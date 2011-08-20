@@ -9,11 +9,11 @@
  *          scene creation and deletion, avatars, prims, and camera.
  *
  *  @note   Avoid direct module dependency to RexLogicModule at all costs because
- *          it's likely to cause cyclic dependy which fails the whole application.
+ *          it's likely to cause cyclic dependency which fails the whole application.
  *          Instead use the WorldLogicInterface or different entity-components which
  *          are not within RexLogicModule. 
  *
- *          Currenly e.g. PythonScriptModule is highly dependant of RexLogicModule,
+ *          Currently e.g. PythonScriptModule is highly dependent of RexLogicModule,
  *          but work is made to overcome this. If some feature you need from RexLogicModule
  *          is missing, please try to find a delicate abstraction/mechanism/design for retrieving it,
  *          instead of just hacking it to RexLogicModule directly.
@@ -31,7 +31,6 @@
 #include "EventHandlers/AvatarEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
-#include "EntityComponent/EC_AttachedSound.h"
 
 //#ifdef EC_FreeData_ENABLED
 #include "EntityComponent/EC_FreeData.h"
@@ -55,35 +54,35 @@
 #include "Avatar/AvatarControllable.h"
 #include "AvatarEditing/AvatarEditor.h"
 
-#ifdef EC_AvatarAppearance_ENABLED
-#include "EntityComponent/EC_AvatarAppearance.h"
-#endif
+//#ifdef EC_AvatarAppearance_ENABLED
+//#include "EntityComponent/EC_AvatarAppearance.h"
+//#endif
 
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
 #include "Camera/CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
-#include "SceneInteract.h"
 
 #include "Camera/ObjectCameraController.h"
 #include "Camera/CameraControl.h"
+
+#include "SceneAPI.h"
+#include "Application.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
 #include "ConsoleCommand.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 #include "ServiceManager.h"
 #include "ComponentManager.h"
 #include "IEventData.h"
-#include "TextureInterface.h"
-#include "ISoundService.h"
-#include "Input.h"
+#include "AudioAPI.h"
+#include "InputAPI.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
 #include "Renderer.h"
 #include "RenderServiceInterface.h"
-#include "OgreTextureResource.h"
 #include "EC_OgreCamera.h"
 #include "EC_Placeable.h"
 #include "EC_OgreMovableTextOverlay.h"
@@ -91,6 +90,7 @@
 #include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
+#include "ConsoleAPI.h"
 
 // External EC's
 #ifdef EC_Highlight_ENABLED
@@ -143,18 +143,30 @@
 #ifdef EC_InputMapper_ENABLED
 #include "EC_InputMapper.h"
 #endif
-#ifdef EC_Movable_ENABLED
-#include "EC_Movable.h"
-#endif
 #ifdef EC_VideoSource_ENABLED
 #include "EC_VideoSource.h"
 #endif
 #ifdef EC_Gizmo_ENABLED
 #include "EC_Gizmo.h"
 #endif
+#ifdef EC_Selected_ENABLED
+#include "EC_Selected.h"
+#endif
 
 #ifdef EC_PlanarMirror_ENABLED
 #include "EC_PlanarMirror.h"
+#endif
+
+#ifdef EC_WebView_ENABLED
+#include "EC_WebView.h"
+#endif
+
+#ifdef EC_ProximityTrigger_ENABLED
+#include "EC_ProximityTrigger.h"
+#endif
+
+#ifdef EC_LaserPointer_ENABLED
+#include "EC_LaserPointer.h"
 #endif
 
 #include <OgreManualObject.h>
@@ -165,8 +177,6 @@
 #include <OgreBillboardSet.h>
 
 #include <boost/make_shared.hpp>
-
-#include "NaaliApplication.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -200,9 +210,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_FreeData);
 //#endif
 
-    DECLARE_MODULE_EC(EC_AttachedSound);
-
-    // External EC's
+// External EC's
 #ifdef EC_Highlight_ENABLED
     DECLARE_MODULE_EC(EC_Highlight);
 #endif
@@ -239,7 +247,7 @@ void RexLogicModule::Load()
 //#ifdef EC_Name_ENABLED
     DECLARE_MODULE_EC(EC_Name);
 //#endif
-#ifdef EC_Movable_ENABLED
+#ifdef EC_ParticleSystem_ENABLED
     DECLARE_MODULE_EC(EC_ParticleSystem);
 #endif
 #ifdef EC_SoundListener_ENABLED
@@ -248,11 +256,8 @@ void RexLogicModule::Load()
 #ifdef EC_Sound_ENABLED
     DECLARE_MODULE_EC(EC_Sound);
 #endif
-#ifdef EC_InputMapper_ENABLED    
+#ifdef EC_InputMapper_ENABLED
     DECLARE_MODULE_EC(EC_InputMapper);
-#endif
-#ifdef EC_Movable_ENABLED
-    DECLARE_MODULE_EC(EC_Movable);
 #endif
 #ifdef EC_VideoSource_ENABLED
     DECLARE_MODULE_EC(EC_VideoSource);
@@ -260,9 +265,20 @@ void RexLogicModule::Load()
 #ifdef EC_Gizmo_ENABLED
     DECLARE_MODULE_EC(EC_Gizmo);
 #endif
-
 #ifdef EC_PlanarMirror_ENABLED
     DECLARE_MODULE_EC(EC_PlanarMirror);
+#endif
+#ifdef EC_Selected_ENABLED
+    DECLARE_MODULE_EC(EC_Selected);
+#endif
+#ifdef EC_WebView_ENABLED
+    DECLARE_MODULE_EC(EC_WebView);
+#endif
+#ifdef EC_ProximityTrigger_ENABLED
+    DECLARE_MODULE_EC(EC_ProximityTrigger);
+#endif
+#ifdef EC_LaserPointer_ENABLED
+    DECLARE_MODULE_EC(EC_LaserPointer);
 #endif
 }
 
@@ -283,12 +299,10 @@ void RexLogicModule::Initialize()
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
     obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
-    camera_control_widget_ = CameraControlPtr(new CameraControl(this));
+	//$ BEGIN_MOD $
+	//camera_control_widget_ = CameraControlPtr(new CameraControl(this)); //Done in PostInitialize, when UiExternalModule is available
+	//$ END_MOD $
     
-    SceneInteract *sceneInteract = new SceneInteract(framework_);
-    QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
-    framework_->RegisterDynamicObject("sceneinteract", sceneInteract);
-
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
 
@@ -308,12 +322,20 @@ void RexLogicModule::Initialize()
     framework_->GetServiceManager()->RegisterService(Service::ST_Login, login_service_);
 
     // For getting ether shots upon exit, desconstuctor LogoutAndDeleteWorld() call is too late
-    connect(framework_->GetNaaliApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
+    connect(framework_->GetApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
 }
 
 // virtual
 void RexLogicModule::PostInitialize()
 {
+	//$ BEGIN_MOD $
+	//Done here when UiExternalModule is available and if is editionless
+    if (!framework_->IsEditionless())
+    {
+	    camera_control_widget_ = CameraControlPtr(new CameraControl(this));
+    }
+	//$ END_MOD $
+
     EventManagerPtr eventMgr = framework_->GetEventManager();
     eventMgr->RegisterEventSubscriber(this, 104);
 
@@ -376,23 +398,23 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
     
-    RegisterConsoleCommand(Console::CreateCommand("Login", 
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
-        Console::Bind(this, &RexLogicModule::ConsoleLogin)));
+        ConsoleBind(this, &RexLogicModule::ConsoleLogin)));
 
-    RegisterConsoleCommand(Console::CreateCommand("Logout", 
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Logout", 
         "Logout from server.",
-        Console::Bind(this, &RexLogicModule::ConsoleLogout)));
+        ConsoleBind(this, &RexLogicModule::ConsoleLogout)));
         
-    RegisterConsoleCommand(Console::CreateCommand("Fly",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Fly",
         "Toggle flight mode.",
-        Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
+        ConsoleBind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
 #ifdef EC_Highlight_ENABLED
-    RegisterConsoleCommand(Console::CreateCommand("Highlight",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Highlight",
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
-        Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
+        ConsoleBind(this, &RexLogicModule::ConsoleHighlightTest)));
 #endif
 
     obj_camera_controller_->PostInitialize();
@@ -400,16 +422,16 @@ void RexLogicModule::PostInitialize()
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
 {
-    if (framework_->HasScene(name))
+    if (framework_->Scene()->HasScene(name))
     {
         LogWarning("Tried to create new active scene, but it already existed!");
-        Scene::ScenePtr scene = framework_->GetScene(name);
-        framework_->SetDefaultWorldScene(scene);
+        Scene::ScenePtr scene = framework_->Scene()->GetScene(name);
+        framework_->Scene()->SetDefaultScene(scene);
         return scene;
     }
 
-    Scene::ScenePtr scene = framework_->CreateScene(name, true);
-    framework_->SetDefaultWorldScene(scene);
+    Scene::ScenePtr scene = framework_->Scene()->CreateScene(name, true);
+    framework_->Scene()->SetDefaultScene(scene);
 
     // Connect ComponentAdded&Removed signals.
     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
@@ -482,14 +504,14 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::SceneManager* scene, bool 
 
 void RexLogicModule::DeleteScene(const QString &name)
 {
-    if (!framework_->HasScene(name))
+    if (!framework_->Scene()->HasScene(name))
     {
         LogWarning("Tried to delete scene, but it didn't exist!");
         return;
     }
 
-    framework_->RemoveScene(name);
-    assert(!framework_->HasScene(name));
+    framework_->Scene()->RemoveScene(name);
+    assert(!framework_->Scene()->HasScene(name));
 }
 
 // virtual
@@ -525,7 +547,7 @@ void RexLogicModule::Uninitialize()
 void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
-    if (!renderer.get())
+    if (!renderer)
         return;
 
     Ogre::Camera *camera = renderer->GetCurrentCamera();
@@ -582,7 +604,7 @@ void RexLogicModule::Update(f64 frametime)
         }
         
         // If scene exists, we should be connected and can update these
-        if (framework_->GetDefaultWorldScene())
+        if (framework_->Scene()->GetDefaultScene())
         {
             camera_controllable_->AddTime(frametime);
             // Update overlays last, after camera update
@@ -623,7 +645,7 @@ Scene::EntityPtr RexLogicModule::GetCameraEntity() const
 
 Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QString &component) const
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -636,8 +658,13 @@ Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QS
 
 const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) const
 {
+    /// \todo Deprecated. Reimplement using EC_Avatar if needed.
+    /*
     static const QString prop = GetUserAvatarEntity()->GetComponent<EC_AvatarAppearance>()->GetProperty(name.toStdString()).c_str();
     return prop;
+    */
+    static QString dummy;
+    return dummy;
 }
 
 float RexLogicModule::GetCameraControllablePitch() const
@@ -716,23 +743,6 @@ PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
     return primitive_;
 }
 
-//XXX \todo add dll exports or fix by some other way (e.g. qobjects)
-//wrappers for calling stuff elsewhere in logic module from outside (python api module)
-void RexLogicModule::SetAvatarYaw(float newyaw)
-{
-    GetAvatarControllable()->SetYaw(newyaw);
-}
-
-void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
-{
-    GetAvatarControllable()->SetRotation(newrot);
-}
-
-void RexLogicModule::SetCameraYawPitch(float newyaw, float newpitch)
-{
-    camera_controllable_->SetYawPitch(newyaw, newpitch);
-}
-
 void RexLogicModule::LogoutAndDeleteWorld()
 {
     emit AboutToDeleteWorld();
@@ -745,7 +755,7 @@ void RexLogicModule::LogoutAndDeleteWorld()
     if (primitive_)
         primitive_->HandleLogout();
 
-    if (framework_->HasScene("World"))
+    if (framework_->Scene()->HasScene("World"))
         DeleteScene("World");
 
     pending_parents_.clear();
@@ -818,7 +828,7 @@ void RexLogicModule::SendAvatarUrl()
 
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -861,7 +871,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
 
 void RexLogicModule::HandleMissingParent(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -900,7 +910,7 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 {
 #ifdef EC_HoveringText_ENABLED
 
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -908,7 +918,7 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
     foreach(Scene::EntityPtr entity, entities)
     {
         boost::shared_ptr<EC_HoveringText> overlay = entity->GetComponent<EC_HoveringText>();
-        assert(overlay.get());
+        assert(overlay);
         if (visible)
             overlay->Show();
         else
@@ -924,7 +934,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
     using namespace OgreRenderer;
 
     //! \todo probably should not be directly in RexLogicModule
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -991,7 +1001,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         boost::shared_ptr<EC_AnimationController> animctrl = entity.GetComponent<EC_AnimationController>();
         if (animctrl)
             animctrl->Update(frametime);
-
+/** \todo Regression. Reimplement using the EC_Sound component. -jj.
         // Attached sound update
         boost::shared_ptr<EC_Placeable> placeable = entity.GetComponent<EC_Placeable>();
         boost::shared_ptr<EC_AttachedSound> sound = entity.GetComponent<EC_AttachedSound>();
@@ -1000,13 +1010,14 @@ void RexLogicModule::UpdateObjects(f64 frametime)
             sound->Update(frametime);
             sound->SetPosition(placeable->GetPosition());
         }
+*/
     }
 }
 
 void RexLogicModule::UpdateSoundListener()
 {
 #ifdef EC_SoundListener_ENABLED
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -1039,8 +1050,8 @@ bool RexLogicModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 {
-    Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-    if (!current_scene.get() || !users_avatar.get())
+    Scene::ScenePtr current_scene = GetFramework()->Scene()->GetDefaultScene();
+    if (!current_scene || !users_avatar)
         return;
 
     Scene::EntityList all_avatars = current_scene->GetEntitiesWithComponent("EC_OpenSimPresence");
@@ -1115,8 +1126,8 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, RaycastResult *resu
 
     EC_OgreCamera * camera = 0;
 
-    Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-    if (!current_scene.get())
+    Scene::ScenePtr current_scene = GetFramework()->Scene()->GetDefaultScene();
+    if (!current_scene)
         return ret_val;
 
     Scene::SceneManager::iterator iter = current_scene->begin();
@@ -1212,7 +1223,7 @@ OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
     return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
 }
 
-Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
+ConsoleCommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
 {
     std::string name = "Test User";
     std::string passwd = "test";
@@ -1233,38 +1244,38 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
 
     StartLoginOpensim(name.c_str(), passwd.c_str(), server.c_str());
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
+ConsoleCommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 {
     if (world_stream_->IsConnected())
     {
         LogoutAndDeleteWorld();
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
     else
     {
-        return Console::ResultFailure("Not connected to server.");
+        return ConsoleResultFailure("Not connected to server.");
     }
 }
 
-Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
+ConsoleCommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
 {
     event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
     GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::TOGGLE_FLYMODE, 0);
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
+ConsoleCommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
 {
 #ifdef EC_Highlight_ENABLED
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene found.");
+        return ConsoleResultFailure("No active scene found.");
 
     if (params.size() != 1 || (params[0] != "add" && params[0] != "remove"))
-        return Console::ResultFailure("Invalid syntax. Usage: highlight(add|remove).");
+        return ConsoleResultFailure("Invalid syntax. Usage: highlight(add|remove).");
 
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
@@ -1281,7 +1292,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
                     // If we didn't have the higihlight component yet, create one now.
                     entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
                     highlight = entity.GetComponent<EC_Highlight>();
-                    assert(highlight.get());
+                    assert(highlight);
                 }
 
                 if (highlight->IsVisible())
@@ -1298,7 +1309,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
         }
     }
 #endif
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 void RexLogicModule::EmitIncomingEstateOwnerMessageEvent(QVariantList params)
@@ -1313,16 +1324,9 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
     {
         LogDebug("Added new sound listener to the listener list.");
 //        EC_SoundListener *listener = entity->GetComponent<EC_SoundListener>().get();
-//        connect(listener, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), 
+//        connect(listener, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)), 
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
-    }
-#endif
-
-#ifdef EC_Movable_ENABLED ///\todo When the Connection API is complete, remove this altogether. The EC_Movable can access the connection via that. -jj.
-    if (component->TypeName() == EC_Movable::TypeNameStatic())
-    {
-        entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }
 #endif
 }

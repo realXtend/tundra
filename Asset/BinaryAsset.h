@@ -10,16 +10,36 @@ class BinaryAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    BinaryAsset(const QString &type_, const QString &name_)//, const QString &ref_)
-    :IAsset(type_, name_)//, ref_)
+    BinaryAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+        IAsset(owner, type_, name_)
     {
     }
 
-    virtual bool LoadFromFileInMemory(const u8 *data_, size_t numBytes)
+    ~BinaryAsset() 
+    { 
+        Unload(); 
+    }
+
+    virtual void DoUnload() 
+    { 
+        data.clear(); 
+    }
+
+    bool Isloaded() const
+    {
+        return data.size() != 0;
+    }
+
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes)
     {
         data.clear();
         data.insert(data.end(), data_, data_ + numBytes);
+        return true;
+    }
 
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
+    {
+        dst = data;
         return true;
     }
 
@@ -27,6 +47,8 @@ public:
     {
         return std::vector<AssetReference>();
     }
+
+    bool IsLoaded() const { return data.size() > 0; }
 
     std::vector<u8> data;
 };

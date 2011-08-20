@@ -21,7 +21,7 @@ me.Action("MouseHoverOut").Triggered.connect(MouseOut);
 //Checking if EC_Hoveringtext component has added after EC_Script to Entity
  function CheckComponent(entity, component, type)
 {
-	if (component.TypeName == "EC_HoveringText")
+	if (component.typeName == "EC_HoveringText")
 	GetHoveringTextComponent();
 }
 

@@ -1,6 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include <QMap>
+#include "btBulletDynamicsCommon.h"
+#include "MemoryLeakCheck.h"
 #include "EC_VolumeTrigger.h"
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
@@ -9,7 +13,6 @@
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include <OgreAxisAlignedBox.h>
-#include "btBulletDynamicsCommon.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_VolumeTrigger");
@@ -19,17 +22,17 @@ EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
     IComponent(module->GetFramework()),
     byPivot(this, "By Pivot", false),
     entities(this, "Entities"),
+//$ BEGIN_MOD $
+    rigidBodyName(this, "RigidBody Name", "VolumeTrigger"),
+//$ END_MOD $
     owner_(checked_static_cast<Physics::PhysicsModule*>(module))
 {
-    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*)));
-
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_VolumeTrigger::~EC_VolumeTrigger()
 {
-
 }
 
 QList<Scene::EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
@@ -151,12 +154,16 @@ bool EC_VolumeTrigger::IsInsideVolume(const Vector3df& point) const
            RayTestSingle(Vector3df(point.x, point.y, point.z + 1e7), point, rigidbody->GetRigidBody());
 }
 
-void EC_VolumeTrigger::AttributeUpdated(IAttribute* attribute)
+void EC_VolumeTrigger::OnAttributeUpdated(IAttribute* attribute)
 {
     //! \todo Attribute updates not handled yet, there are a bit too many problems of what signals to send after the update -cm
 
     //if (attribute == &mass)
     //    ReadBody();
+	//$ BEGIN_MOD $
+	if (attribute == &rigidBodyName)
+		OnRigidBodyNameChanged();
+	//$ END_MOD $
 }
 
 void EC_VolumeTrigger::UpdateSignals()
@@ -179,17 +186,38 @@ void EC_VolumeTrigger::CheckForRigidBody()
     if (!parent)
         return;
     
-    if (!rigidbody_.lock().get())
+    if (!rigidbody_.lock())
     {
-        boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>();
+//$ BEGIN_MOD $
+        boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>(rigidBodyName.Get());
+		//If rigidbody without name founded, get first one
+		if (!rigidbody)
+			boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>();
+//$ END_MOD $
         if (rigidbody)
         {
             rigidbody_ = rigidbody;
             connect(rigidbody.get(), SIGNAL(PhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)),
                 this, SLOT(OnPhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)));
         }
+
     }
 }
+//$ BEGIN_MOD $
+void EC_VolumeTrigger::OnRigidBodyNameChanged()
+{
+	Scene::Entity* parent = GetParentEntity();
+    if (!parent)
+        return;
+	boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>(rigidBodyName.Get());
+	//If rigidbody without name founded, return
+    if (rigidbody)
+    {
+		rigidbody_ = rigidbody;
+		connect(rigidbody.get(), SIGNAL(PhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)), this, SLOT(OnPhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)));
+    }
+}
+//$ END_MOD $
 
 void EC_VolumeTrigger::OnPhysicsUpdate()
 {
@@ -198,8 +226,9 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     {
         if (!i.value())
         {
-            bool active = true;
             Scene::EntityPtr entity = i.key().lock();
+            /* disabled the check 'cause couldn't get the targets active, and the (possible) extran signaling doesn't do harm? --antont 
+            bool active = true;
             // inactive rigid bodies don't generate collisions, so before emitting EntityLeave -event, make sure the body is active.
             if (entity)
             {
@@ -207,14 +236,28 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (rigidbody)
                     active = rigidbody->IsActive();
             }
-            if (active)
+            if (active)*/
+            if (true)
             {
                 i = entities_.erase(i);
                 
                 if (entity)
                 {
-                    emit EntityLeave(entity.get());
-                    disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+					//$ BEGIN_MOD $
+					if (byPivot.Get())
+					{
+						if(!IsPivotInside(entity.get()))
+						{
+							emit EntityLeave(entity.get());
+							disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+						}
+					}
+					else
+					{
+						emit EntityLeave(entity.get());
+						disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+					}
+					//$ END_MOD $
                 }
                 continue;
             }
@@ -233,7 +276,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
     if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->GetName()))
         return;
 
-    Scene::EntityPtr entity = otherEntity->GetSharedPtr();
+    Scene::EntityPtr entity = otherEntity->shared_from_this();
 
     if (byPivot.Get())
     {
@@ -264,7 +307,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
 
 void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
 {
-    Scene::EntityWeakPtr ptr = entity->GetSharedPtr();
+    Scene::EntityWeakPtr ptr = entity->shared_from_this();
     QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.find(ptr);
     if (i != entities_.end())
     {
@@ -273,4 +316,3 @@ void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
         emit EntityLeave(entity);
     }
 }
-

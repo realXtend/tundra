@@ -8,17 +8,12 @@
 #include <map>
 #include <string>
 
-#include "InputApi.h"
-
 class QTreeWidget;
 class QTreeWidgetItem;
 
-namespace Foundation
-{
-class Framework;
-}
+namespace Foundation { class Framework; }
 
-class INPUT_API KeyBindingsConfigWindow : public QWidget
+class KeyBindingsConfigWindow : public QWidget
 {
     Q_OBJECT
 

@@ -15,7 +15,7 @@ EC_VoiceChannel::EC_VoiceChannel(IModule *module):
     channelid(this, "channelid", ""),
     enabled(this, "enabled", false)
 {
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AutoDisabelChannel(IAttribute*, AttributeChange::Type)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AutoDisabelChannel(IAttribute*, AttributeChange::Type)));
 }
 
 EC_VoiceChannel::~EC_VoiceChannel()

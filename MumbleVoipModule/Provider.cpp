@@ -3,18 +3,27 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include <QSignalMapper>
 #include "Provider.h"
 #include "Session.h"
 #include "MumbleVoipModule.h"
 #include "ServerInfoProvider.h"
-#include "EventManager.h"
-#include "NetworkEvents.h" // For network events
 #include "MicrophoneAdjustmentWidget.h"
-#include "UiServiceInterface.h"
-#include "UiProxyWidget.h"
 #include "EC_VoiceChannel.h"
+
+#include "EventManager.h"
+#include "NetworkEvents.h"
+#include "UiProxyWidget.h"
 #include "SceneManager.h"
+#include "TundraLogicModule.h"
+#include "Client.h"
+
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+
+#include "SceneAPI.h"
+#include "Entity.h"
+
+#include <QSignalMapper>
 
 #include "MemoryLeakCheck.h"
 
@@ -40,11 +49,13 @@ namespace MumbleVoip
         if (framework_ &&  framework_->GetServiceManager())
         {
             boost::shared_ptr<Communications::ServiceInterface> communication_service = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Service::ST_Communications).lock();
-            if (communication_service.get())
+            if (communication_service)
                 communication_service->Register(*this);
         }
 
-        connect(framework_, SIGNAL(SceneAdded(const QString &)), this, SLOT(OnSceneAdded(const QString &)));
+        connect(framework_->Scene(), SIGNAL(SceneAdded(const QString &)), this, SLOT(OnSceneAdded(const QString &)));
+
+        framework_->RegisterDynamicObject("mumbleprovider", this);
     }
 
     Provider::~Provider()
@@ -57,6 +68,7 @@ namespace MumbleVoip
     {
         if (session_)
             session_->Update(frametime);
+        CheckChannelQueue();
     }
     
     bool Provider::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
@@ -90,6 +102,18 @@ namespace MumbleVoip
         return false;
     }
 
+    void Provider::CheckChannelQueue()
+    {
+        if (channel_queue_.isEmpty())
+            return;
+        if (GetUsername().length() == 0)
+            return;
+
+        EC_VoiceChannel* channel = channel_queue_.takeFirst();
+        if (channel)
+            AddECVoiceChannel(channel);
+    }
+
     Communications::InWorldVoice::SessionInterface* Provider::Session()
     {
         return session_;
@@ -116,7 +140,7 @@ namespace MumbleVoip
         channel->setchannelname("Public");
         channel->setenabled(true);
 
-        Scene::EntityPtr e = framework_->GetDefaultWorldScene()->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::EntityPtr e = framework_->Scene()->GetDefaultScene()->CreateEntity();
         e->AddComponent(component,  AttributeChange::LocalOnly);
     }
 
@@ -152,13 +176,15 @@ namespace MumbleVoip
 
     void Provider::ShowMicrophoneAdjustmentDialog()
     {
-        UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
-
-        if (!ui_service)
+        if (framework_->IsHeadless())
             return;
 
         if (microphone_adjustment_widget_)
+        {
+            if (!microphone_adjustment_widget_->isVisible())
+                microphone_adjustment_widget_->show();
             return;
+        }
 
         bool audio_sending_was_enabled = false;
         bool audio_receiving_was_enabled = false;
@@ -172,11 +198,13 @@ namespace MumbleVoip
         }
         
         microphone_adjustment_widget_ = new MicrophoneAdjustmentWidget(framework_, settings_);
-        microphone_adjustment_widget_->setWindowTitle("Local Test Mode");
+        microphone_adjustment_widget_->setParent(framework_->Ui()->MainWindow());
+        microphone_adjustment_widget_->setWindowFlags(Qt::Tool);
+        microphone_adjustment_widget_->setWindowTitle("Voice Local Test Mode");
         microphone_adjustment_widget_->setAttribute(Qt::WA_DeleteOnClose, true);
         microphone_adjustment_widget_->show();
-        connect(microphone_adjustment_widget_, SIGNAL(destroyed()), this, SLOT(OnMicrophoneAdjustmentWidgetDestroyed()));
 
+        connect(microphone_adjustment_widget_, SIGNAL(destroyed()), this, SLOT(OnMicrophoneAdjustmentWidgetDestroyed()));
         if (audio_sending_was_enabled)
             connect(microphone_adjustment_widget_, SIGNAL(destroyed()), session_, SLOT(EnableAudioSending()));
         if (audio_receiving_was_enabled)
@@ -198,18 +226,32 @@ namespace MumbleVoip
             return;
 
         if (ec_voice_channels_.contains(channel))
+            return;
+
+        QString user_name = GetUsername();
+        if (user_name.length() == 0)
         {
+            channel_queue_.append(channel);
             return;
         }
+        else
+            AddECVoiceChannel(channel);
+    }
 
+    void Provider::AddECVoiceChannel(EC_VoiceChannel* channel)
+    {
         ec_voice_channels_.append(channel);
         channel_names_[channel] = channel->getchannelname();
-        if (!session_ || session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
+
+        if (!session_)
             CreateSession();
        
-        connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)),Qt::UniqueConnection);
-        connect(channel, SIGNAL(OnChanged()), signal_mapper_, SLOT(map()));
-        signal_mapper_->setMapping(channel,QString::number(reinterpret_cast<unsigned int>(channel)));
+        connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)), Qt::UniqueConnection);
+        connect(channel, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)), signal_mapper_, SLOT(map()), Qt::UniqueConnection);
+        signal_mapper_->setMapping(channel, QString::number(reinterpret_cast<unsigned int>(channel)));
+
+        if (session_->GetChannels().contains(channel->getchannelname()))
+            channel->setenabled(false); // We do not want to create multiple channels with a same name
 
         ServerInfo server_info;
         server_info.server = channel->getserveraddress();
@@ -218,9 +260,7 @@ namespace MumbleVoip
         server_info.channel_id = channel->getchannelid();
         server_info.channel_name = channel->getchannelname();
         server_info.user_name = GetUsername();
-        
-        if (session_->GetChannels().contains(channel->getchannelname()))
-            channel->setenabled(false); // We do not want to create multiple channels with a same name
+        server_info.avatar_id = GetAvatarUuid();
 
         if (channel->getenabled())
             session_->AddChannel(channel->getchannelname(), server_info);
@@ -247,26 +287,29 @@ namespace MumbleVoip
 
     void Provider::OnSceneAdded(const QString &name)
     {
-        Scene::SceneManager* scene = framework_->GetScene(name).get();
+        Scene::SceneManager* scene = framework_->Scene()->GetSceneRaw(name);
         if (!scene)
             return;
 
-        connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)), SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
+        connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     }
 
     void Provider::ECVoiceChannelChanged(const QString &pointer)
     {
-        if (!session_)        
+        if (!session_)
             return;
-
-        /// @todo If user have edited the active channel -> close, reopen
 
         foreach(EC_VoiceChannel* channel, ec_voice_channels_)
         {
             if (QString::number(reinterpret_cast<unsigned int>(channel)) != pointer)
                 continue;
 
-            if (channel->getenabled() && !session_->GetChannels().contains(channel->getchannelname()))
+            /// @todo If user have edited the active channel -> close, reopen
+            if (session_->GetActiveChannel() == channel->getchannelname())
+                MumbleVoip::MumbleVoipModule::LogWarning("Active voice channel data changed.");
+
+            if (channel->getenabled())
             {
                 ServerInfo server_info;
                 server_info.server = channel->getserveraddress();
@@ -274,19 +317,13 @@ namespace MumbleVoip
                 server_info.password = channel->getserverpassword();
                 server_info.channel_id = channel->getchannelid();
                 server_info.channel_name = channel->getchannelname();
-                if (!channel->getusername().isEmpty())
-                {
-                    server_info.user_name = channel->getusername();
-                }
-                else
-                {
-                    server_info.user_name = "anonymous";
-                }
+                server_info.user_name = GetUsername();
+                server_info.avatar_id = GetAvatarUuid();
 
                 channel_names_[channel] = channel->getchannelname();
                 session_->AddChannel(channel->getchannelname(), server_info);
             }
-            if (!channel->getenabled())
+            else
             {
                 session_->RemoveChannel(channel->getchannelname());
             }
@@ -295,10 +332,21 @@ namespace MumbleVoip
 
     QString Provider::GetUsername()
     {
-        if (world_stream_.get())
-            return world_stream_->GetInfo().agentID.ToQString();
-        else
-            return "";
+        if (tundra_logic_ && !tundra_logic_->IsServer())
+            return tundra_logic_->GetClient()->GetLoginProperty("username");
+        return "";
     }
 
+    QString Provider::GetAvatarUuid()
+    {
+        /// @todo: Get user's avatar entity uuid
+        return "";
+    }
+    
+    void Provider::PostInitialize()
+    {
+        tundra_logic_ = framework_->GetModuleManager()->GetModule<TundraLogic::TundraLogicModule>().lock();
+        if (!tundra_logic_)
+            RootLogError("MumbleVoip::Proviver: Could not get TundraLogicModule");
+    }
 } // MumbleVoip

@@ -1,7 +1,21 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "TerrainWeightEditor.h"
+#include "TerrainLabel.h"
 #include "EnvironmentModule.h"
 #include "EC_Terrain.h"
+
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#include "SceneAPI.h"
+#include "Entity.h"
+#include "Framework.h"
+#include "SceneManager.h"
+#include "UiProxyWidget.h"
+#include "ConsoleCommandUtils.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -9,37 +23,29 @@
 #include <QPixmap>
 #include <QLabel>
 
-#include "TerrainLabel.h"
-#include "Framework.h"
-#include "SceneManager.h"
-#include "UiProxyWidget.h"
-#include "UiServiceInterface.h"
+#include "MemoryLeakCheck.h"
 
-
-#include "ConsoleCommandServiceInterface.h"
 namespace Environment
 {
-    TerrainWeightEditor::TerrainWeightEditor(EnvironmentModule* env_module)
-        :env_module_(env_module)
-        ,scene_manager_(0),
+    TerrainWeightEditor::TerrainWeightEditor(Foundation::Framework *fw) :
+        fw_(fw),
+        scene_manager_(0),
         brush_size_(1),
         brush_modifier_(1),
         falloff_percentage_(0),
         neutral_color_(128),
         brush_size_max_(800)
     {
-        
+        Initialize();
     }
+
     TerrainWeightEditor::~TerrainWeightEditor()
     {
-
-    
     }
 
     void TerrainWeightEditor::Initialize()
     {
-        UiServiceInterface *ui = env_module_->GetFramework()->GetService<UiServiceInterface>();
-        if (!ui) // If this occurs, we're most probably operating in headless mode.
+        if (fw_->IsHeadless())
             return;
 
         QUiLoader loader;
@@ -51,15 +57,15 @@ namespace Environment
             EnvironmentModule::LogError("Cannot find " +str.toStdString()+ " file");
             return;
         }
+
         editor_widget_ = loader.load(&file, this);
         if (editor_widget_ == 0)
             return;
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
-        if(editor_proxy == 0)
-            return;
-        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"));
-        ui->RegisterUniversalWidget("Weights", editor_proxy);
 
+        setWindowTitle(editor_widget_->windowTitle());
+
+//        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"));
+//        ui->RegisterUniversalWidget("Weights", editor_proxy);
 
         QSpinBox *box = editor_widget_->findChild<QSpinBox*>("brush_size");
         if(box)
@@ -75,23 +81,9 @@ namespace Environment
         if(dbox)
             falloff_percentage_ = dbox->value();
 
-
-
-        
         InitializeCanvases();
         InitializeConnections();
         emit BrushValueChanged();
-    }
-
-
-    Console::CommandResult TerrainWeightEditor::ShowWindow(const StringVector &params)
-    {
-        UiServiceInterface *ui = env_module_->GetFramework()->GetService<UiServiceInterface>();
-        if (!ui) 
-            return Console::ResultFailure("Failed to acquire UiModule pointer!");;
-
-        ui->BringWidgetToFront(this);
-        return Console::ResultSuccess();
     }
 
     void TerrainWeightEditor::DecomposeImageToCanvases(const QImage& image)
@@ -100,9 +92,7 @@ namespace Environment
         QLabel *canvas2 = editor_widget_->findChild<QLabel *>("canvas_2");
         QLabel *canvas3 = editor_widget_->findChild<QLabel *>("canvas_3");
         QLabel *canvas4 = editor_widget_->findChild<QLabel *>("canvas_4");
-        
         assert(canvas1 && canvas2 && canvas3 && canvas4);
-
 
         int width = image.width();
         int height = image.height();
@@ -134,12 +124,10 @@ namespace Environment
         canvas2->setPixmap(QPixmap::fromImage(image2));
         canvas3->setPixmap(QPixmap::fromImage(image3));
         canvas4->setPixmap(QPixmap::fromImage(image4));
-
     }
 
     void TerrainWeightEditor::InitializeCanvases()
     {
-
         QGroupBox* group = editor_widget_->findChild<QGroupBox*>("weight_group");
         if(!group)
             return;
@@ -171,8 +159,6 @@ namespace Environment
         label4->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         label4->setScaledContents(true);
         layout->addWidget(label4,2,1);
-        
-
 
         QLabel *canvas1 = editor_widget_->findChild<QLabel *>("canvas_1");
         QLabel *canvas2 = editor_widget_->findChild<QLabel *>("canvas_2");
@@ -203,8 +189,6 @@ namespace Environment
             if(!canvas)
                 return;
             QImage image = canvas->pixmap()->toImage();
-            
-            
 
             //in canvas space, between [0,1]
             qreal brush_pos_x = ev->posF().x()/canvas->width();
@@ -260,7 +244,6 @@ namespace Environment
 
     QImage TerrainWeightEditor::CreateImageFromCanvases()
     {
-
         QLabel *canvas1 = editor_widget_->findChild<QLabel *>("canvas_1");
         QLabel *canvas2 = editor_widget_->findChild<QLabel *>("canvas_2");
         QLabel *canvas3 = editor_widget_->findChild<QLabel *>("canvas_3");
@@ -282,10 +265,7 @@ namespace Environment
                 int red = qRed(image1.pixel(i,j));
                 int green = qRed(image2.pixel(i,j));
                 int blue = qRed(image3.pixel(i,j));
-
-
                 int alpha = qRed(image4.pixel(i,j));
-
                 ret_image.setPixel(i,j, QColor(red,green,blue,alpha).rgba());
             }
         }
@@ -294,7 +274,6 @@ namespace Environment
 
     void TerrainWeightEditor::InitializeConnections()
     {
-
         connect(this, SIGNAL(BrushValueChanged()), this, SLOT(RecreateBrush()));
 
         if(!editor_widget_)
@@ -333,8 +312,6 @@ namespace Environment
         box = editor_widget_->findChild<QSpinBox*>("brush_modifier");
         if(box)
             connect(box, SIGNAL(valueChanged(int)), this, SLOT(BrushModifierChanged(int)));
-
-
     }
 
     void TerrainWeightEditor::BrushSizeChanged(int val)
@@ -342,11 +319,13 @@ namespace Environment
         brush_size_ = val;
         emit BrushValueChanged();
     }
+
     void TerrainWeightEditor::BrushFalloffChanged(double val)
     {
         falloff_percentage_ = val;
         emit BrushValueChanged();
     }
+
     void TerrainWeightEditor::BrushModifierChanged(int val)
     {
         brush_modifier_ = val;
@@ -437,12 +416,8 @@ namespace Environment
 
     Scene::SceneManager* TerrainWeightEditor::GetSceneManager()
     {
-        if(!scene_manager_)
-        {
-            Scene::ScenePtr ptr = env_module_->GetFramework()->GetDefaultWorldScene();
-            if(ptr.get())
-                scene_manager_ = ptr.get();
-        }
+        if (!scene_manager_)
+            scene_manager_ = fw_->Scene()->GetDefaultScene().get();
          return scene_manager_;
     }
 
@@ -450,40 +425,33 @@ namespace Environment
     {
         if(!GetSceneManager())
             return;
+
         Scene::EntityList list = scene_manager_->GetEntitiesWithComponent("EC_Terrain");
         Scene::EntityList::const_iterator it = list.begin();
 
-        //Quickfix, we will clone a new material copy for each terrain and assume there does not exist previous materialclones
+        //Quick fix, we will clone a new material copy for each terrain and assume there does not exist previous material clones
         int i = 0;
         Ogre::String mat_name;
         while(it!= list.end())
         {
             boost::shared_ptr<EC_Terrain> ptr = (*it)->GetComponent<EC_Terrain>();
-            if(val)
-            {
+            if (val)
                 ptr->material.Set(AssetReference("Rex/TerrainPCF_weighted"/*, "OgreMaterial"*/), AttributeChange::Disconnected);
-            }
             else
-            {
                 ptr->material.Set(AssetReference("Rex/TerrainPCF"/*, "OgreMaterial"*/), AttributeChange::Disconnected);
-            }
+
             Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName(mat_name);
             if(mat.get())
             {
                 if(i>0)
-                {
                     //So we have several terrains, need to create more materials
                     mat_name += Ogre::StringConverter::toString(i);
-                }
+
                 Ogre::MaterialPtr new_mat =Ogre::MaterialManager::getSingleton().getByName(mat_name);
                 if(!new_mat.get())
-                {
                     new_mat =  mat->clone(mat_name);
-                }
                 if(new_mat.get())
-                {
                     ptr->material.Set(QString(new_mat->getName().c_str()),AttributeChange::Default);
-                }
             }
             it++;
             i++;
@@ -492,13 +460,11 @@ namespace Environment
 
     void TerrainWeightEditor::LoadWeightmapFromFile()
     {
-
         QString fileName = QFileDialog::getOpenFileName(this, tr("Select Image"),"" , tr("Image Files (*.png)"));
         QPixmap pix(fileName, "PNG");
         if(pix.isNull())
             return;
 
-        
         QImage img(pix.size(),QImage::Format_ARGB32);
         QImageReader reader(fileName);
         if(reader.read(&img))

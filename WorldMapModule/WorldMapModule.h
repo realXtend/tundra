@@ -102,7 +102,7 @@ namespace WorldMap
 
         virtual void UpdateAvatarPositions();
         f64 time_from_last_update_ms_;
-        QImage ConvertToQImage(Foundation::TextureInterface &tex);
+        /* XXX old asset api QImage ConvertToQImage(Foundation::TextureInterface &tex); */
 
         /// NetworkState event category.
         event_category_id_t networkStateEventCategory_;

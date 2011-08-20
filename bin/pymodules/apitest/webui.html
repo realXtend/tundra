@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script type="text/javascript">
+      function addobject() {
+          //alert("add object!");
+          connection.SendObjectAddPacket(127, 127, 25);
+      }
+
+      function update() {
+          posspan = document.getElementById("avpos");
+          try {
+              postxt = avatar.placeable; //.position;
+          } catch(e) {
+              postxt = "N/A";
+          }
+          posspan.innerHTML = postxt;
+      }
+
+    </script>
+  </head>
+  <body>
+    <h1>Hello Naali!</h1>
+
+    <p>
+      Your avatar position is: <span id="avpos"></span>
+    </p>
+
+    <p>
+      <input type="button" value="Update" onclick="update()" />
+      <input type="button" value="Add object" onclick="addobject()" />
+    </p>
+
+  </body>
+</html>

@@ -23,6 +23,7 @@ struct MsgEntityIDCollision
 		priority = 100;
 	}
 
+    enum { messageID = 115 };
 	static inline u32 MessageID() { return 115; }
 	static inline const char *Name() { return "EntityIDCollision"; }
 

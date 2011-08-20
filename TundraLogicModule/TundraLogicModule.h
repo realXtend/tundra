@@ -4,7 +4,10 @@
 #define incl_TundraLogicModule_TundraLogicModule_h
 
 #include "IModule.h"
+#include "TundraLogicModuleApi.h"
 #include "ModuleLoggingFunctions.h"
+
+#include "AssetFwd.h"
 
 namespace kNet
 {
@@ -24,8 +27,11 @@ class Client;
 class Server;
 class SyncManager;
 
-class TundraLogicModule : public IModule
+class TUNDRALOGIC_MODULE_API TundraLogicModule : public QObject, public IModule
 {
+
+Q_OBJECT
+
 public:
     /// Default constructor.
     TundraLogicModule();
@@ -57,28 +63,28 @@ public:
     static const std::string &NameStatic() { return type_name_static_; }
 
     /// Starts a server (console command)
-    Console::CommandResult ConsoleStartServer(const StringVector &params);
+    ConsoleCommandResult ConsoleStartServer(const StringVector &params);
     
     /// Stops a server (console command)
-    Console::CommandResult ConsoleStopServer(const StringVector &params);
+    ConsoleCommandResult ConsoleStopServer(const StringVector &params);
     
     /// Connects to server (console command)
-    Console::CommandResult ConsoleConnect(const StringVector &params);
+    ConsoleCommandResult ConsoleConnect(const StringVector &params);
     
     /// Disconnects from server (console command)
-    Console::CommandResult ConsoleDisconnect(const StringVector &params);
+    ConsoleCommandResult ConsoleDisconnect(const StringVector &params);
 
     /// Saves scene to an XML file
-    Console::CommandResult ConsoleSaveScene(const StringVector &params);
+    ConsoleCommandResult ConsoleSaveScene(const StringVector &params);
 
     /// Loads scene from an XML file.
-    Console::CommandResult ConsoleLoadScene(const StringVector &params);
+    ConsoleCommandResult ConsoleLoadScene(const StringVector &params);
     
     /// Imports a dotscene
-    Console::CommandResult ConsoleImportScene(const StringVector& params);
+    ConsoleCommandResult ConsoleImportScene(const StringVector& params);
     
     /// Imports one mesh as a new entity
-    Console::CommandResult ConsoleImportMesh(const StringVector& params);
+    ConsoleCommandResult ConsoleImportMesh(const StringVector& params);
     
     /// Check whether we are a server
     bool IsServer() const;
@@ -95,12 +101,19 @@ public:
     /// Return server
     const boost::shared_ptr<Server>& GetServer() const { return server_; }
     
+private slots:
+    void SceneLoaded(AssetPtr asset);
+    void SceneTransferFailed(IAssetTransfer *transfer, QString reason);
+
 private:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
     /// Load the startup scene
     void LoadStartupScene();
+
+    /// Load startup or command line scene
+    void LoadScene(std::string sceneToLoad, bool clearScene);
     
     /// Sync manager
     boost::shared_ptr<SyncManager> syncManager_;
@@ -121,6 +134,11 @@ private:
     
     //! Type name of the module.
     static std::string type_name_static_;
+    
+    //! Whether to autostart the server
+    bool autostartserver_;
+    //! Autostart server port
+    short autostartserver_port_;
 };
 
 }

@@ -194,13 +194,6 @@ namespace RexLogic
         //! login from py - temp while loginui misses dllexport
         void StartLoginOpensim(const QString &firstAndLast, const QString &password, const QString &serverAddressWithPort);
 
-        //! XXX have linking probs to AvatarController so trying this wrapper
-        //! \todo figure workarounds for these functions so that dependency to RexLogicModule
-        //! is not needed anymore.
-        void SetAvatarYaw(float newyaw);
-        void SetAvatarRotation(const Quaternion &newrot);
-        void SetCameraYawPitch(float newyaw, float newpitch);
-
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
         //! Only functions if #define EC_HoveringText_ENABLED is present. Otherwise performs no function.
         void SetAllTextOverlaysVisible(bool visible);
@@ -260,16 +253,16 @@ namespace RexLogic
         void UpdateAvatarNameTags(Scene::EntityPtr users_avatar);
 
         //! login through console
-        Console::CommandResult ConsoleLogin(const StringVector &params);
+        ConsoleCommandResult ConsoleLogin(const StringVector &params);
 
         //! logout through console
-        Console::CommandResult ConsoleLogout(const StringVector &params);
+        ConsoleCommandResult ConsoleLogout(const StringVector &params);
 
         //! toggle fly mode through console
-        Console::CommandResult ConsoleToggleFlyMode(const StringVector &params);
+        ConsoleCommandResult ConsoleToggleFlyMode(const StringVector &params);
 
         //! Console command for test EC_Highlight. Adds EC_Highlight for every avatar.
-        Console::CommandResult ConsoleHighlightTest(const StringVector &params);
+        ConsoleCommandResult ConsoleHighlightTest(const StringVector &params);
 
         /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
         OgreRenderer::RendererPtr GetOgreRendererPtr() const;

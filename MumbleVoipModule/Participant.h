@@ -22,6 +22,7 @@ namespace MumbleVoip
     public slots:
         virtual QString Name() const;
         virtual QString AvatarUUID() const;
+        virtual void SetAvatarUUID(QString uuid);
         virtual bool IsSpeaking() const;
         virtual void Mute(bool mute);
         virtual bool IsMuted() const;
@@ -46,6 +47,7 @@ namespace MumbleVoip
         void OnStopSpeaking();
         void OnPositionUpdated();
         void OnUserLeft();
+        void UserObjectDestroyed();
     };
     typedef QList<Participant*> ParticipantList;
 

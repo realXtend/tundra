@@ -12,6 +12,7 @@
 #include "InWorldChatModuleApi.h"
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
+#include "SceneFwd.h"
 
 #include <QObject>
 

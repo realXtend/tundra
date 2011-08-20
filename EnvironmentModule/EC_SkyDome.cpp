@@ -32,7 +32,19 @@ namespace Environment
         ySegmentsKeepAttr(this, "Y-segments keep", -1),
         drawFirstAttr(this, "Draw first", true)
     {
-        connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+        static AttributeMetadata materialRefMetadata;
+        AttributeMetadata::ButtonInfoList materialRefButtons;
+        materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.GetName(), "V", "View"));
+        materialRefMetadata.buttons = materialRefButtons;
+        materialRef.SetMetadata(&materialRefMetadata);
+
+        static AttributeMetadata texRefMetadata;
+        AttributeMetadata::ButtonInfoList texRefButtons;
+        texRefButtons.push_back(AttributeMetadata::ButtonInfo(textureRef.GetName(), "V", "View"));
+        texRefMetadata.buttons = texRefButtons;
+        textureRef.SetMetadata(&texRefMetadata);
+
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
         renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
@@ -82,7 +94,19 @@ namespace Environment
         }
     }
 
-    void EC_SkyDome::AttributeUpdated(IAttribute* attr)
+    void EC_SkyDome::View(const QString &attributeName)
+    {
+        if (materialRef.GetName() == attributeName)
+        {
+            /// @todo add implementation
+        }
+        else if(textureRef.GetName() == attributeName)
+        {
+            /// @todo add implementation.
+        }
+    }
+
+    void EC_SkyDome::OnAttributeUpdated(IAttribute* attr)
     {
         std::string name = attr->GetNameString();
         if ((name == materialRef.GetNameString() && materialRef.Get().ref != lastMaterial_ )||

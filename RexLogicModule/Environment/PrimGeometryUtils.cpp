@@ -37,7 +37,6 @@
 #include "RexTypes.h"
 #include "RexLogicModule.h"
 #include "OgreMaterialUtils.h"
-#include "OgreMaterialResource.h"
 #include "Renderer.h"
 #include "ServiceManager.h"
 #include "CoreException.h"
@@ -109,6 +108,7 @@ namespace RexLogic
         {
             mat_override = primitive.Materials[0].asset_id;
 
+/* ///\todo Regression. Reimplement using the new Asset API. -jj.
             // If cannot find the override material, use default
             // We will probably get resource ready event later for the material & redo this prim
             boost::shared_ptr<OgreRenderer::Renderer> renderer = framework->GetServiceManager()->
@@ -117,6 +117,7 @@ namespace RexLogic
             {
                 mat_override = "LitTextured";
             }
+*/
         }
             
         try

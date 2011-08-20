@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "QuaternionDecorator.h"
 
 namespace PythonScript {
@@ -79,6 +81,18 @@ namespace PythonScript {
     {
         return self->dotProduct(other);
     }
+
+	Quaternion* QuaternionDecorator::product(Quaternion* self, const Quaternion& other)
+	{
+		Quaternion tmp = *self * other;
+		return new Quaternion(tmp.x, tmp.y, tmp.z, tmp.w);
+	}
+	
+	Vector3df* QuaternionDecorator::product(Quaternion* self, const Vector3df& vec)
+	{
+		Vector3df tmp = *self * vec;
+		return new Vector3df(tmp);
+	}
 
     void QuaternionDecorator::toEuler(Quaternion* self, Vector3df& euler)
     {

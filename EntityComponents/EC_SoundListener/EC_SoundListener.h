@@ -13,8 +13,6 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 
-
-class ISoundService;
 class EC_Placeable;
 
 /// Entity-component which provides sound listener position for in-world 3D audio.
@@ -82,9 +80,6 @@ private:
 
     /// Parent entity's placeable component.
     boost::weak_ptr<EC_Placeable> placeable_;
-
-    /// Sound service.
-    boost::weak_ptr<ISoundService> soundService_;
 
 private slots:
     /// Called when component changes.

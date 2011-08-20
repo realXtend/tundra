@@ -1,0 +1,1 @@
+Folder for temporary files used by Festival.exe

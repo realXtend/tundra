@@ -1,0 +1,33 @@
+material axis_yellow
+{
+	receive_shadows on
+	technique
+	{
+		pass
+		{
+			ambient 0.000000 0.000000 0.000000 0.750000
+			diffuse 0.000000 0.000000 0.000000 0.750000
+			specular 1.000000 1.000000 0.252631 0.750000 12.750000
+			emissive 1.000000 1.000000 0.000000 0.750000
+			scene_blend alpha_blend
+            depth_check off
+			depth_write off
+		}
+	}
+}
+material axis_yellow_hi
+{
+	receive_shadows on
+	technique
+	{
+		pass
+		{
+			ambient 0.000000 0.000000 0.000000 1.000000
+			diffuse 0.000000 0.000000 0.000000 1.00000
+			specular 0.000000 0.000000 0.000000 1.000000 12.750000
+			emissive 1.000000 1.000000 0.252631 1.000000
+            scene_blend alpha_blend
+            depth_check off
+		}
+	}
+}

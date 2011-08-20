@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_WorldBuildingModule_UiHelper_h
@@ -46,14 +47,27 @@ namespace WorldBuilding
             QtVariantPropertyManager *variant_manager;
             QtStringPropertyManager *string_manager;
             QtTreePropertyBrowser *browser;
-
+//$ BEGIN_MOD $
+			//! Properties widget
+			QtTreePropertyBrowser *widget;
+//$ END_MOD $
         public slots:
             QString CheckUiValue(QString value);
             QString CheckUiValue(unsigned int value);
             void SetManipMode(PythonParams::ManipulationMode mode) { manip_mode_ = mode; }
 
             QtTreePropertyBrowser *CreatePropertyBrowser(QWidget *parent, QObject *controller, EC_OpenSimPrim *prim);
-
+//$ BEGIN_MOD $
+			/*! Creates the property widget
+			 *	\param controller The PropertyEditorHandler
+			 *	\return the properties widget
+			 */
+			QtTreePropertyBrowser *CreatePropertyWindow(QObject *controller);
+			/*! Updates the property widget
+			 *	\param prim EC_OpenSimPrim with the information to update
+			 */
+			void UpdatePropertyWindow(EC_OpenSimPrim *prim);
+//$ END_MOD $
             void SetupManipControls(Ui_ObjectManipulationsWidget *manip_ui, QObject *python_handler);
 
             void SetRotateValues(int x, int y, int z);
@@ -72,7 +86,12 @@ namespace WorldBuilding
 
         private slots:
             void CollapseSubGroups(QtBrowserItem *main_group);
-
+//$ BEGIN_MOD $
+			/*! Updates a group of properties widget
+			 *	\param main_group item with information
+			 */
+			void UpdateSubGroups(QtBrowserItem *main_group);
+//$ END_MOD $
             QtProperty *CreateInformationGroup(QtVariantPropertyManager *variant_manager, EC_OpenSimPrim *prim);
             QtProperty *CreateRexPrimDataGroup(QtVariantPropertyManager *variant_manager, EC_OpenSimPrim *prim);
             QtProperty *CreateShapeGroup(QtVariantPropertyManager *variant_manager, EC_OpenSimPrim *prim);

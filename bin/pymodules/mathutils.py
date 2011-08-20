@@ -65,12 +65,12 @@ def euler_to_quat(euler):
 # replacement for r.GetCameraUp()
 def get_up(entity):
     v = QVector3D(0.0, 1.0, 0.0)
-    return quat_mult_vec(entity.placeable.Orientation, v)
+    return quat_mult_vec(entity.placeable.orientation, v)
     
 # replacement for r.GetCameraRight()
 def get_right(entity):
     v = QVector3D(1.0, 0.0, 0.0)
-    return quat_mult_vec(entity.placeable.Orientation, v)
+    return quat_mult_vec(entity.placeable.orientation, v)
 
 def invert_3x3_matrix(m):
     """

@@ -25,10 +25,23 @@ Example:
 \verbatim
 #ifndef incl_Core_StdIncludes_h
 #define incl_Core_StdIncludes_h
+// code...
+#endif
 \endverbatim
 Use <b>forward declarations</b> to minimize use of \#include declarations in header files.
 
-In all files, try to order your \#include statements in the following order: C library, C++ library, other libraries' .h, your project's .h.
+In all files, try to order your \#include statements in the following order:
+\verbatim
+StableHeaders.h (optional)
+DebugOperatorNew.h (optional)
+file's .h (in cpp file)
+same project's .h
+other Tundra project's .h
+C library
+C++ library
+other libraries' .h
+MemoryLeakCheck.h (optional)
+\endverbatim
 
 \subsection nameconvfuncparam Function Parameters
 In functions that pass output variables as parameters to the function, prefer the order <b>Inputs first, outputs last</b>.
@@ -36,7 +49,7 @@ When passing non-const pointers or references to a function, document the parame
 <b>[out]</b>, <b>[in,out]</b> tags. If you only intend to read from a pointer or reference passed to a function, mark it const.
 
 \subsection scope Scoping and Namespaces
-Avoid unnecessary use of namespaces. One namespace within one module enough.
+Avoid unnecessary use of namespaces. One namespace within one module is usually more than enough.
 
 Do not place the <b>using namespace</b> directives in .h- or .inl -files. Please use the <b>using namespace</b> directive at a local scope 
 whenever it improves readability.
@@ -55,23 +68,50 @@ void AvatarNode::WalkForward();
 Prefer "XmlRpcConnection" naming over "XMLRPCConnection" when class names contain acronyms.
 Interfaces should be prefixed with 'I'. ex: IMyNewClass.
 
-Local variables and public/protected member variables are written in lower case with an underscore:
+Local variables, member variables, and Qt properties (declared using Q_PROPERTY macto)are written in <b>lower camel case</b>:
 \verbatim
-int local_var;
-AvatarPtr user_agent = manager->GetUserAgent();
-int AvatarNode::num_friends;
+int localVar;
+AvatarPtr userAgent = manager->GetUserAgent();
+int AvatarNode::numOfFriends;
+Q_PROPERTY(QString name ...)
 \endverbatim
 
-Private member variables should be lower case as well, but with an underscore appended:
+Private member variables can be appended with an underscore:
 \verbatim
-int AvatarNode::private_member_var_;
+int AvatarNode::privateMemberVar_;
 \endverbatim
 
-In your editor, set the tab key to produce 4 spaces. Do not use the tab character. In Visual Studio this feature can be found from Tools -> Options -> Text Editor -> C/C++ -> General.
+\subsection signals_and_slots Signals and Slots
+When naming signals, use the signature to describe what has happened or is about to happen.
+Document the signal signature as you would any normal function. Use preferably "Handle" or "On" prefix for functions
+handling signals.
+\verbatim
+signals:
+/// This signal is emitted when mouse button is clicked.
+/** @button What button was clicked.
+*/
+void MouseButtonClicked(int button);
+
+/// This signal is emitted when something is about to happen.
+/** @what Description of what is about to happen.
+*/
+void SomethingAboutToHappen(const QString &what);
+
+public slots:
+/// Prints what mouse button was clicked.
+/** @button What button was clicked.
+*/
+void HandleMouseButtonClicked(int button);
+\endverbatim
+
+If you're not familiar with the concepts of Qt's signals and slots, learn about them here: http://doc.qt.nokia.com/4.7/signalsandslots.html
+
+<b>In your editor, set the tab key to produce 4 spaces. Do not use the tab character. </b> In Visual Studio this feature can be found from Tools -> Options -> Text Editor -> C/C++ -> General.
 Parenthesis should use whitespace, and gravitate towards the thing they enclose. ex: if (IsFoo()) Do (bar); not if( IsFoo() ) Do( bar );
 Add extra newline at the end of file for crossplatform compatibility.
 Insert opening braces on a line of their own.
 
+\section cppstandard Programming Guidelines
 Use verbose, descriptive names for classes, methods, variables - everything except trivial counters. 
 Code should be self-describing, don't be obtuse.
 
@@ -79,12 +119,10 @@ Some of the existing code do not follow these naming conventions, largely due to
 before this document was written. Still, when in doubt, observe the existing code. Ambiguities will be resolved here later
 if and when necessary.
 
-\section cppstandard Programming Guidelines
-The RealXtend architecture uses <b>Qt</b>, <b>STL</b>, <b>Boost</b> and <b>PoCo</b> as the major frameworks. Please prefer using the containers
-and algorithms found in those wherever it is sensible. <b>The aim is to steer the architecture more towards being a pure Qt application so prefer 
-Qt over the other major frameworks.</b> Avoid being too smart, there is no need to spend time figuring out how to achieve something
-using a stl back_inserter_iterator combined with a mem_fun_ref and a bind2nd if writing it using a simple loop would only take you
-a moment.
+The RealXtend architecture uses <b>Qt</b> (http://doc.qt.nokia.com/), <b>STL</b> and <b>Boost</b> (http://www.boost.org/)as the major frameworks. Please prefer using the containers
+and algorithms found in those wherever it is sensible. Prefer Qt over the other major frameworks.</b> Avoid being too smart,
+there is no need to spend time figuring out how to achieve something using a stl back_inserter_iterator combined with a mem_fun_ref
+and a bind2nd if writing it using a simple loop would only take you a moment.
 
 If you need to use code from other dependency libraries in an unexpected context, make sure to document the dependency
 clearly. Some of the dependencies are evolving and might be changed out later on.
@@ -101,7 +139,7 @@ processing on the actual exception value, or when writing a catch(...)-block, do
 exception, or describe the not-yet-implemented exception handling using a <b>\\todo</b> block. Avoid writing overly general 
 catch blocks that are not in reality aware of all the exceptions they might receive.
 
-Be <b>const-correct</b> where possible. There are very few places where adding a const is wrong.
+Be <b>const-correct</b> (http://www.parashift.com/c++-faq-lite/const-correctness.html) where possible. There are very few places where adding a const is wrong.
 
 For clarity, use <b>typedef</b>s to define template-based types that you use more than once. ex: typedef std::list<MyType*> MyTypeList;
 
@@ -114,28 +152,28 @@ to be documented using the C++-style tags, but for larger sections, use C-style 
 
 \verbatim
     /// A stream reader utility for reading a byte array bit-by-bit.
-    /// \todo Move into OpenSimProtocol module, has nothing RexLogic -specific, -jj.
+    /// @todo Move into OpenSimProtocol module, has nothing RexLogic -specific, -jj.
     class BitStream
     {
     public:
-        /** Constructs a BitStream reader to the given memory area.
-            \param data A pointer to the data to read. \note The memory will not be copied, but the 
+        /// Constructs a BitStream reader to the given memory area.
+        /** @param data A pointer to the data to read. \note The memory will not be copied, but the 
             data will be read from the original buffer, so keep the data alive at least as long as 
             you're using BitStream to read from it.
-            \param numBytes The number of bytes in the stream. */
+            @param numBytes The number of bytes in the stream. */
         BitStream(const void *data, size_t num_bytes);
 
-        /** Reads the given amount of bits from the stream and advances the position inside the stream.
-            The bits are read from the byte array most-significant-bit first, i.e. big endian for bits, but
+        /// Reads the given amount of bits from the stream and advances the position inside the stream.
+        /** The bits are read from the byte array most-significant-bit first, i.e. big endian for bits, but
             if you read u16 or u32 variables, the bytes are reconstructed as LSB -first. This convention 
             comes directly from the way existing data is stored in the SLUDP protocol.
-            \param count The number of bits to read, 0 <= count <= 32.
-            \return The desired amount of bits packed in an u32, populating bits from the 
+            @param count The number of bits to read, 0 <= count <= 32.
+            @return The desired amount of bits packed in an u32, populating bits from the 
             least-significant-bits-end of the u32. The bits are filled in most-significant-bit first. */
         u32 ReadBits(int count);
 
         /// Reads a single bit from the stream and advances the current stream position.
-        /// \return The next bit in the stream, or 0 if there are no bits left in the stream.
+        /** @return The next bit in the stream, or 0 if there are no bits left in the stream. */
         bool ReadBit();
     };
 }

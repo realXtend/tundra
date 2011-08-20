@@ -154,18 +154,18 @@ void EC_BillboardWidget::UninitializeOgreBillboard()
         material_name_ = "";
     }
 
-	if (billboard_set_ && billboard_)
+    if (billboard_set_ && billboard_)
     {
-		billboard_set_->removeBillboard(billboard_);
+        billboard_set_->removeBillboard(billboard_);
         billboard_ = 0;
     }
 
-	if (billboard_set_)
-	{
-		Ogre::SceneManager* scene = renderer->GetSceneManager();
-		if (scene)
+    if (billboard_set_)
+    {
+        Ogre::SceneManager* scene = renderer->GetSceneManager();
+        if (scene)
         {
-			scene->destroyBillboardSet(billboard_set_);
+            scene->destroyBillboardSet(billboard_set_);
             billboard_set_ = 0;
         }
     }

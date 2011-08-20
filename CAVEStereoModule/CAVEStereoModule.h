@@ -6,33 +6,46 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "CAVEStereoModuleApi.h"
+#include "CAVESettingsWidget.h"
+#include "StereoWidget.h"
 #include <QVector>
+#include <QObject>
+
+namespace Ogre
+{
+    class RenderWindow;
+}
 
 namespace Foundation
 {
     class Framework;
 }
 
-//! Main class of the module.
 namespace CAVEStereo
 {
     class StereoController;
     class CAVEManager;
-    class CAVESTEREO_MODULE_API CAVEStereoModule : public IModule
+
+    class CAVESTEREO_MODULE_API CAVEStereoModule : public QObject, public IModule
     {
+        Q_OBJECT
+
     public:
         MODULE_LOGGING_FUNCTIONS;
         CAVEStereoModule();
         ~CAVEStereoModule();
-        virtual void Load();
-        virtual void PreInitialize();
-        virtual void Initialize();
         virtual void PostInitialize();
-        virtual void Uninitialize();
         virtual void Update(f64 frametime);
         static const std::string &NameStatic() { return type_name_static_; }
-
         QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
+
+    public slots:
+        void ShowStereoscopyWindow();
+        void ShowCaveWindow();
+        QWidget *GetCaveWindow();
+        QWidget *GetStereoscopyWindow();
+
+
     private:
         //! Type name of the module.
         static std::string type_name_static_;
@@ -41,7 +54,6 @@ namespace CAVEStereo
         //! Manager for CAVE
         CAVEManager* cave_;
     };
-
 }
 
 #endif

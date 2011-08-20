@@ -9,7 +9,7 @@
 #define incl_ECEditorModule_EntityActionDialog_h
 
 #include "ECEditorModuleApi.h"
-#include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "EntityAction.h"
 
 #include <QDialog>

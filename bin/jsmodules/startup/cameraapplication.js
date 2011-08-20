@@ -1,6 +1,6 @@
 // A startup script that hooks to scene added & scene cleared signals, and creates a local freelook camera upon either signal.
 
-framework.SceneAdded.connect(OnSceneAdded);
+framework.Scene().SceneAdded.connect(OnSceneAdded);
 
 function OnSceneAdded(scenename)
 {
@@ -9,7 +9,7 @@ function OnSceneAdded(scenename)
         return;
 
     // Get pointer to scene through framework
-    scene = framework.Scene(scenename);
+    scene = framework.Scene().GetSceneRaw(scenename);
     scene.SceneCleared.connect(OnSceneCleared);
     CreateCamera(scene);
 }
@@ -36,4 +36,24 @@ function CreateCamera(scene)
     script.scriptRef = r;
 
     scene.EmitEntityCreatedRaw(entity);
+
+	/* somehow breaks the game cameras in lvm 
+         - they are deactivated, and av cam or something is activated instead, upon any arrowkey/wasd presses in the games
+         - it has return button now, so it doesn't use the arrow and wasd keys
+    */
+    if (scene.GetEntityByNameRaw("ObjectCamera") != null)
+		return;
+
+	var objectcameraentity = scene.CreateEntityRaw(scene.NextFreeIdLocal(), ["EC_Script"]);
+	objectcameraentity.SetName("ObjectCamera");
+	objectcameraentity.SetTemporary(true);
+	
+	var objectcamerascript = objectcameraentity.GetComponentRaw("EC_Script");
+	objectcamerascript.type = "js";
+	objectcamerascript.runOnLoad = true;
+	var objectcameraRef = objectcamerascript.scriptRef;
+	objectcameraRef.ref = "local://objectcamera.js";
+	objectcamerascript.scriptRef = objectcameraRef;
+	
+	scene.EmitEntityCreatedRaw(objectcameraentity);
 }

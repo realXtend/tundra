@@ -79,17 +79,6 @@ namespace MumbleVoip
             }
         }
 
-        //if (category_id == networkstate_event_category_)
-        //{
-        //    switch (event_id)
-        //    {
-        //    case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
-        //        break;
-        //    case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
-        //        break;
-        //    }
-        //}
-
         return false;
     }
 

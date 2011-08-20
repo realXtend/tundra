@@ -6,8 +6,7 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB MOC_FILES CommunicationsService.h UiSettingsServiceInterface.h
     MediaPlayerService.h WorldBuildingServiceInterface.h RenderServiceInterface.h
-    UiServiceInterface.h UiWidgetProperties.h UiProxyWidget.h LoginServiceInterface.h WorldLogicInterface.h
-    ConsoleCommandServiceInterface.h ISoundService.h InputServiceInterface.h IOpenSimSceneService.h)
+    LoginServiceInterface.h WorldLogicInterface.h InputServiceInterface.h IOpenSimSceneService.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 MocFolder ()
@@ -19,12 +18,12 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 add_definitions (-DMODULE_EXPORTS)
 
-use_modules (Core Foundation SceneManager Interfaces Asset)
+use_modules (Core Foundation Scene Interfaces Asset)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package_knet()
-link_modules (Core Foundation SceneManager Interfaces Asset)
+link_modules (Core Foundation Scene Interfaces Asset)
 
 SetupCompileFlagsWithPCH()
 

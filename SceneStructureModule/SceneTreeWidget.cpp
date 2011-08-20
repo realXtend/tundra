@@ -1,17 +1,18 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   SceneTreeView.cpp
+ *  @file   SceneTreeWidget.cpp
  *  @brief  Tree widget showing the scene structure.
  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "SceneTreeWidget.h"
+#include "SceneTreeWidgetItems.h"
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
 
-#include "UiServiceInterface.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
@@ -29,19 +30,18 @@
 #include "ArgumentType.h"
 #include "InvokeItem.h"
 #include "FunctionInvoker.h"
-#include "AssetEvents.h"
-#include "RexTypes.h"
+#include "CoreTypes.h"
 #include "OgreConversionUtils.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-#include "ResourceInterface.h"
-#include "NaaliUi.h"
-#include "NaaliMainWindow.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#include "UiWidget.h"
 #ifdef OGREASSETEDITOR_ENABLED
-#   include "MeshPreviewEditor.h"
-#   include "TexturePreviewEditor.h"
-#   include "OgreScriptEditor.h"
+#include "MeshPreviewEditor.h"
+#include "TexturePreviewEditor.h"
+#include "OgreScriptEditor.h"
 #endif
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
@@ -54,82 +54,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
 #include "MemoryLeakCheck.h"
 
-// EntityItem
-
-EntityItem::EntityItem(const Scene::EntityPtr &entity) :
-    ptr(entity), id(entity->GetId())
-{
-}
-Scene::EntityPtr EntityItem::Entity() const
-{
-    return ptr.lock();
-}
-
-entity_id_t EntityItem::Id() const
-{
-    return id;
-}
-
-// ComponentItem
-
-ComponentItem::ComponentItem(const ComponentPtr &comp, EntityItem *parent) :
-    QTreeWidgetItem(parent), parentItem(parent), ptr(comp), typeName(comp->TypeName()), name(comp->Name())
-{
-}
-
-ComponentPtr ComponentItem::Component() const
-{
-    return ptr.lock();
-}
-
-EntityItem *ComponentItem::Parent() const
-{
-    return parentItem;
-}
-
-// AssetItem
-
-AssetItem::AssetItem(const QString &name, const QString &ref, QTreeWidgetItem *parent) :
-    QTreeWidgetItem(parent)
-{
-    this->name = name;
-    this->id = ref;
-}
-
-// Selection
-
-bool Selection::IsEmpty() const
-{
-    return entities.size() == 0 && components.size() == 0 && assets.isEmpty();
-}
-
-bool Selection::HasEntities() const
-{
-    return entities.size() > 0;
-}
-
-bool Selection::HasComponents() const
-{
-    return components.size() > 0;
-}
-
-bool Selection::HasAssets() const
-{
-    return !assets.isEmpty();
-}
-
-QList<entity_id_t> Selection::EntityIds() const
-{
-    QSet<entity_id_t> ids;
-    foreach(EntityItem *e, entities)
-        ids.insert(e->Id());
-    foreach(ComponentItem *c, components)
-        ids.insert(c->Parent()->Id());
-
-    return ids.toList();
-}
-
 // Menu
+
 Menu::Menu(QWidget *parent) : QMenu(parent), shiftDown(false)
 {
 }
@@ -167,7 +93,9 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     setAllColumnsShowFocus(true);
     //setDefaultDropAction(Qt::MoveAction);
     setDropIndicatorShown(true);
-    setHeaderHidden(true);
+    setHeaderLabel(tr("Scene entities"));
+    setColumnCount(2);
+    header()->setSectionHidden(1, true);
 
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)), SLOT(Edit()));
 
@@ -268,7 +196,7 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
 #endif
             if (SceneStructureModule::IsSupportedFileType(filename))
                 if (sceneStruct)
-                    sceneStruct->InstantiateContent(filename, Vector3df(), false, true);
+                    sceneStruct->InstantiateContent(filename, Vector3df(), false);
         }
 
         e->acceptProposedAction();
@@ -485,7 +413,7 @@ Selection SceneTreeWidget::GetSelection() const
                 ret.components << cItem;
             else
             {
-                AssetItem *aItem = dynamic_cast<AssetItem *>(item);
+                AssetRefItem *aItem = dynamic_cast<AssetRefItem *>(item);
                 if (aItem)
                     ret.assets << aItem;
             }
@@ -510,13 +438,13 @@ QString SceneTreeWidget::GetSelectionAsXml() const
         foreach(EntityItem *eItem, selection.entities)
         {
             Scene::EntityPtr entity = eItem->Entity();
-            assert(entity.get());
+            assert(entity);
             if (entity)
             {
                 QDomElement entity_elem = scene_doc.createElement("entity");
                 entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-                foreach(ComponentPtr component, entity->GetComponentVector())
+                foreach(ComponentPtr component, entity->Components())
                     if (component->IsSerializable())
                         component->SerializeTo(scene_doc, entity_elem);
 
@@ -606,21 +534,14 @@ void SceneTreeWidget::Edit()
 
     if (selection.HasComponents() || selection.HasEntities())
     {
-        //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-        //assert(ui);
-
         // If we have an existing editor instance, use it.
         if (ecEditors.size())
         {
-            ECEditorWindow *editor = ecEditors.back();
+			ECEditorWindow *editor = ecEditors.first(); //second We want to listen new events in the main EC_Editor
             if (editor)
             {
                 editor->AddEntities(selection.EntityIds(), true);
-                /*foreach(entity_id_t id, selection.EntityIds())
-                ecEditor->AddEntity(id, false);
-                ecEditor->SetSelectedEntities(selection.EntityIds());*/
-                editor->show();
-                //ui->BringWidgetToFront(ecEditor);
+                ecEditorsUiWidgets.first()->setVisible(true);
                 return;
             }
         }
@@ -628,58 +549,49 @@ void SceneTreeWidget::Edit()
         ECEditorWindow *editor = 0;
         ECEditorModule *module = framework->GetModule<ECEditorModule>();
         editor = module->GetActiveECEditor();
+        UiWidget *uiwid = module->GetActiveECEditorUiWidget();
         if (editor && !ecEditors.contains(editor))
         {
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
+            ecEditorsUiWidgets.push_back(uiwid);
         }
-        else // If there isn't any active editors in ECEditorModule, create a new one.
+        else if (editor && ecEditors.contains(editor))
+			editor->setAttribute(Qt::WA_DeleteOnClose);
+		else // If there isn't any active editors in ECEditorModule, create a new one.
         {
             editor = new ECEditorWindow(framework);
             editor->setAttribute(Qt::WA_DeleteOnClose);
+			UiAPI *ui = framework->Ui();
+			if (ui)
+                uiwid = ui->AddWidgetToWindow(editor);
+				//editor->setParent(ui->MainWindow());
             ecEditors.push_back(editor);
+            ecEditorsUiWidgets.push_back(uiwid);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
         connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
 
-        //ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
-        //ecEditor->hide();
-        //ecEditor->AddEntities(selection.EntityIds(), true);
-        /*foreach(entity_id_t id, selection.EntityIds())
-            ecEditor->AddEntity(id, false);
-        ecEditor->SetSelectedEntities(selection.EntityIds());*/
-
-        NaaliUi *ui = framework->Ui();
-        if (!ui)
-            return;
-        editor->setParent(ui->MainWindow());
-        editor->setWindowFlags(Qt::Tool);
-        if (!editor->isVisible())
-            editor->show();
-
+        uiwid->setVisible(true);
         editor->AddEntities(selection.EntityIds(), true);
-
-        /*ui->AddWidgetToScene(ecEditor);
-        ui->ShowWidget(ecEditor);
-        ui->BringWidgetToFront(ecEditor);*/ 
-    } else
+    }
+    else
     {
 #ifdef OGREASSETEDITOR_ENABLED
-        foreach(AssetItem *aItem, selection.assets)
+        foreach(AssetRefItem *aItem, selection.assets)
         {
             //int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
+            QWidget *editor = 0;
             QString type = GetResourceTypeFromResourceFileName(aItem->id.toLatin1());
-
             if (type == "OgreMesh")
-            {
-                MeshPreviewEditor::OpenMeshPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), aItem->type);
-            } else if (type ==  "OgreTexture")
-            {
-                TexturePreviewEditor::OpenPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
-            } else if (type == "OgreMaterial")
-            {
-                OgreScriptEditor::OpenOgreScriptEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), RexTypes::RexAT_MaterialScript);
-            }
+                editor = MeshPreviewEditor::OpenMeshPreviewEditor(framework, OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str());
+            else if (type ==  "OgreTexture")
+                editor = TexturePreviewEditor::OpenPreviewEditor(OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str(), 0);
+            else if (type == "OgreMaterial")
+                editor = OgreScriptEditor::OpenOgreScriptEditor(OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str(), RexTypes::RexAT_MaterialScript);
+
+            if (editor)
+                editor->show();
         }
 #endif
     }
@@ -692,34 +604,59 @@ void SceneTreeWidget::EditInNew()
         return;
 
     // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
-    //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-    //assert(ui);
-
     ECEditorWindow *editor = new ECEditorWindow(framework);
+	ECEditorModule *module = framework->GetModule<ECEditorModule>();
+	disconnect(editor, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
     editor->setAttribute(Qt::WA_DeleteOnClose);
+    editor->setWindowFlags(Qt::Tool);
     connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
-    editor->hide();
+    //editor->hide();
     editor->AddEntities(selection.EntityIds(), true);
-    /*foreach(entity_id_t id, selection.EntityIds())
-        editor->AddEntity(id);
-    editor->SetSelectedEntities(selection.EntityIds());*/
 
-    NaaliUi *ui = framework->Ui();
+	disconnect(scene.lock().get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)), editor, 
+            SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)));
+
+    UiAPI *ui = framework->Ui();
     if (!ui)
         return;
-    editor->setParent(ui->MainWindow());
-    editor->setWindowFlags(Qt::Tool);
-    editor->show();
 
-    ecEditors.push_back(editor);
+    QStringList args;
+    args.append("dockable");
+    args.append("false");
+
+    UiWidget* ededitoruiw = ui->AddWidgetToWindow(editor, Qt::Dialog, args);
+    //editor->setParent(ui->MainWindow());
+    
+    ededitoruiw->setVisible(true);
+    //editor->show();
+	//Disconnect to avoid listen to scene events
+	//editor->SetFocus(true);
+	//editor->setFocus(Qt::MouseFocusReason);
+	
+
+	//Make focus over main Ec_Editor
+	ECEditorWindow *editor2 = 0;
+	if (ecEditors.size())
+		editor2 = ecEditors.first(); //second We want to listen new events in the main EC_Editor
+	else
+	{
+		ECEditorModule *module = framework->GetModule<ECEditorModule>();
+        editor2 = module->GetActiveECEditor();
+	}
+	if (editor2){
+		editor2->SetFocus(true);
+		//UiServiceInterface *ui_service = framework->GetService<UiServiceInterface>();
+		//assert(ui_service);
+		//ui_service->ShowWidget(editor2);
+        editor2->show();
+	} 
+
+
+    //ecEditors.push_back(editor);
     /*if (!ecEditor)
         ecEditor = editor;*/
 
-    
-    /*ui->AddWidgetToScene(editor); 
-    ui->ShowWidget(editor);
-    ui->BringWidgetToFront(editor);*/
 }
 
 void SceneTreeWidget::Rename()
@@ -792,11 +729,13 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
 */
 }
 
+/*
 void SceneTreeWidget::CloseEditor(QTreeWidgetItem *c, QTreeWidgetItem *p)
 {
 //    foreach(EntityItem *eItem, GetSelection().entities)
     closePersistentEditor(p);
 }
+*/
 
 void SceneTreeWidget::NewEntity()
 {
@@ -831,7 +770,7 @@ void SceneTreeWidget::NewEntity()
 
     // Create entity.
     Scene::EntityPtr entity = scene.lock()->CreateEntity(id, QStringList(), changeType);
-    assert(entity.get());
+    assert(entity);
     scene.lock()->EmitEntityCreated(entity, changeType);
 }
 
@@ -873,18 +812,19 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         }
 
         // Check if component has been already added to a entity.
-        ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
+        ComponentPtr comp = entity->GetComponent(dialog->GetTypeName(), dialog->GetName());
         if (comp)
         {
             LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
             continue;
         }
 
-        comp = framework->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
-        assert(comp.get());
+        comp = framework->GetComponentManager()->CreateComponent(dialog->GetTypeName(), dialog->GetName());
+        assert(comp);
         if (comp)
         {
             comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
+            comp->SetTemporary(dialog->GetTemporary());
             entity->AddComponent(comp, AttributeChange::Default);
         }
     }
@@ -967,8 +907,8 @@ void SceneTreeWidget::Paste()
                         ComponentPtr component = framework->GetComponentManager()->CreateComponent(type, name);
                         if (component)
                         {
-                            component->DeserializeFrom(componentElem, AttributeChange::Default);
                             entity->AddComponent(component);
+                            component->DeserializeFrom(componentElem, AttributeChange::Default);
                         }
                     }
 
@@ -1280,7 +1220,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
             foreach(EntityItem *eItem, sel.entities)
             {
                 Scene::EntityPtr entity = eItem->Entity();
-                assert(entity.get());
+                assert(entity);
                 if (entity)
                     entity->SerializeToBinary(dest);
             }
@@ -1351,35 +1291,31 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
     if (!directory.exists())
         return;
 
-
     QSet<QString> assets;
     Selection sel = GetSelection();
     if (!sel.HasEntities())
     {
         // Export all assets
-        for (int i = 0; i < topLevelItemCount(); ++i)
+        for(int i = 0; i < topLevelItemCount(); ++i)
         {
             EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(i));
-            if (!eItem)
-                continue;
-
-            assets.unite(GetAssetRefs(eItem));
+            if (eItem)
+                assets.unite(GetAssetRefs(eItem));
         }
     }
     else
     {
         // Export assets for selected entities
-        foreach (EntityItem *eItem, sel.entities)
-        {
+        foreach(EntityItem *eItem, sel.entities)
             assets.unite(GetAssetRefs(eItem));
-        }
     }
 
     saved_assets_.clear();
     fetch_references_ = true;
     //! \todo This is in theory a better way to get all assets in a sceene, but not all assets are currently available with this method
     //!       Once all assets are properly shown in this widget, it would be better to do it this way -cm
-    /*QTreeWidgetItemIterator it(this);
+/*
+    QTreeWidgetItemIterator it(this);
     while (*it)
     {
         AssetItem *aItem = dynamic_cast<AssetItem*>((*it));
@@ -1388,19 +1324,19 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
             assets.insert(aItem->id);
         }
         ++it;
-    }*/
-
+    }
+*/
 
     foreach(const QString &assetid, assets)
     {
         AssetTransferPtr transfer = framework->Asset()->RequestAsset(assetid);
 
         QString filename = directory.absolutePath();
-        QString assetName = assetid.right(assetid.size() - assetid.lastIndexOf("://") - 3);
-        filename += QDir::separator() + assetName;
+        QString assetName = AssetAPI::ExtractFilenameFromAssetRef(assetid);
+        filename += "/" + assetName;
 
-        filesaves_.insert(transfer, filename);
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
+        filesaves_.insert(transfer->source.ref, filename);
+        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
 
@@ -1409,6 +1345,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
     assert(scene.lock());
     QSet<QString> assets;
 
+    ///\todo use eItem->Entity()
     Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
     if (entity)
     {
@@ -1419,11 +1356,12 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
             if (!cItem)
                 continue;
 
+            ///\todo use cItem->Component()
             ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
             if (!comp)
                 continue;
 
-            foreach(ComponentPtr comp, entity->GetComponentVector())
+            foreach(ComponentPtr comp, entity->Components())
                 foreach(IAttribute *attr, comp->GetAttributes())
                     if (attr->TypeName() == "assetreference")
                     {
@@ -1431,8 +1369,16 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                         if (assetRef)
                             assets.insert(assetRef->Get().ref);
                     }
+                    else if (attr->TypeName() == "assetreferencelist")
+                    {
+                        Attribute<AssetReferenceList> *assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
+                        if (assetRefs)
+                            for(int i = 0; i < assetRefs->Get().Size(); ++i)
+                                assets.insert(assetRefs->Get()[i].ref);
+                    }
         }
     }
+
     return assets;
 }
 
@@ -1455,7 +1401,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
 
         SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
         if (sceneStruct)
-            sceneStruct->InstantiateContent(filename, Vector3df(), clearScene, true);
+            sceneStruct->InstantiateContent(filename, Vector3df(), clearScene);
         else
             LogError("Could not retrieve SceneStructureModule. Cannot instantiate content.");
     }
@@ -1489,6 +1435,7 @@ void SceneTreeWidget::InvokeActionTriggered()
     QList<Scene::EntityWeakPtr> entities;
     QObjectList objects;
     QObjectWeakPtrList objectPtrs;
+
     foreach(EntityItem *eItem, sel.entities)
         if (eItem->Entity())
         {
@@ -1496,6 +1443,7 @@ void SceneTreeWidget::InvokeActionTriggered()
             objects << eItem->Entity().get();
             objectPtrs << boost::dynamic_pointer_cast<QObject>(eItem->Entity());
         }
+
     foreach(ComponentItem *cItem, sel.components)
         if (cItem->Component())
         {
@@ -1515,8 +1463,15 @@ void SceneTreeWidget::InvokeActionTriggered()
         }
         else
         {
+// $ BEGIN_MOD $
+			//convert QVariantList to QStringList
+            QStringList parameters;
+            foreach(QVariant p, invokedItem->parameters)
+                parameters.append(p.toString());
+// $ END_MOD $
+
             foreach(Scene::EntityWeakPtr e, entities)
-                e.lock()->Exec(invokedItem->execTypes, invokedItem->name, invokedItem->parameters);
+                e.lock()->Exec(invokedItem->execTypes, invokedItem->name, parameters);
         }
     }
     else if (invokedItem->type == InvokeItem::Function)
@@ -1541,7 +1496,6 @@ void SceneTreeWidget::InvokeActionTriggered()
     }
 }
 
-
 void SceneTreeWidget::SaveAssetAs()
 {
     Selection sel = GetSelection();
@@ -1552,11 +1506,10 @@ void SceneTreeWidget::SaveAssetAs()
 
     if (sel.assets.size() == 1)
     {
-        assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
-
-        fileDialog = QtUtils::SaveFileDialogNonModal("",
-            tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
-    } else
+        assetName = AssetAPI::ExtractFilenameFromAssetRef(sel.assets[0]->id);
+        fileDialog = QtUtils::SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+    }
+    else
     {
         QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
@@ -1584,7 +1537,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
 
     saved_assets_.clear();
     fetch_references_ = false;
-    foreach(AssetItem *aItem, sel.assets)
+    foreach(AssetRefItem *aItem, sel.assets)
     {
         AssetTransferPtr transfer = framework->Asset()->RequestAsset(aItem->id);
 
@@ -1592,38 +1545,33 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         QString filename = files[0];
         if (isDir)
         {
-            QString assetName = aItem->id.right(aItem->id.size() - aItem->id.lastIndexOf("://") - 3);
-            filename += QDir::separator() + assetName;
+            QString assetName = AssetAPI::ExtractFilenameFromAssetRef(aItem->id);
+            filename += "/" + assetName;
         }
 
-        filesaves_.insert(transfer, filename);
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
+        filesaves_.insert(transfer->source.ref, filename);
+        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
 
-void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
+void SceneTreeWidget::AssetLoaded(AssetPtr asset)
 {
-    assert(transfer_);
-    if (!transfer_)
-        return;
-
-    AssetTransferPtr transfer = transfer_->shared_from_this();
-    assert(filesaves_.contains(transfer));
-    assert(transfer.get());
-
-    if (!transfer->resourcePtr.get())
+    assert(asset.get());
+    if (!asset)
     {
-        // This means the asset was loaded through the new Asset API, in which case the resourcePtr is null, and the 'asset' member
-        // points to the actual loaded asset. For a migration period, we'll need to check both pointers.
-        LogWarning("TODO: SceneTreeWidget::AssetLoaded: Received an asset transfer with null resourcePtr. Implement support for this.");
+        LogError("Null asset pointer.");
         return;
     }
 
-    QString filename = filesaves_.take(transfer);
+    QString filename = filesaves_.take(asset->Name());
     if (!saved_assets_.contains(filename))
     {
         saved_assets_.insert(filename);
-        if (!transfer->resourcePtr->Export(filename.toStdString()))
+
+        QString param;
+        if (asset->Type().contains("texture", Qt::CaseInsensitive))
+            param = filename.right(filename.size() - filename.lastIndexOf('.') - 1);
+        if (!asset->SaveToFile(filename, param))
         {
             LogError("Could not save asset to file " + filename.toStdString() + ".");
             QMessageBox box(QMessageBox::Warning, tr("Save asset"), tr("Failed to save asset."), QMessageBox::Ok);
@@ -1632,20 +1580,17 @@ void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
         }
 
         if (fetch_references_)
-        {
-            const Foundation::ResourceReferenceVector &refs = transfer->resourcePtr->GetReferences();
-            Foundation::ResourceReferenceVector::const_iterator i = refs.begin();
-            for ( ; i != refs.end() ; ++i)
-            {
-                QString id = QString(i->id_.c_str());
-                if (!saved_assets_.contains(id))
+            foreach(AssetReference ref, asset->FindReferences())
+                if (!saved_assets_.contains(ref.ref))
                 {
-                    AssetTransferPtr transfer = framework->Asset()->RequestAsset(id, QString(i->type_.c_str()));
-                    filesaves_.insert(transfer, filename);
-                    connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
+                    AssetTransferPtr transfer = framework->Asset()->RequestAsset(ref.ref);
+                    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
+
+                    QString oldAssetName = AssetAPI::ExtractFilenameFromAssetRef(filename);
+                    QString newAssetName = AssetAPI::ExtractFilenameFromAssetRef(ref.ref);
+                    filename.replace(oldAssetName, newAssetName);
+                    filesaves_.insert(transfer->source.ref, filename);
                 }
-            }
-        }
     }
 }
 

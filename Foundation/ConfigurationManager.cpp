@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "ConfigurationManager.h"
 #include "CoreException.h"
 
@@ -51,7 +53,7 @@ void ConfigurationManager::Load(const std::string& path)
             if( bPos != std::string::npos)
             {
                 // File is valid. 
-                bPos +=file_name_encoding_.size();
+                bPos += file_name_encoding_.size();
                 std::string::size_type ePos = fileName.find(".xml");
                 // Get group name.
                 group = fileName.substr(bPos, ePos - bPos);
@@ -61,6 +63,9 @@ void ConfigurationManager::Load(const std::string& path)
                 // File was invalid. 
                 continue;
             }
+
+	    if (!QString::fromStdString(fileName).endsWith(".xml"))
+		continue;
 
            //! Poco xml configuration reader
            Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
@@ -74,7 +79,7 @@ void ConfigurationManager::Load(const std::string& path)
                 // XML file was not valid (not so beatiful way to check validity)
                 continue;
             }
-                
+	                   
             if (pConfiguration.get() != 0)
             {
                 // Read values from xml file and set them into memory.

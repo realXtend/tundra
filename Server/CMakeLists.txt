@@ -8,7 +8,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-# Never compile server in consoleless mode
+# Never compile server in consoleless mode for release configuration
 set (WINDOWS_APP 0)
 
 # Preprocessor defines on MSVC
@@ -29,11 +29,11 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_modules (Core Foundation Interfaces HttpUtilities SupportModules TestModule SceneManager)
+use_modules (Core Foundation Interfaces Scene)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES})
 
-link_modules (Core Foundation Interfaces HttpUtilities SceneManager)
+link_modules (Core Foundation Interfaces Scene)
 
 final_target ()
 

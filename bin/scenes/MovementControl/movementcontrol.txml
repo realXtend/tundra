@@ -1,0 +1,335 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="12">
+  <component type="EC_Name" sync="1">
+   <attribute value="Path[1]" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="1">
+   <attribute value="6" type="int" name="numPoints"/>
+   <attribute value="1,2,3,4,5,6" type="string" name="WayPointList"/>
+   <attribute value="2" type="int" name="Type"/>
+   <attribute value="false" type="bool" name="Random"/>
+  </component>
+ </entity>
+ <entity id="11">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="-25,-18,1,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1" name="VolumeTrigger">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="true" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+  <component type="EC_VolumeTrigger" sync="1">
+   <attribute value="false" name="By Pivot"/>
+   <attribute value="" name="Entities"/>
+   <attribute value="VolumeTrigger" name="RigidBody Name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="WayPoint[6]" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+ <entity id="10">
+  <component type="EC_Name" sync="1">
+   <attribute value="WayPoint[5]" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="-35,20,1,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1" name="VolumeTrigger">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="true" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+  <component type="EC_VolumeTrigger" sync="1">
+   <attribute value="false" name="By Pivot"/>
+   <attribute value="" name="Entities"/>
+   <attribute value="VolumeTrigger" name="RigidBody Name"/>
+  </component>
+ </entity>
+ <entity id="9">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="14,-19,1,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1" name="VolumeTrigger">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="true" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+  <component type="EC_VolumeTrigger" sync="1">
+   <attribute value="false" name="By Pivot"/>
+   <attribute value="" name="Entities"/>
+   <attribute value="VolumeTrigger" name="RigidBody Name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="WayPoint[4]" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+ <entity id="8">
+  <component type="EC_Name" sync="1">
+   <attribute value="WayPoint[3]" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="20,38,1,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1" name="VolumeTrigger">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="true" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+  <component type="EC_VolumeTrigger" sync="1">
+   <attribute value="false" name="By Pivot"/>
+   <attribute value="" name="Entities"/>
+   <attribute value="VolumeTrigger" name="RigidBody Name"/>
+  </component>
+ </entity>
+ <entity id="7">
+  <component type="EC_Name" sync="1">
+   <attribute value="WayPoint[2]" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="30,11,1,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1" name="VolumeTrigger">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="true" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+  <component type="EC_VolumeTrigger" sync="1">
+   <attribute value="false" name="By Pivot"/>
+   <attribute value="" name="Entities"/>
+   <attribute value="VolumeTrigger" name="RigidBody Name"/>
+  </component>
+ </entity>
+ <entity id="6">
+  <component type="EC_Name" sync="1">
+   <attribute value="WayPoint[1]" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="0,0,1,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1" name="VolumeTrigger">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="true" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+  <component type="EC_VolumeTrigger" sync="1">
+   <attribute value="false" name="By Pivot"/>
+   <attribute value="" name="Entities"/>
+   <attribute value="VolumeTrigger" name="RigidBody Name"/>
+  </component>
+ </entity>
+ <entity id="5">
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://avatarapp.js" name="Script ref"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="AvatarScript" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_TtsVoice" sync="1">
+   <attribute value="Spanish male" name="voice"/>
+  </component>
+ </entity>
+ <entity id="3">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,0.14,0.2,0.14" name="Transform"/>
+   <attribute value="file://WoodPallet.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Floor" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="0,0,0,0,0,0,100,1,100" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 0.20" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+  <component type="EC_TtsVoice" sync="1">
+   <attribute value="Spanish male" name="voice"/>
+  </component>
+ </entity>
+ <entity id="13"> 
+  <component type="EC_Script" sync="1" name="Simple Npc">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://simplenpc.js" name="Script ref"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="0,0,10,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_AnimationController" sync="1">
+   <attribute value="" name="Animation state"/>
+  </component>
+  <component type="EC_Avatar" sync="1">
+   <attribute value="local://default_avatar.xml" name="Appearance ref"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="NPC1" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="10" name="Mass"/>
+   <attribute value="3" name="Shape type"/>
+   <attribute value="0.5 0.5 2.4000001" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="0 0 0" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="-4.12732807e-005 -2.89814284e-011 -1.60932541e-006" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+  <component type="EC_TtsVoice" sync="1">
+     <attribute value="Spanish male" name="voice"/>
+  </component>
+  <component type="EC_Script" sync="1" name="Path follower">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://PathFollower.js" name="Script ref"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="1" name="PathProperties">
+   <attribute value="1" type="int" name="Path"/>
+   <attribute value="1" type="int" name="Direction"/>
+  </component>
+ </entity>
+</scene>

@@ -4,15 +4,16 @@
 #define incl_Avatar_EC_Avatar_h
 
 #include "IComponent.h"
+#include "IAsset.h"
 #include "RexUUID.h"
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
+#include "AssetFwd.h"
+#include "SceneFwd.h"
 
-namespace Avatar
-{
-    class AvatarHandler;
-    typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
-};
+struct BoneModifier;
+class AvatarDescAsset;
+typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 //! Avatar component.
 /**
@@ -28,7 +29,7 @@ Registered by Avatar::AvatarModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QString: appearanceId
+<li>QString: appearanceRef
 <div>Asset id for the avatar appearance file that will be used to generate the visible avatar.</div>
 </ul>
 
@@ -48,43 +49,58 @@ Does not emit any actions.
 class AV_MODULE_API EC_Avatar : public IComponent
 {
     Q_OBJECT
-    
     DECLARE_EC(EC_Avatar);
+
 public:
     //! Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
-    Q_PROPERTY(QString appearanceId READ getappearanceId WRITE setappearanceId);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, appearanceId);
+    Q_PROPERTY(AssetReference appearanceRef READ getappearanceRef WRITE setappearanceRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceRef);
 
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }
-    
-    //! Handle Naali event. Used for avatar xml asset request
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
-    
+
     //! Destructor
     virtual ~EC_Avatar();
+
+public slots:
+    //! Refresh appearance completely
+    void SetupAppearance();
+    //! Refresh dynamic parts of the appearance (morphs, bone modifiers)
+    void SetupDynamicAppearance();
+    //! Return the avatar description asset, if set
+    AvatarDescAssetPtr GetAvatarDesc();
+    //! Get a generic property from the avatar description, or empty string if not found
+    QString GetAvatarProperty(const QString& name);
     
 private slots:
     //! Called when some of the attributes has been changed.
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
     
+    void OnAvatarAppearanceLoaded(AssetPtr asset);
+
 private:
     //! constructor
     /*! \param module avatar module
      */
     EC_Avatar(IModule* module);
-    
-    //! Handle asset ready event
-    bool HandleAssetReady(IEventData* data);
-    
-    //! Category for Asset events
-    event_category_id_t asset_event_category_;
-    
-    //! Avatar appearance file request tag
-    request_tag_t appearance_tag_;
-    
-    //! Avatar handler, used to do the heavy lifting
-    Avatar::AvatarHandlerPtr avatar_handler_;
+
+    //! Adjust avatar's height offset dynamically
+    void AdjustHeightOffset();
+    //! Rebuild mesh and set materials
+    void SetupMeshAndMaterials();
+    //! Set morphs to values in avatar desc asset
+    void SetupMorphs();
+    //! Set bone modifiers to values in avatar desc asset
+    void SetupBoneModifiers();
+    //! Rebuild attachment meshes
+    void SetupAttachments();
+    //! Lookup absolute asset reference
+    QString LookupAsset(const QString& ref);
+
+    //! Ref listener for the avatar asset
+    AssetRefListenerPtr avatarAssetListener_;
+    //! Last set avatar asset
+    boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 };
 
 #endif

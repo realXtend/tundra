@@ -2,29 +2,35 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "EC_Mesh.h"
-#include "EC_Placeable.h"
-#include "EC_RigidBody.h"
-#include "EC_Terrain.h"
-#include "EC_VolumeTrigger.h"
+
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "CollisionShapeUtils.h"
 #include "ConvexHull.h"
-#include "MemoryLeakCheck.h"
+#include "EC_RigidBody.h"
+#include "EC_VolumeTrigger.h"
+#include "OgreBulletCollisionsDebugLines.h"
+
+#include "EC_Mesh.h"
+#include "EC_Placeable.h"
+#include "EC_Terrain.h"
 #include "Entity.h"
+#include "SceneAPI.h"
 #include "Framework.h"
 #include "SceneManager.h"
 #include "ServiceManager.h"
 #include "Profiler.h"
 #include "Renderer.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "OgreBulletCollisionsDebugLines.h"
-#include "btBulletDynamicsCommon.h"
+#include "ConsoleAPI.h"
+#include "ConsoleCommandUtils.h"
+
+#include <btBulletDynamicsCommon.h>
 
 #include <QtScript>
 
 #include <Ogre.h>
+
+#include "MemoryLeakCheck.h"
 
 Q_DECLARE_METATYPE(Physics::PhysicsModule*);
 Q_DECLARE_METATYPE(Physics::PhysicsWorld*);
@@ -87,18 +93,18 @@ void PhysicsModule::Initialize()
 
 void PhysicsModule::PostInitialize()
 {
-    RegisterConsoleCommand(Console::CreateCommand("physicsdebug",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("physicsdebug",
         "Toggles drawing of physics debug geometry.",
-        Console::Bind(this, &PhysicsModule::ConsoleToggleDebugGeometry)));
-    RegisterConsoleCommand(Console::CreateCommand("stopphysics",
+        ConsoleBind(this, &PhysicsModule::ConsoleToggleDebugGeometry)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("stopphysics",
         "Stops physics simulation.",
-        Console::Bind(this, &PhysicsModule::ConsoleStopPhysics)));
-    RegisterConsoleCommand(Console::CreateCommand("startphysics",
+        ConsoleBind(this, &PhysicsModule::ConsoleStopPhysics)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("startphysics",
         "(Re)starts physics simulation.",
-        Console::Bind(this, &PhysicsModule::ConsoleStartPhysics)));
-    RegisterConsoleCommand(Console::CreateCommand("autocollisionmesh",
+        ConsoleBind(this, &PhysicsModule::ConsoleStartPhysics)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("autocollisionmesh",
         "Auto-assigns static rigid bodies with collision mesh to all visible meshes.",
-        Console::Bind(this, &PhysicsModule::ConsoleAutoCollisionMesh)));
+        ConsoleBind(this, &PhysicsModule::ConsoleAutoCollisionMesh)));
 }
 
 void PhysicsModule::Uninitialize()
@@ -107,32 +113,32 @@ void PhysicsModule::Uninitialize()
     SetDrawDebugGeometry(false);
 }
 
-Console::CommandResult PhysicsModule::ConsoleToggleDebugGeometry(const StringVector& params)
+ConsoleCommandResult PhysicsModule::ConsoleToggleDebugGeometry(const StringVector& params)
 {
     SetDrawDebugGeometry(!drawDebugGeometry_);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult PhysicsModule::ConsoleStopPhysics(const StringVector& params)
+ConsoleCommandResult PhysicsModule::ConsoleStopPhysics(const StringVector& params)
 {
     SetRunPhysics(false);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult PhysicsModule::ConsoleStartPhysics(const StringVector& params)
+ConsoleCommandResult PhysicsModule::ConsoleStartPhysics(const StringVector& params)
 {
     SetRunPhysics(true);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVector& params)
+ConsoleCommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVector& params)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene");
+        return ConsoleResultFailure("No active scene");
     
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
@@ -151,7 +157,7 @@ Console::CommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVecto
         }
     }
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 void PhysicsModule::Update(f64 frametime)
@@ -174,7 +180,7 @@ void PhysicsModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene)
+Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene, bool isClient)
 {
     if (!scene)
         return 0;
@@ -187,7 +193,9 @@ Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr
     }
     
     Scene::SceneManager* ptr = scene.get();
-    boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld(this));
+    boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld(this, isClient));
+    new_world->SetGravity(Vector3df(0.0f,0.0f,-9.81f));
+    
     physicsWorlds_[ptr] = new_world;
     QObject::connect(ptr, SIGNAL(Removed(Scene::SceneManager*)), this, SLOT(OnSceneRemoved(Scene::SceneManager*)));
     
@@ -260,7 +268,9 @@ void PhysicsModule::SetDrawDebugGeometry(bool enable)
         
         if (!debugGeometryObject_)
         {
+#include "DisableMemoryLeakCheck.h"
             debugGeometryObject_ = new DebugLines();
+#include "EnableMemoryLeakCheck.h"
             scenemgr->getRootSceneNode()->attachObject(debugGeometryObject_);
         }
     }
@@ -281,7 +291,7 @@ void PhysicsModule::UpdateDebugGeometry()
     PROFILE(PhysicsModule_UpdateDebugGeometry);
 
     // Draw debug only for the active scene
-    PhysicsWorld* world = GetPhysicsWorldForScene(framework_->GetDefaultWorldScene());
+    PhysicsWorld* world = GetPhysicsWorldForScene(GetFramework()->Scene()->GetDefaultScene());
     if (!world)
         return;
     
@@ -315,7 +325,9 @@ boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogr
         return iter->second;
     
     // Create new, then interrogate the Ogre mesh
+#include "DisableMemoryLeakCheck.h"
     ptr = boost::shared_ptr<btTriangleMesh>(new btTriangleMesh());
+#include "EnableMemoryLeakCheck.h"
     GenerateTriangleMesh(mesh, ptr.get(), true);
     
     triangleMeshes_[mesh->getName()] = ptr;

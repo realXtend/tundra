@@ -49,17 +49,8 @@ public:
     // Returns QPointer of entity that this item is presenting.
     QPointer<Scene::Entity> GetEntity() const { return entity_ptr_; }
 
-    // Override from QListWidgetItem. Note! baseclass's method isn't virtual, so make sure that QListWidgetItem
-    // pointers are always dynamic_casted to EntityListWidgetItem before using this mehtod.
-    /*void setSelected(bool select)
-    {
-        QListWidgetItem::setSelected(select);
-        QFont font = this->font();
-        font.setBold(select);
-        setFont(font);
-    }*/
 private:
-    //Weak pointer to entity switch will get released and setted to null when QObject's destructor is called.
+    //Weak pointer to entity switch will get released and set to null when QObject's destructor is called.
     QPointer<Scene::Entity> entity_ptr_;
 };
 
@@ -103,6 +94,13 @@ public:
 
     /// Clears entity list.
     void ClearEntities();
+
+    /// Ask ECBrowser what components are currently selected and return them as QObjectList.
+    /// If any components aren't selected return emtpy list.
+    QObjectList GetSelectedComponents() const;
+
+    /// Returns list of selected entities.
+    QList<Scene::EntityPtr> GetSelectedEntities() const;
 
 public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).
@@ -179,6 +177,10 @@ signals:
     /// Signal is emmitted when this window has gained a focus.
     void OnFocusChanged(ECEditorWindow *editor);
 
+    /// Forward ECBrowser's SelectionChanged signal to ECEditorModule, so in script
+    /// we know when new selection has occurred.
+    void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
+
 protected:
     /// QWidget override.
     void hideEvent(QHideEvent *hide_event);
@@ -203,24 +205,22 @@ private slots:
     void PasteEntity();
 
     /// Highlights all entities from the entities_list that own an instance of given component.
-    void HighlightEntities(IComponent *component);
+    void HighlightEntities(const QString &type, const QString &name);
 
     /// Listenes when default world scene has changed and clear the editor window.
     /// @param scene new default world scene.
-    void DefaultSceneChanged(const Scene::ScenePtr &scene);
+    void DefaultSceneChanged(Scene::SceneManager *scene);
 
     //When user have pressed ok or cancel button in component dialog this mehtod is called.
     void ComponentDialogFinished(int result);
 
 private:
-
+    /// Bold all given entities from the entity_list_ QListWidget object.
+    /// Note! this method will unbold previous selection.
     void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
 
     /// Initializes the widget.
     void Initialize();
-
-    /// Returns list of selected entities.
-    QList<Scene::EntityPtr> GetSelectedEntities() const;
 
     /// Framework pointer.
     Foundation::Framework *framework_;
@@ -228,8 +228,8 @@ private:
     QPushButton* toggle_entities_button_;
     QListWidget* entity_list_;
     ECBrowser *browser_;
-    QPointer<AddComponentDialog> component_dialog_;
-    bool has_focus_;
+    QPointer<AddComponentDialog> component_dialog_; /// @todo remove this.
+    bool has_focus_; // To tack if this editor has a focus.
 };
 
 #endif

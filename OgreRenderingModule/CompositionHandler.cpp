@@ -1,5 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "CompositionHandler.h"
 #include "OgreRenderingModule.h"
 
@@ -202,7 +204,7 @@ namespace OgreRenderer
         }
     }
 
-    void CompositionHandler::SetEnableCompositor(const std::string &compositor, bool enable) const
+    void CompositionHandler::SetCompositorEnabled(const std::string &compositor, bool enable) const
     {
         if (c_manager_ && viewport_)
             c_manager_->setCompositorEnabled(viewport_, compositor, enable);

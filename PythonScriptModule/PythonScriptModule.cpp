@@ -6,7 +6,7 @@
 
    the idea of rexlogic, however, is to be a replaceable module that things in core don't generally depend on.
    the framework has developed so that most things can already be gotten without referring to it, like
-   the default scene can now be gotten from Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene(); etc.
+   the default scene can now be gotten from Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene(); etc.
    if we could use the ECs without depending on the module itself, the dependency might be removed,
    and it would be more feasible to replace rexlogic with something and still have the py module work.
 
@@ -38,8 +38,8 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "Input.h"
+#include "ConsoleCommandUtils.h"
+#include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "PythonEngine.h"
 #include "WorldStream.h"
@@ -52,20 +52,31 @@
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "LoginServiceInterface.h"
-#include "Frame.h"
-#include "Console.h"
-#include "ISoundService.h"
-#include "NaaliUi.h"
-#include "NaaliGraphicsView.h"
+#include "FrameAPI.h"
+#include "SceneAPI.h"
+#include "ConsoleAPI.h"
+#include "ConfigAPI.h"
+#include "AudioAPI.h"
+#include "UiAPI.h"
+#include "UiGraphicsView.h"
+#include "UiMainWindow.h"
+#include "DebugAPI.h"
+#include "DevicesAPI.h"
+#include "IDevice.h"
+#include "IPositionalDevice.h"
+
+//Kristalli UserConnection
+//for JS this is actually registered in TundraLogicModule, which depends on QtScript directly.
+//we could probably use the service mechanism for modules to register these optionally
+#include "UserConnection.h"
 
 //#include "Avatar/AvatarHandler.h"
 //#include "Avatar/AvatarControllable.h"
 
-#include "RexLogicModule.h" //much of the api is here
+#include "RexLogicModule.h" //much of the api used to be here -- now the dep is almost refactored out (actually in develop branch only, should be merged here!)
 #include "Camera/CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
-#include "EntityComponent/EC_AttachedSound.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_Mesh.h"
@@ -76,7 +87,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
 
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
 #include "EC_OpenSimPrim.h"
@@ -87,11 +98,14 @@
 //ECs declared by PythonScriptModule
 #include "EC_DynamicComponent.h"
 #include "EC_Script.h"
+#include "ScriptAsset.h"
 
 #include <PythonQt.h>
 
 #include "Vector3dfDecorator.h"
 #include "QuaternionDecorator.h"
+#include "TransformDecorator.h"
+#include "AssetReferenceDecorator.h"
 
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
@@ -109,6 +123,7 @@
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
+#include "GestureEvent.h"
 
 //#include <QDebug>
 
@@ -123,7 +138,7 @@ namespace PythonScript
 
     PythonScriptModule::PythonScriptModule()
     :IModule(type_name_static_),
-    pmmModule(0), pmmDict(0), pmmClass(0), pmmInstance(0)
+    pmmModule(0), pmmDict(0), pmmClass(0), pmmInstance(0), pythonqtconsole_(0), pythonqtconsole_widget_(0)
     {
         pythonqt_inited = false;
         inboundCategoryID_ = 0;
@@ -186,7 +201,7 @@ namespace PythonScript
         scene_event_category_ = em_->QueryEventCategory("Scene");
         
         // Create a new input context with a default priority of 100.
-        input = framework_->GetInput()->RegisterInputContext("PythonInput", 100);
+        input = framework_->Input()->RegisterInputContext("PythonInput", 100);
 
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
@@ -212,7 +227,7 @@ namespace PythonScript
             }
         }
         else
-            LogInfo("No registered events in the input category.");
+            LogDebug("No registered events in the input category.");
 
         /*for (EventManager::EventMap::const_iterator iter = evmap[inputeventcategoryid].begin();
             iter != evmap[inputeventcategoryid].end(); ++iter)
@@ -241,26 +256,33 @@ namespace PythonScript
         //now that the event constants etc are there, can instanciate the manager which triggers the loading of components
         if (PyCallable_Check(pmmClass)) {
             pmmInstance = PyObject_CallObject(pmmClass, NULL); 
-            LogInfo("Instanciated Py ModuleManager.");
+            LogDebug("Instanciated Py ModuleManager.");
         } else {
             LogError("Unable to create instance from class ModuleManager");
         }
 
-        RegisterConsoleCommand(Console::CreateCommand(
+// $ BEGIN_MOD $ 
+        if (!framework_->IsEditionless())
+        {
+            framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunString))); 
-        /* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
-         * Also in the IPython shell 'run' refers to running an external file and not the given string
-         */
+            ConsoleBind(this, &PythonScriptModule::ConsoleRunString)));  
+            /* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
+             * Also in the IPython shell 'run' refers to running an external file and not the given string
+             */
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
+            ConsoleBind(this, &PythonScriptModule::ConsoleRunFile))); 
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
-            Console::Bind(this, &PythonScriptModule::ConsoleReset)));
+            ConsoleBind(this, &PythonScriptModule::ConsoleReset)));
 
+		    CreateConsole();
+            framework_->Console()->RegisterCommand("pythonconsole", "Shows the Python console window.", this, SLOT(ShowConsole()));
+        }
+//$ END_MOD $
         ProcessCommandLineOptions();
     }
 
@@ -284,8 +306,8 @@ namespace PythonScript
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
                 value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
 
-                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName.c_str());
-                assert(scene.get());
+                const Scene::ScenePtr &scene = framework_->Scene()->GetScene(edata->sceneName.c_str());
+                assert(scene);
                 if (scene)
                 {
                     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
@@ -467,15 +489,15 @@ namespace PythonScript
         return false;
     }
 
-    Console::CommandResult PythonScriptModule::ConsoleRunString(const StringVector &params)
+    ConsoleCommandResult PythonScriptModule::ConsoleRunString(const StringVector &params)
     {
         if (params.size() != 1)
-            return Console::ResultFailure("Usage: PyExec(print 1 + 1)");
+            return ConsoleResultFailure("Usage: PyExec(print 1 + 1)");
             //how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
             //probably better have separate py shell.
         engine_->RunString(QString::fromStdString(params[0]));
 
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
     //void PythonScriptModule::x()
@@ -501,22 +523,22 @@ namespace PythonScript
     //    //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
     //}
 
-    Console::CommandResult PythonScriptModule::ConsoleRunFile(const StringVector &params)
+    ConsoleCommandResult PythonScriptModule::ConsoleRunFile(const StringVector &params)
     {
         if (params.size() != 1)
-            return Console::ResultFailure("Usage: PyLoad(mypymodule) (to run mypymodule.py by importing it)");
+            return ConsoleResultFailure("Usage: PyLoad(mypymodule) (to run mypymodule.py by importing it)");
 
         engine_->RunScript(QString::fromStdString(params[0]));
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
-    Console::CommandResult PythonScriptModule::ConsoleReset(const StringVector &params)
+    ConsoleCommandResult PythonScriptModule::ConsoleReset(const StringVector &params)
     {
         //engine_->Reset();
         Uninitialize(); //does also engine_->Uninitialize();
         Initialize();
 
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
     // virtual 
@@ -585,6 +607,25 @@ namespace PythonScript
         return 0;
     }
 
+    Scene::Entity* PythonScriptModule::GetActiveCamera() const
+    {
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+        if (!scene)
+        {
+            LogError("Failed to find active camera, default world scene wasn't setted.");
+            return 0;
+        }
+
+        foreach(Scene::EntityPtr cam, scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic()))
+            if (cam->GetComponent<EC_OgreCamera>()->IsActive())
+            {
+                return cam.get();
+            }
+
+        LogError("No active camera were found.");
+        return 0;
+    }
+
     Foundation::WorldLogicInterface* PythonScriptModule::GetWorldLogic() const
     {
         Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
@@ -597,7 +638,7 @@ namespace PythonScript
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
-        Scene::ScenePtr scene = framework_->GetScene(name);
+        Scene::ScenePtr scene = framework_->Scene()->GetScene(name);
         if (scene)
             return scene.get();
 
@@ -616,7 +657,7 @@ namespace PythonScript
 
     InputContext* PythonScriptModule::CreateInputContext(const QString &name, int priority)
     {
-        InputContextPtr new_input = framework_->GetInput()->RegisterInputContext(name.toStdString().c_str(), priority);
+        InputContextPtr new_input = framework_->Input()->RegisterInputContext(name.toStdString().c_str(), priority);
         if (new_input)
         {
             LogDebug("Created new input context with name: " + name.toStdString());
@@ -640,7 +681,7 @@ namespace PythonScript
         if (player_service)
             return player_service;
 
-        PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
+        PythonScriptModule::LogDebug("Cannot find PlayerServiceInterface implementation.");
         return 0;
     }
 
@@ -657,7 +698,7 @@ namespace PythonScript
         if (service)
             return service;
 
-        PythonScriptModule::LogError("Cannot find CommunicationsServiceInterface implementation.");
+        PythonScriptModule::LogDebug("Cannot find CommunicationsServiceInterface implementation.");
         return 0;
     }
 
@@ -667,7 +708,7 @@ namespace PythonScript
     }
 
     //this whole thing could be probably implemented in py now as well, but perhaps ok in c++ for speed
-  QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate)
+  /*QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate)
     {
         // Iterate the scene to find all submeshes that use this texture uuid
         QList<uint> submeshes_;
@@ -679,7 +720,7 @@ namespace PythonScript
         RexUUID texture_uuid = RexUUID();
         texture_uuid.FromString(uuidstr.toStdString());
 
-        Scene::ScenePtr scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = PythonScript::self()->GetFramework()->Scene()->GetDefaultScene();
         if (!scene)
         {
             //PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
@@ -687,11 +728,6 @@ namespace PythonScript
         }
 
 //        Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
-        /* was wrong way, how did this work? if (!worldLogic)
-        {
-          //PyErr_SetString(PyExc_RuntimeError, "Could not get world logic.");
-          return;
-          }*/
 
         Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
         foreach(Scene::EntityPtr e, prims)
@@ -767,40 +803,63 @@ namespace PythonScript
         }
 
         return affected_entitys_;
-    }
+    }*/
 
-    void PythonScriptModule::LoadScript(const QString &filename)
+    void PythonScriptModule::LoadScript(ScriptAssetPtr scriptAsset)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
         if (!script)
             return;
 
-        if (script->type.Get() != "py")
-            return;
+        QString scriptType = script->type.Get().trimmed().toLower();
+        if (scriptType != "py" && scriptType.length() > 0)
+            return; // The user enforced a foreign script type using the EC_Script type field.
 
-        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get().ref, script->GetParentEntity());
-        script->SetScriptInstance(pyInstance);
-        if (script->runOnLoad.Get())
-            script->Run();
+        if (scriptAsset->Name().endsWith(".py") || scriptType == "py")
+        {
+            PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get().ref, script->GetParentEntity());
+            script->SetScriptInstance(pyInstance);
+            if (script->runOnLoad.Get())
+                script->Run();
+        }
     }
 
     void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, IComponent *component)
     {
         if (component->TypeName() == EC_Script::TypeNameStatic())
-        {
-            EC_Script *script = static_cast<EC_Script *>(component);
-            connect(script, SIGNAL(ScriptRefChanged(const QString &)), SLOT(LoadScript(const QString &)));
-        }
+            connect(component , SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), SLOT(LoadScript(ScriptAssetPtr)), Qt::UniqueConnection);
     }
 
     void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, IComponent *component)
     {
+        if (component->TypeName() == EC_Script::TypeNameStatic())
+            disconnect(component, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(LoadScript(ScriptAssetPtr)));
     }
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule());
-        return pythonqtconsole;
+		if (!pythonqtconsole_ || !pythonqtconsole_widget_)
+        {
+            pythonqtconsole_ = new PythonQtScriptingConsole(framework_->Ui()->MainWindow(), PythonQt::self()->getMainModule(), Qt::Tool);
+		    pythonqtconsole_->setObjectName("Python console");
+		    pythonqtconsole_->setWindowTitle("Python console");
+            pythonqtconsole_->setMinimumSize(200, 75);
+            pythonqtconsole_widget_ = framework_->Ui()->AddWidgetToWindow(pythonqtconsole_, Qt::Tool);
+        }
+
+        return pythonqtconsole_;
+    }
+
+    UiWidget *PythonScriptModule::GetPythonConsoleUiWidget()
+    {
+        CreateConsole();
+        return pythonqtconsole_widget_;
+    }
+
+    void PythonScriptModule::ShowConsole()
+    {
+        CreateConsole();
+        pythonqtconsole_widget_->show();
     }
 }
 
@@ -846,25 +905,6 @@ PyObject* SendChat(PyObject *self, PyObject *args)
     Py_RETURN_TRUE;
 }
 
-static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        float x, y, z, w;
-
-        if(!PyArg_ParseTuple(args, "ffff", &x, &y, &z, &w))
-        {
-            PyErr_SetString(PyExc_ValueError, "Value error, need x, y, z, w params");
-            return NULL;
-        }
-        std::cout << "Sending newrot..." << std::endl;
-        Quaternion newrot(x, y, z, w); //seriously, is this how constructing a quat works!?
-        rexlogic->SetAvatarRotation(newrot);
-    }
-
-    Py_RETURN_NONE;
-}
 
 //returns the entity(id) at the position (x, y), if nothing there, returns None
 //\todo XXX renderer is a qobject now, rc should be made a slot there and this removed.
@@ -1001,7 +1041,7 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
     RexUUID texture_uuid(uuidstr);
 
     /// Get scene
-    const Scene::ScenePtr &scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = PythonScript::self()->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
@@ -1100,7 +1140,7 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
         Py_RETURN_FALSE;
 }
 
-PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
+/*PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
 {
     uint ent_id_int;
     PyObject* py_submeshes;
@@ -1153,7 +1193,7 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
 
     Py_RETURN_NONE;
-}
+    }*/
 
 //XXX \todo remove and use the generic component adding mechanism from core directly. remove (canvas &) touchable deps from py module then
 void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate)
@@ -1192,7 +1232,7 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     }
 }
 
-PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
+/*PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
     // Read params from py: entid as uint, textureuuid as string
     unsigned int ent_id_int;
@@ -1300,7 +1340,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     }
 
     Py_RETURN_NONE;
-}
+    }*/
 
 PyObject* GetApplicationDataDirectory(PyObject *self)
 {
@@ -1339,60 +1379,6 @@ PyObject* RemoveEntity(PyObject *self, PyObject *value)
             //if (event_data.entity) // only send the event if we have an existing entity, no point otherwise
             framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
 */
-
-//XXX logic CameraControllable has GetPitch, perhaps should have SetPitch too
-PyObject* SetCameraYawPitch(PyObject *self, PyObject *args) 
-{
-    float newyaw, newpitch;
-    float y, p;
-    if(!PyArg_ParseTuple(args, "ff", &y, &p)) {
-        PyErr_SetString(PyExc_ValueError, "New camera yaw and pitch expected as float, float.");
-        return NULL;
-    }
-    newyaw = (float) y;
-    newpitch = (float) p;
-
-    //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        //boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
-        //cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
-        //cam->AddTime((float) 0.1);
-        //cam->SetPitch(p); //have a linking prob with this
-        rexlogic->SetCameraYawPitch(y, p);
-    }
-    
-    //was with renderer, worked but required overriding rexlogic :p
-    //{
-    //    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    //    camera->yaw(Ogre::Radian(newyaw));
-    //    camera->pitch(Ogre::Radian(newpitch));
-    //}
-    else
-    {
-        PyErr_SetString(PyExc_RuntimeError, "No logic module, no cameracontrollable.");
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
-}
-
-PyObject* GetCameraYawPitch(PyObject *self, PyObject *args) 
-{
-    float yaw, pitch;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic->GetCameraControllable();
-        pitch = cam->GetPitch();
-        yaw = 0; //XXX not implemented yet (?)
-
-        return Py_BuildValue("ff", (float)yaw, float(pitch));
-    }
-    //else - no logic module. can that ever happen?)
-    return NULL; //rises py exception
-}
 
 PyObject* PyLogInfo(PyObject *self, PyObject *args) 
 {
@@ -1446,83 +1432,16 @@ PyObject* PyLogError(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
-{
-    float newyaw;
-
-    float y;
-    if(!PyArg_ParseTuple(args, "f", &y)) {
-        PyErr_SetString(PyExc_ValueError, "New avatar yaw expected as float.");
-        return NULL;
-    }
-    newyaw = (float) y;
-
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        //rexlogic_->GetServerConnection()->IsConnected();
-        //had linking problems with these, hopefully can be solved somehow easily.
-        //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
-        //boost::shared_ptr<RexLogic::AvatarControllable> avc = rexlogic_->GetAvatarControllable();
-        //avc->SetYaw(newyaw);
-        //f64 t = (f64) 0.01;
-        //avc->AddTime(t);
-        //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
-        rexlogic->SetAvatarYaw(newyaw);
-    }
-    
-    else
-    {
-        PyErr_SetString(PyExc_RuntimeError, "No logic module, no AvatarControllable.");
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
-}
-
-//PyObject* CreateCanvas(PyObject *self, PyObject *args)
-//{        
-//    if (!PythonScript::self()->GetFramework())//PythonScript::staticframework)
-//    {
-//        //std::cout << "Oh crap staticframework is not there! (py)" << std::endl;
-//        PythonScript::self()->LogInfo("PythonScript's framework is not present!");
-//        return NULL;
-//    }
-//
-//    int imode;
-//
-//    if(!PyArg_ParseTuple(args, "i", &imode))
-//    {
-//        PyErr_SetString(PyExc_ValueError, "Getting the mode failed, need 0 / 1");
-//        return NULL;   
-//    }
-//    
-//    boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-//    boost::shared_ptr<QtUI::UICanvas> canvas_;
-//    
-//    if ( qt_module.get() == 0)
-//        return NULL;
-//    
-//    QtUI::UICanvas::DisplayMode rMode = (QtUI::UICanvas::DisplayMode) imode;
-//    canvas_ = qt_module->CreateCanvas(rMode).lock();
-//
-//    QtUI::UICanvas* qcanvas = canvas_.get();
-//    
-//    PyObject* can = PythonQt::self()->wrapQObject(qcanvas);
-//
-//    return can;
-//}
-
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
-    UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
-    if (!ui)
-    {
+    //UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
+    //if (!ui)
+    //{
         // If this occurs, we're most probably operating in headless mode.
         //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
-        PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
-        return NULL;
-    }
+    //    PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
+    //    return NULL;
+    //}
 
 //    if(!PyArg_ParseTuple(args, "OO", &pywidget, &pyuiprops))
     PyObject* pywidget;
@@ -1705,23 +1624,11 @@ static PyMethodDef EmbMethods[] = {
     {"removeEntity", (PyCFunction)RemoveEntity, METH_VARARGS,
     "Creates a new entity with the given ID, and returns it."},
 
-    {"getCameraYawPitch", (PyCFunction)GetCameraYawPitch, METH_VARARGS,
-    "Returns the camera yaw and pitch."},
-
-    {"setCameraYawPitch", (PyCFunction)SetCameraYawPitch, METH_VARARGS,
-    "Sets the camera yaw and pitch."},
-
-    {"setAvatarYaw", (PyCFunction)SetAvatarYaw, METH_VARARGS,
-    "Changes the avatar yaw with the given amount. Keys left/right are -1/+1."},    
-
     {"rayCast", (PyCFunction)RayCast, METH_VARARGS,
     "RayCasting from camera to point (x,y)."},
 
     {"switchCameraState", (PyCFunction)SwitchCameraState, METH_VARARGS,
     "Switching the camera mode from free to thirdperson and back again."},
-
-    {"setAvatarRotation", (PyCFunction)SetAvatarRotation, METH_VARARGS,
-    "Rotating the avatar."},
 
     {"sendEvent", (PyCFunction)SendEvent, METH_VARARGS,
     "Send an event id (WIP other stuff)."},
@@ -1780,11 +1687,12 @@ static PyMethodDef EmbMethods[] = {
     {"checkSceneForTexture", (PyCFunction)CheckSceneForTexture, METH_VARARGS, 
     "Return true if texture exists in scene, otherwise false: Parameters: textureuuid"},
 
-    {"applyUICanvasToSubmeshes", (PyCFunction)ApplyUICanvasToSubmeshes, METH_VARARGS, 
-    "Applies a ui canvas to the given submeshes of the entity. Parameters: entity id, list of submeshes (material indices), uicanvas (internal mode required)"},
+    /*{"applyUICanvasToSubmeshes", (PyCFunction)ApplyUICanvasToSubmeshes, METH_VARARGS, 
+      "Applies a ui canvas to the given submeshes of the entity. Parameters: entity id, list of submeshes (material indices), uicanvas (internal mode required)"},
     
     {"getSubmeshesWithTexture", (PyCFunction)GetSubmeshesWithTexture, METH_VARARGS, 
     "Find the submeshes in this entity that use the given texture, if any. Parameters: entity id, texture uuid"},
+    */
     
     {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
     "Get application data directory."},
@@ -1829,32 +1737,55 @@ namespace PythonScript
             PythonQt::self()->registerClass(&PythonQtScriptingConsole::staticMetaObject);
 
             mainModule.addObject("_naali", GetFramework());
-            PythonQt::self()->registerClass(&Frame::staticMetaObject);
+            PythonQt::self()->registerClass(&FrameAPI::staticMetaObject);
             PythonQt::self()->registerClass(&DelayedSignal::staticMetaObject);
-            PythonQt::self()->registerClass(&ScriptConsole::staticMetaObject);
-            PythonQt::self()->registerClass(&Command::staticMetaObject);
+            PythonQt::self()->registerClass(&ConsoleAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&ConsoleCommand::staticMetaObject);
+            PythonQt::self()->registerClass(&DebugAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&SceneAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&ConfigAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
-            PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
-//            PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
-            PythonQt::self()->registerClass(&ISoundService::staticMetaObject);
-            PythonQt::self()->registerClass(&Input::staticMetaObject);
+            // Ui() - naali.uicore
+            PythonQt::self()->registerClass(&UiAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&UiMainWindow::staticMetaObject);
+            PythonQt::self()->registerClass(&UiWidget::staticMetaObject);
+	    /*  PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);*/
+            // UiService() - naali.ui
+            //PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
+            //PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
+
+            PythonQt::self()->registerClass(&AudioAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&InputAPI::staticMetaObject);
+
+            // DevicesAPI - naali.devices
+            PythonQt::self()->registerClass(&DevicesAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&IDevice::staticMetaObject);
+            PythonQt::self()->registerClass(&IPositionalDevice::staticMetaObject);
+
+            //knet UserConnection
+            PythonQt::self()->registerClass(&UserConnection::staticMetaObject);
 
             //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Mesh::staticMetaObject);
-            PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
+            PythonQt::self()->registerClass(&GestureEvent::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Ruler::staticMetaObject);
+            PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             
             PythonQt::self()->addDecorators(new Vector3dfDecorator());
             PythonQt::self()->registerCPPClass("Vector3df");
             PythonQt::self()->addDecorators(new QuaternionDecorator());
             PythonQt::self()->registerCPPClass("Quaternion");
+            PythonQt::self()->addDecorators(new TransformDecorator());
+            PythonQt::self()->registerCPPClass("Transform");
+            PythonQt::self()->addDecorators(new AssetReferenceDecorator());
+            PythonQt::self()->registerCPPClass("AssetReference");
 
             // For some reason: plain registerClass doosn't work for these classes.
             // Possible reason is that they are just interfaces
@@ -1892,4 +1823,10 @@ namespace PythonScript
 
         LogInfo(Name() + " initialized succesfully.");
     }
+
+    Scene::ScenePtr PythonScriptModule::GetScenePtr() const
+    {
+         return framework_->Scene()->GetDefaultScene();
+    }
+
 }

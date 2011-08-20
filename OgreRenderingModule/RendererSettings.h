@@ -27,6 +27,7 @@ namespace OgreRenderer
         void SetFullScreenMode(bool value);
 
         void KeyPressed(KeyEvent* e);
+        QWidget *GetSettingsWidget() { return settings_widget_; }
 
 
     private:

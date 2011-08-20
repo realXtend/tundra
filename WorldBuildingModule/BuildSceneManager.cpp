@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -15,7 +16,9 @@
 #include "EC_Placeable.h"
 #include "UiServiceInterface.h"
 #include "NaaliApplication.h"
-
+#include "SceneManager.h"
+#include "UiExternalServiceInterface.h"
+#include "BuildToolbar.h"
 #include <QPixmap>
 #include <QDebug>
 
@@ -37,14 +40,48 @@ namespace WorldBuilding
         selected_entity_(0),
         selected_camera_id_(-1),
         viewport_poller_(new QTimer(this)),
-        override_server_time_(false)
+        override_server_time_(false),
+//$ BEGIN_MOD $
+        editToolbar_(0),
+        propertyWidget_(0),
+		assignWidget_(0),
+		inside_(false),
+        create_objects_action_(0),
+        show_build_widgets_action_(0)
+//$ END_MOD $
     {
         setParent(parent);
         connect(framework_->GetNaaliApplication(), SIGNAL(aboutToQuit()), SLOT(CleanPyWidgets()));
         connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));
 
         InitScene();
-        ObjectSelected(false);        
+        ObjectSelected(false); 
+        
+        connect(framework_, SIGNAL(DefaultWorldSceneChanged(const Scene::ScenePtr &)), SLOT(DefaultSceneChanged(const Scene::ScenePtr&)));
+
+		//$ BEGIN_MOD $
+		//Create Action to Create an object & switch to build scene 
+
+		//Check if UiExternalIsAvailable 
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        bool object_edit_menu_actions = true; /// @todo read from settings etc.
+		if (ui && object_edit_menu_actions){
+			//Create Action, insert into menu Create->Avatar
+			create_objects_action_ = new QAction("Create Object",this);
+			if (ui->AddExternalMenuAction(create_objects_action_, "Create Object", tr("Edit"))){
+				//We change scene
+				connect(create_objects_action_, SIGNAL(triggered()), SLOT(ChangeAndCreateObject()));
+			}
+			//Create also an action to switch to Scene in Menu->Panels
+			show_build_widgets_action_ = new QAction("Show Build Widgets",this);
+			if (ui->AddExternalMenuAction(show_build_widgets_action_, "Show Build Widgets", tr("Edit"))){
+				//We change scene
+				connect(show_build_widgets_action_, SIGNAL(triggered()), SLOT(ShowBuildPanels()));
+				//connect(ui, SIGNAL(SceneChanged(const QString&, const QString &)),
+                //SLOT(SceneChangedNotification(const QString&, const QString&)));
+			}
+		}
+		//$ END_MOD $
     }
 
     BuildSceneManager::~BuildSceneManager()
@@ -173,11 +210,17 @@ namespace WorldBuilding
 
         // Setup ui helper
         ui_helper_->SetupManipControls(&object_manip_ui, python_handler_);
+
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal)
+			CreateEditContent();
+//$ END_MOD $
     }
 
     void BuildSceneManager::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
     {
-        if (!widget)
+		if (!widget || !widget->widget())
             return;
         if (!scene_->isActive())
             return;
@@ -209,11 +252,14 @@ namespace WorldBuilding
         }
         else if (name_compare == "library")
         {
-            tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
-            widget->setWidget(0);
-            object_manip_ui.tab_widget->addTab(tranfer_widgets_[name].first, name);
-            tranfer_widgets_[name].first->show();
-            scene_widget = false;
+            if (widget->widget() != 0)
+            {
+                tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
+                widget->setWidget(0);
+                object_manip_ui.tab_widget->addTab(tranfer_widgets_[name].first, name);
+                tranfer_widgets_[name].first->show();
+                scene_widget = false;
+            }
         }
 
         if (scene_widget)
@@ -225,6 +271,14 @@ namespace WorldBuilding
             widget->setPos(object_manipulations_widget_->rect().width() + 25, 60);
             widget->hide();
         }
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal){
+			if(!inside_){
+				TransferAssetWidget(inside_);
+			}
+		}
+//$ END_MOD $
     }
 
     void BuildSceneManager::HandleTransfersBack()
@@ -252,6 +306,14 @@ namespace WorldBuilding
         }
         tranfer_widgets_.clear();
         object_manip_ui.tab_widget->clear();
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal){
+			if(inside_){
+				TransferAssetWidget(inside_);
+			}
+		}
+//$ END_MOD $
     }
 
     void BuildSceneManager::HandlePythonWidget(const QString &type, QWidget *widget)
@@ -294,14 +356,20 @@ namespace WorldBuilding
             if (mesh_browse)
                 ui_helper_->AddBrowsePair("animation", mesh_browse, widget);
         }
+        else if (type_compare == "align")
+        {
+            label_title = "Align Tools";
+        }
         else
             create_widgets = false;
 
         if (create_widgets)
         {
-            int inject_pos = object_manip_ui.main_layout->count() - 2;
-
-            // Make title if needed
+            int inject_pos = object_manip_ui.main_layout->count() - 1;
+//$ BEGIN_MOD $		
+			Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+//$ END_MOD $	
+			// Make title if needed
             if (!label_title.isEmpty())
             {
                 // Make title and insert widget
@@ -312,13 +380,24 @@ namespace WorldBuilding
 
                 toggle_visibility_widgets_ << title;
                 object_manip_ui.main_layout->insertWidget(inject_pos, title);
+//$ BEGIN_MOD $		
+				if(uiExternal){
+					panel_widgets_ << title;
+					asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), title);
+				}
+//$ END_MOD $
                 inject_pos++;
             }
 
             // Insert widget to layout
             widget->hide();
-            object_manip_ui.main_layout->insertWidget(inject_pos, widget);
-
+            object_manip_ui.main_layout->insertWidget(inject_pos, widget);		
+//$ BEGIN_MOD $			
+			if(uiExternal){
+				panel_widgets_ << widget;
+				asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), widget);
+			}
+//$ END_MOD $
             // Put to internal lists for visibility and deleting
             if (toggle_visiblity)
                 toggle_visibility_widgets_ << widget;
@@ -508,6 +587,7 @@ namespace WorldBuilding
             object_info_widget_->CheckSize();
             object_manipulations_widget_->CheckSize();
         }
+
     }
 
     void BuildSceneManager::HideBuildScene()
@@ -515,9 +595,9 @@ namespace WorldBuilding
         UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
-            if (inworld_state)
+			if (inworld_state)
                 ui->SwitchToScene("Inworld");
-            else
+			else
                 ui->SwitchToScene("Ether");
         }
     }
@@ -531,6 +611,8 @@ namespace WorldBuilding
             python_handler_->EmitEditingActivated(true);
             tranfer_widgets_.clear();
             object_manip_ui.tab_widget->clear();
+			create_objects_action_->setDisabled(true);
+			show_build_widgets_action_->setDisabled(true);
         }
         else if (old_name == scene_name_)
         {
@@ -538,7 +620,12 @@ namespace WorldBuilding
             python_handler_->EmitEditingActivated(false);
             toolbar_->RemoveAllButtons();
             HandleTransfersBack();
+			create_objects_action_->setDisabled(false);
+			show_build_widgets_action_->setDisabled(false);
         }
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal && new_name=="Inworld")
+			ActiveEditMode(uiExternal->IsEditModeEnable());
     }
 
     void BuildSceneManager::CreateCamera()
@@ -576,6 +663,14 @@ namespace WorldBuilding
             ManipModeChanged(python_handler_->GetCurrentManipulationMode());
         else
             ManipModeChanged(PythonParams::MANIP_FREEMOVE);
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal){
+		    if (selected)
+				ManipExternalModeChanged(python_handler_->GetCurrentManipulationMode());
+			else
+				ManipExternalModeChanged(PythonParams::MANIP_FREEMOVE);
+		}
 
          // Update ui visibility if the mode changed from previous known one
         if (prim_selected_ == selected)
@@ -589,12 +684,21 @@ namespace WorldBuilding
         object_info_ui.local_id_title->setVisible(selected);
         object_info_ui.local_id_value->setVisible(selected);
 
-        object_manip_ui.button_clone->setEnabled(selected);
-        object_manip_ui.button_delete->setEnabled(selected);
-        object_manip_ui.button_scale->setEnabled(selected);
-        object_manip_ui.button_move->setEnabled(selected);
-        object_manip_ui.button_rotate->setEnabled(selected);
+		object_manip_ui.button_clone->setEnabled(selected);
+		object_manip_ui.button_delete->setEnabled(selected);
+		object_manip_ui.button_scale->setEnabled(selected);
+		object_manip_ui.button_move->setEnabled(selected);
+		object_manip_ui.button_rotate->setEnabled(selected);
 
+//$ BEGIN_MOD $
+		if(uiExternal){
+			asset_ui_.button_clone->setEnabled(selected);
+			asset_ui_.button_delete->setEnabled(selected);
+			asset_ui_.button_scale->setEnabled(selected);
+			asset_ui_.button_move->setEnabled(selected);
+			asset_ui_.button_rotate->setEnabled(selected);
+		}
+//$ END_MOD $
         property_editor_handler_->SetEditorVisible(selected);
 
         foreach(QWidget *widget, toggle_visibility_widgets_)
@@ -686,5 +790,288 @@ namespace WorldBuilding
         else
             toolbar_->button_lights->setText("Custom Lights");
         toolbar_->slider_lights->setVisible(override_server_time_);
+    }
+//$ BEGIN_MOD $
+	void BuildSceneManager::CreateEditContent()
+	{
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        bool create_buttons = true; // todo read from ini
+		if(uiExternal && ui)
+        {
+            if (create_buttons)
+            {
+			      //editToolbar_= ui->GetExternalToolbar("EditToolBar");
+         //         editToolbar_->hide();
+       //         if (editToolbar_)
+       //         {
+			        //QAction* move=new QAction(QIcon("./media/icons/move.png"),"Move",editToolbar_);
+			        //editToolbar_->addAction(move);
+			        //connect(move, SIGNAL(triggered()), this, SLOT(ActionToolBarMove()));
+
+			        //QAction* scale=new QAction(QIcon("./media/icons/scale.png"),"Scale",editToolbar_);
+			        //editToolbar_->addAction(scale);
+			        //connect(scale, SIGNAL(triggered()), this, SLOT(ActionToolBarScale()));
+
+			        //QAction* rotate=new QAction(QIcon("./media/icons/rotate.png"),"Rotate",editToolbar_);
+			        //editToolbar_->addAction(rotate);
+			        //connect(rotate, SIGNAL(triggered()), this, SLOT(ActionToolBarRotate()));
+
+			        //QAction* create=new QAction(QIcon("./media/icons/create.png"),"Create",editToolbar_);
+			        //editToolbar_->addAction(create);
+			        //connect(create, SIGNAL(triggered()), this, SLOT(ActionToolBarCreate()));
+
+			        //QAction* assign=new QAction(QIcon("./media/icons/asset.png"),"Asset",editToolbar_);
+			        //editToolbar_->addAction(assign);
+			        //connect(assign, SIGNAL(triggered()), this, SLOT(ActionToolBarAsset()));
+
+			        //QAction* properties=new QAction(QIcon("./media/icons/properties.png"),"Properties",editToolbar_);
+			        //editToolbar_->addAction(properties);
+			        //connect(properties, SIGNAL(triggered()), this, SLOT(ActionToolBarProperties()));
+//                }
+
+			    //Current World Build
+			    //QToolBar *worldBuildToolbar= ui->GetExternalToolbar("WorldBuildToolBar");
+       //         if (worldBuildToolbar)
+       //         {
+			    //    worldBuildToolbar->setIconSize(QSize(76, 32));
+			    //    QAction* worldbuild=new QAction(QIcon("./media/icons/uibutton_BUILD_normal.png"),"WorldBuildScene",worldBuildToolbar);
+			    //    worldBuildToolbar->addAction(worldbuild);
+			    //    connect(worldbuild, SIGNAL(triggered()), this, SLOT(ToggleBuildScene()));
+       //         }
+            }
+
+			UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+
+			//Create the Properties Widget
+			propertyWidget_ = property_editor_handler_->CreatePropertyWindow();
+			ui->AddWidgetToScene(propertyWidget_,true,true);
+            ui->AddWidgetToMenu(propertyWidget_,"Object Properties","Edit");
+			
+			//Create the Assign Widget
+			assignWidget_= new QWidget();
+			asset_ui_.setupUi(assignWidget_);
+			asset_ui_.tab_widget->setVisible(false);
+
+			connect(asset_ui_.button_new, SIGNAL(clicked()), SLOT(NewObjectClicked()));
+			connect(asset_ui_.button_clone, SIGNAL(clicked()), SLOT(DuplicateObjectClicked()));
+			connect(asset_ui_.button_delete, SIGNAL(clicked()), SLOT(DeleteObjectClicked()));
+			connect(asset_ui_.button_move, SIGNAL(clicked()), SLOT(ExternalToggleMove()));
+			connect(asset_ui_.button_scale, SIGNAL(clicked()), SLOT(ExternalToggleScale()));
+			connect(asset_ui_.button_rotate, SIGNAL(clicked()), SLOT(ExternalToggleRotate()));
+
+			// Setup ui helper
+			ui_helper_->SetupManipControls(&asset_ui_, python_handler_);
+
+			assignWidget_->setMinimumSize(QSize(300,300));
+			assignWidget_->setWindowTitle("Asset");
+			ui->AddWidgetToScene(assignWidget_,true,true);
+			ui->AddWidgetToMenu(assignWidget_,"Asset","Edit");
+			ui->AddPanelToEditMode(assignWidget_);
+
+			connect(uiExternal,SIGNAL(EditModeChanged(bool)),this,SLOT(ActiveEditMode(bool)));
+		}
+	}
+	void BuildSceneManager::ActiveEditMode(bool active)
+    {
+		if(active)
+        {
+			python_handler_->EmitEditingActivated(true);
+            if (editToolbar_)
+			    editToolbar_->setEnabled(true);
+		}
+        else
+        {
+			python_handler_->EmitEditingActivated(false);
+			ObjectSelected(false);
+            if (editToolbar_)
+			    editToolbar_->setEnabled(false);
+		}
+	}
+	void BuildSceneManager::ActionToolBarMove()
+    {
+		ExternalToggleMove();
+	}
+
+    void BuildSceneManager::ActionToolBarScale()
+    {
+		ExternalToggleScale();
+    }
+
+    void BuildSceneManager::ActionToolBarRotate()
+    {
+		ExternalToggleRotate();
+    }
+
+	void BuildSceneManager::ActionToolBarCreate()
+	{
+		python_handler_->EmitObjectAction(PythonParams::OBJ_NEW);
+	}
+
+	void BuildSceneManager::ActionToolBarProperties()
+	{
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		if (ui && !scene_->isActive()){
+			if(!propertyWidget_->isVisible())
+				ui->ShowWidget(propertyWidget_);
+			else
+				ui->HideWidget(propertyWidget_);
+		}
+	}
+
+	void BuildSceneManager::ActionToolBarAsset()
+	{
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		if(ui && !scene_->isActive()){
+			if(!assignWidget_->isVisible())
+				ui->ShowWidget(assignWidget_);
+			else
+				ui->HideWidget(assignWidget_);
+		}
+	}
+
+	void BuildSceneManager::GetSelectedEntity(Scene::Entity *entity)
+	{
+		if(!scene_->isActive())
+			if(entity && !entity->HasComponent("EC_Terrain") && !entity->HasComponent("EC_Controllable")){
+				ObjectSelected(true);
+				EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+				if (prim && propertyWidget_->isVisible())
+					property_editor_handler_->UpdatePropertyWindow(prim);
+			}else{
+				if(prim_selected_)
+					python_handler_->EmitRemoveHightlight();
+				ObjectSelected(false);
+				property_editor_handler_->UpdatePropertyWindow(0);
+			}
+	}
+
+	void BuildSceneManager::ChangeAndCreateObject(){
+		//Change to Build Scene if we are not still there
+		if (!IsBuildingActive())
+			ShowBuildPanels();
+		//Create new object
+		NewObjectClicked();	
+	}
+
+	void BuildSceneManager::ExternalToggleMove()
+    {
+		if(prim_selected_){
+			if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_MOVE)
+				ManipExternalModeChanged(PythonParams::MANIP_FREEMOVE);
+			else
+				ManipExternalModeChanged(PythonParams::MANIP_MOVE);
+		}
+    }
+
+    void BuildSceneManager::ExternalToggleScale()
+    {
+		if(prim_selected_){
+			if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_SCALE)
+				ManipExternalModeChanged(PythonParams::MANIP_FREEMOVE);
+			else
+				ManipExternalModeChanged(PythonParams::MANIP_SCALE);
+		}
+    }
+
+    void BuildSceneManager::ExternalToggleRotate()
+    {
+		if(prim_selected_){
+			if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_ROTATE)
+				ManipExternalModeChanged(PythonParams::MANIP_FREEMOVE);
+			else
+				ManipExternalModeChanged(PythonParams::MANIP_ROTATE);
+		}
+    }
+
+	void BuildSceneManager::TransferAssetWidget(bool inside){
+		if(inside){
+			foreach(QWidget *w, panel_widgets_){
+				int inject_pos = asset_ui_.main_layout->count() - 2;
+				asset_ui_.main_layout->insertWidget(inject_pos,w);
+			}
+
+			// Setup ui helper
+			ui_helper_->SetupManipControls(&asset_ui_, python_handler_);
+
+			assignWidget_->setEnabled(true);
+			inside_=false;
+		}else{
+			foreach(QWidget *w, panel_widgets_){
+				int inject_pos = object_manip_ui.main_layout->count() - 2;
+				w->hide();
+				object_manip_ui.main_layout->insertWidget(inject_pos, w);
+			}
+
+			// Setup ui helper
+			ui_helper_->SetupManipControls(&object_manip_ui, python_handler_);
+
+			assignWidget_->setEnabled(false);
+			inside_=true;
+		}
+	}
+
+    void BuildSceneManager::ManipExternalModeChanged(PythonParams::ManipulationMode mode)
+    {
+        python_handler_->EmitManipulationModeChange(mode);
+        ui_helper_->SetManipMode(mode);
+
+        bool show_rotate_controls = false;
+        bool show_scale_controls = false;
+        bool show_pos_controls = false;
+        QString selected_style = "background-color: qlineargradient(spread:pad, x1:0, y1:0.165, x2:0, y2:0.864, stop:0 rgba(248, 248, 248, 255), stop:1 rgba(232, 232, 232, 255));"
+                                 "border: 1px solid grey; border-radius: 0px; color: black; font-weight: bold; padding-top: 5px; padding-bottom: 4px;";
+        switch (mode)
+        {
+            case PythonParams::MANIP_MOVE:
+                asset_ui_.button_move->setStyleSheet(selected_style);
+                asset_ui_.button_scale->setStyleSheet("");
+                asset_ui_.button_rotate->setStyleSheet("");
+                show_pos_controls = true;
+                break;
+            case PythonParams::MANIP_SCALE:
+                asset_ui_.button_scale->setStyleSheet(selected_style);
+                asset_ui_.button_move->setStyleSheet("");
+                asset_ui_.button_rotate->setStyleSheet("");
+                show_scale_controls = true;
+                break;
+            case PythonParams::MANIP_ROTATE:
+                asset_ui_.button_rotate->setStyleSheet(selected_style);
+                asset_ui_.button_move->setStyleSheet("");
+                asset_ui_.button_scale->setStyleSheet("");
+                show_rotate_controls = true;
+                break;
+            case PythonParams::MANIP_FREEMOVE:
+                asset_ui_.button_move->setStyleSheet("");
+                asset_ui_.button_scale->setStyleSheet("");
+                asset_ui_.button_rotate->setStyleSheet("");
+                break;
+            default:
+                break;
+        }
+        asset_ui_.rotate_frame->setVisible(show_rotate_controls);
+        asset_ui_.scale_frame->setVisible(show_scale_controls);
+        asset_ui_.pos_frame->setVisible(show_pos_controls);
+    }
+	void BuildSceneManager::ShowBuildPanels(){
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		ui->ShowWidget(assignWidget_);
+		ui->ShowWidget(propertyWidget_);
+		ui->BringWidgetToFront("Entity-component Editor");
+		ui->BringWidgetToFront("Inventory");
+		ui->BringWidgetToFront("Library");
+	}
+//$ END_MOD $
+
+    void BuildSceneManager::ComponentAdded(Scene::Entity* entity, IComponent *comp, AttributeChange::Type change)
+    {
+        if(comp->TypeName()=="EC_Selected") {
+            ObjectSelected(entity);
+        }
+    }
+    
+    void BuildSceneManager::DefaultSceneChanged(const Scene::ScenePtr &scene)
+    {
+        connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)), SLOT(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     }
 }

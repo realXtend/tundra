@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "ComponentGroup.h"
 #include "ECComponentEditor.h"
 #include "Entity.h"
@@ -11,10 +13,8 @@
 
 ComponentGroup::ComponentGroup(ComponentPtr component,
                                ECComponentEditor *editor,
-                               QTreeWidgetItem *listItem,
                                bool isDynamic):
     editor_(editor),
-    browserListItem_(listItem),
     isDynamic_(isDynamic)
 {
     assert(component);

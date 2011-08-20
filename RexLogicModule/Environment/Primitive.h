@@ -8,7 +8,6 @@
 #ifndef incl_RexLogicModule_Primitive_h
 #define incl_RexLogicModule_Primitive_h
 
-#include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 #include "IComponent.h"
@@ -30,7 +29,6 @@ namespace ProtocolUtilities
 namespace RexLogic
 {
     class RexLogicModule;
-    class EC_AttachedSound;
 
     class Primitive : public QObject
     {
@@ -65,7 +63,7 @@ namespace RexLogic
 
         void HandleLogout();
 
-        typedef std::map<std::pair<request_tag_t, asset_type_t>, entity_id_t> EntityResourceRequestMap;
+//        typedef std::map<std::pair<request_tag_t, asset_type_t>, entity_id_t> EntityResourceRequestMap;
 
         // Send RexPrimData of a prim entity to server
         ///\todo Move to WorldStream?
@@ -85,7 +83,7 @@ namespace RexLogic
         void RegisterToComponentChangeSignals(Scene::ScenePtr scene);
         
         // Deserialize EC's sent by server
-        void DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc);
+        void DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc, bool deleteNonExitingOnes = true);
         
     public slots:
         //! Trigger EC sync because of component attributes changing
@@ -122,6 +120,9 @@ namespace RexLogic
         //! checks if stored pending rexfreedata exists for prim and handles it
         //! @param entityid Entity id.
         void CheckPendingRexFreeData(entity_id_t entityid);
+
+        //! checks if stored pending ecdata exists for prim and handle it
+        void CheckPendingEcData(entity_id_t entityid);
         
         //! parse TextureEntry data from ObjectUpdate
         /*! @param prim Primitive component to receive texture data
@@ -170,13 +171,13 @@ namespace RexLogic
         void HandleExtraParams(const entity_id_t &entity_id, const uint8_t *extra_params_data);
 
         //! handles mesh resource being ready
-        void HandleMeshReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleMeshReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         //! handles skeleton resource (used in conjunction with a mesh) being ready
-        void HandleSkeletonReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleSkeletonReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         //! handles particle script resource being ready
-        void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         /** Attachs a light component to a prim.
             @param entity Entity pointer of the prim.
@@ -195,15 +196,15 @@ namespace RexLogic
         void AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color);
 
         //! handles mesh or prim texture resource being ready
-        void HandleTextureReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleTextureReady(entity_id_t entity, Foundation::ResourcePtr res);
 
-        void HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res);
+//        void HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res);
 
         //! handles prim size and visibility
         void HandlePrimScaleAndVisibility(entity_id_t entityid);
 
         //! discards request tags for certain entity
-        void DiscardRequestTags(entity_id_t, EntityResourceRequestMap& map);
+//        void DiscardRequestTags(entity_id_t, EntityResourceRequestMap& map);
 
         // Go through dirty lists & send changed components to server
         void SerializeECsToNetwork();
@@ -218,7 +219,7 @@ namespace RexLogic
         static std::string UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id);
 
         //! maps tags of all pending resource request to prim entities.
-        EntityResourceRequestMap prim_resource_request_tags_;
+//        EntityResourceRequestMap prim_resource_request_tags_;
 
         //! pending rexprimdatas. This map exists because in some cases the network messages that describe prim parameters
         //! are received before the actual objects have been created (first ObjectUpdate is received). Any such pending
@@ -230,6 +231,10 @@ namespace RexLogic
         //! pending rexfreedatas
         typedef std::map<RexUUID, std::string > RexFreeDataMap;
         RexFreeDataMap pending_rexfreedata_;
+
+        //! pending ec datas
+        typedef std::map<RexUUID, std::vector<std::vector<u8> > > RexEcData;
+        RexEcData pending_ecdata_;
         
         typedef std::set<entity_id_t> EntityIdSet;
         //! entities with local EC changes

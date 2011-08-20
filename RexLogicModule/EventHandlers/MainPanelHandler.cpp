@@ -8,11 +8,10 @@
 #include "Framework.h"
 #include "WorldStream.h"
 
-#ifndef UISERVICE_TEST
-#include "UiModule.h"
-#include "Inworld/InworldSceneController.h"
-#include "Inworld/ControlPanelManager.h"
+#ifdef USE_UIMODULE
 #include "Common/UiAction.h"
+#include "UiServiceInterface.h"
+#include <QPushButton>
 #endif
 
 namespace RexLogic
@@ -20,15 +19,31 @@ namespace RexLogic
 
 MainPanelHandler::MainPanelHandler(RexLogicModule *rexlogic) : rexlogic_(rexlogic)
 {
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
+    //Do it with QPushButton
+    UiServiceInterface *ui = rexlogic_->GetFramework()->UiService();
+    if (ui)
+    {
+        QPushButton *butt = new QPushButton("Quit");
+        connect(butt, SIGNAL(clicked(bool)),SLOT(QuitRequested()));
+        ui->AddAnchoredWidgetToScene(butt, Qt::TopRightCorner, Qt::Horizontal, 1, true);
+    }
+    
+
+    
+    /*
     UiServices::UiModule *ui_module = rexlogic_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
     {
         UiServices::UiAction *quit_action = new UiServices::UiAction(this);
         connect(quit_action, SIGNAL(triggered()), SLOT(QuitRequested()));
 
-        ui_module->GetInworldSceneController()->GetControlPanelManager()->SetHandler(UiServices::Quit, quit_action);
+        UiServices::InworldSceneController * scene_controller = ui_module->GetInworldSceneController();
+
+		if (scene_controller)
+			scene_controller->GetControlPanelManager()->SetHandler(UiServices::Quit, quit_action);
     }
+     */
 #endif
 }
 

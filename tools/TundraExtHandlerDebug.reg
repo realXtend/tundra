@@ -34,7 +34,7 @@ Windows Registry Editor Version 5.00
 @="Open Tundra ViewerD in this directory"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
 [HKEY_CLASSES_ROOT\Applications\Viewerd.exe\Shell\OpenViewerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewerd.exe\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewerd.exe\" --storage \"%1\""
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type]
 @="Tundra Scene File"
@@ -53,4 +53,4 @@ Windows Registry Editor Version 5.00
 @="Open Tundra ViewerD in this directory"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewerd.exe\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewerd.exe\" --storage \"%1\""

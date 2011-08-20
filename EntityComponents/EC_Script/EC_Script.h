@@ -7,9 +7,11 @@
 #include "Declare_EC.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
-#include "ScriptAsset.h"
 
 class IScriptInstance;
+
+class ScriptAsset;
+typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 
 /// Provides mechanism for adding scripts to entities.
 /**
@@ -105,7 +107,7 @@ private slots:
     void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     /// Called when a new script asset has been loaded.
-    void ScriptAssetLoaded(IAssetTransfer *transfer);
+    void ScriptAssetLoaded(AssetPtr asset);
 
     /// Registers the actions this component provides when parent entity is set.
     void RegisterActions();

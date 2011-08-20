@@ -10,10 +10,10 @@
 #include "EC_OgreCustomObject.h"
 #include "IModule.h"
 #include "Framework.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "SceneManager.h"
-#include "MediaPlayerService.h"
 #include "EventManager.h"
 #include "SceneManager.h"
 
@@ -22,8 +22,6 @@
 #include <QCryptographicHash>
 #include <QSizePolicy>
 
-#include "AssetServiceInterface.h"
-#include "AssetEvents.h"
 #include "RexTypes.h"
 
 #include "LoggingFunctions.h"
@@ -51,7 +49,7 @@ EC_VideoSource::EC_VideoSource(IModule *module):
     player_(0),
     video_widget_(0),
     media_object_(0),
-    video_request_tag_(0),
+//    video_request_tag_(0),
     error_label_(0)
 {
     // Init metadata for attributes
@@ -74,7 +72,7 @@ EC_VideoSource::EC_VideoSource(IModule *module):
 
     connect(ready_poller_, SIGNAL(timeout()), SLOT(Play()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
     // Register as a event listener
     EventManager *event_manager = framework_->GetEventManager().get();
@@ -104,6 +102,8 @@ EC_VideoSource::~EC_VideoSource()
 
 bool EC_VideoSource::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
     if (!expecting_resources_)
         return false;
 
@@ -134,9 +134,12 @@ bool EC_VideoSource::HandleEvent(event_category_id_t category_id, event_id_t eve
             }
         }
     }
+*/
     return false;    
 }
 
+/*
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
 void EC_VideoSource::LoadVideo(Foundation::AssetInterfacePtr asset)
 {
     Foundation::AssetServiceInterface *asset_service = GetFramework()->GetService<Foundation::AssetServiceInterface>();
@@ -153,7 +156,7 @@ void EC_VideoSource::LoadVideo(Foundation::AssetInterfacePtr asset)
         return;
     }
 }
-
+*/
 void EC_VideoSource::LoadCurrentVideo()
 {
     if (QFile::exists(current_video_path_))
@@ -199,7 +202,7 @@ void EC_VideoSource::InitializePhonon()
     }
 }
 
-void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
+void EC_VideoSource::OnAttributeUpdated(IAttribute *attribute)
 {
     if (!video_widget_ || !media_object_)
         return;
@@ -215,6 +218,8 @@ void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
             {
                 if (media_object_->currentSource().url() != source_url)
                 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
                     Foundation::AssetServiceInterface *asset_service = GetFramework()->GetService<Foundation::AssetServiceInterface>();
                     if (asset_service)
                     {
@@ -236,6 +241,7 @@ void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
                             }
                         }
                     }
+*/
                 }
             }
             else if (QFile::exists(getvideoSourceUrl()))
@@ -260,7 +266,7 @@ void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
     {
         if (!videoSourceUrl.Get().isEmpty())
         {
-            // Play video if video source url has been setted and if sound has been triggered or looped.
+            // Play video if video source url has been set and if sound has been triggered or looped.
             if (getplaybackState() == PS_Play && !playing_canvas_)
             {
                 Play();
@@ -430,7 +436,7 @@ void EC_VideoSource::UpdateSignals()
 {
     if (!GetParentEntity())
     {
-        LogError("Couldn't update singals cause component dont have parent entity setted.");
+        LogError("Couldn't update singals cause component dont have parent entity set.");
         return;
     }
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
@@ -451,7 +457,7 @@ void EC_VideoSource::UpdateSignals()
  
     // The magic number of instances before certain unstability is two, 
     // lets not let instantiate more phonon players than that for now
-    Scene::EntityList list = framework_->GetDefaultWorldScene()->GetEntitiesWithComponent(TypeNameStatic());
+    Scene::EntityList list = GetFramework()->Scene()->GetDefaultScene()->GetEntitiesWithComponent(TypeNameStatic());
     if (list.size() < 2)
     {
         LogDebug(QString("Launching video ec in %1 ms").arg(rand_time).toStdString());

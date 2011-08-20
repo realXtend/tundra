@@ -6,8 +6,9 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "OgreMaterialUtils.h"
-#include "OgreMaterialResource.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include <Ogre.h>
@@ -88,9 +89,17 @@ namespace OgreRenderer
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
         Ogre::MaterialPtr material = mm.getByName(SanitateAssetIdForOgre(sourceMaterialName));
 
+        if (!material.get())
+        {
+             OgreRenderingModule::LogWarning("Failed to clone material \"" + sourceMaterialName + "\". It was not found.");
+             return Ogre::MaterialPtr();
+        }
         material = material->clone(SanitateAssetIdForOgre(newName));
-
-        assert(material.get());
+        if (!material.get())
+        {
+             OgreRenderingModule::LogWarning("Failed to clone material \"" + sourceMaterialName + "\" to name \"" + SanitateAssetIdForOgre(newName) + "\"");
+             return Ogre::MaterialPtr();
+        }
         return material;
     }
 
@@ -365,5 +374,20 @@ namespace OgreRenderer
                 OgreRenderingModule::LogDebug("Failed to remove Ogre material:" + std::string(e.what()));
             }
         }
+    }
+
+    bool ProcessBraces(const std::string& line, int& braceLevel)
+    {
+        if (line == "{")
+        {
+            ++braceLevel;
+            return true;
+        } 
+        else if (line == "}")
+        {
+            --braceLevel;
+            return true;
+        }
+        else return false;
     }
 }

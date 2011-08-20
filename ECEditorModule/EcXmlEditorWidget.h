@@ -9,6 +9,7 @@
 #define incl_ECEditorModule_EcXmlEditorWidget_h
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 
 #include <QWidget>
 

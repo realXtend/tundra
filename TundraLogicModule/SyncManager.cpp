@@ -22,7 +22,9 @@
 #include "MsgEntityAction.h"
 #include "EC_DynamicComponent.h"
 
-#include "kNet.h"
+#include "SceneAPI.h"
+
+#include <kNet.h>
 
 #include <cstring>
 
@@ -42,9 +44,9 @@ kNet::MessageConnection* currentSender = 0;
 namespace TundraLogic
 {
 
-SyncManager::SyncManager(TundraLogicModule* owner, Foundation::Framework* fw) :
+SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
-    framework_(fw),
+    framework_(owner->GetFramework()),
     update_period_(1.0f / 30.0f),
     update_acc_(0.0)
 {
@@ -220,11 +222,10 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            #ifndef ECHO_CHANGES_TO_SENDER
+#ifndef ECHO_CHANGES_TO_SENDER
             if ((*i)->connection == currentSender)
                 continue;
-            #endif
-            
+#endif
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
             {
@@ -371,7 +372,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         msg.parameters.push_back(p);
     }
 
-    if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0))
+    if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0) && owner_->GetClient()->GetConnection())
     {
         // send without Local flag
         //TundraLogicModule::LogInfo("Tundra client sending EntityAction " + action.toStdString() + " type " + ToString(type));
@@ -384,8 +385,11 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
         foreach(UserConnection* c, owner_->GetKristalliModule()->GetUserConnections())
         {
-            //TundraLogicModule::LogInfo("peer " + action.toStdString());
-            c->connection->Send(msg);
+            if (c->properties["authenticated"] == "true" && c->connection)
+            {
+                //TundraLogicModule::LogInfo("peer " + action.toStdString());
+                c->connection->Send(msg);
+            }
         }
     }
 }
@@ -397,7 +401,9 @@ void SyncManager::OnUserActionTriggered(UserConnection* user, Scene::Entity *ent
         return; // Should never happen
     if ((!entity) || (!user))
         return;
-        
+    if (user->properties["authenticated"] != "true")
+        return; // Not yet authenticated, do not receive actions
+    
     // Craft EntityAction message.
     MsgEntityAction msg;
     msg.entityId = entity->GetId();
@@ -463,7 +469,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         Scene::EntityPtr entity = scene->GetEntity(*i);
         if (!entity)
             continue;
-        const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+        const Scene::Entity::ComponentVector &components = entity->Components();
         EntitySyncState* entitystate = state->GetEntity(*i);
         // No record in entitystate -> newly created entity, send full state
         if (!entitystate)
@@ -681,7 +687,7 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -769,14 +775,14 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
     scene->EmitEntityCreated(entity, change);
-    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+    const Scene::Entity::ComponentVector &components = entity->Components();
     for(uint i = 0; i < components.size(); ++i)
         components[i]->ComponentChanged(change);
 }
 
 void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -806,7 +812,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
 
 void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -888,7 +894,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -969,7 +975,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                                     endValue->FromBinary(source, AttributeChange::Disconnected);
                                     //! \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
                                     // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                                    scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.25f);
+                                    scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.35f);
                                     // Do not signal attribute change at this point at all
                                     actually_changed_attributes.push_back(false);
                                 }
@@ -1062,7 +1068,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 if (i->second[j])
                 {
                     currentSender = source;
-                    compShared->AttributeChanged(attributes[j], change);
+                    compShared->EmitAttributeChanged(attributes[j], change);
                 }
         }
         ++i;
@@ -1082,7 +1088,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 if (attr)
                 {
                     currentSender = source;
-                    compShared->AttributeChanged(attr, change);
+                    compShared->EmitAttributeChanged(attr, change);
                 }
             }
         }
@@ -1092,7 +1098,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -1138,7 +1144,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -1164,7 +1170,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
 {
     bool isServer = owner_->IsServer();
     
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     

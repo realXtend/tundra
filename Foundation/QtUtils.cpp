@@ -51,10 +51,13 @@ namespace QtUtils
         const QString& dir,
         QWidget* parent,
         QObject* initiator,
-        const char* slot)
+        const char* slot,
+        bool multipleFiles)
     {
         QFileDialog* dialog = new CustomFileDialog(parent, caption, dir, filter);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
+        if (multipleFiles)
+            dialog->setFileMode(QFileDialog::ExistingFiles);
         QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
         dialog->show();
         dialog->resize(500, 300);

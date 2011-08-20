@@ -5,23 +5,31 @@
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
+#include "AssetAPI.h"
 #include <OgreTexture.h>
 
 class TextureAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    TextureAsset(const QString &type_, const QString &name_)
-    :IAsset(type_, name_)
-    {
-    }
+    TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) : IAsset(owner, type_, name_) {}
+    ~TextureAsset();
 
-    virtual bool LoadFromFileInMemory(const u8 *data_, size_t numBytes);
+    /// Load texture from memory
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
-    void Unload();
+    /// Load texture into memory
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
-    /// Returns an empty list - textures do not refer to other assets.
-    virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
+    /// Handle load errors detected by AssetAPI
+    virtual void HandleLoadError(const QString &loadError);
+
+    /// Unload texture from ogre
+    virtual void DoUnload();   
+
+    bool IsLoaded() const;
+
+    //void RegenerateAllMipLevels();
 
     /// This points to the loaded texture asset, if it is present.
     Ogre::TexturePtr ogreTexture;

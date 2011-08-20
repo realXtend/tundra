@@ -6,10 +6,8 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "AvatarModuleApi.h"
-#include "Input.h"
-#include "KeyEvent.h"
-#include "SceneManager.h"
-
+#include "InputFwd.h"
+#include "SceneFwd.h"
 #include "WorldStream.h"
 
 #include <QObject>
@@ -40,7 +38,7 @@ namespace Avatar
         AvatarModule();
         virtual ~AvatarModule();
 
-		void Load();
+        void Load();
         void Initialize();
         void PostInitialize();
         void Uninitialize();
@@ -71,6 +69,9 @@ namespace Avatar
         void UnregisterFullId(const RexUUID &full_uuid);
 
     private:
+        //! Console command: start editing a specific entity's avatar
+        ConsoleCommandResult EditAvatar(const StringVector &params);
+
         //! Current query categories
         QStringList event_query_categories_;
 
@@ -83,11 +84,12 @@ namespace Avatar
         AvatarHandlerPtr avatar_handler_;
         AvatarControllablePtr avatar_controllable_;
         AvatarEditorPtr avatar_editor_;
-        AvatarSceneManager *scene_manager_;
+        //AvatarSceneManager *scene_manager_;
 
         ProtocolUtilities::WorldStreamPtr world_stream_;
 
         UUID_map uuid_to_local_id_;
     };
 }
+
 #endif

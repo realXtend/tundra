@@ -13,11 +13,11 @@ namespace MumbleVoip
         name_(name),
         voice_activity_(0)
     {
-        avatar_uuid_ = user_->Name();
         connect(user_, SIGNAL(StartReceivingAudio()), SLOT(OnStartSpeaking()) );
         connect(user_, SIGNAL(StopReceivingAudio()), SLOT(OnStopSpeaking()) );
         connect(user_, SIGNAL(PositionUpdated()), SLOT(OnPositionUpdated()) );
         connect(user_, SIGNAL(Left()), SLOT(OnUserLeft()) );
+        connect(user_, SIGNAL(destroyed()), SLOT(UserObjectDestroyed()));
     }
 
     Participant::~Participant()
@@ -33,6 +33,11 @@ namespace MumbleVoip
     QString Participant::AvatarUUID() const
     {
         return avatar_uuid_;
+    }
+
+    void Participant::SetAvatarUUID(QString uuid)
+    {
+        avatar_uuid_ = uuid;
     }
 
     bool Participant::IsSpeaking() const
@@ -101,6 +106,11 @@ namespace MumbleVoip
     {
          // todo: implement
         return voice_activity_;
+    }
+
+    void Participant::UserObjectDestroyed()
+    {
+        user_ = 0;
     }
 
 } // MumbleVoip

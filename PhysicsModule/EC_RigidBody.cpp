@@ -1,24 +1,30 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "EC_Mesh.h"
+#include "DebugOperatorNew.h"
+#include <btBulletDynamicsCommon.h>
+#include "MemoryLeakCheck.h"
 #include "EC_RigidBody.h"
-#include "EC_Placeable.h"
-#include "EC_Terrain.h"
 #include "ConvexHull.h"
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
-#include "OgreMeshResource.h"
+#include "OgreMeshAsset.h"
+
+#include "Entity.h"
+#include "EC_Mesh.h"
+#include "EC_Placeable.h"
+#include "EC_Terrain.h"
 #include "ServiceManager.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
-
-#include <btBulletDynamicsCommon.h>
-#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
-
 #include "LoggingFunctions.h"
+
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
+
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#include <BulletCollision/Gimpact/btGImpactShape.h>
+#include <BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
 using namespace Physics;
 
@@ -30,6 +36,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     IComponent(module->GetFramework()),
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
+	physicsType(this, "Physics Type", (int)Type_Static),
     size(this, "Size", Vector3df(1,1,1)),
     collisionMeshRef(this, "Collision mesh ref"),
     friction(this, "Friction", 0.5f),
@@ -61,14 +68,25 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
         shapemetadata.enums[Shape_TriMesh] = "TriMesh";
         shapemetadata.enums[Shape_HeightField] = "HeightField";
         shapemetadata.enums[Shape_ConvexHull] = "ConvexHull";
-        metadataInitialized = true;
+        metadataInitialized = true;  
     }
     shapeType.SetMetadata(&shapemetadata);
+
+	static AttributeMetadata physicstypemetadata;
+    static bool metadataInitialized2 = false;
+    if(!metadataInitialized2)
+    {
+        physicstypemetadata.enums[Type_Dynamic] = "Dynamic";
+        physicstypemetadata.enums[Type_Static] = "Static";
+        physicstypemetadata.enums[Type_Kinematic] = "Kinematic";
+        metadataInitialized2 = true;
+    }
+    physicsType.SetMetadata(&physicstypemetadata);
 
     // Note: we cannot create the body yet because we are not in an entity/scene yet (and thus don't know what physics world we belong to)
     // We will create the body when the scene is known.
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_RigidBody::~EC_RigidBody()
@@ -93,16 +111,28 @@ bool EC_RigidBody::SetShapeFromVisibleMesh()
 
 void EC_RigidBody::SetLinearVelocity(const Vector3df& velocity)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     linearVelocity.Set(velocity, AttributeChange::Default);
 }
 
 void EC_RigidBody::SetAngularVelocity(const Vector3df& velocity)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     angularVelocity.Set(velocity, AttributeChange::Default);
 }
 
 void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     // If force is very small, do not wake up the body and apply
     if (force.getLength() < cForceThreshold)
         return;
@@ -121,6 +151,10 @@ void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
 
 void EC_RigidBody::ApplyTorque(const Vector3df& torque)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     // If torque is very small, do not wake up the body and apply
     if (torque.getLength() < cTorqueThreshold)
         return;
@@ -136,6 +170,10 @@ void EC_RigidBody::ApplyTorque(const Vector3df& torque)
 
 void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& position)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     // If impulse is very small, do not wake up the body and apply
     if (impulse.getLength() < cImpulseThreshold)
         return;
@@ -154,6 +192,10 @@ void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& posit
 
 void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     // If impulse is very small, do not wake up the body and apply
     if (torqueImpulse.getLength() < cTorqueThreshold)
         return;
@@ -167,8 +209,27 @@ void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
     }
 }
 
+void EC_RigidBody::ApplyGravity(const Vector3df& gravity)
+{
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+            
+    if (!body_)
+        CreateBody();
+    if (body_)
+    {
+        Activate();
+        body_->setGravity(ToBtVector3(gravity));
+    }
+}
+
 void EC_RigidBody::Activate()
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     if (!body_)
         CreateBody();
     if (body_)
@@ -185,6 +246,10 @@ bool EC_RigidBody::IsActive()
 
 void EC_RigidBody::ResetForces()
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     if (!body_)
         CreateBody();
     if (body_)
@@ -209,23 +274,23 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
     if (!parent)
         return;
     
-    if (!placeable_.lock().get())
+    if (!placeable_.lock())
     {
         boost::shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
         if (placeable)
         {
             placeable_ = placeable;
-            connect(placeable.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
+            connect(placeable.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
         }
     }
-    if (!terrain_.lock().get())
+    if (!terrain_.lock())
     {
         boost::shared_ptr<Environment::EC_Terrain> terrain = parent->GetComponent<Environment::EC_Terrain>();
         if (terrain)
         {
             terrain_ = terrain;
             connect(terrain.get(), SIGNAL(TerrainRegenerated()), this, SLOT(OnTerrainRegenerated()));
-            connect(terrain.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(TerrainUpdated(IAttribute*)));
+            connect(terrain.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(TerrainUpdated(IAttribute*)));
         }
     }
 }
@@ -259,8 +324,9 @@ void EC_RigidBody::CreateCollisionShape()
         shape_ = new btCapsuleShapeZ(sizeVec.x * 0.5f, sizeVec.z * 0.5f);
         break;
     case Shape_TriMesh:
-        if (triangleMesh_)
-            shape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
+		if (triangleMesh_){
+			shape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
+		}
     case Shape_HeightField:
         CreateHeightFieldFromTerrain();
         break;
@@ -293,7 +359,7 @@ void EC_RigidBody::RemoveCollisionShape()
 
 void EC_RigidBody::CreateBody()
 {
-    if ((!world_) || (body_))
+    if ((!world_) || (!GetParentEntity()) || (body_))
         return;
     
     CheckForPlaceableAndTerrain();
@@ -305,17 +371,18 @@ void EC_RigidBody::CreateBody()
     int collisionFlags;
     
     GetProperties(localInertia, m, collisionFlags);
-    
     body_ = new btRigidBody(m, this, shape_, localInertia);
     body_->setUserPointer(this);
     body_->setCollisionFlags(collisionFlags);
+	if (physicsType.Get() == Type_Kinematic)
+		body_->setActivationState(DISABLE_DEACTIVATION);
     world_->GetWorld()->addRigidBody(body_);
     body_->activate();
 }
 
 void EC_RigidBody::ReaddBody()
 {
-    if ((!body_) || (!world_))
+    if ((!world_) || (!GetParentEntity()) || (!body_))
         return;
     
     btVector3 localInertia;
@@ -329,6 +396,8 @@ void EC_RigidBody::ReaddBody()
     body_->setCollisionFlags(collisionFlags);
     
     world_->GetWorld()->removeRigidBody(body_);
+	if (physicsType.Get() == Type_Kinematic)
+		body_->setActivationState(DISABLE_DEACTIVATION);
     world_->GetWorld()->addRigidBody(body_);
     body_->clearForces();
     body_->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
@@ -362,6 +431,10 @@ void EC_RigidBody::getWorldTransform(btTransform &worldTrans) const
 
 void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
 {
+    // Cannot modify server-authoritative physics object, rather get the transform changes through placeable attributes
+    if (!HasAuthority())
+        return;
+    
     EC_Placeable* placeable = placeable_.lock().get();
     if (!placeable)
         return;
@@ -396,18 +469,14 @@ void EC_RigidBody::OnTerrainRegenerated()
         CreateCollisionShape();
 }
 
-void EC_RigidBody::OnCollisionMeshAssetLoaded(IAssetTransfer *transfer)
+void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
+    OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(asset.get());
+    if (!meshAsset || !meshAsset->ogreMesh.get())
+        LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
 
-    OgreRenderer::OgreMeshResource *resource = dynamic_cast<OgreRenderer::OgreMeshResource *>(transfer->resourcePtr.get());
-    assert(resource);
-    if (!resource)
-        return;
+    Ogre::Mesh *mesh = meshAsset->ogreMesh.get();
 
-    Ogre::Mesh* mesh = resource->GetMesh().getPointer();
     if (mesh)
     {
         if (shapeType.Get() == Shape_TriMesh)
@@ -426,7 +495,7 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(IAssetTransfer *transfer)
     }
 }
 
-void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
+void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
 {
     if (disconnected_)
         return;
@@ -480,6 +549,10 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
     if (attribute == &phantom)
         // Readd body to the world in case phantom classification changed
         ReaddBody();
+
+	if (attribute == &physicsType)
+        // Readd body to the world in case physicsType classification changed
+        ReaddBody();
     
     if (attribute == &drawDebug)
         // Readd body to the world in case phantom classification changed
@@ -530,6 +603,10 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
 
 void EC_RigidBody::SetRotation(const Vector3df& rotation)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     disconnected_ = true;
     
     EC_Placeable* placeable = placeable_.lock().get();
@@ -556,6 +633,10 @@ void EC_RigidBody::SetRotation(const Vector3df& rotation)
 
 void EC_RigidBody::Rotate(const Vector3df& rotation)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     disconnected_ = true;
     
     EC_Placeable* placeable = placeable_.lock().get();
@@ -604,6 +685,14 @@ void EC_RigidBody::GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax)
     outAabbMax.set(aabbMax.x(), aabbMax.y(), aabbMax.z());
 }
 
+bool EC_RigidBody::HasAuthority() const
+{
+    if ((!world_) || ((world_->IsClient()) && (!GetParentEntity()->IsLocal())))
+        return false;
+    
+    return true;
+}
+
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 {
     Environment::EC_Terrain* terrain = terrain_.lock().get();
@@ -622,6 +711,8 @@ void EC_RigidBody::RequestMesh()
     if (collisionMesh.isEmpty() && parent) // We use the mesh ref in EC_Mesh as the collision mesh ref if no collision mesh is set in EC_RigidBody.
     {
         boost::shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
+        if (!mesh)
+            return;
         collisionMesh = mesh->meshRef.Get().ref.trimmed();
     }
 
@@ -630,7 +721,7 @@ void EC_RigidBody::RequestMesh()
         // Do not create shape right now, but request the mesh resource
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(collisionMesh);
         if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnCollisionMeshAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnCollisionMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
 }
 
@@ -736,15 +827,21 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
     // Trimesh shape can not move
     if (shapeType.Get() == Shape_TriMesh)
         m = 0.0f;
+    // On client, all server-side entities become static to not desync or try to send updates we should not
+    if (!HasAuthority())
+        m = 0.0f;
+    
     if ((shape_) && (m > 0.0f))
         shape_->calculateLocalInertia(m, localInertia);
     
-    bool isDynamic = m > 0.0f;
+    //bool isDynamic = m > 0.0f;
     bool isPhantom = phantom.Get();
     collisionFlags = 0;
-    if (!isDynamic)
-        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
-    if (isPhantom)
+    if (physicsType.Get() == Type_Static)
+        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;   
+	else if (physicsType.Get() == Type_Kinematic)   
+		collisionFlags |= btCollisionObject::CF_KINEMATIC_OBJECT;
+	if (isPhantom)
         collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
     if (!drawDebug.Get())
         collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
@@ -754,3 +851,4 @@ void EC_RigidBody::EmitPhysicsCollision(Scene::Entity* otherEntity, const Vector
 {
     emit PhysicsCollision(otherEntity, position, normal, distance, impulse, newCollision);
 }
+

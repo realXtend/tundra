@@ -1,7 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "EC_DynamicComponent.h"
+
 #include "IModule.h"
 #include "ModuleManager.h"
 #include "Entity.h"
@@ -11,11 +13,13 @@
 #include <QScriptEngine>
 #include <QScriptValueIterator>
 
-#include "kNet.h"
+#include <kNet.h>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
 
 #include <QDomDocument>
+
+#include "MemoryLeakCheck.h"
 
 struct DeserializeData
 {
@@ -114,9 +118,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         if(iter1 == oldAttributes.end())
         {
             for(;iter2 != deserializedAttributes.end(); iter2++)
-            {
                 addAttributes.push_back(*iter2);
-            }
             break;
         }
         // Only old attributes are left and they can be removed from the dynamic component.
@@ -132,12 +134,9 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         {
             //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
             for(AttributeVector::const_iterator attr_iter = attributes_.begin(); attr_iter != attributes_.end(); attr_iter++)
-            {
                 if((*attr_iter)->GetNameString() == iter2->name_)
-                {
                     (*attr_iter)->FromString(iter2->value_, change);
-                }
-            }
+
             iter2++;
             iter1++;
         }
@@ -158,7 +157,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
     while(!addAttributes.empty())
     {
         DeserializeData attributeData = addAttributes.back();
-        IAttribute *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str());
+        IAttribute *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str(), change);
         if (attribute)
             attribute->FromString(attributeData.value_, change);
         addAttributes.pop_back();
@@ -179,7 +178,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     IAttribute *attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
     if(!attribute)
     {
-        LogError("Fail to create new attribute:" + name.toStdString() + " in dynamic component:" + Name().toStdString());
+        LogError("Failed to create new attribute:" + name + " in dynamic component:" + Name());
         return 0;
     }
 
@@ -190,7 +189,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     
     // Trigger internal signal
     emit AttributeAdded(attribute);
-    AttributeChanged(attribute, change);
+    EmitAttributeChanged(attribute, change);
     return attribute;
 }
 
@@ -240,7 +239,7 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
     if(!ContainsAttribute(name))
     {
         Attribute<QVariant> *attribute = new Attribute<QVariant>(this, name.toStdString().c_str());
-        AttributeChanged(attribute, change);
+        EmitAttributeChanged(attribute, change);
         emit AttributeAdded(attribute);
     }
     else
@@ -249,28 +248,20 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const
 {
-    if(index < attributes_.size() && index >= 0)
-    {
+    if (index < attributes_.size() && index >= 0)
         return attributes_[index]->ToQVariant();
-    }
     return QVariant();
 }
 
 QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
 {
-    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
-        if ((*iter)->GetNameString() == name.toStdString())
-            return (*iter)->ToQVariant();
-
-    return QVariant();
+    return IComponent::GetAttributeQVariant(name);
 }
 
 void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, AttributeChange::Type change)
 {
-    if(index < attributes_.size() && index >= 0)
-    {
+    if (index < attributes_.size() && index >= 0)
         attributes_[index]->FromQVariant(value, change);
-    }
     else
         LogWarning("Cannot get attribute name, cause index is out of range.");
 }
@@ -278,33 +269,28 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
 void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change)
 {
     for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); iter++)
-    {
         if((*iter)->GetNameString() == name.toStdString())
         {
             (*iter)->FromScriptValue(value, change);
             break; 
         }
-    }
 }
 
 void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change)
 {
     for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); iter++)
-    {
         if((*iter)->GetNameString() == name.toStdString())
         {
             (*iter)->FromQVariant(value, change);
             break;
         }
-    }
 }
 
 QString EC_DynamicComponent::GetAttributeName(int index) const
 {
     if(index < attributes_.size() && index >= 0)
-    {
         return attributes_[index]->GetName();
-    }
+
     LogWarning("Cannot get attribute name, cause index is out of range.");
     return QString();
 }
@@ -325,7 +311,7 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
     AttributeVector::const_iterator iter2 = attributeVector.begin();
     while(iter1 != myAttributeVector.end() && iter2 != attributeVector.end())
     {
-        // Compare attribute names and type and if they mach continue iteration if not components aren't exatly the same.
+        // Compare attribute names and type and if they mach continue iteration if not components aren't exactly the same.
         if((*iter1)->GetNameString() == (*iter2)->GetNameString() &&
            (*iter1)->TypeName() == (*iter2)->TypeName())
         {
@@ -366,11 +352,10 @@ bool EC_DynamicComponent::ContainsAttribute(const QString &name) const
     while(iter != attributes_.end())
     {
         if((*iter)->GetName() == name.toStdString())
-        {
             return true;
-        }
         iter++;
     }
+
     return false;
 }
 
@@ -400,7 +385,6 @@ void EC_DynamicComponent::DeserializeFromBinary(kNet::DataDeserializer& source, 
         DeserializeData attributeData(name, type, value);
         deserializedAttributes.push_back(attributeData);
     }
-    
+
     DeserializeCommon(deserializedAttributes, change);
 }
-

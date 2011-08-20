@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef GLOBALALLOCOBJECT_H_
 #define GLOBALALLOCOBJECT_H_
 
@@ -6,40 +8,38 @@
 
 template <typename T>
 struct GlobalAllocObject
-{   
-   void * operator new(size_t sz )
-   {  
+{
+    void * operator new(size_t sz)
+    {
 #ifndef Q_WS_WIN
-       return malloc(sz);
+        return malloc(sz);
 #else
-       return GlobalAlloc(GPTR, sizeof(T)); 
+        return GlobalAlloc(GPTR, sizeof(T));
 #endif
-   }
+    }
 
-   void operator delete(void * ptr)
-   {  
-#ifndef Q_WS_WIN   
+    void operator delete(void * ptr)
+    {
+#ifndef Q_WS_WIN
         free(ptr);
 #else
-       GlobalFree(ptr); 
-#endif  
+        GlobalFree(ptr);
+#endif
+    }
 
-  }
-
-   T* handle() { return (T*) this; }
+    T* handle() { return (T*) this; }
 };
 
 #include "boost/smart_ptr.hpp"
 
 template <typename T>
-struct  SharedGlobalObject : 
-          public boost::shared_ptr<GlobalAllocObject<T> > 
+struct SharedGlobalObject : public boost::shared_ptr<GlobalAllocObject<T> >
 {
-   typedef boost::shared_ptr<GlobalAllocObject<T> > sgPtr;
+    typedef boost::shared_ptr<GlobalAllocObject<T> > sgPtr;
 
-   SharedGlobalObject() : sgPtr (new sgPtr::element_type)  {}
+    SharedGlobalObject() : sgPtr (new sgPtr::element_type) {}
 
-   operator T*() { return get()->handle(); }
+    operator T*() { return get()->handle(); }
 };
 
 #endif // !defined(GLOBALALLOCOBJECT_H_INCLUDED_)

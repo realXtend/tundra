@@ -45,7 +45,7 @@ use_package (TELEPATHY_GLIB)
 use_package (TELEPATHY_FARSIGHT)
 use_package (GSTREAMER)
 use_package (FARSIGHT2)
-use_modules (TelepathyIMModule Core Foundation SceneManager Interfaces RexCommon UiModule ProtocolUtilities
+use_modules (TelepathyIMModule Core Foundation Scene Interfaces RexCommon UiModule ProtocolUtilities
     OgreRenderingModule EntityComponents/EC_OpenSimPresence)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
@@ -59,7 +59,7 @@ link_package (CURL)
 link_package (XMLRPC)
 link_package (GSTREAMER)
 link_package (FARSIGHT2)
-link_modules (Core Foundation SceneManager Interfaces RexCommon UiModule ProtocolUtilities EC_OpenSimPresence
+link_modules (Core Foundation Scene Interfaces RexCommon UiModule ProtocolUtilities EC_OpenSimPresence
     OgreRenderingModule)
 
 SetupCompileFlagsWithPCH()

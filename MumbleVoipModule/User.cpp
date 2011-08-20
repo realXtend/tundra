@@ -66,7 +66,7 @@ namespace MumbleLib
         return user_.user_id;
     }
     
-    Channel* User::Channel() const
+    Channel* User::GetChannel() const
     {
         if (left_)
             return 0;

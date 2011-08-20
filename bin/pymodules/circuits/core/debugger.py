@@ -85,6 +85,8 @@ class Debugger(Component):
             return
         elif channel in self.IgnoreChannels:
             return
+        elif event.name == 'Registered':
+            print "Registered:", event.args[0]
         else:
             if self.logger is not None:
                 self.logger.debug(repr(event))

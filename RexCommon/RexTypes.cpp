@@ -5,10 +5,12 @@
  *  @brief  RealXtend-spesific typedefs, bit flags, enums etc. and utility functions for them.
  */
 
+#include "DebugOperatorNew.h"
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
-
-#include <boost/algorithm/string.hpp>
 
 namespace RexTypes
 {

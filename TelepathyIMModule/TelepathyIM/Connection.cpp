@@ -3,6 +3,8 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Audio.h" //XXX not ported to new audio API yet
+
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/StreamedMediaChannel>
 #include "Connection.h"

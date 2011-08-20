@@ -81,6 +81,11 @@ public:
     Q_PROPERTY(QVariantList entities READ getentities WRITE setentities);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, entities);
 
+//$ BEGIN_MOD $
+    //! Name of RigidBody component. default value is "VolumeTrigger".
+    Q_PROPERTY(QString rigidBodyName READ getrigidBodyName WRITE setrigidBodyName);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, rigidBodyName);    
+//$ END_MOD $
     virtual ~EC_VolumeTrigger();
 
     //! Set component as serializable.
@@ -157,10 +162,9 @@ public slots:
     /// Returns true if given world coordinate point is inside volume. 
     bool IsInsideVolume(const Vector3df& point) const;
 
-
 private slots:
     //! Called when some of the attributes has been changed.
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
 
     void UpdateSignals();
 
@@ -175,6 +179,8 @@ private slots:
 
     //! Called when entity inside this volume is removed from the scene
     void OnEntityRemoved(Scene::Entity* entity);
+
+	void OnRigidBodyNameChanged();
 
 private:
     //! constructor

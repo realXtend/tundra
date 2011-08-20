@@ -1,4 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
+#include "DebugOperatorNew.h"
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "XMLUtilities.h"
 
 #include <QDomElement>

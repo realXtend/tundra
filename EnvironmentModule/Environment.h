@@ -9,9 +9,6 @@
 #define incl_EnvironmentModule_Environment_h
 
 #include "EnvironmentModuleApi.h"
-#include "ForwardDefines.h"
-#include "RexTypes.h"
-#include "EC_Fog.h"
 
 #include <QVector>
 #include <QObject>
@@ -23,13 +20,13 @@ namespace ProtocolUtilities
     class NetworkEventInboundData;
 }
 
-
 class EC_OgreEnvironment;
-
 
 namespace Environment
 {
     class EnvironmentModule;
+    class EC_EnvironmentLight;
+    class EC_Fog;
 
     //! Environment contain information about water, fog and lighting. Also Caelum implementation code is included in this class.
     //! \ingroup EnvironmentModuleClient.
@@ -38,11 +35,10 @@ namespace Environment
         Q_OBJECT
 
     public:
-        /** 
-         * Overloaded constructor.
-         * @param owner The owner module.
-         **/
-        Environment(EnvironmentModule *owner);
+        /// Overloaded constructor.
+        /** @param owner The owner module.
+        */
+        explicit Environment(EnvironmentModule *owner);
         virtual ~Environment();
 
     public:
@@ -63,73 +59,52 @@ namespace Environment
          **/
         void CreateEnvironment();
 
-        /**
-         * Handles the "SimulatorViewerTimeMessage" packet.
-         * @param data The network event data pointer.
-         **/
+        /// Handles the "SimulatorViewerTimeMessage" packet.
+        /** @param data The network event data pointer.
+        */
         bool HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
 
-        /** 
-         * Sets a ground fog for current active environment.
-         * @param fogStart distance in world unit at which linear fog start ot encroach. 
-         * @param fogEnd distance in world units at which linear fog becomes completely opaque.
-         * @param color the colour of the fog. 
-         **/
-
+        /// Sets a ground fog for current active environment.
+        /** @param fogStart distance in world unit at which linear fog start ot encroach. 
+            @param fogEnd distance in world units at which linear fog becomes completely opaque.
+            @param color the colour of the fog. 
+        */
         void SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color);
 
-        /**
-         * Enables or disables fog color override. 
-         * @param enabled boolean defines state of override.
-         **/
-         
+        /// Enables or disables fog color override. 
+        /**@param enabled boolean defines state of override.
+        */
         void SetFogColorOverride(bool enabled);
-        
-        /**
-         * Returns information is fog color controlled by user or caelum.
-         * @return true if it is fog color is controlled by user, else false.
-         **/
-        
+
+        /// Returns information is fog color controlled by user or caelum.
+        /** @return true if it is fog color is controlled by user, else false.
+        */
         bool GetFogColorOverride();
- 
-        /**
-         * Set new ground fog color.
-         * @param new color value.
-         **/
+
+        /// Set new ground fog color.
+        /** @param new color value.
+        */
         void SetGroundFogColor(const QVector<float>& color);
 
-       
-        /**
-         * Set new ground fog distance.
-         * @param fogStart start distance from the viewpoint.
-         * @param fogEnd end distance from the viewpoint.
-         **/
+        /// Set new ground fog distance.
+        /** @param fogStart start distance from the viewpoint.
+            @param fogEnd end distance from the viewpoint.
+        */
         void SetGroundFogDistance(float fogStart, float fogEnd);
 
-      
-        /**
-         * @return ground fog start distance. 
-         */
+        /// @return ground fog start distance.
         float GetGroundFogStartDistance();
 
-        /**
-         * @return ground fog end distance. 
-         */
+        /// @return ground fog end distance.
         float GetGroundFogEndDistance();
 
-        /**
-         * Returns current fog ground color. 
-         */
+        /// Returns current fog ground color. 
         QVector<float> GetFogGroundColor();
-        
-        /**
-         * Updates the visual effects (fog, skybox etc).
-         **/
+
+        /// Updates the visual effects (fog, skybox etc).
         void Update(f64 frametime);
 
-        /**
-         * @return true if caelum library is used.
-         **/
+        /// @return true if caelum library is used.
         bool IsCaelum();
 
         //! Set new sunlight direction
@@ -193,8 +168,6 @@ namespace Environment
 
         EC_Fog* GetEnvironmentFog();
 
-     
-
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
 
@@ -214,19 +187,16 @@ namespace Environment
         uint32_t secPerYear_;
 
         /// Direction of the sunlight.
-        RexTypes::Vector3 sunDirection_;
+        Vector3df sunDirection_;
 
         /// Sun phase.
         float sunPhase_;
 
         /// Sun's angle velocity.
-        RexTypes::Vector3 sunAngVelocity_;
+        Vector3df sunAngVelocity_;
 
         /// Bit mask of Caelum components we use.
         int caelumComponents_;
-
-        
-
     };
 }
 

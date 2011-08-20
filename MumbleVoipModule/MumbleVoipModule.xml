@@ -3,4 +3,5 @@
     <dependency>CommunicationsModule</dependency>
     <dependency>OgreRenderingModule</dependency>
     <dependency>RexLogicModule</dependency>
+    <dependency>TundraLogicModule</dependency>
 </config>

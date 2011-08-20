@@ -4,7 +4,7 @@
 #include "CameraControllable.h"
 #include "CameraControl.h"
 
-#include "EntityComponent/EC_AvatarAppearance.h"
+#include "EntityComponent/EC_Avatar.h"
 #include "EC_NetworkPosition.h"
 
 #include "SceneEvents.h"
@@ -18,7 +18,7 @@
 #include "EC_Mesh.h"
 
 #include "InputEvents.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "EC_Terrain.h"
@@ -27,7 +27,7 @@
 #include "ServiceManager.h"
 #include "ModuleManager.h"
 
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 
 #include <Ogre.h>
 
@@ -270,27 +270,23 @@ namespace RexLogic
                     if (current_state_ == FirstPerson)
                     {
                         // Try to use head bone from target entity to get the first person camera position
+                        // Note: this no longer works using EC_AvatarAppearance component. Instead EC_Avatar component has to exist.
                         EC_Mesh *mesh = target->GetComponent<EC_Mesh>().get();
-                        EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
+                        EC_Avatar *avatar = target->GetComponent<EC_Avatar>().get();
                         bool fallback = true;
-                        if (mesh && appearance)
+                        if (mesh && avatar)
                         {
                             Ogre::Entity* ent = mesh->GetEntity();
                             if (ent)
                             {
                                 Ogre::SkeletonInstance* skel = ent->getSkeleton();
                                 
-                                std::string view_bone_name;
+                                std::string view_bone_name = avatar->GetAvatarProperty("viewbone").toStdString();
                                 float adjustheight = mesh->GetAdjustPosition().z;
                                 
-                                if (appearance->HasProperty("viewbone"))
+                                if (view_bone_name.empty())
                                 {
-                                    // This bone property is exclusively for view tracking & assumed to be correct position, no offset
-                                    view_bone_name = appearance->GetProperty("viewbone");
-                                }
-                                else if (appearance->HasProperty("headbone"))
-                                {
-                                    view_bone_name = appearance->GetProperty("headbone");
+                                    view_bone_name = avatar->GetAvatarProperty("headbone").toStdString();
                                     // The biped head bone is anchored at the neck usually. Therefore a guessed fixed offset is needed,
                                     // which is not preferable, but necessary
                                     adjustheight += 0.15f;

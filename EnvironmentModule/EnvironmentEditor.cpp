@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -13,19 +14,17 @@
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
 
+#include "Renderer.h"
 #include "SceneManager.h"
-
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "OgreMaterialUtils.h"
-#include "TextureInterface.h"
-#include "TextureServiceInterface.h"
 #include "InputEvents.h"
-#include "../Input/Input.h"
+#include "InputAPI.h"
 #include "OgreRenderingModule.h"
-#include "UiServiceInterface.h"
+#include "UiAPI.h"
 #include "UiProxyWidget.h"
-#include <AttributeChangeType.h>
+#include "AttributeChangeType.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -75,9 +74,6 @@ namespace Environment
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
         terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
-        terrain_texture_requests_.resize(cNumberOfTerrainTextures);
-        for (unsigned i = 0; i < cNumberOfTerrainTextures; ++i)
-            terrain_texture_requests_[i] = 0;
 
         InitEditorWindow();
         mouse_position_[0] = 0;
@@ -232,7 +228,7 @@ namespace Environment
 
     void EnvironmentEditor::InitEditorWindow()
     {
-        UiServiceInterface *ui = environment_module_->GetFramework()->GetService<UiServiceInterface>();
+        UiAPI *ui =environment_module_->GetFramework()->Ui();        
         if (!ui) // If this occurs, we're most probably operating in headless mode.
             return;
 
@@ -250,15 +246,15 @@ namespace Environment
             return;
 
         QVBoxLayout *layout = new QVBoxLayout(this);
-        layout->addWidget(editor_widget_);
+        layout->addWidget(editor_widget_); 
         layout->setContentsMargins(0, 0, 0, 0);
         setLayout(layout);
 
         setWindowTitle(tr("Environment Editor"));
+        ui->AddWidgetToWindow(this);
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
-        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
-        ui->RegisterUniversalWidget("Environment", editor_proxy);
+        //ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("View"), "./data/ui/images/menus/edbutton_ENVED_normal");
+       // ui->RegisterUniversalWidget("Environment", this);
 
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");
@@ -305,7 +301,7 @@ namespace Environment
 
         // Update height map image when terrain object emit GeometryUpdated signal.
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(terrain.get())
+        if(terrain)
             QObject::connect(terrain.get(), SIGNAL(HeightmapGeometryUpdated()), this, SLOT(UpdateTerrain()));
 
         // Button Signals
@@ -377,7 +373,7 @@ namespace Environment
 
         // Making sure that when terrain textures are changed we load new terrain textures to editor window aswell.
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(terrain.get())
+        if(terrain)
             QObject::connect(terrain.get(), SIGNAL(TerrainTextureChanged()), this, SLOT(UpdateTerrainTextures()));
         else
             EnvironmentModule::LogError("Fail to connect TerrainTextureChanged signal cause terrain pointer was null.");
@@ -426,7 +422,7 @@ namespace Environment
         // Sky tab window connections.
         SkyPtr sky = environment_module_->GetSkyHandler();
 
-        if(sky.get())
+        if(sky)
         {
             QObject::connect(sky.get(), SIGNAL(SkyTypeChanged()), this, SLOT(UpdateSkyType()));
 
@@ -740,7 +736,7 @@ namespace Environment
             return;
 
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         if(sky_type_ == sky_type)
@@ -797,7 +793,7 @@ namespace Environment
                 d_spin_box->show();
                 //d_spin_box->setValue(param.distance);
                 if ( skyBox != 0)
-                    d_spin_box->setValue(skyBox->distanceAttr.Get());
+                    d_spin_box->setValue(skyBox->distance.Get());
 
                 apply_button = new QPushButton(properties_frame);
                 apply_button->setObjectName("apply_properties_button");
@@ -1179,7 +1175,7 @@ namespace Environment
     void EnvironmentEditor::UpdateSunLightColor(const QColor& color)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         QWidget* widget = GetCurrentPage();
@@ -1215,7 +1211,7 @@ namespace Environment
     void EnvironmentEditor::UpdateAmbientLightColor(const QColor& color)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         QWidget* widget = GetCurrentPage();
@@ -1363,7 +1359,7 @@ namespace Environment
     void EnvironmentEditor::UpdateSunDirection(double value)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         // Sun direction
@@ -1434,7 +1430,7 @@ namespace Environment
    {
         assert(environment_module_);
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         
@@ -1486,7 +1482,7 @@ namespace Environment
     void EnvironmentEditor::UpdateSkyType()
     {
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         // Ask what type of sky is in use and chage it.
@@ -1519,7 +1515,7 @@ namespace Environment
     {
         assert(environment_module_);
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
@@ -1531,28 +1527,28 @@ namespace Environment
             QLineEdit *text_field = editor_widget_->findChild<QLineEdit *>("sky_texture_line_edit_" + QString("%1").arg(index));
             if(text_field)
             {
-                if(text_field->text() != "")
+                if (text_field->text() != "")
                 {
-                    if(sky_type_ == SKYTYPE_BOX)
+                    if (sky_type_ == SKYTYPE_BOX)
                     {
                         EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
-                        if ( skyBox != 0)
+                        if (skyBox != 0)
                         {
-                           QVariantList lst = skyBox->textureAttr.Get();
-                           lst[index-1] = text_field->text();
-                           skyBox->textureAttr.Set(lst, AttributeChange::Default);
+                           AssetReferenceList lst = skyBox->textureRefs.Get();
+                           lst.refs[index-1] = QVariant::fromValue(AssetReference(text_field->text()));
+                           skyBox->textureRefs.Set(lst, AttributeChange::Default);
                         }
                     }
-                    else if ( sky_type_ == SKYTYPE_PLANE)
+                    else if (sky_type_ == SKYTYPE_PLANE)
                     {
                         EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
-                        if (skyPlane != 0 )
+                        if (skyPlane != 0)
                             skyPlane->textureRef.Set(AssetReference(text_field->text()), AttributeChange::Default);
                     }
-                    else if(sky_type_ == SKYTYPE_DOME )
+                    else if (sky_type_ == SKYTYPE_DOME)
                     {
                         EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome >();
-                        if ( skyDome != 0 )
+                        if (skyDome != 0)
                             skyDome->textureRef.Set(AssetReference(text_field->text()), AttributeChange::Default);
                     }
                 }
@@ -1564,7 +1560,7 @@ namespace Environment
     {
         assert(environment_module_);
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         if(sky_type_ == SKYTYPE_BOX)
@@ -1572,13 +1568,13 @@ namespace Environment
             EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
             if ( skyBox != 0)
             {
-                QVariantList lst = skyBox->textureAttr.Get();
-                for ( int i =0; i < lst.size() && i < 6; ++i)
+                AssetReferenceList lst = skyBox->textureRefs.Get();
+                for(int i =0; i < lst.Size() && i < 6; ++i)
                 {
                     QString line_edit_name = "sky_texture_line_edit_" + QString("%1").arg(i + 1);
                     QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
-                    if ( texture_line_edit != 0)
-                        texture_line_edit->setText(lst[i].toString());
+                    if (texture_line_edit != 0)
+                        texture_line_edit->setText(lst[i].ref);
                 }
             }
         }
@@ -1605,7 +1601,7 @@ namespace Environment
     void EnvironmentEditor::ChangeSkyProperties()
     {
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
@@ -1624,11 +1620,8 @@ namespace Environment
                         QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
 
                         EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox>();
-                        if ( skyBox != 0 && dspin_box != 0)
-                        {
-                            skyBox->distanceAttr.Set(dspin_box->value(), AttributeChange::Default);
-                        }
-                            
+                        if (skyBox != 0 && dspin_box != 0)
+                            skyBox->distance.Set(dspin_box->value(), AttributeChange::Default);
                         break;
                     }
                 case SKYTYPE_DOME:
@@ -1715,7 +1708,7 @@ namespace Environment
     {
         assert(environment_module_);
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         for(uint i = 0; i < cNumberOfTerrainTextures; i++)
@@ -1739,7 +1732,7 @@ namespace Environment
     void EnvironmentEditor::UpdateTerrainTextures()
     {
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         QLineEdit *line_edit = 0;
@@ -1760,7 +1753,7 @@ namespace Environment
                 continue;
             line_edit->setText(QString::fromStdString(terrain_id));
 
-            terrain_texture_requests_[i] = RequestTerrainTexture(i);
+//            terrain_texture_requests_[i] = RequestTerrainTexture(i);
         }
     }
 
@@ -1768,7 +1761,7 @@ namespace Environment
     {
         assert(environment_module_);
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         const QLineEdit *sender = qobject_cast<QLineEdit *>(QObject::sender());
@@ -1793,7 +1786,7 @@ namespace Environment
                     terrain->SetTerrainTextures(texture_id);
 
                     //Request a new texture asser even if it's already loaded to cache.
-                    terrain_texture_requests_[line_edit_number] = RequestTerrainTexture(line_edit_number);
+//                    terrain_texture_requests_[line_edit_number] = RequestTerrainTexture(line_edit_number);
                 }
             }
         }
@@ -1803,7 +1796,7 @@ namespace Environment
     {
         assert(environment_module_);
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
@@ -1834,7 +1827,7 @@ namespace Environment
                             texture_id[i] = terrain_texture_id_list_[i];
                         terrain->SetTerrainTextures(texture_id);
 
-                        terrain_texture_requests_[button_number] = RequestTerrainTexture(button_number);
+//                        terrain_texture_requests_[button_number] = RequestTerrainTexture(button_number);
 
                         environment_module_->SendTextureDetailMessage(texture_id[button_number], button_number);
                     }
@@ -1855,12 +1848,12 @@ namespace Environment
         assert(environment_module_);
 
         // Priority 110: Must be over EtherInput priority (100, see UiModule.cpp) to get the ESC edit cancel message.
-        terrainPaintInputContext = environment_module_->GetFramework()->GetInput()->RegisterInputContext("TerrainPaint", 110);
+        terrainPaintInputContext = environment_module_->GetFramework()->Input()->RegisterInputContext("TerrainPaint", 110);
         terrainPaintInputContext->SetTakeKeyboardEventsOverQt(true); // To be able to process ESC over Qt and Ether.
         terrainPaintInputContext->SetTakeMouseEventsOverQt(true);
 
-        connect(terrainPaintInputContext.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(HandleMouseInputEvent(MouseEvent *)));
-        connect(terrainPaintInputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), this, SLOT(HandleKeyInputEvent(KeyEvent *)));
+        connect(terrainPaintInputContext.get(), SIGNAL(MouseEventReceived(MouseEvent *)), this, SLOT(HandleMouseInputEvent(MouseEvent *)));
+        connect(terrainPaintInputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), this, SLOT(HandleKeyInputEvent(KeyEvent *)));
     }
 
     void EnvironmentEditor::ToggleTerrainPaintMode()
@@ -1917,7 +1910,7 @@ namespace Environment
         }
 
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         CreateHeightmapImage();
@@ -1993,7 +1986,7 @@ namespace Environment
         {
             assert(environment_module_);
             TerrainPtr terrain = environment_module_->GetTerrainHandler();
-            if(!terrain.get())
+            if(!terrain)
                 return;
 
             Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
@@ -2095,7 +2088,7 @@ namespace Environment
         {
             assert(environment_module_);
             TerrainPtr terrain = environment_module_->GetTerrainHandler();
-            if(!terrain.get())
+            if(!terrain)
                 return;
 
             QLineEdit *line_edit = 0;
@@ -2119,7 +2112,7 @@ namespace Environment
                     continue;
                 line_edit->setText(QString::fromStdString(terrain_id));
 
-                terrain_texture_requests_[i] = RequestTerrainTexture(i);
+//                terrain_texture_requests_[i] = RequestTerrainTexture(i);
             }
             terrainPaintMode_ = INACTIVE;
         }
@@ -2127,6 +2120,8 @@ namespace Environment
             terrainPaintMode_ = INACTIVE;
     }
 
+        ///\todo Regression. Use the new Asset API here instead. -jj.
+/*
     void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
     {
         for(uint index = 0; index < terrain_texture_requests_.size(); index++)
@@ -2152,7 +2147,8 @@ namespace Environment
             }
         }
     }
-
+*/
+/*
     QImage EnvironmentEditor::ConvertToQImage(Foundation::TextureInterface &tex)
     {
         uint img_width        = tex.GetWidth(); 
@@ -2202,7 +2198,7 @@ namespace Environment
 
         return image;
     }
-
+*/
     void EnvironmentEditor::CreatePaintAreaMesh(int x_pos, int y_pos, const Color &color, float gradient_size)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
@@ -2210,7 +2206,7 @@ namespace Environment
             return;
 
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
@@ -2362,9 +2358,11 @@ namespace Environment
             manual_paint_node_ = 0;
         }
     }
-
+/*
     request_tag_t EnvironmentEditor::RequestTerrainTexture(uint index)
     {
+        ///\todo Regression. Use the new Asset API here instead. -jj.
+
         if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
 
         ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
@@ -2383,7 +2381,7 @@ namespace Environment
         }
         return 0;
     }
-
+*/
     void EnvironmentEditor::UpdateGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
     {
         // Adjust editor widget.
@@ -2442,7 +2440,7 @@ namespace Environment
     void EnvironmentEditor::SetGroundFog()
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         QDoubleSpinBox* fog_ground_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_red_dSpinBox");
@@ -2465,7 +2463,7 @@ namespace Environment
     void EnvironmentEditor::SetWaterFog()
     {
         WaterPtr water = environment_module_->GetWaterHandler();
-        if(!water.get())
+        if(!water)
             return;
 
         QDoubleSpinBox* fog_water_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_red_dSpinBox");
@@ -2487,7 +2485,7 @@ namespace Environment
     void EnvironmentEditor::SetGroundFogDistance()
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         QDoubleSpinBox* fog_ground_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_start_distance_dSpinBox");
@@ -2501,7 +2499,7 @@ namespace Environment
     void EnvironmentEditor::SetWaterFogDistance()
     {
         WaterPtr water = environment_module_->GetWaterHandler();
-        if(!water.get())
+        if(!water)
             return;
 
         QDoubleSpinBox* fog_water_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_start_distance_dSpinBox");
@@ -2514,7 +2512,7 @@ namespace Environment
     void EnvironmentEditor::ToggleFogOverride()
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         if ( environment->GetFogColorOverride() )
@@ -2527,7 +2525,7 @@ namespace Environment
     {
         assert(environment_module_);
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         QCheckBox *enable_sky_checkbox = editor_widget_->findChild<QCheckBox *>("sky_toggle_box");
@@ -2572,7 +2570,7 @@ namespace Environment
     void EnvironmentEditor::TimeOfDayOverrideChanged(int state)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
         if (state == 1)
             state = 2;
@@ -2603,7 +2601,7 @@ namespace Environment
     void EnvironmentEditor::TimeValueChanged(int new_value)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if (!environment.get())
+        if (!environment)
             return;
         if (!environment->GetTimeOverride())
             return;

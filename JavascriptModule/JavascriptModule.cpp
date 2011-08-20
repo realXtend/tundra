@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   JavascriptModule.cpp
- *  @brief  Enables Javascript execution and scripting in Naali.
+ *  @brief  Enables Javascript execution and scripting by using QtScript.
  */
 
 #include "StableHeaders.h"
@@ -11,20 +11,24 @@
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
 #include "JavascriptInstance.h"
+#include "ScriptCoreTypeDefines.h"
 
+#include "SceneAPI.h"
+#include "Entity.h"
 #include "AssetAPI.h"
 #include "EC_Script.h"
 #include "ScriptAssetFactory.h"
 #include "EC_DynamicComponent.h"
-#include "EventManager.h"
 #include "SceneManager.h"
-#include "Input.h"
-#include "UiServiceInterface.h"
-#include "ISoundService.h"
-#include "Frame.h"
-#include "Console.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "NaaliCoreTypeDefines.h"
+#include "InputAPI.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#include "AudioAPI.h"
+#include "FrameAPI.h"
+#include "ConsoleAPI.h"
+#include "ConsoleCommandUtils.h"
+
+#include "ScriptAsset.h"
 
 #include <QtScript>
 
@@ -35,6 +39,12 @@ JavascriptModule *javascriptModuleInstance_ = 0;
 
 JavascriptModule::JavascriptModule() :
     IModule(type_name_static_),
+#ifndef QT_NO_SCRIPTTOOLS
+	debugger(0),
+	debuggerWindow(0),
+	debuggerAttachedEngine(0),
+	debuggerAttachedEngineEvaluating(false),
+#endif
     engine(new QScriptEngine(this))
 {
 }
@@ -50,16 +60,14 @@ void JavascriptModule::Load()
     framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory));
 }
 
-void JavascriptModule::PreInitialize()
-{
-}
-
 void JavascriptModule::Initialize()
 {
-    connect(GetFramework(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
+    connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
 
     LogInfo("Module " + Name() + " initializing...");
 
+    QString pluginspath("./qtscript-plugins");
+    QCoreApplication::addLibraryPath(pluginspath);
     assert(!javascriptModuleInstance_);
     javascriptModuleInstance_ = this;
 
@@ -69,25 +77,59 @@ void JavascriptModule::Initialize()
     framework_->GetServiceManager()->RegisterService(Service::ST_JavascriptScripting, service);
 
     engine->globalObject().setProperty("print", engine->newFunction(Print));
-
-    frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 }
 
 void JavascriptModule::PostInitialize()
 {
-    RegisterNaaliCoreMetaTypes();
-    
-    RegisterConsoleCommand(Console::CreateCommand(
-        "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
-        Console::Bind(this, &JavascriptModule::ConsoleRunString)));
+#ifndef QT_NO_SCRIPTTOOLS
+	if (!GetFramework()->IsHeadless() && !GetFramework()->IsEditionless())
+	{
+		bool debugging_enable = false;
 
-    RegisterConsoleCommand(Console::CreateCommand(
-        "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
-        Console::Bind(this, &JavascriptModule::ConsoleRunFile)));
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Javascript");
+		if (settings.contains("debugging")){
+			debugging_enable = settings.value("debugging", QVariant(false)).toBool();
+		}
+
+        debuggerAction = framework_->Ui()->MainWindow()->AddMenuAction("&Scripts", "Debugging");
+		debuggerAction->setCheckable(true);
+
+		connect(debuggerAction, SIGNAL(triggered(bool)), this, SLOT(OnToggleDebugging(bool)));
+
+		if (debugging_enable)
+		{
+			debuggerAction->setChecked(true);
+
+			debugger = new QScriptEngineDebugger;
+			if (debugger)
+			{
+				connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
+				connect(debugger, SIGNAL(evaluationResumed(void)), this, SLOT(OnEvaluationResumed(void)));
+                debuggerWindow = framework_->Ui()->AddWidgetToWindow((QWidget*) debugger->standardWindow(), Qt::Tool);
+                QAction* showDebugger = framework_->Ui()->MainWindow()->AddMenuAction("&Scripts", "Show Debugger");
+                connect(showDebugger, SIGNAL(triggered()), debuggerWindow, SLOT(toggleVisibility()));
+			}
+		}
+		else
+		{
+			debuggerAction->setChecked(false);
+		}
+	}
+#endif
+
+    RegisterCoreMetaTypes();
     
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
+        "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
+        ConsoleBind(this, &JavascriptModule::ConsoleRunString)));
+
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
+        "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
+        ConsoleBind(this, &JavascriptModule::ConsoleRunFile)));
+    
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
-        Console::Bind(this, &JavascriptModule::ConsoleReloadScripts)));
+        ConsoleBind(this, &JavascriptModule::ConsoleReloadScripts)));
     
     // Initialize startup scripts
     LoadStartupScripts();
@@ -96,18 +138,54 @@ void JavascriptModule::PostInitialize()
 
     if (programOptions.count("run"))
     {
-        commandLineStartupScript_ = programOptions["run"].as<std::string>();
-        JavascriptInstance *jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
-        PrepareScriptInstance(jsInstance);
-        startupScripts_.push_back(jsInstance);
-        jsInstance->Run();
+        std::vector<std::string> sv =  programOptions["run"].as<std::vector<std::string> >();
+        for(std::vector<std::string>::iterator i = sv.begin(); i != sv.end(); ++i)
+        {
+            JavascriptInstance *jsInstance = new JavascriptInstance(i->c_str(), this);
+            PrepareScriptInstance(jsInstance);
+            startupScripts_.push_back(jsInstance);
+            jsInstance->Run();
+        }
     }
-
 }
 
 void JavascriptModule::Uninitialize()
 {
     UnloadStartupScripts();
+#ifndef QT_NO_SCRIPTTOOLS
+	if (!GetFramework()->IsHeadless() && !GetFramework()->IsEditionless())
+	{
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Javascript");
+		if (!debugger)
+			settings.setValue("debugging", QVariant(false));
+		else
+		{
+			settings.setValue("debugging", QVariant(true));
+			if (debuggerAttachedEngine && (debuggerAttachedEngineEvaluating || debuggerAttachedEngine->isEvaluating()))
+			{
+				debuggerAttachedEngine->abortEvaluation();
+				debuggerAttachedEngine = 0;
+			}
+			if (debuggerWindow)
+			{
+				//On exit, UiModule could have been uninitialized before.
+				/*UiServiceInterface* uiservice = GetFramework()->UiService();
+				if (uiservice)
+				{
+					uiservice->RemoveWidgetFromMenu(debuggerWindow);
+					uiservice->RemoveWidgetFromScene(debuggerWindow);
+				}
+                */
+                framework_->Ui()->RemoveWidgetFromWindow(debuggerWindow);
+				debuggerWindow = 0;//It is removed with debugger
+			}
+
+			debugger->detach();
+			debugger->deleteLater();
+			debugger = 0;
+		}
+	}
+#endif
 }
 
 void JavascriptModule::Update(f64 frametime)
@@ -115,31 +193,30 @@ void JavascriptModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-
-Console::CommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
 {
     if (params.size() != 1)
-        return Console::ResultFailure("Usage: JsExec(print 1 + 1)");
+        return ConsoleResultFailure("Usage: JsExec(print 1 + 1)");
 
     JavascriptModule::RunString(QString::fromStdString(params[0]));
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
 {
     if (params.size() != 1)
-        return Console::ResultFailure("Usage: JsLoad(myfile.js)");
+        return ConsoleResultFailure("Usage: JsLoad(myfile.js)");
 
     JavascriptModule::RunScript(QString::fromStdString(params[0]));
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult JavascriptModule::ConsoleReloadScripts(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleReloadScripts(const StringVector &params)
 {
     LoadStartupScripts();
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 JavascriptModule *JavascriptModule::GetInstance()
@@ -156,21 +233,48 @@ void JavascriptModule::RunString(const QString &codestr, const QVariantMap &cont
         i.next();
         engine->globalObject().setProperty(i.key(), engine->newQObject(i.value().value<QObject*>()));
     }
+#ifndef QT_NO_SCRIPTTOOLS
+	bool attachedToDebugger = attachToDebugger(engine);
+	if(attachedToDebugger)
+	{
+		setAttachedEngineEvaluating(true);
+	}
+#endif
 
-    engine->evaluate(codestr);
+	engine->evaluate(codestr);
+
+#ifndef QT_NO_SCRIPTTOOLS
+	if(attachedToDebugger)
+		setAttachedEngineEvaluating(false);
+#endif
+    
 }
 
 void JavascriptModule::RunScript(const QString &scriptFileName)
 {
     QFile scriptFile(scriptFileName);
     scriptFile.open(QIODevice::ReadOnly);
-    engine->evaluate(scriptFile.readAll(), scriptFileName);
+#ifndef QT_NO_SCRIPTTOOLS
+	bool attachedToDebugger = attachToDebugger(engine);
+	if(attachedToDebugger)
+	{
+		setAttachedEngineEvaluating(true);
+	}
+#endif
+
+	engine->evaluate(scriptFile.readAll(), scriptFileName);
+
+#ifndef QT_NO_SCRIPTTOOLS
+	if(attachedToDebugger)
+		setAttachedEngineEvaluating(false);
+#endif
+    
     scriptFile.close();
 }
 
 void JavascriptModule::SceneAdded(const QString &name)
 {
-    Scene::ScenePtr scene = GetFramework()->GetScene(name);
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetScene(name);
     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
             SLOT(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
@@ -200,7 +304,17 @@ void JavascriptModule::ScriptAssetChanged(ScriptAssetPtr newScript)
     if (newScript->Name().endsWith(".js") || scriptType == "js") // We're positively using QtScript.
     {
         JavascriptInstance *jsInstance = new JavascriptInstance(newScript, this);
-        jsInstance->SetOwnerComponent(sender->GetSharedPtr());
+        ComponentPtr comp;
+        try
+        {
+            comp = sender->shared_from_this();
+        } catch(...)
+        {
+            LogError("Couldn't update component name, cause parent entity was null.");
+            return;
+        }
+
+        jsInstance->SetOwnerComponent(comp);
         sender->SetScriptInstance(jsInstance);
 
         // Register all core APIs and names to this script engine.
@@ -296,7 +410,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     instance->RegisterService(framework_, "framework");
     instance->RegisterService(instance, "engine");
     
-    for(uint i = 0; i < properties.size(); ++i)
+    for(int i = 0; i < properties.size(); ++i)
         instance->RegisterService(framework_->property(properties[i]).value<QObject*>(), properties[i]);
 
     if (comp)
@@ -308,6 +422,106 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
 
     emit ScriptEngineCreated(instance->GetEngine());
 }
+#ifndef QT_NO_SCRIPTTOOLS
+void JavascriptModule::OnToggleDebugging(bool checked)
+{
+	if (!checked || debugger)
+	{
+		if (debuggerAttachedEngine && debuggerAttachedEngine->isEvaluating())
+		{
+			debuggerAction->setChecked(true);
+			return;
+		}
+
+		if (debuggerWindow)
+		{
+			//GetFramework()->UiService()->RemoveWidgetFromMenu(debuggerWindow);
+			//GetFramework()->UiService()->RemoveWidgetFromScene(debuggerWindow);
+            framework_->Ui()->RemoveWidgetFromWindow(debuggerWindow);
+			debuggerWindow = 0;//It is removed with debugger
+		}
+		if(debugger)
+		{
+			debugger->detach();
+			debugger->deleteLater();
+			debugger = 0;
+		}
+	}
+	if (checked)
+	{
+		debugger = new QScriptEngineDebugger;
+		if (debugger)
+		{
+			connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
+            debuggerWindow = framework_->Ui()->AddWidgetToWindow((QWidget*) debugger->standardWindow(), Qt::Tool);
+            QAction* showDebugger = framework_->Ui()->MainWindow()->AddMenuAction("&Scripts", "Show Debugger");
+            connect(showDebugger, SIGNAL(triggered()), debuggerWindow, SLOT(toggleVisibility()));
+		}
+	}
+
+}
+
+void JavascriptModule::setAttachedEngineEvaluating(bool evaluating)
+{
+	debuggerAttachedEngineEvaluating = evaluating;
+	if (evaluating)
+	{
+		if (debuggerAction)
+			debuggerAction->setEnabled(false);
+	}
+	else
+	{
+		if (debuggerAction && debugger && debugger->state() == QScriptEngineDebugger::RunningState)
+			debuggerAction->setEnabled(true);
+	}
+}
+
+void JavascriptModule::OnEvaluationSuspended(void)
+{
+	if (debuggerAction)
+		debuggerAction->setEnabled(false);
+
+	if (debuggerWindow)
+	{
+		debuggerWindow->setEnabled(true);
+        debuggerWindow->show();
+	}
+}
+
+void JavascriptModule::OnEvaluationResumed(void)
+{
+	//Wait for enabling debuggerAction until the scriptengine has been detached
+	if (debuggerAction && !debuggerAttachedEngineEvaluating)
+		debuggerAction->setEnabled(true);
+
+	//Disable automatic hiding of debugger
+	//if (debuggerWindow)
+	//	GetFramework()->UiService()->HideWidget(debuggerWindow);
+}
+
+bool JavascriptModule::attachToDebugger(QScriptEngine* scriptEngine)
+{
+	if(!debuggerAttachedEngineEvaluating && debugger)
+	{
+		debugger->detach();
+		debugger->attachTo(scriptEngine);
+		debuggerAttachedEngine = scriptEngine;
+		return true;
+	}
+	return false;
+}
+
+void JavascriptModule::detachFromDebugger(QScriptEngine* scriptEngine)
+{
+	if (debuggerAttachedEngine == scriptEngine)
+	{
+		debugger->detach();
+		debuggerAttachedEngine = 0;
+	}
+}
+#endif
+
+
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
 {

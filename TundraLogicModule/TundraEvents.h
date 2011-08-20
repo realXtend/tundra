@@ -21,6 +21,9 @@ namespace Events
     
     //! Tundra connection or login failed. No eventdata structure.
     static const event_id_t EVENT_TUNDRA_LOGIN_FAILED = 0x04;
+
+    //! Tundra connection or login failed. No eventdata structure.
+    static const event_id_t EVENT_TUNDRA_LOGIN_FAILED_NOPERMISSION = 0x05;
     
     class TundraLoginEventData : public IEventData
     {
@@ -29,6 +32,7 @@ namespace Events
         unsigned short port_;
         std::string username_;
         std::string password_;
+        std::string protocol_;
     };
     
     class TundraConnectedEventData : public IEventData

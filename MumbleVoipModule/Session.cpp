@@ -12,6 +12,7 @@
 #include "ModuleManager.h"    // for avatar info
 #include "WorldLogicInterface.h" // for avatar position
 #include "Entity.h" // for avatar position
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "User.h"
 #include "Channel.h"
@@ -56,6 +57,7 @@ namespace MumbleVoip
         emit StateChanged(state_);
         /// @todo Check that closed connection can be reopened
         SAFE_DELETE(connection_);
+
         connection_ = new MumbleLib::Connection(server_info, 200);
         if (connection_->GetState() == MumbleLib::Connection::STATE_ERROR)
         {
@@ -66,19 +68,23 @@ namespace MumbleVoip
         current_mumble_channel_ = server_info.channel_id;
         server_address_ = server_info.server;
 
-        connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
-        connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
-        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()));
+        connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)), Qt::UniqueConnection);
+        connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()), Qt::UniqueConnection);
+        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()), Qt::UniqueConnection);
 
         connection_->Join(server_info.channel_id);
-        connection_->SendAudio(sending_audio_);
         connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
-        connection_->SendPosition(true); 
+        connection_->SendPosition(false); // No sensible way to get avatars position in Tundra atm, see the func for more.
         connection_->SendAudio(audio_sending_enabled_);
         connection_->ReceiveAudio(audio_receiving_enabled_);
         
-        EnableAudioReceiving();
-        if (settings_->GetDefaultVoiceMode() == Settings::ContinuousTransmission)
+        // Set the current settings as the mumble config/settings widget might not be used.
+        // Was used in OS Naali.
+        if (sending_audio_)
+            EnableAudioReceiving();
+        else
+            DisableAudioReceiving();
+        if (audio_sending_enabled_)
             EnableAudioSending();
         else
             DisableAudioSending();
@@ -139,21 +145,20 @@ namespace MumbleVoip
 
     void Session::EnableAudioSending()
     {
+        if (!framework_->Audio())
+            return;
+
         if (connection_)
             connection_->SendAudio(true);
         bool audio_sending_was_enabled = audio_sending_enabled_;
         audio_sending_enabled_ = true;
         if (!audio_sending_was_enabled)
         {
-            boost::shared_ptr<ISoundService> sound_service = SoundService();
-            if (sound_service.get())
-            {
-                int frequency = SAMPLE_RATE;
-                bool sixteenbit = true;
-                bool stereo = false;
-                int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
-                sound_service->StartRecording(QString::fromStdString(recording_device_), frequency, sixteenbit, stereo, buffer_size);
-            }
+            int frequency = SAMPLE_RATE;
+            bool sixteenbit = true;
+            bool stereo = false;
+            int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
+            framework_->Audio()->StartRecording(QString::fromStdString(recording_device_), frequency, sixteenbit, stereo, buffer_size);
 
             emit StartSendingAudio();
         }
@@ -161,15 +166,16 @@ namespace MumbleVoip
 
     void Session::DisableAudioSending()
     {
+        if (!framework_->Audio())
+            return;
+
         if (connection_)
             connection_->SendAudio(false);
         bool audio_sending_was_enabled = audio_sending_enabled_;
         audio_sending_enabled_ = false;
         if (audio_sending_was_enabled)
         {
-            boost::shared_ptr<ISoundService> sound_service = SoundService();
-            if (sound_service.get())
-                sound_service->StopRecording();
+            framework_->Audio()->StopRecording();
 
             emit StopSendingAudio();
         }
@@ -215,6 +221,32 @@ namespace MumbleVoip
         return list;
     }
 
+    QStringList Session::GetParticipantsNames() const
+    {
+        QStringList names;
+        QList<Communications::InWorldVoice::ParticipantInterface*> list;
+        for(ParticipantList::const_iterator i = participants_.begin(); i != participants_.end(); ++i)
+        {
+            Participant* p = *i;
+            names << p->Name();
+        }
+        return names;
+    }
+
+    void Session::MuteParticipantByName(QString name, bool mute) const
+    {
+        QList<Communications::InWorldVoice::ParticipantInterface*> list;
+        for(ParticipantList::const_iterator i = participants_.begin(); i != participants_.end(); ++i)
+        {
+            Participant* p = *i;
+            if (p->Name() == name)
+            {
+                p->Mute(mute);
+            }
+        }
+    }
+
+
     void Session::Update(f64 frametime)
     {
         PlaybackReceivedAudio();
@@ -233,23 +265,28 @@ namespace MumbleVoip
         disconnect(user, SIGNAL(ChangedChannel(MumbleLib::User*)),this, SLOT(CheckChannel(MumbleLib::User*)));    
         connect(user, SIGNAL(ChangedChannel(MumbleLib::User*)), SLOT(CheckChannel(MumbleLib::User*)));
 
-        if (user->Name() == OwnAvatarId())
-        {
-            self_user_ = user;
-            return; 
-        }
-
-        if (user->Channel()->FullName() != current_mumble_channel_)
+        if (user->GetChannel()->FullName() != current_mumble_channel_)
         {
             other_channel_users_.append(user);
             return; 
         }
 
-        QString uuid = user->Name();
-        QString name = GetAvatarFullName(uuid);
-        if (name.size() == 0)
-            name = QString("%0 (no avatar)").arg(user->Name());
-        Participant* p = new Participant(name, user);
+        bool avatar_found = false;
+        QString uuid = user->Comment();
+        QString avatar_name = GetAvatarFullName(uuid);
+
+        if (avatar_name.size() > 0)
+            avatar_found = true;
+
+        if (avatar_found)
+            avatar_name = user->Name();
+        else
+            avatar_name = QString("%0 (no avatar)").arg(user->Name());
+        avatar_name.replace('_', ' ');        
+
+        Participant* p = new Participant(avatar_name, user);
+        if (avatar_found)
+            p->SetAvatarUUID(uuid);
         participants_.append(p);
         connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
         connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()) );
@@ -263,7 +300,7 @@ namespace MumbleVoip
         if (user->IsLeft())
             return;
 
-        if (user->Channel()->FullName() == current_mumble_channel_)
+        if (user->GetChannel()->FullName() == current_mumble_channel_)
         {
             foreach(MumbleLib::User* u, other_channel_users_)
             {
@@ -298,22 +335,20 @@ namespace MumbleVoip
                 emit ParticipantLeft(p);
                 continue;
             }
-            QString own_avatar_id_ = OwnAvatarId();
-            if (p->AvatarUUID() == own_avatar_id_)
+            if (p->AvatarUUID().length() == 0)
             {
-                // for some reason we have own avatar as participant here!
-                participants_.removeOne(p);
-                other_channel_users_.append(p->UserPtr());
-                emit ParticipantLeft(p);
-                continue;
-            }
-            if (p->AvatarUUID() == p->Name().left(p->AvatarUUID().size()) || p->AvatarUUID().length() == 0)
-            {
-                // For some reason do not have real name for this participant here!
-                QString full_name = GetAvatarFullName(p->AvatarUUID());
-                if (full_name.length() > 0)
-                    p->SetName( full_name );
-                continue;
+                QString uuid = p->UserPtr()->Comment();
+                if (uuid.length() > 0)
+                {
+                    QString avatar_name = GetAvatarFullName(uuid);
+                    if (avatar_name.size() > 0)
+                    {
+                        p->SetAvatarUUID(uuid);
+                        QString avatar_name = p->UserPtr()->Name();
+                        avatar_name.replace('_', ' ');        
+                        p->SetName(avatar_name);
+                    }
+                }
             }
         }
     }
@@ -374,6 +409,10 @@ namespace MumbleVoip
 
     bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
     {
+        /// \note Avatar position sending is atm disabled in tundra.
+        /*! \todo Fix this for tundra. Although is there a reasonable way to do it? Maybe a script could pass the EC_Placeable*we need to follow here.
+                  as it knows better what is the app spesific avatar entity. For tundra its kind of hard to determine it from here. */
+
         using namespace Foundation;
         boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
         if (!world_logic)
@@ -414,22 +453,23 @@ namespace MumbleVoip
 
     QString Session::GetAvatarFullName(QString uuid) const
     {
-        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-        if (current_scene.get())
+        Scene::ScenePtr current_scene = framework_->Scene()->GetDefaultScene();
+        if (current_scene)
         {
             for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
             {
                 Scene::Entity &entity = *iter->second;
                 EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
-                if (presence_component)
-                    if (presence_component->agentId.ToQString() == uuid)
-                    {
-                        QString name = ""; 
-                        name = presence_component->GetFullName();
-                        if (name.length() == 0)
-                            name = presence_component->getfirstName();
-                        return name;
-                    }
+                if (!presence_component)
+                    continue;
+                if (presence_component->agentId.ToQString() == uuid)
+                {
+                    QString name = ""; 
+                    name = presence_component->GetFullName();
+                    if (name.length() == 0)
+                        name = presence_component->getfirstName();
+                    return name;
+                }
             }
         }
         return "";
@@ -437,6 +477,9 @@ namespace MumbleVoip
 
     void Session::SendRecordedAudio()
     {
+        if (!framework_->Audio())
+            return;
+
         if (!connection_)
             return;
 
@@ -444,18 +487,11 @@ namespace MumbleVoip
         Vector3df avatar_direction;
         GetOwnAvatarPosition(avatar_position, avatar_direction);
 
-        boost::shared_ptr<ISoundService> sound_service = SoundService();
-        if (!sound_service)
-        {
-            MumbleVoipModule::LogDebug("Cannot record audio: Soundservice cannot be found.");
-            return;
-        }
-
-        while (sound_service->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
+        while (framework_->Audio()->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
         {
             int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
             PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
-            int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
+            int bytes = framework_->Audio()->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
             UNREFERENCED_PARAM(bytes);
             ApplyMicrophoneLevel(frame);
             UpdateSpeakerActivity(frame);
@@ -509,68 +545,49 @@ namespace MumbleVoip
 
     void Session::PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame)
     {
-        boost::shared_ptr<ISoundService> sound_service = SoundService();
-        if (!sound_service.get())
-            return;    
+        if (!framework_->Audio())
+            return;
 
-        ISoundService::SoundBuffer sound_buffer;
+        SoundBuffer sound_buffer;
         
-        sound_buffer.data_.resize(frame->DataSize());
-        memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->DataSize());
+        sound_buffer.data.resize(frame->DataSize());
+        memcpy(&sound_buffer.data[0], frame->DataPtr(), frame->DataSize());
 
-        sound_buffer.frequency_ = frame->SampleRate();
+        sound_buffer.frequency = frame->SampleRate();
         if (frame->SampleWidth() == 16)
-            sound_buffer.sixteenbit_ = true;
+            sound_buffer.is16Bit = true;
         else
-            sound_buffer.sixteenbit_ = false;
+            sound_buffer.is16Bit = false;
         
         if (frame->Channels() == 2)
-            sound_buffer.stereo_ = true;
+            sound_buffer.stereo = true;
         else
-            sound_buffer.stereo_ = false;
+            sound_buffer.stereo = false;
 
         if (!user)
         {
             const int source_id = 0;
             if (audio_playback_channels_.contains(source_id))
-                sound_service->PlaySoundBuffer(sound_buffer,  ISoundService::Voice, audio_playback_channels_[0]);
+                framework_->Audio()->PlaySoundBuffer(sound_buffer, SoundChannel::Voice, audio_playback_channels_[0]);
             else
-                audio_playback_channels_[0] = sound_service->PlaySoundBuffer(sound_buffer,  ISoundService::Voice, 0);
+                audio_playback_channels_[0] = framework_->Audio()->PlaySoundBuffer(sound_buffer, SoundChannel::Voice);
         }
         else
         {
             QMutexLocker user_locker(user);
             if (audio_playback_channels_.contains(user->Session()))
                 if (user->PositionKnown() && settings_->GetPositionalAudioEnabled())
-                    sound_service->PlaySoundBuffer3D(sound_buffer, ISoundService::Voice, user->Position(), audio_playback_channels_[user->Session()]);
+                    framework_->Audio()->PlaySoundBuffer3D(sound_buffer, SoundChannel::Voice, user->Position(), audio_playback_channels_[user->Session()]);
                 else
-                    sound_service->PlaySoundBuffer(sound_buffer,  ISoundService::Voice, audio_playback_channels_[user->Session()]);
+                    framework_->Audio()->PlaySoundBuffer(sound_buffer,  SoundChannel::Voice, audio_playback_channels_[user->Session()]);
             else
                 if (user->PositionKnown() && settings_->GetPositionalAudioEnabled())
-                    audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer3D(sound_buffer, ISoundService::Voice, user->Position(), 0);
+                    audio_playback_channels_[user->Session()] = framework_->Audio()->PlaySoundBuffer3D(sound_buffer, SoundChannel::Voice, user->Position());
                 else
-                    audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer(sound_buffer,  ISoundService::Voice, 0);
+                    audio_playback_channels_[user->Session()] = framework_->Audio()->PlaySoundBuffer(sound_buffer,  SoundChannel::Voice);
         }
 
         delete frame;
-    }
-
-    boost::shared_ptr<ISoundService> Session::SoundService()
-    {
-        if (!framework_)
-            return boost::shared_ptr<ISoundService>();
-
-        ServiceManagerPtr service_manager = framework_->GetServiceManager();
-
-        if (!service_manager.get())
-            return boost::shared_ptr<ISoundService>();
-
-        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
-
-        if (!sound_service.get())
-            return boost::shared_ptr<ISoundService>();
-
-        return sound_service;
     }
 
     QList<QString> Session::Statistics()
@@ -683,6 +700,18 @@ namespace MumbleVoip
     {
         channels_[name] = server_info;
         emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
+    }
+
+    void Session::AddChannel(QString name, QString username, QString server, QString password, QString version, QString channelIdBase)
+    {
+        ServerInfo server_info;
+        server_info.version = version;
+        server_info.user_name = username;
+        server_info.server = server;
+        server_info.password = password;
+        server_info.channel_name = name;
+        server_info.channel_id = channelIdBase + name;
+        AddChannel(name, server_info);
     }
 
     void Session::RemoveChannel(QString name)

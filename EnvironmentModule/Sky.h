@@ -14,14 +14,6 @@
 
 #include <QObject>
 
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
-}
-
 namespace ProtocolUtilities
 {
     class NetworkEventInboundData;
@@ -65,7 +57,7 @@ namespace Environment
      
         /// Called whenever a texture is loaded so it can be attached to the sky.
         /// @param Resource pointer to the texture.
-        void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
+//        void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
 
         /// @return The sky type that is in use.
         SkyType GetSkyType() const;
@@ -114,7 +106,7 @@ namespace Environment
         /// Whether sky is enabled by this component.
         bool skyEnabled_;
 
-        QList<request_tag_t > lstRequestTags_;
+//        QList<request_tag_t > lstRequestTags_;
         QMap<int, int >  requestMap_;
     };
 }

@@ -15,6 +15,7 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "OgreConversionUtils.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 
 #include <QFile>
@@ -346,7 +347,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     cameraFarClip_ = renderer->GetViewDistance();
     
     // Go through all water components.
-    // Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    // Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     // EntityList lst = scene->GetEntitiesWithComponent(EC_WaterPlane::TypeNameStatic());
    /*
     if ( sceneManager->hasEntity("WaterEntity") )
@@ -483,7 +484,7 @@ void EC_OgreEnvironment::CreateSunlight()
     sunlight_ = sceneManager->createLight(renderer->GetUniqueObjectName("EC_OgreEnviroment_Sunlight"));
     sunlight_->setType(Ogre::Light::LT_DIRECTIONAL);
     ///\todo Read parameters from config file?
-    sunlight_->setDiffuseColour(0.93f, 1, 0.13f);
+    sunlight_->setDiffuseColour(1, 1, 1);
     sunlight_->setDirection(-1, -1, -1);
     sunlight_->setCastShadows(true);
     SetAmbientLightColor(Color(0.5, 0.5, 0.5, 1));

@@ -5,6 +5,10 @@
  *  @brief  RexUUID is a 16-byte identifier for resources in a virtual world.
 */
 
+#include "DebugOperatorNew.h"
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "RexUUID.h"
 
 #include <iomanip>

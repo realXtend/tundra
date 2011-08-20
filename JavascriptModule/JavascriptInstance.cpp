@@ -7,35 +7,44 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "JavascriptInstance.h"
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
-#include "NaaliCoreTypeDefines.h"
+#include "ScriptCoreTypeDefines.h"
 #include "EC_Script.h"
+#include "ScriptAsset.h"
+#include "IModule.h"
+#include "AssetAPI.h"
+#include "IAssetProvider.h" //to check if the code was loaded from a local or remote storage
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 
 #include <QFile>
+#include <sstream>
+
+//#ifndef QT_NO_SCRIPTTOOLS
+//#include <QScriptEngineDebugger>
+//#endif
 
 #include "MemoryLeakCheck.h"
 
-JavascriptInstance::JavascriptInstance(const QString &fileName, JavascriptModule *module)
-:engine_(0),
-sourceFile(fileName),
-module_(module),
-evaluated(false)
+JavascriptInstance::JavascriptInstance(const QString &fileName, JavascriptModule *module) :
+    engine_(0),
+    sourceFile(fileName),
+    module_(module),
+    evaluated(false)
 {
     CreateEngine();
     Load();
 }
 
-
-JavascriptInstance::JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module)
-:engine_(0),
-scriptRef_(scriptRef),
-module_(module),
-evaluated(false)
+JavascriptInstance::JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module) :
+    engine_(0),
+    scriptRef_(scriptRef),
+    module_(module),
+    evaluated(false)
 {
     CreateEngine();
     Load();
@@ -54,8 +63,22 @@ void JavascriptInstance::Load()
     // Can't specify both a file source and an Asset API source.
     assert(sourceFile.isEmpty() || scriptRef_.get() == 0);
 
-    if (sourceFile.length() > 0)
+    // Determine based on code origin whether it can be trusted with system access or not
+    if (scriptRef_.get()) 
+    {
+        trusted_ = false;
+        AssetProviderPtr provider = scriptRef_.get()->GetAssetProvider();
+        if (provider.get())     
+            if (provider->Name() == "Local")
+                trusted_ = true;
+    }
+    
+    // Local file: trusted
+    if (!sourceFile.isEmpty())
+    {
         program_ = LoadScript(sourceFile);
+        trusted_ = true; //this is a local file directly, right?
+    }
 
     // Do we even have a script to execute?
     if (program_.isEmpty() && (!scriptRef_.get() || scriptRef_->scriptContent.isEmpty()))
@@ -76,11 +99,25 @@ void JavascriptInstance::Load()
         // Delete our loaded script content (if any exists).
         program_ == "";
     }
+
+    // Set the exposed currently loaded script name. 
+    // This is either IAsset::Name() or a absolute local file path.
+    currentScriptName = scriptSourceFilename;
 }
 
 QString JavascriptInstance::LoadScript(const QString &fileName)
 {
     QString filename = fileName.trimmed();
+
+    // First check if the include was supposed to go through the Asset API.
+    if (module_)
+    {
+        ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(module_->GetFramework()->Asset()->GetAsset(fileName));
+        if (asset)
+            return asset->scriptContent;
+    }
+
+    // Otherwise, treat fileName as a local file to load up.
 
     QFile scriptFile(filename);
     if (!scriptFile.open(QIODevice::ReadOnly))
@@ -141,9 +178,39 @@ void JavascriptInstance::Run()
     QString &scriptContent = (scriptRef_.get() ? scriptRef_->scriptContent : program_);
 
     included_files_.clear();
+
+#ifndef QT_NO_SCRIPTTOOLS
+	bool attachedToDebugger = false;
+	if (!engine_->isEvaluating())
+	{
+		attachedToDebugger = module_->attachToDebugger(engine_);
+		if (attachedToDebugger)
+			module_->setAttachedEngineEvaluating(true);
+	}
+#endif
+
     QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
+
+#ifndef QT_NO_SCRIPTTOOLS
+	if (attachedToDebugger)
+	{
+		module_->setAttachedEngineEvaluating(false);
+	}
+#endif
+
     if (engine_->hasUncaughtException())
-        LogError(result.toString().toStdString());
+    {
+        LogError("In run/evaluate: " + result.toString().toStdString());
+        QStringList trace = engine_->uncaughtExceptionBacktrace();
+        QStringList::const_iterator it;
+        for (it = trace.constBegin(); it != trace.constEnd(); ++it)
+            LogError((*it).toLocal8Bit().constData());
+
+        std::stringstream ss;
+        int linenum = engine_->uncaughtExceptionLineNumber();
+        ss << linenum;
+        LogError(ss.str());
+    }
 
     evaluated = true;
 }
@@ -221,9 +288,47 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
         return;
     }
 
+    QStringList qt_extension_whitelist;
+    QStringList qt_class_blacklist;
+
+    /// Allowed extension imports
+    qt_extension_whitelist << "qt.core" << "qt.gui" << "qt.xml" << "qt.xmlpatterns" << "qt.opengl" << "qt.webkit";
+
+    /// qt.core and qt.gui: Classes that may be harmful to your system from untrusted scripts
+    qt_class_blacklist << "QLibrary" << "QPluginLoader" << "QProcess"               // process and library access
+                       << "QFile" << "QDir" << "QFileSystemModel" << "QDirModel"    // file system access
+                       << "QFileDialog" << "QFileSystemWatcher" << "QFileInfo" 
+                       << "QFileOpenEvent" << "QFileSystemModel"
+                       << "QClipboard" << "QDesktopServices";                       // "system" access
+    
+    /// qt.webkit: Initial blacklist, enabling some of these can be discussed. 
+    /// Availble classes: QWebView, QGraphicsWebView, QWebPage, QWebFrame
+    qt_class_blacklist << "QWebDatabase" << "QWebElement" << "QWebElementCollection" << "QWebHistory" << "QWebHistoryInterface" << "QWebHistoryItem"
+                       << "QWebHitTestResult" << "QWebInspector" << "QWebPluginFactory" << "QWebSecurityOrigin" << "QWebSettings"; 
+
+    if (!trusted_ && !qt_extension_whitelist.contains(scriptExtensionName, Qt::CaseInsensitive))
+    {
+        LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance: " + scriptExtensionName.toStdString());
+        return;
+    }
+
     QScriptValue success = engine_->importExtension(scriptExtensionName);
     if (!success.isUndefined()) // Yes, importExtension returns undefinedValue if the import succeeds. http://doc.qt.nokia.com/4.7/qscriptengine.html#importExtension
         LogWarning(std::string("JavascriptInstance::ImportExtension: Failed to load ") + scriptExtensionName.toStdString() + " plugin for QtScript!");
+    
+    if (!trusted_)
+    {
+        QScriptValue exposed;
+        foreach (const QString &blacktype, qt_class_blacklist)
+        {
+            exposed = engine_->globalObject().property(blacktype);
+            if (exposed.isValid())
+            {
+                engine_->globalObject().setProperty(blacktype, QScriptValue()); //passing an invalid val removes the property, http://doc.qt.nokia.com/4.6/qscriptvalue.html#setProperty
+                //LogInfo("JavascriptInstance::ImportExtension: removed a type from the untrusted context: " + blacktype.toStdString());
+            }
+        }
+    }
 }
 
 void JavascriptInstance::CreateEngine()
@@ -232,9 +337,14 @@ void JavascriptInstance::CreateEngine()
         DeleteEngine();
     engine_ = new QScriptEngine;
     connect(engine_, SIGNAL(signalHandlerException(const QScriptValue &)), SLOT(OnSignalHandlerException(const QScriptValue &)));
+//#ifndef QT_NO_SCRIPTTOOLS
+//    debugger_ = new QScriptEngineDebugger();
+//    debugger.attachTo(engine_);
+////  debugger_->action(QScriptEngineDebugger::InterruptAction)->trigger();
+//#endif
 
     ExposeQtMetaTypes(engine_);
-    ExposeNaaliCoreTypes(engine_);
+    ExposeCoreTypes(engine_);
     ExposeCoreApiMetaTypes(engine_);
 
     EC_Script *ec = dynamic_cast<EC_Script *>(owner_.lock().get());
@@ -257,11 +367,25 @@ void JavascriptInstance::DeleteEngine()
     QScriptValue destructor = engine_->globalObject().property("OnScriptDestroyed");
     if (!destructor.isUndefined())
         destructor.call();
+#ifndef QT_NO_SCRIPTTOOLS
+	module_->detachFromDebugger(engine_);
+#endif
     SAFE_DELETE(engine_);
+    //SAFE_DELETE(debugger_);
 }
 
 void JavascriptInstance::OnSignalHandlerException(const QScriptValue& exception)
 {
     LogError(exception.toString().toStdString());
+
+    QStringList trace = engine_->uncaughtExceptionBacktrace();
+    QStringList::const_iterator it;
+    for (it = trace.constBegin(); it != trace.constEnd(); ++it)
+        LogError((*it).toStdString());
+
+    std::stringstream ss;
+    int linenum = engine_->uncaughtExceptionLineNumber();
+    ss << linenum;
+    LogError(ss.str());
 }
 

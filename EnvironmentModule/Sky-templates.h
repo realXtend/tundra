@@ -4,12 +4,14 @@
 # error "Never use <Sky-templates.h> directly; include <Sky.h> instead."
 #endif
 
+#include "SceneAPI.h"
+
 namespace Environment
 {
 
     template <typename T> T* Sky::GetEnviromentSky()
         {
-            Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+            Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
             Scene::Entity* entity = active_scene->GetEntityByName("SkyEnvironment").get();
     
             if (entity != 0 )
@@ -40,7 +42,7 @@ namespace Environment
         template <typename T> void Sky::CreateSky()
         {
 
-           Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+           Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
            Scene::Entity* entity = active_scene->GetEntityByName("SkyEnvironment").get();
            
            // First check that does there exist diffrent skies allready?
@@ -74,7 +76,7 @@ namespace Environment
             else 
                 return;
 
-           Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+           Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
            Scene::Entity* entity = active_scene->GetEntityByName("SkyEnvironment").get();
            if (entity == 0)
            {

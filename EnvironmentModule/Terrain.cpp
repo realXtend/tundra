@@ -6,6 +6,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 
 #include "Terrain.h"
 #include "TerrainDecoder.h"
@@ -13,7 +15,6 @@
 
 #include "EC_Placeable.h"
 #include "Renderer.h"
-#include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
 #include "OgreConversionUtils.h"
 #include "BitStream.h"
@@ -22,6 +23,7 @@
 #include "ServiceManager.h"
 #include "RexTypes.h"
 #include "NetworkMessages/NetInMessage.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 
 #include <OgreManualObject.h>
@@ -81,8 +83,8 @@ namespace Environment
         DebugDumpOgreTextureInfo(textureName);
 
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
-        assert(terrainMaterial.get());
-        if(terrainMaterial.get())
+        assert(terrainMaterial);
+        if(terrainMaterial)
         {
             OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
             emit TerrainTextureChanged();
@@ -407,14 +409,20 @@ namespace Environment
 */
     void Terrain::RequestTerrainTextures()
     {
+        ///\todo Regression. Use the new Asset API here instead. -jj.
+        /*
         OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (renderer)
             for(int i = 0; i < num_terrain_textures; ++i)
                 terrain_texture_requests_[i] = renderer->RequestResource(terrain_textures_[i], OgreRenderer::OgreTextureResource::GetTypeStatic());
+*/
     }
 
+        /*
     void Terrain::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     {
+                ///\todo Regression. Use the new Asset API here instead. -jj.
+
         assert(tex);
         for(int i = 0; i < num_terrain_textures; ++i)
         {
@@ -432,17 +440,18 @@ namespace Environment
                 }
                 switch(i)
                 {
-                case 0: terrainComponent->texture0.Set(AssetReference(tex->id_.c_str()/*, "OgreTexture"*/), AttributeChange::LocalOnly); break;
-                case 1: terrainComponent->texture1.Set(AssetReference(tex->id_.c_str()/*, "OgreTexture"*/), AttributeChange::LocalOnly); break;
-                case 2: terrainComponent->texture2.Set(AssetReference(tex->id_.c_str()/*, "OgreTexture"*/), AttributeChange::LocalOnly); break;
-                case 3: terrainComponent->texture3.Set(AssetReference(tex->id_.c_str()/*, "OgreTexture"*/), AttributeChange::LocalOnly); break;
-                case 4: terrainComponent->texture4.Set(AssetReference(tex->id_.c_str()/*, "OgreTexture"*/), AttributeChange::LocalOnly); break;
+                case 0: terrainComponent->texture0.Set(AssetReference(tex->id_.c_str()), AttributeChange::LocalOnly); break;
+                case 1: terrainComponent->texture1.Set(AssetReference(tex->id_.c_str()), AttributeChange::LocalOnly); break;
+                case 2: terrainComponent->texture2.Set(AssetReference(tex->id_.c_str()), AttributeChange::LocalOnly); break;
+                case 3: terrainComponent->texture3.Set(AssetReference(tex->id_.c_str()), AttributeChange::LocalOnly); break;
+                case 4: terrainComponent->texture4.Set(AssetReference(tex->id_.c_str()), AttributeChange::LocalOnly); break;
                 }
 
 //                SetTerrainMaterialTexture(index, tex->id_.c_str());
             }
         }
     }
+        */
 
     const RexTypes::RexAssetID &Terrain::GetTerrainTextureID(int index) const
     {
@@ -469,7 +478,7 @@ namespace Environment
             terrainComponent->xPatches.Set(16, AttributeChange::LocalOnly);
             terrainComponent->yPatches.Set(16, AttributeChange::LocalOnly);
         }
-        terrainComponent->material.Set(AssetReference("ogre://Rex/TerrainPCF"/*, "OgreMaterial"*/), AttributeChange::LocalOnly);
+        terrainComponent->material.Set(AssetReference("ogre://Rex/TerrainPCF"), AttributeChange::LocalOnly);
 
 //        terrainComponent->OnMaterialChanged();
     }
@@ -616,7 +625,7 @@ namespace Environment
 
     void Terrain::FindCurrentlyActiveTerrain()
     {
-        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->Scene()->GetDefaultScene();
         for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
         {
             Scene::Entity &entity = *iter->second;
@@ -634,7 +643,7 @@ namespace Environment
     EC_Terrain *Terrain::GetTerrainComponent()
     {
         Scene::EntityPtr entity = GetTerrainEntity().lock();
-        if (!entity.get())
+        if (!entity)
             return 0;
         return entity->GetComponent<EC_Terrain>().get();
     }

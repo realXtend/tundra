@@ -565,7 +565,7 @@ namespace ProtocolUtilities
     {
         PROFILE(NetMessageManager_SendPendingACKs);
         // If we aren't even connected (or not connected anymore), clear any old pending ACKs and return.
-        if (!connection.get())
+        if (!connection)
         {
             pendingACKs.clear();
             return;

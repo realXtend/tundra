@@ -33,6 +33,8 @@ namespace PythonScript
             void setw(Quaternion* self, float value);
             
             float dotProduct(Quaternion* self, const Quaternion& other);
+			Quaternion* product(Quaternion* self, const Quaternion& other);
+			Vector3df* product(Quaternion* self, const Vector3df& vec);
 
             void set(Quaternion* self, float x, float y, float z, float w);
             void set(Quaternion* self, float x, float y, float z);

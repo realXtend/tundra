@@ -10,50 +10,38 @@
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "EntityComponent/EC_FreeData.h"
-#include "EntityComponent/EC_AttachedSound.h"
 #include "Environment/Primitive.h"
 
+#include "SceneAPI.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
 #include "EC_OgreCustomObject.h"
-#include "EC_OgreLight.h"
-#include "EC_OgreParticleSystem.h"
-
-#include "OgreTextureResource.h"
-#include "OgreMaterialResource.h"
-#include "OgreMeshResource.h"
-#include "OgreParticleResource.h"
-#include "OgreSkeletonResource.h"
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "QuatUtils.h"
-
 #include "SceneEvents.h"
-#include "ResourceInterface.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "SceneManager.h"
-#include "AssetServiceInterface.h"
-#include "ISoundService.h"
+#include "AudioAPI.h"
 #include "GenericMessageUtils.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "WorldStream.h"
-
 #include "EC_NetworkPosition.h"
+#include "EC_OpenSimPrim.h"
+#include "IAttribute.h"
+#include "Entity.h"
+
 #ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
 #endif
-#include "EC_OpenSimPrim.h"
-
-#include "IAttribute.h"
 
 #include <OgreSceneNode.h>
 
 #include <QUrl>
 #include <QColor>
 #include <QDomDocument>
-
 
 #define SEND_EC_AS_BINARY
 
@@ -77,7 +65,7 @@ void Primitive::Update(f64 frametime)
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *created)
 {
     // Make sure scene exists
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -99,6 +87,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
         CheckPendingRexFreeData(entityid);
+        CheckPendingEcData(entityid);
         *created = true;
         return entity;
     }
@@ -118,7 +107,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
 
 Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -280,7 +269,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         rexlogicmodule_->HandleObjectParent(localid);
         if (was_created)
         {
-            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
             if (scene)
                 scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
         }
@@ -550,6 +539,8 @@ bool Primitive::HandleECGM_ECData(ProtocolUtilities::NetworkEventInboundData* da
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
     if (entity)
         HandleECData(entity->GetId(), &fulldata[0], fulldata.size());
+    else
+        pending_ecdata_[primuuid].push_back(fulldata);
 
     return false;
 }
@@ -586,7 +577,7 @@ void Primitive::HandleECData(entity_id_t entityid, const uint8_t* primdata, cons
     QDomDocument temp_doc;
     if (temp_doc.setContent(QByteArray::fromRawData(data.c_str(), data.size())))
     {
-        DeserializeECsFromFreeData(entity, temp_doc);
+        DeserializeECsFromFreeData(entity, temp_doc, false);
         Scene::Events::SceneEventData event_data(entity->GetId());
         EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_ECS_RECEIVED, &event_data);
@@ -597,7 +588,7 @@ void Primitive::HandleECRemove(entity_id_t entityid, StringVector params)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
 
-    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
+    Scene::Entity::ComponentVector all_components = entity->Components();
     for (uint i = 0; i < all_components.size(); ++i)
     {
         if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
@@ -640,6 +631,23 @@ void Primitive::CheckPendingRexFreeData(entity_id_t entityid)
     {
         HandleRexFreeData(entityid, i->second);
         pending_rexfreedata_.erase(i);
+    }
+}
+
+void Primitive::CheckPendingEcData(entity_id_t entityid)
+{
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity) return;
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+
+    RexEcData::iterator i = pending_ecdata_.find(prim->FullId);
+    if (i != pending_ecdata_.end())
+    {
+        for(int k=0; k< i->second.size(); k++)
+        {
+            HandleECData(entityid, &i->second[k][0], i->second[k].size());
+        }
+        pending_ecdata_.erase(i);
     }
 }
 
@@ -830,7 +838,7 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
     buffer.resize(4096);
     int idx = 0;
     bool send_asset_urls = false;
-
+    UNREFERENCED_PARAM(send_asset_urls);
     WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
     if (!conn)
         return;
@@ -846,6 +854,8 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
     WriteNullTerminatedStringToBytes(freedata, &buffer[0], idx);
 
     buffer.resize(idx);
+
+    //qDebug() << "BINARY MESSAGE MACRO DEFINED";
 
     conn->SendGenericMessageBinary("ECSync", strings, buffer);
 #else
@@ -1020,7 +1030,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return false;
 
@@ -1096,7 +1106,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
 {
     ///\todo Make this only discard mesh resource request tags.
     // Discard old request tags for this entity
-    DiscardRequestTags(entityid, prim_resource_request_tags_);
+//    DiscardRequestTags(entityid, prim_resource_request_tags_);
 
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
@@ -1128,6 +1138,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         const std::string& mesh_name = prim.MeshID;
         if ((!RexTypes::IsNull(mesh_name)) && (mesh.GetMeshName() != mesh_name))
         {
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+            /*
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                 GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (renderer)
@@ -1138,12 +1150,15 @@ void Primitive::HandleDrawType(entity_id_t entityid)
                 if (tag)
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
             }
+            */
         }
         
         // Load mesh skeleton if used/specified
         const std::string& skeleton_name = prim.AnimationPackageID;
         if ((!RexTypes::IsNull(skeleton_name)) && (mesh.GetSkeletonName() != skeleton_name))
         {
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+            /*
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                 GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (renderer)
@@ -1154,6 +1169,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
                 if (tag)
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Skeleton)] = entityid;
             }
+            */
         }
         
         
@@ -1210,6 +1226,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         }
     }
 
+/* Regression: Should convert to using the new Particle System asset, instead of the old resource. -jj.
     if (!RexTypes::IsNull(prim.ParticleScriptID))
     {
         // Create particle system component & attach, if does not yet exist
@@ -1248,6 +1265,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             entity->RemoveComponent(particleptr);
         }
     }
+*/
 }
 
 void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
@@ -1266,7 +1284,9 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
     if ((prim->Materials.size()) && (prim->Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(prim->Materials[0].asset_id)))
     {
         std::string matname = prim->Materials[0].asset_id;
-        
+
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
         // Request material if don't have it yet
         if (!renderer->GetResource(matname, OgreRenderer::OgreMaterialResource::GetTypeStatic()))
         {
@@ -1276,6 +1296,7 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
             if (tag)
                 prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_MaterialScript)] = entityid;
         }
+*/
     }
     else
     {
@@ -1297,7 +1318,8 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
         while (j != tex_requests.end())
         {
             std::string texname = (*j);
-            
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*            
             // Request texture if don't have it yet
             if (!renderer->GetResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic()))
             {
@@ -1307,7 +1329,7 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
                 if (tag)
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;
             }
-            
+*/            
             ++j;
         }
     }
@@ -1354,6 +1376,8 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
             case RexTypes::RexAT_TextureJPEG:
             case RexTypes::RexAT_Texture:
             {
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
                 Foundation::ResourcePtr res = renderer->GetResource(mat_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
                 if (res)
                     HandleTextureReady(entityid, res);
@@ -1365,10 +1389,13 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
                     if (tag)
                         prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;   
                 } 
+*/
             }
             break;
             case RexTypes::RexAT_MaterialScript:
             {
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
                 Foundation::ResourcePtr res = renderer->GetResource(mat_name, OgreRenderer::OgreMaterialResource::GetTypeStatic());
                 if (res)
                     HandleMaterialResourceReady(entityid, res);
@@ -1380,6 +1407,7 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
                     if (tag)
                         prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_MaterialScript)] = entityid;   
                 } 
+                */
             }
             break;
         }
@@ -1449,8 +1477,9 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
         {
         case 32: // light
         {
+            //! \todo Regression: reimplement using EC_Light
             // If light component doesn't exist, create it.
-            entity->GetOrCreateComponent(EC_OgreLight::TypeNameStatic());
+            // entity->GetOrCreateComponent(EC_OgreLight::TypeNameStatic());
                 
             // Read the data.
             Color color = ReadColorFromBytes(extra_params_data, idx);
@@ -1473,6 +1502,8 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
 
 void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, float radius, float falloff)
 {
+    //! \todo Regression: reimplement using EC_Light
+    /*
     if (radius < 0.001)
         radius = 0.001f;
 
@@ -1510,6 +1541,7 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, floa
 
     light->SetColor(color);
     light->SetAttenuation(max_radius, 0.0f, linear, quad);
+    */
 }
 
 void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color)
@@ -1526,7 +1558,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
     else
     {
         ComponentPtr component = entity->GetOrCreateComponent(EC_HoveringText::TypeNameStatic(), "llSetText");
-        assert(component.get());
+        assert(component);
         EC_HoveringText &hoveringText = *(checked_static_cast<EC_HoveringText *>(component.get()));
         hoveringText.SetTextColor(color);
         hoveringText.ShowMessage(QString::fromUtf8(text.c_str()));
@@ -1536,6 +1568,9 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
 
 bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
+    return false;
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
     if (event_id == Resource::Events::RESOURCE_READY)
     {
         Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
@@ -1550,8 +1585,8 @@ bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)
             asset_type = RexTypes::RexAT_Texture;
         else if (res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic())
             asset_type = RexTypes::RexAT_MaterialScript;
-        else if (res->GetType() == OgreRenderer::OgreParticleResource::GetTypeStatic())
-            asset_type = RexTypes::RexAT_ParticleScript;
+//        else if (res->GetType() == OgreRenderer::OgreParticleResource::GetTypeStatic()) // Removed due to regression for now -jj.
+//            asset_type = RexTypes::RexAT_ParticleScript;
         else if (res->GetType() == OgreRenderer::OgreSkeletonResource::GetTypeStatic())
             asset_type = RexTypes::RexAT_Skeleton;
 
@@ -1586,8 +1621,9 @@ bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)
     }
     
     return false;
+    */
 }
-
+/*///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {     
     if (!res) return;
@@ -1611,7 +1647,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     
     if (!skel_res)
     {
-        mesh->SetMesh(res->GetId());
+        mesh->SetMesh(res->GetId().c_str());
     }
     else
     {
@@ -1648,9 +1684,12 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
     event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
 }
+    */
 
+    /*///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
+            
     if (!res) return;
     if (res->GetType() != OgreRenderer::OgreSkeletonResource::GetTypeStatic()) return;
     
@@ -1665,7 +1704,9 @@ void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePt
     if (mesh_res)
         HandleMeshReady(entityid, mesh_res);
 }
+        */
 
+    /*///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
     if (!res) return;
@@ -1688,10 +1729,12 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
     //Quaternion adjust(PI, 0, PI);
     //particle.SetAdjustOrientation(adjust);
 }
+    */
 
+/*            ///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
-    assert(res.get());
+    assert(res);
     if (!res)
         return;
     assert(res->GetType() == OgreRenderer::OgreTextureResource::GetTypeStatic());
@@ -1727,10 +1770,12 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
         }
     }
 }
+    */
 
+/*
 void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
-    assert(res.get());
+    assert(res);
     if (!res) 
         return;
     assert(res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic());
@@ -1805,7 +1850,8 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
         }
     }
 }
-
+    */
+/*
 void Primitive::DiscardRequestTags(entity_id_t entityid, Primitive::EntityResourceRequestMap& map)
 {
     std::vector<Primitive::EntityResourceRequestMap::iterator> tags_to_remove;
@@ -1820,7 +1866,7 @@ void Primitive::DiscardRequestTags(entity_id_t entityid, Primitive::EntityResour
     for (int j = 0; j < tags_to_remove.size(); ++j)
         map.erase(tags_to_remove[j]);
 }
-
+*/
 void Primitive::HandlePrimScaleAndVisibility(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
@@ -2027,6 +2073,9 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
 
 void Primitive::HandleAmbientSound(entity_id_t entityid)
 {
+///\todo Regression. Reimplement using the Audio API. -jj.
+    /*
+
     boost::shared_ptr<ISoundService> soundsystem =
         rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Service::ST_Sound).lock();
     if (!soundsystem)
@@ -2057,7 +2106,7 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
         sound_id_t rex_ambient_sound = sounds[EC_AttachedSound::RexAmbientSound];
         if (rex_ambient_sound)
         {
-            QString sound_name = soundsystem->GetSoundName(rex_ambient_sound);
+            QString sound_name = ""; //soundsystem->GetSoundName(rex_ambient_sound); ///\todo Regression. Reimplement using the Audio API. -jj.
             if (sound_name.toStdString() == prim->SoundID)
                 same = true;
         }
@@ -2070,14 +2119,16 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
             {
                 position = placeable->GetPosition();
             }        
-            rex_ambient_sound = soundsystem->PlaySound3D(QString::fromStdString(prim->SoundID), ISoundService::Ambient, false, position);
+
+            ///\todo Regression. Reimplement using the Audio API. -jj.
+
+//            rex_ambient_sound = soundsystem->PlaySound3D(QString::fromStdString(prim->SoundID), ISoundService::Ambient, false, position);
             // The ambient sounds will always loop
-            soundsystem->SetLooped(rex_ambient_sound, true);
-            
+//            soundsystem->SetLooped(rex_ambient_sound, true);            
             // Now add the sound to entity
-            attachedsound->AddSound(rex_ambient_sound, EC_AttachedSound::RexAmbientSound); 
+//            attachedsound->AddSound(rex_ambient_sound, EC_AttachedSound::RexAmbientSound); 
         }
-        
+
         // Adjust the range & gain parameters
         if (rex_ambient_sound)
         {
@@ -2095,10 +2146,13 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
             soundsystem->SetGain(rex_ambient_sound, prim->SoundVolume);
         }
     }
+        */
 }
 
 bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData* data)
 {
+///\todo Regression. Reimplement using the Audio API. -jj.
+    /*
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -2136,12 +2190,15 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
     // Note that because we use the OpenSimAttachedSound sound slot, any previous sound in that slot
     // will be stopped.
     attachedsound->AddSound(new_sound, EC_AttachedSound::OpenSimAttachedSound);
+    */
 
     return false;
 }
 
 bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData* data)
 {
+///\todo Regression. Reimplement using the Audio API. -jj.
+    /*
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -2164,15 +2221,16 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     const std::vector<sound_id_t>& sounds = attachedsound->GetSounds();
     for (uint i = 0; i < sounds.size(); ++i)
         soundsystem->SetGain(sounds[i], gain);
-
+*/
     return false;
 }
 
 void Primitive::HandleLogout()
 {
-    prim_resource_request_tags_.clear();
+//    prim_resource_request_tags_.clear();
     pending_rexprimdata_.clear();
     pending_rexfreedata_.clear();
+    pending_ecdata_.clear();
     local_dirty_entities_.clear();
 }
 
@@ -2331,7 +2389,7 @@ void Primitive::SerializeECsToNetwork()
         
         //std::cout << "Processing locally dirty entity" << std::endl;
         
-        const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
+        const Scene::Entity::ComponentVector& components = entity->Components();
         
         // Get/create freedata component
         ComponentPtr freeptr = entity->GetOrCreateComponent(EC_FreeData::TypeNameStatic());
@@ -2368,7 +2426,7 @@ void Primitive::SerializeECsToNetwork()
     local_dirty_entities_.clear();
 }
 
-void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc)
+void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc, bool deleteNonExitingOnes)
 {
     StringVector type_names;
     StringVector names;
@@ -2401,32 +2459,33 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
     
     // If the entity has extra serializable EC's, we must remove them if they are no longer in the freedata.
     // However, at present time majority of EC's are not serializable, are handled internally, and must not be removed
-    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
-    for (uint i = 0; i < all_components.size(); ++i)
+    // However, when using the new ec sync, only one ec is included per message. this means that then removes are called explicitly with ec_remove message
+    if(deleteNonExitingOnes)
     {
-        if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
+        Scene::Entity::ComponentVector all_components = entity->Components();
+        for (uint i = 0; i < all_components.size(); ++i)
         {
-            bool found = false;
-            for (uint j = 0; j < type_names.size(); ++j)
+            if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
             {
-                if (type_names[j] == all_components[i]->TypeName().toStdString() && names[j] == all_components[i]->Name().toStdString())
+                bool found = false;
+                for (uint j = 0; j < type_names.size(); ++j)
                 {
-                    found = true;
-                    break;
+                    if (type_names[j] == all_components[i]->TypeName().toStdString() && names[j] == all_components[i]->Name().toStdString())
+                    {
+                        found = true;
+                        break;
+                    }
                 }
+                if (!found)
+                    entity->RemoveComponent(all_components[i], AttributeChange::LocalOnly);
             }
-            if (!found)
-                entity->RemoveComponent(all_components[i], AttributeChange::LocalOnly);
         }
     }
     
-    // Finally trigger localonly change for the components we deserialized.
+    // Finally trigger LocalOnly change for the components we deserialized.
     //! \todo All attributes will reflect a change, even if they had the same value as before. Optimize this away.
-    //! \todo ComponentChanged() currently triggers deprecated OnChanged() signal. This will be removed. Do not rely on it!
     for (uint i = 0; i < deserialized.size(); ++i)
-    {
         deserialized[i]->ComponentChanged(AttributeChange::LocalOnly);
-    }
 }
 
 } // namespace RexLogic

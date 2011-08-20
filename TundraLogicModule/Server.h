@@ -4,6 +4,7 @@
 #define incl_TundraLogicModule_Server_h
 
 #include "Core.h"
+#include "TundraLogicModuleApi.h"
 #include "ForwardDefines.h"
 
 #include "kNet.h"
@@ -31,14 +32,14 @@ namespace TundraLogic
 
 class TundraLogicModule;
 
-class Server : public QObject
+class TUNDRALOGIC_MODULE_API Server : public QObject
 {
     Q_OBJECT
     
 public:
     //! Constructor
-    Server(TundraLogicModule* owner, Foundation::Framework* fw);
-    
+    explicit Server(TundraLogicModule* owner);
+
     //! Destructor
     ~Server();
     
@@ -69,6 +70,11 @@ public:
     void SetActionSender(UserConnection* user);
     
 signals:
+    //! A user is connecting. This is your chance to deny access.
+    /*! Call user->Disconnect() to deny access and kick the user out
+     */ 
+    void UserAboutToConnect(int connectionID, UserConnection* connection);
+     
     //! A user has connected (and authenticated)
     void UserConnected(int connectionID, UserConnection* connection);
     
@@ -84,6 +90,18 @@ signals:
 public slots:
     //! Get whether server is running
     bool IsRunning() const;
+
+    //! Get whether server is about to start.
+    bool IsAboutToStart() const;
+
+    //! Get the running servers port.
+    /// \return int Valid port if server is running. -1 if server is not running.
+    int GetPort() const;
+
+    //! Get the running servers protocol.
+    /// \note This function returns QString due we dont want kNet::TransportLayer enum here. If the module creators feels its ok then change this.
+    /// \return QString Will return 'udp' or 'tcp' if server is running. Otherwise an empty string.
+    QString GetProtocol() const;
     
     //! Get connected users' connection ID's
     QVariantList GetConnectionIDs() const;
@@ -98,18 +116,18 @@ public slots:
     void OnScriptEngineCreated(QScriptEngine* engine);
     
 private:
-    /// Handle a Kristalli protocol message
+    //! Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
-    /// Handle a user disconnecting
+    //! Handle a user disconnecting
     void HandleUserDisconnected(UserConnection* user);
     
-    /// Handle a login message
+    //! Handle a login message
     void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
     
-    /// Kristalli event category
+    //! Kristalli event category
     event_category_id_t kristalliEventCategory_;
-    /// Tundra event category
+    //! Tundra event category
     event_category_id_t tundraEventCategory_;
     
     //! Current action sender
@@ -117,8 +135,15 @@ private:
     
     //! Owning module
     TundraLogicModule* owner_;
+    
     //! Framework pointer
     Foundation::Framework* framework_;
+
+    //! Current running servers port.
+    int current_port_;
+
+    //! Current running servers protocol.
+    QString current_protocol_;
 };
 
 }

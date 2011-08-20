@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_UiModule_UiModule_h
@@ -9,11 +10,18 @@
 #include "UiModuleApi.h"
 #include "UiModuleFwd.h"
 #include "UiTypes.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QMap>
 #include <QPair>
 #include <QStringList>
+//$ BEGIN_MOD $
+#include <QMainWindow>
+#include <QString>
+#include <QMenuBar>
+#include <QAction>
+//$ END_MOD $
 
 class KeyEvent;
 class InputContext;
@@ -23,14 +31,15 @@ namespace ProtocolUtilities
     class WorldStream;
 }
 
+namespace CoreUi
+{
+    class ChangeThemeWidget;
+}
+
 namespace UiServices
 {
-    class UiSettingsService;
-    class UiSceneService;
-    class MessageNotification;
-
-    typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
-    typedef boost::shared_ptr<UiSceneService> UiSceneServicePtr;
+	class ExternalPanelManager;
+	class ViewManager;
 
     //! UiModule provides user interface services
     /*! For details about Inworld Widget Services read UiWidgetServices.h
@@ -56,42 +65,50 @@ namespace UiServices
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         /*************** UiModule Services ***************/
-
-        //! InworldSceneController will give you a QObject derived class that will give you all
-        //! the UI related services like adding your own QWidgets into the 2D scene 
+	
         //! \return InworldSceneController The scene manager with scene services
         InworldSceneController *GetInworldSceneController() const { return inworld_scene_controller_; }
+        QMap<UiWidget*, QDockWidget*> GetExternalWidgets() const { return external_widgets_; }
 
-        NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
 
-        CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
-
-        Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
+		//!Get Managers of the module
+		ExternalPanelManager *GetExternalPanelManager() const { return external_panel_manager_; }
+        CoreUi::SettingsWidget *GetSettingsPanel() const { return settings_widget_;}
+		bool HasBeenPostinitializaded() const { return win_restored_; }
+        bool HasBeenUninitializaded() const { return win_uninitialized_;}
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
 
         //! Returns name of this module.
         static const std::string &NameStatic() { return type_name_static_; }
+        CoreUi::ChangeThemeWidget *changetheme_widget_;
+
+    public slots:
+        
+        void AddWidgetToWindow(UiWidget *widget);
+        void RemoveWidgetFromScene(UiWidget *widget);
+        void AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence);
+        void RemoveAnchoredWidgetFromScene(QWidget *widget);
+        QWidget *GetThemeSettingsWidget(); 
 
     private slots:
         void OnKeyPressed(KeyEvent *key);
-
-        void OnSceneChanged(const QString &old_name, const QString &new_name);
-
-        //! Takes UI screenshots of world/avatar with rendering service
-        void TakeEtherScreenshots();
+		
+		//To restore it after postinitialize all modules
+		void RestoreMainWindow();
 
     private:
-        //! Notify all ui module components of connected/disconnected state
-        //! \param message Optional message, e.g. error message.
-        void PublishConnectionState(ConnectionState connection_state, const QString &message = "");
-
+        
         //! Get all the category id:s of categories in eventQueryCategories
         void SubscribeToEventCategories();
 
         //! Type name of this module.
         static std::string type_name_static_;
+
+		//! External Managers of the Module
+		ExternalPanelManager *external_panel_manager_;
+        CoreUi::SettingsWidget *settings_widget_;
 
         //! Current query categories
         QStringList event_query_categories_;
@@ -102,34 +119,22 @@ namespace UiServices
         //! Pointer to the QOgre UiView
         QGraphicsView *ui_view_;
 
-        //! UiStateMachine pointer
-        CoreUi::UiStateMachine *ui_state_machine_;
-
         //! InworldSceneController pointer
         InworldSceneController *inworld_scene_controller_;
 
-        //! NotificationManager pointer
-        NotificationManager *inworld_notification_manager_;
+        //! MainWindow
+		QMainWindow* qWin_;
 
-        //! Ether Logic
-        Ether::Logic::EtherLogic *ether_logic_;
+		//! Manager of views
+		ViewManager* viewManager_;
 
-        //! Current World Stream pointer
-        boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
+        QMap<UiWidget*, QDockWidget*> external_widgets_;
 
-        //! Ui settings service 
-        UiSettingsPtr ui_settings_service_;
+		bool win_restored_;
+        bool win_uninitialized_;
 
-        //! Ui service.
-        UiSceneServicePtr ui_scene_service_;
-
-        //! Input context for Ether
-        boost::shared_ptr<InputContext> input;
-
-        //! Welcome message to be sent when inworld scene is enabled
-        //! Do NOT delete this on deconstructor or anywhere else for that matter!
-        MessageNotification *welcome_message_;
     };
+
 }
 
 #endif // incl_UiModule_UiModule_h

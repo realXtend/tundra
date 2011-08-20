@@ -7,8 +7,9 @@
 
 #include <QMetaType>
 
-struct Transform
+class Transform
 {
+public:
     Vector3df position;
     Vector3df rotation; ///< The rotation of this transform in Euler XYZ.
     Vector3df scale;

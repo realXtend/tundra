@@ -7,16 +7,16 @@
 
 macro (configure_boost)
     if (MSVC)
-	    set(Boost_USE_MULTITHREADED ON) # test by mattiku
-        set (Boost_USE_STATIC_LIBS ON)
+	    set(Boost_USE_MULTITHREADED TRUE)
+        set(Boost_USE_STATIC_LIBS TRUE)
     else ()
-        set (Boost_USE_STATIC_LIBS OFF)
+        set(Boost_USE_STATIC_LIBS FALSE)
     endif ()
 
-    if (APPLE)
-            set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_program_options boost_unit_test_framework)
+    if (UNIX)
+            set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_regex boost_program_options)
     else ()
-            set (BOOST_COMPONENTS date_time filesystem system thread program_options unit_test_framework)
+            set (BOOST_COMPONENTS date_time filesystem system thread regex program_options)
     endif ()
  
     sagase_configure_package (BOOST 
@@ -59,8 +59,8 @@ endmacro (configure_poco)
 
 macro (configure_qt4)
     sagase_configure_package (QT4 
-        NAMES Qt4 4.6.1
-        COMPONENTS QtCore QtGui QtWebkit QtScript QtXml QtNetwork QtUiTools
+        NAMES Qt
+        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
     # FindQt4.cmake
@@ -76,14 +76,11 @@ macro (configure_qt4)
             ${QT_QTNETWORK_INCLUDE_DIR}
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
+            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR}
-            ${QT_PHONON_INCLUDE_DIR})
+            ${QT_PHONON_INCLUDE_DIR}
+            ${QT_QTDBUS_INCLUDE_DIR})
 
-	if (APPLE) # they forgot qtdbus from mac qt 4.6.0
-	    # nothing
-        else ()
-            LIST(APPEND QT4_INCLUDE_DIRS ${QT_QTDBUS_INCLUDE_DIR})
-        endif()
 		
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
@@ -96,14 +93,10 @@ macro (configure_qt4)
             ${QT_QTNETWORK_LIBRARY}
             ${QT_QTXML_LIBRARY}
             ${QT_QTSCRIPT_LIBRARY}
+            ${QT_QTSCRIPTTOOLS_LIBRARY}
             ${QT_QTWEBKIT_LIBRARY}
-            ${QT_PHONON_LIBRARY})
-
-	if (APPLE)
-	    # nothing
-        else ()
-            LIST(APPEND QT4_LIBRARIES ${QT_QTDBUS_LIBRARY})
-        endif()
+            ${QT_PHONON_LIBRARY}
+            ${QT_QTDBUS_LIBRARY})
 		
     endif ()
     
@@ -148,9 +141,9 @@ endmacro (configure_python_qt)
 macro (configure_ogre)
     if ("$ENV{OGRE_HOME}" STREQUAL "" OR NOT WIN32)
         if (APPLE)
-    	FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
-    	set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
-    	set (OGRE_LIBRARIES ${OGRE_LIBRARY})
+    	  FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
+    	  set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
+    	  set (OGRE_LIBRARIES ${OGRE_LIBRARY})
         else ()
             sagase_configure_package (OGRE 
             NAMES Ogre OgreSDK ogre OGRE
@@ -235,13 +228,23 @@ macro (configure_hydrax)
 endmacro (configure_hydrax)
 
 macro (configure_xmlrpc)
-    sagase_configure_package (XMLRPC 
-        NAMES xmlrpc xmlrpcepi xmlrpc-epi
-        COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid 
-        PREFIXES ${ENV_NAALI_DEP_PATH}
-        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
-        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
+    if (APPLE)
+        sagase_configure_package (XMLRPC 
+            NAMES xmlrpc xmlrpcepi xmlrpc-epi
+            COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid iconv
+            PREFIXES ${ENV_NAALI_DEP_PATH}
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
+    else()
+        sagase_configure_package (XMLRPC 
+            NAMES xmlrpc xmlrpcepi xmlrpc-epi
+            COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid
+            PREFIXES ${ENV_NAALI_DEP_PATH}
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
 		${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
+    endif()
    
 	if (MSVC)
 		set (XMLRPC_LIBRARIES xmlrpcepi)
@@ -379,11 +382,17 @@ macro (configure_ogg)
 endmacro (configure_ogg)
 
 macro (configure_vorbis)
+if (APPLE)
+    sagase_configure_package(VORBIS
+        NAMES vorbisfile vorbis libvorbis libvorbisfile
+        COMPONENTS vorbis libvorbis vorbisfile libvorbisfile
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
+else()
     sagase_configure_package(VORBIS
         NAMES vorbisfile vorbis libvorbis
         COMPONENTS vorbis libvorbis libvorbisfile
         PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
-
+endif()
         # Force include dir on MSVC
         if (MSVC)
   		   set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)
@@ -444,9 +453,8 @@ macro(use_package_knet)
     include_directories(${KNET_DIR}/include)
     link_directories(${KNET_DIR}/lib)
     if (UNIX)    
-        add_definitions(-DLINUX)
+        add_definitions(-DUNIX)
     endif()
-    add_definitions(-DKNET_USE_BOOST)
 endmacro()
 
 macro(link_package_knet)
@@ -455,41 +463,118 @@ macro(link_package_knet)
 endmacro()
 
 macro(use_package_bullet)
-    if ("$ENV{BULLET_DIR}" STREQUAL "")
-       if (WIN32)
-          set(BULLET_DIR ${ENV_NAALI_DEP_PATH}/Bullet)
-	  include_directories(${BULLET_DIR}/include)
-	  include_directories(${BULLET_DIR}/include/ConvexDecomposition)
-	  link_directories(${BULLET_DIR}/lib)
-       else() # todo: This should be temporary? Always just use the above directory.
-          set(BULLET_DIR ${ENV_NAALI_DEP_PATH})
-	  include_directories(${BULLET_DIR}/include/bullet)
-	  include_directories(${BULLET_DIR}/include/bullet/ConvexDecomposition)
-	  link_directories(${BULLET_DIR}/lib)
-       endif()        
-    else()           
-       set(BULLET_DIR $ENV{BULLET_DIR})
-       include_directories(${BULLET_DIR}/include)
-       include_directories(${BULLET_DIR}/include/ConvexDecomposition)
-       link_directories(${BULLET_DIR}/lib)
+    if (WIN32)
+        if ("$ENV{BULLET_DIR}" STREQUAL "")
+            set(BULLET_DIR ${ENV_NAALI_DEP_PATH}/Bullet)
+        endif()
+        include_directories(${BULLET_DIR}/include)
+        include_directories(${BULLET_DIR}/include/ConvexDecomposition)
+        link_directories(${BULLET_DIR}/lib)
+    else() # Linux, note: mac will also come here..
+        if ("$ENV{BULLET_DIR}" STREQUAL "")
+            set(BULLET_DIR ${ENV_NAALI_DEP_PATH})
+        endif()
+        include_directories(${BULLET_DIR}/include/bullet)
+        include_directories(${BULLET_DIR}/include/bullet/ConvexDecomposition)
+        link_directories(${BULLET_DIR}/lib)
     endif()
 endmacro()
 
 macro(link_package_bullet)
-    target_link_libraries(${TARGET_NAME} debug LinearMath_d debug BulletDynamics_d debug BulletCollision_d debug ConvexDecomposition_d)
     target_link_libraries(${TARGET_NAME} optimized LinearMath optimized BulletDynamics optimized BulletCollision optimized ConvexDecomposition)
+    if (WIN32)
+        target_link_libraries(${TARGET_NAME} debug LinearMath_d debug BulletDynamics_d debug BulletCollision_d debug ConvexDecomposition_d)
+    endif()
 endmacro()
 
 macro(use_package_assimp)
-    if ("$ENV{ASSIMP_DIR}" STREQUAL "")
-       set(ASSIMP_DIR ${ENV_NAALI_DEP_PATH}/assimp)
+    if (WIN32)
+        if ("$ENV{ASSIMP_DIR}" STREQUAL "")
+           set(ASSIMP_DIR ${ENV_NAALI_DEP_PATH}/assimp)
+        endif()
+        include_directories(${ASSIMP_DIR}/include)
+        link_directories(${ASSIMP_DIR}/lib/assimp_debug_Win32)
+        link_directories(${ASSIMP_DIR}/lib/assimp_release_Win32)
+    else() # Linux, note: mac will also come here..
+        if ("$ENV{ASSIMP_DIR}" STREQUAL "")
+           set(ASSIMP_DIR ${ENV_NAALI_DEP_PATH})
+        endif()
+        include_directories(${ASSIMP_DIR}/include/assimp)
+        link_directories(${ASSIMP_DIR}/lib)
     endif()
-    include_directories(${ASSIMP_DIR}/include)
-    link_directories(${ASSIMP_DIR}/lib/assimp_debug_Win32)
-	link_directories(${ASSIMP_DIR}/lib/assimp_release_Win32)
 endmacro()
 
 macro(link_package_assimp)
-    target_link_libraries(${TARGET_NAME} debug assimpd)
     target_link_libraries(${TARGET_NAME} optimized assimp)
+    if (WIN32)
+        target_link_libraries(${TARGET_NAME} debug assimpd)
+    endif()
+endmacro()
+
+macro(configure_package_opencv)
+    # \todo Dont do this on linux systems
+    SET(OPENCV_ROOT ${ENV_NAALI_DEP_PATH}/OpenCV-2.2.0)
+
+    # Include directories to add to the user project:
+    SET(OpenCV_INCLUDE_DIR ${OPENCV_ROOT}/include)
+    SET(OpenCV_INCLUDE_DIRS ${OPENCV_ROOT}/include ${OPENCV_ROOT}/include/opencv)
+    INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
+
+    # Link directories to add to the user project:
+    SET(OpenCV_LIB_DIR ${OPENCV_ROOT}/lib)
+    LINK_DIRECTORIES(${OpenCV_LIB_DIR})
+
+    # Link to libraries, todo modify the list, we dont need all this stuff
+    # Full list of available libs from opencv are listed below. If you need there to our dependencies please contact Jonne Nauha aka Pforce on IRC #realxtend-dev @ freenode
+    #set(OPENCV_LIB_COMPONENTS opencv_core opencv_imgproc opencv_features2d opencv_gpu opencv_calib3d opencv_objdetect opencv_video opencv_highgui opencv_ml opencv_legacy opencv_contrib opencv_flann)
+    set(OPENCV_LIB_COMPONENTS opencv_core opencv_highgui)
+    SET(OpenCV_LIBS "")
+    foreach(__CVLIB ${OPENCV_LIB_COMPONENTS})
+        # CMake>=2.6 supports the notation "debug XXd optimized XX"
+        if (CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+            # Modern CMake:
+            SET(OpenCV_LIBS ${OpenCV_LIBS} debug ${__CVLIB}220d optimized ${__CVLIB}220)
+        else(CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+            # Old CMake:
+            SET(OpenCV_LIBS ${OpenCV_LIBS} ${__CVLIB}220)
+        endif(CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+    endforeach(__CVLIB)
+
+    foreach(__CVLIB ${OPENCV_LIB_COMPONENTS})
+        # We only need the "core",... part here: "opencv_core" -> "core"
+        STRING(REGEX REPLACE "opencv_(.*)" "\\1" MODNAME ${__CVLIB})
+        # \todo This wont work on linux as win deps ship all the headers in OPENCV_ROOT/include
+        # see how the headers are in /urs/include and implement the else() part here
+        if (WIN32)
+            INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIR}/${MODNAME})
+        else()
+            # \todo Impl linux module folder includes
+            # something like INCLUDE_DIRECTORIES("/usr/include/opencv/${MODNAME}/include") ??
+        endif()
+    endforeach(__CVLIB)
+
+    # Link to the 3rdparty libs as well
+    if(WIN32)
+        LINK_DIRECTORIES(${OPENCV_ROOT}/3rdparty/lib)
+    else()
+        # \todo Verify this works in linux
+        LINK_DIRECTORIES(${OPENCV_ROOT}/share/opencv/3rdparty/lib)
+    endif()    
+
+    set(OpenCV_LIBS comctl32;gdi32;ole32;vfw32 ${OpenCV_LIBS})
+    set(OPENCV_EXTRA_COMPONENTS libjpeg libpng libtiff libjasper zlib opencv_lapack)
+
+    if (CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+        foreach(__EXTRA_LIB ${OPENCV_EXTRA_COMPONENTS})
+            set(OpenCV_LIBS ${OpenCV_LIBS}
+                debug ${__EXTRA_LIB}d
+                optimized ${__EXTRA_LIB})
+        endforeach(__EXTRA_LIB)
+    else(CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+        set(OpenCV_LIBS ${OpenCV_LIBS} ${OPENCV_EXTRA_COMPONENTS})
+    endif(CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+endmacro()
+
+macro(link_package_opencv)
+    TARGET_LINK_LIBRARIES(${TARGET_NAME} ${OpenCV_LIBS})
 endmacro()

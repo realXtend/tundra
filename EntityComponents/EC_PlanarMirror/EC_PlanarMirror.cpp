@@ -13,11 +13,11 @@
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "LoggingFunctions.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 #include "EC_OgreCamera.h"
 #include "EC_RttTarget.h"
-#include "NaaliUi.h"
-#include "NaaliMainWindow.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_PlanarMirror")
 
@@ -33,8 +33,8 @@ EC_PlanarMirror::EC_PlanarMirror(IModule *module)
     mirror_plane_(0)
 {
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(Initialize()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_PlanarMirror::~EC_PlanarMirror()
@@ -47,7 +47,7 @@ EC_PlanarMirror::~EC_PlanarMirror()
     SAFE_DELETE(mirror_plane_);
 }
 
-void EC_PlanarMirror::AttributeUpdated(IAttribute* attr)
+void EC_PlanarMirror::OnAttributeUpdated(IAttribute* attr)
 {
     if (!ViewEnabled())
         return;
@@ -142,7 +142,7 @@ void EC_PlanarMirror::Initialize()
 
     mirror_cam_->getViewport()->setOverlaysEnabled(false);
 
-    connect(framework_->GetFrame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
+    connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
     connect(framework_->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int, int)), this, SLOT(WindowResized(int,int)));
 }
 

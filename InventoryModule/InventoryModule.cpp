@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -369,7 +370,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
     // Asset download related handlers.
     if (inventoryType_ == IDMT_OpenSim)
     {
-        if (!inventory_.get())
+        if (!inventory_)
             return false;
 
         OpenSimInventoryDataModel *osmodel = checked_static_cast<OpenSimInventoryDataModel *>(inventory_.get());
@@ -477,11 +478,22 @@ void InventoryModule::CreateInventoryWindow()
 
     SAFE_DELETE(inventoryWindow_);
     inventoryWindow_ = new InventoryWindow;
+//$ BEGIN_MOD $
+#ifndef PLAYER_VIEWER
+
+	//$ BEGIN_MOD $
+	inventoryWindow_->setWindowTitle("Inventory");
+	//$ END_MOD $
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
-    ui->AddWidgetToMenu(inventoryWindow_);
+    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, true, true);
+	//$ BEGIN_MOD $	
+	ui->AddWidgetToMenu(inventoryWindow_, "Inventory", "", "./data/ui/images/menus/edbutton_ESMNG_normal.png");
+    //ui->AddWidgetToMenu(inventoryWindow_);
+	//$ END_MOD $
     ui->RegisterUniversalWidget("Inventory", inv_proxy);
+#endif
+	//$ END_MOD $
 
 #ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
@@ -494,16 +506,37 @@ void InventoryModule::CreateInventoryWindow()
         SAFE_DELETE(uploadProgressWindow_);
     uploadProgressWindow_ = new UploadProgressWindow(this);
 */
+//$ BEGIN_MOD $
+    bool create_buttons = false; // todo read from ini
+    if (create_buttons)
+    {
+	    QToolBar* editToolbar_= ui->GetExternalToolbar("EditToolBar");
+	    if(editToolbar_){
+		    QAction* inventoryButton_=new QAction(QIcon("./media/icons/inventory.png"),"Inventory",editToolbar_);
+		    editToolbar_->addAction(inventoryButton_);
+		    connect(inventoryButton_, SIGNAL(triggered()), this, SLOT(ActionToolBarInventory()));
+	    }
+    }
+//$ END_MOD $
 }
-
+//$ BEGIN_MOD $
+	void InventoryModule::ActionToolBarInventory()
+	{
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		if(!inventoryWindow_->isVisible())
+			ui->ShowWidget(inventoryWindow_);
+		else
+			ui->HideWidget(inventoryWindow_);
+	}
+//$ END_MOD $
 Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 {
     using namespace RexTypes;
 
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
-    if (!inventory_.get())
+    if (!inventory_)
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
     if (inventoryType_ != IDMT_OpenSim)
@@ -550,10 +583,10 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 
 Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector &params)
 {
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
-    if (!inventory_.get())
+    if (!inventory_)
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!");
 
     if (inventoryType_ != IDMT_OpenSim)
@@ -575,10 +608,10 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
 
 Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector &params)
 {
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
-    if (!inventory_.get())
+    if (!inventory_)
         return Console::ResultFailure("Inventory doesn't exist.");
 
     if (!service_)

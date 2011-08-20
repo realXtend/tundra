@@ -11,16 +11,13 @@
 
 #include "IComponent.h"
 #include "Declare_EC.h"
+#include "InputFwd.h"
+#include "KeyEvent.h"
 
 #include <QMap>
 #include <QKeySequence>
 #include <QVector>
 #include <QVariant>
-
-#include "KeyEvent.h"
-
-class InputContext;
-
 
 /// Registers an InputContext from the Naali Input subsystem and uses it to translate
 /// given set of key and mouse sequences to Entity Actions on the entity the component is part of.
@@ -128,11 +125,7 @@ public:
 
     struct ActionInvocation
     {
-        ActionInvocation() :
-            executionType(0)
-        {
-        }
-        
+        ActionInvocation() : executionType(0) {}
         QString name;
         int executionType;
     };
@@ -167,23 +160,20 @@ public slots:
     InputContext *GetInputContext() const { return input_.get(); }
 
 private:
-    /** Constructor.
-        @param module Declaring module.
+    /// Constructor.
+    /** @param module Declaring module.
     */
     explicit EC_InputMapper(IModule *module);
 
-    /// Input context for this EC.
-    boost::shared_ptr<InputContext> input_;
-
-    /// List of registered key sequence - action mappings.
-    Mappings_t mappings_;
+    boost::shared_ptr<InputContext> input_; ///< Input context for this EC.
+    Mappings_t mappings_; ///< List of registered key sequence - action mappings.
 
 private slots:
     /// Alters input context's parameters when attributes are changed.
     /** @param attribute Changed attribute.
         @param change Change type.
     */
-    void AttributeUpdated(IAttribute *, AttributeChange::Type change);
+    void HandleAttributeUpdated(IAttribute *, AttributeChange::Type change);
 
     /// Handles key events from input service.
     /** Performs entity action for for the parent entity if action mapping is registered for the key event.

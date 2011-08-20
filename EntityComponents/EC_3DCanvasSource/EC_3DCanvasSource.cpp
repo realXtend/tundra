@@ -11,10 +11,9 @@
 #include "IModule.h"
 #include "ModuleManager.h"
 #include "Entity.h"
+#include "UiAPI.h"
 #include "UiProxyWidget.h"
-#include "UiServiceInterface.h"
 #include "LoggingFunctions.h"
-
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 #include <QWebView>
@@ -32,13 +31,13 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     IComponent(module->GetFramework()),
-    source(this, "Source", ""),
-    submesh(this, "Submesh", 0),
-    refreshRate(this, "Refresh per sec", 0),
-    show2d(this, "Show 2D on click", true),
-    sync2dbrowsing(this, "Sync 2D browsing", false),
-    pageWidth(this, "Page width", 800),
-    pageHeight(this, "Page height", 600),
+    source(this, "source", ""),
+    submesh(this, "submesh", 0),
+    refreshRate(this, "refresh per sec", 0),
+    show2d(this, "show 2D on click", true),
+    sync2dbrowsing(this, "sync 2D browsing", false),
+    pageWidth(this, "page width", 800),
+    pageHeight(this, "page height", 600),
     widget_(0),
     content_widget_(0),
     placeholder_widget_(0),
@@ -52,7 +51,7 @@ EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     pageWidth.SetMetadata(&size_metadata);
     pageHeight.SetMetadata(&size_metadata);
 
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas(IAttribute*, AttributeChange::Type)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(RegisterActions()));
     CreateWidget();
 }
@@ -284,6 +283,10 @@ QWebView *EC_3DCanvasSource::GetWebView()
 
 void EC_3DCanvasSource::UpdateWidget(QString url)
 {
+    // Don't load QWebViews into memory if headless
+    if (GetFramework()->IsHeadless())
+        return;
+
     // Prefer inparam over the attribute (if sync 2d browsing is disabled)
     QString source;
     if (url.isEmpty())
@@ -468,12 +471,8 @@ void EC_3DCanvasSource::ChangeLanguage()
 
 void EC_3DCanvasSource::CreateWidget()
 {
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-    {
-        LogError("Failed to acquire UI service");
+    if (GetFramework()->IsHeadless())
         return;
-    }
 
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
@@ -489,7 +488,7 @@ void EC_3DCanvasSource::CreateWidget()
     }
 
     widget_->setWindowTitle(tr("Naali Web Browser"));
-    proxy_ = ui->AddWidgetToScene(widget_);
+    proxy_ = GetFramework()->Ui()->AddWidgetToScene(widget_);
     connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
 
     source_edit_ = widget_->findChild<QLineEdit*>("line_source");

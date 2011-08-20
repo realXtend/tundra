@@ -5,10 +5,8 @@
 
 #include "Foundation.h"
 #include "IComponent.h"
-#include "SceneManager.h"
+#include "ForwardDefines.h"
 #include "SyncState.h"
-
-#include "kNet.h"
 
 #include <QObject>
 #include <map>
@@ -24,8 +22,8 @@ struct MsgEntityAction;
 
 namespace kNet
 {
-class MessageConnection;
-typedef unsigned long message_id_t;
+    class MessageConnection;
+    typedef unsigned long message_id_t;
 }
 
 class UserConnection;
@@ -47,7 +45,7 @@ class SyncManager : public QObject
     
 public:
     //! Constructor
-    SyncManager(TundraLogicModule* owner, Foundation::Framework* fw);
+    explicit SyncManager(TundraLogicModule* owner);
     
     //! Destructor
     ~SyncManager();
@@ -119,7 +117,7 @@ private:
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
 
     //! Process one sync state for changes in the scene
-    /*! \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management
+    /*! \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management
         \param destination MessageConnection where to send the messages
         \param state Syncstate to process
      */
@@ -145,6 +143,12 @@ private:
     /*! For client, this will always be server_syncstate_.
      */
     SceneSyncState* GetSceneSyncState(kNet::MessageConnection* connection);
+
+    Scene::ScenePtr GetRegisteredScene()
+    {
+        return scene_.lock();
+    }
+
     
     //! Owning module
     TundraLogicModule* owner_;

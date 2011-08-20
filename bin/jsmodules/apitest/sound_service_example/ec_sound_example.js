@@ -1,7 +1,7 @@
 print("Loading EC_Sound example script.");
 
 //This script demonstrates how can we use EC_Sound with EC_Toucable components together. Script listens EC_Touchable's
-//MousePressed signal and when that signal is emmitted script will find a EC_Sound component and triggers it to play wanted sound file.
+//MousePressed signal and when that signal is emitted script will find a EC_Sound component and triggers it to play wanted sound file.
 
 //How to use:
 //1. Create a new entity to the world scene.
@@ -11,31 +11,30 @@ print("Loading EC_Sound example script.");
 var touchable_comp = 0;
 if (me.HasComponent("EC_Touchable"))
 {
-	touchable_comp = me.GetComponentRaw("EC_Touchable");
-	AddConnections();
+    touchable_comp = me.GetComponentRaw("EC_Touchable");
+    AddConnections();
 }
 else
-	scene.ComponentAdded.connect(OnComponentAdded);
+    scene.ComponentAdded.connect(OnComponentAdded);
 
 function OnObjectClicked()
 {
-	var sound = me.GetComponentRaw("EC_Sound");
-	sound.triggerSound = true;
-    # Todo: OnChanged() is deprecated
-	sound.OnChanged();
+    var sound = me.GetComponentRaw("EC_Sound");
+    sound.triggerSound = true;
+    sound.ComponentChanged(0);
 }
 
 function OnComponentAdded(entity, component)
 {
-	if (me.Id != entity.Id && component.TypeName != "EC_Touchable")
-		return;
-		
-	touchable_comp = component;
-	AddConnections();
+    if (me.id != entity.id && component.typeName != "EC_Touchable")
+        return;
+        
+    touchable_comp = component;
+    AddConnections();
 }
 
 function AddConnections()
 {
-	print("Clicked.");
-	touchable_comp.MousePressed.connect(OnObjectClicked);
+    print("Clicked.");
+    touchable_comp.MousePressed.connect(OnObjectClicked);
 }

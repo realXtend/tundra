@@ -14,7 +14,9 @@
 #include <QString>
 #include <Ogre.h>
 
+#ifdef OGREASSETEDITOR_ENABLED
 #include <TexturePreviewEditor.h>
+#endif
 
 class QTreeWidget;
 class QComboBox;
@@ -179,7 +181,9 @@ namespace DebugStats
         QTextEdit* text_scenecomplexity_;
 
         event_category_id_t asset_event_category_;
+#ifdef OGREASSETEDITOR_ENABLED
         TexturePreviewEditor* tex_preview_;
+#endif
     };
 }
 

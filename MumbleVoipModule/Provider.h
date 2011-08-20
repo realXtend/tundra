@@ -4,10 +4,17 @@
 #define incl_MumbleVoipModule_Provider_h
 
 #include <QObject>
+#include <QMap>
+#include <QString>
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
 #include "AttributeChangeType.h"
 #include "WorldStream.h"
+
+namespace TundraLogic
+{
+    class TundraLogicModule;
+}
 
 class UiProxyWidget;
 class IEventData;
@@ -38,6 +45,7 @@ namespace MumbleVoip
     public:
         Provider(Foundation::Framework* framework, Settings* settings);
         virtual ~Provider();
+        void PostInitialize();
 
     public slots:
         virtual Communications::InWorldVoice::SessionInterface* Session();
@@ -47,15 +55,13 @@ namespace MumbleVoip
         virtual QList<QString> Statistics();
         virtual void ShowMicrophoneAdjustmentDialog();
 
-    private slots:
-        void OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
-        void OnECVoiceChannelDestroyed(QObject* obj);
-        void OnSceneAdded(const QString &name);
-
     private:
         void CreateSession();
         void CloseSession();
+        void CheckChannelQueue();
         QString GetUsername();
+        QString GetAvatarUuid();
+        void AddECVoiceChannel(EC_VoiceChannel* channel);
 
         Foundation::Framework* framework_;
         QString description_;
@@ -69,8 +75,14 @@ namespace MumbleVoip
         QMap<EC_VoiceChannel*, QString> channel_names_;
         QSignalMapper* signal_mapper_;
         ProtocolUtilities::WorldStreamPtr world_stream_;
+        boost::shared_ptr<TundraLogic::TundraLogicModule> tundra_logic_;
+        QList<EC_VoiceChannel*> channel_queue_;
 
     private slots:
+        void OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+        void OnECVoiceChannelDestroyed(QObject* obj);
+        void OnSceneAdded(const QString &name);
+
         void OnMumbleServerInfoReceived(ServerInfo info);
         void OnMicrophoneAdjustmentWidgetDestroyed();
         void ECVoiceChannelChanged(const QString &channelname);

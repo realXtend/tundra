@@ -78,16 +78,15 @@ std::string GetId0String()
 
 std::string GetPlatform()
 {
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN)
     return "Win";
-#endif
-#ifdef Q_WS_X11
+#elif defined(Q_WS_X11)
     return "X11";
-#endif
-#ifdef Q_WS_MAC
+#elif defined(Q_WS_MAC)
     return "Mac";
-#endif
+#else
     return "";
+#endif
 }
 
 }

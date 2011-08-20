@@ -6,9 +6,10 @@
 #include "PhysicsModuleApi.h"
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
-#include "RexTypes.h"
-#include "SceneManager.h"
-#include "LinearMath/btIDebugDraw.h"
+#include "ForwardDefines.h"
+#include "SceneFwd.h"
+
+#include <LinearMath/btIDebugDraw.h>
 
 #include <QObject>
 
@@ -60,16 +61,16 @@ public:
     static const std::string moduleName;
     
     //! Toggles physics debug geometry
-    Console::CommandResult ConsoleToggleDebugGeometry(const StringVector& params);
+    ConsoleCommandResult ConsoleToggleDebugGeometry(const StringVector& params);
 
     //! Stops physics
-    Console::CommandResult ConsoleStopPhysics(const StringVector& params);
+    ConsoleCommandResult ConsoleStopPhysics(const StringVector& params);
     
     //! Starts physics
-    Console::CommandResult ConsoleStartPhysics(const StringVector& params);
+    ConsoleCommandResult ConsoleStartPhysics(const StringVector& params);
     
     //! Autoassigns static rigid bodies with collision meshes to visible meshes
-    Console::CommandResult ConsoleAutoCollisionMesh(const StringVector& params);
+    ConsoleCommandResult ConsoleAutoCollisionMesh(const StringVector& params);
     
     //! IDebugDraw override
     virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
@@ -100,7 +101,10 @@ public:
     boost::shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
     
     //! Create a physics world for a scene
-    Physics::PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene);
+    /*! \param scene Scene into which to create
+        \param isClient If true, physics will be only simulated for local entities
+     */
+    Physics::PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene, bool isClient);
     
     //! Return the physics world for a scene if it exists
     Physics::PhysicsWorld* GetPhysicsWorldForScene(Scene::ScenePtr scene);

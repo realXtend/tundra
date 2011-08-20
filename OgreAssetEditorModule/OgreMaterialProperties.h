@@ -24,11 +24,6 @@ namespace Foundation
     class Framework;
 }
 
-namespace OgreRenderer
-{
-    class OgreMaterialResource;
-}
-
 typedef QMap<QString, QVariant> PropertyMap;
 typedef QMap<QString, QVariant> TypeValuePair;
 typedef QMapIterator<QString, QVariant> PropertyMapIter;
@@ -40,7 +35,8 @@ class OgreMaterialProperties : public QObject
 public:
     /// Constructor.
     /// @param asset Asset pointer to the material binary data.
-    explicit OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset);
+    explicit OgreMaterialProperties(const QString &name, void *asset); ///\todo Regression. Reimplement using the new Asset API. -jj.
+//    explicit OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset);
 
     /// Destructor.
     ~OgreMaterialProperties();
@@ -75,7 +71,8 @@ private:
     bool CreateProperties();
 
     /// Material resource pointer.
-    OgreRenderer::OgreMaterialResource *material_;
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+//    OgreRenderer::OgreMaterialResource *material_;
 };
 
 #endif

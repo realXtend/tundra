@@ -103,7 +103,7 @@ namespace OgreRenderer
         void SetCompositorParameter(const std::string &compositorName, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
 
         //! Enable or disable a compositor that has already been added to the default viewport
-        void SetEnableCompositor(const std::string &compositor, bool enable) const;
+        void SetCompositorEnabled(const std::string &compositor, bool enable) const;
 
     private:
         struct Compositor

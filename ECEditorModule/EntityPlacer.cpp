@@ -1,13 +1,21 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "EntityPlacer.h"
 #include "SceneManager.h"
-
+#include "SceneAPI.h"
+#include "Entity.h"
 #include "EC_Placeable.h"
 #include "Renderer.h"
-#include "../Input/Input.h"
+#include "InputAPI.h"
 #include "EC_Mesh.h"
 #include "OgreRenderingModule.h"
+
 #include <Ogre.h>
+
+#include "MemoryLeakCheck.h"
 
 EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityId, QObject *parent):
     framework_(framework),
@@ -18,9 +26,9 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
     previousScrollValue_(0)
 {
     static const std::string customMeshName("Selection.mesh");
-    input_ = framework_->GetInput()->RegisterInputContext("EntityPlacement", 110);
+    input_ = framework_->Input()->RegisterInputContext("EntityPlacement", 110);
     
-    entity_ = framework_->GetDefaultWorldScene()->GetEntity(entityId);
+    entity_ = framework_->Scene()->GetDefaultScene()->GetEntity(entityId);
     if(!entity_.expired())
     {
         Scene::Entity *entity = entity_.lock().get();
@@ -50,7 +58,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
 
     input_->SetTakeMouseEventsOverQt(true);
 
-    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(OnMouseEvent(MouseEvent *)));
+    connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), this, SLOT(OnMouseEvent(MouseEvent *)));
     connect(input_.get(), SIGNAL(MouseMove(MouseEvent *)), this, SLOT(MouseMove(MouseEvent *)));
 }
 
@@ -81,7 +89,7 @@ void EntityPlacer::OnMouseEvent(MouseEvent *mouse)
     }
     else if(mouse->eventType == MouseEvent::MouseScroll)
     {
-        //! @Todo add scele code inside.
+        //! @todo add scele code inside.
     }
 }
 

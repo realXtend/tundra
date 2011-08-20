@@ -2,9 +2,10 @@
 
 #include "DebugOperatorNew.h"
 
+#include <QDir>
+
 #include "Foundation.h"
 #include "ModuleManager.h"
-#include "HttpUtilities.h"
 
 // Disable warning C4244 coming from boost
 #ifdef _MSC_VER
@@ -97,20 +98,21 @@ int run (int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
+    printf("Starting up viewer. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
+    for(int i = 0; i < argc; ++i)
+        printf("argv[%d]: %s\n", i, argv[i]);
+
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     try
 #endif
     {
-        HttpUtilities::InitializeHttp(); 
         Foundation::Framework fw(argc, argv);
         if (fw.Initialized())
         {
             setup(fw);
             fw.Go();
         }
-
-        HttpUtilities::UninitializeHttp();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch (std::exception& e)
@@ -127,7 +129,7 @@ int run (int argc, char **argv)
     return return_value;
 }
 
-#if defined(_MSC_VER) && defined(WINDOWS_APP)
+#if defined(_MSC_VER) && !defined(_DEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     // Parse Windows command line
@@ -189,7 +191,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Naali_v0.3.4.1";
+    WCHAR* szVersion = L"Tundra_v1.0.7-client";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
@@ -229,5 +231,3 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
-
-

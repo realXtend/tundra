@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_ECEditorModule_ECEditorModule_h
@@ -6,9 +7,13 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "ECEditorModuleApi.h"
+#include "SceneFwd.h"
+#include "InputFwd.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QPointer>
+#include <QVariantList>
 
 class TreeWidgetItemExpandMemory;
 typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
@@ -40,9 +45,9 @@ public:
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     //! Show EC editor window.
-    //Console::CommandResult ShowWindow(const StringVector &params);
+    //ConsoleCommandResult ShowWindow(const StringVector &params);
 
-    Console::CommandResult ShowDocumentation(const StringVector &params);
+    ConsoleCommandResult ShowDocumentation(const StringVector &params);
 
     //! Added for testing EC_DynamicComponent.
     /*! @param params Params should be following:
@@ -53,9 +58,11 @@ public:
      *  4 = attribute type. !Only rem dont use in rem operation.
      *  5 = attribute value. !Only rem dont use in rem operation.
      */
-    Console::CommandResult EditDynamicComponent(const StringVector &params);
+    ConsoleCommandResult EditDynamicComponent(const StringVector &params);
 
     ECEditorWindow *GetActiveECEditor() const;
+
+    UiWidget* GetActiveECEditorUiWidget() const;
 
     //! returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return name_static_; }
@@ -70,9 +77,8 @@ public:
     ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
 public slots:
-    // This mehtod is called when new ECEditorWindow isntance is created.
-    //void RegisterECEditor(ECEditorWindow *editor);
-    //void UnregisterECEditor();
+    //! ECEditor has gained a focus event and need to set as active editor.
+    //! @param editor editor that has focus.
     void ECEditorFocusChanged(ECEditorWindow *editor);
 
     void AddEditorWindowToUI();
@@ -93,15 +99,27 @@ public slots:
     //! \param components List of component pointers.
     void CreateXmlEditor(const QList<ComponentPtr> &components);
 
+    //! Return selected components from the active ECEditorWindow.
+    //! If edtior isn't initialized or any components aren't selected from the editor, method will return emtpy list.
+    QObjectList GetSelectedComponents() const;
+
+    //! Return selected entity ids as QVariantList from the active ECEditorWindow.
+    QVariantList GetSelectedEntities() const;
+
+    bool IsECEditorWindowVisible() const;
+
+signals:
+    //! Signal is emitted when active ECEditorWindow's selection has changed.
+    /*! @param compType selected item's component type name.
+     *  @param compName selected item's component name.
+     *  @param attrType selected item's attribute type name (Empty if attribute isn't selected).
+     *  @param attrName selected item's attribute name (Empty if attribute isn't selected).
+     */
+    void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
+
 private:
     //! Static name of the module
     static std::string name_static_;
-
-    //! Id for Scene event category
-    event_category_id_t scene_event_category_;
-
-    //! Id for NetworkState event category
-    event_category_id_t network_state_event_category_;
 
     //! EC XML editor window
     QPointer<EcXmlEditorWidget> xmlEditor_;
@@ -114,6 +132,9 @@ private:
 
     /// Active ECEditorWindow.
     QPointer<ECEditorWindow> active_editor_;
+
+    QPointer<UiWidget> active_editor_uiwidget_;
+
     /// ECEditorModule will create it's own ECEditorWindow instance while it's initializing. 
     /// To avoid a memory leak, we store that pointer.
     QPointer<ECEditorWindow> common_editor_;

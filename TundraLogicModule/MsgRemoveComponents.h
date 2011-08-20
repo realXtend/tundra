@@ -23,6 +23,7 @@ struct MsgRemoveComponents
 		priority = 100;
 	}
 
+    enum { messageID = 114 };
 	static inline u32 MessageID() { return 114; }
 	static inline const char *Name() { return "RemoveComponents"; }
 

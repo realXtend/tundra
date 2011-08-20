@@ -1,6 +1,11 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+/// \todo Deprecated in Tundra. If needed, needs to be reimplemented using EC_Avatar and AvatarDescAsset.
+/*
+
 #include "AvatarEditing/AvatarSceneManager.h"
 #include "AvatarEditing/AnchorLayout.h"
 
@@ -74,14 +79,25 @@ namespace Avatar
         connect(ui_service, SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)), SLOT(HandleTransferRequest(const QString&, QGraphicsProxyWidget*)));
 
         connect(ui_helper_, SIGNAL(ExitRequest()), SLOT(ExitScene()));
+
+		//$ BEGIN_MOD $ 
+		//Insert action in MenuExternal if available to switch to AvatarEditor
+		//Create Action, insert into menu Create->Avatar
+		//QAction *action = new QAction("Avatar Editor",this);
+		//if (ui_service->AddExternalMenuAction(action, "Avatar Editor", tr("View")))
+		//	connect(action, SIGNAL(triggered()), SLOT(ToggleScene()));
+				//LogWarning("Could not connect with Avatar scene !!");    
+		//$ END_MOD $ 
     }
 
     void AvatarSceneManager::ToggleScene()
     {
+		Scene toogle disabled in tundra
         if (avatar_scene_->isActive())
             ExitScene();
         else
             ShowScene();
+			
     }
 
     void AvatarSceneManager::ShowScene()
@@ -95,7 +111,8 @@ namespace Avatar
     {
         UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<UiServiceInterface>();
         if (ui_service)
-            ui_service->SwitchToScene("Inworld");
+            //ui_service->SwitchToScene("Inworld");
+			ui_service->SwitchToMainScene();
     }
 
     void AvatarSceneManager::SceneChanged(const QString &old_name, const QString &new_name)
@@ -158,3 +175,5 @@ namespace Avatar
 
     }
 }
+
+*/

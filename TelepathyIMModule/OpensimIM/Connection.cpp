@@ -178,7 +178,7 @@ namespace OpensimIM
         if (state_ != STATE_OPEN)
             throw Exception("Cannot send text message, the connection is closed.");
 
-        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());///\bug Thread-unsafe use of .lock().get()
 
         if (rexlogic_ == NULL)
             throw Exception("Cannot send text message, RexLogicModule is not found");
@@ -233,7 +233,7 @@ namespace OpensimIM
     void Connection::RequestFriendlist()
     {
         boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule = framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>(Foundation::Module::MT_WorldLogic).lock().get()->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
-        if (currentProtocolModule.lock().get())
+        if (currentProtocolModule.lock())
         {
             ProtocolUtilities::BuddyListPtr buddy_list = currentProtocolModule.lock()->GetClientParameters().buddy_list;
             ProtocolUtilities::BuddyVector buddies = buddy_list->GetBuddies();

@@ -3,14 +3,13 @@
 #ifndef incl_Input_InputContext_h
 #define incl_Input_InputContext_h
 
-#include <map>
-#include <set>
-
 #include "KeyEvent.h"
 #include "MouseEvent.h"
-
+#include "GestureEvent.h"
 #include "KeyEventSignal.h"
-#include "InputApi.h"
+
+#include <map>
+#include <set>
 
 struct KeyPressInformation
 {
@@ -28,7 +27,7 @@ struct KeyPressInformation
 };
 typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
 
-class INPUT_API InputContext : public QObject
+class InputContext : public QObject
 {
     Q_OBJECT
 
@@ -37,27 +36,34 @@ public:
 
     ~InputContext();
 
-    /// Updates the buffered key presses. Called by the input service to
-    /// proceed on to the next input frame.
+    /// Updates the buffered key presses. Called by the input service to proceed on to the next input frame.
     void UpdateFrame();
 
 signals:
     /// Emitted for each key code, for each event type.
-    void OnKeyEvent(KeyEvent *key);
+    void KeyEventReceived(KeyEvent *key);
+
     /// Emitted for each mouse event (move, scroll, button press/release).
-    void OnMouseEvent(MouseEvent *mouse);
+    void MouseEventReceived(MouseEvent *mouse);
+
+    /// Emitted for every gesture event (started, updated, finished and canceled)
+    void GestureEventReceived(GestureEvent *gesture);
 
     /// This signal is emitted when any key is pressed in this context.
     void KeyPressed(KeyEvent *key);
+
     /// This signal is emitted for each application frame when this key is pressed down in this context.
     void KeyDown(KeyEvent *key);
+
     /// This signal is emitted when any key is released in this context.
     void KeyReleased(KeyEvent *key);
 
     /// Emitted when the mouse cursor is moved, independent of whether any buttons are down.
     void MouseMove(MouseEvent *mouse);
+
     /// Mouse wheel was scrolled.
     void MouseScroll(MouseEvent *mouse);
+
     /// Mouse double click
     void MouseDoubleClicked(MouseEvent *mouse);
 
@@ -71,6 +77,15 @@ signals:
     void MouseLeftReleased(MouseEvent *mouse);
     void MouseMiddleReleased(MouseEvent *mouse);
     void MouseRightReleased(MouseEvent *mouse);
+
+    /// @note You need to accept the started event using Accept() in order to receive update and finished events.
+    void GestureStarted(GestureEvent *gesture);
+
+    /// @note You need to accept the started event in order to receive update events.
+    void GestureUpdated(GestureEvent *gesture);
+
+    /// @note You need to accept the started event in order to receive update events.
+    void GestureFinished(GestureEvent *gesture);
 
 public slots:
     /// Creates a new signal object that will be triggered when the given
@@ -96,6 +111,9 @@ public slots:
 
     /// Same as TriggerKeyEvent, but for mouse events.
     void TriggerMouseEvent(MouseEvent &mouse);
+
+    // Trigger gesture event signals
+    void TriggerGestureEvent(GestureEvent &gesture);
 
     /// Returns the user-defined name of this InputContext. The name is
     /// read-only, and associated with the context at creation time.

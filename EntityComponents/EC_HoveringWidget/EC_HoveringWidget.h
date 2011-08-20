@@ -120,6 +120,10 @@ public slots:
     /// @param text Text to be shown.
     void SetText(const QString &text);
 
+    void SetTextHeight(int height);
+
+    void SetFontSize(int pt_size);
+
     /// Sets the icon to the left side of text
     void SetIcon(QPixmap *icon);
 

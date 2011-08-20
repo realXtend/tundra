@@ -36,7 +36,7 @@ EC_SoundRuler::EC_SoundRuler(IModule *module) :
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
     
-    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateSoundRuler()));
+    QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateSoundRuler()));
     
     RexUUID uuid = RexUUID::CreateRandom();
     rulerName = uuid.ToString() + "ruler";
@@ -47,7 +47,7 @@ EC_SoundRuler::~EC_SoundRuler()
 {
     // OgreRendering module might be already deleted. If so, the cloned entity is also already deleted.
     // In this case, just set pointer to 0.
-    if (!renderer_.expired())
+    if (!renderer_.expired() && rulerObject)
     {
         Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
             sceneMgr->destroyManualObject(rulerObject);

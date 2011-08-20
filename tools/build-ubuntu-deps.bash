@@ -1,4 +1,3 @@
-
 #!/bin/bash
 set -e
 set -x
@@ -16,7 +15,6 @@ mkdir -p $deps
 deps=$(cd $deps && pwd)
 viewer=$(cd $viewer && pwd)
 
-viewerdeps_svn=http://realxtend-naali-deps.googlecode.com/svn/
 prefix=$deps/install
 build=$deps/build
 tarballs=$deps/tarballs
@@ -40,16 +38,19 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
-if lsb_release -c | egrep -q "lucid|maverick"; then
+if lsb_release -c | egrep -q "lucid|maverick|natty"; then
+        which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libogre-dev libboost-all-dev libpoco-dev \
-	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
-         libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
-         libtelepathy-qt4-dev python-gst0.10-dev freeglut3-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev \
-	 liboil0.3-dev mercurial unzip xsltproc
+	 ccache libqt4-dev python-dev \
+	 freeglut3-dev \
+	 libxmlrpc-epi-dev bison flex libxml2-dev cmake libalut-dev \
+	 liboil0.3-dev mercurial unzip xsltproc libqtscript4-qtbindings
 fi
+	 #python-gtk2-dev libdbus-glib-1-dev \
+         #libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
+         #libtelepathy-qt4-dev python-gst0.10-dev \ 
 
 function build-regular {
     urlbase=$1
@@ -91,17 +92,45 @@ else
     touch $tags/$what-done
 fi
 
-what=knet
+what=qtscriptgenerator
 if test -f $tags/$what-done; then 
    echo $what is done
 else
     cd $build
+    rm -rf $what
+    git clone git://gitorious.org/qt-labs/$what.git
+    cd $what
+
+    cd generator
+    qmake
+    make -j $nprocs
+    ./generator --include-paths=/usr/include/qt4
+    cd ..
+
+    cd qtbindings
+    sed -i 's/qtscript_phonon //' qtbindings.pro 
+    sed -i 's/qtscript_webkit //' qtbindings.pro 
+    qmake
+    make -j $nprocs
+    cd ..
+    cd ..
+    touch $tags/$what-done
+fi
+mkdir -p $viewer/bin/qtscript-plugins/script
+cp -lf $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
+
+
+what=knet
+if false && test -f $tags/$what-done; then 
+   echo $what is done
+else
+    cd $build
     rm -rf knet
-    hg clone http://bitbucket.org/clb/knet
+    hg clone -r stable http://bitbucket.org/clb/knet
     cd knet
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
     mv x CMakeLists.txt
-    cmake .
+    cmake . -DCMAKE_BUILD_TYPE=Debug
     make -j $nprocs
     cp lib/libkNet.so $prefix/lib/
     rsync -r include/* $prefix/include/
@@ -119,6 +148,8 @@ else
     test -f $zip || wget -O $zip http://ovh.dl.sourceforge.net/project/caelum/caelum/0.5/$pkgbase.zip
     unzip $zip
     cd $pkgbase
+    sed "s/depflags.has_key/False and depflags.has_key/g" < SConstruct > SConstruct.edit
+    mv SConstruct.edit SConstruct
     scons extra_ccflags="-fPIC -DPIC"
     mkdir -p $prefix/etc/OGRE
     cp plugins.cfg $prefix/etc/OGRE/
@@ -138,11 +169,13 @@ else
     test -f $zip || wget -O $zip http://downloads.sourceforge.net/project/pythonqt/pythonqt/$what-$ver/$what$ver.zip
     unzip $zip
     cd $what$ver
+    pyver=$(python -c 'import sys; print sys.version[:3]')
+    sed -i "s/PYTHON_VERSION=.*/PYTHON_VERSION=$pyver/" build/python.prf
     fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
     sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
     mv x $fn
     qmake
-    make -j2
+    make -j$nprocs
     rm -f $prefix/lib/lib$what*
     cp -a lib/lib$what* $prefix/lib/
     cp src/PythonQt*.h $prefix/include/
@@ -163,7 +196,7 @@ else
     cd $pkgbase
     echo yes | ./configure -library
     qmake
-    make
+    make -j$nprocs
     cp lib/lib* $prefix/lib/
     # luckily only extensionless headers under src match Qt*:
     cp src/qt*.h src/Qt* $prefix/include/
@@ -175,16 +208,7 @@ ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
 if lsb_release -c | grep -q lucid; then
     : # nothing
 else
-    build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
-    build-regular http://gstreamer.freedesktop.org/src/gstreamer/ gstreamer 0.10.25
-    build-regular http://gstreamer.freedesktop.org/src/gst-plugins-base/ gst-plugins-base 0.10.25
-    build-regular http://gstreamer.freedesktop.org/src/gst-python/ gst-python 0.10.17
-    build-regular http://farsight.freedesktop.org/releases/farsight2/ farsight2 0.0.17
-    build-regular http://farsight.freedesktop.org/releases/obsolete/gst-plugins-farsight/ gst-plugins-farsight 0.12.11
-    build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.9.1
-    build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.13
-    build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.1
-    build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1
+    : #build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
 fi
 
 

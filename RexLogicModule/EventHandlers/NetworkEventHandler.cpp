@@ -26,19 +26,16 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
-#include "Inworld/ControlPanel/TeleportWidget.h"
 #include "Inworld/NotificationManager.h"
-#include "Inworld/ControlPanelManager.h"
-#include "Inworld/Notifications/QuestionNotification.h"
-#include "Ether/EtherLoginNotifier.h"
+//#include "Inworld/ControlPanelManager.h"
+//#include "Inworld/Notifications/QuestionNotification.h"
 #endif
 
 #include "ServiceManager.h"
-#include "ISoundService.h"
-#include "AssetServiceInterface.h"
+#include "AudioAPI.h"
 #include "ScriptServiceInterface.h" // LoadURL webview opening code is not on the py side, experimentally at least
 
 namespace RexLogic
@@ -228,7 +225,7 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(NetworkEventInboundData* da
 
     // Create the "World" scene.
     boost::shared_ptr<ProtocolModuleInterface> sp = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock();
-    if (!sp.get())
+    if (!sp)
     {
         RexLogicModule::LogError("NetworkEventHandler: Could not acquire Protocol Module!");
         return false;
@@ -236,12 +233,12 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(NetworkEventInboundData* da
 
     const ClientParameters& client = sp->GetClientParameters();
     owner_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
     // Tell teleportWidget current region name
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
-    if (ui_module)
-        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetCurrentRegion(
-            owner_->GetServerConnection()->GetSimName().c_str());
+    //if (ui_module)
+    //    ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetCurrentRegion(
+    //        owner_->GetServerConnection()->GetSimName().c_str());
 #endif
     return false;
 }
@@ -367,6 +364,7 @@ bool NetworkEventHandler::HandleOSNE_KillObject(NetworkEventInboundData* data)
 
 bool NetworkEventHandler::HandleOSNE_PreloadSound(NetworkEventInboundData* data)
 {
+/* ///\todo Regression. Reimplement using the new Asset API. -jj.
     NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -382,15 +380,16 @@ bool NetworkEventHandler::HandleOSNE_PreloadSound(NetworkEventInboundData* data)
             owner_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
             asset_service->RequestAsset(asset_id, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
-
         --instance_count;
     }
-
+*/
     return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
 {
+/* ///\todo Regression. Reimplement using the new Asset API. -jj.
+
     NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -430,7 +429,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
 
     sound_id_t new_sound = soundsystem->PlaySound3D(QString::fromStdString(asset_id), ISoundService::Triggered, false, position);
     soundsystem->SetGain(new_sound, gain);
-
+*/
     return false;
 }
 
@@ -510,10 +509,10 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(NetworkEventInboundData *data)
         block.mapImageID = msg.ReadUUID();
         mapBlocks.append(block);
     }
-#ifndef UISERVICE_TEST
-    UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
+#ifdef USE_UIMODULE
+   /* UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
-        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
+        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);*/
 #endif
     return false;
 }
@@ -530,18 +529,13 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
 
     if (region_name.empty())
         return false;
-
-#ifndef UISERVICE_TEST
+/*
+#ifdef USE_UIMODULE
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (!ui_module)
         return false;
 
-    // Notifier qobject ptr
-    Ether::Logic::EtherLoginNotifier* notifier = ui_module->GetEtherLoginNotifier();
-    if (!notifier)
         return false;
-
-    if (!notifier->IsTeleporting())
         ongoing_script_teleport_ = false;
 
     if (!ongoing_script_teleport_)
@@ -558,17 +552,14 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
             new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()),
                 "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
 
-        // Connect notifier to recieve the answer signal
-        QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
-
         // Send notification
         ui_module->GetNotificationManager()->ShowNotification(question_notification);
 
         // Set bools that we dont get spam notification if you are standing in the script zone
         ongoing_script_teleport_ = true;
-        notifier->SetIsTeleporting(true);
     }
 #endif
+    */
     return false;
 }
 

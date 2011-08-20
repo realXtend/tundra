@@ -42,17 +42,12 @@ public:
     void Run();
 
     /// IScriptInstance override.
-    void Stop();
+    virtual QString GetLoadedScriptName() const { return filename_; }
 
 private:
-    /// Python context for this script instance.
-    PythonQtObjectPtr context_;
-
-    /// Script filename.
-    QString filename_;
-
-    /// Python module name for the script file.
-    QString moduleName_;
+    PythonQtObjectPtr context_; ///< Python context for this script instance.
+    QString filename_; ///< Script filename.
+    QString moduleName_; ///< Python module name for the script file.
 };
 
 #endif

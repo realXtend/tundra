@@ -11,14 +11,9 @@
 
 #include "OgreScriptEditor.h"
 #include "OgreAssetEditorModule.h"
-#include "OgreMaterialResource.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
-
-#include "Framework.h"
-#include "AssetEvents.h"
-#include "Inventory/InventoryEvents.h"
-#include "UiServiceInterface.h"
+#include "RexUUID.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -33,11 +28,7 @@
 
 #include "MemoryLeakCheck.h"
 
-OgreScriptEditor::OgreScriptEditor(
-    const QString &inventory_id,
-    const asset_type_t &asset_type,
-    const QString &name,
-    QWidget *parent) :
+OgreScriptEditor::OgreScriptEditor(const QString &inventory_id, asset_type_t asset_type, const QString &name, QWidget *parent) :
     QWidget(parent),
     mainWidget_(0),
     lineEditName_(0),
@@ -73,9 +64,9 @@ OgreScriptEditor::OgreScriptEditor(
     buttonCancel_ = mainWidget_->findChild<QPushButton *>("buttonCancel");
 
     // Connect signals
-    QObject::connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
-    QObject::connect(buttonCancel_, SIGNAL(clicked(bool)), this, SLOT(Close()));
-    QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
+    connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
+    connect(buttonCancel_, SIGNAL(clicked(bool)), this, SLOT(Close()));
+    connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 
     lineEditName_->setText(name_);
     buttonSaveAs_->setEnabled(false);
@@ -83,7 +74,6 @@ OgreScriptEditor::OgreScriptEditor(
     setWindowTitle(tr("OGRE Script Editor"));
 }
 
-// virtual
 OgreScriptEditor::~OgreScriptEditor()
 {
     SAFE_DELETE(textEdit_);
@@ -92,21 +82,13 @@ OgreScriptEditor::~OgreScriptEditor()
     SAFE_DELETE(mainWidget_);
 }
 
-void OgreScriptEditor::OpenOgreScriptEditor(Foundation::Framework *framework, const QString &asset_id, asset_type_t asset_type, QWidget* parent)
+OgreScriptEditor *OgreScriptEditor::OpenOgreScriptEditor(const QString &asset_id, asset_type_t asset_type, QWidget* parent)
 {
     OgreScriptEditor *editor = new OgreScriptEditor(QString(), asset_type, asset_id, parent);
-    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)), editor, SLOT(Deleted()), Qt::QueuedConnection);
 //    editor->HandleAssetReady();
     editor->Open();
+    return editor;
 //    editor->show();
-
-    boost::shared_ptr<UiServiceInterface> uiService = framework->GetServiceManager()->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (uiService)
-    {
-        uiService->AddWidgetToScene(editor);
-        uiService->ShowWidget(editor);
-        uiService->BringWidgetToFront(editor);
-    }
 }
 
 void OgreScriptEditor::Open()
@@ -127,7 +109,8 @@ void OgreScriptEditor::Open()
         }
     }
 }
-
+/*
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
 void OgreScriptEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
 {
     bool edit_raw = false;
@@ -161,10 +144,11 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
         textEdit_->setText(script);
     }
 }
+*/
 
 void OgreScriptEditor::Close()
 {
-    emit Closed(inventoryId_, assetType_);
+    close();
 }
 
 void OgreScriptEditor::SaveAs()
@@ -194,6 +178,7 @@ void OgreScriptEditor::SaveAs()
     }
 
     // Create event data.
+/*
     Inventory::InventoryUploadBufferEventData event_data;
 
     QVector<u8> data_buffer;
@@ -206,6 +191,7 @@ void OgreScriptEditor::SaveAs()
     event_data.buffers.push_back(data_buffer);
 
     emit UploadNewScript(&event_data);
+*/
 }
 
 void OgreScriptEditor::ValidateScriptName(const QString &name)
@@ -328,5 +314,5 @@ void OgreScriptEditor::CreatePropertyEditor()
 
     propertyTable_->show();
 
-    QObject::connect(propertyTable_, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
+    connect(propertyTable_, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
 }

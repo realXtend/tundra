@@ -11,10 +11,11 @@
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
 #include "AvatarEditing/AvatarEditor.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
+// #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_Controllable.h"
 
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
@@ -43,10 +44,11 @@
 namespace Avatar
 {
     AvatarHandler::AvatarHandler(AvatarModule *avatar_module) : 
-        avatar_appearance_(avatar_module), 
+        //avatar_appearance_(avatar_module), 
         framework_(avatar_module->GetFramework()),
         avatar_module_(avatar_module)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         avatar_states_[RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = EC_OpenSimAvatar::Walk;
         avatar_states_[RexUUID("47f5f6fb-22e5-ae44-f871-73aaaf4a6022")] = EC_OpenSimAvatar::Walk;
         avatar_states_[RexUUID("2408fe9e-df1d-1d7d-f4ff-1384fa7b350f")] = EC_OpenSimAvatar::Stand;
@@ -57,10 +59,10 @@ namespace Avatar
         avatar_states_[RexUUID("20f063ea-8306-2562-0b07-5c853b37b31e")] = EC_OpenSimAvatar::Hover;
         avatar_states_[RexUUID("62c5de58-cb33-5743-3d07-9e4cd4352864")] = EC_OpenSimAvatar::Hover;
 
-        connect(this, SIGNAL(ExportAvatar(Scene::EntityPtr, const std::string&, const std::string&, const std::string&)),
-            &avatar_appearance_, SLOT(ExportAvatar(Scene::EntityPtr, const std::string&, const std::string&, const std::string&)));
-        connect(this, SIGNAL(WebDavExportAvatar(Scene::EntityPtr)),
-            &avatar_appearance_, SLOT(WebDavExportAvatar(Scene::EntityPtr)));
+        //connect(this, SIGNAL(ExportAvatar(Scene::EntityPtr, const std::string&, const std::string&, const std::string&)),
+        //    &avatar_appearance_, SLOT(ExportAvatar(Scene::EntityPtr, const std::string&, const std::string&, const std::string&)));
+        //connect(this, SIGNAL(WebDavExportAvatar(Scene::EntityPtr)),
+        //    &avatar_appearance_, SLOT(WebDavExportAvatar(Scene::EntityPtr)));
     }
 
     AvatarHandler::~AvatarHandler()
@@ -69,8 +71,9 @@ namespace Avatar
 
     Scene::EntityPtr AvatarHandler::GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid, bool *existing)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         // Make sure scene exists
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return Scene::EntityPtr();
 
@@ -83,7 +86,7 @@ namespace Avatar
 
         *existing = false;
         entity = CreateNewAvatarEntity(entityid);
-        assert(entity.get());
+        assert(entity);
         if (!entity)
             return entity;
 
@@ -99,7 +102,7 @@ namespace Avatar
             pending_appearances_.erase(pending_appearances_.find(fullid));
             EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
             avatar->SetAppearanceAddress(appearance,false);
-            avatar_appearance_.DownloadAppearance(entity);
+            //avatar_appearance_.DownloadAppearance(entity);
             AvatarModule::LogDebug("Used pending appearance " + appearance + " for new avatar");
         }
 
@@ -108,7 +111,8 @@ namespace Avatar
 
     Scene::EntityPtr AvatarHandler::CreateNewAvatarEntity(entity_id_t entityid)
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene || !avatar_module_->GetFramework()->GetComponentManager()->CanCreate(EC_Placeable::TypeNameStatic()))
             return Scene::EntityPtr();
 
@@ -116,7 +120,7 @@ namespace Avatar
         defaultcomponents.append(EC_OpenSimPresence::TypeNameStatic());
         defaultcomponents.append(EC_OpenSimAvatar::TypeNameStatic());
         defaultcomponents.append(EC_NetworkPosition::TypeNameStatic());
-        defaultcomponents.append(EC_AvatarAppearance::TypeNameStatic());
+        //defaultcomponents.append(EC_AvatarAppearance::TypeNameStatic());
         defaultcomponents.append(EC_Placeable::TypeNameStatic());
         //defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
 #ifdef EC_HoveringWidget_ENABLED
@@ -153,6 +157,7 @@ namespace Avatar
 
     bool AvatarHandler::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         ProtocolUtilities::NetInMessage &msg = *data->message;
         msg.ResetReading();
 
@@ -240,7 +245,7 @@ namespace Avatar
                     if (!avataraddress.empty())
                     {
                         avatar->SetAppearanceAddress(avataraddress,false);
-                        avatar_appearance_.DownloadAppearance(entity);
+                        //avatar_appearance_.DownloadAppearance(entity);
                     }
                 }
                 
@@ -271,9 +276,10 @@ namespace Avatar
     
     void AvatarHandler::HandleTerseObjectUpdate_30bytes(const uint8_t* bytes)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         if (!framework_)
             return;
-        if (!framework_->GetDefaultWorldScene().get())
+        if (!framework_->Scene()->GetDefaultScene())
             return;
 
         // The data contents:
@@ -318,6 +324,7 @@ namespace Avatar
 
     void AvatarHandler::HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         // The data contents:
         // ofs  0 - localid - packed to 4 bytes
         // ofs  4 - 0
@@ -372,6 +379,7 @@ namespace Avatar
 
     bool AvatarHandler::HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
         bool overrideappearance = false;
 
@@ -388,7 +396,7 @@ namespace Avatar
             {
                 EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->SetAppearanceAddress(avataraddress,overrideappearance);
-                avatar_appearance_.DownloadAppearance(entity);
+                //avatar_appearance_.DownloadAppearance(entity);
             }
             else
             {
@@ -401,6 +409,7 @@ namespace Avatar
 
     bool AvatarHandler::HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
 
         if (params.size() < 7)
@@ -446,7 +455,8 @@ namespace Avatar
 
     bool AvatarHandler::HandleOSNE_KillObject(uint32_t objectid)
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return false;
 
@@ -477,6 +487,7 @@ namespace Avatar
    
     bool AvatarHandler::HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         ProtocolUtilities::NetInMessage &msg = *data->message;
         msg.ResetReading();
         RexUUID avatarid = msg.ReadUUID();
@@ -510,12 +521,14 @@ namespace Avatar
 
     void AvatarHandler::Update(f64 frametime)
     {
-        avatar_appearance_.Update(frametime);
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        //avatar_appearance_.Update(frametime);
     }
 
     void AvatarHandler::CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id)
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 
@@ -541,9 +554,9 @@ namespace Avatar
     void AvatarHandler::CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id)
     {
 <<<<<<< HEAD:RexLogicModule/Avatar/Avatar.cpp
-        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->Scene()->GetDefaultScene();
 =======
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
 >>>>>>> origin/develop:AvatarModule/Avatar/AvatarHandler.cpp
         if (!scene)
             return;
@@ -572,7 +585,8 @@ namespace Avatar
 
     void AvatarHandler::ShowAvatarNameOverlay(entity_id_t entity_id, bool visible)
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 
@@ -606,6 +620,7 @@ namespace Avatar
     
     void AvatarHandler::CreateAvatarMesh(entity_id_t entity_id)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         using namespace OgreRenderer;
 
         Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(entity_id);
@@ -620,7 +635,7 @@ namespace Avatar
         {
             EC_Mesh* mesh = checked_static_cast<EC_Mesh*>(meshptr.get());
             mesh->SetPlaceable(placeableptr);
-            avatar_appearance_.SetupDefaultAppearance(entity);
+            //avatar_appearance_.SetupDefaultAppearance(entity);
         }
         
         if (animctrlptr && meshptr)
@@ -632,6 +647,8 @@ namespace Avatar
     
     void AvatarHandler::StartAvatarAnimations(const RexUUID& avatarid, const std::vector<RexUUID>& anim_ids)
     {
+        /// \todo Deprecated. If needed, should be reimplemented using EC_Avatar
+        /*
         using namespace OgreRenderer;
 
         Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(avatarid);
@@ -684,10 +701,13 @@ namespace Avatar
             QString animname = QString::fromStdString(def.animation_name_);
             animctrl->DisableAnimation(animname, def.fadeout_);
         }
+        */
     }
 
     void AvatarHandler::UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime)
     {
+        /// \todo Deprecated. If needed, should be reimplemented using EC_Avatar
+        /*
         using namespace OgreRenderer;
         Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(avatarid);
         if (!entity)
@@ -714,10 +734,12 @@ namespace Avatar
             }
             ++anim;
         }
+        */
     }
     
     void AvatarHandler::SetAvatarState(const RexUUID& avatarid, EC_OpenSimAvatar::State state)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(avatarid);
         if (!entity)
             return;
@@ -730,21 +752,28 @@ namespace Avatar
     
     bool AvatarHandler::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
-        return avatar_appearance_.HandleResourceEvent(event_id, data);
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        //return avatar_appearance_.HandleResourceEvent(event_id, data);
+        return false;
     }
 
     bool AvatarHandler::HandleInventoryEvent(event_id_t event_id, IEventData* data)
     {
-        return avatar_appearance_.HandleInventoryEvent(event_id, data);
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        //return avatar_appearance_.HandleInventoryEvent(event_id, data);
+        return false;
     }
 
     bool AvatarHandler::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
-        return avatar_appearance_.HandleAssetEvent(event_id, data);
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        //return avatar_appearance_.HandleAssetEvent(event_id, data);
+        return false;
     }
 
     Scene::EntityPtr AvatarHandler::GetUserAvatar() const
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         ProtocolUtilities::WorldStreamPtr conn = avatar_module_->GetServerConnection();
         if (!conn)
             return Scene::EntityPtr();
@@ -754,6 +783,7 @@ namespace Avatar
 
     bool AvatarHandler::AvatarExportSupported()
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
             return false;
@@ -773,6 +803,8 @@ namespace Avatar
 
     void AvatarHandler::ExportUserAvatar()
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        /*
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
         {
@@ -810,10 +842,12 @@ namespace Avatar
         // Inventory avatar
         else
             avatar_appearance_.InventoryExportAvatar(entity);
+        */
     }
 
     void AvatarHandler::ExportUserAvatarLocal(const std::string& filename)
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
         {
@@ -821,11 +855,12 @@ namespace Avatar
             return;
         }
         
-        avatar_appearance_.ExportAvatarLocal(entity, filename);
+        //avatar_appearance_.ExportAvatarLocal(entity, filename);
     }
     
     void AvatarHandler::ReloadUserAvatar()
     {
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
         {
@@ -834,17 +869,13 @@ namespace Avatar
         }
         
         // Revert to default if no storage url
-        avatar_appearance_.DownloadAppearance(entity, true);
+        //avatar_appearance_.DownloadAppearance(entity, true);
     }
     
     void AvatarHandler::HandleLogout()
     {
-        avatar_appearance_.InventoryExportReset();
+        /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
+        //avatar_appearance_.InventoryExportReset();
         pending_appearances_.clear();
     }
-    
-    void AvatarHandler::SetupECAvatar(entity_id_t entityID, const u8* data, uint size)
-    {
-        avatar_appearance_.ProcessECAvatarAppearance(entityID, data, size);
     }
-}

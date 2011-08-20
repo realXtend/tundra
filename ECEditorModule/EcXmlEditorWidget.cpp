@@ -12,10 +12,10 @@
 #include "ECEditorModule.h"
 
 #include "Framework.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "IComponent.h"
 #include "Entity.h"
-#include "XMLUtilities.h"
 
 #include <QDomDocument>
 
@@ -135,7 +135,7 @@ void EcXmlEditorWidget::Refresh()
             temp_doc.appendChild(entity_elem);
         entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-        const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+        const Scene::Entity::ComponentVector &components = entity->Components();
         for(uint i = 0; i < components.size(); ++i)
             if (components[i]->IsSerializable())
             {
@@ -184,7 +184,7 @@ void EcXmlEditorWidget::Save()
     QDomDocument edited_doc;
     if (edited_doc.setContent(text, false, &errorMsg))
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 
@@ -202,7 +202,7 @@ void EcXmlEditorWidget::Save()
         while (!entity_elem.isNull())
         {
             entity_found = true;
-            entity_id_t id = (entity_id_t)RexTypes::ParseInt(entity_elem.attribute("id").toStdString());
+            entity_id_t id = (entity_id_t)boost::lexical_cast<int>(entity_elem.attribute("id").toStdString());
             Scene::EntityPtr entity = scene->GetEntity(id);
             if (entity)
             {

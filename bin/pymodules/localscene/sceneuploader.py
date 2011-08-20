@@ -10,12 +10,15 @@ from socket import SOCK_STREAM
 
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
+from dotscene import findComponentAttribute
+from dotscene import findNodes
 import urllib2
 import time
 import shutil
 import math
 
 from xml.dom.minidom import getDOMImplementation
+from xml.dom import Node
 import sceneactionsxml
 
 import constants
@@ -41,6 +44,7 @@ class SceneUploader:
         self.file = None
         self.headers = {}
         self.progressBar = controller.window.progressBar
+        self.sceneData = None
         
         # poster init
         register_openers()
@@ -53,9 +57,10 @@ class SceneUploader:
         self.appDataUploadFolder=None
         
         
-    def uploadScene(self, filepath, dotScene, regionName = None, publishName = None):
+    def uploadScene(self, filepath, dotScene, sceneData, regionName = None, publishName = None):
         f = None
         self.file = filepath + ".zip"
+        self.sceneData = sceneData
         print "creating zip file"
         self.progressBar.setValue(1)
         self.progressBar.setFormat("progress: creating zip %p%")
@@ -118,7 +123,7 @@ class SceneUploader:
     def parseCapsUrl(self, cap_url):
         r.logInfo(cap_url)
         url_split = cap_url.split(':')
-        if(url_split.__len__<3):
+        if(len(url_split)<3):
             r.logInfo("mallformed cap url for scene upload")
             return False
         surl = url_split[1]
@@ -148,13 +153,22 @@ class SceneUploader:
         print "----------------"
         #print self.file
         zf = zipfile.ZipFile(self.file, "w")
+        uploadPathLen = len(self.appDataUploadFolder)
         for dirname, dirnames, filenames in os.walk(self.appDataUploadFolder):
+            # print "--"
             # print dirname
             # print dirnames
             # print filenames
+            # print "--"
+            zipfolder = dirname[uploadPathLen:]
+            zipfolder = os.path.normpath(zipfolder)
             for filename in filenames:
                 filepath = os.path.join(dirname, filename)
-                zippath = TEMP_UPLOAD_FOLDER + os.sep + os.path.basename(filepath)
+                zippath = None
+                if(zipfolder==''):
+                    zippath = TEMP_UPLOAD_FOLDER + os.sep + os.path.basename(filepath)
+                else:
+                    zippath = TEMP_UPLOAD_FOLDER + os.sep + zipfolder + os.sep + os.path.basename(filepath)
                 #zf.write(filepath)
                 zf.write(filepath, zippath)
         zf.close()
@@ -183,23 +197,43 @@ class SceneUploader:
         
         # if exists copy <scene_name>.material file to upload package
         sceneMaterialFilePath=ds.fileName[:-6] + ".material"
-        if(self.fileExists(sceneMaterialFilePath)==True):
-            materialname = self.nameFromFilepath(sceneMaterialFilePath)
-            dstSceneMaterialFile = self.appDataUploadFolder + os.sep + materialname
-            shutil.copyfile(sceneMaterialFilePath, dstSceneMaterialFile);
-            # copy images in scene material file
-            self.copyTextures(sceneMaterialFilePath, TEXTURE_FOLDER)
+        materialname = self.nameFromFilepath(sceneMaterialFilePath)
+        dstSceneMaterialFile = self.appDataUploadFolder + os.sep + materialname
+        if self.sceneData.sceneDotMaterial == False:
+            if(self.fileExists(sceneMaterialFilePath)==True):
+                shutil.copyfile(sceneMaterialFilePath, dstSceneMaterialFile);
+                # copy images in scene material file
+                self.copyTextures(sceneMaterialFilePath, TEXTURE_FOLDER)
+        else:
+            # copy Scene.material as <scene_name>.material file
+            shutil.copyfile(self.sceneData.materialFile, dstSceneMaterialFile)
+            self.copyTextureList(self.sceneData.textures, self.sceneData.materialFile)
+            pass
         
         saver = SceneSaver()
         saver.save(dstSceneFile, ds.dotscenemanager.nodes)
         
+        # copy  rex file
+        rexFile = ds.fileName[:-6] + ".rex"
+        rexDstFile = dstSceneFile[:-6] + ".rex"
+        # print "--------------"
+        # print rexFile
+        # print rexDstFile
+        # print "--------------"
+        if(self.fileExists(rexFile)==True):
+            shutil.copyfile(rexFile, rexDstFile)
+        
         for k, oNode in ds.dotscenemanager.nodes.iteritems():
             #print k
+            self.handleNodePath(oNode.entityMeshFile)
             dstFile = self.appDataUploadFolder + os.sep + oNode.entityMeshFile
+            dstFile = os.path.normpath(dstFile)
             
             # try first load from scene folder
             sceneFilePath = os.path.dirname(ds.fileName) + os.sep + oNode.entityMeshFile
             pathToFile = relativepath + os.sep + oNode.entityMeshFile
+            sceneFilePath = os.path.normpath(sceneFilePath)
+            pathToFile = os.path.normpath(pathToFile)
             
             materialfile = ''
             
@@ -233,13 +267,10 @@ class SceneUploader:
                 else:
                     print "Collision file specified, but not found"
 
-    def copyTextures(self, matfile, folder):
-        list = self.getTexturesFromMaterialFile(matfile)
-        #print list
+    def copyTextureList(self, list, matfile):
         for name in list:
             #pathToFile = folder.replace('/', os.sep) + os.sep + name
             dstFile = self.appDataUploadFolder + os.sep + name
-            
             dirpath = os.path.dirname(matfile)
             scenePath = dirpath + os.sep + name
             if(self.fileExists(scenePath)):
@@ -254,7 +285,12 @@ class SceneUploader:
             else:
                 r.logInfo("Failed to find texture file specified in material file:")
                 r.logInfo(pathToFile)
-    
+        pass
+                    
+    def copyTextures(self, matfile, folder):
+        list = self.getTexturesFromMaterialFile(matfile)
+        self.copyTextureList(list, matfile)
+        
     def getTexturesFromMaterialFile(self, matfile):
         txtList = []
         f = open(matfile, 'r')
@@ -300,8 +336,6 @@ class SceneUploader:
             line = f.readline()
             if (line==None):
                 break
-            #dir(line).__contains__('endswith')
-            #print "line ", line
             if(line.endswith('.jpg\r\n') or line.endswith('.dds\r\n') or line.endswith('.png\r\n') or line.endswith('.tga\r\n')):
                 txtList.append( line.split(' ')[-1][:-2])
             if(line.endswith('.jpg\n') or line.endswith('.dds\n') or line.endswith('.png\n') or line.endswith('.tga\n')):
@@ -336,7 +370,7 @@ class SceneUploader:
             #print oNode.entityMeshFile
             print k
             pathToFile = relativepath + os.sep + oNode.entityMeshFile
-            if(allreadyread.__contains__(pathToFile)==False):
+            if(not pathToFile in allreadyread):
                 print pathToFile
                 allreadyread.append(pathToFile)
                 tar.add(pathToFile)
@@ -350,8 +384,27 @@ class SceneUploader:
         return os.path.dirname(path)
         
     def copyLocalizedSceneFilesToNaalisFolders(self, sceneFilePath):
-        
         pass
+
+    def handleNodePath(self, path):
+        """ Check if path is more than just filename, then we need to create folder structure, so we can copy objects """
+        # path = "test/test2/file"
+        path = os.path.normpath(path)
+        folders=[]
+        basePath, fileName = os.path.split(path)
+        while(basePath!=''):
+            basePath, folder = os.path.split(basePath)
+            folders.append(folder)
+            pass
+        # create folder structure to uploadfolder
+        folders.reverse()
+        baseFolder = self.appDataUploadFolder
+        for f in folders:
+            newFolder = os.path.join(baseFolder, f)
+            os.mkdir(newFolder)
+            baseFolder = newFolder
+        pass
+        
         
 class SceneSaver:
     """ For uploading scene different from the saver in localscene """
@@ -396,18 +449,33 @@ class SceneSaver:
                 
                 scale = newdoc.createElement('scale')
                 scale.setAttribute("x", str(oNode.naali_ent.placeable.Scale.x()))
-                scale.setAttribute("y", str(oNode.naali_ent.placeable.Scale.y()))
-                scale.setAttribute("z", str(oNode.naali_ent.placeable.Scale.z()))
+                
+                scale.setAttribute("y", str(oNode.naali_ent.placeable.Scale.z()))
+                scale.setAttribute("z", str(oNode.naali_ent.placeable.Scale.y()))
                 nodeNode.appendChild(scale)
                 
                 entity = newdoc.createElement('entity')
-                entity.setAttribute("name", oNode.entityNode.getAttribute("name"))
-                entity.setAttribute("meshFile", oNode.entityNode.getAttribute("meshFile"))
-                if oNode.entityNode.hasAttribute("collisionFile"):
-                    entity.setAttribute("collisionFile", oNode.entityNode.getAttribute("collisionFile"))
-                if oNode.entityNode.hasAttribute("collisionPrim"):
-                    entity.setAttribute("collisionPrim", oNode.entityNode.getAttribute("collisionPrim"))
-                entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
+                # entity.setAttribute("name", oNode.entityNode.getAttribute("name"))
+                # entity.setAttribute("meshFile", oNode.entityNode.getAttribute("meshFile"))
+                # if oNode.entityNode.hasAttribute("collisionFile"):
+                    # entity.setAttribute("collisionFile", oNode.entityNode.getAttribute("collisionFile"))
+                # if oNode.entityNode.hasAttribute("collisionPrim"):
+                    # entity.setAttribute("collisionPrim", oNode.entityNode.getAttribute("collisionPrim"))
+                
+                #copy entitys attributes
+                eAttrs = oNode.entityNode.attributes
+                self.setElementAttributes(entity, eAttrs)
+
+                # print oNode.entityNode.toxml()
+                # print oNode.entityNode.hasChildNodes()
+                self.copySubStructure(newdoc, oNode.entityNode, entity)                
+                        
+                if(entity.attributes.has_key("static")==False):
+                    entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
+                
+                # print "-------------------------"
+                # print entity.toxml()
+                
                 nodeNode.appendChild(entity)
                 nodesNode.appendChild(nodeNode)
         
@@ -422,3 +490,36 @@ class SceneSaver:
         contents = '\n'.join(lines)
         f.write(contents)
         f.close()
+        
+    
+    def getChildElems(self, element):
+        elems = []
+        if element.hasChildNodes():
+            nodes = element.childNodes
+            for node in nodes:
+                if(node.nodeType == Node.ELEMENT_NODE):
+                    elems.append(node)
+        return elems
+        
+    def setElementAttributes(self, element, attributes):
+        keys = attributes.keys()
+        for k in keys:
+            name = attributes[k].nodeName
+            value = attributes[k].nodeValue
+            element.setAttribute(k, value)
+        
+    def copySubStructure(self, newdoc, element1, element2):
+        if element1.hasChildNodes():
+            childs1 = self.getChildElems(element1)
+            if(childs1!=None):
+                for ch1 in childs1:
+                    ch2 = newdoc.createElement(ch1.nodeName)
+                    self.setElementAttributes(ch2, ch1.attributes)
+                    self.copySubStructure(newdoc, ch1, ch2)
+                    element2.appendChild(ch2)
+            else:
+                pass
+        else:
+            #print "%s has no child elements ---------------" % element1.nodeName
+            pass
+        

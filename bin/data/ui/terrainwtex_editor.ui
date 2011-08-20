@@ -10,8 +10,14 @@
     <height>578</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>446</width>
+    <height>578</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Terrain editor</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

@@ -12,7 +12,7 @@
 #include <CommunicationService.h>
 #include "ServiceManager.h"
 #include "VoiceSessionParticipant.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include "Contact.h"
 #include "CoreException.h"
 
@@ -139,10 +139,10 @@ namespace TelepathyIM
         if (!framework)
             return;
         ServiceManagerPtr service_manager = framework->GetServiceManager();
-        if (!service_manager.get())
+        if (!service_manager)
             return;
         boost::shared_ptr<ISoundService> soundsystem = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
-        if (!soundsystem.get())
+        if (!soundsystem)
             return;   
 
         soundsystem->StopSound(audio_playback_channel_);
@@ -701,10 +701,10 @@ namespace TelepathyIM
         if (!framework)
             return;
         ServiceManagerPtr service_manager = framework->GetServiceManager();
-        if (!service_manager.get())
+        if (!service_manager)
             return;
         boost::shared_ptr<ISoundService> soundsystem = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
-        if (!soundsystem.get())
+        if (!soundsystem)
             return;     
         if (!farsight_channel_)
             return;

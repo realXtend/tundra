@@ -1,3 +1,4 @@
+////$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_KristalliProtocolModule_KristalliProtocolModule_h
@@ -10,6 +11,7 @@
 #include "UserConnection.h"
 
 #include "kNet.h"
+#include "kNet/qt/NetworkDialog.h"
 
 namespace KristalliProtocol
 {
@@ -30,6 +32,10 @@ namespace KristalliProtocol
         void Update(f64 frametime);
 
         MODULE_LOGGING_FUNCTIONS;
+
+#ifdef KNET_USE_QT
+        ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
+#endif
 
         /// Connects to the Kristalli server at the given address.
         void Connect(const char *ip, unsigned short port, kNet::SocketTransportLayer transport);
@@ -79,6 +85,15 @@ namespace KristalliProtocol
         UserConnection* GetUserConnection(kNet::MessageConnection* source);
         /// Gets user by connection ID. Returns null if no such connection
         UserConnection* GetUserConnection(u8 id);
+
+        /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
+        kNet::SocketTransportLayer defaultTransport;
+
+//$ BEGIN_MOD $
+	#ifdef KNET_USE_QT
+		NetworkDialog *networkDialog;
+	#endif
+//$ END_MOD $
         
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
@@ -103,7 +118,7 @@ namespace KristalliProtocol
         unsigned short serverPort;
         /// Store the transport type. Used for reconnecting
         kNet::SocketTransportLayer serverTransport;
-
+        
         kNet::Network network;
         Ptr(kNet::MessageConnection) serverConnection;
         kNet::NetworkServer *server;

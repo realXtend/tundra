@@ -193,8 +193,17 @@ public:
         {
         }
     };
-    
-    typedef std::map<QString, Animation> AnimationMap;
+
+    class QStringLessThanNoCase
+    {
+    public:
+        bool operator()(const QString &a, const QString b) const
+        {
+            return QString::compare(a, b, Qt::CaseInsensitive) < 0;
+        }
+    };
+
+    typedef std::map<QString, Animation, QStringLessThanNoCase> AnimationMap;
 
     virtual ~EC_AnimationController();
     

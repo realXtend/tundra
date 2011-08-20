@@ -71,7 +71,7 @@ SoundRotator.prototype.Update = function(frame_time)
 // Wait until EC_Placeable object has been added to entity.
 function componentAdded(entity, component)
 {
-	if (entity.GetId != me.GetId && component.TypeName != "EC_OgrePleacable")
+	if (entity.id != me.id && component.typeName != "EC_OgrePleacable")
 		return;
 	
 	sound_rotator = new SoundRotator(local_audio, 9.0, 1.0, component);

@@ -273,7 +273,7 @@ public:
     /// Has sky enabled.
     bool IsSkyEnabled() const;
 
-    /// @Return sky type that is in use.
+    /// @return sky type that is in use.
     SkyType GetSkyType() const;
 
     /// Change sky type into new one and create new sky if wanted.

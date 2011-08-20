@@ -9,7 +9,7 @@
 
 #include "ModuleManager.h"
 #include "WorldStream.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
 #include "MemoryLeakCheck.h"
@@ -38,20 +38,20 @@ namespace RexLogic
 
     void ScriptDialogHandler::ShowDialog(ScriptDialogRequest& request)
     {
-        UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
+/*        UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
         if (!ui)
         {
             RexLogicModule::LogError("Cannot show ScriptDialogWidget, UI service pointer not valid.");
             return;
-        }
+        }*/
 
         ScriptDialogWidget* widget = new ScriptDialogWidget(request);
         dialogs_.append(widget);
         connect(widget, SIGNAL(OnClosed(int, QString)), this, SLOT(OnDialogClosed(int, QString)));
 
         widget->setWindowTitle(tr("Message from object"));
-        ui->AddWidgetToScene(widget);
-        ui->ShowWidget(widget);
+       // ui->AddWidgetToScene(widget);
+        //ui->ShowWidget(widget);
     }
 
     void ScriptDialogHandler::OnDialogClosed(int channel, const QString &answer)

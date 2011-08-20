@@ -156,9 +156,9 @@ class TestCreateDestroy(TestRunner):
                 r.logInfo("found created test prim - naming, moving and deleting (finished=%s)" % self.finished)
                 ent.prim.Name = "Seppo"
                 ent.prim.SendObjectNameUpdate()
-                pos = ent.placeable.Position
+                pos = ent.placeable.position
                 pos.setX(netp.x() + 1) #change the x-coordinate
-                ent.placeable.Position = pos
+                ent.placeable.position = pos
                 r.logInfo("Moving to move to pos: %s" % pos)
                 
                 r.getServerConnection().SendObjectDeRezPacket(
@@ -250,16 +250,15 @@ class TestDynamicProperties(TestRunner):
         d = ent.qent.EC_DynamicComponent
         val = 42.0
         d.CreateAttribute("real", val)
-        # Todo: OnChanged() is deprecated
-        d.OnChanged()
+        d.ComponentChanged(0)
         assert val == d.GetAttribute("real")
 
         val = 8.5
         d.SetAttribute("real", val)
-        d.OnChanged()
+        d.ComponentChanged(0)
         assert val == d.GetAttribute("real")
         d.RemoveAttribute("real")
-        d.OnChanged()
+        d.ComponentChanged(0)
 
         yield "created, changed and removed attribute"
         r.exit()
@@ -316,7 +315,7 @@ class TestApi(TestRunner):
         e = naali.createMeshEntity("axes.mesh")
 
         from PythonQt.QtGui import QVector3D, QQuaternion
-        e.placeable.Position = QVector3D(128, 128, 60)
+        e.placeable.position = QVector3D(128, 128, 60)
         e.placeable.Scale = QVector3D(5, 5, 5)
         e.placeable.Orientation = QQuaternion(0, 0, 0, 1)
         r.removeEntity(e.Id)
@@ -338,7 +337,7 @@ class TestApi(TestRunner):
         fov = naali.getCamera().camera.GetVerticalFov()
         
         yield "avatar position"
-        p = naali.getUserAvatar().placeable.Position
+        p = naali.getUserAvatar().placeable.position
 
         yield "avatar animation controller"
         naali.getUserAvatar().animationcontroller.EnableAnimation("Walk")
@@ -369,11 +368,11 @@ class TestApi(TestRunner):
         print ent, type(ent)
         d = ent.EC_DynamicComponent
         d.CreateAttribute("real", 42.0)
-        d.OnChanged()
+        d.ComponentChanged(0)
         d.SetAttribute("real", 8.5)
-        d.OnChanged()
+        d.ComponentChanged(0)
         d.RemoveAttribute("real")
-        d.OnChanged()
+        d.ComponentChanged(0)
 
         yield "test javascript"
         cam = naali.getCamera()
@@ -382,7 +381,7 @@ class TestApi(TestRunner):
         naali.runjs('print("Some camera! " + x)', {'x': cam.camera})
         #py objects are not qobjects. naali.runjs('print("Some camera, using naali :O ! " + x.getCamera())', {'x': naali})
         naali.runjs('print("Camera Entity " + x)', {'x': cam})
-        naali.runjs('print("Camera placeable pos: " + pos)', {'pos': cam.placeable.Position})
+        naali.runjs('print("Camera placeable pos: " + pos)', {'pos': cam.placeable.position})
         #not exposed yet. naali.runjs('print("QVector3D: " + new QVector3D())', {})
         #naali.runjs('var a = {"a": true, "b": 2};')
         #naali.runjs('print(a.a + ", " + a.b)')

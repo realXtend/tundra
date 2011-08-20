@@ -8,12 +8,11 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
+# Compile viewer in consoleless mode for release configuration
+set(WINDOWS_APP 1)
+
 # Preprocessor defines on MSVC
 if (MSVC)
-   if (WINDOWS_APP)
-       add_definitions (-DWINDOWS_APP)
-   endif (WINDOWS_APP)
-
    set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP)
    set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELWITHDEBINFO _DMEMDUMP)
 
@@ -30,11 +29,11 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_modules (Core Foundation Interfaces SceneManager HttpUtilities)
+use_modules (Core Foundation Interfaces Scene)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES})
 
-link_modules (Core Foundation  Interfaces SceneManager HttpUtilities)
+link_modules (Core Foundation Interfaces Scene)
 
 final_target ()
 

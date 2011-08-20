@@ -7,7 +7,7 @@
 
 #include "Color.h"
 
-#include "../Input/InputFwd.h"
+#include "InputFwd.h"
 
 #include <QPair>
 #include <QTimer>
@@ -29,14 +29,6 @@ namespace Ogre
     class SceneNode;
 }
 
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
-}
-
 namespace Foundation
 {
     class TextureInterface;
@@ -54,7 +46,7 @@ namespace Environment
     typedef QPair<float, float> MinMaxValue;
 
     //! Environment editor window. Owned by EnvironmentModule. The editor is responsible for terrain, water, sky, fog and light editing.
-    //! Terrain: Paint terrain heightmap, update terrain textures and height ranges.
+    //! Terrain: Paint terrain height map, update terrain textures and height ranges.
     //! Water: Enable/Disable water geometry and change it height value.
     //! Sky: Choose between three sky types that are Sky_box, Sky_dome and Sky_plane, update sky parameters like distance and texture and enable/disable sky geometry.
     //!      Sky editing is only enabled when the Caelum is turned off.
@@ -67,7 +59,7 @@ namespace Environment
 
     public:
         //! All modify land actions that we can send into the server.
-        //! Note! Dont change the order of this list or server wont do right modify land actions.
+        //! Note! Don't change the order of this list or server wont do right modify land actions.
         enum ModifyLandAction
         {
             Flatten = 0,
@@ -79,7 +71,7 @@ namespace Environment
         };
 
         //! All brush sizes that we can use to modify our land.
-        //! Note! Dont change the order of this list.
+        //! Note! Don't change the order of this list.
         enum BrushSize
         {
             //!Brush size is 3x3 vertices.
@@ -96,14 +88,14 @@ namespace Environment
             INACTIVE
         };
 
-        //! Constuctor
+        //! Constructor
         EnvironmentEditor(EnvironmentModule *environment_module);
 
         //! Destructor
         virtual ~EnvironmentEditor();
 
         //! Handle resource ready event that will return the texture that has been requested.
-        void HandleResourceReady(Resource::Events::ResourceReady *res);
+//        void HandleResourceReady(Resource::Events::ResourceReady *res);
 
         //! Heightmap image width
         static const int cHeightmapImageWidth  = 256;
@@ -120,8 +112,8 @@ namespace Environment
         void InitSkyTabWindow();
         void InitFogTabWindow();
         void InitAmbientTabWindow();
-    
-        bool Showed() { return editor_widget_->isVisible(); }
+
+        bool Showed() { return editor_widget_ != 0 ? editor_widget_->isVisible() : false; }
 
     public slots:
         //! Toggle between Paint2D and Paint3D mode.
@@ -263,9 +255,10 @@ namespace Environment
        void CreateInputContext();
 
         //! Convert Degoded texture into QImage format. Note! This method is planned to be removed when QImage can directly created using raw data pointer.
-        //! @Param tex Reference to texture resource.
-        //! @Return converted QImage.
-        QImage ConvertToQImage(Foundation::TextureInterface &tex);
+        //! @param tex Reference to texture resource.
+        //! @return converted QImage.
+        ///\todo Regression. Use the new Asset API here instead. -jj.
+//        QImage ConvertToQImage(Foundation::TextureInterface &tex);
 
         //! Create new terrain paint brush that will display where user is painting the terrain.
         //! Paint area color is calculated using distance between middle point and individual vertex.
@@ -304,22 +297,22 @@ namespace Environment
         void UpdateHeightmapImagePaintArea(uint x_pos, uint y_pos);
 
         //! Clear old sky properties and create a new one for spesific sky type.
-        //! @Param sky_type is used to tell what type of sky is in use, so right properties will be created.
+        //! @param sky_type is used to tell what type of sky is in use, so right properties will be created.
         void CreateSkyProperties(SkyType sky_type);
 
         //! Clean all option widgets on the option scroll area.
         void CleanSkyProperties();
 
         //! Ask texture decoder for a texture resource.
-        //! @Param index Index will tell us what terrain texture we are requesting range [0 - 3] where 0 is the lowest terrain texture and 3 is the highest.
-        //! @Return request tag for the texture.
-        request_tag_t RequestTerrainTexture(uint index);
+        //! @param index Index will tell us what terrain texture we are requesting range [0 - 3] where 0 is the lowest terrain texture and 3 is the highest.
+        //! @return request tag for the texture.
+//        request_tag_t RequestTerrainTexture(uint index);
 
         QWidget* GetPage(const QString& name);
         QWidget* GetCurrentPage();
 
         //! Asset_tags for terrain texture requests.
-        std::vector<request_tag_t> terrain_texture_requests_;
+//        std::vector<request_tag_t> terrain_texture_requests_;
 
         //! Terrain texture asset id list.
         std::vector<std::string> terrain_texture_id_list_;

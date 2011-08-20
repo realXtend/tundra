@@ -5,11 +5,10 @@
 #include "AudioSignalLabel.h"
 #include "OgreAssetEditorModule.h"
 
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "ModuleManager.h"
-#include "ISoundService.h"
-#include "AssetInterface.h"
+#include "AudioAPI.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -29,8 +28,8 @@ AudioPreviewEditor::AudioPreviewEditor(Foundation::Framework *framework,
     framework_(framework),
     assetType_(asset_type),
     inventoryId_(inventory_id),
-    soundId_(0),
-    request_tag_(0),
+//    soundId_(0),
+//    request_tag_(0),
     okButton_(0),
     playButton_(0),
     playTimer_(0)
@@ -44,6 +43,8 @@ AudioPreviewEditor::~AudioPreviewEditor()
 
 }
 
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+    /*
 void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
 {
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
@@ -60,7 +61,10 @@ void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
         }
     }
 }
+    */
 
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+    /*
 void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res) 
 {
     if(request_tag_ == res->tag_)
@@ -105,20 +109,21 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
         }
     }
 }
+    */
 
 void AudioPreviewEditor::Closed()
 {
-    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
+    //UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
+    //if (!ui)
+    //    return;
 
-    ui->RemoveWidgetFromScene(this);
+    //ui->RemoveWidgetFromScene(this);
 
     emit Closed(inventoryId_, assetType_);
 }
 
 void AudioPreviewEditor::PlaySound()
-{
+{/* ///\todo Regression. Reimplement. -jj.
     //If sound asset is not ready yet no need to play it.
     if(assetId_.size() <= 0)
         return;
@@ -165,10 +170,13 @@ void AudioPreviewEditor::PlaySound()
             }
         }
     }
+    */
 }
 
 void AudioPreviewEditor::TimerTimeout()
 {
+///\todo Regression. Reimplement. -jj.
+/*
     //If sound asset is not ready yet no need to play it.
     if(assetId_.size() <= 0 || soundId_ == 0)
         return;
@@ -188,6 +196,7 @@ void AudioPreviewEditor::TimerTimeout()
             playButton_->setText(tr("Play"));
         }
     }
+*/
 }
 
 void AudioPreviewEditor::resizeEvent(QResizeEvent *ev)
@@ -199,9 +208,9 @@ void AudioPreviewEditor::resizeEvent(QResizeEvent *ev)
 void AudioPreviewEditor::InitializeEditorWidget()
 {
     // Get ui service and create canvas
-    UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
+    //UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
+    //if (!ui)
+    //    return;
 
     // Create widget from ui file
     QUiLoader loader;
@@ -229,9 +238,9 @@ void AudioPreviewEditor::InitializeEditorWidget()
 
     // Add widget to UI via ui services module
     setWindowTitle(tr("Audio: ") + objectName());
-    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
-    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-    proxy->show();
-    ui->BringWidgetToFront(proxy);
+    //UiProxyWidget *proxy = ui->AddWidgetToScene(this);
+    //connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
+    //proxy->show();
+    //ui->BringWidgetToFront(proxy);
 }
 

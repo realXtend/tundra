@@ -11,8 +11,10 @@
 
 #include "DebugStatsModuleApi.h"
 #include "IModule.h"
+#include "InputFwd.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexTypes.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QPointer>
@@ -52,10 +54,13 @@ namespace DebugStats
 
     public slots:
         /// Creates and shows the profiling window.
-        Console::CommandResult ShowProfilingWindow(/*const StringVector &params*/);
+        ConsoleCommandResult ShowProfilingWindow(/*const StringVector &params*/);
 
         /// Creates and shows the participant window.
-        Console::CommandResult ShowParticipantWindow(const StringVector &params);
+        ConsoleCommandResult ShowParticipantWindow(const StringVector &params);
+
+        /// Gets debug stats uiwidget
+        UiWidget *GetDebugStatsUiWidget();
 
     private slots:
         void AddProfilerWidgetToUi();
@@ -70,22 +75,22 @@ namespace DebugStats
         Q_DISABLE_COPY(DebugStatsModule);
 
         /// Sends random NetInMessage packet
-        Console::CommandResult SendRandomNetworkInPacket(const StringVector &params);
+        ConsoleCommandResult SendRandomNetworkInPacket(const StringVector &params);
 
         /// Sends random NetOutMessage packet
-        Console::CommandResult SendRandomNetworkOutPacket(const StringVector &params);
+        ConsoleCommandResult SendRandomNetworkOutPacket(const StringVector &params);
 
         /// Sends packet requesting god powers.
-        Console::CommandResult RequestGodMode(const StringVector &params);
+        ConsoleCommandResult RequestGodMode(const StringVector &params);
 
         /// Sends packet requesting kicking user out from the server.
-        Console::CommandResult KickUser(const StringVector &params);
+        ConsoleCommandResult KickUser(const StringVector &params);
 
         /// Dumps J2K decoded textures to PNG images in the viewer working directory.
-        Console::CommandResult DumpTextures(const StringVector &params);
+        ConsoleCommandResult DumpTextures(const StringVector &params);
 
         /// Invokes action in entity.
-        Console::CommandResult Exec(const StringVector &params);
+        ConsoleCommandResult Exec(const StringVector &params);
 
         /// A history of estimated frame times.
         std::vector<std::pair<uint64_t, double> > frameTimes;
@@ -109,6 +114,9 @@ namespace DebugStats
 
         /// Profiler window
         QPointer<TimeProfilerWindow> profilerWindow_;
+
+        /// Profiler widget
+        QPointer<UiWidget> profilerWidget_;
 
         /// Participant window
         QPointer<ParticipantWindow> participantWindow_;

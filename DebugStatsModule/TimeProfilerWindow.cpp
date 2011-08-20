@@ -11,7 +11,6 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetOutMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
-#include "AssetServiceInterface.h"
 #include "WorldStream.h"
 #include "SceneManager.h"
 #include "RenderServiceInterface.h"
@@ -19,10 +18,11 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
-#include "AssetEvents.h"
 #include "EventManager.h"
-#include "NaaliUi.h"
-#include "NaaliMainWindow.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#include "SceneAPI.h"
+#include "Entity.h"
 //#include "RealXtend/RexProtocolMsgIDs.h"
 //#include "GenericMessageUtils.h"
 
@@ -252,7 +252,9 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         menu_material_assets_->addAction(copyAssetName);
     }
 
+#ifdef OGREASSETEDITOR_ENABLED
     tex_preview_ = 0;
+#endif
 }
 
 namespace
@@ -309,17 +311,19 @@ void TimeProfilerWindow::CopyMaterialAssetName()
 
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {
+    /* /// \todo Regression. Reimplement using the Asset API. -jj.
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Mesh));
     boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0 )
     {
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
     }
-
+*/
 }
 
 void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 {
+#ifdef OGREASSETEDITOR_ENABLED
     if ( tex_preview_ == 0)
     {
         tex_preview_ = new TexturePreviewEditor(framework_,this);
@@ -336,7 +340,7 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
     }
     */
-
+#endif
 }
 
 
@@ -1640,8 +1644,8 @@ const char *SimStatsStr(int statID)
         "LL_SIM_STAT_SIMPHYSICSMEMORY",
         "UnknownID"
     };
-    if (statID < 0 || statID > 30)
-        return str[31];
+    if (statID < 0 || statID > 29)
+        return str[29];
     return str[statID];
 }
 
@@ -1680,6 +1684,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
 
     tree_asset_cache_->clear();
     tree_asset_transfers_->clear();
+/*     /// \todo Regression. Reimplement using the Asset API. -jj.
 
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
         framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
@@ -1716,6 +1721,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     }
 
     QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
+    */
 }
 
 void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
@@ -1723,7 +1729,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
         return;
     
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -2296,8 +2302,14 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
     QTreeWidgetItem *nodeItem = AddNewItem(parent, str);
 
     if (e)
+    {
+        if (!e->hasSkeleton())
+            AddNewItem(nodeItem, "Ogre::SkeletonInstance: (no skeleton)");
+        else
+            AddNewItem(nodeItem, ("Ogre::SkeletonInstance: " + e->getSkeleton()->getName()).c_str());
         for(int i = 0; i < e->getNumSubEntities(); ++i)
             AddOgreSubEntity(nodeItem, e->getSubEntity(i), i);
+    }
 }
 
 void AddOgreSceneNode(QTreeWidgetItem *parent, Ogre::SceneNode *node);

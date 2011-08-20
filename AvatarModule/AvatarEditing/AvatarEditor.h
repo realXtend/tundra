@@ -11,6 +11,9 @@
 #include <QWidget>
 
 class QTabWidget;
+class EC_Avatar;
+class AvatarDescAsset;
+typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 namespace Avatar
 {
@@ -27,25 +30,22 @@ namespace Avatar
         //! Rebuild edit view
         void RebuildEditView();
         
-        //! Export click handler
-        void ExportAvatar();
-
-        //! Local export click handler
-        void ExportAvatarLocal();
-
-        //! New avatar click handler
+        //! Save avatar
+        void SaveAvatar();
+        
+        //! Load new avatar asset
         void LoadAvatar();
 
-        //! Revert click handler
+        //! Revert avatar edits
         void RevertAvatar();
 
-        //! Change texture click handler
-        void ChangeTexture();
+        //! Change avatar's material
+        void ChangeMaterial();
 
-        //! New attachment click handler
+        //! New attachment
         void AddAttachment();
 
-        //! Remove attachment click handler
+        //! Remove attachment
         void RemoveAttachment();
 
         //! Bone modifier scrollbar value handler
@@ -57,6 +57,9 @@ namespace Avatar
         //! Master appearance modifier scrollbar value handler
         void MasterModifierValueChanged(int value);
 
+        //! Set avatar entity and asset to edit
+        void SetEntityToEdit(Scene::EntityPtr entity);
+        
     protected:
         /// QWidget override.
         void changeEvent(QEvent* e);
@@ -72,6 +75,9 @@ signals:
 
         //! Create editor window
         void InitEditorWindow();
+        
+        //! Get the avatar entity, avatar component, and avatar description. If all are non-null, return true
+        bool GetAvatarDesc(Scene::Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
 
         //! Clear a panel
         void ClearPanel(QWidget* panel);
@@ -87,6 +93,11 @@ signals:
 
         //! Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
+
+        //! Avatar entity to edit
+        Scene::EntityWeakPtr avatarEntity_;
+        //! Avatar asset to edit
+        boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 
         bool reverting_;
     };

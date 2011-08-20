@@ -8,9 +8,7 @@
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 
-#include "InputApi.h"
-
-class INPUT_API KeyEventSignal : public QObject
+class KeyEventSignal : public QObject
 {
     Q_OBJECT
 

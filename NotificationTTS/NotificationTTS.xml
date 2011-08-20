@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <entry>NotificationTts</entry>
+	<dependency>UiModule</dependency>
+	<dependency>TtsModule</dependency>
+</config>

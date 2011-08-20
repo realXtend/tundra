@@ -1,13 +1,20 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "RendererSettings.h"
+#include "Renderer.h"
 #include "OgreRenderingModule.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Framework.h"
-#include "UiServiceInterface.h"
-#include "../Input/Input.h"
+//#include "UiServiceInterface.h"
+#include "InputAPI.h"
+
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -17,6 +24,9 @@
 #include <QLabel>
 #include <QKeyEvent>
 #include <QApplication>
+#include <QAction>
+
+#include "MemoryLeakCheck.h"
 
 namespace OgreRenderer
 {
@@ -34,13 +44,11 @@ namespace OgreRenderer
 
     void RendererSettings::InitWindow()
     {
-        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-        if (!ui)
+        if (framework_->IsHeadless() || !framework_->Ui()->MainWindow())
             return;
 
         QUiLoader loader;
         QFile file("./data/ui/renderersettings.ui");
-
         if (!file.exists())
         {
             OgreRenderingModule::LogError("Cannot find renderer settings .ui file.");
@@ -50,8 +58,11 @@ namespace OgreRenderer
         settings_widget_ = loader.load(&file); 
         if (!settings_widget_)
             return;
+        settings_widget_->setParent(framework_->Ui()->MainWindow());
+        settings_widget_->setWindowFlags(Qt::Tool);
 
-        ui->AddSettingsWidget(settings_widget_, "Rendering");
+        //QAction *action = framework_->Ui()->MainWindow()->AddMenuAction("&Settings", "Rendering");
+        //connect(action, SIGNAL(triggered()), settings_widget_, SLOT(show()));
 
         QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
         boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Service::ST_Renderer).lock();
@@ -80,9 +91,9 @@ namespace OgreRenderer
             QObject::connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(TextureQualityChanged(int)));
         }
         
-        //fullscreen shortcut key
-        input_context_ = framework_->GetInput()->RegisterInputContext("Renderer", 90);
-        if(input_context_.get())
+        // For listening to the fullscreen shortcut key
+        input_context_ = framework_->Input()->RegisterInputContext("Renderer", 90);
+        if (input_context_)
             connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
     }
 
@@ -91,9 +102,20 @@ namespace OgreRenderer
         Renderer *renderer = framework_->GetService<Renderer>();
         if (!renderer)
             return;
+
+		//$ BEGIN_MOD $
+		//UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        //if (!ui)
+        //    return;
+		//$ END_MOD $
+
+
         if(e->HasCtrlModifier() && e->KeyCode() == Qt::Key_F)
         {
-            renderer->SetFullScreen(!renderer->IsFullScreen());
+            //renderer->SetFullScreen(!renderer->IsFullScreen());
+			//$ BEGIN_MOD $
+			//ui->ToggleFullScreen();
+			//$ END_MOD $
             QCheckBox* cbox = settings_widget_->findChild<QCheckBox*>("fullscreen_toggle");
             if(cbox)
                 cbox->setChecked(!cbox->isChecked());

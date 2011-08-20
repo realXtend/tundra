@@ -23,7 +23,7 @@
 EventManager::EventManager(Foundation::Framework *framework) :
     framework_(framework),
     next_category_id_(1),
-    next_request_tag_(1),
+//    next_request_tag_(1),
     main_thread_id_(QThread::currentThreadId())
 {
 }
@@ -115,10 +115,6 @@ bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_i
         RootLogWarning("Attempted to send event with illegal category");
         return false;
     }
-
-    /// The following line exists for legacy purposes to help transition period to new Asset API. Will be removed. -jj
-    if (framework_->Asset())
-        framework_->Asset()->HandleEvent(category_id, event_id, data);
 
     // Send event in priority order, until someone returns true
     for (int i = 0; i < module_subscribers_.size(); ++i)
@@ -216,14 +212,14 @@ bool EventManager::UnregisterEventSubscriber(IComponent* component, event_catego
 
    return false;
 }
-
+/*
 request_tag_t EventManager::GetNextRequestTag()
 {
     if (next_request_tag_ == 0) 
         ++next_request_tag_; // Never use 0
     return next_request_tag_++;
 }
-
+*/
 void EventManager::ClearDelayedEvents()
 {
     MutexLock lock(delayed_events_mutex_);

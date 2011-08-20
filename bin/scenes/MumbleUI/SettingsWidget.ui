@@ -6,67 +6,186 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>320</width>
-    <height>78</height>
+    <width>310</width>
+    <height>50</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Audio Communication</string>
   </property>
-  <widget class="QCheckBox" name="audioReceiving">
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                       stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+	titlebar-normal-icon: url(data/assets/user.png);
+}</string>
+  </property>
+  <widget class="QPushButton" name="participantsList">
    <property name="geometry">
     <rect>
-     <x>180</x>
+     <x>260</x>
      <y>10</y>
-     <width>131</width>
-     <height>21</height>
+     <width>32</width>
+     <height>32</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>30</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: green; 
+border-image: url(./data/assets/user.png) 3 3 3 3;
+border-top: 3px transparent;
+border-bottom: 3px transparent;
+border-right: 3px transparent;
+border-left: 3px transparent;</string>
    </property>
    <property name="text">
-    <string>Audio Receiving</string>
+    <string/>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
    </property>
   </widget>
-  <widget class="QCheckBox" name="audioSending">
+  <widget class="QLabel" name="channelMsg">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>40</y>
-     <width>131</width>
-     <height>21</height>
+     <x>10</x>
+     <y>10</y>
+     <width>51</width>
+     <height>41</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="font">
     <font>
-     <pointsize>10</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
+     <pointsize>14</pointsize>
     </font>
    </property>
    <property name="text">
-    <string>Audio Sending</string>
+    <string>Voice</string>
    </property>
   </widget>
   <widget class="QComboBox" name="channelsList">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>60</x>
      <y>20</y>
-     <width>131</width>
-     <height>22</height>
+     <width>150</width>
+     <height>21</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>106</width>
+     <height>20</height>
+    </size>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QComboBox {
+	border: 1px solid #333333;
+	border-radius: 3px;
+	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #797979, stop:0.48 #696969, stop:0.52 #5e5e5e, stop:1 #4f4f4f);
+	padding: 1px 23px 1px 3px;
+	min-width: 6em;
+	color: #ffffff;
+}
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 20px;
+	
+	border-top-right-radius: 3px;
+	border-bottom-right-radius: 3px;
+}
+QComboBox::down-arrow {
+     image: url(data/assets/arrow_down.png);
+}
+
+QComboBox QAbstractItemView{
+	background-color: #4f4f4f;
+	color: #ffffff;
+	
+	selection-background-color: #999999;
+	selection-color: #4f4f4f;
+}
+
+</string>
    </property>
    <item>
     <property name="text">
      <string/>
     </property>
    </item>
+  </widget>
+  <widget class="QPushButton" name="transmissionType">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>10</y>
+     <width>28</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: green; 
+border-image: url(./data/assets/status_offline.png) 3 3 3 3;
+border-top: 3px transparent;
+border-bottom: 3px transparent;
+border-right: 3px transparent;
+border-left: 3px transparent;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="numberOfParticipants">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>10</y>
+     <width>16</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>0</string>
+   </property>
   </widget>
  </widget>
  <resources/>

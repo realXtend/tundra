@@ -67,24 +67,22 @@ class OGRE_MODULE_API EC_Placeable : public IComponent
     Q_OBJECT
     
 public:
-    Q_PROPERTY(QVector3D Position READ GetQPosition WRITE SetQPosition)
+    //! position property
+    //! @note This affects internally the transform attribute, but allows QVector3D access to it
+    Q_PROPERTY(QVector3D position READ GetQPosition WRITE SetQPosition)
     
-    //! position Attribute.
-    //! @note Propose to replace Transform when also attributes for rotation and scale have been added.
-    //! @todo Merge Position and position properties, favouring Attribute version.
-    Q_PROPERTY(QVector3D position READ getposition WRITE setposition)
-    Attribute<QVector3D> position;
-    QVector3D getposition() const { return position.Get(); }
-    void setposition(QVector3D value) { SetQPosition(value); }
+    //! scale property
+    //! @note This affects internally the transform attribute, but allows QVector3D access to it
+    Q_PROPERTY(QVector3D scale READ GetQScale WRITE SetQScale)
+
+    //! orientation property
+    //! @note This affects internally the transform attribute, but allows QQuaternion access to it
+    Q_PROPERTY(QQuaternion orientation READ GetQOrientation WRITE SetQOrientation)
+
+    //! orientationEuler property
+    //! @note This affects internally the transform attribute, but allows QVector3D euler angle (in degrees) access to it
+    Q_PROPERTY(QVector3D orientationEuler READ GetQOrientationEuler WRITE SetQOrientationEuler)
     
-    
-    Q_PROPERTY(QVector3D Scale READ GetQScale WRITE SetQScale)
-    Q_PROPERTY(QVector3D scale READ getscale WRITE setscale)
-    Attribute<QVector3D> scale;
-    QVector3D getscale() const { return scale.Get(); }
-    void setscale(QVector3D value) { SetQScale(value); }
-    
-    Q_PROPERTY(QQuaternion Orientation READ GetQOrientation WRITE SetQOrientation)
     Q_PROPERTY(QVector3D LocalXAxis READ GetQLocalXAxis)
     Q_PROPERTY(QVector3D LocalYAxis READ GetQLocalYAxis)
     Q_PROPERTY(QVector3D LocalZAxis READ GetQLocalZAxis)
@@ -94,9 +92,12 @@ public:
     Q_PROPERTY(int SelectPriority READ GetSelectPriority WRITE SetSelectPriority)
 
     //! Transformation attribute for position, rotation and scale adjustments.
-    //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
     Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
-    DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
+	//Expose get and set transform as invokable methods to be accesible from python
+	//DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
+	Attribute<Transform> transform;
+	Q_INVOKABLE Transform gettransform() const { return transform.Get(); }
+	Q_INVOKABLE void settransform(Transform value) { transform.Set(value, AttributeChange::Default); }
     
     //! Show debug bounding box -attribute
     Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug);
@@ -133,19 +134,6 @@ public:
     /*! \param look_at point to look at
      */
     void LookAt(const Vector3df& look_at);
-    //! yaws the node
-    /*! \param radians how many radians to yaw
-     */
-    void SetYaw(float radians);
-    //! pitches the node
-    /*! \param radians how many radians to pitch
-     */
-    void SetPitch(float radians);
-    //! rolls the node
-    /*! \param radians how many radians to roll
-     */
-    void SetRoll(float radians);
-
     //! get the yaw of the node
     float GetYaw() const;
     //! get the pitch of the node
@@ -196,23 +184,28 @@ public:
         as this doesn't take scaling into account!
      */
     Ogre::SceneNode* GetLinkSceneNode() const { return link_scene_node_; }
-                   
+    
     //! returns select priority
     int GetSelectPriority() const { return select_priority_; }
 
     //! experimental accessors that use the new 3d vector etc types in Qt 4.6, for qproperties
     QVector3D GetQPosition() const;
-    void SetQPosition(const QVector3D newpos);
+    void SetQPosition(QVector3D newpos);
 
     //! get node orientation
     QQuaternion GetQOrientation() const;
     //! set node orientation
-    void SetQOrientation(const QQuaternion newort);
+    void SetQOrientation(QQuaternion newrot);
+
+    //! get node orientation as euler (degrees)
+    QVector3D GetQOrientationEuler() const;
+    //! set node orientation as euler (degrees)
+    void SetQOrientationEuler(QVector3D newrot);
 
     //! set node scale
     QVector3D GetQScale() const;
     //! get node scale
-    void SetQScale(const QVector3D newscale);
+    void SetQScale(QVector3D newscale);
 
 
 public slots:
@@ -231,10 +224,17 @@ public slots:
     
     //! Transforms a vector by the placeable's orientation
     Vector3df GetRelativeVector(const Vector3df& vec);
+
+	//! Transforms a vector by the inverse placeable's orientation
+    Vector3df GetAbsoluteVector(const Vector3df& vec);
     
     //! Calculates rotation
     Vector3df GetRotationFromTo(const Vector3df& from, const Vector3df& to);
 
+    // $ BEGIN_MOD $
+    //! Calculates rotation from placeable position
+    Vector3df GetRotationTo(const Vector3df& to);
+    // $ END_MOD $
     /// Shows the Entity
     void Show();
 
@@ -243,6 +243,19 @@ public slots:
 
 	/// Toggle Visibility
 	void ToggleVisibility();
+
+//! yaws the node
+    /*! \param radians how many radians to yaw
+     */
+    void SetYaw(float radians);
+    //! pitches the node
+    /*! \param radians how many radians to pitch
+     */
+    void SetPitch(float radians);
+    //! rolls the node
+    /*! \param radians how many radians to roll
+     */
+    void SetRoll(float radians);
 
 signals:
     //! emmitted when position has changed.

@@ -4,25 +4,29 @@
 #include "DebugOperatorNew.h"
 
 #include "TundraLogicModule.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "EventManager.h"
-#include "ModuleManager.h"
-#include "SyncManager.h"
 #include "Client.h"
 #include "Server.h"
+#include "TundraEvents.h"
+#include "SceneImporter.h"
+#include "SyncManager.h"
+
+#include "SceneAPI.h"
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
+#include "IAsset.h"
+
+#include "SceneManager.h"
+#include "ConsoleCommandUtils.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
-#include "TundraEvents.h"
-#include "SceneImporter.h"
-#include "AssetServiceInterface.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
+#include "ConsoleAPI.h"
 
 #include "MemoryLeakCheck.h"
-
-using namespace RexTypes;
 
 namespace TundraLogic
 {
@@ -31,7 +35,9 @@ std::string TundraLogicModule::type_name_static_ = "TundraLogic";
 
 static const unsigned short cDefaultPort = 2345;
 
-TundraLogicModule::TundraLogicModule() : IModule(type_name_static_)
+TundraLogicModule::TundraLogicModule() : IModule(type_name_static_),
+    autostartserver_(false),
+    autostartserver_port_(cDefaultPort)
 {
 }
 
@@ -47,9 +53,9 @@ void TundraLogicModule::Initialize()
 {
     tundraEventCategory_ = framework_->GetEventManager()->RegisterEventCategory("Tundra");
     
-    syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this, framework_));
-    client_ = boost::shared_ptr<Client>(new Client(this, framework_));
-    server_ = boost::shared_ptr<Server>(new Server(this, framework_));
+    syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this));
+    client_ = boost::shared_ptr<Client>(new Client(this));
+    server_ = boost::shared_ptr<Server>(new Server(this));
     
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
@@ -60,39 +66,51 @@ void TundraLogicModule::PostInitialize()
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
     
-    RegisterConsoleCommand(Console::CreateCommand("startserver", 
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("startserver", 
         "Starts a server. Usage: startserver(port)",
-        Console::Bind(this, &TundraLogicModule::ConsoleStartServer)));
-    RegisterConsoleCommand(Console::CreateCommand("stopserver", 
+        ConsoleBind(this, &TundraLogicModule::ConsoleStartServer)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("stopserver", 
         "Stops the server",
-        Console::Bind(this, &TundraLogicModule::ConsoleStopServer)));
-    RegisterConsoleCommand(Console::CreateCommand("connect", 
+        ConsoleBind(this, &TundraLogicModule::ConsoleStopServer)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("connect", 
         "Connects to a server. Usage: connect(address,port,username,password)",
-        Console::Bind(this, &TundraLogicModule::ConsoleConnect)));
-    RegisterConsoleCommand(Console::CreateCommand("disconnect", 
+        ConsoleBind(this, &TundraLogicModule::ConsoleConnect)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("disconnect", 
         "Disconnects from a server.",
-        Console::Bind(this, &TundraLogicModule::ConsoleDisconnect)));
+        ConsoleBind(this, &TundraLogicModule::ConsoleDisconnect)));
     
-    RegisterConsoleCommand(Console::CreateCommand("savescene",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("savescene",
         "Saves scene into XML or binary. Usage: savescene(filename,binary)",
-        Console::Bind(this, &TundraLogicModule::ConsoleSaveScene)));
-    RegisterConsoleCommand(Console::CreateCommand("loadscene",
-        "Loads scene from XML or binary. Usage: loadscene(filename,binary)",
-        Console::Bind(this, &TundraLogicModule::ConsoleLoadScene)));
+        ConsoleBind(this, &TundraLogicModule::ConsoleSaveScene)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("loadscene",
+        "Loads scene from XML or binary. Usage: loadscene(filename,clearscene=false)",
+        ConsoleBind(this, &TundraLogicModule::ConsoleLoadScene)));
     
-    RegisterConsoleCommand(Console::CreateCommand("importscene",
-        "Loads scene from a dotscene file. Optionally clears the existing scene. Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
-        Console::Bind(this, &TundraLogicModule::ConsoleImportScene)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("importscene",
+        "Loads scene from a dotscene file. Optionally clears the existing scene."
+        "Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
+        ConsoleBind(this, &TundraLogicModule::ConsoleImportScene)));
     
-    RegisterConsoleCommand(Console::CreateCommand("importmesh",
-        "Imports a single mesh as a new entity. Position can be specified optionally. Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
-        Console::Bind(this, &TundraLogicModule::ConsoleImportMesh)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("importmesh",
+        "Imports a single mesh as a new entity. Position can be specified optionally."
+        "Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
+        ConsoleBind(this, &TundraLogicModule::ConsoleImportMesh)));
         
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
-    if (!kristalliModule_.get())
+    if (!kristalliModule_)
     {
         throw Exception("Fatal: could not get KristalliProtocolModule");
+    }
+    
+    // Check whether server should be autostarted
+    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
+    if (programOptions.count("startserver"))
+    {
+        autostartserver_ = true;
+        autostartserver_port_ = programOptions["startserver"].as<int>();
+        if (!autostartserver_port_)
+            autostartserver_port_ = cDefaultPort;
     }
 }
 
@@ -112,19 +130,32 @@ void TundraLogicModule::Update(f64 frametime)
         static bool check_default_server_start = true;
         if (check_default_server_start)
         {
-            //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule or UIModule, assume we are running a "dedicated" server, and start the server automatically on default port
-            ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
-            ModuleWeakPtr uiModule = framework_->GetModuleManager()->GetModule("UI");
-            if ((!loginModule.lock().get()) && (!uiModule.lock().get()))
+            if (autostartserver_)
             {
                 LogInfo("Started server by default");
-                server_->Start(cDefaultPort);
+                server_->Start(autostartserver_port_);
             }
 
             // Load startup scene here (if we have one)
             LoadStartupScene();
             
             check_default_server_start = false;
+        }
+
+        static bool check_login_start = true;
+        if (check_login_start)
+        {
+            // Web login handling, if we are on a server the request will be ignored down the chain.
+            const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
+            if (options.count("login") > 0)
+            {
+                LogInfo(QString::fromStdString(options["login"].as<std::string>()).toStdString());
+                QUrl loginUrl(QString::fromStdString(options["login"].as<std::string>()), QUrl::TolerantMode);
+                if (loginUrl.isValid())
+                    client_->Login(loginUrl);
+            }
+
+            check_login_start = false;
         }
         
         // Update client & server
@@ -136,7 +167,7 @@ void TundraLogicModule::Update(f64 frametime)
         if (syncManager_)
             syncManager_->Update(frametime);
         // Run scene interpolation
-        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
         if (scene)
             scene->UpdateAttributeInterpolations(frametime);
     }
@@ -146,10 +177,6 @@ void TundraLogicModule::Update(f64 frametime)
 
 void TundraLogicModule::LoadStartupScene()
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-    if (!scene)
-        return;
-    
     const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
     if (options.count("file") == 0)
         return; // No startup scene specified, ignore.
@@ -158,18 +185,68 @@ void TundraLogicModule::LoadStartupScene()
     if (startupScene.empty())
         return; // No startup scene specified, ignore.
 
+    LoadScene(startupScene, true);
+}
+void TundraLogicModule::LoadScene(std::string sceneToLoad, bool clearScene)
+{
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    if (!scene)
+        return;
+
     // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
     // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
     // scene we now load will be able to refer to local:// assets in its subfolders.
+    if (AssetAPI::ParseAssetRefType(QString::fromStdString(sceneToLoad)) != AssetAPI::AssetRefLocalPath)
+    {
+        AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(sceneToLoad);
+        if (!sceneTransfer.get())
+        {
+            LogError("Asset transfer initialization failed for scene file " + sceneToLoad + " failed");
+            return;
+        }
+    
+        if (clearScene)
+            scene->RemoveAllEntities();
 
-    bool useBinary = startupScene.find(".tbin") != std::string::npos;
-    if (!useBinary)
-        scene->LoadSceneXML(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        connect(sceneTransfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(SceneLoaded(AssetPtr)));
+        connect(sceneTransfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(SceneTransferFailed(IAssetTransfer*, QString)));
+        LogInfo("Loading scene from " + sceneToLoad);
+    }
     else
-        scene->LoadSceneBinary(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+    {
+        bool useBinary = sceneToLoad.find(".tbin") != std::string::npos;
+        if (!useBinary)
+            scene->LoadSceneXML(sceneToLoad, clearScene, false/*replaceOnConflict*/, AttributeChange::Default);
+        else
+            scene->LoadSceneBinary(sceneToLoad, clearScene, false/*replaceOnConflict*/, AttributeChange::Default);
+    }
 }
 
-Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)
+void TundraLogicModule::SceneLoaded(AssetPtr asset)
+{
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    if (!scene)
+        return;
+
+    QString sceneDiskSource = asset->DiskSource();
+    if (!sceneDiskSource.isEmpty())
+    {
+        bool useBinary = sceneDiskSource.endsWith(".tbin");
+        if (!useBinary)
+            scene->LoadSceneXML(sceneDiskSource.toStdString(), false/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        else
+            scene->LoadSceneBinary(sceneDiskSource.toStdString(), false/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+    }
+    else
+        LogError("Could not resolve disk source for loaded scene file " + asset->Name().toStdString());
+}
+
+void TundraLogicModule::SceneTransferFailed(IAssetTransfer *transfer, QString reason)
+{
+    LogError("Failed to load scene from " + transfer->GetSourceUrl().toStdString() + " reason: " + reason.toStdString());
+}
+
+ConsoleCommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)
 {
     unsigned short port = cDefaultPort;
     
@@ -182,20 +259,20 @@ Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector&
     
     server_->Start(port);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult TundraLogicModule::ConsoleStopServer(const StringVector& params)
+ConsoleCommandResult TundraLogicModule::ConsoleStopServer(const StringVector& params)
 {
     server_->Stop();
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult TundraLogicModule::ConsoleConnect(const StringVector& params)
+ConsoleCommandResult TundraLogicModule::ConsoleConnect(const StringVector& params)
 {
     if (params.size() < 1)
-        return Console::ResultFailure("No address specified");
+        return ConsoleResultFailure("No address specified");
     
     unsigned short port = cDefaultPort;
     std::string username = "test";
@@ -212,25 +289,25 @@ Console::CommandResult TundraLogicModule::ConsoleConnect(const StringVector& par
     }
     catch (...) {}
     
-    client_->Login(params[0], port, username, password);
+    client_->Login(QString::fromStdString(params[0]), port, QString::fromStdString(username), QString::fromStdString(password));
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& params)
+ConsoleCommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& params)
 {
     client_->Logout(false);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &params)
+ConsoleCommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &params)
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene found.");
+        return ConsoleResultFailure("No active scene found.");
     if (params.size() < 1)
-        return Console::ResultFailure("No filename given.");
+        return ConsoleResultFailure("No filename given.");
     
     bool useBinary = false;
     if ((params.size() > 1) && (params[1] == "binary"))
@@ -243,45 +320,37 @@ Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &p
         success = scene->SaveSceneBinary(params[0]);
     
     if (success)
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     else
-        return Console::ResultFailure("Failed to save the scene.");
+        return ConsoleResultFailure("Failed to save the scene.");
 }
 
-Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &params)
+ConsoleCommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &params)
 {
     ///\todo Add loadScene parameter
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene found.");
+        return ConsoleResultFailure("No active scene found.");
     if (params.size() < 1)
-        return Console::ResultFailure("No filename given.");
+        return ConsoleResultFailure("No filename given.");
     
-    bool useBinary = false;
-    if ((params.size() > 1) && (params[1] == "binary"))
-        useBinary = true;
+    bool clearScene = false;
+    if (params.size() > 1)
+        clearScene = ParseBool(params[2]);
     
-    QList<Scene::Entity *> entities;
-    if (!useBinary)
-        entities = scene->LoadSceneXML(params[0], true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
-    else
-        entities = scene->LoadSceneBinary(params[0], true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
-    
-    if (!entities.empty())
-    {
-        return Console::ResultSuccess();
-    }
-    else
-        return Console::ResultFailure("Failed to load the scene.");
+    LoadScene(params[0], clearScene);
+
+    //Return success since the scene load is asynchronous
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector &params)
+ConsoleCommandResult TundraLogicModule::ConsoleImportScene(const StringVector &params)
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene found.");
+        return ConsoleResultFailure("No active scene found.");
     if (params.size() < 1)
-        return Console::ResultFailure("No filename given.");
+        return ConsoleResultFailure("No filename given.");
     bool clearscene = false;
     bool replace = true;
     if (params.size() > 1)
@@ -298,19 +367,19 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
         "local://", AttributeChange::Default, clearscene, replace);
     if (!entities.empty())
     {
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
     else
-        return Console::ResultFailure("Failed to import the scene.");
+        return ConsoleResultFailure("Failed to import the scene.");
 }
 
-Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &params)
+ConsoleCommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &params)
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene found.");
+        return ConsoleResultFailure("No active scene found.");
     if (params.size() < 1)
-        return Console::ResultFailure("No filename given.");
+        return ConsoleResultFailure("No filename given.");
     
     float x = 0.0f, y = 0.0f, z = 0.0f;
     float xr = 0.0f, yr = 0.0f, zr = 0.0f;
@@ -342,7 +411,7 @@ Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &
     Scene::EntityPtr entity = importer.ImportMesh(filename, dirname, Transform(Vector3df(x,y,z),
         Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), "local://", AttributeChange::Default, true);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 bool TundraLogicModule::IsServer() const
@@ -360,7 +429,7 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
         {
             Events::TundraLoginEventData* event_data = checked_static_cast<Events::TundraLoginEventData*>(data);
             if (client_)
-                client_->Login(event_data->address_, event_data->port_ ? event_data->port_ : cDefaultPort, event_data->username_, event_data->password_);
+                client_->Login(QString::fromStdString(event_data->address_), event_data->port_ ? event_data->port_ : cDefaultPort, QString::fromStdString(event_data->username_), QString::fromStdString(event_data->password_), QString::fromStdString(event_data->protocol_));
         }
     }
     

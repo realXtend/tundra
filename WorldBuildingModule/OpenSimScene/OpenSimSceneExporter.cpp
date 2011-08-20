@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -9,8 +10,8 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
-#include "TextureServiceInterface.h"
-#include "TextureResource.h"
+//#include "TextureServiceInterface.h"
+//#include "TextureResource.h"
 
 #include "OgreImage.h"
 
@@ -77,7 +78,9 @@ namespace WorldBuilding
         UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
-            backup_proxy_ = ui->AddWidgetToScene(backup_widget_);
+			//$ BEGIN_MOD $
+            backup_proxy_ = ui->AddWidgetToScene(backup_widget_, true, true);
+			//$ END_MOD $
             backup_widget_->hide();
         }
         else
@@ -250,7 +253,8 @@ namespace WorldBuilding
                 int not_found_mat = 0;
                 int replaced_material_texture_refs = 0;
 
-                Foundation::TextureServiceInterface *texture_service = framework_->GetService<Foundation::TextureServiceInterface>();
+	        /* XXX -NOT PORTED TO NEW ASSET API */
+                /*Foundation::TextureServiceInterface *texture_service = framework_->GetService<Foundation::TextureServiceInterface>();
                 if (texture_service)
                 {
                     foreach (QString mat_ref, material_ref_set->keys())
@@ -354,7 +358,7 @@ namespace WorldBuilding
                     }
                     LogHeadline(">> Replaced texture references:" , QString::number(replaced_material_texture_refs));
                 }
-                else
+                else*/
                     WorldBuildingModule::LogError(">> Texture service not accessible, aborting processing");
                 store_location.cdUp();
             }
@@ -700,7 +704,8 @@ namespace WorldBuilding
 
     QString SceneExporter::TryStoreTexture(const QString &original_ref, const QDir &store_location, const QString &base_url)
     {
-        QString new_ref = "DYNAMIC_TEXTURE_CREATION_FAILED"; // a bit of a hack, yeah
+        /* XXX -NOT PORTED TO NEW ASSET API */
+        /*QString new_ref = "DYNAMIC_TEXTURE_CREATION_FAILED"; // a bit of a hack, yeah
         Foundation::TextureServiceInterface *texture_service = framework_->GetService<Foundation::TextureServiceInterface>();
         if (!texture_service)
             return new_ref;
@@ -785,10 +790,10 @@ namespace WorldBuilding
                     WorldBuildingModule::LogDebug(">> Could not resolve texture format: " + QString::number(ogre_format).toStdString() + ", skipping texture");
             }
         }
-        else
+        else*/
             return ""; // empty means was not in cache aka "not found"
 
-        return new_ref;
+        //return new_ref;
     }
 
     void SceneExporter::CleanLocalDir(QDir dir)

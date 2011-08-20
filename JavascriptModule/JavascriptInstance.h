@@ -9,11 +9,14 @@
 #define incl_JavascriptModule_JavascriptInstance_h
 
 #include "IScriptInstance.h"
-#include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "AssetFwd.h"
-#include "ScriptAsset.h"
+#include "JavascriptFwd.h"
 
-#include <QtScript>
+//#include <QtScript>
+//#ifndef QT_NO_SCRIPTTOOLS
+//#include <QScriptEngineDebugger>
+//#endif
 
 class JavascriptModule;
 
@@ -36,15 +39,18 @@ public:
     /// Destroys script engine created for this script instance.
     virtual ~JavascriptInstance();
 
-    //! Overload from IScriptInstance
+    //! IScriptInstance override.
     void Load();
 
-    //! Overload from IScriptInstance
+    //! IScriptInstance override.
     void Unload();
 
-    //! Overload from IScriptInstance
+    //! IScriptInstance override.
     void Run();
-
+    
+    //! IScriptInstance override.
+    virtual QString GetLoadedScriptName() const { return currentScriptName; }
+    
     //! Register new service to java script engine.
     void RegisterService(QObject *serviceObject, const QString &name);
 
@@ -74,7 +80,7 @@ private:
 
     QScriptEngine *engine_; ///< Qt script engine.
     
-    static QString LoadScript(const QString &fileName);
+    QString LoadScript(const QString &fileName);
 
     // The script content for a JavascriptInstance is loaded either using the Asset API or 
     // using an absolute path name from the local file system.
@@ -84,12 +90,17 @@ private:
 
     /// If the script content is loaded directly from local file, this points to the actual script content.  
     QString program_;
+    
     /// Specifies the absolute path of the source file where the script is loaded from, if the content is directly loaded from file.
     QString sourceFile;
+
+    /// Current script name that is loaded into this instance. Exposed via GetCurrentScriptName().
+    QString currentScriptName;
 
     ComponentWeakPtr owner_; ///< Owner (EC_Script) component, if existing.
     JavascriptModule *module_; ///< Javascript module.
     bool evaluated; ///< Has the script program been evaluated.
+    //QScriptEngineDebugger *debugger_;
 
     /// Already included files for preventing multi-inclusion
     std::vector<QString> included_files_; 

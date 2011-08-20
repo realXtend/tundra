@@ -11,7 +11,6 @@
 #include <OgreMaterial.h>
 
 #include "OgreModuleApi.h"
-#include "ResourceInterface.h"
 
 namespace OgreRenderer
 {
@@ -87,6 +86,10 @@ namespace OgreRenderer
     
     //! Deletes a material. Note: the material pointer passed in will be set to null
     void OGRE_MODULE_API RemoveMaterial(Ogre::MaterialPtr& material);
+
+    //! Counts indentation levels of brace blocks in a file.
+    bool OGRE_MODULE_API ProcessBraces(const std::string& line, int& braceLevel);
+
 }
 
 #endif

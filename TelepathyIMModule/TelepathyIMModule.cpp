@@ -127,7 +127,7 @@ namespace Communication
                 // Get WorldStream from WORLD_STREAM_READY event, not from RexLogicModule!
                 boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> current_protocol_module =
                     framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>().lock()->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
-                if (current_protocol_module.lock().get())
+                if (current_protocol_module.lock())
                 {
 //                    ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
 //                    os_chat_controller_ = new OpensimIM::ChatController(client_params);

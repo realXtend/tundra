@@ -3,9 +3,7 @@
 
     <!-- Client to server -->
     <message id="100" name="Login" reliable="true" inOrder="true" priority="100">
-        <s8 name="userName" dynamicCount="8" />
-        <!-- Todo: add security to the login as appropriate -->
-        <s8 name="password" dynamicCount="8" />
+        <s8 name="loginData" dynamicCount="16" />
     </message>
     <!-- Server to client that attempts to join -->
     <message id="101" name="LoginReply" reliable="true" inOrder="true" priority="100">
@@ -17,12 +15,10 @@
     <!-- Server to other clients when a client joins -->
     <message id="102" name="ClientJoined" reliable="true" inOrder="true" priority="100">
         <u8 name="userID" />
-        <s8 name="userName" dynamicCount="8" />
     </message>
     <!-- Server to other clients when a client left or timed out -->
     <message id="103" name="ClientLeft" reliable="true" inOrder="true" priority="100">
         <u8 name="userID" />
-        <s8 name="userName" dynamicCount="8" />
     </message>
 
     <!-- SCENE REPLICATION -->

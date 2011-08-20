@@ -177,8 +177,7 @@ namespace Communications
         signals:
             /// When text message is received from in-world chat. The origin of the message 
             /// can be self or other participant
-            void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
-
+			void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message,const QString& from_uuid);
             /// When user closes world connections
             void Closed();
             //void ParticipantJoined(ParticipantInterface* participant);
@@ -273,6 +272,8 @@ namespace Communications
 
             //! \todo: Give weak_ptr instead
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const = 0;
+            virtual QStringList GetParticipantsNames() const = 0;
+            virtual void MuteParticipantByName(QString, bool) const = 0;
 
         signals:
             void StateChanged(Communications::InWorldVoice::SessionInterface::State state);

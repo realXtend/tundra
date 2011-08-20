@@ -46,7 +46,7 @@ namespace TaigaProtocol
     {
         // Get ProtocolModuleTaiga
         boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga> spTaiga = networkTaiga_.lock();
-        if (spTaiga.get())
+        if (spTaiga)
         {
             if (!spTaiga->GetLoginWorker())
                 return false;

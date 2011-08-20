@@ -24,6 +24,9 @@ class EC_3DCanvas;
 <tr>
 <td>
 <h2>3DCanvasSource</h2>
+
+\note THIS COMPONENT IS DEPRECATED. Use the new EC_WebView instead when possible.
+
 A 3D canvas controller that initializes an EC_3DCanvas into the same entity, with source parameters (for example html page url)
 Also makes it possible to display the canvas contents as a 2D widget, and edit the source
 
@@ -78,44 +81,44 @@ public:
 
     //! Source
     Q_PROPERTY(QString source READ getsource WRITE setsource);
-	DEFINE_QPROPERTY_ATTRIBUTE(QString, source);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, source);
 
     //! Submesh number into which to apply the 3DCanvas
     Q_PROPERTY(int submesh READ getsubmesh WRITE setsubmesh);
-	DEFINE_QPROPERTY_ATTRIBUTE(int, submesh);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, submesh);
 
     //! Show as 2D when clicked
     Q_PROPERTY(bool show2d READ getshow2d WRITE setshow2d);
-	DEFINE_QPROPERTY_ATTRIBUTE(bool, show2d);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, show2d);
 
     //! Sync url changes from the ui
     Q_PROPERTY(bool sync2dbrowsing READ getsync2dbrowsing WRITE setsync2dbrowsing);
-	DEFINE_QPROPERTY_ATTRIBUTE(bool, sync2dbrowsing);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, sync2dbrowsing);
 
     //! Refresh rate
     Q_PROPERTY(int refreshRate READ getrefreshRate WRITE setrefreshRate);
-	DEFINE_QPROPERTY_ATTRIBUTE(int, refreshRate);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, refreshRate);
 
     //! Width of the rendered widget
     Q_PROPERTY(int pageWidth READ getpageWidth WRITE setpageWidth);
-	DEFINE_QPROPERTY_ATTRIBUTE(int, pageWidth);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, pageWidth);
 
     //! Height of the rendered widget
     Q_PROPERTY(int pageHeight READ getpageHeight WRITE setpageHeight);
-	DEFINE_QPROPERTY_ATTRIBUTE(int, pageHeight);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, pageHeight);
 
 public slots:
     void OnClick();
     //! Source text editor modified
     void SourceEdited();
 
-    //! Link clicked in the 2D webview UI
+    //! Link clicked in the 2D web view UI
     void WebViewLinkClicked(const QUrl& url);
     //! Loading starts, show progress bar and update ui
     void WebViewLoadStarted();
     //! Loading progress, update progress bar
     void WebViewLoadProgress(int progress);
-    //! Loading completed, hide progress bad and upate ui + repaint canvas
+    //! Loading completed, hide progress bad and update ui + repaint canvas
     void WebViewLoadCompleted();
 
     //! Buttons handler for stop/refresh
@@ -142,7 +145,7 @@ private slots:
     QWebView *GetWebView();
 
 private:
-    //! Constuctor.
+    //! Constructor.
     /*! \param module Module.
      */
     explicit EC_3DCanvasSource(IModule *module);

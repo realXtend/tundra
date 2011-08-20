@@ -167,7 +167,7 @@ class MediaURLHandler(Component):
     def connect_touchable(self, mediaurlview, entity):
         if mediaurlview == None or entity == None:
             return
-        entid = entity.Id
+        entid = entity.id
         try:
             mediaurlview.entid_clicked_connected.index(entid) # already hooked up this entity
             return

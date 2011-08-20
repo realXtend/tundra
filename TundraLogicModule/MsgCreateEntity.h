@@ -23,6 +23,7 @@ struct MsgCreateEntity
 		priority = 100;
 	}
 
+    enum { messageID = 110 };
 	static inline u32 MessageID() { return 110; }
 	static inline const char *Name() { return "CreateEntity"; }
 

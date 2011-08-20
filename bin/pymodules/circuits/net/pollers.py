@@ -136,19 +136,20 @@ class Select(_Poller):
     def __tick__(self):
         try:
             r, w, _ = select(self._read, self._write, [], self.timeout)
-            if r or w:
-                self.timeout = 0.0
-            dtime = time() - self._ts
-            self._ts = time()
-            if not dtime == 0.0:
-                load = float(len(r) + len(w)) / dtime
-                if load > self._load:
-                    if self.timeout > 0.1:
-                        self.timeout -= 0.001
-                else:
-                    if self.timeout < 0.5:
-                        self.timeout += 0.001
-                self._load = load
+            #if r or w:
+            self.timeout = 0.0
+            #disabled for naali -- we are ticking in mainloop thread, which sleeps itself --antont
+            # dtime = time() - self._ts
+            # self._ts = time()
+            # if not dtime == 0.0:
+            #     load = float(len(r) + len(w)) / dtime
+            #     if load > self._load:
+            #         if self.timeout > 0.1:
+            #             self.timeout -= 0.001
+            #     else:
+            #         if self.timeout < 0.5:
+            #             self.timeout += 0.001
+            #     self._load = load
         except ValueError, e:
             # Possibly a file descriptor has gone negative?
             return self._preenDescriptors()

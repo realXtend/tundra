@@ -10,6 +10,8 @@
 #include "Declare_EC.h"
 #include "AssetFwd.h"
 
+#include "PhysicsModuleApi.h"
+
 #include <QVector>
 
 class btRigidBody;
@@ -112,12 +114,13 @@ Does not emit any actions.
 <b>Depends on the component Placeable, and optionally on Mesh & Terrain to copy the collision shape from them</b>.
 </table>
 */
-class EC_RigidBody : public IComponent, public btMotionState
+class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
 {
     friend class Physics::PhysicsWorld;
     
     Q_OBJECT
-    Q_ENUMS(EventType)
+    Q_ENUMS(ShapeType)
+	Q_ENUMS(physicsType)
     
     DECLARE_EC(EC_RigidBody);
 public:
@@ -131,6 +134,13 @@ public:
         Shape_HeightField,
         Shape_ConvexHull
     };
+
+	enum physicsType
+    {
+        Type_Static,
+        Type_Kinematic,
+        Type_Dynamic
+    };
     
     //! Mass of the body. Set to 0 for static
     Q_PROPERTY(float mass READ getmass WRITE setmass);
@@ -139,6 +149,10 @@ public:
     //! Shape type
     Q_PROPERTY(int shapeType READ getshapeType WRITE setshapeType)
     DEFINE_QPROPERTY_ATTRIBUTE(int, shapeType);
+
+	//! Physics type
+    Q_PROPERTY(int physicsType READ getphysicsType WRITE setphysicsType)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, physicsType);
     
     //! Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.
     Q_PROPERTY(Vector3df size READ getsize WRITE setsize)
@@ -200,7 +214,7 @@ public:
     virtual void setWorldTransform(const btTransform &worldTrans);
 
 signals:
-    //! A physics collision has happened between this rigidbody and another entity
+    //! A physics collision has happened between this rigid body and another entity
     /*! If there are several contact points, the signal will be sent multiple times for each contact.
         \param otherEntity The second entity
         \param position World position of collision
@@ -252,6 +266,11 @@ public slots:
      */
     void ApplyTorqueImpulse(const Vector3df& torqueImpulse);
     
+	//! Set body gravity
+    /*! \param gravity Gravity
+     */
+	void ApplyGravity(const Vector3df& gravity);
+
     //! Force the body to activate (wake up)
     void Activate();
     
@@ -292,12 +311,15 @@ public slots:
 
     btRigidBody* GetRigidBody() const { return body_; }
     
+    //! Return whether have authority. On the client, returns false for non-local objects.
+    bool HasAuthority() const;
+    
 private slots:
     //! Called when the parent entity has been set.
     void UpdateSignals();
     
     //! Called when some of the attributes has been changed.
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
     
     //! Called when attributes of the placeable have changed
     void PlaceableUpdated(IAttribute *attribute);
@@ -312,7 +334,7 @@ private slots:
     void OnTerrainRegenerated();
 
     //! Called when collision mesh has been downloaded.
-    void OnCollisionMeshAssetLoaded(IAssetTransfer *transfer);
+    void OnCollisionMeshAssetLoaded(AssetPtr asset);
 
 private:
     //! constructor

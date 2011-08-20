@@ -6,6 +6,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "InvokeItem.h"
 
 InvokeItem::InvokeItem() : type(Unknown), execTypes(EntityAction::Invalid), mruOrder(0)

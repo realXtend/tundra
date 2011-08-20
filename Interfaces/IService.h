@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_Interfaces_ServiceInterface_h
@@ -37,8 +38,6 @@ namespace Service
         ST_WorldLogic,
         ST_PythonScripting,
         ST_JavascriptScripting,
-        ST_Console,
-        ST_ConsoleCommand,
         ST_Asset,
         ST_Texture,
         ST_Sound,
@@ -49,6 +48,7 @@ namespace Service
         ST_WorldBuilding,
         ST_Login,
         ST_OpenSimScene,
+		ST_Tts,
         ST_Unknown
     };
 }

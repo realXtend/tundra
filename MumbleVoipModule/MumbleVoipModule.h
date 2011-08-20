@@ -71,10 +71,10 @@ namespace MumbleVoip
         static std::string module_name_;
 
         virtual void InitializeConsoleCommands();
-        virtual Console::CommandResult OnConsoleMumbleLink(const StringVector &params);
-        virtual Console::CommandResult OnConsoleMumbleUnlink(const StringVector &params);
-        virtual Console::CommandResult OnConsoleMumbleStart(const StringVector &params);
-        virtual Console::CommandResult OnConsoleMumbleStats(const StringVector &params);
+        virtual ConsoleCommandResult OnConsoleMumbleLink(const StringVector &params);
+        virtual ConsoleCommandResult OnConsoleMumbleUnlink(const StringVector &params);
+        virtual ConsoleCommandResult OnConsoleMumbleStart(const StringVector &params);
+        virtual ConsoleCommandResult OnConsoleMumbleStats(const StringVector &params);
 
         virtual void UpdateLinkPlugin(f64 frametime);
         virtual bool GetAvatarPosition(Vector3df& position, Vector3df& direction);

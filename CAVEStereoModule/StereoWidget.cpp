@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "StereoWidget.h"
 #include "ServiceManager.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "Framework.h"
 #include <QColorDialog>
 
@@ -15,10 +15,7 @@ namespace CAVEStereo
         setupUi(this);
 
         framework_ = framework;
-        UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-            if (!ui)
-                return;
-        ui->AddSettingsWidget(this, "Stereo");
+       // ui->AddSettingsWidget(this, "Stereo");
         QObject::connect(this->enable, SIGNAL(clicked()), this, SLOT(StereoOn()));
         QObject::connect(this->disable, SIGNAL(clicked()), this, SLOT(StereoOff()));
         QObject::connect(this->left_color, SIGNAL(clicked()), this, SLOT(ColorLeftChanged()));

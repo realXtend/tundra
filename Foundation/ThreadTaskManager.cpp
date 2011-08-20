@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "ThreadTaskManager.h"
 #include "ForwardDefines.h"
 #include "Framework.h"
@@ -103,7 +105,7 @@ namespace Foundation
         
         return ThreadTaskPtr();
     }
-    
+/*    
     request_tag_t ThreadTaskManager::AddRequest(const std::string& task_description, ThreadTaskRequestPtr request)
     {
         if (request)
@@ -130,7 +132,7 @@ namespace Foundation
         
         return 0;
     }
-    
+*/    
     void ThreadTaskManager::QueueResult(ThreadTaskResultPtr result)
     {
         MutexLock lock(result_mutex_);

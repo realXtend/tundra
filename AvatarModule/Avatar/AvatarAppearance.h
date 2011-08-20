@@ -3,9 +3,13 @@
 #ifndef incl_Avatar_AvatarAppearance_h
 #define incl_Avatar_AvatarAppearance_h
 
+/// \todo Deprecated. Not needed for Tundra avatar handling.
+/*
+
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "AvatarModule.h"
 #include "AvatarModuleApi.h" 
+#include "AssetFwd.h"
 
 class QDomDocument;
 
@@ -52,26 +56,15 @@ namespace Avatar
         void ReadDefaultAppearance(const std::string& filename);
         
         //! Reads an avatar's appearance from avatar storage
-        /*! The storage address should be set beforehand in the EC_OpensimAvatar component.
-            \param entity Avatar entity
-            \param use_default Whether to reset to default appearance if there is no storage url, default false
-         */
         void DownloadAppearance(Scene::EntityPtr entity, bool use_default = false);
         
         //! Reads an avatar's appearance from a file
-        /*! \param entity Avatar entity
-            \param filename Path/filename to load from. Note: can either be an xml or mesh file
-            \return true if successful
-         */
         bool LoadAppearance(Scene::EntityPtr entity, const std::string& filename);
         
         //! Sets up an avatar entity's default appearance.
         void SetupDefaultAppearance(Scene::EntityPtr entity);
         
         //! Sets up an avatar entity's appearance with data from the appearance EC.
-        /*! Since this involves deserializing the appearance description XML & (re)creating the mesh entity,
-            should only be called when the whole appearance changes. Calls also SetupDynamicAppearance().
-         */
         void SetupAppearance(Scene::EntityPtr entity);
         
         //! Sets ups the dynamic part of an avatar's appearance. This includes morphs & bone modifiers.
@@ -108,9 +101,6 @@ namespace Avatar
         //! Adds an attachment on the avatar. Filename is the xml attachment description.
         bool AddAttachment(Scene::EntityPtr entity, const std::string& filename);
         
-        //! Handles appearance setup for EC_Avatar-based avatar
-        void ProcessECAvatarAppearance(entity_id_t entityID, const u8* data, uint size);
-        
     public slots:            
         //! Exports avatar to an authentication/avatar storage server account
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
@@ -130,6 +120,9 @@ namespace Avatar
         void AppearanceStatus(const QString &message, int timeout = 7000);
         void AppearanceError(const QString &message, int timeout = 7000);
         void AppearanceHideMessages();
+
+//    private slots:
+//        void OnAvatarAssetDownloadCompleted(IAssetTransfer *transfer);
 
     private:
         //! Sets up an avatar mesh
@@ -184,32 +177,24 @@ namespace Avatar
         bool PrepareAppearanceFromMesh(Scene::EntityPtr entity, const std::string& filename);
                 
         //! Guesses avatar asset resource type from human-readable asset name
-        static const std::string& GetResourceTypeFromName(const std::string& name, bool inventorymode = false);
+        static std::string GetResourceTypeFromName(const std::string& name, bool inventorymode = false);
         
         //! Adds avatar assets to the export request
         void GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode = false);
         
         //! Adds an avatar asset to the export request
-        /*! \return true if added successfully
-         */
         bool GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& appearance, bool replace_spaces = false, bool inventorymode = false);
         
         //! Adds an avatar asset to the export request
-        /*! \return true if added successfully
-         */
         bool GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material, bool inventorymode = false);
         
         //! Gets a bone safely from the avatar skeleton
-        /*! \return Pointer to bone, or 0 if does not exist
-         */
         Ogre::Bone* GetAvatarBone(Scene::EntityPtr entity, const std::string& bone_name);
         
         //! Gets initial derived transform of a bone. This is something Ogre can't give us automatically
         void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position);
         
         //! Adds a directory as a temporary Ogre resource directory, group name "Avatar"
-        /*! Each time this is called, the previously set temp directory will be removed from the resource system.
-         */
         void AddTempResourceDirectory(const std::string& dirname);
         
         //! Default avatar appearance xml document
@@ -219,10 +204,10 @@ namespace Avatar
         std::map<entity_id_t, HttpUtilities::HttpTaskPtr> appearance_downloaders_;
         
         //! Avatar resource request tags associated to entity
-        std::map<request_tag_t, entity_id_t> avatar_resource_tags_;
+//        std::map<request_tag_t, entity_id_t> avatar_resource_tags_;
 
         //! Avatar appearance xml asset request tags associated to entity, for inventory based appearance
-        std::map<request_tag_t, entity_id_t> avatar_appearance_tags_;
+//        std::map<request_tag_t, entity_id_t> avatar_appearance_tags_;
         
         //! Amount of pending avatar resource requests. When hits 0, should be able to build avatar
         std::map<entity_id_t, uint> avatar_pending_requests_;
@@ -244,5 +229,7 @@ namespace Avatar
         AvatarModule *avatar_module_;
     };
 }
+
+*/
 
 #endif

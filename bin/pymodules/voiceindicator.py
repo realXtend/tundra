@@ -69,7 +69,7 @@ class PresenceMonitor:
         presence = ent.GetComponentRaw("EC_OpenSimPresence")
         if presence is None:
             return
-        presence.connect("OnAttributeChanged(IAttribute*, AttributeChange::Type)", self._onOpenSimPresenceChanged)
+        presence.connect("AttributeChanged(IAttribute*, AttributeChange::Type)", self._onOpenSimPresenceChanged)
 
     def _onOpenSimPresenceChanged(self):
         self._changeHandler(self._entity)
@@ -98,7 +98,7 @@ class VoiceIndicatorManager(Component):
         self._indicators[p.AvatarUUID()] = indicator
 
     def _onComponentAdded(self, ent, comp, update):
-        if comp.TypeName == "EC_OpenSimPresence":
+        if comp.typeName == "EC_OpenSimPresence":
             uuid = comp.QGetUUIDString()
             if self._indicators.has_key(uuid):
                 self._indicators[uuid].setEntity(ent)

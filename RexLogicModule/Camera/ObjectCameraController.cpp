@@ -3,29 +3,27 @@
 #include "StableHeaders.h"
 #include "ObjectCameraController.h"
 #include "EventManager.h"
-
 #include "Renderer.h"
-#include "Frame.h"
+#include "FrameAPI.h"
+#include "SceneAPI.h"
 #include "Entity.h"
-
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "AvatarEvents.h"
 #include "NetworkEvents.h"
-#include "UiServiceInterface.h"
-
+//#include "UiServiceInterface.h"
+#include "SceneManager.h"
+#include "EC_Placeable.h"
+#include "EC_OgreCamera.h"
+#include "EC_Mesh.h"
+#include "EC_OgreCustomObject.h"
+#include "InputContext.h"
 #include <QApplication>
 #include <QGraphicsScene>
 
-#include <SceneManager.h>
-#include <EC_Placeable.h>
-#include <EC_OgreCamera.h>
-#include <EC_Mesh.h>
-#include <EC_OgreCustomObject.h>
-
 #include <Ogre.h>
 
-#include "InputContext.h"
+#include "MemoryLeakCheck.h"
 
 namespace RexLogic
 {
@@ -58,7 +56,7 @@ namespace RexLogic
     void ObjectCameraController::PostInitialize()
     {
         // Register building key context
-        input_context_ = framework_->GetInput()->RegisterInputContext("ObjectCameraContext", 100);
+        input_context_ = framework_->Input()->RegisterInputContext("ObjectCameraContext", 100);
         connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), this, SLOT(KeyReleased(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(MouseMove(MouseEvent*)));
@@ -67,7 +65,7 @@ namespace RexLogic
         connect(input_context_.get(), SIGNAL(MouseScroll(MouseEvent*)), this, SLOT(MouseScroll(MouseEvent*)));
         connect(input_context_.get(), SIGNAL(MouseDoubleClicked(MouseEvent*)), this, SLOT(MouseDoubleClicked(MouseEvent*)));
 
-        connect(framework_->GetFrame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
+        connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
         connect(timeline_, SIGNAL(frameChanged(int)), this, SLOT(FrameChanged(int)));
         connect(timeline_, SIGNAL(finished()), this, SLOT(TimeLineFinished()));
     }
@@ -190,12 +188,17 @@ namespace RexLogic
         if (avatar_edit_mode_)
             return;
 
-        // Only do obj focus when in the inworld scene, ignore on building and avatar scenes
-        QGraphicsScene *scene = framework_->UiService()->GetScene("Inworld");
-        if (!scene)
-            return;
-        if (!scene->isActive())
-            return;
+        // Only do obj focus when in the in-world scene, ignore on building and avatar scenes
+        ///\todo UiServiceInterface is/will be deprecated. Refactor.
+        //UiServiceInterface *uiService = framework_->GetService<UiServiceInterface>();
+        ///if (!uiService)
+        //    return;
+
+        //QGraphicsScene *scene = uiService->GetScene("Inworld");
+        //if (!scene)
+        //    return;
+        //if (!scene->isActive())
+        //    return;
 
         if (key_event->keyCode == Qt::Key_Alt)
         {
@@ -207,19 +210,21 @@ namespace RexLogic
             return;
 
         bool return_to_avatar = false;
-        if (key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.WalkForward") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.WalkForward2") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.WalkBack") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.WalkBack2") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.Down") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.Down2") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.Up") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.Up2") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.RotateLeft") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.RotateRight") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.StrafeLeft") ||
-            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.StrafeRight"))
+        if (key_event->sequence == framework_->Input()->KeyBinding("Avatar.WalkForward") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.WalkForward2") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.WalkBack") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.WalkBack2") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.Down") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.Down2") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.Up") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.Up2") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.RotateLeft") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.RotateRight") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.StrafeLeft") ||
+            key_event->sequence == framework_->Input()->KeyBinding("Avatar.StrafeRight"))
+        {
             return_to_avatar = true;
+        }
 
         if (return_to_avatar)
             ReturnToAvatarCamera();
@@ -352,12 +357,12 @@ namespace RexLogic
 
     void ObjectCameraController::CreateCustomCamera()
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 
         Scene::EntityPtr cam_entity = scene->CreateEntity(scene->GetNextFreeId());
-        if (!cam_entity.get())
+        if (!cam_entity)
             return;
 
         cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));

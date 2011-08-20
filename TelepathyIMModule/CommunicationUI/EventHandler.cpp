@@ -34,7 +34,7 @@ namespace CommunicationUI
     {
         QMap<QString, QString> id_to_name;
         Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-        if (current_scene.get())
+        if (current_scene)
         {
             for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
             {
@@ -66,7 +66,7 @@ namespace CommunicationUI
     void EventHandler::UpdateAvatarPosition()
     {
         Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-        if (!current_scene.get())
+        if (!current_scene)
             return;
 
         for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)

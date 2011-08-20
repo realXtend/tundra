@@ -7,6 +7,9 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "PythonQtScriptingConsole.h"
+#include "InputFwd.h"
+#include "SceneFwd.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QList>
@@ -24,6 +27,9 @@
 #else
     #include <Python.h>
 #endif
+
+class ScriptAsset;
+typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 
 namespace OgreRenderer
 {
@@ -68,6 +74,7 @@ namespace PythonScript
     public slots: //things for the py side to call.
         OgreRenderer::Renderer* GetRenderer() const;
         Foundation::WorldLogicInterface* GetWorldLogic() const;
+        Scene::Entity* GetActiveCamera() const;
         Scene::SceneManager* GetScene(const QString &name) const;
         void RunJavascriptString(const QString &codestr, const QVariantMap &context = QVariantMap());
         InputContext* GetInputContext() const { return input.get(); }
@@ -76,14 +83,21 @@ namespace PythonScript
         Communications::ServiceInterface* GetCommunicationsService() const;
         
         void RemoveQtDynamicProperty(QObject* qobj, char* propname);
-        QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate);
-        /** Prepares Python script instance used with EC_Script for execution.
-            The script is executed instantly only if the runOnLoad attribute of the script EC is true.
-            @param filename Filename of the script.
+        //QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate);
+
+        /// Prepares Python script instance used with EC_Script for execution.
+        /** The script is executed instantly only if the runOnLoad attribute of the script EC is true.
+            @param scriptAsset Script asset.
         */
-        void LoadScript(const QString &filename);
+        void LoadScript(ScriptAssetPtr scriptAsset);
 
         PythonQtScriptingConsole* CreateConsole();
+
+        //Get UiWidget of the console
+        UiWidget *GetPythonConsoleUiWidget();
+
+        /// Shows the Python script console.
+        void ShowConsole();
 
     public:
         PythonScriptModule();
@@ -99,9 +113,9 @@ namespace PythonScript
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! callback for console command
-        Console::CommandResult ConsoleRunString(const StringVector &params);
-        Console::CommandResult ConsoleRunFile(const StringVector &params);
-        Console::CommandResult ConsoleReset(const StringVector &params);
+        ConsoleCommandResult ConsoleRunString(const StringVector &params);
+        ConsoleCommandResult ConsoleRunFile(const StringVector &params);
+        ConsoleCommandResult ConsoleReset(const StringVector &params);
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -124,7 +138,7 @@ namespace PythonScript
         /// Returns the currently initialized PythonScriptModule.
         static PythonScriptModule *GetInstance();
 
-        Scene::ScenePtr GetScenePtr() const { return framework_->GetDefaultWorldScene(); }
+        Scene::ScenePtr GetScenePtr() const;
         PyObject* WrapQObject(QObject* qobj) const;
 
         PyObject* entity_create(entity_id_t ent_id); //, Scene::EntityPtr entity);
@@ -139,6 +153,12 @@ namespace PythonScript
 
         /// Keep list of proxy widgets created from py as the cause mem leaks if not deleted explicitily.
         QList<UiProxyWidget *> proxyWidgets;
+
+		/// Python console
+		PythonQtScriptingConsole* pythonqtconsole_;
+
+        /// Python console UiWidget
+		UiWidget* pythonqtconsole_widget_;
 
     private:
         //! Type name of the module.

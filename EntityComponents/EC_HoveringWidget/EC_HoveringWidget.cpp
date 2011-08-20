@@ -19,9 +19,8 @@
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
-#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "ModuleManager.h"
+#include "UiAPI.h"
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -52,7 +51,7 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     buttons_disabled_(false),
     buttons_visible_(false),
     detached_(false),
-    bb_name_size_view(0.25f, 0.07f), // Only the height is used
+    bb_name_size_view(0.25f, 0.2f/*0.07f*/), // Only the height is used
     bb_buttons_size_view(0.1f, 0.25f),
     bb_rel_posy(1.3f),
     cam_distance_(0.0f)
@@ -74,11 +73,7 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
     connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
-    UiServiceInterface *ui = module->GetFramework()->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
-
-    proxy_ = ui->GetScene("Inworld")->addWidget(detachedwidget_);
+    proxy_ = framework_->Ui()->AddWidgetToScene(detachedwidget_);
     proxy_->hide();
 
     QPushButton *b = new QPushButton("Attach");
@@ -430,6 +425,18 @@ void EC_HoveringWidget::SetText(const QString &text)
     Redraw();
 }
 
+void EC_HoveringWidget::SetTextHeight(int height)
+{
+    namewidget_->SetTextHeight(height);
+    Redraw();
+}
+
+void EC_HoveringWidget::SetFontSize(int pt_size)
+{
+    namewidget_->SetFontSize(pt_size);
+    Redraw();
+}
+
 void EC_HoveringWidget::SetIcon(QPixmap *icon)
 {
     namewidget_->SetPixmap(icon);
@@ -581,6 +588,15 @@ QPixmap EC_HoveringWidget::GetPixmap(QWidget &w)
 void EC_HoveringWidget::UpdateBillboardSize()
 {
     namewidget_->resize(1,1); // HACK: minimizes the widget size
+
+    // HACK: This ensure that QWidget::width will return correct value
+    QPixmap temp(10,10);
+    QPainter painter(&temp);
+    namewidget_->adjustSize();
+    namewidget_->render(&painter);  
+    namewidget_->render(&painter);  
+    namewidget_->render(&painter);
+
     qreal bb_width = namewidget_->width() * bb_name_size_view.height() / namewidget_->height();
     bb_name_size_view = QSizeF(bb_width, bb_name_size_view.height());
 }

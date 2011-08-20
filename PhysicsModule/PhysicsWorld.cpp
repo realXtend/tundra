@@ -1,13 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "btBulletDynamicsCommon.h"
+#include "MemoryLeakCheck.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include "Profiler.h"
 #include "EC_RigidBody.h"
 
-#include "btBulletDynamicsCommon.h"
 
 namespace Physics
 {
@@ -20,13 +22,14 @@ void TickCallback(btDynamicsWorld *world, btScalar timeStep)
     static_cast<Physics::PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
 }
 
-PhysicsWorld::PhysicsWorld(PhysicsModule* owner) :
+PhysicsWorld::PhysicsWorld(PhysicsModule* owner, bool isClient) :
     collisionConfiguration_(0),
     collisionDispatcher_(0),
     broadphase_(0),
     solver_(0),
     world_(0),
-    physicsUpdatePeriod_(1.0f / 60.0f)
+    physicsUpdatePeriod_(1.0f / 60.0f),
+    isClient_(isClient)
 {
     collisionConfiguration_ = new btDefaultCollisionConfiguration();
     collisionDispatcher_ = new btCollisionDispatcher(collisionConfiguration_);

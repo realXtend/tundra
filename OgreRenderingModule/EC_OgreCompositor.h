@@ -40,7 +40,8 @@ F.ex. 'strength=1.2' or 'color=1 0 0 0.5'</div>
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>AvailableCompositors
+<div>Returns list of available compositor names.</div>
 </ul>
 </td>
 </tr>
@@ -73,8 +74,12 @@ public:
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }
 
+public slots:
+    /// Returns list of available compositor names.
+    QStringList AvailableCompositors() const;
+
 private slots:
-    void AttributeUpdated(IAttribute* attribute);
+    void OnAttributeUpdated(IAttribute* attribute);
 
 private:
     //! Enables or disables and sets the priority of the specified compositor based on the attributes

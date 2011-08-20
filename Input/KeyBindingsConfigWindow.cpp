@@ -11,7 +11,7 @@
 #include <cassert>
 
 #include "Framework.h"
-#include "Input.h"
+#include "InputAPI.h"
 
 #include "KeyBindingsConfigWindow.h"
 
@@ -85,8 +85,8 @@ void KeyBindingsConfigWindow::ApplyKeyConfig()
             tr("&Yes"), tr("&No"),
             QString::null, 0, 1))
         {
-            framework->GetInput()->SetKeyBindings(editedActions);
-            framework->GetInput()->SaveKeyBindingsToFile();
+            framework->Input()->SetKeyBindings(editedActions);
+            framework->Input()->SaveKeyBindingsToFile();
         }
     }
 }
@@ -119,9 +119,9 @@ void KeyBindingsConfigWindow::PopulateBindingsList()
 
     configList->clear();
 
-    const Input::KeyActionsMap &keyActions = framework->GetInput()->GetKeyBindings();
+    const InputAPI::KeyActionsMap &keyActions = framework->Input()->GetKeyBindings();
 
-    for(Input::KeyActionsMap::const_iterator iter = keyActions.begin(); iter != keyActions.end(); ++iter)
+    for(InputAPI::KeyActionsMap::const_iterator iter = keyActions.begin(); iter != keyActions.end(); ++iter)
     {
         ///\todo Fix - this leaks?
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(iter->first.c_str())));
@@ -139,7 +139,7 @@ void KeyBindingsConfigWindow::ButtonOK()
 
 void KeyBindingsConfigWindow::ButtonCancel()
 {
-    framework->GetInput()->LoadKeyBindingsFromFile();    
+    framework->Input()->LoadKeyBindingsFromFile();    
 }
 
 bool KeyBindingsConfigWindow::eventFilter(QObject *obj, QEvent *event)

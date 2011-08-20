@@ -50,15 +50,11 @@ typedef int service_type_t;
 typedef unsigned int entity_id_t;
 typedef unsigned int event_category_id_t;
 typedef unsigned int event_id_t;
-typedef unsigned int sound_id_t;
 
 namespace
 {
     event_category_id_t IllegalEventCategory = 0;
 }
-
-typedef unsigned int request_tag_t;
-typedef std::vector<request_tag_t> RequestTagVector;
 
 typedef std::vector<std::string> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;

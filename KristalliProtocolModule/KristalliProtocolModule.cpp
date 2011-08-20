@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -9,8 +10,13 @@
 #include "Profiler.h"
 #include "EventManager.h"
 #include "CoreStringUtils.h"
+#include "ConsoleCommandUtils.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#include "ConsoleAPI.h"
 
-#include "kNet.h"
+#include <kNet.h>
+#include <kNet/qt/NetworkDialog.h>
 
 #include <algorithm>
 
@@ -114,13 +120,32 @@ void KristalliProtocolModule::PreInitialize()
 void KristalliProtocolModule::Initialize()
 {
     EventManagerPtr event_manager = framework_->GetEventManager();
-
     networkEventCategory = event_manager->RegisterEventCategory("Kristalli");
     event_manager->RegisterEvent(networkEventCategory, Events::NETMESSAGE_IN, "NetMessageIn");
+
+    defaultTransport = kNet::SocketOverTCP;
+    const boost::program_options::variables_map &options = framework_->ProgramOptions();
+    if (options.count("protocol") > 0)
+        if (QString(options["protocol"].as<std::string>().c_str()).trimmed().toLower() == "udp")
+            defaultTransport = kNet::SocketOverUDP;
 }
 
 void KristalliProtocolModule::PostInitialize()
 {
+#ifdef KNET_USE_QT
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
+            "kNet", "Shows the kNet statistics window.", 
+            ConsoleBind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+	if (!framework_->IsHeadless() && !framework_->IsEditionless()) {
+		networkDialog = new NetworkDialog(0, &network);
+		networkDialog->setWindowTitle("Knet Statistics");
+		UiServiceInterface *ui = GetFramework()->Ui();
+		if (ui)
+			ui->AddWidgetToWindow(networkDialog);
+			ui->AddWidgetToMenu(networkDialog, "Knet Statistics", "View");
+	}
+
+#endif
 }
 
 void KristalliProtocolModule::Uninitialize()
@@ -128,24 +153,56 @@ void KristalliProtocolModule::Uninitialize()
     Disconnect();
 }
 
+#ifdef KNET_USE_QT
+ConsoleCommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
+{
+//$ BEGIN_MOD $
+	if (framework_->IsHeadless() && !framework_->IsEditionless()) {
+		networkDialog = new NetworkDialog(0, &network);
+		networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+		networkDialog->show();
+		return Console::ResultSuccess();
+	}
+	else
+	{
+		UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+		if (ui)
+			ui->ShowWidget(networkDialog);
+		return Console::ResultSuccess();
+	}
+//$ END_MOD $	
+}
+#endif
+
 void KristalliProtocolModule::Update(f64 frametime)
 {
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
     if (serverConnection)
-    {
         serverConnection->Process();
 
-        // Our client->server connection is never kept partially open.
-        // That is, at the moment the server write-closes the connection, we also write-close the connection.
-        // Check here if the server has write-closed, and also write-close our end if so.
-        if (!serverConnection->IsReadOpen() && serverConnection->IsWriteOpen())
-            serverConnection->Disconnect(0);
-    }
+    // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
+    // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
+
+    // Our client->server connection is never kept half-open.
+    // That is, at the moment the server write-closes the connection, we also write-close the connection.
+    // Check here if the server has write-closed, and also write-close our end if so.
+    if (serverConnection && !serverConnection->IsReadOpen() && serverConnection->IsWriteOpen())
+        serverConnection->Disconnect(0);
     
     // Process server incoming connections & messages if server up
     if (server)
+    {
         server->Process();
+
+        // In Tundra, we *never* keep half-open server->client connections alive. 
+        // (the usual case would be to wait for a file transfer to complete, but Tundra messaging mechanism doesn't use that).
+        // So, bidirectionally close all half-open connections.
+        NetworkServer::ConnectionMap connections = server->GetConnections();
+        for(NetworkServer::ConnectionMap::iterator iter = connections.begin(); iter != connections.end(); ++iter)
+            if (!iter->second->IsReadOpen() && iter->second->IsWriteOpen())
+                iter->second->Disconnect(0);
+    }
     
     if ((!serverConnection || serverConnection->GetConnectionState() == ConnectionClosed ||
         serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
@@ -184,7 +241,7 @@ const std::string &KristalliProtocolModule::NameStatic()
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
 {
-    if (Connected() && serverConnection && serverConnection->GetEndPoint().ToString() != serverIp)
+    if (Connected() && serverConnection && serverConnection->RemoteEndPoint().IPToString() != serverIp)
         Disconnect();
     
     serverIp = ip;
@@ -212,10 +269,18 @@ void KristalliProtocolModule::PerformConnection()
         LogError("Unable to connect to " + serverIp + ":" + ToString(serverPort));
         return;
     }
+
+    // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
+    if (serverConnection->GetSocket() && serverConnection->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
+        serverConnection->GetSocket()->SetNaglesAlgorithmEnabled(false);
 }
 
 void KristalliProtocolModule::Disconnect()
 {
+    // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
+    serverIp = "";
+    reconnectTimer.Stop();
+    
     if (serverConnection)
     {
         serverConnection->Disconnect();
@@ -224,17 +289,15 @@ void KristalliProtocolModule::Disconnect()
         serverConnection = 0;
     }
 
-    // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
-    serverIp = "";
-    
-    reconnectTimer.Stop();
+
 }
 
 bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLayer transport)
 {
     StopServer();
     
-    server = network.StartServer(port, transport, this);
+    const bool allowAddressReuse = true;
+    server = network.StartServer(port, transport, this, allowAddressReuse);
     if (!server)
     {
         LogError("Failed to start server on port " + ToString((int)port));
@@ -258,6 +321,10 @@ void KristalliProtocolModule::StopServer()
 
 void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *source)
 {
+    assert(source);
+    if (!source)
+        return;
+
     source->RegisterInboundMessageHandler(this);
     ///\todo Regression. Re-enable. -jj.
 //    source->SetDatagramInFlowRatePerSecond(200);
@@ -266,8 +333,12 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     connection->userID = AllocateNewConnectionID();
     connection->connection = source;
     connections.push_back(connection);
-    
-    LogInfo("User connected from " + source->GetEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
+
+    // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
+    if (source->GetSocket() && source->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
+        source->GetSocket()->SetNaglesAlgorithmEnabled(false);
+
+    LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     Events::KristalliUserConnected msg(connection);
     framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
