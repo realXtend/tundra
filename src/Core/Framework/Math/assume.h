@@ -3,7 +3,6 @@
 #include <stdio.h>
 #ifdef WIN32
 #include <assert.h>
-#define MATH_ASSERT_ON_ASSUME
 #endif
 
 #define ARRAY_LENGTH(x) (sizeof((x))/sizeof((x)[0]))
@@ -39,6 +38,7 @@ bool MathBreakOnAssume();
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <Winsock2.h>
 #include <Windows.h>
 #define assume(x) do { if (!(x)) { printf("Assumption \"%s\" failed! in file %s, line %d!\n", #x, __FILE__, __LINE__); if (MathBreakOnAssume()) DebugBreak(); } } while(0)
 #elif defined(ANDROID)
