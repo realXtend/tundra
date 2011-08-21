@@ -193,7 +193,6 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
         // Iterate all EC_Meshes in scene and find out generated material, then re-apply.
         EntityList meshEnts = ParentScene()->GetEntitiesWithComponent("EC_Mesh");
         EntityList::iterator iter = meshEnts.begin();
-
         while (iter != meshEnts.end())
         {
             EntityPtr meshEnt = (*iter);
@@ -207,16 +206,22 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
             if (!mesh)
                 continue;
             
+            // Inspect mesh materials for our output material
+            QList<int> foundIndexes;
             AssetReferenceList materials = mesh->getmeshMaterial();
             for(int k=0; k<materials.Size(); ++k)
             {
                 QString materialResolved = framework->Asset()->ResolveAssetRef("", materials[k].ref);
                 if (materialResolved == outputResolved)
-                {
-                    // Re-apply to make sure EC_Mesh finds the generated material via AssetAPI.
-                    mesh->setmeshMaterial(materials);
-                    break;
-                }
+                    foundIndexes << k;
+            }
+
+            // Re-apply and emit a signal for each index our output material was found.
+            if (!foundIndexes.empty())
+            {
+                mesh->setmeshMaterial(materials);
+                foreach (int appliedIndex, foundIndexes)
+                    emit AppliedOutputMaterial(meshEnt.get(), mesh->Name(), appliedIndex, outputResolved);
             }
         }
     }

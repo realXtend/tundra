@@ -8,6 +8,7 @@
 #include "AssetRefListener.h"
 
 class OgreMaterialAsset;
+class EC_Mesh;
 
 /// Ogre material modifier component
 /**
@@ -79,6 +80,9 @@ private slots:
     
     /// Input asset has been successfully loaded.
     void OnMaterialAssetLoaded(AssetPtr material);
+
+signals:
+    void AppliedOutputMaterial(Entity *entity, const QString &meshCompName, const int index, const QString &material);
     
 private:
     /// Return the submesh number to use from EC_Mesh, or -1 if not using the EC_Mesh's material
