@@ -48,6 +48,10 @@ public:
     Q_PROPERTY(int renderSubmeshIndex READ getrenderSubmeshIndex WRITE setrenderSubmeshIndex);
     DEFINE_QPROPERTY_ATTRIBUTE(int, renderSubmeshIndex);
 
+    /// If rendering to the target submesh index is enabled
+    Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
+
     /// Target material illumination, can be used to see video in low light/shadow conditions.
     Q_PROPERTY(bool illuminating READ getilluminating WRITE setilluminating);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, illuminating);

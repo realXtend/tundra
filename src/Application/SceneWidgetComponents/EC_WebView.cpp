@@ -56,7 +56,8 @@ EC_WebView::EC_WebView(Scene *scene) :
     renderRefreshRate(this, "Render FPS", 0),
     interactive(this, "Interactive", false),
     controllerId(this, "ControllerId", NoneControlID),
-    illuminating(this, "Illuminating", true)
+    illuminating(this, "Illuminating", true),
+    enabled(this, "Enabled", true)
 {
     interactionMetaData_ = new AttributeMetadata();
 
@@ -232,6 +233,10 @@ void EC_WebView::Render()
 {
     // Don't do anything if rendering is not enabled
     if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return;
+
+    // If not enabled don't render
+    if (!getenabled())
         return;
 
     // Comprehensive checks that everything is ok before rendering anything.
@@ -440,7 +445,11 @@ void EC_WebView::PrepareComponent()
     
     // All the needed components are present, mark prepared as true.
     componentPrepared_ = true;
-    
+
+    // We are now prepared, check enabled state and restore possible materials now
+    if (!getenabled())
+        sceneCanvas->RestoreOriginalMeshMaterials();
+
     // Resize the widget if needed before loading the page.
     QSize targetSize = getwebviewSize();
     if (webview_->size() != targetSize)
@@ -586,6 +595,8 @@ void EC_WebView::TargetMeshMaterialChanged(uint index, const QString &material)
     if (sceneCanvasName_.isEmpty())
         return;
     if (!ParentEntity())
+        return;
+    if (!getenabled())
         return;
 
     if (index == getrenderSubmeshIndex())
@@ -769,6 +780,23 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
         if (canvas)
             canvas->SetSelfIllumination(getilluminating());
+    }
+    else if (attribute == &enabled)
+    {
+        EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
+        if (componentPrepared_ && sceneCanvas)
+        {
+            RenderTimerStop();
+            if (!getenabled())
+            {
+                sceneCanvas->RestoreOriginalMeshMaterials();
+            }
+            else
+            {
+                sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
+                RenderTimerStartOrSingleShot();
+            }
+        }
     }
 }
 

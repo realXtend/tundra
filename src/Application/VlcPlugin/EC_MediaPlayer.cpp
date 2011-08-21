@@ -38,7 +38,8 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
     renderSubmeshIndex(this, "Render Submesh", 0),
     interactive(this, "Interactive", false),
     illuminating(this, "Illuminating", true),
-    streamingAllowed(this, "Streaming Allowed", true)
+    streamingAllowed(this, "Streaming Allowed", true),
+    enabled(this, "Enabled", true)
 {
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
@@ -158,6 +159,8 @@ void EC_MediaPlayer::OnFrameUpdate(QImage frame)
         return;
     if (!componentPrepared_)
         return;
+    if (!getenabled())
+        return;
 
     // Get needed components, something is fatally wrong if these are not present but componentPrepared_ is true.
     EC_Mesh *mesh = GetMeshComponent();
@@ -251,6 +254,10 @@ void EC_MediaPlayer::PrepareComponent()
     // All the needed components are present, mark prepared as true.
     componentPrepared_ = true;
 
+    // We are now prepared, check enabled state and restore possible materials now
+    if (!getenabled())
+        sceneCanvas->RestoreOriginalMeshMaterials();
+
     // Show downloading info icon or if not downloading, 
     // ask for a image update from the player
     if (pendingMediaDownload_)
@@ -272,6 +279,8 @@ void EC_MediaPlayer::TargetMeshMaterialChanged(uint index, const QString &materi
     if (sceneCanvasName_.isEmpty())
         return;
     if (!ParentEntity())
+        return;
+    if (!getenabled())
         return;
 
     if (index == (uint)getrenderSubmeshIndex())
@@ -384,6 +393,17 @@ void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Ty
         EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
         if (canvas)
             canvas->SetSelfIllumination(getilluminating());
+    }
+    else if (attribute == &enabled)
+    {
+        EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
+        if (componentPrepared_ && sceneCanvas)
+        {
+            if (!getenabled())
+                sceneCanvas->RestoreOriginalMeshMaterials();
+            else
+                sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
+        }
     }
 }
 

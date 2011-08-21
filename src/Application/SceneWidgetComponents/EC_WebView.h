@@ -102,6 +102,10 @@ public:
     Q_PROPERTY(int renderRefreshRate READ getrenderRefreshRate WRITE setrenderRefreshRate);
     DEFINE_QPROPERTY_ATTRIBUTE(int, renderRefreshRate);
 
+    /// If rendering to the target submesh index is enabled
+    Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
+
     /// Boolean for interactive mode, if true it will show context menus on mouse click events.
     Q_PROPERTY(bool interactive READ getinteractive WRITE setinteractive);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, interactive);
