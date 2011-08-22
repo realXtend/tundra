@@ -6,6 +6,8 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 
+#include <QPointer>
+
 namespace OgreRenderer
 {
     class RendererSettingsWindow;
@@ -55,6 +57,6 @@ namespace OgreRenderer
     
     private:
         RendererPtr renderer;  ///< Renderer
-        RendererSettingsWindow *settingsWindow; ///< Renderer settings window.
+        QPointer<RendererSettingsWindow> settingsWindow; ///< Renderer settings window.
     };
 }

@@ -54,6 +54,7 @@ OgreRenderingModule::OgreRenderingModule() :
 
 OgreRenderingModule::~OgreRenderingModule()
 {
+    SAFE_DELETE(settingsWindow);
 }
 
 void OgreRenderingModule::Load()
@@ -109,8 +110,8 @@ void OgreRenderingModule::Initialize()
     std::string window_title = framework_->ApplicationVersion()->GetFullIdentifier().toStdString();
 
     renderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
-    assert (renderer);
-    assert (!renderer->IsInitialized());
+    assert(renderer);
+    assert(!renderer->IsInitialized());
 
     // Initializing the Renderer crashes inside Ogre if the current working directory is not the same as the directory where Ogre plugins reside in.
     // So, temporarily set the working dir to the installation directory, and restore it after succeeding to load the plugins.
