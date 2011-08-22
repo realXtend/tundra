@@ -49,9 +49,27 @@ Entity::~Entity()
 
 void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type change)
 {
+    AddComponent(0, component, change);
+}
+
+void Entity::AddComponent(component_id_t id, const ComponentPtr &component, AttributeChange::Type change)
+{
     // Must exist and be free
     if (component && component->ParentEntity() == 0)
     {
+        if (!id)
+            id = idGenerator_.Allocate();
+        else
+        {
+            // If component ID is specified manually, but it already exists, it is an error. Do not add the component in that case.
+            if (components_.find(id) != components_.end())
+            {
+                LogError("Can not add component: a component with id " + QString::number(id) + " already exists in entity " + ToString());
+                return;
+            }
+            idGenerator_.Allocate(id);
+        }
+        
         QString componentTypeName = component->TypeName();
         componentTypeName.replace(0, 3, "");
         componentTypeName = componentTypeName.toLower();
@@ -61,12 +79,10 @@ void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type c
             QVariant var = QVariant::fromValue<QObject*>(component.get());
             setProperty(componentTypeName.toStdString().c_str(), var);
         }
-
-        entity_id_t componentID = idGenerator_.Allocate();
-
-        component->SetNewId(componentID);
+        
+        component->SetNewId(id);
         component->SetParentEntity(this);
-        components_[componentID] = component;
+        components_[id] = component;
         
         if (change != AttributeChange::Disconnected)
             emit ComponentAdded(component.get(), change == AttributeChange::Default ? component->UpdateMode() : change);
@@ -211,6 +227,19 @@ ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeC
     }
 
     AddComponent(new_comp, change);
+    return new_comp;
+}
+
+ComponentPtr Entity::CreateComponent(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change)
+{
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(scene_, typeId, name);
+    if (!new_comp)
+    {
+        LogError("Failed to create a component of type id " + QString::number(typeId) + " and name \"" + name + "\" to " + ToString());
+        return ComponentPtr();
+    }
+
+    AddComponent(compId, new_comp, change);
     return new_comp;
 }
 

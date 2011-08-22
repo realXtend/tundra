@@ -35,6 +35,47 @@ kNet::MessageConnection* currentSender = 0;
 namespace TundraLogic
 {
 
+void SyncManager::QueueMessage(kNet::MessageConnection* connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds)
+{
+    kNet::NetworkMessage* msg = connection->StartNewMessage(id, ds.BytesFilled());
+    memcpy(msg->data, ds.GetData(), ds.BytesFilled());
+    msg->reliable = reliable;
+    msg->inOrder = inOrder;
+    connection->EndAndQueueMessage(msg);
+}
+
+void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp)
+{
+    // Component identification
+    ds.AddVLE<VLE8_16_32>(comp->Id());
+    ds.AddVLE<VLE8_16_32>(comp->TypeId());
+    ds.AddString(comp->Name().toStdString());
+    
+    // Create a nested dataserializer for the attributes, so we can survive unknown or incompatible components
+    kNet::DataSerializer attrDs(attrDataBuffer_, 16 * 1024);
+    
+    // Static-structured attributes
+    unsigned numStaticAttrs = comp->NumStaticAttributes();
+    const AttributeVector& attrs = comp->Attributes();
+    for (uint i = 0; i < numStaticAttrs; ++i)
+        attrs[i]->ToBinary(attrDs);
+    
+    // Dynamic-structured attributes (use EOF to detect so do not need to send their amount)
+    for (unsigned i = numStaticAttrs; i < attrs.size(); ++i)
+    {
+        if (attrs[i] && attrs[i]->IsDynamic())
+        {
+            attrDs.Add<u8>(i); // Index
+            attrDs.Add<u8>(attrs[i]->TypeId());
+            attrDs.AddString(attrs[i]->Name().toStdString());
+            attrs[i]->ToBinary(attrDs);
+        }
+    }
+    
+    // Add the attribute array to the main serializer
+    ds.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDs.BytesFilled());
+}
+
 SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
@@ -126,24 +167,16 @@ void SyncManager::NewUserConnected(UserConnection* user)
     // Connect to actions sent to specifically to this user
     connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
-    /*
-    // If user does not have replication state, create it, then mark all non-local entities dirty
-    // so we will send them during the coming updates
-    if (!user->syncState)
-        user->syncState = boost::shared_ptr<ISyncState>(new SceneSyncState());
-    
-    SceneSyncState* state = checked_static_cast<SceneSyncState*>(user->syncState.get());
-    
+    // Mark all entities in the sync state as new so we will send them
+    user->syncState.Clear();
     for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
+        if (entity->IsLocal())
+            continue;
         entity_id_t id = entity->Id();
-        // If we cross over to local entities (ID range 0x80000000 - 0xffffffff), break
-        if (id & LocalEntity)
-            break;
-        state->OnEntityChanged(id);
+        user->syncState.MarkEntityDirty(id);
     }
-    */
 }
 
 void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
@@ -166,14 +199,11 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         }
     }
     
-    if ((change != AttributeChange::Replicate) || (!comp->IsReplicated()))
+    if ((change != AttributeChange::Replicate) || (comp->IsLocal()))
         return;
     Entity* entity = comp->ParentEntity();
     if ((!entity) || (entity->IsLocal()))
         return;
-    
-    /*
-    bool dynamic = comp->HasDynamicStructure();
     
     if (isServer)
     {
@@ -183,28 +213,13 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
             // Do not echo the attribute change back to the sender
             if ((*i)->connection == currentSender)
                 continue;
-
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
-            if (state)
-            {
-                if (!dynamic)
-                    state->OnAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr);
-                else
-                    // Note: this may be an add, change or remove. We inspect closer when it's time to send the update message.
-                    state->OnDynamicAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr->Name());
-            }
+            (*i)->syncState.MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
         }
     }
     else
     {
-        SceneSyncState* state = &server_syncstate_;
-        if (!dynamic)
-            state->OnAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr);
-        else
-            state->OnDynamicAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr->Name());
+        server_syncstate_.MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
     }
-    
-    */
     
     // This attribute changing might in turn cause other attributes to change on the server, and these must be echoed to all, so reset sender now
     currentSender = 0;
@@ -221,23 +236,16 @@ void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeCh
     if (entity->IsLocal())
         return;
     
-    /*
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-        {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
-            if (state)
-                state->OnComponentAdded(entity->Id(), comp->TypeId(), comp->Name());
-        }
+            (*i)->syncState.MarkComponentDirty(entity->Id(), comp->Id());
     }
     else
     {
-        SceneSyncState* state = &server_syncstate_;
-        state->OnComponentAdded(entity->Id(), comp->TypeId(), comp->Name());
+        server_syncstate_.MarkComponentDirty(entity->Id(), comp->Id());
     }
-    */
 }
 
 void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
@@ -250,23 +258,16 @@ void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, Attribute
     if (entity->IsLocal())
         return;
     
-    /*
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-        {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
-            if (state)
-                state->OnComponentRemoved(entity->Id(), comp->TypeId(), comp->Name());
-        }
+            (*i)->syncState.MarkComponentRemoved(entity->Id(), comp->Id());
     }
     else
     {
-        SceneSyncState* state = &server_syncstate_;
-        state->OnComponentRemoved(entity->Id(), comp->TypeId(), comp->Name());
+        server_syncstate_.MarkComponentRemoved(entity->Id(), comp->Id());
     }
-    */
 }
 
 void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
@@ -277,30 +278,23 @@ void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
     if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
         return;
 
-    /*
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
-            if (state)
+            (*i)->syncState.MarkEntityDirty(entity->Id());
+            if ((*i)->syncState.entities[entity->Id()].removed)
             {
-                if (state->removed_entities_.find(entity->Id()) != state->removed_entities_.end())
-                {
-                    LogWarning("An entity with ID " + QString::number(entity->Id()) + " is queued to be deleted, but a new entity \"" + 
-                        entity->Name() + "\" is to be added to the scene!");
-                }
-                state->OnEntityChanged(entity->Id());
+                LogWarning("An entity with ID " + QString::number(entity->Id()) + " is queued to be deleted, but a new entity \"" + 
+                    entity->Name() + "\" is to be added to the scene!");
             }
         }
     }
     else
     {
-        SceneSyncState* state = &server_syncstate_;
-        state->OnEntityChanged(entity->Id());
+        server_syncstate_.MarkEntityDirty(entity->Id());
     }
-    */
 }
 
 void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
@@ -313,23 +307,16 @@ void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
     if (entity->IsLocal())
         return;
     
-    /*
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-        {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
-            if (state)
-                state->OnEntityRemoved(entity->Id());
-        }
+            (*i)->syncState.MarkEntityRemoved(entity->Id());
     }
     else
     {
-        SceneSyncState* state = &server_syncstate_;
-        state->OnEntityRemoved(entity->Id());
+        server_syncstate_.MarkEntityRemoved(entity->Id());
     }
-    */
 }
 
 void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type)
@@ -423,9 +410,7 @@ void SyncManager::Update(f64 frametime)
         // If we are server, process all users
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-        {
             ProcessSyncState((*i)->connection, (*i)->syncState);
-        }
     }
     else
     {
@@ -442,221 +427,276 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     
     ScenePtr scene = scene_.lock();
     
-    int num_messages_sent = 0;
+    int numMessagesSent = 0;
+    std::set<entity_id_t> newDeletedEntities;
     
-    /*
-    /// \todo Always sends everything that is dirty/removed. No priorization or limiting of sent data size yet.
-    
-    // Process dirty entities (added/updated/removed components)
-    std::set<entity_id_t> dirty = state->dirty_entities_;
-    for(std::set<entity_id_t>::iterator i = dirty.begin(); i != dirty.end(); ++i)
+    // Process the state's dirty entity queue.
+    /// \todo Limit and prioritize the data sent. For now the whole queue is processed, regardless of whether the connection is being saturated.
+    while (!state.dirtyQueue.empty())
     {
-        EntityPtr entity = scene->GetEntity(*i);
+        EntitySyncState& entityState = *state.dirtyQueue.front();
+        state.dirtyQueue.pop_front();
+        entityState.isInQueue = false;
+        
+        EntityPtr entity = scene->GetEntity(entityState.id);
+        bool removeState = false;
         if (!entity)
-            continue;
-
-        if (state->removed_entities_.find(*i) != state->removed_entities_.end())
         {
-            LogWarning("Potentially buggy behavior! Sending entity update for ID " + QString::number(*i) + ", name: " +
-                entity->Name() + " but the entity with that ID is queued for deletion later!");
-        }
-
-        const Entity::ComponentVector &components =  entity->Components();
-        EntitySyncState* entitystate = state->GetEntity(*i);
-        // No record in entitystate -> newly created entity, send full state
-        if (!entitystate)
-        {
-            entitystate = state->GetOrCreateEntity(*i);
-            MsgCreateEntity msg;
-            msg.entityID = entity->Id();
-            for(uint j = 0; j < components.size(); ++j)
-            {
-                ComponentPtr component = components[j];
-                
-                if (component->IsReplicated())
-                {
-                    // Create componentstate so we can start tracking individual attributes
-                    ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeId(), component->Name());
-                    UNREFERENCED_PARAM(componentstate);
-                    MsgCreateEntity::S_components newComponent;
-                    newComponent.componentTypeHash = component->TypeId();
-                    newComponent.componentName = StringToBuffer(component->Name().toStdString());
-                    newComponent.componentData.resize(64 * 1024);
-                    DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
-                    component->SerializeToBinary(dest);
-                    newComponent.componentData.resize(dest.BytesFilled());
-                    msg.components.push_back(newComponent);
-                }
-                
-                entitystate->AckDirty(component->TypeId(), component->Name());
-            }
-            destination->Send(msg);
-            ++num_messages_sent;
+            entityState.isNew = false;
+            removeState = true;
         }
         else
         {
-            // Existing entitystate, check created & modified components
-            /// \todo Renaming an existing component, that already has been replicated to client, leads to duplication.
-            /// So it's not currently supported sensibly.
+            // Make sure we don't send data for local entities
+            if (entity->IsLocal())
+                continue;
+        }
+        
+        // Remove entity
+        if (entityState.removed)
+        {
+            // If we have both new & removed flags on the entity, send the delete now, but queue for creation on a later frame
+            if (entityState.isNew)
             {
-                std::set<std::pair<uint, QString> > dirtycomps = entitystate->dirty_components_;
-                MsgCreateComponents createMsg;
-                createMsg.entityID = entity->Id();
-                MsgUpdateComponents updateMsg;
-                updateMsg.entityID = entity->Id();
+                LogWarning("Entity " + QString::number(entityState.id) + " queued for both deletion and creation. Sending deletion first and creation later.");
+                newDeletedEntities.insert(entityState.id);
+                // The delete has been processed. Do not remember it anymore.
+                entityState.removed = false;
+            }
+            else
+                removeState = true;
+            
+            kNet::DataSerializer ds(removeEntityBuffer_, 1024);
+            ds.AddVLE<VLE8_16_32>(entityState.id);
+            QueueMessage(destination, cRemoveEntityMessage, true, true, ds);
+            ++numMessagesSent;
+        }
+        // New entity
+        else if (entityState.isNew)
+        {
+            kNet::DataSerializer ds(createEntityBuffer_, 64 * 1024);
+            
+            // Entity identification and temporary flag
+            ds.AddVLE<VLE8_16_32>(entityState.id);
+            ds.Add<bit>(entity->IsTemporary() ? 1 : 0);
+            
+            const Entity::ComponentMap& components = entity->Components();
+            // Count the amount of replicated components
+            uint numReplicatedComponents = 0;
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                if (i->second->IsReplicated()) ++numReplicatedComponents;
+            ds.AddVLE<VLE8_16_32>(numReplicatedComponents);
+            
+            // Serialize each replicated component
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            {
+                ComponentPtr comp = i->second;
+                if (!comp->IsReplicated())
+                    continue;
+                WriteComponentFullUpdate(ds, comp);
+            }
+            
+            QueueMessage(destination, cCreateEntityMessage, true, true, ds);
+            ++numMessagesSent;
+            
+            // The create has been processed fully. Clear dirty flags.
+            entityState.DirtyProcessed();
+        }
+        else if (entity)
+        {
+            // Components or attributes have been added, changed, or removed. Prepare the dataserializers
+            kNet::DataSerializer removeCompsDs(removeCompsBuffer_, 1024);
+            kNet::DataSerializer removeAttrsDs(removeAttrsBuffer_, 1024);
+            kNet::DataSerializer createCompsDs(createCompsBuffer_, 64 * 1024);
+            kNet::DataSerializer createAttrsDs(createAttrsBuffer_, 16 * 1024);
+            kNet::DataSerializer editAttrsDs(editAttrsBuffer_, 64 * 1024);
+            
+            while (!entityState.dirtyQueue.empty())
+            {
+                ComponentSyncState& compState = *entityState.dirtyQueue.front();
+                entityState.dirtyQueue.pop_front();
+                compState.isInQueue = false;
                 
-                for(std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
+                ComponentPtr comp = entity->GetComponentById(compState.id);
+                bool removeState = false;
+                if (!comp)
                 {
-                    ComponentPtr component = entity->GetComponent(j->first, j->second);
-                    if (component && component->IsReplicated())
+                    compState.isNew = false;
+                    removeState = true;
+                }
+                else
+                {
+                    // Make sure we don't send data for local components
+                    if (comp->IsLocal())
+                        continue;
+                }
+                
+                // Remove component
+                if (compState.removed)
+                {
+                    removeState = true;
+                    
+                    // If first component, write the entity ID first
+                    if (!removeCompsDs.BytesFilled())
+                        removeCompsDs.AddVLE<VLE8_16_32>(entityState.id);
+                    // Then add component ID
+                    removeCompsDs.AddVLE<VLE8_16_32>(compState.id);
+                }
+                // New component
+                else if (compState.isNew)
+                {
+                    // If first component, write the entity ID first
+                    if (!createCompsDs.BytesFilled())
+                        createCompsDs.AddVLE<VLE8_16_32>(entityState.id);
+                    // Then add the component data
+                    WriteComponentFullUpdate(createCompsDs, comp);
+                }
+                // Added/removed/edited attributes
+                else if (comp)
+                {
+                    const AttributeVector& attrs = comp->Attributes();
+                    
+                    for (std::map<u8, bool>::iterator i = compState.newAndRemovedAttributes.begin(); i != compState.newAndRemovedAttributes.end(); ++i)
                     {
-                        ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeId(), component->Name());
-                        // New component
-                        if (!componentstate)
+                        u8 attrIndex = i->first;
+                        // Clear the corresponding dirty flags, so that we don't redundantly send attribute edited data.
+                        compState.dirtyAttributes[attrIndex >> 3] &= ~(1 << (attrIndex & 7));
+                        
+                        if (i->second)
                         {
-                            // Create componentstate so we can start tracking individual attributes
-                            componentstate = entitystate->GetOrCreateComponent(component->TypeId(), component->Name());
-                            
-                            MsgCreateComponents::S_components newComponent;
-                            newComponent.componentTypeHash = component->TypeId();
-                            newComponent.componentName = StringToBuffer(component->Name().toStdString());
-                            newComponent.componentData.resize(64 * 1024);
-                            DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
-                            component->SerializeToBinary(dest);
-                            newComponent.componentData.resize(dest.BytesFilled());
-                            createMsg.components.push_back(newComponent);
+                            // Create attribute. Make sure it exists and is dynamic.
+                            if (attrIndex >= attrs.size() || !attrs[attrIndex])
+                                ::LogError("CreateAttribute for nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in entity " + entity->ToString() + ". Discarding.");
+                            else if (!attrs[attrIndex]->IsDynamic())
+                                ::LogError("CreateAttribute for a static attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in entity " + entity->ToString() + ". Discarding.");
+                            else
+                            {
+                                // If first attribute, write the entity ID first
+                                if (!createAttrsDs.BytesFilled())
+                                    createAttrsDs.AddVLE<VLE8_16_32>(entityState.id);
+                                
+                                IAttribute* attr = attrs[attrIndex];
+                                createAttrsDs.AddVLE<VLE8_16_32>(compState.id);
+                                createAttrsDs.Add<u8>(attrIndex); // Index
+                                createAttrsDs.Add<u8>(attr->TypeId());
+                                createAttrsDs.AddString(attr->Name().toStdString());
+                                attr->ToBinary(createAttrsDs);
+                            }
                         }
                         else
                         {
-                            // Existing data, serialize changed attributes only
-                            // Static structure component
-                            if (!component->HasDynamicStructure())
+                            // Remove attribute
+                            // If first attribute, write the entity ID first
+                            if (!removeAttrsDs.BytesFilled())
+                                removeAttrsDs.AddVLE<VLE8_16_32>(entityState.id);
+                            removeAttrsDs.AddVLE<VLE8_16_32>(compState.id);
+                            removeAttrsDs.Add<u8>(attrIndex);
+                        }
+                    }
+                    compState.newAndRemovedAttributes.clear();
+                    
+                    // Now, if remaining dirty bits exist, they must be sent in the edit attributes message. These are the majority of our network data.
+                    changedAttributes_.clear();
+                    unsigned numBytes = (attrs.size() + 7) >> 3;
+                    for (unsigned i = 0; i < numBytes; ++i)
+                    {
+                        u8 byte = compState.dirtyAttributes[i];
+                        if (byte)
+                        {
+                            for (unsigned j = 0; j < 8; ++j)
                             {
-                                MsgUpdateComponents::S_components updComponent;
-                                updComponent.componentTypeHash = component->TypeId();
-                                updComponent.componentName = StringToBuffer(component->Name().toStdString());
-                                updComponent.componentData.resize(64 * 1024);
-                                DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
-                                bool has_changes = false;
-                                // Otherwise, we assume the attribute structure is static in the component, and we check which attributes are in the dirty list
-                                const AttributeVector& attributes = component->Attributes();
-                                for(uint k = 0; k < attributes.size(); k++)
+                                if (byte & (1 << j))
                                 {
-                                    if (componentstate->dirty_static_attributes.find(attributes[k]) != componentstate->dirty_static_attributes.end())
-                                    {
-                                        dest.Add<bit>(1);
-                                        attributes[k]->ToBinary(dest);
-                                        has_changes = true;
-                                    }
+                                    u8 attrIndex = i * 8 + j;
+                                    if (attrIndex < attrs.size() && attrs[attrIndex])
+                                        changedAttributes_.push_back(attrIndex);
                                     else
-                                        dest.Add<bit>(0);
+                                        ::LogError("Attribute change for a nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in entity " + entity->ToString() + ". Discarding.");
                                 }
-                                if (has_changes)
-                                {
-                                    updComponent.componentData.resize(dest.BytesFilled());
-                                    updateMsg.components.push_back(updComponent);
-                                }
-                            }
-                            // Existing data, dynamically structured component
-                            else
-                            {
-                                MsgUpdateComponents::S_dynamiccomponents updComponent;
-                                updComponent.componentTypeHash = component->TypeId();
-                                updComponent.componentName = StringToBuffer(component->Name().toStdString());
-                                bool has_changes = false;
-                                const std::set<QString>& dirtyAttrs = componentstate->dirty_dynamic_attributes;
-                                std::set<QString>::const_iterator k = dirtyAttrs.begin();
-                                while(k != dirtyAttrs.end())
-                                {
-                                    has_changes = true;
-                                    MsgUpdateComponents::S_dynamiccomponents::S_attributes updAttribute;
-                                    // Check if the attribute is changed or removed
-                                    IAttribute* attribute = component->GetAttribute(*k);
-                                    if (attribute)
-                                    {
-                                        updAttribute.attributeName = StringToBuffer((*k).toStdString());
-                                        updAttribute.attributeType = StringToBuffer(attribute->TypeName().toStdString());
-                                        updAttribute.attributeData.resize(64 * 1024);
-                                        DataSerializer dest((char*)&updAttribute.attributeData[0], updAttribute.attributeData.size());
-                                        attribute->ToBinary(dest);
-                                        updAttribute.attributeData.resize(dest.BytesFilled());
-                                    }
-                                    else
-                                    {
-                                        // Removed attribute: empty typename & data
-                                        updAttribute.attributeName = StringToBuffer((*k).toStdString());
-                                    }
-                                    
-                                    updComponent.attributes.push_back(updAttribute);
-                                    ++k;
-                                }
-                                if (has_changes)
-                                    updateMsg.dynamiccomponents.push_back(updComponent);
                             }
                         }
                     }
-                    entitystate->AckDirty(j->first, j->second);
+                    if (changedAttributes_.size())
+                    {
+                        // If first component for which attribute changes are sent, write the entity ID first
+                        if (!editAttrsDs.BytesFilled())
+                            editAttrsDs.AddVLE<VLE8_16_32>(entityState.id);
+                        editAttrsDs.AddVLE<VLE8_16_32>(compState.id);
+                        
+                        // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
+                        unsigned bitsMethod1 = changedAttributes_.size() * 8 + 8;
+                        unsigned bitsMethod2 = attrs.size();
+                        if (bitsMethod1 <= bitsMethod2)
+                        {
+                            editAttrsDs.Add<bit>(0);
+                            editAttrsDs.Add<u8>(changedAttributes_.size());
+                            for (unsigned i = 0; i < changedAttributes_.size(); ++i)
+                            {
+                                editAttrsDs.Add<u8>(changedAttributes_[i]);
+                                attrs[changedAttributes_[i]]->ToBinary(editAttrsDs);
+                            }
+                        }
+                        else
+                        {
+                            editAttrsDs.Add<bit>(1);
+                            for (unsigned i = 0; i < attrs.size(); ++i)
+                            {
+                                if (compState.dirtyAttributes[i >> 3] & (1 << (i & 7)))
+                                {
+                                    editAttrsDs.Add<bit>(1);
+                                    attrs[i]->ToBinary(editAttrsDs);
+                                }
+                                else
+                                    editAttrsDs.Add<bit>(0);
+                            }
+                        }
+                        
+                        // Now zero out all remaining dirty bits
+                        for (unsigned i = 0; i < numBytes; ++i)
+                            compState.dirtyAttributes[i] = 0;
+                    }
                 }
                 
-                // Send message(s) only if there were components
-                if (createMsg.components.size())
-                {
-                    destination->Send(createMsg);
-                    ++num_messages_sent;
-                }
-                if (updateMsg.components.size() || updateMsg.dynamiccomponents.size())
-                {
-                    destination->Send(updateMsg);
-                    ++num_messages_sent;
-                }
+                if (removeState)
+                    entityState.components.erase(compState.id);
             }
             
-            // Check removed components
+            // Send the messages which have data
+            if (removeCompsDs.BytesFilled())
             {
-                std::set<std::pair<uint, QString> > removedcomps = entitystate->removed_components_;
-                MsgRemoveComponents removeMsg;
-                removeMsg.entityID = entity->Id();
-                
-                for(std::set<std::pair<uint, QString> >::iterator j = removedcomps.begin(); j != removedcomps.end(); ++j)
-                {
-                    MsgRemoveComponents::S_components remComponent;
-                    remComponent.componentTypeHash = j->first;
-                    remComponent.componentName = StringToBuffer(j->second.toStdString());
-                    removeMsg.components.push_back(remComponent);
-                    
-                    entitystate->RemoveComponent(j->first, j->second);
-                    entitystate->AckRemove(j->first, j->second);
-                }
-                
-                if (removeMsg.components.size())
-                {
-                    destination->Send(removeMsg);
-                    ++num_messages_sent;
-                }
+                QueueMessage(destination, cRemoveComponentsMessage, true, true, removeCompsDs);
+                ++numMessagesSent;
             }
+            if (removeAttrsDs.BytesFilled())
+            {
+                QueueMessage(destination, cRemoveAttributesMessage, true, true, removeAttrsDs);
+                ++numMessagesSent;
+            }
+            if (createCompsDs.BytesFilled())
+            {
+                QueueMessage(destination, cCreateComponentsMessage, true, true, createCompsDs);
+                ++numMessagesSent;
+            }
+            if (createAttrsDs.BytesFilled())
+            {
+                QueueMessage(destination, cCreateAttributesMessage, true, true, createAttrsDs);
+                ++numMessagesSent;
+            }
+            if (editAttrsDs.BytesFilled())
+            {
+                QueueMessage(destination, cEditAttributesMessage, true, true, editAttrsDs);
+                ++numMessagesSent;
+            }
+            
+            // The entity has been processed fully. Clear dirty flags.
+            entityState.DirtyProcessed();
         }
         
-        state->AckDirty(*i);
-        
+        if (removeState)
+            state.entities.erase(entityState.id);
     }
-
-    // Process removed entities
-    std::set<entity_id_t> removed = state->removed_entities_;
-    for(std::set<entity_id_t>::iterator i = removed.begin(); i != removed.end(); ++i)
-    {
-        MsgRemoveEntity msg;
-        msg.entityID = *i;
-        destination->Send(msg);
-        state->RemoveEntity(*i);
-        state->AckRemove(*i);
-        ++num_messages_sent;
-        
-    }
-    
     //if (num_messages_sent)
     //    LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
-    
-    */
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)

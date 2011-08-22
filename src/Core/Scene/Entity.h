@@ -164,8 +164,12 @@ public slots:
     /** @param typeId Unique type ID of the component.
         @param name name of the component */
     ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
-
-    /// Attachs an existing parentless component to this entity.
+    /// This is an overloaded function. This variant used by SyncManager.
+    /** @param typeId Unique type ID of the component.
+        @param name name of the component */
+    ComponentPtr CreateComponent(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
+    
+    /// Attachs an existing parentless component to this entity. A component ID will be allocated.
     /** Entities can contain any number of components of any type.
         It is also possible to have several components of the same type,
         although in most cases it is probably not sensible.
@@ -180,6 +184,9 @@ public slots:
         @param change Change signalling mode */
     void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
 
+    /// Attaches an existing parentless component to this entity, using the specific ID. This variant is used by SyncManager.
+    void AddComponent(component_id_t id, const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
+    
     /// Remove the component from this entity.
     /** When component is removed from the entity a Q_PROPERTY connection is destroyed from
         the component. In case where there are several components with the same typename, there is 

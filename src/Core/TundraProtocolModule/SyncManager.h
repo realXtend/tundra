@@ -93,7 +93,12 @@ private slots:
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
 
 private:
-
+    /// Queue a message to the receiver from a given DataSerializer.
+    void QueueMessage(kNet::MessageConnection* connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds);
+    
+    /// Craft a component full update, with all static and dynamic attributes.
+    void WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp);
+    
     /// Handle entity action message.
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
     
@@ -143,6 +148,17 @@ private:
     
     /// Server sync state (client operation only)
     SceneSyncState server_syncstate_;
+    
+    /// Fixed buffers for crafting messages
+    char createEntityBuffer_[64 * 1024];
+    char createCompsBuffer_[64 * 1024];
+    char editAttrsBuffer_[64 * 1024];
+    char createAttrsBuffer_[16 * 1024];
+    char attrDataBuffer_[16 * 1024];
+    char removeCompsBuffer_[1024];
+    char removeEntityBuffer_[1024];
+    char removeAttrsBuffer_[1024];
+    std::vector<u8> changedAttributes_;
 };
 
 }
