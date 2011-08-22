@@ -225,7 +225,7 @@ void OgreRenderingModule::OnSceneRemoved(const QString& name)
     }
 }
 
-void OgreRenderingModule::SetMaterialAttribute(const StringVector &params)
+void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
 {
     if (params.size() < 3)
     {
@@ -246,7 +246,7 @@ void OgreRenderingModule::SetMaterialAttribute(const StringVector &params)
         LogError("Not a material asset");
         return;
     }
-    matAsset->SetAttribute(QString::fromStdString(params[1]), QString::fromStdString(params[2]));
+    matAsset->SetAttribute(params[1], params[2]);
 }
 
 } // ~namespace OgreRenderer

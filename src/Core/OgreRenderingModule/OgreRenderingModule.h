@@ -47,7 +47,7 @@ namespace OgreRenderer
         void ConsoleStats();
 
         /// Sets attribute value for material.
-        void SetMaterialAttribute(const StringVector &params);
+        void SetMaterialAttribute(const QStringList &params);
 
     private slots:
         /// New scene has been created
