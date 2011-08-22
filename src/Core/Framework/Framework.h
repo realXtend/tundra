@@ -25,12 +25,6 @@ public:
 
     ~Framework();
 
-    /// @todo This function will be removed.
-    void ParseProgramOptions();
-
-    /// @todo This function will be removed. Use HasCommandLineParameter() and CommandLineParameters() instead.
-    boost::program_options::variables_map &ProgramOptions() { return commandLineVariables; }
-
     /// Entry point for the framework.
     void Go();
 

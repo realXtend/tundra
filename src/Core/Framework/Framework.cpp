@@ -59,7 +59,35 @@ Framework::Framework(int argc, char** argv) :
     apiVersionInfo = new ApiVersionInfo(2, 0, 0, 0);
     applicationVersionInfo = new ApplicationVersionInfo(2, 0, 0, 0, "realXtend", "Tundra");
 
-    ParseProgramOptions();
+    // ParseProgramOptions() start
+    namespace po = boost::program_options;
+    ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
+    /// best is to have them parse their own options).
+    commandLineDescriptions.add_options()
+        ("help", "Produce help message") // Framework
+        ("headless", "Run in headless mode without any windows or rendering") // Framework & OgreRenderingModule
+        ("disablerunonload", "Do not start script applications (EC_Script's with applicationName defined) automatically")
+        ("server", "Start Tundra server")
+        ("port", po::value<int>(0), "Start server in the specified port") // TundraLogicModule
+        ("protocol", po::value<std::string>(), "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
+        ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable") // OgreRenderingModule
+        ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
+        ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
+        ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
+        ("config", po::value<std::string>(), "Specifies the startup configration file to use") // Framework
+        ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username")
+        ("clear-asset-cache", "At the start of Tundra, remove all data and metadata files from asset cache.");
+
+    try
+    {
+        po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
+    }
+    catch(std::exception &e)
+    {
+        LogWarning(e.what());
+    }
+    po::notify(commandLineVariables);
+    // ParseProgramOptions() end
 
     if (commandLineVariables.count("help")) 
     {
@@ -131,38 +159,6 @@ Framework::~Framework()
     // When we delete QApplication, we must have ensured that all QObjects have been deleted.
     /// \bug Framework is itself a QObject and we should delete application only after Framework has been deleted. A refactor is required.
     delete application;
-}
-
-void Framework::ParseProgramOptions()
-{
-    namespace po = boost::program_options;
-
-    ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
-    /// best is to have them parse their own options).
-    commandLineDescriptions.add_options()
-        ("help", "Produce help message") // Framework
-        ("headless", "Run in headless mode without any windows or rendering") // Framework & OgreRenderingModule
-        ("disablerunonload", "Do not start script applications (EC_Script's with applicationName defined) automatically")
-        ("server", "Start Tundra server")
-        ("port", po::value<int>(0), "Start server in the specified port") // TundraLogicModule
-        ("protocol", po::value<std::string>(), "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
-        ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable") // OgreRenderingModule
-        ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
-        ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
-        ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
-        ("config", po::value<std::string>(), "Specifies the startup configration file to use") // Framework
-        ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username")
-        ("clear-asset-cache", "At the start of Tundra, remove all data and metadata files from asset cache.");
-
-    try
-    {
-        po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
-    }
-    catch(std::exception &e)
-    {
-        LogWarning(e.what());
-    }
-    po::notify(commandLineVariables);
 }
 
 void Framework::ProcessOneFrame()
