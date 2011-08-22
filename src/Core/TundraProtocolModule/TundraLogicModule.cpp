@@ -230,20 +230,22 @@ void TundraLogicModule::Initialize()
     // Write default values to config if not present.
     if (!framework_->Config()->HasValue(configData))
         framework_->Config()->Set(configData);
-    
+
     // Check whether server should be auto started.
-    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
-    if (programOptions.count("server"))
+    if (framework_->HasCommandLineParameter("--server"))
     {
         autostartserver_ = true;
         // Use parameter port or default to config value
-        if (programOptions.count("port"))
+        QStringList portParam = framework_->CommandLineParameters("--port");
+        if (portParam.size() > 0)
         {
-            try
+            bool ok;
+            int port = portParam.first().toInt(&ok);
+            if (ok)
             {
-                autostartserver_port_ = programOptions["port"].as<int>();
+                autostartserver_port_ = port;
             }
-            catch(...)
+            else
             {
                 LogError("--port parameter is not a valid integer.");
                 GetFramework()->Exit();
@@ -283,11 +285,11 @@ void TundraLogicModule::Update(f64 frametime)
         if (check_login_start)
         {
             // Web login handling, if we are on a server the request will be ignored down the chain.
-            const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
-            if (options.count("login") > 0)
+            QStringList cmdLineParams = framework_->CommandLineParameters("--login");
+            if (cmdLineParams.size() > 0)
             {
-                LogInfo(QString::fromStdString(options["login"].as<std::string>()).toStdString());
-                QUrl loginUrl(QString::fromStdString(options["login"].as<std::string>()), QUrl::TolerantMode);
+                LogInfo(cmdLineParams.first());
+                QUrl loginUrl(cmdLineParams.first(), QUrl::TolerantMode);
                 if (loginUrl.isValid())
                     client_->Login(loginUrl);
             }
@@ -308,7 +310,6 @@ void TundraLogicModule::Update(f64 frametime)
         if (scene)
             scene->UpdateAttributeInterpolations(frametime);
     }
-    
 }
 
 void TundraLogicModule::LoadStartupScene()

@@ -25,12 +25,10 @@ public:
 
     ~Framework();
 
-    /// Parse program options from command line arguments
-    /** For internal use. Should be called immediately after creating the framework,
-        so all options will be taken in effect properly. */
+    /// @todo This function will be removed.
     void ParseProgramOptions();
 
-    /// Returns the command line options specified as command-line options when starting up.
+    /// @todo This function will be removed. Use HasCommandLineParameter() and CommandLineParameters() instead.
     boost::program_options::variables_map &ProgramOptions() { return commandLineVariables; }
 
     /// Entry point for the framework.
@@ -151,6 +149,7 @@ public slots:
     void Exit();
 
     /// Returns whether or not the command line arguments contain a specific value.
+    /** @param value Key or value with possible prefixes. */
     bool HasCommandLineParameter(const QString &value) const;
 
     /// Returns list of command line parameter values for a specific @c key, f.ex. "--file".
@@ -166,8 +165,8 @@ private:
 #ifdef PROFILING
     Profiler *profiler; ///< Profiler.
 #endif
-    boost::program_options::variables_map commandLineVariables; ///< program options
-    boost::program_options::options_description commandLineDescriptions; ///< program option descriptions
+    boost::program_options::variables_map commandLineVariables; ///< program options @todo Will be removed.
+    boost::program_options::options_description commandLineDescriptions; ///< program option descriptions @todo Will be removed.
     bool headless_; ///< Are we running in the headless mode.
     Application *application; ///< The main QApplication object.
     FrameAPI *frame; ///< The Frame API.

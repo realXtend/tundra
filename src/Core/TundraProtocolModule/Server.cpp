@@ -94,18 +94,11 @@ bool Server::Start(unsigned short port)
 
     // Read --protocol or config
     QString userSetProtocol;
-    if (framework_->ProgramOptions().count("protocol") == 0)
-    {
-        userSetProtocol = framework_->Config()->Get(configData).toString().toLower();
-    }
+    QStringList cmdLineParams = framework_->CommandLineParameters("--protocol");
+    if (cmdLineParams.size() > 0)
+        userSetProtocol = cmdLineParams.first().trimmed().toLower();
     else
-    {
-        try
-        {
-            userSetProtocol = QString::fromStdString(framework_->ProgramOptions()["protocol"].as<std::string>());
-        }
-        catch(...) {}
-    }
+        userSetProtocol = framework_->Config()->Get(configData).toString().toLower();
 
     // Inspect protocol
     if (userSetProtocol != "udp" && userSetProtocol != "tcp")
@@ -167,8 +160,8 @@ bool Server::IsRunning() const
 
 bool Server::IsAboutToStart() const
 {
-    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
-    if (programOptions.count("server"))
+    QStringList cmdLineParams = framework_->CommandLineParameters("--server");
+    if (cmdLineParams.size() > 0)
         return true;
     return false;
 }

@@ -435,11 +435,14 @@ void Application::UpdateFrame()
 
         framework->ProcessOneFrame();
 
-        const boost::program_options::variables_map &options = framework->ProgramOptions();
         double targetFpsLimit = 60.0;
-        if (options.count("fpslimit") > 0)
+        QStringList fpsLimitParam = framework->CommandLineParameters("--fpslimit");
+        if (fpsLimitParam.size() > 0)
         {
-            targetFpsLimit = options["fpslimit"].as<float>();
+            bool ok;
+            double target = fpsLimitParam.first().toDouble(&ok);
+            if (ok)
+                targetFpsLimit = target;
             if (targetFpsLimit < 1.f)
                 targetFpsLimit = 0.f;
         }

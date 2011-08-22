@@ -42,4 +42,15 @@ public:
 
     void UnloadPlugins();
 
+private:
+    struct Plugin
+    {
+#ifdef WIN32
+        HMODULE libraryHandle; ///\todo Cross-platform -> void*.
+#endif
+        ///\todo Unix-equivalents.
+    };
+    std::list<Plugin> plugins;
+
+    Framework *owner;
 };

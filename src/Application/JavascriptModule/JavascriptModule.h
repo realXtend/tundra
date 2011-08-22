@@ -96,9 +96,6 @@ private:
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptInstance *> startupScripts_;
 
-    /// Additional startupscript defined from command line
-    std::string commandLineStartupScript_;
-
 private slots:
     void ConsoleRunString(const QStringList &params);
     void ConsoleRunFile(const QStringList &params);
@@ -114,4 +111,3 @@ private slots:
 // API things
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
 QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine);
-

@@ -71,7 +71,7 @@ void JavascriptModule::Initialize()
     framework_->Console()->RegisterCommand(
         "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
         this, SLOT(ConsoleRunFile()));
-    
+
     framework_->Console()->RegisterCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
         this, SLOT(ConsoleReloadScripts()));
@@ -79,12 +79,10 @@ void JavascriptModule::Initialize()
     // Initialize startup scripts
     LoadStartupScripts();
 
-    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
-
-    if (programOptions.count("run"))
+    foreach(const QString &script, framework_->CommandLineParameters("--run"))
     {
-        commandLineStartupScript_ = programOptions["run"].as<std::string>();
-        JavascriptInstance *jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
+        ///\todo Using just the first one, could possibly use multiple?
+        JavascriptInstance *jsInstance = new JavascriptInstance(script, this);
         PrepareScriptInstance(jsInstance);
         startupScripts_.push_back(jsInstance);
         jsInstance->Run();
@@ -177,7 +175,7 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
         bool isApplication = !sender->applicationName.Get().trimmed().isEmpty();
         if (sender->runOnLoad.Get() && sender->ShouldRun())
         {
-            if (isApplication && framework_->ProgramOptions().count("disablerunonload") > 0)
+            if (isApplication && framework_->HasCommandLineParameter("--disablerunonload"))
                 return;
             jsInstance->Run();
         }

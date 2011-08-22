@@ -140,11 +140,10 @@ QString LookupRelativePath(QString path)
 
 QString PluginAPI::ConfigurationFile() const
 {
-    boost::program_options::variables_map &commandLineVariables = owner->ProgramOptions();
     QString configFilename = "plugins.xml";
-    if (commandLineVariables.count("config") > 0)
-        configFilename = commandLineVariables["config"].as<std::string>().c_str();
-    
+    QStringList cmdLineParams = owner->CommandLineParameters("--config");
+    if (cmdLineParams.size() > 0)
+        configFilename = cmdLineParams.first(); // use only the first one
     return LookupRelativePath(configFilename);
 }
 

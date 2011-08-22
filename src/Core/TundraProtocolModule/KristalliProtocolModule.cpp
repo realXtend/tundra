@@ -123,14 +123,12 @@ void KristalliProtocolModule::Unload()
 void KristalliProtocolModule::Initialize()
 {
     defaultTransport = kNet::SocketOverTCP;
-    const boost::program_options::variables_map &options = framework_->ProgramOptions();
-    if (options.count("protocol") > 0)
-        if (QString(options["protocol"].as<std::string>().c_str()).trimmed().toLower() == "udp")
-            defaultTransport = kNet::SocketOverUDP;
+    QStringList cmdLineParams = framework_->CommandLineParameters("--protocol");
+    if (cmdLineParams.size() > 0 && cmdLineParams.first().trimmed().toLower() == "udp")
+        defaultTransport = kNet::SocketOverUDP;
+
 #ifdef KNET_USE_QT
-    framework_->Console()->RegisterCommand(
-            "kNet", "Shows the kNet statistics window.", 
-            this, SLOT(OpenKNetLogWindow()));
+    framework_->Console()->RegisterCommand("kNet", "Shows the kNet statistics window.", this, SLOT(OpenKNetLogWindow()));
 #endif
 }
 
