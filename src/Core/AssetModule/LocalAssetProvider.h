@@ -47,7 +47,7 @@ namespace Asset
             @param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
             @param recursive If true, all the subfolders of the given folder are added as well.
             Returns the newly created storage, or 0 if a storage with the given name already existed, or if some other error occurred. */
-        LocalAssetStoragePtr AddStorageDirectory(const QString &directory, QString storageName, bool recursive);
+        LocalAssetStoragePtr AddStorageDirectory(QString directory, QString storageName, bool recursive);
 
         virtual std::vector<AssetStoragePtr> GetStorages() const;
 

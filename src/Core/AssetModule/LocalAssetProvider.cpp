@@ -157,29 +157,38 @@ bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
     return false;
 }
 
-LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &directory, QString storageName, bool recursive)
+LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, QString storageName, bool recursive)
 {
+    directory = directory.trimmed();
+    if (directory.isEmpty())
+    {
+        LogError("LocalAssetProvider: Cannot add storage \"" + storageName + "\" to an empty directory!");
+        return LocalAssetStoragePtr();
+    }
+    directory = QDir::toNativeSeparators(GuaranteeTrailingSlash(directory));
+
     storageName = storageName.trimmed();
     if (storageName.isEmpty())
     {
-        LogInfo("LocalAssetProvider: Cannot add storage with an empty name.");
+        LogInfo("LocalAssetProvider: Cannot add storage with an empty name to directory \"" + directory + "\"!");
         return LocalAssetStoragePtr();
     }
 
+    // Test if we already have a storage registered with this name.
     for(size_t i = 0; i < storages.size(); ++i)
         if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
         {
-            // Don't print the warning if paths are eg. C:\mydir\subdir to C:\mydir/subdir or C:\mydir\subdir\, convert to native separators
-            // they are essentially the same paths so do some checks!
-            if (QDir::fromNativeSeparators(GuaranteeTrailingSlash(storages[i]->directory)) != QDir::fromNativeSeparators(GuaranteeTrailingSlash(directory)))
-                LogInfo("LocalAssetProvider: Storage '" + storageName.toStdString() + "' already exist in '" + storages[i]->directory.toStdString() + "', not adding with '" + directory.toStdString() + "'.");
-            else
-                LogInfo("LocalAssetProvider: Storage '" + storageName.toStdString() + "' already exists, ignoring add request.");
-            return LocalAssetStoragePtr();
+            if (storages[i]->directory != directory)
+            {
+                LogWarning("LocalAssetProvider: Storage '" + storageName.toStdString() + "' already exist in '" + storages[i]->directory.toStdString() + "', not adding with '" + directory.toStdString() + "'.");
+                return LocalAssetStoragePtr();
+            }
+            else // We already have a storage with that name and target directory registered, just return that.
+                return storages[i];
         }
 
     LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
-    storage->directory = directory;
+    storage->directory = QDir::toNativeSeparators(GuaranteeTrailingSlash(directory));
     storage->name = storageName;
     storage->recursive = recursive;
     storage->provider = shared_from_this();

@@ -123,9 +123,6 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
             return assetStorage;
         }
     }
-    // Don't print errors here, the TryDeserializeStorageFromString impl should print more informative
-    // things on screen if it is returns a null ptr.
-    //LogError("AssetAPI: Failed to deserialize asset storage from string \"" + storage + "\"!");
     return AssetStoragePtr();
 }
 
