@@ -58,7 +58,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
             OgreRenderer::SanitateAssetIdForOgre(this->Name()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         if (ogreMesh.isNull())
         {
-            LogError("Failed to create mesh " + Name());
+            LogError("OgreMeshAsset::DeserializeFromData: Failed to create mesh " + Name());
             return false; 
         }
         ogreMesh->setAutoBuildEdgeLists(false);
@@ -75,6 +75,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
     }
     catch (Ogre::Exception &e)
     {
+        LogError(QString("OgreMeshAsset::DeserializeFromData: Ogre::MeshSerializer::importMesh failed: ") + e.what());
         return false;
     }
     
