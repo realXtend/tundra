@@ -234,7 +234,7 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
     }
     
     AssetAPI* asset = framework_->Asset();
-    AssetPtr assetPtr = asset->GetAsset(asset->ResolveAssetRef("", QString::fromStdString(params[0])));
+    AssetPtr assetPtr = asset->GetAsset(asset->ResolveAssetRef("", params[0]));
     if (!assetPtr || !assetPtr->IsLoaded())
     {
         LogError("No asset found or not loaded");
