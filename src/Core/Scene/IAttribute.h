@@ -83,6 +83,9 @@ public:
     /// Returns whether attribute has been dynamically allocated. By default false
     bool IsDynamic() const { return dynamic; }
     
+    /// Returns attribute's index in the parent component
+    u8 Index() const { return index; }
+    
     /// Notifies owner component that the attribute has changed.
     /** This function is called automatically when the Attribute value is Set(). You may call this manually
         to force a change signal to be emitted for this attribute. Calling this is equivalent to calling the
@@ -111,11 +114,13 @@ public:
 
 protected:
     friend class SceneAPI;
+    friend class IComponent;
     
     IComponent* owner; ///< Owning component.
     QString name; ///< Name of attribute.
     AttributeMetadata *metadata; ///< Possible attribute metadata.
     bool dynamic; ///< Dynamic attributes must be deleted at component destruction
+    u8 index; ///< Attribute index in the parent component's attribute list
     
     /// Null flag. If attribute is null, its value should be fetched from a parent entity
     /** \todo To be thinked about more thoroughly in the future, and then possibly implemented

@@ -98,7 +98,7 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
 void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deserializedAttributes, AttributeChange::Type change)
 {
     // Sort both lists in alphabetical order.
-    AttributeVector oldAttributes = attributes;
+    AttributeVector oldAttributes = NonEmptyAttributes();
     std::stable_sort(oldAttributes.begin(), oldAttributes.end(), &CmpAttributeByName);
     std::stable_sort(deserializedAttributes.begin(), deserializedAttributes.end(), &CmpAttributeDataByName);
 
@@ -191,7 +191,6 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
 
 void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::Type change)
 {
-    /// \todo This should leave a hole instead of reindexing the attributes (needed by the new scene sync protocol)
     for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); iter++)
     {
         if((*iter) && (*iter)->Name() == name)
@@ -204,7 +203,8 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
             // Trigger internal signal(s)
             emit AttributeAboutToBeRemoved(*iter);
             SAFE_DELETE(*iter);
-            attributes.erase(iter);
+            // Leave a hole in the array, which will be filled when new attributes are created
+            *iter = 0;
             break;
         }
     }
@@ -226,10 +226,9 @@ void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
             // Trigger internal signal(s)
             emit AttributeAboutToBeRemoved(attributes[i]);
             SAFE_DELETE(attributes[i]);
-            attributes.erase(attributes.begin() + i);
+            attributes[i] = 0;
         }
-        else
-            attributes.erase(attributes.begin() + i);
+        attributes.clear();
     }
 }
 
@@ -297,8 +296,8 @@ QString EC_DynamicComponent::GetAttributeName(int index) const
 
 bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp) const
 {
-    AttributeVector myAttributeVector = Attributes();
-    AttributeVector attributeVector = comp.Attributes();
+    AttributeVector myAttributeVector = NonEmptyAttributes();
+    AttributeVector attributeVector = comp.NonEmptyAttributes();
     if(attributeVector.size() != myAttributeVector.size())
         return false;
     if(attributeVector.empty() && myAttributeVector.empty())

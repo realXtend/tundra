@@ -89,6 +89,15 @@ void IComponent::SetReplicated(bool enable)
     replicated = enable;
 }
 
+AttributeVector IComponent::NonEmptyAttributes() const
+{
+    AttributeVector ret;
+    for (unsigned i = 0; i < attributes.size(); ++i)
+        if (attributes[i])
+            ret.push_back(attributes[i]);
+    return ret;
+}
+
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
@@ -136,6 +145,33 @@ int IComponent::NumStaticAttributes() const
             break;
     }
     return ret;
+}
+
+void IComponent::AddAttribute(IAttribute* attr)
+{
+    if (!attr)
+        return;
+    // If attribute is static (member variable attributes), we can just push_back it.
+    if (!attr->IsDynamic())
+    {
+        attr->index = attributes.size();
+        attributes.push_back(attr);
+    }
+    else
+    {
+        // For dynamic attributes, need to scan for holes first, and then push_back if no holes
+        for (unsigned i = 0; i < attributes.size(); ++i)
+        {
+            if (!attributes[i])
+            {
+                attr->index = i;
+                attributes[i] = attr;
+                return;
+            }
+        }
+        attr->index = attributes.size();
+        attributes.push_back(attr);
+    }
 }
 
 QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const

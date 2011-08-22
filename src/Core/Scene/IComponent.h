@@ -125,6 +125,9 @@ public:
      */
     const AttributeVector& Attributes() const { return attributes; }
 
+    /// Returns a list of all attributes with null attributes sanitated away. This is slower than Attributes().
+    AttributeVector NonEmptyAttributes() const;
+    
     /// Finds and returns an attribute of type 'Attribute<T>' and given name.
     /** @param T The Attribute type to look for.
         @param name The name of the attribute.
@@ -331,5 +334,5 @@ private:
     void SetNewId(component_id_t newId);
     
     /// Called by IAttribute on initialization of each attribute
-    void AddAttribute(IAttribute* attr) { attributes.push_back(attr); }
+    void AddAttribute(IAttribute* attr);
 };
