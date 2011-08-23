@@ -143,6 +143,10 @@ AssetStoragePtr AssetAPI::GetDefaultAssetStorage() const
 void AssetAPI::SetDefaultAssetStorage(const AssetStoragePtr &storage)
 {
     defaultStorage = storage;
+    if (storage)
+        LogInfo("Set asset storage \"" + storage->Name() + "\" as the default storage (" + storage->SerializeToString() + ").");
+    else
+        LogInfo("Set (null) as the default asset storage.");
 }
 
 std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
