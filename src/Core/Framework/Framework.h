@@ -2,13 +2,16 @@
 
 #pragma once
 
+#include "FrameworkFwd.h"
+
 #include <QObject>
 #include <QStringList>
+#include <QMap>
 
 #include <boost/smart_ptr.hpp>
-#include <boost/program_options.hpp>
 
-#include "FrameworkFwd.h"
+#include <vector>
+
 //class ConnectionAPI;
 //class ServerAPI;
 
@@ -31,6 +34,27 @@ public:
     /// Runs through a single frame of logic update and rendering.
     void ProcessOneFrame();
 
+    /// Returns module by class T.
+    /** @param T class type of the module.
+        @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
+        @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it. */
+    template <class T>
+    T *GetModule() const;
+
+    /// Registers a new module into the Framework.
+    /** Framework will take ownership of the module pointer, so it is safe to pass in a raw pointer. */
+    void RegisterModule(IModule *module);
+
+    /// Stores the given QObject as a dynamic property into the Framework.
+    /** This is done to implement easier script access for QObject-based interface objects.
+        @param name The name to use for the property. Fails if name is an empty string.
+        @param object The object to register as a property. The property will be a QVariant containing this QObject.
+        @return If the registration succeeds, this returns true. Otherwise either 'object' pointer was null,
+               or a property with that name was registered already.
+        @note There is no unregister option. It can be implemented if someone finds it useful, but at this point
+         we are going with a "unload-only-on-close" behavior. */
+    bool RegisterDynamicObject(QString name, QObject *object);
+
     /// Cancel a pending exit
     void CancelExit();
 
@@ -42,17 +66,11 @@ public:
 
 #ifdef PROFILING
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
-    Profiler *GetProfiler();
+    Profiler *GetProfiler() const;
 #endif
     /// Returns the main QApplication
     Application *App() const;
 
-    /// Returns module by class T.
-    /** @param T class type of the module.
-        @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
-        @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it. */
-    template <class T>
-    T *GetModule();
 
 public slots:
     /// Returns the core API UI object.
@@ -117,10 +135,6 @@ public slots:
               This function is intended to serve only for carefully crafted re-entrant code (currently only logging and profiling). */
     static Framework *Instance() { return instance; }
 
-    /// Registers a new module into the Framework.
-    /** Framework will take ownership of the module pointer, so it is safe to pass in a raw pointer. */
-    void RegisterModule(IModule *module);
-
     /// Returns raw module pointer.
     /** @param name Name of the module.
         @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it. */
@@ -128,16 +142,6 @@ public slots:
 
     /// Returns if we're running the application in headless or not.
     bool IsHeadless() const { return headless_; }
-
-    /// Stores the given QObject as a dynamic property into the Framework.
-    /** This is done to implement easier script access for QObject-based interface objects.
-        @param name The name to use for the property. Fails if name is an empty string.
-        @param object The object to register as a property. The property will be a QVariant containing this QObject.
-        @return If the registration succeeds, this returns true. Otherwise either 'object' pointer was null,
-               or a property with that name was registered already.
-        @note There is no unregister option. It can be implemented if someone finds it useful, but at this point
-         we are going with a "unload-only-on-close" behavior. */
-    bool RegisterDynamicObject(QString name, QObject *object);
 
     /// Signals the framework to exit
     void Exit();
@@ -159,8 +163,7 @@ private:
 #ifdef PROFILING
     Profiler *profiler; ///< Profiler.
 #endif
-    boost::program_options::variables_map commandLineVariables; ///< program options @todo Will be removed.
-    boost::program_options::options_description commandLineDescriptions; ///< program option descriptions @todo Will be removed.
+    QMap<QString, QString> cmdLineDescs; ///< Descriptions of supported command line parameters.
     bool headless_; ///< Are we running in the headless mode.
     Application *application; ///< The main QApplication object.
     FrameAPI *frame; ///< The Frame API.
@@ -192,7 +195,7 @@ private:
 };
 
 template <class T>
-T *Framework::GetModule()
+T *Framework::GetModule() const
 {
     for(size_t i = 0; i < modules.size(); ++i)
     {

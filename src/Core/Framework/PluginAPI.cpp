@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "PluginAPI.h"
 #include "LoggingFunctions.h"
@@ -5,8 +7,9 @@
 #include "Application.h"
 
 #include <QtXml>
-#include <iostream>
+
 #include <vector>
+#include <sstream>
 
 std::string WStringToString(const std::wstring &str)
 {
@@ -18,30 +21,30 @@ std::string WStringToString(const std::wstring &str)
 std::string GetErrorString(int error)
 {
 #ifdef WIN32
-	void *lpMsgBuf = 0;
+    void *lpMsgBuf = 0;
 
-	HRESULT hresult = HRESULT_FROM_WIN32(error);
-	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		0, hresult, 0 /*Default language*/, (LPTSTR) &lpMsgBuf, 0, 0);
+    HRESULT hresult = HRESULT_FROM_WIN32(error);
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        0, hresult, 0 /*Default language*/, (LPTSTR) &lpMsgBuf, 0, 0);
 
-	// Copy message to C++ -style string, since the data need to be freed before return.
+    // Copy message to C++ -style string, since the data need to be freed before return.
 #ifdef UNICODE
-	std::wstringstream ss;
+    std::wstringstream ss;
 #else
-	std::stringstream ss;
+    std::stringstream ss;
 #endif
-	ss << (LPTSTR)lpMsgBuf << "(" << error << ")";
-	LocalFree(lpMsgBuf);
+    ss << (LPTSTR)lpMsgBuf << "(" << error << ")";
+    LocalFree(lpMsgBuf);
 #ifdef UNICODE
-	return WStringToString(ss.str());
+    return WStringToString(ss.str());
 #else
-	return ss.str();
+    return ss.str();
 #endif
 
 #else
-	std::stringstream ss;
-	ss << strerror(error) << "(" << error << ")";
-	return ss.str();
+    std::stringstream ss;
+    ss << strerror(error) << "(" << error << ")";
+    return ss.str();
 #endif
 }
 
