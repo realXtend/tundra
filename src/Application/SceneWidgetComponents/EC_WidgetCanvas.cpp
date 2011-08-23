@@ -213,6 +213,7 @@ void EC_WidgetCanvas::SetSubmesh(uint submesh)
     submeshes_.clear();
     submeshes_.append(submesh);
     update_internals_ = true;
+    UpdateSubmeshes();
 }
 
 void EC_WidgetCanvas::SetSubmeshes(const QList<uint> &submeshes)
@@ -223,6 +224,7 @@ void EC_WidgetCanvas::SetSubmeshes(const QList<uint> &submeshes)
     submeshes_.clear();
     submeshes_ = submeshes;
     update_internals_ = true;
+    UpdateSubmeshes();
 }
 
 void EC_WidgetCanvas::WidgetDestroyed(QObject *obj)

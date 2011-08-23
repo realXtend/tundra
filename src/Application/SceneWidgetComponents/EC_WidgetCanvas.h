@@ -90,8 +90,6 @@ public slots:
     QList<uint> GetSubMeshes() { return submeshes_; }
 
     QString GetMaterialName() { return QString::fromStdString(material_name_); }
-
-private:
     void UpdateSubmeshes();
 
 private slots:

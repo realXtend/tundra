@@ -4,8 +4,8 @@ init_target (SceneWidgetComponents OUTPUT plugins)
 MocFolder ()
 
 # Define source files
-file (GLOB CPP_FILES dllmain.cpp EC_WebView.cpp EC_WidgetCanvas.cpp) # omitting EC_VideoView.cpp for now, add when ported
-file (GLOB H_FILES EC_WebView.h EC_WidgetCanvas.h SceneWidgetComponentsApi.h) # omitting EC_VideoView.h for now, add when ported
+file (GLOB CPP_FILES dllmain.cpp EC_WebView.cpp EC_SlideShow.cpp EC_WidgetCanvas.cpp)
+file (GLOB H_FILES EC_WebView.h EC_SlideShow.h EC_WidgetCanvas.h SceneWidgetComponentsApi.h)
 file (GLOB MOC_FILES ${H_FILES})
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})

@@ -81,7 +81,7 @@ public slots:
 
     /// Get the context menu. This can be handy if you don't want to have interactive attribute on,
     /// but still want to show the context menu in your own code.
-    /// @note The QMenu will destroy itself when closed, you dont need to free the ptr.
+    /// @note The QMenu will destroy itself when closed, you don't need to free the ptr.
     QMenu *GetContextMenu();
 
 private slots:
