@@ -51,10 +51,7 @@ namespace Asset
         
         QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
         local->AddStorageDirectory(systemAssetDir, "System", true);
-        // Set asset dir as also as AssetAPI property
-        framework_->Asset()->setProperty("assetdir", systemAssetDir);
-        framework_->Asset()->setProperty("inbuiltassetdir", systemAssetDir);
-        
+
         QString jsAssetDir = Application::InstallationDirectory() + "jsmodules";
         local->AddStorageDirectory(jsAssetDir, "Javascript", true);
 
