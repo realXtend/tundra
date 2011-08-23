@@ -118,6 +118,20 @@ namespace Asset
             if (files.isEmpty()) // If "--file" was not specified, then use "--storage" as the default. (If both are specified, "--file" takes precedence over "--storage").
                 framework_->Asset()->SetDefaultAssetStorage(storage);
         }
+        if (framework_->HasCommandLineParameter("--defaultstorage"))
+        {
+            QStringList defaultStorages = framework_->CommandLineParameters("--defaultstorage");
+            if (defaultStorages.size() == 1)
+            {
+                AssetStoragePtr defaultStorage = framework_->Asset()->GetAssetStorageByName(defaultStorages[0]);
+                if (!defaultStorage)
+                    LogError("Cannot set storage \"" + defaultStorages[0] + "\" as the default storage, since it doesn't exist!");
+                else
+                    framework_->Asset()->SetDefaultAssetStorage(defaultStorage);
+            }
+            else
+                LogError("Parameter --defaultstorage may be specified exactly once, and must contain a single value!");
+        }
     }
 
     void AssetModule::ConsoleRefreshHttpStorages()
