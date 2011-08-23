@@ -121,9 +121,6 @@ namespace OgreRenderer
         ///Is window fullscreen?
         bool IsFullScreen() const;
 
-        /// get visible entities last frame
-        virtual const std::set<entity_id_t>& GetVisibleEntities() { return visible_entities_; }
-
         /// Takes a screenshot and saves it to a file.
         /// @param filePath File path.
         /// @param fileName File name.
@@ -254,9 +251,6 @@ namespace OgreRenderer
 
         /// resized dirty count
         int resized_dirty_;
-
-        /// Visible entities
-        std::set<entity_id_t> visible_entities_;
 
         /// Shadow quality
         ShadowQuality shadowquality_;

@@ -11,7 +11,6 @@
 #include "Application.h"
 #include "Scene.h"
 #include "OgreRenderingModule.h"
-
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
@@ -20,6 +19,8 @@
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "Renderer.h"
+#include "OgreWorld.h"
+
 #include <utility>
 
 #include <QVBoxLayout>
@@ -1424,8 +1425,8 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         return;
     
     std::ostringstream text;
-    
-    uint visible_entities = renderer->GetVisibleEntities().size();
+
+    uint visible_entities = renderer->GetActiveOgreWorld()->GetVisibleEntities().size();
     uint batches = 0;
     uint triangles = 0;
     float avgfps = 0.0f;

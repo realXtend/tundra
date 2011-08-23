@@ -69,8 +69,7 @@ public:
     /** The coordinates are a position in the render window, not scaled to [0,1].
         @param x Horizontal position for the origin of the ray
         @param y Vertical position for the origin of the ray
-        @return Raycast result structure
-    */
+        @return Raycast result structure */
     virtual RaycastResult* Raycast(int x, int y) = 0;
 
     /// Do raycast into the currently active world from viewport coordinates, using specific selection layer(s)
@@ -79,19 +78,16 @@ public:
         @param x Horizontal position for the origin of the ray
         @param y Vertical position for the origin of the ray
         @param layerMask Which selection layer(s) to use (bitmask)
-        @return Raycast result structure
-    */
+        @return Raycast result structure */
     virtual RaycastResult* Raycast(int x, int y, unsigned layerMask) = 0;
     
     /// Do a frustum query to the currently active world from viewport coordinates.
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** Returns the found entities as a QVariantList so that
         Python and Javascript can get the result directly from here.
-        @param viewrect The query rectangle in 2d window coords.
-    */
+        @param viewrect The query rectangle in 2d window coords. */
     virtual QList<Entity*> FrustumQuery(QRect &viewrect) = 0;
-    
-    
+
     /// Returns render window width, or 0 if no window is opened
     /// \todo This function will be removed.
     virtual int GetWindowWidth() const = 0;
@@ -106,8 +102,5 @@ public:
     /// get maximum view distance
     virtual float ViewDistance() const = 0;
 
-    /// get visible entities last frame
-    virtual const std::set<entity_id_t>& GetVisibleEntities() = 0;
-    
     virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
 };
