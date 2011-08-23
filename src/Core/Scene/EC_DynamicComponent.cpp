@@ -171,13 +171,15 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     if(ContainsAttribute(name))
         return IComponent::GetAttribute(name);
 
-    IAttribute *attribute = framework->Scene()->CreateAttribute(this, typeName, name);
+    IAttribute *attribute = SceneAPI::CreateAttribute(typeName, name);
     if(!attribute)
     {
         LogError("Failed to create new attribute:" + name + " in dynamic component:" + Name());
         return 0;
     }
-
+    
+    IComponent::AddAttribute(attribute);
+    
     // Trigger scenemanager signal
     Scene* scene = ParentScene();
     if (scene)
@@ -202,9 +204,8 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
             
             // Trigger internal signal(s)
             emit AttributeAboutToBeRemoved(*iter);
-            SAFE_DELETE(*iter);
             // Leave a hole in the array, which will be filled when new attributes are created
-            *iter = 0;
+            SAFE_DELETE(*iter);
             break;
         }
     }

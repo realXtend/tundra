@@ -81,9 +81,6 @@ public:
 
     ~EC_DynamicComponent();
 
-    /// IComponent override. This component has dynamic attribute structure.
-    virtual bool HasDynamicStructure() const { return true; }
-
     /// IComponent override.
     void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
 
@@ -172,14 +169,4 @@ public slots:
 
     /// Removes all attributes from the component
     void RemoveAllAttributes(AttributeChange::Type change = AttributeChange::Default);
-
-signals:
-    /// Emitted when a new attribute is added to this component.
-    /** @param attr New attribute. */
-    void AttributeAdded(IAttribute *attr);
-
-    /// Emitted when attribute is about to be removed.
-    /** @param attr Attribute about to be removed.
-        @todo Scripts cannot access IAttribute; consider maybe using name or something else in the signature. */
-    void AttributeAboutToBeRemoved(IAttribute *attr);
 };

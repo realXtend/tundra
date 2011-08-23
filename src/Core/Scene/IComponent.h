@@ -78,13 +78,13 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
     Q_OBJECT
     Q_PROPERTY(QString name READ Name WRITE SetName)
     Q_PROPERTY(QString typeName READ TypeName)
-    Q_PROPERTY(bool replicated READ IsReplicated WRITE SetReplicated)
+    Q_PROPERTY(bool replicated READ IsReplicated)
     Q_PROPERTY(bool local READ IsLocal)
     Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode)
     Q_PROPERTY (uint id READ Id)
 
     /// \todo Deprecated. Remove when all scripts have been converted to not refer to this
-    Q_PROPERTY(bool networkSyncEnabled READ IsReplicated WRITE SetReplicated)
+    Q_PROPERTY(bool networkSyncEnabled READ IsReplicated)
 
 public:
     /// Constructor.
@@ -174,18 +174,19 @@ public:
         doesn't work right for py&js 'cause doesn't return a QVariant .. so not a slot now as a temporary measure. */
     IAttribute* GetAttribute(const QString &name) const;
     
+    /// Create an attribute with specifed index, type and name. Return it if successful or null if not. Called by network sync.
+    IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change = AttributeChange::Default);
+    
+    /// Remove an attribute at the specified index. Called by network sync.
+    void RemoveAttribute(u8 index, AttributeChange::Type change);
+    
+    /// Enables or disables network synchronization of changes that occur in the attributes of this component.
+    /** True by default. Can only be changed before the component is added to an entity, because the replication determines the ID range to use. */
+    void SetReplicated(bool enable);
+    
 public slots:
     /// Returns a pointer to the Framework instance.
     Framework *GetFramework() const { return framework; }
-
-    /// Enables or disables network synchronization of changes that occur in the attributes of this component.
-    /** By default, this flag is set for all created components.
-        When network synchronization is disabled, changes to the attributes of this component affect
-        only locally and will not be pushed to network. */
-    void SetReplicated(bool enable);
-    
-    /// \todo Deprecated. Remove when all scripts have been converted to not refer to this
-    void SetNetworkSyncEnabld(bool enable) { SetReplicated(enable); }
 
     /// Returns true if network synchronization of the attributes of this component is enabled.
     bool IsReplicated() const { return replicated; }
@@ -202,9 +203,6 @@ public slots:
     /// Returns component id, which is unique within the parent entity
     component_id_t Id() const { return id; }
     
-    /// Returns true if component has dynamic attribute structure
-    virtual bool HasDynamicStructure() const { return false; }
-
     /// Returns the total number of attributes in this component.
     int NumAttributes() const;
     
@@ -280,6 +278,15 @@ signals:
     /// This signal is emitted when this Component is detached from its parent, i.e. the new parent is set to null.
     void ParentEntityDetached();
 
+    /// Emitted when a new attribute is added to this component.
+    /** @param attr New attribute. */
+    void AttributeAdded(IAttribute *attr);
+
+    /// Emitted when attribute is about to be removed.
+    /** @param attr Attribute about to be removed.
+        @todo Scripts cannot access IAttribute; consider maybe using name or something else in the signature. */
+    void AttributeAboutToBeRemoved(IAttribute *attr);
+    
 protected:
     /// Helper function for starting component serialization.
     /** This function creates an XML element <component> with the name of this component, adds it to the document, and returns it. */
@@ -301,6 +308,12 @@ protected:
 
     /// Helper function for getting a attribute type from serialized component.
     QString ReadAttributeType(QDomElement& compElement, const QString &name) const;
+
+    /// Add attribute to this component.
+    void AddAttribute(IAttribute* attr);
+
+    /// Add attribute to this component at specified index, creating new holes if necessary. Static attributes can not be overwritten. Return true if successful
+    bool AddAttribute(IAttribute* attr, u8 index);
 
     /// Points to the Entity this Component is part of, or null if this Component is not attached to any Entity.
     Entity* parentEntity;
@@ -332,7 +345,4 @@ private:
     
     /// Set component id. Called by Entity
     void SetNewId(component_id_t newId);
-    
-    /// Called by IAttribute on initialization of each attribute
-    void AddAttribute(IAttribute* attr);
 };

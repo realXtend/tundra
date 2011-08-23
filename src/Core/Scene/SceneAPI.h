@@ -110,23 +110,23 @@ public slots:
     u32 GetComponentTypeId(const QString &componentTypename);
     
     /// Looks up the attribute type name for an attribute type id
-    QString GetAttributeTypeName(u32 attributeTypeid);
+    static QString GetAttributeTypeName(u32 attributeTypeid);
     
     /// Looks up the type id for an attribute type name, or zero if not found
-    u32 GetAttributeTypeId(const QString &attributeTypename);
+    static u32 GetAttributeTypeId(const QString &attributeTypename);
     
     /// Creates a clone of the specified component. The new component will be detached, i.e. it has no parent entity.
     ///\todo Implement this.
 //    ComponentPtr CloneComponent(const ComponentPtr &component, const QString &newComponentName);
 
-    /// Create new dynamic attribute for component by typename
-    IAttribute *CreateAttribute(IComponent *owner, const QString &attributeTypename, const QString &newAttributeName);
-    
-    /// Create new dynamic attribute for component by typeid
-    IAttribute *SceneAPI::CreateAttribute(IComponent *owner, u32 attributeTypeid, const QString &newAttributeName);
+    /// Create a new dynamic attribute without attaching it to a component and return it. Return null if illegal typeid.
+    static IAttribute* CreateAttribute(u32 attributeTypeid, const QString& newAttributeName);
+
+    /// Create a new dynamic attribute without attaching it to a component and return it. Return null if illegal type.
+    static IAttribute* CreateAttribute(const QString &attributeTypename, const QString& newAttributeName);
 
     /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
-    QStringList AttributeTypes() const;
+    static QStringList AttributeTypes();
 
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
     QStringList ComponentTypes() const;
@@ -170,5 +170,5 @@ private:
     SceneMap scenes_; ///< All currently created scenes.
     ScenePtr defaultScene_; ///< Current 'default' scene. \todo Delete this.
     SceneInteract *sceneInteract; ///< Scene interact. \todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
-    QStringList attributeTypeNames;
+    static QStringList attributeTypeNames;
 };

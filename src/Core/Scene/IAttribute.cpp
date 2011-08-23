@@ -39,14 +39,14 @@ using namespace kNet;
 // Implementation code for some common attributes
 
 IAttribute::IAttribute(IComponent* owner_, const char* name_) :
-    owner(owner_),
     name(name_),
     metadata(0),
     dynamic(false),
+    owner(0),
     index(0)
 {
-    if (owner)
-        owner->AddAttribute(this);
+    if (owner_)
+        owner_->AddAttribute(this);
 }
 
 void IAttribute::Changed(AttributeChange::Type change)

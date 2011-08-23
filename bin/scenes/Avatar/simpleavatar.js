@@ -369,7 +369,6 @@ SimpleAvatar.prototype.ClientInitialize = function() {
             if (clientName.description != "") {
                 var nameTag = this.me.GetOrCreateComponent("EC_HoveringText", 2, false);
                 if (nameTag != null) {
-                    nameTag.SetNetworkSyncEnabled(false);
                     nameTag.SetTemporary(true);
                     nameTag.text = clientName.description;
                     var pos = nameTag.position;
@@ -457,7 +456,6 @@ SimpleAvatar.prototype.ClientCreateInputMapper = function() {
 
     // Local mapper for mouse scroll and rotate
     var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
-    inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
     inputmapper.takeMouseEventsOverQt = true;
     inputmapper.modifiersEnabled = false;

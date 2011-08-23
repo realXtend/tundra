@@ -23,7 +23,6 @@
 Entity::Entity(Framework* framework, Scene* scene) :
     framework_(framework),
     scene_(scene),
-    replicated_(true),
     temporary_(false)
 {
 }
@@ -32,7 +31,6 @@ Entity::Entity(Framework* framework, uint id, Scene* scene) :
     framework_(framework),
     id_(id),
     scene_(scene),
-    replicated_(true),
     temporary_(false)
 {
 }
@@ -58,9 +56,10 @@ void Entity::AddComponent(component_id_t id, const ComponentPtr &component, Attr
     if (component && component->ParentEntity() == 0)
     {
         if (!id)
-            id = idGenerator_.Allocate();
+            id = component->IsReplicated() ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
         else
         {
+            component->SetReplicated(id < UniqueIdGenerator::FIRST_LOCAL_ID);
             // If component ID is specified manually, but it already exists, it is an error. Do not add the component in that case.
             if (components_.find(id) != components_.end())
             {
@@ -140,25 +139,25 @@ void Entity::RemoveComponentRaw(QObject* comp)
     }
 }
 
-ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
+ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = GetComponent(type_name);
     if (new_comp)
         return new_comp;
 
-    return CreateComponent(type_name, change, syncEnabled);
+    return CreateComponent(type_name, change, replicated);
 }
 
-ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
+ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = GetComponent(type_name, name);
     if (new_comp)
         return new_comp;
 
-    return CreateComponent(type_name, name, change, syncEnabled);
+    return CreateComponent(type_name, name, change, replicated);
 }
 
-ComponentPtr Entity::GetOrCreateComponent(u32 typeId, AttributeChange::Type change)
+ComponentPtr Entity::GetOrCreateComponent(u32 typeId, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = GetComponent(typeId);
     if (new_comp)
@@ -167,13 +166,13 @@ ComponentPtr Entity::GetOrCreateComponent(u32 typeId, AttributeChange::Type chan
     return CreateComponent(typeId, change);
 }
 
-ComponentPtr Entity::GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change)
+ComponentPtr Entity::GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = GetComponent(typeId, name);
     if (new_comp)
         return new_comp;
 
-    return CreateComponent(typeId, name, change);
+    return CreateComponent(typeId, name, change, replicated);
 }
 
 ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool replicated)
@@ -204,7 +203,7 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &na
     return new_comp;
 }
 
-ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change)
+ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = framework_->Scene()->CreateComponentById(scene_, typeId);
     if (!new_comp)
@@ -213,11 +212,12 @@ ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change)
         return ComponentPtr();
     }
 
+    new_comp->SetReplicated(replicated);
     AddComponent(new_comp, change);
     return new_comp;
 }
 
-ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change)
+ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = framework_->Scene()->CreateComponentById(scene_, typeId, name);
     if (!new_comp)
@@ -226,6 +226,7 @@ ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeC
         return ComponentPtr();
     }
 
+    new_comp->SetReplicated(replicated);
     AddComponent(new_comp, change);
     return new_comp;
 }
@@ -566,11 +567,6 @@ void Entity::EmitLeaveView(IComponent* camera)
 void Entity::SetTemporary(bool enable)
 {
     temporary_ = enable;
-}
-
-void Entity::SetReplicated(bool enable)
-{
-    replicated_ = enable;
 }
 
 QString Entity::ToString() const

@@ -101,6 +101,20 @@ private:
     
     /// Handle entity action message.
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
+    /// Handle create entity message.
+    void HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle create components message.
+    void HandleCreateComponents(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle create attributes message.
+    void HandleCreateAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle edit attributes message.
+    void HandleEditAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle remove attributes message.
+    void HandleRemoveAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle remove components message.
+    void HandleRemoveComponents(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle remove entities message.
+    void HandleRemoveEntity(kNet::MessageConnection* source, const char* data, size_t numBytes);
     
     /// Process one sync state for changes in the scene
     /** \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management

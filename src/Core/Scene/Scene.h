@@ -225,8 +225,10 @@ public slots:
     void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::Default);
 
     /// Gets and allocates the next free entity id.
-    /** Note that you can also pass id 0 to CreateEntity to automatically allocate. */
     entity_id_t NextFreeId();
+
+    /// Gets and allocates the next free entity id.
+    entity_id_t NextFreeIdLocal();
 
     /// Returns list of entities with a specific component present.
     /** @param typeName Type name of the component

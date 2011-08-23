@@ -14,6 +14,9 @@
 #include "Framework.h"
 #include "Entity.h"
 #include "Scene.h"
+#include "SceneAPI.h"
+
+#include "LoggingFunctions.h"
 
 #include <QDomDocument>
 
@@ -86,6 +89,12 @@ Scene* IComponent::ParentScene() const
 
 void IComponent::SetReplicated(bool enable)
 {
+    if (id)
+    {
+        LogError("Replication mode can not be changed after an ID has been assigned!");
+        return;
+    }
+    
     replicated = enable;
 }
 
@@ -147,6 +156,53 @@ int IComponent::NumStaticAttributes() const
     return ret;
 }
 
+IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change)
+{
+    IAttribute *attribute = SceneAPI::CreateAttribute(typeID, name);
+    if(!attribute)
+        return 0;
+    
+    if (!AddAttribute(attribute, index))
+    {
+        delete attribute;
+        return 0;
+    }
+    
+    // Trigger scenemanager signal
+    Scene* scene = ParentScene();
+    if (scene)
+        scene->EmitAttributeAdded(this, attribute, change);
+    
+    // Trigger internal signal
+    emit AttributeAdded(attribute);
+    EmitAttributeChanged(attribute, change);
+    return attribute;
+}
+
+void IComponent::RemoveAttribute(u8 index, AttributeChange::Type change)
+{
+    if (attributes.size() < index && attributes[index])
+    {
+        IAttribute* attr = attributes[index];
+        if (!attr->IsDynamic())
+        {
+            LogError("Can not remove static attribute at index " + QString::number(index));
+            return;
+        }
+        
+        // Trigger scenemanager signal
+        Scene* scene = ParentScene();
+        if (scene)
+            scene->EmitAttributeRemoved(this, attr, change);
+        
+        // Trigger internal signal(s)
+        emit AttributeAboutToBeRemoved(attr);
+        SAFE_DELETE(attributes[index]);
+    }
+    else
+        LogError("Can not remove nonexisting attribute at index " + QString::number(index));
+}
+
 void IComponent::AddAttribute(IAttribute* attr)
 {
     if (!attr)
@@ -155,6 +211,7 @@ void IComponent::AddAttribute(IAttribute* attr)
     if (!attr->IsDynamic())
     {
         attr->index = attributes.size();
+        attr->owner = this;
         attributes.push_back(attr);
     }
     else
@@ -165,13 +222,50 @@ void IComponent::AddAttribute(IAttribute* attr)
             if (!attributes[i])
             {
                 attr->index = i;
+                attr->owner = this;
                 attributes[i] = attr;
                 return;
             }
         }
         attr->index = attributes.size();
+        attr->owner = this;
         attributes.push_back(attr);
     }
+}
+
+bool IComponent::AddAttribute(IAttribute* attr, u8 index)
+{
+    if (!attr)
+        return false;
+    if (index < attributes.size())
+    {
+        IAttribute* existing = attributes[index];
+        if (existing)
+        {
+            if (!existing->IsDynamic())
+            {
+                LogError("Can not overwrite static attribute at index " + QString::number(index));
+                return false;
+            }
+            else
+            {
+                LogWarning("Removing existing attribute at index " + QString::number(index) + " to make room for new attribute. Indicates a bug in the scene sync protocol.");
+                delete existing;
+                attributes[index] = 0;
+            }
+        }
+    }
+    else
+    {
+        // Make enough holes until we can reach the index
+        while (attributes.size() <= index)
+            attributes.push_back(0);
+    }
+    
+    attr->index = index;
+    attr->owner = this;
+    attributes[index] = attr;
+    return true;
 }
 
 QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const
@@ -214,11 +308,6 @@ bool IComponent::BeginDeserialization(QDomElement& comp_element)
     if (type == TypeName())
     {
         SetName(comp_element.attribute("name"));
-        QString replicatedStr = comp_element.attribute("sync");
-        bool replicated = true;
-        if (!replicatedStr.isEmpty())
-            replicated = ParseBool(replicatedStr);
-        SetReplicated(replicated);
         return true;
     }
     return false;

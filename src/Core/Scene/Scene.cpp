@@ -72,7 +72,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     // Figure out new entity id
     entity_id_t newentityid = 0;
     if (id == 0)
-        newentityid = idGenerator_.Allocate();
+        newentityid = replicated ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
     else
     {
         if(entities_.find(id) != entities_.end())
@@ -88,7 +88,6 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     }
 
     EntityPtr entity = EntityPtr(new Entity(framework_, newentityid, this));
-    entity->SetReplicated(replicated);
     for(size_t i=0 ; i<(size_t)components.size() ; ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
@@ -159,6 +158,8 @@ void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
     old_entity->SetNewId(old_id);
     entities_.erase(old_id);
     entities_[new_id] = old_entity;
+    idGenerator_.Deallocate(old_id);
+    idGenerator_.Allocate(new_id);
 }
 
 void Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
@@ -203,7 +204,12 @@ void Scene::RemoveAllEntities(bool send_events, AttributeChange::Type change)
 
 entity_id_t Scene::NextFreeId()
 {
-    return idGenerator_.Allocate();
+    return idGenerator_.AllocateReplicated();
+}
+
+entity_id_t Scene::NextFreeIdLocal()
+{
+    return idGenerator_.AllocateLocal();
 }
 
 EntityList Scene::GetEntitiesWithComponent(const QString &typeName, const QString &name) const
@@ -546,15 +552,15 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
     QDomElement ent_elem = scene_elem.firstChildElement("entity");
     while(!ent_elem.isNull())
     {
-        QString id_str = ent_elem.attribute("id");
-        entity_id_t id = !id_str.isEmpty() ? ParseString<entity_id_t>(id_str.toStdString()) : 0;
-        if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
-            id = NextFreeId();
-
         QString replicatedStr = ent_elem.attribute("sync");
         bool replicated = true;
         if (!replicatedStr.isEmpty())
             replicated = ParseBool(replicatedStr);
+
+        QString id_str = ent_elem.attribute("id");
+        entity_id_t id = !id_str.isEmpty() ? ParseString<entity_id_t>(id_str.toStdString()) : 0;
+        if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
+            id = replicated ? NextFreeId() : NextFreeIdLocal();
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
         {
@@ -566,8 +572,6 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         EntityPtr entity = CreateEntity(id);
         if (entity)
         {
-            entity->SetReplicated(replicated);
-            
             QDomElement comp_elem = ent_elem.firstChildElement("component");
             while(!comp_elem.isNull())
             {
@@ -580,10 +584,9 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
                 if (!compReplicatedStr.isEmpty())
                     compReplicated = ParseBool(compReplicatedStr);
                 
-                ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+                ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name, AttributeChange::Default, compReplicated);
                 if (new_comp)
                 {
-                    new_comp->SetReplicated(compReplicated);
                     // Trigger no signal yet when scene is in incoherent state
                     new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                 }
@@ -651,7 +654,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
             entity_id_t id = source.Read<u32>();
             bool replicated = source.Read<u8>() ? true : false;
             if (!useEntityIDsFromFile || id == 0)
-                id = NextFreeId();
+                id = replicated ? NextFreeId() : NextFreeIdLocal();
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
@@ -666,8 +669,6 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
                 LogError("Failed to create entity, stopping scene load!");
                 return ret; // If entity creation fails, stream desync is more than likely so stop right here
             }
-            
-            entity->SetReplicated(replicated);
             
             uint num_components = source.Read<u32>();
             for(uint i = 0; i < num_components; ++i)
@@ -686,10 +687,9 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
                 
                 try
                 {
-                    ComponentPtr new_comp = entity->GetOrCreateComponent(typeId, name);
+                    ComponentPtr new_comp = entity->GetOrCreateComponent(typeId, name, AttributeChange::Default, compReplicated);
                     if (new_comp)
                     {
-                        new_comp->SetReplicated(compReplicated);
                         if (data_size)
                         {
                             DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
@@ -742,7 +742,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     {
         entity_id_t id;
         if (e.id.isEmpty() || !useEntityIDsFromFile)
-            id = NextFreeId();
+            id = e.local ? NextFreeIdLocal() : NextFreeId();
         else
             id =  ParseString<entity_id_t>(e.id.toStdString());
 
@@ -757,7 +757,6 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
         assert(entity);
         if (entity)
         {
-            entity->SetReplicated(!e.local);
             foreach(ComponentDesc c, e.components)
             {
                 if (c.typeName.isNull())
@@ -1188,7 +1187,7 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
     Scene* scene = entity ? entity->ParentScene() : 0;
     
     if ((length <= 0.0f) || (!attr) || (!attr->Metadata()) || (attr->Metadata()->interpolation == AttributeMetadata::None) ||
-        (!comp) || (comp->HasDynamicStructure()) || (!entity) || (!scene) || (scene != this))
+        (!comp) || (!entity) || (!scene) || (scene != this))
     {
         delete endvalue;
         return false;

@@ -27,8 +27,6 @@
 
 #include "MemoryLeakCheck.h"
 
-using namespace kNet;
-
 // This variable is used for the sender echo & interpolation stop check
 kNet::MessageConnection* currentSender = 0;
 
@@ -47,8 +45,8 @@ void SyncManager::QueueMessage(kNet::MessageConnection* connection, kNet::messag
 void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp)
 {
     // Component identification
-    ds.AddVLE<VLE8_16_32>(comp->Id());
-    ds.AddVLE<VLE8_16_32>(comp->TypeId());
+    ds.AddVLE<kNet::VLE8_16_32>(comp->Id());
+    ds.AddVLE<kNet::VLE8_16_32>(comp->TypeId());
     ds.AddString(comp->Name().toStdString());
     
     // Create a nested dataserializer for the attributes, so we can survive unknown or incompatible components
@@ -73,6 +71,7 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
     }
     
     // Add the attribute array to the main serializer
+    ds.AddVLE<kNet::VLE8_16_32>(attrDs.BytesFilled());
     ds.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDs.BytesFilled());
 }
 
@@ -113,7 +112,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     
     if (!scene)
     {
-        ::LogError("Null scene, cannot replicate");
+        LogError("Null scene, cannot replicate");
         return;
     }
     
@@ -140,16 +139,43 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
-    switch (id)
+    try
     {
-    case cEntityActionMessage:
+        switch (id)
         {
-            MsgEntityAction msg(data, numBytes);
-            HandleEntityAction(source, msg);
+        case cCreateEntityMessage:
+            HandleCreateEntity(source, data, numBytes);
+            break;
+        case cCreateComponentsMessage:
+            HandleCreateComponents(source, data, numBytes);
+            break;
+        case cCreateAttributesMessage:
+            HandleCreateAttributes(source, data, numBytes);
+            break;
+        case cEditAttributesMessage:
+            HandleEditAttributes(source, data, numBytes);
+            break;
+        case cRemoveAttributesMessage:
+            HandleRemoveAttributes(source, data, numBytes);
+            break;
+        case cRemoveComponentsMessage:
+            HandleRemoveComponents(source, data, numBytes);
+            break;
+        case cRemoveEntityMessage:
+            HandleRemoveEntity(source, data, numBytes);
+            break;
+        case cEntityActionMessage:
+            {
+                MsgEntityAction msg(data, numBytes);
+                HandleEntityAction(source, msg);
+            }
+            break;
         }
-        break;
     }
-    
+    catch (kNet::NetException& e)
+    {
+        LogError("Exception while handling scene sync network message " + QString::number(id) + ": " + QString(e.what()));
+    }
     currentSender = 0;
 }
 
@@ -209,12 +235,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-        {
-            // Do not echo the attribute change back to the sender
-            if ((*i)->connection == currentSender)
-                continue;
             (*i)->syncState.MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
-        }
     }
     else
     {
@@ -240,7 +261,9 @@ void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeCh
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
             (*i)->syncState.MarkComponentDirty(entity->Id(), comp->Id());
+        }
     }
     else
     {
@@ -442,6 +465,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         bool removeState = false;
         if (!entity)
         {
+            if (!entityState.removed)
+                LogWarning("Entity " + QString::number(entityState.id) + " has gone missing from the scene without the remove properly signalled. Removing from client replication state.");
             entityState.isNew = false;
             removeState = true;
         }
@@ -467,7 +492,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 removeState = true;
             
             kNet::DataSerializer ds(removeEntityBuffer_, 1024);
-            ds.AddVLE<VLE8_16_32>(entityState.id);
+            ds.AddVLE<kNet::VLE8_16_32>(entityState.id);
             QueueMessage(destination, cRemoveEntityMessage, true, true, ds);
             ++numMessagesSent;
         }
@@ -477,15 +502,16 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             kNet::DataSerializer ds(createEntityBuffer_, 64 * 1024);
             
             // Entity identification and temporary flag
-            ds.AddVLE<VLE8_16_32>(entityState.id);
-            ds.Add<bit>(entity->IsTemporary() ? 1 : 0);
+            ds.AddVLE<kNet::VLE8_16_32>(entityState.id);
+            // Do not write the temporary flag as a bit to not desync the byte alignment at this point, as a lot of data potentially follows
+            ds.Add<u8>(entity->IsTemporary() ? 1 : 0);
             
             const Entity::ComponentMap& components = entity->Components();
             // Count the amount of replicated components
             uint numReplicatedComponents = 0;
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
                 if (i->second->IsReplicated()) ++numReplicatedComponents;
-            ds.AddVLE<VLE8_16_32>(numReplicatedComponents);
+            ds.AddVLE<kNet::VLE8_16_32>(numReplicatedComponents);
             
             // Serialize each replicated component
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
@@ -521,6 +547,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 bool removeState = false;
                 if (!comp)
                 {
+                    if (!compState.removed)
+                        LogWarning("Component " + QString::number(compState.id) + " of " + entity->ToString() + " has gone missing from the scene without the remove properly signalled. Removing from client replication state.");
                     compState.isNew = false;
                     removeState = true;
                 }
@@ -538,16 +566,16 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     
                     // If first component, write the entity ID first
                     if (!removeCompsDs.BytesFilled())
-                        removeCompsDs.AddVLE<VLE8_16_32>(entityState.id);
+                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
                     // Then add component ID
-                    removeCompsDs.AddVLE<VLE8_16_32>(compState.id);
+                    removeCompsDs.AddVLE<kNet::VLE8_16_32>(compState.id);
                 }
                 // New component
                 else if (compState.isNew)
                 {
                     // If first component, write the entity ID first
                     if (!createCompsDs.BytesFilled())
-                        createCompsDs.AddVLE<VLE8_16_32>(entityState.id);
+                        createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
                     // Then add the component data
                     WriteComponentFullUpdate(createCompsDs, comp);
                 }
@@ -566,17 +594,17 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                         {
                             // Create attribute. Make sure it exists and is dynamic.
                             if (attrIndex >= attrs.size() || !attrs[attrIndex])
-                                ::LogError("CreateAttribute for nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in entity " + entity->ToString() + ". Discarding.");
+                                LogError("CreateAttribute for nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
                             else if (!attrs[attrIndex]->IsDynamic())
-                                ::LogError("CreateAttribute for a static attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in entity " + entity->ToString() + ". Discarding.");
+                                LogError("CreateAttribute for a static attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
                             else
                             {
                                 // If first attribute, write the entity ID first
                                 if (!createAttrsDs.BytesFilled())
-                                    createAttrsDs.AddVLE<VLE8_16_32>(entityState.id);
+                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
                                 
                                 IAttribute* attr = attrs[attrIndex];
-                                createAttrsDs.AddVLE<VLE8_16_32>(compState.id);
+                                createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id);
                                 createAttrsDs.Add<u8>(attrIndex); // Index
                                 createAttrsDs.Add<u8>(attr->TypeId());
                                 createAttrsDs.AddString(attr->Name().toStdString());
@@ -588,8 +616,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             // Remove attribute
                             // If first attribute, write the entity ID first
                             if (!removeAttrsDs.BytesFilled())
-                                removeAttrsDs.AddVLE<VLE8_16_32>(entityState.id);
-                            removeAttrsDs.AddVLE<VLE8_16_32>(compState.id);
+                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
+                            removeAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id);
                             removeAttrsDs.Add<u8>(attrIndex);
                         }
                     }
@@ -611,7 +639,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                     if (attrIndex < attrs.size() && attrs[attrIndex])
                                         changedAttributes_.push_back(attrIndex);
                                     else
-                                        ::LogError("Attribute change for a nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in entity " + entity->ToString() + ". Discarding.");
+                                        LogError("Attribute change for a nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
                                 }
                             }
                         }
@@ -620,15 +648,16 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     {
                         // If first component for which attribute changes are sent, write the entity ID first
                         if (!editAttrsDs.BytesFilled())
-                            editAttrsDs.AddVLE<VLE8_16_32>(entityState.id);
-                        editAttrsDs.AddVLE<VLE8_16_32>(compState.id);
+                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
+                        editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id);
                         
                         // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
                         unsigned bitsMethod1 = changedAttributes_.size() * 8 + 8;
                         unsigned bitsMethod2 = attrs.size();
+                        // Method 1: indices
                         if (bitsMethod1 <= bitsMethod2)
                         {
-                            editAttrsDs.Add<bit>(0);
+                            editAttrsDs.Add<kNet::bit>(0);
                             editAttrsDs.Add<u8>(changedAttributes_.size());
                             for (unsigned i = 0; i < changedAttributes_.size(); ++i)
                             {
@@ -636,18 +665,19 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                 attrs[changedAttributes_[i]]->ToBinary(editAttrsDs);
                             }
                         }
+                        // Method 2: bitmask
                         else
                         {
-                            editAttrsDs.Add<bit>(1);
+                            editAttrsDs.Add<kNet::bit>(1);
                             for (unsigned i = 0; i < attrs.size(); ++i)
                             {
                                 if (compState.dirtyAttributes[i >> 3] & (1 << (i & 7)))
                                 {
-                                    editAttrsDs.Add<bit>(1);
+                                    editAttrsDs.Add<kNet::bit>(1);
                                     attrs[i]->ToBinary(editAttrsDs);
                                 }
                                 else
-                                    editAttrsDs.Add<bit>(0);
+                                    editAttrsDs.Add<kNet::bit>(0);
                             }
                         }
                         
@@ -695,8 +725,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         if (removeState)
             state.entities.erase(entityState.id);
     }
-    //if (num_messages_sent)
-    //    LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
+    //if (numMessagesSent)
+    //    LogInfo("Sent " + QString::number(numMessagesSent) + " scenesync messages");
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
@@ -715,122 +745,126 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
     return true;
 }
 
-/*
-void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg)
+void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)
 {
     assert(source);
-    ScenePtr scene = GetRegisteredScene();
-    if (!scene)
-    {
-        LogWarning("SyncManager: Ignoring received MsgCreateEntity as no scene exists!");
-        return;
-    }
-    
-    entity_id_t entityID = msg.entityID;
-    if (!ValidateAction(source, msg.messageID, entityID))
-        return;
-
     UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
     if (!scene->AllowModifyEntity(user, 0)) //should be 'ModifyScene', but ModifyEntity is now the signal that covers all
         return;
     
     // Get matching syncstate for reflecting the changes
     SceneSyncState* state = GetSceneSyncState(source);
-    if (!state)
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
     {
-        LogWarning("Null syncstate for connection! Disregarding CreateEntity message");
+        LogWarning("Null scene or sync state, disregarding CreateEntity message");
         return;
     }
     
     bool isServer = owner_->IsServer();
-    
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
-    // Check for ID collision
-    if (isServer)
+    /// \todo Read conversation ID on the server
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cCreateEntityMessage, entityID))
+        return;
+    
+    // If a client gets a entity that already exists, destroy it forcibly
+    if (!isServer && scene->GetEntity(entityID))
     {
-        if (scene->GetEntity(entityID))
-        {
-            entity_id_t newEntityID = scene->NextFreeId();
-            // Send information to the creator that the ID was taken. The reserved ID will never get replicated to others
-            MsgEntityIDCollision collisionMsg;
-            collisionMsg.oldEntityID = entityID;
-            collisionMsg.newEntityID = newEntityID;
-            source->Send(collisionMsg);
-            entityID = newEntityID;
-        }
-    }
-    else
-    {
-        // If a client gets a entity that already exists, destroy it forcibly
-        if (scene->GetEntity(entityID))
-        {
-            LogWarning("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
-            scene->RemoveEntity(entityID, change);
-        }
+        LogWarning("Received entity creation from server for entity ID " + QString::number(entityID) + " that already exists. Removing the old entity.");
+        scene->RemoveEntity(entityID, change);
     }
     
     EntityPtr entity = scene->CreateEntity(entityID);
     if (!entity)
     {
-        LogWarning("Scene refused to create entity " + ToString<int>(entityID));
+        LogWarning("Could not create entity " + QString::number(entityID) + ", disregarding CreateEntity message");
         return;
     }
     
-    // Reflect changes back to syncstate
-    state->GetOrCreateEntity(entityID);
+    // Read the temporary flag
+    bool temporary = ds.Read<u8>() != 0;
+    entity->SetTemporary(temporary);
     
     // Read the components
-    for(uint i = 0; i < msg.components.size(); ++i)
+    unsigned numComponents = ds.ReadVLE<kNet::VLE8_16_32>();
+    for(uint i = 0; i < numComponents; ++i)
     {
-        u32 typeId = msg.components[i].componentTypeHash; ///\todo VLE this!
-        QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr component = entity->GetOrCreateComponent(typeId, name, change);
-        if (component)
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
+        QString name = QString::fromStdString(ds.ReadString());
+        unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
+        ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
+        kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
+        
+        ComponentPtr comp = entity->CreateComponent(compID, typeID, name, change);
+        if (!comp)
         {
-            if (msg.components[i].componentData.size())
-            {
-                DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
-                try
-                {
-                    // Deserialize in disconnected mode, then send the notifications later
-                    component->DeserializeFromBinary(source, AttributeChange::Disconnected);
-                }
-                catch(...)
-                {
-                    ::LogError("Error while deserializing component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"! (typeID: " + QString::number(typeId) + ")");
-                }
-                
-                // Reflect changes back to syncstate
-                EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
-                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(typeId, name);
-                UNREFERENCED_PARAM(componentstate);
-            }
+            LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateEntity message, skipping component");
+            continue;
         }
-        else
-            LogWarning("Could not create component with type " + framework_->Scene()->GetComponentTypeName(typeId));
+        // Create the component to the sender's syncstate, then mark it processed (undirty)
+        state->entities[entityID].components[compID].DirtyProcessed();
+        
+        // Fill static attributes
+        unsigned numStaticAttrs = comp->NumStaticAttributes();
+        const AttributeVector& attrs = comp->Attributes();
+        for (uint i = 0; i < numStaticAttrs; ++i)
+            attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+        
+        // Create any dynamic attributes
+        while (attrDs.BitsLeft() > 2 * 8)
+        {
+            u8 index = attrDs.Read<u8>();
+            u8 typeId = attrDs.Read<u8>();
+            QString name = QString::fromStdString(attrDs.ReadString());
+            IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+            if (!newAttr)
+            {
+                LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                break;
+            }
+            newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+        }
     }
-
-    // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
+    
+    // Emit the component changes last, to signal only a coherent state of the whole entity
     scene->EmitEntityCreated(entity.get(), change);
-    const Entity::ComponentVector &components = entity->Components();
-    for(uint i = 0; i < components.size(); ++i)
-        components[i]->ComponentChanged(change);
+    const Entity::ComponentMap &components = entity->Components();
+    for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+        i->second->ComponentChanged(change);
+    
+    // Mark the entity processed (undirty) in the sender's syncstate so that create is not echoed back
+    state->entities[entityID].DirtyProcessed();
 }
 
-void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg)
+void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const char* data, size_t numBytes)
 {
+    assert(source);
+    // Get matching syncstate for reflecting the changes
+    SceneSyncState* state = GetSceneSyncState(source);
     ScenePtr scene = GetRegisteredScene();
-    if (!scene)
+    if (!scene || !state)
     {
-        LogWarning("SyncManager: Ignoring received MsgRemoveEntity as no scene exists!");
+        LogWarning("Null scene or sync state, disregarding CreateComponents message");
         return;
     }
     
-    entity_id_t entityID = msg.entityID;
-
-    if (!ValidateAction(source, msg.messageID, entityID))
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    /// \todo Read conversation ID on the server
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cCreateComponentsMessage, entityID))
         return;
 
     EntityPtr entity = scene->GetEntity(entityID);
@@ -838,387 +872,388 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
     if (!scene->AllowModifyEntity(user, entity.get()))
         return;
     
-    // Get matching syncstate for reflecting the changes
-    SceneSyncState* state = GetSceneSyncState(source);
-    if (!state)
-    {
-        LogWarning("Null syncstate for connection! Disregarding RemoveEntity message");
-        return;
-    }
-    
-    bool isServer = owner_->IsServer();
-    
-    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-
-    scene->RemoveEntity(entityID, change);
-    
-    // Reflect changes back to syncstate
-    state->RemoveEntity(entityID);
-}
-
-
-void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg)
-{
-    ScenePtr scene = GetRegisteredScene();
-    if (!scene)
-    {
-        LogWarning("SyncManager: Ignoring received MsgCreateComponents as no scene exists!");
-        return;
-    }
-    
-    entity_id_t entityID = msg.entityID;
-    if (!ValidateAction(source, msg.messageID, entityID))
-        return;
-    
-    // Get matching syncstate for reflecting the changes
-    SceneSyncState* state = GetSceneSyncState(source);
-    if (!state)
-    {
-        LogWarning("Null syncstate for connection! Disregarding CreateComponents message");
-        return;
-    }
-    
-    bool isServer = owner_->IsServer();
-    
-    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-    
-    // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
     EntityPtr entity = scene->GetEntity(entityID);
-    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
     if (!entity)
     {
-        if (!scene->AllowModifyEntity(user, 0)) //to check if creating entities is allowed (for this user)
-            return;
-
-        LogWarning("Entity " + ToString<int>(entityID) + " not found for CreateComponents message, creating it now");
-
-        entity = scene->CreateEntity(entityID);
-        if (!entity)
-        {
-            LogWarning("Scene refused to create entity " + ToString<int>(entityID));
-            return;
-        }
-        
-        // Reflect changes back to syncstate
-        state->GetOrCreateEntity(entityID);
-    }
-
-    if (!scene->AllowModifyEntity(user, entity.get()))
+        LogWarning("Entity " + QString::number(entityID) + " not found for CreateComponents message");
         return;
+    }
     
-    // Read the components. These are not deltaserialized.
-    std::vector<ComponentPtr> actually_changed_components;
-    
-    for(uint i = 0; i < msg.components.size(); ++i)
+    // Read the components
+    std::vector<ComponentPtr> addedComponents;
+    while (ds.BitsLeft() > 2 * 8)
     {
-        u32 typeId = msg.components[i].componentTypeHash; ///\todo VLE this!
-        QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr component = entity->GetOrCreateComponent(typeId, name, change);
-        if (component)
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
+        QString name = QString::fromStdString(ds.ReadString());
+        unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
+        ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
+        kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
+        
+        ComponentPtr comp = entity->CreateComponent(compID, typeID, name, change);
+        if (!comp)
         {
-            if (msg.components[i].componentData.size())
+            LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateComponents message, skipping component");
+            continue;
+        }
+        // Create the component to the sender's syncstate, then mark it processed (undirty)
+        state->entities[entityID].components[compID].DirtyProcessed();
+        addedComponents.push_back(comp);
+        
+        // Fill static attributes
+        unsigned numStaticAttrs = comp->NumStaticAttributes();
+        const AttributeVector& attrs = comp->Attributes();
+        for (uint i = 0; i < numStaticAttrs; ++i)
+            attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+        
+        // Create any dynamic attributes
+        while (attrDs.BitsLeft() > 2 * 8)
+        {
+            u8 index = attrDs.Read<u8>();
+            u8 typeId = attrDs.Read<u8>();
+            QString name = QString::fromStdString(attrDs.ReadString());
+            IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+            if (!newAttr)
             {
-                DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
-                
-                try
-                {
-                    // Deserialize with no signals first
-                    component->DeserializeFromBinary(source, AttributeChange::Disconnected);
-                    actually_changed_components.push_back(component);
-                }
-                catch(...)
-                {
-                    ::LogError("Error while deserializing component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"! (typeID: " + QString::number(typeId) + ")");
-                }
-                
-                // Reflect changes back to syncstate
-                EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
-                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(typeId, name);
-                UNREFERENCED_PARAM(componentstate);
+                LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                break;
             }
+            newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
         }
-        else
-            LogWarning("Could not create component with type " + framework_->Scene()->GetComponentTypeName(typeId));
     }
     
-    // Signal the component changes last
-    if (actually_changed_components.size())
-    {
-        for(uint i = 0; i < actually_changed_components.size(); ++i)
-            actually_changed_components[i]->ComponentChanged(change);
-    }
+    // Emit the component changes last, to signal only a coherent state of the whole entity
+    for (unsigned i = 0; i < addedComponents.size(); ++i)
+        addedComponents[i]->ComponentChanged(change);
 }
 
-void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg)
+void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)
 {
-    ScenePtr scene = GetRegisteredScene();
-    if (!scene)
-    {
-        LogWarning("SyncManager: Ignoring received MsgUpdateComponents as no scene exists!");
-        return;
-    }
-    
-    entity_id_t entityID = msg.entityID;
-    if (!ValidateAction(source, msg.messageID, entityID))
-        return;
-    
+    assert(source);
     // Get matching syncstate for reflecting the changes
     SceneSyncState* state = GetSceneSyncState(source);
-    if (!state)
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
     {
-        LogWarning("Null syncstate for connection! Disregarding UpdateComponents message");
+        LogWarning("Null scene or sync state, disregarding RemoveEntity message");
         return;
     }
     
     bool isServer = owner_->IsServer();
-    
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
-    // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
+    /// \todo Read conversation ID on the server
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cRemoveEntityMessage, entityID))
+        return;
+    
+    scene->RemoveEntity(entityID, change);
+    // Delete also from the sender's syncstate
+    state->entities.erase(entityID);
+}
+
+void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    // Get matching syncstate for reflecting the changes
+    SceneSyncState* state = GetSceneSyncState(source);
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding RemoveComponents message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    /// \todo Read conversation ID on the server
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cRemoveComponentsMessage, entityID))
+        return;
+    
+    EntityPtr entity = scene->GetEntity(entityID);
+    if (!entity)
+    {
+        LogWarning("Entity " + QString::number(entityID) + " not found for RemoveComponents message");
+        return;
+    }
+    
+    while (ds.BitsLeft() >= 8)
+    {
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        ComponentPtr comp = entity->GetComponentById(compID);
+        if (!comp)
+        {
+            LogWarning("Component id " + QString::number(compID) + " not found in " + entity->ToString() + " for RemoveComponents message, disregarding");
+            continue;
+        }
+        entity->RemoveComponent(comp, change);
+        // Delete also from the sender's syncstate
+         state->entities[entityID].components.erase(compID);
+    }
+}
+
+void SyncManager::HandleCreateAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    // Get matching syncstate for reflecting the changes
+    SceneSyncState* state = GetSceneSyncState(source);
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding CreateAttributes message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    /// \todo Read conversation ID on the server
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cCreateAttributesMessage, entityID))
+        return;
+    
     EntityPtr entity = scene->GetEntity(entityID);
     UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
     if (!entity)
     {
-        if (!scene->AllowModifyEntity(user, 0)) //to check if creating entities is allowed (for this user)
-            return;
+        LogWarning("Entity " + QString::number(entityID) + " not found for CreateAttributes message");
+        return;
+    }
 
-        LogWarning("Entity " + ToString<int>(entityID) + " not found for UpdateComponents message, creating it now");
+    if (!scene->AllowModifyEntity(user, 0)) //to check if creating entities is allowed (for this user)
+        return;
 
-        entity = scene->CreateEntity(entityID);
-        if (!entity)
+    std::vector<IAttribute*> addedAttrs;
+    while (ds.BitsLeft() >= 3 * 8)
+    {
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        ComponentPtr comp = entity->GetComponentById(compID);
+        if (!comp)
         {
-            LogWarning("Scene refused to create entity " + ToString<int>(entityID));
+            LogWarning("Component id " + QString::number(compID) + " not found in " + entity->ToString() + " for CreateAttributes message, aborting message parsing");
             return;
         }
         
-        // Reflect changes back to syncstate
-        state->GetOrCreateEntity(entityID);
+        u8 attrIndex = ds.Read<u8>();
+        u8 typeId = ds.Read<u8>();
+        QString name = QString::fromStdString(ds.ReadString());
+        
+        IAttribute* attr = comp->CreateAttribute(attrIndex, typeId, name, change);
+        if (!attr)
+        {
+            LogWarning("Could not create attribute into component " + QString::number(compID) + " in " + entity->ToString() + ", aborting CreateAttributes message parsing");
+            return;
+        }
+        
+        addedAttrs.push_back(attr);
+        attr->FromBinary(ds, AttributeChange::Disconnected);
+        
+        // Remove the corresponding add command from the sender's syncstate, so that the attribute add is not echoed back
+        state->entities[entityID].components[compID].newAndRemovedAttributes.erase(attrIndex);
     }
+    
+    // Signal attribute changes after creating and reading all
+    for (unsigned i = 0; i < addedAttrs.size(); ++i)
+    {
+        IComponent* owner = addedAttrs[i]->Owner();
+        u8 attrIndex = addedAttrs[i]->Index();
+        owner->EmitAttributeChanged(addedAttrs[i], change);
+        // Remove the dirty bit from sender's syncstate so that we do not echo the change back
+        state->entities[entityID].components[owner->Id()].dirtyAttributes[attrIndex >> 3] &= ~(1 << (attrIndex & 7));
+    }
+}
 
-    if (!scene->AllowModifyEntity(user, entity.get()))
+void SyncManager::HandleRemoveAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    // Get matching syncstate for reflecting the changes
+    SceneSyncState* state = GetSceneSyncState(source);
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding RemoveAttributes message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    /// \todo Read conversation ID on the server
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
         return;
     
-    std::map<IComponent*, std::vector<bool> > partially_changed_static_components;
-    std::map<IComponent*, std::vector<QString> > partially_changed_dynamic_components;
-    
-    // Read the static structured components
-    for(uint i = 0; i < msg.components.size(); ++i)
+    EntityPtr entity = scene->GetEntity(entityID);
+    if (!entity)
     {
-        u32 typeId = msg.components[i].componentTypeHash; ///\todo VLE this!
-        QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr component = entity->GetOrCreateComponent(typeId, name, change);
-        if (component)
+        LogWarning("Entity " + QString::number(entityID) + " not found for RemoveAttributes message");
+        return;
+    }
+    
+    while (ds.BitsLeft() >= 8)
+    {
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        u8 attrIndex = ds.Read<u8>();
+        
+        ComponentPtr comp = entity->GetComponentById(compID);
+        if (!comp)
         {
-            if (msg.components[i].componentData.size())
+            LogWarning("Component id " + QString::number(compID) + " not found in " + entity->ToString() + " for RemoveAttributes message");
+            continue;
+        }
+        
+        comp->RemoveAttribute(attrIndex, change);
+        // Remove the corresponding remove command from the sender's syncstate, so that the attribute remove is not echoed back
+        state->entities[entityID].components[compID].newAndRemovedAttributes.erase(attrIndex);
+    }
+}
+
+void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    // Get matching syncstate for reflecting the changes
+    SceneSyncState* state = GetSceneSyncState(source);
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        //LogWarning("Null scene or sync state, disregarding EditAttributes message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    /// \todo Read conversation ID on the server
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
+        return;
+    
+    EntityPtr entity = scene->GetEntity(entityID);
+    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (!entity)
+    {
+        LogWarning("Entity " + QString::number(entityID) + " not found for EditAttributes message");
+        return;
+    }
+    
+    if (!scene->AllowModifyEntity(user, 0)) //to check if creating entities is allowed (for this user)
+        return;
+
+    std::vector<IAttribute*> changedAttrs;
+    while (ds.BitsLeft() >= 8)
+    {
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        ComponentPtr comp = entity->GetComponentById(compID);
+        if (!comp)
+        {
+            LogWarning("Component id " + QString::number(compID) + " not found in " + entity->ToString() + " for EditAttributes message, aborting message parsing");
+            return;
+        }
+        const AttributeVector& attributes = comp->Attributes();
+        
+        int indexingMethod = ds.Read<kNet::bit>();
+        if (!indexingMethod)
+        {
+            // Method 1: indices
+            u8 numChangedAttrs = ds.Read<u8>();
+            for (unsigned i = 0; i < numChangedAttrs; ++i)
             {
-                DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
+                u8 attrIndex = ds.Read<u8>();
+                if (attrIndex >= attributes.size())
+                {
+                    LogWarning("Out of bounds attribute index in EditAttributes message, aborting message parsing");
+                    return;
+                }
+                IAttribute* attr = attributes[attrIndex];
+                if (!attr)
+                {
+                    LogWarning("Nonexistent attribute in EditAttributes message, aborting message parsing");
+                    return;
+                }
                 
-                if (component->HasDynamicStructure())
-                    LogWarning("Received static structure update for a dynamic structured component");
+                bool interpolate = (!isServer && attr->Metadata() && attr->Metadata()->interpolation == AttributeMetadata::Interpolate);
+                if (!interpolate)
+                {
+                    attr->FromBinary(ds, AttributeChange::Disconnected);
+                    changedAttrs.push_back(attr);
+                }
                 else
                 {
-                    std::vector<bool> actually_changed_attributes;
-                    const AttributeVector& attributes = component->Attributes();
-                    try
-                    {
-                        // Deserialize changed attributes (1 bit) with no signals first
-                        for(uint i = 0; i < attributes.size(); ++i)
-                        {
-                            if (source.Read<bit>())
-                            {
-                                // If attribute supports interpolation, queue interpolation instead
-                                bool interpolate = false;
-                                if ((!isServer) && (attributes[i]->Metadata()) && (attributes[i]->Metadata()->interpolation == AttributeMetadata::Interpolate))
-                                    interpolate = true;
-                                
-                                if (!interpolate)
-                                {
-                                    attributes[i]->FromBinary(source, AttributeChange::Disconnected);
-                                    actually_changed_attributes.push_back(true);
-                                }
-                                else
-                                {
-                                    IAttribute* endValue = attributes[i]->Clone();
-                                    endValue->FromBinary(source, AttributeChange::Disconnected);
-                                    /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
-                                    // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                                    scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.35f);
-                                    // Do not signal attribute change at this point at all
-                                    actually_changed_attributes.push_back(false);
-                                }
-                            }
-                            else
-                                actually_changed_attributes.push_back(false);
-                        }
-                        partially_changed_static_components[component.get()] = actually_changed_attributes;
-                    }
-                    catch(...)
-                    {
-                        ::LogError("Error while delta-deserializing component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
-                    }
+                    IAttribute* endValue = attr->Clone();
+                    endValue->FromBinary(ds, AttributeChange::Disconnected);
+                    /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
+                    // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
+                    scene->StartAttributeInterpolation(attr, endValue, update_period_ * 1.5f);
                 }
             }
         }
         else
-            LogWarning("Could not create component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
-    }
-    
-    // Read the dynamic structured components. For now, they have to be DynamicComponents.
-    for(uint i = 0; i < msg.dynamiccomponents.size(); ++i)
-    {
-        u32 typeId = msg.dynamiccomponents[i].componentTypeHash; ///\todo VLE this!
-        QString name = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].componentName));
-        ComponentPtr component = entity->GetOrCreateComponent(typeId, name, change);
-        if (component)
         {
-            EC_DynamicComponent* dynComp = dynamic_cast<EC_DynamicComponent*>(component.get());
-            if (!dynComp)
-                LogWarning("Received dynamic attribute update for a component that is not EC_DynamicComponent");
-            else
+            // Method 2: bitmask
+            for (unsigned i = 0; i < attributes.size(); ++i)
             {
-                for(uint j = 0; j < msg.dynamiccomponents[i].attributes.size(); ++j)
+                int changed = ds.Read<kNet::bit>();
+                if (changed)
                 {
-                    QString attrName = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].attributes[j].attributeName));
-                    QString attrTypeName = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].attributes[j].attributeType));
-                    // Empty typename: delete attribute
-                    if (!attrTypeName.size())
+                    IAttribute* attr = attributes[i];
+                    if (!attr)
                     {
-                        // Note: signal remove immediately, as nothing should depend on batched attribute remove
-                        dynComp->RemoveAttribute(attrName, change);
+                        LogWarning("Nonexistent attribute in EditAttributes message, aborting message parsing");
+                        return;
                     }
-                    // Otherwise add or modify attribute
+                    bool interpolate = (!isServer && attr->Metadata() && attr->Metadata()->interpolation == AttributeMetadata::Interpolate);
+                    if (!interpolate)
+                    {
+                        attr->FromBinary(ds, AttributeChange::Disconnected);
+                        changedAttrs.push_back(attr);
+                    }
                     else
                     {
-                        IAttribute* attr = component->GetAttribute(attrName);
-                        if (attr)
-                        {
-                            // If wrong type of attribute, delete and recreate
-                            if (attr->TypeName() != attrTypeName)
-                            {
-                                dynComp->RemoveAttribute(attrName, AttributeChange::Disconnected);
-                                attr = dynComp->CreateAttribute(attrTypeName, attrName, AttributeChange::Disconnected);
-                            }
-                        }
-                        else
-                            attr = dynComp->CreateAttribute(attrTypeName, attrName, AttributeChange::Disconnected);
-                        
-                        if (attr)
-                        {
-                            if (msg.dynamiccomponents[i].attributes[j].attributeData.size())
-                            {
-                                DataDeserializer source((const char*)&msg.dynamiccomponents[i].attributes[j].attributeData[0], 
-                                    msg.dynamiccomponents[i].attributes[j].attributeData.size());
-                                attr->FromBinary(source, AttributeChange::Disconnected);
-                            }
-                            partially_changed_dynamic_components[dynComp].push_back(attrName);
-                        }
-                        else
-                            LogWarning("Could not create attribute type " + attrTypeName + " to dynamic component");
+                        IAttribute* endValue = attr->Clone();
+                        endValue->FromBinary(ds, AttributeChange::Disconnected);
+                        /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
+                        // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
+                        scene->StartAttributeInterpolation(attr, endValue, update_period_ * 1.5f);
                     }
                 }
             }
         }
-        else
-            LogWarning("Could not create component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
     }
     
-    // Signal static components
-    std::map<IComponent*, std::vector<bool> >::iterator i = partially_changed_static_components.begin();
-    while(i != partially_changed_static_components.end())
+    // Signal attribute changes after reading all
+    for (unsigned i = 0; i < changedAttrs.size(); ++i)
     {
-        // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be sure
-        ComponentPtr compShared = i->first->shared_from_this();
-        if (compShared)
-        {
-            const AttributeVector& attributes = compShared->Attributes();
-            for(uint j = 0; (j < attributes.size()) && (j < i->second.size()); ++j)
-                if (i->second[j])
-                {
-                    currentSender = source;
-                    compShared->EmitAttributeChanged(attributes[j], change);
-                }
-        }
-        ++i;
-    }
-    
-    // Signal dynamic components
-    std::map<IComponent*, std::vector<QString> >::iterator j = partially_changed_dynamic_components.begin();
-    while(j != partially_changed_dynamic_components.end())
-    {
-        // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be sure
-        ComponentPtr compShared = j->first->shared_from_this();
-        if (compShared)
-        {
-            for(uint k = 0; k < j->second.size(); ++k)
-            {
-                IAttribute* attr = compShared->GetAttribute(j->second[k]);
-                if (attr)
-                {
-                    currentSender = source;
-                    compShared->EmitAttributeChanged(attr, change);
-                }
-            }
-        }
-        ++j;
+        IComponent* owner = changedAttrs[i]->Owner();
+        u8 attrIndex = changedAttrs[i]->Index();
+        owner->EmitAttributeChanged(changedAttrs[i], change);
+        // Remove the dirty bit from sender's syncstate so that we do not echo the change back
+        state->entities[entityID].components[owner->Id()].dirtyAttributes[attrIndex >> 3] &= ~(1 << (attrIndex & 7));
     }
 }
 
-void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg)
-{
-    ScenePtr scene = GetRegisteredScene();
-    if (!scene)
-    {
-        LogWarning("SyncManager: Ignoring received MsgRemoveComponents as no scene exists!");
-        return;
-    }
-    
-    entity_id_t entityID = msg.entityID;
-    if (!ValidateAction(source, msg.messageID, entityID))
-        return;
-    
-    // Get matching syncstate for reflecting the changes
-    SceneSyncState* state = GetSceneSyncState(source);
-    if (!state)
-    {
-        LogWarning("Null syncstate for connection! Disregarding RemoveComponents message");
-        return;
-    }
-    
-    bool isServer = owner_->IsServer();
-    
-    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-    
-    EntityPtr entity = scene->GetEntity(msg.entityID);
-    if (!entity)
-        return;
-
-    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if (!scene->AllowModifyEntity(user, entity.get()))
-        return;
-    
-    for(unsigned i = 0; i < msg.components.size(); ++i)
-    {
-        u32 typeId = msg.components[i].componentTypeHash; ///\todo VLE this!
-        QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        
-        ComponentPtr comp = entity->GetComponent(typeId, name);
-        if (comp)
-        {
-            entity->RemoveComponent(comp, change);
-            comp.reset();
-        }
-        
-        // Reflect changes back to syncstate
-        EntitySyncState* entitystate = state->GetEntity(entityID);
-        if (entitystate)
-            entitystate->RemoveComponent(typeId, name);
-    }
-}
-
+/*
 void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg)
 {
     ScenePtr scene = GetRegisteredScene();

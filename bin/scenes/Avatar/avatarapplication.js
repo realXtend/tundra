@@ -126,8 +126,7 @@ function ServerHandleUserDisconnected(connectionID, user) {
     var avatarEntityName = "Avatar" + connectionID;
     var avatarEntity = scene.GetEntityByName(avatarEntityName);
     if (avatarEntity != null) {
-        var entityID = avatarEntity.id;
-        scene.RemoveEntityRaw(entityID);
+        scene.Removeentity(avatarEntity);
 
         if (user != null) {
         print("[Avatar Application] User " + user.GetProperty("username") + " disconnected, destroyed avatar entity.");

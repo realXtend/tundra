@@ -48,7 +48,7 @@ class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     Q_PROPERTY (uint id READ Id)
     Q_PROPERTY (QString name READ Name WRITE SetName)
     Q_PROPERTY (QString description READ Description WRITE SetDescription)
-    Q_PROPERTY (bool replicated READ IsReplicated WRITE SetReplicated)
+    Q_PROPERTY (bool replicated READ IsReplicated)
     Q_PROPERTY (bool local READ IsLocal)
     
 public:
@@ -142,10 +142,10 @@ public slots:
     ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function.
     /** @param typeId Identifies the component type to create by the id of the type instead of the name. */
-    ComponentPtr GetOrCreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
+    ComponentPtr GetOrCreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function.
     /** @param name name of the component */
-    ComponentPtr GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
+    ComponentPtr GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
 
     /// Creates a new component and attaches it to this entity. 
     /** @param type_name type of the component
@@ -159,11 +159,11 @@ public slots:
     ComponentPtr CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function.
     /** @param typeId Unique type ID of the component. */
-    ComponentPtr CreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
+    ComponentPtr CreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function.
     /** @param typeId Unique type ID of the component.
         @param name name of the component */
-    ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
+    ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function. This variant used by SyncManager.
     /** @param typeId Unique type ID of the component.
         @param name name of the component */
@@ -291,18 +291,15 @@ public slots:
     /** By definition, all components of a temporary entity are temporary as well. */
     void SetTemporary(bool enable);
 
-    /// Sets whether the changes in this entity's components will be sent over the network.
-    void SetReplicated(bool enable);
-    
     /// Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */
     bool IsTemporary() const { return temporary_; }
 
     /// Returns if this entity's changes will NOT be sent over the network.
-    bool IsLocal() const { return !replicated_; }
+    bool IsLocal() const { return id_ >= UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns if this entity's changes will be sent over the network.
-    bool IsReplicated() const { return replicated_; }
+    bool IsReplicated() const { return id_ < UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns the identifier string for the entity.
     /** Syntax of the string: 'Entity ID <id>' or 'Entity "<name>" (ID: <id>)' if entity has a name. */
@@ -377,7 +374,6 @@ private:
     Framework* framework_; ///< Pointer to framework
     Scene* scene_; ///< Pointer to scene
     ActionMap actions_; ///< Map of registered entity actions.
-    bool replicated_; ///< Network replication flag
     bool temporary_; ///< Temporary-flag
 };
 
