@@ -1321,6 +1321,25 @@ float EC_Mesh::GetAttachmentMorphWeight(unsigned index, const QString& morphName
         return 0.0f;
 }
 
+OBB EC_Mesh::WorldOBB() const
+{
+    OBB obb = LocalOBB();
+    obb.Transform(LocalToWorld());
+    return obb;
+}
+
+OBB EC_Mesh::LocalOBB() const
+{
+    if (!entity_)
+        return OBB();
+
+    Ogre::MeshPtr mesh = entity_->getMesh();
+    if (mesh.isNull())
+        return OBB();
+
+    return OBB(AABB(mesh->getBounds()));
+}
+
 bool EC_Mesh::HasMaterialsChanged() const
 {
     if(!entity_ || !meshMaterial.Get().Size())

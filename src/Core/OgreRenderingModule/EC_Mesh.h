@@ -7,6 +7,8 @@
 #include "OgreModuleFwd.h"
 #include "Math/float3.h"
 #include "Math/Quat.h"
+#include "Math/OBB.h"
+#include "Math/AABB.h"
 #include "Transform.h"
 #include "AssetReference.h"
 #include "AssetRefListener.h"
@@ -392,6 +394,12 @@ public slots:
     void SetAttachmentMorphWeight(unsigned index, const QString& morphName, float weight);
     /// Return the weight of a morph on an attachment mesh. Return 0.0 if not found
     float GetAttachmentMorphWeight(unsigned index, const QString& morphName) const;
+
+    /// Returns the world space bounding box of this object.
+    OBB WorldOBB() const;
+
+    /// Returns the local space bounding box of this object.
+    OBB LocalOBB() const;
 
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed
