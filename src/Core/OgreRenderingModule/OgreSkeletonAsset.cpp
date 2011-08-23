@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "OgreSkeletonAsset.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
@@ -12,6 +12,8 @@
 
 #include <QFile>
 #include <QFileInfo>
+
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 

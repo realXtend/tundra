@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
 
@@ -29,6 +29,8 @@
 #include <QDomDocument>
 #include <QFile>
 #include <QDir>
+
+#include "MemoryLeakCheck.h"
 
 namespace TundraLogic
 {

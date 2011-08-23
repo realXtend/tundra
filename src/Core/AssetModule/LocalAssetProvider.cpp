@@ -2,23 +2,25 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include <QMap>
-#include "MemoryLeakCheck.h"
-#include "AssetModule.h"
-#include "CoreTypes.h"
+
 #include "LocalAssetProvider.h"
-#include "Framework.h"
 #include "LocalAssetStorage.h"
+#include "AssetModule.h"
 #include "IAssetUploadTransfer.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
+
+#include "Framework.h"
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
+
 #include <QDir>
 #include <QByteArray>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QMap>
+
 #include "MemoryLeakCheck.h"
 
 namespace Asset

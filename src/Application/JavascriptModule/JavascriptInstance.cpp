@@ -7,7 +7,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "JavascriptInstance.h"
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
@@ -17,7 +17,6 @@
 #include "IModule.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
-
 #include "LoggingFunctions.h"
 
 #include <QFile>

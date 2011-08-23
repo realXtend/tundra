@@ -2,17 +2,20 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
-#include "OgreRenderingModule.h"
+
+#include "EC_Material.h"
+#include "EC_Mesh.h"
 #include "OgreMaterialAsset.h"
+#include "OgreRenderingModule.h"
+
 #include "FrameAPI.h"
 #include "Scene.h"
 #include "Entity.h"
-#include "EC_Material.h"
-#include "EC_Mesh.h"
 #include "LoggingFunctions.h"
 #include "AssetAPI.h"
 #include "AssetReference.h"
+
+#include "MemoryLeakCheck.h"
 
 EC_Material::EC_Material(Scene* scene) :
     IComponent(scene),

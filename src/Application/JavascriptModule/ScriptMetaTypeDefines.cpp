@@ -7,7 +7,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "ScriptMetaTypeDefines.h"
 
 #include "SceneAPI.h"
@@ -41,6 +41,8 @@
 #include <QUiLoader>
 #include <QFile>
 #include <QFontDatabase>
+
+#include "MemoryLeakCheck.h"
 
 /// Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)

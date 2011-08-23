@@ -2,20 +2,19 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include <QMap>
-#include "MemoryLeakCheck.h"
+
 #include "HttpAssetProvider.h"
 #include "HttpAssetTransfer.h"
-#include "LoggingFunctions.h"
 #include "IAssetUploadTransfer.h"
-
 #include "AssetAPI.h"
 #include "AssetCache.h"
 #include "IAsset.h"
+#include "LoggingFunctions.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+
 #include "MemoryLeakCheck.h"
 
 HttpAssetProvider::HttpAssetProvider(Framework *framework_)

@@ -7,7 +7,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 
 #include "IAttribute.h"
 #include "IComponent.h"
@@ -32,6 +31,8 @@
 #include <QPoint>
 
 #include <kNet.h>
+
+#include "MemoryLeakCheck.h"
 
 using namespace kNet;
 

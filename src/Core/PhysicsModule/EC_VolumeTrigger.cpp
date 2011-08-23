@@ -2,9 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include <QMap>
-#include "btBulletDynamicsCommon.h"
-#include "MemoryLeakCheck.h"
+
 #include "EC_VolumeTrigger.h"
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
@@ -13,9 +11,13 @@
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
-#include <OgreAxisAlignedBox.h>
-
 #include "LoggingFunctions.h"
+
+#include <OgreAxisAlignedBox.h>
+#include <QMap>
+#include <btBulletDynamicsCommon.h>
+
+#include "MemoryLeakCheck.h"
 
 using namespace Physics;
 

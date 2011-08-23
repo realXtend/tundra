@@ -2,9 +2,9 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "AvatarDescHelpers.h"
 #include "AssetAPI.h"
+#include "MemoryLeakCheck.h"
 
 void AppearanceModifier::ResetAccumulation()
 {

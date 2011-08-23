@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "LocalAssetStorage.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
@@ -11,6 +11,8 @@
 #include <QFileSystemWatcher>
 #include <QDir>
 #include <utility>
+
+#include "MemoryLeakCheck.h"
 
 namespace Asset
 {
