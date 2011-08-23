@@ -28,59 +28,14 @@
 
 #include "MemoryLeakCheck.h"
 
-Framework *Framework::instance = 0;
-
-Framework::Framework(int argc, char** argv) :
-    exit_signal_(false),
-    argc_(argc),
-    argv_(argv),
-    headless_(false),
-    application(0),
-    frame(0),
-    console(0),
-    scene(0),
-    input(0),
-    asset(0),
-    audio(0),
-    plugin(0),
-    config(0),
-    ui(0),
-#ifdef PROFILING
-    profiler(0),
-#endif
-    renderer(0),
-    apiVersionInfo(0),
-    applicationVersionInfo(0)
-{    // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
-    instance = this;
-
-    // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
-    /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
-    apiVersionInfo = new ApiVersionInfo(2, 0, 0, 0);
-    applicationVersionInfo = new ApplicationVersionInfo(2, 0, 0, 0, "realXtend", "Tundra");
-
-    ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
-    /// best is to have them parse their own options).
-    cmdLineDescs["--help"] = "Produce help message"; // Framework
-    cmdLineDescs["--headless"] = "Run in headless mode without any windows or rendering"; // Framework & OgreRenderingModule
-    cmdLineDescs["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically";
-    cmdLineDescs["--server"] = "Start Tundra server";
-    cmdLineDescs["--port"] = "Start server in the specified port"; // TundraLogicModule
-    cmdLineDescs["--protocol"] = "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified."; // KristalliProtocolModule
-    cmdLineDescs["--fpslimit"] = "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable"; // OgreRenderingModule
-    cmdLineDescs["--run"] = "Run script on startup"; // JavaScriptModule
-    cmdLineDescs["--file"] = "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
-    cmdLineDescs["--storage"] = "Adds the given directory as a local storage directory on startup"; // AssetModule
-    cmdLineDescs["--config"] = "Specifies the startup configration file to use"; // Framework
-    cmdLineDescs["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username";
-    cmdLineDescs["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
-
-    if (HasCommandLineParameter("--help"))
+/// Temporary utility structure for strong supported command line parameters and their descriptions.
+struct CommandLineParameterMap
+{
+    /// Prints the structure to std::cout.
+    void Print() const
     {
-        std::cout << "Supported command line arguments: " << std::endl;
-        ///\todo Maybe use some custom struct for command line arguments and implement ToString() function to there for pretty printing.
-        QMap<QString, QString>::const_iterator it = cmdLineDescs.begin();
-        while(it != cmdLineDescs.end())
+        QMap<QString, QString>::const_iterator it = commands.begin();
+        while(it != commands.end())
         {
             int charIdx = 0;
             const int treshold = 15;
@@ -112,7 +67,63 @@ Framework::Framework(int argc, char** argv) :
             std::cout << std::endl;
             ++it;
         }
+    }
 
+    QMap<QString, QString> commands;
+};
+
+Framework *Framework::instance = 0;
+
+Framework::Framework(int argc, char** argv) :
+    exit_signal_(false),
+    argc_(argc),
+    argv_(argv),
+    headless_(false),
+    application(0),
+    frame(0),
+    console(0),
+    scene(0),
+    input(0),
+    asset(0),
+    audio(0),
+    plugin(0),
+    config(0),
+    ui(0),
+#ifdef PROFILING
+    profiler(0),
+#endif
+    renderer(0),
+    apiVersionInfo(0),
+    applicationVersionInfo(0)
+{    // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
+    instance = this;
+
+    // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
+    /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
+    apiVersionInfo = new ApiVersionInfo(2, 0, 0, 0);
+    applicationVersionInfo = new ApplicationVersionInfo(2, 0, 0, 0, "realXtend", "Tundra");
+
+    CommandLineParameterMap cmdLineDescs;
+    ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
+    /// best is to have them parse their own options).
+    cmdLineDescs.commands["--help"] = "Produce help message"; // Framework
+    cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework & OgreRenderingModule
+    cmdLineDescs.commands["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically";
+    cmdLineDescs.commands["--server"] = "Start Tundra server";
+    cmdLineDescs.commands["--port"] = "Start server in the specified port"; // TundraLogicModule
+    cmdLineDescs.commands["--protocol"] = "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified."; // KristalliProtocolModule
+    cmdLineDescs.commands["--fpslimit"] = "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable"; // OgreRenderingModule
+    cmdLineDescs.commands["--run"] = "Run script on startup"; // JavaScriptModule
+    cmdLineDescs.commands["--file"] = "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
+    cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup"; // AssetModule
+    cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use"; // Framework
+    cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username";
+    cmdLineDescs["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
+
+    if (HasCommandLineParameter("--help"))
+    {
+        std::cout << "Supported command line arguments: " << std::endl;
+        cmdLineDescs.Print();
         Exit();
     }
     else

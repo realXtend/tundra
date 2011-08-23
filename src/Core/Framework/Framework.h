@@ -163,7 +163,6 @@ private:
 #ifdef PROFILING
     Profiler *profiler; ///< Profiler.
 #endif
-    QMap<QString, QString> cmdLineDescs; ///< Descriptions of supported command line parameters.
     bool headless_; ///< Are we running in the headless mode.
     Application *application; ///< The main QApplication object.
     FrameAPI *frame; ///< The Frame API.
