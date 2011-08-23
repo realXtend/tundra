@@ -145,28 +145,6 @@ else
     touch $tags/$what-done
 fi
 
-#cd $build
-#what=PythonQt
-#ver=2.0.1
-#if test -f $tags/$what-done; then
-#    echo $what is done
-#else
-#    rm -rf $what$ver
-#    zip=../tarballs/$what$ver.zip
-#    test -f $zip || wget -O $zip http://downloads.sourceforge.net/project/pythonqt/pythonqt/$what-$ver/$what$ver.zip
-#    unzip $zip
-#    cd $what$ver
-#    fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
-#    sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
-#    mv x $fn
-#    qmake
-#    make -j$nprocs
-#    rm -f $prefix/lib/lib$what*
-#    cp -a lib/lib$what* $prefix/lib/
-#    cp src/PythonQt*.h $prefix/include/
-#    cp extensions/PythonQt_QtAll/PythonQt*.h $prefix/include/
-#    touch $tags/$what-done
-#fi
 
 # HydraX, SkyX and PythonQT are build from the realxtend own dependencies.
 # At least for the time being, until changes to those components flow into
@@ -214,6 +192,11 @@ if test -f $tags/pythonqt-done; then
     echo "PythonQt-done"
 else
     cd $build/$depdir/PythonQt
+    pyver=$(python -c 'import sys; print sys.version[:3]')
+    sed -i "s/PYTHON_VERSION=.*/PYTHON_VERSION=$pyver/" build/python.prf
+    fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
+    sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
+    mv x $fn
     qmake
     make -j $nprocs
     rm -f $prefix/lib/libPythonQt*
