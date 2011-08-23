@@ -634,12 +634,10 @@ namespace PythonScript
         const QString logTypeUpper = logType.toUpper();
         if (logTypeUpper == "WARNING")
             LogWarning(message);
-        else if (logTypeUpper == "ERROR")
+        else if (logTypeUpper == "ERROR" || logTypeUpper == "FATAL")
             LogError(message);
         else if (logTypeUpper == "DEBUG")
             LogDebug(message);
-        else if (logTypeUpper == "FATAL")
-            LogFatal(message);
         else // "INFO" and everything else
             LogInfo(message);
     }

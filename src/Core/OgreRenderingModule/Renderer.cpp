@@ -70,7 +70,7 @@ namespace OgreRenderer
         void messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
         {
             if (lml == Ogre::LML_CRITICAL)
-                LogCritical(message);
+                LogError(message);
             else if (lml == Ogre::LML_TRIVIAL)
                 LogDebug(message);
             else // lml == Ogre::LML_NORMAL here.
@@ -736,7 +736,7 @@ namespace OgreRenderer
         } catch(const std::exception &e)
         {
             std::cout << "Ogre::Root::renderOneFrame threw an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
-            LogCritical(std::string("Ogre::Root::renderOneFrame threw an exception: ") + (e.what() ? e.what() : "(null)"));
+            LogError(std::string("Ogre::Root::renderOneFrame threw an exception: ") + (e.what() ? e.what() : "(null)"));
         }
 
         view->MarkViewUndirty();

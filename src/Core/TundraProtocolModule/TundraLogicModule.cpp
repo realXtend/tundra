@@ -245,7 +245,7 @@ void TundraLogicModule::Initialize()
             }
             catch(...)
             {
-                LogFatal("--port parameter is not a valid integer.");
+                LogError("--port parameter is not a valid integer.");
                 GetFramework()->Exit();
             }
         }

@@ -176,12 +176,12 @@ void Application::Go()
     }
     catch(const std::exception &e)
     {
-        LogCritical(std::string("Application::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        LogError(std::string("Application::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
         throw;
     }
     catch(...)
     {
-        LogCritical(std::string("Application::Go caught an unknown exception!"));
+        LogError(std::string("Application::Go caught an unknown exception!"));
         throw;
     }
 }
@@ -344,12 +344,12 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
     catch(const std::exception &e)
     {
         std::cout << std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)") << std::endl;
-        LogCritical(std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        LogError(std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)"));
         throw;
     } catch(...)
     {
         std::cout << std::string("QApp::eventFilter caught an unknown exception!") << std::endl;
-        LogCritical(std::string("QApp::eventFilter caught an unknown exception!"));
+        LogError(std::string("QApp::eventFilter caught an unknown exception!"));
         throw;
     }
 }
@@ -409,12 +409,12 @@ bool Application::notify(QObject *receiver, QEvent *event)
     } catch(const std::exception &e)
     {
         std::cout << std::string("QApp::notify caught an exception: ") << (e.what() ? e.what() : "(null)") << std::endl;
-        LogCritical(std::string("QApp::notify caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        LogError(std::string("QApp::notify caught an exception: ") + (e.what() ? e.what() : "(null)"));
         throw;
     } catch(...)
     {
         std::cout << std::string("QApp::notify caught an unknown exception!") << std::endl;
-        LogCritical(std::string("QApp::notify caught an unknown exception!"));
+        LogError(std::string("QApp::notify caught an unknown exception!"));
         throw;
     }
 }
@@ -465,13 +465,13 @@ void Application::UpdateFrame()
     catch(const std::exception &e)
     {
         std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
-        LogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        LogError(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
         throw;
     }
     catch(...)
     {
         std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
-        LogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
+        LogError(std::string("QApp::UpdateFrame caught an unknown exception!"));
         throw;
     }
 }

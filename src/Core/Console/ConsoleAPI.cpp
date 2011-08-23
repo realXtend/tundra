@@ -24,7 +24,8 @@
 
 ConsoleAPI::ConsoleAPI(Framework *fw) :
     QObject(fw),
-    framework(fw)
+    framework(fw),
+    enabledLogChannels(LogLevelErrorWarnInfo)
 {
     if (!fw->IsHeadless())
         consoleWidget = new ConsoleWidget(framework);
@@ -35,8 +36,14 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
 
     RegisterCommand("help", "Lists all registered commands.",
         this, SLOT(ListCommands()));
+    RegisterCommand("loglevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
+        this, SLOT(SetLogLevel(const QString &)));
 
     shellInputThread = boost::shared_ptr<ShellInputThread>(new ShellInputThread);
+
+    QStringList logLevel = fw->CommandLineParameters("--loglevel");
+    if (logLevel.size() == 1)
+        SetLogLevel(logLevel[0]);
 }
 
 ConsoleAPI::~ConsoleAPI()
@@ -148,6 +155,20 @@ void ConsoleAPI::ListCommands()
         Print(iter->first + " - " + iter->second->Description());
 }
 
+void ConsoleAPI::SetLogLevel(const QString &level)
+{
+    if (level.compare("error", Qt::CaseInsensitive) == 0)
+        SetEnabledLogChannels(LogLevelErrorsOnly);
+    else if (level.compare("warning", Qt::CaseInsensitive) == 0)
+        SetEnabledLogChannels(LogLevelErrorWarning);
+    else if (level.compare("info", Qt::CaseInsensitive) == 0)
+        SetEnabledLogChannels(LogLevelErrorWarnInfo);
+    else if (level.compare("debug", Qt::CaseInsensitive) == 0)
+        SetEnabledLogChannels(LogLevelErrorWarnInfoDebug);
+    else
+        LogError("Unknown parameter \"" + level + "\" specified to ConsoleAPI::SetLogLevel!");
+}
+
 void ConsoleAPI::Update(f64 frametime)
 {
     PROFILE(ConsoleAPI_Update);
@@ -188,12 +209,6 @@ void ConsoleAPI::LogError(const QString &message)
     Print("Error: " + message);
 }
 
-void ConsoleAPI::LogFatal(const QString &message)
-{
-    ::LogFatal(message);
-    Print("Fatal: " + message);
-}
-
 void ConsoleAPI::LogDebug(const QString &message)
 {
 #ifdef _DEBUG
@@ -201,3 +216,27 @@ void ConsoleAPI::LogDebug(const QString &message)
     Print("Debug: " + message);
 #endif
 }
+
+void ConsoleAPI::Log(u32 logChannel, const QString &message)
+{
+    if (!IsLogChannelEnabled(logChannel))
+        return;
+
+    Print(message);
+}
+
+void ConsoleAPI::SetEnabledLogChannels(u32 newChannels)
+{
+    enabledLogChannels = newChannels;
+}
+
+bool ConsoleAPI::IsLogChannelEnabled(u32 logChannel) const
+{
+    return (enabledLogChannels & logChannel) != 0;
+}
+
+u32 ConsoleAPI::EnabledLogChannels() const
+{
+    return enabledLogChannels;
+}
+

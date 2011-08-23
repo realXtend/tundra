@@ -116,12 +116,25 @@ public slots:
     /// This command is invoked by typing 'help' to the console.
     void ListCommands();
 
+    /// Sets the current log level.
+    /// @param level One of "error, warning, info, debug".
+    /// @note This function calls SetEnabledLogChannels with one of the above four predefined combinations. It is possible to further customize the set of 
+    /// active log channels by directly calling the SetEnabledLogChannels function with an appropriate bitset.
+    void SetLogLevel(const QString &level);
+
     /// Log printing funtionality for scripts.
     void LogInfo(const QString &message);
     void LogWarning(const QString &message);
     void LogError(const QString &message);
-    void LogFatal(const QString &message);
     void LogDebug(const QString &message);
+    void Log(u32 logChannel, const QString &message);
+
+    /// Sets the new currently enabled log channels. Messages at the given channels will be printed, and others channels will be disabled.
+    void SetEnabledLogChannels(u32 newChannels);
+    /// Returns true if the given log channel is enabled.
+    bool IsLogChannelEnabled(u32 logChannel) const;
+    /// Returns the bitset of currently enabled log channels.
+    u32 EnabledLogChannels() const;
 
 private:
     Framework *framework;
@@ -129,6 +142,8 @@ private:
     InputContextPtr inputContext;
     QPointer<ConsoleWidget> consoleWidget;
     boost::shared_ptr<ShellInputThread> shellInputThread;
+    /// Stores the set of currently active log channels.
+    u32 enabledLogChannels;
 
 private slots:
     void HandleKeyEvent(KeyEvent *e);
