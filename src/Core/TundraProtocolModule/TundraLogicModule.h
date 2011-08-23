@@ -38,19 +38,19 @@ public:
     void Uninitialize();
     void Update(f64 frametime);
 
-    /// Check whether we are a server
+    /// Checks whether we are a server
     bool IsServer() const;
 
-    /// Return pointer to KristalliProtocolModule for convenience
+    /// Returns pointer to KristalliProtocolModule for convenience
     KristalliProtocol::KristalliProtocolModule *GetKristalliModule() const { return kristalliModule_; }
 
-    /// Return syncmanager
+    /// Returns syncmanager
     const boost::shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
 
-    /// Return client
+    /// Returns client
     const boost::shared_ptr<Client>& GetClient() const { return client_; }
 
-    /// Return server
+    /// Returns server
     const boost::shared_ptr<Server>& GetServer() const { return server_; }
 
 public slots:
@@ -87,19 +87,18 @@ private slots:
     void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
 
 private:
-    /// Handle a Kristalli protocol message
+    /// Handles a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
 
-    /// Load the startup scene
+    /// Loads the startup scene
     void LoadStartupScene();
 
     boost::shared_ptr<SyncManager> syncManager_; ///< Sync manager
     boost::shared_ptr<Client> client_; ///< Client
     boost::shared_ptr<Server> server_; ///< Server
     KristalliProtocol::KristalliProtocolModule *kristalliModule_; ///< KristalliProtocolModule pointer
-    bool autostartserver_; ///< Whether to autostart the server
-    short autostartserver_port_; ///< Autostart server port
+    bool autoStartServer_; ///< Whether to autostart the server
+    short autoStartServerPort_; ///< Autostart server port
 };
 
 }
-

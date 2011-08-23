@@ -109,8 +109,8 @@ static const unsigned short cDefaultPort = 2345;
 
 TundraLogicModule::TundraLogicModule() :
     IModule("TundraLogic"),
-    autostartserver_(false),
-    autostartserver_port_(cDefaultPort),
+    autoStartServer_(false),
+    autoStartServerPort_(cDefaultPort),
     kristalliModule_(0)
 {
 }
@@ -234,7 +234,7 @@ void TundraLogicModule::Initialize()
     // Check whether server should be auto started.
     if (framework_->HasCommandLineParameter("--server"))
     {
-        autostartserver_ = true;
+        autoStartServer_ = true;
         // Use parameter port or default to config value
         QStringList portParam = framework_->CommandLineParameters("--port");
         if (portParam.size() > 0)
@@ -243,7 +243,7 @@ void TundraLogicModule::Initialize()
             int port = portParam.first().toInt(&ok);
             if (ok)
             {
-                autostartserver_port_ = port;
+                autoStartServerPort_ = port;
             }
             else
             {
@@ -252,7 +252,7 @@ void TundraLogicModule::Initialize()
             }
         }
         else
-            autostartserver_port_ = GetFramework()->Config()->Get(configData).toInt();
+            autoStartServerPort_ = GetFramework()->Config()->Get(configData).toInt();
     }
 }
 
@@ -272,8 +272,8 @@ void TundraLogicModule::Update(f64 frametime)
         static bool check_default_server_start = true;
         if (check_default_server_start)
         {
-            if (autostartserver_)
-                server_->Start(autostartserver_port_);
+            if (autoStartServer_)
+                server_->Start(autoStartServerPort_);
 
             // Load startup scene here (if we have one)
             LoadStartupScene();
