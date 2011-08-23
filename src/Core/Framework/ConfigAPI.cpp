@@ -21,10 +21,8 @@ QString ConfigAPI::SECTION_UI = "ui";
 
 ConfigAPI::ConfigAPI(Framework *framework) :
     QObject(framework),
-    framework_(framework),
-    configFolder_("")
+    framework_(framework)
 {
-    framework_->RegisterDynamicObject("config", this);
 }
 
 void ConfigAPI::PrepareDataFolder(const QString &configFolderName)
@@ -50,7 +48,7 @@ void ConfigAPI::PrepareDataFolder(const QString &configFolderName)
         configFolder_.append("/");
 }
 
-QString ConfigAPI::GetFilePath(const QString &file)
+QString ConfigAPI::GetFilePath(const QString &file) const
 {
     if (configFolder_.isEmpty())
     {
@@ -64,7 +62,7 @@ QString ConfigAPI::GetFilePath(const QString &file)
     return filePath;
 }
 
-void ConfigAPI::PrepareString(QString &str)
+void ConfigAPI::PrepareString(QString &str) const
 {
     if (!str.isEmpty())
     {
@@ -75,7 +73,7 @@ void ConfigAPI::PrepareString(QString &str)
     }
 }
 
-bool ConfigAPI::HasValue(const ConfigData &data)
+bool ConfigAPI::HasValue(const ConfigData &data) const
 {
     if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty())
     {
@@ -85,7 +83,7 @@ bool ConfigAPI::HasValue(const ConfigData &data)
     return HasValue(data.file, data.section, data.key);
 }
 
-bool ConfigAPI::HasValue(const ConfigData &data, QString key)
+bool ConfigAPI::HasValue(const ConfigData &data, QString key) const
 {
     if (data.file.isEmpty() || data.section.isEmpty())
     {
@@ -95,7 +93,7 @@ bool ConfigAPI::HasValue(const ConfigData &data, QString key)
     return HasValue(data.file, data.section, key);
 }
 
-bool ConfigAPI::HasValue(QString file, QString section, QString key)
+bool ConfigAPI::HasValue(QString file, QString section, QString key) const
 {
     if (configFolder_.isEmpty())
     {
@@ -113,7 +111,7 @@ bool ConfigAPI::HasValue(QString file, QString section, QString key)
     return config.allKeys().contains(key) == true;
 }
 
-QVariant ConfigAPI::Get(const ConfigData &data)
+QVariant ConfigAPI::Get(const ConfigData &data) const
 {
     if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty())
     {
@@ -123,7 +121,7 @@ QVariant ConfigAPI::Get(const ConfigData &data)
     return Get(data.file, data.section, data.key, data.defaultValue);
 }
 
-QVariant ConfigAPI::Get(const ConfigData &data, QString key, const QVariant &defaultValue)
+QVariant ConfigAPI::Get(const ConfigData &data, QString key, const QVariant &defaultValue) const
 {
     if (data.file.isEmpty() || data.section.isEmpty())
     {
@@ -136,7 +134,7 @@ QVariant ConfigAPI::Get(const ConfigData &data, QString key, const QVariant &def
         return Get(data.file, data.section, key, defaultValue);
 }
 
-QVariant ConfigAPI::Get(QString file, QString section, QString key, const QVariant &defaultValue)
+QVariant ConfigAPI::Get(QString file, QString section, QString key, const QVariant &defaultValue) const
 {
     if (configFolder_.isEmpty())
     {

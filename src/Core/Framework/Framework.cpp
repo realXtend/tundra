@@ -163,6 +163,7 @@ Framework::Framework(int argc, char** argv) :
         RegisterDynamicObject("asset", asset);
         RegisterDynamicObject("audio", audio);
         RegisterDynamicObject("application", application);
+        RegisterDynamicObject("config", config);
         RegisterDynamicObject("apiversion", apiVersionInfo);
         RegisterDynamicObject("applicationversion", applicationVersionInfo);
     }
