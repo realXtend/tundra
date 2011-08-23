@@ -34,6 +34,12 @@ public slots:
     /// Specifies whether data can be uploaded to this asset storage.
     virtual bool Writable() const { return false; }
 
+    /// If this function returns true, we have approved the content inside this storage to be trusted and safe.
+    /// Local content is always assumed safe (content from LocalAssetProvider).
+    /// Content from HttpAssetProvider is assumed safe if it points to the local system.
+    /// Other storages need to be approved by other means, e.g. by the user, or by some other configuration or authentication.
+    virtual bool Trusted() const { return false; }
+
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
     virtual QString GetFullAssetURL(const QString &localName) { return ""; }
 
@@ -54,4 +60,3 @@ signals:
     /// Asset refs have changed, either as a result of refresh, or upload / delete
     void AssetRefsChanged(AssetStoragePtr storage);
 };
-

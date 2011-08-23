@@ -23,11 +23,16 @@ public:
     QString baseAddress;
     QString storageName;
     QStringList assetRefs;
+    ///\todo Disallow scripts from changing this after the storage has been created. (security issue) -jj.
     QString localDir;
     
 public slots:
     /// Specifies whether data can be uploaded to this asset storage.
     virtual bool Writable() const { return false; }
+
+    /// HttpAssetStorages are trusted if they point to a web server on the local system.
+    /// \todo Make this bit configurable per-HttpAssetStorage.
+    virtual bool Trusted() const;
 
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
     virtual QString GetFullAssetURL(const QString &localName) { return GuaranteeTrailingSlash(baseAddress) + localName; }

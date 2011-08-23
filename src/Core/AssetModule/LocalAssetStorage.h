@@ -41,7 +41,13 @@ public:
     QStringList assetRefs;
     
 public slots:
+    /// We assume all directories are writable to.
+    /// \todo This does not always hold, e.g. scenes that are run from the C:\Program Files\ do not give the user permission to write to (unless the security is lifted).
+    ///       Make this settable on per-storage basis.
     bool Writable() const { return true; }
+
+    /// Local storages are always assumed to be trusted.
+    bool Trusted() const { return true; }
 
     /// Returns the full local filesystem path name of the given asset in this storage, if it exists.
     /// Example: GetFullPathForAsset("my.mesh", true) might return "C:\Projects\Tundra\bin\data\assets".

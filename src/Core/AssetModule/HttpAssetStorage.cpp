@@ -13,6 +13,11 @@ QString HttpAssetStorage::Type() const
     return "HttpAssetStorage";
 }
 
+bool HttpAssetStorage::Trusted() const
+{
+    return !localDir.isEmpty();
+}
+
 void HttpAssetStorage::RefreshAssetRefs()
 {
     // If searches already ongoing, let them finish and don't start a new refresh

@@ -16,7 +16,7 @@
 #include "ScriptAsset.h"
 #include "IModule.h"
 #include "AssetAPI.h"
-#include "IAssetProvider.h" //to check if the code was loaded from a local or remote storage
+#include "IAssetStorage.h"
 
 #include "LoggingFunctions.h"
 
@@ -79,43 +79,44 @@ void JavascriptInstance::Load()
     if (!engine_)
         CreateEngine();
 
-    // Can't specify both a file source and an Asset API source.
-    assert(sourceFile.isEmpty() || scriptRefs_.empty());
-
-    // Determine based on code origin whether it can be trusted with system access or not
-    if (!scriptRefs_.empty())
-    {
-        trusted_ = true;
-        for (unsigned i = 0; i < scriptRefs_.size(); ++i)
-        {
-            AssetProviderPtr provider = scriptRefs_[i]->GetAssetProvider();
-            if (provider.get())
-                if (provider->Name() != "Local")
-                    trusted_ = false;
-        }
-    }
-    
-    // Local file: trusted
-    if (!sourceFile.isEmpty())
-    {
-        program_ = LoadScript(sourceFile);
-        trusted_ = true; //this is a local file directly, right?
-    }
-
-    // Do we even have a script to execute?
-    if (program_.isEmpty() && scriptRefs_.empty())
+    if (sourceFile.isEmpty() && scriptRefs_.empty())
     {
         LogError("JavascriptInstance::Load: No script content to load!");
         return;
     }
+    // Can't specify both a file source and an Asset API source.
+    if (!sourceFile.isEmpty() && !scriptRefs_.empty())
+    {
+        LogError("JavascriptInstance::Load: Cannot specify both an local input source file and a list of script refs to load!");
+        return;
+    }
 
-    bool useAssets = !scriptRefs_.empty();
-    unsigned numScripts = useAssets ? scriptRefs_.size() : 1;
+    bool useAssetAPI = !scriptRefs_.empty();
+    unsigned numScripts = useAssetAPI ? scriptRefs_.size() : 1;
 
+    // Determine based on code origin whether it can be trusted with system access or not
+    if (useAssetAPI)
+    {
+        trusted_ = true;
+        for(unsigned i = 0; i < scriptRefs_.size(); ++i)
+        {
+            AssetStoragePtr storage = scriptRefs_[i]->GetAssetStorage();
+            trusted_ = trusted_ && storage->Trusted();
+        }
+    }
+    else // Local file: always trusted.
+    {
+        program_ = LoadScript(sourceFile);
+        trusted_ = true; // This is a file on the local filesystem. We are making an assumption nobody can inject untrusted code here.
+        // Actually, we are assuming the attacker does not know the absolute location of the asset cache locally here, since if he makes
+        // the client to load a script into local cache, he could use this code path to automatically load that unsafe script from cache, and make it trusted. -jj.
+    }
+
+    // Check the validity of the syntax in the input.
     for (unsigned i = 0; i < numScripts; ++i)
     {
-        QString scriptSourceFilename = (useAssets ? scriptRefs_[i]->Name() : sourceFile);
-        QString &scriptContent = (useAssets ? scriptRefs_[i]->scriptContent : program_);
+        QString scriptSourceFilename = (useAssetAPI ? scriptRefs_[i]->Name() : sourceFile);
+        QString &scriptContent = (useAssetAPI ? scriptRefs_[i]->scriptContent : program_);
 
         QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(scriptContent);
         if (syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
