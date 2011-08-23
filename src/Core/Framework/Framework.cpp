@@ -104,12 +104,12 @@ Framework::Framework(int argc, char** argv) :
     applicationVersionInfo = new ApplicationVersionInfo(2, 0, 0, 0, "realXtend", "Tundra");
 
     CommandLineParameterMap cmdLineDescs;
-    ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
-    /// best is to have them parse their own options).
+    ///\todo Make it possible for modules to know when "--help" command was issued and list the command line parameters they support.
+    ///\todo Remove non-Framework parameters from the list below.
     cmdLineDescs.commands["--help"] = "Produce help message"; // Framework
     cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework & OgreRenderingModule
-    cmdLineDescs.commands["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically";
-    cmdLineDescs.commands["--server"] = "Start Tundra server";
+    cmdLineDescs.commands["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically"; //JavascriptModule
+    cmdLineDescs.commands["--server"] = "Start Tundra server"; // TundraLogicModule
     cmdLineDescs.commands["--port"] = "Start server in the specified port"; // TundraLogicModule
     cmdLineDescs.commands["--protocol"] = "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified."; // KristalliProtocolModule
     cmdLineDescs.commands["--fpslimit"] = "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable"; // OgreRenderingModule
