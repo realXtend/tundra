@@ -99,10 +99,7 @@ void EC_SlideShow::ShowSlide(int index)
     // Lets still do some log warnings so users know to move to the next slide.
     QString slideRef = slideRefs.at(index).toString();
     if (slideRef.isEmpty())
-    {
-        LogWarning("EC_SlideShow: Index " + QString::number(index) + " slide ref is a empty string.");
         return;
-    }
     if (framework->Asset()->GetResourceTypeFromAssetRef(slideRef) != "Texture")
     {
         LogWarning("EC_SlideShow: Index " + QString::number(index) + " slide ref is not a texture.");
@@ -114,6 +111,8 @@ void EC_SlideShow::ShowSlide(int index)
     foreach(AssetRefListener *listener, assetListeners_)
     {
         if (!listener)
+            return;
+        if (!listener->Asset().get())
             return;
         if (!listener->Asset()->IsLoaded())
             return;
