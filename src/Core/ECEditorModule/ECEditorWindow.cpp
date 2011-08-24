@@ -161,7 +161,7 @@ ECEditorWindow::~ECEditorWindow()
 EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
 {
     EntityListWidgetItem *item = 0;
-    PROFILE(AddEntity);
+    PROFILE(ECEditorWindow_AddEntity);
     if (entityList)
     {
         entityList->blockSignals(true);
@@ -202,7 +202,7 @@ void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select
 
 void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
 {
-    PROFILE(RemoveEntity);
+    PROFILE(ECEditorWindow_RemoveEntity);
     if (!entityList)
         return;
 
@@ -232,7 +232,7 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
 
 void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
 {
-    PROFILE(SetSelectedEntities);
+    PROFILE(ECEditorWindow_SetSelectedEntities);
     if (!entityList)
         return;
 
@@ -597,7 +597,7 @@ void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
 
 void ECEditorWindow::RefreshPropertyBrowser()
 {
-    PROFILE(EC_refresh_browser);
+    PROFILE(ECEditorWindow_RefreshPropertyBrowser);
     if (!ecBrowser)
         return;
 
@@ -906,7 +906,7 @@ bool ECEditorWindow::eventFilter(QObject *obj, QEvent *e)
 
 void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entities)
 {
-    PROFILE(BoldEntityListItems);
+    PROFILE(ECEditorWindow_BoldEntityListItems);
     for(uint i = 0; i < (uint)entityList->count(); ++i)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
