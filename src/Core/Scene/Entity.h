@@ -113,6 +113,12 @@ public:
     /// comparison by id
     bool operator < (const Entity &other) const { return Id() < other.Id(); }
 
+    /// Forcibly changes id of an existing component. If there already is a component with the new id, it will be purged
+    /** @note Called by scenesync. This will not trigger any signals
+        @param old_id Old id of the existing component
+        @param new_id New id to set */
+    void ChangeComponentId(component_id_t old_id, component_id_t new_id);
+    
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
     ComponentPtr GetComponentById(component_id_t id) const;
@@ -302,6 +308,9 @@ public slots:
     /// Returns if this entity's changes will be sent over the network.
     bool IsReplicated() const { return id_ < UniqueIdGenerator::FIRST_LOCAL_ID; }
 
+    /// Returns if this entity is pending a proper ID assignment from the server.
+    bool IsUnacked() const { return id_ >= UniqueIdGenerator::FIRST_UNACKED_ID && id_ < UniqueIdGenerator::FIRST_LOCAL_ID; }
+    
     /// Returns the identifier string for the entity.
     /** Syntax of the string: 'Entity ID <id>' or 'Entity "<name>" (ID: <id>)' if entity has a name. */
     QString ToString() const;

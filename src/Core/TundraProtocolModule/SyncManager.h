@@ -121,6 +121,10 @@ private:
     void HandleRemoveComponents(kNet::MessageConnection* source, const char* data, size_t numBytes);
     /// Handle remove entities message.
     void HandleRemoveEntity(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle create entity reply message.
+    void HandleCreateEntityReply(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle create components reply message.
+    void HandleCreateComponentsReply(kNet::MessageConnection* source, const char* data, size_t numBytes);
     
     /// Process one sync state for changes in the scene
     /** \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management
@@ -135,15 +139,6 @@ private:
         @param entityID What entity it affects
      */
     bool ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID);
-    
-    /// Send serializable components of an entity to a connection, using either a CreateEntity or UpdateComponents packet
-    /** @param connections MessageConnection(s) to use
-        @param entity Entity
-        @param createEntity Whether to use a CreateEntity packet. If false, use a UpdateComponents packet instead
-        @param allComponents Whether to send all components, or only those that are dirty
-        Note: This will not reset any changeflags in the components or attributes!
-     */
-    void SerializeAndSendComponents(const std::vector<kNet::MessageConnection*>& connections, EntityPtr entity, bool createEntity = false, bool allComponents = false);
     
     /// Get a syncstate that matches the messageconnection, for reflecting arrived changes back
     /** For client, this will always be server_syncstate_.
@@ -166,7 +161,7 @@ private:
     /// Time accumulator for update
     float update_acc_;
     
-    /// Server sync state (client operation only)
+    /// Server sync state (client only)
     SceneSyncState server_syncstate_;
     
     /// Fixed buffers for crafting messages

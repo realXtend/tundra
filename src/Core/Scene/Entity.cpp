@@ -45,6 +45,28 @@ Entity::~Entity()
     qDeleteAll(actions_);
 }
 
+void Entity::ChangeComponentId(entity_id_t old_id, entity_id_t new_id)
+{
+    if (old_id == new_id)
+        return;
+    
+    ComponentPtr old_comp = GetComponentById(old_id);
+    if (!old_comp)
+        return;
+    
+    if (GetComponentById(new_id))
+    {
+        LogWarning("Purged component " + QString::number(new_id) + " to make room for a ChangeComponentId request. This should not happen.");
+        RemoveComponentById(new_id, AttributeChange::LocalOnly);
+    }
+    
+    old_comp->SetNewId(old_id);
+    components_.erase(old_id);
+    components_[new_id] = old_comp;
+    idGenerator_.Deallocate(old_id);
+    idGenerator_.Allocate(new_id);
+}
+
 void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type change)
 {
     AddComponent(0, component, change);
@@ -56,7 +78,15 @@ void Entity::AddComponent(component_id_t id, const ComponentPtr &component, Attr
     if (component && component->ParentEntity() == 0)
     {
         if (!id)
-            id = component->IsReplicated() ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
+        {
+            bool authority = true;
+            if (scene_)
+                authority = scene_->IsAuthority();
+            if (authority)
+                id = component->IsReplicated() ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
+            else
+                id = component->IsReplicated() ? idGenerator_.AllocateUnacked() : idGenerator_.AllocateLocal();
+        }
         else
         {
             component->SetReplicated(id < UniqueIdGenerator::FIRST_LOCAL_ID);

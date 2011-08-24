@@ -63,6 +63,26 @@ struct EntitySyncState
     {
     }
     
+    void RemoveFromQueue(component_id_t id)
+    {
+        std::map<component_id_t, ComponentSyncState>::iterator i = components.find(id);
+        if (i != components.end())
+        {
+            if (i->second.isInQueue)
+            {
+                for (std::list<ComponentSyncState*>::iterator j = dirtyQueue.begin(); j != dirtyQueue.end(); ++j)
+                {
+                    if ((*j) == &i->second)
+                    {
+                        dirtyQueue.erase(j);
+                        break;
+                    }
+                }
+                i->second.isInQueue = false;
+            }
+        }
+    }
+    
     void MarkComponentDirty(component_id_t id)
     {
         ComponentSyncState& compState = components[id]; // Creates new if did not exist
@@ -119,6 +139,29 @@ struct SceneSyncState
     {
         dirtyQueue.clear();
         entities.clear();
+    }
+    
+    void RemoveFromQueue(entity_id_t id)
+    {
+        std::map<entity_id_t, EntitySyncState>::iterator i = entities.find(id);
+        if (i != entities.end())
+        {
+            if (i->second.isInQueue)
+            {
+                for (std::list<EntitySyncState*>::iterator j = dirtyQueue.begin(); j != dirtyQueue.end(); ++j)
+                {
+                    if ((*j) == &i->second)
+                    {
+                        dirtyQueue.erase(j);
+                        break;
+                    }
+                }
+                i->second.isInQueue = false;
+                for (std::map<component_id_t, ComponentSyncState>::iterator j = i->second.components.begin(); j != i->second.components.end(); ++j)
+                    j->second.isInQueue = false;
+                i->second.dirtyQueue.clear();
+            }
+        }
     }
     
     void MarkEntityDirty(entity_id_t id)

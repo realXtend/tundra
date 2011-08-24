@@ -194,6 +194,9 @@ public slots:
     /// Returns true if network synchronization of the attributes of this component is NOT enabled.
     bool IsLocal() const { return !replicated; }
 
+    /// Returns true if this component is pending a replicated ID assignment from the server.
+    bool IsUnacked() const;
+    
     /// Sets the default mode for attribute change operations
     void SetUpdateMode(AttributeChange::Type defaultmode);
     

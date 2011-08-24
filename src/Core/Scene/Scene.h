@@ -91,6 +91,12 @@ public:
         return rawPtr ? rawPtr->shared_from_this() : boost::shared_ptr<T>();
     }
 
+    /// Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
+    /** @note Called by scenesync. This will not trigger any signals
+        @param old_id Old id of the existing entity
+        @param new_id New id to set */
+    void ChangeEntityId(entity_id_t old_id, entity_id_t new_id);
+    
 public slots:
     /// Creates new entity that contains the specified components.
     /** Entities should never be created directly, but instead created with this function.
@@ -115,13 +121,6 @@ public slots:
         @param defaultNetworkSync Whether components will have network sync. Default true */
     EntityPtr CreateLocalEntity(const QStringList &components = QStringList(),
         AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = true);
-
-    /// Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
-    /** @note this is meant as a response for a server-authoritative message to change the id of a client-created entity,
-        and this change in itself will not be replicated
-        @param old_id Old id of the existing entity
-        @param new_id New id to set */
-    void ChangeEntityId(entity_id_t old_id, entity_id_t new_id);
 
     /// Starts an attribute interpolation
     /** @param attr Attribute inside a static-structured component.

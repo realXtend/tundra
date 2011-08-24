@@ -59,6 +59,11 @@ void IComponent::SetName(const QString& name_)
     emit ComponentNameChanged(name, oldName);
 }
 
+bool IComponent::IsUnacked() const
+{
+    return id >= UniqueIdGenerator::FIRST_UNACKED_ID && id < UniqueIdGenerator::FIRST_LOCAL_ID;
+}
+
 void IComponent::SetUpdateMode(AttributeChange::Type defaultmode)
 {
     // Note: we can't allow default mode to be Default, because that would be meaningless

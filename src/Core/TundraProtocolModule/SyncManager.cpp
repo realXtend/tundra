@@ -27,7 +27,7 @@
 
 #include "MemoryLeakCheck.h"
 
-// This variable is used for the sender echo & interpolation stop check
+// This variable is used for the interpolation stop check
 kNet::MessageConnection* currentSender = 0;
 
 namespace TundraLogic
@@ -48,7 +48,7 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
 {
     //std::cout << "Writing component fullupdate id " << comp->Id() << " typeid " << comp->TypeId() << std::endl;
     // Component identification
-    ds.AddVLE<kNet::VLE8_16_32>(comp->Id());
+    ds.AddVLE<kNet::VLE8_16_32>(comp->Id() & UniqueIdGenerator::LAST_REPLICATED_ID);
     ds.AddVLE<kNet::VLE8_16_32>(comp->TypeId());
     ds.AddString(comp->Name().toStdString());
     
@@ -167,6 +167,12 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             break;
         case cRemoveEntityMessage:
             HandleRemoveEntity(source, data, numBytes);
+            break;
+        case cCreateEntityReplyMessage:
+            HandleCreateEntityReply(source, data, numBytes);
+            break;
+        case cCreateComponentsReplyMessage:
+            HandleCreateComponentsReply(source, data, numBytes);
             break;
         case cEntityActionMessage:
             {
@@ -508,10 +514,20 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 {
     PROFILE(SyncManager_ProcessSyncState);
     
-    ScenePtr scene = scene_.lock();
+    /*
+    static int counter = 0;
+    ++counter;
+    if (counter >= 30)
+    {
+        std::cout << "Data in " << destination->BytesInPerSec() / 1024.0f << " kB/s Data out " << destination->BytesOutPerSec() / 1024.0f << " kB/s" << std::endl;
+        counter = 0;
+    }
+    */
     
+    ScenePtr scene = scene_.lock();
     int numMessagesSent = 0;
-
+    bool isServer = owner_->IsServer();
+    
     // Process the state's dirty entity queue.
     /// \todo Limit and prioritize the data sent. For now the whole queue is processed, regardless of whether the connection is being saturated.
     while (!state->dirtyQueue.empty())
@@ -531,8 +547,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         }
         else
         {
-            // Make sure we don't send data for local entities
-            if (entity->IsLocal())
+            // Make sure we don't send data for local entities, or unacked entities after the create
+            if (entity->IsLocal() || (!entityState.isNew && entity->IsUnacked()))
                 continue;
         }
         
@@ -553,7 +569,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 removeState = true;
             
             kNet::DataSerializer ds(removeEntityBuffer_, 1024);
-            ds.AddVLE<kNet::VLE8_16_32>(entityState.id);
+            ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             QueueMessage(destination, cRemoveEntityMessage, true, true, ds);
             ++numMessagesSent;
         }
@@ -563,7 +579,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             kNet::DataSerializer ds(createEntityBuffer_, 64 * 1024);
             
             // Entity identification and temporary flag
-            ds.AddVLE<kNet::VLE8_16_32>(entityState.id);
+            ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             // Do not write the temporary flag as a bit to not desync the byte alignment at this point, as a lot of data potentially follows
             ds.Add<u8>(entity->IsTemporary() ? 1 : 0);
             
@@ -617,8 +633,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 }
                 else
                 {
-                    // Make sure we don't send data for local components
-                    if (comp->IsLocal())
+                    // Make sure we don't send data for local components, or unacked components after the create
+                    if (comp->IsLocal() || (!compState.isNew && comp->IsUnacked()))
                         continue;
                 }
                 
@@ -629,16 +645,16 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     
                     // If first component, write the entity ID first
                     if (!removeCompsDs.BytesFilled())
-                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
+                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                     // Then add component ID
-                    removeCompsDs.AddVLE<kNet::VLE8_16_32>(compState.id);
+                    removeCompsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                 }
                 // New component
                 else if (compState.isNew)
                 {
                     // If first component, write the entity ID first
                     if (!createCompsDs.BytesFilled())
-                        createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
+                        createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                     // Then add the component data
                     WriteComponentFullUpdate(createCompsDs, comp);
                     // Mark the component undirty in the receiver's syncstate
@@ -666,10 +682,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             {
                                 // If first attribute, write the entity ID first
                                 if (!createAttrsDs.BytesFilled())
-                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
+                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                                 
                                 IAttribute* attr = attrs[attrIndex];
-                                createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id);
+                                createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                                 createAttrsDs.Add<u8>(attrIndex); // Index
                                 createAttrsDs.Add<u8>(attr->TypeId());
                                 createAttrsDs.AddString(attr->Name().toStdString());
@@ -681,8 +697,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             // Remove attribute
                             // If first attribute, write the entity ID first
                             if (!removeAttrsDs.BytesFilled())
-                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
-                            removeAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id);
+                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                            removeAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                             removeAttrsDs.Add<u8>(attrIndex);
                         }
                     }
@@ -713,8 +729,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     {
                         // If first component for which attribute changes are sent, write the entity ID first
                         if (!editAttrsDs.BytesFilled())
-                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
-                        editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id);
+                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                         
                         // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
                         unsigned bitsMethod1 = changedAttributes_.size() * 8 + 8;
@@ -830,10 +846,9 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
-    /// \todo Read conversation ID on the server
-    
     kNet::DataDeserializer ds(data, numBytes);
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    entity_id_t senderEntityID = entityID;
     
     if (!ValidateAction(source, cCreateEntityMessage, entityID))
         return;
@@ -843,6 +858,11 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     {
         LogWarning("Received entity creation from server for entity ID " + QString::number(entityID) + " that already exists. Removing the old entity.");
         scene->RemoveEntity(entityID, AttributeChange::LocalOnly);
+    }
+    else if (isServer)
+    {
+        // Server never uses the client's entityID.
+        entityID = scene->NextFreeId();
     }
     
     EntityPtr entity = scene->CreateEntity(entityID);
@@ -856,11 +876,16 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     bool temporary = ds.Read<u8>() != 0;
     entity->SetTemporary(temporary);
     
+    std::vector<std::pair<component_id_t, component_id_t> > componentIdRewrites;
     // Read the components
     unsigned numComponents = ds.ReadVLE<kNet::VLE8_16_32>();
     for(uint i = 0; i < numComponents; ++i)
     {
         component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        component_id_t senderCompID = compID;
+        // If we are server, rewrite the ID
+        if (isServer) compID = 0;
+        
         u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
         QString name = QString::fromStdString(ds.ReadString());
         unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
@@ -879,6 +904,12 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
         {
             LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateEntity message, skipping component");
             continue;
+        }
+        // On server, get the assigned ID now
+        if (isServer)
+        {
+            compID = comp->Id();
+            componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
         }
         // Create the component to the sender's syncstate, then mark it processed (undirty)
         state->entities[entityID].components[compID].DirtyProcessed();
@@ -911,8 +942,122 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
         i->second->ComponentChanged(change);
     
+    // Send CreateEntityReply (server only)
+    if (isServer)
+    {
+        kNet::DataSerializer replyDs(createEntityBuffer_, 64 * 1024);
+        replyDs.AddVLE<kNet::VLE8_16_32>(senderEntityID & UniqueIdGenerator::LAST_REPLICATED_ID);
+        replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
+        replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites.size());
+        for (unsigned i = 0; i < componentIdRewrites.size(); ++i)
+        {
+            replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites[i].first & UniqueIdGenerator::LAST_REPLICATED_ID);
+            replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites[i].second & UniqueIdGenerator::LAST_REPLICATED_ID);
+        }
+        QueueMessage(source, cCreateEntityReplyMessage, true, true, replyDs);
+    }
+    
     // Mark the entity processed (undirty) in the sender's syncstate so that create is not echoed back
     state->entities[entityID].DirtyProcessed();
+}
+
+void SyncManager::HandleCreateEntityReply(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    SceneSyncState* state = GetSceneSyncState(source);
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding CreateEntityReply message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    if (isServer)
+    {
+        LogWarning("Discarding CreateEntityReply message on server");
+        return;
+    }
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t senderEntityID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    scene->ChangeEntityId(senderEntityID, entityID); ///\todo Signal this so that SceneStructure or scripts can update itself
+    state->RemoveFromQueue(senderEntityID); // Make sure we don't have stale pointers in the dirty queue
+    state->entities[entityID] = state->entities[senderEntityID]; // Copy the sync state to the new ID
+    state->entities.erase(senderEntityID);
+    
+    EntitySyncState& entityState = state->entities[entityID];
+    
+    EntityPtr entity = scene->GetEntity(entityID);
+    if (!entity)
+    {
+        LogError("Failed to get entity after ID change");
+        return;
+    }
+    
+    unsigned numComps = ds.ReadVLE<kNet::VLE8_16_32>();
+    for (unsigned i = 0; i < numComps; ++i)
+    {
+        component_id_t senderCompID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        entity->ChangeComponentId(senderCompID, compID);
+        entityState.components[compID] = entityState.components[senderCompID]; // Copy the sync state to the new ID
+        entityState.components.erase(senderCompID);
+    }
+    
+    for (std::map<component_id_t, ComponentSyncState>::iterator i = entityState.components.begin(); i != entityState.components.end(); ++i)
+    {
+        // Now mark every component dirty so they will be inspected for changes on the next update
+        state->MarkComponentDirty(entityID, i->first);
+    }
+}
+
+void SyncManager::HandleCreateComponentsReply(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    SceneSyncState* state = GetSceneSyncState(source);
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding CreateComponentsReply message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    if (isServer)
+    {
+        LogWarning("Discarding CreateComponentsReply message on server");
+        return;
+    }
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    state->RemoveFromQueue(entityID); // Make sure we don't have stale pointers in the dirty queue
+    EntitySyncState& entityState = state->entities[entityID];
+    
+    EntityPtr entity = scene->GetEntity(entityID);
+    if (!entity)
+    {
+        LogError("Failed to get entity after ID change");
+        return;
+    }
+    
+    unsigned numComps = ds.ReadVLE<kNet::VLE8_16_32>();
+    for (unsigned i = 0; i < numComps; ++i)
+    {
+        component_id_t senderCompID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        entity->ChangeComponentId(senderCompID, compID);
+        entityState.components[compID] = entityState.components[senderCompID]; // Copy the sync state to the new ID
+        entityState.components.erase(senderCompID);
+    }
+    
+    for (std::map<component_id_t, ComponentSyncState>::iterator i = entityState.components.begin(); i != entityState.components.end(); ++i)
+    {
+        // Now mark every component dirty so they will be inspected for changes on the next update
+        state->MarkComponentDirty(entityID, i->first);
+    }
 }
 
 void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const char* data, size_t numBytes)
@@ -930,8 +1075,6 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     bool isServer = owner_->IsServer();
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-    
-    /// \todo Read conversation ID on the server
     
     kNet::DataDeserializer ds(data, numBytes);
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
@@ -952,10 +1095,15 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     }
     
     // Read the components
+    std::vector<std::pair<component_id_t, component_id_t> > componentIdRewrites;
     std::vector<ComponentPtr> addedComponents;
     while (ds.BitsLeft() > 2 * 8)
     {
         component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        component_id_t senderCompID = compID;
+        // If we are server, rewrite the ID
+        if (isServer) compID = 0;
+        
         u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
         QString name = QString::fromStdString(ds.ReadString());
         unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
@@ -974,6 +1122,12 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         {
             LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateComponents message, skipping component");
             continue;
+        }
+        // On server, get the assigned ID now
+        if (isServer)
+        {
+            compID = comp->Id();
+            componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
         }
         // Create the component to the sender's syncstate, then mark it processed (undirty)
         state->entities[entityID].components[compID].DirtyProcessed();
@@ -1001,6 +1155,20 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         }
     }
     
+    // Send CreateComponentsReply (server only)
+    if (isServer)
+    {
+        kNet::DataSerializer replyDs(createEntityBuffer_, 64 * 1024);
+        replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
+        replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites.size());
+        for (unsigned i = 0; i < componentIdRewrites.size(); ++i)
+        {
+            replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites[i].first & UniqueIdGenerator::LAST_REPLICATED_ID);
+            replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites[i].second & UniqueIdGenerator::LAST_REPLICATED_ID);
+        }
+        QueueMessage(source, cCreateComponentsReplyMessage, true, true, replyDs);
+    }
+    
     // Emit the component changes last, to signal only a coherent state of the whole entity
     for (unsigned i = 0; i < addedComponents.size(); ++i)
         addedComponents[i]->ComponentChanged(change);
@@ -1021,8 +1189,6 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const char
     bool isServer = owner_->IsServer();
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-    
-    /// \todo Read conversation ID on the server
     
     kNet::DataDeserializer ds(data, numBytes);
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
@@ -1050,8 +1216,6 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     bool isServer = owner_->IsServer();
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-    
-    /// \todo Read conversation ID on the server
     
     kNet::DataDeserializer ds(data, numBytes);
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
@@ -1096,8 +1260,6 @@ void SyncManager::HandleCreateAttributes(kNet::MessageConnection* source, const 
     bool isServer = owner_->IsServer();
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-    
-    /// \todo Read conversation ID on the server
     
     kNet::DataDeserializer ds(data, numBytes);
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
@@ -1172,8 +1334,6 @@ void SyncManager::HandleRemoveAttributes(kNet::MessageConnection* source, const 
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
-    /// \todo Read conversation ID on the server
-    
     kNet::DataDeserializer ds(data, numBytes);
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
@@ -1220,8 +1380,6 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
     bool isServer = owner_->IsServer();
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-    
-    /// \todo Read conversation ID on the server
     
     kNet::DataDeserializer ds(data, numBytes);
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();

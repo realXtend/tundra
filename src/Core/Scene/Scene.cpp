@@ -72,7 +72,12 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     // Figure out new entity id
     entity_id_t newentityid = 0;
     if (id == 0)
-        newentityid = replicated ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
+    {
+        if (IsAuthority())
+            newentityid = replicated ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
+        else
+            newentityid = replicated ? idGenerator_.AllocateUnacked() : idGenerator_.AllocateLocal();
+    }
     else
     {
         if(entities_.find(id) != entities_.end())
@@ -151,7 +156,7 @@ void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
     
     if (GetEntity(new_id))
     {
-        LogWarning("Warning: purged entity " + ToString(new_id) + " to make room for a ChangeEntityId request");
+        LogWarning("Purged entity " + ToString(new_id) + " to make room for a ChangeEntityId request. This should not happen");
         RemoveEntity(new_id, AttributeChange::LocalOnly);
     }
     
@@ -204,7 +209,10 @@ void Scene::RemoveAllEntities(bool send_events, AttributeChange::Type change)
 
 entity_id_t Scene::NextFreeId()
 {
-    return idGenerator_.AllocateReplicated();
+    if (IsAuthority())
+        return idGenerator_.AllocateReplicated();
+    else
+        return idGenerator_.AllocateUnacked();
 }
 
 entity_id_t Scene::NextFreeIdLocal()

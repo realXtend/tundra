@@ -14,9 +14,9 @@ const unsigned long cEditAttributesMessage = 113;
 const unsigned long cRemoveAttributesMessage = 114;
 const unsigned long cRemoveComponentsMessage = 115;
 const unsigned long cRemoveEntityMessage = 116;
-const unsigned long cCreateEntityMessageConvID = 117;
-const unsigned long cCreateComponentsMessageConvID = 118;
-const unsigned long cCreateAttributesMessageConvID = 119;
+const unsigned long cCreateEntityReplyMessage = 117; // Server->client only
+const unsigned long cCreateComponentsReplyMessage = 118; // Server->client only
+const unsigned long cCreateAttributesReplyMessage = 119; // Server->client only
 
 // Entity action
 const unsigned long cEntityActionMessage = 120;
