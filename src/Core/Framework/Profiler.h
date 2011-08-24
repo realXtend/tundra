@@ -60,63 +60,40 @@ public:
 
     void Start()
     {
-        if (supported_)
-            start_time_ = GetCurrentClockTime();
+        start_time_ = GetCurrentClockTime();
     }
 
     void Stop()
     {
-        if (supported_)
-            end_time_ = GetCurrentClockTime();
+        end_time_ = GetCurrentClockTime();
     }
 
     /// Returns elapsed time between start and stop in seconds
     double ElapsedTimeSeconds()
     {
-        if (supported_) 
-        {
-            time_elapsed_ = end_time_ - start_time_;
-            double elapsed_s = (double)time_elapsed_ / (double)GetCurrentClockFreq();
-            return (elapsed_s < 0 ? 0 : elapsed_s);
-        } 
-        else
-            return 0.0;
+        time_elapsed_ = end_time_ - start_time_;
+        double elapsed_s = (double)time_elapsed_ / (double)GetCurrentClockFreq();
+        return (elapsed_s < 0 ? 0 : elapsed_s);
     }
 
     static double ElapsedTimeSeconds(const s64 &start, const s64 &end)
     {
-        if (supported_)
-        {
-            double elapsed_s = (double)(end - start) / (double)GetCurrentClockFreq();
-            return (elapsed_s < 0 ? 0 : elapsed_s);
-        }
-        else
-            return 0.0;
+        double elapsed_s = (double)(end - start) / (double)GetCurrentClockFreq();
+        return (elapsed_s < 0 ? 0 : elapsed_s);
     }
 
     /// Returns elapsed time in microseconds
     s64 ElapsedTimeMicroSeconds()
     {
-        if (supported_)
-        {
-            time_elapsed_ = end_time_ - start_time_;
-            s64 elapsed_us = static_cast<s64>(time_elapsed_ * 1000000) / GetCurrentClockFreq();
-            return (elapsed_us < 0 ? 0 : (s64)0);
-        }
-        else
-            return 0;
+        time_elapsed_ = end_time_ - start_time_;
+        s64 elapsed_us = static_cast<s64>(time_elapsed_ * 1000000) / GetCurrentClockFreq();
+        return (elapsed_us < 0 ? 0 : (s64)0);
     }
 
 private:
     friend class ProfilerNode;
     /// default constructor
     ProfilerBlock() {}
-
-    /// is high frequency perf counter supported in this platform
-    static bool supported_;
-
-    /// performance counter frequency
-    static s64 frequency_;
 
     s64 start_time_;
     s64 end_time_;
@@ -190,6 +167,7 @@ public:
 
     /// Returns list of children for introspection
     const NodeList &GetChildren() const { return children_; }
+    NodeList &GetChildren(){ return children_; }
 
     void MarkAsRootBlock(Profiler *owner) { owner_ = owner; }
 
@@ -325,7 +303,7 @@ namespace
 class Profiler
 {
 public:
-    Profiler() :current_node_(0), root_("Root")
+    Profiler() :current_node_(0), root_("Root"), thread_specific_root_(0)
     {
     }
 
@@ -357,6 +335,8 @@ public:
 
     std::string GetThisThreadRootBlockName();
 
+    ProfilerNodeTree *FindBlockByName(const char *name);
+
     /// Returns root profiling node for the current thread only, re-entrant
     ProfilerNodeTree *GetOrCreateThreadRootBlock();
 
@@ -386,9 +366,9 @@ private:
     ProfilerNodeTree root_;
 
     /// Contains the root profile block for each thread.
-    boost::thread_specific_ptr<ProfilerNodeTree> thread_specific_root_;
+    ProfilerNodeTree *thread_specific_root_;
     /// Points to the current topmost profile block in the stack for each thread.
-    boost::thread_specific_ptr<ProfilerNodeTree> current_node_;
+    ProfilerNodeTree *current_node_;
 
     /// container for all the root profile nodes for each thread.
     std::list<ProfilerNodeTree*> thread_root_nodes_;

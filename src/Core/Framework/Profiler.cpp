@@ -18,25 +18,16 @@
 #undef max
 #endif
 
-bool ProfilerBlock::supported_ = false;
-
 bool ProfilerBlock::QueryCapability()
 {
-    if (supported_)
-        return true;
-    
 #if defined(_WINDOWS)
     LARGE_INTEGER frequency;
     BOOL result = QueryPerformanceFrequency(&frequency);
-    frequency_ = frequency.QuadPart;
-    supported_ = (result != 0);
+    return result != 0;
 #elif defined(_POSIX_C_SOURCE)
-    supported_ = true;
+    return true;
 #endif
-    return supported_;
 }
-
-s64 ProfilerBlock::frequency_;
 
 void Profiler::StartBlock(const std::string &name)
 {
@@ -44,11 +35,11 @@ void Profiler::StartBlock(const std::string &name)
     // Get the current topmost profiling node in the stack, or 
     // if none exists, get the root node or create a new root node.
     // This will be the parent node of the new block we're starting.
-    ProfilerNodeTree *parent = current_node_.get();
+    ProfilerNodeTree *parent = current_node_;
     if (!parent)
     {
         parent = GetOrCreateThreadRootBlock();
-        current_node_.reset(parent);
+        current_node_ = parent;
     }
     assert(parent);
 
@@ -74,8 +65,7 @@ void Profiler::StartBlock(const std::string &name)
         parent->recursion_++; // handle recursion
     else
     {
-        current_node_.release();
-        current_node_.reset(node);
+        current_node_ = node;
 
         checked_static_cast<ProfilerNode*>(node)->block_.Start();
     }
@@ -87,7 +77,7 @@ void Profiler::EndBlock(const std::string &name)
 #ifdef PROFILING
     using namespace std;
 
-    ProfilerNodeTree *treeNode = current_node_.get();
+    ProfilerNodeTree *treeNode = current_node_;
     assert (treeNode->Name() == name && "New profiling block started before old one ended!");
 
     ProfilerNode* node = checked_static_cast<ProfilerNode*>(treeNode);
@@ -114,29 +104,49 @@ void Profiler::EndBlock(const std::string &name)
         --node->recursion_;
     else
     {
-        current_node_.release();
-        current_node_.reset(node->Parent());
+        current_node_ = node->Parent();
     }
 #endif
 }
 
 ProfilerNodeTree *Profiler::GetThreadRootBlock()
 { 
-    return thread_specific_root_.get();
+    return thread_specific_root_;
 }
 
 ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
 { 
 #ifdef PROFILING // If not profiling, never create the root block so the getter will always return 0.
-    if (!thread_specific_root_.get())
+    if (!thread_specific_root_)
         return CreateThreadRootBlock();
 #endif
-    return thread_specific_root_.get();
+    return thread_specific_root_;
 }
 
 std::string Profiler::GetThisThreadRootBlockName()
 {
     return std::string("Thread" + ToString(boost::this_thread::get_id()));
+}
+
+ProfilerNodeTree *FindBlockByName(ProfilerNodeTree *parent, const char *name)
+{
+    if (!parent)
+        return 0;
+    if (parent->Name() == name)
+        return parent;
+    ProfilerNodeTree::NodeList &children = parent->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    {
+        ProfilerNodeTree *node = FindBlockByName((*iter).get(), name);
+        if (node)
+            return node;
+    }
+    return 0;
+}
+
+ProfilerNodeTree *Profiler::FindBlockByName(const char *name)
+{
+    return ::FindBlockByName(GetThreadRootBlock(), name);
 }
 
 ProfilerNodeTree *Profiler::CreateThreadRootBlock()
@@ -147,7 +157,8 @@ ProfilerNodeTree *Profiler::CreateThreadRootBlock()
     std::string rootObjectName = GetThisThreadRootBlockName();
 
     ProfilerNodeTree *root = new ProfilerNodeTree(rootObjectName);
-    thread_specific_root_.reset(root);
+    assert(!thread_specific_root_);
+    thread_specific_root_ = root;
 
     // Each thread root block is added as a child of a dummy node root_ owned by
     // this Profiler. The root_ object doesn't own the memory of its children,
