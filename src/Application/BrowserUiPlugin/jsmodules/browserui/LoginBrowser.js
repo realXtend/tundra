@@ -73,6 +73,9 @@ var BrowserManager = Class.extend
         
         var controlLayout = findChild(this.browser, "controlLayout");
         
+        // work around for bug in Anything.prototype.addAction
+        QToolBar.prototype.addAction = QWidget.prototype.addAction;
+        
         // Browser controls
         this.browserToolBar = new QToolBar();
         this.browserToolBar.setFixedHeight(26);
@@ -83,18 +86,23 @@ var BrowserManager = Class.extend
         this.browserToolBar.floatable = false;
         this.browserToolBar.movable = false;
         
-        this.actionBack = this.browserToolBar.addAction(new QIcon(uiBase + "back.png"), "");
+        this.actionBack = new QAction(new QIcon(uiBase + "back.png"), "", null);
         this.actionBack.triggered.connect(this.onBack);
         this.actionBack.toolTip = "Back";
-        this.actionForward = this.browserToolBar.addAction(new QIcon(uiBase + "forward.png"), "");
+        this.actionForward = new QAction(new QIcon(uiBase + "forward.png"), "", null);
         this.actionForward.triggered.connect(this.onForward);
         this.actionForward.toolTip = "Forward";
-        this.actionRefreshStop = this.browserToolBar.addAction(iconRefresh, "");
+        this.actionRefreshStop = new QAction(new QIcon(uiBase + "refresh.png"), "", null);
         this.actionRefreshStop.triggered.connect(this.onRefreshStop);
         this.actionRefreshStop.tooltip = "Refresh";
-        this.actionHome = this.browserToolBar.addAction(new QIcon(uiBase + "home.png"), "");
+        this.actionHome = new QAction(new QIcon(uiBase + "home.png"), "", null);
         this.actionHome.triggered.connect(this.onHome);
         this.actionHome.toolTip = "Go to home page " + this.settings.homepage;
+        
+        this.browserToolBar.addAction(this.actionBack);
+        this.browserToolBar.addAction(this.actionForward);
+        this.browserToolBar.addAction(this.actionRefreshStop);
+        this.browserToolBar.addAction(this.actionHome);
         
         // Toolbar for inworld actions
         this.toolBarGroups = {};
@@ -119,15 +127,19 @@ var BrowserManager = Class.extend
         this.favoritesToolBar.iconSize = new QSize(23,23);
         this.favoritesToolBar.floatable = false;
         this.favoritesToolBar.movable = false;
-        this.actionBookmarks = this.favoritesToolBar.addAction(new QIcon(uiBase + "bookmarks.png"), "");
+        this.actionBookmarks = new QAction(new QIcon(uiBase + "bookmarks.png"), "", null);
         this.actionBookmarks.triggered.connect(this.onBookmarksPressed);
         this.actionBookmarks.tooltip = "Bookmarks";
-        this.actionAddFavorite = this.favoritesToolBar.addAction(new QIcon(uiBase + "favorites.png"), "");
+        this.actionAddFavorite = new QAction(new QIcon(uiBase + "favorites.png"), "", null);
         this.actionAddFavorite.triggered.connect(this.onFavoritePressed);
         this.actionAddFavorite.tooltip = "Add as home page or add to bookmarks";
-        this.actionSettings = this.favoritesToolBar.addAction(new QIcon(uiBase + "settings.png"), "");
+        this.actionSettings = new QAction(new QIcon(uiBase + "settings.png"), "", null);
         this.actionSettings.triggered.connect(this.settings.onSettingsPressed);
         this.actionSettings.tooltip = "Browser settings";
+        
+        this.favoritesToolBar.addAction(this.actionBookmarks);
+        this.favoritesToolBar.addAction(this.actionAddFavorite);
+        this.favoritesToolBar.addAction(this.actionSettings);
         
         this.addressAndFavoritesBar = new QWidget();
         this.addressAndFavoritesBar.setFixedHeight(26);
@@ -214,18 +226,9 @@ var BrowserManager = Class.extend
         if (action.tooltip == null || action.tooltip == "")
             action.tooltip = action.text;
 
-        // \todo will repolicate the action. toolbar.addAction(action) does not work in js!
-        // only down side is that if the calling party changes icon or state of the QAction
-        // the toolbar wont know about it. Bug in js qt??
         if (group == null || group == "")
         {
-            var act = p_.toolBar.addAction(action.icon, action.text);
-            act.tooltip = action.tooltip;
-            act.triggered.connect(action, action.trigger);
-            
-            // \todo seems like this does not work. When a script deleteLater() 
-            // its source QAction it does not come to our action
-            action.destroyed.connect(act, act.deleteLater);
+            p_.toolBar.addAction(action);
         }
         else
         {
@@ -260,14 +263,8 @@ var BrowserManager = Class.extend
                 p_.toolBarGroups[group] = groupToolBar;
                 p_.toolBarContainers[group] = containerWidget;
             }
-            
-            var act = groupToolBar.addAction(action.icon, action.text);
-            act.tooltip = action.tooltip;
-            act.triggered.connect(action, action.trigger);
-            
-            // \todo seems like this does not work. When a script deleteLater() 
-            // its source QAction it does not come to our action
-            action.destroyed.connect(act, act.deleteLater);
+                        
+            groupToolBar.addAction(action);
         }
     },
     
