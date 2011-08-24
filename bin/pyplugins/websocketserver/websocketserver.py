@@ -3,62 +3,62 @@ import random
 import json
 import socket #just for exception handling for restarts here
 
-import circuits
+import sys
+sys.path.append('/usr/lib/pymodules/python2.7/') #wtf
+sys.path.append('/usr/lib/python2.7/dist-packages/')
 import eventlet
 from eventlet import websocket
 from PythonQt.QtGui import QVector3D as Vec3
 from PythonQt.QtGui import QQuaternion as Quat
 
-import naali
+import tundra
 
-import async_eventlet_wsgiserver
+sys.path.append('./pyplugins/websocketserver') #omg
+import websocketserver.async_eventlet_wsgiserver as async_eventlet_wsgiserver
 
 clients = set()
 connections = dict()
 
-class NaaliWebsocketServer(circuits.BaseComponent):
-    instance = None
-    def __init__(self):
+sock = eventlet.listen(('0.0.0.0', 9999))
+print "websocket server started."
 
-        circuits.BaseComponent.__init__(self)
-        self.sock = eventlet.listen(('0.0.0.0', 9999))
-        self.server = async_eventlet_wsgiserver.server(self.sock, handle_clients)
-        print "websocket server started."
+scene = None
 
-        NaaliWebsocketServer.instance = self
-    
-    def newclient(self, connectionid):
-        id = self.scene.NextFreeId()
-        naali.server.UserConnected(connectionid, 0)
+def newclient(connectionid):
+    if scene is not None:
+        id = scene.NextFreeId()
+        tundra.Server().UserConnected(connectionid, 0)
 
         # Return the id of the connection
         return id
 
-    def removeclient(self, connectionid):
-        naali.server.UserDisconnected(connectionid, 0)
+    else:
+        tundra.LogWarning("Websocket server got a client connection, but has no scene - what to do?")
 
-    @circuits.handler("on_sceneadded")
-    def on_sceneadded(self, name):
-        '''Connects to various signal when scene is added'''
-        self.scene = naali.getScene(name)
+def removeclient(connectionid):
+    tundra.Server().UserDisconnected(connectionid, 0)
 
-        self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
+def on_sceneadded(name):
+    '''Connects to various signal when scene is added'''
+    global scene
+    scene = tundra.Scene().GetDefaultSceneRaw() #name)
+    print "Using scene:", scene.name, scene
 
-        self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)", onNewEntity)
+    scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
+    scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)", onNewEntity)
 
-        self.scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
+    scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
 
-        self.scene.connect("EntityRemoved(Scene::Entity*, AttributeChange::Type)", onEntityRemoved)
+    scene.connect("EntityRemoved(Scene::Entity*, AttributeChange::Type)", onEntityRemoved)
 
-    @circuits.handler("update")
-    def update(self, t):
-        if self.server is not None:
-            self.server.next()
+    
+def update(t):
+    if server is not None:
+        server.next()
+        #print '.',
 
-    @circuits.handler("on_exit")
-    def on_exit(self):
+#def on_exit(self):
         # Need to figure something out what to do and how
-        pass
 
 def sendAll(data):
     for client in clients:
@@ -137,8 +137,6 @@ def handle_clients(ws):
     # something.
     connectionid = random.randint(1000, 10000)
     
-    scene = NaaliWebsocketServer.instance.scene
-
     while True:
         # "main loop" for the server. When your done with the
         # connection break from the loop. It is important to remove
@@ -166,28 +164,43 @@ def handle_clients(ws):
         if function == 'CONNECTED':
             ws.send(json.dumps(['initGraffa', {}]))
 
-            myid = NaaliWebsocketServer.instance.newclient(connectionid)
+            myid = newclient(connectionid)
             connections[myid] = connectionid
             ws.send(json.dumps(['setId', {'id': myid}]))
             
             #FIXME don't sync locals
-            xml = scene.GetSceneXML(True)
-
-            ws.send(json.dumps(['loadScene', {'xml': str(xml)}]))
+            if scene is not None:
+                xml = scene.GetSceneXML(True)
+                ws.send(json.dumps(['loadScene', {'xml': str(xml)}]))
+            else:
+                tundra.LogWarning("Websocket Server: handling a client, but doesn't have scene :o")
 
         elif function == 'Action':
             action = params.get('action')
             args = params.get('params')
             id = params.get('id')
-            av = scene.GetEntityByNameRaw("Avatar%s" % connections[id])
 
-            av.Exec(1, action, args)
+            if scene is not None:
+                av = scene.GetEntityByNameRaw("Avatar%s" % connections[id])
+                av.Exec(1, action, args)
+            else:
+                tundra.LogError("Websocket Server: received entity action, but doesn't have scene :o")
                 
         elif function == 'reboot':
             break
 
     # Remove connection
-    NaaliWebsocketServer.instance.removeclient(connectionid)
+    removeclient(connectionid)
             
     clients.remove(ws)
     print 'END', ws
+
+server = async_eventlet_wsgiserver.server(sock, handle_clients)
+tundra.Frame().connect("Updated(float)", update)
+
+sceneapi = tundra.Scene()
+sceneapi.SetDefaultScene("TundraServer")
+sceneapi.connect("OnSceneAdded(QString)", on_sceneadded)
+on_sceneadded("TundraServer")
+
+
