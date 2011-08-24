@@ -123,6 +123,11 @@ void ConsoleWidget::ToggleConsole()
     slideAnimation->start();
 }
 
+void ConsoleWidget::ClearLog()
+{
+    textEdit->clear();
+}
+
 void ConsoleWidget::HandleInput()
 {
     if (framework->IsHeadless())

@@ -32,6 +32,9 @@ public slots:
     /// Toggles visibility of the console UI.
     void ToggleConsole();
 
+    /// Clears the console log.
+    void ClearLog();
+
 private slots:
     /// Handles input to the console (called after return is pressed).
     void HandleInput();

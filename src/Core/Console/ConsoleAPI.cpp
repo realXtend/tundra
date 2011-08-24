@@ -34,8 +34,8 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     inputContext->SetTakeKeyboardEventsOverQt(true);
     connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
-    RegisterCommand("help", "Lists all registered commands.",
-        this, SLOT(ListCommands()));
+    RegisterCommand("help", "Lists all registered commands.", this, SLOT(ListCommands()));
+    RegisterCommand("clear", "Clears the console widget's log.", this, SLOT(ClearLog()));
     RegisterCommand("loglevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
         this, SLOT(SetLogLevel(const QString &)));
 
@@ -146,13 +146,26 @@ void ConsoleAPI::ExecuteCommand(const QString &command)
 void ConsoleAPI::Print(const QString &message)
 {
     if (consoleWidget)
-        consoleWidget->PrintToConsole(message.toStdString().c_str());
+        consoleWidget->PrintToConsole(message);
+    else
+    {
+        printf("%s", message.toStdString().c_str());
+        if (!message.endsWith("\n"))
+            printf("\n");
+    }
 }
 
 void ConsoleAPI::ListCommands()
 {
+    Print("Available console commands:");
     for(CommandMap::iterator iter = commands.begin(); iter != commands.end(); ++iter)
         Print(iter->first + " - " + iter->second->Description());
+}
+
+void ConsoleAPI::ClearLog()
+{
+    if (consoleWidget)
+        consoleWidget->ClearLog();
 }
 
 void ConsoleAPI::SetLogLevel(const QString &level)

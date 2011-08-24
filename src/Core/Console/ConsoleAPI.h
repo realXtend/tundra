@@ -10,6 +10,7 @@
 #include "CoreTypes.h"
 #include "CoreStringUtils.h"
 #include "InputFwd.h"
+
 #include <QPointer>
 #include <QObject>
 #include <QMap>
@@ -25,20 +26,22 @@ class ConsoleCommand : public QObject
     Q_OBJECT
 
 public:
-    ConsoleCommand(const QString &name_, const QString &desc_, QObject *target_, QString functionName_) :
-        name(name_),
-        description(desc_),
-        target(target_),
-        functionName(functionName_)
+    /// Creates new console command. For internal usage of ConsoleAPI.
+    ConsoleCommand(const QString &commandName, const QString &desc, QObject *targetObj, const QString &funcName) :
+        name(commandName),
+        description(desc),
+        target(targetObj),
+        functionName(funcName)
     {
     }
 
     /// Returns the name of this command.
     QString Name() const { return name; }
 
+    /// Returns the description of this command.
     QString Description() const { return description; }
 
-    /// Returns the QObject instance which gets invoked when this command is executed. 
+    /// Returns the QObject instance which gets invoked when this command is executed.
     /// This may be null if this ConsoleCommand is registered from a script.
     QObject *Target() const { return target; }
 
@@ -57,7 +60,6 @@ signals:
     void Invoked(const QStringList &params);
 
 private:
-    /// Name of the command.
     QString name;
     QString description;
     QPointer<QObject> target;
@@ -105,16 +107,20 @@ public slots:
     ConsoleCommand *RegisterCommand(const QString &name, const QString &desc);
 
     /// Executes a console command.
-    /// @param command Console command, syntax: "command(param1, param2, param3, ...)".
+    /** @param command Console command, syntax: "command(param1, param2, param3, ...)". */
     void ExecuteCommand(const QString &command);
 
-    /// Prints a message to the console log.
-    /// @param message The text message to print.
+    /// Prints a message to the console log, or stdout if console is not available (running in headless mode).
+    /** @param message The text message to print. */
     void Print(const QString &message);
 
     /// Lists all console commands and their descriptions to the log.
-    /// This command is invoked by typing 'help' to the console.
+    /** This command is invoked by typing 'help' to the console. */
     void ListCommands();
+
+    /// Clears the console widget's log.
+    /** This command is invoked by typing 'clear' to the console. */
+    void ClearLog();
 
     /// Sets the current log level.
     /// @param level One of "error, warning, info, debug".
