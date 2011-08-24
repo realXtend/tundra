@@ -451,7 +451,10 @@ void Application::UpdateFrame()
         double msecsSpentInFrame = (double)(timeNow - frameStartTime) * 1000.0 / timerFrequency;
         const double msecsPerFrame = 1000.0 / targetFpsLimit;
 
-        double msecsToSleep = std::min(std::max(0.0, msecsPerFrame - msecsSpentInFrame), msecsPerFrame);
+        ///\note Ideally we should sleep 0 msecs when running at a high fps rate,
+        /// but need to avoid QTimer::start() with 0 msecs, since that will cause the timer to immediately fire,
+        /// which can cause the Win32 message loop inside Qt to starve. (Qt keeps spinning the timer.start(0) loop for Tundra mainloop and neglects Win32 API).
+        double msecsToSleep = std::min(std::max(1.0, msecsPerFrame - msecsSpentInFrame), msecsPerFrame);
 
         // Reduce frame rate when unfocused
         if (!frameUpdateTimer.isActive())
