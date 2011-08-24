@@ -101,7 +101,7 @@ void JavascriptInstance::Load()
         for(unsigned i = 0; i < scriptRefs_.size(); ++i)
         {
             AssetStoragePtr storage = scriptRefs_[i]->GetAssetStorage();
-            trusted_ = trusted_ && storage->Trusted();
+            trusted_ = trusted_ && storage && storage->Trusted();
         }
     }
     else // Local file: always trusted.
