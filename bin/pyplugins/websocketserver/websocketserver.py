@@ -110,10 +110,10 @@ def onComponentAdded(entity, component, changeType):
         return
 
     if component_name == "EC_Mesh":
-
         sendAll(['addComponent', {'id': entity.id, 'component': component_name, 'url': 'ankka.dae'}])
-    else:
-        data = component.GetAttributeQVariant('Transform')
+
+    else: #must be pleaceable
+        data = component.transform
         transform = list()
 
         transform.extend([data.position().x(), data.position().y(), data.position().z()])
