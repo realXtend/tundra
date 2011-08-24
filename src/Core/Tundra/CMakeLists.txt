@@ -15,7 +15,7 @@ set (WINDOWS_APP 0)
 
 if (MSVC)
     # Windows resource files for icon, for Visual Studio 2008
-    if (VC90)
+    if (BUILDING_INSTALLER AND VC90)
         set (RESOURCE_FILES ${RESOURCE_FILES} resource.h Tundra.rc)
     endif ()
     

@@ -17,7 +17,8 @@
 ## Various flags/defines that configure your build
 
 set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
-set (WINDOWS_APP 0)                 # Only for windows: 0 = the console (output log) window is created and shown, 1 = this window is not shown.
+set (BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
+set (WINDOWS_APP 0)                 # NOTE: DOES NOTHING IN TUNDA2, need to fix. Only for windows: 0 = the console (output log) window is created and shown, 1 = this window is not shown.
 set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
 set (ENABLE_SKYX 1)                 # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 set (ENABLE_OGRE_ASSET_EDITOR 1)    # Enables Ogre asset editor module.
@@ -25,8 +26,13 @@ set (ENABLE_OPEN_ASSET_IMPORT 0)    # Enables Open Asset Import Library, which c
 set (ENABLE_PROFILING 0)            # Enable the following flag to add compile with support for a built-in execution time profiler.
 set (ENABLE_JS_PROFILING 0)         # Enable js profiling?
 set (ENABLE_MEMORY_LEAK_CHECKS 1)   # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
+set (ENABLE_SPLASH_SCREEN 1)        # Enables application splash screen. 
+
 message ("\n")
 
+if (ENABLE_SPLASH_SCREEN)
+    add_definitions (-DENABLE_SPLASH_SCREEN)
+endif()
 if (ENABLE_PROFILING)
     add_definitions (-DPROFILING)
 endif ()

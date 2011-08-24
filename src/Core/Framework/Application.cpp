@@ -110,7 +110,7 @@ void Application::InitializeSplash()
 {
 // Don't show splash screen in debug mode as it 
 // can obstruct your view if debugging the startup routines.
-#ifndef _DEBUG
+#ifdef ENABLE_SPLASH_SCREEN
     if (framework->IsHeadless())
         return;
 
