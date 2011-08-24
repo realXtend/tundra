@@ -41,7 +41,9 @@ def removeclient(connectionid):
 def on_sceneadded(name):
     '''Connects to various signal when scene is added'''
     global scene
-    scene = tundra.Scene().GetDefaultSceneRaw() #name)
+    sceneapi = tundra.Scene()
+    sceneapi.SetDefaultScene(name)
+    scene = sceneapi.GetDefaultSceneRaw() #name)
     print "Using scene:", scene.name, scene
 
     scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
@@ -200,7 +202,7 @@ tundra.Frame().connect("Updated(float)", update)
 
 sceneapi = tundra.Scene()
 sceneapi.SetDefaultScene("TundraServer")
-sceneapi.connect("OnSceneAdded(QString)", on_sceneadded)
-on_sceneadded("TundraServer")
+print "Websocket Server connecting to OnSceneAdded:", sceneapi.connect("SceneAdded(QString)", on_sceneadded)
+#on_sceneadded("TundraServer")
 
 
