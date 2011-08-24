@@ -129,6 +129,13 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
     }
 }
 
+void Entity::RemoveComponentById(component_id_t id, AttributeChange::Type change)
+{
+    ComponentPtr comp = GetComponentById(id);
+    if (comp)
+        RemoveComponent(comp, change);
+}
+
 void Entity::RemoveComponentRaw(QObject* comp)
 {
     IComponent* compPtr = dynamic_cast<IComponent*>(comp);

@@ -838,11 +838,11 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     if (!ValidateAction(source, cCreateEntityMessage, entityID))
         return;
     
-    // If a client gets a entity that already exists, destroy it forcibly
+    // If client gets a entity that already exists, destroy it forcibly
     if (!isServer && scene->GetEntity(entityID))
     {
         LogWarning("Received entity creation from server for entity ID " + QString::number(entityID) + " that already exists. Removing the old entity.");
-        scene->RemoveEntity(entityID, change);
+        scene->RemoveEntity(entityID, AttributeChange::LocalOnly);
     }
     
     EntityPtr entity = scene->CreateEntity(entityID);
@@ -866,6 +866,13 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
         unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
         ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
         kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
+        
+        // If client gets a component that already exists, destroy it forcibly
+        if (!isServer && entity->GetComponentById(compID))
+        {
+            LogWarning("Received component creation from server for component ID " + QString::number(compID) + " that already exists in " + entity->ToString() + ". Removing the old component.");
+            entity->RemoveComponentById(compID, AttributeChange::LocalOnly);
+        }
         
         ComponentPtr comp = entity->CreateComponent(compID, typeID, name, change);
         if (!comp)
@@ -954,6 +961,13 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
         ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
         kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
+        
+        // If client gets a component that already exists, destroy it forcibly
+        if (!isServer && entity->GetComponentById(compID))
+        {
+            LogWarning("Received component creation from server for component ID " + QString::number(compID) + " that already exists in " + entity->ToString() + ". Removing the old component.");
+            entity->RemoveComponentById(compID, AttributeChange::LocalOnly);
+        }
         
         ComponentPtr comp = entity->CreateComponent(compID, typeID, name, change);
         if (!comp)

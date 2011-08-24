@@ -225,7 +225,8 @@ public slots:
 
     void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name), change); }
     void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name, name), change); }
-
+    void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
+    
     /// Returns list of components with type @c type_name or if @c type_name is empty return all components
     /// @param type_name type of the component
     QObjectList GetComponentsRaw(const QString &type_name) const;
