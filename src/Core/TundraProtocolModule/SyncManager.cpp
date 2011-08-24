@@ -40,6 +40,7 @@ void SyncManager::QueueMessage(kNet::MessageConnection* connection, kNet::messag
     memcpy(msg->data, ds.GetData(), ds.BytesFilled());
     msg->reliable = reliable;
     msg->inOrder = inOrder;
+    msg->priority = 100; // Fixed priority as in those defined with xml
     connection->EndAndQueueMessage(msg);
 }
 
@@ -124,9 +125,9 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( AttributeAdded(IComponent*, IAttribute*, AttributeChange::Type) ),
-        SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
+        SLOT( OnAttributeAdded(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( AttributeRemoved(IComponent*, IAttribute*, AttributeChange::Type) ),
-        SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
+        SLOT( OnAttributeRemoved(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentAdded(Entity*, IComponent*, AttributeChange::Type) ),
         SLOT( OnComponentAdded(Entity*, IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentRemoved(Entity*, IComponent*, AttributeChange::Type) ),
@@ -197,14 +198,14 @@ void SyncManager::NewUserConnected(UserConnection* user)
     connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
-    user->syncState.Clear();
+    user->syncState = boost::shared_ptr<SceneSyncState>(new SceneSyncState());
     for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
         if (entity->IsLocal())
             continue;
         entity_id_t id = entity->Id();
-        user->syncState.MarkEntityDirty(id);
+        user->syncState->MarkEntityDirty(id);
     }
 }
 
@@ -238,15 +239,70 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-            (*i)->syncState.MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
+            if ((*i)->syncState) (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
     }
     else
     {
         server_syncstate_.MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
     }
+}
+
+void SyncManager::OnAttributeAdded(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
+{
+    assert(comp && attr);
+    if (!comp || !attr)
+        return;
+
+    bool isServer = owner_->IsServer();
     
-    // This attribute changing might in turn cause other attributes to change on the server, and these must be echoed to all, so reset sender now
-    currentSender = 0;
+    // We do not allow to create attributes in local or disconnected signaling mode in a replicated component.
+    // Always replicate the creation, because the client & server must have their attribute count in sync to 
+    // be able to send attribute bitmasks
+    if (comp->IsLocal())
+        return;
+    Entity* entity = comp->ParentEntity();
+    if ((!entity) || (entity->IsLocal()))
+        return;
+    
+    if (isServer)
+    {
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+            if ((*i)->syncState) (*i)->syncState->MarkAttributeCreated(entity->Id(), comp->Id(), attr->Index());
+    }
+    else
+    {
+        server_syncstate_.MarkAttributeCreated(entity->Id(), comp->Id(), attr->Index());
+    }
+}
+
+void SyncManager::OnAttributeRemoved(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
+{
+    assert(comp && attr);
+    if (!comp || !attr)
+        return;
+
+    bool isServer = owner_->IsServer();
+    
+    // We do not allow to remove attributes in local or disconnected signaling mode in a replicated component.
+    // Always replicate the removeal, because the client & server must have their attribute count in sync to
+    // be able to send attribute bitmasks
+    if (comp->IsLocal())
+        return;
+    Entity* entity = comp->ParentEntity();
+    if ((!entity) || (entity->IsLocal()))
+        return;
+    
+    if (isServer)
+    {
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+            if ((*i)->syncState) (*i)->syncState->MarkAttributeRemoved(entity->Id(), comp->Id(), attr->Index());
+    }
+    else
+    {
+        server_syncstate_.MarkAttributeRemoved(entity->Id(), comp->Id(), attr->Index());
+    }
 }
 
 void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
@@ -264,9 +320,7 @@ void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeCh
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-        {
-            (*i)->syncState.MarkComponentDirty(entity->Id(), comp->Id());
-        }
+            if ((*i)->syncState) (*i)->syncState->MarkComponentDirty(entity->Id(), comp->Id());
     }
     else
     {
@@ -288,7 +342,7 @@ void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, Attribute
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-            (*i)->syncState.MarkComponentRemoved(entity->Id(), comp->Id());
+            if ((*i)->syncState) (*i)->syncState->MarkComponentRemoved(entity->Id(), comp->Id());
     }
     else
     {
@@ -309,11 +363,14 @@ void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            (*i)->syncState.MarkEntityDirty(entity->Id());
-            if ((*i)->syncState.entities[entity->Id()].removed)
+            if ((*i)->syncState)
             {
-                LogWarning("An entity with ID " + QString::number(entity->Id()) + " is queued to be deleted, but a new entity \"" + 
-                    entity->Name() + "\" is to be added to the scene!");
+                (*i)->syncState->MarkEntityDirty(entity->Id());
+                if ((*i)->syncState->entities[entity->Id()].removed)
+                {
+                    LogWarning("An entity with ID " + QString::number(entity->Id()) + " is queued to be deleted, but a new entity \"" + 
+                        entity->Name() + "\" is to be added to the scene!");
+                }
             }
         }
     }
@@ -337,7 +394,7 @@ void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-            (*i)->syncState.MarkEntityRemoved(entity->Id());
+            if ((*i)->syncState) (*i)->syncState->MarkEntityRemoved(entity->Id());
     }
     else
     {
@@ -433,21 +490,21 @@ void SyncManager::Update(f64 frametime)
     
     if (owner_->IsServer())
     {
-        // If we are server, process all users
+        // If we are server, process all authenticated users
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-            ProcessSyncState((*i)->connection, (*i)->syncState);
+            if ((*i)->syncState) ProcessSyncState((*i)->connection, (*i)->syncState.get());
     }
     else
     {
         // If we are client, process just the server sync state
         kNet::MessageConnection* connection = owner_->GetKristalliModule()->GetMessageConnection();
         if (connection)
-            ProcessSyncState(connection, server_syncstate_);
+            ProcessSyncState(connection, &server_syncstate_);
     }
 }
 
-void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState& state)
+void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state)
 {
     PROFILE(SyncManager_ProcessSyncState);
     
@@ -457,10 +514,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 
     // Process the state's dirty entity queue.
     /// \todo Limit and prioritize the data sent. For now the whole queue is processed, regardless of whether the connection is being saturated.
-    while (!state.dirtyQueue.empty())
+    while (!state->dirtyQueue.empty())
     {
-        EntitySyncState& entityState = *state.dirtyQueue.front();
-        state.dirtyQueue.pop_front();
+        EntitySyncState& entityState = *state->dirtyQueue.front();
+        state->dirtyQueue.pop_front();
         entityState.isInQueue = false;
         
         EntityPtr entity = scene->GetEntity(entityState.id);
@@ -468,7 +525,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         if (!entity)
         {
             if (!entityState.removed)
-                LogWarning("Entity " + QString::number(entityState.id) + " has gone missing from the scene without the remove properly signalled. Removing from client replication state.");
+                LogWarning("Entity " + QString::number(entityState.id) + " has gone missing from the scene without the remove properly signalled. Removing from client replication state->");
             entityState.isNew = false;
             removeState = true;
         }
@@ -489,7 +546,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 // The delete has been processed. Do not remember it anymore, but requeue the state for creation
                 entityState.removed = false;
                 removeState = false;
-                state.dirtyQueue.push_back(&entityState);
+                state->dirtyQueue.push_back(&entityState);
                 entityState.isInQueue = true;
             }
             else
@@ -525,7 +582,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     continue;
                 WriteComponentFullUpdate(ds, comp);
                 // Mark the component undirty in the receiver's syncstate
-                state.entities[entityState.id].components[comp->Id()].DirtyProcessed();
+                state->entities[entityState.id].components[comp->Id()].DirtyProcessed();
             }
             
             QueueMessage(destination, cCreateEntityMessage, true, true, ds);
@@ -554,7 +611,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 if (!comp)
                 {
                     if (!compState.removed)
-                        LogWarning("Component " + QString::number(compState.id) + " of " + entity->ToString() + " has gone missing from the scene without the remove properly signalled. Removing from client replication state.");
+                        LogWarning("Component " + QString::number(compState.id) + " of " + entity->ToString() + " has gone missing from the scene without the remove properly signalled. Removing from client replication state->");
                     compState.isNew = false;
                     removeState = true;
                 }
@@ -585,7 +642,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     // Then add the component data
                     WriteComponentFullUpdate(createCompsDs, comp);
                     // Mark the component undirty in the receiver's syncstate
-                    state.entities[entityState.id].components[comp->Id()].DirtyProcessed();
+                    state->entities[entityState.id].components[comp->Id()].DirtyProcessed();
                 }
                 // Added/removed/edited attributes
                 else if (comp)
@@ -731,7 +788,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         }
         
         if (removeState)
-            state.entities.erase(entityState.id);
+            state->entities.erase(entityState.id);
     }
     //if (numMessagesSent)
     //    std::cout << "Sent " << numMessagesSent << " scenesync messages" << std::endl;
@@ -1142,7 +1199,7 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
     ScenePtr scene = GetRegisteredScene();
     if (!scene || !state)
     {
-        //LogWarning("Null scene or sync state, disregarding EditAttributes message");
+        LogWarning("Null scene or sync state, disregarding EditAttributes message");
         return;
     }
     
@@ -1363,7 +1420,7 @@ SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connecti
     for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
     {
         if ((*i)->connection == connection)
-            return &(*i)->syncState;
+            return (*i)->syncState.get();
     }
     return 0;
 }

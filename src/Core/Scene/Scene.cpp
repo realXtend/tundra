@@ -269,7 +269,8 @@ void Scene::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, Attrib
 
 void Scene::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
-    if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
+    // "Stealth" addition (disconnected changetype) is not supported. Always signal.
+    if ((!comp) || (!attribute))
         return;
     if (change == AttributeChange::Default)
         change = comp->UpdateMode();
@@ -278,7 +279,8 @@ void Scene::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, Attribut
 
 void Scene::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
-    if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
+    // "Stealth" removal (disconnected changetype) is not supported. Always signal.
+    if ((!comp) || (!attribute))
         return;
     if (change == AttributeChange::Default)
         change = comp->UpdateMode();

@@ -69,6 +69,12 @@ public slots:
 private slots:
     /// Trigger EC sync because of component attributes changing
     void OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change);
+
+    /// Trigger EC sync because of component attribute added
+    void OnAttributeAdded(IComponent* comp, IAttribute* attr, AttributeChange::Type change);
+
+    /// Trigger EC sync because of component attribute removed
+    void OnAttributeRemoved(IComponent* comp, IAttribute* attr, AttributeChange::Type change);
     
     /// Trigger EC sync because of component added to entity
     void OnComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
@@ -121,7 +127,7 @@ private:
         @param destination MessageConnection where to send the messages
         @param state Syncstate to process
      */
-    void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState& state);
+    void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state);
     
     /// Validate the scene manipulation action. If returns false, it is ignored
     /** @param source Where the action came from

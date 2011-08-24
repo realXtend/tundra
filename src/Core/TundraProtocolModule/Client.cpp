@@ -314,7 +314,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
 
             framework_->Scene()->SetDefaultScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
-                        
+            
             UserConnectedResponseData responseData;
             if (msg.loginReplyData.size() > 0)
                 responseData.responseData.setContent(QByteArray((const char *)&msg.loginReplyData[0], (int)msg.loginReplyData.size()));
