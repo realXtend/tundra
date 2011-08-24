@@ -73,9 +73,6 @@ struct EntitySyncState
             dirtyQueue.push_back(&compState);
             compState.isInQueue = true;
         }
-        // Try to work around same-ID create and delete (though the ID generator should guarantee this not happening)
-        if (compState.removed)
-            compState.isNew = true;
     }
     
     void MarkComponentRemoved(component_id_t id)
@@ -134,9 +131,6 @@ struct SceneSyncState
             dirtyQueue.push_back(&entityState);
             entityState.isInQueue = true;
         }
-        // Try to work around same-ID create and delete (though the ID generator should guarantee this not happening)
-        if (entityState.removed)
-            entityState.isNew = true;
     }
     
     void MarkEntityRemoved(entity_id_t id)

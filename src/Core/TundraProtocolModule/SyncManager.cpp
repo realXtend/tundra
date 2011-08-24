@@ -35,6 +35,7 @@ namespace TundraLogic
 
 void SyncManager::QueueMessage(kNet::MessageConnection* connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds)
 {
+    //std::cout << "Queuing message " << id << " size " << ds.BytesFilled() << std::endl;
     kNet::NetworkMessage* msg = connection->StartNewMessage(id, ds.BytesFilled());
     memcpy(msg->data, ds.GetData(), ds.BytesFilled());
     msg->reliable = reliable;
@@ -44,6 +45,7 @@ void SyncManager::QueueMessage(kNet::MessageConnection* connection, kNet::messag
 
 void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp)
 {
+    //std::cout << "Writing component fullupdate id " << comp->Id() << " typeid " << comp->TypeId() << std::endl;
     // Component identification
     ds.AddVLE<kNet::VLE8_16_32>(comp->Id());
     ds.AddVLE<kNet::VLE8_16_32>(comp->TypeId());
@@ -139,6 +141,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
+    // std::cout << "Handling message " << id << " size " << numBytes << std::endl;
     try
     {
         switch (id)
@@ -451,8 +454,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     ScenePtr scene = scene_.lock();
     
     int numMessagesSent = 0;
-    std::set<entity_id_t> newDeletedEntities;
-    
+
     // Process the state's dirty entity queue.
     /// \todo Limit and prioritize the data sent. For now the whole queue is processed, regardless of whether the connection is being saturated.
     while (!state.dirtyQueue.empty())
@@ -480,13 +482,15 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         // Remove entity
         if (entityState.removed)
         {
-            // If we have both new & removed flags on the entity, send the delete now, but queue for creation on a later frame
+            // If we have both new & removed flags on the entity, it will probably result in buggy behaviour
             if (entityState.isNew)
             {
-                LogWarning("Entity " + QString::number(entityState.id) + " queued for both deletion and creation. Sending deletion first and creation later.");
-                newDeletedEntities.insert(entityState.id);
-                // The delete has been processed. Do not remember it anymore.
+                LogWarning("Entity " + QString::number(entityState.id) + " queued for both deletion and creation. Buggy behaviour will possibly result!");
+                // The delete has been processed. Do not remember it anymore, but requeue the state for creation
                 entityState.removed = false;
+                removeState = false;
+                state.dirtyQueue.push_back(&entityState);
+                entityState.isInQueue = true;
             }
             else
                 removeState = true;
@@ -520,6 +524,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 if (!comp->IsReplicated())
                     continue;
                 WriteComponentFullUpdate(ds, comp);
+                // Mark the component undirty in the receiver's syncstate
+                state.entities[entityState.id].components[comp->Id()].DirtyProcessed();
             }
             
             QueueMessage(destination, cCreateEntityMessage, true, true, ds);
@@ -578,6 +584,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                         createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id);
                     // Then add the component data
                     WriteComponentFullUpdate(createCompsDs, comp);
+                    // Mark the component undirty in the receiver's syncstate
+                    state.entities[entityState.id].components[comp->Id()].DirtyProcessed();
                 }
                 // Added/removed/edited attributes
                 else if (comp)
@@ -726,7 +734,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             state.entities.erase(entityState.id);
     }
     //if (numMessagesSent)
-    //    LogInfo("Sent " + QString::number(numMessagesSent) + " scenesync messages");
+    //    std::cout << "Sent " << numMessagesSent << " scenesync messages" << std::endl;
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)

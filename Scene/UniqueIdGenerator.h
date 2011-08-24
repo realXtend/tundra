@@ -10,6 +10,8 @@
 class UniqueIdGenerator
 {
 public:
+    // Last replicated ID is guaranteed to fit inside 30 bits since we send them into the network as VLE8/16/32.
+    static const entity_id_t LAST_REPLICATED_ID = 0x3fffffff;
     static const entity_id_t FIRST_LOCAL_ID = 0x80000000;
     
     /// Construct
@@ -30,12 +32,12 @@ public:
         
         // Ensure that the ID we give out is always larger than the largest currently reserved ID.
         id = std::max(id + 1, largestId + 1);
-        if (id >= FIRST_LOCAL_ID) id = 1;
+        if (id > LAST_REPLICATED_ID) id = 1;
         
         while (reserved.find(id) != reserved.end())
         {
             ++id;
-            if (id >= FIRST_LOCAL_ID) id = 1;
+            if (id > LAST_REPLICATED_ID) id = 1;
         }
         
         reserved.insert(id);
