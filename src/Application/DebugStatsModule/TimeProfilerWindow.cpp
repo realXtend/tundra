@@ -68,6 +68,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
     label_frame_time_history_ = findChild<QLabel*>("labelFrameTimeHistory");
     label_top_frame_time_ = findChild<QLabel*>("labelTopFrameTime");
     label_time_per_frame_ = findChild<QLabel*>("labelTimePerFrame");
+    labelTimings = findChild<QLabel*>("labelTimings");
     assert(tab_widget_);
     assert(tree_profiling_data_);
     assert(combo_timing_refresh_interval_);
@@ -494,7 +495,7 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
     return 0;
 }
 
-void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode)
+void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode, int numFrames)
 {
     const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
     for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
@@ -517,25 +518,41 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
         if (timings_node)
         {
             char str[256] = "-";
-            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
-                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
-            item->setText(2, str);
-            if (timings_node->num_called_custom_ > 0)
-                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
-            item->setText(3, str);
-            if (timings_node->num_called_custom_ > 0)
-                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
-            item->setText(4, str);
             sprintf(str, "%d", (int)timings_node->num_called_custom_);
             item->setText(1, str);
+            sprintf(str, "%.2f", (float)timings_node->num_called_custom_ / numFrames);
+            item->setText(2, str);
+            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+            {
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+                item->setText(3, str);
+            }
+            else
+                item->setText(3, "-");
+            if (timings_node->num_called_custom_ > 0)
+            {
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+                item->setText(4, str);
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / numFrames);
+                item->setText(5, str);
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+                item->setText(6, str);
+            }
+            else
+            {
+                item->setText(4, "-");
+                item->setText(5, "-");
+                item->setText(6, "-");
+            }
 
             timings_node->num_called_custom_ = 0;
             timings_node->total_custom_ = 0;
             timings_node->custom_elapsed_min_ = 1e9;
             timings_node->custom_elapsed_max_ = 0;
+
         }
 
-        FillProfileTimingWindow(item, node);
+        FillProfileTimingWindow(item, node, numFrames);
     }
 }
 
@@ -1093,6 +1110,29 @@ void TimeProfilerWindow::RefreshProfilingData()
     if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 0)
         return;
 
+    if (labelTimings)
+    {
+        static tick_t timePrev = GetCurrentClockTime();
+        tick_t timeNow = GetCurrentClockTime();
+
+        static tick_t timerFrequency = GetCurrentClockFreq();
+
+        double msecsOccurred = (double)(timeNow - timePrev) * 1000.0 / timerFrequency;
+        timePrev = timeNow;
+
+        Profiler &profiler = *framework_->GetProfiler();
+        profiler.Lock();
+
+        int numFrames = 1;
+        ProfilerNode *processFrameNode = dynamic_cast<ProfilerNode*>(profiler.FindBlockByName("Framework_ProcessOneFrame")); // We use this node to estimate FPS for display.
+        if (processFrameNode)
+            numFrames = std::max<int>(processFrameNode->num_called_custom_, 1);
+        char str[256];
+        sprintf(str, "%.2f FPS (%.2f msecs/frame)", (numFrames * 1000.f / msecsOccurred), msecsOccurred / numFrames);
+        labelTimings->setText(str);
+        profiler.Release();
+    }
+
     if (show_profiler_tree_)
         RefreshProfilingDataTree();
     else
@@ -1110,6 +1150,11 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
     profiler.Lock();
 //    ProfilerNodeTree *node = profiler.Lock().get();
     ProfilerNodeTree *node = profiler.GetRoot();
+
+    int numFrames = 1;
+    ProfilerNode *processFrameNode = dynamic_cast<ProfilerNode*>(profiler.FindBlockByName("Framework_ProcessOneFrame")); // We use this node to estimate FPS for display.
+    if (processFrameNode)
+        numFrames = std::max<int>(processFrameNode->num_called_custom_, 1);
 
     const ProfilerNodeTree::NodeList &children = node->GetChildren();
     for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
@@ -1130,17 +1175,32 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
         if (timings_node)
         {
             char str[256] = "-";
-            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
-                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
-            item->setText(2, str);
-            if (timings_node->num_called_custom_ > 0)
-                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
-            item->setText(3, str);
-            if (timings_node->num_called_custom_ > 0)
-                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
-            item->setText(4, str);
             sprintf(str, "%d", (int)timings_node->num_called_custom_);
             item->setText(1, str);
+            sprintf(str, "%.2f", (float)timings_node->num_called_custom_ / numFrames);
+            item->setText(2, str);
+            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+            {
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+                item->setText(3, str);
+            }
+            else
+                item->setText(3, "-");
+            if (timings_node->num_called_custom_ > 0)
+            {
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+                item->setText(4, str);
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / numFrames);
+                item->setText(5, str);
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+                item->setText(6, str);
+            }
+            else
+            {
+                item->setText(4, "-");
+                item->setText(5, "-");
+                item->setText(6, "-");
+            }
 
             timings_node->num_called_custom_ = 0;
             timings_node->total_custom_ = 0;
@@ -1148,7 +1208,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
             timings_node->custom_elapsed_max_ = 0;
         }
 
-        FillProfileTimingWindow(item, node);
+        FillProfileTimingWindow(item, node, numFrames);
     }
     profiler.Release();
 #endif
@@ -1188,6 +1248,11 @@ void TimeProfilerWindow::RefreshProfilingDataList()
 
     tree_profiling_data_->clear();
 
+    int numFrames = 1;
+    ProfilerNode *processFrameNode = dynamic_cast<ProfilerNode*>(profiler.FindBlockByName("Framework_ProcessOneFrame")); // We use this node to estimate FPS for display.
+    if (processFrameNode)
+        numFrames = std::max<int>(processFrameNode->num_called_custom_, 1);
+
     for(std::vector<const ProfilerNode *>::iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
     {
         const ProfilerNode *timings_node = *iter;
@@ -1200,17 +1265,33 @@ void TimeProfilerWindow::RefreshProfilingDataList()
         tree_profiling_data_->addTopLevelItem(item);
 
         char str[256] = "-";
-        if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
-            sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
-        item->setText(2, str);
-        if (timings_node->num_called_custom_ > 0)
-            sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
-        item->setText(3, str);
-        if (timings_node->num_called_custom_ > 0)
-            sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
-        item->setText(4, str);
         sprintf(str, "%d", (int)timings_node->num_called_custom_);
         item->setText(1, str);
+        sprintf(str, "%.2f", (float)timings_node->num_called_custom_ / numFrames);
+        item->setText(2, str);
+        if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+        {
+            sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+            item->setText(3, str);
+        }
+        else
+            item->setText(3, "-");
+        if (timings_node->num_called_custom_ > 0)
+        {
+            sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+            item->setText(4, str);
+            sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / numFrames);
+            item->setText(5, str);
+            sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+            item->setText(6, str);
+        }
+        else
+        {
+            item->setText(4, "-");
+            item->setText(5, "-");
+            item->setText(6, "-");
+        }
+
 
         timings_node->num_called_custom_ = 0;
         timings_node->total_custom_ = 0;

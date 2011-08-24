@@ -81,7 +81,7 @@ private:
     bool eventFilter(QObject *obj, QEvent *event);
 
     void FillThresholdLogger(QTextStream& out, const ProfilerNodeTree *profilerNode);
-    void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode);
+    void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode, int numFrames);
     int ReadProfilingRefreshInterval();
     void RefreshProfilingDataTree();
     void RefreshProfilingDataList();
@@ -113,6 +113,7 @@ private:
     QLabel *label_frame_time_history_;
     QLabel *label_top_frame_time_;
     QLabel *label_time_per_frame_;
+    QLabel *labelTimings;
 
     QPushButton *push_button_toggle_tree_;
     QPushButton *push_button_collapse_all_;

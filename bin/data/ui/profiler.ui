@@ -44,7 +44,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>7</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="timing">
          <attribute name="title">
@@ -121,7 +121,7 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="6">
+          <item row="0" column="7">
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -134,10 +134,10 @@
             </property>
            </spacer>
           </item>
-          <item row="1" column="0" colspan="7">
+          <item row="1" column="0" colspan="8">
            <widget class="QTreeWidget" name="treeProfilingData">
             <property name="columnCount">
-             <number>5</number>
+             <number>7</number>
             </property>
             <column>
              <property name="text">
@@ -146,24 +146,41 @@
             </column>
             <column>
              <property name="text">
-              <string>Count</string>
+              <string>#</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Min</string>
+              <string>#/frame</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Avg</string>
+              <string>Min/block</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Max</string>
+              <string>Avg/block</string>
              </property>
             </column>
+            <column>
+             <property name="text">
+              <string>Avg/frame</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Max/block</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item row="0" column="6">
+           <widget class="QLabel" name="labelTimings">
+            <property name="text">
+             <string>Timings</string>
+            </property>
            </widget>
           </item>
          </layout>
