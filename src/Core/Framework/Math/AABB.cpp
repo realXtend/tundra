@@ -468,6 +468,7 @@ bool AABB::Contains(const AABB &aabb) const
 	@return True if an intersection occurs, false otherwise. */
 bool IntersectRayAABB(const float3 &rayPos, const float3 &rayDir, const AABB &aabb, float &tNear, float &tFar)
 {
+    assume(rayDir.IsNormalized());
     tNear = -FLOAT_INF;
     tFar = FLOAT_INF;
 
