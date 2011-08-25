@@ -21,4 +21,7 @@
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
   
   <!-- No js plugins atm for headless servers -->
+
+  <!-- Python plugins -->
+  <!-- pyplugin path="websocketserver/websocketserver.py" /-->           <!-- server for WebNaali -->
 </Tundra>
