@@ -163,8 +163,28 @@ macro (configure_ogre)
         sagase_configure_package (OGRE 
             NAMES Ogre OgreSDK ogre OGRE
             COMPONENTS ${TUNDRA_OGRE_NEEDED_COMPONENTS}
-            PREFIXES ${ENV_OGRE_HOME} ${ENV_TUNDRA_DEP_PATH})
-
+            PREFIXES ${ENV_OGRE_HOME}           # First try to find from OGRE_HOME
+                     ${ENV_OGRE_HOME}/SDK       # Add OGRE_HOME/SDK to make this not so strict
+                     ${ENV_TUNDRA_DEP_PATH})    # TUNDRA_DEP_PATH last
+            
+        # Additional include dirs to find everything when using Ogre SDK
+        # <ogre_main_include_dir>/OGRE
+        foreach (_OGRE_INCLUDE_DIR ${OGRE_INCLUDE_DIRS})
+            string(REGEX MATCH "/include$" _ROOT_INCLUDE_FOUND ${_OGRE_INCLUDE_DIR})
+            if (_ROOT_INCLUDE_FOUND)
+                SET (OGRE_INCLUDE_DIRS ${OGRE_INCLUDE_DIRS} "${_OGRE_INCLUDE_DIR}/OGRE")
+            endif()
+        endforeach ()
+        
+        # Additional library dirs to find everything when using Ogre SDK
+        # <ogre_main_lib_dir>/{Release|Debug|DebWithRelInfo|MinSizeRel}/opt
+        foreach (_OGRE_LIBRARY_DIR ${OGRE_LIBRARY_DIRS})
+            string(REGEX MATCH "/lib$" _ROOT_LIBDIR_FOUND ${_OGRE_LIBRARY_DIR})
+            if (_ROOT_LIBDIR_FOUND)
+                SET (OGRE_LIBRARY_DIRS ${OGRE_LIBRARY_DIRS} "${_OGRE_LIBRARY_DIR}/$(OutDir)/opt")
+            endif()
+        endforeach ()
+        
         # Report ogre then search check directx
         sagase_configure_report (OGRE)
         
