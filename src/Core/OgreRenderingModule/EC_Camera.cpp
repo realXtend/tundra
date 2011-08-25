@@ -266,6 +266,10 @@ void EC_Camera::AttachCamera()
 
 Ray EC_Camera::GetMouseRay(float x, float y)
 {
+    // Do a bit of sanity checking that the user didn't go and input absolute window coordinates.
+    if (fabs(x) >= 10.f || fabs(y) >= 10.f)
+        LogError(QString("EC_Camera::GetMouseRay takes input (x,y) coordinates normalized in the range [0,1]! (You inputted x=%1, y=%2").arg(x).arg(y));
+
     if (camera_)
         return camera_->getCameraToViewportRay(clamp(x, 0.f, 1.f), clamp(y, 0.f, 1.f));
     else
