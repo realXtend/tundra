@@ -239,8 +239,6 @@ namespace QScriptBindings
             Symbol ctor = Class.FindChildByName(Class.name);
             foreach (string s in ctor.comments)
             {
-                if (Class.name == "float3x4")
-                    Console.WriteLine(s);
                 if (s.Contains("[opaque-qtscript]"))
                     return true;
             }

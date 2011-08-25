@@ -55497,8 +55497,8 @@
       <type>bool</type>
       <name>Intersects</name>
       <anchorfile>class_ray.html</anchorfile>
-      <anchor>a61a0928b1217bc4f52955eae76955b03</anchor>
-      <arglist>(const Sphere &amp;s, float3 *intersectionPoint=0, float3 *intersectionNormal=0, float *d=0) const </arglist>
+      <anchor>a0878758fa47e0fa98c26ebcc314db9b1</anchor>
+      <arglist>(const Sphere &amp;s, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const </arglist>
     </member>
     <member kind="function">
       <type>bool</type>

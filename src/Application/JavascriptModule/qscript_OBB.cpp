@@ -2,6 +2,7 @@
 
 void ToExistingScriptValue_OBB(QScriptEngine *engine, const OBB &value, QScriptValue obj)
 {
+    obj.setData(engine->newVariant(QVariant::fromValue(value)));
     obj.setProperty("pos", qScriptValueFromValue(engine, value.pos), QScriptValue::Undeletable);
     obj.setProperty("r", qScriptValueFromValue(engine, value.r), QScriptValue::Undeletable);
 }
@@ -575,6 +576,7 @@ static QScriptValue OBB_Intersects_selector(QScriptContext *context, QScriptEngi
 
 void FromScriptValue_OBB(const QScriptValue &obj, OBB &value)
 {
+    value = obj.data().toVariant().value<OBB>();
     value.pos = qScriptValueToValue<float3>(obj.property("pos"));
     value.r = qScriptValueToValue<float3>(obj.property("r"));
 }
@@ -590,6 +592,7 @@ QScriptValue ToScriptValue_const_OBB(QScriptEngine *engine, const OBB &value)
 {
     QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<OBB>()));
+    obj.setData(engine->newVariant(QVariant::fromValue(value)));
     obj.setProperty("pos", ToScriptValue_const_float3(engine, value.pos), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("r", ToScriptValue_const_float3(engine, value.r), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     return obj;

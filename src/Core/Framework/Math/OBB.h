@@ -29,8 +29,8 @@ public:
     /// Specifies normalized direction vectors for the local axes (x, y and z). [noscript]
     float3 axis[3];
 
-    /// Constructs an uninitialized OBB.
-    /// @note The default ctor does not initialize any member values.
+    /// Constructs an uninitialized OBB [opaque-qtscript].
+    /** @note The default ctor does not initialize any member values. */
     OBB() {}
     OBB(const AABB &aabb);
 
