@@ -14,7 +14,8 @@ engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
 
-// Some functions needed for QVector3D calculations.
+// Some functions needed for QVector3D calculations. Hopefully we can
+// get rid of these in future (or present)
 
 function distance(v1, v2) {
     var a = Math.pow((v1.x() - v2.x()), 2);
@@ -128,26 +129,68 @@ function getPoints(from, to) {
     
 }
 
+function changeSlide(index) {
+    var currentScreen = screens[index % screennumber];
+    var newurl = slideinfo.GetAttribute("slide" + (index));
+    var oldurl = currentScreen.EC_WebView.webviewUrl
+    if (debug) {
+	print("oldurl " + oldurl);
+	print("newurl " + newurl);
+    }
+    if (oldurl != newurl) {
+	if (debug) {
+	    print("It changes");
+	}
+	currentScreen.EC_WebView.webviewUrl = newurl;
+	
+    }
+
+}
+
 function HandleGotoNext() {
-    currenIndex = slideinfo.GetAttribute("curent");
-    newIndex = currentIndex + 1;
-    if (newIndex >= screennumber) {
+    var slideinfo = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleInfo");
+    var currentIndex = slideinfo.GetAttribute("current");
+    if (debug) {
+	print("Current screen is");
+	print(screens[currentIndex % screennumber]);
+	print("Current index is " + currentIndex);
+    }
+    var newIndex = currentIndex + 1;
+    if (newIndex > endIndex) {
 	newIndex = 0;
     }
-    getPoints(entities[currentIndex], entities[newIndex]);
-    currentIndex = newIndex;
-    slideinfo.SetAttribute("current", currentIndex);
+    if (debug) {
+	print("New index is " + newIndex);
+	print("Goto screen " + (newIndex % screennumber));
+    }
+    print(screens[newIndex % screennumber]);
+    getPoints(screens[currentIndex % screennumber], screens[newIndex % screennumber]);
+    slideinfo.SetAttribute("current", newIndex);
+
+    changeSlide(newIndex);
 }
 
 function HandleGotoPrev() {
-    currenIndex = slideinfo.GetAttribute("curent");
-    newIndex = currentIndex - 1;
-    if (newIndex < 0) {
-	newIndex = screennumber - 1;
+    var slideinfo = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleInfo");
+    var currentIndex = slideinfo.GetAttribute("current");
+    if (debug) {
+	print("Current screen is");
+	print(screens[currentIndex % screennumber]);
+	print("Current index is " + currentIndex);
     }
-    getPoints(entities[currentIndex], entities[newIndex]);
-    currentIndex = newIndex;
-    slideinfo.SetAttribute("current", currentIndex);
+    var newIndex = currentIndex -1;
+    if (newIndex < 0) {
+	newIndex = endIndex;
+    }
+    if (debug) {
+	print("New index is " + newIndex);
+	print("Goto screen " + (newIndex % screennumber));
+	print(screens[newIndex % screennumber]);
+    }
+    getPoints(screens[currentIndex % screennumber], screens[newIndex % screennumber]);
+    slideinfo.SetAttribute("current", newIndex);
+
+    changeSlide(newIndex);
 }
 
 function getBezier(t) {
@@ -254,7 +297,8 @@ function animationUpdate(dt) {
 }
 
 function reset() {
-    viewScreen(entities[currentIndex]);
+    var entity = screens[currentIndex];
+    viewScreen(entity);
     targets = [];
     lookAtTargets = [];
 }
@@ -267,18 +311,34 @@ function updateSettings() {
 }
 
 // We look for anything that has a EC_WebView and circulate between them
-var entities = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent", "SlideScreenInfo");
+var ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent");
+var screens = [];
 
+for (i = 0; i < ents.length; i++) {
+    var candidate = ents[i];
+    if (candidate.EC_DynamicComponent.name == 'SlideScreenInfo') {
+	screens.push(candidate);
+    }
+
+}
+var debug = 0
+
+if (debug) {
+    print(screens);
+    for (i = 0; i < screens.length; i++) {
+	print(screens[i].EC_Name.name + ", id: " +screens[i].id);
+    }
+}
 var slideinfo = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleInfo");
 
 var currentIndex = slideinfo.GetAttribute("current");
 var endIndex = slideinfo.GetAttribute("slidenumber") - 1; 
-var screennumber = entities.length
+var screennumber = screens.length
 
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
 //Handy for debug
-var camera = scene.GetEntityByName("Monkey");
+//var camera = scene.GetEntityByName("Monkey");
 
 inputmapper.RegisterMapping('n', "GotoNext", 1);
 inputmapper.RegisterMapping('p', "GotoPrev", 1);
@@ -308,8 +368,10 @@ me.Action("GotoPrev").Triggered.connect(HandleGotoPrev);
 me.Action("ResetShow").Triggered.connect(reset);
 
 var targets = [];
-print(targets);
 
-print('..');
+print('Slide circle started');
+
+// go to first slide
+reset()
 
 frame.Updated.connect(animationUpdate);

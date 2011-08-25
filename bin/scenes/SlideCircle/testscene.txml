@@ -29,13 +29,13 @@
   </component>
   <component type="EC_DynamicComponent" sync="1" name="SlideCircleInfo">
     <attribute value="6" type="int" name="slidenumber"/>
-    <attribute value="1" type="int" name="current"/>
-    <attribute value="http://www.fi/1" type="string" name="slide1"/>
-    <attribute value="http://www.fi/2" type="string" name="slide2"/>
-    <attribute value="http://www.fi/3" type="string" name="slide3"/>
-    <attribute value="http://www.fi/4" type="string" name="slide4"/>
-    <attribute value="http://www.fi/5" type="string" name="slide5"/>
-    <attribute value="http://www.fi/6" type="string" name="slide6"/>
+    <attribute value="0" type="int" name="current"/>
+    <attribute value="http://www.realxtend.org/" type="string" name="slide0"/>
+    <attribute value="http://wiki.realxtend.org/index.php/Getting_Started_with_Tundra" type="string" name="slide1"/>
+    <attribute value="http://realxtend.wordpress.com/media" type="string" name="slide2"/>
+    <attribute value="http://realxtend.wordpress.com/realxtend-association/" type="string" name="slide3"/>
+    <attribute value="https://github.com/realXtend/naali" type="string" name="slide4"/>
+    <attribute value="http://www.realxtend.org/page.php?pg=downloads" type="string" name="slide5"/>
   </component>
  </entity>
  <entity id="2">
@@ -58,7 +58,7 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_WebView" sync="1">
-   <attribute value="http://www.realxtend.org/" name="View URL"/>
+   <attribute value="http://www.realxtend.org//" name="View URL"/>
    <attribute value="800 600" name="View Size"/>
    <attribute value="1" name="Render Submesh"/>
    <attribute value="0" name="Render FPS"/>
@@ -67,7 +67,7 @@
    <attribute value="-1" name="ControllerId"/>
   </component>
   <component type="EC_DynamicComponent" sync="1" name="SlideScreenInfo">
-    <attribute value="1" type="int" name="screennumber"/>
+    <attribute value="0" type="int" name="screennumber"/>
   </component>
  </entity>
  <entity id="3">
@@ -99,7 +99,7 @@
    <attribute value="-1" name="ControllerId"/>
   </component>
   <component type="EC_DynamicComponent" sync="1" name="SlideScreenInfo">
-    <attribute value="2" type="int" name="screennumber"/>
+    <attribute value="1" type="int" name="screennumber"/>
   </component>
  </entity>
  <entity id="4">
@@ -122,7 +122,7 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_WebView" sync="1">
-   <attribute value="http://realxtend.wordpress.com/media/" name="View URL"/>
+   <attribute value="http://realxtend.wordpress.com/media" name="View URL"/>
    <attribute value="800 600" name="View Size"/>
    <attribute value="1" name="Render Submesh"/>
    <attribute value="0" name="Render FPS"/>
@@ -131,7 +131,7 @@
    <attribute value="-1" name="ControllerId"/>
   </component>
   <component type="EC_DynamicComponent" sync="1" name="SlideScreenInfo">
-    <attribute value="3" type="int" name="screennumber"/>
+    <attribute value="2" type="int" name="screennumber"/>
   </component>
  </entity>
  <entity id="5">
@@ -163,7 +163,7 @@
    <attribute value="-1" name="ControllerId"/>
   </component>
   <component type="EC_DynamicComponent" sync="1" name="SlideScreenInfo">
-    <attribute value="4" type="int" name="screennumber"/>
+    <attribute value="3" type="int" name="screennumber"/>
   </component>
  </entity>
  <entity id="6">
