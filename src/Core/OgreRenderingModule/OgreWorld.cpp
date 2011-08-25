@@ -280,6 +280,8 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
 
 RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
 {
+    if (!rayQuery_)
+        return 0;
     rayQuery_->setRay(Ogre::Ray(ray.pos, ray.dir));
     return RaycastInternal(layerMask);
 }
