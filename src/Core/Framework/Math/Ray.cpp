@@ -138,9 +138,19 @@ bool Ray::Intersects(const Triangle &triangle, float *d, float3 *intersectionPoi
     return triangle.Intersects(*this, d, intersectionPoint);
 }
 
+bool Ray::Intersects(const Triangle &triangle) const
+{
+    return triangle.Intersects(*this, 0, 0);
+}
+
 bool Ray::Intersects(const Plane &plane, float *d) const
 {
     return plane.Intersects(*this, d);
+}
+
+bool Ray::Intersects(const Plane &plane) const
+{
+    return plane.Intersects(*this, 0);
 }
 
 bool Ray::Intersects(const Sphere &sphere, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const
@@ -148,14 +158,29 @@ bool Ray::Intersects(const Sphere &sphere, float3 *intersectionPoint, float3 *in
     return sphere.Intersects(*this, intersectionPoint, intersectionNormal, d);
 }
 
+bool Ray::Intersects(const Sphere &sphere) const
+{
+    return sphere.Intersects(*this, 0, 0, 0);
+}
+
 bool Ray::Intersects(const AABB &aabb, float *dNear, float *dFar) const
 {
     return aabb.Intersects(*this, dNear, dFar);
 }
 
+bool Ray::Intersects(const AABB &aabb) const
+{
+    return aabb.Intersects(*this, 0, 0);
+}
+
 bool Ray::Intersects(const OBB &obb, float *dNear, float *dFar) const
 {
     return obb.Intersects(*this, dNear, dFar);
+}
+
+bool Ray::Intersects(const OBB &obb) const
+{
+    return obb.Intersects(*this, 0, 0);
 }
 
 Line Ray::ToLine() const
@@ -167,6 +192,15 @@ LineSegment Ray::ToLineSegment(float d) const
 {
     return LineSegment(pos, GetPoint(d));
 }
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::string Ray::ToString() const
+{
+    char str[256];
+    sprintf(str, "Ray(Pos:(%.2f, %.2f, %.2f) Dir:(%.2f, %.2f, %.2f))", pos.x, pos.y, pos.z, dir.x, dir.y, dir.z);
+    return str;
+}
+#endif
 
 Ray operator *(const float3x3 &transform, const Ray &ray)
 {

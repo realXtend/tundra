@@ -67,10 +67,15 @@ public:
     float3 ClosestPoint(const LineSegment &other, float *d = 0, float *d2 = 0) const;
 
     bool Intersects(const Triangle &triangle, float *d, float3 *intersectionPoint) const;
+    bool Intersects(const Triangle &triangle) const;
     bool Intersects(const Plane &plane, float *d) const;
-    bool Intersects(const Sphere &s, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
+    bool Intersects(const Plane &plane) const;
+    bool Intersects(const Sphere &s, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const;
+    bool Intersects(const Sphere &s) const;
     bool Intersects(const AABB &aabb, float *dNear, float *dFar) const;
+    bool Intersects(const AABB &aabb) const;
     bool Intersects(const OBB &obb, float *dNear, float *dFar) const;
+    bool Intersects(const OBB &obb) const;
 
 /*
     bool Intersect(const Plane &plane) const;
@@ -105,6 +110,16 @@ public:
 */
     Line ToLine() const;
     LineSegment ToLineSegment(float d) const;
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+    /// Returns a human-readable representation of this Ray. Most useful for debugging purposes.
+    /** The returned string specifies the position and direction of this Ray. */
+    std::string ToString() const;
+#endif
+#ifdef QT_INTEROP
+    operator QString() const { return toString(); }
+    QString toString() const { return QString::fromStdString(ToString()); }
+#endif
 
 #ifdef OGRE_INTEROP
     Ray(const Ogre::Ray &other) { pos = other.getOrigin(); dir = other.getDirection(); }

@@ -348,6 +348,10 @@ public:
     /** The returned string specifies the center point and the half-axes of this AABB. */
     std::string ToString() const;
 #endif
+#ifdef QT_INTEROP
+    operator QString() const { return toString(); }
+    QString toString() const { return QString::fromStdString(ToString()); }
+#endif
 
     /// Finds the set intersection of this and the given AABB.
     /** @return This function returns the AABB that is contained in both this and the given AABB. */
