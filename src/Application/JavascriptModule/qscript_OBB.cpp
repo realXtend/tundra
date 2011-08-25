@@ -490,6 +490,15 @@ static QScriptValue OBB_Intersects_Triangle(QScriptContext *context, QScriptEngi
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue OBB_toString(QScriptContext *context, QScriptEngine *engine)
+{
+    OBB This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<OBB>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<OBB>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue OBB_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -627,6 +636,7 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("Contains", engine->newFunction(OBB_Contains_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(OBB_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<OBB>()));
     engine->setDefaultPrototype(qMetaTypeId<OBB>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<OBB*>(), proto);

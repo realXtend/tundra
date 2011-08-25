@@ -204,6 +204,54 @@ static QScriptValue Sphere_Enclose_float3(QScriptContext *context, QScriptEngine
     return QScriptValue();
 }
 
+static QScriptValue Sphere_RandomPointInside_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_RandomPointInside_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Sphere This = qscriptvalue_cast<Sphere>(context->thisObject());
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float3 ret = This.RandomPointInside(lcg);
+    ToExistingScriptValue_Sphere(engine, This, context->thisObject());
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Sphere_RandomPointOnSurface_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_RandomPointOnSurface_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Sphere This = qscriptvalue_cast<Sphere>(context->thisObject());
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float3 ret = This.RandomPointOnSurface(lcg);
+    ToExistingScriptValue_Sphere(engine, This, context->thisObject());
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Sphere_RandomPointInside_LCG_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Sphere_RandomPointInside_LCG_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float3 center = qscriptvalue_cast<float3>(context->argument(1));
+    float radius = qscriptvalue_cast<float>(context->argument(2));
+    float3 ret = Sphere::RandomPointInside(lcg, center, radius);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Sphere_RandomPointOnSurface_LCG_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Sphere_RandomPointOnSurface_LCG_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float3 center = qscriptvalue_cast<float3>(context->argument(1));
+    float radius = qscriptvalue_cast<float>(context->argument(2));
+    float3 ret = Sphere::RandomPointOnSurface(lcg, center, radius);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Sphere_RandomUnitaryFloat3_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_RandomUnitaryFloat3_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float3 ret = Sphere::RandomUnitaryFloat3(lcg);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Sphere_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -243,6 +291,24 @@ static QScriptValue Sphere_Enclose_selector(QScriptContext *context, QScriptEngi
     printf("Sphere_Enclose_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
+static QScriptValue Sphere_RandomPointInside_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<LCG>(context->argument(0)))
+        return Sphere_RandomPointInside_LCG(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<LCG>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return Sphere_RandomPointInside_LCG_float3_float(context, engine);
+    printf("Sphere_RandomPointInside_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
+static QScriptValue Sphere_RandomPointOnSurface_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<LCG>(context->argument(0)))
+        return Sphere_RandomPointOnSurface_LCG(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<LCG>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return Sphere_RandomPointOnSurface_LCG_float3_float(context, engine);
+    printf("Sphere_RandomPointOnSurface_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
 void FromScriptValue_Sphere(const QScriptValue &obj, Sphere &value)
 {
     value.pos = qScriptValueToValue<float3>(obj.property("pos"));
@@ -280,12 +346,17 @@ QScriptValue register_Sphere_prototype(QScriptEngine *engine)
     proto.setProperty("ClosestPoint", engine->newFunction(Sphere_ClosestPoint_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(Sphere_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Enclose", engine->newFunction(Sphere_Enclose_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("RandomPointInside", engine->newFunction(Sphere_RandomPointInside_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("RandomPointOnSurface", engine->newFunction(Sphere_RandomPointOnSurface_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Sphere>()));
     engine->setDefaultPrototype(qMetaTypeId<Sphere>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Sphere*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_Sphere, FromScriptValue_Sphere, proto);
 
     QScriptValue ctor = engine->newFunction(Sphere_ctor, proto, 4);
+    ctor.setProperty("RandomPointInside", engine->newFunction(Sphere_RandomPointInside_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RandomPointOnSurface", engine->newFunction(Sphere_RandomPointOnSurface_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RandomUnitaryFloat3", engine->newFunction(Sphere_RandomUnitaryFloat3_LCG, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     engine->globalObject().setProperty("Sphere", ctor, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
     return ctor;

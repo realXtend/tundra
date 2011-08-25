@@ -79,19 +79,35 @@ static QScriptValue Triangle_GetPlane(QScriptContext *context, QScriptEngine *en
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Triangle_Normal(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Triangle_NormalCCW(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Normal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_NormalCCW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 ret = This.NormalCCW();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Triangle_UnnormalizedNormal(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Triangle_NormalCW(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_UnnormalizedNormal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_NormalCW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
+    float3 ret = This.NormalCW();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Triangle_UnnormalizedNormalCCW(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_UnnormalizedNormalCCW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 ret = This.UnnormalizedNormalCCW();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Triangle_UnnormalizedNormalCW(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_UnnormalizedNormalCW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
+    float3 ret = This.UnnormalizedNormalCW();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -119,7 +135,7 @@ static QScriptValue Triangle_Distance_float3(QScriptContext *context, QScriptEng
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Distance_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
-    bool ret = This.Distance(point);
+    float ret = This.Distance(point);
     ToExistingScriptValue_Triangle(engine, This, context->thisObject());
     return qScriptValueFromValue(engine, ret);
 }
@@ -296,8 +312,10 @@ QScriptValue register_Triangle_prototype(QScriptEngine *engine)
     proto.setProperty("Point", engine->newFunction(Triangle_Point_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Area", engine->newFunction(Triangle_Area, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("GetPlane", engine->newFunction(Triangle_GetPlane, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Normal", engine->newFunction(Triangle_Normal, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("UnnormalizedNormal", engine->newFunction(Triangle_UnnormalizedNormal, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("NormalCCW", engine->newFunction(Triangle_NormalCCW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("NormalCW", engine->newFunction(Triangle_NormalCW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("UnnormalizedNormalCCW", engine->newFunction(Triangle_UnnormalizedNormalCCW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("UnnormalizedNormalCW", engine->newFunction(Triangle_UnnormalizedNormalCW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsDegenerate", engine->newFunction(Triangle_IsDegenerate_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Contains", engine->newFunction(Triangle_Contains_float3_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance", engine->newFunction(Triangle_Distance_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

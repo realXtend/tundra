@@ -97,6 +97,51 @@ static QScriptValue Ray_Contains_float3_float(QScriptContext *context, QScriptEn
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Ray_Intersects_Triangle(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_Intersects_Triangle in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Ray This = qscriptvalue_cast<Ray>(context->thisObject());
+    Triangle triangle = qscriptvalue_cast<Triangle>(context->argument(0));
+    bool ret = This.Intersects(triangle);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Ray_Intersects_Plane(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_Intersects_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Ray This = qscriptvalue_cast<Ray>(context->thisObject());
+    Plane plane = qscriptvalue_cast<Plane>(context->argument(0));
+    bool ret = This.Intersects(plane);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Ray_Intersects_Sphere(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_Intersects_Sphere in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Ray This = qscriptvalue_cast<Ray>(context->thisObject());
+    Sphere s = qscriptvalue_cast<Sphere>(context->argument(0));
+    bool ret = This.Intersects(s);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Ray_Intersects_AABB(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_Intersects_AABB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Ray This = qscriptvalue_cast<Ray>(context->thisObject());
+    AABB aabb = qscriptvalue_cast<AABB>(context->argument(0));
+    bool ret = This.Intersects(aabb);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Ray_Intersects_OBB(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_Intersects_OBB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Ray This = qscriptvalue_cast<Ray>(context->thisObject());
+    OBB obb = qscriptvalue_cast<OBB>(context->argument(0));
+    bool ret = This.Intersects(obb);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Ray_ToLine(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Ray_ToLine in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -111,6 +156,15 @@ static QScriptValue Ray_ToLineSegment_float(QScriptContext *context, QScriptEngi
     Ray This = qscriptvalue_cast<Ray>(context->thisObject());
     float d = qscriptvalue_cast<float>(context->argument(0));
     LineSegment ret = This.ToLineSegment(d);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Ray_toString(QScriptContext *context, QScriptEngine *engine)
+{
+    Ray This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Ray>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Ray>(context->thisObject());
+    QString ret = This.toString();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -138,6 +192,21 @@ static QScriptValue Ray_Transform_selector(QScriptContext *context, QScriptEngin
     if (context->argumentCount() == 1 && QSVIsOfType<Quat>(context->argument(0)))
         return Ray_Transform_Quat(context, engine);
     printf("Ray_Transform_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
+static QScriptValue Ray_Intersects_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<Triangle>(context->argument(0)))
+        return Ray_Intersects_Triangle(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
+        return Ray_Intersects_Plane(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Sphere>(context->argument(0)))
+        return Ray_Intersects_Sphere(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
+        return Ray_Intersects_AABB(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<OBB>(context->argument(0)))
+        return Ray_Intersects_OBB(context, engine);
+    printf("Ray_Intersects_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 void FromScriptValue_Ray(const QScriptValue &obj, Ray &value)
@@ -168,8 +237,10 @@ QScriptValue register_Ray_prototype(QScriptEngine *engine)
     proto.setProperty("GetPoint", engine->newFunction(Ray_GetPoint_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Transform", engine->newFunction(Ray_Transform_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Contains", engine->newFunction(Ray_Contains_float3_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Intersects", engine->newFunction(Ray_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLine", engine->newFunction(Ray_ToLine, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLineSegment", engine->newFunction(Ray_ToLineSegment_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Ray_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Ray>()));
     engine->setDefaultPrototype(qMetaTypeId<Ray>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Ray*>(), proto);

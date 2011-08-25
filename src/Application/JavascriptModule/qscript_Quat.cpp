@@ -746,6 +746,14 @@ static QScriptValue Quat_FromEulerZYX_float_float_float(QScriptContext *context,
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Quat_RandomRotation_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_RandomRotation_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    Quat ret = Quat::RandomRotation(lcg);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Quat_FromQQuaternion_QQuaternion(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_FromQQuaternion_QQuaternion in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -950,6 +958,7 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     ctor.setProperty("FromEulerYZX", engine->newFunction(Quat_FromEulerYZX_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromEulerZXY", engine->newFunction(Quat_FromEulerZXY_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromEulerZYX", engine->newFunction(Quat_FromEulerZYX_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RandomRotation", engine->newFunction(Quat_RandomRotation_LCG, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQQuaternion", engine->newFunction(Quat_FromQQuaternion_QQuaternion, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromString", engine->newFunction(Quat_FromString_QString, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("identity", qScriptValueFromValue(engine, Quat::identity), QScriptValue::Undeletable | QScriptValue::ReadOnly);

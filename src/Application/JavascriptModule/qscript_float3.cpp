@@ -223,6 +223,22 @@ static QScriptValue float3_Abs(QScriptContext *context, QScriptEngine *engine)
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float3_Neg(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3_Neg in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 This = qscriptvalue_cast<float3>(context->thisObject());
+    float3 ret = This.Neg();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float3_Recip(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3_Recip in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 This = qscriptvalue_cast<float3>(context->thisObject());
+    float3 ret = This.Recip();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float3_Min_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3_Min_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -503,14 +519,6 @@ static QScriptValue float3_Div_float(QScriptContext *context, QScriptEngine *eng
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3_Neg(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3_Neg in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3 This = qscriptvalue_cast<float3>(context->thisObject());
-    float3 ret = This.Neg();
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue float3_Mul_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3_Mul_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -650,6 +658,39 @@ static QScriptValue float3_FromScalar_float(QScriptContext *context, QScriptEngi
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3_FromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float scalar = qscriptvalue_cast<float>(context->argument(0));
     float3 ret = float3::FromScalar(scalar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float3_RandomDir_LCG_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3_RandomDir_LCG_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float length = qscriptvalue_cast<float>(context->argument(1));
+    float3 ret = float3::RandomDir(lcg, length);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float3_RandomSphere_LCG_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3_RandomSphere_LCG_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float3 center = qscriptvalue_cast<float3>(context->argument(1));
+    float radius = qscriptvalue_cast<float>(context->argument(2));
+    float3 ret = float3::RandomSphere(lcg, center, radius);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float3_RandomBox_LCG_float_float_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 7) { printf("Error! Invalid number of arguments passed to function float3_RandomBox_LCG_float_float_float_float_float_float in file %s, line %d!\nExpected 7, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float xmin = qscriptvalue_cast<float>(context->argument(1));
+    float xmax = qscriptvalue_cast<float>(context->argument(2));
+    float ymin = qscriptvalue_cast<float>(context->argument(3));
+    float ymax = qscriptvalue_cast<float>(context->argument(4));
+    float zmin = qscriptvalue_cast<float>(context->argument(5));
+    float zmax = qscriptvalue_cast<float>(context->argument(6));
+    float3 ret = float3::RandomBox(lcg, xmin, xmax, ymin, ymax, zmin, zmax);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -822,6 +863,8 @@ QScriptValue register_float3_prototype(QScriptEngine *engine)
     proto.setProperty("MaxElement", engine->newFunction(float3_MaxElement, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MaxElementIndex", engine->newFunction(float3_MaxElementIndex, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Abs", engine->newFunction(float3_Abs, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Neg", engine->newFunction(float3_Neg, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Recip", engine->newFunction(float3_Recip, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Min", engine->newFunction(float3_Min_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Max", engine->newFunction(float3_Max_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Clamp", engine->newFunction(float3_Clamp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -849,7 +892,6 @@ QScriptValue register_float3_prototype(QScriptEngine *engine)
     proto.setProperty("Sub", engine->newFunction(float3_Sub_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Mul", engine->newFunction(float3_Mul_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Div", engine->newFunction(float3_Div_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Neg", engine->newFunction(float3_Neg, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("toString", engine->newFunction(float3_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToQVector3D", engine->newFunction(float3_ToQVector3D, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<float3>()));
@@ -869,6 +911,9 @@ QScriptValue register_float3_prototype(QScriptEngine *engine)
     ctor.setProperty("AreOrthonormal", engine->newFunction(float3_AreOrthonormal_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("AreOrthonormal", engine->newFunction(float3_AreOrthonormal_selector, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromScalar", engine->newFunction(float3_FromScalar_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RandomDir", engine->newFunction(float3_RandomDir_LCG_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RandomSphere", engine->newFunction(float3_RandomSphere_LCG_float3_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RandomBox", engine->newFunction(float3_RandomBox_LCG_float_float_float_float_float_float, 7), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQVector3D", engine->newFunction(float3_FromQVector3D_QVector3D, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromString", engine->newFunction(float3_FromString_QString, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("zero", qScriptValueFromValue(engine, float3::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);

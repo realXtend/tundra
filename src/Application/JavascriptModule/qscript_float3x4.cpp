@@ -1063,6 +1063,16 @@ static QScriptValue float3x4_RotateFromTo_float3_float3_float3(QScriptContext *c
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float3x4_RandomGeneral_LCG_float_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x4_RandomGeneral_LCG_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float minElem = qscriptvalue_cast<float>(context->argument(1));
+    float maxElem = qscriptvalue_cast<float>(context->argument(2));
+    float3x4 ret = float3x4::RandomGeneral(lcg, minElem, maxElem);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float3x4_FromQuat_Quat(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_FromQuat_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1319,9 +1329,9 @@ static QScriptValue float3x4_Reflect_Plane(QScriptContext *context, QScriptEngin
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_MakeOrthographicProjection_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_OrthographicProjection_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3x4_MakeOrthographicProjection_float_float_float_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3x4_OrthographicProjection_float_float_float_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float nearPlaneDistance = qscriptvalue_cast<float>(context->argument(0));
     float farPlaneDistance = qscriptvalue_cast<float>(context->argument(1));
     float horizontalViewportSize = qscriptvalue_cast<float>(context->argument(2));
@@ -1330,31 +1340,31 @@ static QScriptValue float3x4_MakeOrthographicProjection_float_float_float_float(
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_MakeOrthographicProjection_Plane(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_OrthographicProjection_Plane(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_MakeOrthographicProjection_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_OrthographicProjection_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Plane target = qscriptvalue_cast<Plane>(context->argument(0));
     float3x4 ret = float3x4::OrthographicProjection(target);
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_MakeOrthographicProjectionYZ(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_OrthographicProjectionYZ(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_MakeOrthographicProjectionYZ in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_OrthographicProjectionYZ in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 ret = float3x4::OrthographicProjectionYZ();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_MakeOrthographicProjectionXZ(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_OrthographicProjectionXZ(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_MakeOrthographicProjectionXZ in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_OrthographicProjectionXZ in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 ret = float3x4::OrthographicProjectionXZ();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_MakeOrthographicProjectionXY(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_OrthographicProjectionXY(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_MakeOrthographicProjectionXY in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_OrthographicProjectionXY in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 ret = float3x4::OrthographicProjectionXY();
     return qScriptValueFromValue(engine, ret);
 }
@@ -1589,13 +1599,13 @@ static QScriptValue float3x4_ScaleAlongAxis_selector(QScriptContext *context, QS
     printf("float3x4_ScaleAlongAxis_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
-static QScriptValue float3x4_MakeOrthographicProjection_selector(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_OrthographicProjection_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 4 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)))
-        return float3x4_MakeOrthographicProjection_float_float_float_float(context, engine);
+        return float3x4_OrthographicProjection_float_float_float_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
-        return float3x4_MakeOrthographicProjection_Plane(context, engine);
-    printf("float3x4_MakeOrthographicProjection_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+        return float3x4_OrthographicProjection_Plane(context, engine);
+    printf("float3x4_OrthographicProjection_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 void FromScriptValue_float3x4(const QScriptValue &obj, float3x4 &value)
@@ -1724,6 +1734,7 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     ctor.setProperty("RotateAxisAngle", engine->newFunction(float3x4_RotateAxisAngle_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateFromTo", engine->newFunction(float3x4_RotateFromTo_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateFromTo", engine->newFunction(float3x4_RotateFromTo_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RandomGeneral", engine->newFunction(float3x4_RandomGeneral_LCG_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQuat", engine->newFunction(float3x4_FromQuat_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQuat", engine->newFunction(float3x4_FromQuat_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromTRS", engine->newFunction(float3x4_FromTRS_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -1749,11 +1760,11 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     ctor.setProperty("ShearY", engine->newFunction(float3x4_ShearY_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ShearZ", engine->newFunction(float3x4_ShearZ_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Reflect", engine->newFunction(float3x4_Reflect_Plane, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("MakeOrthographicProjection", engine->newFunction(float3x4_MakeOrthographicProjection_selector, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("MakeOrthographicProjection", engine->newFunction(float3x4_MakeOrthographicProjection_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("MakeOrthographicProjectionYZ", engine->newFunction(float3x4_MakeOrthographicProjectionYZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("MakeOrthographicProjectionXZ", engine->newFunction(float3x4_MakeOrthographicProjectionXZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("MakeOrthographicProjectionXY", engine->newFunction(float3x4_MakeOrthographicProjectionXY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("OrthographicProjection", engine->newFunction(float3x4_OrthographicProjection_selector, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("OrthographicProjection", engine->newFunction(float3x4_OrthographicProjection_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("OrthographicProjectionYZ", engine->newFunction(float3x4_OrthographicProjectionYZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("OrthographicProjectionXZ", engine->newFunction(float3x4_OrthographicProjectionXZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("OrthographicProjectionXY", engine->newFunction(float3x4_OrthographicProjectionXY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("LookAtRH", engine->newFunction(float3x4_LookAtRH_float3_float3_float3_float3, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("zero", qScriptValueFromValue(engine, float3x4::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("identity", qScriptValueFromValue(engine, float3x4::identity), QScriptValue::Undeletable | QScriptValue::ReadOnly);

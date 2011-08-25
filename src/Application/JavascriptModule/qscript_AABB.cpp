@@ -38,6 +38,54 @@ static QScriptValue AABB_AABB_Sphere(QScriptContext *context, QScriptEngine *eng
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue AABB_MinX(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_MinX in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    float ret = This.MinX();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_MinY(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_MinY in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    float ret = This.MinY();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_MinZ(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_MinZ in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    float ret = This.MinZ();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_MaxX(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_MaxX in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    float ret = This.MaxX();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_MaxY(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_MaxY in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    float ret = This.MaxY();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_MaxZ(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_MaxZ in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    float ret = This.MaxZ();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue AABB_SetNegativeInfinity(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_SetNegativeInfinity in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -528,6 +576,15 @@ static QScriptValue AABB_Enclose_Sphere(QScriptContext *context, QScriptEngine *
     return QScriptValue();
 }
 
+static QScriptValue AABB_toString(QScriptContext *context, QScriptEngine *engine)
+{
+    AABB This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<AABB>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<AABB>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue AABB_Intersection_AABB(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersection_AABB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -656,6 +713,12 @@ QScriptValue ToScriptValue_const_AABB(QScriptEngine *engine, const AABB &value)
 QScriptValue register_AABB_prototype(QScriptEngine *engine)
 {
     QScriptValue proto = engine->newObject();
+    proto.setProperty("MinX", engine->newFunction(AABB_MinX, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MinY", engine->newFunction(AABB_MinY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MinZ", engine->newFunction(AABB_MinZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MaxX", engine->newFunction(AABB_MaxX, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MaxY", engine->newFunction(AABB_MaxY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MaxZ", engine->newFunction(AABB_MaxZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetNegativeInfinity", engine->newFunction(AABB_SetNegativeInfinity, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetCenter", engine->newFunction(AABB_SetCenter_float3_float3, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetFrom", engine->newFunction(AABB_SetFrom_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -693,6 +756,7 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("Intersects", engine->newFunction(AABB_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ProjectToAxis", engine->newFunction(AABB_ProjectToAxis_float3_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Enclose", engine->newFunction(AABB_Enclose_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(AABB_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersection", engine->newFunction(AABB_Intersection_AABB, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<AABB>()));
     engine->setDefaultPrototype(qMetaTypeId<AABB>(), proto);
