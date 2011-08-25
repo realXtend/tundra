@@ -899,7 +899,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
             entity->RemoveComponentById(compID, AttributeChange::LocalOnly);
         }
         
-        ComponentPtr comp = entity->CreateComponent(compID, typeID, name, change);
+        ComponentPtr comp = entity->CreateComponentWithId(compID, typeID, name, change);
         if (!comp)
         {
             LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateEntity message, skipping component");
@@ -1018,7 +1018,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             entity->RemoveComponentById(compID, AttributeChange::LocalOnly);
         }
         
-        ComponentPtr comp = entity->CreateComponent(compID, typeID, name, change);
+        ComponentPtr comp = entity->CreateComponentWithId(compID, typeID, name, change);
         if (!comp)
         {
             LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateComponents message, skipping component");

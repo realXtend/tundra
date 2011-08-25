@@ -231,8 +231,8 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::
         return ComponentPtr();
     }
 
-    // If new component requests to not be replicated by default, honor that
-    if (new_comp->IsReplicated())
+    // If changemode is default, and new component requests to not be replicated by default, honor that
+    if (change != AttributeChange::Default || new_comp->IsReplicated())
         new_comp->SetReplicated(replicated);
     
     AddComponent(new_comp, change);
@@ -248,8 +248,8 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &na
         return ComponentPtr();
     }
 
-    // If new component requests to not be replicated by default, honor that
-    if (new_comp->IsReplicated())
+    // If changemode is default, and new component requests to not be replicated by default, honor that
+    if (change != AttributeChange::Default || new_comp->IsReplicated())
         new_comp->SetReplicated(replicated);
     
     AddComponent(new_comp, change);
@@ -265,8 +265,8 @@ ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change, b
         return ComponentPtr();
     }
 
-    // If new component requests to not be replicated by default, honor that
-    if (new_comp->IsReplicated())
+    // If changemode is default, and new component requests to not be replicated by default, honor that
+    if (change != AttributeChange::Default || new_comp->IsReplicated())
         new_comp->SetReplicated(replicated);
     
     AddComponent(new_comp, change);
@@ -282,15 +282,15 @@ ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeC
         return ComponentPtr();
     }
 
-    // If new component requests to not be replicated by default, honor that
-    if (new_comp->IsReplicated())
+    // If changemode is default, and new component requests to not be replicated by default, honor that
+    if (change != AttributeChange::Default || new_comp->IsReplicated())
         new_comp->SetReplicated(replicated);
     
     AddComponent(new_comp, change);
     return new_comp;
 }
 
-ComponentPtr Entity::CreateComponent(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change)
+ComponentPtr Entity::CreateComponentWithId(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change)
 {
     ComponentPtr new_comp = framework_->Scene()->CreateComponentById(scene_, typeId, name);
     if (!new_comp)
@@ -298,6 +298,10 @@ ComponentPtr Entity::CreateComponent(component_id_t compId, u32 typeId, const QS
         LogError("Failed to create a component of type id " + QString::number(typeId) + " and name \"" + name + "\" to " + ToString());
         return ComponentPtr();
     }
+
+    // If this overload is called with id 0, it must come from SyncManager (server). In that case make sure we do not allow the component to be created as local
+    if (!compId)
+        new_comp->SetReplicated(true);
 
     AddComponent(compId, new_comp, change);
     return new_comp;

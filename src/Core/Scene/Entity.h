@@ -120,6 +120,11 @@ public:
         @param new_id New id to set */
     void ChangeComponentId(component_id_t old_id, component_id_t new_id);
     
+    /// Create a component with predefined ID. Called by SyncManager.
+    /** @param typeId Unique type ID of the component.
+        @param name name of the component */
+    ComponentPtr CreateComponentWithId(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
+    
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
     ComponentPtr GetComponentById(component_id_t id) const;
@@ -176,10 +181,6 @@ public slots:
     /** @param typeId Unique type ID of the component.
         @param name name of the component */
     ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function. This variant used by SyncManager.
-    /** @param typeId Unique type ID of the component.
-        @param name name of the component */
-    ComponentPtr CreateComponent(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
     
     /// Creates a local component with type 'type_name' and adds it to the entity. If could not create, return empty pointer
     ComponentPtr CreateLocalComponent(const QString &type_name);
