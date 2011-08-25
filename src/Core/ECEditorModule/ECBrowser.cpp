@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "ECBrowser.h"
-#include "COmponentGroup.h"
+#include "ComponentGroup.h"
 #include "ECComponentEditor.h"
 #include "TreeWidgetItemExpandMemory.h"
 #include "TreeWidgetUtils.h"
