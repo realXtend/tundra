@@ -16,7 +16,6 @@ del build\fullmemoryleaklog.txt
 del build\scenestats.txt
 del build\ogrestats.txt
 del build\telepathy*.dll
-del build\caelum*.dll
 del build\openal32.dll
 del build\wrap_oal.dll
 del build\*d4.dll
@@ -34,6 +33,8 @@ del build\libvorbisd.dll
 del build\libvorbisfiled.dll
 del build\Tundrad.exe
 del build\plugins\*d.dll
+del build\caelum.dll
+del build\caelum_d.dll
 del build\Hydraxd.dll
 del build\SkyXd.dll
 @rem for now, delete all python stuff
