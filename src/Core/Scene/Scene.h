@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "CoreDefines.h"
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
