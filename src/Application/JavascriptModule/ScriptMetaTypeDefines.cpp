@@ -288,6 +288,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     qRegisterMetaType<entity_id_t>("entity_id_t");
     qScriptRegisterMetaType(engine, toScriptUInt<entity_id_t>, fromScriptUInt<entity_id_t>);
+    qRegisterMetaType<component_id_t>("component_id_t");
+    qScriptRegisterMetaType(engine, toScriptUInt<component_id_t>, fromScriptUInt<component_id_t>);
 
     // Framework metatype
     qScriptRegisterQObjectMetaType<Framework*>(engine);

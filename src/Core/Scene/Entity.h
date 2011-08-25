@@ -50,6 +50,7 @@ class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     Q_PROPERTY (QString description READ Description WRITE SetDescription)
     Q_PROPERTY (bool replicated READ IsReplicated)
     Q_PROPERTY (bool local READ IsLocal)
+    Q_PROPERTY (bool unacked READ IsUnacked)
     
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.

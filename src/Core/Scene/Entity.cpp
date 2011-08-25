@@ -45,7 +45,7 @@ Entity::~Entity()
     qDeleteAll(actions_);
 }
 
-void Entity::ChangeComponentId(entity_id_t old_id, entity_id_t new_id)
+void Entity::ChangeComponentId(component_id_t old_id, component_id_t new_id)
 {
     if (old_id == new_id)
         return;
@@ -60,7 +60,7 @@ void Entity::ChangeComponentId(entity_id_t old_id, entity_id_t new_id)
         RemoveComponentById(new_id, AttributeChange::LocalOnly);
     }
     
-    old_comp->SetNewId(old_id);
+    old_comp->SetNewId(new_id);
     components_.erase(old_id);
     components_[new_id] = old_comp;
     idGenerator_.Deallocate(old_id);
@@ -235,7 +235,10 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &na
         return ComponentPtr();
     }
 
-    new_comp->SetReplicated(replicated);
+    // If new component requests to not be replicated by default, honor that
+    if (new_comp->IsReplicated())
+        new_comp->SetReplicated(replicated);
+    
     AddComponent(new_comp, change);
     return new_comp;
 }
@@ -249,6 +252,10 @@ ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change, b
         return ComponentPtr();
     }
 
+    // If new component requests to not be replicated by default, honor that
+    if (new_comp->IsReplicated())
+        new_comp->SetReplicated(replicated);
+    
     new_comp->SetReplicated(replicated);
     AddComponent(new_comp, change);
     return new_comp;

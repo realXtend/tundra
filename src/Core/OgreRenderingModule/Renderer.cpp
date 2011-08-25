@@ -109,7 +109,7 @@ namespace OgreRenderer
         resized_dirty_(0),
         view_distance_(500.0f),
         shadowquality_(Shadows_High),
-        texturequality_(Texture_Normal)        
+        texturequality_(Texture_Normal)
     {
         c_handler_ = new CompositionHandler;
         logListener = new OgreLogListener; 
@@ -193,6 +193,8 @@ namespace OgreRenderer
 
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
+        Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_LOW);
+        
 // On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
 // On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
 ///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)

@@ -352,7 +352,7 @@ SimpleAvatar.prototype.ClientInitialize = function() {
         this.ClientCreateInputMapper();
         this.ClientCreateAvatarCamera();
         this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
-        var soundlistener = this.me.GetOrCreateComponent("EC_SoundListener");
+        var soundlistener = this.me.GetOrCreateComponent("EC_SoundListener", 2, false);
         soundlistener.active = true;
 
         this.me.Action("MouseScroll").Triggered.connect(this, this.ClientHandleMouseScroll);
@@ -472,7 +472,7 @@ SimpleAvatar.prototype.ClientCreateAvatarCamera = function() {
     var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
     {
-        cameraentity = scene.CreateEntity(scene.NextFreeIdLocal());
+        cameraentity = scene.CreateLocalEntity();
         cameraentity.SetName("AvatarCamera");
         cameraentity.SetTemporary(true);
     }

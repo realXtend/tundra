@@ -286,6 +286,12 @@ public slots:
         @param type Execution type. */
     void EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
 
+    /// Emits a notification of an entity creation acked by the server, and the entity ID changing as a result. Called by SyncManager
+    void EmitEntityAcked(Entity* entity, entity_id_t oldId);
+    
+    /// Emits a notification of a component creation acked by the server, and the component ID changing as a result. Called by SyncManager
+    void EmitComponentAcked(IComponent* component, component_id_t oldId);
+    
     /// Loads the scene from XML.
     /** @param filename File name
         @param clearScene Do we want to clear the existing scene.
@@ -419,6 +425,12 @@ signals:
 
     /// Signal when an entity deleted
     void EntityRemoved(Entity* entity, AttributeChange::Type change);
+
+    /// A entity creation has been acked by the server and assigned a proper replicated ID
+    void EntityAcked(Entity* entity, entity_id_t oldId);
+
+    /// A component creation into an entity has been acked by the server and assigned a proper replicated ID
+    void ComponentAcked(IComponent* comp, component_id_t oldId);
 
     /// Emitted when entity action is triggered.
     /** @param entity Entity for which action was executed.

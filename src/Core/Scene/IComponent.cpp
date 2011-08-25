@@ -186,7 +186,7 @@ IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& nam
 
 void IComponent::RemoveAttribute(u8 index, AttributeChange::Type change)
 {
-    if (attributes.size() < index && attributes[index])
+    if (index < attributes.size() && attributes[index])
     {
         IAttribute* attr = attributes[index];
         if (!attr->IsDynamic())
@@ -254,7 +254,7 @@ bool IComponent::AddAttribute(IAttribute* attr, u8 index)
             }
             else
             {
-                LogWarning("Removing existing attribute at index " + QString::number(index) + " to make room for new attribute. Indicates a bug in the scene sync protocol.");
+                LogWarning("Removing existing attribute at index " + QString::number(index) + " to make room for new attribute");
                 delete existing;
                 attributes[index] = 0;
             }

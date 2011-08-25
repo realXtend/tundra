@@ -11,6 +11,7 @@
 #pragma once
 
 #include "SceneFwd.h"
+#include "CoreTypes.h"
 
 #include <QWidget>
 #include <QLineEdit>
@@ -102,6 +103,12 @@ private slots:
     */
     void RemoveEntity(Entity *entity);
 
+    /// Readds entity on server ack.
+    /** @param entity Entity to be readded.
+        @param oldId Old entity id
+    */
+    void AckEntity(Entity *entity, entity_id_t oldId);
+    
     /// Adds the entity to the tree widget.
     /** @param entity Altered entity.
         @param comp Component which was added.
@@ -159,5 +166,8 @@ private slots:
 
     /// Checks the expand status to mark it to the expand/collapse button
     void CheckTreeExpandStatus(QTreeWidgetItem *item);
+    
+    /// Removes entity from the tree widget by ID
+    void RemoveEntityById(entity_id_t id);
 };
 

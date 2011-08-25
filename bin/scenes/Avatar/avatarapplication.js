@@ -116,7 +116,7 @@ function ServerHandleUserConnected(connectionID, user) {
     transform.pos.z = (Math.random() - 0.5) * avatar_area_size + avatar_area_z;
     placeable.transform = transform;
 
-    scene.EmitEntityCreatedRaw(avatarEntity);
+    scene.EmitEntityCreated(avatarEntity);
     
     if (user != null)
         print("[Avatar Application] Created avatar for " + user.GetProperty("username"));

@@ -961,105 +961,6 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     state->entities[entityID].DirtyProcessed();
 }
 
-void SyncManager::HandleCreateEntityReply(kNet::MessageConnection* source, const char* data, size_t numBytes)
-{
-    assert(source);
-    SceneSyncState* state = GetSceneSyncState(source);
-    ScenePtr scene = GetRegisteredScene();
-    if (!scene || !state)
-    {
-        LogWarning("Null scene or sync state, disregarding CreateEntityReply message");
-        return;
-    }
-    
-    bool isServer = owner_->IsServer();
-    if (isServer)
-    {
-        LogWarning("Discarding CreateEntityReply message on server");
-        return;
-    }
-    
-    kNet::DataDeserializer ds(data, numBytes);
-    entity_id_t senderEntityID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
-    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
-    scene->ChangeEntityId(senderEntityID, entityID); ///\todo Signal this so that SceneStructure or scripts can update itself
-    state->RemoveFromQueue(senderEntityID); // Make sure we don't have stale pointers in the dirty queue
-    state->entities[entityID] = state->entities[senderEntityID]; // Copy the sync state to the new ID
-    state->entities.erase(senderEntityID);
-    
-    EntitySyncState& entityState = state->entities[entityID];
-    
-    EntityPtr entity = scene->GetEntity(entityID);
-    if (!entity)
-    {
-        LogError("Failed to get entity after ID change");
-        return;
-    }
-    
-    unsigned numComps = ds.ReadVLE<kNet::VLE8_16_32>();
-    for (unsigned i = 0; i < numComps; ++i)
-    {
-        component_id_t senderCompID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
-        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
-        entity->ChangeComponentId(senderCompID, compID);
-        entityState.components[compID] = entityState.components[senderCompID]; // Copy the sync state to the new ID
-        entityState.components.erase(senderCompID);
-    }
-    
-    for (std::map<component_id_t, ComponentSyncState>::iterator i = entityState.components.begin(); i != entityState.components.end(); ++i)
-    {
-        // Now mark every component dirty so they will be inspected for changes on the next update
-        state->MarkComponentDirty(entityID, i->first);
-    }
-}
-
-void SyncManager::HandleCreateComponentsReply(kNet::MessageConnection* source, const char* data, size_t numBytes)
-{
-    assert(source);
-    SceneSyncState* state = GetSceneSyncState(source);
-    ScenePtr scene = GetRegisteredScene();
-    if (!scene || !state)
-    {
-        LogWarning("Null scene or sync state, disregarding CreateComponentsReply message");
-        return;
-    }
-    
-    bool isServer = owner_->IsServer();
-    if (isServer)
-    {
-        LogWarning("Discarding CreateComponentsReply message on server");
-        return;
-    }
-    
-    kNet::DataDeserializer ds(data, numBytes);
-    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
-    state->RemoveFromQueue(entityID); // Make sure we don't have stale pointers in the dirty queue
-    EntitySyncState& entityState = state->entities[entityID];
-    
-    EntityPtr entity = scene->GetEntity(entityID);
-    if (!entity)
-    {
-        LogError("Failed to get entity after ID change");
-        return;
-    }
-    
-    unsigned numComps = ds.ReadVLE<kNet::VLE8_16_32>();
-    for (unsigned i = 0; i < numComps; ++i)
-    {
-        component_id_t senderCompID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
-        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
-        entity->ChangeComponentId(senderCompID, compID);
-        entityState.components[compID] = entityState.components[senderCompID]; // Copy the sync state to the new ID
-        entityState.components.erase(senderCompID);
-    }
-    
-    for (std::map<component_id_t, ComponentSyncState>::iterator i = entityState.components.begin(); i != entityState.components.end(); ++i)
-    {
-        // Now mark every component dirty so they will be inspected for changes on the next update
-        state->MarkComponentDirty(entityID, i->first);
-    }
-}
-
 void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const char* data, size_t numBytes)
 {
     assert(source);
@@ -1293,10 +1194,21 @@ void SyncManager::HandleCreateAttributes(kNet::MessageConnection* source, const 
         u8 typeId = ds.Read<u8>();
         QString name = QString::fromStdString(ds.ReadString());
         
+        if (isServer)
+        {
+            // If we are server, do not allow to overwrite existing attributes by client requests
+            const AttributeVector& existingAttrs = comp->Attributes();
+            if (attrIndex < existingAttrs.size() && existingAttrs[attrIndex])
+            {
+                LogWarning("Client attempted to overwrite an existing attribute index " + QString::number(attrIndex) + " in component " + comp->TypeName() + " in " + entity->ToString() + ", aborting CreateAttributes message parsing");
+                return;
+            }
+        }
+        
         IAttribute* attr = comp->CreateAttribute(attrIndex, typeId, name, change);
         if (!attr)
         {
-            LogWarning("Could not create attribute into component " + QString::number(compID) + " in " + entity->ToString() + ", aborting CreateAttributes message parsing");
+            LogWarning("Could not create attribute into component " + comp->TypeName() + " in " + entity->ToString() + ", aborting CreateAttributes message parsing");
             return;
         }
         
@@ -1490,34 +1402,126 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
     }
 }
 
-/*
-void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg)
+void SyncManager::HandleCreateEntityReply(kNet::MessageConnection* source, const char* data, size_t numBytes)
 {
-    ScenePtr scene = GetRegisteredScene();
-    if (!scene)
-    {
-        LogWarning("SyncManager: Ignoring received MsgEntityIDCollision as no scene exists!");
-        return;
-    }
-    
-    if (owner_->IsServer())
-    {
-        LogWarning("Received EntityIDCollision from a client, disregarding.");
-        return;
-    }
-    
-    LogDebug("An entity ID collision occurred. Entity " + ToString<int>(msg.oldEntityID) + " became " + ToString<int>(msg.newEntityID));
-    scene->ChangeEntityId(msg.oldEntityID, msg.newEntityID);
-    
-    // Do the change also in server scene replication state
+    assert(source);
     SceneSyncState* state = GetSceneSyncState(source);
-    if (state)
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
     {
-        state->entities_[msg.newEntityID] = state->entities_[msg.oldEntityID];
-        state->RemoveEntity(msg.oldEntityID);
+        LogWarning("Null scene or sync state, disregarding CreateEntityReply message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    if (isServer)
+    {
+        LogWarning("Discarding CreateEntityReply message on server");
+        return;
+    }
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t senderEntityID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    scene->ChangeEntityId(senderEntityID, entityID);
+    state->RemoveFromQueue(senderEntityID); // Make sure we don't have stale pointers in the dirty queue
+    state->entities[entityID] = state->entities[senderEntityID]; // Copy the sync state to the new ID
+    state->entities[entityID].id = entityID; // Must remember to change ID manually
+    state->entities.erase(senderEntityID);
+    
+    //std::cout << "CreateEntityReply, entity " << senderEntityID << " -> " << entityID << std::endl;
+    
+    EntitySyncState& entityState = state->entities[entityID];
+    
+    EntityPtr entity = scene->GetEntity(entityID);
+    if (!entity)
+    {
+        LogError("Failed to get entity after ID change");
+        return;
+    }
+    
+    // Send notification
+    scene->EmitEntityAcked(entity.get(), senderEntityID);
+    
+    unsigned numComps = ds.ReadVLE<kNet::VLE8_16_32>();
+    for (unsigned i = 0; i < numComps; ++i)
+    {
+        component_id_t senderCompID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        
+        //std::cout << "CreateEntityReply, component " << senderCompID << " -> " << compID << std::endl;
+        
+        entity->ChangeComponentId(senderCompID, compID);
+        entityState.components[compID] = entityState.components[senderCompID]; // Copy the sync state to the new ID
+        entityState.components[compID].id = compID; // Must remember to change ID manually
+        entityState.components.erase(senderCompID);
+        
+        // Send notification
+        IComponent* comp = entity->GetComponentById(compID).get();
+        scene->EmitComponentAcked(comp, senderCompID);
+    }
+    
+    for (std::map<component_id_t, ComponentSyncState>::iterator i = entityState.components.begin(); i != entityState.components.end(); ++i)
+    {
+        // Now mark every component dirty so they will be inspected for changes on the next update
+        state->MarkComponentDirty(entityID, i->first);
     }
 }
-*/
+
+void SyncManager::HandleCreateComponentsReply(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    SceneSyncState* state = GetSceneSyncState(source);
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding CreateComponentsReply message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    if (isServer)
+    {
+        LogWarning("Discarding CreateComponentsReply message on server");
+        return;
+    }
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    state->RemoveFromQueue(entityID); // Make sure we don't have stale pointers in the dirty queue
+    EntitySyncState& entityState = state->entities[entityID];
+    
+    EntityPtr entity = scene->GetEntity(entityID);
+    if (!entity)
+    {
+        LogError("Failed to get entity after ID change");
+        return;
+    }
+    
+    unsigned numComps = ds.ReadVLE<kNet::VLE8_16_32>();
+    for (unsigned i = 0; i < numComps; ++i)
+    {
+        component_id_t senderCompID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
+        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        
+        //std::cout << "CreateComponentReply, component " << senderCompID << " -> " << compID << std::endl;
+        
+        entity->ChangeComponentId(senderCompID, compID);
+        entityState.components[compID] = entityState.components[senderCompID]; // Copy the sync state to the new ID
+        entityState.components[compID].id = compID; // Must remember to change ID manually
+        entityState.components.erase(senderCompID);
+        
+        // Send notification
+        IComponent* comp = entity->GetComponentById(compID).get();
+        scene->EmitComponentAcked(comp, senderCompID);
+    }
+    
+    for (std::map<component_id_t, ComponentSyncState>::iterator i = entityState.components.begin(); i != entityState.components.end(); ++i)
+    {
+        // Now mark every component dirty so they will be inspected for changes on the next update
+        state->MarkComponentDirty(entityID, i->first);
+    }
+}
 
 void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg)
 {

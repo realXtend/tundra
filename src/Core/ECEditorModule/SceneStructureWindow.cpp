@@ -114,6 +114,7 @@ void SceneStructureWindow::SetScene(const ScenePtr &s)
     treeWidget->SetScene(s);
 
     Scene *scenePtr = scene.lock().get();
+    connect(scenePtr, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
     connect(scenePtr, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
     connect(scenePtr, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
     connect(scenePtr, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
@@ -288,12 +289,31 @@ void SceneStructureWindow::AddEntity(Entity* entity)
         AddComponent(entity, i->second.get());
 }
 
+void SceneStructureWindow::AckEntity(Entity* entity, entity_id_t oldId)
+{
+    RemoveEntityById(oldId);
+    AddEntity(entity);
+}
+
 void SceneStructureWindow::RemoveEntity(Entity* entity)
 {
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (item && (item->Id() == entity->Id()))
+        {
+            SAFE_DELETE(item);
+            break;
+        }
+    }
+}
+
+void SceneStructureWindow::RemoveEntityById(entity_id_t id)
+{
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
+        if (item && (item->Id() == id))
         {
             SAFE_DELETE(item);
             break;

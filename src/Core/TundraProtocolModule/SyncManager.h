@@ -10,12 +10,6 @@
 #include <map>
 #include <set>
 
-struct MsgCreateEntity;
-struct MsgRemoveEntity;
-struct MsgCreateComponents;
-struct MsgUpdateComponents;
-struct MsgRemoveComponents;
-struct MsgEntityIDCollision;
 struct MsgEntityAction;
 
 namespace kNet

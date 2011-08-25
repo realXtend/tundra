@@ -160,7 +160,7 @@ void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
         RemoveEntity(new_id, AttributeChange::LocalOnly);
     }
     
-    old_entity->SetNewId(old_id);
+    old_entity->SetNewId(new_id);
     entities_.erase(old_id);
     entities_[new_id] = old_entity;
     idGenerator_.Deallocate(old_id);
@@ -336,6 +336,19 @@ bool Scene::AllowModifyEntity(UserConnection* user, Entity *entity)
     return req.allowed;
 }
 
+void Scene::EmitEntityAcked(Entity* entity, entity_id_t oldId)
+{
+    if (entity)
+        emit EntityAcked(entity, oldId);
+}
+
+void Scene::EmitComponentAcked(IComponent* comp, component_id_t oldId)
+{
+    if (comp)
+        emit ComponentAcked(comp, oldId);
+}
+
+/*
 QVariantList Scene::GetEntityIdsWithComponent(const QString &type_name) const
 {
     QVariantList ret;

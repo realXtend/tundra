@@ -233,6 +233,22 @@ void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
     }
 }
 
+int EC_DynamicComponent::GetInternalAttributeIndex(int index) const
+{
+    if (index >= (int)attributes.size())
+        return -1; // Can be sure that is not found.
+    int cmp = 0;
+    for (unsigned i = 0; i < attributes.size(); ++i)
+    {
+        if (!attributes[i])
+            continue;
+        if (cmp == index)
+            return i;
+        ++cmp;
+    }
+    return -1;
+}
+
 void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeChange::Type change)
 {
     //Check if the attribute has already been created.
@@ -248,9 +264,11 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const
 {
-    if (index < (int)attributes.size() && index >= 0 && attributes[index])
-        return attributes[index]->ToQVariant();
-    return QVariant();
+    // Do not count holes.
+    int attrIndex = GetInternalAttributeIndex(index);
+    if (attrIndex < 0)
+        return QVariant();
+    return attributes[attrIndex]->ToQVariant();
 }
 
 QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
@@ -260,10 +278,14 @@ QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
 
 void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, AttributeChange::Type change)
 {
-    if (index < (int)attributes.size() && index >= 0 && attributes[index])
-        attributes[index]->FromQVariant(value, change);
-    else
-        LogWarning("Cannot get attribute name, cause index is out of range.");
+    int attrIndex = GetInternalAttributeIndex(index);
+    if (attrIndex < 0)
+    {
+        LogWarning("Cannot set attribute, index out of bounds");
+        return;
+    }
+    
+    attributes[attrIndex]->FromQVariant(value, change);
 }
 
 void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change)
@@ -288,11 +310,14 @@ void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &valu
 
 QString EC_DynamicComponent::GetAttributeName(int index) const
 {
-    if(index < (int)attributes.size() && index >= 0 && attributes[index])
-        return attributes[index]->Name();
-
-    LogWarning("Cannot get attribute name, cause index is out of range.");
-    return QString();
+    // Do not count holes.
+    int attrIndex = GetInternalAttributeIndex(index);
+    if (attrIndex < 0)
+    {
+        LogWarning("Cannot get attribute name, index out of bounds");
+        return QString();
+    }
+    return attributes[index]->Name();
 }
 
 bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp) const

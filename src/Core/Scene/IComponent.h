@@ -82,7 +82,8 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
     Q_PROPERTY(bool local READ IsLocal)
     Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode)
     Q_PROPERTY (uint id READ Id)
-
+    Q_PROPERTY (bool unacked READ IsUnacked)
+    
     /// \todo Deprecated. Remove when all scripts have been converted to not refer to this
     Q_PROPERTY(bool networkSyncEnabled READ IsReplicated)
 
@@ -174,7 +175,7 @@ public:
         doesn't work right for py&js 'cause doesn't return a QVariant .. so not a slot now as a temporary measure. */
     IAttribute* GetAttribute(const QString &name) const;
     
-    /// Create an attribute with specifed index, type and name. Return it if successful or null if not. Called by network sync.
+    /// Create an attribute with specifed index, type and name. Return it if successful or null if not. Called by SyncManager.
     IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change = AttributeChange::Default);
     
     /// Remove an attribute at the specified index. Called by network sync.
@@ -206,7 +207,7 @@ public slots:
     /// Returns component id, which is unique within the parent entity
     component_id_t Id() const { return id; }
     
-    /// Returns the total number of attributes in this component.
+    /// Returns the total number of attributes in this component. Does not count holes in the attribute vector
     int NumAttributes() const;
     
     /// Returns the number of static (ie. not dynamically allocated) attributes in this component. These are always in the beginning of the attribute vector.

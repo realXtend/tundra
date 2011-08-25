@@ -113,7 +113,13 @@ public slots:
     /** @param typeName Type name of the attribute.
         @param name Name of the attribute.
         @param change Change type.
-        This factory is not extensible. If attribute was already created the method will return it's pointer. */
+        This factory is not extensible. If attribute was already created the method will return it's pointer.
+        
+        NOTE: if multiple clients, or the client and the server, add attributes at the same time, unresolvable
+        scene replication conflits will occur. The exception is filling attributes immediately after creation
+        (before the component is replicated for the first time), which is supported. Prefer to either create
+        all attributes at creation, or to only add new attributes on the server.
+        */
     IAttribute *CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Create new attribute that type is QVariant.
@@ -169,4 +175,8 @@ public slots:
 
     /// Removes all attributes from the component
     void RemoveAllAttributes(AttributeChange::Type change = AttributeChange::Default);
+    
+private:
+    /// Convert attribute index without holes (used by client) into actual attribute index. Returns below zero if not found. Requires a linear search.
+    int GetInternalAttributeIndex(int index) const;
 };
