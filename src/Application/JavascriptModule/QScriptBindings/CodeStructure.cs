@@ -1041,15 +1041,19 @@ namespace DocGenerator
         {
             for(;;)
             { ///\todo regex.
-                int start = str.IndexOf("<a");
-                if (start == -1)
-                    start = str.IndexOf("</a");
-                if (start == -1)
+                int firstA = str.IndexOf("<a");
+                int firstCloseA = str.IndexOf("</a");
+                if (firstA == -1) firstA = str.Length + 1;
+                if (firstCloseA == -1) firstCloseA = str.Length + 1;
+                int start = Math.Min(firstA, firstCloseA);
+                if (start == str.Length + 1)
                     return str;
-                int end = str.IndexOf(">");
+                int end = str.IndexOf(">", start);
                 if (end == -1)
                     return str;
-                str = str.Substring(0, start) + str.Substring(end + 1);
+                string left = str.Substring(0, start);
+                string right = str.Substring(end + 1);
+                str = left + right;
             }
         }
     }
