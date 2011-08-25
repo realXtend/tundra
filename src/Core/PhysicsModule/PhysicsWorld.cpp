@@ -133,7 +133,7 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     
     std::set<std::pair<btCollisionObject*, btCollisionObject*> > currentCollisions;
     
-    if (numManifolds)
+    if (numManifolds > 0)
     {
         PROFILE(PhysicsWorld_SendCollisions);
         
@@ -141,7 +141,7 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
         {
             btPersistentManifold* contactManifold = collisionDispatcher_->getManifoldByIndexInternal(i);
             int numContacts = contactManifold->getNumContacts();
-            if (!numContacts)
+            if (numContacts == 0)
                 continue;
             
             btCollisionObject* objectA = static_cast<btCollisionObject*>(contactManifold->getBody0());
@@ -156,15 +156,21 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             EC_RigidBody* bodyB = static_cast<EC_RigidBody*>(objectB->getUserPointer());
             
             // We are only interested in collisions where both EC_RigidBody components are known
-            if ((!bodyA) || (!bodyB))
+            if (!bodyA || !bodyB)
+            {
+                LogError("Inconsistent Bullet physics scene state! An object exists in the physics scene which does not have an associated EC_RigidBody!");
                 continue;
+            }
             // Also, both bodies should have valid parent entities
             Entity* entityA = bodyA->ParentEntity();
             Entity* entityB = bodyB->ParentEntity();
-            if ((!entityA) || (!entityB))
+            if (!entityA || !entityB)
+            {
+                LogError("Inconsistent Bullet physics scene state! A parentless EC_RigidBody exists in the physics scene!");
                 continue;
+            }
             // Check that at least one of the bodies is active
-            if ((!objectA->isActive()) && (!objectB->isActive()))
+            if (!objectA->isActive() && !objectB->isActive())
                 continue;
             
             bool newCollision = previousCollisions_.find(objectPair) == previousCollisions_.end();

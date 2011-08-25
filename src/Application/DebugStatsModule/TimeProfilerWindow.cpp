@@ -33,7 +33,11 @@
 #include <QTextEdit>
 #include <QMenu>
 
+#include "EC_RigidBody.h"
+#include "btBulletDynamicsCommon.h"
+
 #include "PhysicsModule.h"
+#include "PhysicsWorld.h"
 
 #ifdef OGREASSETEDITOR_ENABLED
 #include "TexturePreviewEditor.h"
@@ -65,6 +69,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
     setLayout(layout);
 
     tree_profiling_data_ = findChild<QTreeWidget*>("treeProfilingData");
+    treeBulletStats = findChild<QTreeWidget*>("treeBulletStats");
     combo_timing_refresh_interval_ = findChild<QComboBox*>("comboTimingRefreshInterval");
     tab_widget_ = findChild<QTabWidget*>("tabWidget");
     label_frame_time_history_ = findChild<QLabel*>("labelFrameTimeHistory");
@@ -261,8 +266,6 @@ void TimeProfilerWindow::CopyMaterialAssetName()
 {
     CopySelectedItemName(tree_material_assets_);
 }
-
-
 
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {
@@ -461,6 +464,9 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
         break;
     case 13: // OgreSceneTree
         PopulateOgreSceneTree();
+        break;
+    case 14: // Bullet collision statistics
+        PopulateBulletStats();
         break;
     }
 }
@@ -884,9 +890,7 @@ void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const ProfilerNod
 
         FillThresholdLogger(out, node);
     }
-
 }
-
 
 void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
 {
@@ -2053,6 +2057,39 @@ void TimeProfilerWindow::PopulateOgreSceneTree()
         if (scene)
             AddOgreScene(tree->invisibleRootItem(), scene);
     }    
+}
+
+void TimeProfilerWindow::PopulateBulletStats()
+{
+    boost::shared_ptr<Physics::PhysicsWorld> physics = framework_->Scene()->GetDefaultScene()->GetWorld<Physics::PhysicsWorld>();
+    const std::set<std::pair<btCollisionObject*, btCollisionObject*> > &collisions = physics->PreviousFrameCollisions();
+
+    treeBulletStats->clear();
+    for(std::set<std::pair<btCollisionObject*, btCollisionObject*> >::const_iterator iter = collisions.begin(); iter != collisions.end(); ++iter)
+    {
+        btCollisionObject* objectA = iter->first;
+        btCollisionObject* objectB = iter->second;
+        EC_RigidBody* bodyA = static_cast<EC_RigidBody*>(objectA->getUserPointer());
+        EC_RigidBody* bodyB = static_cast<EC_RigidBody*>(objectB->getUserPointer());
+        if (!bodyA || !bodyB)
+            continue;
+
+        Entity* entityA = bodyA->ParentEntity();
+        Entity* entityB = bodyB->ParentEntity();
+        if (!entityA || !entityB)
+            continue;
+
+        QStringList item;
+        item << entityA->Name();
+        static const char *shapeType[] = { "Box", "Sphere", "Cylinder", "Capsule", "TriMesh", "HeightField", "ConvexHull" };
+        item << shapeType[bodyA->shapeType.Get()];
+        item << entityB->Name();
+        item << shapeType[bodyB->shapeType.Get()];
+
+        treeBulletStats->insertTopLevelItem(0, new QTreeWidgetItem(item, 0));
+    }
+    if (tab_widget_->currentIndex() == 14)
+        QTimer::singleShot(1000, this, SLOT(PopulateBulletStats()));
 }
 
 void TimeProfilerWindow::RefreshRenderTargetProfilingData()

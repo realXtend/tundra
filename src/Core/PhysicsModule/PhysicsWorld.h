@@ -92,6 +92,10 @@ public:
     /// IDebugDraw override
     virtual int getDebugMode() const { return debugDrawMode_; }
     
+    /// Returns the set of collisions that occurred during the previous frame.
+    /// \important Use this function only for debugging, the availability of this set data structure is not guaranteed in the future.
+    const std::set<std::pair<btCollisionObject*, btCollisionObject*> > &PreviousFrameCollisions() const { return previousCollisions_; }
+
 public slots:
     /// Set physics update period (= length of each simulation step.) By default 1/60th of a second.
     /** @param updatePeriod Update period */

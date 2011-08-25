@@ -76,6 +76,7 @@ private slots:
     void CopyTextureAssetName();
     void CopyMeshAssetName();
     void CopyMaterialAssetName();
+    void PopulateBulletStats();
 
 private:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -107,6 +108,7 @@ private:
     QDir logDirectory_;
 
     QTreeWidget *tree_profiling_data_;
+    QTreeWidget *treeBulletStats;
     QComboBox *combo_timing_refresh_interval_;
     QTabWidget *tab_widget_;
     QWidget *contents_widget_;

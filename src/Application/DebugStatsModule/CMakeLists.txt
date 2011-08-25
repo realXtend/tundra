@@ -19,6 +19,7 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DDEBUGSTATS_MODULE_EXPORTS) 
 
+use_package_bullet()
 use_core_modules (Framework Scene OgreRenderingModule AssetModule Input Ui Console EnvironmentModule PhysicsModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})

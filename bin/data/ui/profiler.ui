@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>808</width>
-    <height>541</height>
+    <width>1043</width>
+    <height>601</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1783,6 +1783,47 @@
             <column>
              <property name="text">
               <string notr="true">1</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_2">
+         <attribute name="title">
+          <string>Bullet</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QTreeWidget" name="treeBulletStats">
+            <column>
+             <property name="text">
+              <string>Entity 1</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Shape 1</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Entity 2</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Shape 2</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># contacts</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Impulse</string>
              </property>
             </column>
            </widget>
