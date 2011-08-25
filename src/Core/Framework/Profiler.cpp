@@ -78,6 +78,8 @@ void Profiler::EndBlock(const std::string &name)
     using namespace std;
 
     ProfilerNodeTree *treeNode = current_node_;
+    if (!treeNode)
+        return;
     assert (treeNode->Name() == name && "New profiling block started before old one ended!");
 
     ProfilerNode* node = checked_static_cast<ProfilerNode*>(treeNode);
