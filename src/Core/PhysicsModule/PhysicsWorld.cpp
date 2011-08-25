@@ -105,7 +105,7 @@ void PhysicsWorld::Simulate(f64 frametime)
     if (!runPhysics_)
         return;
     
-    PROFILE(PhysicsWorld_Simulate);
+    PROFILE(PhysicsWorld_Simulate); ///\note Do not delete or rename this PROFILE() block. The DebugStats profiler uses this string as a label to know where to inject the Bullet internal profiling data.
     
     emit AboutToUpdate((float)frametime);
     

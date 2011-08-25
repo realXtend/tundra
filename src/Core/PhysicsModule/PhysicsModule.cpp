@@ -25,6 +25,7 @@
 #include <btBulletDynamicsCommon.h>
 
 #include <QtScript>
+#include <QTreeWidgetItem>
 
 #include <Ogre.h>
 
@@ -247,6 +248,89 @@ boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogr
     
     return ptr;
 }
+
+#ifdef PROFILING
+static QTreeWidgetItem *FindItemByName(QTreeWidgetItem *parent, const char *name)
+{
+    for(int i = 0; i < parent->childCount(); ++i)
+    {
+        if (parent->child(i)->text(0) == name)
+            return parent->child(i);
+        QTreeWidgetItem *item = FindItemByName(parent->child(i), name);
+        if (item)
+            return item;
+    }
+
+    return 0;
+}
+
+void UpdateBulletProfilingData(CProfileIterator* profileIterator, QTreeWidgetItem *parentItem, int numFrames)
+{
+	profileIterator->First();
+	if (profileIterator->Is_Done())
+		return;
+
+//	float accumulated_time=0;
+//    float parent_time = profileIterator->Is_Root() ? CProfileManager::Get_Time_Since_Reset() : profileIterator->Get_Current_Parent_Total_Time();
+	int i;
+	int frames_since_reset = CProfileManager::Get_Frame_Count_Since_Reset();
+
+//    const char *bulletParentNodeName = profileIterator->Get_Current_Parent_Name();
+//	printf("Profiling: %s (total running time: %.3f ms) ---\n",	profileIterator->Get_Current_Parent_Name(), parent_time );
+
+    std::vector<QTreeWidgetItem*> itemsThisLevel; // Cache items at this level to a vector, since bullet profiling iterator requires us to do two passes.
+	int numChildren = 0;
+    for(int i = 0; !profileIterator->Is_Done(); i++,profileIterator->Next())
+	{
+        ++numChildren;
+		float current_total_time = profileIterator->Get_Current_Total_Time();
+//		accumulated_time += current_total_time;
+//		float fraction = parent_time > SIMD_EPSILON ? (current_total_time / parent_time) * 100 : 0.f;
+		//printf("%d -- %s (%.2f %%) :: %.3f ms / frame (%d calls)\n",i, profileIterator->Get_Current_Name(), fraction,(current_total_time / (double)frames_since_reset),profileIterator->Get_Current_Total_Calls());
+//		totalTime += current_total_time;
+		//recurse into children
+
+        QTreeWidgetItem *item = FindItemByName(parentItem, profileIterator->Get_Current_Name());
+        if (!item)
+        {
+            item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(profileIterator->Get_Current_Name()));
+            parentItem->addChild(item);
+        }
+        itemsThisLevel.push_back(item);
+        char str[256];
+        item->setText(1, QString("%1").arg(frames_since_reset));
+        sprintf(str, "%.2f", (float)frames_since_reset / numFrames);
+        item->setText(2, str);
+        item->setText(3, "?");
+        sprintf(str, "%.2fms", (float)current_total_time / profileIterator->Get_Current_Total_Calls());
+        item->setText(4, str);
+        sprintf(str, "%.2fms", (float)current_total_time / frames_since_reset);
+        item->setText(5, str);
+        item->setText(6, "?");
+    }
+
+	for (i=0;i<numChildren;i++)
+    {
+		profileIterator->Enter_Child(i);
+		UpdateBulletProfilingData(profileIterator, itemsThisLevel[i], numFrames);
+		profileIterator->Enter_Parent();
+	}
+}
+
+void UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int numFrames)
+{
+    QTreeWidgetItem *bulletRootNode = FindItemByName(treeRoot, "PhysicsWorld_Simulate");
+    if (!bulletRootNode)
+        return; // We've lost the physics world update node, or no physics occurring, skip bullet profiling altogether.
+
+	CProfileIterator* profileIterator = 0;
+	profileIterator = CProfileManager::Get_Iterator();
+
+    UpdateBulletProfilingData(profileIterator, bulletRootNode, numFrames);
+
+	CProfileManager::Release_Iterator(profileIterator);
+}
+#endif
 
 }
 

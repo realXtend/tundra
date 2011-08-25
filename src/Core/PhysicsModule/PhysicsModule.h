@@ -19,6 +19,10 @@ class btTriangleMesh;
 class QScriptEngine;
 class EC_RigidBody;
 
+#ifdef PROFILING
+class QTreeWidgetItem;
+#endif
+
 namespace Physics
 {
 
@@ -86,6 +90,10 @@ private:
     /// Bullet convex hull sets generated from Ogre meshes
     ConvexHullSetMap convexHullSets_;
 };
+
+#ifdef PROFILING
+void PHYSICS_MODULE_API UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int numFrames);
+#endif
 
 }
 

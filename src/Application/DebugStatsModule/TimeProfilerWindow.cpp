@@ -33,6 +33,8 @@
 #include <QTextEdit>
 #include <QMenu>
 
+#include "PhysicsModule.h"
+
 #ifdef OGREASSETEDITOR_ENABLED
 #include "TexturePreviewEditor.h"
 #endif
@@ -1210,6 +1212,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
 
         FillProfileTimingWindow(item, node, numFrames);
     }
+    Physics::UpdateBulletProfilingData(tree_profiling_data_->invisibleRootItem(), numFrames);
     profiler.Release();
 #endif
 }
