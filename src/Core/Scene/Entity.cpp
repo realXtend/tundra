@@ -231,7 +231,10 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::
         return ComponentPtr();
     }
 
-    new_comp->SetReplicated(replicated);
+    // If new component requests to not be replicated by default, honor that
+    if (new_comp->IsReplicated())
+        new_comp->SetReplicated(replicated);
+    
     AddComponent(new_comp, change);
     return new_comp;
 }
@@ -266,7 +269,6 @@ ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change, b
     if (new_comp->IsReplicated())
         new_comp->SetReplicated(replicated);
     
-    new_comp->SetReplicated(replicated);
     AddComponent(new_comp, change);
     return new_comp;
 }
@@ -280,7 +282,10 @@ ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeC
         return ComponentPtr();
     }
 
-    new_comp->SetReplicated(replicated);
+    // If new component requests to not be replicated by default, honor that
+    if (new_comp->IsReplicated())
+        new_comp->SetReplicated(replicated);
+    
     AddComponent(new_comp, change);
     return new_comp;
 }
