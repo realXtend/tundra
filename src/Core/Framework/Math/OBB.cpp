@@ -650,21 +650,21 @@ bool OBB::Intersects(const Ray &ray, float *dNear, float *dFar) const
 {
     AABB aabb(float3(0,0,0), float3(Size()));
     Ray r = WorldToLocal() * ray;
-    return aabb.Intersects(ray, dNear, dFar);
+    return aabb.Intersects(r, dNear, dFar);
 }
 
 bool OBB::Intersects(const Line &line, float *dNear, float *dFar) const
 {
     AABB aabb(float3(0,0,0), float3(Size()));
     Line l = WorldToLocal() * line;
-    return aabb.Intersects(line, dNear, dFar);
+    return aabb.Intersects(l, dNear, dFar);
 }
 
 bool OBB::Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) const
 {
     AABB aabb(float3(0,0,0), float3(Size()));
     LineSegment l = WorldToLocal() * lineSegment;
-    return aabb.Intersects(lineSegment, dNear, dFar);
+    return aabb.Intersects(l, dNear, dFar);
 }
 
 /// See Christer Ericson's Real-Time Collision Detection, p. 166.
