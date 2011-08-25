@@ -28,7 +28,7 @@
 
 #include "MemoryLeakCheck.h"
 
-/// Temporary utility structure for strong supported command line parameters and their descriptions.
+/// Temporary utility structure for storing supported command line parameters and their descriptions.
 struct CommandLineParameterMap
 {
     /// Prints the structure to std::cout.
@@ -52,9 +52,9 @@ struct CommandLineParameterMap
                 for(charIdx = cmdLength; charIdx < treshold ; ++charIdx)
                     std::cout << " ";
 
-            for(QString::const_iterator descIter = it.value().begin(); descIter != it.value().end(); ++descIter)
+            for(int i = 0; i < it.value().length(); ++i)
             {
-                std::cout << (*descIter).toAscii();
+                std::cout << it.value()[i].toAscii();
                 ++charIdx;
                 if (charIdx >= maxLineWidth)
                 {

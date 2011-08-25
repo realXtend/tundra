@@ -147,13 +147,10 @@ void ConsoleAPI::Print(const QString &message)
 {
     if (consoleWidget)
         consoleWidget->PrintToConsole(message);
-    else
-    {
-        printf("%s", message.toStdString().c_str());
-        ///\todo Temporary hack which appends line ending in case it's not there (output of console commands in headless mode)
-        if (!message.endsWith("\n"))
-            printf("\n");
-    }
+    printf("%s", message.toStdString().c_str());
+    ///\todo Temporary hack which appends line ending in case it's not there (output of console commands in headless mode)
+    if (!message.endsWith("\n"))
+        printf("\n");
 }
 
 void ConsoleAPI::ListCommands()

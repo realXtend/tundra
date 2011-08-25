@@ -110,7 +110,7 @@ public slots:
     /** @param command Console command, syntax: "command(param1, param2, param3, ...)". */
     void ExecuteCommand(const QString &command);
 
-    /// Prints a message to the console log, or stdout if console is not available (running in headless mode).
+    /// Prints a message to the console widget's log and stdout.
     /** @param message The text message to print. */
     void Print(const QString &message);
 
