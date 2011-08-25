@@ -198,6 +198,10 @@ public slots:
     /// Returns true if this component is pending a replicated ID assignment from the server.
     bool IsUnacked() const;
     
+    /// Deprecated function to set network replication mode. Currently a no-op, as replication mode can not be changed after adding to an entity.
+    ///\todo Removed once scripts converted to not call this
+    void SetNetworkSyncEnabled(bool enable);
+    
     /// Sets the default mode for attribute change operations
     void SetUpdateMode(AttributeChange::Type defaultmode);
     
