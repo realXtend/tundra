@@ -196,6 +196,16 @@ namespace DocGenerator
                 return nameWithoutNamespace;
         }
 
+        public bool IsArray()
+        {
+            return argList.StartsWith("[") && argList.EndsWith("]");
+        }
+        public int ArrayLength()
+        {
+            int res = 0;
+            int.TryParse(argList.Substring(1, argList.Length - 2), out res);
+            return res;
+        }
         public bool IsConst()
         {
             if (kind == "function" && argList.EndsWith("const"))
