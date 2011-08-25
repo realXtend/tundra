@@ -154,6 +154,11 @@ public slots:
     /** @param name name of the component */
     ComponentPtr GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
 
+    /// Returns a component with type 'type_name' or creates & adds it as local if not found. If could not create, returns empty pointer
+    ComponentPtr GetOrCreateLocalComponent(const QString &type_name);
+    /// Returns a component with type 'type_name' and name 'name' or creates & adds it as local if not found. If could not create, returns empty pointer
+    ComponentPtr GetOrCreateLocalComponent(const QString &type_name, const QString &name);
+
     /// Creates a new component and attaches it to this entity. 
     /** @param type_name type of the component
         @param change Change signalling mode, in case component has to be created
@@ -175,6 +180,11 @@ public slots:
     /** @param typeId Unique type ID of the component.
         @param name name of the component */
     ComponentPtr CreateComponent(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
+    
+    /// Creates a local component with type 'type_name' and adds it to the entity. If could not create, return empty pointer
+    ComponentPtr CreateLocalComponent(const QString &type_name);
+    /// Creates a local component with type 'type_name' and name 'name' and adds it to the entity. If could not create, return empty pointer
+    ComponentPtr CreateLocalComponent(const QString &type_name, const QString &name);
     
     /// Attachs an existing parentless component to this entity. A component ID will be allocated.
     /** Entities can contain any number of components of any type.

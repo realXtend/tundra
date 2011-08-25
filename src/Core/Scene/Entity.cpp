@@ -212,6 +212,16 @@ ComponentPtr Entity::GetOrCreateComponent(u32 typeId, const QString &name, Attri
     return CreateComponent(typeId, name, change, replicated);
 }
 
+ComponentPtr Entity::GetOrCreateLocalComponent(const QString& type_name)
+{
+    return GetOrCreateComponent(type_name, AttributeChange::LocalOnly, false);
+}
+
+ComponentPtr Entity::GetOrCreateLocalComponent(const QString& type_name, const QString& name)
+{
+    return GetOrCreateComponent(type_name, name, AttributeChange::LocalOnly, false);
+}
+
 ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(scene_, type_name);
@@ -286,6 +296,16 @@ ComponentPtr Entity::CreateComponent(component_id_t compId, u32 typeId, const QS
 
     AddComponent(compId, new_comp, change);
     return new_comp;
+}
+
+ComponentPtr Entity::CreateLocalComponent(const QString &type_name)
+{
+    return CreateComponent(type_name, AttributeChange::LocalOnly, false);
+}
+
+ComponentPtr Entity::CreateLocalComponent(const QString &type_name, const QString &name)
+{
+    return CreateComponent(type_name, name, AttributeChange::LocalOnly, false);
 }
 
 ComponentPtr Entity::GetComponentById(entity_id_t id) const

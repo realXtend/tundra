@@ -193,7 +193,7 @@ namespace OgreRenderer
 
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
-        Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_LOW);
+        //Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_LOW);
         
 // On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
 // On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
