@@ -22,10 +22,6 @@
 #include "AssetAPI.h"
 #include "TextureAsset.h"
 
-#include "Framework.h"
-#include "OgreRenderingModule.h"
-#include "AssetApi.h"
-#include "TextureAsset.h"
 #include <Ogre.h>
 #include <QFile>
 #include <QPainter>
