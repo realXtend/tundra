@@ -44,11 +44,6 @@
 
 #include "MemoryLeakCheck.h"
 
-/// Qt defines
-Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
-Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
-Q_SCRIPT_DECLARE_QMETAOBJECT(QTimer, QObject*);
-
 /// Input API defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
@@ -189,12 +184,6 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     if (!engine)
         return;
 
-    QScriptValue object = engine->scriptValueFromQMetaObject<QPushButton>();
-    engine->globalObject().setProperty("QPushButton", object);
-    object = engine->scriptValueFromQMetaObject<QWidget>();
-    engine->globalObject().setProperty("QWidget", object);
-    object = engine->scriptValueFromQMetaObject<QTimer>();
-    engine->globalObject().setProperty("QTimer", object);
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
     engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));
     engine->globalObject().setProperty("addApplicationFont", engine->newFunction(addApplicationFont));
