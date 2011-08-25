@@ -234,7 +234,10 @@ float3x4 EC_Mesh::LocalToWorld() const
         return float3x4::identity;
     }
 
-    return float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
+    assume(!float3(node->_getDerivedScale()).IsZero());
+    float3x4 tm = float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
+    assume(tm.IsOrthogonal());
+    return tm;
 }
 
 bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
