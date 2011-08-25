@@ -55,9 +55,7 @@ void Client::Login(const QUrl& loginUrl)
     QString urlScheme = loginUrl.scheme().toLower();
     if (urlScheme.isEmpty())
         return;
-    if (urlScheme != "tundra" && 
-        urlScheme != "http" && 
-        urlScheme != "https")
+    if (urlScheme != "tundra" && urlScheme != "http" && urlScheme != "https")
         return;
 
     // Parse values from url
@@ -95,11 +93,12 @@ void Client::Login(const QString& address, unsigned short port, const QString& u
     SetLoginProperty("username", username);
     SetLoginProperty("password", password);
     SetLoginProperty("protocol", protocol);
-    
+
+    QString p = protocol.trimmed().toLower();
     kNet::SocketTransportLayer transportLayer = kNet::InvalidTransportLayer;
-    if (protocol.toLower() == "tcp")
+    if (p == "tcp")
         transportLayer = kNet::SocketOverTCP;
-    else if (protocol.toLower() == "udp")
+    else if (p == "udp")
         transportLayer = kNet::SocketOverUDP;
     Login(address, port, transportLayer);
 }
@@ -118,16 +117,15 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         ::LogInfo("Client::Login: No protocol specified, using the default value.");
         protocol = owner_->GetKristalliModule()->defaultTransport;
 
-    SetLoginProperty("address", address);
-    QString p = "";
-    if (protocol == kNet::SocketOverTCP)
-        p = "tcp";
-    else if (protocol == kNet::SocketOverUDP)
-        p = "udp";
+        SetLoginProperty("address", address);
+        QString p = "";
+        if (protocol == kNet::SocketOverTCP)
+            p = "tcp";
+        else if (protocol == kNet::SocketOverUDP)
+            p = "udp";
 
-    SetLoginProperty("protocol", p);
-    SetLoginProperty("port", QString::number(port));
-
+        SetLoginProperty("protocol", p);
+        SetLoginProperty("port", QString::number(port));
     }
 
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();

@@ -63,7 +63,7 @@ public slots:
     void StopServer();
 
     /// Connects to server.
-    void Connect(QString address, int port, QString username, QString password);
+    void Connect(QString address, int port, QString protocol, QString username, QString password);
 
     /// Disconnects from server.
     void Disconnect();

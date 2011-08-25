@@ -197,8 +197,8 @@ void TundraLogicModule::Initialize()
     framework_->Console()->RegisterCommand("stopserver", "Stops the server",
         this, SLOT(StopServer()));
 
-    framework_->Console()->RegisterCommand("connect", "Connects to a server. Usage: connect(address,port,username,password)",
-        this, SLOT(Connect(QString,int,QString,QString)));
+    framework_->Console()->RegisterCommand("connect", "Connects to a server. Usage: connect(address,port,protocol,username,password)",
+        this, SLOT(Connect(QString,int,QString,QString,QString)));
 
     framework_->Console()->RegisterCommand("disconnect", "Disconnects from a server.",
         this, SLOT(Disconnect()));
@@ -390,9 +390,9 @@ void TundraLogicModule::StopServer()
     server_->Stop();
 }
 
-void TundraLogicModule::Connect(QString address, int port, QString username, QString password)
+void TundraLogicModule::Connect(QString address, int port, QString protocol, QString username, QString password)
 {
-    client_->Login(address, port, username, password);
+    client_->Login(address, port, username, password, protocol);
 }
 
 void TundraLogicModule::Disconnect()
