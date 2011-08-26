@@ -11,7 +11,7 @@ import ircclient
 from circuits.net.protocols import irc #IRC, PRIVMSG, USER, NICK, JOIN, Nick
 
 IRCCHANNEL = "#realxtend"
-NICKNAME = "ant_tundra"
+NICKNAME = "tundraserver"
 IRCSERVER = "irc.freenode.net"
 PORT = 6667
 
@@ -19,7 +19,7 @@ def getname(user): #WebNaali support/hack
     if user is None: #WebNaali WebSocket connection currently
         name = "WebNaali"
     else:
-        name = user.GetProperty("username"))
+        name = user.GetProperty("username")
     return name
 
 class ServerRelay(circuits.Component):
@@ -106,7 +106,7 @@ class ServerRelay(circuits.Component):
     #a circuits event from the underlying irc client (self.client)
     def message(self, source, target, message):
         if target[0] == "#":
-            s = "irc:%s: %s" % (target, source[0], message)
+            s = "%s:%s: %s" % (target, source[0], message)
         else:
             s = "-%s- %s" % (source, message)
 
