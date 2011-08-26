@@ -9,8 +9,6 @@
 
 set (DirectX_FOUND false)
 
-
-
 macro (configure_directx)
     if (WIN32) # The only platform it makes sense to check for DirectX SDK
 

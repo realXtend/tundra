@@ -182,12 +182,13 @@ set(KRISTALLI_CORE_PATH ${PROJECT_BINARY_DIR}/Kristalli)
 
 # Set CMake custom module path & include them
 # The following CMake modules are required for the project to build.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} cmake)
-include(Sagase)
-include(ModuleSetup)
-include(ConfigurePackages)
-include(TundraInstall)
-include(FindDirectX)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} cmake)
+include (Sagase)
+include (ModuleSetup)
+include (ConfigurePackages)
+include (TundraInstall)
+include (FindOgre)
+include (FindDirectX)
 
 # Disable unnecessary build types
 set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
