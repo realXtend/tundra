@@ -194,7 +194,6 @@ bool Client::IsConnected() const
 
 void Client::SetLoginProperty(QString key, QString value)
 {
-    ::LogInfo(key + ":" + value);
     key = key.trimmed();
     value = value.trimmed();
     if (value.isEmpty())
