@@ -3,6 +3,8 @@
 #pragma once
 
 #include "PythonFwd.h"
+#include "Math/float3.h"
+#include "Transform.h"
 #include "AttributeChangeType.h"
 
 namespace PythonScript
