@@ -22,11 +22,10 @@ class ApiRunner:
         tundra.LogInfo("***** Python ApiRunner done *********")
         
     def testLoggers(self):
-        tundra.LogInfo("-- Testing loggers")
+        tundra.LogInfo("-- Testing log channels")
         tundra.LogDebug("this should only show on debug mode")
         tundra.LogWarning("this is a warning")
         tundra.LogError("this is a error")
-        tundra.LogFatal("this is a fatal")
     
     def testFramework(self):
         tundra.LogInfo("-- Testing framework API presence")
