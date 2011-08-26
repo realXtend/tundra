@@ -106,7 +106,7 @@ class ServerRelay(circuits.Component):
     #a circuits event from the underlying irc client (self.client)
     def message(self, source, target, message):
         if target[0] == "#":
-            s = "<%s:%s> %s" % (target, source[0], message)
+            s = "irc:%s: %s" % (target, source[0], message)
         else:
             s = "-%s- %s" % (source, message)
 
