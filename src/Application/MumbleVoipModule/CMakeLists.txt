@@ -4,12 +4,22 @@
 macro (configure_protobuf)
     sagase_configure_package(PROTOBUF
         NAMES google protobuf
-        COMPONENTS protobuf libprotobuf
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf)
-    # Force include dir and libraries on MSVC
+        COMPONENTS protobuf         # protobuf lib
+                   libprotobuf      # protobuf lib
+                   service          # service.h to find include dir
+        PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf                            # Finding the libs
+                 ${ENV_TUNDRA_DEP_PATH}/protobuf/include/google/protobuf)   # Finding the include
+        
+    # Remove FindProtobuf.cmake generated not found item
+    list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
+    
+    # Add the base include dir also, due we cant affect the mumblelib headers including with "google/plapla/some.h"
     if (MSVC)
-          set (PROTOBUF_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/protobuf/include)
+      set (PROTOBUF_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/protobuf/include)
+    elseif (UNIX)
+    
     endif ()
+
     sagase_configure_report (PROTOBUF)
 endmacro (configure_protobuf)
 
@@ -18,10 +28,12 @@ macro (configure_openssl)
         NAMES openssl
         COMPONENTS libeay32 ssleay32 ssl
         PREFIXES ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
-    # remove 'NOTFOUND' entry which makes to linking impossible    
+    
+    # Remove FindOpenSSL.cmake generated not found items
     if (MSVC)
         list(REMOVE_ITEM OPENSSL_LIBRARIES debug optimized SSL_EAY_RELEASE-NOTFOUND LIB_EAY_RELEASE-NOTFOUND SSL_EAY_DEBUG-NOTFOUND LIB_EAY_DEBUG-NOTFOUND NOTFOUND)
     endif ()
+    
     sagase_configure_report (OPENSSL)
 endmacro (configure_openssl)
 
