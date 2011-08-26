@@ -19,7 +19,7 @@ class RaycastResult;
 class SCENEWIDGET_MODULE_API EC_SlideShow : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_SlideShow", 38)
+    COMPONENT_NAME("EC_SlideShow", 40)
 
 public:
     /// List of slide asset references (to texture assets).
