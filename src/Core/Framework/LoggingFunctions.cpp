@@ -12,10 +12,12 @@ void PrintLogMessage(u32 logChannel, const char *str)
     Framework *instance = Framework::Instance();
     ConsoleAPI *console = (instance ? instance->Console() : 0);
 
-    // The console and stdout prints are equivalent.
-    printf("%s", str);
+    // Use console if available, it will print to console widget (if available) and to stdout.
+    // Otherwise use normal stdout only (this happens before ConsoleAPI is initialized).
     if (console)
         console->Print(str);
+    else
+        printf("%s", str);
 }
 
 bool IsLogChannelEnabled(u32 logChannel)
@@ -23,9 +25,11 @@ bool IsLogChannelEnabled(u32 logChannel)
     Framework *instance = Framework::Instance();
     ConsoleAPI *console = (instance ? instance->Console() : 0);
 
+    // If console is null, we've already killed Framework and ConsoleAPI or ConsoleAPI has not yet been initialized! 
+    // Print out everything so that we can't accidentally lose any important messages.
     if (console)
         return console->IsLogChannelEnabled(logChannel);
     else
-        return true; // We've already killed Framework and Console! Print out everything so that we can't accidentally lose any important messages.
+        return true; 
 }
 
