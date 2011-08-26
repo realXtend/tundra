@@ -1109,6 +1109,7 @@ void TimeProfilerWindow::DumpSceneComplexityToFile()
 
 void TimeProfilerWindow::RefreshProfilingData()
 {
+#ifdef PROFILING
     if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 0)
         return;
 
@@ -1141,6 +1142,7 @@ void TimeProfilerWindow::RefreshProfilingData()
         RefreshProfilingDataList();
 
     QTimer::singleShot(ReadProfilingRefreshInterval(), this, SLOT(RefreshProfilingData()));
+#endif
 }
 
 void TimeProfilerWindow::RefreshProfilingDataTree()
