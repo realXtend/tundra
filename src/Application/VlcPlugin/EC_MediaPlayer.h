@@ -88,6 +88,9 @@ private slots:
     /// Callback to render content to the 3D target.
     void OnFrameUpdate(QImage frame); 
 
+    /// Handler for window resize signal.
+    void RenderWindowResized();
+
     /// Prepares everything related to the parent entity and other needed components.
     void PrepareComponent();
 
@@ -144,6 +147,9 @@ private:
     /// multiple media players in a entity (rendering to different submesh indexes). 
     /// This is used to perform cleanup when this component is destroyed.
     QString sceneCanvasName_;
+
+    /// Internal time for updating the rendering after a window resize event.
+    QTimer *resizeRenderTimer_;
 
     /// Helper for manual downloads via asset api, this will be used if attribute 'streamingAllowed' is false.
     AssetRefListener *mediaDownloader_;

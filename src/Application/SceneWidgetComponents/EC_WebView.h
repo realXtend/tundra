@@ -167,6 +167,9 @@ private slots:
     /// \note Depending if the 'renderRefreshRate' is a valid number (0-25) we use the timer, otherwise a QTimer::singleShot().
     void RenderDelayed();
 
+    /// Handler for window resize signal.
+    void RenderWindowResized();
+
     /// Free QWebView memory and reset internal pointer.
     void ResetWidget();
 
@@ -259,6 +262,9 @@ private:
 
     /// Internal timer for updating inworld EC_WidgetCanvas.
     QTimer *renderTimer_;
+
+    /// Internal time for updating the rendering after a window resize event.
+    QTimer *resizeRenderTimer_;
 
     /// Metadata for toggling UI visibility when interaction mode changes.
     AttributeMetadata *interactionMetaData_;

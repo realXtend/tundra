@@ -97,7 +97,7 @@ EC_WebView::EC_WebView(Scene *scene) :
 
     // Connect window size changes to update rendering as the ogre textures go black.
     if (GetFramework()->Ui()->MainWindow())
-        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderDelayed()), Qt::UniqueConnection);
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderWindowResized()), Qt::UniqueConnection);
 
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
@@ -106,6 +106,9 @@ EC_WebView::EC_WebView(Scene *scene) :
     // Prepare render timer
     renderTimer_ = new QTimer(this);
     connect(renderTimer_, SIGNAL(timeout()), SLOT(Render()), Qt::UniqueConnection);
+    resizeRenderTimer_ = new QTimer(this);
+    resizeRenderTimer_->setSingleShot(true);
+    connect(resizeRenderTimer_, SIGNAL(timeout()), SLOT(RenderDelayed()), Qt::UniqueConnection);
 
     // Prepare scene interactions
     SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
@@ -341,6 +344,15 @@ void EC_WebView::RenderDelayed()
     }
     else
         QTimer::singleShot(10, this, SLOT(Render()));
+}
+
+void EC_WebView::RenderWindowResized()
+{
+    if (!resizeRenderTimer_)
+        return;
+
+    if (!resizeRenderTimer_->isActive())
+        resizeRenderTimer_->start(500);
 }
 
 void EC_WebView::ResetWidget()
@@ -599,7 +611,7 @@ void EC_WebView::TargetMeshMaterialChanged(uint index, const QString &material)
     if (!getenabled())
         return;
 
-    if (index == getrenderSubmeshIndex())
+    if (index == (uint)getrenderSubmeshIndex())
     {
         // Don't create the canvas, if its not there yet there is nothing to re-apply
         IComponent *comp = ParentEntity()->GetComponent(EC_WidgetCanvas::TypeNameStatic(), sceneCanvasName_).get();

@@ -63,6 +63,14 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 
+    // Connect window size changes to update rendering as the ogre textures go black.
+    if (GetFramework()->Ui()->MainWindow())
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderWindowResized()), Qt::UniqueConnection);
+
+    resizeRenderTimer_ = new QTimer(this);
+    resizeRenderTimer_->setSingleShot(true);
+    connect(resizeRenderTimer_, SIGNAL(timeout()), mediaPlayer_, SLOT(ForceUpdateImage()), Qt::UniqueConnection);
+
     // Prepare scene interactions
     SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
     if (sceneInteract)
@@ -188,6 +196,15 @@ void EC_MediaPlayer::OnFrameUpdate(QImage frame)
         sceneCanvas->SetSubmesh(submeshIndex);
 
     sceneCanvas->Update(frame);
+}
+
+void EC_MediaPlayer::RenderWindowResized()
+{
+    if (!resizeRenderTimer_)
+        return;
+
+    if (!resizeRenderTimer_->isActive())
+        resizeRenderTimer_->start(500);
 }
 
 void EC_MediaPlayer::PrepareComponent()
