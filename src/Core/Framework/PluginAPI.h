@@ -20,14 +20,6 @@ class PluginAPI : public QObject
 {
     Q_OBJECT;
 
-private:
-    struct Plugin
-    {
-        PluginHandle libraryHandle;
-    };
-    std::list<Plugin> plugins;
-
-    Framework *owner;
 public:
     explicit PluginAPI(Framework *owner);
 
@@ -45,10 +37,7 @@ public:
 private:
     struct Plugin
     {
-#ifdef WIN32
-        HMODULE libraryHandle; ///\todo Cross-platform -> void*.
-#endif
-        ///\todo Unix-equivalents.
+        PluginHandle libraryHandle;
     };
     std::list<Plugin> plugins;
 

@@ -61,8 +61,7 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     setCacheDirectory(cacheDirectory);
 
     // Check --clear-asset-cache start param
-    boost::program_options::variables_map commandLineVariables = owner->GetFramework()->ProgramOptions();
-    if (commandLineVariables.count("clear-asset-cache"))
+    if (owner->GetFramework()->HasCommandLineParameter("--clear-asset-cache"))
     {
         LogInfo("AssetCache: Removing all data and metadata files from cache, found 'clear-asset-cache' from start params!");
         ClearAssetCache();

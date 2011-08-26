@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "EC_WidgetCanvas.h"
 
 #include "Framework.h"
@@ -22,6 +21,7 @@
 #include <QWidget>
 #include <QPainter>
 #include <QDebug>
+#include "MemoryLeakCheck.h"
 
 EC_WidgetCanvas::EC_WidgetCanvas(Scene *scene) :
     IComponent(scene),

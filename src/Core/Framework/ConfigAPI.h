@@ -93,31 +93,31 @@ public slots:
     /// @param data ConfigData. Filled ConfigData object.
     /// @param key QString. Key to look for in the file under section.
     /// @return boolean if key exists in section of file.
-    bool HasValue(const ConfigData &data);
+    bool HasValue(const ConfigData &data) const;
 
     /// Returns if a key is available in the config.
     /// @param data ConfigData. Filled ConfigData object.
     /// @return boolean if key exists in section of file under section.
-    bool HasValue(const ConfigData &data, QString key);
+    bool HasValue(const ConfigData &data, QString key) const;
 
     /// Returns if a key is available in the config.
     /// @param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
     /// @param section QString. The section in the config where key is. For example: "login".
     /// @param key QString. Key to look for in the file under section.
     /// @return boolean if key exists in section of file.
-    bool HasValue(QString file, QString section, QString key);
+    bool HasValue(QString file, QString section, QString key) const;
 
     /// Gets a value of key from a config file
     /// @param data ConfigData. Filled ConfigData object.
     /// @return QVariant The value of key/section in file.
-    QVariant Get(const ConfigData &data);
+    QVariant Get(const ConfigData &data) const;
 
     /// Gets a value of key from a config file
     /// @param data ConfigData. ConfigData object that has file and section filled, also may have defaultValue and it will be used if input defaultValue is null.
     /// @param key QString. Key that value gets returned. For example: "username".
     /// @param defaultValue QVariant. What you expect to get back if the file/section/key combination was not found.
     /// @return QVariant The value of key/section in file.
-    QVariant Get(const ConfigData &data, QString key, const QVariant &defaultValue = QVariant());
+    QVariant Get(const ConfigData &data, QString key, const QVariant &defaultValue = QVariant()) const;
 
     /// Gets a value of key from a config file
     /// @param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
@@ -125,7 +125,7 @@ public slots:
     /// @param key QString. Key that value gets returned. For example: "username".
     /// @param defaultValue QVariant. What you expect to get back if the file/section/key combination was not found.
     /// @return QVariant The value of key/section in file.
-    QVariant Get(QString file, QString section, QString key, const QVariant &defaultValue = QVariant());   
+    QVariant Get(QString file, QString section, QString key, const QVariant &defaultValue = QVariant()) const; 
 
     /// Sets the value of key in a config file.
     /// @param data ConfigData. Filled ConfigData object.
@@ -151,10 +151,10 @@ public slots:
 
 private slots:
     /// Get absolute file path for file. Guarantees that it ends with .ini.
-    QString GetFilePath(const QString &file);
+    QString GetFilePath(const QString &file) const;
 
     /// Prepare string for config usage. Removes spaces from end and start, replaces mid string spaces with '_' and forces to lower case.
-    void PrepareString(QString &str);
+    void PrepareString(QString &str) const;
 
 private:
     Q_DISABLE_COPY(ConfigAPI)

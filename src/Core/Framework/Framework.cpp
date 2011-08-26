@@ -118,7 +118,7 @@ Framework::Framework(int argc, char** argv) :
     cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup"; // AssetModule
     cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use"; // Framework
     cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username";
-    cmdLineDescs["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
+    cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
 
     if (HasCommandLineParameter("--help"))
     {
