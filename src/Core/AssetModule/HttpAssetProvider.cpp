@@ -23,7 +23,7 @@ HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
     networkAccessManager(0)
 {
     CreateAccessManager();
-    connect(framework->GetApplication(), SIGNAL(AboutToExit()), SLOT(AboutToExit()));
+    connect(framework->GetApplication(), SIGNAL(ExitRequested()), SLOT(AboutToExit()));
 }
 
 HttpAssetProvider::~HttpAssetProvider()
@@ -47,7 +47,16 @@ void HttpAssetProvider::AboutToExit()
         return;
 
     if (networkAccessManager)
+    {
+        // We must reset our AssetCaches parent before destroying QNAM
+        // otherwise we will crash in AssetAPI without keepinga QPointer<AssetCache>
+        // so we would know when the QObject is destroyed by qt. This would then again
+        // including AssetCache.h to AssetAPI.h that we certainly dont want.
+        QAbstractNetworkCache *cache = networkAccessManager->cache();
+        if (cache)
+            cache->setParent(0);
         SAFE_DELETE(networkAccessManager);
+    }
 }
 
 QString HttpAssetProvider::Name()

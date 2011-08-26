@@ -32,7 +32,7 @@ QString SanitateAssetRefForCache(QString assetRef)
 }
 
 AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) : 
-    QNetworkDiskCache(owner),
+    QNetworkDiskCache(0),
     assetAPI(owner),
     cacheDirectory(GuaranteeTrailingSlash(QDir::fromNativeSeparators(assetCacheDirectory)))
 {
