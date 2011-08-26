@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Application.h"
 #include "HttpAssetProvider.h"
 #include "HttpAssetTransfer.h"
 #include "IAssetUploadTransfer.h"
@@ -17,17 +18,36 @@
 
 #include "MemoryLeakCheck.h"
 
-HttpAssetProvider::HttpAssetProvider(Framework *framework_)
-:framework(framework_)
+HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
+    framework(framework_),
+    networkAccessManager(0)
 {
-    // Http access manager
-    networkAccessManager = new QNetworkAccessManager(this);
-    networkAccessManager->setCache(framework_->Asset()->GetAssetCache());
-    connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
+    CreateAccessManager();
+    connect(framework->GetApplication(), SIGNAL(AboutToExit()), SLOT(AboutToExit()));
 }
 
 HttpAssetProvider::~HttpAssetProvider()
 {
+}
+
+void HttpAssetProvider::CreateAccessManager()
+{
+    if (!networkAccessManager)
+    {
+        networkAccessManager = new QNetworkAccessManager();
+        networkAccessManager->setCache(framework->Asset()->GetAssetCache());
+        connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
+    }
+}
+
+void HttpAssetProvider::AboutToExit()
+{
+    // Check if someone has canceled the exit command.
+    if (!framework->IsExiting())
+        return;
+
+    if (networkAccessManager)
+        SAFE_DELETE(networkAccessManager);
 }
 
 QString HttpAssetProvider::Name()
@@ -48,6 +68,9 @@ bool HttpAssetProvider::IsValidRef(QString assetRef, QString)
         
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
+    if (!networkAccessManager)
+        CreateAccessManager();
+
     assetRef = assetRef.trimmed();
     QString assetRefWithoutSubAssetName;
     AssetAPI::ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, 0, 0, &assetRefWithoutSubAssetName);
@@ -74,6 +97,9 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
 
 AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
 {
+    if (!networkAccessManager)
+        CreateAccessManager();
+
     QString dstUrl = destination->GetFullAssetURL(assetName);
     QNetworkRequest request;
     request.setUrl(QUrl(dstUrl));
@@ -94,6 +120,9 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
 
 void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
 {
+    if (!networkAccessManager)
+        CreateAccessManager();
+
     assetRef = assetRef.trimmed();
     if (!IsValidRef(assetRef))
     {

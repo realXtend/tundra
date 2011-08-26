@@ -19,7 +19,7 @@ typedef boost::shared_ptr<HttpAssetStorage> HttpAssetStoragePtr;
 /// Adds support for downloading assets over the web using the 'http://' specifier.
 class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<HttpAssetProvider>
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     explicit HttpAssetProvider(Framework *framework);
@@ -63,13 +63,18 @@ public:
     QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }
     
 private slots:
+    void AboutToExit();
     void OnHttpTransferFinished(QNetworkReply *reply);
     
 private:
     Framework *framework;
     
+    /// Creates our QNetworkAccessManager
+    void CreateAccessManager();
+
     /// Add assetref to http storage(s) after successful upload or discovery
     void AddAssetRefToStorages(const QString& ref);
+
     /// Delete assetref from http storages after successful delete
     void DeleteAssetRefFromStorages(const QString& ref);
     
