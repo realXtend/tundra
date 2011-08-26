@@ -199,7 +199,7 @@ namespace PythonScript
 
         // Done in PostInitialize() so all modules/APIs are loaded and initialized.
         //StartPythonModuleManager();
-        
+/*        
         // --p --python --pythonapitests are special command line options that on purpose not put
         // to the Framework program options parsing. So lets do a special parse here for there hidden variables.
         /// \todo See if we should return --p --python as official cmd line options back to Framework. Probably best to have modules give own params somehow, 
@@ -224,11 +224,14 @@ namespace PythonScript
             LogWarning(Name() + ": " + + e.what());
         }
         po::notify(commandLineVariables);
-
-        if (commandLineVariables.count("python"))
-            RunScript(commandLineVariables["python"].as<std::string>().c_str());
-        if (commandLineVariables.count("p"))
-            RunScript(commandLineVariables["p"].as<std::string>().c_str());
+*/
+        if (GetFramework()->HasCommandLineParameter("--python") || GetFramework()->HasCommandLineParameter("--p"))
+        {
+            QStringList scripts = GetFramework()->CommandLineParameters("--python");
+            scripts.append(GetFramework()->CommandLineParameters("--p"));
+            foreach(QString script, scripts)
+                RunScript(script);
+        }
 
         LoadStartupScripts();
     }
