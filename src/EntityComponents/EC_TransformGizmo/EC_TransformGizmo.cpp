@@ -30,17 +30,17 @@
 #include "Math/Plane.h"
 #include <Ogre.h>
 
-const AssetReference cTranslate("axis1.mesh");
-const AssetReference cRotate("rotate1.mesh");
-const AssetReference cScale("scale1.mesh");
+const AssetReference cTranslate("local://axis1.mesh");
+const AssetReference cRotate("local://rotate1.mesh");
+const AssetReference cScale("local://scale1.mesh");
 
-const AssetReference cAxisRed("AxisRed.material");
-const AssetReference cAxisRedHi("AxisRedHi.material");
-const AssetReference cAxisGreen("AxisGreen.material");
-const AssetReference cAxisGreenHi("AxisGreenHi.material");
-const AssetReference cAxisBlue("AxisBlue.material");
-const AssetReference cAxisBlueHi("AxisBlueHi.material");
-const AssetReference cAxisWhite("AxisWhite.material");
+const AssetReference cAxisRed("local://AxisRed.material");
+const AssetReference cAxisRedHi("local://AxisRedHi.material");
+const AssetReference cAxisGreen("local://AxisGreen.material");
+const AssetReference cAxisGreenHi("local://AxisGreenHi.material");
+const AssetReference cAxisBlue("local://AxisBlue.material");
+const AssetReference cAxisBlueHi("local://AxisBlueHi.material");
+const AssetReference cAxisWhite("local://AxisWhite.material");
 
 EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     IComponent(scene),
