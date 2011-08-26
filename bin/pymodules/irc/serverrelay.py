@@ -10,10 +10,17 @@ import ircclient
 
 from circuits.net.protocols import irc #IRC, PRIVMSG, USER, NICK, JOIN, Nick
 
-IRCCHANNEL = "#realxtend-dev"
-NICKNAME = "tundraserver"
+IRCCHANNEL = "#realxtend"
+NICKNAME = "ant_tundra"
 IRCSERVER = "irc.freenode.net"
 PORT = 6667
+
+def getname(user): #WebNaali support/hack
+    if user is None: #WebNaali WebSocket connection currently
+        name = "WebNaali"
+    else:
+        name = user.GetProperty("username"))
+    return name
 
 class ServerRelay(circuits.Component):
     channel = "ircclient"
@@ -78,10 +85,12 @@ class ServerRelay(circuits.Component):
             self.init_chatapp_handlers()
 
     def onUserConnected(self, connid, user):
-        self.note("New user connected: %s" % user.GetProperty("username"))
+        name = getname(user)
+        self.note("New user connected: %s" % name)
 
     def onUserDisconnected(self, connid, user):
-        self.note("User %s disconnected." % user.GetProperty("username"))
+        name = getname(user)
+        self.note("User %s disconnected." % name)
 
     def onClientSendMessage(self, sender, msg):
         print "IRC onClientSendMessage:", sender, msg
