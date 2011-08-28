@@ -152,7 +152,7 @@ namespace PythonScript
             framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory()));
     }
 
-    void PythonScriptModule::PostInitialize()
+    void PythonScriptModule::Initialize()
     {
         // An error has occurred on startup.
         if (!pythonQtStarted_)
@@ -197,34 +197,6 @@ namespace PythonScript
         GetFramework()->Console()->RegisterCommand("PyConsole", "Creates a new Python console window.", 
                                                    this, SLOT(ShowConsole()));
 
-        // Done in PostInitialize() so all modules/APIs are loaded and initialized.
-        //StartPythonModuleManager();
-/*        
-        // --p --python --pythonapitests are special command line options that on purpose not put
-        // to the Framework program options parsing. So lets do a special parse here for there hidden variables.
-        /// \todo See if we should return --p --python as official cmd line options back to Framework. Probably best to have modules give own params somehow, 
-        /// we should not mess python specific things to core SDK params in Framework.cpp :I
-        namespace po = boost::program_options;
-
-        po::variables_map commandLineVariables;
-        po::options_description commandLineDescriptions;
-
-        commandLineDescriptions.add_options()
-            ("p", po::value<std::string>(), "Run a python script on startup")
-            ("python", po::value<std::string>(), "Run a python script on startup")
-            ("pythonapitests", "Run a python api test script on startup");
-
-        try
-        {
-            /// \note QApplication::argc() and QApplication::argv() are deprecated.
-            po::store(po::command_line_parser(QApplication::argc(), QApplication::argv()).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
-        }
-        catch(std::exception &e)
-        {
-            LogWarning(Name() + ": " + + e.what());
-        }
-        po::notify(commandLineVariables);
-*/
         if (GetFramework()->HasCommandLineParameter("--python") || GetFramework()->HasCommandLineParameter("--p"))
         {
             QStringList scripts = GetFramework()->CommandLineParameters("--python");

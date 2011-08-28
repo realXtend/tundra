@@ -37,7 +37,7 @@ namespace PythonScript
         virtual void Load();
 
         /// IModule override
-        virtual void PostInitialize();
+        virtual void Initialize();
 
         /// IModule override
         virtual void Uninitialize();
