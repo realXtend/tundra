@@ -55,6 +55,24 @@ QString ConfigAPI::GetFilePath(const QString &file) const
     return filePath;
 }
 
+bool ConfigAPI::IsFilePathSecure(const QString &file) const
+{
+    if (file.trimmed().isEmpty())
+    {
+        LogError("ConfigAPI: File path to perform read/write operations is not permitted as it's and empty string.");
+        return false;
+    }
+
+    bool secure = true;
+    if (QDir::isAbsolutePath(file))
+        secure = false;
+    else if (file.contains(".."))
+        secure = false;
+    if (!secure)
+        LogError("ConfigAPI: File path to perform read/write operations is not permitted: " + file);
+    return secure;
+}
+
 void ConfigAPI::PrepareString(QString &str) const
 {
     if (!str.isEmpty())
@@ -98,6 +116,9 @@ bool ConfigAPI::HasValue(QString file, QString section, QString key) const
     PrepareString(section);
     PrepareString(key);
 
+    if (!IsFilePathSecure(file))
+        return false;
+
     QSettings config(GetFilePath(file), QSettings::IniFormat);
     if (!section.isEmpty())
         key = section + "/" + key;
@@ -139,6 +160,11 @@ QVariant ConfigAPI::Get(QString file, QString section, QString key, const QVaria
     PrepareString(section);
     PrepareString(key);
 
+    // Don't return 'defaultValue' but null QVariant
+    // as this is an error situation.
+    if (!IsFilePathSecure(file))
+        return QVariant();
+
     QSettings config(GetFilePath(file), QSettings::IniFormat);
     if (section.isEmpty())
         return config.value(key, defaultValue);
@@ -177,6 +203,9 @@ void ConfigAPI::Set(QString file, QString section, QString key, const QVariant &
     PrepareString(file);
     PrepareString(section);
     PrepareString(key);
+
+    if (!IsFilePathSecure(file))
+        return;
 
     QSettings config(GetFilePath(file), QSettings::IniFormat);
     if (!config.isWritable())
