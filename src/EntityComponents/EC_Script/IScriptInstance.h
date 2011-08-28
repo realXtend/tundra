@@ -38,6 +38,5 @@ protected:
         With qt/javascript means that can not load qt dlls to get qt networking etc.,
         and with python loading remote code is not allowed at all (cpython always has system access). */
     bool trusted_;
-
 };
 

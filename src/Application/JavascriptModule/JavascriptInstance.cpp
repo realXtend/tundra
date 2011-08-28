@@ -35,7 +35,8 @@ JavascriptInstance::JavascriptInstance(const QString &fileName, JavascriptModule
     engine_(0),
     sourceFile(fileName),
     module_(module),
-    evaluated(false)
+    evaluated(false),
+    requiresTrust_(false)
 {
     CreateEngine();
     Load();
@@ -94,15 +95,21 @@ void JavascriptInstance::Load()
     unsigned numScripts = useAssetAPI ? scriptRefs_.size() : 1;
 
     // Determine based on code origin whether it can be trusted with system access or not
+    requiresTrust_ = false;
+
     if (useAssetAPI)
     {
         trusted_ = true;
+
         for(unsigned i = 0; i < scriptRefs_.size(); ++i)
         {
             AssetStoragePtr storage = scriptRefs_[i]->GetAssetStorage();
             if (!storage)
                 LogError("JavascriptInstance: Script asset \"" + scriptRefs_[i]->Name() + "\" does not have a source asset storage!");
             trusted_ = trusted_ && storage && storage->Trusted();
+
+            if (!requiresTrust_)
+                requiresTrust_ = scriptRefs_[i]->trustRequested;
         }
     }
     else // Local file: always trusted.
@@ -127,6 +134,80 @@ void JavascriptInstance::Load()
 
             // Delete our loaded script content (if any exists).
             program_ == "";
+        }
+    }
+
+}
+
+void JavascriptInstance::CheckPermissions()
+{
+    EC_Script *sciptComponent = dynamic_cast<EC_Script *>(owner_.lock().get());
+    if (!sciptComponent)
+    {
+        LogError("JavascriptInstance::CheckPermissions(): Owner EC_Script null, cannot continue.");
+        return;
+    }
+
+    // If any of the scripts in this instance requested trust
+    // we need to ask the user to grant all the script for the trust.
+    // This includes engine.IncludeFile() and !ref dependencies, as
+    // they are indirectly granted the trust via this engine.
+    if (!trusted_ && requiresTrust_)
+    {
+        QStringList requestedTrustScrips;
+        QStringList requestedTrustReasons;
+
+        // Check the main scripts
+        for(unsigned i = 0; i < scriptRefs_.size(); ++i)
+        {
+            // Any ref cant be null at this point or we must abort.
+            ScriptAssetPtr scriptAsset = scriptRefs_[i];
+            if (!scriptAsset)
+                return;
+            QString ref = scriptAsset->Name().trimmed().toLower();
+            if (ref.isEmpty())
+                return;
+
+            if (!requestedTrustScrips.contains(ref, Qt::CaseInsensitive))
+                requestedTrustScrips << ref;
+            if (scriptAsset->trustRequested && !scriptAsset->trustRequestReason.isEmpty())
+                requestedTrustReasons << scriptAsset->trustRequestReason;
+
+            // Check the script deps
+            std::vector<AssetReference> depRefs = scriptAsset->FindReferencesRecursive();
+            for(unsigned k = 0; k < depRefs.size(); ++k)
+            {
+                QString depRef = depRefs[k].ref.trimmed().toLower();
+                if (depRef.isEmpty())
+                    continue;
+                if (!depRef.endsWith(".js"))
+                    continue;
+                if (depRef.startsWith("local://"))
+                    continue;
+                if (!requestedTrustScrips.contains(depRef, Qt::CaseInsensitive))
+                    requestedTrustScrips << depRef;
+            }
+        }
+
+        // This check local user specific config if he has permitted all of the base urls before.
+        trusted_ = module_->HasUserTrust(requestedTrustScrips);
+        if (!trusted_)
+        {
+            // If not untrusted by user, go ahead and request trust with UI
+            if (!module_->HasUserUntrust(requestedTrustScrips))
+                module_->RequestUserPermission(sciptComponent, requestedTrustScrips, requestedTrustReasons);
+            else
+            {
+                LogInfo("Javascript: System access denied with previously set config values for:");
+                foreach(QString scriptRef, requestedTrustScrips)
+                    LogInfo("Javascript: * " + scriptRef);
+            }
+        }
+        else
+        {
+            LogInfo("Javascript: System access granted with previously set config values for:");
+            foreach(QString scriptRef, requestedTrustScrips)
+                LogInfo("Javascript: * " + scriptRef);
         }
     }
 }
