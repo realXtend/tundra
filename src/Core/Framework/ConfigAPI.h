@@ -153,6 +153,12 @@ private slots:
     /// Get absolute file path for file. Guarantees that it ends with .ini.
     QString GetFilePath(const QString &file) const;
 
+    /// Returns if file provided by the ConfigAPI caller is secure and we should write/read from it.
+    /// The purpose of this function is to verify the file provided by calling code
+    /// does not go out of the confined ConfigAPI folder. For security reasons we cannot let
+    /// eg. scripts open configs where they like. The whole operation will be canceled if this validation fails.
+    bool IsFilePathSecure(const QString &file) const;
+
     /// Prepare string for config usage. Removes spaces from end and start, replaces mid string spaces with '_' and forces to lower case.
     void PrepareString(QString &str) const;
 
