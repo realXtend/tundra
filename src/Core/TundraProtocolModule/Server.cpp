@@ -163,10 +163,7 @@ bool Server::IsRunning() const
 
 bool Server::IsAboutToStart() const
 {
-    QStringList cmdLineParams = framework_->CommandLineParameters("--server");
-    if (cmdLineParams.size() > 0)
-        return true;
-    return false;
+    return framework_->HasCommandLineParameter("--server");
 }
 
 int Server::GetPort() const
