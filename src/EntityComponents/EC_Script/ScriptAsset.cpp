@@ -87,20 +87,19 @@ void ScriptAsset::ParseReferences()
 
     // Search for the first trusted request with optional reason for the request. 
     // The reason can be used in the UI when requesting user from the trusted status.
-    // !trusted
-    // !trusted: Reason why i should be granted trust. Or just some info what this script does.
-    if (scriptContent.contains("!trusted", Qt::CaseInsensitive))
+    // !trusted: Optional info what this script does.
+    // @todo This could be made to perform a bit faster with boost regexp at some point.
+    // @note We use '// !trusted:' even if there is no message following it, this is to
+    // not hit false positives in code eg. 'var trusted = false; if (!trusted)' etc.
+    if (scriptContent.contains("// !trusted:", Qt::CaseInsensitive))
     {
         QTextStream s(&scriptContent, QIODevice::ReadOnly);
         while (!s.atEnd())
         {
             QString line = s.readLine();
-            QString searchTerm = "!trusted";
+            QString searchTerm = "// !trusted:";
             if (!line.contains(searchTerm, Qt::CaseInsensitive))
                 continue;
-            searchTerm = "!trusted:";
-            if (!line.contains(searchTerm, Qt::CaseInsensitive))
-                searchTerm = "!trusted";
             int sIndex = line.indexOf(searchTerm, 0, Qt::CaseInsensitive);
             if (sIndex == -1)
                 continue;
