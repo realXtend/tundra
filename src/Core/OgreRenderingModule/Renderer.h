@@ -93,6 +93,13 @@ namespace OgreRenderer
             @return Raycast result structure */
         virtual RaycastResult* Raycast(int x, int y, unsigned layerMask);
 
+        /// Do a raycast from a world coordinate to another
+        /** Takes two absolute position vectors as parameters
+            @param pos The origin of the generated ray
+            @param dir Direction of the ray, automatically normalized
+            @return Raycast result structure */
+        virtual RaycastResult* RaycastFromTo(const float3 &pos, const float3 &dir);
+
         /// Do a frustum query to the currently active world from viewport coordinates.
         /// \todo This function will be removed and replaced with a function Scene::Intersect.
         /** @param viewrect The query rectangle in 2d window coords. */

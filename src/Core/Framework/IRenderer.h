@@ -80,6 +80,9 @@ public:
         @param layerMask Which selection layer(s) to use (bitmask)
         @return Raycast result structure */
     virtual RaycastResult* Raycast(int x, int y, unsigned layerMask) = 0;
+
+    /// Do raycast into the currently active world from two positions in world
+    virtual RaycastResult* RaycastFromTo(const float3 &pos, const float3 &dir) = 0;
     
     /// Do a frustum query to the currently active world from viewport coordinates.
     /// \todo This function will be removed and replaced with a function Scene::Intersect.

@@ -509,7 +509,30 @@ namespace OgreRenderer
         else
             return 0;
     }
-    
+
+    RaycastResult* Renderer::RaycastFromTo(const float3 &pos, const float3 &dir)
+    {
+        static RaycastResult result;
+
+        result.entity = 0;
+
+        if (!initialized_)
+            return &result;
+        if (!renderWindow)
+            return &result;
+
+        OgreWorldPtr world = GetActiveOgreWorld();
+        float3 normalisedDir = dir - pos;
+        normalisedDir.Normalize();
+
+        Ray ray(pos, normalisedDir);
+
+        if (world)
+            return world->Raycast(ray, 0xffffffff);
+        else
+            return &result;
+    }
+
     QList<Entity*> Renderer::FrustumQuery(QRect &viewrect)
     {
         OgreWorldPtr world = GetActiveOgreWorld();
