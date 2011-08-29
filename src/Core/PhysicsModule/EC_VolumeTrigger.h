@@ -183,8 +183,7 @@ private:
 
     /// Map of entities inside this volume. 
     /** The value is used in physics update to see if the entity is still inside
-        this volume or if it left the volume during last physics update.
-    */
+        this volume or if it left the volume during last physics update. */
     QMap<EntityWeakPtr, bool> entities_;
 };
 

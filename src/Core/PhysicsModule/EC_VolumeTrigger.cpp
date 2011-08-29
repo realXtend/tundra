@@ -12,6 +12,7 @@
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include <OgreAxisAlignedBox.h>
 #include <QMap>
@@ -26,8 +27,8 @@ EC_VolumeTrigger::EC_VolumeTrigger(Scene* scene) :
     byPivot(this, "By Pivot", false),
     entities(this, "Entities")
 {
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
-    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()), Qt::UniqueConnection);
 }
 
 EC_VolumeTrigger::~EC_VolumeTrigger()
@@ -110,6 +111,8 @@ float EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
 
 bool EC_VolumeTrigger::IsInterestingEntity(const QString &name) const
 {
+    PROFILE(EC_VolumeTrigger_IsInterestingEntity); ///\todo The performance of this function feels really fishy - on each physics collision, we iterate through a list performing string comparisons.
+
     QVariantList interestingEntities = entities.Get();
     if (interestingEntities.isEmpty())
         return true;
@@ -167,12 +170,12 @@ void EC_VolumeTrigger::UpdateSignals()
     if (!parent)
         return;
     
-    connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForRigidBody()));
+    connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForRigidBody()), Qt::UniqueConnection);
 
     Scene* scene = parent->ParentScene();
     PhysicsWorld* world = scene->GetWorld<PhysicsWorld>().get();
     if (world)
-        connect(world, SIGNAL(Updated(float)), this, SLOT(OnPhysicsUpdate()));
+        connect(world, SIGNAL(Updated(float)), this, SLOT(OnPhysicsUpdate()), Qt::UniqueConnection);
 }
 
 void EC_VolumeTrigger::CheckForRigidBody()
@@ -188,20 +191,20 @@ void EC_VolumeTrigger::CheckForRigidBody()
         {
             rigidbody_ = rigidbody;
             connect(rigidbody.get(), SIGNAL(PhysicsCollision(Entity*, const float3&, const float3&, float, float, bool)),
-                this, SLOT(OnPhysicsCollision(Entity*, const float3&, const float3&, float, float, bool)));
+                this, SLOT(OnPhysicsCollision(Entity*, const float3&, const float3&, float, float, bool)), Qt::UniqueConnection);
         }
     }
 }
 
 void EC_VolumeTrigger::OnPhysicsUpdate()
 {
+    PROFILE(EC_VolumeTrigger_OnPhysicsUpdate);
     QMap<EntityWeakPtr, bool>::iterator i = entities_.begin();
     while(i != entities_.end())
     {
         if (!i.value())
         {
             EntityPtr entity = i.key().lock();
-            /* disabled the check 'cause couldn't get the targets active, and the (possible) extran signaling doesn't do harm? --antont 
             bool active = true;
             // inactive rigid bodies don't generate collisions, so before emitting EntityLeave -event, make sure the body is active.
             if (entity)
@@ -210,8 +213,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (rigidbody)
                     active = rigidbody->IsActive();
             }
-            if (active)*/
-            if (true)
+            if (active)
             {
                 i = entities_.erase(i);
                 
@@ -224,6 +226,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
             }
         } else
         {
+            // Age the internal bool from true to false to signal that this collision is now an old one.
             entities_.insert(i.key(), false);
         }
         ++i;
@@ -232,53 +235,39 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
 
 void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision)
 {
-    assert (otherEntity && "Physics collision with no entity.");
+    assert(otherEntity && "Physics collision with no entity.");
 
     if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->Name()))
         return;
 
     EntityPtr entity = otherEntity->shared_from_this();
 
-    // Forcibly keep the other rigidbody awake while inside the trigger, because otherwise the trigger will bug once the body goes to rest
-    EC_RigidBody* rb = entity->GetComponent<EC_RigidBody>().get();
-    if (rb)
-        rb->KeepActive();
-    
-    if (byPivot.Get())
-    {
-        if (IsPivotInside(entity.get()))
-        {
-            if (entities_.find(entity) == entities_.end())
-            {
-                emit entityEnter(otherEntity);
-                connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
-            }
+    // If byPivot attribute is enabled, we require the object pivot to enter the volume trigger area.
+    // Otherwise, we react on each physics collision message (i.e. we accept if the volumetrigger and other entity just touch).
+    if (byPivot.Get() && !IsPivotInside(entity.get()))
+        return;
 
-            entities_.insert(entity, true);
-        }
-    } else
+    if (newCollision)
     {
-        if (newCollision)
+        // make sure the entity isn't already inside the volume
+        if (entities_.find(entity) == entities_.end())
         {
-            // make sure the entity isn't already inside the volume
-            if (entities_.find(entity) == entities_.end())
-            {
-                emit entityEnter(otherEntity);
-                connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
-            }
+            emit entityEnter(otherEntity);
+            connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
         }
-        entities_.insert(entity, true);
     }
+    entities_.insert(entity, true);
 }
 
+/** Called when the given entity is deleted from the scene. In that case, remove the Entity immediately from our tracking data structure (and signal listeners). */
 void EC_VolumeTrigger::OnEntityRemoved(Entity *entity)
 {
+    assert(entity);
     EntityWeakPtr ptr = entity->shared_from_this();
     QMap<EntityWeakPtr, bool>::iterator i = entities_.find(ptr);
     if (i != entities_.end())
     {
         entities_.erase(i);
-
         emit entityLeave(entity);
     }
 }
