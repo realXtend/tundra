@@ -55,6 +55,12 @@ namespace OgreRenderer
         /// Returns window height, or 0 if no render window
         virtual int GetWindowHeight() const;
 
+        /// Takes a screen shot and saves it to a file.
+        /// @note Remove this when EC_Camera implements screen shot functionality.
+        /// @param filePath Directory to save file.
+        /// @param fileName File name in directory.
+        virtual void TakeScreenshot(const QString& filePath, const QString& fileName);
+
         /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /** @param directory Directory path to add. */
         void AddResourceDirectory(const QString &directory);
@@ -119,19 +125,14 @@ namespace OgreRenderer
         /// Destructor
         virtual ~Renderer();
 
-        /// set maximum view distance
+        /// Set maximum view distance
         virtual void SetViewDistance(float distance);
 
-        /// get maximum view distance
+        /// Get maximum view distance
         virtual float ViewDistance()const { return view_distance_; }
 
-        ///Is window fullscreen?
+        /// Is window full screen?
         bool IsFullScreen() const;
-
-        /// Takes a screenshot and saves it to a file.
-        /// @param filePath File path.
-        /// @param fileName File name.
-//        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
         /// Returns framework
         Framework* GetFramework() const { return framework_; }

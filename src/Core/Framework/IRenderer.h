@@ -99,6 +99,12 @@ public:
     /// \todo This function will be removed.
     virtual int GetWindowHeight() const = 0;
 
+    /// Takes a screen shot and saves it to a file.
+    /// @note Remove this when EC_Camera implements screen shot functionality.
+    /// @param filePath Directory to save file.
+    /// @param fileName File name in directory.
+    virtual void TakeScreenshot(const QString& filePath, const QString& fileName) = 0;
+
     /// set maximum view distance
     virtual void SetViewDistance(float distance) = 0;
 

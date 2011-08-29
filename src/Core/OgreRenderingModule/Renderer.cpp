@@ -800,16 +800,23 @@ namespace OgreRenderer
     {
         return prefix + "_" + ToString<uint>(object_id_++);
     }
-/*
-    void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
+
+    void Renderer::TakeScreenshot(const QString& filePath, const QString& fileName)
     {
+        if (!framework_ || framework_->IsHeadless())
+            return;
+
         if (renderWindow)
         {
-            Ogre::String file = filePath + fileName;
-            renderWindow->OgreRenderWindow()->writeContentsToFile(file);
+            QDir dir(filePath);
+            if (dir.exists())
+            {
+                Ogre::String file = dir.absoluteFilePath(fileName).toStdString();
+                renderWindow->OgreRenderWindow()->writeContentsToFile(file);
+            }
         }
     }
-
+/*
     void Renderer::PrepareImageRendering(int width, int height)
     {
         // Only do this once per connect as we create entitys here
