@@ -235,6 +235,6 @@ static const u32 cAttributeEntityReference = 13;
 static const u32 cAttributeQVariant = 14;
 static const u32 cAttributeQVariantList = 15;
 static const u32 cAttributeTransform = 16;
-static const u32 cAttributeQSize = 17;
+static const u32 cAttributeQPoint = 17;
 static const u32 cNumAttributeTypes = 18;
 

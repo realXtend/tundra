@@ -91,8 +91,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(QString, webviewUrl);
 
     /// Webview widget size.
-    Q_PROPERTY(QSize webviewSize READ getwebviewSize WRITE setwebviewSize);
-    DEFINE_QPROPERTY_ATTRIBUTE(QSize, webviewSize);
+    Q_PROPERTY(QPoint webviewSize READ getwebviewSize WRITE setwebviewSize);
+    DEFINE_QPROPERTY_ATTRIBUTE(QPoint, webviewSize);
 
     /// Rendering target submesh index.
     Q_PROPERTY(int renderSubmeshIndex READ getrenderSubmeshIndex WRITE setrenderSubmeshIndex);

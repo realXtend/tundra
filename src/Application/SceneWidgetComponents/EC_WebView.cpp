@@ -51,7 +51,7 @@ EC_WebView::EC_WebView(Scene *scene) :
     myControllerId_(0),
     currentControllerName_(""),
     webviewUrl(this, "View URL", QString()),
-    webviewSize(this, "View Size", QSize(800,600)),
+    webviewSize(this, "View Size", QPoint(800,600)),
     renderSubmeshIndex(this, "Render Submesh", 0),
     renderRefreshRate(this, "Render FPS", 0),
     interactive(this, "Interactive", false),
@@ -463,7 +463,7 @@ void EC_WebView::PrepareComponent()
         sceneCanvas->RestoreOriginalMeshMaterials();
 
     // Resize the widget if needed before loading the page.
-    QSize targetSize = getwebviewSize();
+    QSize targetSize = QSize(getwebviewSize().x(), getwebviewSize().y());
     if (webview_->size() != targetSize)
         webview_->setFixedSize(targetSize);
 
@@ -500,7 +500,7 @@ void EC_WebView::PrepareWebview()
     // Otherwise we cant delete the webview on exit, or if we do crash on UiAPI::~UiAPI()!
     webview_ = new QWebView();
     webview_->setWindowFlags(Qt::Tool);
-    webview_->setFixedSize(getwebviewSize());
+    webview_->setFixedSize(QSize(getwebviewSize().x(), getwebviewSize().y()));
     webview_->installEventFilter(this);
     webview_->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 
@@ -717,7 +717,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         // 2D widget, he needs to use the components attribute.
         // This is done to ensure shared browsing will always be same size on all clients.
         // The scroll event x,y positions will always show same content on both controller and slaves.
-        QSize targetSize = getwebviewSize();
+        QSize targetSize = QSize(getwebviewSize().x(), getwebviewSize().y());
         if (webview_->size() != targetSize)
         {
             webview_->setFixedSize(targetSize);

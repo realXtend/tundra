@@ -67,14 +67,8 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         attributeEditor = new AssetReferenceListAttributeEditor(browser, component, name, type, editor);
     else if(type == "transform")
         attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
-    else if(type == "qsize")
-        attributeEditor = new ECAttributeEditor<QSize>(browser, component, name, type, editor);
-    else if(type == "qsizef")
-        attributeEditor = new ECAttributeEditor<QSizeF>(browser, component, name, type, editor);
     else if(type == "qpoint")
         attributeEditor = new ECAttributeEditor<QPoint>(browser, component, name, type, editor);
-    else if(type == "qpointf")
-        attributeEditor = new ECAttributeEditor<QPointF>(browser, component, name, type, editor);
     else
         LogWarning("Unknown attribute type " + type + " for ECAttributeEditorBase creation.");
 
