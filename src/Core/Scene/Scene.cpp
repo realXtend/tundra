@@ -348,7 +348,6 @@ void Scene::EmitComponentAcked(IComponent* comp, component_id_t oldId)
         emit ComponentAcked(comp, oldId);
 }
 
-/*
 QVariantList Scene::GetEntityIdsWithComponent(const QString &type_name) const
 {
     QVariantList ret;

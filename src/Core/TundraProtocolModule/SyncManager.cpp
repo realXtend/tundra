@@ -830,8 +830,6 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
 {
     assert(source);
     UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if (!scene->AllowModifyEntity(user, 0)) //should be 'ModifyScene', but ModifyEntity is now the signal that covers all
-        return;
     
     // Get matching syncstate for reflecting the changes
     SceneSyncState* state = GetSceneSyncState(source);
@@ -841,7 +839,10 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
         LogWarning("Null scene or sync state, disregarding CreateEntity message");
         return;
     }
-    
+
+    if (!scene->AllowModifyEntity(user, 0)) //should be 'ModifyScene', but ModifyEntity is now the signal that covers all
+        return;
+
     bool isServer = owner_->IsServer();
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
@@ -984,16 +985,16 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         return;
 
     EntityPtr entity = scene->GetEntity(entityID);
-    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if (!scene->AllowModifyEntity(user, entity.get()))
-        return;
-    
-    EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
         LogWarning("Entity " + QString::number(entityID) + " not found for CreateComponents message");
         return;
     }
+
+    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (!scene->AllowModifyEntity(user, entity.get()))
+        return;
+    
     
     // Read the components
     std::vector<std::pair<component_id_t, component_id_t> > componentIdRewrites;

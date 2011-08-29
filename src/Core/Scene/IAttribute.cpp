@@ -73,6 +73,7 @@ template<> u32 Attribute<EntityReference>::TypeId() const { return cAttributeEnt
 template<> u32 Attribute<QVariant>::TypeId() const { return cAttributeQVariant; }
 template<> u32 Attribute<QVariantList>::TypeId() const { return cAttributeQVariantList; }
 template<> u32 Attribute<Transform>::TypeId() const { return cAttributeTransform; }
+template<> u32 Attribute<QSize>::TypeId() const { return cAttributeQSize; }
 
 // TOSTRING TEMPLATE IMPLEMENTATIONS.
 

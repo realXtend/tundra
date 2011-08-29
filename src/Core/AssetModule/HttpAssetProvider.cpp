@@ -23,7 +23,7 @@ HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
     networkAccessManager(0)
 {
     CreateAccessManager();
-    connect(framework->GetApplication(), SIGNAL(ExitRequested()), SLOT(AboutToExit()));
+    connect(framework->App(), SIGNAL(ExitRequested()), SLOT(AboutToExit()));
 }
 
 HttpAssetProvider::~HttpAssetProvider()
