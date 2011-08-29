@@ -44,6 +44,7 @@ public slots:
     CookieJar *CreateCookieJar(const QString &cookieDiskFile);
 
 private slots:
+    void CheckStartParamUrl();
     void OnScriptEngineCreated(QScriptEngine *engine);
 
 signals:
@@ -59,5 +60,7 @@ signals:
 private:
     /// Framework ptr.
     Framework *framework_;
+
+    bool startUrlChecked_;
 
 };

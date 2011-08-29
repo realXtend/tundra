@@ -288,7 +288,6 @@ void TundraLogicModule::Update(f64 frametime)
             QStringList cmdLineParams = framework_->CommandLineParameters("--login");
             if (cmdLineParams.size() > 0)
             {
-                LogInfo(cmdLineParams.first());
                 QUrl loginUrl(cmdLineParams.first(), QUrl::TolerantMode);
                 if (loginUrl.isValid())
                     client_->Login(loginUrl);
