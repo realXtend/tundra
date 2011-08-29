@@ -24,8 +24,6 @@ class JavascriptInstance : public IScriptInstance
 {
     Q_OBJECT
 
-    friend class JavascriptModule;
-
 public:
     /// Creates script engine for this script instance and loads the script but doesn't run it yet.
     /** @param scriptRef Script asset reference.
@@ -82,9 +80,6 @@ public slots:
     /// Check and print error if the engine has an uncaught exception
     bool CheckAndPrintException(const QString& message, const QScriptValue& result);
 
-    /// Check the trust permissions if it has been requested by the script content.
-    void CheckPermissions();
-
 signals:
     /// The scripts have been run. This is the trigger to create script objects as necessary
     void ScriptEvaluated();
@@ -126,11 +121,7 @@ private:
     /// Already included files for preventing multi-inclusion
     std::vector<QString> includedFiles;
 
-    /// Weather this script has requested trust via !trusted tag.
-    bool requiresTrust_;
-
 private slots:
     void OnSignalHandlerException(const QScriptValue& exception);
-
 };
 

@@ -10,7 +10,7 @@ class ScriptAsset : public IAsset
     Q_OBJECT;
 public:
     ScriptAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
-        IAsset(owner, type_, name_), trustRequested(false)
+        IAsset(owner, type_, name_)
     {
     }
 
@@ -34,8 +34,6 @@ public:
     std::vector<AssetReference> references;
 
     QString scriptContent;
-    QString trustRequestReason;
-    bool trustRequested;
 
     bool IsLoaded() const;
 

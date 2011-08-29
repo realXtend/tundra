@@ -17,9 +17,7 @@
 
 #include <QObject>
 #include <QString>
-#include <QStringList>
 #include <QVariantMap>
-#include <QHash>
 
 class JavascriptInstance;
 
@@ -42,21 +40,9 @@ public:
 
     /// Prepares script instance by registering all needed services to it.
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.
-        @param instance Script instance.
+        @param instance Script istance.
         @param comp Script component, null by default. */
     void PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp = 0);
-
-    /// Check local user specific config if scripts from a engine is considered trusted.
-    /// @param scriptBaseUrls Script base urls.
-    bool HasUserTrust(QStringList scriptRefs);
-
-    /// Check local user specific config if scripts from a engine is considered untrusted.
-    /// @param scriptBaseUrls Script base urls.
-    bool HasUserUntrust(QStringList scriptRefs);
-
-    /// Request trusted status for a script base urls.
-    /// @param scriptBaseUrls Script base urls.
-    void RequestUserPermission(EC_Script *script, QStringList scriptRefs, QStringList reasons);
 
 public slots:
     /// New scene has been added to foundation.
@@ -76,9 +62,6 @@ signals:
     void ScriptEngineCreated(QScriptEngine* engine);
 
 private:
-    /// Write trusted script refs to config. Happens if user accepts system access for scripts.
-    void WriteUserPermissions(bool trusted, QStringList scriptRefs);
-
     /// Parses the plugin startup configuration file to detect which startup scripts should be run.
     QStringList ParseStartupScriptConfig();
 
@@ -113,11 +96,6 @@ private:
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptInstance *> startupScripts_;
 
-    /// Currently ongoing script permission requests.
-    QHash<EC_Script*, QStringList> currentPermissionRequests_;
-
-    QString configFolder_;
-
 private slots:
     void ConsoleRunString(const QStringList &params);
     void ConsoleRunFile(const QStringList &params);
@@ -128,8 +106,6 @@ private slots:
     void ScriptClassNameChanged(const QString& newClassName);
     void ScriptEvaluated();
     void ScriptUnloading();
-
-    void PermissionRequestConfirmation(int result);
 };
 
 // API things

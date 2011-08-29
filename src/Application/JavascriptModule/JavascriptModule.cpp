@@ -26,9 +26,6 @@
 #include "FrameAPI.h"
 #include "PluginAPI.h"
 #include "ConsoleAPI.h"
-#include "ConfigAPI.h"
-#include "UiAPI.h"
-#include "UiMainWindow.h"
 #include "IComponentFactory.h"
 #include "TundraLogicModule.h"
 
@@ -36,12 +33,8 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-
 #include <QtScript>
 #include <QDomElement>
-#include <QMessageBox>
-#include <QSettings>
-#include <QDir>
 
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
@@ -50,30 +43,6 @@ JavascriptModule::JavascriptModule() :
     IModule("Javascript"),
     engine(new QScriptEngine(this))
 {
-    // NOTE: We cannot use ConfigAPI for permission storage because then scripts could just add them selves to the trusted config!
-    // This has to be hidden from ConfigAPI and untrusted scripts. Once you give access to a script there is ofc
-    // no holding back via QFile but this is why user needs to confirm the trust.
-
-    /// \todo Should get the unicode GetApplicationDataDirectoryW() QString::fromStdWString seems to give a weird linker error, types wont match?
-    QString applicationDataDir = Application::UserDataDirectory();
-    QString configFolderName("script");
-
-    // Prepare application data dir path
-    applicationDataDir.replace("\\", "/");
-    if (!applicationDataDir.endsWith("/"))
-        applicationDataDir.append("/");
-
-    // Create directory if does not exist
-    QDir configDataDir(applicationDataDir);
-    if (!configDataDir.exists(configFolderName))
-        configDataDir.mkdir(configFolderName);
-    configDataDir.cd(configFolderName);
-
-    configFolder_ = configDataDir.absolutePath();
-
-    // Be sure the path ends with a forward slash
-    if (!configFolder_.endsWith("/"))
-        configFolder_.append("/");
 }
 
 JavascriptModule::~JavascriptModule()
@@ -191,8 +160,6 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
         }
 
         jsInstance->SetOwner(comp);
-        jsInstance->CheckPermissions(); // Can be done after EC_Script owner has been set
-
         sender->SetScriptInstance(jsInstance);
 
         // Register all core APIs and names to this script engine.
@@ -210,23 +177,7 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
         {
             if (isApplication && framework_->HasCommandLineParameter("--disablerunonload"))
                 return;
-            
-            if (!currentPermissionRequests_.contains(sender))
-                jsInstance->Run();
-            else
-            {
-                // Looks stupid but trying to get the most sensible thing to print.
-                QString scriptName = "Unidentified Script";
-                if (!sender->applicationName.Get().trimmed().isEmpty())
-                    scriptName = sender->applicationName.Get();
-                else if (!sender->Name().trimmed().isEmpty())
-                    scriptName = sender->Name();
-                else if (sender->ParentEntity() && !sender->ParentEntity()->Name().trimmed().isEmpty())
-                    scriptName = sender->ParentEntity()->Name();
-                else if (sender->ParentEntity())
-                    scriptName = "EC_Script (Entity ID: " + QString::number(sender->ParentEntity()->Id()) + ")";
-                LogInfo("Javascript: Waiting for user permission to run script '" + scriptName + "'");
-            }
+            jsInstance->Run();
         }
     }
 }
@@ -727,225 +678,6 @@ void JavascriptModule::ConsoleRunFile(const QStringList &params)
 void JavascriptModule::ConsoleReloadScripts()
 {
     LoadStartupScripts();
-}
-
-bool JavascriptModule::HasUserTrust(QStringList scriptRefs)
-{
-    if (scriptRefs.empty())
-        return false;
-
-    // NOTE: We cannot use ConfigAPI because then scripts could just add them selves to the config!
-    // This has to be hidden from ConfigAPI and untrusted scripts. Once you give access to a script there is ofc
-    // no holding back via QFile but this is why user needs to confirm the trust.
-     
-    QSettings config(configFolder_ + "permissions.ini", QSettings::IniFormat);
-    QString section("permissions");
-    QString key("trusted");
-    if (config.status() != QSettings::NoError)
-        return false;
-
-    QStringList permittedList = config.value(section + "/" + key, QStringList()).toStringList();
-    if (permittedList.empty())
-        return false;
-
-    // If any of the scripts in the instance/engine is not 
-    // found from the trusted list, the whole chain becomes untrusted.
-    foreach(QString scriptRef, scriptRefs)
-    {
-        scriptRef = scriptRef.trimmed().toLower();
-        if (!permittedList.contains(scriptRef))
-            return false;
-    }
-    return true;
-}
-
-bool JavascriptModule::HasUserUntrust(QStringList scriptRefs)
-{
-    // If for some reason input is empty, don't trust the instance/engine
-    if (scriptRefs.empty())
-        return true;
-
-    // NOTE: We cannot use ConfigAPI because then scripts could just add them selves to the config!
-    // This has to be hidden from ConfigAPI and untrusted scripts. Once you give access to a script there is ofc
-    // no holding back via QFile but this is why user needs to confirm the trust.
-
-    QSettings config(configFolder_ + "permissions.ini", QSettings::IniFormat);
-    QString section("permissions");
-    QString key("untrusted");
-    if (config.status() != QSettings::NoError)
-        return false;
-
-    QStringList unpermittedList = config.value(section + "/" + key, QStringList()).toStringList();
-    if (unpermittedList.empty())
-        return false;
-
-    // If any of the scripts in the instance/engine is untrusted, 
-    // the whole chain becomes untrusted
-    foreach(QString scriptRef, scriptRefs)
-    {
-        scriptRef = scriptRef.trimmed().toLower();
-        if (unpermittedList.contains(scriptRef))
-            return true;
-    }
-    return false;
-}
-
-void JavascriptModule::WriteUserPermissions(bool trusted, QStringList scriptRefs)
-{
-    if (scriptRefs.empty())
-        return;
-
-    // NOTE: We cannot use ConfigAPI because then scripts could just add them selves to the config!
-    // This has to be hidden from ConfigAPI and untrusted scripts. Once you give access to a script there is ofc
-    // no holding back via QFile but this is why user needs to confirm the trust.
-
-    QSettings config(configFolder_ + "permissions.ini", QSettings::IniFormat);
-    if (config.status() != QSettings::NoError)
-        return;
-
-    // Write the new values to config
-    QString key;
-    QString section("permissions");
-    if (trusted)
-        key = "trusted";
-    else
-        key = "untrusted";
-
-    QStringList writeList = config.value(section + "/" + key, QStringList()).toStringList();
-    foreach(QString scriptRef, scriptRefs)
-    {
-         scriptRef = scriptRef.trimmed().toLower();
-         if (!writeList.contains(scriptRef))
-            writeList << scriptRef;
-    }
-    config.setValue(section + "/" + key, writeList);
-    config.sync();
-
-    // Remove from untrusted/trusted config so we don't leave scripts being in both
-    if (trusted)
-        key = "untrusted";
-    else
-        key = "trusted";
-
-    writeList.clear();
-    writeList = config.value(section + "/" + key, QStringList()).toStringList();
-    if (writeList.isEmpty())
-        return;
-
-    foreach(QString scriptRef, scriptRefs)
-    {
-        scriptRef = scriptRef.trimmed().toLower();
-        if (writeList.contains(scriptRef))
-            writeList.removeAll(scriptRef);
-    }
-    config.setValue(section + "/" + key, writeList);
-    config.sync();
-}
-
-void JavascriptModule::RequestUserPermission(EC_Script *script, QStringList scriptRefs, QStringList reasons)
-{
-    // If we are on a server or we are headless, don't try to ask user for permission.
-    // The system of user giving permissions to otherwise untrusted scripts only work on clients.
-    // Server side the !trusted request is ignored.
-    if (framework_->IsHeadless())
-        return;
-    if (!script)
-        return;
-
-    currentPermissionRequests_[script] = scriptRefs;
-
-    // Lets try to get the most precise name for the script.
-    QString scriptId = script->getapplicationName().trimmed();
-    if (scriptId.isEmpty())
-        scriptId = script->Name().trimmed();
-    if (scriptId.isEmpty() && script->ParentEntity())
-        scriptId = script->ParentEntity()->Name().trimmed();
-    if (scriptId.isEmpty() && script->ParentEntity())
-        scriptId = "EC_Script (Entity ID: " + QString::number(script->ParentEntity()->Id()) + ")";
-    if (scriptId.isEmpty())
-        scriptId = "Unnamed EC_Script";
-
-    QString message = "<p><span style=\"font-weight: bold;\">" + scriptId + " is requesting system access for:</span></p>";
-    message += "<ul>";
-    foreach(QString baseUrl, scriptRefs)
-        message += "<li>" + baseUrl +"</li>";
-    message += "</ul>";
-
-    if (!reasons.empty())
-        message += "<p><span style=\"font-weight: bold;\">Script message:</span> " + reasons.join(" ") + "</p>";
-
-    QMessageBox *requestDialog = new QMessageBox(framework_->Ui()->MainWindow());
-    connect(requestDialog, SIGNAL(finished(int)), SLOT(PermissionRequestConfirmation(int)));
-    
-    requestDialog->setAttribute(Qt::WA_DeleteOnClose);
-    requestDialog->setModal(false);
-    requestDialog->setWindowFlags(Qt::Tool);
-    requestDialog->setWindowTitle("Script Permissions - " + scriptId);
-    requestDialog->setTextFormat(Qt::RichText);
-    requestDialog->addButton("Grant", QMessageBox::YesRole);
-    requestDialog->addButton("Deny", QMessageBox::NoRole);
-    requestDialog->setProperty("EC_Script", QVariant::fromValue<QObject*>(script));
-    requestDialog->setText(message);
-    requestDialog->open();
-
-    QCheckBox *rememberBox = new QCheckBox("Remember my decision on this computer");
-    rememberBox->setObjectName("rememberDecisionCheckBox");
-    rememberBox->setChecked(false);
-    
-    QGridLayout *gridLayout = dynamic_cast<QGridLayout*>(requestDialog->layout());
-    if (gridLayout)
-        gridLayout->addWidget(rememberBox, 2, 1, Qt::AlignVCenter|Qt::AlignLeft);
-}
-
-void JavascriptModule::PermissionRequestConfirmation(int result)
-{
-    QObject *signalSender = sender();
-    if (!signalSender)
-        return;
-    QMessageBox *msgBox = dynamic_cast<QMessageBox*>(signalSender);
-    if (!msgBox)
-        return;
-
-    QObject *ecScriptProp = msgBox->property("EC_Script").value<QObject*>();
-    EC_Script *script = dynamic_cast<EC_Script*>(ecScriptProp);
-    if (!script)
-        return;
-    
-    QStringList scriptRefs = currentPermissionRequests_[script];
-    QCheckBox *rememberBox = msgBox->findChild<QCheckBox*>("rememberDecisionCheckBox");
-    QMessageBox::ButtonRole action = msgBox->buttonRole(msgBox->clickedButton());
-
-    IScriptInstance *iInst = script->GetScriptInstance();
-    JavascriptInstance *jsInst = dynamic_cast<JavascriptInstance*>(iInst);
-    bool userGrantedTrust = (action == QMessageBox::YesRole ? true : false);
-
-    QString logMsg("Javascript: ");
-    logMsg += (userGrantedTrust ? "User granted system access for:" : "User denied system access for:");
-    LogInfo(logMsg);
-    foreach(QString scriptRef, scriptRefs)
-        LogInfo("Javascript: * " + scriptRef);
-
-    // Set trust to config if user says so
-    if (rememberBox && rememberBox->isChecked())
-    {
-        LogInfo("Javascript: Writing decision to user config for this computer.");
-        WriteUserPermissions(userGrantedTrust, scriptRefs);
-    }
-
-    // Set trust for instance
-    if (jsInst)
-        jsInst->trusted_ = userGrantedTrust;
-
-    // Run script
-    if (jsInst && script->runOnLoad.Get() && script->ShouldRun() && !framework_->HasCommandLineParameter("--disablerunonload"))
-    {
-        logMsg = "Javascript: Running script as ";
-        logMsg += (userGrantedTrust ? "trusted code." : "untrusted code.");
-        LogInfo(logMsg);
-        jsInst->Run();
-    }
-
-    currentPermissionRequests_.remove(script);
 }
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
