@@ -173,10 +173,17 @@ namespace MumbleLib
         lock_users_.unlock();
 
         lock_state_.lockForRead();
-        if (state_ != STATE_ERROR)
+        if (client_ && state_ != STATE_ERROR)
         {
             QMutexLocker client_locker(&mutex_client_);
-            SAFE_DELETE(client_);
+            try
+            {
+                SAFE_DELETE(client_);
+            }
+            catch(std::exception &e)
+            {
+                LogError("[MumbleVoip]: Failed to delete client");
+            }
         }
         lock_state_.unlock();
     }
@@ -208,7 +215,7 @@ namespace MumbleLib
 
     void Connection::Close()
     {
-        if(state_ == STATE_CLOSED)
+        if (state_ == STATE_CLOSED)
             return;
 
         if (state_ == STATE_CONNECTING || state_ == STATE_AUTHENTICATING)
@@ -237,6 +244,7 @@ namespace MumbleLib
         }
         catch(std::exception &e)
         {
+            LogError("[MumbleVoip]: Failed to disconnect client");
             lock_state_.lockForWrite();
             state_ = STATE_ERROR;
             lock_state_.unlock();
