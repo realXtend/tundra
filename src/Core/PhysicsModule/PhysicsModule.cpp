@@ -319,7 +319,7 @@ void UpdateBulletProfilingData(CProfileIterator* profileIterator, QTreeWidgetIte
 
 void UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int numFrames)
 {
-    QTreeWidgetItem *bulletRootNode = FindItemByName(treeRoot, "PhysicsWorld_Simulate");
+    QTreeWidgetItem *bulletRootNode = FindItemByName(treeRoot, "Bullet_stepSimulation");
     if (!bulletRootNode)
         return; // We've lost the physics world update node, or no physics occurring, skip bullet profiling altogether.
 

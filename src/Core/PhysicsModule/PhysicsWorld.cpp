@@ -105,12 +105,15 @@ void PhysicsWorld::Simulate(f64 frametime)
     if (!runPhysics_)
         return;
     
-    PROFILE(PhysicsWorld_Simulate); ///\note Do not delete or rename this PROFILE() block. The DebugStats profiler uses this string as a label to know where to inject the Bullet internal profiling data.
+    PROFILE(PhysicsWorld_Simulate);
     
     emit AboutToUpdate((float)frametime);
     
     int maxSubSteps = (int)((1.0f / physicsUpdatePeriod_) / cMinFps);
-    world_->stepSimulation((float)frametime, maxSubSteps, physicsUpdatePeriod_);
+    {
+        PROFILE(Bullet_stepSimulation); ///\note Do not delete or rename this PROFILE() block. The DebugStats profiler uses this string as a label to know where to inject the Bullet internal profiling data.
+        world_->stepSimulation((float)frametime, maxSubSteps, physicsUpdatePeriod_);
+    }
             
     // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
     // However, do not do this if user has used the physicsdebug console command
@@ -128,6 +131,7 @@ void PhysicsWorld::Simulate(f64 frametime)
 
 void PhysicsWorld::ProcessPostTick(float substeptime)
 {
+    PROFILE(PhysicsWorld_ProcessPostTick);
     // Check contacts and send collision signals for them
     int numManifolds = collisionDispatcher_->getNumManifolds();
     
@@ -199,7 +203,10 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     
     previousCollisions_ = currentCollisions;
     
-    emit Updated(substeptime);
+    {
+        PROFILE(PhysicsWorld_ProcessPostTick_Updated);
+        emit Updated(substeptime);
+    }
 }
 
 PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& direction, float maxdistance, int collisiongroup, int collisionmask)
