@@ -13,9 +13,10 @@ void PrintLogMessage(u32 logChannel, const char *str)
     ConsoleAPI *console = (instance ? instance->Console() : 0);
 
     // The console and stdout prints are equivalent.
-    printf("%s", str);
     if (console)
         console->Print(str);
+    else // The Console API is already dead for some reason, print directly to stdout to guarantee we don't lose any logging messags.
+        printf("%s", str);
 }
 
 bool IsLogChannelEnabled(u32 logChannel)
