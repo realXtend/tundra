@@ -623,13 +623,13 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 compState.isInQueue = false;
                 
                 ComponentPtr comp = entity->GetComponentById(compState.id);
-                bool removeState = false;
+                bool removeCompState = false;
                 if (!comp)
                 {
                     if (!compState.removed)
                         LogWarning("Component " + QString::number(compState.id) + " of " + entity->ToString() + " has gone missing from the scene without the remove properly signalled. Removing from client replication state->");
                     compState.isNew = false;
-                    removeState = true;
+                    removeCompState = true;
                 }
                 else
                 {
@@ -641,7 +641,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 // Remove component
                 if (compState.removed)
                 {
-                    removeState = true;
+                    removeCompState = true;
                     
                     // If first component, write the entity ID first
                     if (!removeCompsDs.BytesFilled())
@@ -768,7 +768,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     }
                 }
                 
-                if (removeState)
+                if (removeCompState)
                     entityState.components.erase(compState.id);
             }
             
@@ -1099,7 +1099,8 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const char
         return;
     
     scene->RemoveEntity(entityID, change);
-    // Delete also from the sender's syncstate
+    // Delete from the sender's syncstate so that we don't echo the delete back needlessly
+    state->RemoveFromQueue(entityID); // Be sure to erase from dirty queue so that we don't invoke UDB
     state->entities.erase(entityID);
 }
 
@@ -1142,8 +1143,12 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
             continue;
         }
         entity->RemoveComponent(comp, change);
-        // Delete also from the sender's syncstate
-         state->entities[entityID].components.erase(compID);
+        // Delete from the sender's syncstate, so that we don't echo the delete back needlessly
+        if (state->entities.find(entityID) != state->entities.end())
+        {
+            state->entities[entityID].RemoveFromQueue(compID); // Be sure to erase from dirty queue so that we don't invoke UDB
+            state->entities[entityID].components.erase(compID);
+        }
     }
 }
 
