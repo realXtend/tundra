@@ -541,7 +541,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         if (!entity)
         {
             if (!entityState.removed)
-                LogWarning("Entity " + QString::number(entityState.id) + " has gone missing from the scene without the remove properly signalled. Removing from client replication state->");
+                LogWarning("Entity " + QString::number(entityState.id) + " has gone missing from the scene without the remove properly signalled. Removing from replication state");
             entityState.isNew = false;
             removeState = true;
         }
@@ -913,6 +913,8 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
             componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
         }
         // Create the component to the sender's syncstate, then mark it processed (undirty)
+        state->entities[entityID].id = entityID;
+        state->entities[entityID].components[compID].id = compID;
         state->entities[entityID].components[compID].DirtyProcessed();
         
         // Fill static attributes
@@ -959,6 +961,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     }
     
     // Mark the entity processed (undirty) in the sender's syncstate so that create is not echoed back
+    state->entities[entityID].id = entityID;
     state->entities[entityID].DirtyProcessed();
 }
 
@@ -1031,9 +1034,11 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             compID = comp->Id();
             componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
         }
+        
         // Create the component to the sender's syncstate, then mark it processed (undirty)
+        state->entities[entityID].id = entityID;
+        state->entities[entityID].components[compID].id = compID;
         state->entities[entityID].components[compID].DirtyProcessed();
-        addedComponents.push_back(comp);
         
         // Fill static attributes
         unsigned numStaticAttrs = comp->NumStaticAttributes();
@@ -1097,6 +1102,12 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const char
     
     if (!ValidateAction(source, cRemoveEntityMessage, entityID))
         return;
+    
+    if (!scene->GetEntity(entityID))
+    {
+        LogWarning("Missing entity " + QString::number(entityID) + " for RemoveEntity message");
+        return;
+    }
     
     scene->RemoveEntity(entityID, change);
     // Delete from the sender's syncstate so that we don't echo the delete back needlessly
