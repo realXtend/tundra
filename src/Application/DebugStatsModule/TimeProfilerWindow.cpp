@@ -382,12 +382,12 @@ void TimeProfilerWindow::ToggleTreeButtonPressed()
 
     if (show_profiler_tree_)
     {
-        RefreshProfilingDataTree();
+        RefreshProfilingDataTree(1.f); // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
         push_button_toggle_tree_->setText("Top");
     }
     else
     {
-        RefreshProfilingDataList();
+        RefreshProfilingDataList(1.f); // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
         push_button_toggle_tree_->setText("Tree");
     }
 }
@@ -413,9 +413,9 @@ void TimeProfilerWindow::ShowUnusedButtonPressed()
         push_button_show_unused_->setText("Show Unused");
 
     if (show_profiler_tree_)
-        RefreshProfilingDataTree();
+        RefreshProfilingDataTree(1.f);  // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
     else
-        RefreshProfilingDataList();
+        RefreshProfilingDataList(1.f);  // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
 
     ExpandAllButtonPressed();
 }
@@ -504,8 +504,10 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
     return 0;
 }
 
-void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode, int numFrames)
+void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode, int numFrames, float frameTotalTimeSecs)
 {
+    const ProfilerNode *parentNode = dynamic_cast<const ProfilerNode*>(profilerNode);
+
     const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
     for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
@@ -546,22 +548,36 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
                 item->setText(5, str);
                 sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
                 item->setText(6, str);
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f);
+                item->setText(7, str);
+                if (parentNode)
+                    sprintf(str, "%.2f%%", timings_node->total_custom_ * 100.f / parentNode->total_custom_);
+                else
+                    sprintf(str, "-");
+                item->setText(8, str);
+                sprintf(str, "%.2f%%", timings_node->total_custom_ * 100.f / frameTotalTimeSecs);
+                item->setText(9, str);
             }
             else
             {
                 item->setText(4, "-");
                 item->setText(5, "-");
                 item->setText(6, "-");
+                item->setText(7, "-");
+                item->setText(8, "-");
+                item->setText(9, "-");
             }
+        }
 
+        FillProfileTimingWindow(item, node, numFrames, frameTotalTimeSecs);
+
+        if (timings_node)
+        {
             timings_node->num_called_custom_ = 0;
             timings_node->total_custom_ = 0;
             timings_node->custom_elapsed_min_ = 1e9;
             timings_node->custom_elapsed_max_ = 0;
-
         }
-
-        FillProfileTimingWindow(item, node, numFrames);
     }
 }
 
@@ -1118,16 +1134,16 @@ void TimeProfilerWindow::RefreshProfilingData()
     if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 0)
         return;
 
+    static tick_t timePrev = GetCurrentClockTime();
+    tick_t timeNow = GetCurrentClockTime();
+
+    static tick_t timerFrequency = GetCurrentClockFreq();
+
+    double msecsOccurred = (double)(timeNow - timePrev) * 1000.0 / timerFrequency;
+    timePrev = timeNow;
+
     if (labelTimings)
     {
-        static tick_t timePrev = GetCurrentClockTime();
-        tick_t timeNow = GetCurrentClockTime();
-
-        static tick_t timerFrequency = GetCurrentClockFreq();
-
-        double msecsOccurred = (double)(timeNow - timePrev) * 1000.0 / timerFrequency;
-        timePrev = timeNow;
-
         Profiler &profiler = *framework_->GetProfiler();
         profiler.Lock();
 
@@ -1142,15 +1158,15 @@ void TimeProfilerWindow::RefreshProfilingData()
     }
 
     if (show_profiler_tree_)
-        RefreshProfilingDataTree();
+        RefreshProfilingDataTree(msecsOccurred);
     else
-        RefreshProfilingDataList();
+        RefreshProfilingDataList(msecsOccurred);
 
     QTimer::singleShot(ReadProfilingRefreshInterval(), this, SLOT(RefreshProfilingData()));
 #endif
 }
 
-void TimeProfilerWindow::RefreshProfilingDataTree()
+void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
 {
 #ifdef PROFILING
 //    Profiler *profiler = ProfilerSection::GetProfiler();
@@ -1203,12 +1219,21 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
                 item->setText(5, str);
                 sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
                 item->setText(6, str);
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f);
+                item->setText(7, str);
+                sprintf(str, "100%%");
+                item->setText(8, str);
+                sprintf(str, "%.2f%%", timings_node->total_custom_ * 1000.f * 100.f / msecsOccurred);
+                item->setText(9, str);
             }
             else
             {
                 item->setText(4, "-");
                 item->setText(5, "-");
                 item->setText(6, "-");
+                item->setText(7, "-");
+                item->setText(8, "-");
+                item->setText(9, "-");
             }
 
             timings_node->num_called_custom_ = 0;
@@ -1217,7 +1242,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
             timings_node->custom_elapsed_max_ = 0;
         }
 
-        FillProfileTimingWindow(item, node, numFrames);
+        FillProfileTimingWindow(item, node, numFrames, msecsOccurred / 1000.f);
     }
     Physics::UpdateBulletProfilingData(tree_profiling_data_->invisibleRootItem(), numFrames);
     profiler.Release();
@@ -1245,7 +1270,7 @@ bool ProfilingNodeLessThan(const ProfilerNode *a, const ProfilerNode *b)
     return aTimePerFrame > bTimePerFrame;
 }
 
-void TimeProfilerWindow::RefreshProfilingDataList()
+void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
 {
 #ifdef PROFILING
     Profiler &profiler = *framework_->GetProfiler();
@@ -1294,14 +1319,22 @@ void TimeProfilerWindow::RefreshProfilingDataList()
             item->setText(5, str);
             sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
             item->setText(6, str);
+            sprintf(str, "%.2fms", timings_node->total_custom_*1000.f);
+            item->setText(7, str);
+            sprintf(str, "-");
+            item->setText(8, str);
+            sprintf(str, "%.2f%%", timings_node->total_custom_ * 100.f * 1000.f / msecsOccurred);
+            item->setText(9, str);
         }
         else
         {
             item->setText(4, "-");
             item->setText(5, "-");
             item->setText(6, "-");
+            item->setText(7, "-");
+            item->setText(8, "-");
+            item->setText(9, "-");
         }
-
 
         timings_node->num_called_custom_ = 0;
         timings_node->total_custom_ = 0;

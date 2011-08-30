@@ -137,7 +137,7 @@
           <item row="1" column="0" colspan="8">
            <widget class="QTreeWidget" name="treeProfilingData">
             <property name="columnCount">
-             <number>7</number>
+             <number>10</number>
             </property>
             <column>
              <property name="text">
@@ -172,6 +172,21 @@
             <column>
              <property name="text">
               <string>Max/block</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Total</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Of Parent</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Of Frame</string>
              </property>
             </column>
            </widget>

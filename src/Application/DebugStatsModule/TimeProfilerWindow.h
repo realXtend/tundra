@@ -82,10 +82,10 @@ private:
     bool eventFilter(QObject *obj, QEvent *event);
 
     void FillThresholdLogger(QTextStream& out, const ProfilerNodeTree *profilerNode);
-    void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode, int numFrames);
+    void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode, int numFrames, float frameTotalTimeSecs);
     int ReadProfilingRefreshInterval();
-    void RefreshProfilingDataTree();
-    void RefreshProfilingDataList();
+    void RefreshProfilingDataTree(float msecsOccurred);
+    void RefreshProfilingDataList(float msecsOccurred);
     void CollectProfilerNodes(ProfilerNodeTree *node, std::vector<const ProfilerNode *> &dst);
     void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString drawType);
     void RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType);
