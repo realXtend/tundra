@@ -420,6 +420,23 @@ void TimeProfilerWindow::ShowUnusedButtonPressed()
     ExpandAllButtonPressed();
 }
 
+void ColorTreeWidgetItemByTime(QTreeWidgetItem *item, float time)
+{
+    QColor q;
+
+    if (time > 8)
+        q = QColor(255,0,0);
+    else if (time > 4.f)
+        q = QColor(255, 127, 0);
+    else if (time > 2.f)
+        q = QColor(0, 200, 0);
+    else if (time > 1.f)
+        q = QColor(0, 0, 0);
+    else
+        q = QColor(128, 128, 128);
+	item->setForeground(0, QBrush(q));
+}
+
 void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
 {
     if (newPage == -1)
@@ -574,6 +591,7 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
                 item->setText(9, "-");
                 item->setText(10, "-");
             }
+            ColorTreeWidgetItemByTime(item, timings_node->total_custom_ * 1000.f / numFrames);
         }
 
         FillProfileTimingWindow(item, node, numFrames, frameTotalTimeSecs);
@@ -1250,6 +1268,8 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
                 item->setText(10, "-");
             }
 
+            ColorTreeWidgetItemByTime(item, timings_node->total_custom_ * 1000.f / numFrames);
+
             timings_node->num_called_custom_ = 0;
             timings_node->total_custom_ = 0;
             timings_node->custom_elapsed_min_ = 1e9;
@@ -1356,6 +1376,8 @@ void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
             item->setText(9, "-");
             item->setText(10, "-");
         }
+
+        ColorTreeWidgetItemByTime(item, timings_node->total_custom_ * 1000.f / numFrames);
 
         timings_node->num_called_custom_ = 0;
         timings_node->total_custom_ = 0;
