@@ -111,6 +111,31 @@ void Profiler::EndBlock(const std::string &name)
 #endif
 }
 
+void ProfilerQObj::BeginBlock(const QString &name)
+{
+#ifdef PROFILING
+    Framework *fw = Framework::Instance();
+    Profiler *p = fw ? fw->GetProfiler() : 0;
+    if (p)
+        p->StartBlock(name.toStdString());
+#endif
+}
+
+void ProfilerQObj::EndBlock()
+{
+#ifdef PROFILING
+    Framework *fw = Framework::Instance();
+    Profiler *p = fw ? fw->GetProfiler() : 0;
+    if (p)
+    {
+        ProfilerNodeTree *treeNode = p->current_node_;
+        if (!treeNode)
+            return;
+        p->EndBlock(treeNode->Name());
+    }
+#endif
+}
+
 ProfilerNodeTree *Profiler::GetThreadRootBlock()
 { 
     return thread_specific_root_;

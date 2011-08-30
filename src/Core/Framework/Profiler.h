@@ -282,6 +282,15 @@ namespace
     void EmptyDeletor(ProfilerNodeTree *node) { }
 }
 
+class ProfilerQObj : public QObject
+{
+    Q_OBJECT;
+
+public slots:
+    void BeginBlock(const QString &name);
+    void EndBlock();
+};
+
 /// Profiler can be used to measure execution time of a block of code.
 /** Do not use this class directly for profiling, use instead PROFILE
     and ELIFORP macros.
@@ -376,6 +385,8 @@ private:
     std::list<ProfilerNodeTree*> thread_root_nodes_;
 
     boost::mutex mutex_;
+
+    friend class ProfilerQObj;
 };
 
 /// Used by PROFILE - macro to automatically stop profiling clock when going out of scope

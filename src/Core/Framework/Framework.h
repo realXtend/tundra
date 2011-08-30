@@ -163,6 +163,7 @@ private:
 #ifdef PROFILING
     Profiler *profiler; ///< Profiler.
 #endif
+    ProfilerQObj *profilerQObj; ///< We keep this QObject always alive, even when profiling is not enabled, so that scripts don't have to check whether profiling is enabled or disabled.
     bool headless_; ///< Are we running in the headless mode.
     Application *application; ///< The main QApplication object.
     FrameAPI *frame; ///< The Frame API.

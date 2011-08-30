@@ -134,6 +134,7 @@ Framework::Framework(int argc, char** argv) :
         profiler = new Profiler();
         PROFILE(FW_Startup);
 #endif
+        profilerQObj = new ProfilerQObj;
         // Create ConfigAPI, pass application data and prepare data folder.
         config = new ConfigAPI(this);
         config->PrepareDataFolder("configuration");
@@ -166,6 +167,7 @@ Framework::Framework(int argc, char** argv) :
         RegisterDynamicObject("config", config);
         RegisterDynamicObject("apiversion", apiVersionInfo);
         RegisterDynamicObject("applicationversion", applicationVersionInfo);
+        RegisterDynamicObject("profiler", profilerQObj);
     }
 }
 
@@ -176,9 +178,10 @@ Framework::~Framework()
     SAFE_DELETE(audio);
     SAFE_DELETE(plugin);
 #ifdef PROFILING
-    /// \todo Deleting the profiler currently causes a crash, therefore disabled
-    //SAFE_DELETE(profiler);
+    SAFE_DELETE(profiler);
 #endif
+    SAFE_DELETE(profilerQObj);
+
     SAFE_DELETE(console);
     SAFE_DELETE(scene);
     SAFE_DELETE(frame);

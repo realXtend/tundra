@@ -29,4 +29,5 @@ class ApiVersionInfo;
 class ApplicationVersionInfo;
 
 class Profiler;
+class ProfilerQObj;
 class IModule;
