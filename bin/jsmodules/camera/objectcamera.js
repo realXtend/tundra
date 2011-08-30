@@ -41,9 +41,13 @@ if (!me.GetComponent("EC_Camera"))
 
 function Update(frametime)
 {
+	profiler.BeginBlock("objectcamera_Update");
     var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false || last_clicked == null)
+	{
+		profiler.EndBlock();
         return;
+	}
 
     var placeable = me.GetComponent("EC_Placeable");
 
@@ -56,7 +60,7 @@ function Update(frametime)
     {
         placeable.LookAt(last_clicked.placeable.transform.pos);
     }
-
+	profiler.EndBlock();
 }
 
 

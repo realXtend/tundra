@@ -19,6 +19,7 @@
 #include "EC_Camera.h"
 #include "LoggingFunctions.h"
 #include "Math/MathFunc.h"
+#include "Profiler.h"
 
 #include <Ogre.h>
 
@@ -216,6 +217,7 @@ void EC_SkyX::Update(float frameTime)
 {
     if (impl && impl->skyX)
     {
+        PROFILE(EC_SkyX_Update);
         if (impl->sunlight)
             impl->sunlight->setDirection(impl->skyX->getAtmosphereManager()->getSunDirection());
         impl->skyX->update(frameTime);

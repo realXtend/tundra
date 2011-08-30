@@ -8,6 +8,7 @@
 #include "FrameAPI.h"
 #include "OgreRenderingModule.h"
 #include "CoreStringUtils.h"
+#include "Profiler.h"
 
 #include <Ogre.h>
 
@@ -73,6 +74,8 @@ void EC_AnimationController::Update(float frametime)
     if (!entity) 
         return;
     
+    PROFILE(EC_AnimationController_Update);
+
     std::vector<QString> erase_list;
     
     // Loop through all animations & update them as necessary

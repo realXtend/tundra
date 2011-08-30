@@ -235,6 +235,8 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
 
 void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision)
 {
+    PROFILE(EC_VolumeTrigger_OnPhysicsCollision);
+
     assert(otherEntity && "Physics collision with no entity.");
 
     if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->Name()))

@@ -18,6 +18,7 @@
 #include "EC_Placeable.h"
 #include "EC_SoundListener.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -275,6 +276,7 @@ void EC_Sound::PlaceableUpdated(IAttribute* attribute)
 
 void EC_Sound::ConstantPositionUpdate()
 {
+    PROFILE(EC_Sound_ConstantPositionUpdate);
     if (!ParentEntity())
     {
         disconnect(this, SLOT(ConstantPositionUpdate()));

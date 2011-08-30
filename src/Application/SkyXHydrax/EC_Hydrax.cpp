@@ -23,6 +23,7 @@
 #include "EC_Camera.h"
 #include "Entity.h"
 #include "OgreConversionUtils.h"
+#include "Profiler.h"
 
 #include "AttributeMetadata.h"
 #ifdef SKYX_ENABLED
@@ -234,6 +235,7 @@ void EC_Hydrax::Update(float frameTime)
 {
     if (impl->hydrax)
     {
+        PROFILE(EC_Hydrax_Update);
 #ifdef SKYX_ENABLED
         ///\todo Store weak_ptr to EC_SkyX
         EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(EC_SkyX::TypeNameStatic());

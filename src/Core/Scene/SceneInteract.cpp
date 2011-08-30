@@ -14,6 +14,7 @@
 #include "InputAPI.h"
 #include "IRenderer.h"
 #include "Entity.h"
+#include "Profiler.h"
 
 SceneInteract::SceneInteract() :
     framework(0),
@@ -34,12 +35,13 @@ void SceneInteract::Initialize(Framework *framework_)
 
         connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
         connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
-        connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
+        connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()), Qt::UniqueConnection);
     }
 }
 
 void SceneInteract::Update()
 {
+    PROFILE(SceneInteract_Update);
     Raycast();
 
     if (lastHitEntity.lock())

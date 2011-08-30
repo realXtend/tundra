@@ -421,6 +421,7 @@ void EC_Camera::OnUpdated(float timeStep)
     if (visibilityTrackedEntities_.empty())
         return;
     
+    PROFILE(EC_Camera_OnUpdated);
     // Update visible objects now if necessary
     if (queryFrameNumber_ != framework->Frame()->FrameNumber())
         QueryVisibleEntities();

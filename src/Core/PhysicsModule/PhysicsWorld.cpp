@@ -188,7 +188,10 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
                 float distance = point.m_distance1;
                 float impulse = point.m_appliedImpulse;
                 
-                emit PhysicsCollision(entityA, entityB, position, normal, distance, impulse, newCollision);
+                {
+                    PROFILE(PhysicsWorld_emit_PhysicsCollision);
+                    emit PhysicsCollision(entityA, entityB, position, normal, distance, impulse, newCollision);
+                }
                 bodyA->EmitPhysicsCollision(entityB, position, normal, distance, impulse, newCollision);
                 bodyB->EmitPhysicsCollision(entityA, position, normal, distance, impulse, newCollision);
                 

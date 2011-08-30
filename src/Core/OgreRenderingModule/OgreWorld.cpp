@@ -519,6 +519,7 @@ void OgreWorld::EmitActiveCameraChanged(EC_Camera *camera)
 
 void OgreWorld::OnUpdated(float timeStep)
 {
+    PROFILE(OgreWorld_OnUpdated);
     // Do nothing if visibility not being tracked for any entities
     if (visibilityTrackedEntities_.empty())
     {

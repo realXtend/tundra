@@ -18,6 +18,7 @@
 #include "SceneAPI.h"
 #include "FrameAPI.h"
 #include "Framework.h"
+#include "Profiler.h"
 #include "MemoryLeakCheck.h"
 
 EC_SoundListener::EC_SoundListener(Scene* scene):
@@ -50,7 +51,10 @@ void EC_SoundListener::RetrievePlaceable()
 void EC_SoundListener::Update()
 {
     if (active.Get() && !placeable_.expired())
+    {
+        PROFILE(EC_SoundListener_Update);
         GetFramework()->Audio()->SetListener(placeable_.lock()->WorldPosition(), placeable_.lock()->WorldOrientation());
+    }
 }
 
 void EC_SoundListener::OnActiveChanged()

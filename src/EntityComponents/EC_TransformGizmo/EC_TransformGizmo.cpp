@@ -25,6 +25,7 @@
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "FrameAPI.h"
+#include "Profiler.h"
 
 #include "Math/Ray.h"
 #include "Math/Plane.h"
@@ -393,6 +394,7 @@ void EC_TransformGizmo::OnFrameUpdate(float /*dt*/)
 {
     if (!mesh || ogreWorld.expired())
         return;
+    PROFILE(EC_TransformGizmo_OnFrameUpdate);
     OgreWorldPtr world = ogreWorld.lock();
     EC_Camera *cam = checked_static_cast<EC_Camera*>(world->GetRenderer()->GetActiveCamera());
     if (!cam)

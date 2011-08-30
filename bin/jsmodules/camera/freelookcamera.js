@@ -81,11 +81,13 @@ function IsCameraActive()
 
 function Update(frametime)
 {
+	profiler.BeginBlock("freelookcamera_Update");
     if (!IsCameraActive())
     {
         motion_x = 0;
         motion_y = 0;
         motion_z = 0;
+		profiler.EndBlock();
         return;
     }
 
@@ -96,6 +98,7 @@ function Update(frametime)
     motionvec = placeable.Orientation().Mul(motionvec);
     var newpos = placeable.Position().Add(motionvec);
     placeable.SetPosition(newpos.x, newpos.y, newpos.z);
+	profiler.EndBlock();
 }
 
 function HandleMove(param)

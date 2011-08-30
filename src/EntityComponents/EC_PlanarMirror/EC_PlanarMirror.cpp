@@ -156,8 +156,8 @@ void EC_PlanarMirror::Initialize()
 
     mirror_cam_->getViewport()->setOverlaysEnabled(false);
 
-    connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
-    connect(framework->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int, int)), this, SLOT(WindowResized(int,int)));
+    connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)), Qt::UniqueConnection);
+    connect(framework->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int, int)), this, SLOT(WindowResized(int,int)), Qt::UniqueConnection);
 }
 
 void EC_PlanarMirror::WindowResized(int w,int h)

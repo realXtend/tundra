@@ -10,7 +10,7 @@
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
-
+#include "Profiler.h"
 #include "OgreMeshAsset.h"
 #include "OgreConversionUtils.h"
 #include "Entity.h"
@@ -904,6 +904,7 @@ void EC_RigidBody::UpdatePosRotFromPlaceable()
 
 void EC_RigidBody::EmitPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision)
 {
+    PROFILE(EC_RigidBody_EmitPhysicsCollision);
     emit PhysicsCollision(otherEntity, position, normal, distance, impulse, newCollision);
 }
 

@@ -79,7 +79,7 @@ void EC_ProximityTrigger::SetUpdateMode()
     if (intervalSec <= 0.0f)
     {
         // Update every frame
-        connect(frame, SIGNAL(Updated(float)), this, SLOT(Update(float)));
+        connect(frame, SIGNAL(Updated(float)), this, SLOT(Update(float)), Qt::UniqueConnection);
     }
     else
     {
