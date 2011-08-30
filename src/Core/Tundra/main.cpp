@@ -5,12 +5,19 @@
 #include "Application.h"
 #include "Framework.h"
 #include "LoggingFunctions.h"
-
 #include <QDir>
 
 #ifdef _WIN32
 #include <WinSock2.h>
 #include <Windows.h>
+#endif
+
+#if defined(_MSC_VER) && defined(BUILDING_INSTALLER)
+#include <stdio.h>
+#include <fcntl.h>
+#include <io.h>
+#include <iostream>
+#include <fstream>
 #endif
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
@@ -32,6 +39,10 @@
 #include "MemoryLeakCheck.h"
 
 int run(int argc, char **argv);
+
+#if defined(_MSC_VER) && defined(BUILDING_INSTALLER)
+bool SpawnConsole();
+#endif
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
@@ -88,16 +99,31 @@ int main(int argc, char **argv)
 int run(int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
+    int argcStartIndex = 1;
 
-    // Initilizing prints
-    LogInfo("Starting up Tundra");
-    LogInfo("* Working directory: " + QDir::currentPath());
+#if defined(_MSC_VER) && defined(BUILDING_INSTALLER)
+    // The WinMain function does not get the executable path as first param,
+    // so start checking start params from index 0.
+    argcStartIndex = 0;
+#endif
 
     // Parse and print command arguments
     QStringList arguments;
-    for(int i = 1; i < argc; ++i)
+    for(int i = argcStartIndex; i < argc; ++i)
         arguments << argv[i];
     QString fullArguments = arguments.join(" ");
+    
+#if defined(_MSC_VER) && defined(BUILDING_INSTALLER)
+    // Spawn console in BUILDING_INSTALLER mode if --server or --headless
+    // 'spawnedConsole' marks if console should be freed on exit.
+    bool spawnedConsole = false;
+    if (arguments.contains("--server", Qt::CaseInsensitive) || arguments.contains("--headless", Qt::CaseInsensitive))
+        spawnedConsole = SpawnConsole();
+#endif
+
+    // Print command arguments
+    LogInfo("Starting up Tundra");
+    LogInfo("* Working directory: " + QDir::currentPath());
     if (fullArguments.contains("--"))
     {
         LogInfo("* Command arguments:");
@@ -138,23 +164,26 @@ int run(int argc, char **argv)
     }
 #endif
 
+// Free console if one was spawned
+#if defined(_MSC_VER) && defined(BUILDING_INSTALLER)
+    if (spawnedConsole)
+        FreeConsole();
+#endif
+
     return return_value;
 }
 
-#if defined(_MSC_VER) && defined(WINDOWS_APP)
+#if defined(_MSC_VER) && defined(BUILDING_INSTALLER)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     // Parse Windows command line
     std::vector<std::string> arguments;
-
     std::string cmdLine(lpCmdLine);
     unsigned i;
     unsigned cmdStart = 0;
     unsigned cmdEnd = 0;
     bool cmd = false;
     bool quote = false;
-
-    arguments.push_back("server");
 
     for(i = 0; i < cmdLine.length(); ++i)
     {
@@ -182,13 +211,59 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         arguments.push_back(cmdLine.substr(cmdStart, i-cmdStart));
     
     std::vector<const char*> argv;
-    for(int i = 0; i < arguments.size(); ++i)
+    for(unsigned int i = 0; i < arguments.size(); ++i)
         argv.push_back(arguments[i].c_str());
     
     if (argv.size())
         return main(argv.size(), (char**)&argv[0]);
     else
         return main(0, 0);
+}
+
+bool SpawnConsole()
+{
+    // Copied from http://dslweb.nwnexus.com/~ast/dload/guicon.htm
+    // Simple AttachConsole() did not direct stdin/out to it.
+
+    const WORD MAX_CONSOLE_LINES = 2000;
+    int hConHandle;
+    long lStdHandle;
+    CONSOLE_SCREEN_BUFFER_INFO coninfo;
+    FILE *fp;
+
+    // Allocate a console for this app
+    if (!AllocConsole())
+        return false;
+
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+    coninfo.dwSize.Y = MAX_CONSOLE_LINES;
+    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+
+    // STDOUT
+    lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+    fp = _fdopen( hConHandle, "w" );
+    *stdout = *fp;
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    // STDIN
+    lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+    fp = _fdopen( hConHandle, "r" );
+    *stdin = *fp;
+    setvbuf(stdin, NULL, _IONBF, 0);
+
+    // STDERR
+    lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+    fp = _fdopen( hConHandle, "w" );
+    *stderr = *fp;
+    setvbuf( stderr, NULL, _IONBF, 0 );
+
+    // make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well
+    std::ios::sync_with_stdio();
+
+    return true;
 }
 #endif
 

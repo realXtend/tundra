@@ -121,7 +121,7 @@ macro (build_executable TARGET_NAME)
     set (TARGET_LIB_TYPE "EXECUTABLE")
     message (STATUS "building executable: " ${TARGET_NAME})
     
-    if (MSVC AND WINDOWS_APP)
+    if (MSVC AND BUILDING_INSTALLER)
         add_executable (${TARGET_NAME} WIN32 ${ARGN})
     else ()
         add_executable (${TARGET_NAME} ${ARGN})
