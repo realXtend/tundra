@@ -125,5 +125,8 @@ private:
 
     /// Asset reference listeners for our presentation slides.
     QList<AssetRefListener*> assetListeners_;
+
+    /// If we are on a server or client.
+    bool isServer_;
     
 };
