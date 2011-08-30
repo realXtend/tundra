@@ -37,7 +37,6 @@ public:
     
 public slots:
     /// Do raycast into the world from viewport coordinates, using all selection layers
-    /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** The coordinates are a position in the render window, not scaled to [0,1].
         @param x Horizontal position for the origin of the ray
         @param y Vertical position for the origin of the ray
@@ -45,7 +44,6 @@ public slots:
     RaycastResult* Raycast(int x, int y);
 
     /// Do raycast into the world from viewport coordinates, using specific selection layer(s)
-    /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** The coordinates are a position in the render window, not scaled to [0,1].
         @param x Horizontal position for the origin of the ray
         @param y Vertical position for the origin of the ray
@@ -53,7 +51,7 @@ public slots:
         @return Raycast result structure */
     RaycastResult* Raycast(int x, int y, unsigned layerMask);
     
-    /// Do raycast into the world using a ray
+    /// Do raycast into the world using a ray in world space coordinates.
     RaycastResult* Raycast(const Ray& ray, unsigned layerMask);
     
     /// Do a frustum query to the world from viewport coordinates.

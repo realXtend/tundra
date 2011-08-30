@@ -54,6 +54,9 @@ public:
 };
 
 /// Describes the system renderer.
+/// \note This class is not an abstract reimplementable interface, but exists only internally for DLL dependency inversion
+///    purposes between Framework and OgreRenderingModule. This interface is only internal to Framework. Do not extend this 
+///    interface or use it in client code.
 class IRenderer
 {
 public:
@@ -61,55 +64,28 @@ public:
 
     virtual ~IRenderer() {}
 
-    /// Renders the scene
+    /// Renders the scene.
     virtual void Render(float frameTime) = 0;
     
-    /// Do raycast into the currently active world from viewport coordinates, using all selection layers
-    /// \todo This function will be removed and replaced with a function Scene::Intersect.
-    /** The coordinates are a position in the render window, not scaled to [0,1].
-        @param x Horizontal position for the origin of the ray
-        @param y Vertical position for the origin of the ray
-        @return Raycast result structure */
+    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
     virtual RaycastResult* Raycast(int x, int y) = 0;
 
-    /// Do raycast into the currently active world from viewport coordinates, using specific selection layer(s)
-    /// \todo This function will be removed and replaced with a function Scene::Intersect.
-    /** The coordinates are a position in the render window, not scaled to [0,1].
-        @param x Horizontal position for the origin of the ray
-        @param y Vertical position for the origin of the ray
-        @param layerMask Which selection layer(s) to use (bitmask)
-        @return Raycast result structure */
+    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
     virtual RaycastResult* Raycast(int x, int y, unsigned layerMask) = 0;
 
-    /// Do raycast into the currently active world from two positions in world
+    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
     virtual RaycastResult* RaycastFromTo(const float3 &pos, const float3 &dir) = 0;
     
-    /// Do a frustum query to the currently active world from viewport coordinates.
-    /// \todo This function will be removed and replaced with a function Scene::Intersect.
-    /** Returns the found entities as a QVariantList so that
-        Python and Javascript can get the result directly from here.
-        @param viewrect The query rectangle in 2d window coords. */
+    /// \deprecated Do not use this function. Instead use OgreWorld::FrustumQuery.
     virtual QList<Entity*> FrustumQuery(QRect &viewrect) = 0;
 
-    /// Returns render window width, or 0 if no window is opened
-    /// \todo This function will be removed.
-    virtual int GetWindowWidth() const = 0;
-
-    /// Returns render window height, or 0 if no window is opened
-    /// \todo This function will be removed.
-    virtual int GetWindowHeight() const = 0;
-
+    /// \deprecated Do not use this function.
+    /// \todo Reimplement in EC_Camera.
     /// Takes a screen shot and saves it to a file.
     /// @note Remove this when EC_Camera implements screen shot functionality.
     /// @param filePath Directory to save file.
     /// @param fileName File name in directory.
     virtual void TakeScreenshot(const QString& filePath, const QString& fileName) = 0;
-
-    /// set maximum view distance
-    virtual void SetViewDistance(float distance) = 0;
-
-    /// get maximum view distance
-    virtual float ViewDistance() const = 0;
 
     virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
 };
