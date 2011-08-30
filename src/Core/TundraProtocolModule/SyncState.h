@@ -101,8 +101,15 @@ struct EntitySyncState
         std::map<component_id_t, ComponentSyncState>::iterator i = components.find(id);
         if (i == components.end())
             return;
+        // If component is marked new, it was not sent yet and can be simply removed from the sync state
+        if (i->second.isNew)
+        {
+            RemoveFromQueue(id);
+            components.erase(id);
+            return;
+        }
+        // Else mark as removed and queue the update
         i->second.removed = true;
-        i->second.isNew = false;
         if (!i->second.isInQueue)
         {
             dirtyQueue.push_back(&i->second);
@@ -201,8 +208,15 @@ struct SceneSyncState
         std::map<entity_id_t, EntitySyncState>::iterator i = entities.find(id);
         if (i == entities.end())
             return;
+        // If entity is marked new, it was not sent yet and can be simply removed from the sync state
+        if (i->second.isNew)
+        {
+            RemoveFromQueue(id);
+            entities.erase(id);
+            return;
+        }
+        // Else mark as removed and queue the update
         i->second.removed = true;
-        i->second.isNew = false;
         if (!i->second.isInQueue)
         {
             dirtyQueue.push_back(&i->second);
