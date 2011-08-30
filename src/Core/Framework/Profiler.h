@@ -261,6 +261,8 @@ public:
     mutable double custom_elapsed_min_;
     mutable double custom_elapsed_max_;
 
+    float TotalCustomSpentInChildren() const;
+
 private:
     friend class Profiler;
     ProfilerNode(); // N/I

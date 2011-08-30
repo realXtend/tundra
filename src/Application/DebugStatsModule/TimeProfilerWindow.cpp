@@ -557,6 +557,12 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
                 item->setText(8, str);
                 sprintf(str, "%.2f%%", timings_node->total_custom_ * 100.f / frameTotalTimeSecs);
                 item->setText(9, str);
+                float timeSpentInChildren = timings_node->TotalCustomSpentInChildren();
+                if (timeSpentInChildren >= 0.f)
+                    sprintf(str, "%.2f%%", 100.f - timeSpentInChildren * 100.f / timings_node->total_custom_);
+                else
+                    sprintf(str, "-");
+                item->setText(10, str);
             }
             else
             {
@@ -566,6 +572,7 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
                 item->setText(7, "-");
                 item->setText(8, "-");
                 item->setText(9, "-");
+                item->setText(10, "-");
             }
         }
 
@@ -1225,6 +1232,12 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
                 item->setText(8, str);
                 sprintf(str, "%.2f%%", timings_node->total_custom_ * 1000.f * 100.f / msecsOccurred);
                 item->setText(9, str);
+                float timeSpentInChildren = timings_node->TotalCustomSpentInChildren();
+                if (timeSpentInChildren >= 0.f)
+                    sprintf(str, "%.2f%%", 100.f - timeSpentInChildren * 100.f / timings_node->total_custom_);
+                else
+                    sprintf(str, "-");
+                item->setText(10, str);
             }
             else
             {
@@ -1234,6 +1247,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
                 item->setText(7, "-");
                 item->setText(8, "-");
                 item->setText(9, "-");
+                item->setText(10, "-");
             }
 
             timings_node->num_called_custom_ = 0;
@@ -1325,6 +1339,12 @@ void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
             item->setText(8, str);
             sprintf(str, "%.2f%%", timings_node->total_custom_ * 100.f * 1000.f / msecsOccurred);
             item->setText(9, str);
+            float timeSpentInChildren = timings_node->TotalCustomSpentInChildren();
+            if (timeSpentInChildren >= 0.f)
+                sprintf(str, "%.2f%%", 100.f - timeSpentInChildren * 100.f / timings_node->total_custom_);
+            else
+                sprintf(str, "-");
+            item->setText(10, str);
         }
         else
         {
@@ -1334,6 +1354,7 @@ void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
             item->setText(7, "-");
             item->setText(8, "-");
             item->setText(9, "-");
+            item->setText(10, "-");
         }
 
         timings_node->num_called_custom_ = 0;

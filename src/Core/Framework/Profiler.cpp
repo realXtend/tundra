@@ -151,6 +151,28 @@ ProfilerNodeTree *Profiler::FindBlockByName(const char *name)
     return ::FindBlockByName(GetThreadRootBlock(), name);
 }
 
+float ProfilerNode::TotalCustomSpentInChildren() const
+{
+    const ProfilerNodeTree::NodeList &children = GetChildren();
+    float timeSpentInChildren = 0.f;
+    bool steppedIntoChildren = false;
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    {
+        ProfilerNodeTree *node = iter->get();
+
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
+        if (timings_node)
+        {
+            timeSpentInChildren += timings_node->total_custom_;
+            if (timings_node->num_called_custom_ > 0)
+                steppedIntoChildren = true;
+        }
+    }
+    if (!steppedIntoChildren)
+        return -1.f;
+    return timeSpentInChildren;
+}
+
 ProfilerNodeTree *Profiler::CreateThreadRootBlock()
 {
 #ifdef PROFILING
