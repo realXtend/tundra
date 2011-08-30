@@ -164,6 +164,25 @@ struct SceneSyncState
         }
     }
     
+    void MarkEntityProcessed(entity_id_t id)
+    {
+        EntitySyncState& entityState = entities[id];
+        if (!entityState.id)
+            entityState.id = id;
+        entityState.DirtyProcessed();
+    }
+    
+    void MarkComponentProcessed(entity_id_t id, component_id_t compId)
+    {
+        EntitySyncState& entityState = entities[id];
+        if (!entityState.id)
+            entityState.id = id;
+        ComponentSyncState& compState = entityState.components[compId];
+        if (!compState.id)
+            compState.id = compId;
+        compState.DirtyProcessed();
+    }
+    
     void MarkEntityDirty(entity_id_t id)
     {
         EntitySyncState& entityState = entities[id]; // Creates new if did not exist

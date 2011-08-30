@@ -865,7 +865,7 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
         
         if (highlight)
         {
-            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateComponent(
+            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateLocalComponent(
                 EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
             if (hl)
             {

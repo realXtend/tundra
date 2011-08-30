@@ -598,14 +598,14 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     continue;
                 WriteComponentFullUpdate(ds, comp);
                 // Mark the component undirty in the receiver's syncstate
-                state->entities[entityState.id].components[comp->Id()].DirtyProcessed();
+                state->MarkComponentProcessed(entity->Id(), comp->Id());
             }
             
             QueueMessage(destination, cCreateEntityMessage, true, true, ds);
             ++numMessagesSent;
             
             // The create has been processed fully. Clear dirty flags.
-            entityState.DirtyProcessed();
+            state->MarkEntityProcessed(entity->Id());
         }
         else if (entity)
         {
@@ -658,7 +658,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     // Then add the component data
                     WriteComponentFullUpdate(createCompsDs, comp);
                     // Mark the component undirty in the receiver's syncstate
-                    state->entities[entityState.id].components[comp->Id()].DirtyProcessed();
+                    state->MarkComponentProcessed(entity->Id(), comp->Id());
                 }
                 // Added/removed/edited attributes
                 else if (comp)
@@ -732,35 +732,42 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                         editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                         
+                        // Create a nested dataserializer for the actual attribute data, so we can skip components
+                        kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
+                        
                         // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
                         unsigned bitsMethod1 = changedAttributes_.size() * 8 + 8;
                         unsigned bitsMethod2 = attrs.size();
                         // Method 1: indices
                         if (bitsMethod1 <= bitsMethod2)
                         {
-                            editAttrsDs.Add<kNet::bit>(0);
-                            editAttrsDs.Add<u8>(changedAttributes_.size());
+                            attrDataDs.Add<kNet::bit>(0);
+                            attrDataDs.Add<u8>(changedAttributes_.size());
                             for (unsigned i = 0; i < changedAttributes_.size(); ++i)
                             {
-                                editAttrsDs.Add<u8>(changedAttributes_[i]);
-                                attrs[changedAttributes_[i]]->ToBinary(editAttrsDs);
+                                attrDataDs.Add<u8>(changedAttributes_[i]);
+                                attrs[changedAttributes_[i]]->ToBinary(attrDataDs);
                             }
                         }
                         // Method 2: bitmask
                         else
                         {
-                            editAttrsDs.Add<kNet::bit>(1);
+                            attrDataDs.Add<kNet::bit>(1);
                             for (unsigned i = 0; i < attrs.size(); ++i)
                             {
                                 if (compState.dirtyAttributes[i >> 3] & (1 << (i & 7)))
                                 {
-                                    editAttrsDs.Add<kNet::bit>(1);
-                                    attrs[i]->ToBinary(editAttrsDs);
+                                    attrDataDs.Add<kNet::bit>(1);
+                                    attrs[i]->ToBinary(attrDataDs);
                                 }
                                 else
-                                    editAttrsDs.Add<kNet::bit>(0);
+                                    attrDataDs.Add<kNet::bit>(0);
                             }
                         }
+                        
+                        // Add the attribute data array to the main serializer
+                        editAttrsDs.AddVLE<kNet::VLE8_16_32>(attrDataDs.BytesFilled());
+                        editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDataDs.BytesFilled());
                         
                         // Now zero out all remaining dirty bits
                         for (unsigned i = 0; i < numBytes; ++i)
@@ -800,7 +807,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             }
             
             // The entity has been processed fully. Clear dirty flags.
-            entityState.DirtyProcessed();
+            state->MarkEntityProcessed(entity->Id());
         }
         
         if (removeState)
@@ -913,9 +920,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
             componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
         }
         // Create the component to the sender's syncstate, then mark it processed (undirty)
-        state->entities[entityID].id = entityID;
-        state->entities[entityID].components[compID].id = compID;
-        state->entities[entityID].components[compID].DirtyProcessed();
+        state->MarkComponentProcessed(entityID, compID);
         
         // Fill static attributes
         unsigned numStaticAttrs = comp->NumStaticAttributes();
@@ -961,8 +966,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     }
     
     // Mark the entity processed (undirty) in the sender's syncstate so that create is not echoed back
-    state->entities[entityID].id = entityID;
-    state->entities[entityID].DirtyProcessed();
+    state->MarkEntityProcessed(entityID);
 }
 
 void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const char* data, size_t numBytes)
@@ -1035,9 +1039,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         }
         
         // Create the component to the sender's syncstate, then mark it processed (undirty)
-        state->entities[entityID].id = entityID;
-        state->entities[entityID].components[compID].id = compID;
-        state->entities[entityID].components[compID].DirtyProcessed();
+        state->MarkComponentProcessed(entityID, compID);
         
         addedComponents.push_back(comp);
         
@@ -1332,44 +1334,48 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
     while (ds.BitsLeft() >= 8)
     {
         component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+        unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
+        ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
+        kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
+
         ComponentPtr comp = entity->GetComponentById(compID);
         if (!comp)
         {
-            LogWarning("Component id " + QString::number(compID) + " not found in " + entity->ToString() + " for EditAttributes message, aborting message parsing");
-            return;
+            LogWarning("Component id " + QString::number(compID) + " not found in " + entity->ToString() + " for EditAttributes message, skipping to next component");
+            continue;
         }
         const AttributeVector& attributes = comp->Attributes();
-        
-        int indexingMethod = ds.Read<kNet::bit>();
+
+        int indexingMethod = attrDs.Read<kNet::bit>();
         if (!indexingMethod)
         {
             // Method 1: indices
-            u8 numChangedAttrs = ds.Read<u8>();
+            u8 numChangedAttrs = attrDs.Read<u8>();
             for (unsigned i = 0; i < numChangedAttrs; ++i)
             {
-                u8 attrIndex = ds.Read<u8>();
+                u8 attrIndex = attrDs.Read<u8>();
                 if (attrIndex >= attributes.size())
                 {
-                    LogWarning("Out of bounds attribute index in EditAttributes message, aborting message parsing");
-                    return;
+                    LogWarning("Out of bounds attribute index in EditAttributes message, skipping to next component");
+                    break;
                 }
                 IAttribute* attr = attributes[attrIndex];
                 if (!attr)
                 {
-                    LogWarning("Nonexistent attribute in EditAttributes message, aborting message parsing");
-                    return;
+                    LogWarning("Nonexistent attribute in EditAttributes message, skipping to next component");
+                    break;
                 }
                 
                 bool interpolate = (!isServer && attr->Metadata() && attr->Metadata()->interpolation == AttributeMetadata::Interpolate);
                 if (!interpolate)
                 {
-                    attr->FromBinary(ds, AttributeChange::Disconnected);
+                    attr->FromBinary(attrDs, AttributeChange::Disconnected);
                     changedAttrs.push_back(attr);
                 }
                 else
                 {
                     IAttribute* endValue = attr->Clone();
-                    endValue->FromBinary(ds, AttributeChange::Disconnected);
+                    endValue->FromBinary(attrDs, AttributeChange::Disconnected);
                     /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
                     // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
                     scene->StartAttributeInterpolation(attr, endValue, update_period_ * 1.5f);
@@ -1381,25 +1387,25 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
             // Method 2: bitmask
             for (unsigned i = 0; i < attributes.size(); ++i)
             {
-                int changed = ds.Read<kNet::bit>();
+                int changed = attrDs.Read<kNet::bit>();
                 if (changed)
                 {
                     IAttribute* attr = attributes[i];
                     if (!attr)
                     {
-                        LogWarning("Nonexistent attribute in EditAttributes message, aborting message parsing");
-                        return;
+                        LogWarning("Nonexistent attribute in EditAttributes message, skipping to next component");
+                        break;
                     }
                     bool interpolate = (!isServer && attr->Metadata() && attr->Metadata()->interpolation == AttributeMetadata::Interpolate);
                     if (!interpolate)
                     {
-                        attr->FromBinary(ds, AttributeChange::Disconnected);
+                        attr->FromBinary(attrDs, AttributeChange::Disconnected);
                         changedAttrs.push_back(attr);
                     }
                     else
                     {
                         IAttribute* endValue = attr->Clone();
-                        endValue->FromBinary(ds, AttributeChange::Disconnected);
+                        endValue->FromBinary(attrDs, AttributeChange::Disconnected);
                         /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
                         // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
                         scene->StartAttributeInterpolation(attr, endValue, update_period_ * 1.5f);
@@ -1458,9 +1464,6 @@ void SyncManager::HandleCreateEntityReply(kNet::MessageConnection* source, const
         return;
     }
     
-    // Send notification
-    scene->EmitEntityAcked(entity.get(), senderEntityID);
-    
     unsigned numComps = ds.ReadVLE<kNet::VLE8_16_32>();
     for (unsigned i = 0; i < numComps; ++i)
     {
@@ -1478,6 +1481,9 @@ void SyncManager::HandleCreateEntityReply(kNet::MessageConnection* source, const
         IComponent* comp = entity->GetComponentById(compID).get();
         scene->EmitComponentAcked(comp, senderCompID);
     }
+    
+    // Send notification
+    scene->EmitEntityAcked(entity.get(), senderEntityID);
     
     for (std::map<component_id_t, ComponentSyncState>::iterator i = entityState.components.begin(); i != entityState.components.end(); ++i)
     {
