@@ -63,8 +63,6 @@ void Entity::ChangeComponentId(component_id_t old_id, component_id_t new_id)
     old_comp->SetNewId(new_id);
     components_.erase(old_id);
     components_[new_id] = old_comp;
-    idGenerator_.Deallocate(old_id);
-    idGenerator_.Allocate(new_id);
 }
 
 void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type change)
@@ -82,10 +80,16 @@ void Entity::AddComponent(component_id_t id, const ComponentPtr &component, Attr
             bool authority = true;
             if (scene_)
                 authority = scene_->IsAuthority();
-            if (authority)
-                id = component->IsReplicated() ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
-            else
-                id = component->IsReplicated() ? idGenerator_.AllocateUnacked() : idGenerator_.AllocateLocal();
+            // Loop until we find a free ID
+            for (;;)
+            {
+                if (authority)
+                    id = component->IsReplicated() ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
+                else
+                    id = component->IsReplicated() ? idGenerator_.AllocateUnacked() : idGenerator_.AllocateLocal();
+                if (components_.find(id) == components_.end())
+                    break;
+            }
         }
         else
         {
@@ -96,7 +100,9 @@ void Entity::AddComponent(component_id_t id, const ComponentPtr &component, Attr
                 LogError("Can not add component: a component with id " + QString::number(id) + " already exists in entity " + ToString());
                 return;
             }
-            idGenerator_.Allocate(id);
+            // Whenever a manual replicated ID is assigned, reset the ID generator to the highest value to avoid unnecessary free ID probing in the future
+            if (id < UniqueIdGenerator::FIRST_LOCAL_ID)
+                idGenerator_.ResetReplicatedId(std::max(id, idGenerator_.id));
         }
         
         QString componentTypeName = component->TypeName();
@@ -150,7 +156,6 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
 
             iter->second->SetParentEntity(0);
             components_.erase(iter);
-            idGenerator_.Deallocate(component->Id());
         }
         else
         {

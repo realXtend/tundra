@@ -41,6 +41,8 @@ namespace Asset
 
         void ConsoleRefreshHttpStorages();
 
+        void ConsoleDumpAssetTransfers();
+
         /// Loads from all the registered local storages all assets that have the given suffix.
         /// Type can also be optionally specified
         /// \todo Will be replaced with AssetStorage's GetAllAssetsRefs / GetAllAssets functionality

@@ -76,6 +76,10 @@ namespace Asset
             "RefreshHttpStorages", "Refreshes known assetrefs for all http asset storages", 
             this, SLOT(ConsoleRefreshHttpStorages()));
 
+        framework_->Console()->RegisterCommand(
+            "DumpAssetTransfers", "Dumps debugging information of current asset transfers to console", 
+            this, SLOT(ConsoleDumpAssetTransfers()));
+            
         ProcessCommandLineOptions();
 
         TundraLogic::Server *server = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetServer().get();
@@ -365,6 +369,30 @@ namespace Asset
         }
     }
 
+    void AssetModule::ConsoleDumpAssetTransfers()
+    {
+        AssetAPI* asset = framework_->Asset();
+        const AssetAPI::AssetTransferMap& currentTransfers = asset->GetCurrentTransfers();
+        const std::vector<AssetTransferPtr> readyTransfers = asset->DebugGetReadyTransfers();
+        const AssetAPI::AssetDependenciesMap dependencies = asset->DebugGetAssetDependencies();
+        
+        LogInfo("Current transfers:");
+        for (AssetAPI::AssetTransferMap::const_iterator i = currentTransfers.begin(); i != currentTransfers.end(); ++i)
+        {
+            AssetPtr assetPtr = asset->GetAsset(i->first);
+            unsigned numPendingDependencies = assetPtr ? asset->NumPendingDependencies(assetPtr) : 0;
+            if (numPendingDependencies > 0)
+                LogInfo(i->first + ", " + QString::number(numPendingDependencies) + " pending dependencies");
+            else
+                LogInfo(i->first);
+        }
+        LogInfo("Ready asset transfers:");
+        for (unsigned i = 0; i < readyTransfers.size(); ++i)
+            LogInfo(readyTransfers[i]->source.ref);
+        //LogInfo("Asset dependencies:");
+        //for (AssetAPI::AssetDependenciesMap::const_iterator i = dependencies.begin(); i != dependencies.end(); ++i)
+        //    LogInfo(i->first + " " + i->second);
+    }
 }
 
 using namespace Asset;

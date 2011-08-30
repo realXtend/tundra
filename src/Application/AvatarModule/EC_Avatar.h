@@ -67,7 +67,10 @@ public slots:
 private slots:
     /// Called when some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute *attribute);
+    /// Avatar asset loaded.
     void OnAvatarAppearanceLoaded(AssetPtr asset);
+    /// Avatar asset failed to load.
+    void OnAvatarAppearanceFailed(IAssetTransfer* transfer, QString reason);
 
 private:
     /// Adjust avatar's height offset dynamically

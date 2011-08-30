@@ -134,6 +134,9 @@ public:
         QString *outPath_Filename_SubAssetName = 0, QString *outPath_Filename = 0, QString *outPath = 0, QString *outFilename = 0, QString *outSubAssetName = 0,
         QString *outFullRef = 0, QString *outFullRefNoSubAssetName = 0);
 
+    typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
+    typedef std::vector<std::pair<QString, QString> > AssetDependenciesMap;
+    
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap GetAllAssets() { return assets; }
@@ -346,6 +349,15 @@ public slots:
     
     Framework *GetFramework() { return fw; }
 
+    /// Return current asset transfers
+    const AssetTransferMap& GetCurrentTransfers() const { return currentTransfers; }
+    
+    /// Return the current asset dependency map (debugging)
+    const AssetDependenciesMap& DebugGetAssetDependencies() const { return assetDependencies; }
+    
+    /// Return ready asset transfers (debugging)
+    const std::vector<AssetTransferPtr> DebugGetReadyTransfers() const{ return readyTransfers; }
+
 public:
     /// Explodes the given asset storage description string to key-value pairs.
     static QMap<QString, QString> ParseAssetStorageString(QString storageString);
@@ -388,7 +400,6 @@ private slots:
 
 private:
     bool isHeadless_;
-    typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
 
     AssetTransferMap::iterator FindTransferIterator(QString assetRef);
     AssetTransferMap::iterator FindTransferIterator(IAssetTransfer *transfer);
@@ -400,7 +411,6 @@ private:
     /// Stores all the currently ongoing asset uploads, maps full assetRefs to the asset upload transfer structures.
     AssetUploadTransferMap currentUploadTransfers;
 
-    typedef std::vector<std::pair<QString, QString> > AssetDependenciesMap;
     /// Keeps track of all the dependencies each asset has to each other asset.
     /// \todo Find a more effective data structure for this. Needs something like boost::bimap but for multi-indices.
     AssetDependenciesMap assetDependencies;

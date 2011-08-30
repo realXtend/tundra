@@ -70,13 +70,18 @@ EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChang
 EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool replicated, bool componentsReplicated)
 {
     // Figure out new entity id
-    entity_id_t newentityid = 0;
     if (id == 0)
     {
-        if (IsAuthority())
-            newentityid = replicated ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
-        else
-            newentityid = replicated ? idGenerator_.AllocateUnacked() : idGenerator_.AllocateLocal();
+        // Loop until a free ID found
+        for (;;)
+        {
+            if (IsAuthority())
+                id = replicated ? idGenerator_.AllocateReplicated() : idGenerator_.AllocateLocal();
+            else
+                id = replicated ? idGenerator_.AllocateUnacked() : idGenerator_.AllocateLocal();
+            if (entities_.find(id) == entities_.end())
+                break;
+        }
     }
     else
     {
@@ -87,12 +92,13 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
         }
         else
         {
-            newentityid = id;
-            idGenerator_.Allocate(id);
+            // Reset the ID generator to the manually assigned value to avoid unnecessary free ID probing in the future
+            if (id < UniqueIdGenerator::FIRST_LOCAL_ID)
+                idGenerator_.ResetReplicatedId(std::max(id, idGenerator_.id));
         }
     }
 
-    EntityPtr entity = EntityPtr(new Entity(framework_, newentityid, this));
+    EntityPtr entity = EntityPtr(new Entity(framework_, id, this));
     for(size_t i=0 ; i<(size_t)components.size() ; ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
@@ -163,8 +169,6 @@ void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
     old_entity->SetNewId(new_id);
     entities_.erase(old_id);
     entities_[new_id] = old_entity;
-    idGenerator_.Deallocate(old_id);
-    idGenerator_.Allocate(new_id);
 }
 
 void Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
@@ -180,8 +184,6 @@ void Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
         // If entity somehow manages to live, at least it doesn't belong to the scene anymore
         del_entity->SetScene(0);
         del_entity.reset();
-        
-        idGenerator_.Deallocate(id);
     }
 }
 

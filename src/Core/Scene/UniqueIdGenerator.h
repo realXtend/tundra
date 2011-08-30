@@ -27,23 +27,8 @@ public:
     /** Clients should never allocate replicated ID's on their own. Instead, server sends a reply upon assigning the proper ID. */
     entity_id_t AllocateReplicated()
     {
-        // Find the largest ID among the reserved
-        // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
-        entity_id_t largestId = 0;
-        for (std::set<entity_id_t>::const_iterator iter = reserved.begin(); iter != reserved.end(); ++iter)
-            largestId = std::max(largestId, *iter);
-        
-        // Ensure that the ID we give out is always larger than the largest currently reserved ID.
-        id = std::max(id + 1, largestId + 1);
+        ++id;
         if (id > LAST_REPLICATED_ID) id = 1;
-        
-        while (reserved.find(id) != reserved.end())
-        {
-            ++id;
-            if (id > LAST_REPLICATED_ID) id = 1;
-        }
-        
-        reserved.insert(id);
         return id;
     }
     
@@ -52,13 +37,6 @@ public:
     {
         ++unackedId;
         if (unackedId == FIRST_LOCAL_ID) unackedId = FIRST_UNACKED_ID + 1;
-        while (reservedLocal.find(unackedId) != reservedLocal.end())
-        {
-            ++unackedId;
-            if (unackedId == FIRST_LOCAL_ID) unackedId = FIRST_UNACKED_ID + 1;
-        }
-        
-        reservedLocal.insert(unackedId);
         return unackedId;
     }
     
@@ -68,61 +46,21 @@ public:
     {
         ++localId;
         if (localId == 0) localId = FIRST_LOCAL_ID + 1;
-        while (reservedLocal.find(localId) != reservedLocal.end())
-        {
-            ++localId;
-            if (localId == 0) localId = FIRST_LOCAL_ID + 1;
-        }
-        
-        reservedLocal.insert(localId);
         return localId;
     }
     
-    /// Manually allocate an ID. Returns true if successful (not yet allocated), or false if already allocated
-    bool Allocate(entity_id_t id_)
+    /// Manually reset the replicated ID generator to a specific value. The next returned ID will be value + 1.
+    void ResetReplicatedId(entity_id_t id_)
     {
-        if (id_ < FIRST_UNACKED_ID)
-        {
-            if (reserved.find(id_) != reserved.end())
-                return false;
-            reserved.insert(id_);
-            return true;
-        }
-        else
-        {
-            if (reservedLocal.find(id_) != reservedLocal.end())
-                return false;
-            reservedLocal.insert(id_);
-            return true;
-        }
+        id = id_ & LAST_REPLICATED_ID;
     }
     
-    /// Mark an ID free for reuse. Typically called after deleting entities.
-    void Deallocate(entity_id_t id_)
-    {
-        if (id_ < FIRST_UNACKED_ID)
-            reserved.erase(id_);
-        else
-            reservedLocal.erase(id_);
-    }
-    
-    /// Mark all IDs free and reset next ID.
+    /// Reset all ID generators.
     void Reset()
     {
-        reserved.clear();
-        reservedLocal.clear();
         id = 0;
         unackedId = FIRST_UNACKED_ID;
         localId = FIRST_LOCAL_ID;
-    }
-    
-    /// Return whether an ID is free
-    bool IsFree(entity_id_t id_) const
-    {
-        if (id_ < FIRST_UNACKED_ID)
-            return reserved.find(id_) == reserved.end();
-        else
-            return reservedLocal.find(id_) == reservedLocal.end();
     }
     
     /// Last returned ID
@@ -131,8 +69,4 @@ public:
     entity_id_t unackedId;
     /// Last returned local ID
     entity_id_t localId;
-    /// Reserved ID's
-    std::set<entity_id_t> reserved;
-    /// Reserved unacked and local ID's
-    std::set<entity_id_t> reservedLocal;
 };

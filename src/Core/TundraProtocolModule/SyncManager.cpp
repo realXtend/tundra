@@ -998,7 +998,6 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     if (!scene->AllowModifyEntity(user, entity.get()))
         return;
     
-    
     // Read the components
     std::vector<std::pair<component_id_t, component_id_t> > componentIdRewrites;
     std::vector<ComponentPtr> addedComponents;
@@ -1039,6 +1038,8 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         state->entities[entityID].id = entityID;
         state->entities[entityID].components[compID].id = compID;
         state->entities[entityID].components[compID].DirtyProcessed();
+        
+        addedComponents.push_back(comp);
         
         // Fill static attributes
         unsigned numStaticAttrs = comp->NumStaticAttributes();

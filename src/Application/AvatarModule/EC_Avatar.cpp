@@ -38,10 +38,16 @@ EC_Avatar::EC_Avatar(Scene* scene) :
     
     avatarAssetListener_ = AssetRefListenerPtr(new AssetRefListener());
     connect(avatarAssetListener_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)), Qt::UniqueConnection);
+    connect(avatarAssetListener_.get(), SIGNAL(TransferFailed(IAssetTransfer *, QString)), this, SLOT(OnAvatarAppearanceFailed(IAssetTransfer*, QString)));
 }
 
 EC_Avatar::~EC_Avatar()
 {
+}
+
+void EC_Avatar::OnAvatarAppearanceFailed(IAssetTransfer* transfer, QString reason)
+{
+    LogError("OnAvatarAppearanceFailed, reason " + reason);
 }
 
 void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
