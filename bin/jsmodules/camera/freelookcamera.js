@@ -7,7 +7,9 @@ var motion_z = 0;
 var motion_y = 0;
 var motion_x = 0;
 
-if (!me.GetComponent("EC_Camera"))
+Initialize();
+
+function Initialize()
 {
     // Create components & setup default position/lookat for the camera
     var camera = me.GetOrCreateComponent("EC_Camera");
@@ -22,14 +24,13 @@ if (!me.GetComponent("EC_Camera"))
         camera.SetActive();
         soundlistener.active = true;
     }
-    
-    var transform = placeable.transform;
 
-    // Set initial transform according to camera's up vector
+    /*
+    var transform = placeable.transform;
     var initialRot = camera.InitialRotation();
     transform.rot = initialRot;
-
     placeable.transform = transform;
+    */
 
     // Hook to update tick
     frame.Updated.connect(Update);
