@@ -18,6 +18,7 @@
 #include "Entity.h"
 #include "AssetAPI.h"
 #include "EC_Script.h"
+#include "ScriptAsset.h"
 #include "ScriptAssetFactory.h"
 #include "EC_DynamicComponent.h"
 #include "Scene.h"
@@ -28,15 +29,14 @@
 #include "ConsoleAPI.h"
 #include "IComponentFactory.h"
 #include "TundraLogicModule.h"
-
-#include "ScriptAsset.h"
+#include "LoggingFunctions.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+
 #include <QtScript>
 #include <QDomElement>
 
-#include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
 JavascriptModule::JavascriptModule() :
@@ -557,7 +557,8 @@ void JavascriptModule::LoadStartupScripts()
     QStringList startupScriptsToLoad = ParseStartupScriptConfig();
 
     // Create a script instance for each of the files, register services for it and try to run.
-    LogInfo(Name() + ": Loading startup scripts");
+    if (scripts.size() || startupScriptsToLoad.size())
+        LogInfo("JavascriptModule::LoadStartupScripts: Loading startup scripts...");
     for(uint i = 0; i < scripts.size(); ++i)
     {
         QString startupScript = scripts[i].c_str();
@@ -565,7 +566,7 @@ void JavascriptModule::LoadStartupScripts()
         QString baseName = startupScript.mid(startupScript.lastIndexOf("/")+1);
         if (startupScriptsToLoad.contains(startupScript) || startupScriptsToLoad.contains(baseName))
         {
-            LogInfo(Name() + ": ** " + baseName.toStdString());
+            LogInfo("JavascriptModule::LoadStartupScripts: Loading " + baseName.toStdString());
             JavascriptInstance* jsInstance = new JavascriptInstance(startupScript, this);
             PrepareScriptInstance(jsInstance);
             startupScripts_.push_back(jsInstance);
@@ -592,11 +593,11 @@ void JavascriptModule::LoadStartupScripts()
             pathToFile = startupScript;
         else
         {
-            LogWarning(Name() + "** Could not find startup file for: " + startupScript.toStdString());
+            LogWarning("JavascriptModule::LoadStartupScripts: Could not find startup file for: " + startupScript.toStdString());
             continue;
         }
 
-        LogInfo(Name() + ": ** " + startupScript.toStdString());
+        LogInfo("JavascriptModule::LoadStartupScripts: Loading " + startupScript.toStdString());
         JavascriptInstance* jsInstance = new JavascriptInstance(pathToFile, this);
         PrepareScriptInstance(jsInstance);
         startupScripts_.push_back(jsInstance);
