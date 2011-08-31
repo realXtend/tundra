@@ -222,9 +222,7 @@ void TundraLogicModule::Initialize()
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
     if (!kristalliModule_)
-    {
         throw Exception("Fatal: could not get KristalliProtocolModule");
-    }
 
     ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SERVER, "port", cDefaultPort, cDefaultPort);
     // Write default values to config if not present.
@@ -266,50 +264,62 @@ void TundraLogicModule::Uninitialize()
 
 void TundraLogicModule::Update(f64 frametime)
 {
+    PROFILE(TundraLogicModule_Update);
+
+    static bool checkDefaultServerStart = true;
+    if (checkDefaultServerStart)
     {
-        PROFILE(TundraLogicModule_Update);
-        
-        static bool check_default_server_start = true;
-        if (check_default_server_start)
-        {
-            if (autoStartServer_)
-                server_->Start(autoStartServerPort_);
+        if (autoStartServer_)
+            server_->Start(autoStartServerPort_); 
 
-            // Load startup scene here (if we have one)
-            LoadStartupScene();
-            
-            check_default_server_start = false;
-        }
+        // Load startup scene here (if we have one)
+        LoadStartupScene();
 
-        static bool check_login_start = true;
-        if (check_login_start)
-        {
-            // Web login handling, if we are on a server the request will be ignored down the chain.
-            QStringList cmdLineParams = framework_->CommandLineParameters("--login");
-            if (cmdLineParams.size() > 0)
-            {
-                LogInfo(cmdLineParams.first());
-                QUrl loginUrl(cmdLineParams.first(), QUrl::TolerantMode);
-                if (loginUrl.isValid())
-                    client_->Login(loginUrl);
-            }
-
-            check_login_start = false;
-        }
-        
-        // Update client & server
-        if (client_)
-            client_->Update(frametime);
-        if (server_)
-            server_->Update(frametime);
-        // Run scene sync
-        if (syncManager_)
-            syncManager_->Update(frametime);
-        // Run scene interpolation
-        ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
-        if (scene)
-            scene->UpdateAttributeInterpolations(frametime);
+        checkDefaultServerStart = false;
     }
+
+    static bool checkLoginStart = true;
+    if (checkLoginStart)
+    {
+        // Web login handling, if we are on a server the request will be ignored down the chain.
+        QStringList cmdLineParams = framework_->CommandLineParameters("--login");
+        if (cmdLineParams.size() > 0)
+        {
+            LogInfo(cmdLineParams.first());
+            QUrl loginUrl(cmdLineParams.first(), QUrl::TolerantMode);
+            if (loginUrl.isValid())
+                client_->Login(loginUrl);
+        }
+
+        checkLoginStart = false;
+    }
+
+    static bool checkConnectStart = true;
+    if (checkConnectStart)
+    {
+        if (framework_->CommandLineParameters("--connect").size() == 1)
+        {
+            QStringList params = framework_->CommandLineParameters("--connect").first().split(';');
+            if (params.size() >= 4)
+                Connect(params[0], params[1].toInt(), params[2], params[3], params.size() >= 5 ? params[4] : "");
+            else
+                LogError("Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
+        }
+        checkConnectStart = false;
+    }
+
+    // Update client & server
+    if (client_)
+        client_->Update(frametime);
+    if (server_)
+        server_->Update(frametime);
+    // Run scene sync
+    if (syncManager_)
+        syncManager_->Update(frametime);
+    // Run scene interpolation
+    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    if (scene)
+        scene->UpdateAttributeInterpolations(frametime);
 }
 
 void TundraLogicModule::LoadStartupScene()
