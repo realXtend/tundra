@@ -9,7 +9,8 @@ engine.ImportExtension("qt.network");
 engine.IncludeFile("jsmodules/lib/class.js");
 engine.IncludeFile("jsmodules/lib/json2.js");
 
-var uiBase = "./jsmodules/browserui/ui/"
+var instDir = engine.InstallationDirectory();
+var uiBase = instDir + "jsmodules/browserui/ui/";
 		
 var iconRefresh = new QIcon(uiBase + "refresh.png");
 var iconStop = new QIcon(uiBase + "stop.png");
@@ -1560,7 +1561,7 @@ var ClassicLogin = Class.extend
 		this.udpButton = findChild(this.widget, "radioButton_ProtocolUDP");
 
 		var logoLabel = findChild(this.widget, "label_ClientLogo");
-		logoLabel.pixmap = new QPixmap("./data/ui/images/realxtend_logo.png");
+		logoLabel.pixmap = new QPixmap(instDir + "/data/ui/images/realxtend_logo.png");
 
 		// Connections
 		this.loginButton.clicked.connect(this, this.loginPressed);

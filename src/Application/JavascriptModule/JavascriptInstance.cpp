@@ -8,6 +8,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Application.h"
 #include "JavascriptInstance.h"
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
@@ -144,12 +145,17 @@ QString JavascriptInstance::LoadScript(const QString &fileName)
     }
 
     // Otherwise, treat fileName as a local file to load up.
-
     QFile scriptFile(filename);
     if (!scriptFile.open(QIODevice::ReadOnly))
     {
-        LogError("JavascriptInstance::LoadScript: Failed to load script from file " + filename + "!");
-        return "";
+        // Try with tundra install dir
+        QDir installDir(Application::InstallationDirectory());
+        scriptFile.setFileName(installDir.absoluteFilePath(filename));
+        if (!scriptFile.open(QIODevice::ReadOnly))
+        {
+            LogError("JavascriptInstance::LoadScript: Failed to load script from file " + filename + "!");
+            return "";
+        }
     }
 
     QString result = scriptFile.readAll();
@@ -343,6 +349,12 @@ bool JavascriptInstance::CheckAndPrintException(const QString& message, const QS
         return true;
     }
     return false;
+}
+
+QString JavascriptInstance::InstallationDirectory() const
+{
+    QString instDir = Application::InstallationDirectory();
+    return QDir::fromNativeSeparators(instDir);
 }
 
 void JavascriptInstance::CreateEngine()

@@ -80,6 +80,10 @@ public slots:
     /// Check and print error if the engine has an uncaught exception
     bool CheckAndPrintException(const QString& message, const QScriptValue& result);
 
+    /// Returns the Tundra install directory (as its not a slot in Application we need this, its a static function).
+    /// @return Returns the install directory with qt style separators '/'.
+    QString InstallationDirectory() const;
+
 signals:
     /// The scripts have been run. This is the trigger to create script objects as necessary
     void ScriptEvaluated();
