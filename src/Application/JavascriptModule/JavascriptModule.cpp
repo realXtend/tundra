@@ -60,7 +60,6 @@ void JavascriptModule::Load()
 void JavascriptModule::Initialize()
 {
     connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
-    engine->globalObject().setProperty("print", engine->newFunction(Print));
 
     RegisterCoreMetaTypes();
 
@@ -566,7 +565,7 @@ void JavascriptModule::LoadStartupScripts()
         QString baseName = startupScript.mid(startupScript.lastIndexOf("/")+1);
         if (startupScriptsToLoad.contains(startupScript) || startupScriptsToLoad.contains(baseName))
         {
-            LogInfo("JavascriptModule::LoadStartupScripts: Loading " + baseName.toStdString());
+            LogInfo("JavascriptModule::LoadStartupScripts: Loading " + baseName);
             JavascriptInstance* jsInstance = new JavascriptInstance(startupScript, this);
             PrepareScriptInstance(jsInstance);
             startupScripts_.push_back(jsInstance);
@@ -593,11 +592,11 @@ void JavascriptModule::LoadStartupScripts()
             pathToFile = startupScript;
         else
         {
-            LogWarning("JavascriptModule::LoadStartupScripts: Could not find startup file for: " + startupScript.toStdString());
+            LogWarning("JavascriptModule::LoadStartupScripts: Could not find startup file for: " + startupScript);
             continue;
         }
 
-        LogInfo("JavascriptModule::LoadStartupScripts: Loading " + startupScript.toStdString());
+        LogInfo("JavascriptModule::LoadStartupScripts: Loading " + startupScript);
         JavascriptInstance* jsInstance = new JavascriptInstance(pathToFile, this);
         PrepareScriptInstance(jsInstance);
         startupScripts_.push_back(jsInstance);
@@ -679,12 +678,6 @@ void JavascriptModule::ConsoleRunFile(const QStringList &params)
 void JavascriptModule::ConsoleReloadScripts()
 {
     LoadStartupScripts();
-}
-
-QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
-{
-    LogInfo("{QtScript} " + context->argument(0).toString());
-    return QScriptValue();
 }
 
 extern "C"

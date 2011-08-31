@@ -100,14 +100,9 @@ private slots:
     void ConsoleRunString(const QStringList &params);
     void ConsoleRunFile(const QStringList &params);
     void ConsoleReloadScripts();
-    
     void ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts);
     void ScriptAppNameChanged(const QString& newAppName);
     void ScriptClassNameChanged(const QString& newClassName);
     void ScriptEvaluated();
     void ScriptUnloading();
 };
-
-// API things
-QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
-QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine);
