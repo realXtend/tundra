@@ -12,7 +12,6 @@ function Entity (position)
 	trans.pos.y = position.y;
 	trans.pos.z = position.z;
 	ParticleEntity.placeable.transform = trans;
-	scene.EmitEntityCreated(ParticleEntity, 2);
 
 	frame.DelayedExecute(2.0).Triggered.connect(this, this.DeleteEntity);
 }

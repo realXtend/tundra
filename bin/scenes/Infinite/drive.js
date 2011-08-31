@@ -32,7 +32,7 @@ function addpiece(y) {
     roadpiece.placeable.transform = t;
     print(roadpiece.placeable.transform.pos.y);
 
-    scene.EmitEntityCreatedRaw(roadpiece);
+    //scene.EmitEntityCreatedRaw(roadpiece);
 
     //copy paste from above, didn't make addmesh() yet 'cause seemed that would need many params
     var tree = scene.CreateEntityRaw(scene.NextFreeId(),
@@ -48,7 +48,7 @@ function addpiece(y) {
     t.pos.x = x;
     tree.placeable.transform = t;
 
-    scene.EmitEntityCreatedRaw(roadpiece);
+    //scene.EmitEntityCreatedRaw(roadpiece);
 }
 
 var car = null; //freecam is apparently not there yet when loading this, so gotta fetch later

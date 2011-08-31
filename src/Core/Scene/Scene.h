@@ -269,7 +269,8 @@ public slots:
     void EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emits a notification of an entity having been created
-    /** @param entity Entity pointer
+    /** Creates are also automatically signalled at the end of frame, so you do not necessarily need to call this.
+        @param entity Entity pointer
         @param change Change signalling mode */
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
@@ -450,13 +451,14 @@ signals:
     /// Signal when the whole scene is cleared
     void SceneCleared(Scene* scene);
 
+private slots:
+    /// Handle frame update. Signal this frame's entity creations.
+    void OnUpdated(float frameTime);
+    
 private:
     Q_DISABLE_COPY(Scene);
     friend class ::SceneAPI;
-
-    /// Default constructor, name will be empty string and authority-flag false.
-    Scene();
-
+    
     /// Constructor.
     /** @param name Name of the scene.
         @param fw Framework Parent framework.
@@ -472,4 +474,5 @@ private:
     bool interpolating_; ///< Currently doing interpolation-flag.
     bool authority_; ///< Authority -flag
     std::vector<AttributeInterpolation> interpolations_; ///< Running attribute interpolations.
+    std::vector<std::pair<EntityWeakPtr, AttributeChange::Type> > entitiesCreatedThisFrame_; ///< Entities to signal for creation at frame end.
 };

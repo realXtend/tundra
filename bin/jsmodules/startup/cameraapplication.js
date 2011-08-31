@@ -34,7 +34,4 @@ function CreateCamera(scene)
     var r = script.scriptRef;
     r.ref = "local://freelookcamera.js";
     script.scriptRef = r;
-
-    scene.EmitEntityCreated(entity);
-
 }

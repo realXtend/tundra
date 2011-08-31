@@ -38,7 +38,6 @@ function PerformOperation()
         newEnt.rigidbody.mass = 5;
         newEnt.rigidbody.shapeType = 6; // Convex hull
         newEnt.name = "Test";
-        scene.EmitEntityCreated(newEnt);
         print("Created new entity " + newEnt.id);
     }
     if (operation == 2)

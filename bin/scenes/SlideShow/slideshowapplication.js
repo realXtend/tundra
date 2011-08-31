@@ -197,8 +197,6 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     // Create UI
     // makeSlideWidget(slides);
     
-    // Now we are done
-    scene.EmitEntityCreatedRaw(entity);
 }
 
 function ForgetAsset(assetRef) {
@@ -218,9 +216,9 @@ function getSlides(ref) {
     entity.name = "Slideshow: " + filename;
     entity.name.description = "Simple slideshow app from " + filename;
     prev.name = 'Button prev (' + entity.name + ' ' + entity.id + ')';
-    scene.EmitEntityCreatedRaw(prev);
+    //scene.EmitEntityCreatedRaw(prev);
     next.name.name = 'Button next (' + entity.name.name + ' ' + entity.id + ')';
-    scene.EmitEntityCreatedRaw(next);
+    //scene.EmitEntityCreatedRaw(next);
 }
 
 

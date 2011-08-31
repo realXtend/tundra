@@ -15,6 +15,7 @@
 
 #include "Framework.h"
 #include "AssetAPI.h"
+#include "FrameAPI.h"
 #include "Profiler.h"
 #include "LoggingFunctions.h"
 
@@ -34,14 +35,6 @@
 
 using namespace kNet;
 
-Scene::Scene() :
-    framework_(0),
-    viewEnabled_(true),
-    authority_(true),
-    interpolating_(false)
-{
-}
-
 Scene::Scene(const QString &name, Framework *framework, bool viewEnabled, bool authority) :
     name_(name),
     framework_(framework),
@@ -50,6 +43,9 @@ Scene::Scene(const QString &name, Framework *framework, bool viewEnabled, bool a
 {
     // In headless mode only view disabled-scenes can be created
     viewEnabled_ = framework->IsHeadless() ? false : viewEnabled_ = viewEnabled;
+
+    // Connect to frame update to handle signalling entities created on this frame
+    connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
 }
 
 Scene::~Scene()
@@ -109,6 +105,9 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
         }
     }
     entities_[entity->Id()] = entity;
+
+    // Remember the creation and signal at end of frame if EmitEntityCreated() not called for this entity manually
+    entitiesCreatedThisFrame_.push_back(std::make_pair(EntityWeakPtr(entity), change));
 
     return entity;
 }
@@ -299,6 +298,16 @@ void Scene::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, Attrib
 
 void Scene::EmitEntityCreated(Entity *entity, AttributeChange::Type change)
 {
+    // Remove from the create signalling queue
+    for (unsigned i = 0; i < entitiesCreatedThisFrame_.size(); ++i)
+    {
+        if (entitiesCreatedThisFrame_[i].first.lock().get() == entity)
+        {
+            entitiesCreatedThisFrame_.erase(entitiesCreatedThisFrame_.begin() + i);
+            break;
+        }
+    }
+    
     if (change == AttributeChange::Disconnected)
         return;
     if (change == AttributeChange::Default)
@@ -1317,4 +1326,25 @@ void Scene::UpdateAttributeInterpolations(float frametime)
     }
 
     interpolating_ = false;
+}
+
+void Scene::OnUpdated(float frameTime)
+{
+    // Signal queued entity creations now
+    for (unsigned i = 0; i < entitiesCreatedThisFrame_.size(); ++i)
+    {
+        Entity* entity = entitiesCreatedThisFrame_[i].first.lock().get();
+        if (!entity)
+            continue;
+        
+        AttributeChange::Type change = entitiesCreatedThisFrame_[i].second;
+        if (change == AttributeChange::Disconnected)
+            continue;
+        if (change == AttributeChange::Default)
+            change = AttributeChange::Replicate;
+        
+        emit EntityCreated(entity, change);
+    }
+    
+    entitiesCreatedThisFrame_.clear();
 }

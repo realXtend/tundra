@@ -145,11 +145,10 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
         LogError("No EC_Name was created!");
 
     // All components have been loaded/modified. Trigger change for them now.
+    scene_->EmitEntityCreated(newentity.get(), change);
     const Entity::ComponentMap &components = newentity->Components();
     for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
         i->second->ComponentChanged(change);
-
-    scene_->EmitEntityCreated(newentity.get(), change);
 
     return newentity;
 }
