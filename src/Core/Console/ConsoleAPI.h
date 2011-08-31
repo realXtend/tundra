@@ -118,7 +118,7 @@ public slots:
     /** This command is invoked by typing 'help' to the console. */
     void ListCommands();
 
-    /// Clears the console widget's log.
+    /// Clears the console log.
     /** This command is invoked by typing 'clear' to the console. */
     void ClearLog();
 

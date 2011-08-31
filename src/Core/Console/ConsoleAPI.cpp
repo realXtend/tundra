@@ -20,6 +20,8 @@
 #include "LoggingFunctions.h"
 #include "FunctionInvoker.h"
 
+#include <stdlib.h>
+
 #include "MemoryLeakCheck.h"
 
 ConsoleAPI::ConsoleAPI(Framework *fw) :
@@ -35,7 +37,7 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
     RegisterCommand("help", "Lists all registered commands.", this, SLOT(ListCommands()));
-    RegisterCommand("clear", "Clears the console widget's log.", this, SLOT(ClearLog()));
+    RegisterCommand("clear", "Clears the console log.", this, SLOT(ClearLog()));
     RegisterCommand("loglevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
         this, SLOT(SetLogLevel(const QString &)));
 
@@ -164,6 +166,11 @@ void ConsoleAPI::ClearLog()
 {
     if (consoleWidget)
         consoleWidget->ClearLog();
+#ifdef _WINDOWS
+    system("cls");
+#elif
+    system("clear");
+#endif
 }
 
 void ConsoleAPI::SetLogLevel(const QString &level)
