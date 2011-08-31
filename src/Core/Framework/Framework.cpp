@@ -23,6 +23,9 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 
+#ifndef _WINDOWS
+#include <sys/ioctl.h>
+#endif
 #include <iostream>
 #include <QDir>
 
@@ -39,7 +42,14 @@ struct CommandLineParameterMap
         {
             int charIdx = 0;
             const int treshold = 15;
-            const int maxLineWidth = 80; ///< @todo 80 on Windows, but how bout on other platforms?
+            // Max line width is fixed 80 chars on Windows, but can vary on *nix.
+#ifdef _WINDOWS
+            const int maxLineWidth = 80;
+#else
+            struct winsize w;
+            ioctl(0, TIOCGWINSZ, &w);
+            const int maxLineWidth = (int)w.ws_row;
+#endif
             int cmdLength = it.key().length();
             std::cout << it.key().toStdString();
             if (cmdLength >= treshold)
@@ -95,7 +105,8 @@ Framework::Framework(int argc, char** argv) :
     renderer(0),
     apiVersionInfo(0),
     applicationVersionInfo(0)
-{    // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
+{
+    // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
 
     // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
@@ -140,7 +151,7 @@ Framework::Framework(int argc, char** argv) :
         config->PrepareDataFolder("configuration");
 
         // Create QApplication
-        application = new Application(this, argc_, argv_);       
+        application = new Application(this, argc_, argv_);
 
         // Create core APIs
         frame = new FrameAPI(this);

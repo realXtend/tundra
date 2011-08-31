@@ -168,7 +168,7 @@ void ConsoleAPI::ClearLog()
         consoleWidget->ClearLog();
 #ifdef _WINDOWS
     system("cls");
-#elif
+#else
     system("clear");
 #endif
 }
