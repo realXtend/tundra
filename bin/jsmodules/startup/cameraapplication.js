@@ -4,10 +4,6 @@ framework.Scene().SceneAdded.connect(OnSceneAdded);
 
 function OnSceneAdded(scenename)
 {
-    // If scene is the OpenSim client scene, hardcodedly do not respond
-    if (scenename == "World")
-        return;
-
     // Get pointer to scene through framework
     scene = framework.Scene().GetScene(scenename);
     scene.SceneCleared.connect(OnSceneCleared);
