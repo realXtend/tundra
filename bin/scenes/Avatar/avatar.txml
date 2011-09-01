@@ -1,6 +1,6 @@
 <!DOCTYPE Scene>
 <scene>
- <entity id="2">
+ <entity id="1" sync="1">
   <component type="EC_Script" sync="1">
    <attribute value="local://avatarmenu.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
@@ -13,7 +13,7 @@
    <attribute value="" name="description"/>
   </component>
  </entity>
- <entity id="3">
+ <entity id="2" sync="1">
   <component type="EC_Script" sync="1">
    <attribute value="local://avatarapplication.js;local://simpleavatar.js;local://exampleavataraddon.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
@@ -26,7 +26,7 @@
    <attribute value="" name="description"/>
   </component>
  </entity>
- <entity id="4">
+ <entity id="3" sync="1">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
    <attribute value="file://fish.mesh" name="Mesh ref"/>
@@ -40,7 +40,7 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="1.45142,-4.65131,5.40463,-47.8859,42.0584,-145.4,1,1,1" name="Transform"/>
+   <attribute value="1.45201,-4.65185,5.40487,-47.8323,42.1262,-145.378,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
@@ -61,13 +61,13 @@
    <attribute value="false" name="Kinematic"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.001053 -0.000365 -0.006323" name="Linear velocity"/>
-   <attribute value="-1.131705 -0.305739 -0.875018" name="Angular velocity"/>
+   <attribute value="-0.001488 0.007011 -0.005740" name="Linear velocity"/>
+   <attribute value="-0.981553 -0.320282 -0.493557" name="Angular velocity"/>
    <attribute value="-1" name="Collision Layer"/>
    <attribute value="-1" name="Collision Mask"/>
   </component>
  </entity>
- <entity id="5">
+ <entity id="4" sync="1">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,0,0,0.14,0.2,0.14" name="Transform"/>
    <attribute value="file://WoodPallet.mesh" name="Mesh ref"/>
@@ -108,7 +108,7 @@
    <attribute value="-1" name="Collision Mask"/>
   </component>
  </entity>
- <entity id="6">
+ <entity id="5" sync="1">
   <component type="EC_Name" sync="1">
    <attribute value="Instructions" name="name"/>
    <attribute value="" name="description"/>
@@ -121,20 +121,17 @@
    <attribute value="" name="Script class name"/>
   </component>
  </entity>
- <entity id="7">
+ <entity id="6" sync="1">
   <component type="EC_Name" sync="1">
    <attribute value="Environment" name="name"/>
    <attribute value="" name="description"/>
   </component>
   <component type="EC_EnvironmentLight" sync="1">
-   <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sun color"/>
-   <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient color"/>
-   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sun diffuse color"/>
-   <attribute value="-1.000000 -1.000000 -1.000000" name="Sun direction vector"/>
-   <attribute value="false" name="Use fixed time"/>
-   <attribute value="0.670000017" name="Current time"/>
-   <attribute value="true" name="Sun cast shadows"/>
-   <attribute value="true" name="Use Caelum"/>
+   <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sunlight color"/>
+   <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient light color"/>
+   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sunlight diffuse color"/>
+   <attribute value="-1.000000 -1.000000 -1.000000" name="Sunlight direction vector"/>
+   <attribute value="true" name="Sunlight cast shadows"/>
   </component>
   <component type="EC_Sky" sync="1">
    <attribute value="RexSkyBox" name="Material"/>
@@ -142,6 +139,20 @@
    <attribute value="50" name="Distance"/>
    <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
    <attribute value="true" name="Draw first"/>
+  </component>
+ </entity>
+ <entity id="7" sync="1">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="1.07871,16.6713,35.9556,-33.9,-0.60001,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="FreeLookCameraSpawnPos" name="name"/>
+   <attribute value="" name="description"/>
   </component>
  </entity>
 </scene>
