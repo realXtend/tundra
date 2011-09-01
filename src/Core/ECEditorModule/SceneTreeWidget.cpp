@@ -529,21 +529,21 @@ void SceneTreeWidget::LoadInvokeHistory()
 void SceneTreeWidget::SaveInvokeHistory()
 {
     // Sort descending by MRU order.
-    qSort(invokeHistory);
+    qSort(invokeHistory.begin(), invokeHistory.end(), qGreater<InvokeItem>());
     for(int idx = 0; idx < invokeHistory.size(); ++idx)
         framework->Config()->Set("uimemory", "invoke history", QString("item%1").arg(idx), invokeHistory[idx].ToSetting());
 }
 
-InvokeItem *SceneTreeWidget::FindMruItem() const
+InvokeItem *SceneTreeWidget::FindMruItem()
 {
     InvokeItem *mruItem = 0;
 
-    foreach(InvokeItem ii, invokeHistory)
+    for(int i = 0; i< invokeHistory.size(); ++i)
     {
         if (mruItem == 0)
-            mruItem = &ii;
-        if (ii > *mruItem)
-            mruItem = &ii;
+            mruItem = &invokeHistory[i];
+        if (invokeHistory[i] > *mruItem)
+            mruItem = &invokeHistory[i];
     }
 
     return mruItem;
@@ -989,8 +989,8 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
     QString action = dialog->Action();
     QStringList params = dialog->Parameters();
 
-    foreach(EntityWeakPtr e, dialog->Entities())
-        if (e.lock())
+    foreach(const EntityWeakPtr &e, dialog->Entities())
+        if (!e.expired())
             e.lock()->Exec(execTypes, action, params);
 
     // Save invoke item
@@ -1070,8 +1070,8 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     // Clear old return value from the dialog.
     dialog->SetReturnValueText("");
 
-    foreach(QObjectWeakPtr o, dialog->Objects())
-        if (o.lock())
+    foreach(const QObjectWeakPtr &o, dialog->Objects())
+        if (!o.expired())
         {
             QObject *obj = o.lock().get();
 
@@ -1390,10 +1390,10 @@ void SceneTreeWidget::InvokeActionTriggered()
         return;
 
     InvokeItem *invokedItem = 0;
-    foreach(InvokeItem ii, invokeHistory)
-        if (ii.ToString() == action->text())
+    for(int i = 0; i< invokeHistory.size(); ++i)
+        if (invokeHistory[i].ToString() == action->text())
         {
-            invokedItem = &ii;
+            invokedItem = &invokeHistory[i];
             break;
         }
 
@@ -1434,8 +1434,9 @@ void SceneTreeWidget::InvokeActionTriggered()
         }
         else
         {
-            foreach(EntityWeakPtr e, entities)
+            foreach(const EntityWeakPtr &e, entities)
                 e.lock()->Exec(invokedItem->execTypes, invokedItem->name, invokedItem->parameters);
+            qSort(invokeHistory.begin(), invokeHistory.end(), qGreater<InvokeItem>());
         }
     }
     else if (invokedItem->type == InvokeItem::Function)
@@ -1456,6 +1457,7 @@ void SceneTreeWidget::InvokeActionTriggered()
                 invoker.Invoke(obj, invokedItem->name, invokedItem->parameters, &retVal);
                 LogInfo("Invoked function returned " + retVal.toString());
             }
+            qSort(invokeHistory.begin(), invokeHistory.end(), qGreater<InvokeItem>());
         }
     }
 }

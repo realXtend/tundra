@@ -11,9 +11,7 @@
 #include "EntityAction.h"
 
 /// Struct used to storage information about invokable Entity Action or Function call.
-/** @todo Describe syntax of InvokeItem in the setting file
-    @todo Consider storing entity actions as Entity::Exec() function calls.
-*/
+/**	@todo Consider storing entity actions as Entity::Exec() function calls. */
 struct ECEDITOR_MODULE_API InvokeItem
 {
     /// Default constructor. Sets type and execTypes member variables to Unknown/Invalid.
@@ -32,7 +30,7 @@ struct ECEDITOR_MODULE_API InvokeItem
     /// Inequality operator. Compares items by objectName, name and parameters.
     bool operator !=(const InvokeItem &rhs) const { return !(*this == rhs); }
 
-    /// Less than operator. Compares items by the MRU order number.
+    /// Less than operator. Compares items by the MRU order number, in descending order.
     bool operator <(const InvokeItem &rhs) const { return mruOrder < rhs.mruOrder; }
 
     /// Greater than operator. Compares items by the MRU order number.

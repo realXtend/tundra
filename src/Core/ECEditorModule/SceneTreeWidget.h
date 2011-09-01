@@ -106,7 +106,7 @@ private:
     void SaveInvokeHistory();
 
     /// Return most recently used InvokeItem.
-    InvokeItem *FindMruItem() const;
+    InvokeItem *FindMruItem();
 
     /// Returns all asset references for the specified entity item.
     QSet<QString> GetAssetRefs(const EntityItem *eItem) const;
@@ -203,13 +203,11 @@ private slots:
     void SaveSceneDialogClosed(int result);
 
     /// Called by "Export all" file dialog when it's closed
-    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void ExportAllDialogClosed(int result);
 
     /// Called by open file dialog when it's closed.
-    /** @param result Result of dialog closure. Open is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Open is 1, Cancel is 0. */
     void OpenFileDialogClosed(int result);
 
     /// Executes invoke item or opens it for editing.
