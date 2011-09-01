@@ -17,6 +17,10 @@ class Framework;
 class Application : public QApplication
 {
     Q_OBJECT
+    Q_PROPERTY(QString currentWorkingDirectory READ CurrentWorkingDirectory WRITE SetCurrentWorkingDirectory)
+    Q_PROPERTY(QString installationDirectory READ InstallationDirectory)
+    Q_PROPERTY(QString userDataDirectory READ UserDataDirectory)
+    Q_PROPERTY(QString userDocumentsDirectory READ UserDocumentsDirectory)
 
 public:
     /// Construcs the application singleton.
