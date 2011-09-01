@@ -115,7 +115,7 @@ namespace Foundation
         //! take sceenshot to a location
         //! \param filePath File path.
         //! \param fileName File name.
-        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName) = 0;
+        virtual void TakeScreenshot(const QString& filePath, const QString& fileName) = 0;
 
         //! Render current main window content to texture
         virtual QPixmap RenderImage(bool use_main_camera = true) = 0;
