@@ -181,29 +181,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
     try
     {
         Ogre::Image new_image;
-                
-        // From Ogre 1.7 Texture::convertToImage()
-        size_t numMips = 1;
-        size_t dataSize = Ogre::Image::calculateSize(numMips,
-            ogreTexture->getNumFaces(), ogreTexture->getWidth(), ogreTexture->getHeight(), ogreTexture->getDepth(), ogreTexture->getFormat());
-        void* pixData = OGRE_MALLOC(dataSize, Ogre::MEMCATEGORY_GENERAL);
-        // if there are multiple faces and mipmaps we must pack them into the data
-        // faces, then mips
-        void* currentPixData = pixData;
-        for(size_t face = 0; face < ogreTexture->getNumFaces(); ++face)
-        {
-            for(size_t mip = 0; mip < numMips; ++mip)
-            {
-                size_t mipDataSize = Ogre::PixelUtil::getMemorySize(ogreTexture->getWidth(), ogreTexture->getHeight(), ogreTexture->getDepth(), ogreTexture->getFormat());
-                Ogre::PixelBox pixBox(ogreTexture->getWidth(), ogreTexture->getHeight(), ogreTexture->getDepth(), ogreTexture->getFormat(), currentPixData);
-                ogreTexture->getBuffer(face, mip)->blitToMemory(pixBox);
-                currentPixData = (void*)((char*)currentPixData + mipDataSize);
-            }
-        }
-        // load, and tell Image to delete the memory when it's done.
-        new_image.loadDynamicImage((Ogre::uchar*)pixData, ogreTexture->getWidth(), ogreTexture->getHeight(), ogreTexture->getDepth(), ogreTexture->getFormat(), true, 
-            ogreTexture->getNumFaces(), numMips - 1);
-
+        ogreTexture->convertToImage(new_image);
         Ogre::DataStreamPtr imageStream = new_image.encode(serializationParameters.toStdString());
         if (imageStream.get() && imageStream->size() > 0)
         {
@@ -238,6 +216,32 @@ bool TextureAsset::IsLoaded() const
     return ogreTexture.get() != 0;
 }
 
+QImage TextureAsset::ToQImage(Ogre::Texture* tex, size_t faceIndex, size_t mipmapLevel)
+{
+    if (!tex)
+    {
+        LogError("TextureAsset::ToQImage: Can't convert texture to QImage, null texture pointer");
+        return QImage();
+    }
+    
+    Ogre::Image ogreImage;
+    tex->convertToImage(ogreImage);
+    QImage::Format fmt;
+    switch(ogreImage.getFormat())
+    {
+    case Ogre::PF_X8R8G8B8: fmt = QImage::Format_RGB32; break;
+    case Ogre::PF_A8R8G8B8: fmt = QImage::Format_ARGB32; break;
+    case Ogre::PF_R5G6B5: fmt = QImage::Format_RGB16; break;
+    case Ogre::PF_R8G8B8: fmt = QImage::Format_RGB888; break;
+    default:
+        LogError("TextureAsset::ToQImage: Can't convert texture " + QString::fromStdString(tex->getName()) + " to QImage, unsupported image format " + QString::number(ogreImage.getFormat()));
+        return QImage();
+    }
+    
+    QImage img((uchar*)ogreImage.getData(), ogreImage.getWidth(), ogreImage.getHeight(), fmt);
+    return img;
+}
+
 QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
 {
     if (!ogreTexture.get())
@@ -245,29 +249,8 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
         LogError("TextureAsset::ToQImage: Can't convert texture to QImage, Ogre texture is not initialized for asset \"" + ToString() + "\"!");
         return QImage();
     }
-
-    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = ogreTexture->getBuffer(faceIndex, mipmapLevel);
-    QImage::Format fmt;
-    switch(pixelBuffer->getFormat())
-    {
-    case Ogre::PF_X8R8G8B8: fmt = QImage::Format_RGB32; break;
-    case Ogre::PF_A8R8G8B8: fmt = QImage::Format_ARGB32; break;
-    case Ogre::PF_R5G6B5: fmt = QImage::Format_RGB16; break;
-    case Ogre::PF_R8G8B8: fmt = QImage::Format_RGB888; break;
-    default:
-        LogError("TextureAsset::ToQImage: Cannot convert Ogre TextureAsset \"" + Name() + "\" to QImage: Unsupported Ogre format of type " + (int)pixelBuffer->getFormat());
-        return QImage();
-    }
-
-    void *data = pixelBuffer->lock(Ogre::HardwareBuffer::HBL_READ_ONLY);
-    if (!data)
-    {
-        LogError("TextureAsset::ToQImage: Failed to lock Ogre TextureAsset \"" + Name() + "\" for reading!");
-        return QImage();
-    }
-    QImage img((uchar*)data, pixelBuffer->getWidth(), pixelBuffer->getHeight(), fmt);
-    pixelBuffer->unlock();
-    return img;
+    
+    return ToQImage(ogreTexture.get(), faceIndex, mipmapLevel);
 }
 
 void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic)

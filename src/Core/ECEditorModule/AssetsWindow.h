@@ -100,6 +100,7 @@ private slots:
     /** @param asset Asset which was unloaded. */
     void HandleAssetUnloaded(IAsset *asset);
 
+    void AssetDoubleClicked(QTreeWidgetItem *item, int column);
     void PickAsset(QTreeWidgetItem *);
     void PickAssetAndClose();
     void Cancel();

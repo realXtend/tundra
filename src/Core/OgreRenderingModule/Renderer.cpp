@@ -70,6 +70,7 @@ namespace OgreRenderer
         void messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
         {
             if (lml == Ogre::LML_CRITICAL)
+                // Some Ogre Critical messages are actually not errors. For example MaterialSerializer's log messages.
                 LogError(message);
             else if (lml == Ogre::LML_TRIVIAL)
                 LogDebug(message);

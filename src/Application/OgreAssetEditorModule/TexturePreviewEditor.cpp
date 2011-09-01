@@ -10,6 +10,8 @@
 
 #include "TexturePreviewEditor.h"
 #include "OgreAssetEditorModule.h"
+#include "TextureAsset.h"
+#include "AssetAPI.h"
 
 #include "Application.h"
 #include "LoggingFunctions.h"
@@ -210,8 +212,8 @@ void TexturePreviewEditor::Initialize()
 
     QLabel *assetIdLabel = mainWidget_->findChild<QLabel *>("imageAssetIdLabel");
     if (assetIdLabel)
-        assetIdLabel->setText("inventoryId_");
-
+        assetIdLabel->setText("");
+    
     imageLabel_ = new TextureLabel();
     imageLabel_->setObjectName("previewImageLabel");
     imageLabel_->setScaledContents(true);
@@ -237,18 +239,6 @@ void TexturePreviewEditor::Initialize()
 
 void TexturePreviewEditor::OpenOgreTexture(const QString& name)
 {
-    if (name.contains(".dds"))
-    {
-        LogWarning("currently cannot show .dds files. ");
-        // Set black background image that will be replaced once the real image has been received.
-        QImage emptyImage = QImage(QSize(256, 256), QImage::Format_ARGB32);
-        emptyImage.fill(qRgba(0,0,0,0));
-        if ( imageLabel_ != 0)
-            imageLabel_->setPixmap(QPixmap::fromImage(emptyImage));
-
-        return;
-    }
-
     Ogre::ResourcePtr res = Ogre::TextureManager::getSingleton().getByName(name.toStdString().c_str());
     Ogre::Texture* tex = static_cast<Ogre::Texture* >(res.get());
     if (!tex)
@@ -256,29 +246,19 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
         LogWarning("Failed to open Ogre texture " + name + " .");
         return;
     }
-
-    int width = tex->getWidth();
-    int height = tex->getHeight();
-    Ogre::Box bounds(0, 0, width, height);
-    Ogre::uchar* pixelData = new Ogre::uchar[width * height * 4];
-    Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
-    tex->getBuffer()->blitToMemory(pixels);
     
     // Create image of texture, and show it into label.
-
-    u8* p = static_cast<u8 *>(pixels.data);
-    int widthPixels = pixels.getWidth();
-    int heightPixels= pixels.getHeight();
-    
-    QImage img = ConvertToQImage(p, widthPixels, heightPixels, 4);
+    QImage img = TextureAsset::ToQImage(tex);
 
     if(!img.isNull() && imageLabel_ != 0)
     {
         imageLabel_->setPixmap(QPixmap::fromImage(img));
         imageLabel_->show();
+        
+        QLabel *assetIdLabel = mainWidget_->findChild<QLabel *>("imageAssetIdLabel");
+        if (assetIdLabel)
+            assetIdLabel->setText(AssetAPI::DesanitateAssetRef(name));
     }
-
-    delete[] pixelData;
 }
 
 TexturePreviewEditor *TexturePreviewEditor::OpenPreviewEditor(const QString &texture, QWidget* parent)
@@ -344,6 +324,7 @@ float TexturePreviewEditor::CalculateImageScale()
     return -1.0f;
 }
 
+/*
 QImage TexturePreviewEditor::ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels)
 {
     uint img_width_step = width * channels; 
@@ -424,3 +405,4 @@ QImage TexturePreviewEditor::ConvertToQImage(const u8 *raw_image_data, uint widt
 
     return image;
 }
+*/

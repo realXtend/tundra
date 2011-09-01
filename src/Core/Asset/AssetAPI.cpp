@@ -1671,7 +1671,7 @@ QString AssetAPI::SanitateAssetRef(const QString& input)
     ret.replace("'", "$7");
     ret.replace("<", "$8");
     ret.replace(">", "$9");
-    ret.replace("|", "$10");
+    ret.replace("|", "$0");
     return ret;
 }
 
@@ -1687,7 +1687,7 @@ QString AssetAPI::DesanitateAssetRef(const QString& input)
     ret.replace("$7", "'");
     ret.replace("$8", "<");
     ret.replace("$9", ">");
-    ret.replace("$10", "|");
+    ret.replace("$0", "|");
     return ret;
 }
 

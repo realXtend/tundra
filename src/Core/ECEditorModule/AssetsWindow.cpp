@@ -17,6 +17,7 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetStorage.h"
+#include "UiAPI.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -219,6 +220,8 @@ void AssetsWindow::Initialize()
 
     connect(treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
     connect(treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
+    
+    connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(AssetDoubleClicked(QTreeWidgetItem*, int)));
 }
 
 bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
@@ -333,6 +336,30 @@ void AssetsWindow::HandleAssetUnloaded(IAsset *asset)
             item->MarkUnloaded(true);
         ++it;
     }
+}
+
+void AssetsWindow::AssetDoubleClicked(QTreeWidgetItem *item, int column)
+{
+    AssetItem* assItem = dynamic_cast<AssetItem*>(item);
+    if (!assItem || !assItem->Asset())
+        return;
+    
+    QMenu* dummyMenu = new QMenu(this);
+    dummyMenu->hide();
+    QList<QObject*> targets;
+    targets.push_back(assItem->Asset().get());
+    
+    framework->Ui()->EmitContextMenuAboutToOpen(dummyMenu, targets);
+    const QList<QAction*>& actions = dummyMenu->actions();
+    for (int i = 0; i < actions.size(); ++i)
+    {
+        if (actions[i]->text() == "Open")
+        {
+            actions[i]->activate(QAction::ActionEvent());
+            break;
+        }
+    }
+    dummyMenu->deleteLater();
 }
 
 void AssetsWindow::PickAsset(QTreeWidgetItem *current)

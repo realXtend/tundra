@@ -32,6 +32,7 @@ public:
     /// Unload texture from ogre
     virtual void DoUnload();
 
+    /// Convert texture to QImage
     QImage ToQImage(size_t faceIndex = 0, size_t mipmapLevel = 0) const;
 
     bool IsLoaded() const;
@@ -58,6 +59,9 @@ public:
 
     /// Ticket for ogres threaded loading operation.
     Ogre::BackgroundProcessTicket loadTicket_;
+    
+    /// Convert texture to QImage, static version.
+    static QImage ToQImage(Ogre::Texture* tex, size_t faceIndex = 0, size_t mipmapLevel = 0);
 };
 
 typedef boost::shared_ptr<TextureAsset> TextureAssetPtr;

@@ -106,9 +106,9 @@ private:
         @param height tell image's height.
         @param channels tell how many image channels is in use.
         @return QImage and if fail return empty image.
-    */
     QImage ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels = 3);
-
+    */
+    
     QWidget *mainWidget_;
     QScrollArea *scrollAreaWidget_;
     QLayout *layout_;
