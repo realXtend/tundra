@@ -53,6 +53,9 @@ struct EC_HydraxImpl
 
     Hydrax::Hydrax *hydrax;
     Hydrax::Module::Module *module;
+#ifdef SKYX_ENABLED
+    boost::weak_ptr<EC_SkyX> skyX;
+#endif
 };
 
 EC_Hydrax::EC_Hydrax(Scene* scene) :
@@ -87,7 +90,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
     if (!w)
     {
-        LogError("EC_SkyX: no OgreWorld available. Cannot be created.");
+        LogError("EC_Hydrax: no OgreWorld available. Cannot be created.");
         return;
     }
 
@@ -237,10 +240,15 @@ void EC_Hydrax::Update(float frameTime)
     {
         PROFILE(EC_Hydrax_Update);
 #ifdef SKYX_ENABLED
-        ///\todo Store weak_ptr to EC_SkyX
-        EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(EC_SkyX::TypeNameStatic());
-        if (!entities.empty())
-            impl->hydrax->setSunPosition((*entities.begin())->GetComponent<EC_SkyX>()->SunPosition());
+        if (impl->skyX.expired())
+        {
+            // Find out if we have SkyX in the scene. If yes, use its sun position.
+            EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(EC_SkyX::TypeNameStatic());
+            if (!entities.empty())
+                impl->skyX = (*entities.begin())->GetComponent<EC_SkyX>();
+        }
+        if (!impl->skyX.expired())
+            impl->hydrax->setSunPosition(impl->skyX.lock()->SunPosition());
 #endif
         impl->hydrax->update(frameTime);
     }
