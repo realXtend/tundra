@@ -17,6 +17,7 @@
 #include "OgreWorld.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
+#include "Entity.h"
 #include "LoggingFunctions.h"
 #include "Math/MathFunc.h"
 #include "Profiler.h"
@@ -65,7 +66,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
         return;
     }
 
-    connect(w.get(), SIGNAL(ActiveCameraChanged(EC_Camera *)), SLOT(OnActiveCameraChanged(EC_Camera*)));
+    connect(w->GetRenderer(), SIGNAL(ActiveCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 
@@ -113,7 +114,7 @@ void EC_SkyX::Create()
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
         assert(w);
 
-        if (!w->GetRenderer() || !w->GetRenderer()->GetActiveCamera())
+        if (!w->GetRenderer() || !w->GetRenderer()->MainCamera())
             return; // Can't create SkyX just yet, no main camera set.
 
         Ogre::SceneManager *sm = w->GetSceneManager();
@@ -121,7 +122,13 @@ void EC_SkyX::Create()
         impl = new EC_SkyXImpl();
 
         // Create Sky
-        impl->skyX = new SkyX::SkyX(sm, static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera());
+        Entity *mainCamera = w->GetRenderer()->MainCamera();
+        if (!mainCamera)
+        {
+            LogError("Cannot create SkyX: No main camera set!");
+            return;
+        }
+        impl->skyX = new SkyX::SkyX(sm, mainCamera->GetComponent<EC_Camera>()->GetCamera());
         impl->skyX->create();
 
         // A little change to default atmosphere settings.
@@ -143,14 +150,19 @@ void EC_SkyX::Create()
     }
 }
 
-void EC_SkyX::OnActiveCameraChanged(EC_Camera *newActiveCamera)
+void EC_SkyX::OnActiveCameraChanged(Entity *newActiveCamera)
 {
+    if (!newActiveCamera)
+    {
+        SAFE_DELETE(impl);
+        return;
+    }
     // If we haven't yet initialized, do a full init.
     if (!impl)
         Create();
     else // Otherwise, update the camera to an existing initialized SkyX instance.
         if (impl && impl->skyX)
-            impl->skyX->setCamera(newActiveCamera->GetCamera());
+            impl->skyX->setCamera(newActiveCamera->GetComponent<EC_Camera>()->GetCamera());
 }
 
 void EC_SkyX::UpdateAttribute(IAttribute *attr)

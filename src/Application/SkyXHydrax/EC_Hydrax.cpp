@@ -94,7 +94,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
         return;
     }
 
-    connect(w.get(), SIGNAL(ActiveCameraChanged(EC_Camera *)), SLOT(OnActiveCameraChanged(EC_Camera *)));
+    connect(w->GetRenderer(), SIGNAL(ActiveCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 
@@ -118,12 +118,16 @@ void EC_Hydrax::Create()
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
         assert(w);
 
-        if (!w->GetRenderer() || !w->GetRenderer()->GetActiveCamera())
+        Entity *mainCamera = w->GetRenderer()->MainCamera();
+        if (!mainCamera)
+        {
+            LogError("Cannot create EC_Hydrax: No main camera set!");
             return; // Can't create Hydrax just yet, no main camera set.
+        }
 
-        Ogre::Camera *cam = static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera();
+        Ogre::Camera *cam = mainCamera->GetComponent<EC_Camera>()->GetCamera();
         impl = new EC_HydraxImpl();
-        impl->hydrax = new Hydrax::Hydrax(w->GetSceneManager(), cam, w->GetRenderer()->GetViewport());
+        impl->hydrax = new Hydrax::Hydrax(w->GetSceneManager(), cam, w->GetRenderer()->MainViewport());
 
         // Using projected grid module by default
         Hydrax::Module::ProjectedGrid *module = new Hydrax::Module::ProjectedGrid(impl->hydrax, new Hydrax::Noise::Perlin(),
@@ -148,14 +152,19 @@ void EC_Hydrax::Create()
     }
 }
 
-void EC_Hydrax::OnActiveCameraChanged(EC_Camera *newActiveCamera)
+void EC_Hydrax::OnActiveCameraChanged(Entity *newActiveCamera)
 {
+    if (!newActiveCamera)
+    {
+        SAFE_DELETE(impl);
+        return;
+    }
     // If we haven't yet initialized, do a full init.
     if (!impl)
         Create();
     else // Otherwise, update the camera to an existing initialized Hydrax instance.
         if (impl && impl->hydrax)
-            impl->hydrax->setCamera(newActiveCamera->GetCamera());
+            impl->hydrax->setCamera(newActiveCamera->GetComponent<EC_Camera>()->GetCamera());
 }
 
 void EC_Hydrax::UpdateAttribute(IAttribute *attr)

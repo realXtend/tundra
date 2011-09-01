@@ -159,7 +159,9 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     if (ogreWorld.expired())
         return;
     OgreWorldPtr world = ogreWorld.lock();
-    EC_Camera *cam = checked_static_cast<EC_Camera*>(world->GetRenderer()->GetActiveCamera());
+    if (!world->GetRenderer()->MainCamera())
+        return;
+    EC_Camera *cam = world->GetRenderer()->MainCamera()->GetComponent<EC_Camera>().get();
     if (!cam)
         return;
 
@@ -396,10 +398,10 @@ void EC_TransformGizmo::OnFrameUpdate(float /*dt*/)
         return;
     PROFILE(EC_TransformGizmo_OnFrameUpdate);
     OgreWorldPtr world = ogreWorld.lock();
-    EC_Camera *cam = checked_static_cast<EC_Camera*>(world->GetRenderer()->GetActiveCamera());
+    Entity *cam = world->GetRenderer()->MainCamera();
     if (!cam)
         return;
-    boost::shared_ptr<EC_Placeable> placeable = cam->ParentEntity()->GetComponent<EC_Placeable>();
+    boost::shared_ptr<EC_Placeable> placeable = cam->GetComponent<EC_Placeable>();
     if (!placeable)
         return;
 

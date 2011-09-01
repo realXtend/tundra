@@ -62,9 +62,9 @@ EC_Camera::~EC_Camera()
 
     if (camera_)
     {
-        Renderer* renderer = world->GetRenderer();
-        if (renderer->GetActiveCamera() == this)
-            renderer->SetActiveCamera(0);
+        Renderer *renderer = world->GetRenderer();
+        if (renderer->MainOgreCamera() == camera_)
+            renderer->SetMainCamera(0);
         Ogre::SceneManager* sceneMgr = world->GetSceneManager();
         sceneMgr->destroyCamera(camera_);
         camera_ = 0;
@@ -168,8 +168,13 @@ void EC_Camera::SetActive()
         LogError("EC_Camera::SetActive failed: The camera component is in a scene that has already been destroyed!");
         return;
     }
+    if (!ParentEntity())
+    {
+        LogError("EC_Camera::SetActive failed: The camera component is not attached to an Entity!");
+        return;
+    }
 
-    world_.lock()->GetRenderer()->SetActiveCamera(this);
+    world_.lock()->GetRenderer()->SetMainCamera(ParentEntity());
 }
 
 float EC_Camera::NearClip() const
@@ -223,7 +228,7 @@ float EC_Camera::AspectRatio() const
     }
 
     OgreWorldPtr world = world_.lock();
-    Ogre::Viewport *viewport = world->GetRenderer()->GetViewport();
+    Ogre::Viewport *viewport = world->GetRenderer()->MainViewport();
     if (viewport)
         return (float)viewport->getActualWidth() / viewport->getActualHeight();
     LogWarning("EC_Camera::AspectRatio(): No viewport or aspectRatio attribute set! Don't have an aspect ratio for the camera!");
@@ -236,8 +241,10 @@ bool EC_Camera::IsActive() const
         return false;
     if (world_.expired())
         return false;
+    if (!ParentEntity())
+        return false;
 
-    return world_.lock()->GetRenderer()->GetActiveCamera() == this;
+    return world_.lock()->GetRenderer()->MainCamera() == ParentEntity();
 }
 
 void EC_Camera::DetachCamera()

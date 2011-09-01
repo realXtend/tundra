@@ -511,12 +511,6 @@ void OgreWorld::StopViewTracking(Entity* entity)
     }
 }
 
-void OgreWorld::EmitActiveCameraChanged(EC_Camera *camera)
-{
-    if (camera)
-        emit ActiveCameraChanged(camera);
-}
-
 void OgreWorld::OnUpdated(float timeStep)
 {
     PROFILE(OgreWorld_OnUpdated);
@@ -702,7 +696,10 @@ EC_Camera* OgreWorld::VerifyCurrentSceneCameraComponent() const
 {
     if (!renderer_)
         return 0;
-    EC_Camera *cameraComponent = dynamic_cast<EC_Camera*>(renderer_->GetActiveCamera());
+    Entity *mainCamera = renderer_->MainCamera();
+    if (!mainCamera)
+        return 0;
+    EC_Camera *cameraComponent = dynamic_cast<EC_Camera*>(mainCamera->GetComponent<EC_Camera>().get());
     if (!cameraComponent)
         return 0;
     Entity* entity = cameraComponent->ParentEntity();

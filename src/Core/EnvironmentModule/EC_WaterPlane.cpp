@@ -258,7 +258,7 @@ bool EC_WaterPlane::IsCameraInsideWaterCube()
     if (entity_ == 0)
         return false;
 
-    Ogre::Camera *camera = world_.lock()->GetRenderer()->GetActiveOgreCamera();
+    Ogre::Camera *camera = world_.lock()->GetRenderer()->MainOgreCamera();
     if (!camera)
         return false;
     Ogre::Vector3 posCamera = camera->getDerivedPosition();

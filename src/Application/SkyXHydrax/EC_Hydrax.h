@@ -92,7 +92,7 @@ private slots:
     void Create();
 
     /// Called when the main view active camera has changed.
-    void OnActiveCameraChanged(EC_Camera *newActiveCamera);
+    void OnActiveCameraChanged(Entity *newActiveCamera);
     void UpdateAttribute(IAttribute *attr);
 //    void UpdateNoiseModule();
     void Update(float frameTime);

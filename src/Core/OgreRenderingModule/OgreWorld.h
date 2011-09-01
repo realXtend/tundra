@@ -85,18 +85,12 @@ public slots:
     /// Return the parent scene
     ScenePtr GetScene() { return scene_.lock(); }
 
-    /// Called by the Renderer upon the change of active camera.
-    void EmitActiveCameraChanged(EC_Camera *camera);
-
 signals:
     /// An entity has entered the view
     void EntityEnterView(Entity* entity);
 
     /// An entity has left the view
     void EntityLeaveView(Entity* entity);
-
-    /// Emitted every time the active camera changes.
-    void ActiveCameraChanged(EC_Camera *camera);
 
 private slots:
     /// Handle frame update. Used for entity visibility tracking

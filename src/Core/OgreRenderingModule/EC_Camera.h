@@ -98,7 +98,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(QString, aspectRatio);
 
 public slots:
-    /// sets as active camera in the viewport
+    /// Sets this camera as the active main window camera.
+    /// Calling this function is equivalent to calling Renderer::SetMainCamera(this).
     void SetActive();
 
     /// Get an initial rotation for the camera (in Euler angles, can be assigned to a Transform) that corresponds to the up vector

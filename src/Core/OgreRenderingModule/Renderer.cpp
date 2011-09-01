@@ -94,9 +94,8 @@ namespace OgreRenderer
         framework_(framework),
         buffermanager_(0),
         defaultScene_(0),
-        defaultCamera_(0),
-        cameraComponent_(0),
-        viewport_(0),
+        dummyDefaultCamera(0),
+        mainViewport(0),
         object_id_(0),
         group_id_(0),
         config_filename_(config),
@@ -129,8 +128,8 @@ namespace OgreRenderer
         // Delete the default camera & scene
         if (defaultScene_)
         {
-            defaultScene_->destroyCamera(defaultCamera_);
-            defaultCamera_ = 0;
+            defaultScene_->destroyCamera(dummyDefaultCamera);
+            dummyDefaultCamera = 0;
             root_->destroySceneManager(defaultScene_);
             defaultScene_ = 0;
         }
@@ -288,10 +287,10 @@ namespace OgreRenderer
 
             /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
             defaultScene_ = root_->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
-            defaultCamera_ = defaultScene_->createCamera("DefaultCamera");
+            dummyDefaultCamera = defaultScene_->createCamera("DefaultCamera");
         
-            viewport_ = renderWindow->OgreRenderWindow()->addViewport(defaultCamera_);
-            c_handler_->Initialize(framework_ ,viewport_);
+            mainViewport = renderWindow->OgreRenderWindow()->addViewport(dummyDefaultCamera);
+            c_handler_->Initialize(framework_ ,mainViewport);
         }
 
         initialized_ = true;
@@ -438,10 +437,10 @@ namespace OgreRenderer
         // As double to keep human readable and configurable
         framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)view_distance_);
     }
-
+/*
     void Renderer::SetActiveCamera(EC_Camera* camera)
     {
-        Ogre::Camera* ogreCamera = defaultCamera_;
+        Ogre::Camera* ogreCamera = dummyDefaultCamera;
         
         if ((camera) && (camera->GetCamera()))
         {
@@ -454,14 +453,14 @@ namespace OgreRenderer
         else
             cameraComponent_ = 0;
         
-        if (viewport_)
+        if (mainViewport)
         {
-            viewport_->setCamera(ogreCamera);
+            mainViewport->setCamera(ogreCamera);
             if (c_handler_)
-                c_handler_->CameraChanged(viewport_, ogreCamera);
+                c_handler_->CameraChanged(mainViewport, ogreCamera);
         }
     }
-
+*/
     void Renderer::DoFullUIRedraw()
     {
         if (framework_->IsHeadless())
@@ -507,16 +506,6 @@ namespace OgreRenderer
             return 0;
     }
 
-/*    
-    QList<Entity*> Renderer::FrustumQuery(QRect &viewrect)
-    {
-        OgreWorldPtr world = GetActiveOgreWorld();
-        if (world)
-            return world->FrustumQuery(viewrect);
-        else
-            return QList<Entity*>();
-    }
-*/
     void Renderer::Render(float frameTime)
     {
         using namespace std;
@@ -721,7 +710,7 @@ namespace OgreRenderer
         try
         {
             PROFILE(Renderer_Render_OgreRoot_renderOneFrame);
-            if (viewport_->getCamera())
+            if (mainViewport->getCamera())
             {
                 // Control the frame time manually
                 Ogre::FrameEvent evt;
@@ -739,31 +728,78 @@ namespace OgreRenderer
         view->MarkViewUndirty();
     }
 
-    IComponent* Renderer::GetActiveCamera() const
+    Entity *Renderer::MainCamera()
     {
-        return cameraComponent_;
+        Entity *mainCameraEntity = activeMainCamera.lock().get();
+        if (!mainCameraEntity)
+            return 0;
+
+        if (!mainCameraEntity->ParentScene() || !mainCameraEntity->GetComponent<EC_Camera>())
+        {
+            SetMainCamera(0);
+            return 0;
+        }
+        return mainCameraEntity;
+    }
+
+    void Renderer::SetMainCamera(Entity *mainCameraEntity)
+    {
+        activeMainCamera = mainCameraEntity ? mainCameraEntity->shared_from_this() : boost::shared_ptr<Entity>();
+
+        Ogre::Camera *newActiveCamera = 0;
+        EC_Camera *cameraComponent = mainCameraEntity ? mainCameraEntity->GetComponent<EC_Camera>().get() : 0;
+        if (cameraComponent)
+            newActiveCamera = cameraComponent->GetCamera();
+        else
+        {
+            activeMainCamera.reset();
+            LogWarning("Cannot activate camera \"" + (mainCameraEntity ? mainCameraEntity->Name() : "(null)") + "\": It does not have a EC_Camera component!");
+        }
+        if (mainCameraEntity && !mainCameraEntity->ParentScene()) // If the new to-be camera is not in a scene, don't add it as active.
+        {
+            LogWarning("Cannot activate camera \"" + mainCameraEntity->Name() + "\": It is not attached to a scene!");
+            activeMainCamera.reset();
+            newActiveCamera = 0;
+        }
+
+        if (!activeMainCamera.lock() || !newActiveCamera)
+            LogWarning("Setting main window camera to null!");
+
+        // Avoid setting a null camera to Ogre, instead set a dummy placeholder camera if user wanted to set to null.
+        if (!newActiveCamera)
+            newActiveCamera = dummyDefaultCamera;
+
+        if (mainViewport)
+        {
+            mainViewport->setCamera(newActiveCamera);
+            if (c_handler_)
+                c_handler_->CameraChanged(mainViewport, newActiveCamera);
+        }
+
+        emit MainCameraChanged(mainCameraEntity);
     }
 
     OgreWorldPtr Renderer::GetActiveOgreWorld() const
     {
-        if (!cameraComponent_)
-            return OgreWorldPtr();
-        Entity* entity = cameraComponent_->ParentEntity();
+        Entity *entity = activeMainCamera.lock().get();
         if (!entity)
             return OgreWorldPtr();
-        Scene* scene = entity->ParentScene();
+        Scene *scene = entity->ParentScene();
         if (scene)
             return scene->GetWorld<OgreWorld>();
         else
             return OgreWorldPtr();
     }
     
-    Ogre::Camera* Renderer::GetActiveOgreCamera() const
+    Ogre::Camera *Renderer::MainOgreCamera() const
     {
-        if (cameraComponent_)
-            return cameraComponent_->GetCamera();
-        else
+        Entity *entity = activeMainCamera.lock().get();
+        if (!entity)
             return 0;
+        EC_Camera *camera = entity->GetComponent<EC_Camera>().get();
+        if (!camera)
+            return 0;
+        return camera->GetCamera();
     }
 
     Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const

@@ -73,8 +73,20 @@ namespace OgreRenderer
             @return Raycast result structure */
         virtual RaycastResult* Raycast(int x, int y);
 
-        /// Returns currently active camera component. Returned as IComponent* for scripting convenience.
-        IComponent* GetActiveCamera() const;
+        /// Returns the Entity which contains the currently active camera that is used to render on the main window.
+        /// The returned Entity is guaranteed to have an EC_Camera component, and it is guaranteed to be attached to a scene.
+        Entity *MainCamera();
+
+        /// Sets the given Entity as the main camera for the main window.
+        /// This function fails if the given Entity does not have an EC_Camera component, or if the given Entity is not attached to a scene.
+        /// Whenever the main camera is changed, the signal MainCameraChanged is triggered.
+        void SetMainCamera(Entity *mainCameraEntity);
+
+    signals:
+        /// Emitted every time the main window active camera changes.
+        /// The pointer specified in this signal may be null, if the main camera was set to null.
+        /// If the specified entity is non-zero, it is guaranteed to have an EC_Camera component, and it is attached to some scene.
+        void MainCameraChanged(Entity *newMainWindowCamera);
 
     public:
         /// Constructor
@@ -106,14 +118,14 @@ namespace OgreRenderer
         OgreRootPtr GetRoot() const { return root_; }
 
         /// Returns Ogre viewport
-        Ogre::Viewport* GetViewport() const { return viewport_; }
+        Ogre::Viewport *MainViewport() const { return mainViewport; }
 
         /// Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
         /// Returns currently active Ogre camera
         /** @note in case there is no active camera, will not return the default (dummy) camera, but 0 */
-        Ogre::Camera* GetActiveOgreCamera() const;
+        Ogre::Camera* MainOgreCamera() const;
 
         /// Returns the OgreWorld of the currently active camera
         OgreWorldPtr GetActiveOgreWorld() const;
@@ -124,10 +136,6 @@ namespace OgreRenderer
 
         /// Initializes renderer. Called by OgreRenderingModule
         void Initialize();
-
-        /// Sets current camera component used for rendering the main viewport
-        /** Called by EC_Camera when activating. Null will default to the default camera, so that we don't crash when rendering. */
-        void SetActiveCamera(EC_Camera* camera);
 
         /// returns the composition handler responsible of the post-processing effects
         CompositionHandler *GetCompositionHandler() const { return c_handler_; }
@@ -175,19 +183,22 @@ namespace OgreRenderer
         /// All created OgreWorlds (scene managers)
         std::map<Scene*, OgreWorldPtr> ogreWorlds_;
         
-        /// Currently active camera component
-        EC_Camera* cameraComponent_;
+        /// Stores the camera that is active in the main window.
+        boost::weak_ptr<Entity> activeMainCamera;
+
+        /// Dummy camera when we have no scene / no active camera.
+        /// This is never shown outside to the client, but used as a placeholder
+        /// so that Ogre doesn't crash internally when we don't have an active main camera in Tundra.
+        Ogre::Camera *dummyDefaultCamera;
+
+        /// Stores the main window viewport.
+        Ogre::Viewport *mainViewport;
 
         /// Maximum view distance
         float view_distance_;
 
         /// Dummy scenemanager when we have no scene
         Ogre::SceneManager* defaultScene_;
-        /// Dummy camera when we have no scene / no active camera
-        Ogre::Camera* defaultCamera_;
-
-        /// Viewport
-        Ogre::Viewport* viewport_;
 
         RenderWindow *renderWindow;
 
