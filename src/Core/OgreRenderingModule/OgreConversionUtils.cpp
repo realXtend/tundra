@@ -9,58 +9,11 @@
 #include "DebugOperatorNew.h"
 #include "CoreStringUtils.h"
 #include "OgreConversionUtils.h"
+#include "AssetAPI.h"
 #include "MemoryLeakCheck.h"
 
 namespace OgreRenderer
 {
-
-std::string SanitateAssetIdForOgre(const QString& input)
-{
-    /// \bug Why is this new $1 $2 logic needed? It breaks asynch asset loads
-    /// as the filename wont match the cache file entry!
-    QString ret = input;
-    //if (ret.contains('$'))
-    //    return ret.toStdString();
-
-    //ret.replace(':', "$1");
-    //ret.replace('/', "$2");
-    ret.replace("/", "_");
-    ret.replace("\\", "_");
-    ret.replace(":", "_");
-    ret.replace("*", "_");
-    ret.replace("?", "_");
-    ret.replace("\"", "_");
-    ret.replace("'", "_");
-    ret.replace("<", "_");
-    ret.replace(">", "_");
-    ret.replace("|", "_");
-    return ret.toStdString();
-}
-
-std::string SanitateAssetIdForOgre(const std::string& input)
-{
-    return SanitateAssetIdForOgre(QString::fromStdString(input));
-}
-
-std::string SanitateAssetIdForOgre(const char* input)
-{
-    if (!input)
-        return std::string();
-    return SanitateAssetIdForOgre(std::string(input));
-}
-
-QString DesanitateAssetIdFromOgre(const QString &input)
-{
-    QString ret = input;
-    ret.replace("$1", ":");
-    ret.replace("$2", "/");
-    return ret;
-}
-
-QString DesanitateAssetIdFromOgre(const std::string &input)
-{
-    return DesanitateAssetIdFromOgre(QString::fromStdString(input));
-}
 
 std::string AddDoubleQuotesIfNecessary(const std::string &str)
 {
@@ -93,7 +46,7 @@ void DesanitateAssetIds(std::string &script, const QStringList &keywords)
 
         if (idx != -1 && offset != -1)
         {
-            QString desanitatedRef = DesanitateAssetIdFromOgre(lines[i].mid(idx + offset).trimmed());
+            QString desanitatedRef = AssetAPI::DesanitateAssetRef(lines[i].mid(idx + offset).trimmed());
             lines[i] = lines[i].left(idx);
             lines[i].append(id + desanitatedRef);
         }

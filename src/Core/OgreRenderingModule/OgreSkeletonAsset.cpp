@@ -61,7 +61,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
         if (ogreSkeleton.isNull())
         {
             ogreSkeleton = Ogre::SkeletonManager::getSingleton().create(
-                SanitateAssetIdForOgre(this->Name().toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                AssetAPI::SanitateAssetRef(this->Name().toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
             if (ogreSkeleton.isNull())
             {
@@ -84,7 +84,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
         return false;
     }
 
-    internal_name_ = SanitateAssetIdForOgre(this->Name().toStdString());
+    internal_name_ = AssetAPI::SanitateAssetRef(this->Name().toStdString());
     //LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
 
     // We did a synchronous load, must call AssetLoadCompleted here.
@@ -98,7 +98,7 @@ void OgreSkeletonAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket,
         return;
 
     const QString assetRef = Name();
-    internal_name_ = OgreRenderer::SanitateAssetIdForOgre(assetRef);
+    internal_name_ = AssetAPI::SanitateAssetRef(assetRef).toStdString();
     if (!result.error)
     {
         ogreSkeleton = Ogre::SkeletonManager::getSingleton().getByName(internal_name_, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);

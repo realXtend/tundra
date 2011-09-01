@@ -62,7 +62,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
         }
 
         Ogre::SceneManager* sceneMgr = world->GetSceneManager();
-        Ogre::ParticleSystem* system = sceneMgr->createParticleSystem(world->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName));
+        Ogre::ParticleSystem* system = sceneMgr->createParticleSystem(world->GetUniqueObjectName("EC_Particlesystem"), AssetAPI::SanitateAssetRef(systemName).toStdString());
         if (system)
         {
             placeable->GetSceneNode()->attachObject(system);

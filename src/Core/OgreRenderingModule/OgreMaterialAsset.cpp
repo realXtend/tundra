@@ -215,7 +215,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
         return false;
     }
 
-    std::string sanitatedname = SanitateAssetIdForOgre(assetName);
+    std::string sanitatedname = AssetAPI::SanitateAssetRef(assetName);
     
     std::vector<u8> tempData(data_, data_ + numBytes);
 #include "DisableMemoryLeakCheck.h"
@@ -264,7 +264,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
                             references_.push_back(AssetReference(absolute_tex_name));
 //                            original_textures_.push_back(tex_name);
                             // Sanitate the asset ID
-                            line = "texture " + AddDoubleQuotesIfNecessary(SanitateAssetIdForOgre(absolute_tex_name));
+                            line = "texture " + AddDoubleQuotesIfNecessary(AssetAPI::SanitateAssetRef(absolute_tex_name).toStdString());
                         }
                     }
 
@@ -417,7 +417,7 @@ void OgreMaterialAsset::CopyContent(AssetPtr source)
     {
         try
         {
-            std::string sanitatedName = SanitateAssetIdForOgre(Name());
+            std::string sanitatedName = AssetAPI::SanitateAssetRef(Name()).toStdString();
             ogreMaterial = Ogre::MaterialManager::getSingleton().create(sanitatedName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         }
         catch (Ogre::Exception& e)

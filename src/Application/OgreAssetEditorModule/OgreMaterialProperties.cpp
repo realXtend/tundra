@@ -443,7 +443,7 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                     QString newValueString(typeValuePair.begin().value().toByteArray());
                     newValueString = newValueString.trimmed();
 
-                    tu->setTextureName(OgreRenderer::SanitateAssetIdForOgre(newValueString.toStdString()));
+                    tu->setTextureName(AssetAPI::SanitateAssetRef(newValueString));
                     /*
                     //QString new_texture_name = iter->second;
                     RexUUID new_name(iter->second);

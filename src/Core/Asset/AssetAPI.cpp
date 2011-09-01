@@ -959,7 +959,7 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
         // We loop until we manage to generate a single filename that does not exist, incrementing a running counter at each iteration.
         for(int i = 0; i < 10000; ++i) // The intent is to loop 'infinitely' until a name is found, but do an artificial limit to avoid voodoo bugs.
         {
-            filename = cacheDir.absoluteFilePath("temporary_" + QString::number(uniqueRunningFilenameCounter++) + "_" + SanitateAssetRefForCache(filenameSuffix.trimmed()));
+            filename = cacheDir.absoluteFilePath("temporary_" + QString::number(uniqueRunningFilenameCounter++) + "_" + SanitateAssetRef(filenameSuffix.trimmed()));
             if (!QFile::exists(filename))
                 return filename;
         }
@@ -1654,6 +1654,51 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
 
     // Unknown type, return Binary type.
     return "Binary";
+}
+
+QString AssetAPI::SanitateAssetRef(const QString& input)
+{
+    QString ret = input;
+    if (ret.contains('$'))
+        return ret; // Already sanitated
+
+    ret.replace(":", "$1");
+    ret.replace("/", "$2");
+    ret.replace("\\", "$3");
+    ret.replace("*", "$4");
+    ret.replace("?", "$5");
+    ret.replace("\"", "$6");
+    ret.replace("'", "$7");
+    ret.replace("<", "$8");
+    ret.replace(">", "$9");
+    ret.replace("|", "$10");
+    return ret;
+}
+
+QString AssetAPI::DesanitateAssetRef(const QString& input)
+{
+    QString ret = input;
+    ret.replace("$1", ":");
+    ret.replace("$2", "/");
+    ret.replace("$3", "\\");
+    ret.replace("$4", "*");
+    ret.replace("$5", "?");
+    ret.replace("$6", "\"");
+    ret.replace("$7", "'");
+    ret.replace("$8", "<");
+    ret.replace("$9", ">");
+    ret.replace("$10", "|");
+    return ret;
+}
+
+std::string AssetAPI::SanitateAssetRef(const std::string& input)
+{
+    return SanitateAssetRef(QString::fromStdString(input)).toStdString();
+}
+
+std::string AssetAPI::DesanitateAssetRef(const std::string& input)
+{
+    return DesanitateAssetRef(QString::fromStdString(input)).toStdString();
 }
 
 bool CopyAssetFile(const char *sourceFile, const char *destFile)

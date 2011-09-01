@@ -16,21 +16,6 @@
 
 #include "MemoryLeakCheck.h"
 
-QString SanitateAssetRefForCache(QString assetRef)
-{ 
-    assetRef.replace("/", "_");
-    assetRef.replace("\\", "_");
-    assetRef.replace(":", "_");
-    assetRef.replace("*", "_");
-    assetRef.replace("?", "_");
-    assetRef.replace("\"", "_");
-    assetRef.replace("'", "_");
-    assetRef.replace("<", "_");
-    assetRef.replace(">", "_");
-    assetRef.replace("|", "_");
-    return assetRef;
-}
-
 AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) : 
     QNetworkDiskCache(0),
     assetAPI(owner),
@@ -208,7 +193,7 @@ QString AssetCache::FindInCache(const QString &assetRef)
     if (assetRef.startsWith("http://") || assetRef.startsWith("https://")) ///\todo Remove this. The Asset Cache needs to be protocol agnostic. -jj.
         return "";
 
-    QString absolutePath = assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(assetRef);
+    QString absolutePath = assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(assetRef);
     if (QFile::exists(absolutePath))
         return absolutePath;
     return "";
@@ -216,7 +201,7 @@ QString AssetCache::FindInCache(const QString &assetRef)
 
 QString AssetCache::GetDiskSourceByRef(const QString &assetRef)
 {
-    QString absolutePath = assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(assetRef);
+    QString absolutePath = assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(assetRef);
     if (QFile::exists(absolutePath))
         return absolutePath;
     return "";
@@ -284,7 +269,7 @@ QString AssetCache::GetAbsoluteFilePath(bool isMetaData, const QUrl &url)
 {
     QString subDir = isMetaData ? "metadata" : "data";
     QDir assetDir(cacheDirectory + subDir);
-    QString absolutePath = assetDir.absolutePath() + "/" + SanitateAssetRefForCache(url.toString());
+    QString absolutePath = assetDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(url.toString());
     if (isMetaData)
         absolutePath.append(".metadata");
     return absolutePath;
@@ -292,7 +277,7 @@ QString AssetCache::GetAbsoluteFilePath(bool isMetaData, const QUrl &url)
 
 QString AssetCache::GetAbsoluteDataFilePath(const QString &filename)
 {
-    return assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(filename);
+    return assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(filename);
 }
 
 void AssetCache::ClearDirectory(const QString &absoluteDirPath)

@@ -55,7 +55,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
     if (ogreMesh.isNull())
     {   
         ogreMesh = Ogre::MeshManager::getSingleton().createManual(
-            OgreRenderer::SanitateAssetIdForOgre(this->Name()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            AssetAPI::SanitateAssetRef(this->Name()).toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         if (ogreMesh.isNull())
         {
             LogError("OgreMeshAsset::DeserializeFromData: Failed to create mesh " + Name());
@@ -115,7 +115,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
         return false;
     }
 
-    //internal_name_ = SanitateAssetIdForOgre(id_);
+    //internal_name_ = AssetAPI::SanitateAssetRef(id_);
     //LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
 
     // We did a synchronous load, must call AssetLoadCompleted here.
@@ -138,7 +138,7 @@ void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, con
             for non-manual created meshes via thread loading.
         */
 
-        ogreMesh = Ogre::MeshManager::getSingleton().getByName(OgreRenderer::SanitateAssetIdForOgre(assetRef), 
+        ogreMesh = Ogre::MeshManager::getSingleton().getByName(AssetAPI::SanitateAssetRef(assetRef).toStdString(), 
                                                                OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
         if (!ogreMesh.isNull())
         {        

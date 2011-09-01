@@ -333,7 +333,7 @@ public slots:
     /** This function will raycast the contours of the mesh to generate the height map data points.
         Uses the default identity matrix for the transform.
         @note The Mesh resource must be previously loaded into the Ogre Mesh resource pool.
-        Use SanitateAssetIdForOgre() for the asset's name in order to generate the proper resource name.
+        Use AssetAPI::SanitateAssetRef() for the asset's name in order to generate the proper resource name.
         @param ogreMeshResourceName Internal Ogre resource name. */
     void GenerateFromOgreMesh(QString ogreMeshResourceName);
 

@@ -18,7 +18,7 @@
 #include "MaterialWizard.h"
 #include "LoggingFunctions.h"
 #include "Framework.h"
-
+#include "AssetAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UiProxyWidget.h"
@@ -115,7 +115,7 @@ void OgreAssetEditorModule::OpenAssetInEditor()
 
     AssetPtr asset = action->asset.lock();
     QWidget *editor = 0;
-    QString assetName = OgreRenderer::SanitateAssetIdForOgre(asset->Name()).c_str();
+    QString assetName = AssetAPI::SanitateAssetRef(asset->Name());
 
     if (asset->Type() == "OgreMesh")
     {

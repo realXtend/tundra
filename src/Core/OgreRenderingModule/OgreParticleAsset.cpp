@@ -84,7 +84,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, con
                     // If not a brace and on level 0, it should be a new particlesystem; replace name with resource ID + ordinal
                     if (brace_level == 0)
                     {
-                        line = SanitateAssetIdForOgre(this->Name() + "_" + QString::number(new_templates.size()));
+                        line = AssetAPI::SanitateAssetRef(this->Name() + "_" + QString::number(new_templates.size())).toStdString();
                         new_templates.push_back(line);
                         // New script compilers need this
                         line = "particle_system " + line;
@@ -111,7 +111,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, con
                                 std::string mat_name = line_vec[1];
                                 AssetReference assetRef(assetAPI->ResolveAssetRef(Name(), mat_name.c_str()));
                                 references.push_back(assetRef);
-                                line = "material " + SanitateAssetIdForOgre(assetRef.ref);
+                                line = "material " + AssetAPI::SanitateAssetRef(assetRef.ref).toStdString();
                             }
                         }
                     }
@@ -174,7 +174,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, con
     }
     
     // Give only the name of the first template
-    internalName = SanitateAssetIdForOgre(Name()) + "_0";
+    internalName = (AssetAPI::SanitateAssetRef(Name()) + "_0").toStdString();
     
     // Theoretical success if at least one template was created.
     bool success = (GetNumTemplates() > 0);

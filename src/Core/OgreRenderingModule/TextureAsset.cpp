@@ -30,7 +30,7 @@
 TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
 :IAsset(owner, type_, name_)
 {
-    ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()).c_str();
+    ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
 }
 
 TextureAsset::~TextureAsset()
@@ -89,7 +89,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bo
 
         if (ogreTexture.isNull()) // If we are creating this texture for the first time, create a new Ogre::Texture object.
         {
-            ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()).c_str();
+            ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
             ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
         }
         else // If we're loading on top of an Ogre::Texture we've created before, don't lose the old Ogre::Texture object, but reuse the old.
@@ -132,7 +132,7 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
         return;
 
     const QString assetRef = Name();
-    ogreAssetName = QString::fromStdString(OgreRenderer::SanitateAssetIdForOgre(assetRef));
+    ogreAssetName = AssetAPI::SanitateAssetRef(assetRef);
     if (!result.error)
     {
         ogreTexture = Ogre::TextureManager::getSingleton().getByName(ogreAssetName.toStdString(), OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);

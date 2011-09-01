@@ -137,6 +137,20 @@ public:
     typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
     typedef std::vector<std::pair<QString, QString> > AssetDependenciesMap;
     
+    /// Sanitates an assetref so that it can be used as a filename for caching. Characters like : / \\ * will be replaced with $1, $2, $3, $4 .. respectively, in a reversible way.
+    /** Note that sanitated assetrefs will not work when querying from the asset system, for that you need the desanitated form. */
+    static QString SanitateAssetRef(const QString& ref);
+
+    /// Desanitates an assetref with $1 $2 $3 $4 ... into original form.
+    static QString DesanitateAssetRef(const QString& ref);
+
+    /// Sanitates an assetref so that it can be used as a filename for caching. Characters like : / \\ * will be replaced with $1, $2, $3, $4 .. respectively, in a reversible way.
+    /** Note that sanitated assetrefs will not work when querying from the asset system, for that you need the desanitated form. */
+    static std::string SanitateAssetRef(const std::string& ref);
+
+    /// Desanitates an assetref with $1 $2 $3 $4 ... into original form.
+    static std::string DesanitateAssetRef(const std::string& ref);
+
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap GetAllAssets() { return assets; }
@@ -357,7 +371,7 @@ public slots:
     
     /// Return ready asset transfers (debugging)
     const std::vector<AssetTransferPtr> DebugGetReadyTransfers() const{ return readyTransfers; }
-
+    
 public:
     /// Explodes the given asset storage description string to key-value pairs.
     static QMap<QString, QString> ParseAssetStorageString(QString storageString);

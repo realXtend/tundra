@@ -329,7 +329,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         return false;
     OgreWorldPtr world = world_.lock();
 
-    Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(SanitateAssetIdForOgre(skeleton_name));
+    Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(AssetAPI::SanitateAssetRef(skeleton_name));
     if (skel.isNull())
     {
         LogError("EC_Mesh::SetMeshWithSkeleton: Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": not found");
@@ -609,7 +609,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
     
     try
     {
-        entity_->getSubEntity(index)->setMaterialName(SanitateAssetIdForOgre(material_name));
+        entity_->getSubEntity(index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name));
         emit MaterialChanged(index, QString(material_name.c_str()));
     }
     catch(Ogre::Exception& e)
@@ -642,7 +642,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
     
     try
     {
-        attachment_entities_[index]->getSubEntity(submesh_index)->setMaterialName(SanitateAssetIdForOgre(material_name));
+        attachment_entities_[index]->getSubEntity(submesh_index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name));
     }
     catch(Ogre::Exception& e)
     {
@@ -815,7 +815,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
     OgreWorldPtr world = world_.lock();
     
     Ogre::MeshManager& mesh_mgr = Ogre::MeshManager::getSingleton();
-    Ogre::MeshPtr mesh = mesh_mgr.getByName(SanitateAssetIdForOgre(mesh_name));
+    Ogre::MeshPtr mesh = mesh_mgr.getByName(AssetAPI::SanitateAssetRef(mesh_name));
     
     // For local meshes, mesh will not get automatically loaded until used in an entity. Load now if necessary
     if (mesh.isNull())
@@ -1355,7 +1355,7 @@ bool EC_Mesh::HasMaterialsChanged() const
         if(i >= (uint)materials.Size())
             break;
 
-        if(entity_->getSubEntity(i)->getMaterial()->getName() != SanitateAssetIdForOgre(materials[i].ref.toStdString()))
+        if(entity_->getSubEntity(i)->getMaterial()->getName() != AssetAPI::SanitateAssetRef(materials[i].ref).toStdString())
             return true;
     }
     return false;
