@@ -634,6 +634,8 @@ void SceneTreeWidget::Rename()
         EntityPtr entity = eItem->Entity();
         if (entity)
         {
+            // Disable sorting when renaming so that the item will not jump around in the list.
+            setSortingEnabled(false);
             // Remove the entity ID from the text when user is editing entity's name.
             eItem->setText(0, entity->Name());
 //            openPersistentEditor(eItem);
@@ -672,6 +674,7 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
             // We don't need to set item text here. It's done when SceneStructureWindow gets AttributeChanged() signal from Scene.
             entity->SetName(newName);
 //            closePersistentEditor(item);
+            setSortingEnabled(true);
             return;
         }
     }
