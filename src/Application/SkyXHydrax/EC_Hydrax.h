@@ -57,10 +57,7 @@ public:
     /// Config file asset reference (.hdx).
     /** Hydrax contains a vast amount of configurable options. The easiest way is to configure these options is to use
         the config file. You can edit the config file with a text editor of your choice. See /bin/media/Hydrax/Hydrax.hdx
-        for the example config file.
-        @note Currently only files inside the Hydrax resource group are accepted. Make sure that the config file is in
-            the bin/media/Hydrax folder before Tundra is started.
-        @todo Make Hydrax accept files outside Hydrax resource group and use AssetReference instead. */
+        for the example config file. */
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, configRef);
     Q_PROPERTY(AssetReference configRef READ getconfigRef WRITE setconfigRef);
 
