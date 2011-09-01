@@ -65,7 +65,7 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
 
-    /// Position of the water.
+    /// Position of the water. This is always authoritative, regardless of the value in the config file.
     DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
     Q_PROPERTY(float3 position READ getposition WRITE setposition);
 

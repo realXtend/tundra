@@ -60,7 +60,7 @@ struct EC_HydraxImpl
 
 EC_Hydrax::EC_Hydrax(Scene* scene) :
     IComponent(scene),
-    configRef(this, "Config ref", AssetReference("HydraxDemo.hdx")),
+    configRef(this, "Config ref", AssetReference("HydraxDefault.hdx")),
     visible(this, "Visible", true),
     position(this, "Position"),
 //    noiseModule(this, "Noise module", 0),
@@ -138,7 +138,7 @@ void EC_Hydrax::Create()
         // Load all parameters from config file
         impl->hydrax->loadCfg(configRef.Get().ref.toStdString());
 
-        position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
+//        position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
 
         impl->hydrax->create();
 
@@ -171,10 +171,9 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
 {
     if (attr == &configRef)
     {
-        QString assetRef = getconfigRef().ref;
-        if (!assetRef.isEmpty())
+        if (!configRef.Get().ref.isEmpty())
         {
-            AssetTransferPtr transfer = framework->Asset()->RequestAsset(getconfigRef().ref, "Binary");
+            AssetTransferPtr transfer = framework->Asset()->RequestAsset(configRef.Get().ref, "Binary");
             if (transfer.get())
                 connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(ConfigLoadSucceeded(AssetPtr)), Qt::UniqueConnection);
         }
@@ -187,8 +186,8 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
     if (attr == &configRef)
     {
         impl->hydrax->loadCfg(configRef.Get().ref.toStdString());
-        // Config file can alter, position, update it accordinly
-        position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
+        // The position attribute is always authoritative for the position value.
+        impl->hydrax->setPosition(position.Get());
     }
     else if (attr == &visible)
         impl->hydrax->setVisible(visible.Get());
@@ -249,9 +248,9 @@ void EC_Hydrax::Update(float frameTime)
     {
         PROFILE(EC_Hydrax_Update);
 #ifdef SKYX_ENABLED
+        // Find out if we have SkyX in the scene. If yes, use its sun position.
         if (impl->skyX.expired())
         {
-            // Find out if we have SkyX in the scene. If yes, use its sun position.
             EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(EC_SkyX::TypeNameStatic());
             if (!entities.empty())
                 impl->skyX = (*entities.begin())->GetComponent<EC_SkyX>();
@@ -323,6 +322,6 @@ void EC_Hydrax::LoadDefaultConfig()
         impl->module->setNoise(new Hydrax::Noise::Perlin());
 
     // Load all parameters from the default config file we ship in /media/hydrax
-    /// \todo Inspect if we can change the current SharedMode to HLSL or GLSL on the fly here, depending on the platform!
+    /// \todo Inspect if we can change the current ShaderMode to HLSL or GLSL on the fly here, depending on the platform!
     impl->hydrax->loadCfg("HydraxDefault.hdx");
 }
