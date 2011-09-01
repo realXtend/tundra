@@ -700,7 +700,9 @@ Ogre::Camera* OgreWorld::VerifyCurrentSceneCamera() const
 
 EC_Camera* OgreWorld::VerifyCurrentSceneCameraComponent() const
 {
-    EC_Camera* cameraComponent = checked_static_cast<EC_Camera*>(renderer_->GetActiveCamera());
+    if (!renderer_)
+        return 0;
+    EC_Camera *cameraComponent = dynamic_cast<EC_Camera*>(renderer_->GetActiveCamera());
     if (!cameraComponent)
         return 0;
     Entity* entity = cameraComponent->ParentEntity();
