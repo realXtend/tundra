@@ -56,7 +56,7 @@ public:
 /// Describes the system renderer.
 /// \note This class is not an abstract reimplementable interface, but exists only internally for DLL dependency inversion
 ///    purposes between Framework and OgreRenderingModule. This interface is only internal to Framework. Do not extend this 
-///    interface or use it in client code.
+///    interface. Avoid using it in client code, and prefer directly getting the Renderer object from OgreRenderingModule.
 class IRenderer
 {
 public:
@@ -66,17 +66,11 @@ public:
 
     /// Renders the scene.
     virtual void Render(float frameTime) = 0;
-    
-    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
-    virtual RaycastResult* Raycast(int x, int y) = 0;
 
-    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
-    virtual RaycastResult* Raycast(int x, int y, unsigned layerMask) = 0;
-    
-    /// \deprecated Do not use this function. Instead use OgreWorld::FrustumQuery.
-    virtual QList<Entity*> FrustumQuery(QRect &viewrect) = 0;
-
-    /// \deprecated Do not use this function.
-    /// \todo Reimplement in EC_Camera.
+    /// Returns an unique string name for a new object. This function is intended to be used to generate unique names for Ogre resources.
     virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
+
+    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
+    /// \todo This will be removed as soon as SceneInteract is out of core.
+    virtual RaycastResult *Raycast(int x, int y) = 0;
 };
