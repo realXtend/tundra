@@ -500,18 +500,14 @@ namespace OgreRenderer
 
     RaycastResult* Renderer::Raycast(int x, int y)
     {
-        return Raycast(x, y, 0xffffffff);
-    }
-
-    RaycastResult* Renderer::Raycast(int x, int y, unsigned layerMask)
-    {
         OgreWorldPtr world = GetActiveOgreWorld();
         if (world)
-            return world->Raycast(x, y, layerMask);
+            return world->Raycast(x, y, 0xFFFFFFFF);
         else
             return 0;
     }
-    
+
+/*    
     QList<Entity*> Renderer::FrustumQuery(QRect &viewrect)
     {
         OgreWorldPtr world = GetActiveOgreWorld();
@@ -520,13 +516,10 @@ namespace OgreRenderer
         else
             return QList<Entity*>();
     }
-
+*/
     void Renderer::Render(float frameTime)
     {
         using namespace std;
-        
-        if (!initialized_)
-            return;
             
         if (!initialized_)
             return;
@@ -536,8 +529,8 @@ namespace OgreRenderer
             
         PROFILE(Renderer_Render);
 
-		// The message pump must be called on X11 systems,
-		// but on Windows it is redundant (Qt already manages this), and has been profiled to take as much as 10ms per frame in some situations.
+        // The message pump must be called on X11 systems,
+        // but on Windows it is redundant (Qt already manages this), and has been profiled to take as much as 10ms per frame in some situations.
 #ifdef UNIX
         Ogre::WindowEventUtilities::messagePump();
 #endif
@@ -551,7 +544,10 @@ namespace OgreRenderer
                 {
                     Ogre::SceneManager* mgr = world->GetSceneManager();
                     if (mgr)
+                    {
+                        PROFILE(Ogre_SceneManager_updateSceneGraph);
                         mgr->_updateSceneGraph(0);
+                    }
                 }
             }
             return;
@@ -779,128 +775,7 @@ namespace OgreRenderer
     {
         return prefix + "_" + ToString<uint>(object_id_++);
     }
-/*
-    void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
-    {
-        if (renderWindow)
-        {
-            Ogre::String file = filePath + fileName;
-            renderWindow->OgreRenderWindow()->writeContentsToFile(file);
-        }
-    }
 
-    void Renderer::PrepareImageRendering(int width, int height)
-    {
-        // Only do this once per connect as we create entitys here
-        ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
-        if (scene && image_rendering_texture_name_.empty())
-        {
-            image_rendering_texture_name_ = "ImageRenderingTexture-" + QUuid::createUuid().toString().toStdString();
-            Ogre::TexturePtr image_rendering = Ogre::TextureManager::getSingleton().createManual(
-                image_rendering_texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
-            image_rendering->getBuffer()->getRenderTarget()->setAutoUpdated(false);
-
-            EntityPtr cam_entity = scene->CreateEntity(scene->NextFreeIdLocal());
-            if (!cam_entity)
-                return;
-
-            cam_entity->AddComponent(framework_->Scene()->CreateComponent<EC_Placeable>());
-            cam_entity->AddComponent(framework_->Scene()->CreateComponent<EC_Camera>());
-            
-            ComponentPtr component_placable = cam_entity->GetComponent(EC_Placeable::TypeNameStatic());
-            EC_Camera *ec_camera = cam_entity->GetComponent<EC_Camera>().get();
-            if (!component_placable.get() || !ec_camera)
-                return;
-            ec_camera->SetPlaceable(component_placable);
-            texture_rendering_cam_entity_ = cam_entity;
-        }
-    }
-
-    void Renderer::ResetImageRendering()
-    {
-        if (!image_rendering_texture_name_.empty())
-        {
-            Ogre::TextureManager::getSingleton().remove(image_rendering_texture_name_);
-            image_rendering_texture_name_ = "";
-        }
-    }
-
-    QPixmap Renderer::RenderImage(bool use_main_camera)
-    {
-        int window_width = renderWindow->OgreRenderWindow()->getWidth();
-        int window_height = renderWindow->OgreRenderWindow()->getHeight();
-        PrepareImageRendering(window_width, window_height);
-        if (!texture_rendering_cam_entity_)
-            return QPixmap();
-
-        QImage captured_pixmap(QSize(window_width, window_height), QImage::Format_ARGB32_Premultiplied);
-        captured_pixmap.fill(Qt::gray);
-
-        // Get the camera ec
-        EC_Camera *ec_camera = texture_rendering_cam_entity_->GetComponent<EC_Camera>().get();
-        if (!ec_camera)
-            return QPixmap::fromImage(captured_pixmap);
-
-        Ogre::TexturePtr image_rendering = Ogre::TextureManager::getSingleton().getByName(image_rendering_texture_name_);
-        if (image_rendering.isNull())
-            return QPixmap::fromImage(captured_pixmap);
-
-        // Resize rendering texture if needed
-        if ((int)image_rendering->getWidth() != window_width || (int)image_rendering->getHeight() != window_height)
-        {
-            ResetImageRendering();
-            PrepareImageRendering(window_width, window_height);
-            image_rendering = Ogre::TextureManager::getSingleton().getByName(image_rendering_texture_name_);
-            if (image_rendering.isNull())
-                return QPixmap::fromImage(captured_pixmap);
-        }
-
-        // Set camera aspect ratio
-        if (!use_main_camera)
-            ec_camera->GetCamera()->setAspectRatio(Ogre::Real(window_width) / Ogre::Real(window_height));
-
-        // Get rendering texture and update it
-        Ogre::RenderTexture *render_texture = image_rendering->getBuffer()->getRenderTarget();
-        if (render_texture)
-        {
-            render_texture->removeAllViewports();
-            if (render_texture->getNumViewports() == 0)
-            {
-                // Use custom camera or main av camera
-                Ogre::Viewport *vp = 0;
-                if (use_main_camera)
-                    vp = render_texture->addViewport(GetCurrentCamera());
-                else
-                    vp = render_texture->addViewport(ec_camera->GetCamera());
-                // Exclude ui/name tag overlays
-                vp->setOverlaysEnabled(false);
-                // Exclude highlight mesh from rendering
-                vp->setVisibilityMask(0x2);
-            }
-            render_texture->update(false);
-
-            captured_pixmap = CreateQImageFromTexture(render_texture, window_width, window_height);
-        }
-        QPixmap return_pixmap = QPixmap::fromImage(captured_pixmap).copy(); // Deep copy so we can delete the buffer data
-        SAFE_DELETE(capture_screen_pixel_data_);
-        return return_pixmap;
-    }
-
-    QImage Renderer::CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height)
-    {
-        SAFE_DELETE(capture_screen_pixel_data_);
-        capture_screen_pixel_data_ = new Ogre::uchar[width * height * 4];
-        Ogre::Box bounds(0, 0, width, height);
-        Ogre::PixelBox pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, (void*)capture_screen_pixel_data_);
-        render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
-
-        QImage image = QImage(capture_screen_pixel_data_, width, height, QImage::Format_ARGB32);
-        if (image.isNull())
-            LogError("Capturing render texture to a image failed");
-        return image;
-    }
-*/
     void Renderer::AddResourceDirectory(const QString &qdirectory)
     {
         std::string directory = qdirectory.toStdString();

@@ -50,10 +50,10 @@ namespace OgreRenderer
         virtual void Render(float frameTime);
 
         /// Returns window width, or 0 if no render window
-        virtual int GetWindowWidth() const;
+        int GetWindowWidth() const;
 
         /// Returns window height, or 0 if no render window
-        virtual int GetWindowHeight() const;
+        int GetWindowHeight() const;
 
         /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /** @param directory Directory path to add. */
@@ -61,17 +61,6 @@ namespace OgreRenderer
 
         /// Toggles fullscreen
         void SetFullScreen(bool value);
-
-        /// Render current main window content to texture
-//        virtual QPixmap RenderImage(bool use_main_camera = true);
-
-        /// Prepapres the texture and entities used in texture rendering
-//        void PrepareImageRendering(int width, int height);
-
-        /// Reset the texture
-//        void ResetImageRendering();
-
-//        QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
 
         /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
         void DoFullUIRedraw();
@@ -83,20 +72,6 @@ namespace OgreRenderer
             @param y Vertical position for the origin of the ray
             @return Raycast result structure */
         virtual RaycastResult* Raycast(int x, int y);
-
-        /// Do raycast into the currently active world from viewport coordinates, using specific selection layer(s)
-        /// \todo This function will be removed and replaced with a function Scene::Intersect.
-        /** The coordinates are a position in the render window, not scaled to [0,1].
-            @param x Horizontal position for the origin of the ray
-            @param y Vertical position for the origin of the ray
-            @param layerMask Which selection layer(s) to use (bitmask)
-            @return Raycast result structure */
-        virtual RaycastResult* Raycast(int x, int y, unsigned layerMask);
-
-        /// Do a frustum query to the currently active world from viewport coordinates.
-        /// \todo This function will be removed and replaced with a function Scene::Intersect.
-        /** @param viewrect The query rectangle in 2d window coords. */
-        virtual QList<Entity*> FrustumQuery(QRect &viewrect);
 
         /// Returns currently active camera component. Returned as IComponent* for scripting convenience.
         IComponent* GetActiveCamera() const;
@@ -120,11 +95,6 @@ namespace OgreRenderer
 
         ///Is window fullscreen?
         bool IsFullScreen() const;
-
-        /// Takes a screenshot and saves it to a file.
-        /// @param filePath File path.
-        /// @param fileName File name.
-//        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
         /// Returns framework
         Framework* GetFramework() const { return framework_; }
