@@ -150,6 +150,11 @@ void AssetsWindow::AddAsset(AssetPtr asset)
         noProviderItem->addChild(item);
 
     noProviderItem->setHidden(noProviderItem->childCount() == 0);
+
+    // If we have an ongoing search, make sure that the new item is compared too.
+    QString searchFilter = searchField->text().trimmed();
+    if (!searchFilter.isEmpty() && searchFilter != tr("Search..."))
+        TreeWidgetSearch(treeWidget, 0, searchFilter);
 }
 
 void AssetsWindow::RemoveAsset(AssetPtr asset)

@@ -287,6 +287,11 @@ void SceneStructureWindow::AddEntity(Entity* entity)
     const Entity::ComponentMap &components = entity->Components();
     for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
         AddComponent(entity, i->second.get());
+
+    // If we have an ongoing search, make sure that the new item is compared too.
+    QString searchFilter = searchField->text().trimmed();
+    if (!searchFilter.isEmpty() && searchFilter != tr("Search..."))
+        TreeWidgetSearch(treeWidget, 0, searchFilter);
 }
 
 void SceneStructureWindow::AckEntity(Entity* entity, entity_id_t oldId)
@@ -360,6 +365,11 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
                     CreateAssetItem(cItem, attr);
         }
     }
+
+    // If we have an ongoing search, make sure that the new item is compared too.
+    QString searchFilter = searchField->text().trimmed();
+    if (!searchFilter.isEmpty() && searchFilter != tr("Search..."))
+        TreeWidgetSearch(treeWidget, 0, searchFilter);
 }
 
 void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
