@@ -11,7 +11,6 @@
 #include "Math/float3.h"
 #include "Math/float2.h"
 
-class EC_Camera;
 struct EC_SkyXImpl;
 
 /// A Sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX

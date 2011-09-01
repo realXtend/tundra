@@ -94,7 +94,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
         return;
     }
 
-    connect(w->GetRenderer(), SIGNAL(ActiveCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
+    connect(w->GetRenderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 

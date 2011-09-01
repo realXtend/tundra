@@ -12,7 +12,6 @@
 #include "AssetReference.h"
 #include "Math/float3.h"
 
-class EC_Camera;
 struct EC_HydraxImpl;
 
 /// A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
