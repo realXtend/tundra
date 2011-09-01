@@ -127,7 +127,7 @@ QList<entity_id_t> AddComponentDialog::GetEntityIds() const
 void AddComponentDialog::CheckComponentName(const QString &name)
 {
     bool name_duplicates = false;
-    ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    Scene *scene = framework_->Scene()->MainCameraScene();
     if(scene && type_combo_box_ && name_line_edit_)
     {
         EntityPtr entity;

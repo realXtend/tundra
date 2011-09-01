@@ -143,7 +143,7 @@ void DebugStatsModule::Exec(const QStringList &params)
         return;
     }
 
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("No active scene.");

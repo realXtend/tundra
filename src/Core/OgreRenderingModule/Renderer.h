@@ -77,6 +77,12 @@ namespace OgreRenderer
         /// The returned Entity is guaranteed to have an EC_Camera component, and it is guaranteed to be attached to a scene.
         Entity *MainCamera();
 
+        /// Returns the EC_Camera of the main camera, or 0 if no main camera is active.
+        EC_Camera *MainCameraComponent();
+
+        /// Returns the Scene the current active main camera is in, or 0 if no main camera is active.
+        Scene *MainCameraScene();
+
         /// Sets the given Entity as the main camera for the main window.
         /// This function fails if the given Entity does not have an EC_Camera component, or if the given Entity is not attached to a scene.
         /// Whenever the main camera is changed, the signal MainCameraChanged is triggered.

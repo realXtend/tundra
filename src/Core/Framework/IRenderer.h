@@ -13,7 +13,9 @@
 
 class QRect;
 
+class Scene;
 class Entity;
+class EC_Camera;
 
 /// Result of a raycast. Other fields are valid only if entity_ is non-null
 ///\todo Remove the QObject inheritance here, and expose as a struct to scripts.
@@ -65,7 +67,18 @@ public:
     virtual ~IRenderer() {}
 
     /// Renders the scene.
+    /// Do not call this function yourself. It is only used internally by Framework to drive Ogre rendering.
     virtual void Render(float frameTime) = 0;
+
+    /// Returns the Entity which contains the currently active camera that is used to render on the main window.
+    /// The returned Entity is guaranteed to have an EC_Camera component, and it is guaranteed to be attached to a scene.
+    virtual Entity *MainCamera() = 0;
+
+    /// Returns the EC_Camera of the main camera, or 0 if no main camera is active.
+    virtual EC_Camera *MainCameraComponent() = 0;
+
+    /// Returns the Scene the current active main camera is in, or 0 if no main camera is active.
+    virtual Scene *MainCameraScene() = 0;
 
     /// Returns an unique string name for a new object. This function is intended to be used to generate unique names for Ogre resources.
     virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;

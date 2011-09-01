@@ -21,6 +21,7 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetStorage.h"
+#include "Scene.h"
 #include "AssetCache.h"
 #include "QtUtils.h"
 #include "UiAPI.h"
@@ -460,7 +461,7 @@ void AssetTreeWidget::SaveAssetDialogClosed(int result)
 
 void AssetTreeWidget::Upload(const QStringList &files)
 {
-    AddContentWindow *addContent = new AddContentWindow(framework, framework->Scene()->GetDefaultScene());
+    AddContentWindow *addContent = new AddContentWindow(framework, framework->Scene()->MainCameraScene()->shared_from_this());
     addContent->AddFiles(files);
     addContent->show();
 }

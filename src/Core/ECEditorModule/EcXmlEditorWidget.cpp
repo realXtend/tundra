@@ -182,7 +182,7 @@ void EcXmlEditorWidget::Save()
     QDomDocument edited_doc;
     if (edited_doc.setContent(text, false, &errorMsg))
     {
-        ScenePtr scene = framework_->Scene()->GetDefaultScene();
+        Scene *scene = framework_->Scene()->MainCameraScene();
         if (!scene)
             return;
 

@@ -7,6 +7,7 @@
 #include "Scene.h"
 #include "IComponentFactory.h"
 #include "IComponent.h"
+#include "IRenderer.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
 #include "SceneInteract.h"
@@ -29,7 +30,6 @@ SceneAPI::SceneAPI(Framework *framework) :
     sceneInteract = new SceneInteract();
     framework->RegisterDynamicObject("sceneinteract", sceneInteract);
 
-    defaultScene_.reset();
     scenes_.clear();
 }
 
@@ -41,7 +41,6 @@ SceneAPI::~SceneAPI()
 void SceneAPI::Reset()
 {
     SAFE_DELETE(sceneInteract);
-    defaultScene_.reset();
     scenes_.clear();
     componentFactories.clear();
     componentFactoriesByTypeid.clear();
@@ -62,41 +61,17 @@ bool SceneAPI::HasScene(const QString &name) const
     return scenes_.find(name) != scenes_.end();
 }
 
-void SceneAPI::SetDefaultScene(const QString &name)
-{
-    ScenePtr scene = GetScene(name);
-    if(scene != defaultScene_)
-    {
-        defaultScene_ = scene;
-        emit DefaultWorldSceneChanged(defaultScene_.get());
-    }
-}
-
-void SceneAPI::SetDefaultScene(const ScenePtr &scene)
-{
-    if (scene != defaultScene_)
-    {
-        defaultScene_ = scene;
-        emit DefaultWorldSceneChanged(defaultScene_.get());
-    }
-}
-
-const ScenePtr &SceneAPI::GetDefaultScene() const
-{
-    return defaultScene_;
-}
-
-Scene* SceneAPI::GetDefaultSceneRaw() const
-{
-    return defaultScene_.get();
-}
-
 ScenePtr SceneAPI::GetScene(const QString &name) const
 {
     SceneMap::const_iterator scene = scenes_.find(name);
     if (scene != scenes_.end())
         return scene->second;
     return ScenePtr();
+}
+
+Scene *SceneAPI::MainCameraScene()
+{
+    return framework_->Renderer()->MainCameraScene();
 }
 
 ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool authority)
@@ -126,14 +101,16 @@ void SceneAPI::RemoveScene(const QString &name)
         // Emit signal about removed scene
         emit SceneRemoved(name);
         
-        // If default scene is being removed. Reset our ref so it does not keep ref count alive.
-        if (defaultScene_ == sceneIter->second)
-            defaultScene_.reset();
         scenes_.erase(sceneIter);
     }
 }
 
 const SceneMap &SceneAPI::Scenes() const
+{
+    return scenes_;
+}
+
+SceneMap &SceneAPI::Scenes()
 {
     return scenes_;
 }

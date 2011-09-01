@@ -237,8 +237,8 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
             toggleSelectAllEntities = !toggleSelectAllEntities;
             if (toggleSelectAllEntities)
             {
-                ScenePtr activeScene = framework_->Scene()->GetDefaultScene();
-                if (activeScene.get())
+                Scene *activeScene = framework_->Scene()->MainCameraScene();
+                if (activeScene)
                 {
                     // We can only manipulate entities that have placeable, but exclude temporarys (avatar, cameras etc.)
                     QList<entity_id_t> entIdsSelection;

@@ -1481,7 +1481,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 4)
         return;
     
-    ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
         return;
     
@@ -2138,7 +2138,10 @@ void TimeProfilerWindow::PopulateOgreSceneTree()
 
 void TimeProfilerWindow::PopulateBulletStats()
 {
-    boost::shared_ptr<Physics::PhysicsWorld> physics = framework_->Scene()->GetDefaultScene()->GetWorld<Physics::PhysicsWorld>();
+    Scene *scene = framework_->Scene()->MainCameraScene();
+    if (!scene)
+        return;
+    boost::shared_ptr<Physics::PhysicsWorld> physics = scene->GetWorld<Physics::PhysicsWorld>();
     const std::set<std::pair<btCollisionObject*, btCollisionObject*> > &collisions = physics->PreviousFrameCollisions();
 
     treeBulletStats->clear();

@@ -66,7 +66,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     entityList(0),
     ecBrowser(0),
     hasFocus(true),
-    transformEditor(new TransformEditor(fw->Scene()->GetDefaultScene()))
+    transformEditor(new TransformEditor(fw->Scene()->MainCameraScene()->shared_from_this()))
 {
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
@@ -141,7 +141,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
 
     connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), framework->GetModule<ECEditorModule>(), SLOT(ECEditorFocusChanged(ECEditorWindow*)));
 
-    Scene *scene = framework->Scene()->GetDefaultScene().get();
+    Scene *scene = framework->Scene()->MainCameraScene();
     if (scene)
     {
         connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(RemoveEntity(Entity*)), Qt::UniqueConnection);
@@ -165,7 +165,7 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpa
         entityList->blockSignals(true);
         //If entity don't have EC_Name then entity_name is same as it's id.
         QString entity_name = QString::number(entity_id);
-        EntityPtr entity = framework->Scene()->GetDefaultScene()->GetEntity(entity_id);
+        EntityPtr entity = framework->Scene()->MainCameraScene()->GetEntity(entity_id);
         if (entity && entity->GetComponent<EC_Name>())
             entity_name.append(" " + entity->Name());
 
@@ -205,7 +205,7 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
         return;
 
     entityList->blockSignals(true);
-    EntityPtr entity = framework->Scene()->GetDefaultScene()->GetEntity(entity_id);
+    EntityPtr entity = framework->Scene()->MainCameraScene()->GetEntity(entity_id);
     if (!entity)
     {
         LogError("Fail to remove entity, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
@@ -272,7 +272,7 @@ QList<EntityPtr> ECEditorWindow::GetSelectedEntities() const
     if (!entityList)
         return ret;
 
-    ScenePtr scene = framework->Scene()->GetDefaultScene();
+    Scene *scene = framework->Scene()->MainCameraScene();
     if (!scene)
         return ret;
 
@@ -452,7 +452,7 @@ void ECEditorWindow::OnActionTriggered(Entity *entity, const QString &action, co
 
 void ECEditorWindow::DeleteEntity()
 {
-    ScenePtr scene = framework->Scene()->GetDefaultScene();
+    Scene *scene = framework->Scene()->MainCameraScene();
     if (!scene)
         return;
 
@@ -495,7 +495,7 @@ void ECEditorWindow::PasteEntity()
         return;
     // First we need to check if component is holding EC_OgrePlacable component to tell where entity should be located at.
     /// \todo local only server wont save those objects.
-    ScenePtr scene = framework->Scene()->GetDefaultScene();
+    Scene *scene = framework->Scene()->MainCameraScene();
     assert(scene);
     if(!scene)
         return;
@@ -603,7 +603,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     if (!ecBrowser)
         return;
 
-    ScenePtr scene = framework->Scene()->GetDefaultScene();
+    Scene *scene = framework->Scene()->MainCameraScene();
     if (!scene)
     {
         ecBrowser->clear();
@@ -959,7 +959,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
     if (result != QDialog::Accepted)
         return;
 
-    ScenePtr scene = framework->Scene()->GetDefaultScene();
+    Scene *scene = framework->Scene()->MainCameraScene();
     if (!scene)
     {
         LogWarning("Fail to add new component to entity, since default world scene was null");
@@ -983,7 +983,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
             continue;
         }
 
-        comp = framework->Scene()->CreateComponentByName(scene.get(), dialog->GetTypeName(), dialog->GetName());
+        comp = framework->Scene()->CreateComponentByName(scene, dialog->GetTypeName(), dialog->GetName());
         assert(comp);
         if (comp)
         {

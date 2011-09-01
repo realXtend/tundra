@@ -124,7 +124,7 @@ void PhysicsModule::StartPhysics()
 
 void PhysicsModule::AutoCollisionMesh()
 {
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("No active scene!");

@@ -33,7 +33,7 @@ EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *
     static const std::string customMeshName("Selection.mesh");
     input_ = framework_->Input()->RegisterInputContext("EntityPlacement", 110);
     
-    Scene* scene = framework_->Scene()->GetDefaultScene().get();
+    Scene* scene = framework_->Scene()->MainCameraScene();
     entity_ = scene->GetEntity(entityId);
     if(!entity_.expired())
     {

@@ -76,7 +76,7 @@ namespace Avatar
     
     void AvatarModule::EditAvatar(const QString &entityName)
     {
-        ScenePtr scene = framework_->Scene()->GetDefaultScene();
+        Scene *scene = framework_->Scene()->MainCameraScene();
         if (!scene)
             return;// ConsoleResultFailure("No scene");
         EntityPtr entity = scene->GetEntityByName(entityName);

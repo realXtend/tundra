@@ -311,7 +311,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             // Create a non-authoritative scene for the client
             ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true, false);
 
-            framework_->Scene()->SetDefaultScene(scene);
+//            framework_->Scene()->SetDefaultScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
             
             UserConnectedResponseData responseData;

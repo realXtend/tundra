@@ -742,6 +742,29 @@ namespace OgreRenderer
         return mainCameraEntity;
     }
 
+    EC_Camera *Renderer::MainCameraComponent()
+    {
+        Entity *mainCamera = MainCamera();
+        if (!mainCamera)
+            return 0;
+        return mainCamera->GetComponent<EC_Camera>().get();
+    }
+
+    Scene *Renderer::MainCameraScene()
+    {
+        Entity *mainCamera = MainCamera();
+        Scene *scene = mainCamera ? mainCamera->ParentScene() : 0;
+        if (scene)
+            return scene;
+
+        // If there is no active camera, return the first scene on the list.
+        SceneMap scenes = framework_->Scene()->Scenes();
+        if (scenes.size() > 0)
+            return scenes.begin()->second.get();
+
+        return 0;
+    }
+
     void Renderer::SetMainCamera(Entity *mainCameraEntity)
     {
         activeMainCamera = mainCameraEntity ? mainCameraEntity->shared_from_this() : boost::shared_ptr<Entity>();

@@ -480,7 +480,7 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
 
 void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
 {
-    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->ParentEntity()->Id());
+    EntityPtr entity_ptr = framework_->Scene()->MainCameraScene()->GetEntity(comp->ParentEntity()->Id());
     if(!HasEntity(entity_ptr))
         return;
     ComponentPtr comp_ptr;
@@ -510,7 +510,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
 
 void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
 {
-    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->ParentEntity()->Id());
+    EntityPtr entity_ptr = framework_->Scene()->MainCameraScene()->GetEntity(comp->ParentEntity()->Id());
     if(!HasEntity(entity_ptr))
         return;
 

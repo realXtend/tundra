@@ -317,18 +317,18 @@ void TundraLogicModule::Update(f64 frametime)
     if (syncManager_)
         syncManager_->Update(frametime);
     // Run scene interpolation
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (scene)
         scene->UpdateAttributeInterpolations(frametime);
 }
 
 void TundraLogicModule::LoadStartupScene()
 {
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        scene = framework_->Scene()->CreateScene("TundraServer", true, true);
-        framework_->Scene()->SetDefaultScene(scene);
+        scene = framework_->Scene()->CreateScene("TundraServer", true, true).get();
+//        framework_->Scene()->SetDefaultScene(scene);
     }
 
     bool hasFile = framework_->HasCommandLineParameter("--file");
@@ -368,7 +368,7 @@ void TundraLogicModule::LoadStartupScene()
 
 void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
 {
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
         return;
 
@@ -412,7 +412,7 @@ void TundraLogicModule::Disconnect()
 
 void TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemporaryEntities, bool saveLocalEntities)
 {
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("No active scene found!");
@@ -437,7 +437,7 @@ void TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemp
 
 void TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEntityIDsFromFile)
 {
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("No active scene found!");
@@ -465,7 +465,7 @@ void TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEnt
 
 void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool replace)
 {
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("No active scene found!");
@@ -480,7 +480,7 @@ void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
 
     QString path = QFileInfo(filename).dir().path();
 
-    SceneImporter importer(scene);
+    SceneImporter importer(scene->shared_from_this());
     QList<Entity *> entities = importer.Import(filename, path, Transform(), "local://", AttributeChange::Default, clearScene, replace);
 
     LogInfo("Imported " + QString::number(entities.size()) + " entities.");
@@ -488,7 +488,7 @@ void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
 
 void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float tz, float rx, float ry, float rz, float sx, float sy, float sz, bool inspect)
 {
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("No active scene found!");
@@ -503,7 +503,7 @@ void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float t
 
     QString path = QFileInfo(filename).dir().path();
 
-    SceneImporter importer(scene);
+    SceneImporter importer(scene->shared_from_this());
     EntityPtr entity = importer.ImportMesh(filename, path, Transform(float3(tx,ty,tz), float3(rx,ry,rz),
         float3(sx,sy,sz)), "", "local://", AttributeChange::Default, inspect);
 }

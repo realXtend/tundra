@@ -42,23 +42,6 @@ public slots:
     /// Returns true if specified scene exists, false otherwise
     bool HasScene(const QString &name) const;
 
-    /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    void SetDefaultScene(const QString &name);
-
-    /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    void SetDefaultScene(const ScenePtr &scene);
-    
-    /// Returns the default scene shared ptr.
-    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene> rename GetDefaultSceneRaw() to GetDefaultScene().
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    const ScenePtr &GetDefaultScene() const;
-
-    /// Returns the default scene ptr.
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    Scene* GetDefaultSceneRaw() const;
-
     /// Returns a pointer to a scene
     /** Manage the pointer carefully, as scenes may not get deleted properly if
         references to the pointer are left alive.
@@ -70,6 +53,11 @@ public slots:
         @return The scene, or empty pointer if the scene with the specified name could not be found 
     */
     ScenePtr GetScene(const QString &name) const;
+
+    /// Returns the Scene the current active main camera is in.
+    /// If there is no active main camera, this function returns the first found scene.
+    /// If no scenes have been created, returns 0.
+    Scene *MainCameraScene();
 
     /// Creates new empty scene.
     /** @param name name of the new scene
@@ -89,6 +77,7 @@ public slots:
     void RemoveScene(const QString &name);
 
     /// Returns the scene map for self reflection / introspection.
+    SceneMap &Scenes();
     const SceneMap &Scenes() const;
 
     /// Return if a component factory has been registered for a type name.
@@ -143,7 +132,7 @@ signals:
     /// Emitted when default world scene changes.
     /// @param scene new default world scene object.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    void DefaultWorldSceneChanged(Scene *scene);
+//    void DefaultWorldSceneChanged(Scene *scene);
 
 private:
     /// Constructor. Framework takes ownership of this object.
@@ -168,7 +157,6 @@ private:
     ComponentFactoryWeakMap componentFactoriesByTypeid;
     Framework *framework_; ///< Framework.
     SceneMap scenes_; ///< All currently created scenes.
-    ScenePtr defaultScene_; ///< Current 'default' scene. \todo Delete this.
     SceneInteract *sceneInteract; ///< Scene interact. \todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
     static QStringList attributeTypeNames;
 };

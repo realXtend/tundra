@@ -106,7 +106,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
 {
     QList<Entity *> ret;
 
-    const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");
@@ -126,12 +126,12 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
         if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
         {
             ///\todo Implement ogre.scene url drops at some point?
-            TundraLogic::SceneImporter importer(scene);
+            TundraLogic::SceneImporter importer(scene->shared_from_this());
             sceneDescs.append(importer.CreateSceneDescFromScene(filename));
         }
         else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
         {
-            TundraLogic::SceneImporter importer(scene);
+            TundraLogic::SceneImporter importer(scene->shared_from_this());
 ///\todo Perhaps download the mesh before instantiating so we could inspect the mesh binary for materials and skeleton? The path is already there for tundra scene file web drops
             //if (IsUrl(filename)) ...
             sceneDescs.append(importer.CreateSceneDescFromMesh(filename));
@@ -199,7 +199,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
 
     if (!sceneDescs.isEmpty())
     {
-        AddContentWindow *addContent = new AddContentWindow(framework_, scene);
+        AddContentWindow *addContent = new AddContentWindow(framework_, scene->shared_from_this());
         addContent->AddDescription(sceneDescs[0]);
         if (worldPos != float3::zero)
             addContent->AddPosition(worldPos);
@@ -326,7 +326,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
 
     sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
-    sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
+    sceneWindow->SetScene(GetFramework()->Scene()->MainCameraScene()->shared_from_this());
     sceneWindow->show();
 }
 
@@ -554,7 +554,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         if (!res->entity)
         {
             // No entity hit, use camera's position with hard-coded offset.
-            const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
+            Scene *scene = GetFramework()->Scene()->MainCameraScene();
             if (!scene)
                 return;
 
@@ -654,7 +654,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                     }
                     else
                     {
-                        const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
+                        Scene *scene = GetFramework()->Scene()->MainCameraScene();
                         if (!scene)
                         {
                             LogError("Could not retrieve default world scene.");
@@ -685,7 +685,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         materialFile.close();
 
                         // Add texture assets to scene description
-                        TundraLogic::SceneImporter importer(scene);
+                        TundraLogic::SceneImporter importer(scene->shared_from_this());
                         QSet<QString> textures = importer.ProcessMaterialForTextures(ad.data);
                         if (!textures.empty())
                         {
@@ -705,7 +705,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         }
 
                         // Show add content window
-                        AddContentWindow *addMaterials = new AddContentWindow(framework_, scene);
+                        AddContentWindow *addMaterials = new AddContentWindow(framework_, scene->shared_from_this());
                         connect(addMaterials, SIGNAL(Completed(bool, const QString&)), SLOT(FinishMaterialDrop(bool, const QString&)));
                         addMaterials->AddDescription(sceneDesc);
                         addMaterials->show();
@@ -757,7 +757,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 {
     QApplication::restoreOverrideCursor();
 
-    const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");
@@ -805,7 +805,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     }
 
     // Show add content window
-    AddContentWindow *addContent = new AddContentWindow(framework_, scene);
+    AddContentWindow *addContent = new AddContentWindow(framework_, scene->shared_from_this());
     addContent->AddDescription(sceneDesc);
     addContent->AddPosition(adjustPos);
     addContent->show();
