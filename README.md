@@ -8,15 +8,15 @@ Tundra is licensed under [Apache 2.0] and based on [Qt] and [Ogre3D].
 Getting Started
 ---------------
 
-Tundra uses a traditional server-client architecture for networking. After installing you will find the `Tundra` executable from the install directory, run `Tundra --help` for available commands.
+Tundra uses the traditional client-server architecture for networking. After installing you will find the `Tundra` executable from the install directory, run `Tundra --help` for available commands.
 
-This executable can be configured to run a set of C++ and JavaScript plugins. You can make your own config or use the ones that we ship. Here is some examples:
+This executable can be configured to run a set of C++ and JavaScript plugins. You can create your own configuration file, or use the ones provided. Here are some examples:
 
     Tundra --config viewer.xml
     Tundra --config plugins.xml --server --port 6565 --protocol udp
     Tundra --config server-headless.xml --server --headless
 
-The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the --headless command line option. The Tundra viewer mode is the client that is used to connect to a server.
+The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the --server and --headless command line parameters. The Tundra viewer mode is the client that is used to connect to a server.
 
 Compiling from sources
 ----------------------
@@ -27,12 +27,12 @@ Tundra uses [CMake] as its build system and depends on various other open source
 
 ### Windows
 
-For windows we support Visual Studio 2008 and 2010 build environments. Here are the quick steps for VC2008 after you have cloned the git repo. Same steps apply to VC2010, just with different batch scripts.
+For windows we support Visual Studio 2008 and 2010 build environments. Here are the quick steps for VS2008 after you have cloned the git repo. Same steps apply to VS2010, just with different batch scripts.
 
 1.  Install [CMake]. (>= 2.8 is recommended)
 2.  Run `win_update_deps_vs2008.bat` to acquire the prebuilt dependencies.
-3.  Go through the `CMakeBuildConfigTemplate.txt` if you want to customise the build.
-4.  Run `win_cmake_vs2008.bat`, this will generate a .sln solution file.
+3.  Run `win_cmake_vs2008.bat`, this will generate a .sln solution file.
+4.  If you want to customize the build, go through the `CMakeBuildConfig.txt` and run `win_cmake_vs2008.bat` again.
 5.  Open the solution file with Visual Studio 2008 and build.
 
 See also `doc/build-windows.txt`
@@ -49,12 +49,12 @@ More information about Tundra can be found online at http://www.realxtend.org/do
 Contact Information
 -------------------
 
-You can find our developers from IRC `#realxtend-dev @ freenode`. Also check out the [user-oriented mailing list](http://groups.google.com/group/realxtend) and the [developer-oriented mailing list](http://groups.google.com/group/realxtend-dev).
+You can find Tundra developers from IRC `#realxtend-dev @ freenode`. Also check out the [user-oriented mailing list](http://groups.google.com/group/realxtend) and the [developer-oriented mailing list](http://groups.google.com/group/realxtend-dev).
 
 Releases
 --------
 
-New releases are announced on the mailing lists and at the [realXtend blog]. They are uploaded to our google code project site, that we use for hosting downloads. http://code.google.com/p/realxtend-naali/downloads/list
+New releases are announced on the mailing lists and at the [realXtend blog]. The releases are uploaded to Google Code project site, that is used for hosting downloads. http://code.google.com/p/realxtend-naali/downloads/list
 
 [Qt]:          http://qt.nokia.com/                            "Qt homepage"
 [Ogre3D]:      http://www.ogre3d.org/                          "Ogre3D homepage"
