@@ -484,7 +484,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         {
             mesh->_notifySkeleton(entity_skel);
         }
-        catch(const Ogre::Exception &e)
+        catch(const Ogre::Exception &/*e*/)
         {
             LogError("EC_Mesh::SetAttachmentMesh: Could not set shared skeleton for attachment");
             return false;
