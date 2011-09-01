@@ -7,12 +7,12 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreMaterialUtils.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "AssetAPI.h"
 #include <Ogre.h>
+#include "MemoryLeakCheck.h"
 
 namespace OgreRenderer
 {
