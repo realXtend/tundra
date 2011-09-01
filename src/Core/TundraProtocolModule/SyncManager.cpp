@@ -514,6 +514,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 {
     PROFILE(SyncManager_ProcessSyncState);
     
+    unsigned sceneId = 0; ///\todo Replace with proper scene ID once multiscene support is in place.
+    
     /*
     static int counter = 0;
     ++counter;
@@ -569,6 +571,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 removeState = true;
             
             kNet::DataSerializer ds(removeEntityBuffer_, 1024);
+            ds.AddVLE<kNet::VLE8_16_32>(sceneId);
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             QueueMessage(destination, cRemoveEntityMessage, true, true, ds);
             ++numMessagesSent;
@@ -579,6 +582,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             kNet::DataSerializer ds(createEntityBuffer_, 64 * 1024);
             
             // Entity identification and temporary flag
+            ds.AddVLE<kNet::VLE8_16_32>(sceneId);
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             // Do not write the temporary flag as a bit to not desync the byte alignment at this point, as a lot of data potentially follows
             ds.Add<u8>(entity->IsTemporary() ? 1 : 0);
@@ -645,7 +649,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     
                     // If first component, write the entity ID first
                     if (!removeCompsDs.BytesFilled())
+                    {
+                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
                         removeCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                    }
                     // Then add component ID
                     removeCompsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                 }
@@ -654,7 +661,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 {
                     // If first component, write the entity ID first
                     if (!createCompsDs.BytesFilled())
+                    {
+                        createCompsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
                         createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                    }
                     // Then add the component data
                     WriteComponentFullUpdate(createCompsDs, comp);
                     // Mark the component undirty in the receiver's syncstate
@@ -682,7 +692,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             {
                                 // If first attribute, write the entity ID first
                                 if (!createAttrsDs.BytesFilled())
+                                {
+                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
                                     createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                }
                                 
                                 IAttribute* attr = attrs[attrIndex];
                                 createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
@@ -697,7 +710,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             // Remove attribute
                             // If first attribute, write the entity ID first
                             if (!removeAttrsDs.BytesFilled())
+                            {
+                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
                                 removeAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                            }
                             removeAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                             removeAttrsDs.Add<u8>(attrIndex);
                         }
@@ -729,7 +745,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     {
                         // If first component for which attribute changes are sent, write the entity ID first
                         if (!editAttrsDs.BytesFilled())
+                        {
+                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
                             editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        }
                         editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                         
                         // Create a nested dataserializer for the actual attribute data, so we can skip components
@@ -855,6 +874,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     entity_id_t senderEntityID = entityID;
     
@@ -954,6 +974,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     if (isServer)
     {
         kNet::DataSerializer replyDs(createEntityBuffer_, 64 * 1024);
+        replyDs.AddVLE<kNet::VLE8_16_32>(sceneID);
         replyDs.AddVLE<kNet::VLE8_16_32>(senderEntityID & UniqueIdGenerator::LAST_REPLICATED_ID);
         replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
         replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites.size());
@@ -986,6 +1007,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
     if (!ValidateAction(source, cCreateComponentsMessage, entityID))
@@ -1069,6 +1091,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     if (isServer)
     {
         kNet::DataSerializer replyDs(createEntityBuffer_, 64 * 1024);
+        replyDs.AddVLE<kNet::VLE8_16_32>(sceneID);
         replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
         replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites.size());
         for (unsigned i = 0; i < componentIdRewrites.size(); ++i)
@@ -1101,6 +1124,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const char
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
     if (!ValidateAction(source, cRemoveEntityMessage, entityID))
@@ -1135,6 +1159,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
     if (!ValidateAction(source, cRemoveComponentsMessage, entityID))
@@ -1183,6 +1208,7 @@ void SyncManager::HandleCreateAttributes(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
     if (!ValidateAction(source, cCreateAttributesMessage, entityID))
@@ -1267,6 +1293,7 @@ void SyncManager::HandleRemoveAttributes(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
     if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
@@ -1314,6 +1341,7 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
     if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
@@ -1445,6 +1473,7 @@ void SyncManager::HandleCreateEntityReply(kNet::MessageConnection* source, const
     }
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t senderEntityID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     scene->ChangeEntityId(senderEntityID, entityID);
@@ -1511,6 +1540,7 @@ void SyncManager::HandleCreateComponentsReply(kNet::MessageConnection* source, c
     }
     
     kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     state->RemoveFromQueue(entityID); // Make sure we don't have stale pointers in the dirty queue
     EntitySyncState& entityState = state->entities[entityID];
