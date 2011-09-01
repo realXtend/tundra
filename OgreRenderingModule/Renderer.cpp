@@ -1241,11 +1241,11 @@ namespace OgreRenderer
         return prefix + "_" + ToString<uint>(object_id_++);
     }
 
-    void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
+    void Renderer::TakeScreenshot(const QString& filePath, const QString& fileName)
     {
         if (renderWindow)
         {
-            Ogre::String file = filePath + fileName;
+            Ogre::String file = filePath.toStdString() + fileName.toStdString();
             renderWindow->OgreRenderWindow()->writeContentsToFile(file);
         }
     }

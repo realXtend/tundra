@@ -145,7 +145,7 @@ namespace OgreRenderer
         //! Takes a screenshot and saves it to a file.
         //! \param filePath File path.
         //! \param fileName File name.
-        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
+        virtual void TakeScreenshot(const QString& filePath, const QString& fileName);
         
     public:
         //! Constructor
