@@ -25,7 +25,6 @@ TransformEditor::TransformEditor(const ScenePtr &scene)
         QString uniqueName("TransformEditor" + scene->GetFramework()->Asset()->GenerateUniqueAssetName("",""));
         input = scene->GetFramework()->Input()->RegisterInputContext(uniqueName, 100);
         connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        CreateGizmo();
     }
 }
 
@@ -42,6 +41,8 @@ void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
 
 void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
 {
+    if (!gizmo)
+        CreateGizmo();
     foreach(const EntityPtr &e, entities)
     {
         boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
@@ -80,6 +81,8 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
 #ifdef EC_TransformGizmo_ENABLED
     if (targets.isEmpty())
         return;
+    if (!gizmo)
+        CreateGizmo();
 
     float3 minPos(1e9f, 1e9f, 1e9f);
     float3 maxPos(-1e9f, -1e9f, -1e9f);
@@ -184,7 +187,7 @@ void TransformEditor::CreateGizmo()
     if (!s)
         return;
 
-    gizmo = s->CreateEntity(0, QStringList(QStringList() << EC_TransformGizmo::TypeNameStatic()), AttributeChange::LocalOnly, false, false);
+    gizmo = s->CreateLocalEntity(QStringList(QStringList() << EC_TransformGizmo::TypeNameStatic()), AttributeChange::LocalOnly, false);
     if (!gizmo)
     {
         LogError("TransformEditor: could not create gizmo entity.");

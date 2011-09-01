@@ -21,7 +21,7 @@ struct AttributeWeakPtr
     /// Constructor.
     /** @param c Owner component.
         @param a The actual attribute. */
-    AttributeWeakPtr(const ComponentPtr c, IAttribute *a) : owner(c), attribute(a) {}
+    AttributeWeakPtr(const ComponentPtr &c, IAttribute *a) : owner(c), attribute(a) {}
 
     /// Returns pointer to the attribute or null if the owner component doens't exist anymore.
     IAttribute *Get() const { return owner.lock() ? attribute : 0; }

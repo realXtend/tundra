@@ -8,8 +8,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include <OgreHardwareBuffer.h>
-
 #include "ECEditorWindow.h"
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
@@ -669,7 +667,13 @@ void ECEditorWindow::RefreshPropertyBrowser()
 
     ecBrowser->UpdateBrowser();
 
-    if (!GetSelectedEntities().isEmpty())
+    // Show/set only entities with placeable to transform editor
+    QList<EntityPtr> entitiesWithPlaceable;
+    foreach(const EntityPtr &e, GetSelectedEntities())
+        if (e->GetComponent<EC_Placeable>())
+            entitiesWithPlaceable.append(e);
+
+    if (!entitiesWithPlaceable.isEmpty())
     {
         transformEditor->SetSelection(entities);
         transformEditor->FocusGizmoPivotToAabbBottomCenter();
@@ -860,7 +864,7 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
     {
         // If component already has an EC_Highlight, that is not ours, do nothing, as the highlights would conflict
         ComponentPtr c = entity->GetComponent(EC_Highlight::TypeNameStatic());
-        if ((c) && (c->Name() != cEcEditorHighlight))
+        if (c && c->Name() != cEcEditorHighlight)
             return;
         
         if (highlight)
@@ -989,4 +993,3 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         }
     }
 }
-
