@@ -13,7 +13,7 @@
 #include <cassert>
 #endif
 
-#include "MathFwd.h"
+#include "Math/MathFwd.h"
 #include "MatrixProxy.h"
 #include "CoordinateAxisConvention.h"
 
@@ -214,6 +214,7 @@ public:
 
     /// Creates a new float3x4 that performs uniform scaling by the given amount.
     static ScaleOp UniformScale(float uniformScale);
+    static float3x4 UniformScale(float uniformScale, const float3 &scaleCenter);
 
     /// Returns the scaling performed by this matrix.
     /// GetScale().x specifies the amount of scaling applied to the local x direction vector when it is transformed by this matrix.
@@ -410,7 +411,7 @@ public:
         the vector targetPosition, and secondarily, rotates the localUp to coincide with the vector worldUp, as closely
         as possible while still retaining the localForward->targetPosition constraint.
         @note The resulting right vector for the matrix will be generated using the right-hand rule, to produce a right-handed matrix with determinant > 0. */
-    static float3x4 LookAtRH(const float3 &localForwardDir, const float3 &targetForwardDir, const float3 &localUp, const float3 &worldUp);
+    static float3x4 LookAt(const float3 &localForwardDir, const float3 &targetForwardDir, const float3 &localUp, const float3 &worldUp);
 
     /// Sets this float3x4 to represent the same transformation as the given float3x3.
     /// @important The translate part of this float3x4 is reset to zero.

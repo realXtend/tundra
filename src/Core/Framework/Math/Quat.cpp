@@ -6,17 +6,16 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
-
 #include <stdlib.h>
-#include "Quat.h"
-#include "float3.h"
-#include "float4.h"
-#include "float3x3.h"
-#include "float3x4.h"
-#include "float4x4.h"
+#include "Math/Quat.h"
+#include "Math/float3.h"
+#include "Math/float4.h"
+#include "Math/float3x3.h"
+#include "Math/float3x4.h"
+#include "Math/float4x4.h"
 #include "LCG.h"
 #include "assume.h"
-#include "MathFunc.h"
+#include "Math/MathFunc.h"
 
 Quat::Quat(const float *data)
 :x(data[0]),
@@ -293,6 +292,7 @@ void Quat::ToAxisAngle(float3 &axis, float &angle) const
 void Quat::SetFromAxisAngle(const float3 &axis, float angle)
 {
     assume(axis.IsNormalized());
+    assume(isfinite(angle));
     float cosz = Cos(angle/2.f);
     float sinz = Sin(angle/2.f);
     x = axis.x * sinz;
@@ -391,15 +391,9 @@ void Quat::Set(float x_, float y_, float z_, float w_)
     w = w_;
 }
 
-void Quat::LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp)
+Quat Quat::LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp)
 {
-    assume(false && "Not implemented!");
-    ///\todo
-
-    assume(localForward.IsNormalized());
-    assume(targetDirection.IsNormalized());
-    assume(localUp.IsNormalized());
-    assume(worldUp.IsNormalized());
+    return float3x3::LookAt(localForward, targetDirection, localUp, worldUp).ToQuat();
 }
 
 Quat Quat::RotateX(float angle)
@@ -439,13 +433,7 @@ Quat Quat::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirec
 Quat Quat::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
     const float3 &sourceDirection2, const float3 &targetDirection2)
 {
-    assume(sourceDirection.IsNormalized());
-    assume(targetDirection.IsNormalized());
-    assume(sourceDirection2.IsNormalized());
-    assume(targetDirection2.IsNormalized());
-
-    assume(false && "Not implemented!");
-    return Quat(); ///\todo
+    return LookAt(sourceDirection, targetDirection, sourceDirection2, targetDirection2);
 }
 
 Quat Quat::FromEulerXYX(float x2, float y, float x) { return (Quat::RotateX(x2) * Quat::RotateY(y) * Quat::RotateX(x)).Normalized(); }

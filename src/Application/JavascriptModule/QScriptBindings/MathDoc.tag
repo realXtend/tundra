@@ -2,7 +2,7 @@
 <tagfile>
   <compound kind="file">
     <name>AssetAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_a_p_i_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -60,7 +60,7 @@
   </compound>
   <compound kind="file">
     <name>AssetAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_a_p_i_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
@@ -113,12 +113,12 @@
   </compound>
   <compound kind="file">
     <name>AssetAPI.inl</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_a_p_i_8inl</filename>
   </compound>
   <compound kind="file">
     <name>AssetCache.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_cache_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_asset_cache_8h" name="AssetCache.h" local="yes" imported="no">AssetCache.h</includes>
@@ -127,32 +127,18 @@
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
-    <member kind="function">
-      <type>QString</type>
-      <name>SanitateAssetRefForCache</name>
-      <anchorfile>_asset_cache_8cpp.html</anchorfile>
-      <anchor>ae3c0581defa71b9c07437a283c1c4bf9</anchor>
-      <arglist>(QString assetRef)</arglist>
-    </member>
   </compound>
   <compound kind="file">
     <name>AssetCache.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_cache_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <class kind="class">AssetCache</class>
-    <member kind="function">
-      <type>QString</type>
-      <name>SanitateAssetRefForCache</name>
-      <anchorfile>_asset_cache_8h.html</anchorfile>
-      <anchor>ae3c0581defa71b9c07437a283c1c4bf9</anchor>
-      <arglist>(QString assetRef)</arglist>
-    </member>
   </compound>
   <compound kind="file">
     <name>AssetFwd.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_fwd_8h</filename>
     <member kind="typedef">
       <type>boost::shared_ptr&lt; IAsset &gt;</type>
@@ -234,14 +220,14 @@
   </compound>
   <compound kind="file">
     <name>AssetReference.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_reference_8h</filename>
     <class kind="struct">AssetReference</class>
     <class kind="struct">AssetReferenceList</class>
   </compound>
   <compound kind="file">
     <name>AssetRefListener.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_ref_listener_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -256,14 +242,14 @@
   </compound>
   <compound kind="file">
     <name>AssetRefListener.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_asset_ref_listener_8h</filename>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <class kind="class">AssetRefListener</class>
   </compound>
   <compound kind="file">
     <name>BinaryAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_binary_asset_8h</filename>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
@@ -278,7 +264,7 @@
   </compound>
   <compound kind="file">
     <name>GenericAssetFactory.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_generic_asset_factory_8h</filename>
     <includes id="_i_asset_type_factory_8h" name="IAssetTypeFactory.h" local="yes" imported="no">IAssetTypeFactory.h</includes>
     <includes id="_binary_asset_8h" name="BinaryAsset.h" local="yes" imported="no">BinaryAsset.h</includes>
@@ -293,7 +279,7 @@
   </compound>
   <compound kind="file">
     <name>IAsset.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
@@ -303,7 +289,7 @@
   </compound>
   <compound kind="file">
     <name>IAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
@@ -312,7 +298,7 @@
   </compound>
   <compound kind="file">
     <name>IAssetProvider.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_provider_8h</filename>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -320,21 +306,21 @@
   </compound>
   <compound kind="file">
     <name>IAssetStorage.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_storage_8h</filename>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <class kind="class">IAssetStorage</class>
   </compound>
   <compound kind="file">
     <name>IAssetTransfer.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_transfer_8cpp</filename>
     <includes id="_i_asset_transfer_8h" name="IAssetTransfer.h" local="yes" imported="no">IAssetTransfer.h</includes>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
   </compound>
   <compound kind="file">
     <name>IAssetTransfer.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_transfer_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
@@ -344,14 +330,14 @@
   </compound>
   <compound kind="file">
     <name>IAssetTypeFactory.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_type_factory_8h</filename>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <class kind="class">IAssetTypeFactory</class>
   </compound>
   <compound kind="file">
     <name>IAssetUploadTransfer.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_upload_transfer_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -359,7 +345,7 @@
   </compound>
   <compound kind="file">
     <name>IAssetUploadTransfer.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_i_asset_upload_transfer_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
@@ -368,14 +354,14 @@
   </compound>
   <compound kind="file">
     <name>NullAssetFactory.h</name>
-    <path>C:/test/TundraLCC/src/Core/Asset/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Asset/</path>
     <filename>_null_asset_factory_8h</filename>
     <includes id="_i_asset_type_factory_8h" name="IAssetTypeFactory.h" local="yes" imported="no">IAssetTypeFactory.h</includes>
     <class kind="class">NullAssetFactory</class>
   </compound>
   <compound kind="file">
     <name>AssetModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_asset_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_asset_module_8h" name="AssetModule.h" local="yes" imported="no">AssetModule.h</includes>
@@ -410,7 +396,7 @@
   </compound>
   <compound kind="file">
     <name>AssetModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_asset_module_8h</filename>
     <includes id="_i_module_8h" name="IModule.h" local="yes" imported="no">IModule.h</includes>
     <includes id="_i_asset_provider_8h" name="IAssetProvider.h" local="yes" imported="no">IAssetProvider.h</includes>
@@ -428,7 +414,7 @@
   </compound>
   <compound kind="file">
     <name>AssetModuleApi.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_asset_module_api_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -440,26 +426,27 @@
   </compound>
   <compound kind="file">
     <name>SettingUpWebdav.dox</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/doc/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/doc/</path>
     <filename>_setting_up_webdav_8dox</filename>
   </compound>
   <compound kind="file">
     <name>HttpAssetProvider.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_http_asset_provider_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
+    <includes id="_application_8h" name="Application.h" local="yes" imported="no">Application.h</includes>
     <includes id="_http_asset_provider_8h" name="HttpAssetProvider.h" local="yes" imported="no">HttpAssetProvider.h</includes>
     <includes id="_http_asset_transfer_8h" name="HttpAssetTransfer.h" local="yes" imported="no">HttpAssetTransfer.h</includes>
-    <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_i_asset_upload_transfer_8h" name="IAssetUploadTransfer.h" local="yes" imported="no">IAssetUploadTransfer.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
     <includes id="_asset_cache_8h" name="AssetCache.h" local="yes" imported="no">AssetCache.h</includes>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
+    <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
   </compound>
   <compound kind="file">
     <name>HttpAssetProvider.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_http_asset_provider_8h</filename>
     <includes id="_asset_module_api_8h" name="AssetModuleApi.h" local="yes" imported="no">AssetModuleApi.h</includes>
     <includes id="_i_asset_provider_8h" name="IAssetProvider.h" local="yes" imported="no">IAssetProvider.h</includes>
@@ -477,7 +464,7 @@
   </compound>
   <compound kind="file">
     <name>HttpAssetStorage.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_http_asset_storage_8cpp</filename>
     <includes id="_http_asset_provider_8h" name="HttpAssetProvider.h" local="yes" imported="no">HttpAssetProvider.h</includes>
     <includes id="_http_asset_storage_8h" name="HttpAssetStorage.h" local="yes" imported="no">HttpAssetStorage.h</includes>
@@ -485,7 +472,7 @@
   </compound>
   <compound kind="file">
     <name>HttpAssetStorage.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_http_asset_storage_8h</filename>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
     <includes id="_i_asset_storage_8h" name="IAssetStorage.h" local="yes" imported="no">IAssetStorage.h</includes>
@@ -494,7 +481,7 @@
   </compound>
   <compound kind="file">
     <name>HttpAssetTransfer.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_http_asset_transfer_8h</filename>
     <includes id="_i_asset_transfer_8h" name="IAssetTransfer.h" local="yes" imported="no">IAssetTransfer.h</includes>
     <class kind="class">HttpAssetTransfer</class>
@@ -508,25 +495,24 @@
   </compound>
   <compound kind="file">
     <name>LocalAssetProvider.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_local_asset_provider_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
-    <includes id="_asset_module_8h" name="AssetModule.h" local="yes" imported="no">AssetModule.h</includes>
-    <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_local_asset_provider_8h" name="LocalAssetProvider.h" local="yes" imported="no">LocalAssetProvider.h</includes>
-    <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
     <includes id="_local_asset_storage_8h" name="LocalAssetStorage.h" local="yes" imported="no">LocalAssetStorage.h</includes>
+    <includes id="_asset_module_8h" name="AssetModule.h" local="yes" imported="no">AssetModule.h</includes>
     <includes id="_i_asset_upload_transfer_8h" name="IAssetUploadTransfer.h" local="yes" imported="no">IAssetUploadTransfer.h</includes>
     <includes id="_i_asset_transfer_8h" name="IAssetTransfer.h" local="yes" imported="no">IAssetTransfer.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
+    <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <namespace>Asset</namespace>
   </compound>
   <compound kind="file">
     <name>LocalAssetProvider.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_local_asset_provider_8h</filename>
     <includes id="_asset_module_api_8h" name="AssetModuleApi.h" local="yes" imported="no">AssetModuleApi.h</includes>
     <includes id="_i_asset_provider_8h" name="IAssetProvider.h" local="yes" imported="no">IAssetProvider.h</includes>
@@ -543,18 +529,18 @@
   </compound>
   <compound kind="file">
     <name>LocalAssetStorage.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_local_asset_storage_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <includes id="_local_asset_storage_8h" name="LocalAssetStorage.h" local="yes" imported="no">LocalAssetStorage.h</includes>
     <includes id="_local_asset_provider_8h" name="LocalAssetProvider.h" local="yes" imported="no">LocalAssetProvider.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <namespace>Asset</namespace>
   </compound>
   <compound kind="file">
     <name>LocalAssetStorage.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_local_asset_storage_8h</filename>
     <includes id="_asset_module_api_8h" name="AssetModuleApi.h" local="yes" imported="no">AssetModuleApi.h</includes>
     <includes id="_i_asset_storage_8h" name="IAssetStorage.h" local="yes" imported="no">IAssetStorage.h</includes>
@@ -563,65 +549,65 @@
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_asset_module_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Console/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/</path>
     <filename>_console_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_editor_module_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_environment_module_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_framework_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_rendering_module_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_physics_module_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_tundra_protocol_module_2_stable_headers_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/</path>
     <filename>_asset_module_2_stable_headers_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/Console/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/</path>
     <filename>_console_2_stable_headers_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_editor_module_2_stable_headers_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
@@ -635,43 +621,43 @@
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_environment_module_2_stable_headers_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_framework_2_stable_headers_8h</filename>
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_rendering_module_2_stable_headers_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_physics_module_2_stable_headers_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_2_stable_headers_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
   </compound>
   <compound kind="file">
     <name>StableHeaders.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_tundra_protocol_module_2_stable_headers_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
   </compound>
   <compound kind="file">
     <name>TinyJson.h</name>
-    <path>C:/test/TundraLCC/src/Core/AssetModule/TinyJson/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/AssetModule/TinyJson/</path>
     <filename>_tiny_json_8h</filename>
     <class kind="struct">json::unicodecvt</class>
     <class kind="struct">json::unicodecvt&lt; char &gt;</class>
@@ -700,7 +686,7 @@
   </compound>
   <compound kind="file">
     <name>AudioAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_audio_a_p_i_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_audio_a_p_i_8h" name="AudioAPI.h" local="yes" imported="no">AudioAPI.h</includes>
@@ -719,7 +705,7 @@
   </compound>
   <compound kind="file">
     <name>AudioAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_audio_a_p_i_8h</filename>
     <includes id="_audio_fwd_8h" name="AudioFwd.h" local="yes" imported="no">AudioFwd.h</includes>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
@@ -732,7 +718,7 @@
   </compound>
   <compound kind="file">
     <name>AudioApiExports.h</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_audio_api_exports_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -744,7 +730,7 @@
   </compound>
   <compound kind="file">
     <name>AudioAsset.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_audio_asset_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
@@ -756,7 +742,7 @@
   </compound>
   <compound kind="file">
     <name>AudioAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_audio_asset_8h</filename>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
     <includes id="_audio_api_exports_8h" name="AudioApiExports.h" local="yes" imported="no">AudioApiExports.h</includes>
@@ -766,7 +752,7 @@
   </compound>
   <compound kind="file">
     <name>AudioFwd.h</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_audio_fwd_8h</filename>
     <member kind="typedef">
       <type>unsigned int</type>
@@ -820,7 +806,7 @@
   </compound>
   <compound kind="file">
     <name>OggVorbisLoader.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_ogg_vorbis_loader_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -860,7 +846,7 @@
   </compound>
   <compound kind="file">
     <name>OggVorbisLoader.h</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_ogg_vorbis_loader_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_sound_buffer_8h" name="SoundBuffer.h" local="yes" imported="no">SoundBuffer.h</includes>
@@ -883,7 +869,7 @@
   </compound>
   <compound kind="file">
     <name>SoundBuffer.h</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_sound_buffer_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_audio_api_exports_8h" name="AudioApiExports.h" local="yes" imported="no">AudioApiExports.h</includes>
@@ -891,7 +877,7 @@
   </compound>
   <compound kind="file">
     <name>SoundChannel.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_sound_channel_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -928,7 +914,7 @@
   </compound>
   <compound kind="file">
     <name>SoundChannel.h</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_sound_channel_8h</filename>
     <includes id="_sound_buffer_8h" name="SoundBuffer.h" local="yes" imported="no">SoundBuffer.h</includes>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
@@ -947,7 +933,7 @@
   </compound>
   <compound kind="file">
     <name>WavLoader.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_wav_loader_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -999,7 +985,7 @@
   </compound>
   <compound kind="file">
     <name>WavLoader.h</name>
-    <path>C:/test/TundraLCC/src/Core/Audio/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Audio/</path>
     <filename>_wav_loader_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_sound_buffer_8h" name="SoundBuffer.h" local="yes" imported="no">SoundBuffer.h</includes>
@@ -1029,7 +1015,7 @@
   </compound>
   <compound kind="file">
     <name>ConsoleAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Console/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/</path>
     <filename>_console_a_p_i_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_console_a_p_i_8h" name="ConsoleAPI.h" local="yes" imported="no">ConsoleAPI.h</includes>
@@ -1053,7 +1039,7 @@
   </compound>
   <compound kind="file">
     <name>ConsoleAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Console/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/</path>
     <filename>_console_a_p_i_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
@@ -1063,7 +1049,7 @@
   </compound>
   <compound kind="file">
     <name>ConsoleWidget.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Console/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/</path>
     <filename>_console_widget_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_console_widget_8h" name="ConsoleWidget.h" local="yes" imported="no">ConsoleWidget.h</includes>
@@ -1076,19 +1062,19 @@
   </compound>
   <compound kind="file">
     <name>ConsoleWidget.h</name>
-    <path>C:/test/TundraLCC/src/Core/Console/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/</path>
     <filename>_console_widget_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="class">ConsoleWidget</class>
   </compound>
   <compound kind="file">
     <name>DebugConsole.dox</name>
-    <path>C:/test/TundraLCC/src/Core/Console/doc/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/doc/</path>
     <filename>_debug_console_8dox</filename>
   </compound>
   <compound kind="file">
     <name>ShellInputThread.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Console/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/</path>
     <filename>_shell_input_thread_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_shell_input_thread_8h" name="ShellInputThread.h" local="yes" imported="no">ShellInputThread.h</includes>
@@ -1096,13 +1082,13 @@
   </compound>
   <compound kind="file">
     <name>ShellInputThread.h</name>
-    <path>C:/test/TundraLCC/src/Core/Console/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Console/</path>
     <filename>_shell_input_thread_8h</filename>
     <class kind="class">ShellInputThread</class>
   </compound>
   <compound kind="file">
     <name>AddComponentDialog.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_add_component_dialog_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_add_component_dialog_8h" name="AddComponentDialog.h" local="yes" imported="no">AddComponentDialog.h</includes>
@@ -1114,7 +1100,7 @@
   </compound>
   <compound kind="file">
     <name>AddComponentDialog.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_add_component_dialog_8h</filename>
     <includes id="_e_c_editor_module_api_8h" name="ECEditorModuleApi.h" local="yes" imported="no">ECEditorModuleApi.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -1123,7 +1109,7 @@
   </compound>
   <compound kind="file">
     <name>AddContentWindow.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_add_content_window_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_add_content_window_8h" name="AddContentWindow.h" local="yes" imported="no">AddContentWindow.h</includes>
@@ -1232,7 +1218,7 @@
   </compound>
   <compound kind="file">
     <name>AddContentWindow.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_add_content_window_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
@@ -1242,7 +1228,7 @@
   </compound>
   <compound kind="file">
     <name>AssetsWindow.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_assets_window_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_assets_window_8h" name="AssetsWindow.h" local="yes" imported="no">AssetsWindow.h</includes>
@@ -1265,14 +1251,14 @@
   </compound>
   <compound kind="file">
     <name>AssetsWindow.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_assets_window_8h</filename>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <class kind="class">AssetsWindow</class>
   </compound>
   <compound kind="file">
     <name>AssetTreeWidget.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_asset_tree_widget_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_asset_tree_widget_8h" name="AssetTreeWidget.h" local="yes" imported="no">AssetTreeWidget.h</includes>
@@ -1287,6 +1273,7 @@
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
     <includes id="_i_asset_storage_8h" name="IAssetStorage.h" local="yes" imported="no">IAssetStorage.h</includes>
+    <includes id="_scene_8h" name="Scene.h" local="yes" imported="no">Scene.h</includes>
     <includes id="_asset_cache_8h" name="AssetCache.h" local="yes" imported="no">AssetCache.h</includes>
     <includes id="_qt_utils_8h" name="QtUtils.h" local="yes" imported="no">QtUtils.h</includes>
     <includes id="_ui_a_p_i_8h" name="UiAPI.h" local="yes" imported="no">UiAPI.h</includes>
@@ -1296,14 +1283,14 @@
   </compound>
   <compound kind="file">
     <name>AssetTreeWidget.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_asset_tree_widget_8h</filename>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <class kind="class">AssetTreeWidget</class>
   </compound>
   <compound kind="file">
     <name>CloneAssetDialog.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_clone_asset_dialog_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_clone_asset_dialog_8h" name="CloneAssetDialog.h" local="yes" imported="no">CloneAssetDialog.h</includes>
@@ -1313,14 +1300,14 @@
   </compound>
   <compound kind="file">
     <name>CloneAssetDialog.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_clone_asset_dialog_8h</filename>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <class kind="class">CloneAssetDialog</class>
   </compound>
   <compound kind="file">
     <name>ComponentGroup.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_component_group_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_component_group_8h" name="ComponentGroup.h" local="yes" imported="no">ComponentGroup.h</includes>
@@ -1333,14 +1320,14 @@
   </compound>
   <compound kind="file">
     <name>ComponentGroup.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_component_group_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <class kind="struct">ComponentGroup</class>
   </compound>
   <compound kind="file">
     <name>dllmain.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>dllmain_8cpp</filename>
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
     <includes id="_e_c_editor_module_8h" name="ECEditorModule.h" local="yes" imported="no">ECEditorModule.h</includes>
@@ -1355,12 +1342,12 @@
   </compound>
   <compound kind="file">
     <name>ECEditorModule.dox</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/doc/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/doc/</path>
     <filename>_e_c_editor_module_8dox</filename>
   </compound>
   <compound kind="file">
     <name>DoxygenDocReader.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_doxygen_doc_reader_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -1404,7 +1391,7 @@
   </compound>
   <compound kind="file">
     <name>DoxygenDocReader.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_doxygen_doc_reader_8h</filename>
     <namespace>DoxygenDocReader</namespace>
     <member kind="function">
@@ -1424,7 +1411,7 @@
   </compound>
   <compound kind="file">
     <name>ECAttributeEditor.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_attribute_editor_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c_attribute_editor_8h" name="ECAttributeEditor.h" local="yes" imported="no">ECAttributeEditor.h</includes>
@@ -1457,7 +1444,7 @@
   </compound>
   <compound kind="file">
     <name>ECAttributeEditor.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_attribute_editor_8h</filename>
     <includes id="float2_8h" name="float2.h" local="yes" imported="no">Math/float2.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
@@ -1527,16 +1514,16 @@
   </compound>
   <compound kind="file">
     <name>ECAttributeEditor.inl</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_attribute_editor_8inl</filename>
   </compound>
   <compound kind="file">
     <name>ECBrowser.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_browser_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c_browser_8h" name="ECBrowser.h" local="yes" imported="no">ECBrowser.h</includes>
-    <includes id="_component_group_8h" name="ComponentGroup.h" local="yes" imported="no">COmponentGroup.h</includes>
+    <includes id="_component_group_8h" name="ComponentGroup.h" local="yes" imported="no">ComponentGroup.h</includes>
     <includes id="_e_c_component_editor_8h" name="ECComponentEditor.h" local="yes" imported="no">ECComponentEditor.h</includes>
     <includes id="_tree_widget_item_expand_memory_8h" name="TreeWidgetItemExpandMemory.h" local="yes" imported="no">TreeWidgetItemExpandMemory.h</includes>
     <includes id="_tree_widget_utils_8h" name="TreeWidgetUtils.h" local="yes" imported="no">TreeWidgetUtils.h</includes>
@@ -1552,7 +1539,7 @@
   </compound>
   <compound kind="file">
     <name>ECBrowser.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_browser_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -1568,7 +1555,7 @@
   </compound>
   <compound kind="file">
     <name>ECComponentEditor.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_component_editor_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c_component_editor_8h" name="ECComponentEditor.h" local="yes" imported="no">ECComponentEditor.h</includes>
@@ -1585,7 +1572,7 @@
   </compound>
   <compound kind="file">
     <name>ECComponentEditor.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_component_editor_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_attribute_change_type_8h" name="AttributeChangeType.h" local="yes" imported="no">AttributeChangeType.h</includes>
@@ -1593,7 +1580,7 @@
   </compound>
   <compound kind="file">
     <name>ECEditorModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_editor_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c_editor_module_8h" name="ECEditorModule.h" local="yes" imported="no">ECEditorModule.h</includes>
@@ -1621,7 +1608,7 @@
   </compound>
   <compound kind="file">
     <name>ECEditorModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_editor_module_8h</filename>
     <includes id="_i_module_8h" name="IModule.h" local="yes" imported="no">IModule.h</includes>
     <includes id="_e_c_editor_module_api_8h" name="ECEditorModuleApi.h" local="yes" imported="no">ECEditorModuleApi.h</includes>
@@ -1638,7 +1625,7 @@
   </compound>
   <compound kind="file">
     <name>ECEditorModuleApi.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_editor_module_api_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -1650,7 +1637,7 @@
   </compound>
   <compound kind="file">
     <name>ECEditorWindow.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_editor_window_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c_editor_window_8h" name="ECEditorWindow.h" local="yes" imported="no">ECEditorWindow.h</includes>
@@ -1697,7 +1684,7 @@
   </compound>
   <compound kind="file">
     <name>ECEditorWindow.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_e_c_editor_window_8h</filename>
     <includes id="_e_c_editor_module_api_8h" name="ECEditorModuleApi.h" local="yes" imported="no">ECEditorModuleApi.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -1708,7 +1695,7 @@
   </compound>
   <compound kind="file">
     <name>EcXmlEditorWidget.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_ec_xml_editor_widget_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ec_xml_editor_widget_8h" name="EcXmlEditorWidget.h" local="yes" imported="no">EcXmlEditorWidget.h</includes>
@@ -1723,14 +1710,14 @@
   </compound>
   <compound kind="file">
     <name>EcXmlEditorWidget.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_ec_xml_editor_widget_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <class kind="class">EcXmlEditorWidget</class>
   </compound>
   <compound kind="file">
     <name>EditorButtonFactory.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_editor_button_factory_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_editor_button_factory_8h" name="EditorButtonFactory.h" local="yes" imported="no">EditorButtonFactory.h</includes>
@@ -1738,13 +1725,13 @@
   </compound>
   <compound kind="file">
     <name>EditorButtonFactory.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_editor_button_factory_8h</filename>
     <class kind="class">EditorButtonFactory</class>
   </compound>
   <compound kind="file">
     <name>EntityActionDialog.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_entity_action_dialog_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_entity_action_dialog_8h" name="EntityActionDialog.h" local="yes" imported="no">EntityActionDialog.h</includes>
@@ -1754,7 +1741,7 @@
   </compound>
   <compound kind="file">
     <name>EntityActionDialog.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_entity_action_dialog_8h</filename>
     <includes id="_e_c_editor_module_api_8h" name="ECEditorModuleApi.h" local="yes" imported="no">ECEditorModuleApi.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
@@ -1763,7 +1750,7 @@
   </compound>
   <compound kind="file">
     <name>EntityPlacer.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_entity_placer_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_entity_placer_8h" name="EntityPlacer.h" local="yes" imported="no">EntityPlacer.h</includes>
@@ -1780,7 +1767,7 @@
   </compound>
   <compound kind="file">
     <name>EntityPlacer.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_entity_placer_8h</filename>
     <includes id="_input_fwd_8h" name="InputFwd.h" local="yes" imported="no">InputFwd.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
@@ -1792,7 +1779,7 @@
   </compound>
   <compound kind="file">
     <name>FunctionDialog.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_function_dialog_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_function_dialog_8h" name="FunctionDialog.h" local="yes" imported="no">FunctionDialog.h</includes>
@@ -1806,7 +1793,7 @@
   </compound>
   <compound kind="file">
     <name>FunctionDialog.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_function_dialog_8h</filename>
     <includes id="_e_c_editor_module_api_8h" name="ECEditorModuleApi.h" local="yes" imported="no">ECEditorModuleApi.h</includes>
     <includes id="_entity_action_8h" name="EntityAction.h" local="yes" imported="no">EntityAction.h</includes>
@@ -1830,7 +1817,7 @@
   </compound>
   <compound kind="file">
     <name>InvokeItem.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_invoke_item_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -1839,7 +1826,7 @@
   </compound>
   <compound kind="file">
     <name>InvokeItem.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_invoke_item_8h</filename>
     <includes id="_e_c_editor_module_api_8h" name="ECEditorModuleApi.h" local="yes" imported="no">ECEditorModuleApi.h</includes>
     <includes id="_entity_action_8h" name="EntityAction.h" local="yes" imported="no">EntityAction.h</includes>
@@ -1847,7 +1834,7 @@
   </compound>
   <compound kind="file">
     <name>LineEditPropertyFactory.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_line_edit_property_factory_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_line_edit_property_factory_8h" name="LineEditPropertyFactory.h" local="yes" imported="no">LineEditPropertyFactory.h</includes>
@@ -1858,7 +1845,7 @@
   </compound>
   <compound kind="file">
     <name>LineEditPropertyFactory.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_line_edit_property_factory_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_i_attribute_8h" name="IAttribute.h" local="yes" imported="no">IAttribute.h</includes>
@@ -1903,7 +1890,7 @@
   </compound>
   <compound kind="file">
     <name>MultiEditPropertyFactory.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_multi_edit_property_factory_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_multi_edit_property_factory_8h" name="MultiEditPropertyFactory.h" local="yes" imported="no">MultiEditPropertyFactory.h</includes>
@@ -1912,7 +1899,7 @@
   </compound>
   <compound kind="file">
     <name>MultiEditPropertyFactory.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_multi_edit_property_factory_8h</filename>
     <includes id="_multi_edit_property_manager_8h" name="MultiEditPropertyManager.h" local="yes" imported="no">MultiEditPropertyManager.h</includes>
     <class kind="class">MultiEditButton</class>
@@ -1927,7 +1914,7 @@
   </compound>
   <compound kind="file">
     <name>MultiEditPropertyManager.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_multi_edit_property_manager_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_multi_edit_property_manager_8h" name="MultiEditPropertyManager.h" local="yes" imported="no">MultiEditPropertyManager.h</includes>
@@ -1935,7 +1922,7 @@
   </compound>
   <compound kind="file">
     <name>MultiEditPropertyManager.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_multi_edit_property_manager_8h</filename>
     <includes id="_color_8h" name="Color.h" local="yes" imported="no">Color.h</includes>
     <class kind="class">MultiEditPropertyManager</class>
@@ -1950,7 +1937,7 @@
   </compound>
   <compound kind="file">
     <name>RequestNewAssetDialog.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_request_new_asset_dialog_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_request_new_asset_dialog_8h" name="RequestNewAssetDialog.h" local="yes" imported="no">RequestNewAssetDialog.h</includes>
@@ -1960,13 +1947,13 @@
   </compound>
   <compound kind="file">
     <name>RequestNewAssetDialog.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_request_new_asset_dialog_8h</filename>
     <class kind="class">RequestNewAssetDialog</class>
   </compound>
   <compound kind="file">
     <name>SceneStructureModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_scene_structure_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_scene_structure_module_8h" name="SceneStructureModule.h" local="yes" imported="no">SceneStructureModule.h</includes>
@@ -1997,7 +1984,7 @@
   </compound>
   <compound kind="file">
     <name>SceneStructureModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_scene_structure_module_8h</filename>
     <includes id="_i_module_8h" name="IModule.h" local="yes" imported="no">IModule.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
@@ -2009,7 +1996,7 @@
   </compound>
   <compound kind="file">
     <name>SceneStructureWindow.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_scene_structure_window_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_scene_structure_window_8h" name="SceneStructureWindow.h" local="yes" imported="no">SceneStructureWindow.h</includes>
@@ -2027,14 +2014,15 @@
   </compound>
   <compound kind="file">
     <name>SceneStructureWindow.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_scene_structure_window_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
+    <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="class">SceneStructureWindow</class>
   </compound>
   <compound kind="file">
     <name>SceneTreeWidget.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_scene_tree_widget_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_scene_tree_widget_8h" name="SceneTreeWidget.h" local="yes" imported="no">SceneTreeWidget.h</includes>
@@ -2068,7 +2056,7 @@
   </compound>
   <compound kind="file">
     <name>SceneTreeWidget.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_scene_tree_widget_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
@@ -2078,7 +2066,7 @@
   </compound>
   <compound kind="file">
     <name>SceneTreeWidgetItems.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_scene_tree_widget_items_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_scene_tree_widget_items_8h" name="SceneTreeWidgetItems.h" local="yes" imported="no">SceneTreeWidgetItems.h</includes>
@@ -2090,7 +2078,7 @@
   </compound>
   <compound kind="file">
     <name>SceneTreeWidgetItems.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_scene_tree_widget_items_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
@@ -2104,7 +2092,7 @@
   </compound>
   <compound kind="file">
     <name>SupportedFileTypes.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_supported_file_types_8h</filename>
     <member kind="function">
       <type>const QString</type>
@@ -2179,7 +2167,7 @@
   </compound>
   <compound kind="file">
     <name>TransformEditor.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_transform_editor_8cpp</filename>
     <includes id="_transform_editor_8h" name="TransformEditor.h" local="yes" imported="no">TransformEditor.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
@@ -2191,7 +2179,7 @@
   </compound>
   <compound kind="file">
     <name>TransformEditor.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_transform_editor_8h</filename>
     <includes id="_e_c_editor_module_api_8h" name="ECEditorModuleApi.h" local="yes" imported="no">ECEditorModuleApi.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
@@ -2203,7 +2191,7 @@
   </compound>
   <compound kind="file">
     <name>TreeWidgetItemExpandMemory.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_tree_widget_item_expand_memory_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -2213,13 +2201,13 @@
   </compound>
   <compound kind="file">
     <name>TreeWidgetItemExpandMemory.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_tree_widget_item_expand_memory_8h</filename>
     <class kind="class">TreeWidgetItemExpandMemory</class>
   </compound>
   <compound kind="file">
     <name>TreeWidgetUtils.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_tree_widget_utils_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -2247,7 +2235,7 @@
   </compound>
   <compound kind="file">
     <name>TreeWidgetUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/ECEditorModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/ECEditorModule/</path>
     <filename>_tree_widget_utils_8h</filename>
     <member kind="function">
       <type>void</type>
@@ -2273,7 +2261,7 @@
   </compound>
   <compound kind="file">
     <name>EC_EnvironmentLight.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___environment_light_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___environment_light_8h" name="EC_EnvironmentLight.h" local="yes" imported="no">EC_EnvironmentLight.h</includes>
@@ -2299,7 +2287,7 @@
   </compound>
   <compound kind="file">
     <name>EC_EnvironmentLight.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___environment_light_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -2310,7 +2298,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Fog.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___fog_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___fog_8h" name="EC_Fog.h" local="yes" imported="no">EC_Fog.h</includes>
@@ -2330,7 +2318,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Fog.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___fog_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_color_8h" name="Color.h" local="yes" imported="no">Color.h</includes>
@@ -2338,7 +2326,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Sky.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___sky_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___sky_8h" name="EC_Sky.h" local="yes" imported="no">EC_Sky.h</includes>
@@ -2368,7 +2356,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Sky.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___sky_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_i_attribute_8h" name="IAttribute.h" local="yes" imported="no">IAttribute.h</includes>
@@ -2380,7 +2368,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Terrain.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___terrain_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___terrain_8h" name="EC_Terrain.h" local="yes" imported="no">EC_Terrain.h</includes>
@@ -2452,7 +2440,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Terrain.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___terrain_8h</filename>
     <includes id="_environment_module_api_8h" name="EnvironmentModuleApi.h" local="yes" imported="no">EnvironmentModuleApi.h</includes>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
@@ -2468,7 +2456,7 @@
   </compound>
   <compound kind="file">
     <name>EC_WaterPlane.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___water_plane_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___water_plane_8h" name="EC_WaterPlane.h" local="yes" imported="no">EC_WaterPlane.h</includes>
@@ -2494,7 +2482,7 @@
   </compound>
   <compound kind="file">
     <name>EC_WaterPlane.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_e_c___water_plane_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -2506,7 +2494,7 @@
   </compound>
   <compound kind="file">
     <name>EnvironmentModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_environment_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_environment_module_8h" name="EnvironmentModule.h" local="yes" imported="no">EnvironmentModule.h</includes>
@@ -2535,7 +2523,7 @@
   </compound>
   <compound kind="file">
     <name>EnvironmentModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_environment_module_8h</filename>
     <includes id="_environment_module_api_8h" name="EnvironmentModuleApi.h" local="yes" imported="no">EnvironmentModuleApi.h</includes>
     <includes id="_i_module_8h" name="IModule.h" local="yes" imported="no">IModule.h</includes>
@@ -2545,7 +2533,7 @@
   </compound>
   <compound kind="file">
     <name>EnvironmentModuleApi.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_environment_module_api_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -2557,7 +2545,7 @@
   </compound>
   <compound kind="file">
     <name>TerrainLabel.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_terrain_label_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -2566,14 +2554,14 @@
   </compound>
   <compound kind="file">
     <name>TerrainLabel.h</name>
-    <path>C:/test/TundraLCC/src/Core/EnvironmentModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/EnvironmentModule/</path>
     <filename>_terrain_label_8h</filename>
     <class kind="class">Environment::TerrainLabel</class>
     <namespace>Environment</namespace>
   </compound>
   <compound kind="file">
     <name>Application.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_application_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_application_8h" name="Application.h" local="yes" imported="no">Application.h</includes>
@@ -2588,13 +2576,13 @@
   </compound>
   <compound kind="file">
     <name>Application.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_application_8h</filename>
     <class kind="class">Application</class>
   </compound>
   <compound kind="file">
     <name>ArgumentType.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_argument_type_8h</filename>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
     <class kind="class">IArgumentType</class>
@@ -2603,7 +2591,7 @@
   </compound>
   <compound kind="file">
     <name>Color.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_color_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">Math/MathFunc.h</includes>
@@ -2611,7 +2599,7 @@
   </compound>
   <compound kind="file">
     <name>ConfigAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_config_a_p_i_8cpp</filename>
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
     <includes id="_config_a_p_i_8h" name="ConfigAPI.h" local="yes" imported="no">ConfigAPI.h</includes>
@@ -2620,14 +2608,14 @@
   </compound>
   <compound kind="file">
     <name>ConfigAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_config_a_p_i_8h</filename>
     <class kind="class">ConfigData</class>
     <class kind="class">ConfigAPI</class>
   </compound>
   <compound kind="file">
     <name>CoreDefines.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_core_defines_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -2681,13 +2669,13 @@
   </compound>
   <compound kind="file">
     <name>CoreException.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_core_exception_8h</filename>
     <class kind="class">Exception</class>
   </compound>
   <compound kind="file">
     <name>CoreMath.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_core_math_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="union">inttofloat</class>
@@ -3163,7 +3151,7 @@
   </compound>
   <compound kind="file">
     <name>CoreStringUtils.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_core_string_utils_8cpp</filename>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
     <member kind="function">
@@ -3281,7 +3269,7 @@
   </compound>
   <compound kind="file">
     <name>CoreStringUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_core_string_utils_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -3422,7 +3410,7 @@
   </compound>
   <compound kind="file">
     <name>CoreTypes.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_core_types_8h</filename>
     <member kind="typedef">
       <type>boost::uint8_t</type>
@@ -3523,6 +3511,13 @@
       <arglist></arglist>
     </member>
     <member kind="typedef">
+      <type>unsigned int</type>
+      <name>component_id_t</name>
+      <anchorfile>_core_types_8h.html</anchorfile>
+      <anchor>a02d51228dae65d4226ce4bd5be0c6c42</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
       <type>std::vector&lt; std::string &gt;</type>
       <name>StringVector</name>
       <anchorfile>_core_types_8h.html</anchorfile>
@@ -3560,32 +3555,32 @@
   </compound>
   <compound kind="file">
     <name>DebugOperatorNew.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_debug_operator_new_8h</filename>
   </compound>
   <compound kind="file">
     <name>DisableMemoryLeakCheck.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_disable_memory_leak_check_8h</filename>
   </compound>
   <compound kind="file">
     <name>ConfigAPI.dox</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/doc/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/doc/</path>
     <filename>_config_a_p_i_8dox</filename>
   </compound>
   <compound kind="file">
     <name>Frame.dox</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/doc/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/doc/</path>
     <filename>_frame_8dox</filename>
   </compound>
   <compound kind="file">
     <name>EnableMemoryLeakCheck.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_enable_memory_leak_check_8h</filename>
   </compound>
   <compound kind="file">
     <name>FrameAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_frame_a_p_i_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_frame_a_p_i_8h" name="FrameAPI.h" local="yes" imported="no">FrameAPI.h</includes>
@@ -3595,7 +3590,7 @@
   </compound>
   <compound kind="file">
     <name>FrameAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_frame_a_p_i_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="class">FrameAPI</class>
@@ -3603,7 +3598,7 @@
   </compound>
   <compound kind="file">
     <name>Framework.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_framework_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
@@ -3625,22 +3620,23 @@
     <includes id="_ui_a_p_i_8h" name="UiAPI.h" local="yes" imported="no">UiAPI.h</includes>
     <includes id="_ui_main_window_8h" name="UiMainWindow.h" local="yes" imported="no">UiMainWindow.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
+    <class kind="struct">CommandLineParameterMap</class>
   </compound>
   <compound kind="file">
     <name>Framework.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_framework_8h</filename>
     <includes id="_framework_fwd_8h" name="FrameworkFwd.h" local="yes" imported="no">FrameworkFwd.h</includes>
     <class kind="class">Framework</class>
   </compound>
   <compound kind="file">
     <name>FrameworkFwd.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_framework_fwd_8h</filename>
   </compound>
   <compound kind="file">
     <name>FunctionInvoker.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_function_invoker_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_core_exception_8h" name="CoreException.h" local="yes" imported="no">CoreException.h</includes>
@@ -3651,13 +3647,13 @@
   </compound>
   <compound kind="file">
     <name>FunctionInvoker.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_function_invoker_8h</filename>
     <class kind="class">FunctionInvoker</class>
   </compound>
   <compound kind="file">
     <name>HighPerfClock.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_high_perf_clock_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <member kind="typedef">
@@ -3684,7 +3680,7 @@
   </compound>
   <compound kind="file">
     <name>IModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_i_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
@@ -3694,7 +3690,7 @@
   </compound>
   <compound kind="file">
     <name>IModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_i_module_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_framework_fwd_8h" name="FrameworkFwd.h" local="yes" imported="no">FrameworkFwd.h</includes>
@@ -3702,7 +3698,7 @@
   </compound>
   <compound kind="file">
     <name>IRenderer.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_i_renderer_8h</filename>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
     <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Math/Quat.h</includes>
@@ -3712,7 +3708,7 @@
   </compound>
   <compound kind="file">
     <name>LoggingFunctions.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_logging_functions_8cpp</filename>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
@@ -3734,7 +3730,7 @@
   </compound>
   <compound kind="file">
     <name>LoggingFunctions.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_logging_functions_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <member kind="enumeration">
@@ -3898,7 +3894,7 @@
   </compound>
   <compound kind="file">
     <name>AABB.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_a_a_b_b_8cpp</filename>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <includes id="_a_a_b_b_8h" name="AABB.h" local="yes" imported="no">AABB.h</includes>
@@ -3939,7 +3935,7 @@
   </compound>
   <compound kind="file">
     <name>AABB.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_a_a_b_b_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -3947,7 +3943,7 @@
   </compound>
   <compound kind="file">
     <name>Alignment.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_alignment_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <namespace>kNet</namespace>
@@ -3996,7 +3992,7 @@
   </compound>
   <compound kind="file">
     <name>Allocator.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_allocator_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <namespace>kNet</namespace>
@@ -4050,7 +4046,7 @@
   </compound>
   <compound kind="file">
     <name>Array.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_array_8h</filename>
     <includes id="_allocator_8h" name="Allocator.h" local="yes" imported="no">Allocator.h</includes>
     <includes id="_std_c_malloc_heap_8h" name="StdCMallocHeap.h" local="yes" imported="no">StdCMallocHeap.h</includes>
@@ -4060,8 +4056,15 @@
   </compound>
   <compound kind="file">
     <name>assume.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>assume_8h</filename>
+    <member kind="define">
+      <type>#define</type>
+      <name>MATH_ASSERT_ON_ASSUME</name>
+      <anchorfile>assume_8h.html</anchorfile>
+      <anchor>a794678594ae662bc963f7728e8724dff</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="define">
       <type>#define</type>
       <name>ARRAY_LENGTH</name>
@@ -4093,7 +4096,7 @@
   </compound>
   <compound kind="file">
     <name>BitOps.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_bit_ops_8cpp</filename>
     <includes id="_bit_ops_8h" name="BitOps.h" local="yes" imported="no">BitOps.h</includes>
     <member kind="function">
@@ -4106,7 +4109,7 @@
   </compound>
   <compound kind="file">
     <name>BitOps.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_bit_ops_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -4178,7 +4181,7 @@
   </compound>
   <compound kind="file">
     <name>Circle.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_circle_8cpp</filename>
     <includes id="_circle_8h" name="Circle.h" local="yes" imported="no">Circle.h</includes>
     <includes id="_plane_8h" name="Plane.h" local="yes" imported="no">Plane.h</includes>
@@ -4189,7 +4192,7 @@
   </compound>
   <compound kind="file">
     <name>Circle.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_circle_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -4197,13 +4200,13 @@
   </compound>
   <compound kind="file">
     <name>Complex.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_complex_8h</filename>
     <class kind="class">Complex</class>
   </compound>
   <compound kind="file">
     <name>Cone.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_cone_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -4211,7 +4214,7 @@
   </compound>
   <compound kind="file">
     <name>CoordinateAxisConvention.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_coordinate_axis_convention_8h</filename>
     <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">float3x3.h</includes>
     <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">float3x4.h</includes>
@@ -4220,7 +4223,7 @@
   </compound>
   <compound kind="file">
     <name>Cylinder.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_cylinder_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -4228,7 +4231,7 @@
   </compound>
   <compound kind="file">
     <name>Ellipsoid.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_ellipsoid_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -4236,7 +4239,7 @@
   </compound>
   <compound kind="file">
     <name>FixedPoint.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_fixed_point_8h</filename>
     <class kind="class">math::FixedPoint</class>
     <namespace>math</namespace>
@@ -4404,7 +4407,7 @@
   </compound>
   <compound kind="file">
     <name>float2.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float2_8cpp</filename>
     <includes id="float2_8h" name="float2.h" local="yes" imported="no">float2.h</includes>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
@@ -4428,7 +4431,7 @@
   </compound>
   <compound kind="file">
     <name>float2.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float2_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <class kind="class">float2</class>
@@ -4498,27 +4501,27 @@
   </compound>
   <compound kind="file">
     <name>float2x2.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float2x2_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>float2x2.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float2x2_8h</filename>
   </compound>
   <compound kind="file">
     <name>float2x3.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float2x3_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>float2x3.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float2x3_8h</filename>
   </compound>
   <compound kind="file">
     <name>float3.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float3_8cpp</filename>
     <includes id="float2_8h" name="float2.h" local="yes" imported="no">float2.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -4544,7 +4547,7 @@
   </compound>
   <compound kind="file">
     <name>float3.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float3_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <class kind="class">float3</class>
@@ -4621,17 +4624,17 @@
   </compound>
   <compound kind="file">
     <name>float3x3.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float3x3_8cpp</filename>
-    <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <includes id="assume_8h" name="assume.h" local="yes" imported="no">assume.h</includes>
-    <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
-    <includes id="float4_8h" name="float4.h" local="yes" imported="no">float4.h</includes>
-    <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">float3x3.h</includes>
-    <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">float3x4.h</includes>
-    <includes id="float4x4_8h" name="float4x4.h" local="yes" imported="no">float4x4.h</includes>
+    <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">Math/MathFunc.h</includes>
+    <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
+    <includes id="float4_8h" name="float4.h" local="yes" imported="no">Math/float4.h</includes>
+    <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">Math/float3x3.h</includes>
+    <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">Math/float3x4.h</includes>
+    <includes id="float4x4_8h" name="float4x4.h" local="yes" imported="no">Math/float4x4.h</includes>
     <includes id="_matrix_8inl" name="Matrix.inl" local="yes" imported="no">Matrix.inl</includes>
-    <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Quat.h</includes>
+    <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Math/Quat.h</includes>
     <includes id="_l_c_g_8h" name="LCG.h" local="yes" imported="no">LCG.h</includes>
     <includes id="_plane_8h" name="Plane.h" local="yes" imported="no">Plane.h</includes>
     <includes id="_transform_ops_8h" name="TransformOps.h" local="yes" imported="no">TransformOps.h</includes>
@@ -4666,11 +4669,11 @@
   </compound>
   <compound kind="file">
     <name>float3x3.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float3x3_8h</filename>
-    <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
+    <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">Math/MathFwd.h</includes>
     <includes id="_matrix_proxy_8h" name="MatrixProxy.h" local="yes" imported="no">MatrixProxy.h</includes>
-    <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
+    <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
     <includes id="_coordinate_axis_convention_8h" name="CoordinateAxisConvention.h" local="yes" imported="no">CoordinateAxisConvention.h</includes>
     <class kind="class">float3x3</class>
     <member kind="function">
@@ -4697,16 +4700,16 @@
   </compound>
   <compound kind="file">
     <name>float3x4.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float3x4_8cpp</filename>
-    <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
-    <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
-    <includes id="float4_8h" name="float4.h" local="yes" imported="no">float4.h</includes>
-    <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">float3x3.h</includes>
-    <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">float3x4.h</includes>
-    <includes id="float4x4_8h" name="float4x4.h" local="yes" imported="no">float4x4.h</includes>
+    <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">Math/MathFunc.h</includes>
+    <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
+    <includes id="float4_8h" name="float4.h" local="yes" imported="no">Math/float4.h</includes>
+    <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">Math/float3x3.h</includes>
+    <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">Math/float3x4.h</includes>
+    <includes id="float4x4_8h" name="float4x4.h" local="yes" imported="no">Math/float4x4.h</includes>
     <includes id="_matrix_8inl" name="Matrix.inl" local="yes" imported="no">Matrix.inl</includes>
-    <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Quat.h</includes>
+    <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Math/Quat.h</includes>
     <includes id="_l_c_g_8h" name="LCG.h" local="yes" imported="no">LCG.h</includes>
     <includes id="_plane_8h" name="Plane.h" local="yes" imported="no">Plane.h</includes>
     <includes id="_transform_ops_8h" name="TransformOps.h" local="yes" imported="no">TransformOps.h</includes>
@@ -4734,9 +4737,9 @@
   </compound>
   <compound kind="file">
     <name>float3x4.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float3x4_8h</filename>
-    <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
+    <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">Math/MathFwd.h</includes>
     <includes id="_matrix_proxy_8h" name="MatrixProxy.h" local="yes" imported="no">MatrixProxy.h</includes>
     <includes id="_coordinate_axis_convention_8h" name="CoordinateAxisConvention.h" local="yes" imported="no">CoordinateAxisConvention.h</includes>
     <class kind="class">float3x4</class>
@@ -4764,7 +4767,7 @@
   </compound>
   <compound kind="file">
     <name>float4.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float4_8cpp</filename>
     <includes id="float2_8h" name="float2.h" local="yes" imported="no">float2.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -4783,7 +4786,7 @@
   </compound>
   <compound kind="file">
     <name>float4.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float4_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -4868,16 +4871,16 @@
   </compound>
   <compound kind="file">
     <name>float4x4.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float4x4_8cpp</filename>
-    <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
-    <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
-    <includes id="float4_8h" name="float4.h" local="yes" imported="no">float4.h</includes>
-    <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">float3x3.h</includes>
-    <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">float3x4.h</includes>
-    <includes id="float4x4_8h" name="float4x4.h" local="yes" imported="no">float4x4.h</includes>
+    <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">Math/MathFunc.h</includes>
+    <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
+    <includes id="float4_8h" name="float4.h" local="yes" imported="no">Math/float4.h</includes>
+    <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">Math/float3x3.h</includes>
+    <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">Math/float3x4.h</includes>
+    <includes id="float4x4_8h" name="float4x4.h" local="yes" imported="no">Math/float4x4.h</includes>
     <includes id="_matrix_8inl" name="Matrix.inl" local="yes" imported="no">Matrix.inl</includes>
-    <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Quat.h</includes>
+    <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Math/Quat.h</includes>
     <includes id="_transform_ops_8h" name="TransformOps.h" local="yes" imported="no">TransformOps.h</includes>
     <includes id="_plane_8h" name="Plane.h" local="yes" imported="no">Plane.h</includes>
     <includes id="_l_c_g_8h" name="LCG.h" local="yes" imported="no">LCG.h</includes>
@@ -4919,9 +4922,9 @@
   </compound>
   <compound kind="file">
     <name>float4x4.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>float4x4_8h</filename>
-    <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
+    <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">Math/MathFwd.h</includes>
     <includes id="_matrix_proxy_8h" name="MatrixProxy.h" local="yes" imported="no">MatrixProxy.h</includes>
     <includes id="_coordinate_axis_convention_8h" name="CoordinateAxisConvention.h" local="yes" imported="no">CoordinateAxisConvention.h</includes>
     <class kind="class">float4x4</class>
@@ -4956,7 +4959,7 @@
   </compound>
   <compound kind="file">
     <name>FloatCmp.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_float_cmp_8h</filename>
     <member kind="function">
       <type>bool</type>
@@ -4968,7 +4971,7 @@
   </compound>
   <compound kind="file">
     <name>Frustum.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_frustum_8cpp</filename>
     <includes id="_a_a_b_b_8h" name="AABB.h" local="yes" imported="no">AABB.h</includes>
     <includes id="_circle_8h" name="Circle.h" local="yes" imported="no">Circle.h</includes>
@@ -4989,7 +4992,7 @@
   </compound>
   <compound kind="file">
     <name>Frustum.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_frustum_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -5021,13 +5024,13 @@
   </compound>
   <compound kind="file">
     <name>HitInfo.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_hit_info_8h</filename>
     <class kind="struct">HitInfo</class>
   </compound>
   <compound kind="file">
     <name>LCG.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_l_c_g_8cpp</filename>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <includes id="_l_c_g_8h" name="LCG.h" local="yes" imported="no">LCG.h</includes>
@@ -5035,14 +5038,14 @@
   </compound>
   <compound kind="file">
     <name>LCG.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_l_c_g_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="class">LCG</class>
   </compound>
   <compound kind="file">
     <name>Line.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_line_8cpp</filename>
     <includes id="_line_8h" name="Line.h" local="yes" imported="no">Line.h</includes>
     <includes id="_ray_8h" name="Ray.h" local="yes" imported="no">Ray.h</includes>
@@ -5102,7 +5105,7 @@
   </compound>
   <compound kind="file">
     <name>Line.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_line_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -5152,7 +5155,7 @@
   </compound>
   <compound kind="file">
     <name>LineSegment.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_line_segment_8cpp</filename>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <includes id="_a_a_b_b_8h" name="AABB.h" local="yes" imported="no">AABB.h</includes>
@@ -5198,7 +5201,7 @@
   </compound>
   <compound kind="file">
     <name>LineSegment.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_line_segment_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -5234,7 +5237,7 @@
   </compound>
   <compound kind="file">
     <name>MathConstants.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_math_constants_8h</filename>
     <member kind="variable">
       <type>const float</type>
@@ -5309,7 +5312,7 @@
   </compound>
   <compound kind="file">
     <name>MathFunc.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_math_func_8cpp</filename>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <member kind="function">
@@ -5371,7 +5374,7 @@
   </compound>
   <compound kind="file">
     <name>MathFunc.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_math_func_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_math_constants_8h" name="MathConstants.h" local="yes" imported="no">MathConstants.h</includes>
@@ -5698,7 +5701,7 @@
   </compound>
   <compound kind="file">
     <name>MathFwd.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_math_fwd_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -5717,7 +5720,7 @@
   </compound>
   <compound kind="file">
     <name>MathOps.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_math_ops_8cpp</filename>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <member kind="function">
@@ -5744,7 +5747,7 @@
   </compound>
   <compound kind="file">
     <name>Matrix.inl</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_matrix_8inl</filename>
     <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Quat.h</includes>
     <member kind="function">
@@ -6023,14 +6026,14 @@
   </compound>
   <compound kind="file">
     <name>MatrixProxy.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_matrix_proxy_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <class kind="class">MatrixProxy</class>
   </compound>
   <compound kind="file">
     <name>OBB.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_o_b_b_8cpp</filename>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <includes id="_o_b_b_8h" name="OBB.h" local="yes" imported="no">OBB.h</includes>
@@ -6064,7 +6067,7 @@
   </compound>
   <compound kind="file">
     <name>OBB.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_o_b_b_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -6072,7 +6075,7 @@
   </compound>
   <compound kind="file">
     <name>Plane.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_plane_8cpp</filename>
     <includes id="_a_a_b_b_8h" name="AABB.h" local="yes" imported="no">AABB.h</includes>
     <includes id="_circle_8h" name="Circle.h" local="yes" imported="no">Circle.h</includes>
@@ -6127,7 +6130,7 @@
   </compound>
   <compound kind="file">
     <name>Plane.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_plane_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -6163,7 +6166,7 @@
   </compound>
   <compound kind="file">
     <name>Polygon.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_polygon_8cpp</filename>
     <includes id="_polygon_8h" name="Polygon.h" local="yes" imported="no">Polygon.h</includes>
     <includes id="_plane_8h" name="Plane.h" local="yes" imported="no">Plane.h</includes>
@@ -6173,7 +6176,7 @@
   </compound>
   <compound kind="file">
     <name>Polygon.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_polygon_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -6181,23 +6184,23 @@
   </compound>
   <compound kind="file">
     <name>Polynomial.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_polynomial_8h</filename>
     <class kind="class">Polynomial</class>
   </compound>
   <compound kind="file">
     <name>Quat.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_quat_8cpp</filename>
-    <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Quat.h</includes>
-    <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
-    <includes id="float4_8h" name="float4.h" local="yes" imported="no">float4.h</includes>
-    <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">float3x3.h</includes>
-    <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">float3x4.h</includes>
-    <includes id="float4x4_8h" name="float4x4.h" local="yes" imported="no">float4x4.h</includes>
+    <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Math/Quat.h</includes>
+    <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
+    <includes id="float4_8h" name="float4.h" local="yes" imported="no">Math/float4.h</includes>
+    <includes id="float3x3_8h" name="float3x3.h" local="yes" imported="no">Math/float3x3.h</includes>
+    <includes id="float3x4_8h" name="float3x4.h" local="yes" imported="no">Math/float3x4.h</includes>
+    <includes id="float4x4_8h" name="float4x4.h" local="yes" imported="no">Math/float4x4.h</includes>
     <includes id="_l_c_g_8h" name="LCG.h" local="yes" imported="no">LCG.h</includes>
     <includes id="assume_8h" name="assume.h" local="yes" imported="no">assume.h</includes>
-    <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
+    <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">Math/MathFunc.h</includes>
     <member kind="function">
       <type>Quat</type>
       <name>Lerp</name>
@@ -6222,9 +6225,9 @@
   </compound>
   <compound kind="file">
     <name>Quat.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_quat_8h</filename>
-    <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
+    <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">Math/MathFwd.h</includes>
     <class kind="class">Quat</class>
     <member kind="function">
       <type>Quat</type>
@@ -6243,7 +6246,7 @@
   </compound>
   <compound kind="file">
     <name>Ray.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_ray_8cpp</filename>
     <includes id="_a_a_b_b_8h" name="AABB.h" local="yes" imported="no">AABB.h</includes>
     <includes id="_line_8h" name="Line.h" local="yes" imported="no">Line.h</includes>
@@ -6289,7 +6292,7 @@
   </compound>
   <compound kind="file">
     <name>Ray.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_ray_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -6325,13 +6328,13 @@
   </compound>
   <compound kind="file">
     <name>Rect.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_rect_8h</filename>
     <class kind="class">Rect</class>
   </compound>
   <compound kind="file">
     <name>Sphere.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_sphere_8cpp</filename>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <includes id="_array_8h" name="Array.h" local="yes" imported="no">Array.h</includes>
@@ -6360,7 +6363,7 @@
   </compound>
   <compound kind="file">
     <name>Sphere.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_sphere_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -6368,7 +6371,7 @@
   </compound>
   <compound kind="file">
     <name>StdCMallocHeap.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_std_c_malloc_heap_8h</filename>
     <includes id="_allocator_8h" name="Allocator.h" local="yes" imported="no">Allocator.h</includes>
     <includes id="_alignment_8h" name="Alignment.h" local="yes" imported="no">Alignment.h</includes>
@@ -6377,7 +6380,7 @@
   </compound>
   <compound kind="file">
     <name>TransformOps.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_transform_ops_8cpp</filename>
     <includes id="_transform_ops_8h" name="TransformOps.h" local="yes" imported="no">TransformOps.h</includes>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
@@ -6471,7 +6474,7 @@
   </compound>
   <compound kind="file">
     <name>TransformOps.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_transform_ops_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -6564,7 +6567,7 @@
   </compound>
   <compound kind="file">
     <name>Triangle.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_triangle_8cpp</filename>
     <includes id="_math_func_8h" name="MathFunc.h" local="yes" imported="no">MathFunc.h</includes>
     <includes id="float2_8h" name="float2.h" local="yes" imported="no">float2.h</includes>
@@ -6633,7 +6636,7 @@
   </compound>
   <compound kind="file">
     <name>Triangle.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/Math/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/Math/</path>
     <filename>_triangle_8h</filename>
     <includes id="_math_fwd_8h" name="MathFwd.h" local="yes" imported="no">MathFwd.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">float3.h</includes>
@@ -6669,12 +6672,12 @@
   </compound>
   <compound kind="file">
     <name>MemoryLeakCheck.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_memory_leak_check_8h</filename>
   </compound>
   <compound kind="file">
     <name>PluginAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_plugin_a_p_i_8cpp</filename>
     <includes id="_plugin_a_p_i_8h" name="PluginAPI.h" local="yes" imported="no">PluginAPI.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
@@ -6711,14 +6714,14 @@
   </compound>
   <compound kind="file">
     <name>PluginAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_plugin_a_p_i_8h</filename>
     <class kind="class">PluginAPI</class>
     <class kind="struct">PluginAPI::Plugin</class>
   </compound>
   <compound kind="file">
     <name>Profiler.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_profiler_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_profiler_8h" name="Profiler.h" local="yes" imported="no">Profiler.h</includes>
@@ -6737,13 +6740,14 @@
   </compound>
   <compound kind="file">
     <name>Profiler.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_profiler_8h</filename>
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
     <includes id="_high_perf_clock_8h" name="HighPerfClock.h" local="yes" imported="no">HighPerfClock.h</includes>
     <class kind="class">ProfilerBlock</class>
     <class kind="class">ProfilerNodeTree</class>
     <class kind="class">ProfilerNode</class>
+    <class kind="class">ProfilerQObj</class>
     <class kind="class">Profiler</class>
     <class kind="class">ProfilerSection</class>
     <namespace>anonymous_namespace{Profiler.h}</namespace>
@@ -6799,7 +6803,7 @@
   </compound>
   <compound kind="file">
     <name>QtUtils.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_qt_utils_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_qt_utils_8h" name="QtUtils.h" local="yes" imported="no">QtUtils.h</includes>
@@ -6830,7 +6834,7 @@
   </compound>
   <compound kind="file">
     <name>QtUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_qt_utils_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <namespace>QtUtils</namespace>
@@ -6858,12 +6862,12 @@
   </compound>
   <compound kind="file">
     <name>QuatUtils.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_quat_utils_8cpp</filename>
   </compound>
   <compound kind="file">
     <name>QuatUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_quat_utils_8h</filename>
     <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Math/Quat.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
@@ -6871,7 +6875,7 @@
   </compound>
   <compound kind="file">
     <name>Transform.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_transform_8h</filename>
     <includes id="_core_math_8h" name="CoreMath.h" local="yes" imported="no">CoreMath.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
@@ -6885,20 +6889,20 @@
   </compound>
   <compound kind="file">
     <name>VersionInfo.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_version_info_8cpp</filename>
     <includes id="_version_info_8h" name="VersionInfo.h" local="yes" imported="no">VersionInfo.h</includes>
   </compound>
   <compound kind="file">
     <name>VersionInfo.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_version_info_8h</filename>
     <class kind="class">ApiVersionInfo</class>
     <class kind="class">ApplicationVersionInfo</class>
   </compound>
   <compound kind="file">
     <name>XMLUtilities.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_x_m_l_utilities_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -6991,7 +6995,7 @@
   </compound>
   <compound kind="file">
     <name>XMLUtilities.h</name>
-    <path>C:/test/TundraLCC/src/Core/Framework/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Framework/</path>
     <filename>_x_m_l_utilities_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_color_8h" name="Color.h" local="yes" imported="no">Color.h</includes>
@@ -7084,7 +7088,7 @@
   </compound>
   <compound kind="file">
     <name>EC_InputMapper.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_e_c___input_mapper_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___input_mapper_8h" name="EC_InputMapper.h" local="yes" imported="no">EC_InputMapper.h</includes>
@@ -7098,7 +7102,7 @@
   </compound>
   <compound kind="file">
     <name>EC_InputMapper.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_e_c___input_mapper_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_input_fwd_8h" name="InputFwd.h" local="yes" imported="no">InputFwd.h</includes>
@@ -7109,14 +7113,14 @@
   </compound>
   <compound kind="file">
     <name>GestureEvent.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_gesture_event_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="class">GestureEvent</class>
   </compound>
   <compound kind="file">
     <name>InputAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_input_a_p_i_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_input_a_p_i_8h" name="InputAPI.h" local="yes" imported="no">InputAPI.h</includes>
@@ -7138,7 +7142,7 @@
   </compound>
   <compound kind="file">
     <name>InputAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_input_a_p_i_8h</filename>
     <includes id="_input_fwd_8h" name="InputFwd.h" local="yes" imported="no">InputFwd.h</includes>
     <includes id="_key_event_8h" name="KeyEvent.h" local="yes" imported="no">KeyEvent.h</includes>
@@ -7149,7 +7153,7 @@
   </compound>
   <compound kind="file">
     <name>InputContext.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_input_context_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_input_context_8h" name="InputContext.h" local="yes" imported="no">InputContext.h</includes>
@@ -7158,7 +7162,7 @@
   </compound>
   <compound kind="file">
     <name>InputContext.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_input_context_8h</filename>
     <includes id="_key_event_8h" name="KeyEvent.h" local="yes" imported="no">KeyEvent.h</includes>
     <includes id="_mouse_event_8h" name="MouseEvent.h" local="yes" imported="no">MouseEvent.h</includes>
@@ -7177,7 +7181,7 @@
   </compound>
   <compound kind="file">
     <name>InputFwd.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_input_fwd_8h</filename>
     <member kind="typedef">
       <type>boost::shared_ptr&lt; InputContext &gt;</type>
@@ -7189,7 +7193,7 @@
   </compound>
   <compound kind="file">
     <name>KeyBindingsConfigWindow.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_key_bindings_config_window_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_key_bindings_config_window_8h" name="KeyBindingsConfigWindow.h" local="yes" imported="no">KeyBindingsConfigWindow.h</includes>
@@ -7200,20 +7204,20 @@
   </compound>
   <compound kind="file">
     <name>KeyBindingsConfigWindow.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_key_bindings_config_window_8h</filename>
     <class kind="class">KeyBindingsConfigWindow</class>
   </compound>
   <compound kind="file">
     <name>KeyEvent.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_key_event_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="class">KeyEvent</class>
   </compound>
   <compound kind="file">
     <name>KeyEventSignal.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_key_event_signal_8h</filename>
     <includes id="_key_event_8h" name="KeyEvent.h" local="yes" imported="no">KeyEvent.h</includes>
     <includes id="_mouse_event_8h" name="MouseEvent.h" local="yes" imported="no">MouseEvent.h</includes>
@@ -7221,7 +7225,7 @@
   </compound>
   <compound kind="file">
     <name>MouseEvent.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_mouse_event_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -7236,7 +7240,7 @@
   </compound>
   <compound kind="file">
     <name>MouseEvent.h</name>
-    <path>C:/test/TundraLCC/src/Core/Input/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Input/</path>
     <filename>_mouse_event_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="class">MouseEvent</class>
@@ -7244,7 +7248,7 @@
   </compound>
   <compound kind="file">
     <name>CompositionHandler.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_composition_handler_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_composition_handler_8h" name="CompositionHandler.h" local="yes" imported="no">CompositionHandler.h</includes>
@@ -7254,7 +7258,7 @@
   </compound>
   <compound kind="file">
     <name>CompositionHandler.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_composition_handler_8h</filename>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -7266,12 +7270,12 @@
   </compound>
   <compound kind="file">
     <name>OgreRenderingModule.dox</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/doc/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/doc/</path>
     <filename>_ogre_rendering_module_8dox</filename>
   </compound>
   <compound kind="file">
     <name>EC_AnimationController.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___animation_controller_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___mesh_8h" name="EC_Mesh.h" local="yes" imported="no">EC_Mesh.h</includes>
@@ -7280,6 +7284,7 @@
     <includes id="_frame_a_p_i_8h" name="FrameAPI.h" local="yes" imported="no">FrameAPI.h</includes>
     <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
+    <includes id="_profiler_8h" name="Profiler.h" local="yes" imported="no">Profiler.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <member kind="function">
@@ -7292,7 +7297,7 @@
   </compound>
   <compound kind="file">
     <name>EC_AnimationController.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___animation_controller_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -7303,7 +7308,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Camera.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___camera_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___camera_8h" name="EC_Camera.h" local="yes" imported="no">EC_Camera.h</includes>
@@ -7328,7 +7333,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Camera.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___camera_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -7340,7 +7345,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Light.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___light_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___light_8h" name="EC_Light.h" local="yes" imported="no">EC_Light.h</includes>
@@ -7366,7 +7371,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Light.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___light_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_i_attribute_8h" name="IAttribute.h" local="yes" imported="no">IAttribute.h</includes>
@@ -7378,24 +7383,24 @@
   </compound>
   <compound kind="file">
     <name>EC_Material.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___material_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
-    <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
+    <includes id="_e_c___material_8h" name="EC_Material.h" local="yes" imported="no">EC_Material.h</includes>
+    <includes id="_e_c___mesh_8h" name="EC_Mesh.h" local="yes" imported="no">EC_Mesh.h</includes>
     <includes id="_ogre_material_asset_8h" name="OgreMaterialAsset.h" local="yes" imported="no">OgreMaterialAsset.h</includes>
+    <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
     <includes id="_frame_a_p_i_8h" name="FrameAPI.h" local="yes" imported="no">FrameAPI.h</includes>
     <includes id="_scene_8h" name="Scene.h" local="yes" imported="no">Scene.h</includes>
     <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
-    <includes id="_e_c___material_8h" name="EC_Material.h" local="yes" imported="no">EC_Material.h</includes>
-    <includes id="_e_c___mesh_8h" name="EC_Mesh.h" local="yes" imported="no">EC_Mesh.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
     <includes id="_asset_reference_8h" name="AssetReference.h" local="yes" imported="no">AssetReference.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
   </compound>
   <compound kind="file">
     <name>EC_Material.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___material_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
@@ -7405,7 +7410,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Mesh.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___mesh_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
@@ -7413,8 +7418,6 @@
     <includes id="_renderer_8h" name="Renderer.h" local="yes" imported="no">Renderer.h</includes>
     <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
     <includes id="_scene_8h" name="Scene.h" local="yes" imported="no">Scene.h</includes>
-    <includes id="_a_a_b_b_8h" name="AABB.h" local="yes" imported="no">Math/AABB.h</includes>
-    <includes id="_ray_8h" name="Ray.h" local="yes" imported="no">Math/Ray.h</includes>
     <includes id="_e_c___placeable_8h" name="EC_Placeable.h" local="yes" imported="no">EC_Placeable.h</includes>
     <includes id="_e_c___mesh_8h" name="EC_Mesh.h" local="yes" imported="no">EC_Mesh.h</includes>
     <includes id="_ogre_conversion_utils_8h" name="OgreConversionUtils.h" local="yes" imported="no">OgreConversionUtils.h</includes>
@@ -7436,7 +7439,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Mesh.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___mesh_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -7444,6 +7447,7 @@
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
     <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Math/Quat.h</includes>
     <includes id="_o_b_b_8h" name="OBB.h" local="yes" imported="no">Math/OBB.h</includes>
+    <includes id="_a_a_b_b_8h" name="AABB.h" local="yes" imported="no">Math/AABB.h</includes>
     <includes id="_transform_8h" name="Transform.h" local="yes" imported="no">Transform.h</includes>
     <includes id="_asset_reference_8h" name="AssetReference.h" local="yes" imported="no">AssetReference.h</includes>
     <includes id="_asset_ref_listener_8h" name="AssetRefListener.h" local="yes" imported="no">AssetRefListener.h</includes>
@@ -7452,7 +7456,7 @@
   </compound>
   <compound kind="file">
     <name>EC_OgreCompositor.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___ogre_compositor_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___ogre_compositor_8h" name="EC_OgreCompositor.h" local="yes" imported="no">EC_OgreCompositor.h</includes>
@@ -7465,7 +7469,7 @@
   </compound>
   <compound kind="file">
     <name>EC_OgreCompositor.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___ogre_compositor_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
@@ -7475,7 +7479,7 @@
   </compound>
   <compound kind="file">
     <name>EC_OgreCustomObject.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___ogre_custom_object_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
@@ -7489,7 +7493,7 @@
   </compound>
   <compound kind="file">
     <name>EC_OgreCustomObject.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___ogre_custom_object_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -7499,7 +7503,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Placeable.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___placeable_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___mesh_8h" name="EC_Mesh.h" local="yes" imported="no">EC_Mesh.h</includes>
@@ -7551,7 +7555,7 @@
   </compound>
   <compound kind="file">
     <name>EC_Placeable.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___placeable_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_i_attribute_8h" name="IAttribute.h" local="yes" imported="no">IAttribute.h</includes>
@@ -7566,7 +7570,7 @@
   </compound>
   <compound kind="file">
     <name>EC_RttTarget.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___rtt_target_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___rtt_target_8h" name="EC_RttTarget.h" local="yes" imported="no">EC_RttTarget.h</includes>
@@ -7580,7 +7584,7 @@
   </compound>
   <compound kind="file">
     <name>EC_RttTarget.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___rtt_target_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -7588,7 +7592,7 @@
   </compound>
   <compound kind="file">
     <name>EC_SelectionBox.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___selection_box_8cpp</filename>
     <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
     <includes id="_renderer_8h" name="Renderer.h" local="yes" imported="no">Renderer.h</includes>
@@ -7601,7 +7605,7 @@
   </compound>
   <compound kind="file">
     <name>EC_SelectionBox.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_e_c___selection_box_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -7610,48 +7614,14 @@
   </compound>
   <compound kind="file">
     <name>OgreConversionUtils.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_conversion_utils_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
     <includes id="_ogre_conversion_utils_8h" name="OgreConversionUtils.h" local="yes" imported="no">OgreConversionUtils.h</includes>
+    <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <namespace>OgreRenderer</namespace>
-    <member kind="function">
-      <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a2c4444a05cf63623e787903ebc0118ff</anchor>
-      <arglist>(const QString &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>ab6ca033f828179ec1325aca25def6f35</anchor>
-      <arglist>(const std::string &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a83c37a0b4cb7d8b3341086058ec641df</anchor>
-      <arglist>(const char *input)</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>DesanitateAssetIdFromOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a89e4b849f469d316d86a407eee56bcfa</anchor>
-      <arglist>(const QString &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>DesanitateAssetIdFromOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a28f09923dc0afecf033a004e6e2f313b</anchor>
-      <arglist>(const std::string &amp;input)</arglist>
-    </member>
     <member kind="function">
       <type>std::string</type>
       <name>AddDoubleQuotesIfNecessary</name>
@@ -7669,45 +7639,10 @@
   </compound>
   <compound kind="file">
     <name>OgreConversionUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_conversion_utils_8h</filename>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
     <namespace>OgreRenderer</namespace>
-    <member kind="function">
-      <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a2c4444a05cf63623e787903ebc0118ff</anchor>
-      <arglist>(const QString &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>ab6ca033f828179ec1325aca25def6f35</anchor>
-      <arglist>(const std::string &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a83c37a0b4cb7d8b3341086058ec641df</anchor>
-      <arglist>(const char *input)</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>DesanitateAssetIdFromOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a89e4b849f469d316d86a407eee56bcfa</anchor>
-      <arglist>(const QString &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>DesanitateAssetIdFromOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a28f09923dc0afecf033a004e6e2f313b</anchor>
-      <arglist>(const std::string &amp;input)</arglist>
-    </member>
     <member kind="function">
       <type>std::string</type>
       <name>AddDoubleQuotesIfNecessary</name>
@@ -7725,7 +7660,7 @@
   </compound>
   <compound kind="file">
     <name>OgreLocalResourceUtils.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_local_resource_utils_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -7763,7 +7698,7 @@
   </compound>
   <compound kind="file">
     <name>OgreLocalResourceUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_local_resource_utils_8h</filename>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
     <namespace>OgreRenderer</namespace>
@@ -7798,7 +7733,7 @@
   </compound>
   <compound kind="file">
     <name>OgreMaterialAsset.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_material_asset_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ogre_material_asset_8h" name="OgreMaterialAsset.h" local="yes" imported="no">OgreMaterialAsset.h</includes>
@@ -7916,7 +7851,7 @@
   </compound>
   <compound kind="file">
     <name>OgreMaterialAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_material_asset_8h</filename>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
     <includes id="_color_8h" name="Color.h" local="yes" imported="no">Color.h</includes>
@@ -7926,13 +7861,14 @@
   </compound>
   <compound kind="file">
     <name>OgreMaterialUtils.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_material_utils_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <includes id="_ogre_material_utils_8h" name="OgreMaterialUtils.h" local="yes" imported="no">OgreMaterialUtils.h</includes>
     <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
     <includes id="_ogre_conversion_utils_8h" name="OgreConversionUtils.h" local="yes" imported="no">OgreConversionUtils.h</includes>
+    <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <namespace>OgreRenderer</namespace>
     <member kind="function">
       <type>bool</type>
@@ -8056,7 +7992,7 @@
   </compound>
   <compound kind="file">
     <name>OgreMaterialUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_material_utils_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -8211,7 +8147,7 @@
   </compound>
   <compound kind="file">
     <name>OgreMeshAsset.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_mesh_asset_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ogre_mesh_asset_8h" name="OgreMeshAsset.h" local="yes" imported="no">OgreMeshAsset.h</includes>
@@ -8227,7 +8163,7 @@
   </compound>
   <compound kind="file">
     <name>OgreMeshAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_mesh_asset_8h</filename>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -8242,7 +8178,7 @@
   </compound>
   <compound kind="file">
     <name>OgreModuleApi.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_module_api_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -8254,7 +8190,7 @@
   </compound>
   <compound kind="file">
     <name>OgreModuleFwd.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_module_fwd_8h</filename>
     <namespace>Ogre</namespace>
     <namespace>OgreRenderer</namespace>
@@ -8310,7 +8246,7 @@
   </compound>
   <compound kind="file">
     <name>OgreParticleAsset.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_particle_asset_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ogre_conversion_utils_8h" name="OgreConversionUtils.h" local="yes" imported="no">OgreConversionUtils.h</includes>
@@ -8326,7 +8262,7 @@
   </compound>
   <compound kind="file">
     <name>OgreParticleAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_particle_asset_8h</filename>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -8334,7 +8270,7 @@
   </compound>
   <compound kind="file">
     <name>OgreRenderingModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_rendering_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_application_8h" name="Application.h" local="yes" imported="no">Application.h</includes>
@@ -8383,7 +8319,7 @@
   </compound>
   <compound kind="file">
     <name>OgreRenderingModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_rendering_module_8h</filename>
     <includes id="_i_module_8h" name="IModule.h" local="yes" imported="no">IModule.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -8393,7 +8329,7 @@
   </compound>
   <compound kind="file">
     <name>OgreShadowCameraSetupFocusedPSSM.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_shadow_camera_setup_focused_p_s_s_m_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -8401,28 +8337,28 @@
   </compound>
   <compound kind="file">
     <name>OgreShadowCameraSetupFocusedPSSM.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_shadow_camera_setup_focused_p_s_s_m_8h</filename>
     <class kind="class">OgreShadowCameraSetupFocusedPSSM</class>
   </compound>
   <compound kind="file">
     <name>OgreSkeletonAsset.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_skeleton_asset_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <includes id="_ogre_skeleton_asset_8h" name="OgreSkeletonAsset.h" local="yes" imported="no">OgreSkeletonAsset.h</includes>
     <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
     <includes id="_ogre_conversion_utils_8h" name="OgreConversionUtils.h" local="yes" imported="no">OgreConversionUtils.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
     <includes id="_asset_cache_8h" name="AssetCache.h" local="yes" imported="no">AssetCache.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <includes id="_disable_memory_leak_check_8h" name="DisableMemoryLeakCheck.h" local="yes" imported="no">DisableMemoryLeakCheck.h</includes>
     <includes id="_enable_memory_leak_check_8h" name="EnableMemoryLeakCheck.h" local="yes" imported="no">EnableMemoryLeakCheck.h</includes>
   </compound>
   <compound kind="file">
     <name>OgreSkeletonAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_skeleton_asset_8h</filename>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -8430,7 +8366,7 @@
   </compound>
   <compound kind="file">
     <name>OgreWorld.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_world_8cpp</filename>
     <includes id="_ogre_world_8h" name="OgreWorld.h" local="yes" imported="no">OgreWorld.h</includes>
     <includes id="_renderer_8h" name="Renderer.h" local="yes" imported="no">Renderer.h</includes>
@@ -8476,7 +8412,7 @@
   </compound>
   <compound kind="file">
     <name>OgreWorld.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_ogre_world_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_i_renderer_8h" name="IRenderer.h" local="yes" imported="no">IRenderer.h</includes>
@@ -8487,7 +8423,7 @@
   </compound>
   <compound kind="file">
     <name>Renderer.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_renderer_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_application_8h" name="Application.h" local="yes" imported="no">Application.h</includes>
@@ -8525,7 +8461,7 @@
   </compound>
   <compound kind="file">
     <name>Renderer.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_renderer_8h</filename>
     <includes id="_i_renderer_8h" name="IRenderer.h" local="yes" imported="no">IRenderer.h</includes>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
@@ -8579,7 +8515,7 @@
   </compound>
   <compound kind="file">
     <name>RendererSettings.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_renderer_settings_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_renderer_settings_8h" name="RendererSettings.h" local="yes" imported="no">RendererSettings.h</includes>
@@ -8593,7 +8529,7 @@
   </compound>
   <compound kind="file">
     <name>RendererSettings.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_renderer_settings_8h</filename>
     <includes id="_input_fwd_8h" name="InputFwd.h" local="yes" imported="no">InputFwd.h</includes>
     <class kind="class">OgreRenderer::RendererSettingsWindow</class>
@@ -8601,7 +8537,7 @@
   </compound>
   <compound kind="file">
     <name>RenderWindow.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_render_window_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_profiler_8h" name="Profiler.h" local="yes" imported="no">Profiler.h</includes>
@@ -8626,7 +8562,7 @@
   </compound>
   <compound kind="file">
     <name>RenderWindow.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_render_window_8h</filename>
     <includes id="_ogre_module_api_8h" name="OgreModuleApi.h" local="yes" imported="no">OgreModuleApi.h</includes>
     <class kind="class">RenderWindow</class>
@@ -8634,7 +8570,7 @@
   </compound>
   <compound kind="file">
     <name>TextureAsset.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_texture_asset_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_profiler_8h" name="Profiler.h" local="yes" imported="no">Profiler.h</includes>
@@ -8649,7 +8585,7 @@
   </compound>
   <compound kind="file">
     <name>TextureAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/OgreRenderingModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/OgreRenderingModule/</path>
     <filename>_texture_asset_8h</filename>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
@@ -8665,7 +8601,7 @@
   </compound>
   <compound kind="file">
     <name>CollisionShapeUtils.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_collision_shape_utils_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_collision_shape_utils_8h" name="CollisionShapeUtils.h" local="yes" imported="no">CollisionShapeUtils.h</includes>
@@ -8705,7 +8641,7 @@
   </compound>
   <compound kind="file">
     <name>CollisionShapeUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_collision_shape_utils_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_physics_module_api_8h" name="PhysicsModuleApi.h" local="yes" imported="no">PhysicsModuleApi.h</includes>
@@ -8736,7 +8672,7 @@
   </compound>
   <compound kind="file">
     <name>ConvexHull.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_convex_hull_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_physics_module_api_8h" name="PhysicsModuleApi.h" local="yes" imported="no">PhysicsModuleApi.h</includes>
@@ -8747,7 +8683,7 @@
   </compound>
   <compound kind="file">
     <name>EC_RigidBody.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_e_c___rigid_body_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___rigid_body_8h" name="EC_RigidBody.h" local="yes" imported="no">EC_RigidBody.h</includes>
@@ -8755,6 +8691,7 @@
     <includes id="_physics_module_8h" name="PhysicsModule.h" local="yes" imported="no">PhysicsModule.h</includes>
     <includes id="_physics_utils_8h" name="PhysicsUtils.h" local="yes" imported="no">PhysicsUtils.h</includes>
     <includes id="_physics_world_8h" name="PhysicsWorld.h" local="yes" imported="no">PhysicsWorld.h</includes>
+    <includes id="_profiler_8h" name="Profiler.h" local="yes" imported="no">Profiler.h</includes>
     <includes id="_ogre_mesh_asset_8h" name="OgreMeshAsset.h" local="yes" imported="no">OgreMeshAsset.h</includes>
     <includes id="_ogre_conversion_utils_8h" name="OgreConversionUtils.h" local="yes" imported="no">OgreConversionUtils.h</includes>
     <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
@@ -8804,7 +8741,7 @@
   </compound>
   <compound kind="file">
     <name>EC_RigidBody.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_e_c___rigid_body_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
@@ -8817,10 +8754,9 @@
   </compound>
   <compound kind="file">
     <name>EC_VolumeTrigger.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_e_c___volume_trigger_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <includes id="_e_c___volume_trigger_8h" name="EC_VolumeTrigger.h" local="yes" imported="no">EC_VolumeTrigger.h</includes>
     <includes id="_e_c___rigid_body_8h" name="EC_RigidBody.h" local="yes" imported="no">EC_RigidBody.h</includes>
     <includes id="_e_c___placeable_8h" name="EC_Placeable.h" local="yes" imported="no">EC_Placeable.h</includes>
@@ -8830,10 +8766,12 @@
     <includes id="_physics_world_8h" name="PhysicsWorld.h" local="yes" imported="no">PhysicsWorld.h</includes>
     <includes id="_physics_utils_8h" name="PhysicsUtils.h" local="yes" imported="no">PhysicsUtils.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
+    <includes id="_profiler_8h" name="Profiler.h" local="yes" imported="no">Profiler.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
   </compound>
   <compound kind="file">
     <name>EC_VolumeTrigger.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_e_c___volume_trigger_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
@@ -8843,7 +8781,7 @@
   </compound>
   <compound kind="file">
     <name>hull.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>hull_8cpp</filename>
     <includes id="hull_8h" name="hull.h" local="yes" imported="no">hull.h</includes>
     <class kind="class">StanHull::int3</class>
@@ -9919,7 +9857,7 @@
   </compound>
   <compound kind="file">
     <name>hull.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>hull_8h</filename>
     <class kind="class">StanHull::HullResult</class>
     <class kind="class">StanHull::HullDesc</class>
@@ -9976,7 +9914,7 @@
   </compound>
   <compound kind="file">
     <name>OgreBulletCollisionsDebugLines.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_ogre_bullet_collisions_debug_lines_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
@@ -9984,14 +9922,14 @@
   </compound>
   <compound kind="file">
     <name>OgreBulletCollisionsDebugLines.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_ogre_bullet_collisions_debug_lines_8h</filename>
     <class kind="struct">DebugLine</class>
     <class kind="class">DebugLines</class>
   </compound>
   <compound kind="file">
     <name>PhysicsModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_physics_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_physics_module_8h" name="PhysicsModule.h" local="yes" imported="no">PhysicsModule.h</includes>
@@ -10068,7 +10006,7 @@
   </compound>
   <compound kind="file">
     <name>PhysicsModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_physics_module_8h</filename>
     <includes id="_physics_module_api_8h" name="PhysicsModuleApi.h" local="yes" imported="no">PhysicsModuleApi.h</includes>
     <includes id="_i_module_8h" name="IModule.h" local="yes" imported="no">IModule.h</includes>
@@ -10079,7 +10017,7 @@
   </compound>
   <compound kind="file">
     <name>PhysicsModuleApi.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_physics_module_api_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -10091,7 +10029,7 @@
   </compound>
   <compound kind="file">
     <name>PhysicsUtils.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_physics_utils_8h</filename>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
     <member kind="function">
@@ -10104,7 +10042,7 @@
   </compound>
   <compound kind="file">
     <name>PhysicsWorld.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_physics_world_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_physics_module_8h" name="PhysicsModule.h" local="yes" imported="no">PhysicsModule.h</includes>
@@ -10151,7 +10089,7 @@
   </compound>
   <compound kind="file">
     <name>PhysicsWorld.h</name>
-    <path>C:/test/TundraLCC/src/Core/PhysicsModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/PhysicsModule/</path>
     <filename>_physics_world_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
@@ -10164,42 +10102,42 @@
   </compound>
   <compound kind="file">
     <name>AttributeChangeType.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_attribute_change_type_8h</filename>
     <class kind="class">AttributeChange</class>
   </compound>
   <compound kind="file">
     <name>AttributeMetadata.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_attribute_metadata_8h</filename>
     <class kind="class">AttributeMetadata</class>
     <class kind="struct">AttributeMetadata::ButtonInfo</class>
   </compound>
   <compound kind="file">
     <name>ChangeRequest.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_change_request_8cpp</filename>
     <includes id="_change_request_8h" name="ChangeRequest.h" local="yes" imported="no">ChangeRequest.h</includes>
   </compound>
   <compound kind="file">
     <name>ChangeRequest.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_change_request_8h</filename>
     <class kind="class">ChangeRequest</class>
   </compound>
   <compound kind="file">
     <name>QmlScene.dox</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/doc/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/doc/</path>
     <filename>_qml_scene_8dox</filename>
   </compound>
   <compound kind="file">
     <name>Scene.dox</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/doc/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/doc/</path>
     <filename>_scene_8dox</filename>
   </compound>
   <compound kind="file">
     <name>EC_DynamicComponent.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_e_c___dynamic_component_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_e_c___dynamic_component_8h" name="EC_DynamicComponent.h" local="yes" imported="no">EC_DynamicComponent.h</includes>
@@ -10227,7 +10165,7 @@
   </compound>
   <compound kind="file">
     <name>EC_DynamicComponent.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_e_c___dynamic_component_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_i_attribute_8h" name="IAttribute.h" local="yes" imported="no">IAttribute.h</includes>
@@ -10236,14 +10174,14 @@
   </compound>
   <compound kind="file">
     <name>EC_Name.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_e_c___name_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <class kind="class">EC_Name</class>
   </compound>
   <compound kind="file">
     <name>Entity.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_entity_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
@@ -10258,31 +10196,25 @@
   </compound>
   <compound kind="file">
     <name>Entity.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_entity_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_i_attribute_8h" name="IAttribute.h" local="yes" imported="no">IAttribute.h</includes>
     <includes id="_entity_action_8h" name="EntityAction.h" local="yes" imported="no">EntityAction.h</includes>
+    <includes id="_unique_id_generator_8h" name="UniqueIdGenerator.h" local="yes" imported="no">UniqueIdGenerator.h</includes>
     <includes id="_entity_8inl" name="Entity.inl" local="yes" imported="no">Entity.inl</includes>
     <class kind="class">Entity</class>
-    <member kind="variable" static="yes">
-      <type>static const entity_id_t</type>
-      <name>LocalEntity</name>
-      <anchorfile>_entity_8h.html</anchorfile>
-      <anchor>a1371100cfa7478afa94ff7b42f5b0ab2</anchor>
-      <arglist></arglist>
-    </member>
   </compound>
   <compound kind="file">
     <name>Entity.inl</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_entity_8inl</filename>
   </compound>
   <compound kind="file">
     <name>EntityAction.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_entity_action_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_entity_action_8h" name="EntityAction.h" local="yes" imported="no">EntityAction.h</includes>
@@ -10290,14 +10222,14 @@
   </compound>
   <compound kind="file">
     <name>EntityAction.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_entity_action_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <class kind="class">EntityAction</class>
   </compound>
   <compound kind="file">
     <name>EntityReference.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_entity_reference_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_entity_reference_8h" name="EntityReference.h" local="yes" imported="no">EntityReference.h</includes>
@@ -10313,7 +10245,7 @@
   </compound>
   <compound kind="file">
     <name>EntityReference.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_entity_reference_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -10321,10 +10253,9 @@
   </compound>
   <compound kind="file">
     <name>IAttribute.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_i_attribute_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <includes id="_i_attribute_8h" name="IAttribute.h" local="yes" imported="no">IAttribute.h</includes>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -10337,10 +10268,11 @@
     <includes id="_quat_8h" name="Quat.h" local="yes" imported="no">Math/Quat.h</includes>
     <includes id="float2_8h" name="float2.h" local="yes" imported="no">Math/float2.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
   </compound>
   <compound kind="file">
     <name>IAttribute.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_i_attribute_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
@@ -10355,10 +10287,143 @@
       <anchor>ad516d82c3ced384acb0fd5fa07b8d9bc</anchor>
       <arglist></arglist>
     </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeNone</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a6e9ffb5b2fe5d3c3d3adf0acb0238164</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeString</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a4fac09ef5b0251433fef6302d1511ed2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeInt</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a2114243a141259732f7c386236621aee</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeReal</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a2be2ba48e533a3224defd5ad641166a0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeColor</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a5e5f3e8afb759c7851366811944e3418</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeFloat2</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a9c35a7fe1c4820254535e1f03daa8940</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeFloat3</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>af1290982542ad0447ac07786ab3d0d82</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeFloat4</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a72880a29aaed4bf0f4de5e522da2ca5e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeBool</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>ad76a34509d1a27591920d21b4aef9cc2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeUInt</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>ab800860bb3049e079801ad6ca84cc4e6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeQuat</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a337c444f9b78eb66e321174798146c30</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeAssetReference</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a05be43cedabdb3abe01e929c61bfcb9f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeAssetReferenceList</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a37799f7ea951f3749ace848c4f748bf0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeEntityReference</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>ab674e7eb71c40422ea325d2fb37400ed</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeQVariant</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a9d4e2dc97705e6117c706a8a3cfe4d67</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeQVariantList</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>aebb7242400a409733bc1eca2eb010136</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeTransform</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>ad3306ca1108d2d0d10f66ad663c1cc62</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cAttributeQPoint</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a7d3779e8da06fff2f6f24db577d1fde7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const u32</type>
+      <name>cNumAttributeTypes</name>
+      <anchorfile>_i_attribute_8h.html</anchorfile>
+      <anchor>a455d78886970a2e56d1d5107d8bea7b2</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="file">
     <name>IComponent.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_i_component_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
@@ -10366,6 +10431,8 @@
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
     <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
     <includes id="_scene_8h" name="Scene.h" local="yes" imported="no">Scene.h</includes>
+    <includes id="_scene_a_p_i_8h" name="SceneAPI.h" local="yes" imported="no">SceneAPI.h</includes>
+    <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <member kind="function">
       <type>bool</type>
@@ -10377,7 +10444,7 @@
   </compound>
   <compound kind="file">
     <name>IComponent.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_i_component_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_attribute_change_type_8h" name="AttributeChangeType.h" local="yes" imported="no">AttributeChangeType.h</includes>
@@ -10407,7 +10474,7 @@
   </compound>
   <compound kind="file">
     <name>IComponentFactory.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_i_component_factory_8h</filename>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
@@ -10417,7 +10484,7 @@
   </compound>
   <compound kind="file">
     <name>Scene.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_scene_a_p_i_8h" name="SceneAPI.h" local="yes" imported="no">SceneAPI.h</includes>
@@ -10431,18 +10498,21 @@
     <includes id="_change_request_8h" name="ChangeRequest.h" local="yes" imported="no">ChangeRequest.h</includes>
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
+    <includes id="_frame_a_p_i_8h" name="FrameAPI.h" local="yes" imported="no">FrameAPI.h</includes>
     <includes id="_profiler_8h" name="Profiler.h" local="yes" imported="no">Profiler.h</includes>
     <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
   </compound>
   <compound kind="file">
     <name>Scene.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_8h</filename>
+    <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_attribute_change_type_8h" name="AttributeChangeType.h" local="yes" imported="no">AttributeChangeType.h</includes>
     <includes id="_entity_action_8h" name="EntityAction.h" local="yes" imported="no">EntityAction.h</includes>
     <includes id="_scene_desc_8h" name="SceneDesc.h" local="yes" imported="no">SceneDesc.h</includes>
+    <includes id="_unique_id_generator_8h" name="UniqueIdGenerator.h" local="yes" imported="no">UniqueIdGenerator.h</includes>
     <includes id="float3_8h" name="float3.h" local="yes" imported="no">Math/float3.h</includes>
     <includes id="_change_request_8h" name="ChangeRequest.h" local="yes" imported="no">ChangeRequest.h</includes>
     <class kind="struct">AttributeInterpolation</class>
@@ -10450,13 +10520,14 @@
   </compound>
   <compound kind="file">
     <name>SceneAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_a_p_i_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_scene_a_p_i_8h" name="SceneAPI.h" local="yes" imported="no">SceneAPI.h</includes>
     <includes id="_scene_8h" name="Scene.h" local="yes" imported="no">Scene.h</includes>
     <includes id="_i_component_factory_8h" name="IComponentFactory.h" local="yes" imported="no">IComponentFactory.h</includes>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
+    <includes id="_i_renderer_8h" name="IRenderer.h" local="yes" imported="no">IRenderer.h</includes>
     <includes id="_asset_reference_8h" name="AssetReference.h" local="yes" imported="no">AssetReference.h</includes>
     <includes id="_entity_reference_8h" name="EntityReference.h" local="yes" imported="no">EntityReference.h</includes>
     <includes id="_scene_interact_8h" name="SceneInteract.h" local="yes" imported="no">SceneInteract.h</includes>
@@ -10470,7 +10541,7 @@
   </compound>
   <compound kind="file">
     <name>SceneAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_a_p_i_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -10479,7 +10550,7 @@
   </compound>
   <compound kind="file">
     <name>SceneDesc.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_desc_8h</filename>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
     <class kind="struct">SceneDesc</class>
@@ -10504,7 +10575,7 @@
   </compound>
   <compound kind="file">
     <name>SceneFwd.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_fwd_8h</filename>
     <member kind="typedef">
       <type>boost::shared_ptr&lt; Scene &gt;</type>
@@ -10579,7 +10650,7 @@
   </compound>
   <compound kind="file">
     <name>SceneInteract.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_interact_8cpp</filename>
     <includes id="_scene_interact_8h" name="SceneInteract.h" local="yes" imported="no">SceneInteract.h</includes>
     <includes id="_framework_8h" name="Framework.h" local="yes" imported="no">Framework.h</includes>
@@ -10587,10 +10658,11 @@
     <includes id="_input_a_p_i_8h" name="InputAPI.h" local="yes" imported="no">InputAPI.h</includes>
     <includes id="_i_renderer_8h" name="IRenderer.h" local="yes" imported="no">IRenderer.h</includes>
     <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
+    <includes id="_profiler_8h" name="Profiler.h" local="yes" imported="no">Profiler.h</includes>
   </compound>
   <compound kind="file">
     <name>SceneInteract.h</name>
-    <path>C:/test/TundraLCC/src/Core/Scene/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
     <filename>_scene_interact_8h</filename>
     <includes id="_framework_fwd_8h" name="FrameworkFwd.h" local="yes" imported="no">FrameworkFwd.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
@@ -10598,8 +10670,15 @@
     <class kind="class">SceneInteract</class>
   </compound>
   <compound kind="file">
+    <name>UniqueIdGenerator.h</name>
+    <path>E:/Projects/TundraLCNew/src/Core/Scene/</path>
+    <filename>_unique_id_generator_8h</filename>
+    <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
+    <class kind="class">UniqueIdGenerator</class>
+  </compound>
+  <compound kind="file">
     <name>main.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Tundra/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Tundra/</path>
     <filename>main_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_application_8h" name="Application.h" local="yes" imported="no">Application.h</includes>
@@ -10623,7 +10702,7 @@
   </compound>
   <compound kind="file">
     <name>resource.h</name>
-    <path>C:/test/TundraLCC/src/Core/Tundra/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Tundra/</path>
     <filename>resource_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -10635,7 +10714,7 @@
   </compound>
   <compound kind="file">
     <name>Client.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_client_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_client_8h" name="Client.h" local="yes" imported="no">Client.h</includes>
@@ -10651,12 +10730,13 @@
     <includes id="_msg_login_reply_8h" name="MsgLoginReply.h" local="yes" imported="no">MsgLoginReply.h</includes>
     <includes id="_msg_client_joined_8h" name="MsgClientJoined.h" local="yes" imported="no">MsgClientJoined.h</includes>
     <includes id="_msg_client_left_8h" name="MsgClientLeft.h" local="yes" imported="no">MsgClientLeft.h</includes>
+    <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <namespace>TundraLogic</namespace>
   </compound>
   <compound kind="file">
     <name>Client.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_client_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -10683,7 +10763,7 @@
   </compound>
   <compound kind="file">
     <name>KristalliProtocolModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_kristalli_protocol_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_kristalli_protocol_module_8h" name="KristalliProtocolModule.h" local="yes" imported="no">KristalliProtocolModule.h</includes>
@@ -10713,7 +10793,7 @@
   </compound>
   <compound kind="file">
     <name>KristalliProtocolModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_kristalli_protocol_module_8h</filename>
     <includes id="_i_module_8h" name="IModule.h" local="yes" imported="no">IModule.h</includes>
     <includes id="_kristalli_protocol_module_api_8h" name="KristalliProtocolModuleApi.h" local="yes" imported="no">KristalliProtocolModuleApi.h</includes>
@@ -10723,7 +10803,7 @@
   </compound>
   <compound kind="file">
     <name>KristalliProtocolModuleApi.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_kristalli_protocol_module_api_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -10735,95 +10815,52 @@
   </compound>
   <compound kind="file">
     <name>MsgAssetDeleted.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_msg_asset_deleted_8h</filename>
     <class kind="struct">MsgAssetDeleted</class>
   </compound>
   <compound kind="file">
     <name>MsgAssetDiscovery.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_msg_asset_discovery_8h</filename>
     <class kind="struct">MsgAssetDiscovery</class>
   </compound>
   <compound kind="file">
     <name>MsgClientJoined.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_msg_client_joined_8h</filename>
     <class kind="struct">MsgClientJoined</class>
   </compound>
   <compound kind="file">
     <name>MsgClientLeft.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_msg_client_left_8h</filename>
     <class kind="struct">MsgClientLeft</class>
   </compound>
   <compound kind="file">
-    <name>MsgCreateComponents.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
-    <filename>_msg_create_components_8h</filename>
-    <class kind="struct">MsgCreateComponents</class>
-    <class kind="struct">MsgCreateComponents::S_components</class>
-  </compound>
-  <compound kind="file">
-    <name>MsgCreateEntity.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
-    <filename>_msg_create_entity_8h</filename>
-    <class kind="struct">MsgCreateEntity</class>
-    <class kind="struct">MsgCreateEntity::S_components</class>
-  </compound>
-  <compound kind="file">
     <name>MsgEntityAction.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_msg_entity_action_8h</filename>
     <class kind="struct">MsgEntityAction</class>
     <class kind="struct">MsgEntityAction::S_parameters</class>
   </compound>
   <compound kind="file">
-    <name>MsgEntityIDCollision.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
-    <filename>_msg_entity_i_d_collision_8h</filename>
-    <class kind="struct">MsgEntityIDCollision</class>
-  </compound>
-  <compound kind="file">
     <name>MsgLogin.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_msg_login_8h</filename>
     <class kind="struct">MsgLogin</class>
   </compound>
   <compound kind="file">
     <name>MsgLoginReply.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_msg_login_reply_8h</filename>
     <class kind="struct">MsgLoginReply</class>
   </compound>
   <compound kind="file">
-    <name>MsgRemoveComponents.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
-    <filename>_msg_remove_components_8h</filename>
-    <class kind="struct">MsgRemoveComponents</class>
-    <class kind="struct">MsgRemoveComponents::S_components</class>
-  </compound>
-  <compound kind="file">
-    <name>MsgRemoveEntity.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
-    <filename>_msg_remove_entity_8h</filename>
-    <class kind="struct">MsgRemoveEntity</class>
-  </compound>
-  <compound kind="file">
-    <name>MsgUpdateComponents.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
-    <filename>_msg_update_components_8h</filename>
-    <class kind="struct">MsgUpdateComponents</class>
-    <class kind="struct">MsgUpdateComponents::S_components</class>
-    <class kind="struct">MsgUpdateComponents::S_dynamiccomponents</class>
-    <class kind="struct">MsgUpdateComponents::S_dynamiccomponents::S_attributes</class>
-  </compound>
-  <compound kind="file">
     <name>SceneImporter.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_scene_importer_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
-    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <includes id="_scene_importer_8h" name="SceneImporter.h" local="yes" imported="no">SceneImporter.h</includes>
     <includes id="_tundra_logic_module_8h" name="TundraLogicModule.h" local="yes" imported="no">TundraLogicModule.h</includes>
     <includes id="_scene_8h" name="Scene.h" local="yes" imported="no">Scene.h</includes>
@@ -10842,13 +10879,14 @@
     <includes id="_scene_a_p_i_8h" name="SceneAPI.h" local="yes" imported="no">SceneAPI.h</includes>
     <includes id="_ogre_rendering_module_8h" name="OgreRenderingModule.h" local="yes" imported="no">OgreRenderingModule.h</includes>
     <includes id="_core_exception_8h" name="CoreException.h" local="yes" imported="no">CoreException.h</includes>
+    <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <includes id="_disable_memory_leak_check_8h" name="DisableMemoryLeakCheck.h" local="yes" imported="no">DisableMemoryLeakCheck.h</includes>
     <includes id="_enable_memory_leak_check_8h" name="EnableMemoryLeakCheck.h" local="yes" imported="no">EnableMemoryLeakCheck.h</includes>
     <namespace>TundraLogic</namespace>
   </compound>
   <compound kind="file">
     <name>SceneImporter.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_scene_importer_8h</filename>
     <includes id="_tundra_logic_module_api_8h" name="TundraLogicModuleApi.h" local="yes" imported="no">TundraLogicModuleApi.h</includes>
     <includes id="_scene_fwd_8h" name="SceneFwd.h" local="yes" imported="no">SceneFwd.h</includes>
@@ -10868,7 +10906,7 @@
   </compound>
   <compound kind="file">
     <name>Server.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_server_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_server_8h" name="Server.h" local="yes" imported="no">Server.h</includes>
@@ -10885,6 +10923,7 @@
     <includes id="_msg_login_reply_8h" name="MsgLoginReply.h" local="yes" imported="no">MsgLoginReply.h</includes>
     <includes id="_msg_client_joined_8h" name="MsgClientJoined.h" local="yes" imported="no">MsgClientJoined.h</includes>
     <includes id="_msg_client_left_8h" name="MsgClientLeft.h" local="yes" imported="no">MsgClientLeft.h</includes>
+    <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
     <includes id="_memory_leak_check_8h" name="MemoryLeakCheck.h" local="yes" imported="no">MemoryLeakCheck.h</includes>
     <namespace>TundraLogic</namespace>
     <member kind="function">
@@ -10939,7 +10978,7 @@
   </compound>
   <compound kind="file">
     <name>Server.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_server_8h</filename>
     <includes id="_core_defines_8h" name="CoreDefines.h" local="yes" imported="no">CoreDefines.h</includes>
     <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
@@ -10972,7 +11011,7 @@
   </compound>
   <compound kind="file">
     <name>SyncManager.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_sync_manager_8cpp</filename>
     <includes id="_core_string_utils_8h" name="CoreStringUtils.h" local="yes" imported="no">CoreStringUtils.h</includes>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
@@ -10984,12 +11023,6 @@
     <includes id="_client_8h" name="Client.h" local="yes" imported="no">Client.h</includes>
     <includes id="_server_8h" name="Server.h" local="yes" imported="no">Server.h</includes>
     <includes id="_tundra_messages_8h" name="TundraMessages.h" local="yes" imported="no">TundraMessages.h</includes>
-    <includes id="_msg_create_entity_8h" name="MsgCreateEntity.h" local="yes" imported="no">MsgCreateEntity.h</includes>
-    <includes id="_msg_create_components_8h" name="MsgCreateComponents.h" local="yes" imported="no">MsgCreateComponents.h</includes>
-    <includes id="_msg_update_components_8h" name="MsgUpdateComponents.h" local="yes" imported="no">MsgUpdateComponents.h</includes>
-    <includes id="_msg_remove_components_8h" name="MsgRemoveComponents.h" local="yes" imported="no">MsgRemoveComponents.h</includes>
-    <includes id="_msg_remove_entity_8h" name="MsgRemoveEntity.h" local="yes" imported="no">MsgRemoveEntity.h</includes>
-    <includes id="_msg_entity_i_d_collision_8h" name="MsgEntityIDCollision.h" local="yes" imported="no">MsgEntityIDCollision.h</includes>
     <includes id="_msg_entity_action_8h" name="MsgEntityAction.h" local="yes" imported="no">MsgEntityAction.h</includes>
     <includes id="_e_c___dynamic_component_8h" name="EC_DynamicComponent.h" local="yes" imported="no">EC_DynamicComponent.h</includes>
     <includes id="_asset_a_p_i_8h" name="AssetAPI.h" local="yes" imported="no">AssetAPI.h</includes>
@@ -11010,9 +11043,10 @@
   </compound>
   <compound kind="file">
     <name>SyncManager.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_sync_manager_8h</filename>
     <includes id="_i_component_8h" name="IComponent.h" local="yes" imported="no">IComponent.h</includes>
+    <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
     <includes id="_sync_state_8h" name="SyncState.h" local="yes" imported="no">SyncState.h</includes>
     <class kind="struct">TundraLogic::RemovedComponent</class>
     <class kind="class">TundraLogic::SyncManager</class>
@@ -11021,21 +11055,16 @@
   </compound>
   <compound kind="file">
     <name>SyncState.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_sync_state_8h</filename>
-    <includes id="_i_attribute_8h" name="IAttribute.h" local="yes" imported="no">IAttribute.h</includes>
-    <includes id="_user_connection_8h" name="UserConnection.h" local="yes" imported="no">UserConnection.h</includes>
-    <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
-    <includes id="_tundra_logic_module_8h" name="TundraLogicModule.h" local="yes" imported="no">TundraLogicModule.h</includes>
-    <includes id="_logging_functions_8h" name="LoggingFunctions.h" local="yes" imported="no">LoggingFunctions.h</includes>
-    <class kind="struct">TundraLogic::ComponentSyncState</class>
-    <class kind="struct">TundraLogic::EntitySyncState</class>
-    <class kind="struct">TundraLogic::SceneSyncState</class>
-    <namespace>TundraLogic</namespace>
+    <includes id="_core_types_8h" name="CoreTypes.h" local="yes" imported="no">CoreTypes.h</includes>
+    <class kind="struct">ComponentSyncState</class>
+    <class kind="struct">EntitySyncState</class>
+    <class kind="struct">SceneSyncState</class>
   </compound>
   <compound kind="file">
     <name>TundraLogicModule.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_tundra_logic_module_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_tundra_logic_module_8h" name="TundraLogicModule.h" local="yes" imported="no">TundraLogicModule.h</includes>
@@ -11086,7 +11115,7 @@
   </compound>
   <compound kind="file">
     <name>TundraLogicModule.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_tundra_logic_module_8h</filename>
     <includes id="_i_module_8h" name="IModule.h" local="yes" imported="no">IModule.h</includes>
     <includes id="_tundra_logic_module_api_8h" name="TundraLogicModuleApi.h" local="yes" imported="no">TundraLogicModuleApi.h</includes>
@@ -11098,7 +11127,7 @@
   </compound>
   <compound kind="file">
     <name>TundraLogicModuleApi.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_tundra_logic_module_api_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -11110,7 +11139,7 @@
   </compound>
   <compound kind="file">
     <name>TundraMessages.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_tundra_messages_8h</filename>
     <member kind="variable">
       <type>const unsigned long</type>
@@ -11149,13 +11178,6 @@
     </member>
     <member kind="variable">
       <type>const unsigned long</type>
-      <name>cRemoveEntityMessage</name>
-      <anchorfile>_tundra_messages_8h.html</anchorfile>
-      <anchor>a6b45ef6562fc68d637f5ea8f484d9271</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>const unsigned long</type>
       <name>cCreateComponentsMessage</name>
       <anchorfile>_tundra_messages_8h.html</anchorfile>
       <anchor>a8c0ac568f173066053d9d54df96d7a9f</anchor>
@@ -11163,9 +11185,23 @@
     </member>
     <member kind="variable">
       <type>const unsigned long</type>
-      <name>cUpdateComponentsMessage</name>
+      <name>cCreateAttributesMessage</name>
       <anchorfile>_tundra_messages_8h.html</anchorfile>
-      <anchor>a147e23f08bd558f02727076cbe4dbb8e</anchor>
+      <anchor>a437917a23714a3464af894a7182306be</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const unsigned long</type>
+      <name>cEditAttributesMessage</name>
+      <anchorfile>_tundra_messages_8h.html</anchorfile>
+      <anchor>a07b441a819b02a70b1c686d3f53ef8ba</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const unsigned long</type>
+      <name>cRemoveAttributesMessage</name>
+      <anchorfile>_tundra_messages_8h.html</anchorfile>
+      <anchor>a1ab4cc38e61d7424347eadb74a899669</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -11177,9 +11213,23 @@
     </member>
     <member kind="variable">
       <type>const unsigned long</type>
-      <name>cEntityIDCollisionMessage</name>
+      <name>cRemoveEntityMessage</name>
       <anchorfile>_tundra_messages_8h.html</anchorfile>
-      <anchor>aa4a26c5397a152b920514bb8898daee2</anchor>
+      <anchor>a6b45ef6562fc68d637f5ea8f484d9271</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const unsigned long</type>
+      <name>cCreateEntityReplyMessage</name>
+      <anchorfile>_tundra_messages_8h.html</anchorfile>
+      <anchor>a2b927d86ce6b47a2ab040cb0fcc9c37f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const unsigned long</type>
+      <name>cCreateComponentsReplyMessage</name>
+      <anchorfile>_tundra_messages_8h.html</anchorfile>
+      <anchor>a0912de54bfd64e575852855aa67a361c</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -11206,13 +11256,13 @@
   </compound>
   <compound kind="file">
     <name>UserConnectedResponseData.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_user_connected_response_data_8h</filename>
     <class kind="struct">UserConnectedResponseData</class>
   </compound>
   <compound kind="file">
     <name>UserConnection.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_user_connection_8cpp</filename>
     <includes id="_user_connection_8h" name="UserConnection.h" local="yes" imported="no">UserConnection.h</includes>
     <includes id="_entity_8h" name="Entity.h" local="yes" imported="no">Entity.h</includes>
@@ -11220,10 +11270,9 @@
   </compound>
   <compound kind="file">
     <name>UserConnection.h</name>
-    <path>C:/test/TundraLCC/src/Core/TundraProtocolModule/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/TundraProtocolModule/</path>
     <filename>_user_connection_8h</filename>
     <includes id="_kristalli_protocol_module_api_8h" name="KristalliProtocolModuleApi.h" local="yes" imported="no">KristalliProtocolModuleApi.h</includes>
-    <class kind="struct">ISyncState</class>
     <class kind="class">UserConnection</class>
     <namespace>kNet</namespace>
     <member kind="typedef">
@@ -11250,7 +11299,7 @@
   </compound>
   <compound kind="file">
     <name>QtUiAsset.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_qt_ui_asset_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_qt_ui_asset_8h" name="QtUiAsset.h" local="yes" imported="no">QtUiAsset.h</includes>
@@ -11263,7 +11312,7 @@
   </compound>
   <compound kind="file">
     <name>QtUiAsset.h</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_qt_ui_asset_8h</filename>
     <includes id="_asset_fwd_8h" name="AssetFwd.h" local="yes" imported="no">AssetFwd.h</includes>
     <includes id="_i_asset_8h" name="IAsset.h" local="yes" imported="no">IAsset.h</includes>
@@ -11273,13 +11322,13 @@
   </compound>
   <compound kind="file">
     <name>RedirectedPaintWidget.h</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_redirected_paint_widget_8h</filename>
     <class kind="class">RedirectedPaintWidget</class>
   </compound>
   <compound kind="file">
     <name>UiAPI.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_a_p_i_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ui_a_p_i_8h" name="UiAPI.h" local="yes" imported="no">UiAPI.h</includes>
@@ -11298,7 +11347,7 @@
   </compound>
   <compound kind="file">
     <name>UiAPI.h</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_a_p_i_8h</filename>
     <includes id="_ui_fwd_8h" name="UiFwd.h" local="yes" imported="no">UiFwd.h</includes>
     <includes id="_ui_api_export_8h" name="UiApiExport.h" local="yes" imported="no">UiApiExport.h</includes>
@@ -11306,7 +11355,7 @@
   </compound>
   <compound kind="file">
     <name>UiApiExport.h</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_api_export_8h</filename>
     <member kind="define">
       <type>#define</type>
@@ -11318,12 +11367,12 @@
   </compound>
   <compound kind="file">
     <name>UiFwd.h</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_fwd_8h</filename>
   </compound>
   <compound kind="file">
     <name>UiGraphicsView.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_graphics_view_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ui_graphics_view_8h" name="UiGraphicsView.h" local="yes" imported="no">UiGraphicsView.h</includes>
@@ -11332,7 +11381,7 @@
   </compound>
   <compound kind="file">
     <name>UiGraphicsView.h</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_graphics_view_8h</filename>
     <includes id="_ui_fwd_8h" name="UiFwd.h" local="yes" imported="no">UiFwd.h</includes>
     <includes id="_ui_api_export_8h" name="UiApiExport.h" local="yes" imported="no">UiApiExport.h</includes>
@@ -11340,7 +11389,7 @@
   </compound>
   <compound kind="file">
     <name>UiMainWindow.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_main_window_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ui_main_window_8h" name="UiMainWindow.h" local="yes" imported="no">UiMainWindow.h</includes>
@@ -11351,7 +11400,7 @@
   </compound>
   <compound kind="file">
     <name>UiMainWindow.h</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_main_window_8h</filename>
     <includes id="_ui_fwd_8h" name="UiFwd.h" local="yes" imported="no">UiFwd.h</includes>
     <includes id="_ui_api_export_8h" name="UiApiExport.h" local="yes" imported="no">UiApiExport.h</includes>
@@ -11359,7 +11408,7 @@
   </compound>
   <compound kind="file">
     <name>UiProxyWidget.cpp</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_proxy_widget_8cpp</filename>
     <includes id="_debug_operator_new_8h" name="DebugOperatorNew.h" local="yes" imported="no">DebugOperatorNew.h</includes>
     <includes id="_ui_proxy_widget_8h" name="UiProxyWidget.h" local="yes" imported="no">UiProxyWidget.h</includes>
@@ -11367,7 +11416,7 @@
   </compound>
   <compound kind="file">
     <name>UiProxyWidget.h</name>
-    <path>C:/test/TundraLCC/src/Core/Ui/</path>
+    <path>E:/Projects/TundraLCNew/src/Core/Ui/</path>
     <filename>_ui_proxy_widget_8h</filename>
     <class kind="class">UiProxyWidget</class>
   </compound>
@@ -12723,6 +12772,34 @@
       <anchor>a056d377671eaa9da64188927b5f11b1c</anchor>
       <arglist>(QObject *obj, QEvent *event)</arglist>
     </member>
+    <member kind="property">
+      <type>QString</type>
+      <name>currentWorkingDirectory</name>
+      <anchorfile>class_application.html</anchorfile>
+      <anchor>aa333b85fcfecb5b855e39c2aeb1dee33</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>QString</type>
+      <name>installationDirectory</name>
+      <anchorfile>class_application.html</anchorfile>
+      <anchor>a0f77e7bdb3345d3618462a49bd0b23b5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>QString</type>
+      <name>userDataDirectory</name>
+      <anchorfile>class_application.html</anchorfile>
+      <anchor>aff65991068428b1b19b5df6dc2caabdf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>QString</type>
+      <name>userDocumentsDirectory</name>
+      <anchorfile>class_application.html</anchorfile>
+      <anchor>a370af88ce3695991ba2c06d8a9e79b11</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function" protection="private">
       <type>QStringList</type>
       <name>GetQmFiles</name>
@@ -13405,6 +13482,20 @@
       <anchor>ada85b0bd8a3ba09f094a63df9ffd3bebaebc9609ddd716281f5e1c3c7cc92e637</anchor>
       <arglist></arglist>
     </member>
+    <member kind="typedef">
+      <type>std::map&lt; QString, AssetTransferPtr, QStringLessThanNoCase &gt;</type>
+      <name>AssetTransferMap</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>a3bf079c74e76f6a672fff104782122ad</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>std::vector&lt; std::pair&lt; QString, QString &gt; &gt;</type>
+      <name>AssetDependenciesMap</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>a5d967b4a5fee63119e0ce97deebab49f</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="slot">
       <type>AssetMap</type>
       <name>GetAllAssets</name>
@@ -13699,6 +13790,27 @@
       <anchor>ab47033138beebde3980a8eccf0cee1bb</anchor>
       <arglist>()</arglist>
     </member>
+    <member kind="slot">
+      <type>const AssetTransferMap &amp;</type>
+      <name>GetCurrentTransfers</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>ac20c5c2b960f68362e67055ba2092da4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>const AssetDependenciesMap &amp;</type>
+      <name>DebugGetAssetDependencies</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>a32d0815882b120e71b7e07a89391bca0</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>const std::vector&lt; AssetTransferPtr &gt;</type>
+      <name>DebugGetReadyTransfers</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>ae8c8e2805623e5d5d14f81e6f57d4810</anchor>
+      <arglist>() const </arglist>
+    </member>
     <member kind="signal">
       <type>void</type>
       <name>AssetCreated</name>
@@ -13882,6 +13994,34 @@
       <arglist>(QString assetRef, QString *outProtocolPart=0, QString *outNamedStorage=0, QString *outProtocol_Path=0, QString *outPath_Filename_SubAssetName=0, QString *outPath_Filename=0, QString *outPath=0, QString *outFilename=0, QString *outSubAssetName=0, QString *outFullRef=0, QString *outFullRefNoSubAssetName=0)</arglist>
     </member>
     <member kind="function" static="yes">
+      <type>static QString</type>
+      <name>SanitateAssetRef</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>aa3ac9563a88af439bcb2013c6ca7174c</anchor>
+      <arglist>(const QString &amp;ref)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static QString</type>
+      <name>DesanitateAssetRef</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>a237ac99c2b1a94c7cb87f2ad53dbd116</anchor>
+      <arglist>(const QString &amp;ref)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static std::string</type>
+      <name>SanitateAssetRef</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>ac990d3b9087c47bb1102e8b1cbac6a8d</anchor>
+      <arglist>(const std::string &amp;ref)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static std::string</type>
+      <name>DesanitateAssetRef</name>
+      <anchorfile>class_asset_a_p_i.html</anchorfile>
+      <anchor>a98ea3c44f3573951aa0fb3a70c3eaba6</anchor>
+      <arglist>(const std::string &amp;ref)</arglist>
+    </member>
+    <member kind="function" static="yes">
       <type>static QMap&lt; QString, QString &gt;</type>
       <name>ParseAssetStorageString</name>
       <anchorfile>class_asset_a_p_i.html</anchorfile>
@@ -13889,24 +14029,10 @@
       <arglist>(QString storageString)</arglist>
     </member>
     <member kind="typedef" protection="private">
-      <type>std::map&lt; QString, AssetTransferPtr, QStringLessThanNoCase &gt;</type>
-      <name>AssetTransferMap</name>
-      <anchorfile>class_asset_a_p_i.html</anchorfile>
-      <anchor>a3bf079c74e76f6a672fff104782122ad</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef" protection="private">
       <type>std::map&lt; QString, AssetUploadTransferPtr, QStringLessThanNoCase &gt;</type>
       <name>AssetUploadTransferMap</name>
       <anchorfile>class_asset_a_p_i.html</anchorfile>
       <anchor>a62c51ec5d36cf3077c8eb38f0238e7a0</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef" protection="private">
-      <type>std::vector&lt; std::pair&lt; QString, QString &gt; &gt;</type>
-      <name>AssetDependenciesMap</name>
-      <anchorfile>class_asset_a_p_i.html</anchorfile>
-      <anchor>a5d967b4a5fee63119e0ce97deebab49f</anchor>
       <arglist></arglist>
     </member>
     <member kind="typedef" protection="private">
@@ -15426,6 +15552,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function" virtualness="virtual">
+      <type>virtual u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a53322f32a9eaf2661f74e7eb063eec4b</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
       <type>virtual QVariant</type>
       <name>ToQVariant</name>
       <anchorfile>class_attribute.html</anchorfile>
@@ -15445,6 +15578,125 @@
       <anchorfile>class_attribute.html</anchorfile>
       <anchor>ab68f7d368f7c6e573de231d28981c043</anchor>
       <arglist>(const QScriptValue &amp;value, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>ac2c76ef9707e34913ad11276abb116a5</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a2382b7bf0ecd2b7adccf1692510f44ab</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a14fb264b765799a1764d38beb65f360a</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a0a00cdf588bab1078bd5b625484c4275</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a2d7adfaa47e6ac3d0672885e56c28db9</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>ab08fe3503db38c14e2d773da03fb83dd</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a3576e8d34fead0dbe16fde079e5df57b</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a6a50aa1309bb1f867f3978d5178a4052</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a4d62570f1266fcb6a82cff79d23e7d47</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>ab8142abad7e8c77de8d5d6796bdd14da</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>aaa35a5eb8fd529c6ff72c84cdba44fe7</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a48f538187686baeafa581ff40f8cfd9f</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a4f67fcf6a258a4c287855b5f6f007bf8</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a5877cc10d63fa2ae769e2f04aface6d8</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a943a12ef9a00a3b13931971a362f1c56</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>ad93c3b0749b7dc90bd9a0dfbe55d4ef4</anchor>
+      <arglist>() const</arglist>
+    </member>
+    <member kind="function">
+      <type>u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>aca747cd38574dc6ea8f8d0c935c16407</anchor>
+      <arglist>() const</arglist>
     </member>
     <member kind="function">
       <type>std::string</type>
@@ -15562,35 +15814,7 @@
       <type>std::string</type>
       <name>ToString</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a6f4c97d09294c988aefbb51c8e8e6abd</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>ToString</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>ad19ec5fc94f3f953114c78f6637c454c</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>ToString</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a2e447ad32ec0751a004c14b383f33aac</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>ToString</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>adf446e1b90844e5bbac385aabc57547e</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>ToString</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a3b6d7658eaaa6a9add1f99639ba269f3</anchor>
       <arglist>() const</arglist>
     </member>
     <member kind="function">
@@ -15709,35 +15933,7 @@
       <type>QString</type>
       <name>TypeName</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>aad9c301806177ed76a119b6ddc074df8</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>TypeName</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>af8f77dc29b4a4b26f0d574581295c713</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>TypeName</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a5a23d20f3a947719aec39679a9e20579</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>TypeName</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>a70679830c33050f7ce8b64688ce54dfb</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>TypeName</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a2a12621bfa12dc3f5d3e043f2875b040</anchor>
       <arglist>() const</arglist>
     </member>
     <member kind="function">
@@ -15856,35 +16052,7 @@
       <type>void</type>
       <name>FromString</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a5dc049cc0d20a9ec8be296700d8d9ab6</anchor>
-      <arglist>(const std::string &amp;str, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromString</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>abb5a98370f68b8d1982c5da131053477</anchor>
-      <arglist>(const std::string &amp;str, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromString</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>ac348881166cdad1f842d8c8881daf0c2</anchor>
-      <arglist>(const std::string &amp;str, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromString</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>aaa64b8573b90490523ad4a9fe11c1c68</anchor>
-      <arglist>(const std::string &amp;str, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromString</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>afcb128aeed4989dd30b972a0c1247008</anchor>
       <arglist>(const std::string &amp;str, AttributeChange::Type change)</arglist>
     </member>
     <member kind="function">
@@ -16003,35 +16171,7 @@
       <type>void</type>
       <name>FromQVariant</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a6c4e97d7c8385212340c8426bfe130c2</anchor>
-      <arglist>(const QVariant &amp;variant, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromQVariant</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>ac62012c2fb4d385bf91cd2793e741f03</anchor>
-      <arglist>(const QVariant &amp;variant, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromQVariant</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a8ff6bda2f0ffbd313a87c88203b5eb47</anchor>
-      <arglist>(const QVariant &amp;variant, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromQVariant</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>a5cf9899c3d0475615c6828d56d3ddd6c</anchor>
-      <arglist>(const QVariant &amp;variant, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromQVariant</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a46f16293527ed56228978611664bb91c</anchor>
       <arglist>(const QVariant &amp;variant, AttributeChange::Type change)</arglist>
     </member>
     <member kind="function">
@@ -16150,35 +16290,7 @@
       <type>QVariant</type>
       <name>ToQVariant</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a495ffdb1d74400c5e857449a4f729a69</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>QVariant</type>
-      <name>ToQVariant</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>ac8f6ff05d169dba3dc899495c65bc402</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>QVariant</type>
-      <name>ToQVariant</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a9bf903d7170957eec077265011d4d75e</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>QVariant</type>
-      <name>ToQVariant</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>a5916ee0bb7075a3991b13cb380befa73</anchor>
-      <arglist>() const</arglist>
-    </member>
-    <member kind="function">
-      <type>QVariant</type>
-      <name>ToQVariant</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a271ccc2653c1990ffdbc7c2a11bcfda7</anchor>
       <arglist>() const</arglist>
     </member>
     <member kind="function">
@@ -16297,35 +16409,7 @@
       <type>void</type>
       <name>FromScriptValue</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>ab707335e9c7e6007fb7a4e6337dd406b</anchor>
-      <arglist>(const QScriptValue &amp;value, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromScriptValue</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a652c4a179ac19000914200d941309996</anchor>
-      <arglist>(const QScriptValue &amp;value, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromScriptValue</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a501a0aa85b36a91a6aa259f153f8532d</anchor>
-      <arglist>(const QScriptValue &amp;value, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromScriptValue</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>a343a7a093c7246e843b68d2b3892048d</anchor>
-      <arglist>(const QScriptValue &amp;value, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromScriptValue</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>ab7e1c86b68e95f5bc86fa6f2457906df</anchor>
       <arglist>(const QScriptValue &amp;value, AttributeChange::Type change)</arglist>
     </member>
     <member kind="function">
@@ -16361,13 +16445,6 @@
       <name>ToBinary</name>
       <anchorfile>class_attribute.html</anchorfile>
       <anchor>ac6d140152548038a1690201f8c6433bf</anchor>
-      <arglist>(kNet::DataSerializer &amp;dest) const</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>ToBinary</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a3aa5bf8695614a4abc6a3ab7a766a219</anchor>
       <arglist>(kNet::DataSerializer &amp;dest) const</arglist>
     </member>
     <member kind="function">
@@ -16451,28 +16528,7 @@
       <type>void</type>
       <name>ToBinary</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>aa5de406f45073424c01b9cf162e3fcaf</anchor>
-      <arglist>(kNet::DataSerializer &amp;dest) const</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>ToBinary</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a7700b96d38ec509bed8e38f1e6cf6a22</anchor>
-      <arglist>(kNet::DataSerializer &amp;dest) const</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>ToBinary</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>ada6adef47197492875015b2d65838cc2</anchor>
-      <arglist>(kNet::DataSerializer &amp;dest) const</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>ToBinary</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a1abc0099051d2790d885c144af90a0ec</anchor>
       <arglist>(kNet::DataSerializer &amp;dest) const</arglist>
     </member>
     <member kind="function">
@@ -16508,13 +16564,6 @@
       <name>FromBinary</name>
       <anchorfile>class_attribute.html</anchorfile>
       <anchor>aad87eae53d268e55274cd4b8630dc403</anchor>
-      <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromBinary</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a46cb07a264ce571c063832ddb5872b18</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
     </member>
     <member kind="function">
@@ -16598,28 +16647,7 @@
       <type>void</type>
       <name>FromBinary</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a57c09dc8e4cc9788618a508febeda151</anchor>
-      <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromBinary</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a3fc71673086505ebf02cbffd915347d2</anchor>
-      <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromBinary</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>a5228e01ce9aba5190856f66a46a30e3a</anchor>
-      <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>FromBinary</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a3c75dca63975ac3ae820e28add0605f5</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
     </member>
     <member kind="function">
@@ -16634,69 +16662,6 @@
       <name>Interpolate</name>
       <anchorfile>class_attribute.html</anchorfile>
       <anchor>a9163f8c11901255e5ea86bd57297f4cd</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a01a4c38b3ff7d15a78557c09259d04ad</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a90268ca7e5a85e0bbb347f4bb5c63efb</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>abbcb89c3af1bffaa8cad36ade5382187</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a19c25a265ea0c5213f6f8db6b1e09a5d</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>ac7e3dcba1c443b0666a25722482d167e</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a82b8d95adc6fe7d41cbddaad3d323193</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>aae55545a18a3b20db38add8e8a0885a5</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>aa6b658dd234e998d324ca51741e2fb0a</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>ad10f0b0f1864693d6062d8ec6e53a840</anchor>
       <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
     </member>
     <member kind="function">
@@ -16738,6 +16703,62 @@
       <type>void</type>
       <name>Interpolate</name>
       <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a01a4c38b3ff7d15a78557c09259d04ad</anchor>
+      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Interpolate</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a90268ca7e5a85e0bbb347f4bb5c63efb</anchor>
+      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Interpolate</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>abbcb89c3af1bffaa8cad36ade5382187</anchor>
+      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Interpolate</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>ac7e3dcba1c443b0666a25722482d167e</anchor>
+      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Interpolate</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>a82b8d95adc6fe7d41cbddaad3d323193</anchor>
+      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Interpolate</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>aae55545a18a3b20db38add8e8a0885a5</anchor>
+      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Interpolate</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>aa6b658dd234e998d324ca51741e2fb0a</anchor>
+      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Interpolate</name>
+      <anchorfile>class_attribute.html</anchorfile>
+      <anchor>ad10f0b0f1864693d6062d8ec6e53a840</anchor>
+      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Interpolate</name>
+      <anchorfile>class_attribute.html</anchorfile>
       <anchor>a01c34af6612833519cda2670ef229065</anchor>
       <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
     </member>
@@ -16745,28 +16766,7 @@
       <type>void</type>
       <name>Interpolate</name>
       <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a3d254d203a9d82e24bc38892cd747185</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a71a55f6a9c7bf9ef2cf0fb03de3edcf3</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
       <anchor>a6d06d26d39ab37008ca87b5faae42b1e</anchor>
-      <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Interpolate</name>
-      <anchorfile>class_attribute.html</anchorfile>
-      <anchor>a8c8855ac73a0c06fda8c11470808bf73</anchor>
       <arglist>(IAttribute *start, IAttribute *end, float t, AttributeChange::Type change)</arglist>
     </member>
     <member kind="function">
@@ -16798,6 +16798,20 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>IsDynamic</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>ab3502a1174db4caf8e9e748626c69250</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>u8</type>
+      <name>Index</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>a17f08e4484b4b5ac5826a28c4a14d7fc</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>Changed</name>
       <anchorfile>class_i_attribute.html</anchorfile>
@@ -16825,11 +16839,39 @@
       <anchor>a7da2a9e1605f986531bfdd6735b845c6</anchor>
       <arglist></arglist>
     </member>
+    <member kind="variable" protection="protected">
+      <type>bool</type>
+      <name>dynamic</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>a5fe6bd36ee0974fa480ec900051f6f41</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>u8</type>
+      <name>index</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>a7043aa32a06da1ae93b634a6635e99e4</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="private">
       <type>T</type>
       <name>value</name>
       <anchorfile>class_attribute.html</anchorfile>
       <anchor>aa548d9213403a3be625cdd28a5889506</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="friend" protection="protected">
+      <type>friend class</type>
+      <name>SceneAPI</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>ac967c6054ece854f41e058fd1af0f506</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="friend" protection="protected">
+      <type>friend class</type>
+      <name>IComponent</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>a5ff52d239b68a851c87a767a9d9a3c55</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -17168,8 +17210,8 @@
       <type></type>
       <name>AttributeWeakPtr</name>
       <anchorfile>struct_attribute_weak_ptr.html</anchorfile>
-      <anchor>a38e62657ad51dabbaaa9780c248c7daf</anchor>
-      <arglist>(const ComponentPtr c, IAttribute *a)</arglist>
+      <anchor>a0265519a74686293cb592ed0022f32d5</anchor>
+      <arglist>(const ComponentPtr &amp;c, IAttribute *a)</arglist>
     </member>
     <member kind="function">
       <type>IAttribute *</type>
@@ -18492,6 +18534,24 @@
       <arglist></arglist>
     </member>
   </compound>
+  <compound kind="struct">
+    <name>CommandLineParameterMap</name>
+    <filename>struct_command_line_parameter_map.html</filename>
+    <member kind="function">
+      <type>void</type>
+      <name>Print</name>
+      <anchorfile>struct_command_line_parameter_map.html</anchorfile>
+      <anchor>a52e7d07c672f4a04e564e10d3b57f0fe</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="variable">
+      <type>QMap&lt; QString, QString &gt;</type>
+      <name>commands</name>
+      <anchorfile>struct_command_line_parameter_map.html</anchorfile>
+      <anchor>a8f5e9712f088212a60ced6b8dfa7b04f</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
   <compound kind="class">
     <name>Complex</name>
     <filename>class_complex.html</filename>
@@ -18900,6 +18960,87 @@
       <arglist></arglist>
     </member>
   </compound>
+  <compound kind="struct">
+    <name>ComponentSyncState</name>
+    <filename>struct_component_sync_state.html</filename>
+    <member kind="function">
+      <type></type>
+      <name>ComponentSyncState</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>a5472378382bb1e0fec5ae0b6b9b1895b</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkAttributeDirty</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>ae9279999f017ed705394340a5afc6537</anchor>
+      <arglist>(u8 attrIndex)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkAttributeCreated</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>a241b4bc5ebf23e49ef33aa1438f17f80</anchor>
+      <arglist>(u8 attrIndex)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkAttributeRemoved</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>a19632af13de097d6f5d0b5a444284deb</anchor>
+      <arglist>(u8 attrIndex)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>DirtyProcessed</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>ac752e8a6b69ff260d4f84cd6b7eef34b</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="variable">
+      <type>u8</type>
+      <name>dirtyAttributes</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>a2556fd5b2139a7296e3f79121e07f35c</anchor>
+      <arglist>[32]</arglist>
+    </member>
+    <member kind="variable">
+      <type>std::map&lt; u8, bool &gt;</type>
+      <name>newAndRemovedAttributes</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>aa6509df29807077f6104e45a1d5501c4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>ad794ca73e69bb26f6e488354f06d3ca9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>removed</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>a2198afb7e9d431e72952ea28a3c723ed</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>isNew</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>aea7c5b0d6ca1af6e0a22b7b1eee1c6b3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>isInQueue</name>
+      <anchorfile>struct_component_sync_state.html</anchorfile>
+      <anchor>ae050149ca976fe29a2cad021a3d96081</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
   <compound kind="class">
     <name>Cone</name>
     <filename>class_cone.html</filename>
@@ -18925,43 +19066,43 @@
       <type>bool</type>
       <name>HasValue</name>
       <anchorfile>class_config_a_p_i.html</anchorfile>
-      <anchor>abd518b6f6f7e04bacc1acf41ed3f72f0</anchor>
-      <arglist>(const ConfigData &amp;data)</arglist>
+      <anchor>a54df9b38de5a2c404e707a6e38c97f6c</anchor>
+      <arglist>(const ConfigData &amp;data) const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
       <name>HasValue</name>
       <anchorfile>class_config_a_p_i.html</anchorfile>
-      <anchor>a45dd640b3c3242576c91baaf3eaf273b</anchor>
-      <arglist>(const ConfigData &amp;data, QString key)</arglist>
+      <anchor>af37250e180aa87a06bc2d668e151cc5b</anchor>
+      <arglist>(const ConfigData &amp;data, QString key) const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
       <name>HasValue</name>
       <anchorfile>class_config_a_p_i.html</anchorfile>
-      <anchor>a6269466d98dfa9dea79f38824a524d53</anchor>
-      <arglist>(QString file, QString section, QString key)</arglist>
+      <anchor>a6a2be190166cc307a5c2076ab7e66e44</anchor>
+      <arglist>(QString file, QString section, QString key) const </arglist>
     </member>
     <member kind="slot">
       <type>QVariant</type>
       <name>Get</name>
       <anchorfile>class_config_a_p_i.html</anchorfile>
-      <anchor>a15d0997c9626980115dd1f16883c16f2</anchor>
-      <arglist>(const ConfigData &amp;data)</arglist>
+      <anchor>afca57421be66e5c014e7e7e00bbc09c0</anchor>
+      <arglist>(const ConfigData &amp;data) const </arglist>
     </member>
     <member kind="slot">
       <type>QVariant</type>
       <name>Get</name>
       <anchorfile>class_config_a_p_i.html</anchorfile>
-      <anchor>ad25c9f54547175de8bc635110e50a148</anchor>
-      <arglist>(const ConfigData &amp;data, QString key, const QVariant &amp;defaultValue=QVariant())</arglist>
+      <anchor>aa8faece0f9b56384952e93f05adc6ad2</anchor>
+      <arglist>(const ConfigData &amp;data, QString key, const QVariant &amp;defaultValue=QVariant()) const </arglist>
     </member>
     <member kind="slot">
       <type>QVariant</type>
       <name>Get</name>
       <anchorfile>class_config_a_p_i.html</anchorfile>
-      <anchor>a85c0c72e77b44c86dd1b1f488edffb6c</anchor>
-      <arglist>(QString file, QString section, QString key, const QVariant &amp;defaultValue=QVariant())</arglist>
+      <anchor>a3562b6b2ff95341e303d78b5f7eda5a9</anchor>
+      <arglist>(QString file, QString section, QString key, const QVariant &amp;defaultValue=QVariant()) const </arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -19037,15 +19178,15 @@
       <type>QString</type>
       <name>GetFilePath</name>
       <anchorfile>class_config_a_p_i.html</anchorfile>
-      <anchor>a4ec905c23766ee4cbaa58cd7450933a8</anchor>
-      <arglist>(const QString &amp;file)</arglist>
+      <anchor>a0e0b4b71d36654631d68781d7ae4cea2</anchor>
+      <arglist>(const QString &amp;file) const </arglist>
     </member>
     <member kind="slot" protection="private">
       <type>void</type>
       <name>PrepareString</name>
       <anchorfile>class_config_a_p_i.html</anchorfile>
-      <anchor>a6def477e46fccc6f9216368c2e881237</anchor>
-      <arglist>(QString &amp;str)</arglist>
+      <anchor>abd38f561785f7f731c234e2c30a2811e</anchor>
+      <arglist>(QString &amp;str) const </arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
@@ -19253,6 +19394,13 @@
     </member>
     <member kind="slot">
       <type>void</type>
+      <name>ClearLog</name>
+      <anchorfile>class_console_a_p_i.html</anchorfile>
+      <anchor>afef3d103eb90380245b7dbe8b9269125</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
       <name>SetLogLevel</name>
       <anchorfile>class_console_a_p_i.html</anchorfile>
       <anchor>a37b92ed73fe539abf8252b8910fe37ef</anchor>
@@ -19420,8 +19568,8 @@
       <type></type>
       <name>ConsoleCommand</name>
       <anchorfile>class_console_command.html</anchorfile>
-      <anchor>aa58fdad2092981a367de365608126e73</anchor>
-      <arglist>(const QString &amp;name_, const QString &amp;desc_, QObject *target_, QString functionName_)</arglist>
+      <anchor>ad2c8eeb46ea90bcc18d019d4702aa957</anchor>
+      <arglist>(const QString &amp;commandName, const QString &amp;desc, QObject *targetObj, const QString &amp;funcName)</arglist>
     </member>
     <member kind="function">
       <type>QString</type>
@@ -19502,6 +19650,13 @@
       <name>ToggleConsole</name>
       <anchorfile>class_console_widget.html</anchorfile>
       <anchor>a9f458acb169235ad6dcb909a186e5f6e</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>ClearLog</name>
+      <anchorfile>class_console_widget.html</anchorfile>
+      <anchor>a6c7a18746d4c2bc3fa4272337d411207</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
@@ -20135,18 +20290,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -20162,11 +20331,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -20174,6 +20343,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -20288,6 +20464,20 @@
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
     </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
     <member kind="function">
       <type></type>
       <name>EC_AnimationController</name>
@@ -20359,6 +20549,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -20399,6 +20596,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -20442,6 +20660,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -20454,13 +20693,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -20500,9 +20732,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -20510,6 +20749,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -20795,18 +21055,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -20822,11 +21096,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -20834,6 +21108,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -20948,6 +21229,20 @@
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
     </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
     <member kind="function">
       <type></type>
       <name>EC_Camera</name>
@@ -21040,6 +21335,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -21080,6 +21382,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -21123,6 +21446,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -21135,13 +21479,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -21209,9 +21546,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -21219,6 +21563,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -21402,13 +21767,6 @@
       <arglist>(const QString &amp;name, const QVariant &amp;value, AttributeChange::Type change=AttributeChange::Default)</arglist>
     </member>
     <member kind="slot">
-      <type>int</type>
-      <name>GetNumAttributes</name>
-      <anchorfile>class_e_c___dynamic_component.html</anchorfile>
-      <anchor>ac1e6fa80b56ffa267fa247a2d0461856</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="slot">
       <type>QString</type>
       <name>GetAttributeName</name>
       <anchorfile>class_e_c___dynamic_component.html</anchorfile>
@@ -21451,18 +21809,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -21479,10 +21851,24 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
       <type>int</type>
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -21557,20 +21943,6 @@
     </member>
     <member kind="signal">
       <type>void</type>
-      <name>AttributeAdded</name>
-      <anchorfile>class_e_c___dynamic_component.html</anchorfile>
-      <anchor>a5ec230cc63ac2f1fe716c8fe59254e57</anchor>
-      <arglist>(IAttribute *attr)</arglist>
-    </member>
-    <member kind="signal">
-      <type>void</type>
-      <name>AttributeAboutToBeRemoved</name>
-      <anchorfile>class_e_c___dynamic_component.html</anchorfile>
-      <anchor>a1ddfaed35853b6f8813454b14a063e06</anchor>
-      <arglist>(IAttribute *attr)</arglist>
-    </member>
-    <member kind="signal">
-      <type>void</type>
       <name>AttributeChanged</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a831b035648a3ec54c47991f61352b76f</anchor>
@@ -21597,6 +21969,20 @@
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
     </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
     <member kind="function">
       <type></type>
       <name>EC_DynamicComponent</name>
@@ -21610,13 +21996,6 @@
       <anchorfile>class_e_c___dynamic_component.html</anchorfile>
       <anchor>a1149ca82f8b006ff17a0fe3a4f3bbb51</anchor>
       <arglist>()</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
-      <anchorfile>class_e_c___dynamic_component.html</anchorfile>
-      <anchor>a68742febd219bb9b162d997c0aa7ac40</anchor>
-      <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -21702,6 +22081,34 @@
       <anchor>a89a8bab524c7fcfef61ce856e7b4d076</anchor>
       <arglist>() const </arglist>
     </member>
+    <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
+    </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
       <name>BeginSerialization</name>
@@ -21744,6 +22151,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -21756,13 +22184,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -21795,9 +22216,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -21806,6 +22234,34 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
       <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>int</type>
+      <name>GetInternalAttributeIndex</name>
+      <anchorfile>class_e_c___dynamic_component.html</anchorfile>
+      <anchor>a910cc4cd292d61cb4ec0fd31492b9316</anchor>
+      <arglist>(int index) const </arglist>
     </member>
     <member kind="friend">
       <type>friend class</type>
@@ -21855,18 +22311,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -21882,11 +22352,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -21894,6 +22364,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -21993,6 +22470,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -22086,6 +22577,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -22126,6 +22624,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -22169,6 +22688,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -22181,13 +22721,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -22255,9 +22788,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -22265,6 +22805,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" protection="private">
@@ -22338,18 +22899,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -22365,11 +22940,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -22377,6 +22952,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -22476,6 +23058,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -22569,6 +23165,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -22609,6 +23212,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -22652,6 +23276,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -22664,13 +23309,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -22738,9 +23376,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -22748,6 +23393,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -22820,18 +23486,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -22847,11 +23527,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -22859,6 +23539,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -22958,6 +23645,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -23079,6 +23780,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -23119,6 +23827,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -23162,6 +23891,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -23174,13 +23924,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -23276,9 +24019,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -23286,6 +24036,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -23392,18 +24163,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -23419,11 +24204,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -23431,6 +24216,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -23530,6 +24322,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -23686,6 +24492,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -23726,6 +24539,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -23769,6 +24603,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -23781,13 +24636,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -23897,9 +24745,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -23907,6 +24762,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -23978,18 +24854,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -24005,11 +24895,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -24017,6 +24907,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -24091,6 +24988,13 @@
     </member>
     <member kind="signal">
       <type>void</type>
+      <name>AppliedOutputMaterial</name>
+      <anchorfile>class_e_c___material.html</anchorfile>
+      <anchor>ad5289613d90b295d32bf1109479411b1</anchor>
+      <arglist>(Entity *entity, const QString &amp;meshCompName, const int index, const QString &amp;material)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
       <name>AttributeChanged</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a831b035648a3ec54c47991f61352b76f</anchor>
@@ -24116,6 +25020,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -24195,6 +25113,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -24235,6 +25160,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -24278,6 +25224,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -24290,13 +25257,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -24350,9 +25310,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -24360,6 +25327,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -24865,13 +25853,6 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>bool</type>
-      <name>Intersects</name>
-      <anchorfile>class_e_c___mesh.html</anchorfile>
-      <anchor>a63d85806c517c3132ae3e2136da67031</anchor>
-      <arglist>(const Ray &amp;ray, const OBB &amp;obb) const </arglist>
-    </member>
-    <member kind="slot">
       <type>Framework *</type>
       <name>GetFramework</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -24879,18 +25860,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -24906,11 +25901,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -24918,6 +25913,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -25046,6 +26048,20 @@
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
     </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
     <member kind="function">
       <type></type>
       <name>EC_Mesh</name>
@@ -25145,6 +26161,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -25185,6 +26208,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -25228,6 +26272,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -25240,13 +26305,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -25321,9 +26379,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -25331,6 +26396,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -25514,18 +26600,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -25541,11 +26641,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -25553,6 +26653,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -25652,6 +26759,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -25724,6 +26845,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -25764,6 +26892,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -25807,6 +26956,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -25819,13 +26989,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -25865,9 +27028,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -25875,6 +27045,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="friend">
@@ -25897,18 +27088,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -25924,11 +27129,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -25936,6 +27141,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -26035,6 +27247,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -26121,6 +27347,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -26161,6 +27394,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -26204,6 +27458,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -26216,13 +27491,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -26283,9 +27551,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -26293,6 +27568,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -26371,18 +27667,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -26398,11 +27708,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -26410,6 +27720,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -26509,6 +27826,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -26644,6 +27975,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -26684,6 +28022,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -26727,6 +28086,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -26739,13 +28119,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -26778,9 +28151,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -26788,6 +28168,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" protection="private">
@@ -27118,18 +28519,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -27145,11 +28560,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -27157,6 +28572,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -27264,6 +28686,20 @@
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
     </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
     <member kind="function">
       <type></type>
       <name>EC_Placeable</name>
@@ -27370,6 +28806,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -27410,6 +28853,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -27453,6 +28917,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -27465,13 +28950,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -27546,9 +29024,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -27556,6 +29041,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -27885,18 +29391,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -27912,11 +29432,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -27924,6 +29444,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -28030,6 +29557,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -28172,6 +29713,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -28212,6 +29760,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -28255,6 +29824,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -28267,13 +29857,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -28425,9 +30008,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -28435,6 +30025,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -28716,18 +30327,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -28743,11 +30368,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -28755,6 +30380,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -28854,6 +30486,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -28933,6 +30579,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -28973,6 +30626,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -29016,6 +30690,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -29028,13 +30723,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -29088,9 +30776,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -29098,6 +30793,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -29155,18 +30871,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -29182,11 +30912,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -29194,6 +30924,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -29293,6 +31030,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -29351,6 +31102,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -29391,6 +31149,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -29434,6 +31213,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -29446,13 +31246,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -29485,9 +31278,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -29495,6 +31295,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
@@ -29552,18 +31373,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -29579,11 +31414,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -29591,6 +31426,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -29690,6 +31532,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -29783,6 +31639,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -29823,6 +31686,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -29866,6 +31750,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -29878,13 +31783,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -29952,9 +31850,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -29962,6 +31867,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" protection="private">
@@ -30300,18 +32226,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -30327,11 +32267,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -30339,6 +32279,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -30445,6 +32392,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -30622,6 +32583,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -30662,6 +32630,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -30705,6 +32694,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -30717,13 +32727,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -30847,9 +32850,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -30857,6 +32867,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -31156,18 +33187,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -31183,11 +33228,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -31195,6 +33240,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -31309,6 +33361,20 @@
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
     </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
     <member kind="function">
       <type></type>
       <name>EC_VolumeTrigger</name>
@@ -31373,6 +33439,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -31413,6 +33486,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -31456,6 +33550,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -31468,13 +33583,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -31521,9 +33629,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -31531,6 +33646,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="slot" protection="private">
@@ -31707,18 +33843,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -31734,11 +33884,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -31746,6 +33896,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -31845,6 +34002,20 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -32015,6 +34186,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -32055,6 +34233,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a481ee3acac8605b1e683c1231f25e2bc</anchor>
       <arglist>(kNet::DataDeserializer &amp;source, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -32098,6 +34297,27 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>component_id_t</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -32110,13 +34330,6 @@
       <name>attributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>ae0bfd9389533b6a178d0876b1174102f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -32254,9 +34467,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -32264,6 +34484,27 @@
       <name>updateMode</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" protection="private">
@@ -32604,34 +34845,6 @@
       <type>void</type>
       <name>Update</name>
       <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>ae68a808f8ce6f21850200278eaf53d0c</anchor>
-      <arglist>(IAttribute *attr)</arglist>
-    </member>
-    <member kind="function" protection="protected">
-      <type>void</type>
-      <name>Initialize</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>a6b4a2a8b54662480da8c8ac9e25e6847</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function" protection="protected">
-      <type>void</type>
-      <name>Update</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>af7707d8ffde53803685df14c65efff9c</anchor>
-      <arglist>(IAttribute *attr)</arglist>
-    </member>
-    <member kind="function" protection="protected">
-      <type>void</type>
-      <name>Initialize</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>ad33cddf7124feb26468350cce921b3fe</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function" protection="protected">
-      <type>void</type>
-      <name>Update</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
       <anchor>ab48cf76527497072b34f885a0bd66624</anchor>
       <arglist>(IAttribute *attr)</arglist>
     </member>
@@ -32640,20 +34853,6 @@
       <name>Initialize</name>
       <anchorfile>class_e_c_attribute_editor.html</anchorfile>
       <anchor>adeebfece4d6a222c3b39fc162379c56d</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function" protection="protected">
-      <type>void</type>
-      <name>Update</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>a1ca334a6f5cdb5d51a11ae333c38d158</anchor>
-      <arglist>(IAttribute *attr)</arglist>
-    </member>
-    <member kind="function" protection="protected">
-      <type>void</type>
-      <name>Initialize</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>af5fe4e113b7e7c4be71b091766525483</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function" protection="protected">
@@ -33178,28 +35377,7 @@
       <type>void</type>
       <name>Set</name>
       <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>a59e903cc79003f28455a9c90eb56eacd</anchor>
-      <arglist>(QtProperty *property)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>Set</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>a13693eb04b3c0dec99ee4631c7e96bfc</anchor>
-      <arglist>(QtProperty *property)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>Set</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
       <anchor>a623bb7eda9b930b65bb564f6f9a5c634</anchor>
-      <arglist>(QtProperty *property)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>Set</name>
-      <anchorfile>class_e_c_attribute_editor.html</anchorfile>
-      <anchor>a66cdb14f2761817e4dd5f58b5d1b1b19</anchor>
       <arglist>(QtProperty *property)</arglist>
     </member>
     <member kind="function" protection="private">
@@ -34857,6 +37035,13 @@
     <name>Entity</name>
     <filename>class_entity.html</filename>
     <member kind="typedef">
+      <type>std::map&lt; component_id_t, ComponentPtr &gt;</type>
+      <name>ComponentMap</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>aba41151cc946e02c2ee618f6fdc2c865</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
       <type>std::vector&lt; ComponentPtr &gt;</type>
       <name>ComponentVector</name>
       <anchorfile>class_entity.html</anchorfile>
@@ -34869,6 +37054,13 @@
       <anchorfile>class_entity.html</anchorfile>
       <anchor>a2c6093999f6f19fc90239a93d128d6fb</anchor>
       <arglist></arglist>
+    </member>
+    <member kind="slot">
+      <type>ComponentPtr</type>
+      <name>GetComponentById</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a2e90ae97ecfdd329a45f08a21162d60b</anchor>
+      <arglist>(component_id_t id) const </arglist>
     </member>
     <member kind="slot">
       <type>ComponentPtr</type>
@@ -34902,57 +37094,85 @@
       <type>ComponentPtr</type>
       <name>GetOrCreateComponent</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>a883c56657541a31a9657dd57ad86ed63</anchor>
-      <arglist>(const QString &amp;type_name, AttributeChange::Type change=AttributeChange::Default, bool syncEnabled=true)</arglist>
+      <anchor>a55e5f3be38c4f3268d11e4cfa6c3ac6f</anchor>
+      <arglist>(const QString &amp;type_name, AttributeChange::Type change=AttributeChange::Default, bool replicated=true)</arglist>
     </member>
     <member kind="slot">
       <type>ComponentPtr</type>
       <name>GetOrCreateComponent</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>a6db224eaac00607a2a1c0956266bb94a</anchor>
-      <arglist>(const QString &amp;type_name, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default, bool syncEnabled=true)</arglist>
+      <anchor>a7fe870df9f995e58eb06278b73778684</anchor>
+      <arglist>(const QString &amp;type_name, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default, bool replicated=true)</arglist>
     </member>
     <member kind="slot">
       <type>ComponentPtr</type>
       <name>GetOrCreateComponent</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>a2e75683cdd3b8ac58c9751e84716dbb7</anchor>
-      <arglist>(u32 typeId, AttributeChange::Type change=AttributeChange::Default)</arglist>
+      <anchor>adcb6f20342f62f5842ef1b47bfb5ccac</anchor>
+      <arglist>(u32 typeId, AttributeChange::Type change=AttributeChange::Default, bool replicated=true)</arglist>
     </member>
     <member kind="slot">
       <type>ComponentPtr</type>
       <name>GetOrCreateComponent</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>ae40c26d12d4faff9a22b7ba1c05f0d7c</anchor>
-      <arglist>(u32 typeId, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+      <anchor>a8b5b130a898409974766d03628cd70ce</anchor>
+      <arglist>(u32 typeId, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default, bool replicated=true)</arglist>
+    </member>
+    <member kind="slot">
+      <type>ComponentPtr</type>
+      <name>GetOrCreateLocalComponent</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a012424ffb45e7e8048c84e21084c1f55</anchor>
+      <arglist>(const QString &amp;type_name)</arglist>
+    </member>
+    <member kind="slot">
+      <type>ComponentPtr</type>
+      <name>GetOrCreateLocalComponent</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a8922f327625fe76e1aa96a571906885e</anchor>
+      <arglist>(const QString &amp;type_name, const QString &amp;name)</arglist>
     </member>
     <member kind="slot">
       <type>ComponentPtr</type>
       <name>CreateComponent</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>aa783b224f7e2ca72fe97207788713039</anchor>
-      <arglist>(const QString &amp;type_name, AttributeChange::Type change=AttributeChange::Default, bool syncEnabled=true)</arglist>
+      <anchor>ae0fa141ba694a9f7c09f3c456c3147fb</anchor>
+      <arglist>(const QString &amp;type_name, AttributeChange::Type change=AttributeChange::Default, bool replicated=true)</arglist>
     </member>
     <member kind="slot">
       <type>ComponentPtr</type>
       <name>CreateComponent</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>a977cf0cb8b19e08be0485d09f5b8862c</anchor>
-      <arglist>(const QString &amp;type_name, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default, bool syncEnabled=true)</arglist>
+      <anchor>a258011da68787b82a1ae0afdcaf97435</anchor>
+      <arglist>(const QString &amp;type_name, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default, bool replicated=true)</arglist>
     </member>
     <member kind="slot">
       <type>ComponentPtr</type>
       <name>CreateComponent</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>abc85369e73cdbfe993297108b244472a</anchor>
-      <arglist>(u32 typeId, AttributeChange::Type change=AttributeChange::Default)</arglist>
+      <anchor>a87c9fb535afeb9ae35fcde1a7ffc215c</anchor>
+      <arglist>(u32 typeId, AttributeChange::Type change=AttributeChange::Default, bool replicated=true)</arglist>
     </member>
     <member kind="slot">
       <type>ComponentPtr</type>
       <name>CreateComponent</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>a0f289793e325ca3906b2b71dbf5655f6</anchor>
-      <arglist>(u32 typeId, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+      <anchor>a1b2645103ec184d8f2135c71022f4fe2</anchor>
+      <arglist>(u32 typeId, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default, bool replicated=true)</arglist>
+    </member>
+    <member kind="slot">
+      <type>ComponentPtr</type>
+      <name>CreateLocalComponent</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a06593dc3d6da3559ec83626b074972e9</anchor>
+      <arglist>(const QString &amp;type_name)</arglist>
+    </member>
+    <member kind="slot">
+      <type>ComponentPtr</type>
+      <name>CreateLocalComponent</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>ae37d83e09b232f290b930a912960c79c</anchor>
+      <arglist>(const QString &amp;type_name, const QString &amp;name)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -34960,6 +37180,13 @@
       <anchorfile>class_entity.html</anchorfile>
       <anchor>aef91d3577f7cd0ab34730382aaf547dd</anchor>
       <arglist>(const ComponentPtr &amp;component, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>AddComponent</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a2b18bf2677a2d7f87ac0438b498452e3</anchor>
+      <arglist>(component_id_t id, const ComponentPtr &amp;component, AttributeChange::Type change=AttributeChange::Default)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -35023,6 +37250,13 @@
       <anchorfile>class_entity.html</anchorfile>
       <anchor>a10597ebb3bcba3878e67a68ca5301dba</anchor>
       <arglist>(const QString &amp;type_name, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>RemoveComponentById</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a2d51dad58005def6d1893e044d8e0aff</anchor>
+      <arglist>(component_id_t id, AttributeChange::Type change=AttributeChange::Default)</arglist>
     </member>
     <member kind="slot">
       <type>QObjectList</type>
@@ -35130,6 +37364,20 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
+      <type>bool</type>
+      <name>IsReplicated</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a23c6a78003b3d5af0f683da1fb1919bf</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a70131fb852390b86309aec09d816fd8a</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
       <type>QString</type>
       <name>ToString</name>
       <anchorfile>class_entity.html</anchorfile>
@@ -35151,10 +37399,10 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>const ComponentVector &amp;</type>
+      <type>const ComponentMap &amp;</type>
       <name>Components</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>a96a5c88731be34b9242fc219d23afc9f</anchor>
+      <anchor>aacb3afcbcdfa927b53e2a28a446a511b</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -35297,6 +37545,20 @@
       <anchor>ad6a461499f8fd12d48506e0564c5f6fe</anchor>
       <arglist>(const Entity &amp;other) const </arglist>
     </member>
+    <member kind="function">
+      <type>void</type>
+      <name>ChangeComponentId</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>aada4eb8e64a14052a70ec64f41aeee7c</anchor>
+      <arglist>(component_id_t old_id, component_id_t new_id)</arglist>
+    </member>
+    <member kind="function">
+      <type>ComponentPtr</type>
+      <name>CreateComponentWithId</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a99167f74cf5d43254e49eb35ba4ba643</anchor>
+      <arglist>(component_id_t compId, u32 typeId, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
     <member kind="property">
       <type>uint</type>
       <name>id</name>
@@ -35316,6 +37578,27 @@
       <name>description</name>
       <anchorfile>class_entity.html</anchorfile>
       <anchor>a18ea70e4a59826ece671f605559275b5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>replicated</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a12e886ac19fc9d279ea0746432f8f6bc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>abcc3efad9e0e0220fa015a19349a149c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a3652d9a41105580917cabddc51dadaf9</anchor>
       <arglist></arglist>
     </member>
     <member kind="function" protection="private">
@@ -35361,10 +37644,17 @@
       <arglist>(AttributeChange::Type change)</arglist>
     </member>
     <member kind="variable" protection="private">
-      <type>ComponentVector</type>
+      <type>UniqueIdGenerator</type>
+      <name>idGenerator_</name>
+      <anchorfile>class_entity.html</anchorfile>
+      <anchor>a64c1b884fb7562d52c3164e650a1709e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>ComponentMap</type>
       <name>components_</name>
       <anchorfile>class_entity.html</anchorfile>
-      <anchor>a50cc0e021b9b1ed65d3cc6e859280081</anchor>
+      <anchor>adaac93ba6e34089a12c49ac39b6acef7</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
@@ -36001,6 +38291,87 @@
       <name>ref</name>
       <anchorfile>struct_entity_reference.html</anchorfile>
       <anchor>a9c4f15678727cf7a505c6f1a22329931</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>EntitySyncState</name>
+    <filename>struct_entity_sync_state.html</filename>
+    <member kind="function">
+      <type></type>
+      <name>EntitySyncState</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>ac42ede5bb7ed42e2483c61a3e6221c04</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveFromQueue</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>a516c893aea8becdf6786d21ee94281a6</anchor>
+      <arglist>(component_id_t id)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkComponentDirty</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>a14c30d1517b4d321488592d0542e7094</anchor>
+      <arglist>(component_id_t id)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkComponentRemoved</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>ac6a6120aede7619d2e98d2891999f81c</anchor>
+      <arglist>(component_id_t id)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>DirtyProcessed</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>a08d15eca24a063404193a766fba5ad93</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="variable">
+      <type>std::list&lt; ComponentSyncState * &gt;</type>
+      <name>dirtyQueue</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>ab5e29ed024a18385f5fac166a33d3688</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>std::map&lt; component_id_t, ComponentSyncState &gt;</type>
+      <name>components</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>adf41a6364e90c904ccfdfbb691c7926b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>entity_id_t</type>
+      <name>id</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>a23db0e31751e9f48e16a954e6a8e87a9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>removed</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>a0cb40bd349dab0a2e030874f564a8d74</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>isNew</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>aeddb46282640c0690091fbecb68034ff</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>isInQueue</name>
+      <anchorfile>struct_entity_sync_state.html</anchorfile>
+      <anchor>a0e670be3c6075620cab76d451788413f</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -38367,6 +40738,13 @@
     </member>
     <member kind="function" static="yes">
       <type>static float3x3</type>
+      <name>LookAt</name>
+      <anchorfile>classfloat3x3.html</anchorfile>
+      <anchor>ae9ff1b3992467f41dd002c08515f6371</anchor>
+      <arglist>(const float3 &amp;localForward, const float3 &amp;targetDirection, const float3 &amp;localUp, const float3 &amp;worldUp)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static float3x3</type>
       <name>RandomRotation</name>
       <anchorfile>classfloat3x3.html</anchorfile>
       <anchor>a6927aa0f3a1e1e142b34df59e8a1afe4</anchor>
@@ -38539,13 +40917,6 @@
       <anchorfile>classfloat3x3.html</anchorfile>
       <anchor>a1ffc0a37d8aaff34a34309e5ea7d4d90</anchor>
       <arglist>(const Plane &amp;p)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static float3x3</type>
-      <name>OrthographicProjection</name>
-      <anchorfile>classfloat3x3.html</anchorfile>
-      <anchor>aaeb84010085e80d3ead5a3f35246d4b1</anchor>
-      <arglist>(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static float3x3</type>
@@ -39790,6 +42161,13 @@
     </member>
     <member kind="function" static="yes">
       <type>static float3x4</type>
+      <name>UniformScale</name>
+      <anchorfile>classfloat3x4.html</anchorfile>
+      <anchor>a583dca1b31c957d73617a9c2490b2dbf</anchor>
+      <arglist>(float uniformScale, const float3 &amp;scaleCenter)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static float3x4</type>
       <name>ShearX</name>
       <anchorfile>classfloat3x4.html</anchorfile>
       <anchor>a99626d83d58aad2dc388b05867041c82</anchor>
@@ -39853,9 +42231,9 @@
     </member>
     <member kind="function" static="yes">
       <type>static float3x4</type>
-      <name>LookAtRH</name>
+      <name>LookAt</name>
       <anchorfile>classfloat3x4.html</anchorfile>
-      <anchor>a71a7a1d1eb84ae498d1bc49ebdde00f5</anchor>
+      <anchor>a910fdfffdb38216ffbeb96a4d42cf6de</anchor>
       <arglist>(const float3 &amp;localForwardDir, const float3 &amp;targetForwardDir, const float3 &amp;localUp, const float3 &amp;worldUp)</arglist>
     </member>
     <member kind="variable">
@@ -41939,8 +44317,15 @@
       <type>static float4x4</type>
       <name>RotateFromTo</name>
       <anchorfile>classfloat4x4.html</anchorfile>
-      <anchor>a1cfaf7f826274d145c1f08b58800d6bd</anchor>
-      <arglist>(const float3 &amp;centerPoint, const float3 &amp;sourceDirection, const float3 &amp;targetDirection, const float3 &amp;sourceDirection2, const float3 &amp;targetDirection2)</arglist>
+      <anchor>a05ad7a3b7ba3e12c2a477fe2235446f0</anchor>
+      <arglist>(const float3 &amp;sourceDirection, const float3 &amp;targetDirection, const float3 &amp;sourceDirection2, const float3 &amp;targetDirection2)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static float4x4</type>
+      <name>RotateFromTo</name>
+      <anchorfile>classfloat4x4.html</anchorfile>
+      <anchor>aacbfa6a5982221097927b79feb2178d0</anchor>
+      <arglist>(const float3 &amp;sourceDirection, const float3 &amp;targetDirection, const float3 &amp;sourceDirection2, const float3 &amp;targetDirection2, const float3 &amp;centerPoint)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static float4x4</type>
@@ -42191,8 +44576,8 @@
       <type>static float4x4</type>
       <name>LookAt</name>
       <anchorfile>classfloat4x4.html</anchorfile>
-      <anchor>a7b67e3e0ae46e0a72449e8f3ed16fdf2</anchor>
-      <arglist>(const float3 &amp;localForward, const float3 &amp;targetDirection, const float3 &amp;localUp, const float3 &amp;worldUp, bool rightHanded=true)</arglist>
+      <anchor>a95885b9685172e38d150a45a6fe65bc2</anchor>
+      <arglist>(const float3 &amp;localForward, const float3 &amp;targetDirection, const float3 &amp;localUp, const float3 &amp;worldUp)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static float4x4</type>
@@ -42455,13 +44840,6 @@
       <arglist>()</arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>RegisterModule</name>
-      <anchorfile>class_framework.html</anchorfile>
-      <anchor>a14f61d22dd17e6cbd7b2b023f84e365e</anchor>
-      <arglist>(IModule *module)</arglist>
-    </member>
-    <member kind="slot">
       <type>IModule *</type>
       <name>GetModuleByName</name>
       <anchorfile>class_framework.html</anchorfile>
@@ -42474,13 +44852,6 @@
       <anchorfile>class_framework.html</anchorfile>
       <anchor>a0c4e8a3d4c258733d2460d8538695a7d</anchor>
       <arglist>() const </arglist>
-    </member>
-    <member kind="slot">
-      <type>bool</type>
-      <name>RegisterDynamicObject</name>
-      <anchorfile>class_framework.html</anchorfile>
-      <anchor>ab3ae4a69b9d48e759556f0993fc0ad53</anchor>
-      <arglist>(QString name, QObject *object)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -42519,20 +44890,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>ParseProgramOptions</name>
-      <anchorfile>class_framework.html</anchorfile>
-      <anchor>a2a13a8dd865ace4d27242979b0de0b0c</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>boost::program_options::variables_map &amp;</type>
-      <name>ProgramOptions</name>
-      <anchorfile>class_framework.html</anchorfile>
-      <anchor>a1f5010a32c9bcf654f32aa81ae5bc875</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>Go</name>
       <anchorfile>class_framework.html</anchorfile>
       <anchor>a93e84a46b97a526809a0cb9118a78e1f</anchor>
@@ -42544,6 +44901,27 @@
       <anchorfile>class_framework.html</anchorfile>
       <anchor>a5d496236fc7cc95de64d7e9807d7bf50</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>T *</type>
+      <name>GetModule</name>
+      <anchorfile>class_framework.html</anchorfile>
+      <anchor>abdb64a75403fec5486e10694a2b1e50b</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RegisterModule</name>
+      <anchorfile>class_framework.html</anchorfile>
+      <anchor>a14f61d22dd17e6cbd7b2b023f84e365e</anchor>
+      <arglist>(IModule *module)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>RegisterDynamicObject</name>
+      <anchorfile>class_framework.html</anchorfile>
+      <anchor>ab3ae4a69b9d48e759556f0993fc0ad53</anchor>
+      <arglist>(QString name, QObject *object)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -42573,13 +44951,6 @@
       <anchor>a2f4400c21888b81095582882f66b900e</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="function">
-      <type>T *</type>
-      <name>GetModule</name>
-      <anchorfile>class_framework.html</anchorfile>
-      <anchor>a4767030bd1425f293d492dc42d36c825</anchor>
-      <arglist>()</arglist>
-    </member>
     <member kind="variable" protection="private">
       <type>bool</type>
       <name>exit_signal_</name>
@@ -42588,17 +44959,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
-      <type>boost::program_options::variables_map</type>
-      <name>commandLineVariables</name>
+      <type>ProfilerQObj *</type>
+      <name>profilerQObj</name>
       <anchorfile>class_framework.html</anchorfile>
-      <anchor>ac1e7ae56c209ad77729d28568f199530</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>boost::program_options::options_description</type>
-      <name>commandLineDescriptions</name>
-      <anchorfile>class_framework.html</anchorfile>
-      <anchor>a2b6a34969dde101726ac954647900104</anchor>
+      <anchor>a5f03d03ba1e2ed55ea1831c24eeb6bc5</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
@@ -43874,10 +46238,24 @@
     </member>
     <member kind="slot" protection="private">
       <type>void</type>
+      <name>AboutToExit</name>
+      <anchorfile>class_http_asset_provider.html</anchorfile>
+      <anchor>ae0ca9070140346b07b8b1eb25c7a335a</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="slot" protection="private">
+      <type>void</type>
       <name>OnHttpTransferFinished</name>
       <anchorfile>class_http_asset_provider.html</anchorfile>
       <anchor>a471c56510e4ec0986f89a3d139ffffb0</anchor>
       <arglist>(QNetworkReply *reply)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>CreateAccessManager</name>
+      <anchorfile>class_http_asset_provider.html</anchorfile>
+      <anchor>a6947fae8171b58d6b5e26071cee57f53</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
@@ -45140,6 +47518,13 @@
       <arglist>() const =0</arglist>
     </member>
     <member kind="function" virtualness="pure">
+      <type>virtual u32</type>
+      <name>TypeId</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>aaf3ccf65d16a4cc99f288a38ee663f90</anchor>
+      <arglist>() const =0</arglist>
+    </member>
+    <member kind="function" virtualness="pure">
       <type>virtual void</type>
       <name>ToBinary</name>
       <anchorfile>class_i_attribute.html</anchorfile>
@@ -45186,6 +47571,20 @@
       <name>Metadata</name>
       <anchorfile>class_i_attribute.html</anchorfile>
       <anchor>ac7a4585681999c01e9de14fd060d4156</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>IsDynamic</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>ab3502a1174db4caf8e9e748626c69250</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>u8</type>
+      <name>Index</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>a17f08e4484b4b5ac5826a28c4a14d7fc</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
@@ -45237,6 +47636,34 @@
       <anchor>a7da2a9e1605f986531bfdd6735b845c6</anchor>
       <arglist></arglist>
     </member>
+    <member kind="variable" protection="protected">
+      <type>bool</type>
+      <name>dynamic</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>a5fe6bd36ee0974fa480ec900051f6f41</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="protected">
+      <type>u8</type>
+      <name>index</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>a7043aa32a06da1ae93b634a6635e99e4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="friend" protection="protected">
+      <type>friend class</type>
+      <name>SceneAPI</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>ac967c6054ece854f41e058fd1af0f506</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="friend" protection="protected">
+      <type>friend class</type>
+      <name>IComponent</name>
+      <anchorfile>class_i_attribute.html</anchorfile>
+      <anchor>a5ff52d239b68a851c87a767a9d9a3c55</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="class">
     <name>IComponent</name>
@@ -45249,18 +47676,32 @@
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetNetworkSyncEnabled</name>
+      <type>bool</type>
+      <name>IsReplicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af0a3e649093e1863c62d748704a66524</anchor>
-      <arglist>(bool enabled)</arglist>
+      <anchor>a37b5449bdd8f88a07390204b6db24a80</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
-      <name>NetworkSyncEnabled</name>
+      <name>IsLocal</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a7aba63f32372662bea07c135f50892d9</anchor>
+      <anchor>a7db6ec7dcedff369978dc05c114c3c91</anchor>
       <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>bool</type>
+      <name>IsUnacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a9f03346fe17c944a68a8388765d270c4</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetNetworkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a552391127e461b25b9d1d82028bae538</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -45276,11 +47717,11 @@
       <anchor>ab9fe0648d176468ad31690c9fe34663b</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual bool</type>
-      <name>HasDynamicStructure</name>
+    <member kind="slot">
+      <type>component_id_t</type>
+      <name>Id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>acbfc1b97ae702db921be67f1de5568da</anchor>
+      <anchor>a63fd758d1042c37b180b0521408794bf</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -45288,6 +47729,13 @@
       <name>NumAttributes</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a2fdd3bc81ee6586e78cae212063185f5</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="slot">
+      <type>int</type>
+      <name>NumStaticAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ad73dac34801dde16fd02332ff9e04aae</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="slot">
@@ -45388,19 +47836,26 @@
       <anchor>a2e2ed82d9dc9a91f1347c3fbdf6ee305</anchor>
       <arglist>()</arglist>
     </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAdded</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a81284243581f53c55f5817f5963665dc</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>AttributeAboutToBeRemoved</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>adffe0688eddd4f05201376f3c3d75f2c</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
     <member kind="function">
       <type></type>
       <name>IComponent</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>adf16e4a106eecb490b84d0e91c6200a5</anchor>
       <arglist>(Scene *scene)</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>IComponent</name>
-      <anchorfile>class_i_component.html</anchorfile>
-      <anchor>aeb788ccb02d54eea4d1fb54cbe93f519</anchor>
-      <arglist>(const IComponent &amp;rhs)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual</type>
@@ -45452,6 +47907,13 @@
       <arglist>() const </arglist>
     </member>
     <member kind="function">
+      <type>AttributeVector</type>
+      <name>NonEmptyAttributes</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a8a2fff750482947ccbdbf9ce3064c428</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
       <type>Attribute&lt; T &gt; *</type>
       <name>GetAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
@@ -45492,6 +47954,27 @@
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>a0dea3e94303deea91633301813553676</anchor>
       <arglist>(const QString &amp;name) const </arglist>
+    </member>
+    <member kind="function">
+      <type>IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a4356799119ea6ecae4b6dfc6b091bddb</anchor>
+      <arglist>(u8 index, u32 typeID, const QString &amp;name, AttributeChange::Type change=AttributeChange::Default)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a2f8b15aa5edcdaac2f32c5959c5d88dc</anchor>
+      <arglist>(u8 index, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>SetReplicated</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a62dfbeca452e6449c233a570cf059225</anchor>
+      <arglist>(bool enable)</arglist>
     </member>
     <member kind="function" protection="protected">
       <type>QDomElement</type>
@@ -45535,6 +48018,20 @@
       <anchor>a5b0ecd40b4da8fb8d6794b2cf31ce4c9</anchor>
       <arglist>(QDomElement &amp;compElement, const QString &amp;name) const </arglist>
     </member>
+    <member kind="function" protection="protected">
+      <type>void</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>af5a186f31936694254018f2c720256c7</anchor>
+      <arglist>(IAttribute *attr)</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>bool</type>
+      <name>AddAttribute</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a96113e4d61805b085f4b0d6d36135391</anchor>
+      <arglist>(IAttribute *attr, u8 index)</arglist>
+    </member>
     <member kind="variable" protection="protected">
       <type>Entity *</type>
       <name>parentEntity</name>
@@ -45550,10 +48047,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
-      <type>bool</type>
-      <name>networkSync</name>
+      <type>component_id_t</type>
+      <name>id</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a5a6fb7749d12454f09602d7b232da0a1</anchor>
+      <anchor>a946596d66e1667003eafab6ddb6f141b</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="protected">
@@ -45586,9 +48083,16 @@
     </member>
     <member kind="property">
       <type>bool</type>
-      <name>networkSyncEnabled</name>
+      <name>replicated</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <anchor>aaf5b7cfc104657f2795c8b0b237089eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>local</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a95ade3d0915b7224d56cd34a4e308cfd</anchor>
       <arglist></arglist>
     </member>
     <member kind="property">
@@ -45598,18 +48102,46 @@
       <anchor>a75b46dc1d972b1f10c17d8521aabf3c3</anchor>
       <arglist></arglist>
     </member>
+    <member kind="property">
+      <type>uint</type>
+      <name>id</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a418e735d210d40d2551b21a04f1cdde9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>unacked</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>ab5194d9724dc21842582abaa47ec4f4c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="property">
+      <type>bool</type>
+      <name>networkSyncEnabled</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a0d221fecdcf0c6b3ec731936d3c43fb8</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>AddAttribute</name>
+      <name>SetNewId</name>
       <anchorfile>class_i_component.html</anchorfile>
-      <anchor>af5a186f31936694254018f2c720256c7</anchor>
-      <arglist>(IAttribute *attr)</arglist>
+      <anchor>a2b7a2b7d7e7a48fd687a24fa8ed08bbf</anchor>
+      <arglist>(component_id_t newId)</arglist>
     </member>
     <member kind="friend">
       <type>friend class</type>
       <name>::IAttribute</name>
       <anchorfile>class_i_component.html</anchorfile>
       <anchor>aea94a77a3151b94a6e695e5e5632cff8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="friend" protection="private">
+      <type>friend class</type>
+      <name>Entity</name>
+      <anchorfile>class_i_component.html</anchorfile>
+      <anchor>a614439ccac0344926adc4c0165d64060</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -46813,59 +49345,24 @@
       <arglist>(float frameTime)=0</arglist>
     </member>
     <member kind="function" virtualness="pure">
-      <type>virtual RaycastResult *</type>
-      <name>Raycast</name>
+      <type>virtual Entity *</type>
+      <name>MainCamera</name>
       <anchorfile>class_i_renderer.html</anchorfile>
-      <anchor>a59ea6a434b472926da7fa11db4dc6984</anchor>
-      <arglist>(int x, int y)=0</arglist>
+      <anchor>afddff5e089efcc42b4943606c25b1ae7</anchor>
+      <arglist>()=0</arglist>
     </member>
     <member kind="function" virtualness="pure">
-      <type>virtual RaycastResult *</type>
-      <name>Raycast</name>
+      <type>virtual EC_Camera *</type>
+      <name>MainCameraComponent</name>
       <anchorfile>class_i_renderer.html</anchorfile>
-      <anchor>a143e548b6e9aaa78042ff162a341e3de</anchor>
-      <arglist>(int x, int y, unsigned layerMask)=0</arglist>
+      <anchor>a73b8b46365d839372e51661cbf1d6ded</anchor>
+      <arglist>()=0</arglist>
     </member>
     <member kind="function" virtualness="pure">
-      <type>virtual QList&lt; Entity * &gt;</type>
-      <name>FrustumQuery</name>
+      <type>virtual Scene *</type>
+      <name>MainCameraScene</name>
       <anchorfile>class_i_renderer.html</anchorfile>
-      <anchor>af79c12714dc389b3e512f033b73ffa86</anchor>
-      <arglist>(QRect &amp;viewrect)=0</arglist>
-    </member>
-    <member kind="function" virtualness="pure">
-      <type>virtual int</type>
-      <name>GetWindowWidth</name>
-      <anchorfile>class_i_renderer.html</anchorfile>
-      <anchor>afcace6429d3af427bac28ac75d6fdd92</anchor>
-      <arglist>() const =0</arglist>
-    </member>
-    <member kind="function" virtualness="pure">
-      <type>virtual int</type>
-      <name>GetWindowHeight</name>
-      <anchorfile>class_i_renderer.html</anchorfile>
-      <anchor>aa88f3f775e04ac950351b65a5de93bb0</anchor>
-      <arglist>() const =0</arglist>
-    </member>
-    <member kind="function" virtualness="pure">
-      <type>virtual void</type>
-      <name>SetViewDistance</name>
-      <anchorfile>class_i_renderer.html</anchorfile>
-      <anchor>a1b5cdc5104f74447cc51808c16740079</anchor>
-      <arglist>(float distance)=0</arglist>
-    </member>
-    <member kind="function" virtualness="pure">
-      <type>virtual float</type>
-      <name>ViewDistance</name>
-      <anchorfile>class_i_renderer.html</anchorfile>
-      <anchor>ae42d6ff0cc1ec580907f57eec5ff208e</anchor>
-      <arglist>() const =0</arglist>
-    </member>
-    <member kind="function" virtualness="pure">
-      <type>virtual const std::set&lt; entity_id_t &gt; &amp;</type>
-      <name>GetVisibleEntities</name>
-      <anchorfile>class_i_renderer.html</anchorfile>
-      <anchor>ab3e1663669b2346ebf19ac46f1c4a3c6</anchor>
+      <anchor>a55606b498abe9c166fda1a2aed19d4bd</anchor>
       <arglist>()=0</arglist>
     </member>
     <member kind="function" virtualness="pure">
@@ -46875,16 +49372,12 @@
       <anchor>a3465d96fe04f65bd3924463fa93feddb</anchor>
       <arglist>(const std::string &amp;prefix)=0</arglist>
     </member>
-  </compound>
-  <compound kind="struct">
-    <name>ISyncState</name>
-    <filename>struct_i_sync_state.html</filename>
-    <member kind="function" virtualness="virtual">
-      <type>virtual</type>
-      <name>~ISyncState</name>
-      <anchorfile>struct_i_sync_state.html</anchorfile>
-      <anchor>ab5ba694841dfdc42f06ab84465fb6646</anchor>
-      <arglist>()</arglist>
+    <member kind="function" virtualness="pure">
+      <type>virtual RaycastResult *</type>
+      <name>Raycast</name>
+      <anchorfile>class_i_renderer.html</anchorfile>
+      <anchor>a59ea6a434b472926da7fa11db4dc6984</anchor>
+      <arglist>(int x, int y)=0</arglist>
     </member>
   </compound>
   <compound kind="class">
@@ -49004,337 +51497,13 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>MsgCreateComponents</name>
-    <filename>struct_msg_create_components.html</filename>
-    <class kind="struct">MsgCreateComponents::S_components</class>
-    <member kind="enumvalue">
-      <name>messageID</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a1679a8223a61675c4942593d9aedd9b5acfbb51da07776dcaf0b8bd1aff3351ca</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgCreateComponents</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a49a6065e56c72c54917fd8164935bdae</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgCreateComponents</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a1248a71a6c697f0488c53dd6ab9c7f05</anchor>
-      <arglist>(const char *data, size_t numBytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>InitToDefault</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a58d537e5c5bd47e4bce971376e92f5a6</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>ab230e8901dfc07e334a377c696800773</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>ae8eee583eb2850a28a05040b684a3784</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>aef28ab0e3686b0392a86e6543ab8b596</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static const char *const</type>
-      <name>Name</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a39f298523dee28bff2270eef39135eb7</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>reliable</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>ab926421441fcd2bb5c8b842add3eb9ca</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>inOrder</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a83174f9def13444d541a79e2861d762e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>priority</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a93bba61768ad52e865a53e78db717c63</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>entityID</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a4d66cb75c6a5c05f0cc07506ee14df3c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; S_components &gt;</type>
-      <name>components</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>ad9090b3b4bd738c41aaefb74c69338ce</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultReliable</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a29c8126dd1f372dd06d05de23f0ae9c8</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultInOrder</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a0cfae464273ae9f3e01880da7a34b59c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const u32</type>
-      <name>defaultPriority</name>
-      <anchorfile>struct_msg_create_components.html</anchorfile>
-      <anchor>a51d1737db3000e31970af1a15367ea45</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgCreateComponents::S_components</name>
-    <filename>struct_msg_create_components_1_1_s__components.html</filename>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_create_components_1_1_s__components.html</anchorfile>
-      <anchor>a671d7b53e0cab278171d30fe3fad2531</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_create_components_1_1_s__components.html</anchorfile>
-      <anchor>aff0669d570b7702e57519b3fe9975aa3</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_create_components_1_1_s__components.html</anchorfile>
-      <anchor>a7dbe27ce407ba019c6134aadb4c0fcb2</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>componentTypeHash</name>
-      <anchorfile>struct_msg_create_components_1_1_s__components.html</anchorfile>
-      <anchor>ad3e4f2b9a4690c992e9ebcdc4f9de772</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; s8 &gt;</type>
-      <name>componentName</name>
-      <anchorfile>struct_msg_create_components_1_1_s__components.html</anchorfile>
-      <anchor>af11ac680500e683c246294c42f8dbbb1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; u8 &gt;</type>
-      <name>componentData</name>
-      <anchorfile>struct_msg_create_components_1_1_s__components.html</anchorfile>
-      <anchor>a756019c7050763b8727bee8b7cc2228d</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgCreateEntity</name>
-    <filename>struct_msg_create_entity.html</filename>
-    <class kind="struct">MsgCreateEntity::S_components</class>
-    <member kind="enumvalue">
-      <name>messageID</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>aa5d062f2e07dfe8c48e36860bdbae5faa447c6781a9a2eaf17ab2b8417d988718</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgCreateEntity</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>acb02d44e8748e039882860ca2e0c234e</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgCreateEntity</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>aec5ae609d5c36ea912754a43884c6bbb</anchor>
-      <arglist>(const char *data, size_t numBytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>InitToDefault</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>aa24b61630ebcebf8b4a0586869c340ef</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a3fa687861743997824a99577bd5407ad</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a565674fc50fd026376748c2dfe62a80e</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>ab65785388bb36fdcd800c049ba0f7227</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static const char *const</type>
-      <name>Name</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a110fc2ec746bb16d7d137089838a571f</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>reliable</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a5e4e831257bc39fedb90b8cc9cae239b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>inOrder</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a2cbc53291aa24a86792244cf9cd11762</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>priority</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a21d6ed247daf30193d7c2a572e0ef268</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>entityID</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>afb4e663125b1f410c4d9e5261a5b7109</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; S_components &gt;</type>
-      <name>components</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a654b55d2ad84bab15c64ebef088557db</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultReliable</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a8be132c9278490772c01b86e31784bf8</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultInOrder</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>ac23688c7a010fbc31b40d3e23b7fd712</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const u32</type>
-      <name>defaultPriority</name>
-      <anchorfile>struct_msg_create_entity.html</anchorfile>
-      <anchor>a61acfb42a75b34f328f5c8678fe38154</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgCreateEntity::S_components</name>
-    <filename>struct_msg_create_entity_1_1_s__components.html</filename>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_create_entity_1_1_s__components.html</anchorfile>
-      <anchor>aab96ed2aba6299cda153a2df4a03d5cf</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_create_entity_1_1_s__components.html</anchorfile>
-      <anchor>a0e8bad0090cc5dc1d47a2334aa925384</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_create_entity_1_1_s__components.html</anchorfile>
-      <anchor>a65ea76a16151de940a61fee82b2c732d</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>componentTypeHash</name>
-      <anchorfile>struct_msg_create_entity_1_1_s__components.html</anchorfile>
-      <anchor>a8be88de3d868949553d319397bcb0e11</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; s8 &gt;</type>
-      <name>componentName</name>
-      <anchorfile>struct_msg_create_entity_1_1_s__components.html</anchorfile>
-      <anchor>a48e5bf423533c79ab0469d75e873a0b3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; u8 &gt;</type>
-      <name>componentData</name>
-      <anchorfile>struct_msg_create_entity_1_1_s__components.html</anchorfile>
-      <anchor>aa7a9403d750b7a718ab6962e189e8a11</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
     <name>MsgEntityAction</name>
     <filename>struct_msg_entity_action.html</filename>
     <class kind="struct">MsgEntityAction::S_parameters</class>
     <member kind="enumvalue">
       <name>messageID</name>
       <anchorfile>struct_msg_entity_action.html</anchorfile>
-      <anchor>a2ac0d68c2eab6109471f04a053a4c0e1a3fcec639a126f8735eddee4fa3ded5a3</anchor>
+      <anchor>a70a32e0d7aa2f9beaa10c3f5e0e4908da3fcec639a126f8735eddee4fa3ded5a3</anchor>
       <arglist></arglist>
     </member>
     <member kind="function">
@@ -49490,127 +51659,12 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>MsgEntityIDCollision</name>
-    <filename>struct_msg_entity_i_d_collision.html</filename>
-    <member kind="enumvalue">
-      <name>messageID</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a221c95215b03c9bb74df4f5e1d624450a6ccac1af078b07ce89c98efa3d039739</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgEntityIDCollision</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a24b3604c9a1f498c6ad3767e67d42eca</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgEntityIDCollision</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>afb42a208939bcb4f3a4d64ca2a53ad79</anchor>
-      <arglist>(const char *data, size_t numBytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>InitToDefault</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a9d06e0d47cb9dee877e294af2822c7a1</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a7770f569c60e2dacfb324e79be0329f9</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a47067b94f8b0dbdae84cd88065e65097</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a21f322601243383c0756520aba5e3a04</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static const char *const</type>
-      <name>Name</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a572022ff872c5b6a6757a09837329bcf</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>reliable</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a55c7ee1e1de7db3831bb951c3dc868bf</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>inOrder</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a5955a0e72c25da78430a066cb05943aa</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>priority</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>afc2d792bb9c983b8bea7c74125a125ba</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>oldEntityID</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a1a1cc56edd7fcf7b0c169d2a1f5e00da</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>newEntityID</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>acb92b42e909b2ca64a9f57ec1a1c4323</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultReliable</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a03a0405b954bfc3b6d18a266e388dfee</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultInOrder</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a61a8160ba7c66e1ab37a9aec091036f9</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const u32</type>
-      <name>defaultPriority</name>
-      <anchorfile>struct_msg_entity_i_d_collision.html</anchorfile>
-      <anchor>a9e49dcc7f3481e4ad7b4abec75b12125</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
     <name>MsgLogin</name>
     <filename>struct_msg_login.html</filename>
     <member kind="enumvalue">
       <name>messageID</name>
       <anchorfile>struct_msg_login.html</anchorfile>
-      <anchor>a6540e5c2837268b0bab928c4cffb63d8a4c4bb3fe7a4a76b3333230a95730a310</anchor>
+      <anchor>aa28a800cbbd9bb19e0d67de26b5c5702a4c4bb3fe7a4a76b3333230a95730a310</anchor>
       <arglist></arglist>
     </member>
     <member kind="function">
@@ -49718,7 +51772,7 @@
     <member kind="enumvalue">
       <name>messageID</name>
       <anchorfile>struct_msg_login_reply.html</anchorfile>
-      <anchor>a72a4ead91af688f2a8fa6fee9549e0f0a3ef32d62e4c374494973d5c8582bdc00</anchor>
+      <anchor>a237067bac3cf52314c6859a1eee4675ca3ef32d62e4c374494973d5c8582bdc00</anchor>
       <arglist></arglist>
     </member>
     <member kind="function">
@@ -49831,532 +51885,6 @@
       <name>defaultPriority</name>
       <anchorfile>struct_msg_login_reply.html</anchorfile>
       <anchor>a7173a05694a437e2bf2583b708b438a1</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgRemoveComponents</name>
-    <filename>struct_msg_remove_components.html</filename>
-    <class kind="struct">MsgRemoveComponents::S_components</class>
-    <member kind="enumvalue">
-      <name>messageID</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a5f784b094fd85079069f2d7edb803feda55e2f3678d01aef74a24925669d6555e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgRemoveComponents</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>af6ff7cf9f07b3d85680d21d53bcf80b1</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgRemoveComponents</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a4edb829721bd7e4d1aaea8a629986765</anchor>
-      <arglist>(const char *data, size_t numBytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>InitToDefault</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a73d8eeb34007a9b79c24c4b36b12bb90</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a41737a78691b6a287b987e01355af931</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a32a8723cf3622137c0b29445671c23be</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>ad5908cee8fac1b516419e5489083f94a</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static const char *const</type>
-      <name>Name</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a8abcf9b646c0085b076fb945f32ae8d1</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>reliable</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a4acdcb3201683c375f1690546c422ffc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>inOrder</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a6bd2504dd859bb1a6f05e12b682a3bdd</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>priority</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a7611565701a74a9813a1e0f899e52ad3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>entityID</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>ad2ce85604d86857bef090f652d6861e9</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; S_components &gt;</type>
-      <name>components</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a679903a1387a77433c4bf734c2f9373b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultReliable</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a3338ae3fa80719aca43a6f9bbb31b59c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultInOrder</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a58bb0f7a934fead27068887888533b1d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const u32</type>
-      <name>defaultPriority</name>
-      <anchorfile>struct_msg_remove_components.html</anchorfile>
-      <anchor>a78815bc95b6db8a05fffd0e2734656e3</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgRemoveComponents::S_components</name>
-    <filename>struct_msg_remove_components_1_1_s__components.html</filename>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_remove_components_1_1_s__components.html</anchorfile>
-      <anchor>a42ad7db5dc8f8be538638e100975bac0</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_remove_components_1_1_s__components.html</anchorfile>
-      <anchor>a92c3a0c3c70c49126bf155b30dc978f8</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_remove_components_1_1_s__components.html</anchorfile>
-      <anchor>a9eb50dd1fabdd32959eedc03da71d3c7</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>componentTypeHash</name>
-      <anchorfile>struct_msg_remove_components_1_1_s__components.html</anchorfile>
-      <anchor>a26be52dbaa918d37568dea69893848a4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; s8 &gt;</type>
-      <name>componentName</name>
-      <anchorfile>struct_msg_remove_components_1_1_s__components.html</anchorfile>
-      <anchor>a7a36ac99c4366da9d1f5d174d6857b8e</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgRemoveEntity</name>
-    <filename>struct_msg_remove_entity.html</filename>
-    <member kind="enumvalue">
-      <name>messageID</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a72a9ae45dbf5de3071077e9b5a506dfba8559cab838325c3636b3399494d44c48</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgRemoveEntity</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a942673dbd6a013eec6c726990fe668b1</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgRemoveEntity</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a19aa1eea599e3ac871f39b55eb319b66</anchor>
-      <arglist>(const char *data, size_t numBytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>InitToDefault</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a2541bfbefa5505a3e00021e3e4fec545</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a6ae39004704e67e597d7d7c1930a43ca</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a4287f803f7aa15290560532244499dc2</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>affe2fea04f226d7b15868705ab090453</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static const char *const</type>
-      <name>Name</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>acfb065620f42da137d1fb5f43e1e2c86</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>reliable</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>ac093abee7288fb8149d35b8affa114f5</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>inOrder</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a51559156dde3ddefc383a1a33ba86746</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>priority</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a71b5c1d8270ee7674ff1fab91f640b64</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>entityID</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>ac58bb5fc2dc1fa78c8bd7fed1538ea35</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultReliable</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>aeb40fa143ac84e08629d4b48f0894be7</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultInOrder</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>ab29fd51239535ddae79afc49f8e20f95</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const u32</type>
-      <name>defaultPriority</name>
-      <anchorfile>struct_msg_remove_entity.html</anchorfile>
-      <anchor>a6ad801c85f1e5ad5d2a2d1bd7f940e9b</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgUpdateComponents</name>
-    <filename>struct_msg_update_components.html</filename>
-    <class kind="struct">MsgUpdateComponents::S_components</class>
-    <class kind="struct">MsgUpdateComponents::S_dynamiccomponents</class>
-    <member kind="enumvalue">
-      <name>messageID</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a7d881306cd89e77bda76aa0e716c959ea8fb3d3a1c2b976b8a73a4da436fb41ba</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgUpdateComponents</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a2e936d11cb961d6bfe202bc5389bb27d</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type></type>
-      <name>MsgUpdateComponents</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a80e2c9131a6ad36fd16515dfe8936813</anchor>
-      <arglist>(const char *data, size_t numBytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>InitToDefault</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a0a990b52380bbdfc27e69c642be868b6</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a6db5c1c484f3e3d14bc679dd870095b5</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a8738ee345e78a7e283bfe2125540edd1</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>aa42a3bfcc55e658f200bf30c5bb84507</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static const char *const</type>
-      <name>Name</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a293055a14eef3f0f4c06914dc451849e</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>reliable</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a5d91fe14433135fb6ce6c852f9fba1fd</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>inOrder</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>aea040473117d69cd213037d38dd1170e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>priority</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>afab51b013821b694eed8e5babb0a34ae</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>entityID</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a93cc7d5110593a95dedda702601a5021</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; S_components &gt;</type>
-      <name>components</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>ab21ee98d2bb521eee19a0df85727310f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; S_dynamiccomponents &gt;</type>
-      <name>dynamiccomponents</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a8e7f90944320fe9a700452b3a5ef3f52</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultReliable</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a39d293beac8acd70a30fd5d6109f8523</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const bool</type>
-      <name>defaultInOrder</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>abacdd25d78809aa782e2539416aeefdd</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" static="yes">
-      <type>static const u32</type>
-      <name>defaultPriority</name>
-      <anchorfile>struct_msg_update_components.html</anchorfile>
-      <anchor>a231155fd12d88588c2c40b43a6dac2bd</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgUpdateComponents::S_components</name>
-    <filename>struct_msg_update_components_1_1_s__components.html</filename>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_update_components_1_1_s__components.html</anchorfile>
-      <anchor>acdcfa1232e6d9d515c747f0d7bc8aaa3</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_update_components_1_1_s__components.html</anchorfile>
-      <anchor>a22f3e22fcf1f78980a9c5b243b53a342</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_update_components_1_1_s__components.html</anchorfile>
-      <anchor>a9bae82b92176af8e0d79ce78bc893665</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>componentTypeHash</name>
-      <anchorfile>struct_msg_update_components_1_1_s__components.html</anchorfile>
-      <anchor>aa855f8ee0d44489f260bcbe35863c51b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; s8 &gt;</type>
-      <name>componentName</name>
-      <anchorfile>struct_msg_update_components_1_1_s__components.html</anchorfile>
-      <anchor>a69cd7336096ab9110825ce1ed601ae91</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; u8 &gt;</type>
-      <name>componentData</name>
-      <anchorfile>struct_msg_update_components_1_1_s__components.html</anchorfile>
-      <anchor>ac31d145d0c9686a92c1ddf881ed01958</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgUpdateComponents::S_dynamiccomponents</name>
-    <filename>struct_msg_update_components_1_1_s__dynamiccomponents.html</filename>
-    <class kind="struct">MsgUpdateComponents::S_dynamiccomponents::S_attributes</class>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents.html</anchorfile>
-      <anchor>a8ff5b310599b57fdd459c99594c407bd</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents.html</anchorfile>
-      <anchor>a1fd3b525b217a7d95771470bc84d44ec</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents.html</anchorfile>
-      <anchor>a889dcc32994b23b76cee72c6e605ab3a</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="variable">
-      <type>u32</type>
-      <name>componentTypeHash</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents.html</anchorfile>
-      <anchor>a21482d0aa705fbd91dfd320e17eb4a04</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; s8 &gt;</type>
-      <name>componentName</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents.html</anchorfile>
-      <anchor>ad1f35003ed10842d61c009857881a914</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; S_attributes &gt;</type>
-      <name>attributes</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents.html</anchorfile>
-      <anchor>a2ac1fb051f61653e7a08d28c55616756</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>MsgUpdateComponents::S_dynamiccomponents::S_attributes</name>
-    <filename>struct_msg_update_components_1_1_s__dynamiccomponents_1_1_s__attributes.html</filename>
-    <member kind="function">
-      <type>size_t</type>
-      <name>Size</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents_1_1_s__attributes.html</anchorfile>
-      <anchor>ac0e2311f9eb195caeda68f8492cf42b6</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SerializeTo</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents_1_1_s__attributes.html</anchorfile>
-      <anchor>aac76343d4a1c33737c1123903ce5ef23</anchor>
-      <arglist>(kNet::DataSerializer &amp;dst) const </arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>DeserializeFrom</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents_1_1_s__attributes.html</anchorfile>
-      <anchor>a70df5ddea15c7c813f8c593f5a210e00</anchor>
-      <arglist>(kNet::DataDeserializer &amp;src)</arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; s8 &gt;</type>
-      <name>attributeName</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents_1_1_s__attributes.html</anchorfile>
-      <anchor>a7feb0e507d1eb1c198c82ad3fee9df94</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; s8 &gt;</type>
-      <name>attributeType</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents_1_1_s__attributes.html</anchorfile>
-      <anchor>a4b5b433a7a0432d023a8077504635c46</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; u8 &gt;</type>
-      <name>attributeData</name>
-      <anchorfile>struct_msg_update_components_1_1_s__dynamiccomponents_1_1_s__attributes.html</anchorfile>
-      <anchor>a10cc94a56a598100d09d08f804ea0c6e</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -52777,13 +54305,6 @@
       <anchor>a12a9404d77b54c725935da7fd98d8b6b</anchor>
       <arglist>()</arglist>
     </member>
-    <member kind="slot">
-      <type>void</type>
-      <name>EmitActiveCameraChanged</name>
-      <anchorfile>class_ogre_world.html</anchorfile>
-      <anchor>a94b51151bcdd0761499959f21f901800</anchor>
-      <arglist>(EC_Camera *camera)</arglist>
-    </member>
     <member kind="signal">
       <type>void</type>
       <name>EntityEnterView</name>
@@ -52797,13 +54318,6 @@
       <anchorfile>class_ogre_world.html</anchorfile>
       <anchor>a9793fb862a350d75a0cc3648cb869f36</anchor>
       <arglist>(Entity *entity)</arglist>
-    </member>
-    <member kind="signal">
-      <type>void</type>
-      <name>ActiveCameraChanged</name>
-      <anchorfile>class_ogre_world.html</anchorfile>
-      <anchor>ae0578ccd9152a65b26c65c10868f839b</anchor>
-      <arglist>(EC_Camera *camera)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -53760,6 +55274,13 @@
       <anchor>ad9e929beb41fcab8a307ffb9e3810c5c</anchor>
       <arglist></arglist>
     </member>
+    <member kind="friend" protection="private">
+      <type>friend class</type>
+      <name>ProfilerQObj</name>
+      <anchorfile>class_profiler.html</anchorfile>
+      <anchor>ade67d1c9821776c240cd9fcb34adf49b</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="class">
     <name>ProfilerBlock</name>
@@ -53880,6 +55401,13 @@
       <anchorfile>class_profiler_node.html</anchorfile>
       <anchor>aa90478274c377c6aa6adfff44e0514cd</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>float</type>
+      <name>TotalCustomSpentInChildren</name>
+      <anchorfile>class_profiler_node.html</anchorfile>
+      <anchor>a493fa1e8c5a6ba2fe2cfe315231933c6</anchor>
+      <arglist>() const </arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -54213,6 +55741,24 @@
       <anchorfile>class_profiler_node_tree.html</anchorfile>
       <anchor>ad73e5645d5b7b84a00d4a5d07b8d8078</anchor>
       <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>ProfilerQObj</name>
+    <filename>class_profiler_q_obj.html</filename>
+    <member kind="slot">
+      <type>void</type>
+      <name>BeginBlock</name>
+      <anchorfile>class_profiler_q_obj.html</anchorfile>
+      <anchor>af6533785459b85643347ecbeb485bba4</anchor>
+      <arglist>(const QString &amp;name)</arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>EndBlock</name>
+      <anchorfile>class_profiler_q_obj.html</anchorfile>
+      <anchor>a5d36287dddd1f8901f62c071d426238c</anchor>
+      <arglist>()</arglist>
     </member>
   </compound>
   <compound kind="class">
@@ -54895,13 +56441,6 @@
       <arglist>(float x, float y, float z, float w)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>LookAt</name>
-      <anchorfile>class_quat.html</anchorfile>
-      <anchor>af4e734a6af2f83b6bfaa794115b29f71</anchor>
-      <arglist>(const float3 &amp;localForward, const float3 &amp;targetDirection, const float3 &amp;localUp, const float3 &amp;worldUp)</arglist>
-    </member>
-    <member kind="function">
       <type>float3</type>
       <name>ToEulerXYX</name>
       <anchorfile>class_quat.html</anchorfile>
@@ -55103,6 +56642,13 @@
       <anchorfile>class_quat.html</anchorfile>
       <anchor>a844f56ec5305ddff2453b797b94ca355</anchor>
       <arglist>(const Quat &amp;source, const Quat &amp;target, float t)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static Quat</type>
+      <name>LookAt</name>
+      <anchorfile>class_quat.html</anchorfile>
+      <anchor>af297f22ef5dc3215ad1b8702e6c34ab5</anchor>
+      <arglist>(const float3 &amp;localForward, const float3 &amp;targetDirection, const float3 &amp;localUp, const float3 &amp;worldUp)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static Quat</type>
@@ -56050,22 +57596,15 @@
       <type>EntityPtr</type>
       <name>CreateEntity</name>
       <anchorfile>class_scene.html</anchorfile>
-      <anchor>ac5491ae050b7c0c6eaf233065ef59da4</anchor>
-      <arglist>(entity_id_t id=0, const QStringList &amp;components=QStringList(), AttributeChange::Type change=AttributeChange::Default, bool defaultNetworkSync=true)</arglist>
+      <anchor>ab1905dd10f82d6430eadb19468dac1a0</anchor>
+      <arglist>(entity_id_t id=0, const QStringList &amp;components=QStringList(), AttributeChange::Type change=AttributeChange::Default, bool replicated=true, bool componentsReplicated=true)</arglist>
     </member>
     <member kind="slot">
       <type>EntityPtr</type>
       <name>CreateLocalEntity</name>
       <anchorfile>class_scene.html</anchorfile>
-      <anchor>a14811afbab6de0f4cf38a72dfd3b0f48</anchor>
-      <arglist>(const QStringList &amp;components=QStringList(), AttributeChange::Type change=AttributeChange::Default, bool defaultNetworkSync=true)</arglist>
-    </member>
-    <member kind="slot">
-      <type>void</type>
-      <name>ChangeEntityId</name>
-      <anchorfile>class_scene.html</anchorfile>
-      <anchor>aba6787695a963e68de443affd932fd2b</anchor>
-      <arglist>(entity_id_t old_id, entity_id_t new_id)</arglist>
+      <anchor>a1c1daa784d640cffe204351455f2c2c9</anchor>
+      <arglist>(const QStringList &amp;components=QStringList(), AttributeChange::Type change=AttributeChange::Default, bool componentsReplicated=true)</arglist>
     </member>
     <member kind="slot">
       <type>bool</type>
@@ -56320,6 +57859,20 @@
       <arglist>(Entity *entity, const QString &amp;action, const QStringList &amp;params, EntityAction::ExecTypeField type)</arglist>
     </member>
     <member kind="slot">
+      <type>void</type>
+      <name>EmitEntityAcked</name>
+      <anchorfile>class_scene.html</anchorfile>
+      <anchor>ae06a4809d3e2c7dcc49ef63f704a414d</anchor>
+      <arglist>(Entity *entity, entity_id_t oldId)</arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>EmitComponentAcked</name>
+      <anchorfile>class_scene.html</anchorfile>
+      <anchor>a6ee8b982fdb5279ed0a1daf749bf8570</anchor>
+      <arglist>(IComponent *component, component_id_t oldId)</arglist>
+    </member>
+    <member kind="slot">
       <type>QList&lt; Entity * &gt;</type>
       <name>LoadSceneXML</name>
       <anchorfile>class_scene.html</anchorfile>
@@ -56475,6 +58028,20 @@
     </member>
     <member kind="signal">
       <type>void</type>
+      <name>EntityAcked</name>
+      <anchorfile>class_scene.html</anchorfile>
+      <anchor>a94b152a357f0d26e6058e721e5f65fd2</anchor>
+      <arglist>(Entity *entity, entity_id_t oldId)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>ComponentAcked</name>
+      <anchorfile>class_scene.html</anchorfile>
+      <anchor>a8fcbe3edbd6b65c8c9f6253a0d96b6f5</anchor>
+      <arglist>(IComponent *comp, component_id_t oldId)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
       <name>ActionTriggered</name>
       <anchorfile>class_scene.html</anchorfile>
       <anchor>a56cc2e649ad98dad0609fe996a1c723c</anchor>
@@ -56571,6 +58138,13 @@
       <anchor>aacc871ddabb21389a376042bd705997f</anchor>
       <arglist>() const </arglist>
     </member>
+    <member kind="function">
+      <type>void</type>
+      <name>ChangeEntityId</name>
+      <anchorfile>class_scene.html</anchorfile>
+      <anchor>aba6787695a963e68de443affd932fd2b</anchor>
+      <arglist>(entity_id_t old_id, entity_id_t new_id)</arglist>
+    </member>
     <member kind="property">
       <type>QString</type>
       <name>name</name>
@@ -56592,6 +58166,13 @@
       <anchor>a7a115865e7f5ebb1851dc3b648024c7b</anchor>
       <arglist></arglist>
     </member>
+    <member kind="slot" protection="private">
+      <type>void</type>
+      <name>OnUpdated</name>
+      <anchorfile>class_scene.html</anchorfile>
+      <anchor>a17fd781b7ba4e6b45541f60fe2e254e3</anchor>
+      <arglist>(float frameTime)</arglist>
+    </member>
     <member kind="function" protection="private">
       <type></type>
       <name>Q_DISABLE_COPY</name>
@@ -56603,28 +58184,14 @@
       <type></type>
       <name>Scene</name>
       <anchorfile>class_scene.html</anchorfile>
-      <anchor>ad10176d75a9cc0da56626f682d083507</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type></type>
-      <name>Scene</name>
-      <anchorfile>class_scene.html</anchorfile>
       <anchor>aa550f22b31afc5d08c0dfc16030b6aa0</anchor>
       <arglist>(const QString &amp;name, Framework *fw, bool viewEnabled, bool authority)</arglist>
     </member>
     <member kind="variable" protection="private">
-      <type>uint</type>
-      <name>gid_</name>
+      <type>UniqueIdGenerator</type>
+      <name>idGenerator_</name>
       <anchorfile>class_scene.html</anchorfile>
-      <anchor>ae0667f89b4507807e09b48a6f162f20f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>uint</type>
-      <name>gid_local_</name>
-      <anchorfile>class_scene.html</anchorfile>
-      <anchor>a0399daf2439716692ac8741b9caee871</anchor>
+      <anchor>a0e8d37a52e09a367527590038673ae3b</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
@@ -56676,6 +58243,13 @@
       <anchor>ab857b97154537d132b598ed691c2c638</anchor>
       <arglist></arglist>
     </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; std::pair&lt; EntityWeakPtr, AttributeChange::Type &gt; &gt;</type>
+      <name>entitiesCreatedThisFrame_</name>
+      <anchorfile>class_scene.html</anchorfile>
+      <anchor>a9e800c1c8c48e5b94383859c19cdd148</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="friend">
       <type>friend class</type>
       <name>::SceneAPI</name>
@@ -56702,39 +58276,18 @@
       <arglist>(const QString &amp;name) const </arglist>
     </member>
     <member kind="slot">
-      <type>void</type>
-      <name>SetDefaultScene</name>
-      <anchorfile>class_scene_a_p_i.html</anchorfile>
-      <anchor>a0590503a37b6f5a6ae9ff65e3a710c33</anchor>
-      <arglist>(const QString &amp;name)</arglist>
-    </member>
-    <member kind="slot">
-      <type>void</type>
-      <name>SetDefaultScene</name>
-      <anchorfile>class_scene_a_p_i.html</anchorfile>
-      <anchor>a2f6ab982cdd8cff23768027ca6561a6b</anchor>
-      <arglist>(const ScenePtr &amp;scene)</arglist>
-    </member>
-    <member kind="slot">
-      <type>const ScenePtr &amp;</type>
-      <name>GetDefaultScene</name>
-      <anchorfile>class_scene_a_p_i.html</anchorfile>
-      <anchor>a3fb38951edf7110cee1c1a3f1742fd0c</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="slot">
-      <type>Scene *</type>
-      <name>GetDefaultSceneRaw</name>
-      <anchorfile>class_scene_a_p_i.html</anchorfile>
-      <anchor>ac88e91b481dec57c033b74e6e95391be</anchor>
-      <arglist>() const </arglist>
-    </member>
-    <member kind="slot">
       <type>ScenePtr</type>
       <name>GetScene</name>
       <anchorfile>class_scene_a_p_i.html</anchorfile>
       <anchor>a96b3bf069831d9531e15edf208de80b0</anchor>
       <arglist>(const QString &amp;name) const </arglist>
+    </member>
+    <member kind="slot">
+      <type>Scene *</type>
+      <name>MainCameraScene</name>
+      <anchorfile>class_scene_a_p_i.html</anchorfile>
+      <anchor>a002ba7b9b4b8f93ccc07234683a01bc9</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="slot">
       <type>ScenePtr</type>
@@ -56749,6 +58302,13 @@
       <anchorfile>class_scene_a_p_i.html</anchorfile>
       <anchor>a09eaaaaedc10339912f053ff178a82b3</anchor>
       <arglist>(const QString &amp;name)</arglist>
+    </member>
+    <member kind="slot">
+      <type>SceneMap &amp;</type>
+      <name>Scenes</name>
+      <anchorfile>class_scene_a_p_i.html</anchorfile>
+      <anchor>ad5592bfcc702e279c8747bce8874b1e1</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="slot">
       <type>const SceneMap &amp;</type>
@@ -56799,19 +58359,40 @@
       <anchor>aaaeee1c275cadee43452a5ca0d4bbe79</anchor>
       <arglist>(const QString &amp;componentTypename)</arglist>
     </member>
-    <member kind="slot">
-      <type>IAttribute *</type>
+    <member kind="slot" static="yes">
+      <type>static QString</type>
+      <name>GetAttributeTypeName</name>
+      <anchorfile>class_scene_a_p_i.html</anchorfile>
+      <anchor>adda797e506845a7375df2e5e66425be6</anchor>
+      <arglist>(u32 attributeTypeid)</arglist>
+    </member>
+    <member kind="slot" static="yes">
+      <type>static u32</type>
+      <name>GetAttributeTypeId</name>
+      <anchorfile>class_scene_a_p_i.html</anchorfile>
+      <anchor>a82956cb0bc8cfa9972c271fd8e6bd8dc</anchor>
+      <arglist>(const QString &amp;attributeTypename)</arglist>
+    </member>
+    <member kind="slot" static="yes">
+      <type>static IAttribute *</type>
       <name>CreateAttribute</name>
       <anchorfile>class_scene_a_p_i.html</anchorfile>
-      <anchor>ac452a2d48eee5eba8a8983b14c504829</anchor>
-      <arglist>(IComponent *owner, const QString &amp;attributeTypename, const QString &amp;newAttributeName)</arglist>
+      <anchor>ac4a96ed6cd1c2b781313e84c2ce4e39f</anchor>
+      <arglist>(u32 attributeTypeid, const QString &amp;newAttributeName)</arglist>
     </member>
-    <member kind="slot">
-      <type>QStringList</type>
+    <member kind="slot" static="yes">
+      <type>static IAttribute *</type>
+      <name>CreateAttribute</name>
+      <anchorfile>class_scene_a_p_i.html</anchorfile>
+      <anchor>a511c3ab1f3e131a987876bb0c7c848f1</anchor>
+      <arglist>(const QString &amp;attributeTypename, const QString &amp;newAttributeName)</arglist>
+    </member>
+    <member kind="slot" static="yes">
+      <type>static QStringList</type>
       <name>AttributeTypes</name>
       <anchorfile>class_scene_a_p_i.html</anchorfile>
-      <anchor>afec897a1098b91bffe7ebace8a7d37ff</anchor>
-      <arglist>() const </arglist>
+      <anchor>a94fa016f42a5153bf3eb4df27c0a15c6</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="slot">
       <type>QStringList</type>
@@ -56833,13 +58414,6 @@
       <anchorfile>class_scene_a_p_i.html</anchorfile>
       <anchor>a9feeb4c711f967bd2e0cbf3f7edec404</anchor>
       <arglist>(const QString &amp;name)</arglist>
-    </member>
-    <member kind="signal">
-      <type>void</type>
-      <name>DefaultWorldSceneChanged</name>
-      <anchorfile>class_scene_a_p_i.html</anchorfile>
-      <anchor>a8138bbcd535990ef43391ffcc5b97158</anchor>
-      <arglist>(Scene *scene)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -56933,17 +58507,17 @@
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
-      <type>ScenePtr</type>
-      <name>defaultScene_</name>
-      <anchorfile>class_scene_a_p_i.html</anchorfile>
-      <anchor>aa7b794812df23f52adaf0d2410cddb41</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
       <type>SceneInteract *</type>
       <name>sceneInteract</name>
       <anchorfile>class_scene_a_p_i.html</anchorfile>
       <anchor>a48b0845eac2d96ab63088c32cec9b76f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private" static="yes">
+      <type>static QStringList</type>
+      <name>attributeTypeNames</name>
+      <anchorfile>class_scene_a_p_i.html</anchorfile>
+      <anchor>ac0fa9fa8ed3d4addf05fe0ccae354894</anchor>
       <arglist></arglist>
     </member>
     <member kind="friend" protection="private">
@@ -57501,6 +59075,13 @@
     </member>
     <member kind="slot" protection="private">
       <type>void</type>
+      <name>AckEntity</name>
+      <anchorfile>class_scene_structure_window.html</anchorfile>
+      <anchor>addc12b9d631bea3808c3ee6c26022d9e</anchor>
+      <arglist>(Entity *entity, entity_id_t oldId)</arglist>
+    </member>
+    <member kind="slot" protection="private">
+      <type>void</type>
       <name>AddComponent</name>
       <anchorfile>class_scene_structure_window.html</anchorfile>
       <anchor>a7bc9b7ce42de8b79d5fcfeb8c4fe8447</anchor>
@@ -57576,6 +59157,13 @@
       <anchor>aa6648e947aded9e3bc6a4ed8f1b6bcf2</anchor>
       <arglist>(QTreeWidgetItem *item)</arglist>
     </member>
+    <member kind="slot" protection="private">
+      <type>void</type>
+      <name>RemoveEntityById</name>
+      <anchorfile>class_scene_structure_window.html</anchorfile>
+      <anchor>a7e6a21c636c32d5b2a9770c40b3f8194</anchor>
+      <arglist>(entity_id_t id)</arglist>
+    </member>
     <member kind="function" protection="private">
       <type>void</type>
       <name>Populate</name>
@@ -57610,20 +59198,6 @@
       <anchorfile>class_scene_structure_window.html</anchorfile>
       <anchor>a4d6f1c29c206fe81702242afd8643441</anchor>
       <arglist>(QTreeWidgetItem *parentItem, IAttribute *attr)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>DecorateEntityItem</name>
-      <anchorfile>class_scene_structure_window.html</anchorfile>
-      <anchor>afc56f7e1c7556b8e7339a342d6bb2426</anchor>
-      <arglist>(Entity *entity, QTreeWidgetItem *item) const </arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>DecorateComponentItem</name>
-      <anchorfile>class_scene_structure_window.html</anchorfile>
-      <anchor>a6a5578a11a9cd6a23976ed4791c722a6</anchor>
-      <arglist>(IComponent *comp, QTreeWidgetItem *item) const </arglist>
     </member>
     <member kind="variable" protection="private">
       <type>Framework *</type>
@@ -57672,6 +59246,101 @@
       <name>expandAndCollapseButton</name>
       <anchorfile>class_scene_structure_window.html</anchorfile>
       <anchor>a8216fde006e2c46b5a0f1eb637eb5282</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>SceneSyncState</name>
+    <filename>struct_scene_sync_state.html</filename>
+    <member kind="function">
+      <type>void</type>
+      <name>Clear</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a4688be7d94741eaf77ee11ca4d75f851</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>RemoveFromQueue</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>aab9712d571f72591a8afeb39d19164a0</anchor>
+      <arglist>(entity_id_t id)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkEntityProcessed</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a76950056187f0985c3ceff8b749a0580</anchor>
+      <arglist>(entity_id_t id)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkComponentProcessed</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a0b59123786c0566e636a3e409dff22d5</anchor>
+      <arglist>(entity_id_t id, component_id_t compId)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkEntityDirty</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a66bb4967cb273cdbbba7d5581ae1af51</anchor>
+      <arglist>(entity_id_t id)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkEntityRemoved</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a31e34ebb18eda8ab5f910be46b9e4711</anchor>
+      <arglist>(entity_id_t id)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkComponentDirty</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a1972444a468e9601793a0d61002bbb5c</anchor>
+      <arglist>(entity_id_t id, component_id_t compId)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkComponentRemoved</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a6154683129c476f542c6c9c6ea9f5532</anchor>
+      <arglist>(entity_id_t id, component_id_t compId)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkAttributeDirty</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>ae25738ea6b6611cf31918b1bf0d18153</anchor>
+      <arglist>(entity_id_t id, component_id_t compId, u8 attrIndex)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkAttributeCreated</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a49e08df33d0aa78fac08f874c4ac6b9d</anchor>
+      <arglist>(entity_id_t id, component_id_t compId, u8 attrIndex)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>MarkAttributeRemoved</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>ae8f99ddf9799ce6eebc4050ac659f5e6</anchor>
+      <arglist>(entity_id_t id, component_id_t compId, u8 attrIndex)</arglist>
+    </member>
+    <member kind="variable">
+      <type>std::list&lt; EntitySyncState * &gt;</type>
+      <name>dirtyQueue</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a135e0cb0988446c21c6c40c28dcdbda1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>std::map&lt; entity_id_t, EntitySyncState &gt;</type>
+      <name>entities</name>
+      <anchorfile>struct_scene_sync_state.html</anchorfile>
+      <anchor>a6efc5de4f0a08b30d8041e2606085135</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -58004,8 +59673,8 @@
       <type>InvokeItem *</type>
       <name>FindMruItem</name>
       <anchorfile>class_scene_tree_widget.html</anchorfile>
-      <anchor>a5347cc335cdcda52ef38c59701322dc9</anchor>
-      <arglist>() const </arglist>
+      <anchor>a3985eee6469ba57614e10ed6e8e79103</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function" protection="private">
       <type>QSet&lt; QString &gt;</type>
@@ -60269,34 +61938,6 @@
       <anchor>ab30bd0d09c84d18ba6e73281de77b6c2</anchor>
       <arglist>(QDropEvent *e)</arglist>
     </member>
-    <member kind="signal">
-      <type>void</type>
-      <name>UiDragEnterEvent</name>
-      <anchorfile>class_ui_graphics_view.html</anchorfile>
-      <anchor>a3666be2e37756a844cbc2bc27ffc1dd2</anchor>
-      <arglist>(QDragEnterEvent *e)</arglist>
-    </member>
-    <member kind="signal">
-      <type>void</type>
-      <name>UiDragLeaveEvent</name>
-      <anchorfile>class_ui_graphics_view.html</anchorfile>
-      <anchor>acf9d01ce9835891cc0cfb07e30863698</anchor>
-      <arglist>(QDragLeaveEvent *e)</arglist>
-    </member>
-    <member kind="signal">
-      <type>void</type>
-      <name>UiDragMoveEvent</name>
-      <anchorfile>class_ui_graphics_view.html</anchorfile>
-      <anchor>a1608fab439fc78733da8c654cce1d0ae</anchor>
-      <arglist>(QDragMoveEvent *e)</arglist>
-    </member>
-    <member kind="signal">
-      <type>void</type>
-      <name>UiDropEvent</name>
-      <anchorfile>class_ui_graphics_view.html</anchorfile>
-      <anchor>a1f6b3b06014987d574b79ba94f5cc618</anchor>
-      <arglist>(QDropEvent *e)</arglist>
-    </member>
     <member kind="function">
       <type></type>
       <name>UiGraphicsView</name>
@@ -60614,6 +62255,94 @@
       <arglist></arglist>
     </member>
   </compound>
+  <compound kind="class">
+    <name>UniqueIdGenerator</name>
+    <filename>class_unique_id_generator.html</filename>
+    <member kind="function">
+      <type></type>
+      <name>UniqueIdGenerator</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a16b656e7f52031b6c55b606d9e2150fc</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>entity_id_t</type>
+      <name>AllocateReplicated</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a4b0138967e9c79ce2acca78a15030dea</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>entity_id_t</type>
+      <name>AllocateUnacked</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a5592d13977689a51355fc5eb4f6d5062</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>entity_id_t</type>
+      <name>AllocateLocal</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a8e8c11cc9ee14f708409ab06e6e0b66c</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>ResetReplicatedId</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a93602c170722c7aa14aa4950df118a33</anchor>
+      <arglist>(entity_id_t id_)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>Reset</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a54dec78cc83642c14481a68f39afdffc</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="variable">
+      <type>entity_id_t</type>
+      <name>id</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a352dd83d1d2925851aca856d57e66052</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>entity_id_t</type>
+      <name>unackedId</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>afec6fc31e289557525f616e217b5580a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>entity_id_t</type>
+      <name>localId</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>acee64e7546a5bdc1a210b258854e1525</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const entity_id_t</type>
+      <name>LAST_REPLICATED_ID</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a732facf485727309c042a9614e20dbef</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const entity_id_t</type>
+      <name>FIRST_UNACKED_ID</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a83b1c4e9652c5e5cc60f16aba10ad7ad</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const entity_id_t</type>
+      <name>FIRST_LOCAL_ID</name>
+      <anchorfile>class_unique_id_generator.html</anchorfile>
+      <anchor>a87612c542ce014465193da04109794a8</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
   <compound kind="struct">
     <name>UserConnectedResponseData</name>
     <filename>struct_user_connected_response_data.html</filename>
@@ -60727,10 +62456,10 @@
       <arglist></arglist>
     </member>
     <member kind="property">
-      <type>boost::shared_ptr&lt; ISyncState &gt;</type>
+      <type>boost::shared_ptr&lt; SceneSyncState &gt;</type>
       <name>syncState</name>
       <anchorfile>class_user_connection.html</anchorfile>
-      <anchor>a14d4df98de29561f8a95eb8b5b16ddb1</anchor>
+      <anchor>adb0438e495b21406e04a945d08227065</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -61153,6 +62882,13 @@
       <name>ConsoleRefreshHttpStorages</name>
       <anchorfile>class_asset_1_1_asset_module.html</anchorfile>
       <anchor>a8bf705f1f8418f2dd5031a1403a60467</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>ConsoleDumpAssetTransfers</name>
+      <anchorfile>class_asset_1_1_asset_module.html</anchorfile>
+      <anchor>afb949100dd478dc8c1125198871a6af8</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="slot">
@@ -63508,41 +65244,6 @@
     </member>
     <member kind="function">
       <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a2c4444a05cf63623e787903ebc0118ff</anchor>
-      <arglist>(const QString &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>ab6ca033f828179ec1325aca25def6f35</anchor>
-      <arglist>(const std::string &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
-      <name>SanitateAssetIdForOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a83c37a0b4cb7d8b3341086058ec641df</anchor>
-      <arglist>(const char *input)</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>DesanitateAssetIdFromOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a89e4b849f469d316d86a407eee56bcfa</anchor>
-      <arglist>(const QString &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>QString</type>
-      <name>DesanitateAssetIdFromOgre</name>
-      <anchorfile>namespace_ogre_renderer.html</anchorfile>
-      <anchor>a28f09923dc0afecf033a004e6e2f313b</anchor>
-      <arglist>(const std::string &amp;input)</arglist>
-    </member>
-    <member kind="function">
-      <type>std::string</type>
       <name>AddDoubleQuotesIfNecessary</name>
       <anchorfile>namespace_ogre_renderer.html</anchorfile>
       <anchor>ae319180e8bff881610d31fa27392ff10</anchor>
@@ -64113,8 +65814,8 @@
       <type>void</type>
       <name>SetMaterialAttribute</name>
       <anchorfile>class_ogre_renderer_1_1_ogre_rendering_module.html</anchorfile>
-      <anchor>a6ab418600e5e926e67c095cf0f94c57a</anchor>
-      <arglist>(const StringVector &amp;params)</arglist>
+      <anchor>a9008e41a79ace9907e2c1f3d5340c42f</anchor>
+      <arglist>(const QStringList &amp;params)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -64222,10 +65923,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
-      <type>RendererSettingsWindow *</type>
+      <type>QPointer&lt; RendererSettingsWindow &gt;</type>
       <name>settingsWindow</name>
       <anchorfile>class_ogre_renderer_1_1_ogre_rendering_module.html</anchorfile>
-      <anchor>a95226c7669834f5c077f6d43c4b86769</anchor>
+      <anchor>a481f9a43edd75ce0966b90077ed653a0</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -64251,15 +65952,15 @@
       <anchor>a7e33ecced28ab01910a20e5b05e9b1c6</anchor>
       <arglist>(float frameTime)</arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual int</type>
+    <member kind="slot">
+      <type>int</type>
       <name>GetWindowWidth</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
       <anchor>a1ca0916476f424ee1d745f99ec75f1d9</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual int</type>
+    <member kind="slot">
+      <type>int</type>
       <name>GetWindowHeight</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
       <anchor>a0b0b55cd582c0cdb874a06d181f2fb6e</anchor>
@@ -64293,26 +65994,40 @@
       <anchor>a66fd3b93d9d8c5b1548413cb84673ac7</anchor>
       <arglist>(int x, int y)</arglist>
     </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual RaycastResult *</type>
-      <name>Raycast</name>
+    <member kind="slot">
+      <type>Entity *</type>
+      <name>MainCamera</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>a1a8491a249f6ad623d8a027ae1ce1798</anchor>
-      <arglist>(int x, int y, unsigned layerMask)</arglist>
-    </member>
-    <member kind="slot" virtualness="virtual">
-      <type>virtual QList&lt; Entity * &gt;</type>
-      <name>FrustumQuery</name>
-      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>a44423d3a8a99d723884cc3aa973abba3</anchor>
-      <arglist>(QRect &amp;viewrect)</arglist>
+      <anchor>a0ed6fff37982f44add3f53a710e2eba1</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="slot">
-      <type>IComponent *</type>
-      <name>GetActiveCamera</name>
+      <type>EC_Camera *</type>
+      <name>MainCameraComponent</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>a1977508af018163dca398b5242c42810</anchor>
-      <arglist>() const </arglist>
+      <anchor>a3a268121a37bf86b055846de53c5b2e0</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="slot">
+      <type>Scene *</type>
+      <name>MainCameraScene</name>
+      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
+      <anchor>a543db5af0219b3df6edc4c811477a9fe</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="slot">
+      <type>void</type>
+      <name>SetMainCamera</name>
+      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
+      <anchor>a95694f318a6a7ec53bb81b686f0eeb60</anchor>
+      <arglist>(Entity *mainCameraEntity)</arglist>
+    </member>
+    <member kind="signal">
+      <type>void</type>
+      <name>MainCameraChanged</name>
+      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
+      <anchor>a74ef38ab87a06a10a0c44094fbb12db0</anchor>
+      <arglist>(Entity *newMainWindowCamera)</arglist>
     </member>
     <member kind="function">
       <type></type>
@@ -64349,13 +66064,6 @@
       <anchor>a1e91731fd20db3dbd9ff6f667e545f00</anchor>
       <arglist>() const </arglist>
     </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual const std::set&lt; entity_id_t &gt; &amp;</type>
-      <name>GetVisibleEntities</name>
-      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>abfb7a023cb7f8ba9001986db4a497d76</anchor>
-      <arglist>()</arglist>
-    </member>
     <member kind="function">
       <type>Framework *</type>
       <name>GetFramework</name>
@@ -64379,9 +66087,9 @@
     </member>
     <member kind="function">
       <type>Ogre::Viewport *</type>
-      <name>GetViewport</name>
+      <name>MainViewport</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>a812ec0b3937019b0648c206f6eb4956c</anchor>
+      <anchor>ad8e732726f4d8f1c0785d2ba7b4225f9</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
@@ -64393,9 +66101,9 @@
     </member>
     <member kind="function">
       <type>Ogre::Camera *</type>
-      <name>GetActiveOgreCamera</name>
+      <name>MainOgreCamera</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>acba734c89ebee0168eb1b7b4de38d011</anchor>
+      <anchor>aa2f9add5e258eba4c4ceb18c44632dbd</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function">
@@ -64418,13 +66126,6 @@
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
       <anchor>a36f2629ad71bcd9981a046b00fc0eabf</anchor>
       <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>SetActiveCamera</name>
-      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>ab34198bb18788054291fd2606007e5cb</anchor>
-      <arglist>(EC_Camera *camera)</arglist>
     </member>
     <member kind="function">
       <type>CompositionHandler *</type>
@@ -64525,10 +66226,24 @@
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
-      <type>EC_Camera *</type>
-      <name>cameraComponent_</name>
+      <type>boost::weak_ptr&lt; Entity &gt;</type>
+      <name>activeMainCamera</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>a84b5851bce43ad4e5174e88bfab5fc09</anchor>
+      <anchor>a11ea6c22657c8909a4ac85fe8379f0ae</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>Ogre::Camera *</type>
+      <name>dummyDefaultCamera</name>
+      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
+      <anchor>a8b4c26f29dd7e22f44320af4230cfc1a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>Ogre::Viewport *</type>
+      <name>mainViewport</name>
+      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
+      <anchor>a45bcccacfcc34dc252914936688720a4</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
@@ -64543,20 +66258,6 @@
       <name>defaultScene_</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
       <anchor>ac317e31d17597d0f450522d9d8019fa8</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>Ogre::Camera *</type>
-      <name>defaultCamera_</name>
-      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>aee70f8d85d936e43ca876765aa1b75b1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>Ogre::Viewport *</type>
-      <name>viewport_</name>
-      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>aec6fe97fa69f62554d9921026968d705</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
@@ -64641,13 +66342,6 @@
       <name>resized_dirty_</name>
       <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
       <anchor>af8fd68a5b5edf5dd976fd5186b55db7c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>std::set&lt; entity_id_t &gt;</type>
-      <name>visible_entities_</name>
-      <anchorfile>class_ogre_renderer_1_1_renderer.html</anchorfile>
-      <anchor>a36ab0533a814b0f5dbe9642f5f13353b</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
@@ -65244,6 +66938,13 @@
       <name>getDebugMode</name>
       <anchorfile>class_physics_1_1_physics_world.html</anchorfile>
       <anchor>a827230e978d6ff5e9215cefc2592d062</anchor>
+      <arglist>() const </arglist>
+    </member>
+    <member kind="function">
+      <type>const std::set&lt; std::pair&lt; btCollisionObject *, btCollisionObject * &gt; &gt; &amp;</type>
+      <name>PreviousFrameCollisions</name>
+      <anchorfile>class_physics_1_1_physics_world.html</anchorfile>
+      <anchor>a52017b8d9ccaab3bd1718f9d5264a614</anchor>
       <arglist>() const </arglist>
     </member>
     <member kind="function" static="yes">
@@ -68453,9 +70154,6 @@
     <class kind="class">TundraLogic::Server</class>
     <class kind="struct">TundraLogic::RemovedComponent</class>
     <class kind="class">TundraLogic::SyncManager</class>
-    <class kind="struct">TundraLogic::ComponentSyncState</class>
-    <class kind="struct">TundraLogic::EntitySyncState</class>
-    <class kind="struct">TundraLogic::SceneSyncState</class>
     <class kind="class">TundraLogic::TundraLogicModule</class>
     <member kind="typedef">
       <type>std::set&lt; MaterialInfo &gt;</type>
@@ -69248,6 +70946,20 @@
     </member>
     <member kind="slot" protection="private">
       <type>void</type>
+      <name>OnAttributeAdded</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a099b5da7142cf9fa0370765940fe8c6e</anchor>
+      <arglist>(IComponent *comp, IAttribute *attr, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="slot" protection="private">
+      <type>void</type>
+      <name>OnAttributeRemoved</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>acb0c3422870d8dd169e4b30c969c0f71</anchor>
+      <arglist>(IComponent *comp, IAttribute *attr, AttributeChange::Type change)</arglist>
+    </member>
+    <member kind="slot" protection="private">
+      <type>void</type>
       <name>OnComponentAdded</name>
       <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
       <anchor>a361512d29335d9554a8e9e5a249341b9</anchor>
@@ -69297,45 +71009,17 @@
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>HandleCreateEntity</name>
+      <name>QueueMessage</name>
       <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
-      <anchor>a1889eba00e0eb8e74c7477997a7c1816</anchor>
-      <arglist>(kNet::MessageConnection *source, const MsgCreateEntity &amp;msg)</arglist>
+      <anchor>af11cff44cf3b61d55e14bfac9ad6174e</anchor>
+      <arglist>(kNet::MessageConnection *connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer &amp;ds)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>HandleRemoveEntity</name>
+      <name>WriteComponentFullUpdate</name>
       <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
-      <anchor>a5e4f48e9f813a14c6d5bdc57d10ce56a</anchor>
-      <arglist>(kNet::MessageConnection *source, const MsgRemoveEntity &amp;msg)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>HandleCreateComponents</name>
-      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
-      <anchor>a08db91fb0c9db003c10310a6ab65cba9</anchor>
-      <arglist>(kNet::MessageConnection *source, const MsgCreateComponents &amp;msg)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>HandleUpdateComponents</name>
-      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
-      <anchor>a8a7cbab71d34f4d53ff182bab62b4edc</anchor>
-      <arglist>(kNet::MessageConnection *source, const MsgUpdateComponents &amp;msg)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>HandleRemoveComponents</name>
-      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
-      <anchor>ac8d5cd8a287d02c634facbd8da50b817</anchor>
-      <arglist>(kNet::MessageConnection *source, const MsgRemoveComponents &amp;msg)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>HandleEntityIDCollision</name>
-      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
-      <anchor>a68a758ab9809267647986399ae70e519</anchor>
-      <arglist>(kNet::MessageConnection *source, const MsgEntityIDCollision &amp;msg)</arglist>
+      <anchor>ae0e0129c48d3e900e721ab23499232ce</anchor>
+      <arglist>(kNet::DataSerializer &amp;ds, ComponentPtr comp)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
@@ -69343,6 +71027,69 @@
       <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
       <anchor>ae4b208a218f3aae83871862147ab286d</anchor>
       <arglist>(kNet::MessageConnection *source, MsgEntityAction &amp;msg)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleCreateEntity</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>ab732fb2b2b9f7a742aa234d65667eb78</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleCreateComponents</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a06f6a5dfa0bf35f7502bbc400140ec5d</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleCreateAttributes</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a4c9805ebdd172034a1139b84b20c7b47</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleEditAttributes</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>af297989fff2674cb45213816e8141da9</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleRemoveAttributes</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a397ca6889300644ce8bcec2b36d7fd0a</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleRemoveComponents</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a1b6e60577831e751cbc8e9562d99c9aa</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleRemoveEntity</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>aa9cb35447c0e333c72857ba16768f87a</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleCreateEntityReply</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>ac8775b211e1c54749ec83027a5c24f49</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>HandleCreateComponentsReply</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a616abbcaf969c0622a58278e78fb0374</anchor>
+      <arglist>(kNet::MessageConnection *source, const char *data, size_t numBytes)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
@@ -69357,13 +71104,6 @@
       <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
       <anchor>ae4e966abd39e2b7679e021dd40795e14</anchor>
       <arglist>(kNet::MessageConnection *source, unsigned messageID, entity_id_t entityID)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>SerializeAndSendComponents</name>
-      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
-      <anchor>ac3b2aaf125482b7fbd9730a04d3f6789</anchor>
-      <arglist>(const std::vector&lt; kNet::MessageConnection * &gt; &amp;connections, EntityPtr entity, bool createEntity=false, bool allComponents=false)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>SceneSyncState *</type>
@@ -69421,234 +71161,67 @@
       <anchor>a523a55566c7350cf987bc7111fe54340</anchor>
       <arglist></arglist>
     </member>
-  </compound>
-  <compound kind="struct">
-    <name>TundraLogic::ComponentSyncState</name>
-    <filename>struct_tundra_logic_1_1_component_sync_state.html</filename>
-    <member kind="variable">
-      <type>u32</type>
-      <name>typeId</name>
-      <anchorfile>struct_tundra_logic_1_1_component_sync_state.html</anchorfile>
-      <anchor>a5214afc70dadbb561a67df65085b9efa</anchor>
-      <arglist></arglist>
+    <member kind="variable" protection="private">
+      <type>char</type>
+      <name>createEntityBuffer_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a95af9ffc30bd50ea2bb105cf00dfb027</anchor>
+      <arglist>[64 *1024]</arglist>
     </member>
-    <member kind="variable">
-      <type>QString</type>
-      <name>name</name>
-      <anchorfile>struct_tundra_logic_1_1_component_sync_state.html</anchorfile>
-      <anchor>a73e80c6eac8b120d53f8327f8398b648</anchor>
-      <arglist></arglist>
+    <member kind="variable" protection="private">
+      <type>char</type>
+      <name>createCompsBuffer_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>ae0ef6806dabc4796406d30a4156e6b0d</anchor>
+      <arglist>[64 *1024]</arglist>
     </member>
-    <member kind="variable">
-      <type>std::set&lt; IAttribute * &gt;</type>
-      <name>dirty_static_attributes</name>
-      <anchorfile>struct_tundra_logic_1_1_component_sync_state.html</anchorfile>
-      <anchor>abb17be0693fe88b4e3870be8a90161b7</anchor>
-      <arglist></arglist>
+    <member kind="variable" protection="private">
+      <type>char</type>
+      <name>editAttrsBuffer_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a1f81255907c5748a3e1ce892ea282617</anchor>
+      <arglist>[64 *1024]</arglist>
     </member>
-    <member kind="variable">
-      <type>std::set&lt; QString &gt;</type>
-      <name>dirty_dynamic_attributes</name>
-      <anchorfile>struct_tundra_logic_1_1_component_sync_state.html</anchorfile>
-      <anchor>afcaf17f7c4f85ffc3505ed7200af1121</anchor>
-      <arglist></arglist>
+    <member kind="variable" protection="private">
+      <type>char</type>
+      <name>createAttrsBuffer_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a4a67ba71ba7cae1e1b4472a0f0ef0a0a</anchor>
+      <arglist>[16 *1024]</arglist>
     </member>
-  </compound>
-  <compound kind="struct">
-    <name>TundraLogic::EntitySyncState</name>
-    <filename>struct_tundra_logic_1_1_entity_sync_state.html</filename>
-    <member kind="function">
-      <type>ComponentSyncState *</type>
-      <name>GetOrCreateComponent</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>ae842be0d6e679f3df557a6569f75bfa9</anchor>
-      <arglist>(u32 typeId, const QString &amp;name)</arglist>
+    <member kind="variable" protection="private">
+      <type>char</type>
+      <name>attrDataBuffer_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>addd48b5912d61836f23e15ac9df512de</anchor>
+      <arglist>[16 *1024]</arglist>
     </member>
-    <member kind="function">
-      <type>ComponentSyncState *</type>
-      <name>GetComponent</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>a29117f2cbe3ecb132cedf32f7d2024ce</anchor>
-      <arglist>(u32 typeId, const QString &amp;name)</arglist>
+    <member kind="variable" protection="private">
+      <type>char</type>
+      <name>removeCompsBuffer_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a46b86fcfc5a8dce4f3fc89f77cc40e28</anchor>
+      <arglist>[1024]</arglist>
     </member>
-    <member kind="function">
-      <type>void</type>
-      <name>RemoveComponent</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>a4da2b71d2bbecaf8a1be364ef7b9dc81</anchor>
-      <arglist>(u32 typeId, const QString &amp;name)</arglist>
+    <member kind="variable" protection="private">
+      <type>char</type>
+      <name>removeEntityBuffer_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a7ec43f29e7f84a7ca2fc9bfedd20fb6b</anchor>
+      <arglist>[1024]</arglist>
     </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnComponentAdded</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>a41dd59979702e23fe7bf5508b027ac7a</anchor>
-      <arglist>(u32 typeId, const QString &amp;name)</arglist>
+    <member kind="variable" protection="private">
+      <type>char</type>
+      <name>removeAttrsBuffer_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>ae835d85af7225605227887953cb775ca</anchor>
+      <arglist>[1024]</arglist>
     </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnAttributeChanged</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>a0c2cca15bd9bcf72c0464592bfd812fa</anchor>
-      <arglist>(u32 typeId, const QString &amp;name, IAttribute *attribute)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnDynamicAttributeChanged</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>ac0aa3731742a103d5cc06b15e00ef43f</anchor>
-      <arglist>(u32 typeId, const QString &amp;name, const QString &amp;attrName)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnComponentRemoved</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>aa387629ae0d1c8248ec72df4e946e431</anchor>
-      <arglist>(u32 typeId, const QString &amp;name)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>AckDirty</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>a22f8fda026b08c465d85d80568cc5004</anchor>
-      <arglist>(u32 typeId, const QString &amp;name)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>AckRemove</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>ac02c9ad98af5132c301d85d42f59a186</anchor>
-      <arglist>(u32 typeId, const QString &amp;name)</arglist>
-    </member>
-    <member kind="variable">
-      <type>std::vector&lt; ComponentSyncState &gt;</type>
-      <name>components_</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>acd445bf749d9789817b7d1b1b9464d32</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::set&lt; std::pair&lt; uint, QString &gt; &gt;</type>
-      <name>dirty_components_</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>a77b5e4200527b7c9cb3fec3b8b62dccc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::set&lt; std::pair&lt; uint, QString &gt; &gt;</type>
-      <name>removed_components_</name>
-      <anchorfile>struct_tundra_logic_1_1_entity_sync_state.html</anchorfile>
-      <anchor>af88bda23afe329388192c462330b87fd</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>TundraLogic::SceneSyncState</name>
-    <filename>struct_tundra_logic_1_1_scene_sync_state.html</filename>
-    <base>ISyncState</base>
-    <member kind="function">
-      <type>EntitySyncState *</type>
-      <name>GetOrCreateEntity</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>acb7493020dad0c91e1381606bca95406</anchor>
-      <arglist>(entity_id_t id)</arglist>
-    </member>
-    <member kind="function">
-      <type>EntitySyncState *</type>
-      <name>GetEntity</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a105270bcc7641dcf8484a1a34cffa21d</anchor>
-      <arglist>(entity_id_t id)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>RemoveEntity</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a9165bab31f82a84881c75a4ab9d5fd21</anchor>
-      <arglist>(entity_id_t id)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnEntityChanged</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a8bd5f75c6e9833256e4a710ecfbfa202</anchor>
-      <arglist>(entity_id_t id)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnEntityRemoved</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a4570506c2300aea4aa907cff232950da</anchor>
-      <arglist>(entity_id_t id)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnAttributeChanged</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a5c569759160d091757957ea54009957c</anchor>
-      <arglist>(entity_id_t id, u32 typeId, const QString &amp;name, IAttribute *attribute)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnDynamicAttributeChanged</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a8a004dab864385ae14f8d89d10126424</anchor>
-      <arglist>(entity_id_t id, u32 typeId, const QString &amp;name, const QString &amp;attrName)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnComponentAdded</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a0ced9dfed25a0a465b32007735597f4e</anchor>
-      <arglist>(entity_id_t id, u32 typeId, const QString &amp;name)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>OnComponentRemoved</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a3dd883362f3075e0b62839349334d912</anchor>
-      <arglist>(entity_id_t id, u32 typeId, const QString &amp;name)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>AckDirty</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a3602c8274faefa4ea30d266454301461</anchor>
-      <arglist>(entity_id_t id)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>AckRemove</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a855b543cc98dc62b291829cff19b73ce</anchor>
-      <arglist>(entity_id_t id)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>Clear</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a7a20783982f29de322e3ae74c4a624ac</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="variable">
-      <type>std::map&lt; entity_id_t, EntitySyncState &gt;</type>
-      <name>entities_</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a2d6684344b74082c4e0aad24d482efde</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::set&lt; entity_id_t &gt;</type>
-      <name>dirty_entities_</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a852f2bfd3dcfa9b24ac5405c292f3c09</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>std::set&lt; entity_id_t &gt;</type>
-      <name>removed_entities_</name>
-      <anchorfile>struct_tundra_logic_1_1_scene_sync_state.html</anchorfile>
-      <anchor>a9b081383ddcd1c7b7eddc71858dd9547</anchor>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; u8 &gt;</type>
+      <name>changedAttributes_</name>
+      <anchorfile>class_tundra_logic_1_1_sync_manager.html</anchorfile>
+      <anchor>a637fbde9db14f77c5fe10459639ba85e</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -69674,8 +71247,8 @@
       <type>void</type>
       <name>Connect</name>
       <anchorfile>class_tundra_logic_1_1_tundra_logic_module.html</anchorfile>
-      <anchor>a1cbac3431cb2d0978e1c47a13a03df53</anchor>
-      <arglist>(QString address, int port, QString username, QString password)</arglist>
+      <anchor>a1485fc2ea5b5952150f10820f264334f</anchor>
+      <arglist>(QString address, int port, QString protocol, QString username, QString password)</arglist>
     </member>
     <member kind="slot">
       <type>void</type>
@@ -69875,16 +71448,16 @@
     </member>
     <member kind="variable" protection="private">
       <type>bool</type>
-      <name>autostartserver_</name>
+      <name>autoStartServer_</name>
       <anchorfile>class_tundra_logic_1_1_tundra_logic_module.html</anchorfile>
-      <anchor>aa4ace111b4abaa93ad3dcb23b7994088</anchor>
+      <anchor>ae99d82e268a048282d911ce844d0afe0</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable" protection="private">
       <type>short</type>
-      <name>autostartserver_port_</name>
+      <name>autoStartServerPort_</name>
       <anchorfile>class_tundra_logic_1_1_tundra_logic_module.html</anchorfile>
-      <anchor>a8a266390106531b0d8bb24d8a2cb866b</anchor>
+      <anchor>a885ea2761425b47b9685e564fe295755</anchor>
       <arglist></arglist>
     </member>
   </compound>

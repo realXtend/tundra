@@ -359,19 +359,6 @@ static QScriptValue Quat_Set_float_float_float_float(QScriptContext *context, QS
     return QScriptValue();
 }
 
-static QScriptValue Quat_LookAt_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Quat_LookAt_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    Quat This = qscriptvalue_cast<Quat>(context->thisObject());
-    float3 localForward = qscriptvalue_cast<float3>(context->argument(0));
-    float3 targetDirection = qscriptvalue_cast<float3>(context->argument(1));
-    float3 localUp = qscriptvalue_cast<float3>(context->argument(2));
-    float3 worldUp = qscriptvalue_cast<float3>(context->argument(3));
-    This.LookAt(localForward, targetDirection, localUp, worldUp);
-    ToExistingScriptValue_Quat(engine, This, context->thisObject());
-    return QScriptValue();
-}
-
 static QScriptValue Quat_ToEulerXYX(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Quat_ToEulerXYX in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -570,6 +557,17 @@ static QScriptValue Quat_Slerp_Quat_Quat_float(QScriptContext *context, QScriptE
     Quat target = qscriptvalue_cast<Quat>(context->argument(1));
     float t = qscriptvalue_cast<float>(context->argument(2));
     Quat ret = Quat::Slerp(source, target, t);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Quat_LookAt_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Quat_LookAt_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 localForward = qscriptvalue_cast<float3>(context->argument(0));
+    float3 targetDirection = qscriptvalue_cast<float3>(context->argument(1));
+    float3 localUp = qscriptvalue_cast<float3>(context->argument(2));
+    float3 worldUp = qscriptvalue_cast<float3>(context->argument(3));
+    Quat ret = Quat::LookAt(localForward, targetDirection, localUp, worldUp);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -913,7 +911,6 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     proto.setProperty("SetFromAxisAngle", engine->newFunction(Quat_SetFromAxisAngle_float3_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(Quat_Set_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(Quat_Set_selector, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("LookAt", engine->newFunction(Quat_LookAt_float3_float3_float3_float3, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToEulerXYX", engine->newFunction(Quat_ToEulerXYX, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToEulerXZX", engine->newFunction(Quat_ToEulerXZX, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToEulerYXY", engine->newFunction(Quat_ToEulerYXY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -940,6 +937,7 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     QScriptValue ctor = engine->newFunction(Quat_ctor, proto, 4);
     ctor.setProperty("Lerp", engine->newFunction(Quat_Lerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Slerp", engine->newFunction(Quat_Slerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("LookAt", engine->newFunction(Quat_LookAt_float3_float3_float3_float3, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateX", engine->newFunction(Quat_RotateX_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateY", engine->newFunction(Quat_RotateY_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateZ", engine->newFunction(Quat_RotateZ_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

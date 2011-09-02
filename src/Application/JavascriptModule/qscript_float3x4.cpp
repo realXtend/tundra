@@ -1294,6 +1294,15 @@ static QScriptValue float3x4_UniformScale_float(QScriptContext *context, QScript
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float3x4_UniformScale_float_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_UniformScale_float_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float uniformScale = qscriptvalue_cast<float>(context->argument(0));
+    float3 scaleCenter = qscriptvalue_cast<float3>(context->argument(1));
+    float3x4 ret = float3x4::UniformScale(uniformScale, scaleCenter);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float3x4_ShearX_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_ShearX_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1369,14 +1378,14 @@ static QScriptValue float3x4_OrthographicProjectionXY(QScriptContext *context, Q
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_LookAtRH_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_LookAt_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3x4_LookAtRH_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3x4_LookAt_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 localForwardDir = qscriptvalue_cast<float3>(context->argument(0));
     float3 targetForwardDir = qscriptvalue_cast<float3>(context->argument(1));
     float3 localUp = qscriptvalue_cast<float3>(context->argument(2));
     float3 worldUp = qscriptvalue_cast<float3>(context->argument(3));
-    float3x4 ret = float3x4::LookAtRH(localForwardDir, targetForwardDir, localUp, worldUp);
+    float3x4 ret = float3x4::LookAt(localForwardDir, targetForwardDir, localUp, worldUp);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -1599,6 +1608,15 @@ static QScriptValue float3x4_ScaleAlongAxis_selector(QScriptContext *context, QS
     printf("float3x4_ScaleAlongAxis_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
+static QScriptValue float3x4_UniformScale_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<float>(context->argument(0)))
+        return float3x4_UniformScale_float(context, engine);
+    if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)))
+        return float3x4_UniformScale_float_float3(context, engine);
+    printf("float3x4_UniformScale_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
 static QScriptValue float3x4_OrthographicProjection_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 4 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)))
@@ -1755,7 +1773,8 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     ctor.setProperty("Scale", engine->newFunction(float3x4_Scale_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ScaleAlongAxis", engine->newFunction(float3x4_ScaleAlongAxis_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ScaleAlongAxis", engine->newFunction(float3x4_ScaleAlongAxis_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("UniformScale", engine->newFunction(float3x4_UniformScale_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("UniformScale", engine->newFunction(float3x4_UniformScale_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("UniformScale", engine->newFunction(float3x4_UniformScale_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ShearX", engine->newFunction(float3x4_ShearX_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ShearY", engine->newFunction(float3x4_ShearY_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ShearZ", engine->newFunction(float3x4_ShearZ_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -1765,7 +1784,7 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     ctor.setProperty("OrthographicProjectionYZ", engine->newFunction(float3x4_OrthographicProjectionYZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("OrthographicProjectionXZ", engine->newFunction(float3x4_OrthographicProjectionXZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("OrthographicProjectionXY", engine->newFunction(float3x4_OrthographicProjectionXY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("LookAtRH", engine->newFunction(float3x4_LookAtRH_float3_float3_float3_float3, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("LookAt", engine->newFunction(float3x4_LookAt_float3_float3_float3_float3, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("zero", qScriptValueFromValue(engine, float3x4::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("identity", qScriptValueFromValue(engine, float3x4::identity), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("nan", qScriptValueFromValue(engine, float3x4::nan), QScriptValue::Undeletable | QScriptValue::ReadOnly);
