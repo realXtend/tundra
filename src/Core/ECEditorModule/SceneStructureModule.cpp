@@ -311,12 +311,6 @@ void SceneStructureModule::CleanReference(QString &fileRef)
 
 void SceneStructureModule::ToggleSceneStructureWindow()
 {
-    if (framework_->IsHeadless())
-    {
-        LogError("Cannot show scene structure window in headless mode.");
-        return;
-    }
-
     if (sceneWindow)
     {
         sceneWindow->setVisible(!sceneWindow->isVisible());
@@ -333,12 +327,6 @@ void SceneStructureModule::ToggleSceneStructureWindow()
 
 void SceneStructureModule::ToggleAssetsWindow()
 {
-    if (framework_->IsHeadless())
-    {
-        LogError("Cannot show assets window in headless mode.");
-        return;
-    }
-
     if (assetsWindow)
     {
         assetsWindow->setVisible(!assetsWindow->isVisible());
