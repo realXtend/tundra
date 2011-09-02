@@ -61,6 +61,7 @@ SceneStructureModule::SceneStructureModule() :
 SceneStructureModule::~SceneStructureModule()
 {
     SAFE_DELETE(sceneWindow);
+    SAFE_DELETE(assetsWindow);
     SAFE_DELETE(toolTipWidget);
 }
 
