@@ -8,9 +8,12 @@
 #include "StableHeaders.h"
 #include "TransformEditor.h"
 #include "LoggingFunctions.h"
+#include "OgreWorld.h"
 #include "Scene.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
+#include "EC_Light.h"
+#include "FrameAPI.h"
 #include "InputAPI.h"
 #include "AssetAPI.h"
 #ifdef EC_TransformGizmo_ENABLED
@@ -25,6 +28,8 @@ TransformEditor::TransformEditor(const ScenePtr &scene)
         QString uniqueName("TransformEditor" + scene->GetFramework()->Asset()->GenerateUniqueAssetName("",""));
         input = scene->GetFramework()->Input()->RegisterInputContext(uniqueName, 100);
         connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        
+        connect(scene->GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
     }
 }
 
@@ -240,4 +245,51 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     if (e->sequence == scale)
         tg->SetCurrentGizmoType(EC_TransformGizmo::Scale);
 #endif
+}
+
+void TransformEditor::OnUpdated(float frameTime)
+{
+    if (targets.size() && !scene.expired())
+    {
+        OgreWorldPtr ogreWorld = scene.lock()->GetWorld<OgreWorld>();
+        if (ogreWorld)
+        {
+            for (int i = 0; i < targets.size(); ++i)
+            {
+                if (!targets[i].owner.expired())
+                {
+                    Entity* ent = targets[i].owner.lock()->ParentEntity();
+                    if (ent)
+                        DrawDebug(ogreWorld.get(), ent);
+                }
+            }
+        }
+    }
+}
+
+void TransformEditor::DrawDebug(OgreWorld* world, Entity* entity)
+{
+    const Entity::ComponentMap& components = entity->Components();
+    for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+    {
+        u32 type = i->second->TypeId();
+        /// \todo Placeable debug visualization disabled pending a sensible scaling algorithm
+        /*
+        if (type == EC_Placeable::TypeIdStatic())
+        {
+            EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(i->second.get());
+            world->DebugDrawAxes(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), 1.0f);
+        }
+        */
+        if (type == EC_Light::TypeIdStatic())
+        {
+            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
+            if (placeable)
+            {
+                EC_Light* light = checked_static_cast<EC_Light*>(i->second.get());
+                const Color& color = light->diffColor.Get();
+                world->DebugDrawLight(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), light->type.Get(), light->range.Get(), light->outerAngle.Get(), color.r, color.g, color.b);
+            }
+        }
+    }
 }

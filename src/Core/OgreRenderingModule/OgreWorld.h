@@ -98,10 +98,17 @@ public slots:
     void DebugDrawLineSegment(const LineSegment &l, float r, float g, float b);
     void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b);
     void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b);
+    void DebugDrawAxes(const float3x4 &t, float axisLength);
+    /// Renders a debug representation of a light.
+    /// @param transform Transform of the light. The scale is ignored.
+    /// @param lightType 0=point, 1=spot, 2=directional
+    /// @param range Range of the light (point and spot lights only)
+    /// @param spotAngle Spotlight cone outer angle in degrees (spot lights only)
+    void DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, float r, float g, float b);
     /// Renders a hollow circle.
     /// @param numSubdivisions The number of edges to subdivide the circle into. This value must be at least 3.
     void DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b);
-
+    
 signals:
     /// An entity has entered the view
     void EntityEnterView(Entity* entity);

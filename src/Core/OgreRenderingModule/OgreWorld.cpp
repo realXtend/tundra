@@ -786,6 +786,59 @@ void OgreWorld::DebugDrawCircle(const Circle &c, int numSubdivisions, float r, f
     }
 }
 
+void OgreWorld::DebugDrawAxes(const float3x4 &t, float axisLength)
+{
+    float3 translate, scale;
+    Quat rotate;
+    t.Decompose(translate, rotate, scale);
+    
+    DebugDrawLine(translate, translate + rotate * float3(axisLength, 0.0f, 0.0f), 1.0f, 0.0f, 0.0f);
+    DebugDrawLine(translate, translate + rotate * float3(axisLength, 0.0f, 0.0f), 0.0f, 1.0f, 0.0f);
+    DebugDrawLine(translate, translate + rotate * float3(axisLength, 0.0f, 0.0f), 0.0f, 0.0f, 1.0f);
+}
+
+void OgreWorld::DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, float r, float g, float b)
+{
+    float3 translate, scale;
+    Quat rotate;
+    t.Decompose(translate, rotate, scale);
+    float3 lightDirection = rotate * float3(0.0f, 0.0f, 1.0f);
+    switch (lightType)
+    {
+        // Point
+    case 0:
+        DebugDrawCircle(Circle(translate, float3(1.0f, 0.0f, 0.0f), range), 8, r, g, b);
+        DebugDrawCircle(Circle(translate, float3(0.0f, 1.0f, 0.0f), range), 8, r, g, b);
+        DebugDrawCircle(Circle(translate, float3(0.0f, 0.0f, 1.0f), range), 8, r, g, b);
+        break;
+        
+        // Spot
+    case 1:
+        {
+            float3 endPoint = translate + range * lightDirection;
+            float coneRadius = range * sinf(DegToRad(spotAngle));
+            DebugDrawLine(translate, endPoint + rotate * float3(coneRadius, 0.0f, 0.0f), r, g, b);
+            DebugDrawLine(translate, endPoint + rotate * float3(-coneRadius, 0.0f, 0.0f), r, g, b);
+            DebugDrawLine(translate, endPoint + rotate * float3(0.0f, coneRadius, 0.0f), r, g, b);
+            DebugDrawLine(translate, endPoint + rotate * float3(0.0f, -coneRadius, 0.0f), r, g, b);
+            DebugDrawCircle(Circle(endPoint, -lightDirection, coneRadius), 8, r, g, b);
+        }
+        break;
+        
+        // Directional
+    case 2:
+        {
+            const float cDirLightRange = 10.0f;
+            float3 endPoint = translate + cDirLightRange * lightDirection;
+            float3 offset = rotate * float3(1.0f, 0.0f, 0.0f);
+            DebugDrawLine(translate, endPoint, r, g, b);
+            DebugDrawLine(translate + offset, endPoint + offset, r, g, b);
+            DebugDrawLine(translate - offset, endPoint - offset, r, g, b);
+        }
+        break;
+    }
+}
+
 void OgreWorld::FlushDebugGeometry()
 {
     if (debugLines_)

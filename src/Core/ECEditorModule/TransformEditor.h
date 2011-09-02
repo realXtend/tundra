@@ -15,6 +15,8 @@
 
 #include <QObject>
 
+class OgreWorld;
+
 /// Represents weak pointer to IAttribute.
 struct AttributeWeakPtr
 {
@@ -105,6 +107,9 @@ private:
     /// Destroys editor's transform gizmo.
     void DeleteGizmo();
 
+    /// Draw debug visualization for an entity.
+    void DrawDebug(OgreWorld* world, Entity* entity);
+    
     SceneWeakPtr scene; ///< Scene in which the edited entities reside.
     EntityPtr gizmo; ///< Gizmo entity.
     QList<AttributeWeakPtr> targets; ///< Current target transform attributes.
@@ -114,4 +119,7 @@ private slots:
     /// Handles KeyEvents and changes gizmo's mode.
     /** @param e Key event. */
     void HandleKeyEvent(KeyEvent *e);
+    
+    /// Handles frame update. Redraws debug visualizations as necessary.
+    void OnUpdated(float frameTime);
 };

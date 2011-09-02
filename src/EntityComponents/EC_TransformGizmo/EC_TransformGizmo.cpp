@@ -97,7 +97,7 @@ void EC_TransformGizmo::SetVisible(bool visible)
 {
     if (placeable)
     {
-        std::cout << "EC_TransformGizmo::SetVisible: " << visible << std::endl;
+        //std::cout << "EC_TransformGizmo::SetVisible: " << visible << std::endl;
         placeable->visible.Set(visible, AttributeChange::Default);
     }
 }
