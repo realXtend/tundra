@@ -34,11 +34,11 @@ EC_Light::EC_Light(Scene* scene) :
     light_(0),
     attached_(false),
     type(this, "light type", LT_Point),
-    direction(this, "direction", float3(0.0f, 0.0f, 1.0f)),
     diffColor(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
     specColor(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
     castShadows(this, "cast shadows", false),
     range(this, "light range", 100.0f),
+    brightness(this, "brightness", 1.0f),
     constAtten(this, "constant atten", 0.0f),
     linearAtten(this, "linear atten", 0.01f),
     quadraAtten(this, "quadratic atten", 0.01f),
@@ -160,11 +160,12 @@ void EC_Light::UpdateOgreLight()
     
     try
     {
+        float b = std::max(brightness.Get(), 1e-3f);
+        
         light_->setType(ogre_type);
-        light_->setDirection(direction.Get());
         light_->setDiffuseColour(diffColor.Get());
         light_->setSpecularColour(specColor.Get());
-        light_->setAttenuation(range.Get(), constAtten.Get(), linearAtten.Get(), quadraAtten.Get());
+        light_->setAttenuation(range.Get(), constAtten.Get() / b , linearAtten.Get() / b, quadraAtten.Get() / b);
         // Note: Ogre throws exception if we try to set this when light is not spotlight
         if (type.Get() == LT_Spot)
             light_->setSpotlightRange(Ogre::Degree(innerAngle.Get()), Ogre::Degree(outerAngle.Get()));

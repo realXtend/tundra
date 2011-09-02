@@ -24,8 +24,6 @@ Makes the entity a light source.
 
 <b>Attributes</b>:
 <ul>
-<li>float3: direction.
-<div>Specifies the direction vector the light is shining at.</div> 
 <li>enum: light type. 
 <div>One of the values "Point", "Spot" or "Directional".</div> 
 <li>Color: diffuse color.
@@ -36,6 +34,8 @@ Makes the entity a light source.
 <div>If true, this light casts dynamically calculated shadows on the scene.</div> 
 <li>float: light range.
 <div>Specifies how far in world space units the light reaches.</div> 
+<li>float: brightness
+<div>Specifies the numerator of the light attenuation equation.</div> 
 <li>float: constant attenuation.
 <div>Specifies the constant term of the light attenuation equation.</div> 
 <li>float: linear attenuation.
@@ -99,10 +99,6 @@ public:
     /// @return Ogre light pointer
     Ogre::Light* GetLight() const { return light_; }
     
-    /// Light direction
-    Q_PROPERTY(float3 direction READ getdirection WRITE setdirection)
-    DEFINE_QPROPERTY_ATTRIBUTE(float3, direction);
-    
     /// Light type
     Q_PROPERTY(int type READ gettype WRITE settype)
     DEFINE_QPROPERTY_ATTRIBUTE(int, type);
@@ -123,6 +119,10 @@ public:
     /// Light range
     Q_PROPERTY(float range READ getrange WRITE setrange)
     DEFINE_QPROPERTY_ATTRIBUTE(float, range);
+    
+    /// Light brightness
+    Q_PROPERTY(float brightness READ getbrightness WRITE setbrightness)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, brightness);
     
     /// Light constant attenuation
     Q_PROPERTY(float constAtten READ getconstAtten WRITE setconstAtten)
