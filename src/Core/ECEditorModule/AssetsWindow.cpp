@@ -182,8 +182,6 @@ void AssetsWindow::Search(const QString &filter)
 
 void AssetsWindow::Initialize()
 {
-    // Init main widget
-    setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(tr("Assets"));
     // Append asset type if we're viewing only assets of specific type.
     if (!assetType.isEmpty())

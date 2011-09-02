@@ -347,6 +347,7 @@ void SceneStructureModule::ToggleAssetsWindow()
     }
 
     assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
+    assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
 }

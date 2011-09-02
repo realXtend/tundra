@@ -1583,6 +1583,7 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
         AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
         connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
         connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
+        assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
         assetsWindow->setWindowFlags(Qt::Tool);
         assetsWindow->show();
 
@@ -1839,6 +1840,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
+    assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
 

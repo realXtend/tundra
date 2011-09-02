@@ -493,7 +493,7 @@ void ECEditorWindow::PasteEntity()
     // Dont allow paste operation if we are placing previosly pasted object to a scene.
     if(findChild<QObject*>("EntityPlacer"))
         return;
-    // First we need to check if component is holding EC_OgrePlacable component to tell where entity should be located at.
+    // First we need to check if component is holding EC_Placeable component to tell where entity should be located at.
     /// \todo local only server wont save those objects.
     Scene *scene = framework->Scene()->MainCameraScene();
     assert(scene);
@@ -809,14 +809,9 @@ void ECEditorWindow::RemoveEntity(Entity* entity)
 void ECEditorWindow::SetFocus(bool focus)
 {
     hasFocus = focus;
-//    LogInfo("ECEditorWindow::SetFocus: " + ToString(focus));
-//    bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
-//    LogInfo("SetFocus: showGizmo: " + ToString(showGizmo));
-
     if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
     {
         transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && hasFocus);
-
         for(uint i = 0; i < (uint)entityList->count(); i++)
         {
             EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
@@ -943,7 +938,7 @@ void ECEditorWindow::OnDefaultSceneChanged(Scene *scene)
     if (!scene)
         return;
 
-    /// todo disconnect previous scene connection.
+    /// @todo disconnect previous scene connection.
     connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)),
         SLOT(RemoveEntity(Entity*)), Qt::UniqueConnection);
     connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)),
