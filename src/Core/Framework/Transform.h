@@ -60,7 +60,7 @@ public:
 
     void SetPos(const float3 &v)
     {
-        assert(v.IsFinite());
+        assume(v.IsFinite());
         pos.x = v.x;
         pos.y = v.y;
         pos.z = v.z;
@@ -68,7 +68,7 @@ public:
 
     void SetPos(float x, float y, float z)
     {
-        assert(isfinite(x) && isfinite(y) && isfinite(z));
+        assume(isfinite(x) && isfinite(y) && isfinite(z));
         pos.x = x;
         pos.y = y;
         pos.z = z;
@@ -77,7 +77,7 @@ public:
     /// Direcly sets the rotation angles in euler ZYX convention, in degrees.
     void SetRotation(float x, float y, float z)
     {
-        assert(isfinite(x) && isfinite(y) && isfinite(z));
+        assume(isfinite(x) && isfinite(y) && isfinite(z));
         rot.x = x;
         rot.y = y;
         rot.z = z;
@@ -86,7 +86,7 @@ public:
     /// Set scale. Note! scale cannot contain zero value.
     void SetScale(float x, float y, float z)
     {
-        assert(isfinite(x) && isfinite(y) && isfinite(z));
+        assume(isfinite(x) && isfinite(y) && isfinite(z));
         scale.x = x;
         scale.y = y;
         scale.z = z;
@@ -94,7 +94,7 @@ public:
 
     void SetScale(const float3 &s)
     {
-        assert(s.IsFinite());
+        assume(s.IsFinite());
         scale = s;
     }
 
@@ -110,7 +110,7 @@ public:
 
     void FromFloat3x4(const float3x4 &m)
     {
-        assert(m.IsFinite());
+        assume(m.IsFinite());
         float3 trans;
         Quat rot_;
         float3 scl;
@@ -123,7 +123,7 @@ public:
 
     void FromFloat4x4(const float4x4 &m)
     {
-        assert(m.IsFinite());
+        assume(m.IsFinite());
         assume(m.Row(3).Equals(0,0,0,1));
         float3 trans;
         Quat rot_;
@@ -137,7 +137,7 @@ public:
 
     void SetRotationAndScale(const float3x3 &mat)
     {
-        assert(mat.IsFinite());
+        assume(mat.IsFinite());
         scale.x = mat.Col(0).Length();
         scale.y = mat.Col(1).Length();
         scale.z = mat.Col(2).Length();
@@ -149,7 +149,7 @@ public:
     /// Sets the rotation part of this transform.
     void SetOrientation(const float3x3 &mat)
     {
-        assert(mat.IsFinite());
+        assume(mat.IsFinite());
         rot = RadToDeg(mat.ToEulerZYX());
         std::swap(rot.x, rot.z); // The above function returns a vector with convention [0] [1] [2]: Z Y X, whereas we want to store it in [0] [1] [2] : X Y Z.
     }
@@ -157,7 +157,7 @@ public:
     /// Sets the rotation part of this transform.
     void SetOrientation(const Quat &q)
     {
-        assert(q.IsFinite());
+        assume(q.IsFinite());
         rot = RadToDeg(q.ToEulerZYX());
         std::swap(rot.x, rot.z); // The above function returns a vector with convention [0] [1] [2]: Z Y X, whereas we want to store it in [0] [1] [2] : X Y Z.
     }

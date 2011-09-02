@@ -652,6 +652,9 @@ void EC_Placeable::OnComponentAdded(IComponent* component, AttributeChange::Type
 
 void EC_Placeable::SetPosition(float x, float y, float z)
 {
+    assume(isfinite(x));
+    assume(isfinite(y));
+    assume(isfinite(z));
     Transform newtrans = transform.Get();
     newtrans.SetPos(x, y, z);
     transform.Set(newtrans, AttributeChange::Default);
@@ -664,6 +667,7 @@ void EC_Placeable::SetPosition(const float3 &pos)
 
 void EC_Placeable::SetOrientation(const Quat &q)
 {
+    assume(q.IsNormalized());
     Transform newtrans = transform.Get();
     newtrans.SetOrientation(q);
     transform.Set(newtrans, AttributeChange::Default);
@@ -736,6 +740,8 @@ void EC_Placeable::SetWorldTransform(const float3x3 &tm, const float3 &pos)
 
 void EC_Placeable::SetWorldTransform(const float3x4 &tm)
 {
+    assume(tm.IsOrthogonal());
+    assume(!tm.HasNegativeScale());
     if (!parentPlaceable_) // No parent, the local->parent transform equals the local->world transform.
     {
         SetTransform(tm);
@@ -770,11 +776,13 @@ void EC_Placeable::SetWorldTransform(const float4x4 &tm)
 
 void EC_Placeable::SetWorldTransform(const Quat &orientation, const float3 &pos)
 {
+    assume(orientation.IsNormalized());
     SetWorldTransform(float3x4(orientation, pos));
 }
 
 void EC_Placeable::SetWorldTransform(const Quat &orientation, const float3 &pos, const float3 &scale)
 {
+    assume(orientation.IsNormalized());
     SetWorldTransform(float3x4::FromTRS(pos, orientation, scale));
 }
 
@@ -819,7 +827,7 @@ float3 EC_Placeable::Scale() const
 float3x4 EC_Placeable::LocalToWorld() const
 {
     if (sceneNode_)
-        return ((float4x4)sceneNode_->_getFullTransform()).Float3x4Part();
+        return float4x4(sceneNode_->_getFullTransform()).Float3x4Part();
     else
         return float3x4::identity;
 }

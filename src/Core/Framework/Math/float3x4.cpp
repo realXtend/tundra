@@ -1247,9 +1247,9 @@ bool float3x4::HasUniformScale(float epsilon) const
 
 bool float3x4::IsOrthogonal(float epsilon) const
 {
-    return Row(0).IsPerpendicular3(Row(1), epsilon)
-        && Row(0).IsPerpendicular3(Row(2), epsilon)
-        && Row(1).IsPerpendicular3(Row(2), epsilon);
+    return Col(0).IsPerpendicular(Col(1), epsilon)
+        && Col(0).IsPerpendicular(Col(2), epsilon)
+        && Col(1).IsPerpendicular(Col(2), epsilon);
 }
 
 bool float3x4::IsOrthonormal(float epsilon) const
