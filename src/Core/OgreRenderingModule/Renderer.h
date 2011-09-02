@@ -159,7 +159,7 @@ namespace OgreRenderer
         void SetTextureQuality(TextureQuality newquality);
 
         RenderWindow *GetRenderWindow() const { return renderWindow; }
-
+        
     private:
         friend class OgreRenderingModule;
 

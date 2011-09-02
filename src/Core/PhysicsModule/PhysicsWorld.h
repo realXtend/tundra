@@ -24,8 +24,7 @@ class btDispatcher;
 class btCollisionObject;
 class EC_RigidBody;
 class Transform;
-
-class DebugLines;
+class OgreWorld;
 
 ///\todo Remove the QObject inheritance here, and expose as a struct to scripts.
 class PhysicsRaycastResult : public QObject
@@ -138,19 +137,6 @@ public slots:
     /// Return whether simulation is on
     bool GetRunPhysics() const { return runPhysics_; }
     
-    // Debugging aids:
-    ///\todo This is a temporary function, which will be removed in the future.
-    void DrawAABB(const AABB &aabb, float r, float g, float b);
-    ///\todo This is a temporary function, which will be removed in the future.
-    void DrawOBB(const OBB &obb, float r, float g, float b);
-    ///\todo This is a temporary function, which will be removed in the future.
-    void DrawLineSegment(const LineSegment &l, float r, float g, float b);
-    void DrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b);
-    void DrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b);
-    /// Renders a hollow circle.
-    /// @param numSubdivisions The number of edges to subdivide the circle into. This value must be at least 3.
-    void DrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b);
-
 signals:
     /// A physics collision has happened between two entities. 
     /** Note: both rigidbodies participating in the collision will also emit a signal separately. 
@@ -197,8 +183,8 @@ private:
     /// Previous frame's collisions. We store these to know whether the collision was new or "ongoing"
     std::set<std::pair<btCollisionObject*, btCollisionObject*> > previousCollisions_;
     
-    /// Update debug geometry manual object, if physics debug drawing is on
-    void UpdateDebugGeometry();
+    /// Draw physics debug geometry, if debug drawing enabled
+    void DrawDebugGeometry();
     
     /// Debug geometry enabled flag
     bool drawDebugGeometry_;
@@ -206,14 +192,14 @@ private:
     /// Debug geometry manually enabled/disabled (with physicsdebug console command). If true, do not automatically enable/disable debug geometry anymore
     bool drawDebugManuallySet_;
     
-    /// Lines object for the debug geometry
-    DebugLines* debugGeometryObject_;
-    
     /// Whether should run physics. Default true
     bool runPhysics_;
     
     /// Bullet debug draw / debug behaviour flags
     int debugDrawMode_;
+    
+    /// Cached OgreWorld pointer for drawing debug geometry
+    OgreWorld* cachedOgreWorld_;
     
     /// Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
     std::set<EC_RigidBody*> debugRigidBodies_;

@@ -7,6 +7,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "SceneFwd.h"
+#include "Math/MathFwd.h"
 
 #include <QObject>
 #include <QList>
@@ -16,6 +17,8 @@
 #include <boost/enable_shared_from_this.hpp>
 
 class Framework;
+class DebugLines;
+class Transform;
 
 /// Contains the Ogre representation of a scene, ie. the Ogre Scene
 class OGRE_MODULE_API OgreWorld : public QObject, public boost::enable_shared_from_this<OgreWorld>
@@ -34,6 +37,9 @@ public:
     /// Returns an unique name to create Ogre objects that require a mandatory name. Calls the parent Renderer
     /** @param prefix Prefix for the name. */
     std::string GetUniqueObjectName(const std::string &prefix);
+    
+    /// Dump the debug geometry drawn this frame to the debug geometry vertex buffer. Called by Renderer before rendering.
+    void FlushDebugGeometry();
     
 public slots:
     /// Do raycast into the world from viewport coordinates, using all selection layers
@@ -84,6 +90,17 @@ public slots:
     Ogre::SceneManager* GetSceneManager() { return sceneManager_; }
     /// Return the parent scene
     ScenePtr GetScene() { return scene_.lock(); }
+
+    // Debugging aids:
+    void DebugDrawAABB(const AABB &aabb, float r, float g, float b);
+    void DebugDrawOBB(const OBB &obb, float r, float g, float b);
+    void DebugDrawLine(const float3& start, const float3& end, float r, float g, float b);
+    void DebugDrawLineSegment(const LineSegment &l, float r, float g, float b);
+    void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b);
+    void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b);
+    /// Renders a hollow circle.
+    /// @param numSubdivisions The number of edges to subdivide the circle into. This value must be at least 3.
+    void DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b);
 
 signals:
     /// An entity has entered the view
@@ -138,5 +155,8 @@ private:
     
     /// Entities being tracked for visibility changes
     std::vector<EntityWeakPtr> visibilityTrackedEntities_;
+    
+    /// Debug geometry object
+    DebugLines* debugLines_;
 };
 

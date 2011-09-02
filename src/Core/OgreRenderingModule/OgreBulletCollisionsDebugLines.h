@@ -33,8 +33,11 @@ THE SOFTWARE.
 #ifndef _OgreBulletCollisions_DEBUGLines_H_
 #define _OgreBulletCollisions_DEBUGLines_H_
 
+#define OGRE_INTEROP
+
 #include <Ogre.h>
-#include "LinearMath/btIDebugDraw.h"
+#include "Math/float3.h"
+#include "Color.h"
 
 struct DebugLine
 {
@@ -44,24 +47,20 @@ struct DebugLine
 };
 
 //------------------------------------------------------------------------------------------------
-class DebugLines:public Ogre::SimpleRenderable
+class DebugLines : public Ogre::SimpleRenderable
 {
 public:
     DebugLines(void);
     ~DebugLines(void);
 
-    void addLine (const btVector3& from, const btVector3& to, const btVector3& color)
+    void addLine (const float3& from, const float3& to, const float3& color)
     {
         DebugLine newLine;
-        newLine._start.x = from.x();
-        newLine._start.y = from.y();
-        newLine._start.z = from.z();
-        newLine._end.x = to.x();
-        newLine._end.y = to.y();
-        newLine._end.z = to.z();
-        newLine._color.r = color.x();
-        newLine._color.g = color.y();
-        newLine._color.b = color.z();
+        newLine._start = from;
+        newLine._end = to;
+        newLine._color.r = color.x;
+        newLine._color.g = color.y;
+        newLine._color.b = color.z;
         newLine._color.a = 1.0f;
         _lines.push_back(newLine);
     }

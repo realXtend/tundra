@@ -14,7 +14,15 @@
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "FrameAPI.h"
+#include "Transform.h"
+#include "Math/float3x4.h"
+#include "Math/AABB.h"
+#include "Math/OBB.h"
+#include "Math/LineSegment.h"
+#include "Math/float3.h"
+#include "Math/Circle.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
+#include "OgreBulletCollisionsDebugLines.h"
 
 #include <Ogre.h>
 
@@ -23,7 +31,8 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     renderer_(renderer),
     scene_(scene),
     sceneManager_(0),
-    rayQuery_(0)
+    rayQuery_(0),
+    debugLines_(0)
 {
     assert(renderer_->IsInitialized());
     
@@ -41,6 +50,11 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
         sceneManager_->setAmbientLight(Ogre::ColourValue(0.364f, 0.364f, 0.364f, 1.f));
         
         SetupShadows();
+        
+#include "DisableMemoryLeakCheck.h"
+        debugLines_ = new DebugLines();
+#include "EnableMemoryLeakCheck.h"
+        sceneManager_->getRootSceneNode()->attachObject(debugLines_);
     }
     
     connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
@@ -50,6 +64,12 @@ OgreWorld::~OgreWorld()
 {
     if (rayQuery_)
         sceneManager_->destroyQuery(rayQuery_);
+    
+    if (debugLines_)
+    {
+        sceneManager_->getRootSceneNode()->detachObject(debugLines_);
+        SAFE_DELETE(debugLines_);
+    }
     
     // Remove all compositors.
     /// \todo This does not work with a proper multiscene approach
@@ -714,4 +734,60 @@ EC_Camera* OgreWorld::VerifyCurrentSceneCameraComponent() const
 bool OgreWorld::IsActive() const
 {
     return VerifyCurrentSceneCamera() != 0;
+}
+
+void OgreWorld::DebugDrawAABB(const AABB &aabb, float r, float g, float b)
+{
+    for(int i = 0; i < 12; ++i)
+        DebugDrawLineSegment(aabb.Edge(i), r, g, b);
+}
+
+void OgreWorld::DebugDrawOBB(const OBB &obb, float r, float g, float b)
+{
+    for(int i = 0; i < 12; ++i)
+        DebugDrawLineSegment(obb.Edge(i), r, g, b);
+}
+
+void OgreWorld::DebugDrawLineSegment(const LineSegment &l, float r, float g, float b)
+{
+    if (debugLines_)
+        debugLines_->addLine(l.a, l.b, float3(r,g,b));
+}
+
+void OgreWorld::DebugDrawLine(const float3& start, const float3& end, float r, float g, float b)
+{
+    if (debugLines_)
+        debugLines_->addLine(start, end, float3(r,g,b));
+}
+
+void OgreWorld::DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b)
+{
+    DebugDrawFloat3x4(t.ToFloat3x4(), axisLength, boxSize, r, g, b);
+}
+
+void OgreWorld::DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b)
+{
+    AABB aabb(float3::FromScalar(-boxSize/2.f), float3::FromScalar(boxSize/2.f));
+    OBB obb = aabb.Transform(t);
+    DebugDrawOBB(obb, r, g, b);
+    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(0)), 1, 0, 0);
+    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(1)), 0, 1, 0);
+    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(2)), 0, 0, 1);
+}
+
+void OgreWorld::DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b)
+{
+    float3 p = c.GetPoint(0);
+    for(int i = 1; i <= numSubdivisions; ++i)
+    {
+        float3 p2 = c.GetPoint(i * 2.f * 3.14f / numSubdivisions);
+        DebugDrawLineSegment(LineSegment(p, p2), r, g, b);
+        p = p2;
+    }
+}
+
+void OgreWorld::FlushDebugGeometry()
+{
+    if (debugLines_)
+        debugLines_->draw();
 }

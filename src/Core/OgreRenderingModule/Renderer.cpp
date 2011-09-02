@@ -708,6 +708,14 @@ namespace OgreRenderer
             renderWindow->OgreOverlay()->show();
 #endif
 
+        // Flush debug geometry into vertex buffer now
+        OgreWorldPtr world = GetActiveOgreWorld();
+        if (world)
+        {
+            PROFILE(Renderer_Render_UpdateDebugGeometry)
+            world->FlushDebugGeometry();
+        }
+        
         try
         {
             PROFILE(Renderer_Render_OgreRoot_renderOneFrame);

@@ -10,17 +10,10 @@
 #include "Profiler.h"
 #include "Scene.h"
 #include "OgreWorld.h"
-#include "OgreBulletCollisionsDebugLines.h"
 #include "EC_RigidBody.h"
-#include "Transform.h"
-#include "Math/float3x4.h"
-#include "Math/AABB.h"
-#include "Math/OBB.h"
-#include "Math/LineSegment.h"
-#include "Math/float3.h"
-#include "Math/Circle.h"
 #include "MemoryLeakCheck.h"
 #include "LoggingFunctions.h"
+#include "Math/LineSegment.h"
 
 #include <Ogre.h>
 
@@ -47,8 +40,8 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
     runPhysics_(true),
     drawDebugGeometry_(false),
     drawDebugManuallySet_(false),
-    debugGeometryObject_(0),
-    debugDrawMode_(0)
+    debugDrawMode_(0),
+    cachedOgreWorld_(0)
 {
     collisionConfiguration_ = new btDefaultCollisionConfiguration();
     collisionDispatcher_ = new btCollisionDispatcher(collisionConfiguration_);
@@ -114,7 +107,7 @@ void PhysicsWorld::Simulate(f64 frametime)
         PROFILE(Bullet_stepSimulation); ///\note Do not delete or rename this PROFILE() block. The DebugStats profiler uses this string as a label to know where to inject the Bullet internal profiling data.
         world_->stepSimulation((float)frametime, maxSubSteps, physicsUpdatePeriod_);
     }
-            
+    
     // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
     // However, do not do this if user has used the physicsdebug console command
     if (!drawDebugManuallySet_)
@@ -126,7 +119,7 @@ void PhysicsWorld::Simulate(f64 frametime)
     }
     
     if (drawDebugGeometry_)
-        UpdateDebugGeometry();
+        DrawDebugGeometry();
 }
 
 void PhysicsWorld::ProcessPostTick(float substeptime)
@@ -249,46 +242,24 @@ void PhysicsWorld::SetDrawDebugGeometry(bool enable)
 {
     if (scene_.expired() || !scene_.lock()->ViewEnabled() || drawDebugGeometry_ == enable)
         return;
-    OgreWorldPtr ogreWorld = scene_.lock()->GetWorld<OgreWorld>();
-    if (!ogreWorld)
-        return;
-    Ogre::SceneManager* scenemgr = ogreWorld->GetSceneManager();
-    
+
     drawDebugGeometry_ = enable;
     if (!enable)
-    {
         setDebugMode(0);
-        
-        if (debugGeometryObject_)
-        {
-            scenemgr->getRootSceneNode()->detachObject(debugGeometryObject_);
-            delete debugGeometryObject_;
-            debugGeometryObject_ = 0;
-        }
-    }
     else
-    {
         setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-        
-        if (!debugGeometryObject_)
-        {
-#include "DisableMemoryLeakCheck.h"
-            debugGeometryObject_ = new DebugLines();
-#include "EnableMemoryLeakCheck.h"
-            scenemgr->getRootSceneNode()->attachObject(debugGeometryObject_);
-        }
-    }
 }
 
-void PhysicsWorld::UpdateDebugGeometry()
+void PhysicsWorld::DrawDebugGeometry()
 {
-    if ((!drawDebugGeometry_) || (!debugGeometryObject_))
+    if (!drawDebugGeometry_)
         return;
 
-    PROFILE(PhysicsModule_UpdateDebugGeometry);
+    PROFILE(PhysicsModule_DrawDebugGeometry);
     
     // Draw debug only for the active (visible) scene
     OgreWorldPtr ogreWorld = scene_.lock()->GetWorld<OgreWorld>();
+    cachedOgreWorld_ = ogreWorld.get();
     if (!ogreWorld)
         return;
     if (!ogreWorld->IsActive())
@@ -296,9 +267,6 @@ void PhysicsWorld::UpdateDebugGeometry()
     
     // Get all lines of the physics world
     world_->debugDrawWorld();
-    
-    // Build the debug vertex buffer. Note: this is a no-op if there is no debug objects to draw
-    debugGeometryObject_->draw();
 }
 
 void PhysicsWorld::reportErrorWarning(const char* warningString)
@@ -308,51 +276,8 @@ void PhysicsWorld::reportErrorWarning(const char* warningString)
 
 void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
-    if ((drawDebugGeometry_) && (debugGeometryObject_))
-        debugGeometryObject_->addLine(from, to, color);
-}
-
-void PhysicsWorld::DrawAABB(const AABB &aabb, float r, float g, float b)
-{
-    for(int i = 0; i < 12; ++i)
-        DrawLineSegment(aabb.Edge(i), r, g, b);
-}
-
-void PhysicsWorld::DrawOBB(const OBB &obb, float r, float g, float b)
-{
-    for(int i = 0; i < 12; ++i)
-        DrawLineSegment(obb.Edge(i), r, g, b);
-}
-
-void PhysicsWorld::DrawLineSegment(const LineSegment &l, float r, float g, float b)
-{
-    drawLine(l.a, l.b, float3(r,g,b));
-}
-
-void PhysicsWorld::DrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b)
-{
-    DrawFloat3x4(t.ToFloat3x4(), axisLength, boxSize, r, g, b);
-}
-
-void PhysicsWorld::DrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b)
-{
-    AABB aabb(float3::FromScalar(-boxSize/2.f), float3::FromScalar(boxSize/2.f));
-    OBB obb = aabb.Transform(t);
-    DrawOBB(obb, r, g, b);
-    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(0)), 1, 0, 0);
-    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(1)), 0, 1, 0);
-    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(2)), 0, 0, 1);
-}
-
-void PhysicsWorld::DrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b)
-{
-    float3 p = c.GetPoint(0);
-    for(int i = 1; i <= numSubdivisions; ++i)
-    {
-        float3 p2 = c.GetPoint(i * 2.f * 3.14f / numSubdivisions);
-        DrawLineSegment(LineSegment(p, p2), r, g, b);
-        p = p2;
-    }
+    if (drawDebugGeometry_ && cachedOgreWorld_)
+        cachedOgreWorld_->DebugDrawLine(from, to, color.x(), color.y(), color.z());
 }
 
 } // ~Physics
