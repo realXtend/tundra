@@ -37,6 +37,8 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
         // If fog is FOG_NONE, force it to some default ineffective settings, because otherwise SuperShader shows just white
         if (sceneManager_->getFogMode() == Ogre::FOG_NONE)
             sceneManager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
+        // Set a default ambient color that matches the default ambient color of EC_EnvironmentLight, in case there is no environmentlight component.
+        sceneManager_->setAmbientLight(Ogre::ColourValue(0.364f, 0.364f, 0.364f, 1.f));
         
         SetupShadows();
     }

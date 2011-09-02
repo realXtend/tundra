@@ -145,9 +145,21 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, outerAngle);
 
 private slots:
+    /// Update light attributes to the Ogre light object.
     void UpdateOgreLight();
     
+    /// Called when the parent entity has been set.
+    void UpdateSignals();
+    
+    /// Handle a component being added to the parent entity, in case it is the missing Placeable we need
+    void OnComponentAdded(IComponent* component, AttributeChange::Type change);
+    
+    /// Called when component has been removed from the parent entity. Checks if the component removed was the placeable, and autodissociates it.
+    void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
+    
 private:
+    /// Automatically checks for placeable in same entity
+    void CheckForPlaceable();
     
     /// Attaches light to placeable
     void AttachLight();
@@ -155,7 +167,6 @@ private:
     /// Detaches light from placeable
     void DetachLight();
     
-    /// Placeable component, optional
     ComponentPtr placeable_;
     
     /// Ogre world ptr
@@ -164,7 +175,7 @@ private:
     /// Ogre light
     Ogre::Light* light_;
     
-    /// Attached flag
+    /// Attached to placeable -flag
     bool attached_;
 
 

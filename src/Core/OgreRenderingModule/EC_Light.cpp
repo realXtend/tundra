@@ -37,7 +37,7 @@ EC_Light::EC_Light(Scene* scene) :
     diffColor(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
     specColor(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
     castShadows(this, "cast shadows", false),
-    range(this, "light range", 100.0f),
+    range(this, "light range", 25.0f),
     brightness(this, "brightness", 1.0f),
     constAtten(this, "constant atten", 0.0f),
     linearAtten(this, "linear atten", 0.01f),
@@ -45,9 +45,6 @@ EC_Light::EC_Light(Scene* scene) :
     innerAngle(this, "light inner angle", 30.0f),
     outerAngle(this, "light outer angle", 40.0f)
 {
-    if (scene)
-        world_ = scene->GetWorld<OgreWorld>();
-    
     static AttributeMetadata typeAttrData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
@@ -59,14 +56,19 @@ EC_Light::EC_Light(Scene* scene) :
     }
     type.SetMetadata(&typeAttrData);
 
-    if (scene->ViewEnabled())
+    if (scene)
     {
-        OgreWorldPtr world = world_.lock();
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
-        light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
+        world_ = scene->GetWorld<OgreWorld>();
+        if (!world_.expired() && scene->ViewEnabled())
+        {
+            OgreWorldPtr world = world_.lock();
+            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
+            
+            connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
+            connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateOgreLight()));
+        }
     }
-    
-    QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateOgreLight()));
 }
 
 EC_Light::~EC_Light()
@@ -85,6 +87,43 @@ EC_Light::~EC_Light()
         sceneMgr->destroyLight(light_);
         light_ = 0;
     }
+}
+
+void EC_Light::UpdateSignals()
+{
+    Entity* parent = ParentEntity();
+    if (parent)
+    {
+        connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+        CheckForPlaceable();
+    }
+}
+
+void EC_Light::CheckForPlaceable()
+{
+    if (!placeable_)
+    {
+        Entity* entity = ParentEntity();
+        if (entity)
+        {
+            ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
+            if (placeable)
+                SetPlaceable(placeable);
+        }
+    }
+}
+
+void EC_Light::OnComponentAdded(IComponent* component, AttributeChange::Type change)
+{
+    if (component->TypeId() == EC_Placeable::TypeIdStatic())
+        CheckForPlaceable();
+}
+
+void EC_Light::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
+{
+    if (component == placeable_.get())
+        SetPlaceable(ComponentPtr());
 }
 
 void EC_Light::SetPlaceable(ComponentPtr placeable)
@@ -133,28 +172,16 @@ void EC_Light::UpdateOgreLight()
     if (!light_)
         return;
     
-    // If placeable is not set yet, set it manually by searching it from the parent entity
-    if (!placeable_)
-    {
-        Entity* entity = ParentEntity();
-        if (entity)
-        {
-            ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
-            if (placeable)
-                SetPlaceable(placeable);
-        }
-    }
-    
-    Ogre::Light::LightTypes ogre_type = Ogre::Light::LT_POINT;
+    Ogre::Light::LightTypes ogreType = Ogre::Light::LT_POINT;
 
     switch (type.Get())
     {
         case LT_Spot:
-        ogre_type = Ogre::Light::LT_SPOTLIGHT;
+        ogreType = Ogre::Light::LT_SPOTLIGHT;
         break;
         
         case LT_Directional:
-        ogre_type = Ogre::Light::LT_DIRECTIONAL;
+        ogreType = Ogre::Light::LT_DIRECTIONAL;
         break;
     }
     
@@ -162,7 +189,7 @@ void EC_Light::UpdateOgreLight()
     {
         float b = std::max(brightness.Get(), 1e-3f);
         
-        light_->setType(ogre_type);
+        light_->setType(ogreType);
         light_->setDiffuseColour(diffColor.Get());
         light_->setSpecularColour(specColor.Get());
         light_->setAttenuation(range.Get(), constAtten.Get() / b , linearAtten.Get() / b, quadraAtten.Get() / b);
