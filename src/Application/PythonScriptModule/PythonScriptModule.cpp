@@ -558,7 +558,7 @@ namespace PythonScript
 
     Entity* PythonScriptModule::GetActiveCamera() const
     {
-        Scene *scene = GetFramework()->Scene()->GetDefaultScene().get();
+        Scene *scene = GetFramework()->Scene()->MainCameraScene();
         if (scene)
         {
             EntityList cameraEnts = scene->GetEntitiesWithComponent(EC_Camera::TypeNameStatic());

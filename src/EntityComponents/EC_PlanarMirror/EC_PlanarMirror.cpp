@@ -72,7 +72,7 @@ void EC_PlanarMirror::Update(float val)
     if (!renderer_)
         return;
 
-    const Ogre::Camera* cam = renderer_->GetActiveOgreCamera();
+    const Ogre::Camera* cam = renderer_->MainOgreCamera();
 
     if (mirror_cam_)
     {
@@ -124,8 +124,8 @@ void EC_PlanarMirror::Initialize()
         return;
     }
 
-    const Ogre::Camera* v_cam = renderer_->GetActiveOgreCamera();
-    const Ogre::Viewport* vp = renderer_->GetViewport();
+    const Ogre::Camera* v_cam = renderer_->MainOgreCamera();
+    const Ogre::Viewport* vp = renderer_->MainViewport();
 
     mirror_cam_ = cam->GetCamera();
     mirror_cam_->setFarClipDistance(v_cam->getFarClipDistance());
@@ -167,7 +167,7 @@ void EC_PlanarMirror::WindowResized(int w,int h)
 
     if(renderer_)
     {
-        const Ogre::Viewport* vp = renderer_->GetViewport();
+        const Ogre::Viewport* vp = renderer_->MainViewport();
         mirror_cam_->setAspectRatio(Ogre::Real(vp->getActualWidth())/Ogre::Real(vp->getActualHeight()));
     }
 }
