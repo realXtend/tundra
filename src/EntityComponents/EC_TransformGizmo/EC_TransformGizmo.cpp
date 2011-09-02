@@ -96,7 +96,10 @@ void EC_TransformGizmo::SetCurrentGizmoType(GizmoType type)
 void EC_TransformGizmo::SetVisible(bool visible)
 {
     if (placeable)
+    {
+        std::cout << "EC_TransformGizmo::SetVisible: " << visible << std::endl;
         placeable->visible.Set(visible, AttributeChange::Default);
+    }
 }
 
 bool EC_TransformGizmo::IsVisible() const
@@ -142,9 +145,6 @@ void EC_TransformGizmo::Initialize()
     mesh->meshMaterial.Set(materials, AttributeChange::Default);
 }
 
-const float cClickDistanceThreshold = 0.125f;
-const float cClickOffsetThreshold = 2.5f;
-
 void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 {
     using namespace OgreRenderer;
@@ -179,9 +179,9 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     {
         float3x4 worldTM = placeable->LocalToWorld();
         float3 worldPos = placeable->WorldPosition();
-        xRay = Ray(worldPos, worldTM.WorldX());
-        yRay = Ray(worldPos, worldTM.WorldY());
-        zRay = Ray(worldPos, worldTM.WorldZ());
+        xRay = Ray(worldPos, worldTM.WorldX().Normalized());
+        yRay = Ray(worldPos, worldTM.WorldY().Normalized());
+        zRay = Ray(worldPos, worldTM.WorldZ().Normalized());
     }
 
     float relX = (float)e->x/GetFramework()->Ui()->GraphicsView()->size().width();
@@ -198,6 +198,9 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     RaycastResult *result = world->Raycast(e->x, e->y);
     if (result->entity && result->entity->GetComponent<EC_TransformGizmo>().get() == this)
         hit = true;
+
+    const float cClickDistanceThreshold = 0.125f;
+    const float cClickOffsetThreshold = 2.5f;
 
     float offsetX, offsetY, offsetZ;
     xRay.ClosestPoint(mouseRay, &offsetX);
@@ -270,7 +273,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         //LogInfo("Hovering");
         if (mouseOnTop)
         {
-            foreach(GizmoAxis a, hits)
+            foreach(const GizmoAxis &a, hits)
                 materials.Set(a.axis, a.material);
 
             input->SetMouseCursorOverride(QCursor(Qt::OpenHandCursor));
@@ -307,7 +310,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 //                    prevPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
             }
 
-            foreach(GizmoAxis a, activeAxes)
+            foreach(const GizmoAxis &a, activeAxes)
                 materials.Set(a.axis, a.material);
             input->SetMouseCursorOverride(QCursor(Qt::ClosedHandCursor));
             // Emit only when dragging
@@ -328,7 +331,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 //                else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)
 //                    curPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
 
-                std::stringstream ss;
+                //std::stringstream ss;
                 switch(gizmoType)
                 {
                 case EC_TransformGizmo::Translate:
@@ -352,7 +355,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                         emit Scaled(curPoint-prevPoint);
                     else
                     {
-                        float3 scale = curPoint-prevPoint;                        
+                        float3 scale = curPoint-prevPoint;
                         emit Scaled(float3::FromScalar(scale.AverageOfElements()));
                     }
                     break;
