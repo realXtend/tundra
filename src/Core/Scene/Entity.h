@@ -315,9 +315,11 @@ public slots:
     bool IsTemporary() const { return temporary_; }
 
     /// Returns if this entity's changes will NOT be sent over the network.
+    /// An Entity is always either local or replicated, but not both.
     bool IsLocal() const { return id_ >= UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns if this entity's changes will be sent over the network.
+    /// An Entity is always either local or replicated, but not both.
     bool IsReplicated() const { return id_ < UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns if this entity is pending a proper ID assignment from the server.

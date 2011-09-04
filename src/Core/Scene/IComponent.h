@@ -190,9 +190,11 @@ public slots:
     Framework *GetFramework() const { return framework; }
 
     /// Returns true if network synchronization of the attributes of this component is enabled.
+    /// A component is always either local or replicated, but not both.
     bool IsReplicated() const { return replicated; }
 
     /// Returns true if network synchronization of the attributes of this component is NOT enabled.
+    /// A component is always either local or replicated, but not both.
     bool IsLocal() const { return !replicated; }
 
     /// Returns true if this component is pending a replicated ID assignment from the server.
