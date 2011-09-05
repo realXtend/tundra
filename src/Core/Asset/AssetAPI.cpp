@@ -21,6 +21,7 @@
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
 #include "AssetCache.h"
+#include "Application.h"
 #include "Profiler.h"
 #include <QDir>
 #include <QFileSystemWatcher>
@@ -456,7 +457,8 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
         // Remove disk watcher before deleting the file. Otherwise we get tons of spam and not wanted reload tries.
         if (diskSourceChangeWatcher)
             diskSourceChangeWatcher->removePath(asset->DiskSource());
-        assetCache->DeleteAsset(asset->Name());
+        if (assetCache)
+            assetCache->DeleteAsset(asset->Name());
         asset->SetDiskSource("");
     }
 
@@ -756,7 +758,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     }
 
     // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache->FindInCache(assetRef);
+    QString assetFileInCache = assetCache ? assetCache->FindInCache(assetRef) : "";
     AssetTransferPtr transfer;
 
     if (!assetFileInCache.isEmpty())
@@ -952,7 +954,11 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
 
     // Create this file path into the cache dir to avoid
     // windows non-admin users having no write permission to the run folder
-    QDir cacheDir(assetCache->GetCacheDirectory());
+    QDir cacheDir;
+    if (assetCache)
+        cacheDir = QDir(assetCache->GetCacheDirectory());
+    else
+        cacheDir = QDir(Application::UserDataDirectory());
     if (cacheDir.exists())
     {
         QString filename;
@@ -1134,11 +1140,11 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     // Save this asset to cache, and find out which file will represent a cached version of this asset.
     QString assetDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
-    if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0)
+    if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0 && assetCache)
         assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
 
     // If disksource is still empty, forcibly look up from cache
-    if (!assetDiskSource.length())
+    if (assetDiskSource.isEmpty() && assetCache)
         assetDiskSource = assetCache->GetDiskSourceByRef(transfer->source.ref);
     
     // Save for the asset the storage and provider it came from.
@@ -1276,7 +1282,8 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
     // Before issuing a request, clear our cache of this data.
     /// @note We could actually update our cache with the same version of the asset that we just uploaded,
     /// to avoid downloading what we just uploaded. That can be implemented later.
-    assetCache->DeleteAsset(assetRef);
+    if (assetCache)
+        assetCache->DeleteAsset(assetRef);
 
     currentUploadTransfers.erase(assetRef); // Note: this might kill the 'transfer' ptr if we were the last one to hold on to it. Don't dereference transfer below this.
     PendingDownloadRequestMap::iterator iter = pendingDownloadRequests.find(assetRef);

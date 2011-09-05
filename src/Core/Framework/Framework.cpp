@@ -158,7 +158,8 @@ Framework::Framework(int argc, char** argv) :
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
         asset = new AssetAPI(this, headless_);
-        asset->OpenAssetCache(Application::UserDataDirectory() + QDir::separator() + "assetcache");
+        if (!HasCommandLineParameter("--noassetcache"))
+            asset->OpenAssetCache(Application::UserDataDirectory() + QDir::separator() + "assetcache");
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);

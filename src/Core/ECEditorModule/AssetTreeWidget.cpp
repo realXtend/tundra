@@ -260,6 +260,11 @@ void AssetTreeWidget::DeleteFromSource()
 
 void AssetTreeWidget::DeleteFromCache()
 {
+    if (!framework->Asset()->GetAssetCache())
+    {
+        LogError("Cannot delete asset from cache: Not running Tundra with an asset cache!");
+        return;
+    }
     foreach(AssetItem *item, GetSelection().assets)
         if (item->Asset())
             framework->Asset()->GetAssetCache()->DeleteAsset(item->Asset()->Name());
