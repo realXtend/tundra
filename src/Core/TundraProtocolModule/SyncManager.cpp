@@ -1347,6 +1347,18 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
     if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
         return;
     
+    // Record the update time for calculating the update interval
+    float updateInterval = updatePeriod_; // Default update interval if state not found or interval not measured yet
+    std::map<entity_id_t, EntitySyncState>::iterator it = state->entities.find(entityID);
+    if (it != state->entities.end())
+    {
+        it->second.UpdateReceived();
+        if (it->second.avgUpdateInterval > 0.0f)
+            updateInterval = it->second.avgUpdateInterval;
+    }
+    // Add a fudge factor in case there is jitter in packet receipt or the server is too taxed
+    updateInterval *= 1.25f;
+    
     EntityPtr entity = scene->GetEntity(entityID);
     UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
     if (!entity)
@@ -1404,9 +1416,7 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
                 {
                     IAttribute* endValue = attr->Clone();
                     endValue->FromBinary(attrDs, AttributeChange::Disconnected);
-                    /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
-                    // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                    scene->StartAttributeInterpolation(attr, endValue, updatePeriod_ * 1.5f);
+                    scene->StartAttributeInterpolation(attr, endValue, updateInterval);
                 }
             }
         }
@@ -1434,9 +1444,7 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
                     {
                         IAttribute* endValue = attr->Clone();
                         endValue->FromBinary(attrDs, AttributeChange::Disconnected);
-                        /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
-                        // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                        scene->StartAttributeInterpolation(attr, endValue, updatePeriod_ * 1.5f);
+                        scene->StartAttributeInterpolation(attr, endValue, updateInterval);
                     }
                 }
             }
