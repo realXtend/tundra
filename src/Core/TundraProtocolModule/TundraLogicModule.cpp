@@ -252,6 +252,20 @@ void TundraLogicModule::Initialize()
         else
             autoStartServerPort_ = GetFramework()->Config()->Get(configData).toInt();
     }
+    
+    if (framework_->HasCommandLineParameter("--netrate"))
+    {
+        QStringList rateParam = framework_->CommandLineParameters("--netrate");
+        if (rateParam.size() > 0)
+        {
+            bool ok;
+            int rate = rateParam.first().toInt(&ok);
+            if (ok && rate > 0)
+                syncManager_->SetUpdatePeriod(1.f / (float)rate);
+            else
+                LogError("--netrate parameter is not a valid integer.");
+        }
+    }
 }
 
 void TundraLogicModule::Uninitialize()

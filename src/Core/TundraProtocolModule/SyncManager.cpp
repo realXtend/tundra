@@ -81,8 +81,8 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
 SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
-    update_period_(1.0f / 30.0f),
-    update_acc_(0.0)
+    updatePeriod_(1.0f / 30.0f),
+    updateAcc_(0.0)
 {
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
@@ -98,7 +98,7 @@ void SyncManager::SetUpdatePeriod(float period)
     // Allow max 100fps
     if (period < 0.01f)
         period = 0.01f;
-    update_period_ = period;
+    updatePeriod_ = period;
 }
 
 void SyncManager::RegisterToScene(ScenePtr scene)
@@ -483,12 +483,12 @@ void SyncManager::Update(f64 frametime)
 {
     PROFILE(SyncManager_Update);
     
-    update_acc_ += (float)frametime;
-    if (update_acc_ < update_period_)
+    updateAcc_ += (float)frametime;
+    if (updateAcc_ < updatePeriod_)
         return;
     // If multiple updates passed, update still just once
-    while(update_acc_ >= update_period_)
-        update_acc_ -= update_period_;
+    while(updateAcc_ >= updatePeriod_)
+        updateAcc_ -= updatePeriod_;
     
     ScenePtr scene = scene_.lock();
     if (!scene)
@@ -1406,7 +1406,7 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
                     endValue->FromBinary(attrDs, AttributeChange::Disconnected);
                     /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
                     // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                    scene->StartAttributeInterpolation(attr, endValue, update_period_ * 1.5f);
+                    scene->StartAttributeInterpolation(attr, endValue, updatePeriod_ * 1.5f);
                 }
             }
         }
@@ -1436,7 +1436,7 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
                         endValue->FromBinary(attrDs, AttributeChange::Disconnected);
                         /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
                         // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                        scene->StartAttributeInterpolation(attr, endValue, update_period_ * 1.5f);
+                        scene->StartAttributeInterpolation(attr, endValue, updatePeriod_ * 1.5f);
                     }
                 }
             }
