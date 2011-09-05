@@ -15,6 +15,8 @@
 #include <QObject>
 #include <QMap>
 
+class QFile;
+class QTextStream;
 class Framework;
 
 class ConsoleWidget;
@@ -128,6 +130,18 @@ public slots:
     /// active log channels by directly calling the SetEnabledLogChannels function with an appropriate bitset.
     void SetLogLevel(const QString &level);
 
+    /// Starts logging to the given file.
+    /// By default at startup, logging to file is not enabled.
+    /// @param filename The file to log the output to. Passing an empty string will stop logging altogether.
+    ///    The filename string accepts some special symbols:
+    ///    $(CWD) is expanded to the current working directory.
+    ///    $(INSTDIR) is expanded to the Tundra installation directory (Application::InstallationDirectory)
+    ///    $(USERDATA) is expanded to Application::UserDataDirectory.
+    ///    $(USERDOCS) is expanded to Application::UserDocumentsDirectory.
+    ///    $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString .
+    ///    E.g. $(DATE:yyyyMMdd) gives something like "20110905".
+    void SetLogFile(const QString &filename);
+
     /// Log printing funtionality for scripts.
     void LogInfo(const QString &message);
     void LogWarning(const QString &message);
@@ -150,6 +164,9 @@ private:
     boost::shared_ptr<ShellInputThread> shellInputThread;
     /// Stores the set of currently active log channels.
     u32 enabledLogChannels;
+    /// Points to the currently open text file for logging.
+    QFile *logFile;
+    QTextStream *logFileText;
 
 private slots:
     void HandleKeyEvent(KeyEvent *e);

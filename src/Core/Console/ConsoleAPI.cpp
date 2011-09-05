@@ -11,7 +11,7 @@
 #include "ConsoleAPI.h"
 #include "ConsoleWidget.h"
 #include "ShellInputThread.h"
-
+#include "Application.h"
 #include "Profiler.h"
 #include "Framework.h"
 #include "InputAPI.h"
@@ -21,6 +21,9 @@
 #include "FunctionInvoker.h"
 
 #include <stdlib.h>
+
+#include <QFile>
+#include <QTextStream>
 
 #include "MemoryLeakCheck.h"
 
@@ -44,8 +47,16 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     shellInputThread = boost::shared_ptr<ShellInputThread>(new ShellInputThread);
 
     QStringList logLevel = fw->CommandLineParameters("--loglevel");
-    if (logLevel.size() == 1)
-        SetLogLevel(logLevel[0]);
+    if (logLevel.size() >= 1)
+        SetLogLevel(logLevel[logLevel.size()-1]);
+    if (logLevel.size() > 1)
+        LogWarning("Ignoring multiple --loglevel command line parameters!");
+
+    QStringList logFile = fw->CommandLineParameters("--logfile");
+    if (logFile.size() >= 1)
+        SetLogFile(logFile[logFile.size()-1]);
+    if (logFile.size() > 1)
+        LogWarning("Ignoring multiple --logfile command line parameters!");
 }
 
 ConsoleAPI::~ConsoleAPI()
@@ -59,6 +70,8 @@ void ConsoleAPI::Reset()
     inputContext.reset();
     SAFE_DELETE(consoleWidget);
     shellInputThread.reset();
+    SAFE_DELETE(logFileText);
+    SAFE_DELETE(logFile);
 }
 
 QVariant ConsoleCommand::Invoke(const QStringList &params)
@@ -149,10 +162,31 @@ void ConsoleAPI::Print(const QString &message)
 {
     if (consoleWidget)
         consoleWidget->PrintToConsole(message);
-    printf("%s", message.toStdString().c_str());
     ///\todo Temporary hack which appends line ending in case it's not there (output of console commands in headless mode)
     if (!message.endsWith("\n"))
-        printf("\n");
+    {
+        printf("%s\n", message.toStdString().c_str());
+        if (logFileText)
+        {
+            (*logFileText) << message << "\n";
+            /// \note If we want to guarantee that each message gets to the log even in the presence of a crash, we must flush()
+            /// after each write. Tested that on Windows 7, if you kill the process using Ctrl-C on command line, or from 
+            /// task manager, the log will not contain all the text, so this is required for correctness.
+            /// But this flush() after each message also causes a *serious* performance drawback.
+            /// One way to try avoiding this issue is to move to using C API for file writing, and at atexit() and other crash 
+            /// handlers, close the file handle gracefully.
+            logFileText->flush(); 
+        }
+    }
+    else
+    {
+        printf("%s", message.toStdString().c_str());
+        if (logFileText)
+        {
+            (*logFileText) << message;
+            logFileText->flush(); // See comment about flush() above.
+        }
+    }
 }
 
 void ConsoleAPI::ListCommands()
@@ -185,6 +219,50 @@ void ConsoleAPI::SetLogLevel(const QString &level)
         SetEnabledLogChannels(LogLevelErrorWarnInfoDebug);
     else
         LogError("Unknown parameter \"" + level + "\" specified to ConsoleAPI::SetLogLevel!");
+}
+
+void ConsoleAPI::SetLogFile(const QString &wildCardFilename)
+{
+    // Parse all the special symbols from the log filename.
+    QString filename = wildCardFilename.trimmed().replace("$(CWD)", Application::CurrentWorkingDirectory(), Qt::CaseInsensitive);
+    filename = filename.replace("$(INSTDIR)", Application::InstallationDirectory(), Qt::CaseInsensitive);
+    filename = filename.replace("$(USERDATA)", Application::UserDataDirectory(), Qt::CaseInsensitive);
+    filename = filename.replace("$(USERDOCS)", Application::UserDocumentsDirectory(), Qt::CaseInsensitive);
+    QRegExp rx("\\$\\(DATE:(.*)\\)");
+    // Qt Regexes don't support non-greedy matching. The above regex should be "\\$\\(DATE:(.*?)\\)". Instad Qt supports
+    // only setting the matching to be non-greedy globally.
+    rx.setMinimal(true); // This is to avoid e.g. $(DATE:yyyyMMdd)_aaa).txt to be incorrectly captured as "yyyyMMdd)_aaa".
+    for(;;) // Loop and find all instances of $(DATE:someformat).
+    {
+        int pos = rx.indexIn(filename);
+        if (pos > -1)
+        {
+            QString dateFormat = rx.cap(1);
+            QString date = QDateTime::currentDateTime().toString(dateFormat);
+            filename = filename.replace(rx.pos(0), rx.cap(0).length(), date);
+        }
+        else
+            break;
+    }
+    // An empty log file closes the log output writing.
+    if (filename.isEmpty())
+    {
+        SAFE_DELETE(logFileText);
+        SAFE_DELETE(logFile);
+        return;
+    }
+    logFile = new QFile(filename);
+    bool isOpen = logFile->open(QIODevice::WriteOnly | QIODevice::Text);
+    if (!isOpen)
+    {
+        LogError("Failed to open file \"" + filename + "\" for logging! (parsed from string \"" + wildCardFilename + "\")");
+        SAFE_DELETE(logFile);
+    }
+    else
+    {
+        printf("Opened logging file \"%s\".\n", filename.toStdString().c_str());
+        logFileText = new QTextStream(logFile);
+    }
 }
 
 void ConsoleAPI::Update(f64 frametime)
