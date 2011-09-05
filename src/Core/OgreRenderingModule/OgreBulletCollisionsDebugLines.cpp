@@ -37,8 +37,10 @@ THE SOFTWARE.
 
 using namespace Ogre;
 
+#include "DisableMemoryLeakCheck.h"
+
 //------------------------------------------------------------------------------------------------
-DebugLines::DebugLines() : SimpleRenderable()
+DebugLines::DebugLines(const std::string& materialName) : SimpleRenderable()
 {
     mRenderOp.vertexData = new Ogre::VertexData();
     mRenderOp.indexData = 0;
@@ -48,14 +50,7 @@ DebugLines::DebugLines() : SimpleRenderable()
     mRenderOp.useIndexes = false;
 
     setCastShadows (false);
-    this->setMaterial("PhysicsDebug");
-}
-
-
-//------------------------------------------------------------------------------------------------
-void DebugLines::clear()
-{
-    _lines.clear();
+    this->setMaterial(materialName);
 }
 
 //------------------------------------------------------------------------------------------------
@@ -65,6 +60,15 @@ DebugLines::~DebugLines(void)
 
     delete mRenderOp.vertexData;
 }
+
+#include "EnableMemoryLeakCheck.h"
+
+//------------------------------------------------------------------------------------------------
+void DebugLines::clear()
+{
+    _lines.clear();
+}
+
 //------------------------------------------------------------------------------------------------
 void DebugLines::draw()
 {

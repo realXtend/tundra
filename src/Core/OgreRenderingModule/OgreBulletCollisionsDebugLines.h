@@ -50,8 +50,8 @@ struct DebugLine
 class DebugLines : public Ogre::SimpleRenderable
 {
 public:
-    DebugLines(void);
-    ~DebugLines(void);
+    DebugLines(const std::string& name);
+    ~DebugLines();
 
     void addLine (const float3& from, const float3& to, const float3& color)
     {

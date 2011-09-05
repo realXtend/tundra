@@ -1,4 +1,4 @@
-material PhysicsDebug
+material PhysicsDebugNoDepth
 {
 	receive_shadows off
 
@@ -6,6 +6,9 @@ material PhysicsDebug
 	{
 		pass
 		{
+			depth_write off
+			depth_func always_pass
+
 			lighting off
 			diffuse vertexcolour
 		}

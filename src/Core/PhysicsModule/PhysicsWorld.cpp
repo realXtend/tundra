@@ -15,8 +15,6 @@
 #include "LoggingFunctions.h"
 #include "Math/LineSegment.h"
 
-#include <Ogre.h>
-
 namespace Physics
 {
 

@@ -92,22 +92,27 @@ public slots:
     ScenePtr GetScene() { return scene_.lock(); }
 
     // Debugging aids:
-    void DebugDrawAABB(const AABB &aabb, float r, float g, float b);
-    void DebugDrawOBB(const OBB &obb, float r, float g, float b);
-    void DebugDrawLine(const float3& start, const float3& end, float r, float g, float b);
-    void DebugDrawLineSegment(const LineSegment &l, float r, float g, float b);
-    void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b);
-    void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b);
-    void DebugDrawAxes(const float3x4 &t, float axisLength);
+    void DebugDrawAABB(const AABB &aabb, float r, float g, float b, bool depthTest = true);
+    void DebugDrawOBB(const OBB &obb, float r, float g, float b, bool depthTest = true);
+    void DebugDrawLine(const float3& start, const float3& end, float r, float g, float b, bool depthTest = true);
+    void DebugDrawLineSegment(const LineSegment &l, float r, float g, float b, bool depthTest = true);
+    void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest = true);
+    void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest = true);
+    /// Renders a transform's local X, Y & Z axes in world space, with scaling
+    void DebugDrawAxes(const float3x4 &t, bool depthTest = true);
     /// Renders a debug representation of a light.
     /// @param transform Transform of the light. The scale is ignored.
     /// @param lightType 0=point, 1=spot, 2=directional
     /// @param range Range of the light (point and spot lights only)
     /// @param spotAngle Spotlight cone outer angle in degrees (spot lights only)
-    void DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, float r, float g, float b);
+    void DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, float r, float g, float b, bool depthTest = true);
     /// Renders a hollow circle.
     /// @param numSubdivisions The number of edges to subdivide the circle into. This value must be at least 3.
-    void DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b);
+    void DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b, bool depthTest = true);
+    /// Renders a simple box-like debug camera.
+    void DebugDrawCamera(const float3x4 &t, float size, float r, float g, float b, bool depthTest = true);
+    /// Renders a sphere as geosphere.
+    void DebugDrawSphere(const float3& center, float radius, int vertices, float r, float g, float b, bool depthTest = true);
     
 signals:
     /// An entity has entered the view
@@ -165,5 +170,7 @@ private:
     
     /// Debug geometry object
     DebugLines* debugLines_;
+    /// Debug geometry object, no depth testing
+    DebugLines* debugLinesNoDepth_;
 };
 

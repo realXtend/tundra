@@ -21,6 +21,7 @@
 #include "Math/LineSegment.h"
 #include "Math/float3.h"
 #include "Math/Circle.h"
+#include "Math/Sphere.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "OgreBulletCollisionsDebugLines.h"
 
@@ -32,7 +33,8 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     scene_(scene),
     sceneManager_(0),
     rayQuery_(0),
-    debugLines_(0)
+    debugLines_(0),
+    debugLinesNoDepth_(0)
 {
     assert(renderer_->IsInitialized());
     
@@ -52,9 +54,12 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
         SetupShadows();
         
 #include "DisableMemoryLeakCheck.h"
-        debugLines_ = new DebugLines();
+        debugLines_ = new DebugLines("PhysicsDebug");
+        debugLinesNoDepth_ = new DebugLines("PhysicsDebugNoDepth");
 #include "EnableMemoryLeakCheck.h"
         sceneManager_->getRootSceneNode()->attachObject(debugLines_);
+        sceneManager_->getRootSceneNode()->attachObject(debugLinesNoDepth_);
+        debugLinesNoDepth_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY);
     }
     
     connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
@@ -69,6 +74,11 @@ OgreWorld::~OgreWorld()
     {
         sceneManager_->getRootSceneNode()->detachObject(debugLines_);
         SAFE_DELETE(debugLines_);
+    }
+    if (debugLinesNoDepth_)
+    {
+        sceneManager_->getRootSceneNode()->detachObject(debugLinesNoDepth_);
+        SAFE_DELETE(debugLinesNoDepth_);
     }
     
     // Remove all compositors.
@@ -736,68 +746,101 @@ bool OgreWorld::IsActive() const
     return VerifyCurrentSceneCamera() != 0;
 }
 
-void OgreWorld::DebugDrawAABB(const AABB &aabb, float r, float g, float b)
+void OgreWorld::DebugDrawAABB(const AABB &aabb, float r, float g, float b, bool depthTest)
 {
     for(int i = 0; i < 12; ++i)
-        DebugDrawLineSegment(aabb.Edge(i), r, g, b);
+        DebugDrawLineSegment(aabb.Edge(i), r, g, b, depthTest);
 }
 
-void OgreWorld::DebugDrawOBB(const OBB &obb, float r, float g, float b)
+void OgreWorld::DebugDrawOBB(const OBB &obb, float r, float g, float b, bool depthTest)
 {
     for(int i = 0; i < 12; ++i)
-        DebugDrawLineSegment(obb.Edge(i), r, g, b);
+        DebugDrawLineSegment(obb.Edge(i), r, g, b, depthTest);
 }
 
-void OgreWorld::DebugDrawLineSegment(const LineSegment &l, float r, float g, float b)
+void OgreWorld::DebugDrawLineSegment(const LineSegment &l, float r, float g, float b, bool depthTest)
 {
-    if (debugLines_)
-        debugLines_->addLine(l.a, l.b, float3(r,g,b));
+    if (depthTest)
+    {
+        if (debugLines_)
+            debugLines_->addLine(l.a, l.b, float3(r,g,b));
+    }
+    else
+    {
+        if (debugLinesNoDepth_)
+            debugLinesNoDepth_->addLine(l.a, l.b, float3(r,g,b));
+    }
 }
 
-void OgreWorld::DebugDrawLine(const float3& start, const float3& end, float r, float g, float b)
+void OgreWorld::DebugDrawLine(const float3& start, const float3& end, float r, float g, float b, bool depthTest)
 {
-    if (debugLines_)
-        debugLines_->addLine(start, end, float3(r,g,b));
+    if (depthTest)
+    {
+        if (debugLines_)
+            debugLines_->addLine(start, end, float3(r,g,b));
+    }
+    else
+    {
+        if (debugLinesNoDepth_)
+            debugLinesNoDepth_->addLine(start, end, float3(r,g,b));
+    }
 }
 
-void OgreWorld::DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b)
+void OgreWorld::DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest)
 {
-    DebugDrawFloat3x4(t.ToFloat3x4(), axisLength, boxSize, r, g, b);
+    DebugDrawFloat3x4(t.ToFloat3x4(), axisLength, boxSize, r, g, b, depthTest);
 }
 
-void OgreWorld::DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b)
+void OgreWorld::DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest)
 {
     AABB aabb(float3::FromScalar(-boxSize/2.f), float3::FromScalar(boxSize/2.f));
     OBB obb = aabb.Transform(t);
     DebugDrawOBB(obb, r, g, b);
-    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(0)), 1, 0, 0);
-    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(1)), 0, 1, 0);
-    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(2)), 0, 0, 1);
+    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(0)), 1, 0, 0, depthTest);
+    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(1)), 0, 1, 0, depthTest);
+    DebugDrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(2)), 0, 0, 1, depthTest);
 }
 
-void OgreWorld::DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b)
+void OgreWorld::DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b, bool depthTest)
 {
     float3 p = c.GetPoint(0);
     for(int i = 1; i <= numSubdivisions; ++i)
     {
         float3 p2 = c.GetPoint(i * 2.f * 3.14f / numSubdivisions);
-        DebugDrawLineSegment(LineSegment(p, p2), r, g, b);
+        DebugDrawLineSegment(LineSegment(p, p2), r, g, b, depthTest);
         p = p2;
     }
 }
 
-void OgreWorld::DebugDrawAxes(const float3x4 &t, float axisLength)
+void OgreWorld::DebugDrawAxes(const float3x4 &t, bool depthTest)
 {
     float3 translate, scale;
     Quat rotate;
     t.Decompose(translate, rotate, scale);
     
-    DebugDrawLine(translate, translate + rotate * float3(axisLength, 0.0f, 0.0f), 1.0f, 0.0f, 0.0f);
-    DebugDrawLine(translate, translate + rotate * float3(axisLength, 0.0f, 0.0f), 0.0f, 1.0f, 0.0f);
-    DebugDrawLine(translate, translate + rotate * float3(axisLength, 0.0f, 0.0f), 0.0f, 0.0f, 1.0f);
+    DebugDrawLine(translate, translate + rotate * float3(scale.x, 0.f, 0.f), 1, 0, 0, depthTest);
+    DebugDrawLine(translate, translate + rotate * float3(0., scale.y, 0.f), 0, 1, 0, depthTest);
+    DebugDrawLine(translate, translate + rotate * float3(0.f, 0.f, scale.z), 0, 0, 1, depthTest);
 }
 
-void OgreWorld::DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, float r, float g, float b)
+void OgreWorld::DebugDrawSphere(const float3& center, float radius, int vertices, float r, float g, float b, bool depthTest)
+{
+    if (vertices <= 0)
+        return;
+    
+    std::vector<float3> positions(vertices);
+    
+    Sphere sphere(center, radius);
+    int actualVertices = sphere.Triangulate(&positions[0], 0, 0, vertices);
+    for (int i = 0; i < actualVertices; i += 3)
+    {
+        DebugDrawLine(positions[i], positions[i + 1], r, g, b, depthTest);
+        DebugDrawLine(positions[i + 1], positions[i + 2], r, g, b, depthTest);
+        DebugDrawLine(positions[i + 2], positions[i], r, g, b, depthTest);
+    }
+}
+
+void OgreWorld::DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, float r, float g, float b, bool depthTest)
 {
     float3 translate, scale;
     Quat rotate;
@@ -807,9 +850,9 @@ void OgreWorld::DebugDrawLight(const float3x4 &t, int lightType, float range, fl
     {
         // Point
     case 0:
-        DebugDrawCircle(Circle(translate, float3(1.0f, 0.0f, 0.0f), range), 8, r, g, b);
-        DebugDrawCircle(Circle(translate, float3(0.0f, 1.0f, 0.0f), range), 8, r, g, b);
-        DebugDrawCircle(Circle(translate, float3(0.0f, 0.0f, 1.0f), range), 8, r, g, b);
+        DebugDrawCircle(Circle(translate, float3(1.f, 0.f, 0.f), range), 8, r, g, b, depthTest);
+        DebugDrawCircle(Circle(translate, float3(0.f, 1.f, 0.f), range), 8, r, g, b, depthTest);
+        DebugDrawCircle(Circle(translate, float3(0.f, 0.f, 1.f), range), 8, r, g, b, depthTest);
         break;
         
         // Spot
@@ -817,30 +860,44 @@ void OgreWorld::DebugDrawLight(const float3x4 &t, int lightType, float range, fl
         {
             float3 endPoint = translate + range * lightDirection;
             float coneRadius = range * sinf(DegToRad(spotAngle));
-            DebugDrawLine(translate, endPoint + rotate * float3(coneRadius, 0.0f, 0.0f), r, g, b);
-            DebugDrawLine(translate, endPoint + rotate * float3(-coneRadius, 0.0f, 0.0f), r, g, b);
-            DebugDrawLine(translate, endPoint + rotate * float3(0.0f, coneRadius, 0.0f), r, g, b);
-            DebugDrawLine(translate, endPoint + rotate * float3(0.0f, -coneRadius, 0.0f), r, g, b);
-            DebugDrawCircle(Circle(endPoint, -lightDirection, coneRadius), 8, r, g, b);
+            Circle spotCircle(endPoint, -lightDirection, coneRadius);
+            
+            DebugDrawCircle(Circle(endPoint, -lightDirection, coneRadius), 8, r, g, b, depthTest);
+            for (int i = 1; i <= 8; ++i)
+                DebugDrawLine(translate, spotCircle.GetPoint(i * 2.f * 3.14f / 8), r, g, b, depthTest);
         }
         break;
         
         // Directional
     case 2:
         {
-            const float cDirLightRange = 10.0f;
+            const float cDirLightRange = 10.f;
             float3 endPoint = translate + cDirLightRange * lightDirection;
-            float3 offset = rotate * float3(1.0f, 0.0f, 0.0f);
-            DebugDrawLine(translate, endPoint, r, g, b);
-            DebugDrawLine(translate + offset, endPoint + offset, r, g, b);
-            DebugDrawLine(translate - offset, endPoint - offset, r, g, b);
+            float3 offset = rotate * float3(1.f, 0.f, 0.f);
+            DebugDrawLine(translate, endPoint, r, g, b, depthTest);
+            DebugDrawLine(translate + offset, endPoint + offset, r, g, b, depthTest);
+            DebugDrawLine(translate - offset, endPoint - offset, r, g, b, depthTest);
         }
         break;
     }
+}
+
+void OgreWorld::DebugDrawCamera(const float3x4 &t, float size, float r, float g, float b, bool depthTest)
+{
+    AABB aabb(float3(-size/2.f, -size/2.f, -size), float3(size/2.f, size/2.f, size));
+    OBB obb = aabb.Transform(t);
+    DebugDrawOBB(obb, r, g, b, depthTest);
+    
+    float3 translate(0, 0, -size * 1.25f);
+    AABB aabb2(translate + float3::FromScalar(-size/4.f), translate + float3::FromScalar(size/4.f));
+    OBB obb2 = aabb2.Transform(t);
+    DebugDrawOBB(obb2, r, g, b, depthTest);
 }
 
 void OgreWorld::FlushDebugGeometry()
 {
     if (debugLines_)
         debugLines_->draw();
+    if (debugLinesNoDepth_)
+        debugLinesNoDepth_->draw();
 }
