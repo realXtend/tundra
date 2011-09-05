@@ -31,6 +31,7 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     QObject(fw),
     framework(fw),
     enabledLogChannels(LogLevelErrorWarnInfo),
+    logFile(0),
     logFileText(0)
 {
     if (!fw->IsHeadless())
