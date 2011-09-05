@@ -11,9 +11,11 @@
 #include "Scene.h"
 #include "OgreWorld.h"
 #include "EC_RigidBody.h"
-#include "MemoryLeakCheck.h"
 #include "LoggingFunctions.h"
 #include "Math/LineSegment.h"
+
+#include <Ogre.h>
+#include "MemoryLeakCheck.h"
 
 namespace Physics
 {

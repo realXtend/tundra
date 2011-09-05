@@ -32,8 +32,8 @@ THE SOFTWARE.
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreBulletCollisionsDebugLines.h"
+#include "MemoryLeakCheck.h"
 
 using namespace Ogre;
 
@@ -42,7 +42,9 @@ using namespace Ogre;
 //------------------------------------------------------------------------------------------------
 DebugLines::DebugLines(const std::string& materialName) : SimpleRenderable()
 {
+#include "DisableMemoryLeakCheck.h"
     mRenderOp.vertexData = new Ogre::VertexData();
+#include "EnableMemoryLeakCheck.h"
     mRenderOp.indexData = 0;
     mRenderOp.vertexData->vertexCount = 0;
     mRenderOp.vertexData->vertexStart = 0;
