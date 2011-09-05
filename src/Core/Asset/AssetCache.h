@@ -17,8 +17,6 @@
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 
-#define DISABLE_QNETWORKDISKCACHE
-
 #ifndef DISABLE_QNETWORKDISKCACHE
 class QNetworkDiskCache;
 #endif
