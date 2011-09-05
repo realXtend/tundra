@@ -226,10 +226,41 @@ public slots:
     void SetParent(Entity *parent, QString boneName, bool preserveWorldTransform);
 
     /// Returns all entities that are attached to this placeable.
-    EntityList Children();
+    EntityList Children() const;
 
     /// Prints the scene node hierarchy this scene node is part of.
     void DumpNodeHierarhy();
+
+    /// If this placeable is parented to another entity's placeable (parentRef.Get()IsEmpty() == false, and points to a valid entity), returns the parent placeable entity.
+    Entity *ParentPlaceableEntity() const;
+
+    /// If this placeable is parented to another entity's placeable (parentRef.Get()IsEmpty() == false, and points to a valid entity), returns parent placeable component.
+    EC_Placeable *ParentPlaceableComponent() const;
+
+    /// Checks whether or not this component is parented and is grandparent of another @c entity.
+    /** @param entity Entity for which relationship is to be inspected.
+        @note Each entity is its own grand parent. */
+    bool IsGrandparentOf(Entity *entity) const;
+
+    /// This is an overloaded function.
+    /** @param placeable Placeable component, of which relationship is to be inspected.
+        @note Each entity is its own grand parent. */
+    bool IsGrandparentOf(EC_Placeable *placeable) const;
+
+    /// Checks whether or not this component is parented and is a grandchild of another @c entity.
+    /** @param entity Entity for which relationship is to be inspected.
+        @note Each entity is its own grand child. */
+    bool IsGrandchildOf(Entity *entity) const;
+
+    /// This is an overloaded function.
+    /** @param placeable Placeable component, of which relationship is to be inspected.
+        @note Each entity is its own grand child. */
+    bool IsGrandchildOf(EC_Placeable *placeable) const;
+
+    /// Returns flat list consisting of the whole parent-child hierachy for @c entity.
+    /** @param entity Entity to be inspected. */
+    EntityList Grandchildren(Entity *entity) const;
+
 signals:
     /// Emitted when about to be destroyed
     void AboutToBeDestroyed();
