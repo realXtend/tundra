@@ -17,7 +17,9 @@
 #include "MemoryLeakCheck.h"
 
 AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) : 
+#ifndef DISABLE_QNETWORKDISKCACHE
     QNetworkDiskCache(0),
+#endif
     assetAPI(owner),
     cacheDirectory(GuaranteeTrailingSlash(QDir::fromNativeSeparators(assetCacheDirectory)))
 {
@@ -40,10 +42,13 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     assetDataDir = QDir(cacheDirectory + "data");
     if (!assetDir.exists("metadata"))
         assetDir.mkdir("metadata");
+
+#ifndef DISABLE_QNETWORKDISKCACHE
     assetMetaDataDir = QDir(cacheDirectory + "metadata");
 
     // Set for QNetworkDiskCache
     setCacheDirectory(cacheDirectory);
+#endif
 
     // Check --clear-asset-cache start param
     if (owner->GetFramework()->HasCommandLineParameter("--clear-asset-cache"))
@@ -53,6 +58,7 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     }
 }
 
+#ifndef DISABLE_QNETWORKDISKCACHE
 QIODevice* AssetCache::data(const QUrl &url)
 {
     QScopedPointer<QFile> dataFile;
@@ -184,6 +190,7 @@ qint64 AssetCache::expire()
     // Skip keeping cache at some static size, unlimited for now.
     return maximumCacheSize() / 2;
 }
+#endif
 
 QString AssetCache::FindInCache(const QString &assetRef)
 {
@@ -235,16 +242,21 @@ void AssetCache::DeleteAsset(const QString &assetRef)
 
 void AssetCache::DeleteAsset(const QUrl &assetUrl)
 {
+#ifndef DISABLE_QNETWORKDISKCACHE
     if (!remove(assetUrl))
         LogWarning("AssetCache: AssetCache::DeleteAsset Failed to delete asset " + assetUrl.toString().toStdString());
+#endif
 }
 
 void AssetCache::ClearAssetCache()
 {
     ClearDirectory(assetDataDir.absolutePath());
+#ifndef DISABLE_QNETWORKDISKCACHE
     ClearDirectory(assetMetaDataDir.absolutePath());
+#endif
 }
 
+#ifndef DISABLE_QNETWORKDISKCACHE
 bool AssetCache::WriteMetadata(const QString &filePath, const QNetworkCacheMetaData &metaData)
 {
     QFile metaDataFile(filePath);
@@ -264,6 +276,7 @@ bool AssetCache::WriteMetadata(const QString &filePath, const QNetworkCacheMetaD
     metaDataFile.close();
     return true;
 }
+#endif
 
 QString AssetCache::GetAbsoluteFilePath(bool isMetaData, const QUrl &url)
 {
