@@ -25,9 +25,14 @@
 #include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 #include "ConfigAPI.h"
+#include <QScriptEngine>
+#include "QScriptEngineHelpers.h"
 
 #include <boost/filesystem.hpp>
 #include <Ogre.h>
+
+Q_DECLARE_METATYPE(EC_Placeable*);
+Q_DECLARE_METATYPE(EC_Camera*);
 
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;
@@ -889,4 +894,11 @@ namespace OgreRenderer
 
         added_resource_directories_.push_back(directory);
     }
+
+    void Renderer::OnScriptEngineCreated(QScriptEngine* engine)
+    {
+        qScriptRegisterQObjectMetaType<EC_Placeable*>(engine);
+        qScriptRegisterQObjectMetaType<EC_Camera*>(engine);
+    }
+
 }

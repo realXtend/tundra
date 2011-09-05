@@ -16,6 +16,7 @@
 #include <boost/enable_shared_from_this.hpp>
 
 class QRect;
+class QScriptEngine;
 class RenderWindow;
 class Framework;
 
@@ -159,7 +160,11 @@ namespace OgreRenderer
         void SetTextureQuality(TextureQuality newquality);
 
         RenderWindow *GetRenderWindow() const { return renderWindow; }
-        
+
+    private slots:
+        /// Embeds the Renderer types to the given script engine.
+        void OnScriptEngineCreated(QScriptEngine* engine);
+
     private:
         friend class OgreRenderingModule;
 
