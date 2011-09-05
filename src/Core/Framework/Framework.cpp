@@ -304,8 +304,13 @@ void Framework::Go()
         modules[i]->Unload();
     }
 
-    // Actually unload all DLLs from memory.
+    // Delete all modules.
     modules.clear();
+
+    // Now that each module has been deleted, they've closed all their windows as well. Tear down the main UI.
+    ui->Reset();
+
+    // Actually unload all DLL plugins from memory.
     plugin->UnloadPlugins();
 }
 

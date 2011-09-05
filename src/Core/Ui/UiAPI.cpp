@@ -136,6 +136,11 @@ UiAPI::UiAPI(Framework *owner_) :
 
 UiAPI::~UiAPI()
 {
+    Reset();
+}
+
+void UiAPI::Reset()
+{
     // If we have a mainwindow delete it, note this will be null on headless mode
     // so this if check needs to be here.
     if (mainWindow)
