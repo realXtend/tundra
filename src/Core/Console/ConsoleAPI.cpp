@@ -30,7 +30,8 @@
 ConsoleAPI::ConsoleAPI(Framework *fw) :
     QObject(fw),
     framework(fw),
-    enabledLogChannels(LogLevelErrorWarnInfo)
+    enabledLogChannels(LogLevelErrorWarnInfo),
+    logFileText(0)
 {
     if (!fw->IsHeadless())
         consoleWidget = new ConsoleWidget(framework);
