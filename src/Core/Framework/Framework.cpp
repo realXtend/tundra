@@ -136,6 +136,8 @@ Framework::Framework(int argc, char** argv) :
     cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional.";
     cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username";
     cmdLineDescs.commands["--netrate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
+    cmdLineDescs.commands["--noassetcache"] = "Disable asset cache.";
+    cmdLineDescs.commands["--assetcachedir"] = "Specify asset cache directory to use.";
     cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
 
     if (HasCommandLineParameter("--help"))
@@ -164,8 +166,13 @@ Framework::Framework(int argc, char** argv) :
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
         asset = new AssetAPI(this, headless_);
+        
+        QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
+        if (CommandLineParameters("--assetcachedir").size() > 0)
+            assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir")[0]);
+        
         if (!HasCommandLineParameter("--noassetcache"))
-            asset->OpenAssetCache(Application::UserDataDirectory() + QDir::separator() + "assetcache");
+            asset->OpenAssetCache(assetCacheDir);
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);
