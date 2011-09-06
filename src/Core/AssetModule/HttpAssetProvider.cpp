@@ -83,6 +83,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     if (!networkAccessManager)
         CreateAccessManager();
 
+    QString originalAssetRef = assetRef;
     assetRef = assetRef.trimmed();
     QString assetRefWithoutSubAssetName;
     AssetAPI::ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, 0, 0, &assetRefWithoutSubAssetName);
@@ -99,7 +100,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     QNetworkReply *reply = networkAccessManager->get(request);
 
     HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
-    transfer->source.ref = assetRef;
+    transfer->source.ref = originalAssetRef;
     transfer->assetType = assetType;
     transfer->provider = shared_from_this();
     transfer->storage = GetStorageForAssetRef(assetRef);
