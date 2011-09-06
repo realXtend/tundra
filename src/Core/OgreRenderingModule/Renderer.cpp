@@ -277,7 +277,15 @@ namespace OgreRenderer
                 renderWindow = new RenderWindow();
                 bool fullscreen = false;
 
-                renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
+                // On some systems, the Ogre rendering output is overdrawn by the Windows desktop compositing manager, but the actual cause of this
+                // is uncertain.
+                // As a workaround, it is possible to have Ogre output directly on the main window HWND of the ui chain. On other systems, this gives
+                // graphical issues, so it cannot be used as a permanent mechanism. Therefore this workaround is enabled only as a command-line switch.
+                if (framework_->HasCommandLineParameter("--ogrecapturetopwindow"))
+                    renderWindow->CreateRenderWindow(framework_->Ui()->MainWindow(), window_title_.c_str(), width, height, window_left, window_top, false);
+                else // Normally, we want to render Ogre onto the UiGraphicsview viewport window.
+                    renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
+
                 connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
                 renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
 
