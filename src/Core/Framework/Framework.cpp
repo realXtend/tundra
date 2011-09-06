@@ -42,9 +42,13 @@ struct CommandLineParameterMap
         {
             int charIdx = 0;
             const int treshold = 15;
-            // Max line width is fixed 80 chars on Windows, but can vary on *nix.
 #ifdef _WINDOWS
-            const int maxLineWidth = 80;
+            int maxLineWidth = 80; // Initially assume default 80 on Windows.
+            CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+            HANDLE hstdout;
+            hstdout = GetStdHandle(STD_OUTPUT_HANDLE);
+            if (GetConsoleScreenBufferInfo(hstdout, &csbiInfo))
+                maxLineWidth = csbiInfo.dwSize.X;
 #else
             struct winsize w;
             ioctl(0, TIOCGWINSZ, &w);
