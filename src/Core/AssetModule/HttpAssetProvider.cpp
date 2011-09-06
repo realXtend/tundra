@@ -12,6 +12,7 @@
 #include "IAsset.h"
 #include "LoggingFunctions.h"
 
+#include <QAbstractNetworkCache>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
