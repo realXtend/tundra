@@ -5,9 +5,11 @@
 #pragma once
 
 #include <QString>
+#ifndef DISABLE_QNETWORKDISKCACHE
 #include <QNetworkDiskCache>
 #include <QNetworkCacheMetaData>
 #include <QHash>
+#endif
 #include <QUrl>
 #include <QDir>
 #include <QObject>
@@ -15,12 +17,17 @@
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 
+#ifndef DISABLE_QNETWORKDISKCACHE
 class QNetworkDiskCache;
-
+#endif
 /// Implements a disk cache for asset files to avoid re-downloading assets between runs.
 /** Subclassing QNetworkDiskCache has the main goal of separating metadata from the raw asset data. The basic implementation of QNetworkDiskCache
     will store both in the same file. That did not work very well with our asset system as we need absolute paths to loaded assets for various purpouses. */
+#ifndef DISABLE_QNETWORKDISKCACHE
 class AssetCache : public QNetworkDiskCache
+#else
+class AssetCache : public QObject
+#endif
 {
 
 Q_OBJECT
@@ -28,6 +35,7 @@ Q_OBJECT
 public:
     explicit AssetCache(AssetAPI *owner, QString assetCacheDirectory);
 
+#ifndef DISABLE_QNETWORKDISKCACHE
     /// Allocates new QFile*, it is the callers responsibility to free the memory once done with it.
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QIODevice* data(const QUrl &url);
@@ -61,7 +69,7 @@ public:
     /// This call is ignored untill we decide to limit the disk cache size.
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual qint64 expire();
-
+#endif
 public slots:
     /// Searches if the cache contains the asset with the given assetRef. Returns an absolute path to the asset on the local file system, if it is found.
     /// @return An absolute path to the assets disk source, or an empty string if asset is not in the cache.
@@ -97,9 +105,10 @@ public slots:
     void ClearAssetCache();
 
 private slots:
+#ifndef DISABLE_QNETWORKDISKCACHE
     /// Writes metadata into a file. Helper function for the QNetworkDiskCache overrides.
     bool WriteMetadata(const QString &filePath, const QNetworkCacheMetaData &metaData);
-
+#endif
     /// Genrates the absolute path to an asset cache entry. Helper function for the QNetworkDiskCache overrides.
     QString GetAbsoluteFilePath(bool isMetaData, const QUrl &url);
 
@@ -119,10 +128,12 @@ private:
     /// Asset data dir.
     QDir assetDataDir;
 
+#ifndef DISABLE_QNETWORKDISKCACHE
     /// Asset metadata dir.
     QDir assetMetaDataDir;
 
     /// Internal tracking of prepared QUrl to QIODevice pairs.
     QHash<QString, QFile*> preparedItems;
+#endif
 };
 

@@ -58,7 +58,7 @@ public slots:
     void SetUpdatePeriod(float period);
     
     /// Get update period
-    float GetUpdatePeriod() { return update_period_; }
+    float GetUpdatePeriod() { return updatePeriod_; }
     
 private slots:
     /// Trigger EC sync because of component attributes changing
@@ -151,9 +151,9 @@ private:
     SceneWeakPtr scene_;
     
     /// Time period for update, default 1/30th of a second
-    float update_period_;
+    float updatePeriod_;
     /// Time accumulator for update
-    float update_acc_;
+    float updateAcc_;
     
     /// Server sync state (client only)
     SceneSyncState server_syncstate_;

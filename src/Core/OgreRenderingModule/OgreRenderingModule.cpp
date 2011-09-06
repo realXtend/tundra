@@ -133,9 +133,12 @@ void OgreRenderingModule::Initialize()
     connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
 
     // Add asset cache directory as its own resource group to ogre to support threaded loading.
-    std::string cacheResourceDir = GetFramework()->Asset()->GetAssetCache()->GetCacheDirectory().toStdString();
-    if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(cacheResourceDir, CACHE_RESOURCE_GROUP))
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
+    if (GetFramework()->Asset()->GetAssetCache())
+    {
+        std::string cacheResourceDir = GetFramework()->Asset()->GetAssetCache()->GetCacheDirectory().toStdString();
+        if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(cacheResourceDir, CACHE_RESOURCE_GROUP))
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
+    }
 
     framework_->Console()->RegisterCommand("RenderStats", "Prints out render statistics.",
         this, SLOT(ConsoleStats()));

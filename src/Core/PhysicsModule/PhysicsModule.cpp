@@ -21,6 +21,7 @@
 #include "Renderer.h"
 #include "ConsoleAPI.h"
 #include "IComponentFactory.h"
+#include "QScriptEngineHelpers.h"
 
 #include <btBulletDynamicsCommon.h>
 
@@ -34,31 +35,6 @@
 Q_DECLARE_METATYPE(Physics::PhysicsModule*);
 Q_DECLARE_METATYPE(Physics::PhysicsWorld*);
 Q_DECLARE_METATYPE(PhysicsRaycastResult*);
-
-// The following functions help register a custom QObject-derived class to a QScriptEngine.
-// See http://lists.trolltech.com/qt-interest/2007-12/thread00158-0.html .
-template <typename Tp>
-QScriptValue qScriptValueFromQObject(QScriptEngine *engine, Tp const &qobject)
-{
-    return engine->newQObject(qobject);
-}
-
-template <typename Tp>
-void qScriptValueToQObject(const QScriptValue &value, Tp &qobject)
-{   
-    qobject = qobject_cast<Tp>(value.toQObject());
-}
-
-template <typename Tp>
-int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &prototype = QScriptValue()
-#ifndef qdoc
-    , Tp * = 0
-#endif
-    )
-{
-    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject, qScriptValueToQObject, prototype);
-}
-
 
 namespace Physics
 {

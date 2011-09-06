@@ -96,10 +96,7 @@ void EC_TransformGizmo::SetCurrentGizmoType(GizmoType type)
 void EC_TransformGizmo::SetVisible(bool visible)
 {
     if (placeable)
-    {
-        //std::cout << "EC_TransformGizmo::SetVisible: " << visible << std::endl;
         placeable->visible.Set(visible, AttributeChange::Default);
-    }
 }
 
 bool EC_TransformGizmo::IsVisible() const
@@ -115,8 +112,8 @@ void EC_TransformGizmo::Initialize()
 
     ParentEntity()->SetName("TransformGizmo");
 
-    placeable = boost::dynamic_pointer_cast<EC_Placeable>(ParentEntity()->CreateComponent(
-        EC_Placeable::TypeNameStatic(), "TransformGizmoPlaceable", AttributeChange::Default, false));
+    placeable = boost::dynamic_pointer_cast<EC_Placeable>(ParentEntity()->CreateLocalComponent(
+        EC_Placeable::TypeNameStatic(), "TransformGizmoPlaceable"));
     if (!placeable)
     {
         LogError("Could not create EC_Placeable for EC_TransformGizmo.");
@@ -127,8 +124,8 @@ void EC_TransformGizmo::Initialize()
 //    placeable->selectionLayer.Set(0, AttributeChange::Default); // ignore raycast
     placeable->visible.Set(false, AttributeChange::Default);
 
-    mesh = boost::dynamic_pointer_cast<EC_Mesh>(ParentEntity()->CreateComponent(
-        EC_Mesh::TypeNameStatic(), "TransformGizmoMesh", AttributeChange::Default, false));
+    mesh = boost::dynamic_pointer_cast<EC_Mesh>(ParentEntity()->CreateLocalComponent(
+        EC_Mesh::TypeNameStatic(), "TransformGizmoMesh"));
     if (!mesh)
     {
         LogError("Could not create EC_Mesh for EC_TransformGizmo.");
@@ -147,6 +144,7 @@ void EC_TransformGizmo::Initialize()
 
 void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 {
+//    std::cout << IsVisible() << " " << placeable->WorldPosition() << std::endl;
     using namespace OgreRenderer;
     if (!mesh || !placeable)
         return;

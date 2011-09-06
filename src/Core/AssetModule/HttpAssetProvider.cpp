@@ -35,7 +35,9 @@ void HttpAssetProvider::CreateAccessManager()
     if (!networkAccessManager)
     {
         networkAccessManager = new QNetworkAccessManager();
+#ifndef DISABLE_QNETWORKDISKCACHE
         networkAccessManager->setCache(framework->Asset()->GetAssetCache());
+#endif
         connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
     }
 }
@@ -217,8 +219,10 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         {
             // If asset request creator has not allowed caching, remove it now
             AssetCache *cache = framework->Asset()->GetAssetCache();
+#ifndef DISABLE_QNETWORKDISKCACHE
             if (!transfer->CachingAllowed())
                 cache->remove(reply->url());
+#endif
 
             // Setting cache allowed as false is very important! The items are already in our cache via the 
             // QAccessManagers QAbstractNetworkCache (same as our AssetAPI::AssetCache). Network replies will already call them

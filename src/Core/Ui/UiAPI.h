@@ -25,6 +25,7 @@ public:
     /// Destroys main window and viewport.
     ~UiAPI();
 
+    void Reset();
 public slots:
     /// Returns the widget that is the main window.
     /** @return Main window pointer, or null pointer if we're running in headless mode. */

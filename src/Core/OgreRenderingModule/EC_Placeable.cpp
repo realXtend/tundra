@@ -541,12 +541,91 @@ void EC_Placeable::DumpNodeHierarhy()
     }
 
     for(int i = parents.size()-1; i >= 0; --i)
-        LogInfo(parents[i]->ParentEntity()->ToString().toStdString() + " at local->parent: " + parents[i]->LocalToParent().ToString() + ", world space: " + parents[i]->LocalToWorld().ToString());
+        LogInfo(parents[i]->ParentEntity()->ToString().toStdString() + " at local->parent: " + 
+            parents[i]->LocalToParent().ToString() + ", world space: " + parents[i]->LocalToWorld().ToString());
 
     DumpChildHierarchy(this, 2);
 }
 
-EntityList EC_Placeable::Children()
+Entity *EC_Placeable::ParentPlaceableEntity() const
+{
+    return parentRef.Get().Lookup(ParentScene()).get();
+}
+
+EC_Placeable *EC_Placeable::ParentPlaceableComponent() const
+{
+    Entity *p = ParentPlaceableEntity();
+    if (p)
+        return p->GetComponent<EC_Placeable>().get();
+    else
+        return 0;
+}
+
+bool EC_Placeable::IsGrandparentOf(Entity *entity) const
+{
+    if (!entity)
+    {
+        LogError("EC_Placeable::IsGrandParentOf: called with null pointer.");
+        return false;
+    }
+    if (!ParentEntity())
+        return false;
+    if (entity == ParentEntity())
+        return true;
+
+    EntityList allChildren = Grandchildren(ParentEntity());
+    EntityList::const_iterator iter = std::find(allChildren.begin(), allChildren.end(), entity->shared_from_this());
+    return iter != allChildren.end();
+}
+
+bool EC_Placeable::IsGrandparentOf(EC_Placeable *placeable) const
+{
+    assert(placeable->ParentEntity());
+    return IsGrandparentOf(placeable->ParentEntity());
+}
+
+bool EC_Placeable::IsGrandchildOf(Entity *entity) const
+{
+    if (!entity)
+    {
+        LogError("EC_Placeable::IsGrandChildOf: called with null pointer.");
+        return false;
+    }
+    if (!ParentEntity())
+        return false;
+    Entity *parentPlaceableEntity = ParentPlaceableEntity();
+    if (!parentPlaceableEntity)
+        return false;
+    if (entity == ParentEntity())
+        return true;
+
+    EntityList allChildren = Grandchildren(ParentEntity());
+    EntityList::const_iterator iter = std::find(allChildren.begin(), allChildren.end(), ParentEntity()->shared_from_this());
+    return iter != allChildren.end();
+}
+
+bool EC_Placeable::IsGrandchildOf(EC_Placeable *placeable) const
+{
+    assert(placeable->ParentEntity());
+    return IsGrandchildOf(placeable->ParentEntity());
+}
+
+EntityList EC_Placeable::Grandchildren(Entity *entity) const
+{
+    EntityList ret;
+    if (!entity)
+        return ret;
+    if (!entity->GetComponent<EC_Placeable>())
+        return ret;
+    foreach(const EntityPtr &e, entity->GetComponent<EC_Placeable>()->Children())
+    {
+        EntityList grandchildren = Grandchildren(e.get());
+        ret.merge(grandchildren);
+    }
+    return ret;
+}
+
+EntityList EC_Placeable::Children() const
 {
     EntityList children;
 

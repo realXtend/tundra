@@ -4,6 +4,8 @@
 
 #include "CoreTypes.h"
 
+#include "kNet/PolledTimer.h"
+
 #include <list>
 #include <map>
 #include <set>
@@ -59,7 +61,8 @@ struct EntitySyncState
         removed(false),
         isNew(true),
         isInQueue(false),
-        id(0)
+        id(0),
+        avgUpdateInterval(0.0f)
     {
     }
     
@@ -128,12 +131,29 @@ struct EntitySyncState
         isNew = false;
     }
     
+    void UpdateReceived()
+    {
+        float time = updateTimer.MSecsElapsed() * 0.001f;
+        updateTimer.Start();
+        // Maximum update rate should be 100fps. Discard either very frequent or very infrequent updates.
+        if (time < 0.005f || time >= 0.5f)
+            return;
+        // If it's the first measurement, set time directly. Else smooth
+        if (avgUpdateInterval == 0.0f)
+            avgUpdateInterval = time;
+        else
+            avgUpdateInterval = 0.5 * time + 0.5 * avgUpdateInterval;
+    }
+    
     std::list<ComponentSyncState*> dirtyQueue; ///< Dirty components
     std::map<component_id_t, ComponentSyncState> components; ///< Component syncstates
     entity_id_t id; ///< Entity ID. Duplicated here intentionally to allow recognizing the entity without the parent map.
     bool removed; ///< The entity has been removed since last update
     bool isNew; ///< The client does not have the entity and it must be serialized in full
     bool isInQueue; ///< The entity is already in the scene's dirty queue
+    
+    kNet::PolledTimer updateTimer; ///< Last update received timer
+    float avgUpdateInterval; ///< Average network update interval in seconds
 };
 
 /// Scene's per-user network sync state

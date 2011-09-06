@@ -23,7 +23,7 @@ class EC_LaserPointer : public IComponent
     Q_OBJECT
     /// Track placeable and mouse, this is not synced over network
     Q_PROPERTY(bool tracking READ IsTracking WRITE SetTracking)
-    COMPONENT_NAME("EC_LaserPointer", 34);
+    COMPONENT_NAME("EC_LaserPointer", 40);
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.

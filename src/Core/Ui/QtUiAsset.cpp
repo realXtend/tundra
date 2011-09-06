@@ -148,13 +148,13 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
         AssetPtr asset = assetAPI->GetAsset(refs[i].parsedRef);
         if (!asset.get())
         {
-            LogError("ReplaceAssetReferences: Asset not found from asset system even when it was marked as a dependency earlier, skipping: " + refs[i].parsedRef);
+            LogError("QtUiAsset::GetRefReplacedAssetData: Asset not found from asset system even when it was marked as a dependency earlier, skipping: " + refs[i].parsedRef);
         }
         else
         {
             assetDiskSource = asset->DiskSource();
             if (assetDiskSource.isEmpty())
-                LogWarning("ReplaceAssetReferences: Asset disk source empty, skipping: " + refs[i].parsedRef);
+                LogWarning("QtUiAsset::GetRefReplacedAssetData: Asset \"" + refs[i].parsedRef + "\" does not have a disk source. The UI asset \"" + Name() + "\" will not be able to use it.");
         }
         assetDiskSource = assetDiskSource.trimmed();
         if (!assetDiskSource.isEmpty() && QFile::exists(assetDiskSource))
@@ -165,7 +165,7 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
         }
         else
         {
-            LogWarning("ReplaceAssetReferences: Asset disk source does not exist, skipping: " + refs[i].parsedRef);
+            LogWarning("QtUiAsset::GetRefReplacedAssetData: Asset disk source does not exist, skipping: " + refs[i].parsedRef);
         }
     }
     return refRewrittenData;

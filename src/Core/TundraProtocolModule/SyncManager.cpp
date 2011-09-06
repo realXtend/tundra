@@ -81,8 +81,8 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
 SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
-    update_period_(1.0f / 30.0f),
-    update_acc_(0.0)
+    updatePeriod_(1.0f / 30.0f),
+    updateAcc_(0.0)
 {
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
@@ -98,7 +98,7 @@ void SyncManager::SetUpdatePeriod(float period)
     // Allow max 100fps
     if (period < 0.01f)
         period = 0.01f;
-    update_period_ = period;
+    updatePeriod_ = period;
 }
 
 void SyncManager::RegisterToScene(ScenePtr scene)
@@ -483,12 +483,12 @@ void SyncManager::Update(f64 frametime)
 {
     PROFILE(SyncManager_Update);
     
-    update_acc_ += (float)frametime;
-    if (update_acc_ < update_period_)
+    updateAcc_ += (float)frametime;
+    if (updateAcc_ < updatePeriod_)
         return;
     // If multiple updates passed, update still just once
-    while(update_acc_ >= update_period_)
-        update_acc_ -= update_period_;
+    while(updateAcc_ >= updatePeriod_)
+        updateAcc_ -= updatePeriod_;
     
     ScenePtr scene = scene_.lock();
     if (!scene)
@@ -1347,6 +1347,18 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
     if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
         return;
     
+    // Record the update time for calculating the update interval
+    float updateInterval = updatePeriod_; // Default update interval if state not found or interval not measured yet
+    std::map<entity_id_t, EntitySyncState>::iterator it = state->entities.find(entityID);
+    if (it != state->entities.end())
+    {
+        it->second.UpdateReceived();
+        if (it->second.avgUpdateInterval > 0.0f)
+            updateInterval = it->second.avgUpdateInterval;
+    }
+    // Add a fudge factor in case there is jitter in packet receipt or the server is too taxed
+    updateInterval *= 1.25f;
+    
     EntityPtr entity = scene->GetEntity(entityID);
     UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
     if (!entity)
@@ -1404,9 +1416,7 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
                 {
                     IAttribute* endValue = attr->Clone();
                     endValue->FromBinary(attrDs, AttributeChange::Disconnected);
-                    /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
-                    // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                    scene->StartAttributeInterpolation(attr, endValue, update_period_ * 1.5f);
+                    scene->StartAttributeInterpolation(attr, endValue, updateInterval);
                 }
             }
         }
@@ -1434,9 +1444,7 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
                     {
                         IAttribute* endValue = attr->Clone();
                         endValue->FromBinary(attrDs, AttributeChange::Disconnected);
-                        /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
-                        // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                        scene->StartAttributeInterpolation(attr, endValue, update_period_ * 1.5f);
+                        scene->StartAttributeInterpolation(attr, endValue, updateInterval);
                     }
                 }
             }

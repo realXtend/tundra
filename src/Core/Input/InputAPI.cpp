@@ -5,6 +5,7 @@
 
 #include "Framework.h"
 #include "UiAPI.h"
+#include "UiMainWindow.h"
 #include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 #include "CoreDefines.h"
@@ -254,7 +255,8 @@ void InputAPI::ApplyMouseCursorOverride()
 {
     if (!IsMouseCursorVisible())
         return;
-    // Return if in headless and do not have the GraphicsView
+
+    // If we don't have a main window (e.g. in headless mode), this doesn't do anything.
     if (!framework->Ui()->GraphicsView())
         return;
     
@@ -323,6 +325,10 @@ void InputAPI::SceneReleaseMouseButtons()
 void InputAPI::RecenterMouse()
 {
     QGraphicsView *view = framework->Ui()->GraphicsView();
+    // If we don't have a main window to recenter to, or if the main window is not active (user has ALT-TABbed to another app),
+    // don't recenter.
+    if (!view || !framework->Ui()->MainWindow() || !framework->Ui()->MainWindow()->isActiveWindow())
+        return;
     QPoint centeredCursorPosLocal = QPoint(view->size().width()/2, view->size().height()/2);
     
     lastMouseX = centeredCursorPosLocal.x();
@@ -737,6 +743,10 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         // in the QGraphicsView client area, so we need to remap them.
         QPoint mousePos = MapPointToMainGraphicsView(obj, e->pos());
 
+        mouseEvent.z = 0;
+        mouseEvent.relativeX = mousePos.x() - lastMouseX;
+        mouseEvent.relativeY = mousePos.y() - lastMouseY;
+
         if (mouseCursorVisible)
         {
             mouseEvent.x = mousePos.x();
@@ -748,10 +758,15 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
             // the mouse absolute coordinates are restricted to stay in the center of the screen.
             mouseEvent.x = mainView->size().width()/2;
             mouseEvent.y = mainView->size().height()/2;
+
+            // If the main window is not active, the mouse recentering logic is not active either.
+            // If that is the case, don't output relative movement information (because it couldn't be calculated properly)
+            if (!mainWindow || !mainWindow->isActiveWindow())
+            {
+                mouseEvent.relativeX = 0;
+                mouseEvent.relativeY = 0;
+            }
         }
-        mouseEvent.z = 0;
-        mouseEvent.relativeX = mousePos.x() - lastMouseX;
-        mouseEvent.relativeY = mousePos.y() - lastMouseY;
         
         // If there wasn't any change to the mouse relative coords in FPS mode, ignore this event.
         if (!mouseCursorVisible && mouseEvent.relativeX == 0 && mouseEvent.relativeY == 0)

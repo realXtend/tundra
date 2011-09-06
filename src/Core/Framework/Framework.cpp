@@ -129,6 +129,7 @@ Framework::Framework(int argc, char** argv) :
     cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup"; // AssetModule
     cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use"; // Framework
     cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username";
+    cmdLineDescs.commands["--netrate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
     cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
 
     if (HasCommandLineParameter("--help"))
@@ -157,7 +158,8 @@ Framework::Framework(int argc, char** argv) :
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
         asset = new AssetAPI(this, headless_);
-        asset->OpenAssetCache(Application::UserDataDirectory() + QDir::separator() + "assetcache");
+        if (!HasCommandLineParameter("--noassetcache"))
+            asset->OpenAssetCache(Application::UserDataDirectory() + QDir::separator() + "assetcache");
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);
@@ -303,8 +305,13 @@ void Framework::Go()
         modules[i]->Unload();
     }
 
-    // Actually unload all DLLs from memory.
+    // Delete all modules.
     modules.clear();
+
+    // Now that each module has been deleted, they've closed all their windows as well. Tear down the main UI.
+    ui->Reset();
+
+    // Actually unload all DLL plugins from memory.
     plugin->UnloadPlugins();
 }
 
