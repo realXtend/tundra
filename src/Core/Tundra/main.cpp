@@ -12,6 +12,12 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #endif
+#ifdef WINDOWS_APP
+#include <io.h>
+#include <iostream>
+#include <fcntl.h>
+#include <conio.h>
+#endif
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
@@ -103,7 +109,7 @@ int run(int argc, char **argv)
         LogInfo("* Command arguments:");
         int iStart = fullArguments.indexOf("--");
         while (iStart != -1)
-        {       
+        {
             int iStop = fullArguments.indexOf("--", iStart+1);
             QString subStr = fullArguments.mid(iStart, iStop-iStart);
             if (!subStr.isEmpty() && !subStr.isNull())
@@ -154,7 +160,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     bool cmd = false;
     bool quote = false;
 
-    arguments.push_back("server");
+    if (cmdLine.find("--headless") != std::string::npos)
+    {
+        // Code below apapted from http://www.programmingforums.org/post163691-12.html
+        BOOL ret = AllocConsole();
+        if (!ret)
+            return EXIT_FAILURE;
+
+        // Prepare input
+        long hIn =(long)GetStdHandle(STD_INPUT_HANDLE);
+        int hCrt = _open_osfhandle(hIn, _O_TEXT);
+        FILE *hf = _fdopen(hCrt, "r+");
+        setvbuf(hf,0,_IONBF,0);
+        *stdin = *hf;
+
+        // Prepare output
+        long hOut =(long)GetStdHandle(STD_OUTPUT_HANDLE);
+        hCrt = _open_osfhandle(hOut, _O_TEXT);
+        hf = _fdopen(hCrt, "w+");
+        setvbuf(hf, 0, _IONBF, 0);
+        *stdout = *hf;
+
+        printf("Trying to start Tundra as Windows GUI application in headless mode: console window created.\n");
+    }
 
     for(i = 0; i < cmdLine.length(); ++i)
     {
@@ -180,9 +208,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
     if (cmd)
         arguments.push_back(cmdLine.substr(cmdStart, i-cmdStart));
-    
+
     std::vector<const char*> argv;
-    for(int i = 0; i < arguments.size(); ++i)
+    for(size_t i = 0; i < arguments.size(); ++i)
         argv.push_back(arguments[i].c_str());
     
     if (argv.size())

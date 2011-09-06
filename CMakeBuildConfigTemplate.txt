@@ -18,7 +18,7 @@
 
 set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
 set (BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
-set (WINDOWS_APP 0)                 # NOTE: DOES NOTHING IN TUNDA2, need to fix. Only for windows: 0 = the console (output log) window is created and shown, 1 = this window is not shown.
+set (WINDOWS_APP 0)                 # Only for Windows: 0 = the console (output log) window is created and shown, 1 = this window is not shown.
 set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
 set (ENABLE_SKYX 1)                 # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 set (ENABLE_OGRE_ASSET_EDITOR 1)    # Enables Ogre asset editor module.
@@ -30,6 +30,9 @@ set (ENABLE_SPLASH_SCREEN 1)        # Enables application splash screen.
 
 message ("\n")
 
+if (WINDOWS_APP)
+    add_definitions (-DWINDOWS_APP)
+endif()
 if (ENABLE_SPLASH_SCREEN)
     add_definitions (-DENABLE_SPLASH_SCREEN)
 endif()
