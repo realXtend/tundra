@@ -104,6 +104,9 @@ public slots:
     /// Will not clear subfolders in the cache folders, or remove any folders.
     void ClearAssetCache();
 
+    /// Returns cache directory
+    const QString& CacheDirectory() const { return cacheDirectory; }
+    
 private slots:
 #ifndef DISABLE_QNETWORKDISKCACHE
     /// Writes metadata into a file. Helper function for the QNetworkDiskCache overrides.

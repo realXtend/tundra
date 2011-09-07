@@ -12,6 +12,7 @@
 #include "IAsset.h"
 #include "LoggingFunctions.h"
 
+#include <QAbstractNetworkCache>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -82,6 +83,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     if (!networkAccessManager)
         CreateAccessManager();
 
+    QString originalAssetRef = assetRef;
     assetRef = assetRef.trimmed();
     QString assetRefWithoutSubAssetName;
     AssetAPI::ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, 0, 0, &assetRefWithoutSubAssetName);
@@ -98,7 +100,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     QNetworkReply *reply = networkAccessManager->get(request);
 
     HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
-    transfer->source.ref = assetRef;
+    transfer->source.ref = originalAssetRef;
     transfer->assetType = assetType;
     transfer->provider = shared_from_this();
     transfer->storage = GetStorageForAssetRef(assetRef);
@@ -222,13 +224,13 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
 #ifndef DISABLE_QNETWORKDISKCACHE
             if (!transfer->CachingAllowed())
                 cache->remove(reply->url());
-#endif
 
             // Setting cache allowed as false is very important! The items are already in our cache via the 
             // QAccessManagers QAbstractNetworkCache (same as our AssetAPI::AssetCache). Network replies will already call them
             // so the AssetAPI::AssetTransferCompletes doesn't have to.
             // @note GetDiskSource() will return empty string if above cache remove was performed, this is wanted behaviour.
             transfer->SetCachingBehavior(false, cache->FindInCache(reply->url().toString()));
+#endif
 
             // Copy raw data to transfer
             transfer->rawAssetData.insert(transfer->rawAssetData.end(), data.data(), data.data() + data.size());

@@ -9,10 +9,6 @@ set (RESOURCE_FILES "")
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-# Never compile server in consoleless mode
-# Todo: We need to fix this somehow now that server and viewer are in the same project to get a non-shelled viewer!
-set (WINDOWS_APP 0)
-
 if (MSVC)
     # Windows resource files for icon, for Visual Studio 2008
     if (BUILDING_INSTALLER AND VC90)

@@ -1230,8 +1230,9 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
 
         // Add to watch this path for changed, note this does nothing if the path is already added
         // so we should not be having duplicate paths and/or double emits on changes.
+        /// \todo To work around a file corruption bug with uploads, we do not add files in asset cache to be watched for changes. Needs proper investigation why the corruption happens.
         const QString diskSource = asset->DiskSource();
-        if (diskSourceChangeWatcher && !diskSource.isEmpty())
+        if (diskSourceChangeWatcher && !diskSource.isEmpty() && (!assetCache || !diskSource.startsWith(assetCache->CacheDirectory())))
         {
             diskSourceChangeWatcher->removePath(diskSource);
             diskSourceChangeWatcher->addPath(diskSource);

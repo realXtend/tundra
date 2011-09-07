@@ -229,6 +229,10 @@ QString AssetCache::StoreAsset(AssetPtr asset)
 QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, const QString &assetName)
 {
     QString absolutePath = GetAbsoluteDataFilePath(assetName);
+#ifdef DISABLE_QNETWORKDISKCACHE // Don't store duplicate assets, but only if not using QNetworkDiskCache.
+    if (QFile::exists(absolutePath))
+        return absolutePath;
+#endif
     bool success = SaveAssetFromMemoryToFile(data, numBytes, absolutePath.toStdString().c_str());
     if (success)
         return absolutePath;

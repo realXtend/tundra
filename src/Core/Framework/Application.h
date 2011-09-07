@@ -66,6 +66,14 @@ public:
         The returned path contains a trailing slash. */
     static QString UserDocumentsDirectory();
 
+    /// Parse a filename for specific wildcard modifiers, and return as parsed
+    ///    $(CWD) is expanded to the current working directory.
+    ///    $(INSTDIR) is expanded to the Tundra installation directory (Application::InstallationDirectory)
+    ///    $(USERDATA) is expanded to Application::UserDataDirectory.
+    ///    $(USERDOCS) is expanded to Application::UserDocumentsDirectory.
+    ///    $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString .
+    static QString ParseWildCardFilename(const QString& input);
+
 public slots:
     void UpdateFrame();
     void ChangeLanguage(const QString& file);
