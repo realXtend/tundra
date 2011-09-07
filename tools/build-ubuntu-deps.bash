@@ -155,14 +155,21 @@ depdir=realxtend-tundra-deps
 if [ ! -e $depdir ]
 then
     echo "Cloning source of HydraX/SkyX/PythonQT/NullRenderer..."
-    git clone https://code.google.com/p/realxtend-tundra-deps
+    git init $depdir
+    cd $depdir
+    git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    git remote add origin https://code.google.com/p/realxtend-tundra-deps/
+    git checkout sources
+else
+    cd $depdir
+    git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    if [ -z "`git merge sources origin/sources|grep "Already"`" ]; then
+        echo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
+        rm -f $tags/hydrax-done $tags/skyx-done $tags/pythonqt-done
+    else
+        echo "No changes in realxtend deps git."
+    fi
 fi
-cd $depdir
-if [ -z "`git pull|grep "Already up\-to\-date"`" ]; then
-    echo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
-    rm -f $tags/hydrax-done $tags/skyx-done $tags/pythonqt-done
-fi
-git checkout sources
 # HydraX build:
 if test -f $tags/hydrax-done; then
     echo "Hydrax-done"
