@@ -80,7 +80,7 @@ public slots:
 
     /// Imports one mesh as a new entity.
     void ImportMesh(QString filename, float tx = 0.f, float ty = 0.f, float tz = 0.f, float rx = 0.f, float ry = 0.f,
-        float rz = 0.f, float sx = 1.f, float sy = 1.f, float sz = 1.f, bool inspect = true);
+        float rz = 0.f, float sx = 1.f, float sy = 1.f, float sz = 1.f, bool inspectForMaterialsAndSkeleton = true);
 
 private slots:
     void StartupSceneLoaded(AssetPtr asset);
