@@ -107,7 +107,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     ScenePtr previous = scene_.lock();
     if (previous)
     {
-        disconnect(this);
+        disconnect(previous.get(), 0, this, 0);
         server_syncstate_.Clear();
     }
     
