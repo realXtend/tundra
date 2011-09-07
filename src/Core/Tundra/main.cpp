@@ -150,40 +150,47 @@ int run(int argc, char **argv)
 #if defined(_MSC_VER) && defined(WINDOWS_APP)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-    // Parse Windows command line
-    std::vector<std::string> arguments;
-
     std::string cmdLine(lpCmdLine);
+    // If trying to run Windows GUI application in headless mode, we must set up the console in order to be able to proceed.
+    if (cmdLine.find("--headless") != std::string::npos)
+    {
+        // Code below adapted from http://dslweb.nwnexus.com/~ast/dload/guicon.htm
+        BOOL ret = AllocConsole();
+        if (!ret)
+            return EXIT_FAILURE;
+
+        // Prepare stdin, stdout and stderr.
+        long hStd =(long)GetStdHandle(STD_INPUT_HANDLE);
+        int hCrt = _open_osfhandle(hStd, _O_TEXT);
+        FILE *hf = _fdopen(hCrt, "r+");
+        setvbuf(hf,0,_IONBF,0);
+        *stdin = *hf;
+
+        hStd =(long)GetStdHandle(STD_OUTPUT_HANDLE);
+        hCrt = _open_osfhandle(hStd, _O_TEXT);
+        hf = _fdopen(hCrt, "w+");
+        setvbuf(hf, 0, _IONBF, 0);
+        *stdout = *hf;
+
+        hStd =(long)GetStdHandle(STD_ERROR_HANDLE);
+        hCrt = _open_osfhandle(hStd, _O_TEXT);
+        hf = _fdopen(hCrt, "w+");
+        setvbuf(hf, 0, _IONBF, 0);
+        *stderr = *hf;
+
+        // Make C++ IO streams cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well.
+        std::ios::sync_with_stdio();
+
+        printf("Tried to start Tundra as a Windows GUI application in headless mode: console window created.\n");
+    }
+
+    // Parse the Windows command line.
+    std::vector<std::string> arguments;
     unsigned i;
     unsigned cmdStart = 0;
     unsigned cmdEnd = 0;
     bool cmd = false;
     bool quote = false;
-
-    if (cmdLine.find("--headless") != std::string::npos)
-    {
-        // Code below apapted from http://www.programmingforums.org/post163691-12.html
-        BOOL ret = AllocConsole();
-        if (!ret)
-            return EXIT_FAILURE;
-
-        // Prepare input
-        long hIn =(long)GetStdHandle(STD_INPUT_HANDLE);
-        int hCrt = _open_osfhandle(hIn, _O_TEXT);
-        FILE *hf = _fdopen(hCrt, "r+");
-        setvbuf(hf,0,_IONBF,0);
-        *stdin = *hf;
-
-        // Prepare output
-        long hOut =(long)GetStdHandle(STD_OUTPUT_HANDLE);
-        hCrt = _open_osfhandle(hOut, _O_TEXT);
-        hf = _fdopen(hCrt, "w+");
-        setvbuf(hf, 0, _IONBF, 0);
-        *stdout = *hf;
-
-        printf("Trying to start Tundra as Windows GUI application in headless mode: console window created.\n");
-    }
-
     for(i = 0; i < cmdLine.length(); ++i)
     {
         if (cmdLine[i] == '\"')
