@@ -8,16 +8,12 @@
 #pragma once
 
 #include "IModule.h"
-
 #include "AttributeChangeType.h"
-
 #include "AssetFwd.h"
 #include "SceneFwd.h"
 #include "JavascriptFwd.h"
 
-#include <QObject>
-#include <QString>
-#include <QVariantMap>
+#include <QVariant>
 
 class JavascriptInstance;
 
@@ -33,10 +29,6 @@ public:
     void Load();
     void Initialize();
     void Uninitialize();
-    void Update(f64 frametime);
-
-    void RunScript(const QString &scriptname);
-    void RunString(const QString &codestr, const QVariantMap &context = QVariantMap());
 
     /// Prepares script instance by registering all needed services to it.
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.
@@ -45,14 +37,11 @@ public:
     void PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp = 0);
 
 public slots:
-    /// New scene has been added to foundation.
-    void SceneAdded(const QString &name);
+    /// Executes js file.
+    void RunScript(const QString &scriptFilename);
 
-    /// New component has been added to scene.
-    void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
-
-    /// Component has been removed from scene.
-    void ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
+    /// Executes and arbitrary js code string.
+    void RunString(const QString &codeString, const QVariantMap &context = QVariantMap());
 
 signals:
     /// A script engine has been created
@@ -65,11 +54,7 @@ private:
     /// Parses the plugin startup configuration file to detect which startup scripts should be run.
     QStringList ParseStartupScriptConfig();
 
-    /// Load & execute startup scripts
-    /** Destroys old scripts if they exist */
-    void LoadStartupScripts();
-
-    /// Stop & delete startup scripts
+    /// Stops and deletes startup scripts
     void UnloadStartupScripts();
 
     /// Parse the appname and classname from an EC_Script
@@ -97,12 +82,15 @@ private:
     std::vector<JavascriptInstance *> startupScripts_;
 
 private slots:
-    void ConsoleRunString(const QStringList &params);
-    void ConsoleRunFile(const QStringList &params);
-    void ConsoleReloadScripts();
+    /// (Re)loads and executes startup scripts.
+    void LoadStartupScripts();
+    void ScriptEvaluated();
+    void ScriptUnloading();
+
+    void SceneAdded(const QString &name);
+    void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
+    void ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
     void ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts);
     void ScriptAppNameChanged(const QString& newAppName);
     void ScriptClassNameChanged(const QString& newClassName);
-    void ScriptEvaluated();
-    void ScriptUnloading();
 };
