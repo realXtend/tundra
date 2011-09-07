@@ -31,7 +31,7 @@ namespace CAVEStereo
         SAFE_DELETE(cave_);
     }
 
-    void CAVEStereoModule::PostInitialize()
+    void CAVEStereoModule::Initialize()
     {
         OgreRenderer::OgreRenderingModule *renderingModule = framework_->GetModule<OgreRenderer::OgreRenderingModule>();
         if (!renderingModule)
