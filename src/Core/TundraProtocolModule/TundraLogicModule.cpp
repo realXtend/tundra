@@ -192,8 +192,8 @@ void TundraLogicModule::Initialize()
     framework_->RegisterDynamicObject("server", server_.get());
 
     framework_->Console()->RegisterCommand("startserver",
-        "Starts a server. Usage: startserver(port)",
-        this, SLOT(StartServer(int)));
+        "Starts a server. Usage: startserver(port,protocol)",
+        this, SLOT(StartServer(int,const QString &)));
 
     framework_->Console()->RegisterCommand("stopserver",
         "Stops the server",
@@ -410,9 +410,9 @@ void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QSt
     LogError("Failed to load startup scene from " + transfer->SourceUrl() + " reason: " + reason);
 }
 
-void TundraLogicModule::StartServer(int port)
+void TundraLogicModule::StartServer(int port, const QString &protocol)
 {
-    server_->Start(port);
+    server_->Start(port, protocol);
 }
 
 void TundraLogicModule::StopServer()

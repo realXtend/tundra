@@ -80,10 +80,13 @@ void Server::Update(f64 frametime)
 {
 }
 
-bool Server::Start(unsigned short port)
+bool Server::Start(unsigned short port, const QString &protocol)
 {
     if (owner_->IsServer())
+    {
+        LogDebug("Trying to start server but it's already running.");
         return true; // Already started, don't need to do anything.
+    }
 
     ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SERVER, "protocol", "tcp");
 
@@ -94,20 +97,28 @@ bool Server::Start(unsigned short port)
     // Set default protocol
     kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
 
-    // Read --protocol or config
+    // Protocol is usually defined as a --protocol command line parameter or in config file,
+    // but if it's given as a param to this function use it instead.
     QString userSetProtocol;
-    QStringList cmdLineParams = framework_->CommandLineParameters("--protocol");
-    if (cmdLineParams.size() > 0)
-        userSetProtocol = cmdLineParams.first().trimmed().toLower();
+    if (!protocol.trimmed().isEmpty())
+    {
+        userSetProtocol = protocol;
+    }
     else
-        userSetProtocol = framework_->Config()->Get(configData).toString().toLower();
+    {
+        QStringList cmdLineParams = framework_->CommandLineParameters("--protocol");
+        if (cmdLineParams.size() > 0)
+            userSetProtocol = cmdLineParams.first().trimmed().toLower();
+        else
+            userSetProtocol = framework_->Config()->Get(configData).toString().toLower();
+    }
 
-    // Inspect protocol
     if (userSetProtocol != "udp" && userSetProtocol != "tcp")
         ::LogWarning("Server::Start: Server config has an invalid server protocol '" + userSetProtocol + "'. Use tcp or udp. Resetting to default protocol.");
     else
         transportLayer = userSetProtocol == "udp" ? kNet::SocketOverUDP : kNet::SocketOverTCP;
-    
+
+
     // Start server
     if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
     {

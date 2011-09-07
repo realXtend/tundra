@@ -56,8 +56,8 @@ public:
 public slots:
     /// Starts the server.
     /** @param port Port.
-        @todo Add protocol option */
-    void StartServer(int port);
+        @param protocol Protocol, udp or tcp. */
+    void StartServer(int port, const QString &protocol);
 
     /// Stops the server.
     void StopServer();
