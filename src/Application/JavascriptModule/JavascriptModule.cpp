@@ -47,6 +47,7 @@ JavascriptModule::JavascriptModule() :
 
 JavascriptModule::~JavascriptModule()
 {
+    SAFE_DELETE(engine);
 }
 
 void JavascriptModule::Load()

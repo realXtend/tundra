@@ -45,7 +45,7 @@ public slots:
 
 signals:
     /// A script engine has been created
-    /** The purpose of this is to allow dynamic service objects (registered with FrameWork->RegisterDynamicObject())
+    /** The purpose of this is to allow dynamic service objects (registered with Framework::RegisterDynamicObject)
         to perform further scriptengine initialization, such as registration of new datatypes. The slot
         OnScriptEngineCreated() will be invoked on the dynamic service object, if it exists. */
     void ScriptEngineCreated(QScriptEngine* engine);
