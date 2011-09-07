@@ -26,6 +26,7 @@
    <attribute value="8" type="real" name="infront"/>
    <attribute value="15" type="real" name="far"/>
    <attribute value="10" type="real" name="close"/>
+   <attribute value="False" type="bool" name="recording"/>
   </component>
   <component type="EC_DynamicComponent" sync="1" name="SlideCircleInfo">
     <attribute value="6" type="int" name="slidenumber"/>
