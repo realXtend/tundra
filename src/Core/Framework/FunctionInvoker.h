@@ -30,21 +30,18 @@ public:
 
     /// Creates argument type list for function of object.@c obj.with the signature @c signature.
     /** @param obj Object.
-        @param signature of the function, e.g. "SetName(QString)".
-    */
+        @param signature of the function, e.g. "SetName(QString)". */
     QList<IArgumentType *> CreateArgumentList(const QObject *obj, const QString &signature);
 
 private:
     /// Returns Argument type object for spesific parameter type name.
     /** @param type Type name of the function parameter.
-        @return Argument type, or 0 if invalid type name was given.
-    */
+        @return Argument type, or 0 if invalid type name was given. */
     IArgumentType *CreateArgumentType(const QString &type);
 
     /// Creates return value argument type for function @c function of object.@c obj.
     /** @param obj Object.
-        @param function Name of the function, e.g. "SetName".
-    */
+        @param function Name of the function, e.g. "SetName". */
     IArgumentType *CreateReturnValueArgument(const QObject *obj, const QString &function);
 
     void Invoke(QObject *obj, const QString &function, QList<IArgumentType *> &args, QVariant *ret, QString *errorMsg);
