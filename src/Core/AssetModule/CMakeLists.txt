@@ -22,6 +22,10 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules(Framework Math Asset Console TundraProtocolModule)
 
+if (APPLE)
+link_ogre()
+endif ()
+
 SetupCompileFlagsWithPCH()
 
 if (WIN32)
