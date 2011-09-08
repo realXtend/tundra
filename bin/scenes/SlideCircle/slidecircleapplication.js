@@ -228,7 +228,7 @@ function animationUpdate(dt) {
 	dt = 1 / 25;
 	var filename = "frame" + pad(animationFrame, 6) + ".jpg";
 	print(filename);
-	renderer.TakeScreenshot("/home/therauli/temp/", filename);
+	renderer.TakeScreenshot(recordpath, filename);
 	animationFrame += 1;
     }
 
@@ -345,6 +345,8 @@ function updateSettings() {
     infront = settings.GetAttribute('infront');
     close = settings.GetAttribute('close');
     far = settings.GetAttribute('far');
+    recording = settings.GetAttribute('record')
+    recordpath = settings.GetAttribute('recordpath')
 }
 
 
@@ -412,6 +414,7 @@ var infront = settings.GetAttribute('infront');
 var close = settings.GetAttribute('close');
 var far = settings.GetAttribute('far');
 var recording = settings.GetAttribute('record')
+var recordpath = settings.GetAttribute('recordpath')
 
 var tolerance = 3;
 var max_ratio = 1.5;
