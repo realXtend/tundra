@@ -19,6 +19,9 @@ class MouseEvent : public QObject
     Q_ENUMS(EventType)
     Q_ENUMS(PressOrigin)
     // Meta-information wrappers for dynamic languages.
+    Q_PROPERTY(EventType eventType READ GetEventType())
+    Q_PROPERTY(MouseButton button READ GetMouseButton())
+    Q_PROPERTY(PressOrigin origin READ GetPressOrigin())
     Q_PROPERTY(int x READ X)
     Q_PROPERTY(int y READ Y)
     Q_PROPERTY(int z READ Z)
@@ -28,7 +31,7 @@ class MouseEvent : public QObject
     Q_PROPERTY(int globalX READ GlobalX)
     Q_PROPERTY(int globalY READ GlobalY)
     Q_PROPERTY(unsigned long otherButtons READ OtherButtons)
-    
+
 public:
     MouseEvent()
     :eventType(MouseEventInvalid),
@@ -163,9 +166,9 @@ public:
     QGraphicsItem *ItemUnderMouse() const { return itemUnderMouse; }
     
 public slots:
-    EventType GetEventType() const { return eventType; }
-    MouseButton GetMouseButton() const { return button; }
-    PressOrigin GetPressOrigin() const { return origin; }
+    EventType GetEventType() const { return eventType; } ///<\todo Don't need to be a slot, exposed as QPROPERTY
+    MouseButton GetMouseButton() const { return button; } ///<\todo Don't need to be a slot, exposed as QPROPERTY
+    PressOrigin GetPressOrigin() const { return origin; } ///<\todo Don't need to be a slot, exposed as QPROPERTY
     
     /// Marks this event as having been handled already, which will suppress this event from
     /// going on to lower input context levels.
@@ -196,4 +199,3 @@ public slots:
     // Returns if mouse is over a graphics item in the scene
     bool IsItemUnderMouse() const { if (itemUnderMouse) return true; else return false; }
 };
-
