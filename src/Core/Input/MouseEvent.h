@@ -19,9 +19,9 @@ class MouseEvent : public QObject
     Q_ENUMS(EventType)
     Q_ENUMS(PressOrigin)
     // Meta-information wrappers for dynamic languages.
-    Q_PROPERTY(EventType eventType READ GetEventType())
-    Q_PROPERTY(MouseButton button READ GetMouseButton())
-    Q_PROPERTY(PressOrigin origin READ GetPressOrigin())
+    Q_PROPERTY(EventType eventType READ GetEventType)
+    Q_PROPERTY(MouseButton button READ GetMouseButton)
+    Q_PROPERTY(PressOrigin origin READ GetPressOrigin)
     Q_PROPERTY(int x READ X)
     Q_PROPERTY(int y READ Y)
     Q_PROPERTY(int z READ Z)
