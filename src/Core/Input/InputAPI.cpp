@@ -41,7 +41,7 @@ pressedMouseButtons(0),
 releasedMouseButtons(0),
 newMouseButtonsPressedQueue(0),
 newMouseButtonsReleasedQueue(0),
-current_modifiers_(0),
+currentModifiers(0),
 mainView(0),
 mainWindow(0),
 framework(framework_)
@@ -257,11 +257,8 @@ void InputAPI::ApplyMouseCursorOverride()
         return;
 
     // If we don't have a main window (e.g. in headless mode), this doesn't do anything.
-    if (!framework->Ui()->GraphicsView())
-        return;
-    
     UiGraphicsView *gv = framework->Ui()->GraphicsView();
-    if (!gv) // If the tundra is running in headless, mode no graphics view is created.
+    if (!gv)
         return;
 
     bool is2DUiUnderMouse = gv->GetVisibleItemAtCoords(lastMouseX, lastMouseY) != 0;
@@ -541,7 +538,7 @@ QPoint InputAPI::MapPointToMainGraphicsView(QObject *source, const QPoint &point
     if (sender)
         return mainView->mapFromGlobal(sender->mapToGlobal(point));
     else
-        return mainView->mapFromGlobal(sender->mapToGlobal(QCursor::pos()));
+        return mainView->mapFromGlobal(QCursor::pos());
 }
 
 bool InputAPI::eventFilter(QObject *obj, QEvent *event)
@@ -563,7 +560,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         //keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
-        current_modifiers_ = e->modifiers(); // local tracking for mouse events
+        currentModifiers = e->modifiers(); // local tracking for mouse events
 
         // We only take key events from the main QGraphicsView.
         if (obj != qobject_cast<QObject*>(mainView))
@@ -628,7 +625,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         keyEvent.handled = false;
 
         heldKeys.erase(existingKey);
-        current_modifiers_ = e->modifiers(); // local tracking for mouse events
+        currentModifiers = e->modifiers(); // local tracking for mouse events
 
         // Queue up the release event for the polling API, independent of whether any Qt widget has keyboard focus.
         if (keyEvent.keyPressCount == 1) /// \todo The polling API does not get key repeats at all. Should it?
@@ -680,9 +677,9 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         switch(event->type())
         {
-            case QEvent::MouseButtonPress: mouseEvent.eventType = MouseEvent::MousePressed; break;
-            case QEvent::MouseButtonDblClick: mouseEvent.eventType = MouseEvent::MouseDoubleClicked; break;
-            case QEvent::MouseButtonRelease: mouseEvent.eventType = MouseEvent::MouseReleased; break;
+        case QEvent::MouseButtonPress: mouseEvent.eventType = MouseEvent::MousePressed; break;
+        case QEvent::MouseButtonDblClick: mouseEvent.eventType = MouseEvent::MouseDoubleClicked; break;
+        case QEvent::MouseButtonRelease: mouseEvent.eventType = MouseEvent::MouseReleased; break;
         }
 
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
@@ -691,7 +688,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.z = 0;
         mouseEvent.relativeX = mouseEvent.x - lastMouseX;
         mouseEvent.relativeY = mouseEvent.y - lastMouseY;
-        mouseEvent.modifiers = current_modifiers_;
+        mouseEvent.modifiers = currentModifiers;
 
         lastMouseX = mouseEvent.x;
         lastMouseY = mouseEvent.y;
@@ -732,12 +729,9 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.eventType = MouseEvent::MouseMove;
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
         mouseEvent.itemUnderMouse = ItemAtCoords(e->x(), e->y());
-        ///\todo Set whether the previous press originated over a Qt widget or scene.
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
 
-        QWidget *sender = qobject_cast<QWidget*>(obj);
-        assert(sender);
-        UNREFERENCED_PARAM(sender);
+        assert(qobject_cast<QWidget*>(obj));
 
         // The mouse coordinates we receive can come from different widgets, and we are interested only in the coordinates
         // in the QGraphicsView client area, so we need to remap them.
@@ -771,7 +765,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         // If there wasn't any change to the mouse relative coords in FPS mode, ignore this event.
         if (!mouseCursorVisible && mouseEvent.relativeX == 0 && mouseEvent.relativeY == 0)
             return true;
-            
+
         mouseEvent.globalX = e->globalX(); // Note that these may "jitter" when mouse is in relative movement mode.
         mouseEvent.globalY = e->globalY();
         mouseEvent.otherButtons = e->buttons();
