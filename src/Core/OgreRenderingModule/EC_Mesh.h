@@ -317,10 +317,6 @@ public slots:
     ///\todo Remove, leave just one.
     QString GetMatName(uint index) const { return GetMaterialName(index).c_str(); }
 
-    /// Returns bounding box of Ogre mesh entity
-    /** @return zero box if no entity */
-    void GetBoundingBox(float3& min, float3& max) const;
-
     ///\todo Is this needed? If not, remove.
     QVector3D GetWorldSize() const;
 
@@ -400,6 +396,12 @@ public slots:
 
     /// Returns the local space bounding box of this object.
     OBB LocalOBB() const;
+
+    /// Returns the world space axis-aligned bounding box of this object.
+    AABB WorldAABB() const;
+
+    /// Returns the local space axis-aligned bounding box of this object.
+    AABB LocalAABB() const;
 
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed

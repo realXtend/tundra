@@ -11,6 +11,7 @@
 
 #include "Profiler.h"
 #include "SceneAPI.h"
+#include "UiAPI.h"
 #include "Entity.h"
 #include "IComponent.h"
 #include "Scene.h"
@@ -430,6 +431,15 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
                 QObject::connect(addAttribute, SIGNAL(triggered()), this, SLOT(CreateAttribute()), Qt::UniqueConnection);
                 menu_->addAction(addAttribute);
             }
+            
+            QList<QObject*> targets;
+            for (unsigned i = 0; i < (*iter)->components_.size(); ++i)
+            {
+                IComponent* comp = (*iter)->components_[i].lock().get();
+                if (comp)
+                    targets.push_back(comp);
+            }
+            framework_->Ui()->EmitContextMenuAboutToOpen(menu_, targets);
         }
     }
     else
