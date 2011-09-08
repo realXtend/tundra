@@ -227,7 +227,6 @@ function animationUpdate(dt) {
     if (recording) {
 	dt = 1 / 25;
 	var filename = "frame" + pad(animationFrame, 6) + ".jpg";
-	print(filename);
 	renderer.TakeScreenshot(recordpath, filename);
 	animationFrame += 1;
     }
@@ -370,7 +369,7 @@ for (i = 0; i < ents.length; i++) {
     
 }
 
-var debug = 1
+var debug = 0
 
 if (debug) {
     print(screens);
