@@ -225,25 +225,27 @@ function animationUpdate(dt) {
     var recording = settings.GetAttribute("recording");
 
     if (recording) {
-	dt = 1 / 20;
+	dt = 1 / 25;
 	var filename = "frame" + pad(animationFrame, 6) + ".jpg";
 	print(filename);
 	renderer.TakeScreenshot("/home/therauli/temp/", filename);
 	animationFrame += 1;
-	if (changes > endIndex) {
-	    settings.SetAttribute("recording", false)
-	    print("Video done");
-	}
     }
 
     if (targets.length == 0) {
-	if (recording)	{
+	if (recording) {
+	    if (changes >= endIndex) {
+		settings.SetAttribute("recording", false)
+		max_ratio = 1.5;
+		print("Video done");
+		return;
+	    }
 	    HandleGotoNext();
 	} else {
 	    return;
 	}
     }
-
+    
     //backing from front and closing to front also, yes
     if (targets.length == 6 || targets.length == 1) {
 	if (targets.length == 6) {
@@ -271,7 +273,6 @@ function animationUpdate(dt) {
 	camera.placeable.position = newPos;
 	return;
     }
-
 
     curveposition += dt / 3;
     
@@ -302,9 +303,12 @@ function animationUpdate(dt) {
 	return;
     }
 
+
     // Don't turn back
     if (r > prev_r + tolerance) {
-	print("won't turn back");
+	if (debug) {
+	    print("won't turn back");
+	}
 	camera.placeable.LookAt(lookAtTargets[0]);
 	prev_r = r;
 	return;
@@ -325,6 +329,8 @@ function animationUpdate(dt) {
     newtransform.rot.z = (currentRotation.z + drotz / magnitude * ratio) % 360;
     
     camera.placeable.transform = newtransform;
+
+
 }
 
 function reset() {
@@ -345,6 +351,7 @@ function updateSettings() {
 function StartRecord() {
     var settings = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleSettings");
     settings.SetAttribute("recording", true)
+    max_ratio = 2.5;
     HandleGotoNext()
 }
 
