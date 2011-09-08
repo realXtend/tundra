@@ -123,5 +123,6 @@ function OnLocateTriggered()
         var finalPosition = entityLocatePosition.Add(cameraEntity.placeable.WorldOrientation().Mul(new float3(0,0,entityLocateDistance)));
         transform.pos = finalPosition;
         cameraEntity.placeable.transform = transform;
+        cameraEntity.camera.SetActive();
     }
 }
