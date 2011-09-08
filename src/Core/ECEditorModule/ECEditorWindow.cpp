@@ -111,16 +111,18 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
             property_layout->addWidget(ecBrowser);
     }
 
+    ECEditorModule *ecEditorModule = framework->GetModule<ECEditorModule>();
     if (ecBrowser)
     {
         // signals from attribute browser to editor window.
         connect(ecBrowser, SIGNAL(ShowXmlEditorForComponent(const QString &)), SLOT(ShowXmlEditorForComponent(const QString &)));
         connect(ecBrowser, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
-        connect(ecBrowser, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)), SLOT(HighlightEntities(const QString&, const QString&)));
         connect(ecBrowser, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)),
-                SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
+            SLOT(HighlightEntities(const QString&, const QString&)));
+        connect(ecBrowser, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)),
+            SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
 
-        ecBrowser->SetItemExpandMemory(framework->GetModule<ECEditorModule>()->ExpandMemory());
+        ecBrowser->SetItemExpandMemory(ecEditorModule->ExpandMemory());
     }
 
     if (entityList)
@@ -137,10 +139,8 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     if (expandOrCollapseButton && ecBrowser)
         connect(expandOrCollapseButton, SIGNAL(clicked()), ecBrowser, SLOT(ExpandOrCollapseAll()));
 
-    // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
-    connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene *)), SLOT(OnDefaultSceneChanged(Scene *)));
-
-    connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), framework->GetModule<ECEditorModule>(), SLOT(ECEditorFocusChanged(ECEditorWindow*)));
+    ///\todo Do we want to EC editor listen to scene changed signals, or is editor "dedicated" to the scene that was active when the editor was created?
+    //connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene *)), SLOT(OnDefaultSceneChanged(Scene *)));
 
     Scene *scene = framework->Scene()->MainCameraScene();
     if (scene)
@@ -149,6 +149,10 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
         connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)),
             SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
     }
+
+    connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), ecEditorModule, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
+    connect(this, SIGNAL(EditEntityXml(const QList<EntityPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<EntityPtr> &)));
+    connect(this, SIGNAL(EditComponentXml(const QList<ComponentPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<ComponentPtr> &)));
 }
 
 ECEditorWindow::~ECEditorWindow()
@@ -753,29 +757,22 @@ void ECEditorWindow::ShowXmlEditorForEntity()
     emit EditEntityXml(ents);
 }
 
-void ECEditorWindow::ShowXmlEditorForComponent(const std::vector<ComponentPtr> &components)
+void ECEditorWindow::ShowXmlEditorForComponent(const QList<ComponentPtr> &components)
 {
-    if(!components.size())
-        return;
-
-    QList<ComponentPtr> comps;
-    foreach(const ComponentPtr &component, components)
-        comps << component;
-
-    emit EditComponentXml(comps);
+    emit EditComponentXml(components);
 }
 
 void ECEditorWindow::ShowXmlEditorForComponent(const QString &componentType)
 {
-    if (componentType.isEmpty())
-        return;
-
+    QList<ComponentPtr> components;
     foreach(const EntityPtr &e, GetSelectedEntities())
     {
         ComponentPtr component = e->GetComponent(componentType);
         if (component)
-            emit EditComponentXml(component);
+            components << component;
     }
+
+    emit EditComponentXml(components);
 }
 
 void ECEditorWindow::ToggleEntityList()
@@ -940,6 +937,7 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
     }
 }
 
+/*
 void ECEditorWindow::OnDefaultSceneChanged(Scene *scene)
 {
     if (!scene)
@@ -951,6 +949,7 @@ void ECEditorWindow::OnDefaultSceneChanged(Scene *scene)
     connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)),
         SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
 }
+*/
 
 void ECEditorWindow::AddComponentDialogFinished(int result)
 {

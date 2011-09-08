@@ -197,6 +197,7 @@ void ECBrowser::ExpandOrCollapseAll()
 
 void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
 {
+    ///\todo "application/vnd.inventory.item" deprecated, reimplement
     QTreeWidgetItem *item = treeWidget_->itemAt(event->pos().x(), event->pos().y() - 20);
     if (event->mimeData()->hasFormat("application/vnd.inventory.item") && item && !item->childCount())
         event->acceptProposedAction();
@@ -204,6 +205,7 @@ void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
 
 void ECBrowser::dropEvent(QDropEvent *event)
 {
+    ///\todo Regression, "application/vnd.inventory.item" deprecated, reimplement
     QTreeWidgetItem *item = treeWidget_->itemAt(event->pos().x(), event->pos().y() - 20);
     if(item)
         dropMimeData(item, 0, event->mimeData(), event->dropAction());
@@ -211,6 +213,7 @@ void ECBrowser::dropEvent(QDropEvent *event)
 
 void ECBrowser::dragMoveEvent(QDragMoveEvent *event)
 {
+    ///\todo Regression, "application/vnd.inventory.item" deprecated, reimplement
     if (event->mimeData()->hasFormat("application/vnd.inventory.item"))
     {
         QTreeWidgetItem *item = treeWidget_->itemAt(event->pos().x(), event->pos().y() - 20);
@@ -395,7 +398,7 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
     {
         QAction *copyComponent = new QAction(tr("Copy"), menu_);
         QAction *pasteComponent = new QAction(tr("Paste"), menu_);
-        QAction *editXml= new QAction(tr("Edit XML..."), menu_);
+        QAction *editXml = new QAction(tr("Edit XML..."), menu_);
         // Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
         // If root item is selected we assume that we want to remove component and non root items are attributes
         // that need to removed (attribute delete is only enabled with EC_DynamicComponent).

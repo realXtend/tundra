@@ -135,7 +135,7 @@ public slots:
     void ShowXmlEditorForEntity();
 
     /// Shows EC XML editor for each components.
-    void ShowXmlEditorForComponent(const std::vector<ComponentPtr> &components);
+    void ShowXmlEditorForComponent(const QList<ComponentPtr> &components);
 
     /// Shows EC XML editor for a single component.
     void ShowXmlEditorForComponent(const QString &componentType);
@@ -164,15 +164,15 @@ public slots:
     void HighlightEntity(const EntityPtr &entity, bool highlight);
 
 signals:
-    /// Emitted user wants to edit entity's EC attributes in XML editor.
+    /// \todo Remove, one signal (the one below is enough)
     void EditEntityXml(EntityPtr entity);
-
-    /// Emitted user wants to edit EC attributes in XML editor.
-    void EditComponentXml(ComponentPtr component);
 
     /// Emitted user wants to edit entity's EC attributes in XML editor.
     /** @param entities list of entities */
     void EditEntityXml(const QList<EntityPtr> &entities);
+
+    /// \todo Remove, one signal (the one below is enough)
+    void EditComponentXml(ComponentPtr component);
 
     /// Emitted user wants to edit EC attributes in XML editor.
     /** @param list of components */
@@ -218,9 +218,10 @@ private slots:
     /// Highlights all entities from the entities_list that own an instance of given component.
     void HighlightEntities(const QString &type, const QString &name);
 
+    ///\todo Do we want to EC editor listen to scene changed signals, or is editor "dedicated" to the scene that was active when the editor was created?
     /// Listens when default world scene changes and clears the editor window.
     /** @param scene new default world scene. */
-    void OnDefaultSceneChanged(Scene *scene);
+//    void OnDefaultSceneChanged(Scene *scene);
 
     /// Called by add component dialog when it's finished.
     void AddComponentDialogFinished(int result);

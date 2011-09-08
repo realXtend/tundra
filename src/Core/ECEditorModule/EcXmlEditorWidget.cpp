@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EcXmlEditorWidget.cpp
- *  @brief  Entity-component XML editor widget used for editing EC attributes in XML format.
+ *  @brief  Widget for entity-component XML editing.
  */
 
 #include "StableHeaders.h"
@@ -21,18 +21,20 @@
 
 #include "MemoryLeakCheck.h"
 
-EcXmlEditorWidget::EcXmlEditorWidget(Framework *framework, QWidget *parent) :
-    QWidget(parent), framework_(framework), xmlEdit_(0)
+EcXmlEditorWidget::EcXmlEditorWidget(Framework *fw, QWidget *parent) :
+    QWidget(parent),
+    framework(fw),
+    xmlEdit(0)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setObjectName("mainlayout");
-    layout->setContentsMargins(0,0,0,0);
+    layout->setContentsMargins(5,5,5,5);
     setLayout(layout);
-    setWindowTitle(tr("EC Attribute XML Editor"));
+    setWindowTitle(tr("Entity-Component XML Editor"));
     resize(300, 300);
 
-    xmlEdit_ = new QTextEdit(this);
-    layout->addWidget(xmlEdit_);
+    xmlEdit = new QTextEdit(this);
+    layout->addWidget(xmlEdit);
 
     QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->setObjectName("buttonlayout");
@@ -49,8 +51,6 @@ EcXmlEditorWidget::EcXmlEditorWidget(Framework *framework, QWidget *parent) :
     hlayout->addWidget(revertButton);
 
     layout->addLayout(hlayout);
-
-    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 EcXmlEditorWidget::~EcXmlEditorWidget()
@@ -59,29 +59,29 @@ EcXmlEditorWidget::~EcXmlEditorWidget()
 
 void EcXmlEditorWidget::SetEntity(const QList<EntityPtr> &entities)
 {
-    entities_.clear();
-    components_.clear();
+    targetEntities.clear();
+    targetComponents.clear();
 
-    foreach(EntityPtr ent, entities)
-        entities_ << ent;
+    foreach(const EntityPtr &ent, entities)
+        targetEntities << ent;
 
     Refresh();
 }
 
 void EcXmlEditorWidget::SetComponent(const QList<ComponentPtr> &components)
 {
-    entities_.clear();
-    components_.clear();
+    targetEntities.clear();
+    targetComponents.clear();
 
-    foreach(ComponentPtr comp, components)
-        components_ << comp;
+    foreach(const ComponentPtr &comp, components)
+        targetComponents << comp;
 
     Refresh();
 }
 
 void EcXmlEditorWidget::Refresh()
 {
-    xmlEdit_->clear();
+    xmlEdit->clear();
 
     ///\todo Check for expired entities & components and drop them.
 //    if (entity_.expired())
@@ -91,36 +91,30 @@ void EcXmlEditorWidget::Refresh()
     QDomDocument temp_doc;
 
     // Iterate through individually selected components
-    if (components_.size() > 0)
+    if (targetComponents.size() > 0)
     {
-        QListIterator<ComponentWeakPtr> it(components_);
+        QListIterator<ComponentWeakPtr> it(targetComponents);
 
         QDomElement entity_elem = temp_doc.createElement("entity");
         temp_doc.appendChild(entity_elem);
-
-        QString id_str;
-        id_str.setNum((int)it.peekNext().lock()->ParentEntity()->Id());
-        entity_elem.setAttribute("id", id_str);
+        entity_elem.setAttribute("id", QString::number((int)it.peekNext().lock()->ParentEntity()->Id()));
 
         while(it.hasNext())
-        {
-            ComponentPtr component = it.next().lock();
-            component->SerializeTo(temp_doc, entity_elem);
-        }
+            it.next().lock()->SerializeTo(temp_doc, entity_elem);
     }
 
     // Insert "entities" tag if we have multiple entities within the same doc, otherwise XML parsing error occurs.
-    QDomElement entities_elem = temp_doc.createElement("entities");
+    QDomElement targetEntitieselem = temp_doc.createElement("entities");
     bool multiple = false;
-    if (entities_.size() > 1)
+    if (targetEntities.size() > 1)
     {
         multiple = true;
-        temp_doc.appendChild(entities_elem);
-        entities_elem.setAttribute("count", QString::number(entities_.size()));
+        temp_doc.appendChild(targetEntitieselem);
+        targetEntitieselem.setAttribute("count", QString::number(targetEntities.size()));
     }
 
     // Iterate through individually selected entities.
-    QListIterator<EntityWeakPtr> it(entities_);
+    QListIterator<EntityWeakPtr> it(targetEntities);
     while(it.hasNext())
     {
         EntityPtr entity = it.next().lock();
@@ -129,32 +123,33 @@ void EcXmlEditorWidget::Refresh()
 
         QDomElement entity_elem = temp_doc.createElement("entity");
         if (multiple)
-            entities_elem.appendChild(entity_elem);
+            targetEntitieselem.appendChild(entity_elem);
         else
             temp_doc.appendChild(entity_elem);
         entity_elem.setAttribute("id", QString::number((int)entity->Id()));
 
-        const Entity::ComponentMap components = entity->Components();
-        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+        const Entity::ComponentMap &components = entity->Components();
+        for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
         {
             i->second->SerializeTo(temp_doc, entity_elem);
             if (multiple)
-                entities_elem.appendChild(entity_elem);
+                targetEntitieselem.appendChild(entity_elem);
             else
                 temp_doc.appendChild(entity_elem);
         }
     }
 
-    xmlEdit_->setText(temp_doc.toString());
+    xmlEdit->setText(temp_doc.toString());
 }
 
 void EcXmlEditorWidget::Revert()
 {
-    ///\todo Check for expired entities & components and drop them.
-/*
-    foreach(EntityWeakPtr entity, entities_)
+    /*
+    QMutableListIterator<EntityWeakPtr> it(targetEntities);
+    while(cdIt.hasNext())
+    foreach(EntityWeakPtr entity, targetEntities)
         if (entity.expired())
-            xmlEdit_->clear();
+            xmlEdit->clear();
 */
     Refresh();
 }
@@ -163,81 +158,91 @@ void EcXmlEditorWidget::Save()
 {
     ///\todo Check for expired entities & components and drop them.
 /*
-    foreach(EntityWeakPtr entity, entities_)
+    foreach(EntityWeakPtr entity, targetEntities)
         if (entity.expired())
         {
-            xmlEdit_->clear();
+            xmlEdit->clear();
             Refresh();
             return;
         }
 */
-    QString text = xmlEdit_->toPlainText();
+    QString text = xmlEdit->toPlainText();
     if (!text.length())
     {
-        LogWarning("Empty XML data");
+        LogWarning("EcXmlEditorWidget::Save: Tried to save empty XML data.");
+        return;
+    }
+
+    Scene *scene = framework->Scene()->MainCameraScene();
+    if (!scene)
+    {
+        LogError("EcXmlEditorWidget::Save: No scene avaiblable.");
         return;
     }
 
     QString errorMsg;
     QDomDocument edited_doc;
-    if (edited_doc.setContent(text, false, &errorMsg))
+    if (!edited_doc.setContent(text, false, &errorMsg))
     {
-        Scene *scene = framework_->Scene()->MainCameraScene();
-        if (!scene)
-            return;
+        LogWarning("EcXmlEditorWidget::Save: Could not parse XML data: " + errorMsg);
+        return;
+    }
 
-        // Check if multi-entity or single-entity
-        QDomElement entities_elem = edited_doc.firstChildElement("entities");
+    // Check if multi-entity or single-entity
+    QDomElement targetEntitieselem = edited_doc.firstChildElement("entities");
 
-        // Deserialize all entities/components contained in the data, provided we still find them from the scene
-        QDomElement entity_elem;
-        if (!entities_elem.isNull())
-            entity_elem = entities_elem.firstChildElement("entity");
-        else
-            entity_elem = edited_doc.firstChildElement("entity");
+    // Deserialize all entities/components contained in the data, provided we still find them from the scene
+    QDomElement entity_elem;
+    if (!targetEntitieselem.isNull())
+        entity_elem = targetEntitieselem.firstChildElement("entity");
+    else
+        entity_elem = edited_doc.firstChildElement("entity");
 
-        bool entity_found = false;
-        while(!entity_elem.isNull())
+    bool entity_found = false;
+    while(!entity_elem.isNull())
+    {
+        entity_found = true;
+        entity_id_t id = (entity_id_t)entity_elem.attribute("id").toInt();
+        EntityPtr entity = scene->GetEntity(id);
+        if (entity)
         {
-            entity_found = true;
-            entity_id_t id = (entity_id_t)entity_elem.attribute("id").toInt();
-            EntityPtr entity = scene->GetEntity(id);
-            if (entity)
+            QDomElement comp_elem = entity_elem.firstChildElement("component");
+            while(!comp_elem.isNull())
             {
-                QDomElement comp_elem = entity_elem.firstChildElement("component");
-                while(!comp_elem.isNull())
-                {
-                    ComponentPtr comp = entity->GetComponent(comp_elem.attribute("type"), comp_elem.attribute("name"));
-                    if (comp)
-                    {
-                        comp->DeserializeFrom(comp_elem, AttributeChange::Default);
-                        //comp->ComponentChanged(AttributeChange::Default);
-                    }
-                    comp_elem = comp_elem.nextSiblingElement("component");
-                }
-            }
-            else
-            {
-                LogWarning("Could not find entity " + ToString<int>(id) + " in scene!");
-            }
+                QString typeName = comp_elem.attribute("type");
+                QString name = comp_elem.attribute("name");
+                ComponentPtr comp = entity->GetComponent(typeName, name);
+                if (comp)
+                    comp->DeserializeFrom(comp_elem, AttributeChange::Default);
 
-            entity_elem = entity_elem.nextSiblingElement("entity");
+                comp_elem = comp_elem.nextSiblingElement("component");
+            }
+        }
+        else
+        {
+            LogWarning("EcXmlEditorWidget::Save: Could not find entity " + QString::number(id) + " in scene!");
         }
 
-        // Refresh immediately after, so that any extra stuff is stripped out, and illegal parameters are (hopefully) straightened
-        if (entity_found)
-            Refresh();
-        else
-            LogWarning("No entity elements in XML data");
+        entity_elem = entity_elem.nextSiblingElement("entity");
+    }
+
+    // Refresh immediately after, so that any extra stuff is stripped out, and illegal parameters are (hopefully) straightened
+    if (entity_found)
+    {
+        LogInfo("ENTITY FOUND");
+        Refresh();
+        emit Saved();
     }
     else
-        LogWarning("Could not parse XML data: " + errorMsg);
+        LogWarning("No entity elements in XML data");
+    LogInfo("ENTITY FOUND");
+
 }
 
 void EcXmlEditorWidget::changeEvent(QEvent *event)
 {
     if (event->type() == QEvent::LanguageChange)
-        setWindowTitle(tr("EC Attribute XML Editor"));
+        setWindowTitle(tr("Entity-Component XML Editor"));
     else
        QWidget::changeEvent(event);
 }
