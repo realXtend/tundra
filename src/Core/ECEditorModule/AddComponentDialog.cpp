@@ -44,6 +44,7 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
 
     QLabel *component_type_label = new QLabel(tr("Component:"), this);
     QLabel *component_name_label = new QLabel(tr("Name:"), this);
+    errorLabel = new QLabel(this);
 
     name_line_edit_ = new QLineEdit(this);
     type_combo_box_ = new QComboBox(this);
@@ -55,6 +56,7 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
     layout->addWidget(type_combo_box_);
     layout->addWidget(component_name_label);
     layout->addWidget(name_line_edit_);
+    layout->addWidget(errorLabel);
     layout->addWidget(sync_check_box_);
     layout->addWidget(temp_check_box_);
 
@@ -72,8 +74,8 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
     buttons_layout->addWidget(ok_button_);
     buttons_layout->addWidget(cancel_button_);
 
-    connect(name_line_edit_, SIGNAL(textChanged(const QString&)), this, SLOT(CheckComponentName(const QString&)));
-    connect(type_combo_box_, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(CheckComponentName(const QString&)));
+    connect(name_line_edit_, SIGNAL(textChanged(const QString&)), this, SLOT(CheckComponentName()));
+    connect(type_combo_box_, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(CheckComponentName()));
     connect(ok_button_, SIGNAL(clicked()), this, SLOT(accept()));
     connect(cancel_button_, SIGNAL(clicked()), this, SLOT(reject()));
 }
@@ -124,27 +126,30 @@ QList<entity_id_t> AddComponentDialog::GetEntityIds() const
     return entities_;
 }
 
-void AddComponentDialog::CheckComponentName(const QString &name)
+void AddComponentDialog::CheckComponentName()
 {
     bool name_duplicates = false;
     Scene *scene = framework_->Scene()->MainCameraScene();
-    if(scene && type_combo_box_ && name_line_edit_)
+    if(!scene)
+        return;
+
+    for(uint i = 0; i < (uint)entities_.size(); i++)
     {
-        EntityPtr entity;
-        for(uint i = 0; i < (uint)entities_.size(); i++)
+        EntityPtr entity = scene->GetEntity(entities_[i]);
+        if (!entity)
+            continue;
+        QString typeName = type_combo_box_->currentText();
+        if (!typeName.startsWith("EC_"))
+            typeName.prepend("EC_");
+        if (entity->GetComponent(typeName, name_line_edit_->text().trimmed()))
         {
-            entity = scene->GetEntity(entities_[i]);
-            if (entity->GetComponent(type_combo_box_->currentText(), name_line_edit_->text()))
-            {
-                name_duplicates = true;
-                break;
-            }
+            name_duplicates = true;
+            break;
         }
-        if (name_duplicates)
-            ok_button_->setEnabled(false);
-        else
-            ok_button_->setEnabled(true);
     }
+
+    ok_button_->setDisabled(name_duplicates);
+    errorLabel->setText(name_duplicates ? tr("Cannot add components with duplicate names.") : "");
 }
 
 void AddComponentDialog::hideEvent(QHideEvent *event)
