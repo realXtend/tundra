@@ -17,13 +17,19 @@
 
 class OgreWorld;
 
-/// Represents weak pointer to IAttribute.
+/// Represents weak pointer to Transform attribute.
 struct AttributeWeakPtr
 {
     /// Constructor.
     /** @param c Owner component.
-        @param a The actual attribute. */
-    AttributeWeakPtr(const ComponentPtr &c, IAttribute *a) : owner(c), attribute(a) {}
+        @param a The actual attribute.
+        @param If the placeable component is parented, pointer to the parent placeable entity. */
+    AttributeWeakPtr(const ComponentPtr &c, IAttribute *a, const EntityPtr &p) :
+        owner(c),
+        attribute(a),
+        parentPlaceableEntity(p)
+    {
+    }
 
     /// Returns pointer to the attribute or null if the owner component doens't exist anymore.
     IAttribute *Get() const { return owner.lock() ? attribute : 0; }
@@ -38,6 +44,7 @@ struct AttributeWeakPtr
 
     ComponentWeakPtr owner; ///< Owner component.
     IAttribute *attribute; ///< The actual attribute.
+    EntityWeakPtr parentPlaceableEntity; ///< If the placeable component is parented, points to the parent placeable entity.
 };
 
 /// Controls Transform attributes for groups of entities.
@@ -85,7 +92,8 @@ public:
     /// Sets visibility of the gizmo (if used).
     void SetGizmoVisible(bool show);
 
-    float3 GetGizmoPos() const;
+    /// Returns position of the editing gizmo.
+    float3 GizmoPos() const;
 
 public slots:
     /// Translates current target transforms.
@@ -101,6 +109,9 @@ public slots:
     void ScaleTargets(const float3 &offset);
 
 private:
+    /// Returns whether or not transform attribute @attr is parented and current selection of targets contain also the parent.
+    bool TargetsContainAlsoParent(const AttributeWeakPtr &attr) const;
+
     /// Creates transform gizmo for the editor.
     void CreateGizmo();
 
@@ -109,7 +120,7 @@ private:
 
     /// Draw debug visualization for an entity.
     void DrawDebug(OgreWorld* world, Entity* entity);
-    
+
     SceneWeakPtr scene; ///< Scene in which the edited entities reside.
     EntityPtr gizmo; ///< Gizmo entity.
     QList<AttributeWeakPtr> targets; ///< Current target transform attributes.
@@ -119,7 +130,7 @@ private slots:
     /// Handles KeyEvents and changes gizmo's mode.
     /** @param e Key event. */
     void HandleKeyEvent(KeyEvent *e);
-    
+
     /// Handles frame update. Redraws debug visualizations as necessary.
     void OnUpdated(float frameTime);
 };
