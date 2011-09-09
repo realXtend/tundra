@@ -152,7 +152,7 @@ namespace PythonScript
             framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory()));
     }
 
-    void PythonScriptModule::PostInitialize()
+    void PythonScriptModule::Initialize()
     {
         // An error has occurred on startup.
         if (!pythonQtStarted_)
