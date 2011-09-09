@@ -639,29 +639,13 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = ../external_libs \
+EXCLUDE                = ../.git \
                          ../bin \
-                         ../.git \
+                         ../cmake \
                          ../CMakeFiles \
-                         ../CMakeModules \
+                         ../deps \
+                         ../lib \
                          ../tools \
-                         ../WorldBuildingModule \
-                         ../WorldMapModule \
-                         ../UiModule \
-                         ../TtsModule \
-                         ../ScenePersistenceModule \
-                         ../ProtocolModuleOpenSim \
-                         ../ProtocolModuleTaiga \
-                         ../ProtocolUtilities \
-                         ../InWorldChatModule \
-                         ../TelepathyIMModule \
-                         ../LegacyAvatarModule \
-                         ../InventoryModule \
-                         ../LibraryModule \
-                         ../RpcUtilities \
-                         ../HttpUtilities \
-                         ../TextureDecoderModule \
-                         ../UnitTests
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
