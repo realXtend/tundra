@@ -37,6 +37,7 @@ CloneAssetDialog::CloneAssetDialog(const AssetPtr &asset, AssetAPI *assetApi, QW
     QHBoxLayout *buttonLayout = new QHBoxLayout(this);
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     okButton = new QPushButton(tr("OK"), this);
+    okButton->setDisabled(false);
     buttonLayout->addSpacerItem(spacer);
     buttonLayout->addWidget(okButton);
 
