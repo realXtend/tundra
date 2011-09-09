@@ -655,7 +655,7 @@ void SceneTreeWidget::Rename()
         {
             // Disable sorting when renaming so that the item will not jump around in the list.
             setSortingEnabled(false);
-            // Remove the entity ID from the text when user is editing entity's name.
+             // Remove the entity ID from the text when user is editing entity's name.
             eItem->setText(0, entity->Name());
 //            openPersistentEditor(eItem);
 //            setCurrentIndex(index);
@@ -678,6 +678,7 @@ void SceneTreeWidget::Rename()
 
 void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
 {
+    LogInfo("fdsafdsafdsajfdsa");
     if (column != 0)
         return;
 
@@ -691,7 +692,11 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
             QString newName = eItem->text(0);
             disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
             // We don't need to set item text here. It's done when SceneStructureWindow gets AttributeChanged() signal from Scene.
-            entity->SetName(newName);
+            // But in case that the new name is the same as the old, the change signal is not emitted and we need to the name manually.
+            if (newName != entity->Name())
+                entity->SetName(newName);
+            else
+                eItem->SetText(entity.get()); 
 //            closePersistentEditor(item);
             setSortingEnabled(true);
             return;
@@ -731,7 +736,7 @@ void SceneTreeWidget::NewEntity()
     // Show a dialog so that user can choose if he wants to create local or synchronized entity.
     QStringList types(QStringList() << tr("Replicated") << tr("Local"));
     bool ok;
-    QString type = QInputDialog::getItem(NULL, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
+    QString type = QInputDialog::getItem(0, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
     if (!ok || type.isEmpty())
         return;
 
