@@ -28,6 +28,7 @@
 #include "EC_Name.h"
 #include "EC_Placeable.h"
 #include "InputAPI.h"
+#include "UiAPI.h"
 #include "LoggingFunctions.h"
 #ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
@@ -718,6 +719,12 @@ void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
     menu->addAction(pasteEntity);
     menu->addAction(actions);
     menu->addAction(functions);
+
+    QList<QObject*> targets;
+    EntityListWidgetItem* entityItem = dynamic_cast<EntityListWidgetItem*>(item);
+    if (entityItem && entityItem->Entity())
+        targets.push_back(entityItem->Entity().get());
+    framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
 
     menu->popup(entityList->mapToGlobal(pos));
 }

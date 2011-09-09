@@ -25,13 +25,11 @@ class QDomDocument;
 struct AttributeInterpolation
 {
     AttributeInterpolation() : dest(0), start(0), end(0), time(0.0f), length(0.0f) {}
-    ///\todo The raw IAttribute pointers are unsafe.
+    ///\todo The raw IAttribute pointers are unsafe. Access to them must be guarded by first checking if the component weak pointer has not expired.
     IAttribute* dest;
     IAttribute* start;
     IAttribute* end;
-    entity_id_t entityId;
-    uint compTypeId;
-    QString compName;
+    ComponentWeakPtr comp;
     float time;
     float length;
 };

@@ -137,6 +137,12 @@ void ParseCommand(QString command, QString &commandName, QStringList &parameterL
     }
 
     commandName = command.left(split).trimmed();
+    // Take into account the possible ending ")" and strip it away from the parameter list.
+    // Remove it only if it's the last character in the string, as f.ex. some code execution console
+    // command could contain ')' in the syntax.
+    int endOfSplit = command.lastIndexOf(")");
+    if (endOfSplit != -1 && endOfSplit == command.length()-1)
+        command.remove(endOfSplit, 1);
     parameterList = command.mid(split+1).split(",");
 }
 

@@ -191,32 +191,38 @@ void TundraLogicModule::Initialize()
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
 
-    framework_->Console()->RegisterCommand("startserver", "Starts a server. Usage: startserver(port)",
-        this, SLOT(StartServer(int)));
+    framework_->Console()->RegisterCommand("startserver",
+        "Starts a server. Usage: startserver(port,protocol)",
+        this, SLOT(StartServer(int,const QString &)));
 
-    framework_->Console()->RegisterCommand("stopserver", "Stops the server",
+    framework_->Console()->RegisterCommand("stopserver",
+        "Stops the server",
         this, SLOT(StopServer()));
 
-    framework_->Console()->RegisterCommand("connect", "Connects to a server. Usage: connect(address,port,protocol,username,password)",
+    framework_->Console()->RegisterCommand("connect",
+        "Connects to a server. Usage: connect(address,port,protocol,username,password)",
         this, SLOT(Connect(QString,int,QString,QString,QString)));
 
-    framework_->Console()->RegisterCommand("disconnect", "Disconnects from a server.",
+    framework_->Console()->RegisterCommand("disconnect",
+        "Disconnects from a server.",
         this, SLOT(Disconnect()));
 
-    framework_->Console()->RegisterCommand("savescene", "Saves scene into XML or binary. Usage: savescene(filename,binary)",
+    framework_->Console()->RegisterCommand("savescene",
+        "Saves scene into XML or binary. Usage: savescene(filename,asBinary=false,saveTemporaryEntities=false,saveLocalEntities=true)",
         this, SLOT(SaveScene(QString, bool, bool, bool)));
 
-    framework_->Console()->RegisterCommand("loadscene", "Loads scene from XML or binary. Usage: loadscene(filename,binary)",
-        this, SLOT(ConsoleLoadSceneLoadScene(QString, bool, bool)));
+    framework_->Console()->RegisterCommand("loadscene",
+        "Loads scene from XML or binary. Usage: loadscene(filename,clearScene=true,useEntityIDsFromFile=true)",
+        this, SLOT(LoadScene(QString, bool, bool)));
 
     framework_->Console()->RegisterCommand("importscene",
         "Loads scene from a dotscene file. Optionally clears the existing scene."
-        "Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
+        "Replace-mode can be optionally disabled. Usage: importscene(filename,clearScene=false,replace=true)",
         this, SLOT(ImportScene(QString, bool, bool)));
 
     framework_->Console()->RegisterCommand("importmesh",
         "Imports a single mesh as a new entity. Position can be specified optionally."
-        "Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
+        "Usage: importmesh(filename,x=0,y=0,z=0,xrot=0,yrot=0,zrot=0,xscale=1,yscale=1,zscale=1,inspectForMaterialsAndSkeleton=true)",
         this, SLOT(ImportMesh(QString, float, float, float, float, float, float, float, float, float, bool)));
 
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
@@ -404,9 +410,9 @@ void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QSt
     LogError("Failed to load startup scene from " + transfer->SourceUrl() + " reason: " + reason);
 }
 
-void TundraLogicModule::StartServer(int port)
+void TundraLogicModule::StartServer(int port, const QString &protocol)
 {
-    server_->Start(port);
+    server_->Start(port, protocol);
 }
 
 void TundraLogicModule::StopServer()
@@ -429,13 +435,13 @@ void TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemp
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogError("No active scene found!");
+        LogError("TundraLogicModule::SaveScene: No active scene found!");
         return;
     }
     filename = filename.trimmed();
     if (filename.isEmpty())
     {
-        LogError("Empty filename given!");
+        LogError("TundraLogicModule::SaveScene: Empty filename given!");
         return;
     }
     
@@ -454,13 +460,13 @@ void TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEnt
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogError("No active scene found!");
+        LogError("TundraLogicModule::LoadScene: No active scene found!");
         return;
     }
     filename = filename.trimmed();
     if (filename.isEmpty())
     {
-        LogError("Empty filename given!");
+        LogError("TundraLogicModule::LoadScene: Empty filename given!");
         return;
     }
     
@@ -474,7 +480,7 @@ void TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEnt
     else
         entities = scene->LoadSceneBinary(filename, clearScene, useEntityIDsFromFile, AttributeChange::Default);
 
-    LogInfo("Loaded " + QString::number(entities.size()) + " entities.");
+    LogInfo("TundraLogicModule::LoadScene: Loaded " + QString::number(entities.size()) + " entities.");
 }
 
 void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool replace)
@@ -482,13 +488,13 @@ void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogError("No active scene found!");
+        LogError("TundraLogicModule::ImportScene: No active scene found!");
         return;
     }
     filename = filename.trimmed();
     if (filename.isEmpty())
     {
-        LogError("Empty filename given!");
+        LogError("TundraLogicModule::ImportScene: Empty filename given!");
         return;
     }
 
@@ -497,7 +503,7 @@ void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
     SceneImporter importer(scene->shared_from_this());
     QList<Entity *> entities = importer.Import(filename, path, Transform(), "local://", AttributeChange::Default, clearScene, replace);
 
-    LogInfo("Imported " + QString::number(entities.size()) + " entities.");
+    LogInfo("TundraLogicModule::ImportScene: Imported " + QString::number(entities.size()) + " entities.");
 }
 
 void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float tz, float rx, float ry, float rz, float sx, float sy, float sz, bool inspect)
@@ -505,13 +511,13 @@ void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float t
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogError("No active scene found!");
+        LogError("TundraLogicModule::ImportMesh: No active scene found!");
         return;
     }
     filename = filename.trimmed();
     if (filename.isEmpty())
     {
-        LogError("Empty filename given!");
+        LogError("TundraLogicModule::ImportMesh: Empty filename given!");
         return;
     }
 

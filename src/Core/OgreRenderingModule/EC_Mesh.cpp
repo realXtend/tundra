@@ -746,20 +746,6 @@ const std::string& EC_Mesh::GetSkeletonName() const
     }
 }
 
-void EC_Mesh::GetBoundingBox(float3& min, float3& max) const
-{
-    if (!entity_)
-    {
-        min = float3::zero;
-        max = float3::zero;
-        return;
-    }
-
-    const Ogre::AxisAlignedBox& bbox = entity_->getMesh()->getBounds();
-    min = bbox.getMinimum();
-    max = bbox.getMaximum();
-}
-
 QVector3D EC_Mesh::GetWorldSize() const
 {
     QVector3D size(0,0,0);
@@ -1333,14 +1319,26 @@ OBB EC_Mesh::WorldOBB() const
 
 OBB EC_Mesh::LocalOBB() const
 {
+    return OBB(LocalAABB());
+}
+
+AABB EC_Mesh::WorldAABB() const
+{
+    AABB aabb = LocalAABB();
+    aabb.Transform(LocalToWorld());
+    return aabb;
+}
+
+AABB EC_Mesh::LocalAABB() const
+{
     if (!entity_)
-        return OBB();
+        return AABB();
 
     Ogre::MeshPtr mesh = entity_->getMesh();
     if (mesh.isNull())
-        return OBB();
+        return AABB();
 
-    return OBB(AABB(mesh->getBounds()));
+    return AABB(mesh->getBounds());
 }
 
 bool EC_Mesh::HasMaterialsChanged() const

@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   InputMapper.h
+ *  @file   EC_InputMapper.h
  *  @brief  Registers an InputContext from the Input API and uses it to translate
  *          given set of key and mouse sequences to Entity Actions on the entity the component is part of.
  */
@@ -15,7 +15,6 @@
 
 #include <QMap>
 #include <QKeySequence>
-#include <QVector>
 #include <QVariant>
 
 /// Registers an InputContext from the Input API and uses it to translate
@@ -73,6 +72,7 @@ given set of key and mouse sequences to Entity Actions on the entity the compone
 class EC_InputMapper : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_InputMapper", 13)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -96,86 +96,77 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, takeMouseEventsOverQt);
 
     /// Key sequence - action name mappings.
+    ///\todo Seems to be unused - delete?
     Q_PROPERTY(QVariantList mappings READ getmappings WRITE setmappings);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, mappings);
-    
+
     /// Execution type for actions
     Q_PROPERTY(int executionType READ getexecutionType WRITE setexecutionType)
     DEFINE_QPROPERTY_ATTRIBUTE(int, executionType);
-    
+
     /// Modifier mode for key events. Default true. If false, modifiers are not checked for key events
     Q_PROPERTY(bool modifiersEnabled READ getmodifiersEnabled WRITE setmodifiersEnabled)
     DEFINE_QPROPERTY_ATTRIBUTE(int, modifiersEnabled);
-    
+
     /// Is the input mapper enabled
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
-    
+
     /// Trigger on keyrepeats, if it is off input mapper does not repeat keypressed actions. Default is on.
+    ///\todo Rename to keyRepeatTrigger
     Q_PROPERTY(bool keyrepeatTrigger READ getkeyrepeatTrigger WRITE setkeyrepeatTrigger)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, keyrepeatTrigger);
 
-    //Attribute<QVariantList > mappings;
+public slots:
+    /// Registers new key sequence - action mapping for this input mapper.
+    /** @param keySeq Key sequence.
+        @param action Name of the action. If you want to use parameters the string should look the following: 
+        "More(Forward)" or "Move(Forward,100)" etc.
+        @param eventType Event type (press, release), default press (1)
+        @param executionType Execution type override. If 0 (default), uses the InputMapper's executionType attribute
+        @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead. */
+    void RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType = 1, int executionType = 0);
 
+    /** Registers new key sequence - action mapping for this input mapper.
+        @param keySeq Key sequence as in string. example Qt::CTRL+Qt::Key_O sequence eguals "Ctrl+O" string.
+        @param action Name of the action. If you want to use parameters the string should look the following: 
+        @param executionType Execution type override. If 0 (default), uses the InputMapper's executionType attribute
+        "More(Forward)" or "Move(Forward,100)" etc. */
+    void RegisterMapping(const QString &keySeqString, const QString &action, int eventType = 1, int executionType = 0);
+
+    /// Removes a key mapping
+    void RemoveMapping(const QKeySequence &keySeq, int eventType = 1);
+    /// This is an overloaded function.
+    void RemoveMapping(const QString &keySeqString, int eventType = 1);
+
+    /// Returns the input context of this input mapper.
+    InputContext *GetInputContext() const { return inputContext.get(); }
+
+private:
     struct ActionInvocation
     {
         ActionInvocation() : executionType(0) {}
         QString name;
         int executionType;
     };
-    
-    typedef QMap<QPair<QKeySequence, KeyEvent::EventType>, ActionInvocation> Mappings_t;
 
-    COMPONENT_NAME("EC_InputMapper", 13)
-public slots:
-
-    /// Register new key sequence - action mapping for this input mapper.
-    /** @param keySeq Key sequence.
-        @param action Name of the action. If you want to use parameters the string should look the following: 
-        "More(Forward)" or "Move(Forward,100)" etc.
-        @param eventType Event type (press, release), default press (1)
-        @param executionType Execution type override. If 0 (default), uses the InputMapper's executionType attribute
-        @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
-    */
-    void RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType = 1, int executionType = 0);
-
-    /** Register new key sequence - action mapping for this input mapper.
-        @param keySeq Key sequence as in string. example Qt::CTRL+Qt::Key_O sequence eguals "Ctrl+O" string.
-        @param action Name of the action. If you want to use parameters the string should look the following: 
-        @param executionType Execution type override. If 0 (default), uses the InputMapper's executionType attribute
-        "More(Forward)" or "Move(Forward,100)" etc.
-    */
-    void RegisterMapping(const QString &keySeqString, const QString &action, int eventType = 1, int executionType = 0);
-
-    /// Remove a key mapping
-    void RemoveMapping(const QKeySequence &keySeq, int eventType = 1);
-    /// Remove a key mapping
-    void RemoveMapping(const QString &keySeqString, int eventType = 1);
-    
-    /// Returns the input context of this input mapper.
-    InputContext *GetInputContext() const { return input_.get(); }
-
-private:
-    boost::shared_ptr<InputContext> input_; ///< Input context for this EC.
-    Mappings_t mappings_; ///< List of registered key sequence - action mappings.
+    typedef QMap<QPair<QKeySequence, KeyEvent::EventType>, ActionInvocation> ActionInvocationMap;
+    ActionInvocationMap actionInvokationMappings; ///< List of registered key sequence - action mappings.
+    boost::shared_ptr<InputContext> inputContext; ///< Input context for this EC.
 
 private slots:
     /// Alters input context's parameters when attributes are changed.
     /** @param attribute Changed attribute.
-        @param change Change type.
-    */
+        @param change Change type. */
     void HandleAttributeUpdated(IAttribute *, AttributeChange::Type change);
 
     /// Handles key events from the input system.
     /** Performs entity action for for the parent entity if action mapping is registered for the key event.
-        @param e Key event.
-    */
+        @param e Key event. */
     void HandleKeyEvent(KeyEvent *e);
 
     /// Handles mouse events from the input system.
     /** Performs entity action for for the parent entity if action mapping is registered for the mouse event.
-        @param e Mouse event.
-    */
+        @param e Mouse event. */
     void HandleMouseEvent(MouseEvent *e);
 };
-

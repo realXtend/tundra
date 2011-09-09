@@ -421,6 +421,25 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
                 }
         }
     }
+    
+    // Finally let others add functionality
+    QList<QObject*> targets;
+    if (hasSelection)
+    {
+        if (sel.HasEntities())
+        {
+            foreach(EntityItem* eItem, sel.entities)
+                if (eItem->Entity())
+                    targets.push_back(eItem->Entity().get());
+        }
+        if (sel.HasComponents())
+        {
+            foreach(ComponentItem* cItem, sel.components)
+                if (cItem->Component())
+                    targets.push_back(cItem->Component().get());
+        }
+    }
+    framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
 }
 
 Selection SceneTreeWidget::GetSelection() const

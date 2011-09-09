@@ -90,10 +90,10 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &functionSignature, con
                              QVariant *ret, QString *errorMsg)
 {
     QList<IArgumentType *> args = CreateArgumentList(obj, functionSignature);
-
     if (args.size() != params.size())
     {
-        LogError("FunctionInvoker::Invoke: Parameter number mismatch!");
+        LogError("FunctionInvoker::Invoke: Parameter number mismatch: " + QString::number(params.size()) +
+            " given, but " + QString::number(args.size()) + " expected.");
         return;
     }
 

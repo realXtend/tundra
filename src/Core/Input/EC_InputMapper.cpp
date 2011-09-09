@@ -1,63 +1,23 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   InputMapper.h
+ *  @file   EC_InputMapper.cpp
  *  @brief  Registers an InputContext from the Input API and uses it to translate
  *          given set of keys to Entity Actions on the entity the component is part of.
  */
 
 #include "DebugOperatorNew.h"
-#include "EC_InputMapper.h"
-#include "Framework.h"
 
+#include "EC_InputMapper.h"
+#include "InputAPI.h"
+
+#include "Framework.h"
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
-#include "InputAPI.h"
 #include "Entity.h"
-
 #include "LoggingFunctions.h"
+
 #include "MemoryLeakCheck.h"
-
-EC_InputMapper::~EC_InputMapper()
-{
-    input_.reset();
-}
-
-void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType, int executionType)
-{
-    ActionInvocation invocation;
-    invocation.name = action;
-    invocation.executionType = executionType;
-    
-    mappings_[qMakePair(keySeq, (KeyEvent::EventType)eventType)] = invocation;
-}
-
-void EC_InputMapper::RegisterMapping(const QString &keySeq, const QString &action, int eventType, int executionType)
-{
-    ActionInvocation invocation;
-    invocation.name = action;
-    invocation.executionType = executionType;
-    
-    QKeySequence key(keySeq);
-    if(!key.isEmpty())
-    {
-        mappings_[qMakePair(key, (KeyEvent::EventType)eventType)] = invocation;
-    }
-}
-
-void EC_InputMapper::RemoveMapping(const QKeySequence &keySeq, int eventType)
-{
-    Mappings_t::iterator it = mappings_.find(qMakePair(keySeq, (KeyEvent::EventType)eventType));
-    if (it != mappings_.end())
-        mappings_.erase(it);
-}
-
-void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
-{
-    Mappings_t::iterator it = mappings_.find(qMakePair(QKeySequence(keySeq), (KeyEvent::EventType)eventType));
-    if (it != mappings_.end())
-        mappings_.erase(it);
-}
 
 EC_InputMapper::EC_InputMapper(Scene* scene):
     IComponent(scene),
@@ -89,29 +49,66 @@ EC_InputMapper::EC_InputMapper(Scene* scene):
     connect(this, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
         SLOT(HandleAttributeUpdated(IAttribute *, AttributeChange::Type)));
 
-    input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
-    input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
-    input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
-    connect(input_.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-    connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+    inputContext = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+    inputContext->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
+    inputContext->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
+    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+}
+
+EC_InputMapper::~EC_InputMapper()
+{
+    inputContext.reset();
+}
+
+void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType, int executionType)
+{
+    ActionInvocation invocation;
+    invocation.name = action;
+    invocation.executionType = executionType;
+    actionInvokationMappings[qMakePair(keySeq, (KeyEvent::EventType)eventType)] = invocation;
+}
+
+void EC_InputMapper::RegisterMapping(const QString &keySeq, const QString &action, int eventType, int executionType)
+{
+    ActionInvocation invocation;
+    invocation.name = action;
+    invocation.executionType = executionType;
+    QKeySequence key(keySeq);
+    if (!key.isEmpty())
+        actionInvokationMappings[qMakePair(key, (KeyEvent::EventType)eventType)] = invocation;
+}
+
+void EC_InputMapper::RemoveMapping(const QKeySequence &keySeq, int eventType)
+{
+    ActionInvocationMap::iterator it = actionInvokationMappings.find(qMakePair(keySeq, (KeyEvent::EventType)eventType));
+    if (it != actionInvokationMappings.end())
+        actionInvokationMappings.erase(it);
+}
+
+void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
+{
+    ActionInvocationMap::iterator it = actionInvokationMappings.find(qMakePair(QKeySequence(keySeq), (KeyEvent::EventType)eventType));
+    if (it != actionInvokationMappings.end())
+        actionInvokationMappings.erase(it);
 }
 
 void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
 {
     if(attribute == &contextName || attribute == &contextPriority)
     {
-        input_.reset();
-        input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
-        connect(input_.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+        inputContext.reset();
+        inputContext = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+        connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
     }
     else if(attribute == &takeKeyboardEventsOverQt)
     {
-        input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
+        inputContext->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
     }
     else if(attribute == &takeMouseEventsOverQt)
     {
-        input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
+        inputContext->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
     }
     else if(attribute == &mappings)
     {
@@ -134,12 +131,12 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
             return;
     }
 
-    Mappings_t::iterator it;
+    ActionInvocationMap::iterator it;
     if (modifiersEnabled.Get())
-        it = mappings_.find(qMakePair(QKeySequence(e->keyCode | e->modifiers), e->eventType));
+        it = actionInvokationMappings.find(qMakePair(QKeySequence(e->keyCode | e->modifiers), e->eventType));
     else
-        it = mappings_.find(qMakePair(QKeySequence(e->keyCode), e->eventType));
-    if (it == mappings_.end())
+        it = actionInvokationMappings.find(qMakePair(QKeySequence(e->keyCode), e->eventType));
+    if (it == actionInvokationMappings.end())
         return;
 
     Entity *entity = ParentEntity();

@@ -50,8 +50,11 @@ void AssetAPI::OpenAssetCache(QString directory)
     SAFE_DELETE(assetCache);
     SAFE_DELETE(diskSourceChangeWatcher);
     assetCache = new AssetCache(this, directory);
-    diskSourceChangeWatcher = new QFileSystemWatcher();
-    connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)), Qt::UniqueConnection);
+    if (!fw->HasCommandLineParameter("--nofilewatcher"))
+    {
+        diskSourceChangeWatcher = new QFileSystemWatcher();
+        connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)), Qt::UniqueConnection);
+    }
 }
 
 std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
@@ -1230,9 +1233,8 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
 
         // Add to watch this path for changed, note this does nothing if the path is already added
         // so we should not be having duplicate paths and/or double emits on changes.
-        /// \todo To work around a file corruption bug with uploads, we do not add files in asset cache to be watched for changes. Needs proper investigation why the corruption happens.
         const QString diskSource = asset->DiskSource();
-        if (diskSourceChangeWatcher && !diskSource.isEmpty() && (!assetCache || !diskSource.startsWith(assetCache->CacheDirectory())))
+        if (diskSourceChangeWatcher && !diskSource.isEmpty())
         {
             diskSourceChangeWatcher->removePath(diskSource);
             diskSourceChangeWatcher->addPath(diskSource);
