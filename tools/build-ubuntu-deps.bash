@@ -47,7 +47,7 @@ if [ x$private_ogre != xtrue ]; then
    more="$more libogre-dev"
 fi
 
-if lsb_release -c | egrep -q "lucid|maverick|natty"; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric"; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
         if [ x$build_valgrind != xfalse ]; then
             more="$more libc6 libc6-dbg valgrind"
