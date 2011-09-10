@@ -42,9 +42,13 @@ struct CommandLineParameterMap
         {
             int charIdx = 0;
             const int treshold = 15;
-            // Max line width is fixed 80 chars on Windows, but can vary on *nix.
 #ifdef _WINDOWS
-            const int maxLineWidth = 80;
+            int maxLineWidth = 80; // Initially assume default 80 on Windows.
+            CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+            HANDLE hstdout;
+            hstdout = GetStdHandle(STD_OUTPUT_HANDLE);
+            if (GetConsoleScreenBufferInfo(hstdout, &csbiInfo))
+                maxLineWidth = csbiInfo.dwSize.X;
 #else
             struct winsize w;
             ioctl(0, TIOCGWINSZ, &w);
@@ -102,6 +106,7 @@ Framework::Framework(int argc, char** argv) :
 #ifdef PROFILING
     profiler(0),
 #endif
+    profilerQObj(0),
     renderer(0),
     apiVersionInfo(0),
     applicationVersionInfo(0)
@@ -128,8 +133,11 @@ Framework::Framework(int argc, char** argv) :
     cmdLineDescs.commands["--file"] = "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
     cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup"; // AssetModule
     cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use"; // Framework
+    cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional.";
     cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username";
     cmdLineDescs.commands["--netrate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
+    cmdLineDescs.commands["--noassetcache"] = "Disable asset cache.";
+    cmdLineDescs.commands["--assetcachedir"] = "Specify asset cache directory to use.";
     cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
 
     if (HasCommandLineParameter("--help"))
@@ -158,8 +166,13 @@ Framework::Framework(int argc, char** argv) :
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
         asset = new AssetAPI(this, headless_);
+        
+        QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
+        if (CommandLineParameters("--assetcachedir").size() > 0)
+            assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir")[0]);
+        
         if (!HasCommandLineParameter("--noassetcache"))
-            asset->OpenAssetCache(Application::UserDataDirectory() + QDir::separator() + "assetcache");
+            asset->OpenAssetCache(assetCacheDir);
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);

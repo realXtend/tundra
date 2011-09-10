@@ -1236,9 +1236,7 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
         attr->CopyValue(endvalue, AttributeChange::LocalOnly);
     
     AttributeInterpolation newInterp;
-    newInterp.entityId = entity->Id();
-    newInterp.compName = comp->Name();
-    newInterp.compTypeId = comp->TypeId();
+    newInterp.comp = comp->shared_from_this();
     newInterp.dest = attr;
     newInterp.start = attr->Clone();
     newInterp.end = endvalue;
@@ -1287,13 +1285,8 @@ void Scene::UpdateAttributeInterpolations(float frametime)
         AttributeInterpolation& interp = interpolations_[i];
         bool finished = false;
         
-        // Check that the entity & component exist ie. it's safe to access the attribute
-        Entity* entity = GetEntity(interp.entityId).get();
-        IComponent* comp = 0;
-        if (entity)
-            comp = entity->GetComponent(interp.compTypeId, interp.compName).get();
-        
-        if (comp)
+        // Check that the component still exists ie. it's safe to access the attribute
+        if (!interp.comp.expired())
         {
             // Allow the interpolation to persist for 2x time, though we are no longer setting the value
             // This is for the continuous/discontinuous update detection in StartAttributeInterpolation()
@@ -1313,7 +1306,7 @@ void Scene::UpdateAttributeInterpolations(float frametime)
             }
         }
         else
-            // Component could not be found, abort this interpolation
+            // Component pointer has expired, abort this interpolation
             finished = true;
         
         // Remove interpolation (& delete start/endpoints) when done

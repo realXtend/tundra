@@ -47,6 +47,7 @@ JavascriptModule::JavascriptModule() :
 
 JavascriptModule::~JavascriptModule()
 {
+    SAFE_DELETE(engine);
 }
 
 void JavascriptModule::Load()
@@ -64,23 +65,22 @@ void JavascriptModule::Initialize()
     RegisterCoreMetaTypes();
 
     framework_->Console()->RegisterCommand(
-        "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
-        this, SLOT(ConsoleRunString()));
+        "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)",
+        this, SLOT(RunString(const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
-        this, SLOT(ConsoleRunFile()));
+        "JsLoad", "Execute a javascript file. JsLoad(myJsFile.js)",
+        this, SLOT(RunScript(const QString &)));
 
     framework_->Console()->RegisterCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
-        this, SLOT(ConsoleReloadScripts()));
+        this, SLOT(LoadStartupScripts()));
 
     // Initialize startup scripts
     LoadStartupScripts();
 
     foreach(const QString &script, framework_->CommandLineParameters("--run"))
     {
-        ///\todo Using just the first one, could possibly use multiple?
         JavascriptInstance *jsInstance = new JavascriptInstance(script, this);
         PrepareScriptInstance(jsInstance);
         startupScripts_.push_back(jsInstance);
@@ -91,10 +91,6 @@ void JavascriptModule::Initialize()
 void JavascriptModule::Uninitialize()
 {
     UnloadStartupScripts();
-}
-
-void JavascriptModule::Update(f64 frametime)
-{
 }
 
 void JavascriptModule::RunString(const QString &codestr, const QVariantMap &context)
@@ -112,7 +108,12 @@ void JavascriptModule::RunString(const QString &codestr, const QVariantMap &cont
 void JavascriptModule::RunScript(const QString &scriptFileName)
 {
     QFile scriptFile(scriptFileName);
-    scriptFile.open(QIODevice::ReadOnly);
+    if (!scriptFile.open(QIODevice::ReadOnly))
+    {
+        LogError("JavascriptModule::RunScript: failed to open file: " + scriptFileName);
+        return;
+    }
+
     engine->evaluate(scriptFile.readAll(), scriptFileName);
     scriptFile.close();
 }
@@ -501,12 +502,13 @@ QStringList JavascriptModule::ParseStartupScriptConfig()
     QFile file(configFile);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + configFile + "\"!");
+        LogError("JavascriptModule::ParseStartupScriptConfig: Failed to open file \"" + configFile + "\"!");
         return QStringList();
     }
-    if (!doc.setContent(&file))
+    QString errorMsg;
+    if (!doc.setContent(&file, &errorMsg))
     {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + configFile + "\"!");
+        LogError("JavascriptModule::ParseStartupScriptConfig: Failed to parse XML file \"" + configFile + "\": " + errorMsg);
         file.close();
         return QStringList();
     }
@@ -651,33 +653,6 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     }
 
     emit ScriptEngineCreated(instance->Engine());
-}
-
-void JavascriptModule::ConsoleRunString(const QStringList &params)
-{
-    if (params.size() != 1)
-    {
-        LogError("Usage: JsExec(print 1 + 1)");
-        return;
-    }
-
-    JavascriptModule::RunString(params[0]);
-}
-
-void JavascriptModule::ConsoleRunFile(const QStringList &params)
-{
-    if (params.size() != 1)
-    {
-        LogError("Usage: JsLoad(myfile.js)");
-        return;
-    }
-
-    JavascriptModule::RunScript(params[0]);
-}
-
-void JavascriptModule::ConsoleReloadScripts()
-{
-    LoadStartupScripts();
 }
 
 extern "C"

@@ -173,8 +173,12 @@ namespace OgreRenderer
 
     void Renderer::Initialize()
     {
+        assert(!initialized_);
         if (initialized_)
+        {
+            LogError("Renderer::Initialize: Called when Renderer has already been initialized!");
             return;
+        }
 
         std::string logfilepath, rendersystem_name;
         Ogre::RenderSystem *rendersystem = 0;
@@ -273,7 +277,15 @@ namespace OgreRenderer
                 renderWindow = new RenderWindow();
                 bool fullscreen = false;
 
-                renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
+                // On some systems, the Ogre rendering output is overdrawn by the Windows desktop compositing manager, but the actual cause of this
+                // is uncertain.
+                // As a workaround, it is possible to have Ogre output directly on the main window HWND of the ui chain. On other systems, this gives
+                // graphical issues, so it cannot be used as a permanent mechanism. Therefore this workaround is enabled only as a command-line switch.
+                if (framework_->HasCommandLineParameter("--ogrecapturetopwindow"))
+                    renderWindow->CreateRenderWindow(framework_->Ui()->MainWindow(), window_title_.c_str(), width, height, window_left, window_top, false);
+                else // Normally, we want to render Ogre onto the UiGraphicsview viewport window.
+                    renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
+
                 connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
                 renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
 
@@ -443,30 +455,7 @@ namespace OgreRenderer
         // As double to keep human readable and configurable
         framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)view_distance_);
     }
-/*
-    void Renderer::SetActiveCamera(EC_Camera* camera)
-    {
-        Ogre::Camera* ogreCamera = dummyDefaultCamera;
-        
-        if ((camera) && (camera->GetCamera()))
-        {
-            cameraComponent_ = camera;
-            ogreCamera = camera->GetCamera();
-            OgreWorldPtr w = GetActiveOgreWorld();
-            if (w)
-                w->EmitActiveCameraChanged(camera);
-        }
-        else
-            cameraComponent_ = 0;
-        
-        if (mainViewport)
-        {
-            mainViewport->setCamera(ogreCamera);
-            if (c_handler_)
-                c_handler_->CameraChanged(mainViewport, ogreCamera);
-        }
-    }
-*/
+
     void Renderer::DoFullUIRedraw()
     {
         if (framework_->IsHeadless())
@@ -478,7 +467,10 @@ namespace OgreRenderer
 
         QImage *backBuffer = view->BackBuffer();
         if (!backBuffer)
+        {
+            LogWarning("Renderer::DoFullUIRedraw: UiGraphicsView does not have a backbuffer initialized!");
             return;
+        }
 
         QSize viewsize(view->viewport()->size());
         QRect viewrect(QPoint(0, 0), viewsize);
@@ -517,7 +509,10 @@ namespace OgreRenderer
         using namespace std;
             
         if (!initialized_)
+        {
+            LogError("Renderer::Render called when Renderer is not initialized!");
             return;
+        }
 
         if (frameTime > MAX_FRAME_TIME)
             frameTime = MAX_FRAME_TIME;
@@ -561,6 +556,7 @@ namespace OgreRenderer
         }
 
         UiGraphicsView *view = framework_->Ui()->GraphicsView();
+        assert(view);
 
 #ifdef DIRECTX_ENABLED
         if (view->IsViewDirty() || resized_dirty_)
@@ -608,18 +604,14 @@ namespace OgreRenderer
                 LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(d3d9rw ? d3d9rw->getD3D9Device() : 0);
                 if (!surface)
                 {
-#ifdef _DEBUG
-                    std::cout << "No D3DSurface!" << std::endl;
-#endif
+                    LogError("Renderer::Render: Failed to get LPDIRECT3DSURFACE9 for surface!");
                     return;
                 }
                 D3DSURFACE_DESC desc;
                 HRESULT hr = surface->GetDesc(&desc);
                 if (FAILED(hr))
                 {
-#ifdef _DEBUG
-                    std::cout << "surface->GetDesc failed!" << std::endl;
-#endif
+                    LogError("Renderer::Render: D3DSURFACE_DESC::GetDesc failed!");
                     return;
                 }
 
@@ -632,9 +624,7 @@ namespace OgreRenderer
                 const int copyableWidthBytes = 4*min<int>(dirty.width(), min<int>(view->BackBuffer()->width() - dirty.left(), desc.Width - dirty.left()));
                 if (copyableHeight <= 0 || copyableWidthBytes <= 0)
                 {
-#ifdef _DEBUG
-                    std::cout << "Nothing to blit!" << std::endl;
-#endif
+                    LogError("Renderer::Render: Nothing to blit!");
                     return;
                 }
 
@@ -647,29 +637,21 @@ namespace OgreRenderer
                     HRESULT hr = surface->LockRect(&lock, &lockRect, 0);
                     if (FAILED(hr))
                     {
-#ifdef _DEBUG
-                        std::cout << "SubRect Lock Failed!" << std::endl;
-#endif
-                        return;
-/*
-                        HRESULT hr = surface->LockRect(&lock, 0, 0);
-                        if (FAILED(hr))
-                        {
-#ifdef _DEBUG
-                            std::cout << "Surface LockRect Failed!" << std::endl;
-#endif
-                            return;
-                        }
-*/
+                        LogError("Renderer::Render: D3D9SURFACE9::LockRect failed!");
+                        return; // Instead of returning, could try doing a full surface lock. See commented line above.
                     }
                     assert((uint)lock.Pitch >= desc.Width*4);
                 }
                 char *surfacePtr = (char *)lock.pBits;
+                assert(surfacePtr);
 
                 char *scanlines = (char*)view->BackBuffer()->bits();
-                 assert(scanlines);
-                 if (!scanlines)
-                     return;
+                assert(scanlines);
+                if (!scanlines)
+                {
+                    LogError("Cannot get UiGraphicsView backbuffer data!");
+                    return;
+                }
 
                 {
                     PROFILE(surface_memcpy);
@@ -688,7 +670,7 @@ namespace OgreRenderer
                     hr = surface->UnlockRect();
                     if (FAILED(hr))
                     {
-                        std::cout << "Unlock Failed!" << std::endl;
+                        LogError("Renderer::Render: Unlock Failed!");
                         return;
                     }
                 }

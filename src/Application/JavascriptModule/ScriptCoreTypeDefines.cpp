@@ -21,6 +21,7 @@ Q_DECLARE_METATYPE(ScenePtr);
 Q_DECLARE_METATYPE(EntityPtr);
 Q_DECLARE_METATYPE(ComponentPtr);
 Q_DECLARE_METATYPE(QList<Entity*>);
+Q_DECLARE_METATYPE(QList<QObject*>);
 Q_DECLARE_METATYPE(Entity*);
 Q_DECLARE_METATYPE(std::string);
 Q_DECLARE_METATYPE(EntityList);
@@ -232,6 +233,31 @@ QScriptValue toScriptValueEntityList(QScriptEngine *engine, const QList<Entity*>
     return obj;
 }
 
+void fromScriptValueQObjectList(const QScriptValue &obj, QList<QObject*> &objs)
+{
+    objs.clear();
+    QScriptValueIterator it(obj);
+    while(it.hasNext())
+    {
+        it.next();
+        QObject *qobj = it.value().toQObject();
+        if (qobj)
+            objs.append(qobj);
+    }
+}
+
+QScriptValue toScriptValueQObjectList(QScriptEngine *engine, const QList<QObject*> &objs)
+{
+    QScriptValue obj = engine->newArray(objs.size());
+    for(int i=0; i<objs.size(); ++i)
+    {
+        QObject* qobj = objs.at(i);
+        if (qobj)
+            obj.setProperty(i, engine->newQObject(qobj));
+    }
+    return obj;
+}
+
 void fromScriptValueEntityStdList(const QScriptValue &obj, EntityList &ents)
 {
     ents.clear();
@@ -349,6 +375,7 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<EntityReference>("EntityReference");
     qRegisterMetaType<IAttribute*>("IAttribute*");
     qRegisterMetaType<QList<Entity*> >("QList<Entity*>");
+    qRegisterMetaType<QList<QObject*> >("QList<QObject*>");
     qRegisterMetaType<EntityList>("EntityList");
     qRegisterMetaType<std::string>("std::string");
 }
@@ -367,6 +394,7 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType<EntityPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<QList<Entity*> >(engine, toScriptValueEntityList, fromScriptValueEntityList);
+    qScriptRegisterMetaType<QList<QObject*> >(engine, toScriptValueQObjectList, fromScriptValueQObjectList);
     qScriptRegisterMetaType<EntityList>(engine, toScriptValueEntityStdList, fromScriptValueEntityStdList);
     qScriptRegisterMetaType<std::string>(engine, toScriptValueStdString, fromScriptValueStdString);
     

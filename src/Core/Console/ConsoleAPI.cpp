@@ -137,6 +137,12 @@ void ParseCommand(QString command, QString &commandName, QStringList &parameterL
     }
 
     commandName = command.left(split).trimmed();
+    // Take into account the possible ending ")" and strip it away from the parameter list.
+    // Remove it only if it's the last character in the string, as f.ex. some code execution console
+    // command could contain ')' in the syntax.
+    int endOfSplit = command.lastIndexOf(")");
+    if (endOfSplit != -1 && endOfSplit == command.length()-1)
+        command.remove(endOfSplit, 1);
     parameterList = command.mid(split+1).split(",");
 }
 
@@ -225,27 +231,8 @@ void ConsoleAPI::SetLogLevel(const QString &level)
 
 void ConsoleAPI::SetLogFile(const QString &wildCardFilename)
 {
-    // Parse all the special symbols from the log filename.
-    QString filename = wildCardFilename.trimmed().replace("$(CWD)", Application::CurrentWorkingDirectory(), Qt::CaseInsensitive);
-    filename = filename.replace("$(INSTDIR)", Application::InstallationDirectory(), Qt::CaseInsensitive);
-    filename = filename.replace("$(USERDATA)", Application::UserDataDirectory(), Qt::CaseInsensitive);
-    filename = filename.replace("$(USERDOCS)", Application::UserDocumentsDirectory(), Qt::CaseInsensitive);
-    QRegExp rx("\\$\\(DATE:(.*)\\)");
-    // Qt Regexes don't support non-greedy matching. The above regex should be "\\$\\(DATE:(.*?)\\)". Instad Qt supports
-    // only setting the matching to be non-greedy globally.
-    rx.setMinimal(true); // This is to avoid e.g. $(DATE:yyyyMMdd)_aaa).txt to be incorrectly captured as "yyyyMMdd)_aaa".
-    for(;;) // Loop and find all instances of $(DATE:someformat).
-    {
-        int pos = rx.indexIn(filename);
-        if (pos > -1)
-        {
-            QString dateFormat = rx.cap(1);
-            QString date = QDateTime::currentDateTime().toString(dateFormat);
-            filename = filename.replace(rx.pos(0), rx.cap(0).length(), date);
-        }
-        else
-            break;
-    }
+    QString filename = Application::ParseWildCardFilename(wildCardFilename);
+    
     // An empty log file closes the log output writing.
     if (filename.isEmpty())
     {

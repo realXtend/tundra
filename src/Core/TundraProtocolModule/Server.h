@@ -38,21 +38,17 @@ class TundraLogicModule;
 class TUNDRALOGIC_MODULE_API Server : public QObject
 {
     Q_OBJECT
-    
-public:
-    /// Constructor
-    explicit Server(TundraLogicModule* owner);
 
-    /// Destructor
+public:
+    explicit Server(TundraLogicModule* owner);
     ~Server();
-    
+
     /// Perform any per-frame processing
     void Update(f64 frametime);
     
     /// Create server scene & start server
-    /** @return True if successful, false otherwise. No scene will be created if starting the server fails.
-     */
-    bool Start(unsigned short port);
+    /** @return True if successful, false otherwise. No scene will be created if starting the server fails. */
+    bool Start(unsigned short port, const QString &protocol = "");
     
     /// Stop server & delete server scene
     void Stop();
@@ -75,8 +71,7 @@ public:
 
 signals:
     /// A user is connecting. This is your chance to deny access.
-    /** Call user->Disconnect() to deny access and kick the user out
-     */ 
+    /** Call user->Disconnect() to deny access and kick the user out */ 
     void UserAboutToConnect(int connectionID, UserConnection* connection);
      
     /// A user has connected (and authenticated)
@@ -131,7 +126,6 @@ private slots:
     void HandleUserDisconnected(UserConnection* user);
 
 private:
-        
     /// Handle a login message
     void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
         
@@ -152,4 +146,3 @@ private:
 };
 
 }
-

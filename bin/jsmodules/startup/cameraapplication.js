@@ -1,9 +1,20 @@
 // A startup script that hooks to scene added & scene cleared signals, and creates a local freelook camera upon either signal.
+// Also adds Locate functionality to the SceneStructureWindow.
 
 framework.Scene().SceneAdded.connect(OnSceneAdded);
 
+if (!framework.IsHeadless())
+{
+    engine.ImportExtension("qt.core");
+    engine.ImportExtension("qt.gui");
+    ui.ContextMenuAboutToOpen.connect(OnContextMenu);
+}
+
 var scene = null;
 var cameraEntityId = 0;
+var entityLocatePosition = new float3(0, 0, 0);
+var entityLocateDistance = 0;
+var entityLocateMinDistance = 10.0; // Be at least this distance away from the object's bounding box when locating it
 
 function OnSceneAdded(scenename)
 {
@@ -31,8 +42,8 @@ function OnEntityCreated(entity, change)
     {
         if (entity.camera != null)
         {
-            print("Activating loaded camera");
             entity.camera.SetActive();
+            cameraEntityId = entity.id;
         }
         scene.RemoveEntity(cameraEntityId);
     }
@@ -59,6 +70,59 @@ function CreateCamera(scene)
     var r = script.scriptRef;
     r.ref = "local://freelookcamera.js";
     script.scriptRef = r;
-    
+
     cameraEntityId = entity.id;
+}
+
+function OnContextMenu(menu, targets)
+{
+    // Implement the "Locate" functionality
+    var numPlaceableEntities = 0;
+    var averagePosition = new float3(0, 0, 0);
+    var maxDistanceAway = entityLocateMinDistance;
+    for (var i = 0; i < targets.length; ++i)
+    {
+        var entity = null;
+        // Recognize entity by properties
+        if ("name" in targets[i] && "description" in targets[i])
+            entity = targets[i];
+        // If not an entity, it might be a component
+        else if ("name" in targets[i] && "typeName" in targets[i])
+            entity = targets[i].ParentEntity();
+
+        if (entity && entity.placeable)
+        {
+            numPlaceableEntities++;
+            averagePosition = averagePosition.Add(entity.placeable.WorldPosition());
+
+            if (entity.mesh)
+            {
+                var distanceAway = entityLocateMinDistance + entity.mesh.WorldOBB().Diagonal().Length();
+                if (distanceAway > maxDistanceAway)
+                    maxDistanceAway = distanceAway;
+            }
+        }
+    }
+
+    if (numPlaceableEntities > 0)
+    {
+        entityLocatePosition = averagePosition.Div(numPlaceableEntities);
+        entityLocateDistance = maxDistanceAway;
+
+        menu.addSeparator();
+        menu.addAction("Locate").triggered.connect(OnLocateTriggered);
+    }
+}
+
+function OnLocateTriggered()
+{
+    var cameraEntity = scene.GetEntity(cameraEntityId);
+    if (cameraEntity)
+    {
+        var transform = cameraEntity.placeable.transform;
+        var finalPosition = entityLocatePosition.Add(cameraEntity.placeable.WorldOrientation().Mul(new float3(0,0,entityLocateDistance)));
+        transform.pos = finalPosition;
+        cameraEntity.placeable.transform = transform;
+        cameraEntity.camera.SetActive();
+    }
 }

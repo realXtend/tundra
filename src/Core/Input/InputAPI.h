@@ -282,7 +282,7 @@ private:
     unsigned long releasedMouseButtons;
 
     /// Keep track of key modifiers to be sent with mouse pressed/released
-    unsigned long current_modifiers_;
+    unsigned long currentModifiers;
 
     // The following variables double-buffer the mouse button presses and releases, so that a module will not lose these
     // events depending on what order the module Updates are called.

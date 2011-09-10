@@ -302,6 +302,32 @@ QString Application::UserDocumentsDirectory()
 #endif
 }
 
+QString Application::ParseWildCardFilename(const QString& input)
+{
+    // Parse all the special symbols from the log filename.
+    QString filename = input.trimmed().replace("$(CWD)", CurrentWorkingDirectory(), Qt::CaseInsensitive);
+    filename = filename.replace("$(INSTDIR)", InstallationDirectory(), Qt::CaseInsensitive);
+    filename = filename.replace("$(USERDATA)", UserDataDirectory(), Qt::CaseInsensitive);
+    filename = filename.replace("$(USERDOCS)", UserDocumentsDirectory(), Qt::CaseInsensitive);
+    QRegExp rx("\\$\\(DATE:(.*)\\)");
+    // Qt Regexes don't support non-greedy matching. The above regex should be "\\$\\(DATE:(.*?)\\)". Instad Qt supports
+    // only setting the matching to be non-greedy globally.
+    rx.setMinimal(true); // This is to avoid e.g. $(DATE:yyyyMMdd)_aaa).txt to be incorrectly captured as "yyyyMMdd)_aaa".
+    for(;;) // Loop and find all instances of $(DATE:someformat).
+    {
+        int pos = rx.indexIn(filename);
+        if (pos > -1)
+        {
+            QString dateFormat = rx.cap(1);
+            QString date = QDateTime::currentDateTime().toString(dateFormat);
+            filename = filename.replace(rx.pos(0), rx.cap(0).length(), date);
+        }
+        else
+            break;
+    }
+    return filename;
+}
+
 bool Application::eventFilter(QObject *obj, QEvent *event)
 {
 #ifdef Q_WS_MAC // workaround for Mac, because mouse events are not received as it ought to be
