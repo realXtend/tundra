@@ -20,6 +20,7 @@
 #ifdef EC_TransformGizmo_ENABLED
 #include "EC_TransformGizmo.h"
 #endif
+#include "Profiler.h"
 
 TransformEditor::TransformEditor(const ScenePtr &scene)
 {
@@ -29,7 +30,6 @@ TransformEditor::TransformEditor(const ScenePtr &scene)
         QString uniqueName("TransformEditor" + scene->GetFramework()->Asset()->GenerateUniqueAssetName("",""));
         input = scene->GetFramework()->Input()->RegisterInputContext(uniqueName, 100);
         connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        
         connect(scene->GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
     }
 }
@@ -53,7 +53,11 @@ void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
     {
         boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
         if (p)
-            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name())));
+        {
+            Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
+            EntityPtr parent = (parentPlaceableEntity ? parentPlaceableEntity ->shared_from_this() : EntityPtr());
+            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
+        }
     }
 }
 
@@ -68,7 +72,11 @@ void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
     {
         boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
         if (p)
-            targets.removeOne(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name())));
+        {
+            Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
+            EntityPtr parent = (parentPlaceableEntity ? parentPlaceableEntity ->shared_from_this() : EntityPtr());
+            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
+        }
     }
 }
 
@@ -90,6 +98,29 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
     if (!gizmo)
         CreateGizmo();
 
+    PROFILE(TransformEditor_FocusGizmoPivotToAabbBottomCenter);
+
+    // If all objects have the same parent, parent the gizmo with the common parent for all the objects.
+    entity_id_t prevParentId = 0;
+    Entity *parentEntity = 0;
+    foreach(const AttributeWeakPtr &attr, targets)
+        if (attr.Get())
+        {
+            parentEntity = attr.parentPlaceableEntity.lock().get();
+            if (parentEntity)
+            {
+                if (prevParentId == 0)
+                    prevParentId = parentEntity->Id();
+                if (prevParentId != parentEntity->Id())
+                {
+                    parentEntity = 0;
+                    break;
+                }
+            }
+        }
+
+    gizmo->GetComponent<EC_Placeable>()->SetParent(parentEntity, true);
+
     float3 minPos(1e9f, 1e9f, 1e9f);
     float3 maxPos(-1e9f, -1e9f, -1e9f);
 
@@ -98,18 +129,23 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
-            minPos = Min(minPos, transform->Get().pos);
-            maxPos = Max(maxPos, transform->Get().pos);
+            float3 worldPos = transform->Owner()->ParentEntity()->GetComponent<EC_Placeable>()->WorldPosition();
+            minPos = Min(minPos, worldPos);
+            maxPos = Max(maxPos, worldPos);
         }
     }
 
     // We assume that world's up axis is Y-coordinate axis.
-    float3 pivotPos = float3((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
+    float3 pivotPos = float3((minPos.x + maxPos.x) / 2.f, minPos.y, (minPos.z + maxPos.z) / 2.f);
+    if (parentEntity)
+        pivotPos = parentEntity->GetComponent<EC_Placeable>()->WorldToLocal().MulPos(pivotPos);
     if (gizmo)
     {
         EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
         if (tg)
             tg->SetPosition(pivotPos);
+        ///\todo Hack: for some odd reason when gizmo is parented its scale will go to zero. Hack the scale to stay the same.
+        gizmo->GetComponent<EC_Placeable>()->SetScale(1,1,1);
     }
 #endif
 }
@@ -126,15 +162,35 @@ void TransformEditor::SetGizmoVisible(bool show)
 #endif
 }
 
+float3 TransformEditor::GizmoPos() const
+{
+    if (!gizmo)
+        return float3::zero;
+    boost::shared_ptr<EC_Placeable> placeable = gizmo->GetComponent<EC_Placeable>();
+    if (!placeable)
+        return float3::zero;
+    return placeable->transform.Get().pos;
+}
+
 void TransformEditor::TranslateTargets(const float3 &offset)
 {
+    PROFILE(TransformEditor_TranslateTargets);
     foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
+            // If selected object's parent is also selected, do not apply changes to the child object.
+            if (TargetsContainAlsoParent(attr))
+                continue;
+
             Transform t = transform->Get();
-            t.pos += offset;
+            // If we have parented transform, translate the changes to parent's world space.
+            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+            if (parentPlaceableEntity)
+                t.pos += parentPlaceableEntity->GetComponent<EC_Placeable>()->WorldToLocal().MulDir(offset);
+            else
+                t.pos += offset;
             transform->Set(t, AttributeChange::Default);
         }
     }
@@ -142,25 +198,20 @@ void TransformEditor::TranslateTargets(const float3 &offset)
     FocusGizmoPivotToAabbBottomCenter();
 }
 
-float3 TransformEditor::GetGizmoPos() const
-{
-    if (!gizmo)
-        return float3(0,0,0);
-    boost::shared_ptr<EC_Placeable> placeable = gizmo->GetComponent<EC_Placeable>();
-    if (!placeable)
-        return float3(0,0,0);
-    return placeable->transform.Get().pos;
-}
-
 void TransformEditor::RotateTargets(const Quat &delta)
 {
-    float3 gizmoPos = GetGizmoPos();
+    PROFILE(TransformEditor_RotateTargets);
+    float3 gizmoPos = GizmoPos();
     float3x4 rotation = float3x4::Translate(gizmoPos) * float3x4(delta) * float3x4::Translate(-gizmoPos);
     foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
+            // If selected object's parent is also selected, do not apply changes to the child object.
+            if (TargetsContainAlsoParent(attr))
+                continue;
+
             Transform t = transform->Get();
             t.FromFloat3x4(rotation * t.ToFloat3x4());
             transform->Set(t, AttributeChange::Default);
@@ -172,11 +223,16 @@ void TransformEditor::RotateTargets(const Quat &delta)
 
 void TransformEditor::ScaleTargets(const float3 &offset)
 {
+    PROFILE(TransformEditor_ScaleTargets);
     foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
+            // If selected object's parent is also selected, do not apply changes to the child object.
+            if (TargetsContainAlsoParent(attr))
+                continue;
+
             Transform t = transform->Get();
             t.scale += offset;
             transform->Set(t, AttributeChange::Default);
@@ -184,6 +240,19 @@ void TransformEditor::ScaleTargets(const float3 &offset)
     }
 
     FocusGizmoPivotToAabbBottomCenter();
+}
+
+bool TransformEditor::TargetsContainAlsoParent(const AttributeWeakPtr &attr) const
+{
+    Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+    if (!parentPlaceableEntity)
+        return false; // Not parented, ignore.
+
+    foreach(const AttributeWeakPtr &target, targets)
+        if (target.Get() && target.Get() != attr.Get() && target.Get()->Owner()->ParentEntity() == parentPlaceableEntity)
+            return true;
+
+    return false;
 }
 
 void TransformEditor::CreateGizmo()
@@ -255,7 +324,7 @@ void TransformEditor::OnUpdated(float frameTime)
         OgreWorldPtr ogreWorld = scene.lock()->GetWorld<OgreWorld>();
         if (ogreWorld)
         {
-            for (int i = 0; i < targets.size(); ++i)
+            for(int i = 0; i < targets.size(); ++i)
             {
                 if (!targets[i].owner.expired())
                 {

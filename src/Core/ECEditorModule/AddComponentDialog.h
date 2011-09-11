@@ -26,24 +26,21 @@ public:
     /** @param fw Framework.
         @param ids IDs of entities to which the component will be added.
         @param parent Parent widget.
-        @param f Window flags.
-    */
+        @param f Window flags. */
     AddComponentDialog(Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
-    /// Destroyes the dialog.
     ~AddComponentDialog();
 
     /// Sets available component types.
     /** In order to improve readibility and usability, the "EC_" prefix is stripped from the type name.
-        GetTypeName() however returns the full type name.
-    */
+        GetTypeName() however returns the full type name. */
     void SetComponentList(const QStringList &component_types);
 
     /// Sets default name.
     void SetComponentName(const QString &name);
 
 public slots:
-    /// Returns component typename
+    /// Returns component typename, guaranteed to begin with the "EC_" prefix.
     QString GetTypeName() const;
 
     /// Returns component name
@@ -60,7 +57,7 @@ public slots:
 
 private slots:
     /// Make sure that component name don't duplicate with existing entity's components, and if it do disable ok button.
-    void CheckComponentName(const QString &name);
+    void CheckComponentName();
 
 protected:
     /// Override event from QDialog.
@@ -73,8 +70,7 @@ private:
     QCheckBox *temp_check_box_;
     QPushButton *ok_button_;
     QPushButton *cancel_button_;
-    typedef QList<entity_id_t> EntityIdList;
-    EntityIdList entities_; ///< Entities for which the new component is planned to be added.
+    QLabel *errorLabel;
+    QList<entity_id_t> entities_; ///< Entities for which the new component is planned to be added.
     Framework *framework_;
 };
-

@@ -14,6 +14,7 @@
 #include "AssetReference.h"
 #include "IAsset.h"
 #include "IAssetStorage.h"
+#include "AssetAPI.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -218,7 +219,9 @@ AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
     assetPtr(asset)
 {
-    setText(0, asset->Name());
+    QString outPathFileName;
+    QString name = AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &outPathFileName);
+    setText(0, outPathFileName);
     MarkUnloaded(!asset->IsLoaded());
 }
 

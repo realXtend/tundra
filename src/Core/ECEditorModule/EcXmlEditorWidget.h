@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EcXmlEditorWidget.h
- *  @brief  Entity-component XML editor widget used for editing EC attributes in XML format.
+ *  @brief  Widget for entity-component XML editing.
  */
 
 #pragma once
@@ -15,7 +15,7 @@ class QTextEdit;
 
 class Framework;
 
-/// Entity-component XML editor widget used for editing EC attributes in XML format.
+/// Widget for entity-component XML editing.
 /// \ingroup ECEditorModuleClient.
 class EcXmlEditorWidget : public QWidget
 {
@@ -23,19 +23,18 @@ class EcXmlEditorWidget : public QWidget
 
 public:
     /// Constructor.
-    /// @param framework Framework.
-    /// @param parent Parent widget.
-    EcXmlEditorWidget(Framework *framework, QWidget *parent = 0);
+    /** @param fw Framework.
+        @param parent Parent widget. */
+    EcXmlEditorWidget(Framework *fw, QWidget *parent = 0);
 
-    /// Destructor.
     ~EcXmlEditorWidget();
 
     /// Sets the entities whose EC attributes we want to edit as XML.
-    /// @param entities List of entities.
+    /** @param entities List of entities. */
     void SetEntity(const QList<EntityPtr> &entities);
 
     /// Sets the components whose EC attributes we want to edit as XML.
-    /// @param components List of components.
+    /** @param components List of components. */
     void SetComponent(const QList<ComponentPtr> &components);
 
 public slots:
@@ -48,21 +47,17 @@ public slots:
     /// Saves the modifications.
     void Save();
 
+signals:
+    /// Emitted when changes to the entity-component XML are saved.
+    void Saved();
+
 protected:
     /// QWidget override.
     void changeEvent(QEvent *event);
 
 private:
-    /// Framework.
-    Framework *framework_;
-
-    /// XML text edit field.
-    QTextEdit *xmlEdit_;
-
-    /// Entities whose EC's we're editing.
-    QList<EntityWeakPtr> entities_;
-
-    /// Components which we're editing.
-    QList<ComponentWeakPtr > components_;
+    Framework *framework; ///< Framework.
+    QTextEdit *xmlEdit; ///< XML text edit field.
+    QList<EntityWeakPtr> targetEntities; ///< Entities whose EC's we're editing.
+    QList<ComponentWeakPtr > targetComponents; ///< Components which we're editing.
 };
-

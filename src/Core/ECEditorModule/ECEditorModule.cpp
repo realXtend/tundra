@@ -27,7 +27,7 @@
 
 const QString cShowAidsSetting("show visual editing aids");
 
-ECEditorModule::ECEditorModule() : 
+ECEditorModule::ECEditorModule() :
     IModule("ECEditor"),
     showVisualAids(false),
     toggleSelectAllEntities(false)
@@ -178,12 +178,16 @@ void ECEditorModule::CreateXmlEditor(const QList<EntityPtr> &entities)
 
     if (!xmlEditor)
     {
-        xmlEditor = new EcXmlEditorWidget(framework_);
-        xmlEditor->setParent(GetFramework()->Ui()->MainWindow());
+        xmlEditor = new EcXmlEditorWidget(framework_, GetFramework()->Ui()->MainWindow());
+        xmlEditor->setAttribute(Qt::WA_DeleteOnClose);
         xmlEditor->setWindowFlags(Qt::Tool);
+        if (activeEditor) // make sure the editing gizmo follow the entity when it's saved
+            connect(xmlEditor, SIGNAL(Saved()), activeEditor.data(), SLOT(RefreshPropertyBrowser()), Qt::UniqueConnection);
     }
 
     xmlEditor->SetEntity(entities);
+    xmlEditor->show();
+    xmlEditor->activateWindow();
 }
 
 void ECEditorModule::CreateXmlEditor(ComponentPtr component)
@@ -202,12 +206,14 @@ void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
 
     if (!xmlEditor)
     {
-        xmlEditor = new EcXmlEditorWidget(framework_);
-        xmlEditor->setParent(GetFramework()->Ui()->MainWindow());
+        xmlEditor = new EcXmlEditorWidget(framework_, GetFramework()->Ui()->MainWindow());
+        xmlEditor->setAttribute(Qt::WA_DeleteOnClose);
         xmlEditor->setWindowFlags(Qt::Tool);
     }
 
     xmlEditor->SetComponent(components);
+    xmlEditor->show();
+    xmlEditor->activateWindow();
 }
 
 void ECEditorModule::HandleKeyPressed(KeyEvent *e)

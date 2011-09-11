@@ -218,7 +218,6 @@ void AssetsWindow::Initialize()
 
     connect(treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
     connect(treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
-    
     connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(AssetDoubleClicked(QTreeWidgetItem*, int)));
 }
 
@@ -260,7 +259,7 @@ bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
 
 void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
 {
-    foreach(AssetReference ref, asset->FindReferences())
+    foreach(const AssetReference &ref, asset->FindReferences())
     {
         AssetPtr asset = framework->Asset()->GetAsset(ref.ref);
         if (asset && alreadyAdded.find(asset) == alreadyAdded.end())

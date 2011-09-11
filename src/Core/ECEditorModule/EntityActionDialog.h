@@ -21,8 +21,7 @@ struct InvokeItem;
 
 /// Dialog for invoking entity actions.
 /** Emits finished(0) when "Close" is clicked, finished(1) when "Close and Execute" is cliked,
-    and finished(2), when "Execute" is cliked. The dialog is destroyed when hide() or close() is called for it.
-*/
+    and finished(2), when "Execute" is cliked. The dialog is destroyed when hide() or close() is called for it. */
 class ECEDITOR_MODULE_API EntityActionDialog : public QDialog
 {
     Q_OBJECT
@@ -30,18 +29,15 @@ class ECEDITOR_MODULE_API EntityActionDialog : public QDialog
 public:
     /// Constructs the dialog and populates action combo box with union of all the actions of all the @c entities.
     /** @param entities Entities for which action is performed.
-        @param parent Parent widget.
-    */
+        @param parent Parent widget. */
     EntityActionDialog(const QList<EntityWeakPtr> &entities, QWidget *parent = 0);
 
     /// Constructs the dialog and uses information of @c invokeItem to fill the currently active function and parameter editors.
     /** @param entities Entities for which action is performed.
         @param invokeItem Invoke history item 
-        @param parent Parent widget.
-    */
+        @param parent Parent widget. */
     EntityActionDialog(const QList<EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *parent = 0);
 
-public slots:
     /// Returns list of entities for which the action is triggered.
     QList<EntityWeakPtr> Entities() const;
 
@@ -59,31 +55,15 @@ protected:
     void hideEvent(QHideEvent *);
 
 private:
-    /// Creates the widget's contents.
     void Initialize();
 
-    /// Action name combo box.
     QComboBox *actionComboBox;
-
-    /// Line edit for actions parameters.
     QLineEdit *parametersLineEdit;
-
-    /// "Local" check box.
     QCheckBox *localCheckBox;
-
-    /// "Server" check box.
     QCheckBox *serverComboBox;
-
-    /// "Peers" check box.
     QCheckBox *peersComboBox;
-
-    /// "Execute" button.
     QPushButton *execButton;
-
-    /// "Execute and Close" button.
     QPushButton *execAndCloseButton;
-
-    /// List of entities for 
     QList<EntityWeakPtr> entities;
 
 private slots:
@@ -93,4 +73,3 @@ private slots:
     /// Emits finished(2).
     void Execute();
 };
-
