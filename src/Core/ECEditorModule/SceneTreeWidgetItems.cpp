@@ -220,7 +220,7 @@ AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
     assetPtr(asset)
 {
     QString outPathFileName;
-    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &outPathFileName);
+    AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &outPathFileName);
     setText(0, outPathFileName);
     MarkUnloaded(!asset->IsLoaded());
 }
