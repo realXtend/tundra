@@ -14,7 +14,7 @@ class QtProperty;
 class ECComponentEditor;
 
 /// Data structure that holds all information that ECBrowser needs to know about the component.
-/** One ComponentGroup data memeber per ECComponentEditor.. Each component that we want to add to this object
+/** One ComponentGroup data memeber per ECComponentEditor. Each component that we want to add to this object
     need to share exatly same attributes as other components in this object's vector. */
 struct ComponentGroup
 {

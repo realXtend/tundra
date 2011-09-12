@@ -386,7 +386,7 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
     /*QPoint globalPos = mapToGlobal(pos);
     QPoint point = treeWidget_->mapFromGlobal(globalPos);*/
     QTreeWidgetItem *treeWidgetItem = treeWidget_->itemAt(pos.x(), pos.y() - 20);
-    if(treeWidgetItem)
+    if (treeWidgetItem)
         treeWidget_->setCurrentItem(treeWidgetItem);
     else
         treeWidget_->setCurrentItem(0);
@@ -402,7 +402,7 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
         // Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
         // If root item is selected we assume that we want to remove component and non root items are attributes
         // that need to removed (attribute delete is only enabled with EC_DynamicComponent).
-        QAction *deleteAction= new QAction(tr("Delete"), menu_);
+        QAction *deleteAction = new QAction(tr("Delete"), menu_);
 
         //Add shortcuts for actions
         copyComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
@@ -423,18 +423,25 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
             menu_->addAction(pasteComponent);
             menu_->addAction(editXml);
         }
+
         connect(deleteAction, SIGNAL(triggered()), this, SLOT(OnDeleteAction()), Qt::UniqueConnection);
         menu_->addAction(deleteAction);
 
-        if(iter != itemToComponentGroups_.end())
+        if (iter != itemToComponentGroups_.end())
         {
-            if((*iter)->isDynamic_)
+            if ((*iter)->isDynamic_)
             {
                 QAction *addAttribute = new QAction(tr("Add new attribute..."), menu_);
-                QObject::connect(addAttribute, SIGNAL(triggered()), this, SLOT(CreateAttribute()), Qt::UniqueConnection);
+                connect(addAttribute, SIGNAL(triggered()), this, SLOT(CreateAttribute()), Qt::UniqueConnection);
                 menu_->addAction(addAttribute);
             }
-            
+            else
+            {
+                // Disable delete action for static attributes
+                if (treeWidget_->currentItem() && treeWidget_->currentItem()->parent())
+                    deleteAction->setDisabled(true);
+            }
+
             QList<QObject*> targets;
             for (unsigned i = 0; i < (*iter)->components_.size(); ++i)
             {
@@ -716,7 +723,7 @@ void ECBrowser::CreateAttribute()
         EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(component.get());
         if (dc)
         {
-            if(dc->CreateAttribute(typeName, name))
+            if (dc->CreateAttribute(typeName, name))
                 dc->ComponentChanged(AttributeChange::Default);
         }
     }
