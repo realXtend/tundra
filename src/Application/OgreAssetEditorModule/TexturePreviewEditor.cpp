@@ -203,10 +203,7 @@ void TexturePreviewEditor::Initialize()
     layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
 
-    // Get controls
     okButtonName_ = mainWidget_->findChild<QPushButton *>("okButton");
-    connect(okButtonName_, SIGNAL(clicked()), this, SLOT(Closed()));
-
     headerLabel_ = mainWidget_->findChild<QLabel *>("imageNameLabel");
     scaleLabel_ = mainWidget_->findChild<QLabel *>("imageScaleLabel");
 
