@@ -219,8 +219,8 @@ AssetTreeWidgetSelection AssetTreeWidget::GetSelection() const
         else
         {
             AssetStorageItem* sItem = dynamic_cast<AssetStorageItem *>(item);
-                if (sItem)
-                    sel.storages << sItem;
+            if (sItem)
+                sel.storages << sItem;
         }
     }
 
@@ -229,25 +229,24 @@ AssetTreeWidgetSelection AssetTreeWidget::GetSelection() const
 
 void AssetTreeWidget::DeleteFromSource()
 {
-    int ret = QMessageBox::warning(
-        this,
-        tr("Delete From Source"),
-        tr("Are you sure want to delete the selected asset(s) permanently from the source?"),
-        QMessageBox::Ok | QMessageBox::Cancel,
-        QMessageBox::Cancel);
+    // AssetAPI::DeleteAssetFromStorage() signals will start deletion of tree widget asset items:
+    // Gather the asset refs to a separate list beforehand in order to prevent crash.
+    QStringList assetRefs, assetsToBeDeleted;
+    foreach(AssetItem *item, GetSelection().assets)
+        if (item->Asset())
+        {
+            assetRefs << item->Asset()->Name();
+            assetsToBeDeleted << item->Asset()->DiskSource();
+        }
 
+     QMessageBox msgBox(QMessageBox::Warning, tr("Delete From Source"),
+        tr("Are you sure want to delete the selected asset(s) permanently from the source?\n"),
+        QMessageBox::Ok | QMessageBox::Cancel, this);
+    msgBox.setDetailedText(assetsToBeDeleted.join("\n"));
+    int ret = msgBox.exec();
     if (ret == QMessageBox::Ok)
-    {
-        // AssetAPI::DeleteAssetFromStorage() signals will start deletion of tree widget asset items:
-        // Gather the asset refs to a separate list beforehand in order to prevent crash.
-        QStringList assetRefs;
-        foreach(AssetItem *item, GetSelection().assets)
-            if (item->Asset())
-                assetRefs << item->Asset()->Name();
-
         foreach(QString ref, assetRefs)
             framework->Asset()->DeleteAssetFromStorage(ref);
-    }
 }
 
 void AssetTreeWidget::DeleteFromCache()
