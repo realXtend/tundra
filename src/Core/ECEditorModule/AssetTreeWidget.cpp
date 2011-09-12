@@ -139,10 +139,8 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 
         // Reload from cache & delete from cache are not possible for e.g. local assets don't have a cached version of the asset,
         // Even if the asset is an HTTP asset, these options are disable if there does not exist a cached version of that asset in the cache.
-        // Reload from cache is not possible if asset's disk source is empty.
         foreach(AssetItem *item, sel.assets)
             if (item->Asset() && framework->Asset()->GetAssetCache()->FindInCache(item->Asset()->Name()).isEmpty())
-            //if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
             {
                 reloadFromCacheAction->setDisabled(true);
                 deleteCacheAction->setDisabled(true);
@@ -161,11 +159,17 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
         menu->addAction(openFileLocationAction);
         connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
-        // Not possible if disk source is empty.
+
+        // Delete from Source, Delete from Cache, Reload from Source, Unload, Open File Location
+        // are not applicable for assets which have been created programmatically (disk source is empty).
         ///\todo Currently disk source is empty for unloaded assets, and open file location is disabled for them. This should not happen.
         foreach(AssetItem *item, sel.assets)
             if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
             {
+                deleteSourceAction->setDisabled(true);
+                deleteCacheAction->setDisabled(true);
+                reloadFromSourceAction->setDisabled(true);
+                unloadAction->setDisabled(true);
                 openFileLocationAction->setDisabled(true);
                 break;
             }
