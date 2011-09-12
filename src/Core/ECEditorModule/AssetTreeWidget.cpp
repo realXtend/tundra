@@ -137,11 +137,15 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         QAction *reloadFromCacheAction = new QAction(tr("Reload from cache"), deleteMenu);
         QAction *unloadAction = new QAction(tr("Unload"), deleteMenu);
 
+        // Reload from cache & delete from cache are not possible for e.g. local assets don't have a cached version of the asset,
+        // Even if the asset is an HTTP asset, these options are disable if there does not exist a cached version of that asset in the cache.
         // Reload from cache is not possible if asset's disk source is empty.
         foreach(AssetItem *item, sel.assets)
-            if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
+            if (item->Asset() && framework->Asset()->GetAssetCache()->FindInCache(item->Asset()->Name()).isEmpty())
+            //if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
             {
                 reloadFromCacheAction->setDisabled(true);
+                deleteCacheAction->setDisabled(true);
                 break;
             }
 
@@ -156,8 +160,15 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 
         QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
         menu->addAction(openFileLocationAction);
-
         connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
+        // Not possible if disk source is empty.
+        ///\todo Currently disk source is empty for unloaded assets, and open file location is disabled for them. This should not happen.
+        foreach(AssetItem *item, sel.assets)
+            if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
+            {
+                openFileLocationAction->setDisabled(true);
+                break;
+            }
 
         menu->addSeparator();
 
@@ -239,7 +250,7 @@ void AssetTreeWidget::DeleteFromSource()
             assetsToBeDeleted << item->Asset()->DiskSource();
         }
 
-     QMessageBox msgBox(QMessageBox::Warning, tr("Delete From Source"),
+    QMessageBox msgBox(QMessageBox::Warning, tr("Delete From Source"),
         tr("Are you sure want to delete the selected asset(s) permanently from the source?\n"),
         QMessageBox::Ok | QMessageBox::Cancel, this);
     msgBox.setDetailedText(assetsToBeDeleted.join("\n"));
