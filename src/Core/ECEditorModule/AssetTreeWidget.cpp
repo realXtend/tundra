@@ -28,11 +28,6 @@
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
 
-#ifdef _WINDOWS
-#include <WinSock2.h>
-#include <windows.h>
-#endif
-
 #include "MemoryLeakCheck.h"
 
 AssetTreeWidget::AssetTreeWidget(Framework *fw, QWidget *parent) :
@@ -480,27 +475,8 @@ void AssetTreeWidget::OpenFileLocation()
     AssetItem *item = selection.first();
     if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
     {
-#ifdef _WINDOWS
-        // Craft command line string
         QString path = QDir::toNativeSeparators(QFileInfo(item->Asset()->DiskSource()).dir().path());
-        WCHAR commandLineStr[256] = {};
-        WCHAR wcharPath[256] = {};
-        mbstowcs(wcharPath, path.toStdString().c_str(), 254);
-        wsprintf(commandLineStr, L"explorer.exe %s", wcharPath);
-
-        STARTUPINFO startupInfo;
-        memset(&startupInfo, 0, sizeof(STARTUPINFO));
-        startupInfo.cb = sizeof(STARTUPINFO);
-        PROCESS_INFORMATION processInfo;
-        memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
-        /*BOOL success = */CreateProcessW(NULL, commandLineStr, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS,
-            NULL, NULL, &startupInfo, &processInfo);
-
-        CloseHandle(processInfo.hProcess);
-        CloseHandle(processInfo.hThread);
-#endif
-       ///\todo Cross-platform
-       /// Might be possible to use this: http://doc.qt.nokia.com/latest/qdesktopservices.html#openUrl -jj.
+        QDesktopServices::openUrl("file:///" + path);
     }
 }
 
