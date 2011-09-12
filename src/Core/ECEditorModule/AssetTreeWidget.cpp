@@ -155,9 +155,6 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         connect(unloadAction, SIGNAL(triggered()), SLOT(Unload()));
 
         QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
-#ifndef _WINDOWS
-        openFileLocationAction->setDisabled(true);
-#endif
         menu->addAction(openFileLocationAction);
 
         connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
