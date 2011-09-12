@@ -263,24 +263,23 @@ void EC_Placeable::AttachNode()
         // 1) attach to scene root node
         // 2) attach to another EC_Placeable's scene node
         // 3) attach to a bone on a skeletal mesh
-        // Disconnect from the EntityCreated & ParentMeshChanged signals, as responding to them might not be needed anymore.
+        // Disconnect from the EntityCreated & ComponentAdded signals, as responding to them might not be needed anymore.
         // We will reconnect signals as necessary
-        disconnect(this, SLOT(CheckParentEntityCreated(Entity*, AttributeChange::Type)));
-        disconnect(this, SLOT(OnParentMeshChanged()));
-        disconnect(this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
+        Entity* ownEntity = ParentEntity();
+        Scene* scene = ownEntity ? ownEntity->ParentScene() : 0;
+        if (scene)
+            scene->disconnect(this, SLOT(CheckParentEntityCreated(Entity*, AttributeChange::Type)));
+        if (ownEntity)
+            ownEntity->disconnect(this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
         
         // Try to attach to another entity if the parent ref is non-empty
         // Make sure we're not trying to attach to ourselves as the parent
         const EntityReference& parent = parentRef.Get();
         if (!parent.IsEmpty())
         {
-            Entity* ownEntity = ParentEntity();
-            if (!ownEntity)
+            if (!ownEntity || !scene)
                 return;
-            Scene* scene = ownEntity->ParentScene();
-            if (!scene)
-                return;
-
+            
             Entity* parentEntity = parent.Lookup(scene).get();
             if (parentEntity == ownEntity)
             {

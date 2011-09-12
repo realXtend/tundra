@@ -162,12 +162,12 @@ void EC_Sound::PlaySound()
         if (!placeable->parentRef.Get().IsEmpty())
             connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()), Qt::UniqueConnection);
         else
-            disconnect(this, SLOT(ConstantPositionUpdate()));
+            disconnect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()));
     }
     else // Play back sound as a nonpositional sound, if no EC_Placeable was found or if spatial was not set.
     {
         soundChannel = GetFramework()->Audio()->PlaySound(audioAsset, SoundChannel::Ambient);
-        disconnect(this, SLOT(ConstantPositionUpdate()));
+        disconnect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()));
     }
 
     if (soundChannel)
@@ -279,13 +279,13 @@ void EC_Sound::ConstantPositionUpdate()
     PROFILE(EC_Sound_ConstantPositionUpdate);
     if (!ParentEntity())
     {
-        disconnect(this, SLOT(ConstantPositionUpdate()));
+        disconnect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()));
         return;
     }
     EC_Placeable* placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
     if ((!placeable) || (!soundChannel) || (!spatial.Get()))
     {
-        disconnect(this, SLOT(ConstantPositionUpdate()));
+        disconnect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()));
         return;
     }
     

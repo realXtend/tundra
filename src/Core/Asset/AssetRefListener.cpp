@@ -30,8 +30,13 @@ void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef, const QString&
 void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef, const QString& assetType)
 {
     // Disconnect from any previous transfer we might be listening to
-    disconnect(this, SLOT(OnTransferSucceeded(AssetPtr)));
-    disconnect(this, SLOT(OnTransferFailed(IAssetTransfer*, QString)));
+    if (!currentTransfer.expired())
+    {
+        IAssetTransfer* current = currentTransfer.lock().get();
+        current->disconnect(this, SLOT(OnTransferSucceeded(AssetPtr)));
+        current->disconnect(this, SLOT(OnTransferFailed(IAssetTransfer*, QString)));
+        currentTransfer.reset();
+    }
     
     assert(assetApi);
 
@@ -43,7 +48,8 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
     
     connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnTransferSucceeded(AssetPtr)), Qt::UniqueConnection);
     connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(OnTransferFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
-
+    currentTransfer = transfer;
+    
     // Disconnect from the old asset's load signal
     AssetPtr assetData = asset.lock();
     if (assetData)
