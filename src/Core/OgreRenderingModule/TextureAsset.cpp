@@ -180,9 +180,16 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
 
     try
     {
-        Ogre::Image new_image;
-        ogreTexture->convertToImage(new_image);
-        Ogre::DataStreamPtr imageStream = new_image.encode(serializationParameters.toStdString());
+        Ogre::Image newImage;
+        ogreTexture->convertToImage(newImage);
+        std::string formatExtension = serializationParameters.trimmed().toStdString();
+        if (formatExtension.empty())
+        {
+            LogDebug("TextureAsset::SerializeTo: no serializationParameters given. Trying to guess format extension from the asset name.");
+            formatExtension = QFileInfo(Name()).suffix().toStdString();
+        }
+
+        Ogre::DataStreamPtr imageStream = newImage.encode(formatExtension);
         if (imageStream.get() && imageStream->size() > 0)
         {
             data.resize(imageStream->size());
