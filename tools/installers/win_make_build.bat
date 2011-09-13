@@ -1,10 +1,11 @@
 @rem Makes a build directory of the Tundra, so that you can run the NSIS install script
-@rem You should have VS2008 redistributable (vcredist_x86.exe) in your viewer trunk root
+@rem You should have VS2008 redistributable (vcredist_x86.exe) in your <TundraRoot>\tools\installer
 @rem as well as OpenAL installer (oalinst.exe)
 @echo off
+cd ..\..
 rmdir build /S /Q
 md build
-copy README build
+copy README.md build
 copy LICENSE build
 copy tools\installers\vcredist_x86.exe build
 copy tools\installers\oalinst.exe build
