@@ -47,7 +47,7 @@ public:
     float3 normal;
     /// Submesh index in entity, starting from 0
     unsigned submesh;
-    /// Triangle index in mesh
+    /// Triangle index in submesh
     unsigned index;
     /// U coord in entity. 0 if no texture mapping
     float u;

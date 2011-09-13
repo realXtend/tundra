@@ -17,6 +17,9 @@
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 #include "AttributeMetadata.h"
+#include "Profiler.h"
+#include "Math/Float2.h"
+#include "Math/Ray.h"
 
 #include <Ogre.h>
 #include <OgreTagPoint.h>
@@ -35,6 +38,7 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     meshMaterial(this, "Mesh materials", AssetReferenceList("OgreMaterial")),
     drawDistance(this, "Draw distance", 0.0f),
     castShadows(this, "Cast shadows", false),
+    raycastSubmeshMask(this, "Raycast submesh mask", -1),
     entity_(0),
     attached_(false)
 {
@@ -1357,4 +1361,155 @@ bool EC_Mesh::HasMaterialsChanged() const
             return true;
     }
     return false;
+}
+
+Ogre::Vector2 FindUVs(const Ogre::Vector3& hitPoint, const Ogre::Vector3& t1, const Ogre::Vector3& t2, const Ogre::Vector3& t3, const Ogre::Vector2& tex1, const Ogre::Vector2& tex2, const Ogre::Vector2& tex3)
+{
+    Ogre::Vector3 v1 = hitPoint - t1;
+    Ogre::Vector3 v2 = hitPoint - t2;
+    Ogre::Vector3 v3 = hitPoint - t3;
+    
+    float area1 = (v2.crossProduct(v3)).length() / 2.0f;
+    float area2 = (v1.crossProduct(v3)).length() / 2.0f;
+    float area3 = (v1.crossProduct(v2)).length() / 2.0f;
+    float sum_area = area1 + area2 + area3;
+    if (sum_area <= 0.0)
+        return Ogre::Vector2(0.0f, 0.0f);
+    
+    Ogre::Vector3 bary(area1 / sum_area, area2 / sum_area, area3 / sum_area);
+    Ogre::Vector2 t = tex1 * bary.x + tex2 * bary.y + tex3 * bary.z;
+    
+    return t;
+}
+
+bool EC_Mesh::Raycast(const Ray& ray, float* distance, unsigned* subMeshIndex, unsigned* triangleIndex, float3* hitPosition, float3* normal, float2* uv)
+{
+    PROFILE(EC_Mesh_Raycast)
+    
+    if (!entity_)
+        return false;
+    
+    float3x4 localToWorld = LocalToWorld();
+    float3x4 worldToLocal = localToWorld.Inverted();
+    Ray localRay = ray;
+    localRay.Transform(worldToLocal);
+    Ogre::Ray ogreLocalRay = localRay;
+    unsigned submeshMask = raycastSubmeshMask.Get();
+    
+    Ogre::MeshPtr mesh = entity_->getMesh();
+    bool useSoftwareBlendingVertices = entity_->hasSkeleton();
+    
+    float closestDistance = -1.0f; // In objectspace
+    
+    for (unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        // Note: submeshes over 32 are always included in the raycast, as we run out of bits
+        if (i < 32 && (submeshMask & (1 << i)) == 0)
+            continue;
+        
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        
+        Ogre::VertexData* vertexData;
+        if (useSoftwareBlendingVertices)
+            vertexData = submesh->useSharedVertices ? entity_->_getSkelAnimVertexData() : entity_->getSubEntity(i)->_getSkelAnimVertexData();
+        else
+            vertexData = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+        
+        const Ogre::VertexElement* posElem =
+            vertexData->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
+        if (!posElem)
+            continue; // No position element, can not raycast
+        
+        Ogre::HardwareVertexBufferSharedPtr vbufPos =
+            vertexData->vertexBufferBinding->getBuffer(posElem->getSource());
+        unsigned char* pos = static_cast<unsigned char*>(vbufPos->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        unsigned posOffset = posElem->getOffset();
+        unsigned posSize = vbufPos->getVertexSize();
+        
+        // Texcoord element is not mandatory
+        unsigned char* texCoord = 0;
+        unsigned texOffset = 0;
+        unsigned texSize = 0;
+        Ogre::HardwareVertexBufferSharedPtr vbufTex;
+        const Ogre::VertexElement *texElem = vertexData->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
+        if (texElem)
+        {
+            vbufTex = vertexData->vertexBufferBinding->getBuffer(texElem->getSource());
+            // Check if the texcoord buffer is different than the position buffer, in that case lock it separately
+            if (vbufTex != vbufPos)
+                texCoord = static_cast<unsigned char*>(vbufTex->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+            else
+                texCoord = pos;
+            texOffset = texElem->getOffset();
+            texSize = vbufTex->getVertexSize();
+        }
+        
+        Ogre::IndexData* indexData = submesh->indexData;
+        Ogre::HardwareIndexBufferSharedPtr ibuf = indexData->indexBuffer;
+
+        unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
+        bool use32BitIndices = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
+        
+        for (unsigned j = 0; j < indexData->indexCount - 2; j += 3)
+        {
+            unsigned i0, i1, i2;
+            if (use32BitIndices)
+            {
+                i0 = pLong[j];
+                i1 = pLong[j+1];
+                i2 = pLong[j+2];
+            }
+            else
+            {
+                i0 = pShort[j];
+                i1 = pShort[j+1];
+                i2 = pShort[j+2];
+            }
+            
+            const Ogre::Vector3& v0 = *((Ogre::Vector3*)(pos + posOffset + i0 * posSize));
+            const Ogre::Vector3& v1 = *((Ogre::Vector3*)(pos + posOffset + i1 * posSize));
+            const Ogre::Vector3& v2 = *((Ogre::Vector3*)(pos + posOffset + i2 * posSize));
+            
+            std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ogreLocalRay, v0, v1, v2, true, false);
+            if (hit.first && hit.second >= 0.0f && (closestDistance < 0.0f || hit.second < closestDistance))
+            {
+                closestDistance = hit.second;
+                
+                float3 localHitPoint = ogreLocalRay.getPoint(hit.second);
+                float3 worldHitPoint = localToWorld.TransformPos(localHitPoint);
+                
+                if (subMeshIndex)
+                    *subMeshIndex = i;
+                if (triangleIndex)
+                    *triangleIndex = j;
+                if (distance)
+                    *distance = (worldHitPoint - ray.pos).Length();
+                if (hitPosition)
+                    *hitPosition = worldHitPoint;
+                if (uv && texElem)
+                {
+                    const Ogre::Vector2& t0 = *((Ogre::Vector2*)(texCoord + texOffset + i0 * texSize));
+                    const Ogre::Vector2& t1 = *((Ogre::Vector2*)(texCoord + texOffset + i1 * texSize));
+                    const Ogre::Vector2& t2 = *((Ogre::Vector2*)(texCoord + texOffset + i2 * texSize));
+                    
+                    *uv = FindUVs(localHitPoint, v0, v1, v2, t0, t1, t2);
+                }
+                if (normal)
+                {
+                    float3 edge1 = v1 - v0;
+                    float3 edge2 = v2 - v0;
+                    *normal = localToWorld.TransformDir(edge1.Cross(edge2));
+                    normal->Normalize();
+                }
+            }
+        }
+        
+        vbufPos->unlock();
+        if (!vbufTex.isNull() && vbufTex != vbufPos)
+            vbufTex->unlock();
+        ibuf->unlock();
+    }
+    
+    return closestDistance >= 0.0f;
 }

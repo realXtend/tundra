@@ -9,12 +9,14 @@
 #include "Entity.h"
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
+#include "EC_Mesh.h"
 #include "Scene.h"
 #include "CompositionHandler.h"
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "FrameAPI.h"
 #include "Transform.h"
+#include "Math/float2.h"
 #include "Math/float3x4.h"
 #include "Math/AABB.h"
 #include "Math/OBB.h"
@@ -96,192 +98,6 @@ std::string OgreWorld::GetUniqueObjectName(const std::string &prefix)
     return renderer_->GetUniqueObjectName(prefix);
 }
 
-uint GetSubmeshFromIndexRange(uint index, const std::vector<uint>& submeshstartindex)
-{
-    for(uint i = 0; i < submeshstartindex.size(); ++i)
-    {
-        uint start = submeshstartindex[i];
-        uint end;
-        if (i < submeshstartindex.size() - 1)
-            end = submeshstartindex[i+1];
-        else
-            end = 0x7fffffff;
-        if ((index >= start) && (index < end))
-            return i;
-    }
-    return 0; // should never happen
-}
-
-// Get the mesh information for the given mesh. Version which supports animation
-// Adapted from http://www.ogre3d.org/wiki/index.php/Raycasting_to_the_polygon_level
-void GetMeshInformation(
-    Ogre::Entity *entity,
-    std::vector<Ogre::Vector3>& vertices,
-    std::vector<Ogre::Vector2>& texcoords,
-    std::vector<uint>& indices,
-    std::vector<uint>& submeshstartindex,
-    const Ogre::Vector3 &position,
-    const Ogre::Quaternion &orient,
-    const Ogre::Vector3 &scale)
-{
-    PROFILE(OgreWorld_GetMeshInformation);
-
-    bool added_shared = false;
-    size_t current_offset = 0;
-    size_t shared_offset = 0;
-    size_t next_offset = 0;
-    size_t index_offset = 0;
-    size_t vertex_count = 0;
-    size_t index_count = 0;
-    Ogre::MeshPtr mesh = entity->getMesh();
-
-    bool useSoftwareBlendingVertices = entity->hasSkeleton();
-    //if (useSoftwareBlendingVertices)
-    //    entity->_updateAnimation();
-
-    submeshstartindex.resize(mesh->getNumSubMeshes());
-
-    // Calculate how many vertices and indices we're going to need
-    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
-    {
-        Ogre::SubMesh* submesh = mesh->getSubMesh( i );
-        // We only need to add the shared vertices once
-        if (submesh->useSharedVertices)
-        {
-            if (!added_shared)
-            {
-                vertex_count += mesh->sharedVertexData->vertexCount;
-                added_shared = true;
-            }
-        }
-        else
-        {
-            vertex_count += submesh->vertexData->vertexCount;
-        }
-
-        // Add the indices
-        submeshstartindex[i] = index_count;
-        index_count += submesh->indexData->indexCount;
-    }
-
-    // Allocate space for the vertices and indices
-    vertices.resize(vertex_count);
-    texcoords.resize(vertex_count);
-    indices.resize(index_count);
-
-    added_shared = false;
-
-    // Run through the submeshes again, adding the data into the arrays
-    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
-    {
-        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
-
-        // Get vertex data
-        //Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-        Ogre::VertexData* vertex_data;
-
-        //When there is animation:
-        if (useSoftwareBlendingVertices)
-            vertex_data = submesh->useSharedVertices ? entity->_getSkelAnimVertexData() : entity->getSubEntity(i)->_getSkelAnimVertexData();
-        else
-            vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-
-        if ((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
-        {
-            if(submesh->useSharedVertices)
-            {
-                added_shared = true;
-                shared_offset = current_offset;
-            }
-
-            const Ogre::VertexElement* posElem =
-                vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-            const Ogre::VertexElement *texElem = 
-                vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
-
-            Ogre::HardwareVertexBufferSharedPtr vbuf =
-                vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
-
-            unsigned char* vertex =
-                static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-
-            // There is _no_ baseVertexPointerToElement() which takes an Ogre::Real or a double
-            //  as second argument. So make it float, to avoid trouble when Ogre::Real will
-            //  be comiled/typedefed as double:
-            //      Ogre::Real* pReal;
-            float* pReal = 0;
-
-            for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
-            {
-                posElem->baseVertexPointerToElement(vertex, &pReal);
-
-                Ogre::Vector3 pt(pReal[0], pReal[1], pReal[2]);
-
-                vertices[current_offset + j] = (orient * (pt * scale)) + position;
-                if (texElem)
-                {
-                    texElem->baseVertexPointerToElement(vertex, &pReal);
-                    texcoords[current_offset + j] = Ogre::Vector2(pReal[0], pReal[1]);
-                }
-                else
-                    texcoords[current_offset + j] = Ogre::Vector2(0.0f, 0.0f);
-            }
-
-            vbuf->unlock();
-            next_offset += vertex_data->vertexCount;
-        }
-
-        Ogre::IndexData* index_data = submesh->indexData;
-        size_t numTris = index_data->indexCount / 3;
-        Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
-
-        unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
-        size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
-
-        bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
-        if (use32bitindexes)
-            for(size_t k = 0; k < numTris*3; ++k)
-                indices[index_offset++] = pLong[k] + static_cast<uint>(offset);
-        else
-            for(size_t k = 0; k < numTris*3; ++k)
-                indices[index_offset++] = static_cast<uint>(pShort[k]) + static_cast<unsigned long>(offset);
-
-        ibuf->unlock();
-        current_offset = next_offset;
-    }
-}
-
-Ogre::Vector2 FindUVs(
-    const Ogre::Ray& ray,
-    float distance,
-    const std::vector<Ogre::Vector3>& vertices,
-    const std::vector<Ogre::Vector2>& texcoords,
-    const std::vector<uint> indices, uint foundindex)
-{
-    Ogre::Vector3 point = ray.getPoint(distance);
-
-    Ogre::Vector3 t1 = vertices[indices[foundindex]];
-    Ogre::Vector3 t2 = vertices[indices[foundindex+1]];
-    Ogre::Vector3 t3 = vertices[indices[foundindex+2]];
-
-    Ogre::Vector3 v1 = point - t1;
-    Ogre::Vector3 v2 = point - t2;
-    Ogre::Vector3 v3 = point - t3;
-
-    float area1 = (v2.crossProduct(v3)).length() / 2.0f;
-    float area2 = (v1.crossProduct(v3)).length() / 2.0f;
-    float area3 = (v1.crossProduct(v2)).length() / 2.0f;
-    float sum_area = area1 + area2 + area3;
-    if (sum_area == 0.0)
-        return Ogre::Vector2(0.0f, 0.0f);
-
-    Ogre::Vector3 bary(area1 / sum_area, area2 / sum_area, area3 / sum_area);
-    Ogre::Vector2 t = texcoords[indices[foundindex]] * bary.x + texcoords[indices[foundindex+1]] * bary.y + texcoords[indices[foundindex+2]] * bary.z;
-
-    return t;
-}
-
 RaycastResult* OgreWorld::Raycast(int x, int y)
 {
     return Raycast(x, y, 0xffffffff);
@@ -322,21 +138,12 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
 {
     result_.entity = 0;
     
-    const Ogre::Ray& ray = rayQuery_->getRay();
+    const Ogre::Ray& ogreRay = rayQuery_->getRay();
+    Ray ray(ogreRay.getOrigin(), ogreRay.getDirection());
     
     Ogre::RaySceneQueryResult &results = rayQuery_->execute();
-    Ogre::Real closest_distance = -1.0f;
-    Ogre::Vector2 closest_uv;
-
-    static std::vector<Ogre::Vector3> vertices;
-    static std::vector<Ogre::Vector2> texcoords;
-    static std::vector<uint> indices;
-    static std::vector<uint> submeshstartindex;
-    vertices.clear();
-    texcoords.clear();
-    indices.clear();
-    submeshstartindex.clear();
-
+    float closestDistance = -1.0f;
+    
     for(size_t i = 0; i < results.size(); ++i)
     {
         Ogre::RaySceneQueryResultEntry &entry = results[i];
@@ -369,67 +176,48 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 continue;
         }
         
-        // Mesh entity check: triangle intersection
-        if (entry.movable->getMovableType().compare("Entity") == 0)
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
+        // EC_Mesh: check triangle intersection
+        /// \todo Currently we only support triangle-level raycast for mesh components, and for the first EC_Mesh in an entity
+        if (mesh)
         {
-            Ogre::Entity* ogre_entity = static_cast<Ogre::Entity*>(entry.movable);
-            assert(ogre_entity != 0);
-
-            // get the mesh information
-            GetMeshInformation(ogre_entity, vertices, texcoords, indices, submeshstartindex,
-                ogre_entity->getParentNode()->_getDerivedPosition(),
-                ogre_entity->getParentNode()->_getDerivedOrientation(),
-                ogre_entity->getParentNode()->_getDerivedScale());
-
-            unsigned closest_index = 0xffffffff;
-            // test for hitting individual triangles on the mesh
-            for(int j = 0; j < ((int)indices.size())-2; j += 3)
-            {
-                // check for a hit against this triangle
-                std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[j]],
-                    vertices[indices[j+1]], vertices[indices[j+2]], true, false);
-                if (hit.first)
-                {
-                    if (closest_distance < 0.0f || hit.second < closest_distance)
-                    {
-                        // this is the closest/best so far, save it
-                        closest_distance = hit.second;
-                        closest_index = j;
-                    }
-                }
-            }
+            // If this mesh's bounding box is further away than our current best result, skip the triangle-level test, as this mesh possibly can't be closer
+            if (closestDistance >= 0.0f && entry.distance > closestDistance)
+                continue;
             
-            if (closest_index < indices.size())
+            float meshClosestDistance;
+            unsigned subMeshIndex;
+            unsigned triangleIndex;
+            float3 hitPoint;
+            float3 normal;
+            float2 uv;
+            
+            if (mesh->Raycast(ray, &meshClosestDistance, &subMeshIndex, &triangleIndex, &hitPoint, &normal, &uv))
             {
-                Ogre::Vector2 uv = FindUVs(ray, closest_distance, vertices, texcoords, indices, closest_index);
-                Ogre::Vector3 point = ray.getPoint(closest_distance);
-
-                float3 edge1 = vertices[indices[closest_index+1]] - vertices[indices[closest_index]];
-                float3 edge2 = vertices[indices[closest_index+2]] - vertices[indices[closest_index]];
-
-                result_.entity = entity;
-                result_.pos = point;
-                result_.normal = edge1.Cross(edge2);
-                result_.normal.Normalize();
-                result_.submesh = GetSubmeshFromIndexRange(closest_index, submeshstartindex);
-                result_.index = closest_index;
-                result_.u = uv.x;
-                result_.v = uv.y;
+                if (closestDistance < 0.0f || meshClosestDistance < closestDistance)
+                {
+                    closestDistance = meshClosestDistance;
+                    
+                    result_.entity = entity;
+                    result_.pos = hitPoint;
+                    result_.normal = normal;
+                    result_.submesh = subMeshIndex;
+                    result_.index = triangleIndex;
+                    result_.u = uv.x;
+                    result_.v = uv.y;
+                }
             }
         }
         else
         {
-            // Not an entity, fall back to just using the bounding box - ray intersection
-            if ((closest_distance < 0.0f) || (entry.distance < closest_distance))
+            // Not a mesh entity, fall back to just using the bounding box - ray intersection
+            if (closestDistance < 0.0f || entry.distance < closestDistance)
             {
-                // this is the closest/best so far, save it
-                closest_distance = entry.distance;
-
-                Ogre::Vector3 point = ray.getPoint(closest_distance);
-
+                closestDistance = entry.distance;
+                
                 result_.entity = entity;
-                result_.pos = point;
-                result_.normal = -ray.getDirection();
+                result_.pos = ogreRay.getPoint(closestDistance);
+                result_.normal = -ogreRay.getDirection();
                 result_.submesh = 0;
                 result_.index = 0;
                 result_.u = 0.0f;
