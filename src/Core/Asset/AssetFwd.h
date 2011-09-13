@@ -28,6 +28,7 @@ class IAssetUploadTransfer;
 typedef boost::shared_ptr<IAssetUploadTransfer> AssetUploadTransferPtr;
 
 struct AssetReference;
+struct AssetReferenceList;
 
 class IAssetTypeFactory;
 typedef boost::shared_ptr<IAssetTypeFactory> AssetTypeFactoryPtr;

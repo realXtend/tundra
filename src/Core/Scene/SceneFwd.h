@@ -33,6 +33,8 @@ struct ComponentDesc;
 struct AttributeDesc;
 struct AssetDesc;
 
+struct EntityReference;
+
 class IComponentFactory;
 class IComponent;
 class IAttribute;
