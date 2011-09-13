@@ -37,7 +37,7 @@ Contact Tundra developers and users at
 <li><a href="http://groups.google.com/group/realxtend">End-user mailing list</a>.
 <li><a href="http://wiki.realxtend.org/index.php/Main_Page">Naali community wiki</a> (old for Tundra content).
 <li>IRC channels: #realxtend and #realxtend-dev on <a href="http://freenode.net/">freenode</a>.
-<li>Bug trackers: <a href="http://github.com/realXtend/naali/issues">github</a>, <a href="http://code.google.com/p/realxtend-naali/issues/list">Google Code</a>. (yes, there are two, one of them is due to be dropped!)
+<li>Bug tracker: <a href="http://github.com/realXtend/naali/issues">github</a>
 </ul>
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
@@ -65,7 +65,7 @@ The functionality built into Tundra is subdivided into core libraries and option
 These interfaces are accessible directly through the root Framework object. The individual subsystems are accessible by querying the appropriate modules using the Module API.     
 
 The root object for accessing all Tundra features is the Framework object. This object drives the main loop and gives access of all the core APIs to modules and scripts. For more information, see
-- \ref Foundation::Framework "the Framework class".
+- \ref Framework "the Framework class".
 - \ref FrameAPI "Tundra Frame API."
 
 \section CoreAPIList Core
@@ -85,27 +85,14 @@ The \ref ModuleArchitecture "Module" API gives access to all the modules registe
 
 Classes:
 <ul>
-<li>ModuleManager
+<li>Framework
 <li>IModule
 </ul>  
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Event</h3>
-The Tundra event pipe is a channel for system-wide inter-module messaging.
-<div style="color: #FF0000;">The use of the event system is discontinued, and no longer needed for new code.</div>
+The <a href="http://doc.qt.nokia.com/4.7/signalsandslots.html">Qt's signals and slots mechanism</a> is used for communication between objects.
 
-Information:
-<ul>
-<li>\ref EventSystem "Viewer event system."
-<li>\ref events_avoid "Why avoid events?"
-</ul>
-
-Classes:
-<ul>
-<li>IEventData
-<li>EventManager
-</ul>
-   
 </td>
 </tr>
 
@@ -119,8 +106,9 @@ More information:
 - \ref ConfigDefaultValues "Using default values."
 
 Classes:
-- ConfigurationManager.
-   
+- ConfigAPI
+- ConfigData
+
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Debug</h3>
@@ -132,8 +120,8 @@ Topics:
 - Performing automated network testing.
 
 Classes:
-- Foundation::Profiler.
-- Foundation::ProfilerBlock.   
+- Profiler
+- ProfilerBlock
 </td>
 </tr>
 
@@ -152,10 +140,10 @@ Follow these topics to learn more:
 </td>
 
 Classes:
-- InputContext.
-- KeyEvent.
-- MouseEvent.
-- QtInputService.
+- InputAPI
+- InputContext
+- KeyEvent
+- MouseEvent
 
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>UI</h3>
@@ -163,6 +151,13 @@ Exposes the Tundra main window and allows clients to create and show their own Q
 
 UiAPI is available as 'ui' in Javascript and 'naali.ui' in Python.
 </td>
+
+Classes:
+- UiAPI
+- UiMainWindow
+- UiGraphicsView
+- UiProxyWidget
+
 </tr>
 
 <tr>
@@ -184,19 +179,19 @@ Topics:
 <li>Accessing entity attributes using Python.
 <li>Creating new component types.
 <li>Creating new attribute types.
-<li>Entity attribute replication model.      
+<li>Entity attribute replication model.
 </ul>
 Classes:
 <ul>
+<li>SceneAPI
+<li>Scene
+<li>Entity
+<li>EntityAction
+<li>IComponent
 <li>IAttribute
 <li>AttributeMetadata
-<li>ComponentManager
-<li>IComponent
-<li>Scene::SceneManager
-<li>Scene::Entity
-<li>Scene::EntityAction
 </ul>
-  
+
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Asset</h3>
@@ -211,15 +206,8 @@ For more information, see
 </td>
 
 Classes:
-- Foundation::AssetServiceInterface.
-- Asset::AssetManager.
-- Foundation::AssetInterface.
-- Foundation::AssetMetadataInterface.
-- Foundation::AssetProviderInterface.
-- Foundation::AssetServiceInterface.
-- Foundation::ResourceInterface.
-- Foundation::TextureInterface.
-- Foundation::TextureServiceInterface.
+- AssetAPI
+- ...
 </tr>
 
 <tr>
@@ -232,23 +220,30 @@ ConsoleAPI is available as 'console' in Javascript and 'naali.console' in Python
 - Programmatically invoking console commands.
 
 Classes:
-- Console::Command.
-- Console::ConsoleCommandServiceInterface.
-- Console::ConsoleServiceInterface.
-- Console::CommandManager.
--     
+- ConsoleAPI
+- ConsoleCommand
+
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Connection</h3>
 Exposes the functionality related to the currently active server connection, if Tundra is connected to a server.   
 </td>
+
+Classes:
+- TundraLogic::TundraLogicModule
+- TundraLogic::Client
 </tr>
 
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Server</h3>
 If Tundra is acting as a network server, this interface can be accessed to interact with the currently active client connections.    
+
+Classes:
+- TundraLogic::TundraLogicModule
+- TundraLogic::Server
 </td>
+
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Audio</h3>
 Provides functions for playing back audio on the client. \ref OpenALAudioModule "Main documentation page."
@@ -258,11 +253,8 @@ Topics:
  - todo: add here the concepts related to audio.
 
 Classes:
- - ISoundService.
- - OpenALAudio::Sound.
- - OpenALAudio::SoundChannel.
- - OpenALAudio::SoundSettings.
- - OpenALAudio::SoundSystem.
+ - AudioAPI
+ - ...
 </td>
 </tr>
 
@@ -276,9 +268,13 @@ Topics:
 - \ref FrameAPI_Delayed "Delayed one-time execution".
 - \ref FrameAPI_Periodic "Periodic execution".
 
-The Frame API is accessed through the class \ref Frame "Frame". 
+The Frame API is accessed through the class \ref FrameAPI "Frame". 
 
-<!--    
+Classes:
+-FrameAPI
+-DelayedSignal
+
+<!--
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3></h3>
@@ -304,7 +300,7 @@ In addition to providing the core API, Tundra contains the following functional 
 This subsystem consists of the rendering library and the graphics-related Tundra scene features.  
 
 See the following topics for more information:
-	- \ref OgreRenderingModule "Using the Ogre renderer module".	
+	- \ref OgreRenderingModule "Using the Ogre renderer module".
 	
 <p>Implemented by modules
 <ul>
