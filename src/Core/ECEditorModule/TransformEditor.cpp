@@ -262,7 +262,7 @@ void TransformEditor::CreateGizmo()
     if (!s)
         return;
 
-    gizmo = s->CreateLocalEntity(QStringList(QStringList() << EC_TransformGizmo::TypeNameStatic()), AttributeChange::LocalOnly, false);
+    gizmo = s->CreateLocalEntity(QStringList(EC_TransformGizmo::TypeNameStatic()), AttributeChange::LocalOnly, false);
     if (!gizmo)
     {
         LogError("TransformEditor: could not create gizmo entity.");
