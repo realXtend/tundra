@@ -468,8 +468,7 @@ void ECEditorWindow::DeleteEntity()
 
 void ECEditorWindow::CopyEntity()
 {
-    /// @todo will only take a copy of first entity of the selection. 
-    /// should we support multi entity copy and paste functionality.
+    /// @todo multiple entities copy-paste support.
     QDomDocument temp_doc;
 
     // Create root Scene element always for consistency, even if we only have one entity
@@ -495,14 +494,16 @@ void ECEditorWindow::CopyEntity()
 
 void ECEditorWindow::PasteEntity()
 {
-    // Dont allow paste operation if we are placing previosly pasted object to a scene.
-    if(findChild<QObject*>("EntityPlacer"))
-        return;
+    ///\todo EntityPlacer is deprecated? If so, remove for good.
+    // Dont allow paste operation if we are placing previosuly pasted object to a scene.
+//    if(findChild<QObject*>("EntityPlacer"))
+//        return;
+
     // First we need to check if component is holding EC_Placeable component to tell where entity should be located at.
     /// \todo local only server wont save those objects.
     Scene *scene = framework->Scene()->MainCameraScene();
     assert(scene);
-    if(!scene)
+    if (!scene)
         return;
 
     QString errorMsg;
@@ -513,56 +514,55 @@ void ECEditorWindow::PasteEntity()
         return;
     }
 
-    //Check if clipboard contain infomation about entity's id,
-    //which is used to find a right type of entity from the scene.
-    QDomElement ent_elem = temp_doc.firstChildElement("entity");
-    if(ent_elem.isNull())
+    // Check if clipboard contain infomation about entity's id,
+    // which is used to find a right type of entity from the scene.
+    QDomElement sceneElem = temp_doc.firstChildElement("scene");
+    if (sceneElem.isNull())
+        return;
+    QDomElement ent_elem = sceneElem.firstChildElement("entity");
+    if (ent_elem.isNull())
         return;
     QString id = ent_elem.attribute("id");
-    EntityPtr originalEntity = scene->GetEntity(ParseString<entity_id_t>(id.toStdString()));
-    if(!originalEntity)
+    EntityPtr originalEntity = scene->GetEntity((entity_id_t)id.toInt());
+    if (!originalEntity)
     {
-        LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id + ").");
+        LogWarning("ECEditorWindow::PasteEntity: cannot create a new copy of entity, because scene manager couldn't find the original entity. (id " + id + ").");
         return;
     }
 
-    EntityPtr entity = scene->CreateEntity();
+    EntityPtr entity = scene->CreateEntity(originalEntity->IsLocal() ? scene->NextFreeIdLocal() : scene->NextFreeId());
     assert(entity);
-    if(!entity)
+    if (!entity)
         return;
 
-    bool hasPlaceable = false;
-    const Entity::ComponentMap components =  originalEntity->Components();
-    for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+//    bool hasPlaceable = false;
+    const Entity::ComponentMap &components =  originalEntity->Components();
+    for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
     {
         // If the entity is holding placeable component we can place it into the scene.
-        if(i->second->TypeName() == EC_Placeable::TypeNameStatic())
-        {
-            hasPlaceable = true;
-            ComponentPtr component = entity->GetOrCreateComponent(i->second->TypeName(), i->second->Name(), AttributeChange::Default);
-        }
-
+//        if (i->second->TypeName() == EC_Placeable::TypeNameStatic())
+//            hasPlaceable = true;
         ComponentPtr component = entity->GetOrCreateComponent(i->second->TypeName(), i->second->Name(), AttributeChange::Default);
-        AttributeVector attributes = i->second->Attributes();
+        const AttributeVector &attributes = i->second->Attributes();
         for(uint j = 0; j < attributes.size(); j++)
-        {
             if (attributes[j])
             {
                 IAttribute *attribute = component->GetAttribute(attributes[j]->Name());
                 if(attribute)
                     attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
             }
-        }
     }
 
+    ///\todo EntityPlacer is deprecated? If so, remove for good.
+/*
     if(hasPlaceable)
     {
         EntityPlacer *entityPlacer = new EntityPlacer(framework, entity->Id(), this);
         entityPlacer->setObjectName("EntityPlacer");
     }
+*/
 
     AddEntity(entity->Id());
-    scene->EmitEntityCreated(entity.get());
 }
 
 void ECEditorWindow::OpenEntityActionDialog()
@@ -695,40 +695,62 @@ void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
         return;
 
     QListWidgetItem *item = entityList->itemAt(pos);
-    if (!item)
+    // Do not necessarily return if we have no item
+    // We can use paste entity without selection if we seem to have valid scene XML in the contents.
+    QString clipboardContents = QApplication::clipboard()->text();
+    bool clipboardHasEntityXml = clipboardContents.contains("scene") && clipboardContents.contains("entity");
+    if (!item && !clipboardHasEntityXml)
         return;
 
     QMenu *menu = new QMenu(this);
-    menu->setAttribute(Qt::WA_DeleteOnClose);
-    QAction *editXml = new QAction(tr("Edit XML..."), menu);
-    QAction *deleteEntity = new QAction(tr("Delete"), menu);
-    QAction *addComponent = new QAction(tr("Add new component..."), menu);
-    QAction *copyEntity = new QAction(tr("Copy"), menu);
-    QAction *pasteEntity = new QAction(tr("Paste"), menu);
-    QAction *actions = new QAction(tr("Actions..."), menu);
-    QAction *functions = new QAction(tr("Functions..."), menu);
+    menu->setAttribute(Qt::WA_DeleteOnClose); ///<\todo has no effect if we don't call close() explicitly, and hence leaks memory (until ECEditorWindow is destroyed).
+    QAction *editXml = 0, *deleteEntity = 0, *addComponent = 0, *copyEntity = 0, *pasteEntity = 0, *actions = 0, *functions = 0;
+    if (item)
+    {
+        editXml = new QAction(tr("Edit XML..."), menu);
+        deleteEntity = new QAction(tr("Delete"), menu);
+        addComponent = new QAction(tr("Add new component..."), menu);
+        copyEntity = new QAction(tr("Copy"), menu);
+        actions = new QAction(tr("Actions..."), menu);
+        functions = new QAction(tr("Functions..."), menu);
 
-    connect(editXml, SIGNAL(triggered()), this, SLOT(ShowXmlEditorForEntity()));
-    connect(deleteEntity, SIGNAL(triggered()), this, SLOT(DeleteEntity()));
-    connect(addComponent, SIGNAL(triggered()), this, SLOT(CreateComponent()));
-    connect(copyEntity, SIGNAL(triggered()), this, SLOT(CopyEntity()));
-    connect(pasteEntity, SIGNAL(triggered()), this, SLOT(PasteEntity()));
-    connect(actions, SIGNAL(triggered()), this, SLOT(OpenEntityActionDialog()));
-    connect(functions, SIGNAL(triggered()), this, SLOT(OpenFunctionDialog()));
+        connect(editXml, SIGNAL(triggered()), this, SLOT(ShowXmlEditorForEntity()));
+        connect(deleteEntity, SIGNAL(triggered()), this, SLOT(DeleteEntity()));
+        connect(addComponent, SIGNAL(triggered()), this, SLOT(CreateComponent()));
+        connect(copyEntity, SIGNAL(triggered()), this, SLOT(CopyEntity()));
+        connect(actions, SIGNAL(triggered()), this, SLOT(OpenEntityActionDialog()));
+        connect(functions, SIGNAL(triggered()), this, SLOT(OpenFunctionDialog()));
+    }
 
-    menu->addAction(editXml);
-    menu->addAction(deleteEntity);
-    menu->addAction(addComponent);
-    menu->addAction(copyEntity);
-    menu->addAction(pasteEntity);
-    menu->addAction(actions);
-    menu->addAction(functions);
+    if (clipboardHasEntityXml)
+    {
+        pasteEntity = new QAction(tr("Paste"), menu);
+        connect(pasteEntity, SIGNAL(triggered()), this, SLOT(PasteEntity()));
+    }
 
-    QList<QObject*> targets;
-    EntityListWidgetItem* entityItem = dynamic_cast<EntityListWidgetItem*>(item);
-    if (entityItem && entityItem->Entity())
-        targets.push_back(entityItem->Entity().get());
-    framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
+    if (item)
+    {
+        menu->addAction(editXml);
+        menu->addAction(deleteEntity);
+        menu->addAction(addComponent);
+        menu->addAction(copyEntity);
+    }
+    if (clipboardHasEntityXml)
+        menu->addAction(pasteEntity);
+    if (item)
+    {
+        menu->addAction(actions);
+        menu->addAction(functions);
+    }
+
+    if (item)
+    {
+        QList<QObject*> targets;
+        EntityListWidgetItem* entityItem = dynamic_cast<EntityListWidgetItem*>(item);
+        if (entityItem && entityItem->Entity())
+            targets.push_back(entityItem->Entity().get());
+        framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
+    }
 
     menu->popup(entityList->mapToGlobal(pos));
 }

@@ -43,5 +43,6 @@ private slots:
 
 private:
     AssetWeakPtr asset;
+    AssetTransferWeakPtr currentTransfer;
 };
 

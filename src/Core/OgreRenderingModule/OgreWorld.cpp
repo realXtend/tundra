@@ -381,6 +381,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 ogre_entity->getParentNode()->_getDerivedOrientation(),
                 ogre_entity->getParentNode()->_getDerivedScale());
 
+            unsigned closest_index = 0xffffffff;
             // test for hitting individual triangles on the mesh
             for(int j = 0; j < ((int)indices.size())-2; j += 3)
             {
@@ -389,27 +390,31 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                     vertices[indices[j+1]], vertices[indices[j+2]], true, false);
                 if (hit.first)
                 {
-                    if ((closest_distance < 0.0f) || (hit.second < closest_distance))
+                    if (closest_distance < 0.0f || hit.second < closest_distance)
                     {
                         // this is the closest/best so far, save it
                         closest_distance = hit.second;
-
-                        Ogre::Vector2 uv = FindUVs(ray, hit.second, vertices, texcoords, indices, j); 
-                        Ogre::Vector3 point = ray.getPoint(closest_distance);
-
-                        float3 edge1 = vertices[indices[j+1]] - vertices[indices[j]];
-                        float3 edge2 = vertices[indices[j+2]] - vertices[indices[j]];
-
-                        result_.entity = entity;
-                        result_.pos = point;
-                        result_.normal = edge1.Cross(edge2);
-                        result_.normal.Normalize();
-                        result_.submesh = GetSubmeshFromIndexRange(j, submeshstartindex);
-                        result_.index = j;
-                        result_.u = uv.x;
-                        result_.v = uv.y;
+                        closest_index = j;
                     }
                 }
+            }
+            
+            if (closest_index < indices.size())
+            {
+                Ogre::Vector2 uv = FindUVs(ray, closest_distance, vertices, texcoords, indices, closest_index);
+                Ogre::Vector3 point = ray.getPoint(closest_distance);
+
+                float3 edge1 = vertices[indices[closest_index+1]] - vertices[indices[closest_index]];
+                float3 edge2 = vertices[indices[closest_index+2]] - vertices[indices[closest_index]];
+
+                result_.entity = entity;
+                result_.pos = point;
+                result_.normal = edge1.Cross(edge2);
+                result_.normal.Normalize();
+                result_.submesh = GetSubmeshFromIndexRange(closest_index, submeshstartindex);
+                result_.index = closest_index;
+                result_.u = uv.x;
+                result_.v = uv.y;
             }
         }
         else

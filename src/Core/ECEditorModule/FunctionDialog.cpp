@@ -13,8 +13,8 @@
 #include "DoxygenDocReader.h"
 #include "FunctionInvoker.h"
 #include "InvokeItem.h"
-
 #include "Entity.h"
+#include "IAsset.h"
 #include "LoggingFunctions.h"
 
 //#include <QWebView>
@@ -41,14 +41,18 @@ void FunctionComboBox::AddFunction(const FunctionMetaData &f)
 }
 */
 
-void FunctionComboBox::SetFunctions(const QList<FunctionMetaData> &funcs)
+void FunctionComboBox::SetFunctions(const std::set<FunctionMetaData> &funcs)
 {
-    foreach(FunctionMetaData f, funcs)
+    QList<FunctionMetaData> fmdsAsList;
+    foreach(const FunctionMetaData &f, funcs)
+    {
         addItem(f.signature);
+        fmdsAsList << f;
+    }
 
     model()->sort(0);
 //    functions.append(funcs);
-    functions = funcs;
+    functions = fmdsAsList;
     qSort(functions);
     for(int i = 0; i < count() && i < functions.size(); ++i)
         if (itemText(i) == functions[i].signature)
@@ -297,10 +301,11 @@ void FunctionDialog::UpdateEditors()
 
     // Create and show doxygen documentation for the function.
     QObject *obj = objects[0].lock().get();
-    QString doxyFuncName = QString(obj->metaObject()->className()) + "::" + fmd.function;
+    //QString doxyFuncName = QString(obj->metaObject()->className()) + "::" + fmd.function;
+    QString doxyFuncName = fmd.className + "::" + fmd.function;
     QUrl styleSheetPath;
     QString documentation;
-    /*bool success = */DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
+    DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
     if (documentation.length() != 0)
     {
         doxygenView->setHtml(documentation);//, styleSheetPath);
@@ -332,21 +337,10 @@ void FunctionDialog::UpdateEditors()
     move(orgPos);
 }
 
-void FunctionDialog::GenerateTargetLabelAndFunctions()
+void FunctionDialog::Populate(const QMetaObject *mo, std::set<FunctionMetaData> &fmds)
 {
-    // Generate functions for the function combo box.
-    QList<FunctionMetaData> fmds;
-    QSet<QString> functions;
-
-    QString targetText;
-    assert(objects.size());
-    if (objects.size() == 1)
-        targetText.append(tr("Target: "));
-    else
-        targetText.append(tr("Targets: "));
-
-    // Clear previous content of function combo box
-    functionComboBox->Clear();
+    if (!mo)
+        return;
 
     // Create filter from user's check box selection to decide which methods we will show.
     QList<QMetaMethod::Access> acceptedAccessTypes;
@@ -364,6 +358,84 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
     QList<QMetaMethod::Access>::const_iterator accessIter;
     QList<QMetaMethod::MethodType>::const_iterator methodIter;
 
+    for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+    {
+        const QMetaMethod &mm = mo->method(i);
+
+        // Filter according to users selection.
+        accessIter = qFind(acceptedAccessTypes, mm.access());
+        methodIter = qFind(acceptedMethodTypes, mm.methodType());
+        if ((accessIter == acceptedAccessTypes.end()) || (methodIter == acceptedMethodTypes.end()))
+            continue;
+
+        // Craft full signature with return type and parameter names.
+        QString fullSig = mm.signature();
+        QList<QByteArray> pNames = mm.parameterNames();
+        QList<QByteArray> pTypes = mm.parameterTypes();
+        if (pTypes.size())
+        {
+            // Insert as many parameter names as we pNames in total; function signatures might be missing some param names.
+            int idx, searchStart = 0;
+            for(int pIdx = 0; pIdx < pNames.size(); ++pIdx)
+            {
+                idx = fullSig.indexOf(',', searchStart);
+                QString param = ' ' + QString(pNames[pIdx]);
+                if (idx == -1)
+                {
+                    // No more commas found. Assume that we can insert the last param name now.
+                    if (pIdx < pNames.size())
+                        fullSig.insert(fullSig.size() - 1, param);
+                    break;
+                }
+
+                // Insert parameter name.
+                fullSig.insert(idx, param);
+                searchStart = idx + param.size() + 1;
+            }
+        }
+
+        // Prepend full signature with return type.
+        QString returnType = mm.typeName();
+        if (returnType.isEmpty())
+            returnType = "void";
+        fullSig.prepend(returnType + ' ');
+
+        // Construct FunctionMetaData struct.
+        FunctionMetaData f;
+        f.className = mo->className();
+        int start = fullSig.indexOf(' ');
+        int end = fullSig.indexOf('(');
+        f.function = fullSig.mid(start + 1, end - start - 1);
+        f.returnType = returnType;
+        f.fullSignature = fullSig;
+        f.signature = mm.signature();
+
+        for(int k = 0; k < pTypes.size(); ++k)
+            if (k < pNames.size())
+                f.parameters.push_back(qMakePair(QString(pTypes[k]), QString(pNames[k])));
+            else 
+                // Protection agains missing parameter names in the signature: insert just an empty string.
+                f.parameters.push_back(qMakePair(QString(pTypes[k]), QString()));
+
+        fmds.insert(f);
+    }
+}
+
+void FunctionDialog::GenerateTargetLabelAndFunctions()
+{
+    // Generate functions for the function combo box.
+    std::set<FunctionMetaData> fmds;
+
+    QString targetText;
+    assert(objects.size());
+    if (objects.size() == 1)
+        targetText.append(tr("Target: "));
+    else
+        targetText.append(tr("Targets: "));
+
+    // Clear previous content of function combo box
+    functionComboBox->Clear();
+
     int objectsTotal = objects.size();
     for(int i = 0; i < objectsTotal; ++i)
     {
@@ -376,90 +448,38 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
         }
 
         const QMetaObject *mo = obj->metaObject();
+        const QMetaObject *superClassMo = mo->superClass();
+        while(superClassMo != 0)
+        {
+            Populate(superClassMo, fmds);
+            superClassMo = superClassMo->superClass();
+        }
+
         targetText.append(mo->className());
 
+        // Decorate the target text according to the object type.
         {
             Entity *e = dynamic_cast<Entity *>(obj);
             IComponent *c = dynamic_cast<IComponent *>(obj);
+            IAsset *a = dynamic_cast<IAsset *>(obj);
             if (e)
                 targetText.append('(' + QString::number((uint)e->Id()) + ')');
             else if (c)
                 targetText.append('(' + c->Name() + ')');
+            else if (a)
+                targetText.append('(' + a->Name() + ')');
         }
 
         if (i < objects.size() - 1)
             targetText.append(", ");
 
-        for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
-        {
-            const QMetaMethod &mm = mo->method(i);
-
-            // Filter according to users selection.
-            accessIter = qFind(acceptedAccessTypes, mm.access());
-            methodIter = qFind(acceptedMethodTypes, mm.methodType());
-            if ((accessIter == acceptedAccessTypes.end()) || (methodIter == acceptedMethodTypes.end()))
-                continue;
-
-            // Craft full signature with return type and parameter names.
-            QString fullSig = mm.signature();
-            QList<QByteArray> pNames = mm.parameterNames();
-            QList<QByteArray> pTypes = mm.parameterTypes();
-            if (pTypes.size())
-            {
-                // Insert as many parameter names as we pNames in total; function signatures might be missing some param names.
-                int idx, searchStart = 0;
-                for(int pIdx = 0; pIdx < pNames.size(); ++pIdx)
-                {
-                    idx = fullSig.indexOf(',', searchStart);
-                    QString param = ' ' + QString(pNames[pIdx]);
-                    if (idx == -1)
-                    {
-                        // No more commas found. Assume that we can insert the last param name now.
-                        if (pIdx < pNames.size())
-                            fullSig.insert(fullSig.size() - 1, param);
-                        break;
-                    }
-
-                    // Insert parameter name.
-                    fullSig.insert(idx, param);
-                    searchStart = idx + param.size() + 1;
-                }
-            }
-
-            // Prepend full signature with return type.
-            QString returnType = mm.typeName();
-            if (returnType.isEmpty())
-                returnType = "void";
-            fullSig.prepend(returnType + ' ');
-
-            // Construct FunctionMetaData struct.
-            FunctionMetaData f;
-            int start = fullSig.indexOf(' ');
-            int end = fullSig.indexOf('(');
-            f.function = fullSig.mid(start + 1, end - start - 1);
-            f.returnType = returnType;
-            f.fullSignature = fullSig;
-            f.signature = mm.signature();
-
-            for(int k = 0; k < pTypes.size(); ++k)
-                if (k < pNames.size())
-                    f.parameters.push_back(qMakePair(QString(pTypes[k]), QString(pNames[k])));
-                else 
-                    // Protection agains missing parameter names in the signature: insert just an empty string.
-                    f.parameters.push_back(qMakePair(QString(pTypes[k]), QString()));
-
-            fmds.push_back(f);
-        }
+        Populate(mo, fmds);
     }
 
     targetsLabel->setText(targetText);
-    functionComboBox ->SetFunctions(fmds);
+    functionComboBox->SetFunctions(fmds);
 
     // If no functions, disable exec buttons.
-    /*
     if (functionComboBox->count() == 0)
-    {
-    }
-    */
+        functionComboBox->setDisabled(true);
 }
-

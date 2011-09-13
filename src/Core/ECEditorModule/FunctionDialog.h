@@ -13,6 +13,8 @@
 #include <QDialog>
 #include <QComboBox>
 
+#include <set>
+
 class QGridLayout;
 class QLabel;
 class QTextEdit;
@@ -28,7 +30,8 @@ struct FunctionMetaData
 {
     /// Less than operator. Needed for qSort().
     bool operator <(const FunctionMetaData &rhs) const { return signature < rhs.signature; }
-    QString function; ///< Function name in the simplest form
+    QString className; ///< Class name.
+    QString function; ///< Function name in the simplest form.
     QString returnType; ///< Return type of the function.
     QString signature; ///< Signature of the function without return type and parameter names.
     QString fullSignature; ///< Full signature of the function including return type and parameter names.
@@ -52,12 +55,11 @@ public:
 
     /// Sets list of functions to the combo box. Overrides existing functions.
     /** @param funcs List of functions. */
-    void SetFunctions(const QList<FunctionMetaData> &funcs);
+    void SetFunctions(const std::set<FunctionMetaData> &funcs);
 
     /// Set currently active.
     /** @param function Function name.
-        @param paramTypeNames List of parameter type names.
-    */
+        @param paramTypeNames List of parameter type names. */
     void SetCurrentFunction(const QString &function, const QStringList &paramTypeNames);
 
     /// Returns meta data structure of the currently selected function.
@@ -77,8 +79,7 @@ typedef QList<QObjectWeakPtr> QObjectWeakPtrList;
 /** Emits finished(0) when "Close" is clicked, finished(1) when "Close and Execute" is clicked,
     and finished(2), when "Execute" is cliked. The dialog is destroyed when hide() or close() is called for it.
 
-    Use Objects(), Function() and Arguments() functions to retrieve necesary information for invoking Qt slots.
-*/
+    Use Objects(), Function() and Arguments() functions to retrieve necesary information for invoking Qt slots. */
 class ECEDITOR_MODULE_API FunctionDialog : public QDialog
 {
     Q_OBJECT
@@ -120,9 +121,9 @@ private:
     /// QWidget override.
     void hideEvent(QHideEvent *);
 
-    /// Creates the widget's contents.
-
     void Initialize();
+    void Populate(const QMetaObject *mo, std::set<FunctionMetaData> &fmds);
+
     FunctionInvoker *invoker; ///< Function invoker object.
     QLabel *targetsLabel; ///< Label showing the target objects.
     FunctionComboBox *functionComboBox; ///< Function combo box
@@ -146,4 +147,3 @@ private slots:
     /// Generates the targel label and list of available functions according to current object selection and function filter.
     void GenerateTargetLabelAndFunctions();
 };
-

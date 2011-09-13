@@ -137,11 +137,13 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         QAction *reloadFromCacheAction = new QAction(tr("Reload from cache"), deleteMenu);
         QAction *unloadAction = new QAction(tr("Unload"), deleteMenu);
 
-        // Reload from cache is not possible if asset's disk source is empty.
+        // Reload from cache & delete from cache are not possible for e.g. local assets don't have a cached version of the asset,
+        // Even if the asset is an HTTP asset, these options are disable if there does not exist a cached version of that asset in the cache.
         foreach(AssetItem *item, sel.assets)
-            if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
+            if (item->Asset() && framework->Asset()->GetAssetCache()->FindInCache(item->Asset()->Name()).isEmpty())
             {
                 reloadFromCacheAction->setDisabled(true);
+                deleteCacheAction->setDisabled(true);
                 break;
             }
 
@@ -156,8 +158,21 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 
         QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
         menu->addAction(openFileLocationAction);
-
         connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
+
+        // Delete from Source, Delete from Cache, Reload from Source, Unload, Open File Location
+        // are not applicable for assets which have been created programmatically (disk source is empty).
+        ///\todo Currently disk source is empty for unloaded assets, and open file location is disabled for them. This should not happen.
+        foreach(AssetItem *item, sel.assets)
+            if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
+            {
+                deleteSourceAction->setDisabled(true);
+                deleteCacheAction->setDisabled(true);
+                reloadFromSourceAction->setDisabled(true);
+                unloadAction->setDisabled(true);
+                openFileLocationAction->setDisabled(true);
+                break;
+            }
 
         menu->addSeparator();
 
@@ -219,8 +234,8 @@ AssetTreeWidgetSelection AssetTreeWidget::GetSelection() const
         else
         {
             AssetStorageItem* sItem = dynamic_cast<AssetStorageItem *>(item);
-                if (sItem)
-                    sel.storages << sItem;
+            if (sItem)
+                sel.storages << sItem;
         }
     }
 
@@ -229,25 +244,24 @@ AssetTreeWidgetSelection AssetTreeWidget::GetSelection() const
 
 void AssetTreeWidget::DeleteFromSource()
 {
-    int ret = QMessageBox::warning(
-        this,
-        tr("Delete From Source"),
-        tr("Are you sure want to delete the selected asset(s) permanently from the source?"),
-        QMessageBox::Ok | QMessageBox::Cancel,
-        QMessageBox::Cancel);
+    // AssetAPI::DeleteAssetFromStorage() signals will start deletion of tree widget asset items:
+    // Gather the asset refs to a separate list beforehand in order to prevent crash.
+    QStringList assetRefs, assetsToBeDeleted;
+    foreach(AssetItem *item, GetSelection().assets)
+        if (item->Asset())
+        {
+            assetRefs << item->Asset()->Name();
+            assetsToBeDeleted << item->Asset()->DiskSource();
+        }
 
+    QMessageBox msgBox(QMessageBox::Warning, tr("Delete From Source"),
+        tr("Are you sure want to delete the selected asset(s) permanently from the source?\n"),
+        QMessageBox::Ok | QMessageBox::Cancel, this);
+    msgBox.setDetailedText(assetsToBeDeleted.join("\n"));
+    int ret = msgBox.exec();
     if (ret == QMessageBox::Ok)
-    {
-        // AssetAPI::DeleteAssetFromStorage() signals will start deletion of tree widget asset items:
-        // Gather the asset refs to a separate list beforehand in order to prevent crash.
-        QStringList assetRefs;
-        foreach(AssetItem *item, GetSelection().assets)
-            if (item->Asset())
-                assetRefs << item->Asset()->Name();
-
         foreach(QString ref, assetRefs)
             framework->Asset()->DeleteAssetFromStorage(ref);
-    }
 }
 
 void AssetTreeWidget::DeleteFromCache()
