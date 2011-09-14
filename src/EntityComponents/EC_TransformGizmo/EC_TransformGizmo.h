@@ -13,6 +13,7 @@
 #include "AssetReference.h"
 #include "Math/Ray.h"
 #include "Math/float3.h"
+#include "Math/float3x4.h"
 #include "Math/Quat.h"
 
 /// Enables visual manipulators (gizmos) for Transform attributes.
@@ -62,6 +63,14 @@ public:
         Scale ///< Scales an object.
     };
 
+    /// Internal states of gizmo.
+    enum GizmoState
+    {
+        Inactive, ///< Mouse is not above gizmo.
+        Hovering, ///< We're hovering mouse above gizmo.
+        Active, ///< Mouse was pressed above gizmo, and is currently held down (might or might not be above the gizmo).
+    };
+    
 public slots:
     ///\todo implement SetPivot
     //void SetPivot(float3x4 tm)
@@ -70,6 +79,10 @@ public slots:
     /** @param pos New position. */
     void SetPosition(const float3 &pos);
 
+    /// Sets orientation of the gizmo.
+    /** @param pos New orientation. */
+    void SetOrientation(const Quat &rot);
+    
     /// Returns current type of the gizmo.
     GizmoType CurrentGizmoType() const { return gizmoType; }
 
@@ -84,6 +97,9 @@ public slots:
     /// Returns visibility of the gizmo.
     bool IsVisible() const;
 
+    /// Return state of gizmo
+    GizmoState State() const { return state; }
+    
 signals:
     /// Emitted when gizmo is active in Translate mode.
     /** @param offset New offset. */
@@ -110,18 +126,12 @@ private:
         AssetReference material; ///< Currently used material for the axis' submesh.
     };
 
-    /// Internal states of gizmo.
-    enum GizmoState
-    {
-        Inactive, ///< Mouse is not above gizmo.
-        Hovering, ///< We're hovering mouse above gizmo.
-        Active, ///< Mouse was pressed above gizmo, and is currently held down (might or might not be above the gizmo).
-    };
-
     InputContextPtr input; ///< Input context for the gizmo.
     boost::shared_ptr<EC_Placeable> placeable; ///< Placeable component.
     boost::shared_ptr<EC_Mesh> mesh; ///< Mesh component.
     GizmoType gizmoType; ///< Current gizmo type.
+    float3x4 worldTM; ///< Transform used for the gizmo rays. Based on the placeable; updated in inactive & hovering states, but not in active state
+    float3 worldPos; ///< Gizmo's remembered world position. Based on the placeable; updated in inactive & hovering states, but not in active state
     OgreWorldWeakPtr ogreWorld; ///< OgreWorld.
     float3 prevPoint; ///< Previous nearest projected point on the gizmo's coordinate axes.
     float3 curPoint; ///< Current nearest projected point on the gizmo's coordinate axes.

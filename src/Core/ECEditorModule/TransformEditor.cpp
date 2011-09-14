@@ -17,12 +17,19 @@
 #include "FrameAPI.h"
 #include "InputAPI.h"
 #include "AssetAPI.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 #ifdef EC_TransformGizmo_ENABLED
 #include "EC_TransformGizmo.h"
 #endif
 #include "Profiler.h"
 
-TransformEditor::TransformEditor(const ScenePtr &scene)
+#include "Application.h"
+#include <QUiLoader>
+
+TransformEditor::TransformEditor(const ScenePtr &scene) :
+    editorSettings(0),
+    localAxes(false)
 {
     if (scene)
     {
@@ -43,6 +50,10 @@ void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
 {
     ClearSelection();
     AppendSelection(entities);
+    
+    // If settings window was hidden, show it again now
+    if (editorSettings && !editorSettings->isVisible())
+        editorSettings->show();
 }
 
 void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
@@ -90,7 +101,7 @@ void TransformEditor::ClearSelection()
     targets.clear();
 }
 
-void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
+void TransformEditor::FocusGizmoPivotToAabbCenter()
 {
 #ifdef EC_TransformGizmo_ENABLED
     if (targets.isEmpty())
@@ -98,9 +109,11 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
     if (!gizmo)
         CreateGizmo();
 
-    PROFILE(TransformEditor_FocusGizmoPivotToAabbBottomCenter);
+    PROFILE(TransformEditor_FocusGizmoPivotToAabbCenter);
 
     // If all objects have the same parent, parent the gizmo with the common parent for all the objects.
+    // Currently this logic is not used.
+    /*
     entity_id_t prevParentId = 0;
     Entity *parentEntity = 0;
     foreach(const AttributeWeakPtr &attr, targets)
@@ -118,34 +131,52 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
                 }
             }
         }
-
-    gizmo->GetComponent<EC_Placeable>()->SetParent(parentEntity, true);
+    */
 
     float3 minPos(1e9f, 1e9f, 1e9f);
     float3 maxPos(-1e9f, -1e9f, -1e9f);
 
+    float3 pivotPos;
+    Quat pivotRot = Quat::identity;
+    bool useLocalAxisRotation = localAxes;
+    
     foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
-            float3 worldPos = transform->Owner()->ParentEntity()->GetComponent<EC_Placeable>()->WorldPosition();
-            minPos = Min(minPos, worldPos);
-            maxPos = Max(maxPos, worldPos);
+            ///\todo The gizmo is placed according to the target placeable position, although it is meant as a generic transform editor. Refactor needed in the future.
+            EC_Placeable* placeable = transform->Owner()->ParentEntity()->GetComponent<EC_Placeable>().get();
+            if (placeable)
+            {
+                float3 worldPos = placeable->WorldPosition();
+                minPos = Min(minPos, worldPos);
+                maxPos = Max(maxPos, worldPos);
+                // When multiple targets are selected, only use the local axes if orientations are equal in all targets, else revert to world axes
+                if (useLocalAxisRotation)
+                {
+                    if (attr == targets[0])
+                        pivotRot = placeable->WorldOrientation();
+                    else if (!pivotRot.Equals(placeable->WorldOrientation()))
+                        useLocalAxisRotation = false; // Mismatch, revert to world axes
+                }
+            }
         }
     }
-
-    // We assume that world's up axis is Y-coordinate axis.
-    float3 pivotPos = float3((minPos.x + maxPos.x) / 2.f, minPos.y, (minPos.z + maxPos.z) / 2.f);
-    if (parentEntity)
-        pivotPos = parentEntity->GetComponent<EC_Placeable>()->WorldToLocal().MulPos(pivotPos);
+    pivotPos = float3((minPos.x + maxPos.x) / 2.f, (minPos.y + maxPos.y) / 2.f, (minPos.z + maxPos.z) / 2.f);
+    
     if (gizmo)
     {
         EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
         if (tg)
+        {
             tg->SetPosition(pivotPos);
-        ///\todo Hack: for some odd reason when gizmo is parented its scale will go to zero. Hack the scale to stay the same.
-        gizmo->GetComponent<EC_Placeable>()->SetScale(1,1,1);
+            
+            if (useLocalAxisRotation)
+                tg->SetOrientation(pivotRot);
+            else
+                tg->SetOrientation(Quat::identity);
+        }
     }
 #endif
 }
@@ -195,7 +226,7 @@ void TransformEditor::TranslateTargets(const float3 &offset)
         }
     }
 
-    FocusGizmoPivotToAabbBottomCenter();
+    FocusGizmoPivotToAabbCenter();
 }
 
 void TransformEditor::RotateTargets(const Quat &delta)
@@ -203,6 +234,7 @@ void TransformEditor::RotateTargets(const Quat &delta)
     PROFILE(TransformEditor_RotateTargets);
     float3 gizmoPos = GizmoPos();
     float3x4 rotation = float3x4::Translate(gizmoPos) * float3x4(delta) * float3x4::Translate(-gizmoPos);
+    
     foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
@@ -213,12 +245,24 @@ void TransformEditor::RotateTargets(const Quat &delta)
                 continue;
 
             Transform t = transform->Get();
-            t.FromFloat3x4(rotation * t.ToFloat3x4());
+            // If we have parented transform, translate the changes to parent's world space.
+            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+            if (parentPlaceableEntity)
+            {
+                EC_Placeable* parentPlaceable = parentPlaceableEntity->GetComponent<EC_Placeable>().get();
+                float3x4 worldToLocal = parentPlaceable->LocalToWorld();
+                ///\todo Works around WorldToLocal() bug, which uses InverseOrthogonal(). Remove when fixed.
+                worldToLocal.Inverse();
+                t.FromFloat3x4(worldToLocal * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
+            }
+            else
+                t.FromFloat3x4(rotation * t.ToFloat3x4());
+            
             transform->Set(t, AttributeChange::Default);
         }
     }
 
-    FocusGizmoPivotToAabbBottomCenter();
+    FocusGizmoPivotToAabbCenter();
 }
 
 void TransformEditor::ScaleTargets(const float3 &offset)
@@ -239,7 +283,7 @@ void TransformEditor::ScaleTargets(const float3 &offset)
         }
     }
 
-    FocusGizmoPivotToAabbBottomCenter();
+    FocusGizmoPivotToAabbCenter();
 }
 
 bool TransformEditor::TargetsContainAlsoParent(const AttributeWeakPtr &attr) const
@@ -280,6 +324,34 @@ void TransformEditor::CreateGizmo()
     connect(tg, SIGNAL(Translated(const float3 &)), SLOT(TranslateTargets(const float3 &)));
     connect(tg, SIGNAL(Rotated(const Quat &)), SLOT(RotateTargets(const Quat &)));
     connect(tg, SIGNAL(Scaled(const float3 &)), SLOT(ScaleTargets(const float3 &)));
+    
+    // Create editor window for choosing gizmo mode
+    QUiLoader loader;
+    loader.setLanguageChangeEnabled(true);
+    QFile file(Application::InstallationDirectory() + "data/ui/EditorSettings.ui");
+    file.open(QFile::ReadOnly);
+    if (!file.exists())
+    {
+        LogError("Cannot find " + Application::InstallationDirectory() + "data/ui/EditorSettings.ui file.");
+        return;
+    }
+    editorSettings = loader.load(&file, s->GetFramework()->Ui()->MainWindow());
+    file.close();
+    if (!editorSettings)
+    {
+        LogError("Could not load editor settings layout");
+        return;
+    }
+    
+    QComboBox* modeCombo = editorSettings->findChild<QComboBox*>("modeComboBox");
+    if (modeCombo)
+        connect(modeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoModeSelected(int)));
+    QComboBox* axisCombo = editorSettings->findChild<QComboBox*>("axisComboBox");
+    if (axisCombo)
+        connect(axisCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoAxisSelected(int)));
+    
+    editorSettings->setWindowFlags(Qt::Tool);
+    editorSettings->show();
 #endif
 }
 
@@ -288,6 +360,8 @@ void TransformEditor::DeleteGizmo()
     ScenePtr s = scene.lock();
     if (s && gizmo)
         s->RemoveEntity(gizmo->Id());
+    
+    SAFE_DELETE(editorSettings);
 }
 
 void TransformEditor::HandleKeyEvent(KeyEvent *e)
@@ -308,13 +382,60 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     const QKeySequence &translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
     const QKeySequence &rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
     const QKeySequence &scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
-    if (e->sequence == translate)
+    QComboBox* modeCombo = editorSettings ? editorSettings->findChild<QComboBox*>("modeComboBox") : 0;
+    if (modeCombo)
+    {
+        if (e->sequence == translate)
+            modeCombo->setCurrentIndex(0);
+        if (e->sequence == rotate)
+            modeCombo->setCurrentIndex(1);
+        if (e->sequence == scale)
+            modeCombo->setCurrentIndex(2);
+    }
+    else
+    {
+        if (e->sequence == translate)
+            tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
+        if (e->sequence == rotate)
+            tg->SetCurrentGizmoType(EC_TransformGizmo::Rotate);
+        if (e->sequence == scale)
+            tg->SetCurrentGizmoType(EC_TransformGizmo::Scale);
+    }
+#endif
+}
+
+void TransformEditor::OnGizmoModeSelected(int mode)
+{
+    if (mode < 0)
+        return;
+#ifdef EC_TransformGizmo_ENABLED
+    ScenePtr scn = scene.lock();
+    if (!scn)
+        return;
+    EC_TransformGizmo *tg = 0;
+    if (gizmo && scn)
+    {
+        tg = gizmo->GetComponent<EC_TransformGizmo>().get();
+        if (!tg)
+            return;
+    }
+    
+    if (mode == 0)
         tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
-    if (e->sequence == rotate)
+    if (mode == 1)
         tg->SetCurrentGizmoType(EC_TransformGizmo::Rotate);
-    if (e->sequence == scale)
+    if (mode == 2)
         tg->SetCurrentGizmoType(EC_TransformGizmo::Scale);
 #endif
+}
+
+void TransformEditor::OnGizmoAxisSelected(int axis)
+{
+    if (axis < 0)
+        return;
+    
+    localAxes = axis != 0;
+    FocusGizmoPivotToAabbCenter();
 }
 
 void TransformEditor::OnUpdated(float frameTime)
@@ -334,6 +455,18 @@ void TransformEditor::OnUpdated(float frameTime)
                 }
             }
         }
+        
+#ifdef EC_TransformGizmo_ENABLED
+        // If gizmo is not active (ie. no drag going on), update the axes
+        // This is needed to update local mode rotation after a rotation edit is finished, as well as to make it follow autonomously moving objects
+        EC_TransformGizmo *tg = 0;
+        if (gizmo)
+        {
+            tg = gizmo->GetComponent<EC_TransformGizmo>().get();
+            if (tg && tg->State() != EC_TransformGizmo::Active)
+                FocusGizmoPivotToAabbCenter();
+        }
+#endif
     }
 }
 
