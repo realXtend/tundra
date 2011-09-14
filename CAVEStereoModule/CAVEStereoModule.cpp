@@ -45,12 +45,12 @@ namespace CAVEStereo
             }
         }
     }
-
+  
     void CAVEStereoModule::Update(f64 frametime)
     {
-        RESETPROFILER;
+    RESETPROFILER;
     }
-
+  
     QVector<Ogre::RenderWindow*> CAVEStereoModule::GetCAVERenderWindows()
     {
         return cave_->GetExternalWindows();
@@ -63,8 +63,14 @@ namespace CAVEStereo
 
     void CAVEStereoModule::ShowCaveWindow()
     {
-        cave_->GetCaveWidget()->show();
+      cave_->GetCaveWidget()->show();
     }
+  
+    void CAVEStereoModule::TakeScreenshots(QString path, QString filename) 
+    {
+      stereo_->TakeScreenshots(path, filename);
+    }
+
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

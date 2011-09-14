@@ -40,6 +40,7 @@ namespace CAVEStereo
     public slots:
         void ShowStereoscopyWindow();
         void ShowCaveWindow();
+	void TakeScreenshots(QString path, QString filename);
 
     private:
         //! Type name of the module.
