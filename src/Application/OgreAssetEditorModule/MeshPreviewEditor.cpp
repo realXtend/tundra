@@ -100,15 +100,14 @@ MeshPreviewEditor::~MeshPreviewEditor()
 {
     if (renderer_)
     {
+        if (render_texture_)
+            render_texture_->removeAllViewports();
         OgreRenderer::OgreRootPtr root = renderer_->GetRoot();
-        render_texture_->removeAllViewports();
-
         Ogre::TextureManager::getSingleton().remove(mesh_id_.toStdString().c_str());
         root_scene_->removeAllChildren();
         manager_->destroySceneNode(scene_);
         manager_->destroyCamera(camera_);
         manager_->destroyLight(newLight_);
-
         root->destroySceneManager(manager_);
     }
 }
