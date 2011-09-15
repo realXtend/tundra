@@ -188,13 +188,27 @@ void EC_Light::UpdateOgreLight()
     try
     {
         float b = std::max(brightness.Get(), 1e-3f);
+        Color diff = diffColor.Get();
+        Color spec = diffColor.Get();
+        // Because attenuation equation (and therefore brightness) does not affect directional lights,
+        // manually multiply the colors by brightness for a dir.light
+        if (ogreType == Ogre::Light::LT_DIRECTIONAL)
+        {
+            diff.r *= b;
+            diff.g *= b;
+            diff.b *= b;
+            spec.r *= b;
+            spec.g *= b;
+            spec.b *= b;
+        }
         
         light_->setType(ogreType);
-        light_->setDiffuseColour(diffColor.Get());
-        light_->setSpecularColour(specColor.Get());
+        
+        light_->setDiffuseColour(diff);
+        light_->setSpecularColour(spec);
         light_->setAttenuation(range.Get(), constAtten.Get() / b , linearAtten.Get() / b, quadraAtten.Get() / b);
         // Note: Ogre throws exception if we try to set this when light is not spotlight
-        if (type.Get() == LT_Spot)
+        if (ogreType == Ogre::Light::LT_SPOTLIGHT)
             light_->setSpotlightRange(Ogre::Degree(innerAngle.Get()), Ogre::Degree(outerAngle.Get()));
     }
     catch(Ogre::Exception& e)

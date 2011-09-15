@@ -21,15 +21,15 @@
     <b>Attributes</b>:
     <ul>
     <li> Color : sunColor.
-    <div> Defines sunlight color. </div>
+    <div> Defines sunlight (diffuse) color. </div>
     <li> Color : ambientColor.
     <div> Defines scene ambient light color. </div>
-    <li> Color : sunDiffuseColor.
-    <div> Defines sunlight diffuse color.  </div>
     <li> float3 : sunDirection.
     <div> Defines sunlight direction vector. </div>
     <li> bool : sunCastShadows.
     <div> Defines that does sun cast shadows. </div>
+    <li> float : brightness.
+    <div> Sunlight diffuse color multiplier. </div>
     </table>
 */
 class EC_EnvironmentLight : public IComponent
@@ -50,10 +50,6 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Color, ambientColor);
     Q_PROPERTY(Color ambientColor READ getambientColor WRITE setambientColor); 
 
-    /// Defines sun diffuse light color.
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, sunDiffuseColor);
-    Q_PROPERTY(Color sunDiffuseColor READ getsunDiffuseColor WRITE setsunDiffuseColor); 
-
     /// Defines sun light direction.
     DEFINE_QPROPERTY_ATTRIBUTE(float3, sunDirection);
     Q_PROPERTY(float3 sunDirection READ getsunDirection WRITE setsunDirection); 
@@ -62,6 +58,10 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, sunCastShadows);
     Q_PROPERTY(bool sunCastShadows READ getsunCastShadows WRITE setsunCastShadows); 
 
+    /// Sunlight brightness multiplier.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, brightness);
+    Q_PROPERTY(float brightness READ getbrightness WRITE setbrightness);
+    
 public slots:
     /// Called If some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);

@@ -34,6 +34,13 @@ del build\libvorbisd.dll
 del build\libvorbisfiled.dll
 del build\Tundrad.exe
 del build\plugins\*d.dll
+del build\qtplugins\codecs\*d4.dll
+del build\qtplugins\graphicssystems\*d4.dll
+del build\qtplugins\iconengines\*d4.dll
+del build\qtplugins\imageformats\*d4.dll
+del build\qtplugins\phonon_backend\*d4.dll
+del build\qtplugins\script\*d.dll
+rmdir build\qtplugins\designer /S /Q
 del build\caelum.dll
 del build\caelum_d.dll
 del build\Hydraxd.dll
