@@ -62,7 +62,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     IComponent(scene),
     configRef(this, "Config ref", AssetReference("HydraxDefault.hdx")),
     visible(this, "Visible", true),
-    position(this, "Position"),
+    position(this, "Position", float3(0.0, 0.0, 0.0)),
 //    noiseModule(this, "Noise module", 0),
 //    noiseType(this, "Noise type", 0),
 //    normalMode(this, "Normal mode", 0),
@@ -107,6 +107,9 @@ void EC_Hydrax::Create()
 {
     SAFE_DELETE(impl);
 
+    if (framework->IsHeadless())
+        return;
+
     try
     {
         if (!ParentScene())
@@ -137,10 +140,8 @@ void EC_Hydrax::Create()
 
         // Load all parameters from config file
         impl->hydrax->loadCfg(configRef.Get().ref.toStdString());
-
-//        position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
-
         impl->hydrax->create();
+        impl->hydrax->setPosition(position.Get());
 
         connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
         connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)), Qt::UniqueConnection);
@@ -181,14 +182,8 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
             LoadDefaultConfig();
     }
 
-    if (!impl->hydrax)
+    if (impl && !impl->hydrax)
         return;
-    if (attr == &configRef)
-    {
-        impl->hydrax->loadCfg(configRef.Get().ref.toStdString());
-        // The position attribute is always authoritative for the position value.
-        impl->hydrax->setPosition(position.Get());
-    }
     else if (attr == &visible)
         impl->hydrax->setVisible(visible.Get());
     else if (attr == &position)
@@ -244,7 +239,7 @@ void EC_Hydrax::UpdateNoiseModule()
 */
 void EC_Hydrax::Update(float frameTime)
 {
-    if (impl->hydrax)
+    if (impl && impl->hydrax)
     {
         PROFILE(EC_Hydrax_Update);
 #ifdef SKYX_ENABLED
@@ -255,10 +250,11 @@ void EC_Hydrax::Update(float frameTime)
             if (!entities.empty())
                 impl->skyX = (*entities.begin())->GetComponent<EC_SkyX>();
         }
-        if (!impl->skyX.expired())
+        if (!impl->skyX.expired() && impl->hydrax->isCreated())
             impl->hydrax->setSunPosition(impl->skyX.lock()->SunPosition());
 #endif
-        impl->hydrax->update(frameTime);
+        if (impl->hydrax->isCreated())
+            impl->hydrax->update(frameTime);
     }
 }
 
@@ -302,7 +298,10 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
         }
 
         // Load config from the asset data string.
+        impl->hydrax->remove();
         impl->hydrax->loadCfgString(configData.toStdString());
+        impl->hydrax->create();
+        impl->hydrax->setPosition(position.Get());
     }
     catch (Ogre::Exception &e)
     {
@@ -318,10 +317,21 @@ void EC_Hydrax::LoadDefaultConfig()
         return;
     }
 
+    LogInfo(impl->module->getNoise()->getName());
     if (impl->module->getNoise()->getName() != "Perlin")
         impl->module->setNoise(new Hydrax::Noise::Perlin());
 
     // Load all parameters from the default config file we ship in /media/hydrax
     /// \todo Inspect if we can change the current ShaderMode to HLSL or GLSL on the fly here, depending on the platform!
-    impl->hydrax->loadCfg("HydraxDefault.hdx");
+    try 
+    {
+        impl->hydrax->remove();
+        impl->hydrax->loadCfg("HydraxDefault.hdx");
+        impl->hydrax->create();
+        impl->hydrax->setPosition(position.Get());
+    }
+    catch(Ogre::Exception &e)
+    {
+        LogError("EC_Hydrax failed to load default config: " + std::string(e.what()));
+    }
 }
