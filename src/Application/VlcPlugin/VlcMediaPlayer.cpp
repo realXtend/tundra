@@ -190,7 +190,7 @@ const QList<QByteArray> VlcMediaPlayer::GenerateVlcParameters()
 
     if (pluginDir.exists(folderToFind))
         pluginDir.cd(folderToFind);
-    /*else
+    else
     {
         // This most likely means we are running 
         // inside a IDE from the viewer projects folder.
@@ -198,16 +198,15 @@ const QList<QByteArray> VlcMediaPlayer::GenerateVlcParameters()
         while (!pluginDir.exists("bin"))
         {
             if (!pluginDir.cdUp())
-              //throw std::exception(); //"Fatal error, could not find vlc plugins path!");
-              break;
+                throw std::exception("Fatal error, could not find vlc plugins path!");
         }
         pluginDir.cd("bin");
         pluginDir.cd(folderToFind);
-        }*/
+    }
 
     // Validate
-    //if (!pluginDir.absolutePath().endsWith(folderToFind))
-    //  throw std::exception(); //"Fatal error, could not find vlc plugins path!");
+    if (!pluginDir.absolutePath().endsWith(folderToFind))
+        throw std::exception("Fatal error, could not find vlc plugins path!");
 
     // Set plugin path
     QString pluginPath = QLatin1Literal("--plugin-path=") % QDir::toNativeSeparators(pluginDir.absolutePath());

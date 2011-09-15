@@ -21,7 +21,7 @@ VlcVideoWidget::VlcVideoWidget(const QList<QByteArray> &args) :
         vlcArgs[i] = args.at(i).constData();
 
     // Create new libvlc instance
-    vlcInstance_ = libvlc_new(0, 0); //vlcArgs.size(), vlcArgs.constData());
+    vlcInstance_ = libvlc_new(vlcArgs.size(), vlcArgs.constData());
 
     // Check if instance is running
     if (!vlcInstance_)
