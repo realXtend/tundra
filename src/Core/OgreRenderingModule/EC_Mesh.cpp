@@ -18,7 +18,7 @@
 #include "AssetAPI.h"
 #include "AttributeMetadata.h"
 #include "Profiler.h"
-#include "Math/Float2.h"
+#include "Math/float2.h"
 #include "Math/Ray.h"
 
 #include <Ogre.h>
