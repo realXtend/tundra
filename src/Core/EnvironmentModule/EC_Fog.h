@@ -4,6 +4,7 @@
 
 #include "IComponent.h"
 #include "Color.h"
+#include "OgreModuleFwd.h"
 
 /// Environment fog.
 /** <table class="header">
@@ -71,4 +72,7 @@ public:
 
 private slots:
     void Update();
+
+private:
+    OgreWorldWeakPtr world;
 };

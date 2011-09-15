@@ -43,9 +43,7 @@ EC_Fog::EC_Fog(Scene* scene) :
 
 EC_Fog::~EC_Fog()
 {
-    if (!ParentScene())
-        return;
-    OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+    OgreWorldPtr w = world.lock();
     if (!w)
         return;
 
@@ -61,6 +59,7 @@ void EC_Fog::Update()
     if (!w)
         return;
 
+    world = w;
     // Note: in Tundra1-series, if we were within EC_WaterPlane, the waterPlaneColor*fogColor was used as the scene fog color.
     w->GetSceneManager()->setFog((Ogre::FogMode)mode.Get(), color.Get(), expDensity.Get(), startDistance.Get(), endDistance.Get());
     if ((FogMode)mode.Get() == None)
