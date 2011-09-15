@@ -182,7 +182,7 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
             LoadDefaultConfig();
     }
 
-    if (impl && !impl->hydrax)
+    if (!impl || !impl->hydrax)
         return;
     else if (attr == &visible)
         impl->hydrax->setVisible(visible.Get());
@@ -317,7 +317,6 @@ void EC_Hydrax::LoadDefaultConfig()
         return;
     }
 
-    LogInfo(impl->module->getNoise()->getName());
     if (impl->module->getNoise()->getName() != "Perlin")
         impl->module->setNoise(new Hydrax::Noise::Perlin());
 
