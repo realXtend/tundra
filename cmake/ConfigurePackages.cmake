@@ -128,10 +128,12 @@ macro (configure_python_qt)
 endmacro (configure_python_qt)
 
 macro (configure_skyx)
+    # Prioritize env variable SKYX_HOME to be searched first
+    # to allow custom skyx builds agains a custom ogre (potentially from OGRE_HOME)
     sagase_configure_package (SKYX
       NAMES SkyX SKYX skyx
       COMPONENTS SkyX SKYX skyx
-      PREFIXES ${ENV_TUNDRA_DEP_PATH})
+      PREFIXES ${ENV_SKYX_HOME} ${ENV_TUNDRA_DEP_PATH})
 
     if (NOT WIN32)
       set (SKYX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/SkyX)
@@ -141,11 +143,13 @@ macro (configure_skyx)
 endmacro (configure_skyx)
 
 macro (configure_hydrax)
+    # Prioritize env variable HYDRAX_HOME to be searched first
+    # to allow custom hydrax builds agains a custom ogre (potentially from OGRE_HOME)
     sagase_configure_package (HYDRAX
         NAMES Hydrax HYDRAX hydrax
         COMPONENTS Hydrax HYDRAX hydrax
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
-    
+        PREFIXES ${ENV_HYDRAX_HOME} ${ENV_TUNDRA_DEP_PATH})
+
     if (NOT WIN32)
        set (HYDRAX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/Hydrax)
     endif ()
@@ -228,16 +232,12 @@ endmacro (configure_theora)
 macro(use_package_knet)
     message ("** Configuring KNET")
     
-    # Extract the KNET_DIR_QT47 variable, indended 
-    # to include external dev kNet outside the deps.
-    file(TO_CMAKE_PATH "$ENV{KNET_DIR_QT47}" ENV_KNET_DIR_QT47)
-    
     # Use KNET_DIR_QT47 if there, fallback to TUNDRA_DEP_PATH
     if ("${ENV_KNET_DIR_QT47}" STREQUAL "")
         set (KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
     else ()
         message (STATUS "-- Using from env variable KNET_DIR_QT47")
-        set (KNET_DIR $ENV{KNET_DIR_QT47})
+        set (KNET_DIR ${ENV_KNET_DIR_QT47})
     endif ()
     
     # Report findings
@@ -257,21 +257,29 @@ macro(use_package_knet)
 endmacro()
 
 macro(link_package_knet)
-    target_link_libraries(${TARGET_NAME} debug kNet)
     target_link_libraries(${TARGET_NAME} optimized kNet)
+    target_link_libraries(${TARGET_NAME} debug kNet)
 endmacro()
 
 macro(use_package_bullet)
+    # todo: convert to sagase_configure_package and sagase_report or custom FindBullet.cmake
+    message(STATUS "todo: fix use_package_bullet() from hardcoded one to more robust using sagase.")
     if (WIN32)
-        if ("$ENV{BULLET_DIR}" STREQUAL "")
+        if ("${ENV_BULLET_DIR}" STREQUAL "")
             set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH}/Bullet)
-        endif()
+        else ()
+            message (STATUS "-- Using from env variable BULLET_DIR")
+            set(BULLET_DIR ${ENV_BULLET_DIR})
+        endif ()
         include_directories(${BULLET_DIR}/include)
         link_directories(${BULLET_DIR}/lib)
     else() # Linux, note: mac will also come here..
-        if ("$ENV{BULLET_DIR}" STREQUAL "")
+        if ("${ENV_BULLET_DIR}" STREQUAL "")
             set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH})
-        endif()
+        else ()
+            message (STATUS "-- Using from env variable BULLET_DIR")
+            set(BULLET_DIR ${ENV_BULLET_DIR})
+        endif ()
         include_directories(${BULLET_DIR}/include/bullet)
         link_directories(${BULLET_DIR}/lib)
     endif()
@@ -285,21 +293,24 @@ macro(link_package_bullet)
 endmacro()
 
 macro(use_package_assimp)
-    # todo: fix this hardcoded thing to a more robust one
-    # make the include and lib consistent with normal projects 'assimp_release_Win32'
-    # magic subfolders are not good...
-    message("** Configuring ASSIMP")
+    # todo: convert to sagase_configure_package and sagase_report or custom FindAssimp.cmake
     message(STATUS "todo: fix use_package_assimp() from hardcoded one to more robust using sagase.")
     if (WIN32)
-        if ("$ENV{ASSIMP_DIR}" STREQUAL "")
+        if ("${ENV_ASSIMP_DIR}" STREQUAL "")
            set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH}/assimp)
+        else ()
+            message (STATUS "-- Using from env variable ASSIMP_DIR")
+            set(ASSIMP_DIR ${ENV_ASSIMP_DIR})
         endif()
         include_directories(${ASSIMP_DIR}/include)
         link_directories(${ASSIMP_DIR}/lib/assimp_debug_Win32)
         link_directories(${ASSIMP_DIR}/lib/assimp_release_Win32)
     else() # Linux, note: mac will also come here..
-        if ("$ENV{ASSIMP_DIR}" STREQUAL "")
-           set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH})
+        if ("${ENV_ASSIMP_DIR}" STREQUAL "")
+            set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH})
+        else ()
+            message (STATUS "-- Using from env variable ASSIMP_DIR")
+            set(ASSIMP_DIR ${ENV_ASSIMP_DIR})
         endif()
         include_directories(${ASSIMP_DIR}/include/assimp)
         link_directories(${ASSIMP_DIR}/lib)

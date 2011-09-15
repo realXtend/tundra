@@ -10,6 +10,11 @@ macro (PrintUsedEnvVariables)
     message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
     message (STATUS "QTDIR            = " ${ENV_QT_DIR})
     message (STATUS "OGRE_HOME        = " ${ENV_OGRE_HOME})
+    message (STATUS "SKYX_HOME        = " ${ENV_SKYX_HOME})
+    message (STATUS "HYDRAX_HOME      = " ${ENV_HYDRAX_HOME})
+    message (STATUS "KNET_DIR_QT47    = " ${ENV_KNET_DIR_QT47})
+    message (STATUS "BULLET_DIR       = " ${BULLET_DIR})
+    message (STATUS "ASSIMP_DIR       = " ${ASSIMP_DIR})
 endmacro ()
 
 macro (PrintUsedBuildConfig)
@@ -261,9 +266,17 @@ set (TUNDRA_BIN ${PROJECT_BINARY_DIR}/bin)
 setup_clean_install_step()
 
 # Set normalized path for common environment variables
+# If you want to use custom built dependencies along side with TUNDRA_DEP_PATH
+# you can define the following env variables: 
+# OGRE_HOME, SKYX_HOME, HYDRAX_HOME, KNET_DIR_QT47, BULLET_DIR, ASSIMP_DIR
 file (TO_CMAKE_PATH "$ENV{TUNDRA_DEP_PATH}" ENV_TUNDRA_DEP_PATH)
 file (TO_CMAKE_PATH "$ENV{QTDIR}" ENV_QT_DIR)
 file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
+file (TO_CMAKE_PATH "$ENV{SKYX_HOME}" ENV_SKYX_HOME)
+file (TO_CMAKE_PATH "$ENV{HYDRAX_HOME}" ENV_HYDRAX_HOME)
+file (TO_CMAKE_PATH "$ENV{KNET_DIR_QT47}" ENV_KNET_DIR_QT47)
+file (TO_CMAKE_PATH "$ENV{BULLET_DIR}" ENV_BULLET_DIR)
+file (TO_CMAKE_PATH "$ENV{ASSIMP_DIR}" ENV_ASSIMP_DIR)
 
 # Utilize cmakes cache for the environment variables. This is needed if eg. TUNDRA_DEP_PATH
 # was set on the first run of cmake, but once eg. Visual Studio auto runs cmake (after changes to any CMakeLists.txt)
