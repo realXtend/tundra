@@ -30,14 +30,40 @@ macro (PrintUsedBuildConfig)
     message ("")
 endmacro ()
 
+macro(GetLastElementFromPath dirPath outputParam)
+    string (FIND ${dirPath} "/" lastPathSepIndex REVERSE)
+    # This path does not have any subdirs in it
+    if (${lastPathSepIndex} STREQUAL "-1")
+        set (${outputParam} ${dirPath})
+    # Path has subdirs, pick the last
+    else ()
+        math(EXPR lastPathSepIndex "${lastPathSepIndex} + 1")
+        string(SUBSTRING ${dirPath} ${lastPathSepIndex} -1 ${outputParam})
+    endif ()
+endmacro ()
+
 # The AddEntityComponent macro adds the static EC lib from the given sourceFolder directory to the build.
-# The componentName must be the name of the EC that will be added. E.g. AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
+# The componentName == A subfolder in src/EntityComponents/ or a relative path to the EC directory where the CMakeLists.txt is located.
 # Use this macro when adding ECs to the build, since this macro tracks the set of ECs that are added, so that the individual
 # modules get #defines in C++ code for each EC that is present. This allows conditionally excluding ECs from the build.
+# Note that for eg. AddEntityComponent(3rdparty/myecs/EC_Thingie) the define will be EC_Thingie_ENABLED and you would expect.
+# Examples:     AddEntityComponent(EC_Sound)
+#               AddEntityComponent(3rdparty/myecs/EC_Thingie)
 macro(AddEntityComponent componentName)
-   add_subdirectory(src/EntityComponents/${componentName})
-   set(${componentName}_ENABLED 1)
-   set(USED_ENTITYCOMPONENTS ${USED_ENTITYCOMPONENTS} ${componentName})
+    # Chekc if the component is in our default entity components location
+    # note: from cmake docs: IS_DIRECTORY Behavior is well-defined only for full paths.
+    if (IS_DIRECTORY ${PROJECT_BINARY_DIR}/src/EntityComponents/${componentName})
+        add_subdirectory (src/EntityComponents/${componentName})
+        set (${componentName}_ENABLED 1)
+        set (USED_ENTITYCOMPONENTS ${USED_ENTITYCOMPONENTS} ${componentName})
+    elseif (IS_DIRECTORY ${PROJECT_BINARY_DIR}/${componentName})
+        add_subdirectory (${componentName})
+        GetLastElementFromPath(${componentName} compNameFromRelPath)
+        set(${compNameFromRelPath}_ENABLED 1)
+        set(USED_ENTITYCOMPONENTS ${USED_ENTITYCOMPONENTS} ${compNameFromRelPath})
+    else ()
+        message(FATAL_ERROR "Could not resolve AddEntityComponent() call with path " ${componentName} ". Are you sure the component is there?")
+    endif ()
 endmacro()
 
 # AddProject takes in one or two parameters: 

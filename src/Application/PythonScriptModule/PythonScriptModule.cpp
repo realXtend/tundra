@@ -80,7 +80,6 @@
 #include "EC_DynamicComponent.h"
 #include "EC_Name.h"
 #include "EC_OgreCompositor.h"
-#include "EC_Sound.h"
 #include "EC_InputMapper.h"
 #include "EC_SelectionBox.h"
 
@@ -331,7 +330,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EC_DynamicComponent::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Name::staticMetaObject);
             PythonQt::self()->registerClass(&EC_OgreCompositor::staticMetaObject);
-            PythonQt::self()->registerClass(&EC_Sound::staticMetaObject);
             PythonQt::self()->registerClass(&EC_InputMapper::staticMetaObject);
             PythonQt::self()->registerClass(&EC_SelectionBox::staticMetaObject);
 

@@ -183,25 +183,53 @@ macro (use_app_modules)
     endforeach ()
 endmacro (use_app_modules)
 
-# Macro for src/EntityComponents include.
+# Macro for EC include and link directory addition.
+# The EC list can have items from src/EntityComponents/ or any relative path from the Tundra source tree root.
 # note: You should not use this directly, use link_entity_components that will call this when needed.
+# Example:      use_entity_components(EC_Sound 3rdparty/myecs/EC_Thingie)
 macro (use_entity_components)
     message (STATUS "-- using Entity-Components:")
     set (INTERNAL_MODULE_DIR ${PROJECT_SOURCE_DIR}/src/EntityComponents)
     foreach (entityComponent_ ${ARGN})
-        message (STATUS "       " ${entityComponent_})
-        include_directories (${INTERNAL_MODULE_DIR}/${entityComponent_})
-        link_directories (${INTERNAL_MODULE_DIR}/${entityComponent_})
+        if (IS_DIRECTORY ${INTERNAL_MODULE_DIR}/${entityComponent_})
+            set (_compNameInternal ${entityComponent_})
+            include_directories (${INTERNAL_MODULE_DIR}/${entityComponent_})
+            link_directories (${INTERNAL_MODULE_DIR}/${entityComponent_})
+        elseif (IS_DIRECTORY ${PROJECT_BINARY_DIR}/${entityComponent_})
+            GetLastElementFromPath(${entityComponent_} _compNameInternal)
+            include_directories (${PROJECT_BINARY_DIR}/${entityComponent_})
+            link_directories (${PROJECT_BINARY_DIR}/${entityComponent_})
+        else ()
+            message(FATAL_ERROR "Could not resolve use_entity_components() call with " ${entityComponent_} ". Are you sure the component is there?")
+        endif ()
+        message (STATUS "       " ${_compNameInternal})
     endforeach ()
 endmacro (use_entity_components)
 
 # Links the current project to the given EC, if that EC has been added to the build. Otherwise omits the EC.
+# The EC list can have items from src/EntityComponents/ or any relative path from the Tundra source tree root.
+# Example:      link_entity_components(EC_Sound 3rdparty/myecs/EC_Thingie)
 macro(link_entity_components)
     # Link and track found components
     set (foundComponents "")
     foreach(componentName ${ARGN})
-        if (${componentName}_ENABLED)
-            link_modules(${componentName})
+        # Determine if this is a component under the usual static EC dir
+        # or a custom EC that is in a relative path.
+        if (IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/EntityComponents/${componentName})
+            set (_compNameInternal ${componentName})
+        elseif (IS_DIRECTORY ${PROJECT_BINARY_DIR}/${componentName})
+            GetLastElementFromPath(${componentName} _compNameInternal)
+        else ()
+            message(FATAL_ERROR "Could not resolve link_entity_components() call with " ${componentName} ". Are you sure the component is there?")
+        endif ()
+        
+        # Check if the component is included in the build
+        if (${_compNameInternal}_ENABLED)
+            # Link to the project folder name
+            link_modules(${_compNameInternal})
+            # Add the input 'path' to list of component we are using includes from
+            # 1. Its either a folder name under src/EntityComponents/componentName
+            # 2. Its a relative path from project binary dir <clone>/path/componentPath
             set (foundComponents ${foundComponents} ${componentName})
             add_definitions(-D${componentName}_ENABLED)
         endif()
