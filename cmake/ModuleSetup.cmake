@@ -42,7 +42,7 @@ macro (init_target NAME)
     link_directories (${PROJECT_BINARY_DIR}/lib)
     
     # set TARGET_DIR
-    if (${TARGET_NAME}_OUTPUT)
+    if (NOT "${TARGET_NAME_OUTPUT}" STREQUAL "")
         set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/${ARGV2})
         if (MSVC)
             # export symbols, copy needs to be added via copy_target
