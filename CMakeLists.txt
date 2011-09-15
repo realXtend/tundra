@@ -40,21 +40,33 @@ macro(AddEntityComponent componentName)
    set(USED_ENTITYCOMPONENTS ${USED_ENTITYCOMPONENTS} ${componentName})
 endmacro()
 
-# The AddProject takes in two parameters: projectType == Core or Application and projectName that should essentially be the folder name of the project.
-macro(AddProject projectType projectName)
-    set (addProjectSubdirectory 1)
-    if (NOT ${projectType} STREQUAL "Core" AND NOT ${projectType} STREQUAL "Application")
-        message (FATAL_ERROR "You are trying to use AddProject macro with invalid project type parameter: " ${projectType} " with project name " ${projectName})
-        set (addProjectSubdirectory 0)
-    endif()
-    if (BUILD_SDK_ONLY AND ${projectType} STREQUAL "Application")
-        message (STATUS "** Omitting Application level project " ${projectName} " because BUILD_SDK_ONLY is set to TRUE")
-        set (addProjectSubdirectory 0)
+# AddProject takes in one or two parameters: 
+# - One param  : argv0 == the relative directory (to the root CMakeLists.txt) where you project is and that contains the CMakeLists.txt for this project.
+# - Two params : argv0 == 'Core'|'Application'. argv1 folder name of the project in the src/argv0/
+# More useful for building the Tundra project when including platform provided projects.
+# Note: One param projects or two param "Application" type plugins will always be omitted if BUILD_SDK_ONLY is true!
+# Note: Due to the cmake add_subdirectory restrictions, the directory cannot be outside the Tundra source tree, hopefully we can go around this one day.
+# Examples:     AddProject(Core Input)
+#               AddProject(Application JavascriptModule)
+#               AddProject(mysubdir/MyPlugin)
+function(AddProject)
+    if (NOT ARGV1)
+        if (BUILD_SDK_ONLY)
+            message (STATUS "** Omitting Application level project " ${ARGV0} " because BUILD_SDK_ONLY is set to TRUE")
+        else ()
+            add_subdirectory(${ARGV0})
+        endif ()
+    else ()
+        if (NOT ${ARGV0} STREQUAL "Core" AND NOT ${ARGV0} STREQUAL "Application")
+            message (FATAL_ERROR "You are trying to use AddProject macro with invalid project type parameter: " ${ARGV0} " with project name " ${ARGV1})
+        endif()
+        if (BUILD_SDK_ONLY AND ${ARGV0} STREQUAL "Application")
+            message (STATUS "** Omitting Application level project " ${ARGV1} " because BUILD_SDK_ONLY is set to TRUE")
+        else ()
+            add_subdirectory(src/${ARGV0}/${ARGV1})
+        endif ()
     endif ()
-    if (addProjectSubdirectory)
-        add_subdirectory(src/${projectType}/${projectName})
-    endif()
-endmacro()
+endfunction()
 
 # Generates in the current project a #define for each EC that has been added to the build. Use this macro in your module CMakeLists.txt
 # to receive information in C++ about which ECs have been added to the project. This allows supporting conditional compilation of the ECs in your module.

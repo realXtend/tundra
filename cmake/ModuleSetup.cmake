@@ -144,7 +144,22 @@ macro (use_package PREFIX)
     link_directories (${${PREFIX}_LIBRARY_DIRS})
 endmacro (use_package)
 
+# Macro for using modules outside the normal src/{Core|Application}/Project modules: 
+# include module header dir and add link dir. Takes in list of relative paths to the modules.
+# Example:      use_modules(mycompany/plugins/OurModuleOne 3rdParty/AnotherModule)
+#               link_modules(OurModuleOne AnotherModule)
+macro (use_modules)
+    message (STATUS "-- using modules:")
+    foreach (modulePath_ ${ARGN})
+        message (STATUS "       " ${modulePath_})
+        include_directories (${modulePath_})
+        link_directories (${modulePath_})
+    endforeach ()
+endmacro (use_modules)
+
 # Macro for src/Core modules: include local module headers and add link directory
+# Example:      use_core_modules(Framework Input Ui)
+#               link_modules(Framework Input Ui)
 macro (use_core_modules)
     message (STATUS "-- using Core modules:")
     set (INTERNAL_MODULE_DIR ${PROJECT_SOURCE_DIR}/src/Core)
@@ -156,6 +171,8 @@ macro (use_core_modules)
 endmacro (use_core_modules)
 
 # Macro for src/Application modules: include local module headers and add link directory
+# Example:      use_app_modules(JavascripModule)
+#               link_modules(JavascripModule)
 macro (use_app_modules)
     message (STATUS "-- using Application modules:")
     set (INTERNAL_MODULE_DIR ${PROJECT_SOURCE_DIR}/src/Application)
