@@ -189,7 +189,7 @@ void EC_Light::UpdateOgreLight()
     {
         float b = std::max(brightness.Get(), 1e-3f);
         Color diff = diffColor.Get();
-        Color spec = diffColor.Get();
+        Color spec = specColor.Get();
         // Because attenuation equation (and therefore brightness) does not affect directional lights,
         // manually multiply the colors by brightness for a dir.light
         if (ogreType == Ogre::Light::LT_DIRECTIONAL)
