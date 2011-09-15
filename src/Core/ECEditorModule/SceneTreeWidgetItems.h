@@ -86,7 +86,7 @@ public:
 
     QString name; ///< Name of the attribute.
     QString id; ///< ID.
-    QString type; ///< Type. ///<\todo Remove/evaluate if needed.
+    QString type; ///< Type. \todo Remove/evaluate if needed.
 };
 
 /// Represents selection of SceneTreeWidget items.
@@ -104,7 +104,7 @@ struct Selection
     /// Returns true if selection contains assets.
     bool HasAssets() const;
 
-    /// Returns list containing unique entity ID's of both selected entities and parent entities of selected components
+    /// Returns list containing unique entity IDs of both selected entities and parent entities of selected components
     QList<entity_id_t> EntityIds() const;
 
     QList<EntityItem *> entities; ///< List of selected entities.
@@ -127,6 +127,16 @@ public:
     /// Appends information text to the item that the asset is unloaded.
     /** @param value. If true, "(Unloaded)" is appended to the item text. If false, the aforementiond text is removed. */
     void MarkUnloaded(bool value);
+
+    /// Sets the item text accordingly to the asset properties.
+    /** @param asset Asset which this item represents. */
+    void SetText(const AssetPtr &asset);
+
+    // "File missing" red
+    // "No disk source" red
+    // "Read-only" 
+    // "Memory-only" red
+    // "Unloaded " red
 
 private:
     AssetWeakPtr assetPtr; ///< Weak pointer to the asset.

@@ -15,6 +15,7 @@
 #include "IAsset.h"
 #include "IAssetStorage.h"
 #include "AssetAPI.h"
+#include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -28,6 +29,9 @@ EntityItem::EntityItem(const EntityPtr &entity) :
 
 void EntityItem::SetText(::Entity *entity)
 {
+    if (ptr.lock().get() != entity)
+        LogWarning("EntityItem::SetText: the entity given is different than the entity this item represents.");
+
     QString name = QString("%1 %2").arg(entity->Id()).arg(entity->Name());
     setTextColor(0, QColor(Qt::black));
     
@@ -97,17 +101,25 @@ ComponentItem::ComponentItem(const ComponentPtr &comp, EntityItem *parent) :
 
 void ComponentItem::SetText(IComponent *comp)
 {
+    if (ptr.lock().get() != comp)
+        LogWarning("ComponentItem::SetText: the component given is different than the component this item represents.");
+
     QString name = QString("%1 %2").arg(comp->TypeName()).arg(comp->Name());
     setTextColor(0, QColor(Qt::black));
-    
+
+    QString localText = QApplication::translate("ComponentItem", "Local");
+    QString temporaryText = QApplication::translate("ComponentItem", "Temporary");
+    QString localOnlyText = QApplication::translate("ComponentItem", "UpdateMode:LocalOnly");
+    QString disconnectedText = QApplication::translate("ComponentItem", "UpdateMode:Disconnected");
+
     bool sync = comp->IsReplicated();
     bool temporary = comp->IsTemporary();
-    
+
     QString info;
     if (!sync)
     {
         setTextColor(0, QColor(Qt::blue));
-        info.append("Local");
+        info.append(localText);
     }
 
     if (temporary)
@@ -115,21 +127,21 @@ void ComponentItem::SetText(IComponent *comp)
         setTextColor(0, QColor(Qt::red));
         if (!info.isEmpty())
             info.append(" ");
-        info.append("Temporary");
+        info.append(temporaryText);
     }
 
     if (comp->UpdateMode() == AttributeChange::LocalOnly)
     {
         if (!info.isEmpty())
             info.append(" ");
-        info.append("UpdateMode:LocalOnly");
+        info.append(localOnlyText);
     }
 
     if (comp->UpdateMode() == AttributeChange::Disconnected)
     {
         if (!info.isEmpty())
             info.append(" ");
-        info.append("UpdateMode:Disconnected");
+        info.append(disconnectedText);
     }
 
     if (!info.isEmpty())
@@ -164,10 +176,10 @@ AssetRefItem::AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent) :
     SetText(assetRef);
 }
 
-AssetRefItem::AssetRefItem(const QString &name, const QString &ref, QTreeWidgetItem *parent) :
+AssetRefItem::AssetRefItem(const QString &name_, const QString &ref, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent)
 {
-    this->name = name;
+    name = name_;
     id = ref;
     setText(0, QString("%1: %2").arg(name).arg(ref));
 }
@@ -220,7 +232,7 @@ AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
     assetPtr(asset)
 {
     QString outPathFileName;
-    QString name = AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &outPathFileName);
+    AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &outPathFileName);
     setText(0, outPathFileName);
     MarkUnloaded(!asset->IsLoaded());
 }
@@ -237,6 +249,17 @@ void AssetItem::MarkUnloaded(bool value)
         setText(0, text(0) + unloaded);
     else
         setText(0, text(0).remove(unloaded));
+}
+
+void AssetItem::SetText(const AssetPtr &asset)
+{
+    if (assetPtr.lock() != asset)
+        LogWarning("AssetItem::SetText: the asset given is different than the asset this item represents.");
+
+    QString fileMissing = QApplication::translate("AssetItem", "File mssing");
+    QString noDiskSource = QApplication::translate("AssetItem", "No disk source");
+    QString readOnly = QApplication::translate("AssetItem", "Read-only");
+    QString memoryOnly = QApplication::translate("AssetItem", "Memory-only");
 }
 
 // AssetStorageItem
