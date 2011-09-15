@@ -143,7 +143,7 @@ void OgreRenderingModule::Initialize()
     framework_->Console()->RegisterCommand("RenderStats", "Prints out render statistics.",
         this, SLOT(ConsoleStats()));
     framework_->Console()->RegisterCommand("SetMaterialAttribute", "Sets an attribute on a material asset",
-        this, SLOT(SetMaterialAttribute(const StringVector &)));
+        this, SLOT(SetMaterialAttribute(const QStringList &)));
 }
 
 void OgreRenderingModule::Uninitialize()

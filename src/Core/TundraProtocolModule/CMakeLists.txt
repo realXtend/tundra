@@ -36,7 +36,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 link_ogre()
 link_modules (Framework Asset Scene OgreRenderingModule PhysicsModule Console)
 link_entity_components (EC_HoveringText EC_TransformGizmo EC_Gizmo EC_Highlight EC_LaserPointer EC_Sound
-                        EC_ParticleSystem EC_Touchable EC_PlanarMirror EC_ProximityTrigger EC_Billboard)
+                        EC_ParticleSystem EC_PlanarMirror EC_ProximityTrigger EC_Billboard)
 
 # This is only needed because this module bootstraps EC_Sound. If EC_Sound is removed to someplace else, this can be removed.
 link_modules (Audio)

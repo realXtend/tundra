@@ -219,9 +219,9 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
 
         if (reply->error() == QNetworkReply::NoError)
         {
+#ifndef DISABLE_QNETWORKDISKCACHE
             // If asset request creator has not allowed caching, remove it now
             AssetCache *cache = framework->Asset()->GetAssetCache();
-#ifndef DISABLE_QNETWORKDISKCACHE
             if (!transfer->CachingAllowed())
                 cache->remove(reply->url());
 

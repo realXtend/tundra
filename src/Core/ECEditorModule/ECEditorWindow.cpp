@@ -681,7 +681,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     if (!entitiesWithPlaceable.isEmpty())
     {
         transformEditor->SetSelection(entities);
-        transformEditor->FocusGizmoPivotToAabbBottomCenter();
+        transformEditor->FocusGizmoPivotToAabbCenter();
         // Shows gizmo only if we have focus.
         bool enabled = framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled();
         transformEditor->SetGizmoVisible(hasFocus && enabled);

@@ -3,10 +3,7 @@
 #include "StableHeaders.h"
 #define OGRE_INTEROP
 #include "DebugOperatorNew.h"
-
 #include "EC_EnvironmentLight.h"
-#include "EnvironmentModule.h"
-
 #include "EC_Placeable.h"
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
@@ -16,6 +13,7 @@
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
+
 #include <Ogre.h>
 #include <OgreQuaternion.h>
 #include <OgreColourValue.h>

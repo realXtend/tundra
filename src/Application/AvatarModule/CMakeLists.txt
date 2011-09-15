@@ -6,7 +6,6 @@ GetEntityComponents()
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES ui/*.ui)
 
 # Qt4 Moc files to "CMake Moc" subgroup
@@ -24,14 +23,13 @@ QT4_WRAP_UI (UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_core_modules (Framework Scene AssetModule OgreRenderingModule Input Asset Console)
+use_core_modules (Framework Scene OgreRenderingModule Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Linking
 link_ogre ()
-link_modules (Framework Scene AssetModule OgreRenderingModule Input Asset Console)
-link_entity_components (EC_HoveringText EC_Sound)
+link_modules (Framework Scene OgreRenderingModule Asset Console)
 
 SetupCompileFlagsWithPCH()
 

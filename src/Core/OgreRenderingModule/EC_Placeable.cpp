@@ -288,7 +288,6 @@ void EC_Placeable::AttachNode()
                 attached_ = true;
                 return;
             }
-            
             if (parentEntity)
             {
                 // Note: if we don't find the correct bone, we attach to the root
@@ -334,9 +333,24 @@ void EC_Placeable::AttachNode()
                     }
                 }
                 
-                parentPlaceable_ = parentEntity->GetComponent<EC_Placeable>().get();
-                if (parentPlaceable_)
+                EC_Placeable* parentPlaceable = parentEntity->GetComponent<EC_Placeable>().get();
+                if (parentPlaceable)
                 {
+                    // If we have a cyclic parenting attempt, attach to the root instead
+                    EC_Placeable* parentCheck = parentPlaceable;
+                    while (parentCheck)
+                    {
+                        if (parentCheck == this)
+                        {
+                            LogWarning("Cyclic scene node parenting attempt detected! Parenting to the scene root node instead.");
+                            root_node->addChild(sceneNode_);
+                            attached_ = true;
+                            return;
+                        }
+                        parentCheck = parentCheck->parentPlaceable_;
+                    }
+                    
+                    parentPlaceable_ = parentPlaceable;
                     parentPlaceable_->GetSceneNode()->addChild(sceneNode_);
                     
                     // Connect to destruction of the placeable to be able to detach gracefully
@@ -392,7 +406,7 @@ void EC_Placeable::DetachNode()
         // 3) attached to a bone via manual tracking
         if (parentBone_)
         {
-            disconnect(parentMesh_, SIGNAL(MeshAboutToBeDestroyed()));
+            disconnect(parentMesh_, SIGNAL(MeshAboutToBeDestroyed()), this, SLOT(OnParentMeshDestroyed()));
             attachmentListener.RemoveAttachment(parentBone_, this);
             boneAttachmentNode_->removeChild(sceneNode_);
             parentBone_ = 0;
@@ -400,7 +414,7 @@ void EC_Placeable::DetachNode()
         }
         else if (parentPlaceable_)
         {
-            disconnect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()));
+            disconnect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()), this, SLOT(OnParentPlaceableDestroyed()));
             parentPlaceable_->GetSceneNode()->removeChild(sceneNode_);
             parentPlaceable_ = 0;
         }
@@ -913,7 +927,7 @@ float3x4 EC_Placeable::LocalToWorld() const
 float3x4 EC_Placeable::WorldToLocal() const
 {
     float3x4 tm = LocalToWorld();
-    bool success = tm.InverseOrthogonal();
+    bool success = tm.Inverse();
     assume(success);
     return tm;
 }
@@ -926,7 +940,7 @@ float3x4 EC_Placeable::LocalToParent() const
 float3x4 EC_Placeable::ParentToLocal() const
 {
     float3x4 tm = transform.Get().ToFloat3x4();
-    bool success = tm.InverseOrthogonal();
+    bool success = tm.Inverse();
     assume(success);
     return tm;
 }

@@ -86,8 +86,8 @@ public:
     /// Clears the selection.
     void ClearSelection();
 
-    /// Focuses the position of gizmo (if used) to bottom center of AABB
-    void FocusGizmoPivotToAabbBottomCenter();
+    /// Focuses the transform of gizmo (if used) to center of AABB
+    void FocusGizmoPivotToAabbCenter();
 
     /// Sets visibility of the gizmo (if used).
     void SetGizmoVisible(bool show);
@@ -125,7 +125,8 @@ private:
     EntityPtr gizmo; ///< Gizmo entity.
     QList<AttributeWeakPtr> targets; ///< Current target transform attributes.
     InputContextPtr input; ///< Input context for controlling gizmo mode.
-
+    QWidget* editorSettings; ///< Editor settings window
+    bool localAxes; ///< Whether to show object local axes instead of global world axes.
 private slots:
     /// Handles KeyEvents and changes gizmo's mode.
     /** @param e Key event. */
@@ -133,4 +134,9 @@ private slots:
 
     /// Handles frame update. Redraws debug visualizations as necessary.
     void OnUpdated(float frameTime);
+    
+    /// Gizmo mode has been selected from the settings widget.
+    void OnGizmoModeSelected(int mode);
+    /// Gizmo axis has been selected from the settings widget.
+    void OnGizmoAxisSelected(int axis);
 };

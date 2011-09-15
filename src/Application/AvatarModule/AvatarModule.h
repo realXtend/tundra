@@ -3,59 +3,29 @@
 #pragma once
 
 #include "IModule.h"
-
 #include "AvatarModuleApi.h"
-#include "InputFwd.h"
-#include "SceneFwd.h"
 
-#include <QObject>
-#include <QList>
-#include <QMap>
+#include <QPointer>
 
-namespace Avatar
+class AvatarEditor;
+
+class AV_MODULE_API AvatarModule : public IModule
 {
-    class AvatarHandler;
-    class AvatarControllable;
-    class AvatarEditor;
+    Q_OBJECT
 
-    typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
-    typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
-    typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
+public:
+    AvatarModule();
+    virtual ~AvatarModule();
 
-    class AV_MODULE_API AvatarModule : public IModule
-    {
-        Q_OBJECT
+    void Load();
+    void Initialize();
 
-    public:
-        AvatarModule();
-        virtual ~AvatarModule();
+public slots:
+    AvatarEditor* GetAvatarEditor() const;
 
-        void Load();
-        void Initialize();
-        void Uninitialize();
-        void Update(f64 frametime);
+    /// Start editing a specific entity's avatar
+    void EditAvatar(const QString &entityName);
 
-    public slots:
-
-        AvatarHandlerPtr GetAvatarHandler() { return avatar_handler_; }
-        AvatarEditorPtr GetAvatarEditor() { return avatar_editor_; }
-        AvatarControllablePtr GetAvatarControllable() { return avatar_controllable_; }
-
-        /// Console command: start editing a specific entity's avatar
-        void EditAvatar(const QString &entityName);
-
-    private slots:
-        /// Handle our key context input
-        void KeyPressed(KeyEvent *key);
-        void KeyReleased(KeyEvent *key);
-
-    private:
-        /// AvatarModules input context
-        InputContextPtr avatar_context_;
-
-        AvatarHandlerPtr avatar_handler_;
-        AvatarControllablePtr avatar_controllable_;
-        AvatarEditorPtr avatar_editor_;
-    };
-}
-
+private:
+    QPointer<AvatarEditor> avatarEditor;
+};

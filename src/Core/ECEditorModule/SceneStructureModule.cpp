@@ -100,7 +100,7 @@ void SceneStructureModule::Initialize()
 
 QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene)
 {
-    return InstantiateContent(QStringList(QStringList() << filename), worldPos, clearScene);
+    return InstantiateContent(QStringList(filename), worldPos, clearScene);
 }
 
 QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)

@@ -48,7 +48,9 @@ EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     gizmoType(Translate),
     state(Inactive),
     prevPoint(float3::zero),
-    curPoint(float3::zero)
+    curPoint(float3::zero),
+    worldTM(float3x4::identity),
+    worldPos(float3::zero)
 {
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 
@@ -74,6 +76,13 @@ void EC_TransformGizmo::SetPosition(const float3 &pos)
     if (placeable)
         placeable->SetPosition(pos);
 }
+
+void EC_TransformGizmo::SetOrientation(const Quat &rot)
+{
+    if (placeable)
+        placeable->SetOrientation(rot);
+}
+
 
 void EC_TransformGizmo::SetCurrentGizmoType(GizmoType type)
 {
@@ -174,13 +183,17 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 /// \todo Ali had to comment out the following lines to make gizmo work. Re-enable this. -jj.
 //    if ((e->eventType == MouseEvent::MousePressed && e->button == MouseEvent::LeftButton) ||
 //        (e->eventType == MouseEvent::MouseMove && e->otherButtons == 0))
+
+    // To avoid confusion while editing, do not update the axes during a drag, although the visualization is updated
+    if (state != Active)
     {
-        float3x4 worldTM = placeable->LocalToWorld();
-        float3 worldPos = placeable->WorldPosition();
-        xRay = Ray(worldPos, worldTM.WorldX().Normalized());
-        yRay = Ray(worldPos, worldTM.WorldY().Normalized());
-        zRay = Ray(worldPos, worldTM.WorldZ().Normalized());
+        worldTM = placeable->LocalToWorld();
+        worldPos = placeable->WorldPosition();
     }
+    
+    xRay = Ray(worldPos, worldTM.WorldX().Normalized());
+    yRay = Ray(worldPos, worldTM.WorldY().Normalized());
+    zRay = Ray(worldPos, worldTM.WorldZ().Normalized());
 
     float relX = (float)e->x/GetFramework()->Ui()->GraphicsView()->size().width();
     float relY = (float)e->y/GetFramework()->Ui()->GraphicsView()->size().height();

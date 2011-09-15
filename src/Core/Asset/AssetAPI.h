@@ -125,7 +125,7 @@ public:
     ///                                     "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
     /// @param outPath_Filename [out] Gets the combined path name and asset filename in the ref.
     ///                                e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png".
-    ///                                     "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
+    ///                                     "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png".
     /// @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/". Has a trailing slash when necessary.
     /// @param outFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
     /// @param outSubAssetName [out] Returns the subasset name in the ref. e.g. "local://path/folder/asset.png, subAsset" -> "subAsset".
@@ -214,7 +214,7 @@ public slots:
     AssetPtr GetAsset(QString assetRef);
     
     /// Returns the asset cache object that genereates a disk source for all assets.
-    AssetCache *GetAssetCache() { return assetCache; }
+    AssetCache *GetAssetCache() const { return assetCache; }
 
     /// Returns the asset storage of the given name.
     /// @param name The name of the storage to get. Remember that Asset Storage names are case-insensitive.
@@ -408,7 +408,7 @@ private slots:
 
     /// The Asset API reloads all assets from file when their disk source contents change.
     void OnAssetDiskSourceChanged(const QString &path);
-    
+
     /// An asset storage refreshed its references. Create empty assets from the new refs as necessary
     void OnAssetStorageRefsChanged(AssetStoragePtr storage);
 

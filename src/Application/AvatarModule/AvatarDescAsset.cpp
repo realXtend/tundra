@@ -13,8 +13,6 @@
 #include <cstring>
 #include "MemoryLeakCheck.h"
 
-using namespace Avatar;
-
 std::string QuatToLegacyRexString(const Quat& q)
 {
     char str[256];

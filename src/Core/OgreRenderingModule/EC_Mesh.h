@@ -44,7 +44,9 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>float: drawDistance
 <div>Distance where the mesh is shown from the camera, 0.0 = draw always (default).</div> 
 <li>bool: castShadows
-<div>Will the mesh cast shadows.</div> 
+<div>Will the mesh cast shadows.</div>
+<li>int: raycastSubmeshMask
+<div>Bitmask of which submeshes are included in the raycast. By default all are.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -170,6 +172,10 @@ public:
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
+    // Raycast submesh bitmask.
+    Q_PROPERTY(int raycastSubmeshMask READ getraycastSubmeshMask WRITE setraycastSubmeshMask);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, raycastSubmeshMask);
+    
 public slots:
     /// Automatically finds the placeable from the parent entity and sets it.
     void AutoSetPlaceable();
@@ -403,6 +409,10 @@ public slots:
     /// Returns the local space axis-aligned bounding box of this object.
     AABB LocalAABB() const;
 
+public:
+    /// Raycast into the mesh entity using a world-space ray. Returns true if a hit happens, in which case the fields (which are not null) are filled appropriately
+    bool Raycast(const Ray& ray, float* distance = 0, unsigned* subMeshIndex = 0, unsigned* triangleIndex = 0, float3* hitPosition = 0, float3* normal = 0, float2* uv = 0);
+    
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed
     void MeshAboutToBeDestroyed();
