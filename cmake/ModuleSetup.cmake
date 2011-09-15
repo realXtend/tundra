@@ -18,9 +18,10 @@
 # ARGV1 is directive to output, and ARGV2 is where to
 macro (init_target NAME)
 
-    # Define target name and output directory
+    # Define target name and output directory.
+    # Skip ARGV1 that is the keyword OUTPUT.
     set (TARGET_NAME ${NAME})
-    set (${TARGET_NAME}_OUTPUT ${ARGV1})
+    set (TARGET_OUTPUT ${ARGV2}) 
     
     message ("** " ${TARGET_NAME})
 
@@ -42,8 +43,8 @@ macro (init_target NAME)
     link_directories (${PROJECT_BINARY_DIR}/lib)
     
     # set TARGET_DIR
-    if (NOT "${TARGET_NAME_OUTPUT}" STREQUAL "")
-        set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/${ARGV2})
+    if (NOT "${TARGET_OUTPUT}" STREQUAL "")
+        set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/${TARGET_OUTPUT})
         if (MSVC)
             # export symbols, copy needs to be added via copy_target
             add_definitions (-DMODULE_EXPORTS)
@@ -132,7 +133,6 @@ macro (build_executable TARGET_NAME)
     endif (MSVC)
 
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-    
 
 endmacro (build_executable)
 
