@@ -1,106 +1,82 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+#ifndef incl_OpenAssetImport_h
+#define incl_OpenAssetImport_h
 
-#ifndef incl_AssImp_OpenAssetImport_h
-#define incl_AssImp_OpenAssetImport_h
+#include <string>
+#include <OgreMesh.h>
+#include <OgreMeshSerializer.h>
 
-#include <assimp.hpp>
-#include <LogStream.h>
-#include <aiScene.h>
-#include "Transform.h"
+#include <assimp/assimp.hpp>
+#include <assimp/aiScene.h>
+#include <assimp/aiPostProcess.h>
+#include <map>
+#include <QString>
 
-struct SceneDesc;
-
-namespace AssImp
+struct boneNode
 {
-    //! Contains mesh data information about a file that can be imported with OpenAssetImport.
-    /*! GetMeshData() uses this to fill out information which can be used to generate entities
-        and components.
-    */
-    struct MeshData
-    {
-        QString file_;          //!< file path, same for each individual mesh in the file.
-        QString name_;          //!< name of an individual mesh inside the file. May be empty if file contains only one mesh.
-        Transform transform_;   //!< transforms in global space for an individual mesh.
-    };
+    aiNode* node;
+    aiNode* parent;
+    bool isNeeded;
+};
 
-    //! Open Asset Import, a wrapper for Open Asset Import library that is used for loading model formats other than Ogre .mesh.
-    /*! Imports an Ogre mesh from various different model formats. The Ogre mesh is created to Ogre::MeshManager. This class
-        doesn't create any entities or components, the caller is responsible for this.
-    */
-    class OpenAssetImport
-    {
-    public:
-        OpenAssetImport();
-        ~OpenAssetImport();
+class OpenAssetImport
+{
+public:
+    bool convert(const Ogre::String& filename, bool generateMaterials, QString addr = "", int index = -1);
 
-        //! Helper function for stripping mesh name from asset id
-        /*! If asset is contained in a file that contains other assets as well,
-            this function can be used to separate the mesh name so you can
-            get a file name and a mesh name
-            \param id asset id
-            \param outfile asset filename
-            \param outMeshname mesh name
-        */
-        static void StripMeshnameFromAssetId(const QString& id, QString &outfile, QString &outMeshname);
-        
-        //! Returns true if filename has an extension that implies supported file format
-        /*!
-            \param filename full path or only filename to test
-        */
-        bool IsSupportedExtension(const QString& filename);
+    Ogre::Mesh * GetMesh() { return mMesh.get(); }
+    std::map<QString, QString> matList;
+    std::vector<QString> matNameList;
+    const Ogre::String& getBasename(){ return mBasename; }
+    void FixLocalReference(QString &matRef, QString addRef);
+    void FixHttpReference(QString &matRef, QString addRef);
+    bool IsSupportedExtension(QString extension);
 
-        //! Imports mesh data from a file.
-        /*! Import mesh names and transformations contained in the model file. This
-            information can be used to create entities, components ands asset refs.
-            Use Import() to create the actual Ogre mesh data.
+private:
+    const aiScene *scene;
+    QString addr;
+    Ogre::MeshPtr mMesh;
+    bool generateMaterials;
+    void linearScaleMesh(Ogre::MeshPtr mesh, int targetSize);
+    bool createSubMesh(const Ogre::String& name, int index, const aiNode* pNode, const aiMesh *mesh, const aiMaterial* mat, Ogre::MeshPtr pMesh, Ogre::AxisAlignedBox& mAAB, const Ogre::String& mDir);
+    Ogre::MaterialPtr createMaterial(int index, const aiMaterial* mat, const Ogre::String& mDir);
+    Ogre::MaterialPtr createMaterialByScript(int index, const aiMaterial* mat);
+    void grabNodeNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
+    void grabBoneNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
+    void computeNodesDerivedTransform(const aiScene* mScene,  const aiNode *pNode, const aiMatrix4x4 accTransform);
+    void createBonesFromNode(const aiScene* mScene,  const aiNode* pNode);
+    void createBoneHiearchy(const aiScene* mScene,  const aiNode *pNode);
+    void loadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const Ogre::String& mDir);
+    void markAllChildNodesAsNeeded(const aiNode *pNode);
+    void flagNodeAsNeeded(const char* name);
+    bool isNodeNeeded(const char* name);
+    void parseAnimation (const aiScene* mScene, int index, aiAnimation* anim);
+    typedef std::map<Ogre::String, boneNode> boneMapType;
+    boneMapType boneMap;
+    int mLoaderParams;
+    Ogre::String mBasename;
+    Ogre::String mPath;
+    Ogre::String mMaterialCode;
+    Ogre::String mCustomAnimationName;
 
-            \note Does not handle scene hierarchy, all transformations are converted
-                  to world space.
+    typedef std::map<Ogre::String, const aiNode*> BoneNodeMap;
+    BoneNodeMap mBoneNodesByName;
 
-            \param file path to file where to import meshes from
-            \param outMeshData Out string vector of mesh names
-        */
-        void GetMeshData(const QString& file, std::vector<MeshData> &outMeshData) const;
+    typedef std::map<Ogre::String, const aiBone*> BoneMap;
+    BoneMap mBonesByName;
 
-        //! Generates Ogre meshes from memory buffer.
-        /*! The meshes are generated directly to Ogre::MeshManager and names of the meshes are
-            returned. Use GetMeshData() to get hierarchy and transformation data from a model file.
+    typedef std::map<Ogre::String, aiMatrix4x4> NodeTransformMap;
+    NodeTransformMap mNodeDerivedTransformByName;
 
-            \param data memory buffer where to import meshes from
-            \param length memory buffer length
-            \param name file format hint for the importer, looks for extension within the name
-            \param hint file format hint for the importer, in practise file extension with the dot included
-            \param node name of the node to import
-            \param outMeshNames Out string vector of generated Ogre mesh names
-        */
-        void Import(const void *data, size_t length, const QString &name, const char* hint, const QString &nodeName, std::vector<std::string> &outMeshNames);
+    typedef std::vector<Ogre::MeshPtr> MeshVector;
+    MeshVector mMeshes;
 
-        //! Inspects file and returns a scene description structure of the contents of the file.
-        /*! \param filename File name.
-        */
-        SceneDesc GetSceneDescription(const QString &filename) const;
+    Ogre::SkeletonPtr mSkeleton;
 
-    private:
-        class AssImpLogStream : public Assimp::LogStream
-        {
-        public:
-            AssImpLogStream() {}
-            virtual ~AssImpLogStream() {}
+    static int msBoneCount;
 
-            void write(const char* message);
-        };
+    Ogre::Real mTicksPerSecond;
+    Ogre::Real mAnimationSpeedModifier;
 
-        void GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
-            const aiMatrix4x4 &parentTransform, std::vector<MeshData> &outMeshNames) const;
-        
-        void ImportNode(const struct aiScene *scene, const struct aiNode *node, const QString& file, const QString &nodeName, 
-            std::vector<std::string> &outMeshNames);
+};
 
-        boost::shared_ptr<Assimp::Importer> importer_;
-        AssImpLogStream *logstream_;
-
-        const unsigned int loglevels_;     //! Log levels to capture during import
-        const unsigned int default_flags_; //! Default import postprocess flags
-    };
-}
-#endif
+#endif // __OpenAssetImport_h__

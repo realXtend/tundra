@@ -42,9 +42,9 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
-#ifdef ASSIMP_ENABLED
+/*#ifdef ASSIMP_ENABLED
 #include <OpenAssetImport.h>
-#endif
+#endif*/
 
 //#include <OgreCamera.h>
 
@@ -176,7 +176,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
         }
         else
         {
-#ifdef ASSIMP_ENABLED
+/*#ifdef ASSIMP_ENABLED
             boost::filesystem::path path(filename.toStdString());
             AssImp::OpenAssetImport assimporter;
             QString extension = QString(path.extension().c_str()).toLower();
@@ -197,7 +197,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
 
                 return ret;
             }
-#endif
+#endif*/
         }
     }
 
@@ -263,13 +263,13 @@ bool SceneStructureModule::IsSupportedFileType(const QString &fileRef)
     }
     else
     {
-#ifdef ASSIMP_ENABLED
+/*#ifdef ASSIMP_ENABLED
         boost::filesystem::path path(fileRef.toStdString());
         AssImp::OpenAssetImport assimporter;
         QString extension = QString(path.extension().c_str()).toLower();
         if (assimporter.IsSupportedExtension(extension))
             return true;
-#endif
+#endif*/
         return false;
     }
 }
