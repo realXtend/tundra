@@ -250,10 +250,7 @@ void TransformEditor::RotateTargets(const Quat &delta)
             if (parentPlaceableEntity)
             {
                 EC_Placeable* parentPlaceable = parentPlaceableEntity->GetComponent<EC_Placeable>().get();
-                float3x4 worldToLocal = parentPlaceable->LocalToWorld();
-                ///\todo Works around WorldToLocal() bug, which uses InverseOrthogonal(). Remove when fixed.
-                worldToLocal.Inverse();
-                t.FromFloat3x4(worldToLocal * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
+                t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
             }
             else
                 t.FromFloat3x4(rotation * t.ToFloat3x4());

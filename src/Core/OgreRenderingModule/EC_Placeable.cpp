@@ -913,7 +913,7 @@ float3x4 EC_Placeable::LocalToWorld() const
 float3x4 EC_Placeable::WorldToLocal() const
 {
     float3x4 tm = LocalToWorld();
-    bool success = tm.InverseOrthogonal();
+    bool success = tm.Inverse();
     assume(success);
     return tm;
 }
@@ -926,7 +926,7 @@ float3x4 EC_Placeable::LocalToParent() const
 float3x4 EC_Placeable::ParentToLocal() const
 {
     float3x4 tm = transform.Get().ToFloat3x4();
-    bool success = tm.InverseOrthogonal();
+    bool success = tm.Inverse();
     assume(success);
     return tm;
 }
