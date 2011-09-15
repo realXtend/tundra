@@ -17,29 +17,51 @@ macro (configure_boost)
     endif ()
 
     if (UNIX)
-            set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_regex boost_program_options)
+        set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_regex boost_program_options)
     else ()
-            set (BOOST_COMPONENTS date_time filesystem system thread regex program_options)
+        set (BOOST_COMPONENTS date_time filesystem system thread regex program_options)
     endif ()
  
+    # Set BOOST_ROOT to our deps if not defined so the FindBoost.cmake 
+    # macro is used in a any situation inside sagase_configure_package().
+    if (WIN32 AND "${ENV_BOOST_ROOT}" STREQUAL "")
+        if (WIN32)
+            # Fallback to the deps boost if a overriding env variable is not set
+            SET (BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
+        else () 
+            # For linux boost is found from system, if not there it will anyway
+            # fallback to brute force search to ENV_TUNDRA_DEP_PATH
+            SET (BOOST_ROOT "")
+        endif ()
+    else ()
+        SET (BOOST_ROOT ${ENV_BOOST_ROOT})
+    endif()
+    
+    # BOOST_ROOT
     sagase_configure_package (BOOST 
         NAMES Boost boost
         COMPONENTS ${BOOST_COMPONENTS}
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
+        PREFIXES ${BOOST_ROOT} ${ENV_TUNDRA_DEP_PATH})
 
     if (APPLE)
         set (BOOST_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/lib)
         set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
     endif()
 
-    # boost library naming is complex, and FindBoost.cmake is preferred to 
-    # find the correct names. however on windows it appears to not find the
-    # library directories correctly. find_path cannot be counted on to find
-    # the libraries as component thread -> libboost_thread_vc90-mt.lib (etc.)
-
+    # Setting the BOOST_ROOT will result in linking failures on Visual Studio as found release and debug
+    # libs get mixed up. On windows we will empty out the Boost_LIBRARIES list and count on the 
+    # auto-linking feature boost provides. http://www.boost.org/doc/libs/1_35_0/more/getting_started/windows.html#auto-linking
     if (MSVC)
-        set (BOOST_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS} ${ENV_TUNDRA_DEP_PATH}/Boost/include)
-        set (BOOST_LIBRARY_DIRS ${BOOST_LIBRARY_DIRS} ${ENV_TUNDRA_DEP_PATH}/Boost/lib)
+        # Reset libraries list so VC will perform auto-linking.
+        set (BOOST_LIBRARIES "")
+        # Not needed anymore as BOOST_ROOT finds these properly. 
+        # Didnt remove yet eiher so nothing breaks, added empty checks instead to not add duplicated.
+        if ("${BOOST_INCLUDE_DIRS}" STREQUAL "")
+            set (BOOST_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS} $ENV{BOOST_ROOT}/include)
+        endif ()
+        if ("${BOOST_LIBRARY_DIRS}" STREQUAL "")
+            set (BOOST_LIBRARY_DIRS ${BOOST_LIBRARY_DIRS} $ENV{BOOST_ROOT}/lib)
+        endif ()
     endif ()
 
     sagase_configure_report (BOOST)
