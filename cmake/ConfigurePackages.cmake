@@ -24,13 +24,13 @@ macro (configure_boost)
  
     # Set BOOST_ROOT to our deps if not defined so the FindBoost.cmake 
     # macro is used in a any situation inside sagase_configure_package().
-    if (WIN32 AND "${ENV_BOOST_ROOT}" STREQUAL "")
+    if (MSVC AND "${ENV_BOOST_ROOT}" STREQUAL "")
         if (WIN32)
-            # Fallback to the deps boost if a overriding env variable is not set
+            # Fallback to the deps boost if a overriding env variable is not set. 
             SET (BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
         else () 
-            # For linux boost is found from system, if not there it will anyway
-            # fallback to brute force search to ENV_TUNDRA_DEP_PATH
+            # For linux etc. boost is found from system. If not it will anyway
+            # fallback to brute force search to ENV_TUNDRA_DEP_PATH like before.
             SET (BOOST_ROOT "")
         endif ()
     else ()
