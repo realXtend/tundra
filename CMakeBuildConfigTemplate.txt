@@ -74,7 +74,6 @@ AddEntityComponent(EC_TransformGizmo)
 
 if (NOT BUILD_SDK_ONLY)
     AddEntityComponent(EC_Script)                   # Optional but used by both PythonScriptModule and JavascriptModule.
-    AddEntityComponent(EC_Touchable)
     AddEntityComponent(EC_PlanarMirror)
     AddEntityComponent(EC_ProximityTrigger)
 endif()

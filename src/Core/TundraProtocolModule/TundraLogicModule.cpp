@@ -39,14 +39,6 @@
 #include "EC_HoveringText.h"
 #endif
 
-#ifdef EC_Clone_ENABLED
-#include "EC_Clone.h"
-#endif
-
-#ifdef EC_Touchable_ENABLED
-#include "EC_Touchable.h"
-#endif
-
 #ifdef EC_Ruler_ENABLED
 #include "EC_Ruler.h"
 #endif
@@ -131,12 +123,6 @@ void TundraLogicModule::Load()
 #endif
 #ifdef EC_HoveringText_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_HoveringText>));
-#endif
-#ifdef EC_Clone_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Clone>));
-#endif
-#ifdef EC_Touchable_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Touchable>));
 #endif
 #ifdef EC_Ruler_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Ruler>));
