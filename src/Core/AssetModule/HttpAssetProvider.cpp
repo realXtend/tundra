@@ -104,6 +104,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     transfer->assetType = assetType;
     transfer->provider = shared_from_this();
     transfer->storage = GetStorageForAssetRef(assetRef);
+    transfer->diskSourceType = IAsset::Cached; // The asset's disksource will represent a cached version of the original on the http server
     transfers[reply] = transfer;
     return transfer;
 }

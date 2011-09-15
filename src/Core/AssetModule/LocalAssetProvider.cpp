@@ -68,7 +68,8 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
     AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();
     transfer->assetType = assetType;
-
+    transfer->diskSourceType = IAsset::Original; // The disk source represents the original authoritative source for the asset.
+    
     pendingDownloads.push_back(transfer);
 
     return transfer;

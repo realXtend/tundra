@@ -9,6 +9,7 @@
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 #include "AssetReference.h"
+#include "IAsset.h"
 
 #include <QByteArray>
 
@@ -19,7 +20,7 @@ class IAssetTransfer : public QObject, public boost::enable_shared_from_this<IAs
 
 public:
     IAssetTransfer()
-    :cachingAllowed(true)
+    :cachingAllowed(true),diskSourceType(IAsset::Original)
     {
     }
 
@@ -37,6 +38,9 @@ public:
     /// Specifies the internal resource name. Will not be filled until the resource is loaded.
     QString internalResourceName;
 
+    /// Specifies the disk source type to set for the asset once this transfer completes.
+    IAsset::SourceType diskSourceType;
+    
     /// Specifies the provider this asset is being downloaded from.
     AssetProviderWeakPtr provider;
 
@@ -68,6 +72,8 @@ public slots:
 
     QString DiskSource() const { return diskSource; }
 
+    IAsset::SourceType DiskSourceType() const { return diskSourceType; }
+    
     bool CachingAllowed() const { return cachingAllowed; }
 
     // Script getters for public attributes

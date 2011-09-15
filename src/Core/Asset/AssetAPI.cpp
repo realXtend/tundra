@@ -733,7 +733,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         transfer->assetType = assetType;
         transfer->provider = transfer->asset->GetAssetProvider();
         transfer->storage = transfer->asset->GetAssetStorage();
-
+        transfer->diskSourceType = transfer->asset->DiskSourceType();
+        
         readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
         return transfer;
     }
@@ -768,6 +769,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     {
         // The asset can be found from cache. Generate a providerless transfer and return it to the client.
         transfer = AssetTransferPtr(new IAssetTransfer());
+        transfer->diskSourceType = IAsset::Cached;
+        
         bool success = LoadFileToVector(assetFileInCache.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
         {
@@ -1152,6 +1155,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     
     // Save for the asset the storage and provider it came from.
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());
+    transfer->asset->SetDiskSourceType(transfer->diskSourceType);
     transfer->asset->SetAssetStorage(transfer->storage.lock());
     transfer->asset->SetAssetProvider(transfer->provider.lock());
 
