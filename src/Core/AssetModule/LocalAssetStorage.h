@@ -29,6 +29,9 @@ public:
     /// If true, all subdirectories of the storage directory are automatically looked in when loading an asset.
     bool recursive;
 
+    /// If true, assets can be written to the storage.
+    bool writable;
+
     /// Starts listening on the local directory this asset storage points to.
     void SetupWatcher();
 
@@ -39,12 +42,11 @@ public:
     void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType);
 
     QStringList assetRefs;
+
     
 public slots:
-    /// We assume all directories are writable to.
-    /// \todo This does not always hold, e.g. scenes that are run from the C:\Program Files\ do not give the user permission to write to (unless the security is lifted).
-    ///       Make this settable on per-storage basis.
-    bool Writable() const { return true; }
+    /// Specifies whether data can be uploaded to this asset storage.
+    virtual bool Writable() const { return writable; }
 
     /// Local storages are always assumed to be trusted.
     bool Trusted() const { return true; }

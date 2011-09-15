@@ -160,7 +160,7 @@ bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
     return false;
 }
 
-LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, QString storageName, bool recursive)
+LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, QString storageName, bool recursive, bool writable)
 {
     directory = directory.trimmed();
     if (directory.isEmpty())
@@ -194,6 +194,7 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
     storage->directory = QDir::toNativeSeparators(GuaranteeTrailingSlash(directory));
     storage->name = storageName;
     storage->recursive = recursive;
+    storage->writable = writable;
     storage->provider = shared_from_this();
     storage->SetupWatcher(); // Start listening on file change notifications.
 //    connect(storage->changeWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(FileChanged(QString)));
@@ -326,10 +327,14 @@ AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QStrin
     QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
 
     bool recursive = true;
+    bool writable = true;
     if (s.contains("recursive"))
         recursive = ParseBool(s["recursive"]);
 
-    return AddStorageDirectory(path, name, recursive);
+    if (s.contains("readonly"))
+        writable = !ParseBool(s["readonly"]);
+
+    return AddStorageDirectory(path, name, recursive, writable);
 }
 
 QString LocalAssetProvider::GenerateUniqueStorageName() const

@@ -20,15 +20,18 @@ class HttpAssetStorage : public IAssetStorage
 Q_OBJECT
 
 public:
+    HttpAssetStorage();
+    
     QString baseAddress;
     QString storageName;
     QStringList assetRefs;
     ///\todo Disallow scripts from changing this after the storage has been created. (security issue) -jj.
     QString localDir;
+    bool writable;
     
 public slots:
     /// Specifies whether data can be uploaded to this asset storage.
-    virtual bool Writable() const { return false; }
+    virtual bool Writable() const { return writable; }
 
     /// HttpAssetStorages are trusted if they point to a web server on the local system.
     /// \todo Make this bit configurable per-HttpAssetStorage.

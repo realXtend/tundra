@@ -8,6 +8,10 @@
 #include <QBuffer>
 #include <QDomDocument>
 
+HttpAssetStorage::HttpAssetStorage() : writable(true)
+{
+}
+
 QString HttpAssetStorage::Type() const
 {
     return "HttpAssetStorage";
@@ -41,9 +45,9 @@ void HttpAssetStorage::RefreshAssetRefs()
 QString HttpAssetStorage::SerializeToString() const
 {
     if (localDir.isEmpty())
-        return "type=" + Type() + ";name=" + storageName + ";src=" + baseAddress;
+        return "type=" + Type() + ";name=" + storageName + ";src=" + baseAddress + ";readonly=" + (!writable ? "true" : "false");
     else
-        return "type=" + Type() + ";name=" + storageName + ";localdir=" + localDir + ";src=" + baseAddress;
+        return "type=" + Type() + ";name=" + storageName + ";localdir=" + localDir + ";src=" + baseAddress + ";readonly=" + (!writable ? "true" : "false");
 }
 
 void HttpAssetStorage::PerformSearch(QString path)
