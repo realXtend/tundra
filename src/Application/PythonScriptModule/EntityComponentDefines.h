@@ -9,10 +9,6 @@
 #include "EC_HoveringText.h"
 #endif
 
-#ifdef EC_Touchable_ENABLED
-#include "EC_Touchable.h"
-#endif
-
 #ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
 #include "EC_SoundListener.h"

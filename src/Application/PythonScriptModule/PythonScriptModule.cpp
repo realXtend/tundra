@@ -341,9 +341,6 @@ namespace PythonScript
 #ifdef EC_HoveringText_ENABLED
             PythonQt::self()->registerClass(&EC_HoveringText::staticMetaObject);
 #endif
-#ifdef EC_Touchable_ENABLED
-            PythonQt::self()->registerClass(&EC_Touchable::staticMetaObject);
-#endif
 #ifdef EC_Sound_ENABLED
             PythonQt::self()->registerClass(&EC_Sound::staticMetaObject);
             PythonQt::self()->registerClass(&EC_SoundListener::staticMetaObject);
