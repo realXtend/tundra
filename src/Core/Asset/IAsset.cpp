@@ -19,11 +19,16 @@ IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
 void IAsset::SetDiskSource(QString diskSource_)
 {
     diskSource = diskSource_.trimmed();
+    emit PropertyStatusChanged();
 }
 
 void IAsset::SetDiskSourceType(SourceType type)
 {
-    diskSourceType = type;
+    if (diskSourceType != type)
+    {
+        diskSourceType = type;
+        emit PropertyStatusChanged();
+    }
 }
 
 bool IAsset::LoadFromCache()
@@ -55,12 +60,20 @@ bool IAsset::IsEmpty() const
 
 void IAsset::MarkModified()
 {
-    modified = true;
+    if (!modified)
+    {
+        modified = true;
+        emit PropertyStatusChanged();
+    }
 }
 
 void IAsset::ClearModified()
 {
-    modified = false;
+    if (modified)
+    {
+        modified = false;
+        emit PropertyStatusChanged();
+    }
 }
 
 AssetPtr IAsset::Clone(QString newAssetName) const

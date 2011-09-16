@@ -19,7 +19,9 @@ namespace Asset
 
 LocalAssetStorage::LocalAssetStorage()  :
     recursive(true), /// \todo This was uninitialized so set to true, which one do we want as default behavior?
-    writable(true)
+    writable(true),
+    liveUpdate(true),
+    autoDiscoverable(true)
 {
 }
 
@@ -175,7 +177,8 @@ QString LocalAssetStorage::Type() const
 
 QString LocalAssetStorage::SerializeToString() const
 {
-    return "type=" + Type() + ";name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false") + ";readonly=" + (!writable ? "true" : "false");
+    return "type=" + Type() + ";name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false") + ";readonly=" + (!writable ? "true" : "false") +
+        ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
 }
 
 void LocalAssetStorage::SetupWatcher()

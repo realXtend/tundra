@@ -127,6 +127,9 @@ signals:
         @param asset A pointer to this will be passed in. The signature of this signal deliberately contains this member to be unified with AssetAPI. */
     void Loaded(AssetPtr asset);
 
+    /// Asset properties have changed. Emitted whenever the modified flag, disksource, or disksourcetype changes.
+    void PropertyStatusChanged();
+    
 public:
     /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
     /// Returns true if loading succeeded, false otherwise.

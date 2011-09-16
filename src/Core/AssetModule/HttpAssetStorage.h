@@ -27,12 +27,26 @@ public:
     QStringList assetRefs;
     ///\todo Disallow scripts from changing this after the storage has been created. (security issue) -jj.
     QString localDir;
+    
+    /// If true, uploads are supported.
     bool writable;
+    
+    /// If true, assets in this storage are subject to live update after loading.
+    bool liveUpdate;
+    
+    /// If true, storage has automatic discovery of new assets enabled.
+    bool autoDiscoverable;
     
 public slots:
     /// Specifies whether data can be uploaded to this asset storage.
     virtual bool Writable() const { return writable; }
 
+    /// Specifies whether the assets in the storage should be subject to live update, once loaded
+    virtual bool HasLiveUpdate() const { return liveUpdate; }
+    
+    /// Specifies whether the asset storage has automatic discovery of new assets enabled
+    virtual bool AutoDiscoverable() const { return autoDiscoverable; }
+    
     /// HttpAssetStorages are trusted if they point to a web server on the local system.
     /// \todo Make this bit configurable per-HttpAssetStorage.
     virtual bool Trusted() const;

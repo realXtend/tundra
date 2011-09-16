@@ -180,13 +180,23 @@ AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString
 
     QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
 
-    HttpAssetStoragePtr newStorage = AddStorageAddress(protocolPath, name);
+    bool liveUpdate = true;
+    bool autoDiscoverable = false;
+    if (s.contains("liveupdate"))
+        liveUpdate = ParseBool(s["liveupdate"]);
+    if (s.contains("autodiscoverable"))
+        autoDiscoverable = ParseBool(s["autodiscoverable"]);
+    
+    HttpAssetStoragePtr newStorage = AddStorageAddress(protocolPath, name, liveUpdate, autoDiscoverable);
 
     // Set local dir if specified
-    if (newStorage && s.contains("localdir"))
-        newStorage->localDir = GuaranteeTrailingSlash(s["localdir"]);
-    if (newStorage && s.contains("readonly"))
-        newStorage->writable = !ParseBool(s["readonly"]);
+    if (newStorage)
+    {
+        if (s.contains("localdir"))
+            newStorage->localDir = GuaranteeTrailingSlash(s["localdir"]);
+        if (s.contains("readonly"))
+            newStorage->writable = !ParseBool(s["readonly"]);
+    }
     
     return newStorage;
 }
@@ -294,7 +304,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     }
 }
 
-HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address, const QString &storageName)
+HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate, bool autoDiscoverable)
 {    QString locationCleaned = GuaranteeTrailingSlash(address.trimmed());
 
     // Check if a storage with this name already exists.
@@ -310,8 +320,14 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
     HttpAssetStoragePtr storage = HttpAssetStoragePtr(new HttpAssetStorage());
     storage->baseAddress = locationCleaned;
     storage->storageName = storageName;
+    storage->liveUpdate = liveUpdate;
+    storage->autoDiscoverable = autoDiscoverable;
     storage->provider = this->shared_from_this();
     storages.push_back(storage);
+    
+    if (storage->AutoDiscoverable())
+        storage->RefreshAssetRefs(); // Initiate PROPFIND
+    
     return storage;
 }
 

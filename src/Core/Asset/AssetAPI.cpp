@@ -519,7 +519,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
         LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName + "! Please add a storage with this name.");
         return AssetUploadTransferPtr();
     }
-
+    
     // Protect crashes when as this function is called from scripts!
     AssetUploadTransferPtr transfer;
     try
@@ -603,6 +603,9 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, siz
 
     if (!destination)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The passed destination asset storage was null!");
+
+    if (!destination->Writable())
+        throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The storage is not writable.");
 
     AssetProviderPtr provider = destination->provider.lock();
     if (!provider)
@@ -1012,7 +1015,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     }
     assert(asset->IsEmpty());
 
-    // Fill the provider & storage for the new asset already heree if possible
+    // Fill the provider & storage for the new asset already here if possible
     if (!storage)
     {
         asset->SetAssetProvider(GetProviderForAssetRef(type, name));
@@ -1222,7 +1225,7 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
 {
     AssetPtr asset;
     AssetTransferMap::iterator iter = FindTransferIterator(assetRef);
-    AssetMap::iterator iter2 = assets.find(assetRef);   
+    AssetMap::iterator iter2 = assets.find(assetRef);
     
     // Check for new transfer: not in the assets map yet
     if (iter != currentTransfers.end())
@@ -1240,8 +1243,17 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
         const QString diskSource = asset->DiskSource();
         if (diskSourceChangeWatcher && !diskSource.isEmpty())
         {
-            diskSourceChangeWatcher->removePath(diskSource);
-            diskSourceChangeWatcher->addPath(diskSource);
+            // If available, check the storage whether assets loaded from it should be live-updated.
+            // Otherwise assume live-update == true
+            bool shouldLiveUpdate = true;
+            AssetStoragePtr storage = asset->GetAssetStorage();
+            if (storage)
+                shouldLiveUpdate = storage->HasLiveUpdate();
+            if (shouldLiveUpdate)
+            {
+                diskSourceChangeWatcher->removePath(diskSource);
+                diskSourceChangeWatcher->addPath(diskSource);
+            }
         }
 
         // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).

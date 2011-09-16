@@ -43,12 +43,14 @@ namespace Asset
         virtual bool RemoveAssetStorage(QString storageName);
 
         /// Adds the given directory as an asset storage.
-        /** @param directory The paht name for the directory to add.
+        /** @param directory The path name for the directory to add.
             @param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
             @param recursive If true, all the subfolders of the given folder are added as well.
             @param writable If true, assets can be uploaded to the storage.
+            @param liveUpdate If true, assets will be reloaded when the underlying file changes.
+            @param autoDiscoverable If true, a recursive directory search will be initially performed to know which assets reside inside the storage.
             Returns the newly created storage, or 0 if a storage with the given name already existed, or if some other error occurred. */
-        LocalAssetStoragePtr AddStorageDirectory(QString directory, QString storageName, bool recursive, bool writable);
+        LocalAssetStoragePtr AddStorageDirectory(QString directory, QString storageName, bool recursive, bool writable = true, bool liveUpdate = true, bool autoDiscoverable = true);
 
         virtual std::vector<AssetStoragePtr> GetStorages() const;
 
