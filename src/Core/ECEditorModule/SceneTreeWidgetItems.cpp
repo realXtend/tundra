@@ -231,10 +231,11 @@ AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
     assetPtr(asset)
 {
-    QString outPathFileName;
-    AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &outPathFileName);
-    setText(0, outPathFileName);
-    MarkUnloaded(!asset->IsLoaded());
+    //QString outPathFileName;
+    //AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &outPathFileName);
+    //setText(0, outPathFileName);
+    //MarkUnloaded(!asset->IsLoaded());
+    SetText(asset);
 }
 
 AssetPtr AssetItem::Asset() const
@@ -242,6 +243,7 @@ AssetPtr AssetItem::Asset() const
     return assetPtr.lock();
 }
 
+/*
 void AssetItem::MarkUnloaded(bool value)
 {
     QString unloaded = QApplication::translate("AssetItem", " (Unloaded)");
@@ -250,16 +252,79 @@ void AssetItem::MarkUnloaded(bool value)
     else
         setText(0, text(0).remove(unloaded));
 }
+*/
 
 void AssetItem::SetText(const AssetPtr &asset)
 {
     if (assetPtr.lock() != asset)
         LogWarning("AssetItem::SetText: the asset given is different than the asset this item represents.");
 
-    QString fileMissing = QApplication::translate("AssetItem", "File mssing");
-    QString noDiskSource = QApplication::translate("AssetItem", "No disk source");
-    QString readOnly = QApplication::translate("AssetItem", "Read-only");
-    QString memoryOnly = QApplication::translate("AssetItem", "Memory-only");
+    QString name;//outPathFileName
+    AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &name);
+
+    // "File missing" red
+    // "No disk source" red
+    // "Read-only" 
+    // "Memory-only" red
+    // "Unloaded " gray
+
+    QString unloadedText = QApplication::translate("AssetItem", "Unloaded");
+    QString fileMissingText = QApplication::translate("AssetItem", "File missing");
+    QString noDiskSourceText = QApplication::translate("AssetItem", "No disk source");
+//    QString readOnlyText = QApplication::translate("AssetItem", "Read-only");
+    QString memoryOnlyText = QApplication::translate("AssetItem", "Memory-only");
+
+    bool unloaded = !asset->IsLoaded();
+    bool fileMissing = !asset->DiskSource().isEmpty() && asset->DiskSourceType() == IAsset::Original && !QFile::exists(asset->DiskSource());
+    bool memoryOnly = asset->DiskSource().isEmpty() && asset->DiskSourceType() == IAsset::Programmatic;
+    bool diskSourceMissing = asset->DiskSource().isEmpty();
+    bool isModified = asset->IsModified();
+
+/*
+    LogInfo(QString("unloaded")+(unloaded?"1":"0"));
+    LogInfo(QString("fileMissing")+(fileMissing?"1":"0"));
+    LogInfo(QString("memoryOnly")+(memoryOnly?"1":"0"));
+    LogInfo(QString("diskSourceMissing:")+(diskSourceMissing?"1":"0"));
+    LogInfo(QString("isModified:")+(isModified?"1":"0"));
+*/
+    QString info;
+    if (fileMissing)
+    {
+        setTextColor(0, QColor(Qt::red));
+        info.append(fileMissingText);
+    }
+    if (diskSourceMissing)
+    {
+        setTextColor(0, QColor(Qt::red));
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append(noDiskSourceText);
+    }
+    if (unloaded)
+    {
+        setTextColor(0, QColor(Qt::gray));
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append(unloadedText);
+    }
+    if (memoryOnly)
+    {
+        setTextColor(0, QColor(Qt::red));
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append(memoryOnlyText);
+    }
+
+    if (isModified)
+        name.append("*");
+    if (!info.isEmpty())
+    {
+        info.prepend(" (");
+        info.append(")");
+        setText(0, name + info);
+    }
+    else
+        setText(0, name);
 }
 
 // AssetStorageItem

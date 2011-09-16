@@ -318,7 +318,8 @@ void AssetsWindow::HandleAssetLoaded(AssetPtr asset)
     {
         AssetItem *item = dynamic_cast<AssetItem *>(*it);
         if (item && item->Asset() == asset)
-            item->MarkUnloaded(false);
+            item->SetText(asset);
+            //item->MarkUnloaded(false);
         ++it;
     }
 }
@@ -330,7 +331,8 @@ void AssetsWindow::HandleAssetUnloaded(IAsset *asset)
     {
         AssetItem *item = dynamic_cast<AssetItem *>(*it);
         if (item && item->Asset().get() == asset)
-            item->MarkUnloaded(true);
+            item->SetText(asset->shared_from_this());
+            //item->MarkUnloaded(true);
         ++it;
     }
 }

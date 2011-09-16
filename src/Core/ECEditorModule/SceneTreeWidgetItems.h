@@ -18,10 +18,10 @@ public:
     /** @param entity Entity which the item represents. */
     explicit EntityItem(const EntityPtr &entity);
 
-    /// Sets the item text accordingly to the entity information.
+    /// Decorates the item (text + color) accordingly to the entity information.
     /** @param entity Entity which the item represents. */
     void SetText(::Entity *entity);
-    
+
     /// Returns pointer to the entity this item represents.
     EntityPtr Entity() const;
 
@@ -29,8 +29,7 @@ public:
     entity_id_t Id() const;
 
     /// QTreeWidgetItem override.
-    /** If treeWidget::sortColumn() is 0, items are sorted by ID,
-        or if it's 1, items are sorted by name (if applicable). */
+    /** If treeWidget::sortColumn() is 0, items are sorted by ID, or if it's 1, items are sorted by name (if applicable). */
     bool operator <(const QTreeWidgetItem &rhs) const;
 
 private:
@@ -47,7 +46,7 @@ public:
         @param parent Parent entity item. */
     ComponentItem(const ComponentPtr &comp, EntityItem *parent);
 
-    /// Sets the item text accordingly to the component information.
+    /// Decorates the item (text + color) accordingly to the component information.
     /** @param comp Component which the item represents. */
     void SetText(IComponent *comp);
 
@@ -126,17 +125,11 @@ public:
 
     /// Appends information text to the item that the asset is unloaded.
     /** @param value. If true, "(Unloaded)" is appended to the item text. If false, the aforementiond text is removed. */
-    void MarkUnloaded(bool value);
+//    void MarkUnloaded(bool value);
 
-    /// Sets the item text accordingly to the asset properties.
+    /// Decorates the item (text + color) accordingly to the asset properties.
     /** @param asset Asset which this item represents. */
     void SetText(const AssetPtr &asset);
-
-    // "File missing" red
-    // "No disk source" red
-    // "Read-only" 
-    // "Memory-only" red
-    // "Unloaded " red
 
 private:
     AssetWeakPtr assetPtr; ///< Weak pointer to the asset.
