@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   OgreAssetEditorModule.h
- *  @brief  OgreAssetEditorModule.provides editing and previewing tools for
- *          OGRE assets such as meshes and material scripts.
+ *  @brief  Provides editing and previewing tools for various asset types.
  */
 
 #pragma once
@@ -17,23 +16,17 @@
 
 class QMenu;
 
-class MaterialWizard;
-class EditorManager;
-
+/// Utility class that wraps QAction and stores an asset pointer.
 class EditorAction : public QAction
 {
     Q_OBJECT
 
 public:
-    ///
-    /** @param asset
-        @param text
-        @param menu
-    */
-    EditorAction(const AssetPtr &asset, const QString &text, QMenu *menu);
+    EditorAction(const AssetPtr &assetPtr, const QString &text, QMenu *menu);
     AssetWeakPtr asset;
 };
 
+/// Provides editing and previewing tools for various asset types.
 class ASSET_EDITOR_MODULE_API OgreAssetEditorModule : public IModule
 {
     Q_OBJECT
@@ -44,23 +37,15 @@ public:
 
     void Initialize();
     void Uninitialize();
-    void Update(f64 frametime);
 
 public slots:
     bool IsSupportedAssetTypes(const QString &type) const;
 
-//    void OpenAssetInEditor(const AssetPtr &asset);
-
 private:
     Q_DISABLE_COPY(OgreAssetEditorModule);
-
-    static std::string typeNameStatic; ///< Type name of this module.
-    EditorManager *editorManager; ///< Editor manager.
-    MaterialWizard *materialWizard; ///< Material wizard.
 
 private slots:
     void OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
     void OpenAssetInEditor();
 };
-
