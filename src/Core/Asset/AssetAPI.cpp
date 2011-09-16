@@ -168,7 +168,7 @@ std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
     return storages;
 }
 
-AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName)
+AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName) const
 {
     // Make sure relative paths are turned into local paths.
     QString refLocal = ResolveAssetRef("local://", ref);
@@ -643,19 +643,19 @@ void AssetAPI::Reset()
     providers.clear();
 }
 
-std::vector<AssetTransferPtr> AssetAPI::PendingTransfers()
+std::vector<AssetTransferPtr> AssetAPI::PendingTransfers() const
 {
     std::vector<AssetTransferPtr> transfers;
-    for(AssetTransferMap::iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
+    for(AssetTransferMap::const_iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
         transfers.push_back(iter->second);
 
     transfers.insert(transfers.end(), readyTransfers.begin(), readyTransfers.end());
     return transfers;
 }
 
-AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
+AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef) const
 {
-    AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
+    AssetTransferMap::const_iterator iter = currentTransfers.find(assetRef);
     if (iter != currentTransfers.end())
         return iter->second;
     for(size_t i = 0; i < readyTransfers.size(); ++i)
@@ -813,7 +813,7 @@ AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref, bool forceTra
     return RequestAsset(ref.ref, ref.type, forceTransfer);
 }
 
-AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
+AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType) const
 {
     assetType = assetType.trimmed();
     assetRef = assetRef.trimmed();
@@ -847,7 +847,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     return AssetProviderPtr();
 }
 
-QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
+QString AssetAPI::ResolveAssetRef(QString context, QString assetRef) const
 {
     if (assetRef.trimmed().isEmpty())
         return "";
@@ -855,7 +855,7 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
     context = context.trimmed();
 
     // First see if we have an exact match for the ref to an existing asset.
-    AssetMap::iterator iter = assets.find(assetRef);
+    AssetMap::const_iterator iter = assets.find(assetRef);
     if (iter != assets.end())
         return assetRef; // Use the ref as-is, there's an existing asset to map this string to.
 
@@ -915,7 +915,7 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
     return assetRef;
 }
 
-bool AssetAPI::IsAssetTypeFactoryRegistered(const QString &typeName)
+bool AssetAPI::IsAssetTypeFactoryRegistered(const QString &typeName) const
 {
     AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(typeName);
     return (existingFactory.get() ? true : false);
@@ -935,7 +935,7 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
     assetTypeFactories.push_back(factory);
 }
 
-QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix)
+QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix) const
 {
     static unsigned long uniqueRunningAssetCounter = 1;
 
@@ -957,7 +957,7 @@ QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString asset
     throw Exception("GenerateUniqueAssetName failed!");
 }
 
-QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuffix)
+QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuffix) const
 {
     static unsigned long uniqueRunningFilenameCounter = 1;
 
@@ -1035,7 +1035,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     return asset;
 }
 
-AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
+AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName) const
 {
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
         if (assetTypeFactories[i]->Type().toLower() == typeName.toLower())
@@ -1044,10 +1044,10 @@ AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
     return AssetTypeFactoryPtr();
 }
 
-AssetPtr AssetAPI::GetAsset(QString assetRef)
+AssetPtr AssetAPI::GetAsset(QString assetRef) const
 {
     // First try to see if the ref has an exact match.
-    AssetMap::iterator iter = assets.find(assetRef);
+    AssetMap::const_iterator iter = assets.find(assetRef);
     if (iter != assets.end())
         return iter->second;
 
@@ -1413,7 +1413,7 @@ bool AssetAPI::ShouldReplicateAssetDiscovery(const QString& assetRef)
         return true;
 }
 
-int AssetAPI::NumPendingDependencies(AssetPtr asset)
+int AssetAPI::NumPendingDependencies(AssetPtr asset) const
 {
     int numDependencies = 0;
 
