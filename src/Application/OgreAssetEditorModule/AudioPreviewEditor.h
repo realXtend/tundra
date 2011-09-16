@@ -10,8 +10,7 @@
 #include <QWidget>
 
 #include "AssetFwd.h"
-
-#include <boost/shared_ptr.hpp>
+#include "AudioFwd.h"
 
 class QPushButton;
 class QTimer;
@@ -20,12 +19,12 @@ class Framework;
 
 /// Preview window for audio assets.
 /** Window is used to play audio assets and display the infomation about that file, including the visual presentation of audio signal. */
-class AudioPreviewEditor: public QWidget
+class AudioPreviewEditor : public QWidget
 {
     Q_OBJECT
 
 public:
-    AudioPreviewEditor(Framework *framework, const QString &name, QWidget *parent = 0);
+    AudioPreviewEditor(const AssetPtr &audioAsset, Framework *fw, QWidget *parent = 0);
     virtual ~AudioPreviewEditor();
 
 public slots:
@@ -33,18 +32,18 @@ public slots:
     void PlaySound();
     void TimerTimeout();
 
-signals:
-    /// Signal for widget resize.
-    void WidgetResized(QSize size);
-
-protected:
-    virtual void resizeEvent(QResizeEvent *ev);
-
 private:
+//    void DrawAudioSignal();
+
     Framework *framework_;
-    QString assetId_;
+    AssetWeakPtr asset;
+    SoundChannelPtr soundChannel;
     QWidget *mainWidget_;
     QPushButton *okButton_;
     QPushButton *playButton_;
     QTimer *playTimer_;
+
+private slots:
+    void OnAssetTransferSucceeded(AssetPtr asset);
+    void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
 };

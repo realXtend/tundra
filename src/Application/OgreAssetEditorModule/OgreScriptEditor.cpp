@@ -263,9 +263,9 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
     propertyTable->setCurrentItem(valueItem, QItemSelectionModel::Deselect);
 }
 
-void OgreScriptEditor::OnAssetTransferSucceeded(AssetPtr asset)
+void OgreScriptEditor::OnAssetTransferSucceeded(AssetPtr audioAsset)
 {
-    Open();
+    asset = audioAsset;
 }
 
 void OgreScriptEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)

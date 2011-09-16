@@ -105,10 +105,12 @@ void OgreAssetEditorModule::OpenAssetInEditor()
         scriptEditor->Open();
         editor = scriptEditor;
     }
-    /*else if (asset->Type() == "Audio")
+    else if (asset->Type() == "Audio")
     {
-        //AudioPreviewEditor *editor = new AudioPreviewEditor(framework_, id, at, name);
-    }*/
+        AudioPreviewEditor *audioEditor = new AudioPreviewEditor(asset, framework_);
+        //editor->Open();
+        editor = audioEditor;
+    }
     else if (asset->Type() == "Texture")
     {
         TexturePreviewEditor *texEditor = new TexturePreviewEditor(asset, framework_->Asset());
