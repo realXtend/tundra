@@ -128,7 +128,7 @@ signals:
     void Loaded(AssetPtr asset);
 
     /// Asset properties have changed. Emitted whenever the modified flag, disksource, or disksourcetype changes.
-    void PropertyStatusChanged();
+    void PropertyStatusChanged(IAsset *asset);
     
 public:
     /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.

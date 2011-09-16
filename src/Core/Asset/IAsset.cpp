@@ -19,7 +19,7 @@ IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
 void IAsset::SetDiskSource(QString diskSource_)
 {
     diskSource = diskSource_.trimmed();
-    emit PropertyStatusChanged();
+    emit PropertyStatusChanged(this);
 }
 
 void IAsset::SetDiskSourceType(SourceType type)
@@ -27,7 +27,7 @@ void IAsset::SetDiskSourceType(SourceType type)
     if (diskSourceType != type)
     {
         diskSourceType = type;
-        emit PropertyStatusChanged();
+        emit PropertyStatusChanged(this);
     }
 }
 
@@ -63,7 +63,7 @@ void IAsset::MarkModified()
     if (!modified)
     {
         modified = true;
-        emit PropertyStatusChanged();
+        emit PropertyStatusChanged(this);
     }
 }
 
@@ -72,7 +72,7 @@ void IAsset::ClearModified()
     if (modified)
     {
         modified = false;
-        emit PropertyStatusChanged();
+        emit PropertyStatusChanged(this);
     }
 }
 
