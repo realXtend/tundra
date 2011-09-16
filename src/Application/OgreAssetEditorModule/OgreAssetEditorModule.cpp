@@ -89,8 +89,8 @@ void OgreAssetEditorModule::OpenAssetInEditor()
 
     if (asset->Type() == "OgreMesh")
     {
-        MeshPreviewEditor *meshEditor = new MeshPreviewEditor(framework_);
-        meshEditor->Open(assetName);
+        MeshPreviewEditor *meshEditor = new MeshPreviewEditor(asset, framework_);
+        //meshEditor->Open(assetName);
         editor = meshEditor;
     }
     else if (asset->Type() == "OgreMaterial")
@@ -111,8 +111,8 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     }*/
     else if (asset->Type() == "Texture")
     {
-        TexturePreviewEditor *texEditor = new TexturePreviewEditor(0);
-        texEditor->OpenTexture(assetName);
+        TexturePreviewEditor *texEditor = new TexturePreviewEditor(asset, framework_->Asset());
+        texEditor->Open();
         editor = texEditor;
     }
 

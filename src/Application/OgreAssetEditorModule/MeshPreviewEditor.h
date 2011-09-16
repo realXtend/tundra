@@ -40,14 +40,14 @@ class ASSET_EDITOR_MODULE_API MeshPreviewEditor: public QWidget
     Q_OBJECT
 
 public:
-    MeshPreviewEditor(Framework *framework, QWidget* parent = 0);
+    MeshPreviewEditor(const AssetPtr &meshAsset, Framework *framework, QWidget* parent = 0);
     virtual ~MeshPreviewEditor();
 
     void RequestMeshAsset(const QString &asset_id);
     QImage ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels);
-    void Open(const QString& asset_id);
+    void Open();
 
-    static MeshPreviewEditor *OpenMeshPreviewEditor(Framework *framework, const QString &asset_id, QWidget* parent = 0);
+//    static MeshPreviewEditor *OpenMeshPreviewEditor(Framework *framework, const QString &asset_id, QWidget* parent = 0);
 
 public slots:
     void Update();
@@ -55,11 +55,14 @@ public slots:
     void MouseWheelEvent(QWheelEvent* ev);
 
 private:
+    Q_DISABLE_COPY(MeshPreviewEditor)
+
     void InitializeEditorWidget();
     void CreateRenderTexture();
     void AdjustScene();
 
     Framework *framework_;
+    AssetWeakPtr asset;
     QWidget *mainWidget_;
     QPushButton *okButton_;
     QString assetId_;

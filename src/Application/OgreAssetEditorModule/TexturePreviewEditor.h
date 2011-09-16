@@ -44,27 +44,16 @@ class ASSET_EDITOR_MODULE_API TexturePreviewEditor: public QWidget
     Q_OBJECT
 
 public:
-    ///\todo Remove these two when have more time in hand.
-    const static int cWindowMinimumWidth = 256;
-    const static int cWindowMinimumHeight = 323;
-
-    explicit TexturePreviewEditor(QWidget* parent = 0);
-
+    TexturePreviewEditor(const AssetPtr &textureAsset, AssetAPI *assetApi, QWidget* parent = 0);
     virtual ~TexturePreviewEditor();
 
     /// Opens text texture
-    void OpenTexture(const QString& name);
+    void Open();
 
-    /// Convenience function for opening texture preview editor with a texture.
-    /** Opens a TexturePreviewEditor window which gets auto-deleted upon close.
-        @param texture texture name to open
-        @param parent parent widget */
-    static TexturePreviewEditor *OpenPreviewEditor(const QString &texture, QWidget* parent = 0);
+    /// Sets the texture for viewing.
+    void SetTexture(const AssetPtr &textureAsset) { asset = textureAsset; }
 
 public slots:
-    /// Request texture asset from texture decoder service.
-    void RequestTextureAsset(const QString &asset_id);
-
     /// Listens when image label has been pressed.
     void TextureLabelClicked(QMouseEvent *ev);
 
@@ -73,8 +62,6 @@ protected:
     virtual void resizeEvent(QResizeEvent *ev);
 
 private:
-    void Initialize();
-
     /// Will the texture displayed as original size or not.
     void UseTextureOriginalSize(bool use = true);
 
@@ -95,7 +82,12 @@ private:
         @return QImage and if fail return empty image.
     QImage ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels = 3);
     */
-    
+
+    ///\todo Remove these two when have more time in hand.
+    const static int cWindowMinimumWidth = 256;
+    const static int cWindowMinimumHeight = 323;
+
+    AssetWeakPtr asset;
     QWidget *mainWidget_;
     QScrollArea *scrollAreaWidget_;
     QLayout *layout_;
@@ -107,4 +99,8 @@ private:
 
     QString assetId_;
     bool useOriginalImageSize_;
+
+private slots:
+    void OnAssetTransferSucceeded(AssetPtr asset);
+    void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
 };

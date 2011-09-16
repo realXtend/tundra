@@ -27,7 +27,7 @@ class ASSET_EDITOR_MODULE_API OgreScriptEditor : public QWidget
     Q_OBJECT
 
 public:
-    OgreScriptEditor(const AssetPtr &asset, AssetAPI *assetApi, QWidget *parent = 0);
+    OgreScriptEditor(const AssetPtr &scriptAsset, AssetAPI *assetApi, QWidget *parent = 0);
     ~OgreScriptEditor();
 
 public slots:
@@ -49,6 +49,9 @@ private slots:
         @param column Column of the cell. */
     void PropertyChanged(int row, int column);
 
+    void OnAssetTransferSucceeded(AssetPtr asset);
+    void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
+
 private:
     Q_DISABLE_COPY(OgreScriptEditor);
 
@@ -59,7 +62,7 @@ private:
     void CreatePropertyEditor();
 
     AssetAPI *assetApi;
-    AssetPtr asset;
+    AssetWeakPtr asset;
     QLineEdit *lineEditName; ///< Asset name line edit.
     QPushButton *buttonSave; ///< Save button.
     QPushButton *buttonSaveAs; ///< Save As button.

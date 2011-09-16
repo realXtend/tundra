@@ -20,6 +20,8 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreWorld.h"
+#include "AssetAPI.h"
+#include "LoggingFunctions.h"
 
 #include <utility>
 
@@ -270,19 +272,31 @@ void TimeProfilerWindow::CopyMaterialAssetName()
 
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {
+#ifdef OGREASSETEDITOR_ENABLED
     ///\todo Reimplement.
+#else
+    LogError("Cannot open texture preview editor - AssetEditorModule not enabled.");
+#endif
 }
 
 void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 {
 #ifdef OGREASSETEDITOR_ENABLED
+    AssetPtr textureAsset = framework_->Asset()->GetAsset(item->text(0));
+    if (textureAsset)
+    {
+        LogError("TimeProfilerWindow::ShowTextureAsset: could not obtain texture " + item->text(0));
+        return;
+    }
+
     if (tex_preview_ == 0)
-        tex_preview_ = new TexturePreviewEditor(this);
-    tex_preview_->OpenTexture(item->text(0));
+        tex_preview_ = new TexturePreviewEditor(textureAsset, framework_->Asset(), this);
+    tex_preview_->Open();
     tex_preview_->show();
+#else
+    LogError("Cannot open texture preview editor - AssetEditorModule not enabled.");
 #endif
 }
-
 
 void TimeProfilerWindow::ChangeLoggerThreshold()
 {
