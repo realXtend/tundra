@@ -14,7 +14,7 @@
 
 class QPushButton;
 
-/// Label is used to display the mesh in image format.
+/// Displays mesh in image format.
 class MeshPreviewLabel: public QLabel
 {
     Q_OBJECT
@@ -34,14 +34,13 @@ protected:
      void wheelEvent(QWheelEvent* e);
 };
 
-/// MeshPrevieEditor is used to view meshes
+/// Mesh preview UI
 class ASSET_EDITOR_MODULE_API MeshPreviewEditor: public QWidget
 {
     Q_OBJECT
 
 public:
     MeshPreviewEditor(Framework *framework, QWidget* parent = 0);
-
     virtual ~MeshPreviewEditor();
 
     void RequestMeshAsset(const QString &asset_id);
@@ -55,25 +54,15 @@ public slots:
     void MouseEvent(QMouseEvent* event);
     void MouseWheelEvent(QWheelEvent* ev);
 
-signals:
-    /// This signal is emitted when the editor is closed.
-    void Closed(const QString &inventory_id);
-
-private slots:
-    /// Delete this object.
-    void Deleted() { delete this; }
-
 private:
     void InitializeEditorWidget();
     void CreateRenderTexture();
     void AdjustScene();
 
     Framework *framework_;
-
     QWidget *mainWidget_;
     QPushButton *okButton_;
     QString assetId_;
-
     QPointF lastPos_;
     int camAlphaAngle_;
     QString mesh_id_;
@@ -81,7 +70,6 @@ private:
     double mouseDelta_;
     InputContextPtr meshInputContext_;
     MeshPreviewLabel* label_;
-
     // For mesh viewing
     OgreRenderer::RendererPtr renderer_;
     Ogre::SceneManager* manager_;
@@ -94,4 +82,3 @@ private:
     int width_;
     int height_;
 };
-

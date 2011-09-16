@@ -112,7 +112,7 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     else if (asset->Type() == "Texture")
     {
         TexturePreviewEditor *texEditor = new TexturePreviewEditor(0);
-        texEditor->OpenOgreTexture(assetName);
+        texEditor->OpenTexture(assetName);
         editor = texEditor;
     }
 
@@ -120,6 +120,7 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     {
         editor->setParent(framework_->Ui()->MainWindow());
         editor->setWindowFlags(Qt::Tool);
+        editor->setAttribute(Qt::WA_DeleteOnClose);
         editor->show();
     }
 }

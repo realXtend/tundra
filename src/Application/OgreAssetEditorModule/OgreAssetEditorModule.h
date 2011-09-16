@@ -27,6 +27,7 @@ public:
 };
 
 /// Provides editing and previewing tools for various asset types.
+///\todo rename this class to AssetEditorModule as it handles more than just Ogre assets.
 class ASSET_EDITOR_MODULE_API OgreAssetEditorModule : public IModule
 {
     Q_OBJECT
@@ -39,6 +40,7 @@ public:
     void Uninitialize();
 
 public slots:
+    /// Returns if asset of @type is supported for editing/previewing.
     bool IsSupportedAssetTypes(const QString &type) const;
 
 private:

@@ -277,11 +277,8 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 {
 #ifdef OGREASSETEDITOR_ENABLED
     if (tex_preview_ == 0)
-    {
         tex_preview_ = new TexturePreviewEditor(this);
-    }
-        
-    tex_preview_->OpenOgreTexture(item->text(0));
+    tex_preview_->OpenTexture(item->text(0));
     tex_preview_->show();
 #endif
 }

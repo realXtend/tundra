@@ -32,12 +32,8 @@ AudioPreviewEditor::AudioPreviewEditor(Framework *framework, const QString &name
 {
     setObjectName(name);
     // Get ui service and create canvas
-    ///\todo Use UiAPI
+    ///\todo Regression. Re-implement.
 /*
-    UiServiceInterface *ui= framework_->Get Service<UiServiceInterface>();
-    if (!ui)
-        return;
-
     // Create widget from ui file
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/audio_preview.ui");
@@ -57,17 +53,12 @@ AudioPreviewEditor::AudioPreviewEditor(Framework *framework, const QString &name
     layout->setContentsMargins(0, 0, 0, 0);
 
     okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
-    QObject::connect(okButton_, SIGNAL(clicked()), this, SLOT(Closed()));
 
     playButton_ = mainWidget_->findChild<QPushButton *>("playButton");
-    QObject::connect(playButton_, SIGNAL(clicked()), this, SLOT(PlaySound()));
+    connect(playButton_, SIGNAL(clicked()), this, SLOT(PlaySound()));
 
     // Add widget to UI via ui services module
     setWindowTitle(tr("Audio: ") + objectName());
-    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
-    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-    proxy->show();
-    ui->BringWidgetToFront(proxy);
 */
 }
 
@@ -142,11 +133,6 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
     }
 }
     */
-
-void AudioPreviewEditor::Closed()
-{
-//    emit Closed(inventoryId_, assetType_);
-}
 
 void AudioPreviewEditor::PlaySound()
 {/* ///\todo Regression. Reimplement. -jj.

@@ -26,6 +26,8 @@
 
 #include "MemoryLeakCheck.h"
 
+// TextureLabel
+
 TextureLabel::TextureLabel(QWidget *parent, Qt::WindowFlags flags):
     QLabel(parent, flags)
 {
@@ -40,10 +42,7 @@ void TextureLabel::mousePressEvent(QMouseEvent *ev)
     emit MouseClicked(ev);
 }
 
-TexturePreviewEditor::~TexturePreviewEditor()
-{
-    LogInfo("Deleting TexturePreviewEditor " + objectName());
-}
+// TexturePreviewEditor
 
 TexturePreviewEditor::TexturePreviewEditor(QWidget* parent) :
     QWidget(parent),
@@ -59,14 +58,8 @@ TexturePreviewEditor::TexturePreviewEditor(QWidget* parent) :
      Initialize();
 }
 
-void TexturePreviewEditor::Close()
+TexturePreviewEditor::~TexturePreviewEditor()
 {
-//    UiServiceInterface* ui= framework_->G et Service<UiServiceInterface>();
-//    if (!ui)
-//        return
-//    ui->RemoveWidgetFromScene(this);
-    // Must be last line in this function, since it is possible this causes the deletion of this object
-    emit Closed("");
 }
 
 void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
@@ -194,8 +187,6 @@ void TexturePreviewEditor::Initialize()
     mainWidget_ = loader.load(&file);
     file.close();
 
-    setAttribute(Qt::WA_DeleteOnClose);
-
     resize(cWindowMinimumWidth, cWindowMinimumHeight);
 
     layout_ = new QVBoxLayout;
@@ -228,13 +219,9 @@ void TexturePreviewEditor::Initialize()
 
     // Add widget to UI via ui services module
     setWindowTitle(tr("Texture: ") + objectName());
-//    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
-//    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-//    proxy->show();
-//    ui->BringWidgetToFront(proxy);
 }
 
-void TexturePreviewEditor::OpenOgreTexture(const QString& name)
+void TexturePreviewEditor::OpenTexture(const QString& name)
 {
     Ogre::ResourcePtr res = Ogre::TextureManager::getSingleton().getByName(name.toStdString().c_str());
     Ogre::Texture* tex = static_cast<Ogre::Texture* >(res.get());
@@ -261,11 +248,9 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
 TexturePreviewEditor *TexturePreviewEditor::OpenPreviewEditor(const QString &texture, QWidget* parent)
 {
     TexturePreviewEditor *editor = new TexturePreviewEditor(parent);
-    //connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
     connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(close()));
-    editor->OpenOgreTexture(texture);
+    editor->OpenTexture(texture);
     return editor;
-    //editor->show();
 }
 
 void TexturePreviewEditor::UseTextureOriginalSize(bool use)

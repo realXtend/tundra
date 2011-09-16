@@ -38,8 +38,7 @@ protected:
 };
 
 /// Preview window for textures.
-/** Will convert texture asset into Qt image format and display the image in image label.
-*/
+/** Will convert texture asset into Qt image format and display the image in image label. */
 class ASSET_EDITOR_MODULE_API TexturePreviewEditor: public QWidget
 {
     Q_OBJECT
@@ -53,33 +52,21 @@ public:
 
     virtual ~TexturePreviewEditor();
 
-    /// Open Ogre texture
-    void OpenOgreTexture(const QString& name);
+    /// Opens text texture
+    void OpenTexture(const QString& name);
 
     /// Convenience function for opening texture preview editor with a texture.
     /** Opens a TexturePreviewEditor window which gets auto-deleted upon close.
         @param texture texture name to open
-        @param parent parent widget
-    */
+        @param parent parent widget */
     static TexturePreviewEditor *OpenPreviewEditor(const QString &texture, QWidget* parent = 0);
 
 public slots:
-    /// Close the window.
-    void Close();
-
     /// Request texture asset from texture decoder service.
     void RequestTextureAsset(const QString &asset_id);
 
     /// Listens when image label has been pressed.
     void TextureLabelClicked(QMouseEvent *ev);
-
-signals:
-    /// This signal is emitted when the editor is closed.
-    void Closed(const QString &inventory_id);
-
-private slots:
-    /// Delete this object.
-    void Deleted() { delete this; }
 
 protected:
     /// overrides QWidget's resizeEvent so we can recalculate new image differences.
@@ -121,4 +108,3 @@ private:
     QString assetId_;
     bool useOriginalImageSize_;
 };
-

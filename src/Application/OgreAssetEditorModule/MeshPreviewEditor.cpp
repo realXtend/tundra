@@ -297,8 +297,6 @@ void MeshPreviewEditor::InitializeEditorWidget()
     mainWidget_ = loader.load(&file);
     file.close();
 
-    setAttribute(Qt::WA_DeleteOnClose);
-
     okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
 
     QVBoxLayout* vLayout = mainWidget_->findChild<QVBoxLayout* >("imageLayout");

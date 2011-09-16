@@ -29,17 +29,11 @@ public:
     virtual ~AudioPreviewEditor();
 
 public slots:
-    /// Close the window.
-    void Closed();
-
     /// Toggle between sound play and stop states.
     void PlaySound();
     void TimerTimeout();
 
 signals:
-    /// This signal is emitted when the editor is closed.
-    void Closed(const QString &inventory_id);
-
     /// Signal for widget resize.
     void WidgetResized(QSize size);
 
