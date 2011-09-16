@@ -557,6 +557,31 @@ macro(link_package_assimp)
     endif()
 endmacro()
 
+macro(use_package_quazip)
+    if (WIN32)
+        if ("$ENV{QUAZIP_DIR}" STREQUAL "")
+           set(QUAZIP_DIR ${ENV_NAALI_DEP_PATH})
+        endif()
+        include_directories(${QUAZIP_DIR}/include)
+        link_directories(${QUAZIP_DIR}/lib) # VC10 deps way, no subfolders, dynamic
+        link_directories(${QUAZIP_DIR}/lib/quazip_debug_Win32) # VC9 deps way, in subfolder, static
+        link_directories(${QUAZIP_DIR}/lib/quazip_release_Win32)
+    else() # Linux, note: mac will also come here..
+        if ("$ENV{QUAZIP_DIR}" STREQUAL "")
+           set(QUAZIP_DIR ${ENV_NAALI_DEP_PATH})
+        endif()
+        include_directories(${QUAZIP_DIR}/include/)
+        link_directories(${QUAZIP_DIR}/lib)
+    endif()
+endmacro()
+
+macro(link_package_quazip)
+    target_link_libraries(${TARGET_NAME} optimized quazip)
+    if (WIN32)
+        target_link_libraries(${TARGET_NAME} debug quazipd)
+    endif()
+endmacro()
+
 macro(configure_package_opencv)
     # \todo Dont do this on linux systems
     SET(OPENCV_ROOT ${ENV_NAALI_DEP_PATH}/OpenCV-2.2.0)

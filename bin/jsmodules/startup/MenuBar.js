@@ -58,6 +58,9 @@ if (!framework.IsHeadless())
 
     if (framework.GetModuleQObj("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
+
+    if (framework.GetModuleQObj("G3dwh"))
+        viewMenu.addAction("Google 3D Warehouse").triggered.connect(OpenG3dwhWindow);
         
     // Settings
     if (framework.GetModuleQObj("CAVEStereo"))
@@ -172,6 +175,10 @@ if (!framework.IsHeadless())
 
     function OpenCaveWindow() {
         framework.GetModuleQObj("CAVEStereo").ShowCaveWindow();
+    }
+
+    function OpenG3dwhWindow() {
+        framework.GetModuleQObj("G3dwh").ShowG3dwhWindow();
     }
     
     function OpenLocalScene() {
