@@ -37,7 +37,6 @@ public:
         @parent parent Parent widget. */
     AssetsWindow(const QString &assetType, Framework *fw, QWidget *parent = 0);
 
-    /// Destructor.
     ~AssetsWindow();
 
 public slots:
@@ -56,6 +55,10 @@ public slots:
     /** If match is found the item is set visible and expanded, otherwise it's hidden.
         @param filter Text used as a filter. */
     void Search(const QString &filter);
+
+    /// Updates asset item's text and appearance accordingly to the asset properties.
+    void UpdateAssetItem(IAsset *asset);
+    void UpdateAssetItem(AssetPtr asset) { UpdateAssetItem(asset.get()); }
 
 signals:
     /// Emitted when asset was picked.
@@ -91,14 +94,6 @@ private slots:
 
     /// Checks the expand status to mark it to the expand/collapse button
     void CheckTreeExpandStatus(QTreeWidgetItem *item);
-
-    /// Unmarks unloaded assets in the UI.
-    /** @param asset Asset which was loaded. */
-    void HandleAssetLoaded(AssetPtr asset);
-
-    /// Marks unloaded assets in the UI.
-    /** @param asset Asset which was unloaded. */
-    void HandleAssetUnloaded(IAsset *asset);
 
     void AssetDoubleClicked(QTreeWidgetItem *item, int column);
     void PickAsset(QTreeWidgetItem *);

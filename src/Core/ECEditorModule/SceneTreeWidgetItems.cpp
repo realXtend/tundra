@@ -231,11 +231,7 @@ AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
     assetPtr(asset)
 {
-    //QString outPathFileName;
-    //AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &outPathFileName);
-    //setText(0, outPathFileName);
-    //MarkUnloaded(!asset->IsLoaded());
-    SetText(asset);
+    SetText(asset.get());
 }
 
 AssetPtr AssetItem::Asset() const
@@ -243,20 +239,9 @@ AssetPtr AssetItem::Asset() const
     return assetPtr.lock();
 }
 
-/*
-void AssetItem::MarkUnloaded(bool value)
+void AssetItem::SetText(IAsset *asset)
 {
-    QString unloaded = QApplication::translate("AssetItem", " (Unloaded)");
-    if (value)
-        setText(0, text(0) + unloaded);
-    else
-        setText(0, text(0).remove(unloaded));
-}
-*/
-
-void AssetItem::SetText(const AssetPtr &asset)
-{
-    if (assetPtr.lock() != asset)
+    if (assetPtr.lock().get() != asset)
         LogWarning("AssetItem::SetText: the asset given is different than the asset this item represents.");
 
     QString name;//outPathFileName
@@ -324,7 +309,10 @@ void AssetItem::SetText(const AssetPtr &asset)
         setText(0, name + info);
     }
     else
+    {
+        setTextColor(0, QColor(Qt::black));
         setText(0, name);
+    }
 }
 
 // AssetStorageItem

@@ -129,7 +129,7 @@ public:
 
     /// Decorates the item (text + color) accordingly to the asset properties.
     /** @param asset Asset which this item represents. */
-    void SetText(const AssetPtr &asset);
+    void SetText(IAsset *asset);
 
 private:
     AssetWeakPtr assetPtr; ///< Weak pointer to the asset.
