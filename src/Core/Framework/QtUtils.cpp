@@ -33,12 +33,9 @@ QStringList RecursiveDirectorySearch(const QString &path, QDir::Filters filters)
     QStringList ret;
     if (path.trimmed().isEmpty())
         return ret; // QFileInfo behavior for empty string is undefined
-    foreach(const QFileInfo &info, QDir(path).entryInfoList(filters))
-    {
-        QString subdir = info.filePath();
-        ret.append(subdir);
-        ret.append(RecursiveDirectorySearch(subdir, filters));
-    }
+    QDirIterator it(path, filters, QDirIterator::Subdirectories);
+        while(it.hasNext())
+            ret.append(it.next());
     return ret;
 }
 
