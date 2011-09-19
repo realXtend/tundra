@@ -18,17 +18,10 @@
    <attribute value="Environment" name="name"/>
    <attribute value="" name="description"/>
   </component>
-  <component type="EC_Script" sync="1">
-   <attribute value="local://daynight.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
-  </component>
   <component type="EC_SkyX" sync="1">
    <attribute value="false" name="Volumetric clouds"/>
    <attribute value="1" name="Time multiplier"/>
-   <attribute value="22.439789 7.500000 20.500000" name="Time"/>
+   <attribute value="3.696215 7.500000 20.500000" name="Time"/>
    <attribute value="1.000000 1.000000" name="Weather (volumetric clouds only)"/>
    <attribute value="0" name="Wind direction"/>
   </component>
