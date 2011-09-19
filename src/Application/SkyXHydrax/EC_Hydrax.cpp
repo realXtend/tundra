@@ -135,11 +135,9 @@ void EC_Hydrax::Create()
         impl->hydrax->setModule(module);
         impl->module = module;
 
-        // Load all parameters from config file
+        // Load all parameters from config file, but position attribute is always authoritative for the position.
         impl->hydrax->loadCfg(configRef.Get().ref.toStdString());
-
-//        position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
-
+        impl->hydrax->setPosition(position.Get());
         impl->hydrax->create();
 
         connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
@@ -186,8 +184,7 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
     if (attr == &configRef)
     {
         impl->hydrax->loadCfg(configRef.Get().ref.toStdString());
-        // The position attribute is always authoritative for the position value.
-        impl->hydrax->setPosition(position.Get());
+        impl->hydrax->setPosition(position.Get()); // The position attribute is always authoritative for the position value.
     }
     else if (attr == &visible)
         impl->hydrax->setVisible(visible.Get());
@@ -303,6 +300,7 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
 
         // Load config from the asset data string.
         impl->hydrax->loadCfgString(configData.toStdString());
+        impl->hydrax->setPosition(position.Get());  // The position attribute is always authoritative for the position value.
     }
     catch (Ogre::Exception &e)
     {
@@ -314,14 +312,15 @@ void EC_Hydrax::LoadDefaultConfig()
 {
     if (!impl || !impl->hydrax || !impl->module)
     {
-        LogError("EC_Hydrax: Could not apply default config, hydrax not initialized.");
+        LogError("EC_Hydrax: Could not apply default config, Hydrax not initialized.");
         return;
     }
 
     if (impl->module->getNoise()->getName() != "Perlin")
         impl->module->setNoise(new Hydrax::Noise::Perlin());
 
-    // Load all parameters from the default config file we ship in /media/hydrax
+    // Load all parameters from the default config file in /media/Hydrax
     /// \todo Inspect if we can change the current ShaderMode to HLSL or GLSL on the fly here, depending on the platform!
     impl->hydrax->loadCfg("HydraxDefault.hdx");
+    impl->hydrax->setPosition(position.Get());  // The position attribute is always authoritative for the position value.
 }
