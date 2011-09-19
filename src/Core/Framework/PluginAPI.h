@@ -23,8 +23,8 @@ class PluginAPI : public QObject
 public:
     explicit PluginAPI(Framework *owner);
 
-    /// Returns the plugin configuration file that was used to load the plugins at startup.
-    QString ConfigurationFile() const;
+    /// Returns list of plugin configuration files that were used to load the plugins at startup.
+    QStringList ConfigurationFiles() const;
 
     /// Loads and executes the given shared library plugin.
     void LoadPlugin(const QString &filename);

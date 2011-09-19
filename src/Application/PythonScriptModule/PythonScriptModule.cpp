@@ -104,8 +104,6 @@
 
 namespace PythonScript
 {
-    //////////////// PythonScriptModule public
-
     PythonScriptModule::PythonScriptModule() :
         IModule("PythonScript"),
         pythonQtStarted_(false)
@@ -116,8 +114,6 @@ namespace PythonScript
     PythonScriptModule::~PythonScriptModule()
     {
     }
-
-    //////////////// IModule overrides
 
     void PythonScriptModule::Uninitialize()
     {
@@ -236,37 +232,36 @@ namespace PythonScript
         LoadStartupScripts();
     }
 
-    //////////////// PythonScriptModule private slots
-
     void PythonScriptModule::LoadStartupScripts()
     {
         QStringList pluginsToLoad;
-        QString configFile = GetFramework()->Plugins()->ConfigurationFile();
-
-        QDomDocument doc("plugins");
-        QFile file(configFile);
-        if (!file.open(QIODevice::ReadOnly))
+        foreach(const QString &configFile, GetFramework()->Plugins()->ConfigurationFiles())
         {
-            LogError("PythonScriptModule::LoadStartupScripts: Failed to open file \"" + configFile + "\"!");
-            return;
-        }
-        if (!doc.setContent(&file))
-        {
-            LogError("PythonScriptModule::LoadStartupScripts: Failed to parse XML file \"" + configFile + "\"!");
+            QDomDocument doc("plugins");
+            QFile file(configFile);
+            if (!file.open(QIODevice::ReadOnly))
+            {
+                LogError("PythonScriptModule::LoadStartupScripts: Failed to open file \"" + configFile + "\"!");
+                return;
+            }
+            if (!doc.setContent(&file))
+            {
+                LogError("PythonScriptModule::LoadStartupScripts: Failed to parse XML file \"" + configFile + "\"!");
+                file.close();
+                return;
+            }
             file.close();
-            return;
-        }
-        file.close();
 
-        QDomElement docElem = doc.documentElement();
+            QDomElement docElem = doc.documentElement();
 
-        QDomNode n = docElem.firstChild();
-        while(!n.isNull())
-        {
-            QDomElement e = n.toElement(); // try to convert the node to an element.
-            if (!e.isNull() && e.tagName() == "pyplugin" && e.hasAttribute("path"))
-                pluginsToLoad.push_back(e.attribute("path"));
-            n = n.nextSibling();
+            QDomNode n = docElem.firstChild();
+            while(!n.isNull())
+            {
+                QDomElement e = n.toElement(); // try to convert the node to an element.
+                if (!e.isNull() && e.tagName() == "pyplugin" && e.hasAttribute("path"))
+                    pluginsToLoad.push_back(e.attribute("path"));
+                n = n.nextSibling();
+            }
         }
 
         LogInfo(Name() + ": Loading startup scripts");
@@ -307,7 +302,6 @@ namespace PythonScript
             /// \todo We need a way for other modules to register ECs/Classes 
             /// to PythonModule so it does not have to link against everything in /src/Application.
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Framework and APIs
             PythonQt::self()->registerClass(&Framework::staticMetaObject);
             PythonQt::self()->registerClass(&Application::staticMetaObject);
@@ -320,7 +314,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&AudioAPI::staticMetaObject);
             PythonQt::self()->registerClass(&UiAPI::staticMetaObject);
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // ECs
             PythonQt::self()->registerClass(&EC_Camera::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Mesh::staticMetaObject);
@@ -335,7 +328,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EC_InputMapper::staticMetaObject);
             PythonQt::self()->registerClass(&EC_SelectionBox::staticMetaObject);
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Conditional ECs
 #ifdef EC_Highlight_ENABLED
             PythonQt::self()->registerClass(&EC_Highlight::staticMetaObject);
@@ -363,7 +355,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EC_TransformGizmo::staticMetaObject);
 #endif
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Scene
             PythonQt::self()->registerClass(&Scene::staticMetaObject);
             PythonQt::self()->registerClass(&Entity::staticMetaObject);
@@ -371,7 +362,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Asset
             PythonQt::self()->registerClass(&AssetCache::staticMetaObject);
             PythonQt::self()->registerClass(&IAsset::staticMetaObject);
@@ -379,39 +369,33 @@ namespace PythonScript
             PythonQt::self()->registerClass(&IAssetStorage::staticMetaObject);
             PythonQt::self()->registerClass(&IAssetUploadTransfer::staticMetaObject);
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Rendering
             PythonQt::self()->registerClass(&OgreRenderer::OgreRenderingModule::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::Renderer::staticMetaObject);
             PythonQt::self()->registerClass(&RaycastResult::staticMetaObject);
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Ui
             PythonQt::self()->registerClass(&UiMainWindow::staticMetaObject);
             PythonQt::self()->registerClass(&UiGraphicsView::staticMetaObject);
             PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Input
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
             PythonQt::self()->registerClass(&GestureEvent::staticMetaObject);
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // TundraLogicModule
             PythonQt::self()->registerClass(&UserConnection::staticMetaObject);
             PythonQt::self()->registerClass(&TundraLogic::TundraLogicModule::staticMetaObject);
             PythonQt::self()->registerClass(&TundraLogic::Client::staticMetaObject);
             PythonQt::self()->registerClass(&TundraLogic::Server::staticMetaObject);
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Misc
             PythonQt::self()->registerClass(&ConsoleCommand::staticMetaObject);
             PythonQt::self()->registerClass(&DelayedSignal::staticMetaObject);
             PythonQt::self()->registerClass(&PythonQtScriptingConsole::staticMetaObject); // ??
 
-            /////////////////////////////////////////////////////////////////////////////////////////
             // Decorators
             /// \todo Reimplemented decorators for new math lib
             PythonQt::self()->addInstanceDecorators(new TundraInstanceDecorator());
@@ -489,8 +473,6 @@ namespace PythonScript
         if (component->TypeName() == EC_Script::TypeNameStatic())
             QObject::disconnect(component, SIGNAL(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)), this, SLOT(LoadScripts(const std::vector<ScriptAssetPtr>&)));
     }
-
-    //////////////// PythonScriptModule public slots
 
     void PythonScriptModule::LoadScripts(const std::vector<ScriptAssetPtr> &newScripts)
     {

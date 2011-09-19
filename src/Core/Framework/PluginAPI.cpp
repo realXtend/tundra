@@ -48,13 +48,13 @@ std::string GetErrorString(int error)
 #endif
 }
 
+/// Signature for Tundra plugins
+typedef void (*TundraPluginMainSignature)(Framework *owner);
 
 PluginAPI::PluginAPI(Framework *owner_)
 :owner(owner_)
 {
 }
-
-typedef void (*TundraPluginMainSignature)(Framework *owner);
 
 void PluginAPI::LoadPlugin(const QString &filename)
 {
@@ -70,29 +70,27 @@ void PluginAPI::LoadPlugin(const QString &filename)
     const QString pluginSuffix = ".dylib";
 #endif
 
-
     LogInfo("Loading plugin '" + filename + "'");
     owner->App()->SetSplashMessage("Loading plugin " + filename);
     QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
-    
+
     ///\todo Unicode support!
 #ifdef WIN32
     path = path.replace("/", "\\");
     HMODULE module = LoadLibraryA(path.toStdString().c_str());
     if (module == NULL)
     {
-        DWORD errorCode = GetLastError(); ///\todo ToString.
+        DWORD errorCode = GetLastError();
         LogError("Failed to load plugin from file \"" + path + "\": Error " + GetErrorString(errorCode).c_str() + "!");
         return;
     }
     TundraPluginMainSignature mainEntryPoint = (TundraPluginMainSignature)GetProcAddress(module, "TundraPluginMain");
     if (mainEntryPoint == NULL)
     {
-        DWORD errorCode = GetLastError(); ///\todo ToString.
+        DWORD errorCode = GetLastError();
         LogError("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"" + path + "\": Error " + GetErrorString(errorCode).c_str() + "!");
         return;
     }
-
 #else
     char *dlerrstr;
     dlerror();
@@ -110,7 +108,6 @@ void PluginAPI::LoadPlugin(const QString &filename)
         LogError("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"" + path + "\": Error " + dlerrstr + "!");
         return;
     }
-
 #endif
     Plugin p = { module };
     plugins.push_back(p);
@@ -141,13 +138,18 @@ QString LookupRelativePath(QString path)
         return path;
 }
 
-QString PluginAPI::ConfigurationFile() const
+QStringList PluginAPI::ConfigurationFiles() const
 {
-    QString configFilename = "plugins.xml";
+    QStringList configs;
+    QString defaultConfigFilename = "plugins.xml";
     QStringList cmdLineParams = owner->CommandLineParameters("--config");
     if (cmdLineParams.size() > 0)
-        configFilename = cmdLineParams.first(); // use only the first one
-    return LookupRelativePath(configFilename);
+        foreach(const QString &config, cmdLineParams)
+            configs.append(LookupRelativePath(config));
+    else
+        configs.append(LookupRelativePath(defaultConfigFilename));
+
+    return configs;
 }
 
 void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)

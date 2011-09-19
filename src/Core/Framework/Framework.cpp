@@ -283,7 +283,11 @@ void Framework::Go()
     
     srand(time(0));
 
-    plugin->LoadPluginsFromXML(plugin->ConfigurationFile());
+    foreach(const QString &config, plugin->ConfigurationFiles())
+    {
+        LogDebug("Loading plugins from config XML " + config);
+        plugin->LoadPluginsFromXML(config);
+    }
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
