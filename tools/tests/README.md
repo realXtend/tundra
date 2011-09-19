@@ -1,10 +1,8 @@
---------------------------------------
-README for Tundra2 python test scripts
---------------------------------------
+realXtend Tundra 2.0 python test scripts
+========================================
 
------------------------------------------
-1. File descriptions & usage instructions
------------------------------------------
+File descriptions & usage instructions
+--------------------------------------
 
 - autoreport.py
     - creates a zip containing the html summary + log files for each test
@@ -22,7 +20,7 @@ README for Tundra2 python test scripts
 - js-viewer-server-test.py
     - tries to launch local server and connect to it with the viewer app
     - parameters:
-        -f, --file <path/to/file> (default ~/realxtend/bin/scenes/Avatar/avatar.txml)
+        -f, --file <path/to/file>
     - usage example: 
         python js-viewer-server-test.py -f ~/realxtend/bin/scenes/Avatar/avatar.txml
 
@@ -42,16 +40,15 @@ README for Tundra2 python test scripts
     - usage example:
         python launchtundra.py -p '--server --protocol udp --file scenes/scenex/x.txml'
 
--------------------------
-2. How to add a new test?
--------------------------
+How to add a new test?
+----------------------
 
 - In config.py, define the logs folder(s) path for your test under "FOLDER CONFIG"
 
 - Now you can import config to your newtest.py and add all the needed folders as follows: logsDir = config.testXLogsDir
 
 - In autoreport.py
-    - Add definition "TESTX = "newtest" under "CONSTANTS"
+    - Add definition TESTX = "newtest" under "CONSTANTS"
     - Add a new function def newTest(), use the other functions for example def avatarTest() as a reference
     - Add new elif condition for your test in whichTestWasRun function: elif option == TESTX: newTest()
 
