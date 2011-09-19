@@ -290,7 +290,7 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
     }
 
     if (tex_preview_ == 0)
-        tex_preview_ = new TexturePreviewEditor(textureAsset, framework_->Asset(), this);
+        tex_preview_ = new TexturePreviewEditor(textureAsset, framework_, this);
     tex_preview_->Open();
     tex_preview_->show();
 #else

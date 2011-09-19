@@ -21,17 +21,36 @@ class OgreMaterialProperties;
 class PropertyTableWidget;
 
 /// Editing tool for OGRE material and particle scripts.
-/** Provides raw text edit for both script types and property editing for material scripts. */
 class ASSET_EDITOR_MODULE_API OgreScriptEditor : public QWidget
 {
     Q_OBJECT
 
 public:
-    OgreScriptEditor(const AssetPtr &scriptAsset, AssetAPI *assetApi, QWidget *parent = 0);
+    OgreScriptEditor(const AssetPtr &scriptAsset, Framework *fw, QWidget *parent = 0);
     ~OgreScriptEditor();
+
+    void SetScriptAsset(const AssetPtr &scriptAsset);
 
 public slots:
     void Open();
+
+private:
+    Q_DISABLE_COPY(OgreScriptEditor);
+
+    /// Creates the text edit field for raw editing.
+    void CreateTextEdit();
+
+    /// Creates the property table for material property editing.
+    void CreatePropertyEditor();
+
+    Framework *framework;
+    AssetWeakPtr asset;
+    QLineEdit *lineEditName; ///< Asset name line edit.
+    QPushButton *buttonSave; ///< Save button.
+    QPushButton *buttonSaveAs; ///< Save As button.
+    QTextEdit *textEdit; ///< Text edit field used in raw edit mode.
+    PropertyTableWidget *propertyTable; ///< Table widget for editing material properties.
+    OgreMaterialProperties *materialProperties; ///< Material properties.
 
 private slots:
     /// Saves changes made to the asset.
@@ -51,22 +70,4 @@ private slots:
 
     void OnAssetTransferSucceeded(AssetPtr asset);
     void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
-
-private:
-    Q_DISABLE_COPY(OgreScriptEditor);
-
-    /// Creates the text edit field for raw editing.
-    void CreateTextEdit();
-
-    /// Creates the property table for material property editing.
-    void CreatePropertyEditor();
-
-    AssetAPI *assetApi;
-    AssetWeakPtr asset;
-    QLineEdit *lineEditName; ///< Asset name line edit.
-    QPushButton *buttonSave; ///< Save button.
-    QPushButton *buttonSaveAs; ///< Save As button.
-    QTextEdit *textEdit; ///< Text edit field used in raw edit mode.
-    PropertyTableWidget *propertyTable; ///< Table widget for editing material properties.
-    OgreMaterialProperties *materialProperties; ///< Material properties.
 };

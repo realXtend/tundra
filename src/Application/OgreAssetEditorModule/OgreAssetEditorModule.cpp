@@ -94,20 +94,17 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     }
     else if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")
     {
-        OgreScriptEditor *scriptEditor = new OgreScriptEditor(asset, framework_->Asset());
-        scriptEditor->Open();
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(asset, framework_);
         editor = scriptEditor;
     }
     else if (asset->Type() == "Audio")
     {
         AudioPreviewEditor *audioEditor = new AudioPreviewEditor(asset, framework_);
-        //editor->Open();
         editor = audioEditor;
     }
     else if (asset->Type() == "Texture")
     {
-        TexturePreviewEditor *texEditor = new TexturePreviewEditor(asset, framework_->Asset());
-        texEditor->Open();
+        TexturePreviewEditor *texEditor = new TexturePreviewEditor(asset, framework_);
         editor = texEditor;
     }
 

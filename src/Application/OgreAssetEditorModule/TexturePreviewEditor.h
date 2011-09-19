@@ -44,14 +44,14 @@ class ASSET_EDITOR_MODULE_API TexturePreviewEditor: public QWidget
     Q_OBJECT
 
 public:
-    TexturePreviewEditor(const AssetPtr &textureAsset, AssetAPI *assetApi, QWidget* parent = 0);
+    TexturePreviewEditor(const AssetPtr &textureAsset, Framework *fw, QWidget* parent = 0);
     virtual ~TexturePreviewEditor();
 
     /// Opens text texture
     void Open();
 
     /// Sets the texture for viewing.
-    void SetTexture(const AssetPtr &textureAsset) { asset = textureAsset; }
+    void SetTexture(const AssetPtr &textureAsset);
 
 public slots:
     /// Listens when image label has been pressed.
@@ -87,6 +87,7 @@ private:
     const static int cWindowMinimumWidth = 256;
     const static int cWindowMinimumHeight = 323;
 
+    Framework *framework;
     AssetWeakPtr asset;
     QWidget *mainWidget_;
     QScrollArea *scrollAreaWidget_;
@@ -96,7 +97,6 @@ private:
     QLabel *scaleLabel_;
     TextureLabel *imageLabel_;
     QSize imageSize_;
-
     QString assetId_;
     bool useOriginalImageSize_;
 

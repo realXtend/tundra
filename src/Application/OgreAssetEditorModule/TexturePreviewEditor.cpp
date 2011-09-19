@@ -44,11 +44,10 @@ void TextureLabel::mousePressEvent(QMouseEvent *ev)
 
 // TexturePreviewEditor
 
-TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, AssetAPI *assetApi, QWidget* parent) :
+TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, Framework *fw, QWidget* parent) :
     QWidget(parent),
-    asset(textureAsset),
+    framework(fw),
     mainWidget_(0),
-    okButtonName_(0),
     headerLabel_(0),
     imageLabel_(0),
     scaleLabel_(0),
@@ -56,13 +55,6 @@ TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, AssetAP
     imageSize_(QSize(0,0)),
     useOriginalImageSize_(true)
 {
-    assert(asset.lock());
-    AssetPtr assetPtr = asset.lock();
-    if (!assetPtr)
-        LogError("TexturePreviewEditor: null asset given.");
-    if (assetPtr && assetPtr->Type() != "Texture")
-        LogWarning("Created TexturePreviewEditor for non-supported asset type " + assetPtr->Type() + ".");
-
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/texture_preview.ui");
     if (!file.exists())
@@ -74,7 +66,6 @@ TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, AssetAP
     mainWidget_ = loader.load(&file);
     file.close();
 
-    setWindowTitle(tr("Texture: ") + (assetPtr?assetPtr->Name():QString()));
     resize(cWindowMinimumWidth, cWindowMinimumHeight);
 
     layout_ = new QVBoxLayout;
@@ -82,7 +73,6 @@ TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, AssetAP
     layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
 
-    okButtonName_ = mainWidget_->findChild<QPushButton *>("okButton");
     headerLabel_ = mainWidget_->findChild<QLabel *>("imageNameLabel");
     scaleLabel_ = mainWidget_->findChild<QLabel *>("imageScaleLabel");
 
@@ -105,19 +95,35 @@ TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, AssetAP
     imageLabel_->setPixmap(QPixmap::fromImage(emptyImage));
     headerLabel_->setText(objectName());
 
-    // If asset is unloaded, load it now.
-    if (assetPtr && !assetPtr->IsLoaded())
-    {
-        AssetTransferPtr transfer = assetApi->RequestAsset(assetPtr->Name(), assetPtr->Type(), true);
-        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetTransferSucceeded(AssetPtr)));
-        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
-    }
+    SetTexture(textureAsset);
 }
 
 TexturePreviewEditor::~TexturePreviewEditor()
 {
 }
 
+void TexturePreviewEditor::SetTexture(const AssetPtr &textureAsset)
+{
+    asset = textureAsset;
+    assert(asset.lock());
+    AssetPtr assetPtr = asset.lock();
+    setWindowTitle(tr("Texture: ") + (assetPtr?assetPtr->Name():QString()));
+    if (!assetPtr)
+        LogError("TexturePreviewEditor: null asset given.");
+    if (assetPtr && assetPtr->Type() != "Texture")
+        LogWarning("Created TexturePreviewEditor for non-supported asset type " + assetPtr->Type() + ".");
+
+    // If asset is unloaded, load it now.
+    if (assetPtr && !assetPtr->IsLoaded())
+    {
+        AssetTransferPtr transfer = framework->Asset()->RequestAsset(assetPtr->Name(), assetPtr->Type(), true);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetTransferSucceeded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
+    }
+
+    Open();
+}
+///\todo Move the code below to Open().
 /*
 void TexturePreviewEditor::HandleResouceReady()
 {
