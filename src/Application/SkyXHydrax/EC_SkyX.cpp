@@ -232,7 +232,7 @@ void EC_SkyX::Update(float frameTime)
         if (impl->sunlight)
             impl->sunlight->setDirection(impl->skyX->getAtmosphereManager()->getSunDirection());
         impl->skyX->update(frameTime);
-        // Do not trigger AttributeChanged for time as SkyX internals are authorative for it.
-        settime(impl->skyX->getAtmosphereManager()->getOptions().Time);
+        // Do not replicate constant time attribute updates as SkyX internals are authoritative for it.
+        time.Set(impl->skyX->getAtmosphereManager()->getOptions().Time, AttributeChange::LocalOnly);
     }
 }
