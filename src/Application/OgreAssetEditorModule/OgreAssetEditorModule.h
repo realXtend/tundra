@@ -41,7 +41,7 @@ public:
 
 public slots:
     /// Returns if asset of @type is supported for editing/previewing.
-    bool IsSupportedAssetTypes(const QString &type) const;
+    bool IsSupportedAssetType(const QString &type) const;
 
 private:
     Q_DISABLE_COPY(OgreAssetEditorModule);
