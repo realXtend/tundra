@@ -12,10 +12,35 @@
 #include <QString>
 #include <QFileDialog>
 #include <QDir>
+#include <QFileInfo>
 #include <QCloseEvent>
 #include <QGraphicsProxyWidget>
 
 #include "MemoryLeakCheck.h"
+
+QStringList DirectorySearch(const QString &path, QDir::Filters filters)
+{
+    QStringList ret;
+    if (path.trimmed().isEmpty())
+        return ret; // QFileInfo behavior for empty string is undefined
+    foreach(const QFileInfo &info, QDir(path).entryInfoList(filters))
+        ret.append(info.filePath());
+    return ret;
+}
+
+QStringList RecursiveDirectorySearch(const QString &path, QDir::Filters filters)
+{
+    QStringList ret;
+    if (path.trimmed().isEmpty())
+        return ret; // QFileInfo behavior for empty string is undefined
+    foreach(const QFileInfo &info, QDir(path).entryInfoList(filters))
+    {
+        QString subdir = info.filePath();
+        ret.append(subdir);
+        ret.append(RecursiveDirectorySearch(subdir, filters));
+    }
+    return ret;
+}
 
 class CustomFileDialog : public QFileDialog
 {

@@ -168,7 +168,7 @@ std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
     return storages;
 }
 
-AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName)
+AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName) const
 {
     // Make sure relative paths are turned into local paths.
     QString refLocal = ResolveAssetRef("local://", ref);
@@ -519,7 +519,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
         LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName + "! Please add a storage with this name.");
         return AssetUploadTransferPtr();
     }
-
+    
     // Protect crashes when as this function is called from scripts!
     AssetUploadTransferPtr transfer;
     try
@@ -604,6 +604,9 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, siz
     if (!destination)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The passed destination asset storage was null!");
 
+    if (!destination->Writable())
+        throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The storage is not writable.");
+
     AssetProviderPtr provider = destination->provider.lock();
     if (!provider)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The provider pointer of the passed destination asset storage was null!");
@@ -640,19 +643,19 @@ void AssetAPI::Reset()
     providers.clear();
 }
 
-std::vector<AssetTransferPtr> AssetAPI::PendingTransfers()
+std::vector<AssetTransferPtr> AssetAPI::PendingTransfers() const
 {
     std::vector<AssetTransferPtr> transfers;
-    for(AssetTransferMap::iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
+    for(AssetTransferMap::const_iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
         transfers.push_back(iter->second);
 
     transfers.insert(transfers.end(), readyTransfers.begin(), readyTransfers.end());
     return transfers;
 }
 
-AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
+AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef) const
 {
-    AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
+    AssetTransferMap::const_iterator iter = currentTransfers.find(assetRef);
     if (iter != currentTransfers.end())
         return iter->second;
     for(size_t i = 0; i < readyTransfers.size(); ++i)
@@ -733,7 +736,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         transfer->assetType = assetType;
         transfer->provider = transfer->asset->GetAssetProvider();
         transfer->storage = transfer->asset->GetAssetStorage();
-
+        transfer->diskSourceType = transfer->asset->DiskSourceType();
+        
         readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
         return transfer;
     }
@@ -768,6 +772,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     {
         // The asset can be found from cache. Generate a providerless transfer and return it to the client.
         transfer = AssetTransferPtr(new IAssetTransfer());
+        transfer->diskSourceType = IAsset::Cached;
+        
         bool success = LoadFileToVector(assetFileInCache.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
         {
@@ -807,7 +813,7 @@ AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref, bool forceTra
     return RequestAsset(ref.ref, ref.type, forceTransfer);
 }
 
-AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
+AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType) const
 {
     assetType = assetType.trimmed();
     assetRef = assetRef.trimmed();
@@ -841,7 +847,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     return AssetProviderPtr();
 }
 
-QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
+QString AssetAPI::ResolveAssetRef(QString context, QString assetRef) const
 {
     if (assetRef.trimmed().isEmpty())
         return "";
@@ -849,7 +855,7 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
     context = context.trimmed();
 
     // First see if we have an exact match for the ref to an existing asset.
-    AssetMap::iterator iter = assets.find(assetRef);
+    AssetMap::const_iterator iter = assets.find(assetRef);
     if (iter != assets.end())
         return assetRef; // Use the ref as-is, there's an existing asset to map this string to.
 
@@ -909,7 +915,7 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
     return assetRef;
 }
 
-bool AssetAPI::IsAssetTypeFactoryRegistered(const QString &typeName)
+bool AssetAPI::IsAssetTypeFactoryRegistered(const QString &typeName) const
 {
     AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(typeName);
     return (existingFactory.get() ? true : false);
@@ -929,7 +935,7 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
     assetTypeFactories.push_back(factory);
 }
 
-QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix)
+QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix) const
 {
     static unsigned long uniqueRunningAssetCounter = 1;
 
@@ -951,7 +957,7 @@ QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString asset
     throw Exception("GenerateUniqueAssetName failed!");
 }
 
-QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuffix)
+QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuffix) const
 {
     static unsigned long uniqueRunningFilenameCounter = 1;
 
@@ -1009,7 +1015,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     }
     assert(asset->IsEmpty());
 
-    // Fill the provider & storage for the new asset already heree if possible
+    // Fill the provider & storage for the new asset already here if possible
     if (!storage)
     {
         asset->SetAssetProvider(GetProviderForAssetRef(type, name));
@@ -1029,7 +1035,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     return asset;
 }
 
-AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
+AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName) const
 {
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
         if (assetTypeFactories[i]->Type().toLower() == typeName.toLower())
@@ -1038,10 +1044,10 @@ AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
     return AssetTypeFactoryPtr();
 }
 
-AssetPtr AssetAPI::GetAsset(QString assetRef)
+AssetPtr AssetAPI::GetAsset(QString assetRef) const
 {
     // First try to see if the ref has an exact match.
-    AssetMap::iterator iter = assets.find(assetRef);
+    AssetMap::const_iterator iter = assets.find(assetRef);
     if (iter != assets.end())
         return iter->second;
 
@@ -1152,6 +1158,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     
     // Save for the asset the storage and provider it came from.
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());
+    transfer->asset->SetDiskSourceType(transfer->diskSourceType);
     transfer->asset->SetAssetStorage(transfer->storage.lock());
     transfer->asset->SetAssetProvider(transfer->provider.lock());
 
@@ -1218,7 +1225,7 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
 {
     AssetPtr asset;
     AssetTransferMap::iterator iter = FindTransferIterator(assetRef);
-    AssetMap::iterator iter2 = assets.find(assetRef);   
+    AssetMap::iterator iter2 = assets.find(assetRef);
     
     // Check for new transfer: not in the assets map yet
     if (iter != currentTransfers.end())
@@ -1236,8 +1243,17 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
         const QString diskSource = asset->DiskSource();
         if (diskSourceChangeWatcher && !diskSource.isEmpty())
         {
-            diskSourceChangeWatcher->removePath(diskSource);
-            diskSourceChangeWatcher->addPath(diskSource);
+            // If available, check the storage whether assets loaded from it should be live-updated.
+            // Otherwise assume live-update == true
+            bool shouldLiveUpdate = true;
+            AssetStoragePtr storage = asset->GetAssetStorage();
+            if (storage)
+                shouldLiveUpdate = storage->HasLiveUpdate();
+            if (shouldLiveUpdate)
+            {
+                diskSourceChangeWatcher->removePath(diskSource);
+                diskSourceChangeWatcher->addPath(diskSource);
+            }
         }
 
         // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
@@ -1397,7 +1413,7 @@ bool AssetAPI::ShouldReplicateAssetDiscovery(const QString& assetRef)
         return true;
 }
 
-int AssetAPI::NumPendingDependencies(AssetPtr asset)
+int AssetAPI::NumPendingDependencies(AssetPtr asset) const
 {
     int numDependencies = 0;
 

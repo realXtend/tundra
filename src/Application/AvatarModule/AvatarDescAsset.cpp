@@ -20,8 +20,17 @@ std::string QuatToLegacyRexString(const Quat& q)
     return str;
 }
 
-Quat QuatFromLegacyRexString(const std::string& stdStr)
+Quat QuatFromLegacyRexString(const QString& qStr)
 {
+    // If consists of 3 components split by spaces, interpret as Euler angles
+    if (qStr.split(" ").length() == 3)
+    {
+        float3 e = DegToRad(float3::FromString(qStr));
+        return Quat::FromEulerZYX(e.z, e.y, e.x);
+    }
+    
+    // Else interpret as quaternion directly
+    std::string stdStr = qStr.toStdString();
     const char* str = stdStr.c_str();
     if (!str)
         return Quat();
@@ -462,7 +471,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
             if (attachment.bone_name_ == "None")
                 attachment.bone_name_ = std::string();
             attachment.transform_.position_ = float3::FromString(bone.attribute("offset"));
-            attachment.transform_.orientation_ = QuatFromLegacyRexString(bone.attribute("rotation").toStdString());
+            attachment.transform_.orientation_ = QuatFromLegacyRexString(bone.attribute("rotation"));
             attachment.transform_.scale_ = float3::FromString(bone.attribute("scale"));
         }
         

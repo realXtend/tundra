@@ -9,9 +9,12 @@
 
 #include "Framework.h"
 #include "Application.h"
-#include "UiProxyWidget.h"
-
+#include "IAsset.h"
 #include "AudioAPI.h"
+#include "LoggingFunctions.h"
+#include "AssetAPI.h"
+#include "IAsset.h"
+#include "IAssetTransfer.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -22,21 +25,21 @@
 
 #include "MemoryLeakCheck.h"
 
-AudioPreviewEditor::AudioPreviewEditor(Framework *framework, const QString &name, QWidget *parent):
+AudioPreviewEditor::AudioPreviewEditor(const AssetPtr &audioAsset, Framework *fw, QWidget *parent) :
     QWidget(parent),
-    framework_(framework),
+    framework_(fw),
     okButton_(0),
     playButton_(0),
     playTimer_(0),
-    mainWidget_(0)
+    mainWidget_(0),
+    asset(audioAsset)
 {
-    setObjectName(name);
-    // Get ui service and create canvas
-    ///\todo Use UiAPI
-/*
-    UiServiceInterface *ui= framework_->Get Service<UiServiceInterface>();
-    if (!ui)
-        return;
+    assert(asset.lock());
+    AssetPtr assetPtr = asset.lock();
+    if (!assetPtr)
+        LogError("OgreScriptEditor: null asset given.");
+    if (assetPtr->Type() != "OgreMaterial" && assetPtr->Type() != "OgreParticle")
+        LogWarning("Created OgreScriptEditor for non-supported asset type " + assetPtr->Type() + ".");
 
     // Create widget from ui file
     QUiLoader loader;
@@ -56,177 +59,123 @@ AudioPreviewEditor::AudioPreviewEditor(Framework *framework, const QString &name
     layout->addWidget(mainWidget_);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
-    QObject::connect(okButton_, SIGNAL(clicked()), this, SLOT(Closed()));
+//    okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
 
     playButton_ = mainWidget_->findChild<QPushButton *>("playButton");
-    QObject::connect(playButton_, SIGNAL(clicked()), this, SLOT(PlaySound()));
+    connect(playButton_, SIGNAL(clicked()), this, SLOT(PlaySound()));
 
-    // Add widget to UI via ui services module
-    setWindowTitle(tr("Audio: ") + objectName());
-    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
-    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-    proxy->show();
-    ui->BringWidgetToFront(proxy);
-*/
+    setWindowTitle(tr("Audio: ") + (assetPtr?assetPtr->Name():QString()));
+
+    // If asset is unloaded, load it now.
+    if (assetPtr && !assetPtr->IsLoaded())
+    {
+        AssetTransferPtr transfer = framework_->Asset()->RequestAsset(assetPtr->Name(), assetPtr->Type(), true);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetTransferSucceeded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
+    }
 }
 
 AudioPreviewEditor::~AudioPreviewEditor()
 {
 }
 
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-    /*
-void AudioPreviewEditor::HandleAssetReady(AssetInterfacePtr asset)
+/*
+void AudioPreviewEditor::DrawAudioSignal()
 {
-    Service ManagerPtr service_manager = framework_->Get ServiceManager();
-    if(service_manager)
+    AudioAsset *sound = dynamic_cast<AudioAsset *>(asset.lock().get());
+    if (sound)
     {
-        if(service_manager->IsRegistered(Service::ST_Sound))
+        QLabel *audioInfoLabel = findChild<QLabel*>("descriptionLabel");
+        //SoundBuffer buffer = sound->GetBuffer();
+        SoundBuffer buffer;
+        audioInfoLabel->setText(QString(tr("Frequency: %1Hz")).arg(buffer.frequency));
+        
+        int bits = 16;
+        if (!buffer.is16Bit)
+            bits = 8;
+        audioInfoLabel->setText(audioInfoLabel->text() + QString(tr(" Bits: %1 bit")).arg(bits));
+
+        QString stereo = "Stereo";
+        if(!buffer.stereo)
+            stereo = "Mono";
+        audioInfoLabel->setText(audioInfoLabel->text() + tr(" Format: ") + stereo);
+
+        float duration;
+        if (!buffer.stereo)
+            duration = float(buffer.data.size() / ((bits / 8))) / float(buffer.frequency);
+        else
+            duration = float(buffer.data.size() / ((bits / 8) * 2)) / float(buffer.frequency);
+        audioInfoLabel->setText(audioInfoLabel->text() + QString(tr("\nDuration: %1 sec")).arg(duration));
+
+        QVBoxLayout *layout = mainWidget_->findChild<QVBoxLayout*>("verticalLayout_2");
+        if (layout)
         {
-            boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->G etS ervice<ISoundService>(Service::ST_Sound).lock();
-            if(!sound_service)
-                return;
-
-            request_tag_ = sound_service->RequestSoundResource(QString::fromStdString(asset->Id()));
-        }
-    }
-}
-    */
-
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-    /*
-void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res) 
-{
-    if(request_tag_ == res->tag_)
-    {
-        SoundResource *sound = dynamic_cast<SoundResource *>(res->resource_.get());
-        if(sound)
-        {
-            QLabel *audioInfoLabel = findChild<QLabel*>("descriptionLabel");
-            ISoundService::SoundBuffer buffer = sound->GetBuffer();
-            audioInfoLabel->setText(QString(tr("Frequency: %1Hz")).arg(buffer.frequency_));
-            
-            int bits = 16;
-            if(!buffer.sixteenbit_)
-                bits = 8;
-            audioInfoLabel->setText(audioInfoLabel->text() + QString(tr(" Bits: %1 bit")).arg(bits));
-
-            QString stereo = "Stereo";
-            if(!buffer.stereo_)
-                stereo = "Mono";
-            audioInfoLabel->setText(audioInfoLabel->text() + tr(" Format: ") + stereo);
-
-            float duration;
-            if(!buffer.stereo_)
-                duration = float(buffer.data_.size() / ((bits / 8))) / float(buffer.frequency_);
-            else
-                duration = float(buffer.data_.size() / ((bits / 8) * 2)) / float(buffer.frequency_);
-            audioInfoLabel->setText(audioInfoLabel->text() + QString(tr("\nDuration: %1 sec")).arg(duration));
-
-            QVBoxLayout *layout = mainWidget_->findChild<QVBoxLayout*>("verticalLayout_2");
-            if(layout)
+            AudioSignalLabel *audioSignalLabel = mainWidget_->findChild<AudioSignalLabel *>("audioSignalLabel");
+            if (!audioSignalLabel)
             {
-                AudioSignalLabel *audioSignalLabel = mainWidget_->findChild<AudioSignalLabel *>("audioSignalLabel");
-                if(!audioSignalLabel)
-                {
-                    audioSignalLabel = new AudioSignalLabel(this);
-                    audioSignalLabel->setObjectName("audioSignalLabel");
-                    layout->addWidget(audioSignalLabel);
-                }
-                audioSignalLabel->SetAudioData(buffer.data_, buffer.frequency_, bits, buffer.stereo_);
+                audioSignalLabel = new AudioSignalLabel(this);
+                audioSignalLabel->setObjectName("audioSignalLabel");
+                layout->addWidget(audioSignalLabel);
             }
-            assetId_ = QString(sound->Id().c_str());
+            audioSignalLabel->SetAudioData(buffer.data, buffer.frequency, bits, buffer.stereo);
         }
     }
 }
-    */
-
-void AudioPreviewEditor::Closed()
-{
-//    emit Closed(inventoryId_, assetType_);
-}
+*/
 
 void AudioPreviewEditor::PlaySound()
-{/* ///\todo Regression. Reimplement. -jj.
+{
     //If sound asset is not ready yet no need to play it.
-    if(assetId_.size() <= 0)
+    if (asset.expired())
         return;
 
-    Service ManagerPtr service_manager = framework_->Get ServiceManager();
-    if(service_manager)
+    if (!soundChannel)
     {
-        if(service_manager->IsRegistered(Service::ST_Sound))
-        {
-            boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->G et Service<ISoundService>(Service::ST_Sound).lock();
-            if(!sound_service)
-                return;
+        soundChannel = framework_->Audio()->PlaySound(asset.lock(), SoundChannel::Ambient);
+        playButton_->setText(tr("Stop"));
 
-            if(soundId_ == 0)
+        AudioSignalLabel *audioSignalLabel = mainWidget_->findChild<AudioSignalLabel *>("audioSignalLabel");
+        if (audioSignalLabel)
+        {
+            float duration = audioSignalLabel->GetAudioDuration();
+            if (!playTimer_)
             {
-                soundId_ = sound_service->PlaySound(assetId_, ISoundService::Ambient);
-                playButton_->setText(tr("Stop"));
-                
-                AudioSignalLabel *audioSignalLabel = mainWidget_->findChild<AudioSignalLabel *>("audioSignalLabel");
-                if(audioSignalLabel)
-                {
-                    float duration = audioSignalLabel->GetAudioDuration();
-                    if(!playTimer_)
-                    {
-                        playTimer_ = new QTimer(this);
-                        playTimer_->setSingleShot(true);
-                        QObject::connect(playTimer_, SIGNAL(timeout()), this, SLOT(TimerTimeout()));
-                    }
-                    playTimer_->start(duration * 1000);
-                }
+                playTimer_ = new QTimer(this);
+                playTimer_->setSingleShot(true);
+                connect(playTimer_, SIGNAL(timeout()), this, SLOT(TimerTimeout()));
             }
-            else
-            {
-                //User pressed stop audio before audio clip was finnished.
-                sound_service->StopSound(soundId_);
-                soundId_ = 0;
-                playButton_->setText(tr("Play"));
-                if(playTimer_)
-                {
-                    if(playTimer_->isActive())
-                        playTimer_->stop();
-                }
-            }
+            playTimer_->start(duration * 1000);
         }
     }
-    */
+    else
+    {
+        //User pressed stop audio before audio clip was finnished.
+        framework_->Audio()->Stop(soundChannel);
+        soundChannel.reset();
+        playButton_->setText(tr("Play"));
+        if (playTimer_ && playTimer_->isActive())
+            playTimer_->stop();
+    }
 }
 
 void AudioPreviewEditor::TimerTimeout()
 {
-///\todo Regression. Reimplement. -jj.
-/*
-    //If sound asset is not ready yet no need to play it.
-    if(assetId_.size() <= 0 || soundId_ == 0)
+    if (asset.expired() || !soundChannel)
         return;
 
-    Service ManagerPtr service_manager = framework_->Get ServiceManager();
-    if(service_manager)
-    {
-        if(service_manager->IsRegistered(Service::ST_Sound))
-        {
-            boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->G et Service<ISoundService>(Service::ST_Sound).lock();
-            if(!sound_service)
-                return;
-
-            sound_service->StopSound(soundId_);
-            soundId_ = 0;
-            playButton_->setText(tr("Play"));
-        }
-    }
-*/
+    framework_->Audio()->Stop(soundChannel);
+    soundChannel.reset();
+    playButton_->setText(tr("Play"));
 }
 
-void AudioPreviewEditor::resizeEvent(QResizeEvent *ev)
+void AudioPreviewEditor::OnAssetTransferSucceeded(AssetPtr asset)
 {
-    QWidget::resizeEvent(ev);
-    emit WidgetResized(ev->size());
+    //Open();
 }
+
+void AudioPreviewEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
+{
+    LogError("AudioPreviewEditor::OnAssetTransferFailed: " + reason);
+    //setText("Could not load asset: " + reason);
+}
+

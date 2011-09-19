@@ -19,6 +19,7 @@
 #include "Application.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+#include "IAssetTransfer.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -33,18 +34,22 @@
 
 #include "MemoryLeakCheck.h"
 
-OgreScriptEditor::OgreScriptEditor(const AssetPtr &assetPtr, AssetAPI *assetAPI, QWidget *parent) :
+OgreScriptEditor::OgreScriptEditor(const AssetPtr &scriptAsset, AssetAPI *assetAPI, QWidget *parent) :
     QWidget(parent),
     assetApi(assetAPI),
-    asset(assetPtr),
+    asset(scriptAsset),
     lineEditName(0),
     buttonSaveAs(0),
     textEdit(0),
     propertyTable(0),
     materialProperties(0)
 {
-    if (asset->Type() != "OgreMaterial" && asset->Type() != "OgreParticle")
-        LogWarning("Created OgreScriptEditor for non-supported asset type " + asset->Type() + ".");
+    assert(asset.lock());
+    AssetPtr assetPtr = asset.lock();
+    if (!assetPtr)
+        LogError("OgreScriptEditor: null asset given.");
+    if (assetPtr->Type() != "OgreMaterial" && assetPtr->Type() != "OgreParticle")
+        LogWarning("Created OgreScriptEditor for non-supported asset type " + assetPtr->Type() + ".");
 
     // Create widget from ui file
     QUiLoader loader;
@@ -77,10 +82,18 @@ OgreScriptEditor::OgreScriptEditor(const AssetPtr &assetPtr, AssetAPI *assetAPI,
     connect(buttonCancel, SIGNAL(clicked(bool)), SLOT(close()));
     connect(lineEditName, SIGNAL(textChanged(const QString &)), SLOT(ValidateScriptName(const QString &)));
 
-    lineEditName->setText(asset->Name());
+    lineEditName->setText(assetPtr->Name());
     buttonSaveAs->setEnabled(false);
 
     setWindowTitle(tr("OGRE Script Editor"));
+
+    // If asset is unloaded, load it now.
+    if (assetPtr && !assetPtr->IsLoaded())
+    {
+        AssetTransferPtr transfer = assetApi->RequestAsset(assetPtr->Name(), assetPtr->Type(), true);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetTransferSucceeded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
+    }
 }
 
 OgreScriptEditor::~OgreScriptEditor()
@@ -91,6 +104,12 @@ OgreScriptEditor::~OgreScriptEditor()
 
 void OgreScriptEditor::Open()
 {
+    AssetPtr assetPtr = asset.lock();
+    if (!assetPtr->IsLoaded())
+    {
+        LogInfo("OgreScriptEditor::Open: asset not loaded.");
+        return;
+    }
     ///\todo
 /*
     bool edit_raw = false;
@@ -124,10 +143,10 @@ void OgreScriptEditor::Open()
         textEdit->setText(script);
     }
 */
-    if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")
+    if (assetPtr->Type() == "OgreMaterial" || assetPtr->Type() == "OgreParticle")
     {
         std::vector<u8> data;
-        if (asset->SerializeTo(data))
+        if (assetPtr->SerializeTo(data))
         {
             data.push_back('\0');
             QString script((const char *)&data[0]);
@@ -136,7 +155,7 @@ void OgreScriptEditor::Open()
 
             CreateTextEdit();
             textEdit->setText(script);
-            OgreScriptHighlighter *hl= new OgreScriptHighlighter(asset->Type(), textEdit);
+            OgreScriptHighlighter *hl= new OgreScriptHighlighter(assetPtr->Type(), textEdit);
             hl->setDocument(textEdit->document());
         }
     }
@@ -144,11 +163,12 @@ void OgreScriptEditor::Open()
 
 void OgreScriptEditor::Save()
 {
-    if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")
+    AssetPtr assetPtr = asset.lock();
+    if (assetPtr && assetPtr->Type() == "OgreMaterial" || assetPtr->Type() == "OgreParticle")
     {
         QByteArray bytes = textEdit->toPlainText().toAscii().data();
         const char *data = bytes.data();
-        asset->LoadFromFileInMemory((u8 *)data, (size_t)bytes.size());
+        assetPtr->LoadFromFileInMemory((u8 *)data, (size_t)bytes.size());
     }
 }
 
@@ -241,6 +261,17 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
     }
 
     propertyTable->setCurrentItem(valueItem, QItemSelectionModel::Deselect);
+}
+
+void OgreScriptEditor::OnAssetTransferSucceeded(AssetPtr audioAsset)
+{
+    asset = audioAsset;
+}
+
+void OgreScriptEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
+{
+    LogError("OgreScriptEditor::OnAssetTransferFailed: " + reason);
+    //setText("Could not load asset: " + reason);
 }
 
 void OgreScriptEditor::CreateTextEdit()

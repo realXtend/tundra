@@ -38,7 +38,9 @@ public:
     /// Adds the given http URL to the list of current asset storages.
     /// Returns the newly created storage, or 0 if a storage with the given name already existed, or if some other error occurred.
     /// @param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
-    HttpAssetStoragePtr AddStorageAddress(const QString &address, const QString &storageName);
+    /// @param liveUpdate Whether assets will be reloaded whenever they change. \todo For HTTP storages, this currently means only watching the disk cache changes
+    /// @param autoDiscoverable Whether recursive PROPFIND queries will be immediately performed on the storage to discover assets
+    HttpAssetStoragePtr AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate = true, bool autoDiscoverable = false);
 
     virtual std::vector<AssetStoragePtr> GetStorages() const;
 

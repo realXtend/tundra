@@ -218,8 +218,9 @@ void TransformEditor::TranslateTargets(const float3 &offset)
             Transform t = transform->Get();
             // If we have parented transform, translate the changes to parent's world space.
             Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            if (parentPlaceableEntity)
-                t.pos += parentPlaceableEntity->GetComponent<EC_Placeable>()->WorldToLocal().MulDir(offset);
+            EC_Placeable *parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
+            if (parentPlaceable)
+                t.pos += parentPlaceable->WorldToLocal().MulDir(offset);
             else
                 t.pos += offset;
             transform->Set(t, AttributeChange::Default);
@@ -247,9 +248,9 @@ void TransformEditor::RotateTargets(const Quat &delta)
             Transform t = transform->Get();
             // If we have parented transform, translate the changes to parent's world space.
             Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            if (parentPlaceableEntity)
+            EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
+            if (parentPlaceable)
             {
-                EC_Placeable* parentPlaceable = parentPlaceableEntity->GetComponent<EC_Placeable>().get();
                 t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
             }
             else

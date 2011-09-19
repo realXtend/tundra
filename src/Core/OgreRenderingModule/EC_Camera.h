@@ -83,9 +83,11 @@ public:
     Q_PROPERTY(float3 upVector READ getupVector WRITE setupVector);
     DEFINE_QPROPERTY_ATTRIBUTE(float3, upVector);
 
+    ///\todo Rename to nearClipDistance?
     Q_PROPERTY(float nearPlane READ getnearPlane WRITE setnearPlane);
     DEFINE_QPROPERTY_ATTRIBUTE(float, nearPlane);
 
+    ///\todo Rename to farClipDistance?
     Q_PROPERTY(float farPlane READ getfarPlane WRITE setfarPlane);
     DEFINE_QPROPERTY_ATTRIBUTE(float, farPlane);
 
@@ -102,6 +104,9 @@ public slots:
     /// Calling this function is equivalent to calling Renderer::SetMainCamera(this).
     void SetActive();
 
+    /// returns whether camera is active in the viewport
+    bool IsActive() const;
+
     /// Get an initial rotation for the camera (in Euler angles, can be assigned to a Transform) that corresponds to the up vector
     /// @note the left/right & front/back axes are unspecified
     float3 InitialRotation() const;
@@ -109,37 +114,32 @@ public slots:
     /// Adjust a pitch/yaw/roll Euler rotation vector using the up vector
     float3 AdjustedRotation(const float3& rotation) const;
 
-    /// sets near clip distance
-    /** @note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
-        @param nearclip new near clip distance
-    */
+    /// Sets near clip distance
+    /** @param nearclip new near clip distance */
+    ///\todo Remove, exposed as Attribute nearPlane
     void SetNearClip(float nearclip);
-
-    /// sets far clip distance
-    /** @note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
-        @param farclip new far clip distance
-    */
-    void SetFarClip(float farclip);
-
-    /// Sets vertical fov 
-    /** @param fov new vertical fov in radians 
-    */
-    void SetVerticalFov(float fov);
-
     /// returns near clip distance
+    ///\todo Remove, exposed as Attribute nearPlane
     float NearClip() const;
 
+    /// sets far clip distance
+    /** @param farclip new far clip distance */
+    ///\todo Remove, exposed as Attribute farPlane
+    void SetFarClip(float farclip);
     /// returns far clip distance
+    ///\todo Remove, exposed as Attribute farPlane
     float FarClip() const;
 
+    /// Sets vertical fov 
+    /** @param fov new vertical fov in radians  */
+    ///\todo Remove, exposed as Attribute verticalFov
+    void SetVerticalFov(float fov);
     /// returns vertical fov as radians
+    ///\todo Remove, exposed as Attribute verticalFov
     float VerticalFov() const;
 
     /// Returns the currently used view aspect ratio (width/height).
     float AspectRatio() const;
-
-    /// returns whether camera is active in the viewport
-    bool IsActive() const;
 
     /// Returns the actual Ogre camera.
     /** @note Use with caution. Never set the position of the camera directly, use the placeable component for that. */
@@ -147,13 +147,13 @@ public slots:
 
     /// Returns whether an entity is visible in the camera's frustum
     bool IsEntityVisible(Entity* entity);
-    
+
     /// Get visible entities in the camera's frustum
     QList<Entity*> VisibleEntities();
-    
+
     /// Get visible entity ID's in the camera's frustum
-    const std::set<entity_id_t>& VisibleEntityIDs();
-    
+    const std::set<entity_id_t>& VisibleEntityIDs() ;
+
 /* The following functions moved here from IRenderer. Reimplement them:
 
     /// take sceenshot to a location
@@ -166,26 +166,24 @@ public slots:
 
     /// Returns a world space ray as cast from the camera through a viewport position.
     /** @param The x position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
-        @param The y position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
-    */
+        @param The y position at which the ray should intersect the viewport, in normalized screen coordinates [0,1]. */
     Ray GetMouseRay(float x, float y);
 
-    /// Start tracking an entity's visibility within the scene using this camera
-    /** After this, connect either to the camera's EntityEnterView and EntityLeaveView signals, or the entity's EnterView & LeaveView signals,
-       to be notified of the visibility change(s)
-     */
+    /// Starts tracking an entity's visibility within the scene using this camera
+    /** After this, connect either to the camera's EntityEnterView and EntityLeaveView signals,
+        or the entity's EnterView & LeaveView signals, to be notified of the visibility change(s) */
     void StartViewTracking(Entity* entity);
-    
-    /// Stop tracking an entity's visibility
+
+    /// Stops tracking an entity's visibility
     void StopViewTracking(Entity* entity);
-    
+
 signals:
     /// An entity has entered the view
     void EntityEnterView(Entity* entity);
-    
+
     /// An entity has left the view
     void EntityLeaveView(Entity* entity);
-    
+
 private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
@@ -240,4 +238,3 @@ private:
     /// Frustum query
     Ogre::PlaneBoundedVolumeListSceneQuery *query_;
 };
-

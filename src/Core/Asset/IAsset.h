@@ -14,6 +14,7 @@
 class IAsset : public QObject, public boost::enable_shared_from_this<IAsset>
 {
     Q_OBJECT
+    Q_ENUMS(SourceType)
 
 public:
     IAsset(AssetAPI *owner, const QString &type_, const QString &name_);
@@ -23,6 +24,16 @@ public:
         types into internal Ogre pools must guarantee that at dtor (and at Unload()) these resources from Ogre pools are completely cleared. */
     virtual ~IAsset() {}
 
+    enum SourceType
+    {
+        /// The disk source is the authoritative copy of the asset
+        Original = 0,
+        /// The disk source is a cached copy of the asset
+        Cached,
+        /// The asset is programmatically created. This is the default for empty new assets.
+        Programmatic
+    };
+    
 public slots:
     /// Returns the type of this asset. The type of an asset cannot change during the lifetime of the instance of an asset.
     QString Type() const { return type; }
@@ -33,11 +44,17 @@ public slots:
     /// Specifies the file from which this asset can be reloaded, if it is unloaded in between. 
     void SetDiskSource(QString diskSource);
 
+    /// Sets the disk source type for this asset.
+    void SetDiskSourceType(SourceType type);
+
     /// Returns the absolute path name to the file that contains the disk-cached version of this asset.
     /** For some assets, this is the cache file containing this asset, but for assets from some providers (e.g. LocalAssetProvider),
         this is the actual source filename of the asset. */
     QString DiskSource() const { return diskSource; }
 
+    /// Returns the disk source type of this asset.
+    SourceType DiskSourceType() const { return diskSourceType; }
+    
     /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.
     bool LoadFromFile(QString filename);
 
@@ -55,7 +72,16 @@ public slots:
 
     /// Returns true if the asset is empty. An empty asset is unloaded, and has an empty disk source.
     bool IsEmpty() const;
-
+    
+    /// Marks the asset to be have been modified in memory.
+    void MarkModified();
+    
+    /// Clears the modified in memory -status.
+    void ClearModified();
+    
+    /// Returns true if the asset has been modified in memory without saving to the source.
+    bool IsModified() const { return modified; }
+    
     /// Makes a clone of this asset.
     /// For this function to succeed, the asset must be loaded in memory. (IsLoaded() == true)
     /// @param newAssetName The name for the new asset. This will be the 'assetRef' of the new asset. You will use AssetAPI::GetAsset(newAssetName) to get
@@ -101,6 +127,9 @@ signals:
         @param asset A pointer to this will be passed in. The signature of this signal deliberately contains this member to be unified with AssetAPI. */
     void Loaded(AssetPtr asset);
 
+    /// Asset properties have changed. Emitted whenever the modified flag, disksource, or disksourcetype changes.
+    void PropertyStatusChanged(IAsset *asset);
+    
 public:
     /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
     /// Returns true if loading succeeded, false otherwise.
@@ -167,5 +196,11 @@ protected:
 
     /// This path specifies a local filename from which this asset can be reloaded if necessary.
     QString diskSource;
+    
+    /// Disk source type of the asset.
+    SourceType diskSourceType;
+    
+    /// Modified in memory -status of the asset.
+    bool modified;
 };
 

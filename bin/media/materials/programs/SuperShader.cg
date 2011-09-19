@@ -264,7 +264,7 @@ void mainPS(
 #endif
 
     // Limit diffuse term to prevent overburn
-    diffuseLightFactor = min(diffuseLightFactor, float3(1,1,1));
+    //diffuseLightFactor = min(diffuseLightFactor, float3(1,1,1));
 
 #ifdef SPECULAR_LIGHTING
 	float3 totalColor = diffuseLightFactor * baseColor.rgb + specularLightFactor * specularColor;

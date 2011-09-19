@@ -50,13 +50,13 @@ namespace Asset
         framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
         
         QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
-        local->AddStorageDirectory(systemAssetDir, "System", true);
+        local->AddStorageDirectory(systemAssetDir, "System", true, QFileInfo(systemAssetDir).isWritable());
 
         QString jsAssetDir = Application::InstallationDirectory() + "jsmodules";
-        local->AddStorageDirectory(jsAssetDir, "Javascript", true);
+        local->AddStorageDirectory(jsAssetDir, "Javascript", true, QFileInfo(jsAssetDir).isWritable());
 
         QString ogreAssetDir = Application::InstallationDirectory() + "media";
-        local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true);
+        local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true, QFileInfo(ogreAssetDir).isWritable());
 
         framework_->RegisterDynamicObject("assetModule", this);
 

@@ -34,6 +34,12 @@ public slots:
     /// Specifies whether data can be uploaded to this asset storage.
     virtual bool Writable() const { return false; }
 
+    /// Specifies whether the assets in the storage should be subject to live update, once loaded
+    virtual bool HasLiveUpdate() const { return false; }
+    
+    /// Specifies whether the asset storage has automatic discovery of new assets enabled
+    virtual bool AutoDiscoverable() const { return false; }
+
     /// If this function returns true, we have approved the content inside this storage to be trusted and safe.
     /// Local content is always assumed safe (content from LocalAssetProvider).
     /// Content from HttpAssetProvider is assumed safe if it points to the local system.

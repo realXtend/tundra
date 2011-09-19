@@ -68,7 +68,8 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
     AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();
     transfer->assetType = assetType;
-
+    transfer->diskSourceType = IAsset::Original; // The disk source represents the original authoritative source for the asset.
+    
     pendingDownloads.push_back(transfer);
 
     return transfer;
@@ -159,7 +160,7 @@ bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
     return false;
 }
 
-LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, QString storageName, bool recursive)
+LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, QString storageName, bool recursive, bool writable, bool liveUpdate, bool autoDiscoverable)
 {
     directory = directory.trimmed();
     if (directory.isEmpty())
@@ -193,14 +194,18 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
     storage->directory = QDir::toNativeSeparators(GuaranteeTrailingSlash(directory));
     storage->name = storageName;
     storage->recursive = recursive;
+    storage->writable = writable;
+    storage->liveUpdate = liveUpdate;
+    storage->autoDiscoverable = autoDiscoverable;
     storage->provider = shared_from_this();
     storage->SetupWatcher(); // Start listening on file change notifications.
 //    connect(storage->changeWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(FileChanged(QString)));
 //    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
     storages.push_back(storage);
 
-    // Make the storage refresh itself immediately.
-    storage->RefreshAssetRefs();
+    // If autodiscovery is on, make the storage refresh itself immediately.
+    if (storage->AutoDiscoverable())
+        storage->RefreshAssetRefs();
     
     return storage;
 }
@@ -325,10 +330,22 @@ AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QStrin
     QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
 
     bool recursive = true;
+    bool writable = true;
+    bool liveUpdate = true;
+    bool autoDiscoverable = true;
     if (s.contains("recursive"))
         recursive = ParseBool(s["recursive"]);
 
-    return AddStorageDirectory(path, name, recursive);
+    if (s.contains("readonly"))
+        writable = !ParseBool(s["readonly"]);
+
+    if (s.contains("liveupdate"))
+        liveUpdate = ParseBool(s["liveupdate"]);
+    
+    if (s.contains("autodiscoverable"))
+        autoDiscoverable = ParseBool(s["autodiscoverable"]);
+    
+    return AddStorageDirectory(path, name, recursive, writable, liveUpdate, autoDiscoverable);
 }
 
 QString LocalAssetProvider::GenerateUniqueStorageName() const

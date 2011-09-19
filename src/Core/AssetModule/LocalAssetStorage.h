@@ -29,6 +29,15 @@ public:
     /// If true, all subdirectories of the storage directory are automatically looked in when loading an asset.
     bool recursive;
 
+    /// If true, assets can be written to the storage.
+    bool writable;
+
+    /// If true, assets in this storage are subject to live update after loading.
+    bool liveUpdate;
+    
+    /// If true, storage has automatic discovery of new assets enabled.
+    bool autoDiscoverable;
+    
     /// Starts listening on the local directory this asset storage points to.
     void SetupWatcher();
 
@@ -39,13 +48,18 @@ public:
     void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType);
 
     QStringList assetRefs;
+
     
 public slots:
-    /// We assume all directories are writable to.
-    /// \todo This does not always hold, e.g. scenes that are run from the C:\Program Files\ do not give the user permission to write to (unless the security is lifted).
-    ///       Make this settable on per-storage basis.
-    bool Writable() const { return true; }
+    /// Specifies whether data can be uploaded to this asset storage.
+    virtual bool Writable() const { return writable; }
 
+    /// Specifies whether the assets in the storage should be subject to live update, once loaded
+    virtual bool HasLiveUpdate() const { return liveUpdate; }
+    
+    /// Specifies whether the asset storage has automatic discovery of new assets enabled
+    virtual bool AutoDiscoverable() const { return autoDiscoverable; }
+    
     /// Local storages are always assumed to be trusted.
     bool Trusted() const { return true; }
 
@@ -58,7 +72,7 @@ public slots:
     /// Example: GetFullAssetURL("my.mesh") might return "local://my.mesh".
     /// @note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
     QString GetFullAssetURL(const QString &localName);
-
+    
     /// Returns the type of this storage: "LocalAssetStorage".
     virtual QString Type() const;
 

@@ -25,9 +25,9 @@ EC_EnvironmentLight::EC_EnvironmentLight(Scene* scene) :
     IComponent(scene),
     sunColor(this, "Sunlight color", Color(0.639f,0.639f,0.639f)),
     ambientColor(this, "Ambient light color", Color(0.364f, 0.364f, 0.364f, 1.f)),
-    sunDiffuseColor(this, "Sunlight diffuse color", Color(0.93f, 0.93f, 0.93f, 1.f)),
     sunDirection(this, "Sunlight direction vector", float3(-1.f, -1.f, -1.f)),
     sunCastShadows(this, "Sunlight cast shadows", true),
+    brightness(this, "Brightness", 1.0f),
     sunlight(0)
 {
     if (scene)
@@ -52,14 +52,22 @@ void EC_EnvironmentLight::UpdateSunlight()
 {
     if (ogreWorld.lock() != 0)
     {
-        if (sunlight != 0)
+        if (!sunlight)
+            CreateSunlight();
+        
+        if (sunlight)
         {
-            sunlight->setDiffuseColour(sunColor.Get());
+            Color col = sunColor.Get();
+            float b = std::max(brightness.Get(), 1e-3f);
+            // Manually apply brightness multiplier to the sun diffuse color
+            col.r *= b;
+            col.g *= b;
+            col.b *= b;
+            
+            sunlight->setDiffuseColour(col);
             sunlight->setCastShadows(sunCastShadows.Get());
             sunlight->setDirection(sunDirection.Get());
         }
-        else
-            CreateSunlight();
     }
 }
 
@@ -88,16 +96,12 @@ void EC_EnvironmentLight::CreateSunlight()
     sunlight = sceneManager->createLight(world->GetUniqueObjectName("EC_EnvironmentLight_Sunlight"));
 
     sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
-
-    sunlight->setDirection(sunDirection.Get());
-    sunlight->setCastShadows(sunCastShadows.Get());
-    sunlight->setDiffuseColour(sunDiffuseColor.Get());
     sunlight->setSpecularColour(0.0f,0.0f,0.0f);
 }
 
 void EC_EnvironmentLight::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
 {
-    if (attribute == &sunColor || attribute == &sunDirection || attribute == &sunCastShadows)
+    if (attribute == &sunColor || attribute == &brightness || attribute == &sunDirection || attribute == &sunCastShadows)
         UpdateSunlight();
     else if (attribute == &ambientColor )
         UpdateAmbientLight();

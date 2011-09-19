@@ -11,7 +11,7 @@
 #include "MemoryLeakCheck.h"
 
 IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-:assetAPI(owner), type(type_), name(name_)
+:assetAPI(owner), type(type_), name(name_), diskSourceType(Programmatic), modified(false)
 {
     assert(assetAPI);
 }
@@ -19,6 +19,16 @@ IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
 void IAsset::SetDiskSource(QString diskSource_)
 {
     diskSource = diskSource_.trimmed();
+    emit PropertyStatusChanged(this);
+}
+
+void IAsset::SetDiskSourceType(SourceType type)
+{
+    if (diskSourceType != type)
+    {
+        diskSourceType = type;
+        emit PropertyStatusChanged(this);
+    }
 }
 
 bool IAsset::LoadFromCache()
@@ -46,6 +56,24 @@ void IAsset::Unload()
 bool IAsset::IsEmpty() const
 {
     return !IsLoaded() && diskSource.isEmpty();
+}
+
+void IAsset::MarkModified()
+{
+    if (!modified)
+    {
+        modified = true;
+        emit PropertyStatusChanged(this);
+    }
+}
+
+void IAsset::ClearModified()
+{
+    if (modified)
+    {
+        modified = false;
+        emit PropertyStatusChanged(this);
+    }
 }
 
 AssetPtr IAsset::Clone(QString newAssetName) const

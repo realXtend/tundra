@@ -12,7 +12,7 @@
 #include "OgreAssetEditorModule.h"
 #include "TextureAsset.h"
 #include "AssetAPI.h"
-
+#include "IAssetTransfer.h"
 #include "Application.h"
 #include "LoggingFunctions.h"
 
@@ -25,6 +25,8 @@
 #include <QScrollArea>
 
 #include "MemoryLeakCheck.h"
+
+// TextureLabel
 
 TextureLabel::TextureLabel(QWidget *parent, Qt::WindowFlags flags):
     QLabel(parent, flags)
@@ -40,13 +42,11 @@ void TextureLabel::mousePressEvent(QMouseEvent *ev)
     emit MouseClicked(ev);
 }
 
-TexturePreviewEditor::~TexturePreviewEditor()
-{
-    LogInfo("Deleting TexturePreviewEditor " + objectName());
-}
+// TexturePreviewEditor
 
-TexturePreviewEditor::TexturePreviewEditor(QWidget* parent) :
+TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, AssetAPI *assetApi, QWidget* parent) :
     QWidget(parent),
+    asset(textureAsset),
     mainWidget_(0),
     okButtonName_(0),
     headerLabel_(0),
@@ -56,72 +56,102 @@ TexturePreviewEditor::TexturePreviewEditor(QWidget* parent) :
     imageSize_(QSize(0,0)),
     useOriginalImageSize_(true)
 {
-     Initialize();
-}
+    assert(asset.lock());
+    AssetPtr assetPtr = asset.lock();
+    if (!assetPtr)
+        LogError("TexturePreviewEditor: null asset given.");
+    if (assetPtr && assetPtr->Type() != "Texture")
+        LogWarning("Created TexturePreviewEditor for non-supported asset type " + assetPtr->Type() + ".");
 
-void TexturePreviewEditor::Close()
-{
-//    UiServiceInterface* ui= framework_->G et Service<UiServiceInterface>();
-//    if (!ui)
-//        return
-//    ui->RemoveWidgetFromScene(this);
-    // Must be last line in this function, since it is possible this causes the deletion of this object
-    emit Closed("");
-}
-
-void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
-{
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-/*
-    Service ManagerPtr service_manager = framework_->GetSer vi ceManager();
-    if(service_manager)
+    QUiLoader loader;
+    QFile file(Application::InstallationDirectory() + "data/ui/texture_preview.ui");
+    if (!file.exists())
     {
-        if(service_manager->IsRegistered(Service::ST_Texture))
-        {
-            boost::shared_ptr<TextureServiceInterface> texture_service = 
-                service_manager->G et Service<TextureServiceInterface>(Service::ST_Texture).lock();
-            if(!texture_service)
-                return;
-            // Request texture assets.
-            request_tag_ = texture_service->RequestTexture(asset_id.toStdString());
-        }
+        LogError("Cannot find Texture Preview Editor .ui file.");
+        return;
     }
-*/
-}
-/*
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-void TexturePreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
-{
-    if(request_tag_ == res->tag_)
+
+    mainWidget_ = loader.load(&file);
+    file.close();
+
+    setWindowTitle(tr("Texture: ") + objectName());
+    resize(cWindowMinimumWidth, cWindowMinimumHeight);
+
+    layout_ = new QVBoxLayout;
+    layout_->addWidget(mainWidget_);
+    layout_->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout_);
+
+    okButtonName_ = mainWidget_->findChild<QPushButton *>("okButton");
+    headerLabel_ = mainWidget_->findChild<QLabel *>("imageNameLabel");
+    scaleLabel_ = mainWidget_->findChild<QLabel *>("imageScaleLabel");
+
+    QLabel *assetIdLabel = mainWidget_->findChild<QLabel *>("imageAssetIdLabel");
+    if (assetIdLabel)
+        assetIdLabel->setText("");
+    
+    imageLabel_ = new TextureLabel();
+    imageLabel_->setObjectName("previewImageLabel");
+    imageLabel_->setScaledContents(true);
+    imageLabel_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    connect(imageLabel_, SIGNAL(MouseClicked(QMouseEvent*)), this, SLOT(TextureLabelClicked(QMouseEvent*)));
+
+    scrollAreaWidget_ = mainWidget_->findChild<QScrollArea *>("imageScrollArea");
+    scrollAreaWidget_->widget()->layout()->addWidget(imageLabel_);
+
+    // Set black background image that will be replaced once the real image has been received.
+    QImage emptyImage = QImage(QSize(256, 256), QImage::Format_ARGB32);
+    emptyImage.fill(qRgba(0,0,0,0));
+    imageLabel_->setPixmap(QPixmap::fromImage(emptyImage));
+    headerLabel_->setText(objectName());
+
+    // If asset is unloaded, load it now.
+    if (assetPtr && !assetPtr->IsLoaded())
     {
-        TextureInterface *tex = dynamic_cast<TextureInterface *>(res->resource_.get());
-        if(tex)
+        AssetTransferPtr transfer = assetApi->RequestAsset(assetPtr->Name(), assetPtr->Type(), true);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetTransferSucceeded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
+    }
+}
+
+TexturePreviewEditor::~TexturePreviewEditor()
+{
+}
+
+/*
+void TexturePreviewEditor::HandleResouceReady()
+{
+    TextureAsset *tex = dynamic_cast<TextureAsset *>(asset.get());
+    if (!tex)
+    {
+        LogError();
+        return;
+    }
+
+    QImage img = ConvertToQImage(tex->GetData(), tex->GetWidth(), tex->GetHeight(), tex->GetComponents());
+    // Only show chessboard pattern if image has an alpha channel.
+    if (tex->GetComponents() == 4 || tex->GetComponents() == 2) 
+    {
+        imageLabel_->setStyleSheet(
+            "QLabel#previewImageLabel"
+            "{"
+                "background-image: url(\Application::InstallationDirectory + "data/ui/images/image_background.png\");"
+                "background-repeat: repeat-xy;"
+            "}");
+    }
+
+    if (!img.isNull())
+    {
+        // Take image's original size.
+        imageSize_ = QSize(tex->GetWidth(), tex->GetHeight());
+        if (headerLabel_)
+            headerLabel_->setText(headerLabel_->text() + QString(" %1 x %2").arg(tex->GetWidth()).arg(tex->GetHeight()));
+
+        if (imageLabel_)
         {
-            QImage img = ConvertToQImage(tex->GetData(), tex->GetWidth(), tex->GetHeight(), tex->GetComponents());
-            // Only show chessboard pattern if image has an alpha channel.
-            if(tex->GetComponents() == 4 || tex->GetComponents() == 2) 
-            {
-                imageLabel_->setStyleSheet("QLabel#previewImageLabel"
-                                           "{"
-                                                "background-image: url(\Application::InstallationDirectory + "data/ui/images/image_background.png\");"
-                                                "background-repeat: repeat-xy;"
-                                           "}");
-            }
-
-            if(!img.isNull())
-            {
-                // Take image's original size.
-                imageSize_ = QSize(tex->GetWidth(), tex->GetHeight());
-                if(headerLabel_)
-                    headerLabel_->setText(headerLabel_->text() + QString(" %1 x %2").arg(tex->GetWidth()).arg(tex->GetHeight()));
-
-                if(imageLabel_)
-                {
-                    imageLabel_->setPixmap(QPixmap::fromImage(img));
-                    UseTextureOriginalSize(true);
-                    scaleLabel_->setText("Image scale: 1:1");
-                }
-            }
+            imageLabel_->setPixmap(QPixmap::fromImage(img));
+            UseTextureOriginalSize(true);
+            scaleLabel_->setText("Image scale: 1:1");
         }
     }
 }
@@ -180,70 +210,23 @@ void TexturePreviewEditor::resizeEvent(QResizeEvent *ev)
     }
 }
 
-void TexturePreviewEditor::Initialize()
+void TexturePreviewEditor::Open()
 {
-    // Create widget from ui file
-    QUiLoader loader;
-    QFile file(Application::InstallationDirectory() + "data/ui/texture_preview.ui");
-    if (!file.exists())
+    if (asset.expired())
     {
-        LogError("Cannot find OGRE Script Editor .ui file.");
+        LogError("TexturePreviewEditor::Open: Texture asset expired.");
         return;
     }
 
-    mainWidget_ = loader.load(&file);
-    file.close();
-
-    setAttribute(Qt::WA_DeleteOnClose);
-
-    resize(cWindowMinimumWidth, cWindowMinimumHeight);
-
-    layout_ = new QVBoxLayout;
-    layout_->addWidget(mainWidget_);
-    layout_->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout_);
-
-    okButtonName_ = mainWidget_->findChild<QPushButton *>("okButton");
-    headerLabel_ = mainWidget_->findChild<QLabel *>("imageNameLabel");
-    scaleLabel_ = mainWidget_->findChild<QLabel *>("imageScaleLabel");
-
-    QLabel *assetIdLabel = mainWidget_->findChild<QLabel *>("imageAssetIdLabel");
-    if (assetIdLabel)
-        assetIdLabel->setText("");
-    
-    imageLabel_ = new TextureLabel();
-    imageLabel_->setObjectName("previewImageLabel");
-    imageLabel_->setScaledContents(true);
-    imageLabel_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    QObject::connect(imageLabel_, SIGNAL(MouseClicked(QMouseEvent*)), this, SLOT(TextureLabelClicked(QMouseEvent*)));
-
-    scrollAreaWidget_ = mainWidget_->findChild<QScrollArea *>("imageScrollArea");
-    scrollAreaWidget_->widget()->layout()->addWidget(imageLabel_);
-
-    // Set black background image that will be replaced once the real image has been received.
-    QImage emptyImage = QImage(QSize(256, 256), QImage::Format_ARGB32);
-    emptyImage.fill(qRgba(0,0,0,0));
-    imageLabel_->setPixmap(QPixmap::fromImage(emptyImage));
-    headerLabel_->setText(objectName());
-
-    // Add widget to UI via ui services module
-    setWindowTitle(tr("Texture: ") + objectName());
-//    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
-//    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-//    proxy->show();
-//    ui->BringWidgetToFront(proxy);
-}
-
-void TexturePreviewEditor::OpenOgreTexture(const QString& name)
-{
-    Ogre::ResourcePtr res = Ogre::TextureManager::getSingleton().getByName(name.toStdString().c_str());
-    Ogre::Texture* tex = static_cast<Ogre::Texture* >(res.get());
+    AssetPtr assetPtr = asset.lock();
+    Ogre::ResourcePtr res = Ogre::TextureManager::getSingleton().getByName(AssetAPI::SanitateAssetRef(assetPtr->Name()).toStdString());
+    Ogre::Texture* tex = dynamic_cast<Ogre::Texture* >(res.get());
     if (!tex)
     {
-        LogWarning("Failed to open Ogre texture " + name + " .");
+        LogWarning("Failed to open Ogre texture " + assetPtr->Name() + " .");
         return;
     }
-    
+
     // Create image of texture, and show it into label.
     QImage img = TextureAsset::ToQImage(tex);
 
@@ -254,18 +237,8 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
         
         QLabel *assetIdLabel = mainWidget_->findChild<QLabel *>("imageAssetIdLabel");
         if (assetIdLabel)
-            assetIdLabel->setText(AssetAPI::DesanitateAssetRef(name));
+            assetIdLabel->setText(AssetAPI::DesanitateAssetRef(assetPtr->Name()));
     }
-}
-
-TexturePreviewEditor *TexturePreviewEditor::OpenPreviewEditor(const QString &texture, QWidget* parent)
-{
-    TexturePreviewEditor *editor = new TexturePreviewEditor(parent);
-    //connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
-    connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(close()));
-    editor->OpenOgreTexture(texture);
-    return editor;
-    //editor->show();
 }
 
 void TexturePreviewEditor::UseTextureOriginalSize(bool use)
@@ -403,3 +376,13 @@ QImage TexturePreviewEditor::ConvertToQImage(const u8 *raw_image_data, uint widt
     return image;
 }
 */
+void TexturePreviewEditor::OnAssetTransferSucceeded(AssetPtr asset)
+{
+    Open();
+}
+
+void TexturePreviewEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
+{
+    LogError("TexturePreviewEditor::OnAssetTransferFailed: " + reason);
+    //setText("Could not load asset: " + reason);
+}

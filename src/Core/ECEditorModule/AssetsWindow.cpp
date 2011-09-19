@@ -126,12 +126,18 @@ void AssetsWindow::PopulateTreeWidget()
 
 void AssetsWindow::AddAsset(AssetPtr asset)
 {
-    ///\todo Check that the asset doesn't already exists
+    if (alreadyAdded.find(asset) != alreadyAdded.end())
+    {
+        LogWarning("Trying to already existing asset " + asset->ToString() + " to AssetsWindow. Ignoring.");
+        return;
+    }
+
     AssetItem *item = new AssetItem(asset);
     AddChildren(asset, item);
 
-    connect(asset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleAssetLoaded(AssetPtr)));
-    connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(HandleAssetUnloaded(IAsset *)));
+    connect(asset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(UpdateAssetItem(AssetPtr)), Qt::UniqueConnection);
+    connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
+    connect(asset.get(), SIGNAL(PropertyStatusChanged(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
 
     bool storageFound = false;
     AssetStoragePtr storage = asset->GetAssetStorage();
@@ -169,6 +175,7 @@ void AssetsWindow::RemoveAsset(AssetPtr asset)
             QTreeWidgetItem *parent = item->parent();
             parent->removeChild(item);
             SAFE_DELETE(item);
+            alreadyAdded.erase(asset);
         }
 
         ++it;
@@ -178,6 +185,21 @@ void AssetsWindow::RemoveAsset(AssetPtr asset)
 void AssetsWindow::Search(const QString &filter)
 {
     TreeWidgetSearch(treeWidget, 0, filter);
+}
+
+void AssetsWindow::UpdateAssetItem(IAsset *asset)
+{
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        AssetItem *item = dynamic_cast<AssetItem *>(*it);
+        if (item && item->Asset().get() == asset)
+        {
+            item->SetText(asset);
+            break;
+        }
+        ++it;
+    }
 }
 
 void AssetsWindow::Initialize()
@@ -309,30 +331,6 @@ void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
         expandAndCollapseButton->setText(tr("Collapse All"));
     else
         expandAndCollapseButton->setText(tr("Expand All"));
-}
-
-void AssetsWindow::HandleAssetLoaded(AssetPtr asset)
-{
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        AssetItem *item = dynamic_cast<AssetItem *>(*it);
-        if (item && item->Asset() == asset)
-            item->MarkUnloaded(false);
-        ++it;
-    }
-}
-
-void AssetsWindow::HandleAssetUnloaded(IAsset *asset)
-{
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        AssetItem *item = dynamic_cast<AssetItem *>(*it);
-        if (item && item->Asset().get() == asset)
-            item->MarkUnloaded(true);
-        ++it;
-    }
 }
 
 void AssetsWindow::AssetDoubleClicked(QTreeWidgetItem *item, int column)

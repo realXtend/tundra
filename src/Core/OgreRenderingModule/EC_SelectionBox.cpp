@@ -23,7 +23,7 @@ EC_SelectionBox::EC_SelectionBox(Scene* scene) :
         world_ = scene->GetWorld<OgreWorld>();
     OgreWorldPtr world = world_.lock();
     Ogre::SceneManager* sceneMgr = world->GetSceneManager();
-    selectionBox_ = sceneMgr->createManualObject(world->GetUniqueObjectName("EC_Selected"));
+    selectionBox_ = sceneMgr->createManualObject(world->GetUniqueObjectName("EC_SelectionBox"));
     selectionBox_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY);
     selectionBox_->setUseIdentityProjection(true);
     selectionBox_->setUseIdentityView(true);

@@ -11,6 +11,7 @@
 #include "CoreMath.h"
 #include "OgreRenderingModule.h"
 #include "RenderWindow.h"
+#include "IAsset.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -53,7 +54,7 @@ void MeshPreviewLabel::mouseMoveEvent(QMouseEvent *ev)
         sendMouseEvent(ev);
 }
 
-MeshPreviewEditor::MeshPreviewEditor(Framework *framework, QWidget* parent): 
+MeshPreviewEditor::MeshPreviewEditor(const AssetPtr &meshAsset, Framework *framework, QWidget* parent): 
     QWidget(parent), framework_(framework), lastPos_(QPointF()),
     camAlphaAngle_(0), mouseDelta_(0),label_(0),
     manager_(0),
@@ -66,27 +67,65 @@ MeshPreviewEditor::MeshPreviewEditor(Framework *framework, QWidget* parent):
     width_(400),
     height_(400)
 {
-    InitializeEditorWidget();
+    QUiLoader loader;
+    QFile file(Application::InstallationDirectory() + "data/ui/mesh_preview.ui");
+    if (!file.exists())
+    {
+        LogError("Cannot find OGRE Script Editor .ui file.");
+        return;
+    }
+
+    mainWidget_ = loader.load(&file);
+    file.close();
+
     setMouseTracking(true);
+
+    okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
+
+    QVBoxLayout* vLayout = mainWidget_->findChild<QVBoxLayout* >("imageLayout");
+    
+    label_ = new MeshPreviewLabel(mainWidget_);
+    label_->setObjectName("meshImageLabel");
+
+    label_->setMinimumSize(300,300);
+
+    // Kind of hack, in this way we assure that we will get mouseMove-event with left and right button pressed.
+    connect(label_, SIGNAL(sendMouseEvent(QMouseEvent*)), this, SLOT(MouseEvent(QMouseEvent*)));
+    connect(label_, SIGNAL(sendWheelEvent(QWheelEvent*)), this, SLOT(MouseWheelEvent(QWheelEvent*)));
+    vLayout->addWidget(label_);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    setLayout(layout);
+    layout->addWidget(mainWidget_);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    // Add widget to UI via ui services module
+    setWindowTitle((tr("Mesh: ")) + objectName());
 }
 
-void MeshPreviewEditor::Open(const QString &asset_id)
+void MeshPreviewEditor::Open()
 {
-    mesh_id_ = asset_id;
+    if (asset.expired())
+    {
+        LogError("");
+        return;
+    }
 
+    AssetPtr assetPtr = asset.lock();
      // Add widget to UI via ui services module
-    setWindowTitle((tr("Mesh: ")) + asset_id);
+    setWindowTitle((tr("Mesh: ")) + assetPtr->Name());
     try
     {
         Update();
     }
     catch (Ogre::Exception &e)
     {
-        LogError("Exception while opening mesh " + asset_id + " for editing.");
+        LogError("Exception while opening mesh " + assetPtr->Name() + " for editing.");
         LogError(e.what());
     }
 }
 
+/*
 MeshPreviewEditor *MeshPreviewEditor::OpenMeshPreviewEditor(Framework *framework, const QString &asset_id, QWidget* parent)
 {
     MeshPreviewEditor *editor = new MeshPreviewEditor(framework, parent);
@@ -95,6 +134,7 @@ MeshPreviewEditor *MeshPreviewEditor::OpenMeshPreviewEditor(Framework *framework
     //editor->show();
     return editor;
 }
+*/
 
 MeshPreviewEditor::~MeshPreviewEditor()
 {
@@ -281,45 +321,6 @@ void MeshPreviewEditor::CreateRenderTexture()
 
     render_texture_ = tex->getBuffer()->getRenderTarget();
     render_texture_->setAutoUpdated(false);
-}
-
-void MeshPreviewEditor::InitializeEditorWidget()
-{
-    // Create widget from ui file
-    QUiLoader loader;
-    QFile file(Application::InstallationDirectory() + "data/ui/mesh_preview.ui");
-    if (!file.exists())
-    {
-        LogError("Cannot find OGRE Script Editor .ui file.");
-        return;
-    }
-
-    mainWidget_ = loader.load(&file);
-    file.close();
-
-    setAttribute(Qt::WA_DeleteOnClose);
-
-    okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
-
-    QVBoxLayout* vLayout = mainWidget_->findChild<QVBoxLayout* >("imageLayout");
-    
-    label_ = new MeshPreviewLabel(mainWidget_);
-    label_->setObjectName("meshImageLabel");
-
-    label_->setMinimumSize(300,300);
-
-    // Kind of hack, in this way we assure that we will get mouseMove-event with left and right button pressed.
-    connect(label_, SIGNAL(sendMouseEvent(QMouseEvent*)), this, SLOT(MouseEvent(QMouseEvent*)));
-    connect(label_, SIGNAL(sendWheelEvent(QWheelEvent*)), this, SLOT(MouseWheelEvent(QWheelEvent*)));
-    vLayout->addWidget(label_);
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    setLayout(layout);
-    layout->addWidget(mainWidget_);
-    layout->setContentsMargins(0, 0, 0, 0);
-
-    // Add widget to UI via ui services module
-    setWindowTitle((tr("Mesh: ")) + objectName());
 }
 
 void MeshPreviewEditor::MouseWheelEvent(QWheelEvent* ev)

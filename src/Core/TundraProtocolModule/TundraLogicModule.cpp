@@ -62,10 +62,6 @@
 #include "EC_PlanarMirror.h"
 #endif
 
-#ifdef EC_Selected_ENABLED
-#include "EC_Selected.h"
-#endif
-
 #ifdef EC_ProximityTrigger_ENABLED
 #include "EC_ProximityTrigger.h"
 #endif
@@ -150,9 +146,6 @@ void TundraLogicModule::Load()
 
 #ifdef EC_PlanarMirror_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PlanarMirror>));
-#endif
-#ifdef EC_Selected_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Selected>));
 #endif
 #ifdef EC_Billboard_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Billboard>));

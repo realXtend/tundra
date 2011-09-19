@@ -42,18 +42,18 @@ public:
 
 public:
     /// Returns if a asset type factory has been registered for a type name.
-    bool IsAssetTypeFactoryRegistered(const QString &typeName);
+    bool IsAssetTypeFactoryRegistered(const QString &typeName) const;
 
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
 
     /// Returns all registered asset type factories. You can use this list to query which asset types the system can handle.
-    std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() { return assetTypeFactories; }
+    std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() const { return assetTypeFactories; }
 
     /// Returns the asset provider of the given type.
     /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
     template<typename T>
-    boost::shared_ptr<T> GetAssetProvider();
+    boost::shared_ptr<T> GetAssetProvider() const;
 
     /// Registers a new asset provider to the Asset API. Use this to add a new provider type you have instantiated to the system.
     void RegisterAssetProvider(AssetProviderPtr provider);
@@ -62,7 +62,7 @@ public:
     std::vector<AssetProviderPtr> GetAssetProviders() const;
 
     /// Returns all the currently ongoing or waiting asset transfers.
-    std::vector<AssetTransferPtr> PendingTransfers();
+    std::vector<AssetTransferPtr> PendingTransfers() const;
 
     /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
     /// it yourself.
@@ -151,9 +151,12 @@ public:
     /// Desanitates an assetref with $1 $2 $3 $4 ... into original form.
     static std::string DesanitateAssetRef(const std::string& ref);
 
+    /// Explodes the given asset storage description string to key-value pairs.
+    static QMap<QString, QString> ParseAssetStorageString(QString storageString);
+
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
-    AssetMap GetAllAssets() { return assets; }
+    AssetMap GetAllAssets() const { return assets; }
 
     /// Returns the known asset storage instances in the system.
     AssetStorageVector GetAssetStorages() const;
@@ -181,7 +184,7 @@ public slots:
         @param assetRef The asset reference name to query a provider for.
         @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
                         used to more completely specify the type. */
-    AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
+    AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "") const;
 
     /// Creates a new empty unloaded asset of the given type and name.
     /** This function uses the Asset type factories to create an instance of the proper asset class.
@@ -199,19 +202,19 @@ public slots:
     /** @param assetTypePrefix The type of the asset to use as a human-readable visual prefix identifier for the name. May be empty.
         @param assetNamePrefix A name prefix that is added to the asset name for visual identification. May be empty.
         @return A string of the form "Asset_<assetTypePrefix>_<assetNamePrefix>_<number>". */
-    QString GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix);
+    QString GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix) const;
 
     /// Generates an absolute path name to a file on the local system that is guaranteed to be writable to and nonexisting. This file can be used as temporary workspace
     /// for asset serialization/deserialization routines. This is used especially with Ogre-related data (de)serializers, since they don't have support for loading/saving data
     /// from memory and need to access a file.
-    QString GenerateTemporaryNonexistingAssetFilename(QString filename);
+    QString GenerateTemporaryNonexistingAssetFilename(QString filename) const;
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
-    AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
+    AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName) const;
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     /// @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
-    AssetPtr GetAsset(QString assetRef);
+    AssetPtr GetAsset(QString assetRef) const;
     
     /// Returns the asset cache object that genereates a disk source for all assets.
     AssetCache *GetAssetCache() const { return assetCache; }
@@ -257,12 +260,12 @@ public slots:
     /// context: "http://myserver.com/path/myasset.material", ref: "texture.png" returns "http://myserver.com/path/texture.png".
     /// The context string may be left empty, in which case the current default storage (GetDefaultAssetStorage()) is used as the context.
     /// If ref is an absolute asset reference, it is returned unmodified (no need for context).
-    QString ResolveAssetRef(QString context, QString ref);
+    QString ResolveAssetRef(QString context, QString ref) const;
 
     /// Given an assetRef, turns it into a native OS file path to the asset. The given ref is resolved in the context of "local://", if it is
     /// a relative asset ref. If ref contains a subAssetName, it is stripped from outFilePath, and returned in subAssetName.
     /// If the assetRef doesn't represent a file on the local filesystem, FileQueryExternalFile is returned and outFilePath is set to equal best effort to parse 'ref' locally.
-    FileQueryResult ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName = 0);
+    FileQueryResult ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName = 0) const;
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
     /** Returns the absolute path for that file, if it exists. The path contains the filename,
@@ -341,13 +344,13 @@ public slots:
     /// mutually exclusive).
     /// @note Client code should not need to worry about whether a particular transfer is pending or not, but simply call RequestAsset whenever an asset
     /// request is needed. AssetAPI will optimize away any duplicate transfers to the same asset.
-    AssetTransferPtr GetPendingTransfer(QString assetRef);
+    AssetTransferPtr GetPendingTransfer(QString assetRef) const;
 
     /// Starts an asset transfer for each dependency the given asset has.
     void RequestAssetDependencies(AssetPtr transfer);
 
     /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
-    int NumPendingDependencies(AssetPtr asset);
+    int NumPendingDependencies(AssetPtr asset) const;
 
     /// Utility function that checks whether an asset ref's discovery or deletion should be replicated
     bool ShouldReplicateAssetDiscovery(const QString &assetRef);
@@ -371,10 +374,6 @@ public slots:
     
     /// Return ready asset transfers (debugging)
     const std::vector<AssetTransferPtr> DebugGetReadyTransfers() const{ return readyTransfers; }
-    
-public:
-    /// Explodes the given asset storage description string to key-value pairs.
-    static QMap<QString, QString> ParseAssetStorageString(QString storageString);
 
 signals:
     /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
@@ -478,4 +477,3 @@ private:
 };
 
 #include "AssetAPI.inl"
-
