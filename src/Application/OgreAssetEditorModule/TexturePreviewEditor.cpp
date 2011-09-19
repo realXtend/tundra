@@ -74,7 +74,7 @@ TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, AssetAP
     mainWidget_ = loader.load(&file);
     file.close();
 
-    setWindowTitle(tr("Texture: ") + objectName());
+    setWindowTitle(tr("Texture: ") + (assetPtr?assetPtr->Name():QString()));
     resize(cWindowMinimumWidth, cWindowMinimumHeight);
 
     layout_ = new QVBoxLayout;

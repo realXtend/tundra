@@ -85,7 +85,7 @@ OgreScriptEditor::OgreScriptEditor(const AssetPtr &scriptAsset, AssetAPI *assetA
     lineEditName->setText(assetPtr->Name());
     buttonSaveAs->setEnabled(false);
 
-    setWindowTitle(tr("OGRE Script Editor"));
+    setWindowTitle(tr("OGRE Script Editor:") + (assetPtr?assetPtr->Name():QString()));
 
     // If asset is unloaded, load it now.
     if (assetPtr && !assetPtr->IsLoaded())
@@ -105,7 +105,7 @@ OgreScriptEditor::~OgreScriptEditor()
 void OgreScriptEditor::Open()
 {
     AssetPtr assetPtr = asset.lock();
-    if (!assetPtr->IsLoaded())
+    if (assetPtr && !assetPtr->IsLoaded())
     {
         LogInfo("OgreScriptEditor::Open: asset not loaded.");
         return;
