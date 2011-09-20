@@ -28,13 +28,13 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 add_definitions (-DECEDITOR_MODULE_EXPORTS)
 
 use_package (QT_PROPERTY_BROWSER)
-use_core_modules (Framework Scene Input Console Ui OgreRenderingModule TundraProtocolModule AssetModule)
+use_core_modules (Framework Scene Input Console Ui OgreRenderingModule TundraProtocolModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
 link_package (QT_PROPERTY_BROWSER)
-link_modules (Framework Scene Input Console Ui OgreRenderingModule TundraProtocolModule AssetModule)
+link_modules (Framework Scene Input Console Ui OgreRenderingModule TundraProtocolModule)
 link_entity_components (EC_TransformGizmo EC_Highlight)
 
 SetupCompileFlagsWithPCH()
