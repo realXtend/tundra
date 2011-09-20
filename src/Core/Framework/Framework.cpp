@@ -249,21 +249,20 @@ void Framework::ProcessOneFrame()
         try
         {
 #ifdef PROFILING
-            ProfilerSection ps(("Module_" + modules[i]->Name() + "_Update").c_str());
+            ProfilerSection ps(("Module_" + modules[i]->Name() + "_Update").toStdString());
 #endif
             modules[i]->Update(frametime);
         }
         catch(const std::exception &e)
         {
-            std::cout << "ProcessOneFrame caught an exception while updating module " << modules[i]->Name()
+            std::cout << "ProcessOneFrame caught an exception while updating module " << modules[i]->Name().toStdString()
                 << ": " << (e.what() ? e.what() : "(null)") << std::endl;
-            LogError(std::string("ProcessOneFrame caught an exception while updating module " + modules[i]->Name()
-                + ": " + (e.what() ? e.what() : "(null)")));
+            LogError("ProcessOneFrame caught an exception while updating module " + modules[i]->Name() + ": " + (e.what() ? e.what() : "(null)"));
         }
         catch(...)
         {
-            std::cout << "ProcessOneFrame caught an unknown exception while updating module " << modules[i]->Name() << std::endl;
-            LogError(std::string("ProcessOneFrame caught an unknown exception while updating module " + modules[i]->Name()));
+            std::cout << "ProcessOneFrame caught an unknown exception while updating module " << modules[i]->Name().toStdString() << std::endl;
+            LogError("ProcessOneFrame caught an unknown exception while updating module " + modules[i]->Name());
         }
     }
 
@@ -455,9 +454,8 @@ void Framework::RegisterModule(IModule *module)
 IModule *Framework::GetModuleByName(const QString &name) const
 {
     for(size_t i = 0; i < modules.size(); ++i)
-        if (modules[i]->Name() == name.toStdString())
+        if (modules[i]->Name() == name)
             return modules[i].get();
-
     return 0;
 }
 

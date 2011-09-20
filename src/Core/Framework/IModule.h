@@ -26,25 +26,24 @@ class IModule : public QObject, public boost::enable_shared_from_this<IModule>
 public:
     /// Constructor.
     /** @param name Module name. */
-    explicit IModule(const std::string &name);
+    explicit IModule(const QString &name);
     virtual ~IModule();
 
     /// Called when module is loaded into memory.
-    /** Do not trust that framework can be used. Override in your own module. Do not call.
-        Components in the module should be registered here using the SceneApi component type factory registration functions.
-        Component is the class of the component. */
+    /** Override in your own module. Do not call.
+        Components and asset types exposed by the module should be registered here using SceneAPI and AssetAPI respectively. */
     virtual void Load() {}
 
-    /// Initializes the module.
-    /** Called when module is taken in use. Override in your own module. Do not call. */
+    /// Called when module is taken in use.
+    /** Override in your own module. Do not call. */
     virtual void Initialize() {}
 
-    /// Uninitialize the module.
-    /** Called when module is removed from use. Override in your own module. Do not call. */
+    /// Called when module is removed from use.
+    /** Override in your own module. Do not call. */
     virtual void Uninitialize() {}
 
     /// Called when module is unloaded from memory.
-    /** Do not trust that framework can be used. Override in your own module. Do not call. */
+    /** Override in your own module. Do not call. */
     virtual void Unload() {}
 
     /// Synchronized update for the module
@@ -53,7 +52,7 @@ public:
     virtual void Update(f64 frametime) {}
 
     /// Returns the name of the module.
-    const std::string &Name() const { return name; }
+    const QString &Name() const { return name; }
 
     /// Returns parent framework.
     Framework *GetFramework() const;
@@ -68,7 +67,7 @@ private:
     /// Only for internal use.
     void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
-    const std::string name; ///< Name of the module
+    const QString name; ///< Name of the module
 };
 
 #ifdef _MSC_VER

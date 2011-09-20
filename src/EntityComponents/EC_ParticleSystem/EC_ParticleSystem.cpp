@@ -2,7 +2,6 @@
 
 #include "DebugOperatorNew.h"
 #include "EC_ParticleSystem.h"
-#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"

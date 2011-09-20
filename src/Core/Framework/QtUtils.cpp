@@ -11,8 +11,7 @@
 
 #include <QString>
 #include <QFileDialog>
-#include <QDir>
-#include <QFileInfo>
+#include <QDirIterator>
 #include <QCloseEvent>
 #include <QGraphicsProxyWidget>
 
@@ -21,11 +20,9 @@
 QStringList DirectorySearch(const QString &path, bool recursive, QDir::Filters filters)
 {
     QStringList ret;
-    if (path.trimmed().isEmpty())
-        return ret; // QFileInfo behavior for empty string is undefined
     QDirIterator it(path, filters, recursive ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
-        while(it.hasNext())
-            ret.append(it.next());
+    while(it.hasNext())
+        ret.append(it.next());
     return ret;
 }
 

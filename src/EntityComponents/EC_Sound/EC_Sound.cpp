@@ -4,7 +4,6 @@
 
 #include "EC_Sound.h"
 
-#include "IModule.h"
 #include "Framework.h"
 #include "Entity.h"
 #include "Scene.h"

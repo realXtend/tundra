@@ -9,7 +9,6 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_HoveringText.h"
-#include "IModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"

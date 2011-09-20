@@ -9,7 +9,6 @@
 #include "CoreException.h"
 #include "BinaryAsset.h"
 #include "Renderer.h"
-#include "IModule.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "EC_Placeable.h"

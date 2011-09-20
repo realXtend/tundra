@@ -14,7 +14,6 @@
 #include "ScriptCoreTypeDefines.h"
 #include "EC_Script.h"
 #include "ScriptAsset.h"
-#include "IModule.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
 #include "LoggingFunctions.h"

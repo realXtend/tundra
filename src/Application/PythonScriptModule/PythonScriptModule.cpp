@@ -271,11 +271,11 @@ namespace PythonScript
             const QString pluginFile = pythonPlugins.absoluteFilePath(pluginPath);
             if (QFile::exists(pluginFile))
             {
-                LogInfo(Name() + ": ** " + pluginPath.toStdString());
+                LogInfo(Name() + ": ** " + pluginPath);
                 RunScript(pluginFile);
             }
             else
-                LogWarning(Name() + ": ** Could not locate startup pyplugin '" + pluginPath.toStdString() +"'. Make sure your path is relative to /pyplugins folder.");
+                LogWarning(Name() + ": ** Could not locate startup pyplugin '" + pluginPath +"'. Make sure your path is relative to /pyplugins folder.");
         }
         if (pluginsToLoad.empty())
             LogInfo(Name() + ": ** No python scripts in startup config");
@@ -439,14 +439,14 @@ namespace PythonScript
     {
         QString strSimplified = str.trimmed();
         if (!strSimplified.isEmpty())
-            LogInfo(Name() + ": " + strSimplified.toStdString());
+            LogInfo(Name() + ": " + strSimplified);
     }
 
     void PythonScriptModule::OnPythonQtStdErr(const QString &str)
     {
         QString strSimplified = str.trimmed();
         if (!strSimplified.isEmpty())
-            LogError(Name() + ": " + strSimplified.toStdString());
+            LogError(Name() + ": " + strSimplified);
     }
 
     void PythonScriptModule::OnSceneAdded(const QString &name)
@@ -612,7 +612,7 @@ namespace PythonScript
 
     void PythonScriptModule::PythonPrintLog(const QString &logType, const QString &logMessage)
     {
-        const QString message = QString::fromStdString(Name()) + ": " + logMessage;
+        const QString message = Name() + ": " + logMessage;
         const QString logTypeUpper = logType.toUpper();
         if (logTypeUpper == "WARNING")
             LogWarning(message);

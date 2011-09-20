@@ -9,7 +9,6 @@
 #define OGRE_INTEROP
 
 #include "EC_Billboard.h"
-#include "IModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"

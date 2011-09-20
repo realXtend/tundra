@@ -41,9 +41,9 @@ ECEditorModule::~ECEditorModule()
 void ECEditorModule::Initialize()
 {
     GetFramework()->RegisterDynamicObject("eceditor", this);
-    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(Name().c_str(), framework_));
+    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(Name().toStdString().c_str(), framework_));
 
-    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name().c_str());
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name());
     if (!framework_->Config()->HasValue(configData, cShowAidsSetting))
         framework_->Config()->Set(configData, cShowAidsSetting, true);
     showVisualAids = framework_->Config()->Get(configData, cShowAidsSetting, QVariant(showVisualAids)).toBool();
@@ -57,7 +57,7 @@ void ECEditorModule::Initialize()
 
 void ECEditorModule::Uninitialize()
 {
-    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name().c_str());
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name());
     framework_->Config()->Set(configData, cShowAidsSetting, showVisualAids);
 
     SAFE_DELETE(commonEditor);

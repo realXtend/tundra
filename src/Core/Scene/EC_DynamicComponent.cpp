@@ -5,7 +5,6 @@
 #include "EC_DynamicComponent.h"
 
 #include "SceneAPI.h"
-#include "IModule.h"
 
 #include "Entity.h"
 #include "LoggingFunctions.h"
