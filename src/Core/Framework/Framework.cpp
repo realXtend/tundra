@@ -132,13 +132,15 @@ Framework::Framework(int argc, char** argv) :
     cmdLineDescs.commands["--run"] = "Run script on startup"; // JavaScriptModule
     cmdLineDescs.commands["--file"] = "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
     cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup"; // AssetModule
-    cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use"; // Framework
+    cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml"; // Framework
     cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional.";
     cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username";
     cmdLineDescs.commands["--netrate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
     cmdLineDescs.commands["--noassetcache"] = "Disable asset cache.";
     cmdLineDescs.commands["--assetcachedir"] = "Specify asset cache directory to use.";
     cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
+    cmdLineDescs.commands["--loglevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'";
+    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--loglevel TundraLogFile.txt";
 
     if (HasCommandLineParameter("--help"))
     {
