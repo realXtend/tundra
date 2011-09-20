@@ -30,6 +30,9 @@ Section ""
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
 
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
+                   "QuietUninstallString" "$INSTDIR\uninstaller.exe /S"
+
   # Register file extensions for .txml and .tbin.
   !insertmacro APP_ASSOCIATE "txml" "Tundra.Scenexmlfile" "Tundra XML Scene File" "$INSTDIR\data\ui\images\icon\naali_logo_32px_RC1.ico,0" "Edit in Tundra" "$INSTDIR\tundra.exe --file $\"%1$\""
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "hostserverheadless" "Host in Tundra Server (UDP 2345)" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp --headless"
