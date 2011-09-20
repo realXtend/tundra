@@ -6,8 +6,7 @@ function AutoConnect(){
     var isserver = server.IsRunning() || server.IsAboutToStart();
     if(isserver==false){
         client.Login("localhost",2345,"Guest"+randomnumber.toString()," ","udp");
-        //engine.IncludeFile("/scenes/PlaceableTest/createmovekilltest.js");
-        engine.IncludeFile("./../../../rextest2/PlaceableTest/createmovekilltest.js");
+        engine.IncludeFile("scenes/TestScenes/PlaceableTest/createmovekilltest.js");
     }
     if(isserver==true){
         print("server");
