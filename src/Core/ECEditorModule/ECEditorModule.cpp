@@ -40,7 +40,6 @@ ECEditorModule::~ECEditorModule()
 
 void ECEditorModule::Initialize()
 {
-    GetFramework()->RegisterDynamicObject("eceditor", this);
     expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(Name().toStdString().c_str(), framework_));
 
     ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name());
