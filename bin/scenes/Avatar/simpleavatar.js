@@ -1,11 +1,11 @@
-// !ref: local://default_avatar.avatar
-// !ref: local://crosshair.js
+// !ref: default_avatar.avatar
+// !ref: crosshair.js
 
 if (!server.IsRunning() && !framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
-    engine.IncludeFile("local://crosshair.js");
+    engine.IncludeFile("crosshair.js");
 }
 
 // A simple walking avatar with physics & 1st/3rd person camera
@@ -81,7 +81,7 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     var clientPtr = server.GetUserConnection(parseInt(indexNum, 10));
     
     // Default avatar ref
-    var avatarurl = "local://default_avatar.avatar";
+    var avatarurl = "default_avatar.avatar";
     
     // This is done here (server side) because it seems changing the avatar 
     // appearance ref right after this in the client actually does not take effect at all.

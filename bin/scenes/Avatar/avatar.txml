@@ -2,7 +2,7 @@
 <scene>
  <entity id="1" sync="1">
   <component type="EC_Script" sync="1">
-   <attribute value="local://avatarmenu.js" name="Script ref"/>
+   <attribute value="avatarmenu.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="0" name="Run mode"/>
    <attribute value="" name="Script application name"/>
@@ -15,7 +15,7 @@
  </entity>
  <entity id="2" sync="1">
   <component type="EC_Script" sync="1">
-   <attribute value="local://avatarapplication.js;local://simpleavatar.js;local://exampleavataraddon.js" name="Script ref"/>
+   <attribute value="avatarapplication.js;simpleavatar.js;exampleavataraddon.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="0" name="Run mode"/>
    <attribute value="AvatarApp" name="Script application name"/>
@@ -29,7 +29,7 @@
  <entity id="3" sync="1">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
-   <attribute value="file://fish.mesh" name="Mesh ref"/>
+   <attribute value="fish.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
    <attribute value="" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
@@ -51,7 +51,7 @@
    <attribute value="10" name="Mass"/>
    <attribute value="6" name="Shape type"/>
    <attribute value="1.000000 1.000000 1.000000" name="Size"/>
-   <attribute value="file://fish.mesh" name="Collision mesh ref"/>
+   <attribute value="fish.mesh" name="Collision mesh ref"/>
    <attribute value="0.5" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
@@ -70,7 +70,7 @@
  <entity id="4" sync="1">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,0,0,0.14,0.2,0.14" name="Transform"/>
-   <attribute value="file://WoodPallet.mesh" name="Mesh ref"/>
+   <attribute value="WoodPallet.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
    <attribute value="" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
@@ -114,7 +114,7 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Script" sync="1">
-   <attribute value="local://instructions.js" name="Script ref"/>
+   <attribute value="instructions.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="0" name="Run mode"/>
    <attribute value="" name="Script application name"/>

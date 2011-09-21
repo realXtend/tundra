@@ -79,7 +79,11 @@ namespace Asset
         framework_->Console()->RegisterCommand(
             "DumpAssetTransfers", "Dumps debugging information of current asset transfers to console", 
             this, SLOT(ConsoleDumpAssetTransfers()));
-            
+
+        framework_->Console()->RegisterCommand(
+            "DumpAssets", "Lists all assets known to the Asset API", 
+            this, SLOT(ConsoleDumpAssets()));
+        
         ProcessCommandLineOptions();
 
         TundraLogic::Server *server = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetServer().get();
@@ -392,6 +396,21 @@ namespace Asset
         //LogInfo("Asset dependencies:");
         //for (AssetAPI::AssetDependenciesMap::const_iterator i = dependencies.begin(); i != dependencies.end(); ++i)
         //    LogInfo(i->first + " " + i->second);
+    }
+    
+    void AssetModule::ConsoleDumpAssets()
+    {
+        AssetAPI* asset = framework_->Asset();
+        const AssetMap& assets = asset->GetAllAssets();
+        
+        LogInfo("Current assets:");
+        for (AssetMap::const_iterator i = assets.begin(); i != assets.end(); ++i)
+        {
+            QString name = i->first;
+            if (!i->second->IsLoaded())
+                name += " (unloaded)";
+            LogInfo(name);
+        }
     }
 }
 

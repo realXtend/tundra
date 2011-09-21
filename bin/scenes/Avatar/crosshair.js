@@ -1,4 +1,4 @@
-// !ref: local://firstpersonmouseicon.png
+// !ref: firstpersonmouseicon.png
 
 if (!server.IsRunning() && !framework.IsHeadless())
 {
