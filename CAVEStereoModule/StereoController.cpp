@@ -9,7 +9,10 @@
 #include <QDebug>
 #include <QMessageBox>
 #include "ExternalRenderWindow.h"
+#include "VersionInfo.h"
 #include "CAVEStereoModule.h"
+#include <OgreRenderTarget.h>
+#include <OgreRoot.h>
 
 namespace CAVEStereo
 {
@@ -266,17 +269,26 @@ namespace CAVEStereo
         return settings_widget_;
     }
 
-  
-
     void StereoController::TakeScreenshots(QString path, QString filename)
     {
-      QString leftname = filename.replace(".jpg", "_left.jpg");
-      QString rightname = filename.replace("_left.jpg", "_right.jpg");
       
+      if (stereo_views_.count() == 0) {
+	CAVEStereoModule::LogError("StereoController: Cannot take stereographic screenshots. Stereo not enabled!");
+	return;
+      }
+
       // FIXME relies on that there is only one external window and
       // its the right side window for stereographical stuff
+      QString leftname = filename.replace(".jpg", "_left.jpg");
+      QString rightname = filename.replace("_left.jpg", "_right.jpg");
 
       Ogre::CompositorInstance* comp = stereo_views_["stereoview0"]->GetCompositor();
+
+      if (!comp) {
+	CAVEStereoModule::LogError("StereoController: Wrong stereographic mode. No Compositor. Cannot take screenshots!");
+	return;
+      }
+
       comp->getRenderTarget("Stereo/Left")->writeContentsToFile(path.toStdString() + leftname.toStdString());
       comp->getRenderTarget("Stereo/Right")->writeContentsToFile(path.toStdString() + rightname.toStdString());
     }

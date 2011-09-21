@@ -8,7 +8,6 @@
 #include <QVector>
 #include <Ogre.h>
 
-
 namespace OgreRenderer
 {
     class Renderer;

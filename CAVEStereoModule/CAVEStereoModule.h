@@ -41,6 +41,7 @@ namespace CAVEStereo
         void ShowStereoscopyWindow();
         void ShowCaveWindow();
 	void TakeScreenshots(QString path, QString filename);
+        void EnableStereo(QString tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width);
 
     private:
         //! Type name of the module.
