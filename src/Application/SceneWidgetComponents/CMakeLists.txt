@@ -4,8 +4,8 @@ init_target (SceneWidgetComponents OUTPUT plugins)
 MocFolder ()
 
 # Define source files
-file (GLOB CPP_FILES dllmain.cpp EC_WebView.cpp EC_SlideShow.cpp EC_WidgetCanvas.cpp)
-file (GLOB H_FILES EC_WebView.h EC_SlideShow.h EC_WidgetCanvas.h SceneWidgetComponentsApi.h)
+file (GLOB CPP_FILES *.cpp)
+file (GLOB H_FILES *.h)
 file (GLOB MOC_FILES ${H_FILES})
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
@@ -21,6 +21,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
 link_modules (Framework Ui Input Scene Asset OgreRenderingModule TundraProtocolModule)
+link_entity_components (EC_Billboard)
 
 SetupCompileFlags()
 

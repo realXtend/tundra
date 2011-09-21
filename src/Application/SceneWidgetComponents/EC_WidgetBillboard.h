@@ -1,0 +1,131 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#pragma once
+
+#include "SceneWidgetComponentsApi.h"
+#include "SceneWidgetComponents.h"
+#include "IComponent.h"
+#include "Math/float3.h"
+#include "Math/float2.h"
+
+#include "OgreModuleFwd.h"
+#include "Renderer.h"
+
+#include "InputFwd.h"
+#include "AssetFwd.h"
+#include "AssetReference.h"
+
+#include <QWidget>
+#include <QTimer>
+#include <QImage>
+#include <QEvent>
+#include <QPointer>
+
+class QGraphicsView;
+class EC_Billboard;
+
+class SCENEWIDGET_MODULE_API EC_WidgetBillboard : public IComponent
+{
+Q_OBJECT
+COMPONENT_NAME("EC_WidgetBillboard", 42)
+
+friend class SceneWidgetComponents;
+
+public:
+    explicit EC_WidgetBillboard(Scene* scene);
+    ~EC_WidgetBillboard();
+
+    /// Asset reference to the UI file where the source widget will be instantiated.
+    Q_PROPERTY(AssetReference uiRef READ getuiRef WRITE setuiRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, uiRef);
+
+    /// Sets widget 3D scene visibility
+    Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
+
+    /// 3D widget position in relation to the placeable component
+    Q_PROPERTY(float3 position READ getposition WRITE setposition);
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
+
+    /// Pixels per world unit (we'll call them meters for simplicity)
+    Q_PROPERTY(int ppm READ getppm WRITE setppm);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, ppm);
+
+public slots:
+    void Render();
+
+private slots:
+    /// Delayed rendering.
+    void RenderDelayed();
+
+    /// Returns if the component is prepared.
+    bool IsPrepared();
+
+    /// Prepares the component.
+    void PrepareComponent();
+
+    /// Monitors attribute changes.
+    void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+
+    /// Monitors removed components.
+    void ComponentRemoved(IComponent *component, AttributeChange::Type change);
+
+    /// Returns the unique EC_Billboard for this component (in the parent entity).
+    EC_Billboard *GetBillboardComponent();
+
+    /// Handles uiRef asset load.
+    void OnUiAssetLoaded(AssetPtr asset);
+
+    /// Handles uiRef asset load fail.
+    void OnUiAssetLoadFailed(IAssetTransfer *transfer, QString reason);
+
+    /// Handles main input context mouse events.
+    void OnMouseEvent(MouseEvent *mEvent);
+
+    /// Does a raycast to the billboard. Sets hit, uv and distance accordingly.
+    void RaycastBillboard(int mouseX, int mouseY, bool &hit, float2 &uv, float &distance);
+
+    /// Sends a mouse event to the widget container scene that redirects the input to the actual widget.
+    /// @return bool True if event was handled, false otherwise.
+    bool SendWidgetMouseEvent(QPoint pos, QEvent::Type type, Qt::MouseButton button, Qt::KeyboardModifier modifier = Qt::NoModifier);
+
+    /// Checks if we have "unacked" mouse press events pending.
+    void CheckWidgetMouseRelease();
+
+signals:
+    /// Emitted when the 'uiRef' has been loaded successfully. This is a great place to 
+    /// connect to the widgets UI signals to your logic eg. pressing buttons.
+    /// @param widget QWidget ptr of the instantiated widget.
+    void WidgetReady(QWidget *widget);
+
+protected:
+    /// QObject override.
+    bool eventFilter(QObject *obj, QEvent *e);
+
+private:
+    // Widget and its container.
+    QPointer<QWidget> widget_;
+    QGraphicsView *widgetContainer_;
+
+    // Asset related ptrs.
+    AssetPtr materialAsset_;
+    AssetPtr textureAsset_;
+    AssetRefListener *refListener_;
+
+    // Asset related identifiers.
+    QString uniqueMaterialName_;
+    QString uniqueTextureName_;
+    QString billboardCompName_;
+    QString cloneMaterialRef_;
+
+    // Rendering related variables.
+    QTimer renderTimer_;
+    QImage renderBuffer_;
+
+    // Tracking booleans.
+    bool rendering_;
+    bool leftPressReleased_;
+
+    // Renderer ptr.
+    OgreRenderer::RendererPtr renderer_;    
+};

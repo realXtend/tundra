@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_SceneWidgetComponents_EC_WebView_h
-#define incl_SceneWidgetComponents_EC_WebView_h
+#pragma once
 
 #include "SceneWidgetComponentsApi.h"
 #include "IComponent.h"
@@ -282,5 +281,3 @@ private:
     /// multiple web views in a entity. This is used to perform cleanup when this component is destroyed.
     QString sceneCanvasName_;
 };
-
-#endif
