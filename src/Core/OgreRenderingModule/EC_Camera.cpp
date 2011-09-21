@@ -140,11 +140,14 @@ void EC_Camera::SetFarClip(float farclip)
     if (world_.expired())
         return;
 
+    // Commented out as it can cause SkyX missing bug, depending on the view distance.
+    /*
     // Enforce that farclip doesn't go past renderer's view distance
     OgreWorldPtr world = world_.lock();
     Renderer* renderer = world->GetRenderer();
     if (farclip > renderer->ViewDistance())
         farclip = renderer->ViewDistance();
+    */
     camera_->setFarClipDistance(farclip);
 }
 
@@ -305,11 +308,11 @@ void EC_Camera::UpdateSignals()
         camera_ = sceneMgr->createCamera(world->GetUniqueObjectName("EC_Camera"));
         
         // Set default values for the camera
-		camera_->setNearClipDistance(nearPlane.Get());
-		camera_->setFarClipDistance(farPlane.Get());
+        SetNearClip(nearPlane.Get());
+        SetFarClip(farPlane.Get());
+        SetVerticalFov(Ogre::Math::DegreesToRadians(verticalFov.Get()));
         camera_->setAspectRatio(AspectRatio());
         camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); ///\note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). 
-        camera_->setFOVy(Ogre::Radian(Ogre::Math::DegreesToRadians(verticalFov.Get())));
 
         // Create a reusable frustum query
         Ogre::PlaneBoundedVolumeList dummy;
