@@ -140,7 +140,7 @@ Framework::Framework(int argc, char** argv) :
     cmdLineDescs.commands["--assetcachedir"] = "Specify asset cache directory to use.";
     cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
     cmdLineDescs.commands["--loglevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'";
-    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--loglevel TundraLogFile.txt";
+    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt";
 
     if (HasCommandLineParameter("--help"))
     {
