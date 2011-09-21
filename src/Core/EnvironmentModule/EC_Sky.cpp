@@ -192,10 +192,7 @@ void EC_Sky::OnAttributeUpdated(IAttribute* attribute)
     else if (attribute->Name() == textureRefs.Name())
     {
         AssetReferenceList textures = textureRefs.Get();
-        // Make sure that the asset ref list type stays intact.
-        textures.type = "Texture";
-        textureRefs.Set(textures, AttributeChange::Disconnected);
-
+        
         // Reallocate the number of texture asset reflisteners.
         while(textureAssets.size() > (size_t)textures.Size())
             textureAssets.pop_back();

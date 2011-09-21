@@ -28,6 +28,10 @@ public:
 
     AssetReference(const QString &reference, const QString &type_) : ref(reference), type(type_) {}
 
+    /// Perform assignment
+    /** @note This will not modify the type if already set. Set the type explicitly if required. */
+    AssetReference& operator = (const AssetReference &rhs) { ref = rhs.ref; if (type.isEmpty()) type = rhs.type; return *this; }
+    
     bool operator ==(const AssetReference &rhs) const { return this->ref == rhs.ref; }
 
     bool operator !=(const AssetReference &rhs) const { return !(*this == rhs); }
@@ -62,6 +66,10 @@ struct AssetReferenceList
     */
     void RemoveLast() { refs.removeLast(); }
 
+    /// Perform assignment.
+    /** @note This will not modify the type if already set. Set the type explicitly if required. */
+    AssetReferenceList& operator = (const AssetReferenceList &rhs) { refs = rhs.refs; if (type.isEmpty()) type = rhs.type; return *this; }
+    
     /// Removes empty items
     void RemoveEmpty()
     {

@@ -33,8 +33,8 @@ using namespace OgreRenderer;
 EC_Mesh::EC_Mesh(Scene* scene) :
     IComponent(scene),
     nodeTransformation(this, "Transform", Transform(float3(0,0,0),float3(0,0,0),float3(1,1,1))),
-    meshRef(this, "Mesh ref"),
-    skeletonRef(this, "Skeleton ref"),
+    meshRef(this, "Mesh ref", AssetReference("", "OgreMesh")),
+    skeletonRef(this, "Skeleton ref", AssetReference("", "OgreSkeleton")),
     meshMaterial(this, "Mesh materials", AssetReferenceList("OgreMaterial")),
     drawDistance(this, "Draw distance", 0.0f),
     castShadows(this, "Cast shadows", false),
@@ -908,21 +908,6 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         if (!ViewEnabled())
             return;
             
-        //Ensure that mesh is requested only when it's has actually changed.
-//        if(entity_)
- //           if(QString::fromStdString(entity_->getMesh()->getName()) == meshRef.Get().ref/*meshResourceId.Get()*/)
-  //              return;
-/*
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
-        if (transfer)
-        {
-            connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
-        }
-        else
-        {
-            RemoveMesh();
-        }
-        */
         if (meshRef.Get().ref.trimmed().isEmpty())
             LogDebug("Warning: Mesh \"" + this->parentEntity->Name() + "\" mesh ref was set to an empty reference!");
         meshAsset->HandleAssetRefChange(&meshRef);
@@ -931,16 +916,8 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
     {
         if (!ViewEnabled())
             return;
-        
-        // We won't request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
-        // This logic shouldn't be necessary anymore. -jj.
-//        if(!HasMaterialsChanged())
-//            return;
 
         AssetReferenceList materials = meshMaterial.Get();
-        // Make sure that the asset ref list type stays intact.
-        materials.type = "OgreMaterial";
-        meshMaterial.Set(materials, AttributeChange::Disconnected);
 
         // Reallocate the number of material asset reflisteners.
         while(materialAssets.size() > (size_t)materials.Size())
@@ -955,19 +932,13 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             materialAssets[i]->HandleAssetRefChange(framework->Asset(), materials[i].ref);
         }
     }
-    else if((attribute == &skeletonRef) && (!skeletonRef.Get().ref.isEmpty()))
+    else if(attribute == &skeletonRef)
     {
         if (!ViewEnabled())
             return;
         
-        // If same name skeleton already set no point to do it again.
-//        if (entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonRef.Get().ref/*skeletonId.Get()*/.toStdString())
- //           return;
-
-  //      AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
-   //     if (transfer)
-    //        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
-        skeletonAsset->HandleAssetRefChange(&skeletonRef);
+        if (!skeletonRef.Get().ref.isEmpty())
+            skeletonAsset->HandleAssetRefChange(&skeletonRef);
     }
 }
 
@@ -1342,24 +1313,6 @@ AABB EC_Mesh::LocalAABB() const
         return AABB();
 
     return AABB(mesh->getBounds());
-}
-
-bool EC_Mesh::HasMaterialsChanged() const
-{
-    if(!entity_ || !meshMaterial.Get().Size())
-        return false;
-
-    AssetReferenceList materials = meshMaterial.Get();
-    for(uint i = 0; i < entity_->getNumSubEntities(); i++)
-    {
-        // No point to continue if all materials are not set.
-        if(i >= (uint)materials.Size())
-            break;
-
-        if(entity_->getSubEntity(i)->getMaterial()->getName() != AssetAPI::SanitateAssetRef(materials[i].ref).toStdString())
-            return true;
-    }
-    return false;
 }
 
 Ogre::Vector2 FindUVs(const Ogre::Vector3& hitPoint, const Ogre::Vector3& t1, const Ogre::Vector3& t2, const Ogre::Vector3& t3, const Ogre::Vector2& tex1, const Ogre::Vector2& tex2, const Ogre::Vector2& tex3)
