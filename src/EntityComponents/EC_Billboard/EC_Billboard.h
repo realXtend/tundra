@@ -110,12 +110,18 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, autoHideTime);
 
 public slots:
-
     /// Show billboard. If autoHideTime is positive, it will be autohidden after the time has passed
     void Show();
     
     /// Hide billboard
     void Hide();
+
+public:
+    /// Returns the Ogre Billboard ptr.
+    Ogre::Billboard *GetBillBoard() const { return billboard_; }
+    
+    /// Returns the Ogre BillboardSet ptr.
+    Ogre::BillboardSet *GetBillBoardSet() const { return billboardSet_; }
     
 private slots:
     /// Component has been assigned to an entity
