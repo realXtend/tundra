@@ -1,5 +1,9 @@
 !include "fileassoc.nsh"
+
+# Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
+!ifndef
 !define VERSION "2.0"
+!endif
 
 Name "Tundra ${VERSION}"
 
