@@ -100,6 +100,8 @@ namespace CAVEStereo
 
         typedef std::map<StereoMode, StereoModeDescription> StereoModeList;
 
+        Ogre::CompositorInstance* GetCompositor(); //for TakeScreenshots
+
     protected:
         class StereoCameraListener : public Ogre::RenderTargetListener
         {
