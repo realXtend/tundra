@@ -158,7 +158,7 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
         
         AssetReferenceList scripts = scriptRef.Get();
         // Make sure that the asset ref list type stays intact.
-        scripts.type = "Scripts";
+        scripts.type = "Script";
         scriptRef.Set(scripts, AttributeChange::Disconnected);
 
         // Purge empty script refs
