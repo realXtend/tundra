@@ -15,15 +15,10 @@ class QFileDialog;
 
 /// Searches contents of directory.
 /** @param path Path to search.
+    @param recursive Do we want to search contents of directory recursively i.e. include all subdirectories.
     @param filters What is wanted to be found (directories, files, etc)
     @return List of absolute paths that match the filter. */
-QStringList DirectorySearch(const QString &path, QDir::Filters filters);
-
-/// Searches contents of directory recursively.
-/** @param path Path to search.
-    @param filters What is wanted to be found (directories, files, etc)
-    @return List of absolute paths that match the filter. */
-QStringList RecursiveDirectorySearch(const QString &path, QDir::Filters filters);
+QStringList DirectorySearch(const QString &path, bool recursive, QDir::Filters filters);
 
 namespace QtUtils
 {

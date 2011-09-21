@@ -11,7 +11,6 @@
 
 #include "Framework.h"
 #include "AssetAPI.h"
-#include "IModule.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "Renderer.h"

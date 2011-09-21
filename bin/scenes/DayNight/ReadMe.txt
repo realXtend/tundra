@@ -1,3 +1,6 @@
-This sample demonstrates the EC_EnvironmentLight component. This component is used to define the global environmental lighting of the scene.
+This scene demonstrates the SkyX and Hydrax plugin integrations
+to Tundra.
 
-In this sample, a script is used to show how to animate the day-night cycle of the scene.
+The SkyX plugin implements an outdoor environment with a
+controllable day-night cycle. The Hydrax plugin implements a
+procedurally generated water effect.

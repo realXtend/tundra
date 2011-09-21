@@ -59,7 +59,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>5</y>
+        <y>7</y>
         <width>254</width>
         <height>255</height>
        </rect>
@@ -162,13 +162,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="okButton">
-       <property name="text">
-        <string>Ok</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>

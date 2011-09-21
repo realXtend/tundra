@@ -13,7 +13,7 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
-IModule::IModule(const std::string &name_) : name(name_), framework_(0)
+IModule::IModule(const QString &name_) : name(name_), framework_(0)
 {
 }
 

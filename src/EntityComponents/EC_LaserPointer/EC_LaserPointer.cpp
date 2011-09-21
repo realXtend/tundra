@@ -12,7 +12,6 @@
 
 #include "Framework.h"
 #include "AttributeMetadata.h"
-#include "IModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"

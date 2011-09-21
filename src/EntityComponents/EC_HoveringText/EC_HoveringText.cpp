@@ -9,7 +9,6 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_HoveringText.h"
-#include "IModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
@@ -193,12 +192,6 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (world_.expired())
         return;
     
-    // Moved earlier to prevent gray opaque box artifact if text is empty. Original place was just before Redraw().
-    if (text.isNull() || text.isEmpty() || text.trimmed() == "")
-    {
-        return;
-    }
-
     OgreWorldPtr world = world_.lock();
     Ogre::SceneManager *scene = world->GetSceneManager();
     assert(scene);
@@ -242,7 +235,6 @@ void EC_HoveringText::ShowMessage(const QString &text)
         SetPosition(position.Get());
     }
 
-    //text.Set(text);
     Redraw();
 }
 
@@ -254,6 +246,8 @@ void EC_HoveringText::Redraw()
     if (world_.expired() || !billboardSet_ || !billboard_)
         return;
 
+    bool textEmpty = text.Get().isEmpty();
+    
     try
     {
         if (texture_.get() == 0)
@@ -290,17 +284,22 @@ void EC_HoveringText::Redraw()
         QPen borderPen;
         borderPen.setColor(borderCol);
         borderPen.setWidthF(borderThickness.Get());
-                
+        
         float2 corners =  cornerRadius.Get();
 
-        // Disable mipmapping, as Ogre seems to bug with it
-        texture_->SetContentsDrawText(texWidth.Get(), 
-                                texHeight.Get(), 
-                                text.Get(), 
-                                textColor_, 
-                                font_, 
-                                brush, 
-                                borderPen, Qt::AlignCenter | Qt::TextWordWrap, false, corners.x, corners.y);
+        if (!textEmpty)
+        {
+            // Disable mipmapping, as Ogre seems to bug with it
+            texture_->SetContentsDrawText(texWidth.Get(), 
+                                    texHeight.Get(), 
+                                    text.Get(), 
+                                    textColor_, 
+                                    font_, 
+                                    brush, 
+                                    borderPen, Qt::AlignCenter | Qt::TextWordWrap, false, corners.x, corners.y);
+        }
+        else
+            texture_->SetContentsDrawText(texWidth.Get(), texHeight.Get(), text.Get(), textColor_, font_, QBrush(), QPen(), Qt::AlignCenter | Qt::TextWordWrap, false, 0.0f, 0.0f);
     }
     catch(Ogre::Exception &e)
     {

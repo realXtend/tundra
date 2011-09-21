@@ -13,11 +13,22 @@
 class IAssetStorage : public QObject, public boost::enable_shared_from_this<IAssetStorage>
 {
     Q_OBJECT
+    Q_ENUMS(ChangeType)
+
 public:
     virtual ~IAssetStorage() {}
 
     /// Points to the asset provider that is used to communicate with this storage.
     AssetProviderWeakPtr provider;
+
+    /// Different type of asset changes.
+    /** @see AssetChanged */
+    enum ChangeType
+    {
+        AssetCreate,
+        AssetModify,
+        AssetDelete
+    };
 
 public slots:
     /// Returns all assetrefs currently known to exist in this asset storage. Does not load the assets, and does not refresh the list automatically
@@ -60,9 +71,18 @@ public slots:
 
     /// Returns a human-readable description of this asset storage.
     virtual QString ToString() const { return Name() + " (" + BaseURL() + ")"; }
+
     /// Serializes this storage to a string for machine transfer.
     virtual QString SerializeToString() const = 0;
+
 signals:
     /// Asset refs have changed, either as a result of refresh, or upload / delete
+    ///\todo Delete, superseded by the AssetChanged signal.
     void AssetRefsChanged(AssetStoragePtr storage);
+
+    /// Asset has changed in the the storage.
+    /** @param localName Name of the asset local to the storage. Use GetFullAssetURL to get the full qualifier.
+        @param diskSource If the original copy of this asset exists on the local system, this string points to the original disk copy.
+        @param change Type of change. */
+    void AssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change);
 };

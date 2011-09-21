@@ -12,6 +12,7 @@ if (!framework.IsHeadless())
 
 var scene = null;
 var cameraEntityId = 0;
+var createdCameraEntityId = 0;
 var entityLocatePosition = new float3(0, 0, 0);
 var entityLocateDistance = 0;
 var entityLocateMinDistance = 10.0; // Be at least this distance away from the object's bounding box when locating it
@@ -34,24 +35,27 @@ function OnEntityCreated(entity, change)
 {
     if (entity.id == cameraEntityId)
         return; // This was the signal for our camera, ignore
-    
-    var oldCamera = scene.GetEntity(cameraEntityId);
 
     // If a freelookcamera entity is loaded from the scene, use it instead; delete the one we created
     if (entity.name == "FreeLookCamera")
     {
-        if (entity.camera != null)
+        if (entity.camera != null && entity.placeable != null)
         {
             entity.camera.SetActive();
+            if (createdCameraEntityId != 0)
+            {
+                scene.RemoveEntity(createdCameraEntityId);
+                createdCameraEntityId = 0;
+            }
             cameraEntityId = entity.id;
         }
-        scene.RemoveEntity(cameraEntityId);
     }
     // If a camera spawnpos entity is loaded, copy the transform
     if (entity.name == "FreeLookCameraSpawnPos")
     {
-        if (oldCamera)
-            oldCamera.placeable.transform = entity.placeable.transform;
+        var cameraEntity = scene.GetEntity(cameraEntityId);
+        if (cameraEntity)
+            cameraEntity.placeable.transform = entity.placeable.transform;
     }
 }
 
@@ -72,6 +76,7 @@ function CreateCamera(scene)
     script.scriptRef = r;
 
     cameraEntityId = entity.id;
+    createdCameraEntityId = entity.id;
 }
 
 function OnContextMenu(menu, targets)

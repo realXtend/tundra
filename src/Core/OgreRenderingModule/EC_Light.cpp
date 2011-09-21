@@ -9,7 +9,6 @@
 #include "EC_Placeable.h"
 #include "OgreConversionUtils.h"
 
-#include "IModule.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "XMLUtilities.h"

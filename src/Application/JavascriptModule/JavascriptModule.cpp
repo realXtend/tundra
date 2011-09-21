@@ -496,35 +496,37 @@ void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
 QStringList JavascriptModule::ParseStartupScriptConfig()
 {
     QStringList pluginsToLoad;
-    QString configFile = framework_->Plugins()->ConfigurationFile();
-
-    QDomDocument doc("plugins");
-    QFile file(configFile);
-    if (!file.open(QIODevice::ReadOnly))
+    foreach(const QString &configFile, framework_->Plugins()->ConfigurationFiles())
     {
-        LogError("JavascriptModule::ParseStartupScriptConfig: Failed to open file \"" + configFile + "\"!");
-        return QStringList();
-    }
-    QString errorMsg;
-    if (!doc.setContent(&file, &errorMsg))
-    {
-        LogError("JavascriptModule::ParseStartupScriptConfig: Failed to parse XML file \"" + configFile + "\": " + errorMsg);
+        QDomDocument doc("plugins");
+        QFile file(configFile);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("JavascriptModule::ParseStartupScriptConfig: Failed to open file \"" + configFile + "\"!");
+            return QStringList();
+        }
+        QString errorMsg;
+        if (!doc.setContent(&file, &errorMsg))
+        {
+            LogError("JavascriptModule::ParseStartupScriptConfig: Failed to parse XML file \"" + configFile + "\": " + errorMsg);
+            file.close();
+            return QStringList();
+        }
         file.close();
-        return QStringList();
+
+        QDomElement docElem = doc.documentElement();
+
+        QDomNode n = docElem.firstChild();
+        while(!n.isNull())
+        {
+            QDomElement e = n.toElement(); // try to convert the node to an element.
+            if (!e.isNull() && e.tagName() == "jsplugin" && e.hasAttribute("path"))
+                pluginsToLoad.push_back(e.attribute("path"));
+
+            n = n.nextSibling();
+        }
     }
-    file.close();
 
-    QDomElement docElem = doc.documentElement();
-
-    QDomNode n = docElem.firstChild();
-    while(!n.isNull())
-    {
-        QDomElement e = n.toElement(); // try to convert the node to an element.
-        if (!e.isNull() && e.tagName() == "jsplugin" && e.hasAttribute("path"))
-            pluginsToLoad.push_back(e.attribute("path"));
-
-        n = n.nextSibling();
-    }
     return pluginsToLoad;
 }
 

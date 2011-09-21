@@ -12,6 +12,8 @@
 #include "OgreRenderingModule.h"
 #include "RenderWindow.h"
 #include "IAsset.h"
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -55,8 +57,11 @@ void MeshPreviewLabel::mouseMoveEvent(QMouseEvent *ev)
 }
 
 MeshPreviewEditor::MeshPreviewEditor(const AssetPtr &meshAsset, Framework *framework, QWidget* parent): 
-    QWidget(parent), framework_(framework), lastPos_(QPointF()),
-    camAlphaAngle_(0), mouseDelta_(0),label_(0),
+    QWidget(parent),
+    framework_(framework),
+    camAlphaAngle_(0),
+    mouseDelta_(0),
+    label_(0),
     manager_(0),
     camera_(0),
     entity_(0),
@@ -65,7 +70,8 @@ MeshPreviewEditor::MeshPreviewEditor(const AssetPtr &meshAsset, Framework *frame
     newLight_(0),
     render_texture_(0),
     width_(400),
-    height_(400)
+    height_(400),
+    asset(meshAsset)
 {
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/mesh_preview.ui");
@@ -79,8 +85,6 @@ MeshPreviewEditor::MeshPreviewEditor(const AssetPtr &meshAsset, Framework *frame
     file.close();
 
     setMouseTracking(true);
-
-    okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
 
     QVBoxLayout* vLayout = mainWidget_->findChild<QVBoxLayout* >("imageLayout");
     
@@ -99,42 +103,8 @@ MeshPreviewEditor::MeshPreviewEditor(const AssetPtr &meshAsset, Framework *frame
     layout->addWidget(mainWidget_);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    // Add widget to UI via ui services module
-    setWindowTitle((tr("Mesh: ")) + objectName());
+    SetMeshAsset(meshAsset);
 }
-
-void MeshPreviewEditor::Open()
-{
-    if (asset.expired())
-    {
-        LogError("");
-        return;
-    }
-
-    AssetPtr assetPtr = asset.lock();
-     // Add widget to UI via ui services module
-    setWindowTitle((tr("Mesh: ")) + assetPtr->Name());
-    try
-    {
-        Update();
-    }
-    catch (Ogre::Exception &e)
-    {
-        LogError("Exception while opening mesh " + assetPtr->Name() + " for editing.");
-        LogError(e.what());
-    }
-}
-
-/*
-MeshPreviewEditor *MeshPreviewEditor::OpenMeshPreviewEditor(Framework *framework, const QString &asset_id, QWidget* parent)
-{
-    MeshPreviewEditor *editor = new MeshPreviewEditor(framework, parent);
-    connect(editor, SIGNAL(Closed(const QString &, asset_type_t)), editor, SLOT(close()));
-    editor->Open(asset_id);
-    //editor->show();
-    return editor;
-}
-*/
 
 MeshPreviewEditor::~MeshPreviewEditor()
 {
@@ -152,67 +122,86 @@ MeshPreviewEditor::~MeshPreviewEditor()
     }
 }
 
-///\todo Regression. Reimplement using the new Asset API. -jj.
-/*
-void MeshPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
+void MeshPreviewEditor::SetMeshAsset(const AssetPtr &meshAsset)
 {
-    if(request_tag_ == res->tag_)
-    {
-       mesh_id_ =  res->id_.c_str();
-       Update();
-    }
-}
-*/
+    asset = meshAsset;
+    assert(asset.lock());
+    AssetPtr assetPtr = asset.lock();
+    if (!assetPtr)
+        LogError("MeshPreviewEditor: null asset given.");
+    if (assetPtr->Type() != "OgreMesh")
+        LogWarning("Created MeshPreviewEditor for non-supported asset type " + assetPtr->Type() + ".");
 
-void MeshPreviewEditor::RequestMeshAsset(const QString &asset_id)
+    setWindowTitle(tr("Mesh: ") + (assetPtr?assetPtr->Name():QString()));
+
+    // If asset is unloaded, load it now.
+    if (assetPtr && !assetPtr->IsLoaded())
+    {
+        AssetTransferPtr transfer = framework_->Asset()->RequestAsset(assetPtr->Name(), assetPtr->Type(), true);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetTransferSucceeded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
+    }
+
+    Open();
+}
+
+void MeshPreviewEditor::Open()
 {
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-/*
-     boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
-        framework_->GetModule<OgreRenderer::OgreRenderingModule>().lock();
-    OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
-    if (renderer != 0)
-        request_tag_ = renderer->RequestResource(asset_id.toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
-*/
+    if (asset.expired())
+    {
+        LogError("MeshPreviewEditor::Open: asset expired.");
+        return;
+    }
+
+    AssetPtr assetPtr = asset.lock();
+    mesh_id_ = AssetAPI::SanitateAssetRef(assetPtr->Name());
+    Update();
 }
 
 void MeshPreviewEditor::Update()
 {
-    if ( mesh_id_ == "" )
+    if (asset.expired())
         return;
 
-    if ( render_texture_ == 0 )
+    if (render_texture_ == 0 )
         CreateRenderTexture();
 
-    // Hide the main UI Overlay, because otherwise Ogre will paint the Overlay onto the Mesh preview screen as well,
-    // which is not desired.
-    renderer_->GetRenderWindow()->ShowOverlay(false);
+    try
+    {
+        // Hide the main UI Overlay, because otherwise Ogre will paint the Overlay onto the Mesh preview screen as well,
+        // which is not desired.
+        renderer_->GetRenderWindow()->ShowOverlay(false);
 
-    AdjustScene();
+        AdjustScene();
 
-    render_texture_->update();
+        render_texture_->update();
 
-    Ogre::Box bounds(0, 0, width_, height_);
-    Ogre::uchar* pixelData = new Ogre::uchar[width_ * height_ * 4];
-    Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
-    
-    render_texture_->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
+        Ogre::Box bounds(0, 0, width_, height_);
+        Ogre::uchar* pixelData = new Ogre::uchar[width_ * height_ * 4];
+        Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
+        
+        render_texture_->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
 
-    // Create image of texture, and show it into label.
+        // Create image of texture, and show it into label.
 
-    u8* p = static_cast<u8 *>(pixels.data);
-    int width = pixels.getWidth();
-    int height = pixels.getHeight();
+        u8* p = static_cast<u8 *>(pixels.data);
+        int width = pixels.getWidth();
+        int height = pixels.getHeight();
 
-    QImage img = ConvertToQImage(p, width, height, 4);
+        QImage img = ConvertToQImage(p, width, height, 4);
 
-    if(!img.isNull() && label_ != 0)
-        label_->setPixmap(QPixmap::fromImage(img));
+        if(!img.isNull() && label_ != 0)
+            label_->setPixmap(QPixmap::fromImage(img));
 
-    delete[] pixelData;
+        delete[] pixelData;
 
-    // Remember to re-enable the main UI now we're finished with the Ogre render.
-    renderer_->GetRenderWindow()->ShowOverlay(true);
+        // Remember to re-enable the main UI now we're finished with the Ogre render.
+        renderer_->GetRenderWindow()->ShowOverlay(true);
+    }
+    catch (const Ogre::Exception &e)
+    {
+        LogError("MeshPreviewEditor::Update: " + QString(e.what()));
+    }
 }
 
 void MeshPreviewEditor::AdjustScene()
@@ -252,75 +241,81 @@ void MeshPreviewEditor::AdjustScene()
 
 void MeshPreviewEditor::CreateRenderTexture()
 {
-    renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    try
+    {
+        renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 
-    // Create scene node and attach camera to it
-    OgreRenderer::OgreRootPtr root = renderer_->GetRoot();
-    manager_ = root->createSceneManager(Ogre::ST_GENERIC,mesh_id_.toStdString().c_str());
+        // Create scene node and attach camera to it
+        OgreRenderer::OgreRootPtr root = renderer_->GetRoot();
+        manager_ = root->createSceneManager(Ogre::ST_GENERIC, mesh_id_.toStdString().c_str());
 
-    camera_ = manager_->createCamera(mesh_id_.toStdString().c_str());
+        camera_ = manager_->createCamera(mesh_id_.toStdString().c_str());
 
-    entity_ = manager_->createEntity("entity", mesh_id_.toStdString());
-    entity_->setMaterialName("BaseWhite");
+        entity_ = manager_->createEntity("entity", mesh_id_.toStdString());
+        entity_->setMaterialName("BaseWhite");
 
-    Ogre::AxisAlignedBox box = entity_->getBoundingBox();
-    Ogre::Vector3 boxCenterPos = box.getHalfSize();
+        Ogre::AxisAlignedBox box = entity_->getBoundingBox();
+        Ogre::Vector3 boxCenterPos = box.getHalfSize();
 
-    Ogre::Vector3 volume= box.getSize();
+        Ogre::Vector3 volume= box.getSize();
 
-    // Get biggest side :
+        // Get biggest side :
 
-    double biggest = boxCenterPos.x;
-    if ( biggest < boxCenterPos.y )
-     biggest = boxCenterPos.y;
-    if ( biggest < boxCenterPos.z )
-     biggest = boxCenterPos.z;
+        double biggest = boxCenterPos.x;
+        if (biggest < boxCenterPos.y )
+            biggest = boxCenterPos.y;
+        if (biggest < boxCenterPos.z )
+            biggest = boxCenterPos.z;
 
+        scene_ = manager_->createSceneNode(renderer_->GetUniqueObjectName(("MeshPreview_" + mesh_id_).toStdString()));
+        scene_->attachObject(entity_);
+        scene_->showBoundingBox(true);
+        scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));
 
-    scene_ = manager_->createSceneNode(renderer_->GetUniqueObjectName(("MeshPreview_" + mesh_id_).toStdString()));
-    scene_->attachObject(entity_);
-    scene_->showBoundingBox(true);
-    scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));
+        root_scene_ = manager_->getRootSceneNode();
+        root_scene_->addChild(scene_);
 
-    root_scene_ = manager_->getRootSceneNode();
-    root_scene_->addChild(scene_);
+        camera_->setNearClipDistance(0.1f);
+        camera_->setFarClipDistance(2000.f);
 
-    camera_->setNearClipDistance(0.1f);
-    camera_->setFarClipDistance(2000.f);
+        // Create camera position vector
 
-    // Create camera position vector
+        double r = sqrt(2.0) * 2*biggest * tan(camera_->getFOVy().valueRadians() * camera_->getAspectRatio());
 
-    double r = sqrt(2.0) * 2*biggest * tan(camera_->getFOVy().valueRadians() * camera_->getAspectRatio());
+        // Adjust r by using mouse roll
 
-    // Adjust r by using mouse roll
+        int numDegrees = mouseDelta_ / 8;
+        int numSteps = numDegrees / 15;
+        r = r + numSteps;
 
-    int numDegrees = mouseDelta_ / 8;
-    int numSteps = numDegrees / 15;
-    r = r + numSteps;
+        double x = 0;
+        double y = boxCenterPos.y;
+        double z = r;
 
-    double x = 0;
-    double y = boxCenterPos.y;
-    double z = r;
+        Ogre::Vector3 pos(x,y,z);
+        camera_->setPosition(pos);
+        camera_->lookAt(boxCenterPos);
 
-    Ogre::Vector3 pos(x,y,z);
-    camera_->setPosition(pos);
-    camera_->lookAt(boxCenterPos);
+        newLight_ = manager_->createLight("light");
 
-    newLight_ = manager_->createLight("light");
+        newLight_->setDirection(Ogre::Vector3(-x,-y,-z));
+        newLight_->setType(Ogre::Light::LT_DIRECTIONAL);
+        newLight_->setDiffuseColour(Ogre::ColourValue::White);
+        manager_->setAmbientLight(Ogre::ColourValue::Black);
 
-    newLight_->setDirection(Ogre::Vector3(-x,-y,-z));
-    newLight_->setType(Ogre::Light::LT_DIRECTIONAL);
-    newLight_->setDiffuseColour(Ogre::ColourValue::White);
-    manager_->setAmbientLight(Ogre::ColourValue::Black);
+        // Render camera view to texture 
 
-    // Render camera view to texture 
+        Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().createManual(
+            mesh_id_.toStdString().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            Ogre::TEX_TYPE_2D, width_, height_, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
 
-    Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().createManual(
-    mesh_id_.toStdString().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    Ogre::TEX_TYPE_2D, width_, height_, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
-
-    render_texture_ = tex->getBuffer()->getRenderTarget();
-    render_texture_->setAutoUpdated(false);
+        render_texture_ = tex->getBuffer()->getRenderTarget();
+        render_texture_->setAutoUpdated(false);
+    }
+    catch(const Ogre::Exception &e)
+    {
+        LogError("MeshPreviewEditor::CreateRenderTexture: " + QString(e.what()));
+    }
 }
 
 void MeshPreviewEditor::MouseWheelEvent(QWheelEvent* ev)
@@ -350,21 +345,20 @@ void MeshPreviewEditor::MouseEvent(QMouseEvent* event)
 
     if (event->buttons() == Qt::RightButton)
     {
-        if ( pos.x() > lastPos_.x() )
+        if (pos.x() > lastPos_.x())
         {
             int width = label_->size().width();
             double pix = (2*360.0) / width;
             
             camAlphaAngle_ = camAlphaAngle_ + pix * abs(pos.x() - lastPos_.x());
-            
-            if ( camAlphaAngle_ < 0 )
+            if (camAlphaAngle_ < 0)
                 camAlphaAngle_ = - ( abs(camAlphaAngle_) % 360 ); 
             else
                 camAlphaAngle_ = camAlphaAngle_ % 360;
 
             Update();
         }
-        else if ( pos.x() < lastPos_.x())
+        else if (pos.x() < lastPos_.x())
         {
             int width = label_->size().width();
             double pix = (2* 360.0 ) / width;
@@ -462,3 +456,15 @@ QImage MeshPreviewEditor::ConvertToQImage(const u8 *raw_image_data, uint width, 
 
     return image;
 }
+
+void MeshPreviewEditor::OnAssetTransferSucceeded(AssetPtr asset)
+{
+    Open();
+}
+
+void MeshPreviewEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
+{
+    LogError("MeshPreviewEditor::OnAssetTransferFailed: " + reason);
+    //setText("Could not load asset: " + reason);
+}
+

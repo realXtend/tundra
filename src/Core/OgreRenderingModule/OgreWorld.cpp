@@ -176,10 +176,8 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 continue;
         }
         
-        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
-        // EC_Mesh: check triangle intersection
-        /// \todo Currently we only support triangle-level raycast for mesh components, and for the first EC_Mesh in an entity
-        if (mesh)
+        Ogre::Entity* meshEntity = dynamic_cast<Ogre::Entity*>(entry.movable);
+        if (meshEntity)
         {
             // If this mesh's bounding box is further away than our current best result, skip the triangle-level test, as this mesh possibly can't be closer
             if (closestDistance >= 0.0f && entry.distance > closestDistance)
@@ -192,7 +190,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
             float3 normal;
             float2 uv;
             
-            if (mesh->Raycast(ray, &meshClosestDistance, &subMeshIndex, &triangleIndex, &hitPoint, &normal, &uv))
+            if (EC_Mesh::Raycast(meshEntity, ray, &meshClosestDistance, &subMeshIndex, &triangleIndex, &hitPoint, &normal, &uv))
             {
                 if (closestDistance < 0.0f || meshClosestDistance < closestDistance)
                 {

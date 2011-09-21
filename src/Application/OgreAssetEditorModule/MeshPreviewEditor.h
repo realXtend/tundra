@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "InputAPI.h"
-#include "MouseEvent.h"
-#include "AssetFwd.h"
+
+#include "CoreTypes.h"
 #include "OgreModuleFwd.h"
 #include "OgreAssetEditorModuleApi.h"
+#include "AssetFwd.h"
 
 #include <QWidget>
 #include <QLabel>
@@ -43,11 +43,10 @@ public:
     MeshPreviewEditor(const AssetPtr &meshAsset, Framework *framework, QWidget* parent = 0);
     virtual ~MeshPreviewEditor();
 
-    void RequestMeshAsset(const QString &asset_id);
-    QImage ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels);
+    void SetMeshAsset(const AssetPtr &meshAsset);
     void Open();
 
-//    static MeshPreviewEditor *OpenMeshPreviewEditor(Framework *framework, const QString &asset_id, QWidget* parent = 0);
+    QImage ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels);
 
 public slots:
     void Update();
@@ -63,15 +62,13 @@ private:
 
     Framework *framework_;
     AssetWeakPtr asset;
+    QString mesh_id_;
     QWidget *mainWidget_;
     QPushButton *okButton_;
-    QString assetId_;
     QPointF lastPos_;
     int camAlphaAngle_;
-    QString mesh_id_;
     // Mid button roll.
     double mouseDelta_;
-    InputContextPtr meshInputContext_;
     MeshPreviewLabel* label_;
     // For mesh viewing
     OgreRenderer::RendererPtr renderer_;
@@ -84,4 +81,8 @@ private:
     Ogre::RenderTexture* render_texture_;
     int width_;
     int height_;
+
+private slots:
+    void OnAssetTransferSucceeded(AssetPtr asset);
+    void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
 };

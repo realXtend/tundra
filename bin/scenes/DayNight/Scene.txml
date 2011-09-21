@@ -1,40 +1,37 @@
 <!DOCTYPE Scene>
 <scene>
- <entity id="3">
+ <entity id="1" sync="1">
   <component type="EC_Name" sync="1">
    <attribute value="Instructions" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Script" sync="1">
-   <attribute value="" name="Type"/>
-   <attribute value="true" name="Run on load"/>
    <attribute value="local://instructions.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
   </component>
  </entity>
- <entity id="2">
+ <entity id="2" sync="1">
   <component type="EC_Name" sync="1">
    <attribute value="Environment" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
-  <component type="EC_EnvironmentLight" sync="1">
-   <attribute value="0.548735142 0.548735142 0.548735142 1" name="Sun color"/>
-   <attribute value="0.328502834 0.328502834 0.328502834 3" name="Ambient color"/>
-   <attribute value="0.930000007 1 0.129999995 1" name="Sun diffuse color"/>
-   <attribute value="-0.0124335717 -0.866106272 0.499705195" name="Sun direction vector"/>
-   <attribute value="true" name="Use fixed time"/>
-   <attribute value="0.416600376" name="Current time"/>
-   <attribute value="true" name="Sun cast shadows"/>
-   <attribute value="true" name="Use Caelum"/>
+  <component type="EC_SkyX" sync="1">
+   <attribute value="false" name="Volumetric clouds"/>
+   <attribute value="1" name="Time multiplier"/>
+   <attribute value="3.696215 7.500000 20.500000" name="Time"/>
+   <attribute value="1.000000 1.000000" name="Weather (volumetric clouds only)"/>
+   <attribute value="0" name="Wind direction"/>
   </component>
-  <component type="EC_Script" sync="1">
-   <attribute value="js" name="Type"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="local://daynight.js" name="Script ref"/>
+  <component type="EC_Hydrax" sync="1">
+   <attribute value="HydraxDefault.hdx" name="Config ref"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="0.000000 18.000000 0.000000" name="Position"/>
   </component>
  </entity>
- <entity id="1">
+ <entity id="3" sync="1">
   <component type="EC_Terrain" sync="1">
    <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
    <attribute value="16" name="Grid Width"/>
@@ -52,7 +49,6 @@
   <component type="EC_Name" sync="1">
    <attribute value="Terrain" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
  </entity>
 </scene>

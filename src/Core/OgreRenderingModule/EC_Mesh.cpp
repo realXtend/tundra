@@ -38,7 +38,6 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     meshMaterial(this, "Mesh materials", AssetReferenceList("OgreMaterial")),
     drawDistance(this, "Draw distance", 0.0f),
     castShadows(this, "Cast shadows", false),
-    raycastSubmeshMask(this, "Raycast submesh mask", -1),
     entity_(0),
     attached_(false)
 {
@@ -1382,36 +1381,43 @@ Ogre::Vector2 FindUVs(const Ogre::Vector3& hitPoint, const Ogre::Vector3& t1, co
     return t;
 }
 
-bool EC_Mesh::Raycast(const Ray& ray, float* distance, unsigned* subMeshIndex, unsigned* triangleIndex, float3* hitPosition, float3* normal, float2* uv)
+bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance, unsigned* subMeshIndex, unsigned* triangleIndex, float3* hitPosition, float3* normal, float2* uv)
 {
     PROFILE(EC_Mesh_Raycast)
     
-    if (!entity_)
+    if (!meshEntity)
+    {
+        LogError("EC_Mesh::Raycast called with null mesh entity. Returning no result.");
         return false;
+    }
+    Ogre::SceneNode *node = meshEntity->getParentSceneNode();
+    if (!node)
+    {
+        LogError("EC_Mesh::Raycast called for a mesh entity that is not attached to a scene node. Returning no result.");
+        return false;
+    }
+
+    assume(!float3(node->_getDerivedScale()).IsZero());
+    float3x4 localToWorld = float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
+    assume(localToWorld.IsOrthogonal());
     
-    float3x4 localToWorld = LocalToWorld();
     float3x4 worldToLocal = localToWorld.Inverted();
     Ray localRay = ray;
     localRay.Transform(worldToLocal);
     Ogre::Ray ogreLocalRay = localRay;
-    unsigned submeshMask = raycastSubmeshMask.Get();
-    
-    Ogre::MeshPtr mesh = entity_->getMesh();
-    bool useSoftwareBlendingVertices = entity_->hasSkeleton();
+
+    Ogre::MeshPtr mesh = meshEntity->getMesh();
+    bool useSoftwareBlendingVertices = meshEntity->hasSkeleton();
     
     float closestDistance = -1.0f; // In objectspace
     
     for (unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
     {
-        // Note: submeshes over 32 are always included in the raycast, as we run out of bits
-        if (i < 32 && (submeshMask & (1 << i)) == 0)
-            continue;
-        
         Ogre::SubMesh* submesh = mesh->getSubMesh(i);
         
         Ogre::VertexData* vertexData;
         if (useSoftwareBlendingVertices)
-            vertexData = submesh->useSharedVertices ? entity_->_getSkelAnimVertexData() : entity_->getSubEntity(i)->_getSkelAnimVertexData();
+            vertexData = submesh->useSharedVertices ? meshEntity->_getSkelAnimVertexData() : meshEntity->getSubEntity(i)->_getSkelAnimVertexData();
         else
             vertexData = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
         

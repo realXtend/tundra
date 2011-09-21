@@ -327,10 +327,7 @@ void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
         ++iter;
     }
 
-    if (anyExpanded)
-        expandAndCollapseButton->setText(tr("Collapse All"));
-    else
-        expandAndCollapseButton->setText(tr("Expand All"));
+    expandAndCollapseButton->setText(anyExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
 void AssetsWindow::AssetDoubleClicked(QTreeWidgetItem *item, int column)

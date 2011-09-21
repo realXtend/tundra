@@ -196,12 +196,11 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr)
     }
     else if (attr == &weather)
     {
+        // Clamp value to [0.0, 1.0], otherwise crashes occur.
+        float2 w = Clamp(weather.Get(), 0.f, 1.f);
         if (volumetricClouds.Get())
-        {
-            // Negative value for humidity causes crash within SkyX, so clamp value to min 0.
-            float humidity = (weather.Get().x >= 0) ? weather.Get().x : 0.f;
-            impl->skyX->getVCloudsManager()->getVClouds()->setWheater(humidity, weather.Get().y, 2);
-        }
+            impl->skyX->getVCloudsManager()->getVClouds()->setWheater(w.x, w.y, 2);
+        weather.Set(w, AttributeChange::Disconnected);
     }
 /*    else if (attr == &windSpeed)
     {
@@ -233,7 +232,7 @@ void EC_SkyX::Update(float frameTime)
         if (impl->sunlight)
             impl->sunlight->setDirection(impl->skyX->getAtmosphereManager()->getSunDirection());
         impl->skyX->update(frameTime);
-        // Do not trigger AttributeChanged for time as SkyX internals are authorative for it.
-        settime(impl->skyX->getAtmosphereManager()->getOptions().Time);
+        // Do not replicate constant time attribute updates as SkyX internals are authoritative for it.
+        time.Set(impl->skyX->getAtmosphereManager()->getOptions().Time, AttributeChange::LocalOnly);
     }
 }

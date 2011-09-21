@@ -11,34 +11,18 @@
 
 #include <QString>
 #include <QFileDialog>
-#include <QDir>
-#include <QFileInfo>
+#include <QDirIterator>
 #include <QCloseEvent>
 #include <QGraphicsProxyWidget>
 
 #include "MemoryLeakCheck.h"
 
-QStringList DirectorySearch(const QString &path, QDir::Filters filters)
+QStringList DirectorySearch(const QString &path, bool recursive, QDir::Filters filters)
 {
     QStringList ret;
-    if (path.trimmed().isEmpty())
-        return ret; // QFileInfo behavior for empty string is undefined
-    foreach(const QFileInfo &info, QDir(path).entryInfoList(filters))
-        ret.append(info.filePath());
-    return ret;
-}
-
-QStringList RecursiveDirectorySearch(const QString &path, QDir::Filters filters)
-{
-    QStringList ret;
-    if (path.trimmed().isEmpty())
-        return ret; // QFileInfo behavior for empty string is undefined
-    foreach(const QFileInfo &info, QDir(path).entryInfoList(filters))
-    {
-        QString subdir = info.filePath();
-        ret.append(subdir);
-        ret.append(RecursiveDirectorySearch(subdir, filters));
-    }
+    QDirIterator it(path, filters, recursive ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
+    while(it.hasNext())
+        ret.append(it.next());
     return ret;
 }
 

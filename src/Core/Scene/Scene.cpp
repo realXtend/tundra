@@ -573,13 +573,14 @@ QList<Entity *> Scene::CreateContentFromXml(const QString &xml,  bool useEntityI
 
 QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
-    QList<Entity *> ret;
+    std::vector<EntityWeakPtr> entities;
+    
     // Check for existence of the scene element before we begin
     QDomElement scene_elem = xml.firstChildElement("scene");
     if (scene_elem.isNull())
     {
         LogError("Could not find 'scene' element from XML.");
-        return ret;
+        return QList<Entity*>();
     }
 
     QDomElement ent_elem = scene_elem.firstChildElement("entity");
@@ -626,7 +627,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
                 
                 comp_elem = comp_elem.nextSiblingElement("component");
             }
-            ret.append(entity.get());
+            entities.push_back(entity);
         }
         else
         {
@@ -637,27 +638,37 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
     }
 
     // Now that we have each entity spawned to the scene, trigger all the signals for EntityCreated/ComponentChanged messages.
-    for(int i = 0; i < ret.size(); ++i)
+    for(unsigned i = 0; i < entities.size(); ++i)
     {
-        Entity* entity = ret[i];
-        EmitEntityCreated(entity, change);
-        // All entities & components have been loaded. Trigger change for them now.
-        const Entity::ComponentMap &components = entity->Components();
-        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-            i->second->ComponentChanged(change);
+        if (!entities[i].expired())
+            EmitEntityCreated(entities[i].lock().get(), change);
+        if (!entities[i].expired())
+        {
+            EntityPtr entityShared = entities[i].lock();
+            const Entity::ComponentMap &components = entityShared->Components();
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                i->second->ComponentChanged(change);
+        }
     }
-
+    
+    // The above signals may have caused scripts to remove entities. Return those that still exist.
+    QList<Entity *> ret;
+    for(unsigned i = 0; i < entities.size(); ++i)
+    {
+        if (!entities[i].expired())
+            ret.append(entities[i].lock().get());
+    }
+    
     return ret;
 }
 
 QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
-    QList<Entity *> ret;
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
         LogError("Failed to open file " + filename + " when loading scene binary.");
-        return ret;
+        return QList<Entity*>();
     }
 
     QByteArray bytes = file.readAll();
@@ -666,7 +677,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool use
     if (!bytes.size())
     {
         LogError("File " + filename + "contained 0 bytes when loading scene binary.");
-        return ret;
+        return QList<Entity*>();
     }
 
     return CreateContentFromBinary(bytes.data(), bytes.size(), useEntityIDsFromFile, change);
@@ -674,7 +685,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool use
 
 QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
-    QList<Entity *> ret;
+    std::vector<EntityWeakPtr> entities;
     assert(data);
     assert(numBytes > 0);
     try
@@ -700,7 +711,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
             if (!entity)
             {
                 LogError("Failed to create entity, stopping scene load!");
-                return ret; // If entity creation fails, stream desync is more than likely so stop right here
+                return QList<Entity*>(); // If entity creation fails, stream desync is more than likely so stop right here
             }
             
             uint num_components = source.Read<u32>();
@@ -739,7 +750,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
                 }
             }
 
-            ret.append(entity.get());
+            entities.push_back(entity);
         }
     }
     catch(...)
@@ -748,14 +759,26 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
         return QList<Entity *>();
     }
 
-    for(uint i = 0; i < (size_t)ret.size(); ++i)
+    // Now that we have each entity spawned to the scene, trigger all the signals for EntityCreated/ComponentChanged messages.
+    for(unsigned i = 0; i < entities.size(); ++i)
     {
-        Entity* entity = ret[i];
-        EmitEntityCreated(entity, change);
-        // All entities & components have been loaded. Trigger change for them now.
-        const Entity::ComponentMap &components = entity->Components();
-        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-            i->second->ComponentChanged(change);
+        if (!entities[i].expired())
+            EmitEntityCreated(entities[i].lock().get(), change);
+        if (!entities[i].expired())
+        {
+            EntityPtr entityShared = entities[i].lock();
+            const Entity::ComponentMap &components = entityShared->Components();
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                i->second->ComponentChanged(change);
+        }
+    }
+    
+    // The above signals may have caused scripts to remove entities. Return those that still exist.
+    QList<Entity *> ret;
+    for(unsigned i = 0; i < entities.size(); ++i)
+    {
+        if (!entities[i].expired())
+            ret.append(entities[i].lock().get());
     }
     
     return ret;

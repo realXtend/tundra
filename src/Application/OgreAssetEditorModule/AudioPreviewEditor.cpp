@@ -37,9 +37,9 @@ AudioPreviewEditor::AudioPreviewEditor(const AssetPtr &audioAsset, Framework *fw
     assert(asset.lock());
     AssetPtr assetPtr = asset.lock();
     if (!assetPtr)
-        LogError("OgreScriptEditor: null asset given.");
+        LogError("AudioPreviewEditor: null asset given.");
     if (assetPtr->Type() != "OgreMaterial" && assetPtr->Type() != "OgreParticle")
-        LogWarning("Created OgreScriptEditor for non-supported asset type " + assetPtr->Type() + ".");
+        LogWarning("Created AudioPreviewEditor for non-supported asset type " + assetPtr->Type() + ".");
 
     // Create widget from ui file
     QUiLoader loader;

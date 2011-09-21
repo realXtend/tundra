@@ -9,7 +9,6 @@
 
 #include "DebugOperatorNew.h"
 #include "EC_SoundListener.h"
-#include "IModule.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "Scene.h"
