@@ -275,9 +275,9 @@ namespace CAVEStereo
       
       // FIXME relies on that there is only one external window and
       // its the right side window for stereographical stuff
-      windows_to_dispose_.first()->getRenderWindow()->writeContentsToFile(path.toStdString() + leftname.toStdString());
-      renderer_->TakeScreenshot(path, rightname);
 
+      Ogre::CompositorInstance* comp = stereo_views_["stereoview0"]->GetCompositor();
+      comp->getRenderTarget("Stereo/Left")->writeContentsToFile(path.toStdString() + leftname.toStdString());
+      comp->getRenderTarget("Stereo/Right")->writeContentsToFile(path.toStdString() + rightname.toStdString());
     }
-    
 }
