@@ -89,12 +89,12 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     this->installTranslator(nativeTranslator);
 
     if (!framework_->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language"))
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/naali_en");
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en");
 
     QString default_language = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
     ChangeLanguage(default_language);
 
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enablig flash
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enable flash
 
     InitializeSplash();
 }

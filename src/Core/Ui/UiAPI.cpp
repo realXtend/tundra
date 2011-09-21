@@ -81,7 +81,7 @@ UiAPI::UiAPI(Framework *owner_) :
     
     mainWindow = new UiMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
-    mainWindow->setWindowIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/naali_logo_32px_RC1.ico"));
+    mainWindow->setWindowIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/TundraLogo32px.ico"));
     connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
 
     // Prepare graphics view and scene
