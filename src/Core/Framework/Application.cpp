@@ -43,6 +43,8 @@
 
 #include "MemoryLeakCheck.h"
 
+const QString Application::applicationName = "Tundra";
+
 Application::Application(Framework *framework_, int &argc, char **argv) :
     QApplication(argc, argv),
     framework(framework_),
@@ -51,7 +53,7 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     appTranslator(new QTranslator),
     splashScreen(0)
 {
-    QApplication::setApplicationName("Tundra");
+    QApplication::setApplicationName(ApplicationName());
 
     // Make sure that the required Tundra data directories exist.
     boost::filesystem::wpath path(QStringToWString(UserDataDirectory()));
@@ -258,7 +260,6 @@ QString Application::InstallationDirectory()
 
 QString Application::UserDataDirectory()
 {
-    const QString applicationName = "Tundra"; ///\todo Move applicationName from Config API to the Application class. Make it static without a runtime setter.
 #ifdef _WINDOWS
     LPITEMIDLIST pidl;
 
@@ -269,7 +270,7 @@ QString Application::UserDataDirectory()
     SHGetPathFromIDListW(pidl, str);
     CoTaskMemFree(pidl);
 
-    return WStringToQString(str) + "\\" + applicationName;
+    return WStringToQString(str) + "\\" + ApplicationName();
 #else
     ///\todo Convert to QString instead of std::string.
     char *ppath = 0;
@@ -278,7 +279,7 @@ QString Application::UserDataDirectory()
         throw Exception("Failed to get HOME environment variable.");
 
     std::string path(ppath);
-    return QString((path + "/." + applicationName.toStdString()).c_str());
+    return QString((path + "/." + ApplicationName().toStdString()).c_str());
 #endif
 }
 
@@ -294,8 +295,7 @@ QString Application::UserDocumentsDirectory()
     SHGetPathFromIDListW(pidl, str);
     CoTaskMemFree(pidl);
 
-    const QString applicationName = "Tundra"; ///\todo Move applicationName from Config API to the Application class. Make it static without a runtime setter.
-    return WStringToQString(str) + '\\' + applicationName;
+    return WStringToQString(str) + '\\' + ApplicationName();
 #else
     ///\todo Review. Is this desirable?
     return UserDataDirectory();
@@ -326,6 +326,11 @@ QString Application::ParseWildCardFilename(const QString& input)
             break;
     }
     return filename;
+}
+
+QString Application::ApplicationName()
+{
+    return applicationName;
 }
 
 bool Application::eventFilter(QObject *obj, QEvent *event)

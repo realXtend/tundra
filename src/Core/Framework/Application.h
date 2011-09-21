@@ -21,6 +21,7 @@ class Application : public QApplication
     Q_PROPERTY(QString installationDirectory READ InstallationDirectory)
     Q_PROPERTY(QString userDataDirectory READ UserDataDirectory)
     Q_PROPERTY(QString userDocumentsDirectory READ UserDocumentsDirectory)
+    Q_PROPERTY(QString applicationName READ ApplicationName)
 
 public:
     /// Construcs the application singleton.
@@ -74,6 +75,9 @@ public:
     ///    $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString .
     static QString ParseWildCardFilename(const QString& input);
 
+    /// Returns name of the application, "Tundra" usually.
+    static QString ApplicationName();
+
 public slots:
     void UpdateFrame();
     void ChangeLanguage(const QString& file);
@@ -101,5 +105,6 @@ private:
     QTimer frameUpdateTimer;
     QTranslator *nativeTranslator;
     QTranslator *appTranslator;
+    static const QString applicationName;
 };
 
