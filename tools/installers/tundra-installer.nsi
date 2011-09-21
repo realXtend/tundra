@@ -1,7 +1,7 @@
 !include "fileassoc.nsh"
 
 # Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
-!ifndef
+!ifndef VERSION
 !define VERSION "2.0"
 !endif
 
