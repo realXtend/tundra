@@ -372,7 +372,6 @@ private slots:
     void OnAttributeUpdated(IAttribute *attribute);
 
     void MaterialAssetLoaded(AssetPtr asset);
-    void TextureAssetLoaded(AssetPtr asset);
     void TerrainAssetLoaded(AssetPtr asset);
 
     /// (Re)checks whether this entity has EC_Placeable (or if it was just added or removed), and reparents the rootNode of this component to it or the scene root.

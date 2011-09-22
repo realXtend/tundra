@@ -188,44 +188,11 @@ void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
         if (transfer)
             connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
-/*
-    else if (changedAttribute == texture0.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
-    else if (changedAttribute == texture1.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
-    else if (changedAttribute == texture2.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
-    else if (changedAttribute == texture3.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
-    else if (changedAttribute == texture4.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    } */
     else if (attribute->Name() == heightMap.Name())
     {
         QString refBody;
         std::map<QString, QString> args = ParseAssetRefArgs(heightMap.Get().ref, &refBody);
         heightMapAsset->HandleAssetRefChange(framework->Asset(), refBody);
-//        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref/*, "Terrain"*/));
-//        connect(transfer, SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
     }
     else if (attribute->Name() == uScale.Name() || attribute->Name() == vScale.Name())
     {
@@ -233,8 +200,6 @@ void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
         DirtyAllTerrainPatches();
         RegenerateDirtyTerrainPatches();
     }
-
-    ///\todo Delete the old unused textures.
 }
 
 void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
@@ -255,32 +220,6 @@ void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
     for(int y = 0; y < patchHeight; ++y)
         for(int x = 0; x < patchWidth; ++x)
             UpdateTerrainPatchMaterial(x, y);
-/*
-    // The material of the terrain has changed. Since we specify the textures of that material as attributes,
-    // we need to re-apply the textures from the attributes to the new material we set.
-    SetTerrainMaterialTexture(0, texture0.Get().ref.toStdString().c_str());
-    SetTerrainMaterialTexture(1, texture1.Get().ref.toStdString().c_str());
-    SetTerrainMaterialTexture(2, texture2.Get().ref.toStdString().c_str());
-    SetTerrainMaterialTexture(3, texture3.Get().ref.toStdString().c_str());
-    SetTerrainMaterialTexture(4, texture4.Get().ref.toStdString().c_str());
-*/
-}
-
-void EC_Terrain::TextureAssetLoaded(AssetPtr asset_)
-{
-    /*
-    TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(asset_.get());
-    if (!textureAsset)
-        return;
-
-    Ogre::TexturePtr texture = textureAsset->ogreTexture;
-    
-    if (transfer->source == texture0.Get()) SetTerrainMaterialTexture(0, texture->getName().c_str());
-    else if (transfer->source == texture1.Get()) SetTerrainMaterialTexture(1, texture->getName().c_str());
-    else if (transfer->source == texture2.Get()) SetTerrainMaterialTexture(2, texture->getName().c_str());
-    else if (transfer->source == texture3.Get()) SetTerrainMaterialTexture(3, texture->getName().c_str());
-    else if (transfer->source == texture4.Get()) SetTerrainMaterialTexture(4, texture->getName().c_str());
-    */
 }
 
 void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
@@ -377,8 +316,6 @@ void EC_Terrain::Destroy()
         sceneMgr->destroySceneNode(rootNode);
         rootNode = 0;
     }
-
-    ///\todo Clear up materials and textures.
 }
 
 float EC_Terrain::GetPoint(int x, int y) const
