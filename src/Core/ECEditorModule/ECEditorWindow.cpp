@@ -153,6 +153,10 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), ecEditorModule, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
     connect(this, SIGNAL(EditEntityXml(const QList<EntityPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<EntityPtr> &)));
     connect(this, SIGNAL(EditComponentXml(const QList<ComponentPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<ComponentPtr> &)));
+
+    // Set ourselves as the commanding widget for transform editor.
+    // In case it is showing ui it should reposition itself relative to this QWidget.
+    transformEditor->SetCommandingWidget(this);
 }
 
 ECEditorWindow::~ECEditorWindow()

@@ -29,6 +29,7 @@
 
 TransformEditor::TransformEditor(const ScenePtr &scene) :
     editorSettings(0),
+    commandingWidget(0),
     localAxes(false)
 {
     if (scene)
@@ -350,6 +351,27 @@ void TransformEditor::CreateGizmo()
     
     editorSettings->setWindowFlags(Qt::Tool);
     editorSettings->show();
+
+    // Move widget to not be on top of commanding widget if one is set
+    if (commandingWidget)
+    {
+        QSize desktopSize(s->GetFramework()->Ui()->MainWindow()->DesktopWidth(), s->GetFramework()->Ui()->MainWindow()->DesktopHeight());
+        QRect parentGeom = commandingWidget->frameGeometry();
+        QRect myGeom = editorSettings->frameGeometry();
+
+        // Check if we should position the widget on top or below the commanding widget
+        editorSettings->resize(commandingWidget->width(), editorSettings->height());
+        if (parentGeom.bottomLeft().y() + myGeom.height() < desktopSize.height())
+            editorSettings->move(parentGeom.bottomLeft());
+        else if (parentGeom.topLeft().y() - myGeom.height() > 0)
+            editorSettings->move(parentGeom.topLeft().x(), parentGeom.topLeft().y() - myGeom.height());
+        // Check if we have room on the right side of the commanding widget.
+        else if (parentGeom.topRight().x() + myGeom.width() < desktopSize.width())
+            editorSettings->move(parentGeom.topRight());
+        // Last resort, move us to be on top but at the bottom.
+        else
+            editorSettings->move(parentGeom.bottomLeft().x(), parentGeom.bottomLeft().y() - myGeom.height());
+    }
 #endif
 }
 
@@ -497,4 +519,9 @@ void TransformEditor::DrawDebug(OgreWorld* world, Entity* entity)
                 world->DebugDrawCamera(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), 1.0f, 1.0f, 1.0f, 1.0f);
         }
     }
+}
+
+void TransformEditor::SetCommandingWidget(QWidget *widget)
+{
+    commandingWidget = widget;
 }
