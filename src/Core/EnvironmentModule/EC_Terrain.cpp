@@ -38,11 +38,6 @@ EC_Terrain::EC_Terrain(Scene* scene) :
     xPatches(this, "Grid Width"),
     yPatches(this, "Grid Height"),
     material(this, "Material"),
-    texture0(this, "Texture 0"),
-    texture1(this, "Texture 1"),
-    texture2(this, "Texture 2"),
-    texture3(this, "Texture 3"),
-    texture4(this, "Texture 4"),
     heightMap(this, "Heightmap"),
     uScale(this, "Tex. U scale"),
     vScale(this, "Tex. V scale"),
@@ -61,11 +56,6 @@ EC_Terrain::EC_Terrain(Scene* scene) :
     MakePatchFlat(0, 0, 0.f);
     uScale.Set(0.13f, AttributeChange::Disconnected);
     vScale.Set(0.13f, AttributeChange::Disconnected);
-    texture0.Set(AssetReference(""), AttributeChange::Disconnected);
-    texture1.Set(AssetReference(""), AttributeChange::Disconnected);
-    texture2.Set(AssetReference(""), AttributeChange::Disconnected);
-    texture3.Set(AssetReference(""), AttributeChange::Disconnected);
-    texture4.Set(AssetReference(""), AttributeChange::Disconnected);
     material.Set(AssetReference("local://RexTerrainPCF.material"), AttributeChange::Disconnected);
 
     heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);

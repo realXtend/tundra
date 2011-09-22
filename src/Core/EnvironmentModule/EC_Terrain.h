@@ -35,16 +35,6 @@ Registered by Environment::EnvironmentModule.
 <div>The number of patches to generate in the terrain in the vertical direction, in the range [0, 256].</div>
 <li>QString: material
 <div>Specifies the material to use when rendering the terrain.</div> 
-<li>QString: texture0
-<div>Specifies the texture channel 0 for the material.</div> 
-<li>QString: texture1
-<div>Specifies the texture channel 1 for the material.</div> 
-<li>QString: texture2
-<div>Specifies the texture channel 2 for the material.</div> 
-<li>QString: texture3
-<div>Specifies the texture channel 3 for the material.</div> 
-<li>QString: texture4
-<div>Specifies the texture channel 4 for the material.</div> 
 </ul>
 
 Note that the way the textures are used depends completely on the material. For example, the default height-based terrain material "Rex/TerrainPCF"
@@ -84,21 +74,6 @@ public:
 
     Q_PROPERTY(AssetReference material READ getmaterial WRITE setmaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, material);
-
-    Q_PROPERTY(AssetReference texture0 READ gettexture0 WRITE settexture0);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture0);
-
-    Q_PROPERTY(AssetReference texture1 READ gettexture1 WRITE settexture1);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture1);
-
-    Q_PROPERTY(AssetReference texture2 READ gettexture2 WRITE settexture2);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture2);
-
-    Q_PROPERTY(AssetReference texture3 READ gettexture3 WRITE settexture3);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture3);
-
-    Q_PROPERTY(AssetReference texture4 READ gettexture4 WRITE settexture4);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture4);
 
     Q_PROPERTY(AssetReference heightMap READ getheightMap WRITE setheightMap);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, heightMap);
