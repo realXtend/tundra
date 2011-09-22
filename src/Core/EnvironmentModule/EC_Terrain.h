@@ -382,7 +382,6 @@ private:
     boost::shared_ptr<AssetRefListener> heightMapAsset;
 
     /// For all terrain patches, we maintain a global parent/root node to be able to transform the whole terrain at one go.
-    ///\todo Perhaps this should be unified with the ECPlaceable.
     Ogre::SceneNode *rootNode;
 
     int patchWidth;
