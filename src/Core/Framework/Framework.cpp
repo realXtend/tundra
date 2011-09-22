@@ -159,7 +159,13 @@ Framework::Framework(int argc, char** argv) :
         profilerQObj = new ProfilerQObj;
         // Create ConfigAPI, pass application data and prepare data folder.
         config = new ConfigAPI(this);
-        config->PrepareDataFolder("configuration");
+        QStringList configDirs = CommandLineParameters("--configdir");
+        QString configDir = "$(USERDATA)/configuration"; // The default configuration goes to "C:\Users\username\AppData\Roaming\Tundra\configuration"
+        if (configDirs.size() >= 1)
+            configDir = configDirs.last();
+        if (configDirs.size() > 1)
+            LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");        
+        config->PrepareDataFolder(configDir);
 
         // Create QApplication
         application = new Application(this, argc_, argv_);

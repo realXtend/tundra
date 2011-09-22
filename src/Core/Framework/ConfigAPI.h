@@ -164,9 +164,9 @@ private:
     /// @param framework Framework. Takes ownership of the object.
     ConfigAPI(Framework *framework);
 
-    /// Prepares the data directory where config api will be working. This call will make sure that the folder path exists.
-    /// @param configFolderName QString. The sub folder name on where to store configs.
-    void PrepareDataFolder(const QString &configFolderName);
+    /// Opens up the Config API to the given data folder. This call will make sure that the required folders exist.
+    /// @param configFolderName The name of the folder to store Tundra Config API data to.
+    void PrepareDataFolder(QString configFolderName);
     
     /// Framework ptr.
     Framework *framework_;

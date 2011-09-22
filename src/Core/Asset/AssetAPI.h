@@ -24,6 +24,8 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile);
 bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile);
 
 /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
+/// This trailing slash will always be of the unix format, i.e. '/'.
+/// If an empty string is submitted, and empty string will be output, so that an empty string won't suddenly point to the filesystem root.
 QString GuaranteeTrailingSlash(const QString &source);
 
 typedef std::map<QString, AssetPtr> AssetMap;
