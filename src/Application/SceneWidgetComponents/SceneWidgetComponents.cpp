@@ -5,7 +5,7 @@
 #include "Framework.h"
 #include "Math/float2.h"
 
-#include "InputApi.h"
+#include "InputAPI.h"
 #include "MouseEvent.h"
 #include "InputContext.h"
 
