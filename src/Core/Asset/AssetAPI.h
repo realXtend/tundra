@@ -23,6 +23,10 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile);
 /// Saves the given raw data buffer to destFile. Returns true on success.
 bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile);
 
+/// Given a string of form "someString?param1=value1&param2=value2", returns a map of key-value pairs.
+/// @param body [out] If specified, the part 'someString' is returned here.
+std::map<QString, QString> ParseAssetRefArgs(const QString &url, QString *body);
+
 /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
 /// This trailing slash will always be of the unix format, i.e. '/'.
 /// If an empty string is submitted, and empty string will be output, so that an empty string won't suddenly point to the filesystem root.

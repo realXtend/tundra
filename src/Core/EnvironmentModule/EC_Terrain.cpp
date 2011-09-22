@@ -221,7 +221,9 @@ void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
     } */
     else if (attribute->Name() == heightMap.Name())
     {
-        heightMapAsset->HandleAssetRefChange(attribute);
+        QString refBody;
+        std::map<QString, QString> args = ParseAssetRefArgs(heightMap.Get().ref, &refBody);
+        heightMapAsset->HandleAssetRefChange(framework->Asset(), refBody);
 //        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref/*, "Terrain"*/));
 //        connect(transfer, SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
     }
@@ -284,10 +286,36 @@ void EC_Terrain::TextureAssetLoaded(AssetPtr asset_)
 void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
 {
     BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(asset_);
-    if (!assetData.get() || assetData->data.size() == 0)
+    TextureAssetPtr textureData = boost::dynamic_pointer_cast<TextureAsset>(asset_);
+    if ((!assetData.get() || assetData->data.size() == 0) && !textureData)
+    {
+        LogError("Failed to load terrain asset from file!");
         return;
+    }
 
-    LoadFromDataInMemory((const char*)&assetData->data[0], assetData->data.size());
+    if (assetData)
+        LoadFromDataInMemory((const char*)&assetData->data[0], assetData->data.size());
+    if (textureData)
+    {
+        if (textureData->DiskSource().isEmpty())
+        {
+            LogError("Tried to load terrain from texture file \"" + textureData->Name() + "\", but this requires a disk source of the asset for the load to work properly!");
+            return;
+        }
+        std::map<QString, QString> args = ParseAssetRefArgs(heightMap.Get().ref, 0);
+        float scale = 30.f;
+        float offset = 0.f;
+        if (args.find("scale") != args.end())
+            scale = args["scale"].toFloat();
+        if (args.find("offset") != args.end())
+            offset = args["offset"].toFloat();
+        bool success = LoadFromImageFile(textureData->DiskSource(), offset, scale);
+        if (!success)
+        {
+            LogError("Failed to load terrain from texture source \"" + textureData->Name() + "\"! Loading the file \"" + textureData->DiskSource() + "\" failed!");
+        }
+    }
+
 }
 
 /// Releases all GPU resources used for the given patch.
@@ -834,11 +862,8 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
             SetPointHeight(x, y, height);
         }
 
-    heightMap.Set(AssetReference(""/*,""*/), AttributeChange::Disconnected);
-
     xPatches.Changed(AttributeChange::LocalOnly);
     yPatches.Changed(AttributeChange::LocalOnly);
-    heightMap.Changed(AttributeChange::LocalOnly);
 
     DirtyAllTerrainPatches();
     RegenerateDirtyTerrainPatches();
