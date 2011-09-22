@@ -31,6 +31,9 @@ public:
     /// Starts this script instance.
     virtual void Run() = 0;
 
+    /// Return whether the script has been run.
+    virtual bool IsEvaluated() const = 0;
+    
 protected:
     /// Whether this instance executed trusted code or not. 
     /** By default everything loaded remotely (with e.g. http) is untrusted,

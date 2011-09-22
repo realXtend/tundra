@@ -38,8 +38,12 @@ public:
     /// IScriptInstance override.
     virtual QString GetLoadedScriptName() const { return filename_; }
 
+    /// IScriptInstance override.
+    bool IsEvaluated() const { return evaluated_; }
+    
 private:
     PythonQtObjectPtr context_; ///< Python context for this script instance.
     QString filename_; ///< Script filename.
     QString moduleName_; ///< Python module name for the script file.
+    bool evaluated_; ///< Whether the script has been evaluated
 };

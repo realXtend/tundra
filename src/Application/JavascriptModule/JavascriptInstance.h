@@ -75,7 +75,7 @@ public slots:
     void ImportExtension(const QString &scriptExtensionName);
 
     /// Return whether has been evaluated
-    bool IsEvaluated() const { return evaluated; }
+    virtual bool IsEvaluated() const { return evaluated; }
 
     /// Check and print error if the engine has an uncaught exception
     bool CheckAndPrintException(const QString& message, const QScriptValue& result);

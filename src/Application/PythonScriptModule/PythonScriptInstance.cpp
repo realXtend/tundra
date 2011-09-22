@@ -17,7 +17,8 @@
 #include "MemoryLeakCheck.h"
 
 PythonScriptInstance::PythonScriptInstance(const QString &filename, Entity *entity) :
-    filename_(filename)
+    filename_(filename),
+    evaluated_(false)
 {
     context_ = PythonQt::self()->createUniqueModule();
 
@@ -44,6 +45,9 @@ void PythonScriptInstance::Unload()
 void PythonScriptInstance::Run()
 {
     if (QFile::exists(filename_) && !context_.isNull())
+    {
         context_.evalFile(filename_);
+        evaluated_ = true;
+    }
 }
 

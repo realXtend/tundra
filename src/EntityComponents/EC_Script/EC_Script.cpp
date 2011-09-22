@@ -201,6 +201,12 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
                 HandleAttributeChanged(&scriptRef, AttributeChange::Default);
         }
     }
+    else if (attribute == &runOnLoad)
+    {
+        // If RunOnLoad changes, is true, and we don't have a script instance yet, emit ScriptAssetsChanged to start up the script.
+        if (runOnLoad.Get() && scriptAssets.size() && (!scriptInstance_ || !scriptInstance_->IsEvaluated()))
+            OnScriptAssetLoaded(AssetPtr()); // The asset ptr can be null, it is not used.
+    }
 }
 
 void EC_Script::OnScriptAssetLoaded(AssetPtr asset_)
