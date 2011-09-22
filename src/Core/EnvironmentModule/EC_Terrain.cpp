@@ -238,13 +238,13 @@ void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
             scale = args["scale"].toFloat();
         if (args.find("offset") != args.end())
             offset = args["offset"].toFloat();
+        ///\todo Add support for converting the loaded image file directly to a .ntf asset and refer to that one.
         bool success = LoadFromImageFile(textureData->DiskSource(), offset, scale);
         if (!success)
         {
             LogError("Failed to load terrain from texture source \"" + textureData->Name() + "\"! Loading the file \"" + textureData->DiskSource() + "\" failed!");
         }
     }
-
 }
 
 /// Releases all GPU resources used for the given patch.
