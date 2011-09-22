@@ -61,6 +61,18 @@ public slots:
 
     /// Starts physics for all physics worlds
     void StartPhysics();
+    
+    /// Set default physics update rate for new physics worlds
+    void SetDefaultPhysicsUpdatePeriod(float updatePeriod);
+    
+    /// Set default physics max substeps for new physics worlds
+    void SetDefaultMaxSubSteps(int steps);
+    
+    /// Return default physics update rate for new physics worlds
+    float GetDefaultPhysicsUpdatePeriod() const { return defaultPhysicsUpdatePeriod_; }
+    
+    /// Return default physics max substeps for new physics worlds
+    int GetDefaultMaxSubSteps() const { return defaultMaxSubSteps_; }
 
     /// Autoassigns static rigid bodies with collision meshes to visible meshes
     void AutoCollisionMesh();
@@ -89,6 +101,9 @@ private:
     typedef std::map<std::string, boost::shared_ptr<ConvexHullSet> > ConvexHullSetMap;
     /// Bullet convex hull sets generated from Ogre meshes
     ConvexHullSetMap convexHullSets_;
+    
+    float defaultPhysicsUpdatePeriod_;
+    int defaultMaxSubSteps_;
 };
 
 #ifdef PROFILING

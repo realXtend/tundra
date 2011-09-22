@@ -100,8 +100,15 @@ public slots:
     /** @param updatePeriod Update period */
     void SetPhysicsUpdatePeriod(float updatePeriod);
     
+    /// Set maximum physics substeps to perform on a single frame. Once this maximum is reached, time will appear to slow down if framerate is too low.
+    /** @param steps Maximum physics substeps */
+    void SetMaxSubSteps(int steps);
+    
     /// Return internal physics timestep
     float GetPhysicsUpdatePeriod() const { return physicsUpdatePeriod_; }
+    
+    /// Return amount of maximum physics substeps on a single frame.
+    int GetMaxSubSteps() const { return maxSubSteps_; }
     
     /// Set gravity that affects all moving objects of the physics world
     /** @param gravity Gravity vector */
@@ -171,8 +178,10 @@ private:
     /// Bullet physics world
     btDiscreteDynamicsWorld* world_;
     
-    /// Length of internal physics timestep
+    /// Length of one physics simulation step
     float physicsUpdatePeriod_;
+    /// Maximum amount of physics simulation substeps to run on a frame
+    int maxSubSteps_;
     
     /// Client scene flag
     bool isClient_;

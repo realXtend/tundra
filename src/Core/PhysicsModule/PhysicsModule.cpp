@@ -40,7 +40,9 @@ namespace Physics
 {
 
 PhysicsModule::PhysicsModule()
-:IModule("Physics")
+:IModule("Physics"),
+defaultPhysicsUpdatePeriod_(1.0f / 60.0f),
+defaultMaxSubSteps_(6) // If fps is below 10, we start to slow down physics
 {
 }
 
@@ -73,6 +75,22 @@ void PhysicsModule::Initialize()
     framework_->Console()->RegisterCommand("autocollisionmesh",
         "Auto-assigns static rigid bodies with collision mesh to all visible meshes.",
         this, SLOT(AutoCollisionMesh()));
+    
+    // Check physics execution rate related command line parameters
+    if (framework_->HasCommandLineParameter("--physicsrate"))
+    {
+        bool ok;
+        int rate = framework_->CommandLineParameters("--physicsrate")[0].toInt(&ok);
+        if (ok && rate > 0)
+            SetDefaultPhysicsUpdatePeriod(1.0f / (float)rate);
+    }
+    if (framework_->HasCommandLineParameter("--physicsmaxsteps"))
+    {
+        bool ok;
+        int steps = framework_->CommandLineParameters("--physicsmaxsteps")[0].toInt(&ok);
+        if (ok && steps > 0)
+            SetDefaultMaxSubSteps(steps);
+    }
 }
 
 void PhysicsModule::Uninitialize()
@@ -86,6 +104,20 @@ void PhysicsModule::ToggleDebugGeometry()
         i->second->SetDrawDebugGeometry(!i->second->GetDrawDebugGeometry());
         i->second->drawDebugManuallySet_ = true; // Disable automatic debugdraw state change
     }
+}
+
+void PhysicsModule::SetDefaultPhysicsUpdatePeriod(float updatePeriod)
+{
+    // Allow max.1000 fps
+    if (updatePeriod <= 0.001f)
+        updatePeriod = 0.001f;
+    defaultPhysicsUpdatePeriod_ = updatePeriod;
+}
+
+void PhysicsModule::SetDefaultMaxSubSteps(int steps)
+{
+    if (steps > 0)
+        defaultMaxSubSteps_ = steps;
 }
 
 void PhysicsModule::StopPhysics()
@@ -148,6 +180,8 @@ void PhysicsModule::OnSceneAdded(const QString& name)
     
     boost::shared_ptr<PhysicsWorld> newWorld(new PhysicsWorld(scene, !scene->IsAuthority()));
     newWorld->SetGravity(scene->UpVector() * -9.81f);
+    newWorld->SetPhysicsUpdatePeriod(defaultPhysicsUpdatePeriod_);
+    newWorld->SetMaxSubSteps(defaultMaxSubSteps_);
     physicsWorlds_[scene.get()] = newWorld;
     scene->setProperty(PhysicsWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
