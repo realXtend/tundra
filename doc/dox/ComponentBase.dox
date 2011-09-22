@@ -41,6 +41,7 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_SoundListener "SoundListener"
 - \ref EC_Terrain "Terrain"
 - \ref EC_TransformGizmo "TransformGizmo"
+- \ref EC_VolumeTrigger "VolumeTrigger"
 - \ref EC_WaterPlane "WaterPlane"
 - \ref EC_WebView "WebView"
 - \ref EC_WidgetCanvas "WidgetCanvas"
