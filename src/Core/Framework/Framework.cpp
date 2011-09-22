@@ -485,8 +485,48 @@ QStringList Framework::CommandLineParameters(const QString &key) const
 {
     QStringList ret;
     for(int i = 0; i < argc_; ++i)
+    {
         if (QString(argv_[i]) == key && i+1 < argc_ && !QString(argv_[i+1]).startsWith("--"))
-            ret.append(argv_[++i]);
+        {
+            // Inspect for quoted parameters.
+            QString quotedParam = argv_[i+1];
+            if (quotedParam.startsWith("\""))
+            {
+                for(int pi=i+2; pi < argc_; ++pi)
+                {
+                    QString param = argv_[pi];
+
+                    // If a new -- key is found before an end quote we have a error.
+                    // Report and don't add anything to the return list as the param is malformed.
+                    if (param.startsWith("--"))
+                    {
+                        LogError("Could not find an end quote for '" + key + "' parameter: " + quotedParam);
+                        i = pi - 1; // Step one back so the main for loop will inspect this element next.
+                        break;
+                    }
+                    // We found the end of the quoted param.
+                    // Remove quotes and append to the return list.
+                    else if (param.endsWith("\""))
+                    {
+                        i = pi; // Set the main for loops index so it will process the proper elements next.
+                        quotedParam += " " + param;
+                        if (quotedParam.startsWith("\""))
+                            quotedParam = quotedParam.right(quotedParam.length() -1);
+                        if (quotedParam.endsWith("\""))
+                            quotedParam.chop(1);
+                        ret.append(quotedParam);
+                        break;
+                    }
+                    // Append to param.
+                    else
+                        quotedParam += " " + param;
+                }
+            }
+            // No quote start, push as is
+            else
+                ret.append(argv_[++i]);
+        }
+    }
     return ret;
 }
 
