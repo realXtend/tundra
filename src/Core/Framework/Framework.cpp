@@ -177,7 +177,9 @@ Framework::Framework(int argc, char** argv) :
         
         QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
         if (CommandLineParameters("--assetcachedir").size() > 0)
-            assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir")[0]);
+            assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir").last());
+        if (CommandLineParameters("--assetcachedir").size() > 1)
+            LogWarning("Multiple --assetcachedir parameters specified! Using \"" + CommandLineParameters("--assetcachedir").last() + "\" as the assetcache directory.");
         
         if (!HasCommandLineParameter("--noassetcache"))
             asset->OpenAssetCache(assetCacheDir);
