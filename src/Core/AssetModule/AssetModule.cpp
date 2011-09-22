@@ -376,12 +376,9 @@ namespace Asset
     void AssetModule::ConsoleDumpAssetTransfers()
     {
         AssetAPI* asset = framework_->Asset();
-        const AssetAPI::AssetTransferMap& currentTransfers = asset->GetCurrentTransfers();
-        const std::vector<AssetTransferPtr> readyTransfers = asset->DebugGetReadyTransfers();
-        const AssetAPI::AssetDependenciesMap dependencies = asset->DebugGetAssetDependencies();
-        
         LogInfo("Current transfers:");
-        for (AssetAPI::AssetTransferMap::const_iterator i = currentTransfers.begin(); i != currentTransfers.end(); ++i)
+        const AssetAPI::AssetTransferMap& currentTransfers = asset->GetCurrentTransfers();
+        for(AssetAPI::AssetTransferMap::const_iterator i = currentTransfers.begin(); i != currentTransfers.end(); ++i)
         {
             AssetPtr assetPtr = asset->GetAsset(i->first);
             unsigned numPendingDependencies = assetPtr ? asset->NumPendingDependencies(assetPtr) : 0;
@@ -390,9 +387,13 @@ namespace Asset
             else
                 LogInfo(i->first);
         }
+
         LogInfo("Ready asset transfers:");
-        for (unsigned i = 0; i < readyTransfers.size(); ++i)
+        const std::vector<AssetTransferPtr> &readyTransfers = asset->DebugGetReadyTransfers();
+        for(unsigned i = 0; i < readyTransfers.size(); ++i)
             LogInfo(readyTransfers[i]->source.ref);
+
+        //const AssetAPI::AssetDependenciesMap &dependencies = asset->DebugGetAssetDependencies();
         //LogInfo("Asset dependencies:");
         //for (AssetAPI::AssetDependenciesMap::const_iterator i = dependencies.begin(); i != dependencies.end(); ++i)
         //    LogInfo(i->first + " " + i->second);

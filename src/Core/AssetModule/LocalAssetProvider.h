@@ -7,6 +7,8 @@
 #include "IAssetProvider.h"
 #include "AssetFwd.h"
 
+//#include <QSet>
+
 namespace Asset
 {
     class LocalAssetStorage;
@@ -64,24 +66,15 @@ namespace Asset
 
         QString GenerateUniqueStorageName() const;
 
-    
+        /// Returns LocalAssetStorage for specific @c path. The @c path can be root directory of storage or any of its subdirectories.
+        LocalAssetStoragePtr FindStorageForPath(const QString &path) const;
+
     private:
+        Q_DISABLE_COPY(LocalAssetProvider)
 
         /// Finds a path where the file localFilename can be found. Searches through all local storages.
         /// @param storage [out] Receives the local storage that contains the asset.
         QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage) const;
-        
-        /// Framework
-        Framework *framework;
-        
-        /// Asset directories to search, may be recursive or not
-        std::vector<LocalAssetStoragePtr> storages;
-
-        /// The following asset uploads are pending to be completed by this provider.
-        std::vector<AssetUploadTransferPtr> pendingUploads;
-
-        /// The following asset downloads are pending to be completed by this provider.
-        std::vector<AssetTransferPtr> pendingDownloads;
 
         /// Takes all the pending file download transfers and finishes them.
         void CompletePendingFileDownloads();
@@ -89,10 +82,18 @@ namespace Asset
         /// Takes all the pending file upload transfers and finishes them.
         void CompletePendingFileUploads();
 
-    private slots:
-        void FileChanged(const QString &path);
+        /// Checks for pending file systems changes and updates 
+//        void CheckForPendingFileSystemChanges();
 
+        Framework *framework;
+        std::vector<LocalAssetStoragePtr> storages; ///< Asset directories to search, may be recursive or not
+        std::vector<AssetUploadTransferPtr> pendingUploads; ///< The following asset uploads are pending to be completed by this provider.
+        std::vector<AssetTransferPtr> pendingDownloads; ///< The following asset downloads are pending to be completed by this provider.
+//        QSet<QString> changedFiles; ///< Pending file changes.
+//        QSet<QString> changedDirectories; ///< Pending directory changes.
+
+//    private slots:
+//        void OnFileChanged(const QString &path);
+//        void OnDirectoryChanged(const QString &path);
     };
 }
-
-

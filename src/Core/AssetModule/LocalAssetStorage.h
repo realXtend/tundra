@@ -5,6 +5,8 @@
 #include "AssetModuleApi.h"
 #include "IAssetStorage.h"
 
+#include <QMap>
+
 class QFileSystemWatcher;
 class AssetAPI;
 
@@ -14,9 +16,10 @@ namespace Asset
 /// Represents a single (possibly recursive) directory on the local file system.
 class ASSET_MODULE_API LocalAssetStorage : public IAssetStorage
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
+    /// recursive, writable, liveUpdate and autoDiscoverable all set to true by default.
     LocalAssetStorage();
     ~LocalAssetStorage();
 
@@ -39,17 +42,18 @@ public:
     bool autoDiscoverable;
     
     /// Starts listening on the local directory this asset storage points to.
-    void SetupWatcher();
+//    void SetupWatcher();
 
     /// Stops and deallocates the directory change listener.
-    void RemoveWatcher();
+//    void RemoveWatcher();
 
     /// Load all assets of specific suffix
     void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType);
 
     QStringList assetRefs;
 
-    
+//    QFileSystemWatcher *changeWatcher;
+
 public slots:
     /// Specifies whether data can be uploaded to this asset storage.
     virtual bool Writable() const { return writable; }
@@ -81,8 +85,6 @@ public slots:
     
     /// Refresh asset refs. Issues a directory query and emits AssetRefsChanged immediately
     virtual void RefreshAssetRefs();
-    
-//    QFileSystemWatcher *changeWatcher;
 
     QString Name() const { return name; }
 
@@ -95,9 +97,7 @@ public slots:
     virtual QString SerializeToString() const;
 
 private:
-    void operator=(const LocalAssetStorage &);
-    LocalAssetStorage(const LocalAssetStorage &);
+    Q_DISABLE_COPY(LocalAssetStorage)
 };
 
 }
-
