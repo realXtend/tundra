@@ -103,4 +103,8 @@ private slots:
     /// Handles KeyPressed() signal from input context.
     /** @param e Key event. */
     void HandleKeyPressed(KeyEvent *e);
+
+    /// Repositions the given editor relative to an active SceneStructureWindow or MainWindow.
+    /** @param editor ECEditorWindow. */
+    void RepositionEditor(ECEditorWindow *editor);
 };
