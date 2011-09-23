@@ -42,8 +42,8 @@ public:
         [cdda://][device]              Audio CD device
         udp:[[<source address>]@[<bind address>][:<bind port>]]
 	*/
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, sourceRef);
     Q_PROPERTY(AssetReference sourceRef READ getsourceRef WRITE setsourceRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, sourceRef);
 
     /// Rendering target submesh index.
     Q_PROPERTY(int renderSubmeshIndex READ getrenderSubmeshIndex WRITE setrenderSubmeshIndex);
@@ -87,6 +87,10 @@ public slots:
     /// Stop video playback. This will reset the timer to the start of the video.
     void Stop();
 
+    /// Returns if the media asset is being downloaded at this time.
+    /// @note Will return false always if streamingAllowed is set to false.
+    bool IsDownloadingMedia() { return pendingMediaDownload_; }
+
     /// Show/hide the player widget.
     void ShowPlayer(bool visible = true);
 
@@ -94,6 +98,12 @@ public slots:
     /// but still want to show the context menu in your own code.
     /// @note The QMenu will destroy itself when closed, you don't need to free the ptr.
     QMenu *GetContextMenu();
+
+signals:
+    /// This signal is emitted once the current media asset has been downloaded and is ready for playback.
+    /// @param bool If download was succesfull true, false otherwise.
+    /// @param QString Media source ref. This is the same as sourceRef.ref but provided here for convenience. 
+    void MediaDownloaded(bool succesfull, QString source);
 
 private slots:
     /// Callback to render content to the 3D target.
@@ -168,6 +178,6 @@ private:
     /// Download indicator logo to inworld object.
     QImage downloadingLogo_;
 
-    /// Track if we havea pending download operation.
+    /// Track if we have a pending download operation.
     bool pendingMediaDownload_;
 };

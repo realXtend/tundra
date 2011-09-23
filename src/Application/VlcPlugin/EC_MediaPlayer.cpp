@@ -539,6 +539,7 @@ void EC_MediaPlayer::OnMediaLoaded(AssetPtr asset)
         else
         {
             LogInfo("EC_MediaPlayer: Loaded source media after download '" + asset->Name() + "'");
+            emit MediaDownloaded(true, asset->Name());
             mediaPlayer_->ForceUpdateImage();
         }
     }
@@ -550,4 +551,6 @@ void EC_MediaPlayer::OnMediaFailed(IAssetTransfer *transfer, QString reason)
 {
     LogError("EC_MediaPlayer: Failed to download media from '" + transfer->source.ref + "' with reason: " + reason);
     pendingMediaDownload_ = false;
+
+    emit MediaDownloaded(false, getsourceRef().ref.trimmed());
 }
