@@ -70,7 +70,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
     const QString pluginSuffix = ".dylib";
 #endif
 
-    LogInfo("Loading plugin '" + filename + "'");
+    LogInfo("Loading plugin '" + filename + "'.");
     owner->App()->SetSplashMessage("Loading plugin " + filename);
     QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
 
