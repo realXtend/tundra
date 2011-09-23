@@ -69,11 +69,11 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
     if (!recursive || !recursiveLookup)
         return "";
 
-    foreach(const QString &str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+    foreach(const QString &str, DirectorySearch(directory, recursive, QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks))
     {
-        QDir dir(GuaranteeTrailingSlash(str) + assetname);
-        if (dir.exists())
-            return dir.path();
+        QFileInfo file(GuaranteeTrailingSlash(str) + assetname);
+        if (file.exists())
+            return file.dir().path();
     }
     return "";
 }
