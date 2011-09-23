@@ -20,19 +20,18 @@ LocalAssetStorage::LocalAssetStorage() :
     recursive(true),
     writable(true),
     liveUpdate(true),
-    autoDiscoverable(true)
-//    changeWatcher(0)
+    autoDiscoverable(true),
+    changeWatcher(0)
 {
 }
 
 LocalAssetStorage::~LocalAssetStorage()
 {
-//    RemoveWatcher();
+    RemoveWatcher();
 }
 
 void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType)
 {
-    ///\todo Profile which ones are better: Boost's or Qt's directory iterators. Preliminary tests by me (Stinkfist) show that Qt's are better.
     foreach(QString str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
         if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
         {
@@ -41,125 +40,25 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
                 str = str.right(str.length() - lastSlash - 1);
             assetAPI->RequestAsset("local://" + str, assetType);
         }
-/*
-    try
-    {
-        if (recursive)
-        {
-            boost::filesystem::recursive_directory_iterator iter(directory.toStdString()), end_iter;
-            for(; iter != end_iter; ++iter)
-            {
-                if (boost::filesystem::is_regular_file(iter->status()))
-                {
-                    QString str = iter->path().string().c_str();
-                    if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-                    {
-                        int lastSlash = str.lastIndexOf('/');
-                        if (lastSlash != -1)
-                            str = str.right(str.length() - lastSlash - 1);
-                        assetAPI->RequestAsset("local://" + str, assetType);
-                    }
-                }
-            }
-        }
-        else
-        {
-            boost::filesystem::directory_iterator iter(directory.toStdString()), end_iter;
-            for(; iter != end_iter; ++iter)
-            {
-                if (boost::filesystem::is_regular_file(iter->status()))
-                {
-                    QString str = iter->path().string().c_str();
-                    if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-                    {
-                        int lastSlash = str.lastIndexOf('/');
-                        if (lastSlash != -1)
-                            str = str.right(str.length() - lastSlash - 1);
-                        assetAPI->RequestAsset("local://" + str, assetType);
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-    }
-*/
 }
 
 void LocalAssetStorage::RefreshAssetRefs()
 {
-    ///\todo Profile which ones are better: Boost's or Qt's directory iterators. Preliminary tests by me (Stinkfist) show that Qt's are better.
-    PROFILE(LocalAssetStorage_RefreshAssetRefs)
-    {
-        PROFILE(LocalAssetStorage_RefreshAssetRefs_QtDirectorySearch)
-        foreach(QString str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
-            if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-            {
-                QString diskSource = str;
-                int lastSlash = str.lastIndexOf('/');
-                if (lastSlash != -1)
-                    str = str.right(str.length() - lastSlash - 1);
-                QString localName = str;
-                str.prepend("local://");
-                if (!assetRefs.contains(str))
-                {
-                    assetRefs.append(str);
-                    emit AssetChanged(localName, diskSource, IAssetStorage::AssetCreate);
-                }
-            }
-    }
-
-/*
-    assetRefs.clear();
-    PROFILE(LocalAssetStorage_RefreshAssetRefs_boost)
-    {
-        try
+    foreach(QString str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+        if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
         {
-            if (recursive)
+            QString diskSource = str;
+            int lastSlash = str.lastIndexOf('/');
+            if (lastSlash != -1)
+                str = str.right(str.length() - lastSlash - 1);
+            QString localName = str;
+            str.prepend("local://");
+            if (!assetRefs.contains(str))
             {
-                boost::filesystem::recursive_directory_iterator iter(directory.toStdString()), end_iter;
-                for(; iter != end_iter; ++iter)
-                {
-                    if (boost::filesystem::is_regular_file(iter->status()))
-                    {
-                        QString str = iter->path().string().c_str();
-                        if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-                        {
-                            int lastSlash = str.lastIndexOf('/');
-                            if (lastSlash != -1)
-                                str = str.right(str.length() - lastSlash - 1);
-                            assetRefs.append("local://" + str);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                boost::filesystem::directory_iterator iter(directory.toStdString()), end_iter;
-                for(; iter != end_iter; ++iter)
-                {
-                    if (boost::filesystem::is_regular_file(iter->status()))
-                    {
-                        QString str = iter->path().string().c_str();
-                        if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-                        {
-                            int lastSlash = str.lastIndexOf('/');
-                            if (lastSlash != -1)
-                                str = str.right(str.length() - lastSlash - 1);
-                            assetRefs.append("local://" + str);
-                        }
-                    }
-                }
+                assetRefs.append(str);
+                emit AssetChanged(localName, diskSource, IAssetStorage::AssetCreate);
             }
         }
-        catch (...)
-        {
-        }
-    }
-
-    emit AssetRefsChanged(this->shared_from_this());
-*/
 }
 
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)
@@ -207,7 +106,19 @@ QString LocalAssetStorage::SerializeToString() const
         ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
 }
 
-/*
+void LocalAssetStorage::EmitAssetChanged(QString absoluteFilename, IAssetStorage::ChangeType change)
+{
+    QString localName;
+    int lastSlash = absoluteFilename.lastIndexOf('/');
+    if (lastSlash != -1)
+        localName = absoluteFilename.right(absoluteFilename.length() - lastSlash - 1);
+    QString assetRef = "local://" + localName;
+    if (assetRefs.contains(assetRef) && change == IAssetStorage::AssetCreate)
+        LogWarning("LocalAssetStorage::EmitAssetChanged: AssetCreate signaled for already existing asset.");
+    else
+        emit AssetChanged(localName, absoluteFilename, change);
+}
+
 void LocalAssetStorage::SetupWatcher()
 {
     if (changeWatcher) // Remove the old watcher if one exists.
@@ -215,10 +126,11 @@ void LocalAssetStorage::SetupWatcher()
 
     changeWatcher = new QFileSystemWatcher();
 
-    // Add directory contents to watch list..
+    // Add directory contents to watch list.
     LogDebug("LocalAssetStorage::SetupWatcher: adding " + directory + " recursive=" + (recursive ? "true" : "false"));
 
     QStringList paths = DirectorySearch(directory, recursive, QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+    changeWatcher->addPath(QDir::fromNativeSeparators(directory));
     changeWatcher->addPaths(paths);
 
     LogDebug("Total of " + QString::number(paths.count()) + " dirs and files added to watch list.");
@@ -228,4 +140,3 @@ void LocalAssetStorage::RemoveWatcher()
 {
     SAFE_DELETE(changeWatcher);
 }
-*/

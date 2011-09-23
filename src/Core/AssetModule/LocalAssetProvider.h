@@ -7,7 +7,7 @@
 #include "IAssetProvider.h"
 #include "AssetFwd.h"
 
-//#include <QSet>
+#include <QSet>
 
 class LocalAssetStorage;
 
@@ -81,16 +81,16 @@ private:
     void CompletePendingFileUploads();
 
     /// Checks for pending file systems changes and updates 
-//        void CheckForPendingFileSystemChanges();
+    void CheckForPendingFileSystemChanges();
 
     Framework *framework;
     std::vector<LocalAssetStoragePtr> storages; ///< Asset directories to search, may be recursive or not
     std::vector<AssetUploadTransferPtr> pendingUploads; ///< The following asset uploads are pending to be completed by this provider.
     std::vector<AssetTransferPtr> pendingDownloads; ///< The following asset downloads are pending to be completed by this provider.
-//        QSet<QString> changedFiles; ///< Pending file changes.
-//        QSet<QString> changedDirectories; ///< Pending directory changes.
+    QSet<QString> changedFiles; ///< Pending file changes.
+    QSet<QString> changedDirectories; ///< Pending directory changes.
 
-//    private slots:
-//        void OnFileChanged(const QString &path);
-//        void OnDirectoryChanged(const QString &path);
+    private slots:
+        void OnFileChanged(const QString &path);
+        void OnDirectoryChanged(const QString &path);
 };

@@ -24,6 +24,7 @@ public:
     
     QString baseAddress;
     QString storageName;
+    ///\todo Evaluate if could be removed. Now both AssetAPI and HttpAssetStorage manage list of asset refs.
     QStringList assetRefs;
     ///\todo Disallow scripts from changing this after the storage has been created. (security issue) -jj.
     QString localDir;

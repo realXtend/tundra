@@ -39,17 +39,18 @@ public:
     bool autoDiscoverable;
     
     /// Starts listening on the local directory this asset storage points to.
-//    void SetupWatcher();
+    void SetupWatcher();
 
     /// Stops and deallocates the directory change listener.
-//    void RemoveWatcher();
+    void RemoveWatcher();
 
     /// Load all assets of specific suffix
     void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType);
 
+    ///\todo Evaluate if could be removed. Now both AssetAPI and LocalAssetStorage manage list of asset refs.
     QStringList assetRefs;
 
-//    QFileSystemWatcher *changeWatcher;
+    QFileSystemWatcher *changeWatcher;
 
 public slots:
     /// Specifies whether data can be uploaded to this asset storage.
@@ -92,6 +93,9 @@ public slots:
 
     /// Serializes this storage to a string for machine transfer.
     virtual QString SerializeToString() const;
+
+    /// If @c change is IAssetStorage::AssetCreate, adds file to the list of asset refs and signal
+    void EmitAssetChanged(QString absoluteFilename, IAssetStorage::ChangeType change);
 
 private:
     Q_DISABLE_COPY(LocalAssetStorage)
