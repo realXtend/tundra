@@ -2,7 +2,7 @@
 
 \page progconv Programming Conventions
 
-This page describes the different conventions for producing code and documentation for the RealXtend project.
+This page describes the different conventions for producing code and documentation for the RealXtend Tundra project.
 
 \section nameconv Naming Conventions
 
@@ -18,16 +18,9 @@ should be placed in an .inl file that matches the classes name, for example for 
 the template and inline code that is associated to that class.
 
 \subsection nameconvh Header Files
-Each .cpp file should have corresponding header file, excluding certain .cpp files such as main.cpp and unit tests. 
-All header files should have #define guards to prevent multiple inclusion. The format of the symbol name should be incl_ModuleName_ClassName_h.
+Each .cpp file should have corresponding header file, excluding certain .cpp files such as main.cpp and unit tests.
+All header files must have #pragma once inclusion guards.
 
-Example:
-\verbatim
-#ifndef incl_Core_StdIncludes_h
-#define incl_Core_StdIncludes_h
-// code...
-#endif
-\endverbatim
 Use <b>forward declarations</b> to minimize use of \#include declarations in header files.
 
 In all files, try to order your \#include statements in the following order:
@@ -49,7 +42,7 @@ When passing non-const pointers or references to a function, document the parame
 <b>[out]</b>, <b>[in,out]</b> tags. If you only intend to read from a pointer or reference passed to a function, mark it const.
 
 \subsection scope Scoping and Namespaces
-Avoid unnecessary use of namespaces. One namespace within one module is usually more than enough.
+<b>Avoid unnecessary use of namespaces.</b> One namespace within one module is usually more than enough.
 
 Do not place the <b>using namespace</b> directives in .h- or .inl -files. Please use the <b>using namespace</b> directive at a local scope 
 whenever it improves readability.
@@ -82,19 +75,16 @@ handling signals.
 \verbatim
 signals:
 /// This signal is emitted when mouse button is clicked.
-/** @button What button was clicked.
-*/
+/** @button What button was clicked. */
 void MouseButtonClicked(int button);
 
 /// This signal is emitted when something is about to happen.
-/** @what Description of what is about to happen.
-*/
+/** @what Description of what is about to happen. */
 void SomethingAboutToHappen(const QString &what);
 
 public slots:
 /// Prints what mouse button was clicked.
-/** @button What button was clicked.
-*/
+/** @button What button was clicked. */
 void HandleMouseButtonClicked(int button);
 \endverbatim
 
@@ -113,8 +103,8 @@ Some of the existing code do not follow these naming conventions, largely due to
 before this document was written. Still, when in doubt, observe the existing code. Ambiguities will be resolved here later
 if and when necessary.
 
-The RealXtend architecture uses <b>Qt</b> (http://doc.qt.nokia.com/), <b>STL</b> and <b>Boost</b> (http://www.boost.org/)as the major frameworks. Please prefer using the containers
-and algorithms found in those wherever it is sensible. Prefer Qt over the other major frameworks.</b> Avoid being too smart,
+The RealXtend Tundra architecture uses <b>Qt</b> (http://doc.qt.nokia.com/), <b>STL</b> and <b>Boost</b> (http://www.boost.org/) as the major frameworks. Please prefer using the containers
+and algorithms found in those wherever it is sensible. <b>Prefer Qt over the other major frameworks.</b> Avoid being too smart,
 there is no need to spend time figuring out how to achieve something using a stl back_inserter_iterator combined with a mem_fun_ref
 and a bind2nd if writing it using a simple loop would only take you a moment.
 

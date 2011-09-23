@@ -11,8 +11,7 @@
 ## The idea is that everyone can customize the set of modules to build using that 
 ## file, without having to fear about an accidental commit of these changes.
 
-############################################################################################################
-###### BUILD CONFIGURATION DEFINES #########################################################################
+###### BUILD CONFIGURATION DEFINES ######
 
 ## Various flags/defines that configure your build
 
@@ -52,8 +51,7 @@ if (MSVC AND ENABLE_MEMORY_LEAK_CHECKS)
     add_definitions(-DMEMORY_LEAK_CHECK)
 endif()
 
-############################################################################################################
-###### ENTITY COMPONENTS ###################################################################################
+###### ENTITY COMPONENTS ######
 
 message ("\n=========== Configuring Entity-Components ===========\n")
 
@@ -78,8 +76,7 @@ if (NOT BUILD_SDK_ONLY)
     AddEntityComponent(EC_ProximityTrigger)
 endif()
 
-############################################################################################################
-###### REQUIRED STATIC FRAMEWORK ###########################################################################
+###### REQUIRED STATIC FRAMEWORK ######
 
 message ("\n=========== Configuring Static Framework ===========\n")
 
@@ -95,8 +92,7 @@ AddProject(Core Console)
 AddProject(Core Input)
 AddProject(Core Ui)
 
-############################################################################################################
-###### REQUIRED MODULES ####################################################################################
+###### REQUIRED MODULES ######
 
 message ("\n=========== Configuring Required Modules ===========\n")
 
@@ -105,36 +101,35 @@ message ("\n=========== Configuring Required Modules ===========\n")
 AddProject(Core OgreRenderingModule)
 AddProject(Core TundraProtocolModule)
 AddProject(Core AssetModule)
-AddProject(Core ECEditorModule)
-AddProject(Core PhysicsModule)                      # Depends on OgreRenderingModule and EnvironmentModule.
-AddProject(Core EnvironmentModule)                  # Depends on OgreRenderingModule.
+AddProject(Core EnvironmentModule)      # Optional in theory, if you drop PhysicsModule. Depends on OgreRenderingModule.
+AddProject(Core PhysicsModule)          # Optional in theory, if your application doesn't need physics. Depends on OgreRenderingModule and EnvironmentModule.
 
-############################################################################################################
-###### OPTIONAL MODULES ####################################################################################
+###### OPTIONAL MODULES ######
 
 message ("\n=========== Configuring Optional Modules ===========\n")
 
-AddProject(Application AvatarModule)                # Depends on OgreRenderingModule.
-AddProject(Application DebugStatsModule)            # Enables a developer window for debugging. Depends on OgreRenderingModule and EnvironmentModule.
-AddProject(Application SkyXHydrax)                  # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
-AddProject(Application SceneWidgetComponents)       # Provide ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
-AddProject(Application JavascriptModule)            # Allows QtScript-created scene script instances.
-AddProject(Application PythonScriptModule)          # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
-AddProject(Application BrowserUiPlugin)             # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
+AddProject(Core ECEditorModule)                 # Provides tools for managing scenes, entities, entity-components and assets.
+AddProject(Application AvatarModule)            # Provides EC_Avatar. Depends on OgreRenderingModule.
+AddProject(Application DebugStatsModule)        # Enables a developer window for debugging. Depends on OgreRenderingModule and EnvironmentModule.
+AddProject(Application SkyXHydrax)              # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
+AddProject(Application SceneWidgetComponents)   # Provide ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
+AddProject(Application JavascriptModule)        # Allows QtScript-created scene script instances.
+AddProject(Application PythonScriptModule)      # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
+AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 
 # Both are doable in linux, but need some prep work for fetching the deps etc. For vlc some code changes need to be done.
 # Remove the win32 check once the mumble and vlc deps are fetched in the deps build scripts. For mumble this is same as msantalas libmumbleclient and vlc apt-get libvlc-dev.
 if (WIN32)
-    AddProject(Application MumbleVoipModule)            # VOIP communication using the Mumble library. Depends on OgreRenderingModule and TundraProtocolModule.
-    AddProject(Application VlcPlugin)                   # Adds media playback capabilities with libVLC and entity components.
+    AddProject(Application MumbleVoipModule)    # VOIP communication using the Mumble library. Depends on OgreRenderingModule and TundraProtocolModule.
+    AddProject(Application VlcPlugin)           # Adds media playback capabilities with libVLC and entity components.
 endif ()
 
-#AddProject(Application KinectModule)               # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.
-#AddProject(Application CAVEStereoModule)           # Provides multi windowed rendering views for CAVE setups and stereoscopy view modes.
-#AddProject(Application UpdateModule)               # Windows msi installer only. Adds 'Check For Updates' functionality.
+#AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.
+#AddProject(Application CAVEStereoModule)       # Provides multi windowed rendering views for CAVE setups and stereoscopy view modes.
+#AddProject(Application UpdateModule)           # Windows msi installer only. Adds 'Check For Updates' functionality.
 
 if (ENABLE_OGRE_ASSET_EDITOR)
-    AddProject(Application OgreAssetEditorModule)   # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
+    AddProject(Application OgreAssetEditorModule)   # Enables various asset editors. Depends on OgreRenderingModule.
 endif ()
 
 if (ENABLE_OPEN_ASSET_IMPORT)
