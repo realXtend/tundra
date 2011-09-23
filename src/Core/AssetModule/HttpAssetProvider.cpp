@@ -325,6 +325,9 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
     storage->provider = this->shared_from_this();
     storages.push_back(storage);
     
+    // Tell the Asset API that we have created a new storage.
+    framework->Asset()->EmitAssetStorageAdded(storage);
+
     if (storage->AutoDiscoverable())
         storage->RefreshAssetRefs(); // Initiate PROPFIND
     

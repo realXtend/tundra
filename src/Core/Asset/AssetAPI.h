@@ -370,6 +370,9 @@ public slots:
     /// Cause AssetAPI to emit AssetDeletedFromStorage. Called by asset providers
     void EmitAssetDeletedFromStorage(const QString &assetRef);
     
+    /// Called by all providers to inform Asset API whenever they have added a new asset storage to the provider.
+    void EmitAssetStorageAdded(AssetStoragePtr newStorage);
+
     Framework *GetFramework() { return fw; }
 
     /// Return current asset transfers

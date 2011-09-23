@@ -203,6 +203,9 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
 //    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
     storages.push_back(storage);
 
+    // Tell the Asset API that we have created a new storage.
+    framework->Asset()->EmitAssetStorageAdded(storage);
+
     // If autodiscovery is on, make the storage refresh itself immediately.
     if (storage->AutoDiscoverable())
         storage->RefreshAssetRefs();

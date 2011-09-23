@@ -111,6 +111,8 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
     for(size_t i = 0; i < providers.size(); ++i)
     {
         AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
+        // The above function will call back to AssetAPI::EmitAssetStorageAdded.
+
         if (assetStorage)
         {
             // Make this storage the default storage if it was requested so.
@@ -118,12 +120,6 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
             if (s.contains("default") && ParseBool(s["default"]))
                 SetDefaultAssetStorage(assetStorage);
 
-            // Connect to the asset storage's refs refreshed signal, so that we can create actual empty assets from its refs
-            connect(assetStorage.get(), SIGNAL(AssetRefsChanged(AssetStoragePtr)), this, SLOT(OnAssetStorageRefsChanged(AssetStoragePtr)), Qt::UniqueConnection);
-            // Get refs right now in case the storage already has them
-            OnAssetStorageRefsChanged(assetStorage),
-            
-            emit AssetStorageAdded(assetStorage);
             return assetStorage;
         }
     }
@@ -1517,6 +1513,14 @@ void AssetAPI::HandleAssetDeleted(const QString &assetRef)
 void AssetAPI::EmitAssetDeletedFromStorage(const QString &assetRef)
 {
     emit AssetDeletedFromStorage(assetRef);
+}
+
+void AssetAPI::EmitAssetStorageAdded(AssetStoragePtr newStorage)
+{
+    // Connect to the asset storage's refs refreshed signal, so that we can create actual empty assets from its refs whenever new assets are added to 
+    // this storage from external sources.
+    connect(newStorage.get(), SIGNAL(AssetRefsChanged(AssetStoragePtr)), this, SLOT(OnAssetStorageRefsChanged(AssetStoragePtr)), Qt::UniqueConnection);            
+    emit AssetStorageAdded(newStorage);
 }
 
 QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
