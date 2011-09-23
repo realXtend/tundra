@@ -1644,7 +1644,7 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
         else
         {
             AssetPtr asset = CreateNewAsset(assetType, assetRef, storage->shared_from_this());
-            if (!diskSource.isEmpty())
+            if (asset && !diskSource.isEmpty())
             {
                 asset->SetDiskSource(diskSource);
                 //bool cached = (assetCache && diskSource.contains(GetAssetCache()->GetCacheDirectory(), Qt::CaseInsensitive));
