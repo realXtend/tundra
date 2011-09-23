@@ -40,6 +40,13 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDebug>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QDialog>
 
 #include <kNet/DataSerializer.h>
 
@@ -726,17 +733,76 @@ void SceneTreeWidget::NewEntity()
     if (scene.expired())
         return;
 
-    AttributeChange::Type changeType;
-
-    // Show a dialog so that user can choose if he wants to create local or synchronized entity.
+    // Create the dialog
     QStringList types(QStringList() << tr("Replicated") << tr("Local"));
-    bool ok;
-    QString type = QInputDialog::getItem(NULL, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
-    if (!ok || type.isEmpty())
+
+    QDialog newEntDialog(framework->Ui()->MainWindow());
+    newEntDialog.setModal(true);
+    newEntDialog.setWindowFlags(Qt::Tool);
+    newEntDialog.setWindowTitle(tr("Create New Entity"));
+    newEntDialog.setStyleSheet("font-size: 9pt;");
+
+    QPushButton *buttonCreate = new QPushButton(tr("Create"));
+    QPushButton *buttonCancel = new QPushButton(tr("Cancel"));
+    buttonCreate->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    buttonCancel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    buttonCreate->setDefault(true);
+    buttonCancel->setAutoDefault(false);
+
+    QComboBox *comboTypes = new QComboBox();
+    comboTypes->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    comboTypes->addItems(types);
+
+    QLineEdit *nameEdit = new QLineEdit();
+    nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    nameEdit->setFocus(Qt::ActiveWindowFocusReason);
+
+    QCheckBox *checkTemporary = new QCheckBox();
+    checkTemporary->setChecked(false);
+
+    QLabel *lName = new QLabel(tr("Name"));
+    QLabel *lType = new QLabel(tr("Type"));
+    QLabel *lTemp = new QLabel(tr("Temporary"));
+    lTemp->setMinimumWidth(70);
+
+    QGridLayout *grid = new QGridLayout();
+    grid->setVerticalSpacing(8);
+    grid->addWidget(lName, 0, 0);
+    grid->addWidget(nameEdit, 0, 1, Qt::AlignLeft, 1);
+    grid->addWidget(lType, 1, 0);
+    grid->addWidget(comboTypes, 1, 1, Qt::AlignLeft, 1);
+    grid->addWidget(lTemp, 2, 0);
+    grid->addWidget(checkTemporary, 2, 1);
+
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(buttonCreate);
+    buttonLayout->addWidget(buttonCancel);
+
+    QVBoxLayout *vertLayout = new QVBoxLayout();
+    vertLayout->addLayout(grid);
+    vertLayout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+    vertLayout->addLayout(buttonLayout);
+
+    newEntDialog.setLayout(vertLayout);
+
+    connect(nameEdit, SIGNAL(returnPressed()), &newEntDialog, SLOT(accept()));
+    connect(buttonCreate, SIGNAL(clicked()), &newEntDialog, SLOT(accept()));
+    connect(buttonCancel, SIGNAL(clicked()), &newEntDialog, SLOT(reject()));
+
+    // Execute dialog
+    newEntDialog.resize(300, newEntDialog.width() + 30);
+    newEntDialog.activateWindow();
+    int ret = newEntDialog.exec();
+    if (ret == QDialog::Rejected)
         return;
 
-    bool replicated = true;
+    // Process the results
+    QString type = comboTypes->currentText();
+    QString name = nameEdit->text().trimmed();
+    bool temporary = checkTemporary->isChecked();
 
+    AttributeChange::Type changeType;
+    bool replicated = true;
     if (type == tr("Replicated"))
     {
         changeType = AttributeChange::Replicate;
@@ -748,13 +814,19 @@ void SceneTreeWidget::NewEntity()
     }
     else
     {
-        LogError("Invalid entity type:" + type);
+        LogError("SceneTreeWidget::NewEntity: Invalid entity type:" + type);
         return;
     }
 
     // Create entity.
     EntityPtr entity = scene.lock()->CreateEntity(0, QStringList(), changeType, replicated);
     assert(entity);
+
+    // Set additional properties.
+    if (!name.isEmpty())
+        entity->SetName(name);
+    if (temporary)
+        entity->SetTemporary(true);
 }
 
 void SceneTreeWidget::NewComponent()
