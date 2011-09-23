@@ -101,7 +101,9 @@ private:
     Framework *framework;
     bool appActivated;
 
+#ifdef ENABLE_SPLASH_SCREEN
     QSplashScreen *splashScreen;
+#endif
     QTimer frameUpdateTimer;
     QTranslator *nativeTranslator;
     QTranslator *appTranslator;

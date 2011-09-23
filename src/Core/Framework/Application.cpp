@@ -22,7 +22,9 @@
 #include <QLocale>
 #include <QIcon>
 #include <QWebSettings>
+#ifdef ENABLE_SPLASH_SCREEN
 #include <QSplashScreen>
+#endif
 
 #ifdef Q_WS_MAC
 #include <QMouseEvent>
@@ -50,8 +52,10 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     framework(framework_),
     appActivated(true),
     nativeTranslator(new QTranslator),
-    appTranslator(new QTranslator),
-    splashScreen(0)
+    appTranslator(new QTranslator)
+#ifdef ENABLE_SPLASH_SCREEN
+    ,splashScreen(0)
+#endif
 {
     QApplication::setApplicationName(ApplicationName());
 
@@ -129,6 +133,7 @@ void Application::InitializeSplash()
 
 void Application::SetSplashMessage(const QString &message)
 {
+#ifdef ENABLE_SPLASH_SCREEN
     if (framework->IsHeadless())
         return;
 
@@ -144,6 +149,7 @@ void Application::SetSplashMessage(const QString &message)
         splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
         processEvents();
     }
+#endif
 }
 
 QStringList Application::GetQmFiles(const QDir& dir)
@@ -160,11 +166,13 @@ QStringList Application::GetQmFiles(const QDir& dir)
 
 void Application::Go()
 {
+#ifdef ENABLE_SPLASH_SCREEN
     if (splashScreen)
     {
         splashScreen->close();
         SAFE_DELETE(splashScreen);
     }
+#endif
 
     installEventFilter(this);
 
