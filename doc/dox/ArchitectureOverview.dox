@@ -12,7 +12,7 @@ The plugins/modules are implemented on top of a common \ref CoreAPIList "Core AP
 Additionally, functionality is implemented as separate Entity-Component libraries. The \ref component_base "Tundra Entity Component Reference" page describes in detail all the provided components.
 
 
-Naali uses CMake as its build system. The different parts of the repository are grouped into separate projects, which each reside in their individual folders.
+Tundra uses CMake as its build system. The different parts of the repository are grouped into separate projects, which each reside in their individual folders.
 
 This page provides an overview of the internal structure of different folders in the codebase.
 
