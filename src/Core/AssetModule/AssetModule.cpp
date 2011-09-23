@@ -53,10 +53,10 @@ namespace Asset
         local->AddStorageDirectory(systemAssetDir, "System", true, QFileInfo(systemAssetDir).isWritable());
 
         QString jsAssetDir = Application::InstallationDirectory() + "jsmodules";
-        local->AddStorageDirectory(jsAssetDir, "Javascript", true, QFileInfo(jsAssetDir).isWritable());
+        local->AddStorageDirectory(jsAssetDir, "Javascript", true, false);
 
         QString ogreAssetDir = Application::InstallationDirectory() + "media";
-        local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true, QFileInfo(ogreAssetDir).isWritable());
+        local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true, false);
 
         framework_->RegisterDynamicObject("assetModule", this);
 
