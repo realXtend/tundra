@@ -16,9 +16,6 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace Asset
-{
-
 LocalAssetStorage::LocalAssetStorage() :
     recursive(true),
     writable(true),
@@ -232,5 +229,3 @@ void LocalAssetStorage::RemoveWatcher()
     SAFE_DELETE(changeWatcher);
 }
 */
-
-} // ~Asset

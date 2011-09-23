@@ -25,9 +25,6 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace Asset
-{
-
 LocalAssetProvider::LocalAssetProvider(Framework* framework_)
 :framework(framework_)
 {
@@ -659,5 +656,3 @@ void LocalAssetProvider::CompletePendingFileUploads()
 //    LogInfo("LocalAssetProvider: Directory " + path + " changed.");
 //    changedDirectories << path;
 //}
-
-} // ~Asset

@@ -10,9 +10,6 @@
 class QFileSystemWatcher;
 class AssetAPI;
 
-namespace Asset
-{
-
 /// Represents a single (possibly recursive) directory on the local file system.
 class ASSET_MODULE_API LocalAssetStorage : public IAssetStorage
 {
@@ -99,5 +96,3 @@ public slots:
 private:
     Q_DISABLE_COPY(LocalAssetStorage)
 };
-
-}
