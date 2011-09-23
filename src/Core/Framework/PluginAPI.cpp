@@ -116,9 +116,11 @@ void PluginAPI::LoadPlugin(const QString &filename)
 
 void PluginAPI::UnloadPlugins()
 {
-#ifdef WIN32
     for(std::list<Plugin>::reverse_iterator iter = plugins.rbegin(); iter != plugins.rend(); ++iter)
+#ifdef WIN32
         FreeLibrary(iter->libraryHandle);
+#else
+        dlclose(iter->libraryHandle);
 #endif
     plugins.clear();
 }
