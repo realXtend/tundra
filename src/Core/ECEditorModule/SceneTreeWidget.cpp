@@ -598,17 +598,21 @@ void SceneTreeWidget::Edit()
             }
         }
 
+        // Check for active editor
         ECEditorWindow *editor = framework->GetModule<ECEditorModule>()->ActiveEditor();
         if (editor && !ecEditors.contains(editor))
         {
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
         }
-        else // If there isn't any active editors in ECEditorModule, create a new one.
+        // If there isn't any active editors in ECEditorModule, create a new one.
+        else 
         {
             editor = new ECEditorWindow(framework);
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
+
+            framework->GetModule<ECEditorModule>()->RepositionEditor(editor);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
         connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
@@ -837,10 +841,11 @@ void SceneTreeWidget::NewComponent()
     if (sel.IsEmpty())
         return;
 
-    AddComponentDialog *dialog = new AddComponentDialog(framework, sel.EntityIds(), this);
+    AddComponentDialog *dialog = new AddComponentDialog(framework, sel.EntityIds(), framework->Ui()->MainWindow(), Qt::Tool);
     dialog->SetComponentList(framework->Scene()->ComponentTypes());
     connect(dialog, SIGNAL(finished(int)), SLOT(ComponentDialogFinished(int)));
     dialog->show();
+    dialog->activateWindow();
 }
 
 void SceneTreeWidget::ComponentDialogFinished(int result)

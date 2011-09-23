@@ -82,6 +82,10 @@ public slots:
     /// Return selected entity ids as QVariantList from the active ECEditorWindow.
     QVariantList GetSelectedEntities() const;
 
+    /// Repositions the given editor relative to an active SceneStructureWindow or MainWindow.
+    /** @param editor ECEditorWindow. */
+    void RepositionEditor(ECEditorWindow *editor);
+
 signals:
     /// Signal is emitted when active ECEditorWindow's selection has changed.
     /** @param compType Selected item's component type name.
@@ -103,8 +107,4 @@ private slots:
     /// Handles KeyPressed() signal from input context.
     /** @param e Key event. */
     void HandleKeyPressed(KeyEvent *e);
-
-    /// Repositions the given editor relative to an active SceneStructureWindow or MainWindow.
-    /** @param editor ECEditorWindow. */
-    void RepositionEditor(ECEditorWindow *editor);
 };

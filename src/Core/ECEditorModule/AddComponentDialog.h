@@ -59,6 +59,9 @@ private slots:
     /// Make sure that component name don't duplicate with existing entity's components, and if it do disable ok button.
     void CheckComponentName();
 
+    /// Check ui state and updates ui accordingly.
+    void CheckTempAndSync();
+
 protected:
     /// Override event from QDialog.
     void hideEvent(QHideEvent *event);

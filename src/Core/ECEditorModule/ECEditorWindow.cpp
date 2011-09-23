@@ -29,6 +29,7 @@
 #include "EC_Placeable.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
+#include "UiMainWindow.h"
 #include "LoggingFunctions.h"
 #ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
@@ -363,10 +364,11 @@ void ECEditorWindow::CreateComponent()
 
     if (ids.size())
     {
-        AddComponentDialog *dialog = new AddComponentDialog(framework, ids, NULL);
+        AddComponentDialog *dialog = new AddComponentDialog(framework, ids, framework->Ui()->MainWindow(), Qt::Tool);
         dialog->SetComponentList(framework->Scene()->ComponentTypes());
         connect(dialog, SIGNAL(finished(int)), this, SLOT(AddComponentDialogFinished(int)));
         dialog->show();
+        dialog->activateWindow();
     }
 }
 
