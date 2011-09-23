@@ -95,7 +95,7 @@ UiAPI::UiAPI(Framework *owner_) :
         mainWindow->setLayout(new QVBoxLayout());
     mainWindow->layout()->setMargin(0);
     mainWindow->layout()->setContentsMargins(0,0,0,0);
-    mainWindow->layout()->addWidget(graphicsView);
+    mainWindow->setCentralWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
