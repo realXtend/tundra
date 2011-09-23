@@ -71,21 +71,36 @@ public:
     COMPONENT_NAME("EC_MediaPlayer", 37)
 
 public slots:
-    /// Returns current video state. QAbstractAnimation::State can be Running (2), Paused (1) and Stopped (0).
-    /// This enum is used because its auto exposed to scripting etc. and suits our purposes here.
-    QAbstractAnimation::State GetMediaState() const;
-
-    /// Plays video is stopped or paused, pauses otherwise.
-    void PlayPauseToggle();
-
     /// Starts playing the video if stopped or paused.
     void Play();
 
     /// Pauses the video if playing.
     void Pause();
 
+    /// Plays video is stopped or paused, pauses otherwise.
+    void PlayPauseToggle();
+
     /// Stop video playback. This will reset the timer to the start of the video.
     void Stop();
+
+    /// Seeks media to desired seconds. This will be done only if media is seekable.
+    /// Will seek only if media is playing, as long as one has been loaded successfully.
+    /// @return bool True if succesfull, false other wise.
+    bool SeekMedia(float timeInSeconds);
+
+    /// Returns current video state. QAbstractAnimation::State can be Running (2), Paused (1) and Stopped (0).
+    /// This enum is used because its auto exposed to scripting etc. and suits our purposes here.
+    QAbstractAnimation::State GetMediaState() const;
+
+    /// Returns the current loaded media total lenght in seconds. See GetMediaTime() for the current playback time.
+    /// @return float Media lenght in seconds.
+    /// @note If the media lenght cannot be resolved or no media is loaded returns 0.0.
+    float GetMediaLenght();
+
+    /// Returns the current media playback time in seconds. See GetMediaLenght() for the total lenght of the media.
+    /// @return float Media time in seconds.
+    /// @note Will return time also if paused/stopped. If the media time cannot be resolved or no media is loaded returns 0.0.
+    float GetMediaTime();
 
     /// Returns if the media asset is being downloaded at this time.
     /// @note Will return false always if streamingAllowed is set to false.

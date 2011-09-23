@@ -119,32 +119,6 @@ EC_MediaPlayer::~EC_MediaPlayer()
 
 // Public slots
 
-QAbstractAnimation::State EC_MediaPlayer::GetMediaState() const
-{
-    if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
-        return QAbstractAnimation::Stopped;
-
-    libvlc_state_t state = mediaPlayer_->GetVideoWidget()->GetMediaState();
-    if (state == libvlc_Playing)
-        return QAbstractAnimation::Running;
-    else if (state == libvlc_Paused)
-        return QAbstractAnimation::Paused;
-    else
-        return QAbstractAnimation::Stopped;
-}
-
-void EC_MediaPlayer::PlayPauseToggle()
-{
-    // Don't do anything if rendering is not enabled
-    if (!ViewEnabled() || GetFramework()->IsHeadless())
-        return;
-    if (!componentPrepared_)
-        return;
-    if (!mediaPlayer_ || mediaPlayer_->Media().isEmpty())
-        return;
-    mediaPlayer_->PlayPause();
-}
-
 void EC_MediaPlayer::Play()
 {
     // Don't do anything if rendering is not enabled
@@ -179,6 +153,17 @@ void EC_MediaPlayer::Pause()
         mediaPlayer_->GetVideoWidget()->Pause();
 }
 
+void EC_MediaPlayer::PlayPauseToggle()
+{
+    // Don't do anything if rendering is not enabled
+    if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return;
+    if (!componentPrepared_)
+        return;
+    if (!mediaPlayer_ || mediaPlayer_->Media().isEmpty())
+        return;
+    mediaPlayer_->PlayPause();
+}
 
 void EC_MediaPlayer::Stop()
 {
@@ -190,6 +175,59 @@ void EC_MediaPlayer::Stop()
     if (!mediaPlayer_ || mediaPlayer_->Media().isEmpty())
         return;
     mediaPlayer_->Stop();
+}
+
+bool EC_MediaPlayer::SeekMedia(float timeInSeconds)
+{
+    // Don't do anything if rendering is not enabled
+    if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return false;
+    if (!componentPrepared_ || !mediaPlayer_ || mediaPlayer_->Media().isEmpty())
+        return false;
+    if (!mediaPlayer_->GetVideoWidget())
+        return false;
+
+    QAbstractAnimation::State state = GetMediaState();
+    if (state == QAbstractAnimation::Running)
+    {
+        if (timeInSeconds < 0.0)
+            timeInSeconds = 0.0;
+        boost::uint_least64_t seekTimeMsec = timeInSeconds * 1000.0;
+        return mediaPlayer_->GetVideoWidget()->Seek(seekTimeMsec);
+    }
+    return false;
+}
+
+QAbstractAnimation::State EC_MediaPlayer::GetMediaState() const
+{
+    if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
+        return QAbstractAnimation::Stopped;
+
+    libvlc_state_t state = mediaPlayer_->GetVideoWidget()->GetMediaState();
+    if (state == libvlc_Playing)
+        return QAbstractAnimation::Running;
+    else if (state == libvlc_Paused)
+        return QAbstractAnimation::Paused;
+    else
+        return QAbstractAnimation::Stopped;
+}
+
+float EC_MediaPlayer::GetMediaLenght()
+{
+    if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
+        return 0.0;
+
+    boost::uint_least64_t lenMsecs = mediaPlayer_->GetVideoWidget()->GetMediaLenght();
+    return (lenMsecs / 1000.0);
+}
+
+float EC_MediaPlayer::GetMediaTime()
+{
+    if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
+        return 0.0;
+
+    boost::uint_least64_t timeMsecs = mediaPlayer_->GetVideoWidget()->GetMediaTime();
+    return (timeMsecs / 1000.0);
 }
 
 void EC_MediaPlayer::ShowPlayer(bool visible)

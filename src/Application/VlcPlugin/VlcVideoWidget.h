@@ -57,6 +57,14 @@ public slots:
     /// Return the current media state.
     libvlc_state_t GetMediaState() const;
 
+    /// Return the current media lenght as milliseconds. 0.0 means 
+    /// either no media is loaded or lenght cannot be resolved at this time.
+    boost::uint_least64_t GetMediaLenght();
+
+    /// Return the current media time as milliseconds. 0.0 means 
+    /// either no media is loaded, stopped or time could not be resolved at this time.
+    boost::uint_least64_t GetMediaTime();
+
 	/// Start playback
 	void Play();
 
@@ -66,8 +74,9 @@ public slots:
 	/// Stop playback and rewind to beginning
 	void Stop();
 
-    /// Seek current media to time
-    void Seek(boost::uint_least64_t time);
+    /// Seek current media to time. Input time is in milliseconds. Will only seek playig video.
+    /// @return If seek was successful. False means no media was loaded or the media is not seekable.
+    bool Seek(boost::uint_least64_t time);
 
     /// Shutdown this widget and the vlc related instances
     void ShutDown();
