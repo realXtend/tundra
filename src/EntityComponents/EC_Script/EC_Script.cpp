@@ -157,9 +157,6 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
         }
         
         AssetReferenceList scripts = scriptRef.Get();
-        // Make sure that the asset ref list type stays intact.
-        scripts.type = "Scripts";
-        scriptRef.Set(scripts, AttributeChange::Disconnected);
 
         // Purge empty script refs
         scripts.RemoveEmpty();
@@ -203,6 +200,12 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
             if (scriptAssets.empty())
                 HandleAttributeChanged(&scriptRef, AttributeChange::Default);
         }
+    }
+    else if (attribute == &runOnLoad)
+    {
+        // If RunOnLoad changes, is true, and we don't have a script instance yet, emit ScriptAssetsChanged to start up the script.
+        if (runOnLoad.Get() && scriptAssets.size() && (!scriptInstance_ || !scriptInstance_->IsEvaluated()))
+            OnScriptAssetLoaded(AssetPtr()); // The asset ptr can be null, it is not used.
     }
 }
 

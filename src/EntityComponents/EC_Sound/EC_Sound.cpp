@@ -28,7 +28,7 @@
 
 EC_Sound::EC_Sound(Scene* scene):
     IComponent(scene),
-    soundRef(this, "Sound ref"),
+    soundRef(this, "Sound ref", AssetReference("", "Audio")),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
     playOnLoad(this, "Play on load", false),

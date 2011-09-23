@@ -23,7 +23,7 @@ using namespace OgreRenderer;
 
 EC_ParticleSystem::EC_ParticleSystem(Scene* scene):
     IComponent(scene),
-    particleRef(this, "Particle ref" ),
+    particleRef(this, "Particle ref", AssetReference("", "OgreParticle")),
     castShadows(this, "Cast shadows", false),
     renderingDistance(this, "Rendering distance", 0.0f)
 {

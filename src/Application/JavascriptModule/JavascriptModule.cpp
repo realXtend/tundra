@@ -561,7 +561,7 @@ void JavascriptModule::LoadStartupScripts()
 
     // Create a script instance for each of the files, register services for it and try to run.
     if (scripts.size() || startupScriptsToLoad.size())
-        LogInfo("JavascriptModule::LoadStartupScripts: Loading startup scripts...");
+        LogInfo("Loading JS startup scripts...");
     for(uint i = 0; i < scripts.size(); ++i)
     {
         QString startupScript = scripts[i].c_str();
@@ -569,7 +569,7 @@ void JavascriptModule::LoadStartupScripts()
         QString baseName = startupScript.mid(startupScript.lastIndexOf("/")+1);
         if (startupScriptsToLoad.contains(startupScript) || startupScriptsToLoad.contains(baseName))
         {
-            LogInfo("JavascriptModule::LoadStartupScripts: Loading " + baseName);
+            LogInfo("Loading JS script " + baseName + ".");
             JavascriptInstance* jsInstance = new JavascriptInstance(startupScript, this);
             PrepareScriptInstance(jsInstance);
             startupScripts_.push_back(jsInstance);

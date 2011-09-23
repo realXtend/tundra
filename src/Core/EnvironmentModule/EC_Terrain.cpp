@@ -38,11 +38,6 @@ EC_Terrain::EC_Terrain(Scene* scene) :
     xPatches(this, "Grid Width"),
     yPatches(this, "Grid Height"),
     material(this, "Material"),
-    texture0(this, "Texture 0"),
-    texture1(this, "Texture 1"),
-    texture2(this, "Texture 2"),
-    texture3(this, "Texture 3"),
-    texture4(this, "Texture 4"),
     heightMap(this, "Heightmap"),
     uScale(this, "Tex. U scale"),
     vScale(this, "Tex. V scale"),
@@ -61,11 +56,6 @@ EC_Terrain::EC_Terrain(Scene* scene) :
     MakePatchFlat(0, 0, 0.f);
     uScale.Set(0.13f, AttributeChange::Disconnected);
     vScale.Set(0.13f, AttributeChange::Disconnected);
-    texture0.Set(AssetReference(""), AttributeChange::Disconnected);
-    texture1.Set(AssetReference(""), AttributeChange::Disconnected);
-    texture2.Set(AssetReference(""), AttributeChange::Disconnected);
-    texture3.Set(AssetReference(""), AttributeChange::Disconnected);
-    texture4.Set(AssetReference(""), AttributeChange::Disconnected);
     material.Set(AssetReference("local://RexTerrainPCF.material"), AttributeChange::Disconnected);
 
     heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
@@ -188,42 +178,11 @@ void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
         if (transfer)
             connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
-/*
-    else if (changedAttribute == texture0.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
-    else if (changedAttribute == texture1.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
-    else if (changedAttribute == texture2.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
-    else if (changedAttribute == texture3.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
-    else if (changedAttribute == texture4.GetNameString())
-    {
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    } */
     else if (attribute->Name() == heightMap.Name())
     {
-        heightMapAsset->HandleAssetRefChange(attribute);
-//        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref/*, "Terrain"*/));
-//        connect(transfer, SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
+        QString refBody;
+        std::map<QString, QString> args = ParseAssetRefArgs(heightMap.Get().ref, &refBody);
+        heightMapAsset->HandleAssetRefChange(framework->Asset(), refBody);
     }
     else if (attribute->Name() == uScale.Name() || attribute->Name() == vScale.Name())
     {
@@ -231,8 +190,6 @@ void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
         DirtyAllTerrainPatches();
         RegenerateDirtyTerrainPatches();
     }
-
-    ///\todo Delete the old unused textures.
 }
 
 void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
@@ -253,41 +210,41 @@ void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
     for(int y = 0; y < patchHeight; ++y)
         for(int x = 0; x < patchWidth; ++x)
             UpdateTerrainPatchMaterial(x, y);
-/*
-    // The material of the terrain has changed. Since we specify the textures of that material as attributes,
-    // we need to re-apply the textures from the attributes to the new material we set.
-    SetTerrainMaterialTexture(0, texture0.Get().ref.toStdString().c_str());
-    SetTerrainMaterialTexture(1, texture1.Get().ref.toStdString().c_str());
-    SetTerrainMaterialTexture(2, texture2.Get().ref.toStdString().c_str());
-    SetTerrainMaterialTexture(3, texture3.Get().ref.toStdString().c_str());
-    SetTerrainMaterialTexture(4, texture4.Get().ref.toStdString().c_str());
-*/
-}
-
-void EC_Terrain::TextureAssetLoaded(AssetPtr asset_)
-{
-    /*
-    TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(asset_.get());
-    if (!textureAsset)
-        return;
-
-    Ogre::TexturePtr texture = textureAsset->ogreTexture;
-    
-    if (transfer->source == texture0.Get()) SetTerrainMaterialTexture(0, texture->getName().c_str());
-    else if (transfer->source == texture1.Get()) SetTerrainMaterialTexture(1, texture->getName().c_str());
-    else if (transfer->source == texture2.Get()) SetTerrainMaterialTexture(2, texture->getName().c_str());
-    else if (transfer->source == texture3.Get()) SetTerrainMaterialTexture(3, texture->getName().c_str());
-    else if (transfer->source == texture4.Get()) SetTerrainMaterialTexture(4, texture->getName().c_str());
-    */
 }
 
 void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
 {
     BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(asset_);
-    if (!assetData.get() || assetData->data.size() == 0)
+    TextureAssetPtr textureData = boost::dynamic_pointer_cast<TextureAsset>(asset_);
+    if ((!assetData.get() || assetData->data.size() == 0) && !textureData)
+    {
+        LogError("Failed to load terrain asset from file!");
         return;
+    }
 
-    LoadFromDataInMemory((const char*)&assetData->data[0], assetData->data.size());
+    if (assetData)
+        LoadFromDataInMemory((const char*)&assetData->data[0], assetData->data.size());
+    if (textureData)
+    {
+        if (textureData->DiskSource().isEmpty())
+        {
+            LogError("Tried to load terrain from texture file \"" + textureData->Name() + "\", but this requires a disk source of the asset for the load to work properly!");
+            return;
+        }
+        std::map<QString, QString> args = ParseAssetRefArgs(heightMap.Get().ref, 0);
+        float scale = 30.f;
+        float offset = 0.f;
+        if (args.find("scale") != args.end())
+            scale = args["scale"].toFloat();
+        if (args.find("offset") != args.end())
+            offset = args["offset"].toFloat();
+        ///\todo Add support for converting the loaded image file directly to a .ntf asset and refer to that one.
+        bool success = LoadFromImageFile(textureData->DiskSource(), offset, scale);
+        if (!success)
+        {
+            LogError("Failed to load terrain from texture source \"" + textureData->Name() + "\"! Loading the file \"" + textureData->DiskSource() + "\" failed!");
+        }
+    }
 }
 
 /// Releases all GPU resources used for the given patch.
@@ -349,8 +306,6 @@ void EC_Terrain::Destroy()
         sceneMgr->destroySceneNode(rootNode);
         rootNode = 0;
     }
-
-    ///\todo Clear up materials and textures.
 }
 
 float EC_Terrain::GetPoint(int x, int y) const
@@ -834,11 +789,8 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
             SetPointHeight(x, y, height);
         }
 
-    heightMap.Set(AssetReference(""/*,""*/), AttributeChange::Disconnected);
-
     xPatches.Changed(AttributeChange::LocalOnly);
     yPatches.Changed(AttributeChange::LocalOnly);
-    heightMap.Changed(AttributeChange::LocalOnly);
 
     DirtyAllTerrainPatches();
     RegenerateDirtyTerrainPatches();

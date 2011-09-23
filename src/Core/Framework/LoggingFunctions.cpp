@@ -4,6 +4,10 @@
 #include "Framework.h"
 #include "ConsoleAPI.h"
 
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
 void PrintLogMessage(u32 logChannel, const char *str)
 {
     if (!IsLogChannelEnabled(logChannel))
@@ -12,11 +16,21 @@ void PrintLogMessage(u32 logChannel, const char *str)
     Framework *instance = Framework::Instance();
     ConsoleAPI *console = (instance ? instance->Console() : 0);
 
+    // On Windows, highlight errors and warnings.
+#ifdef WIN32
+    if ((logChannel & LogChannelError) != 0) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
+    else if ((logChannel & LogChannelWarning) != 0) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+#endif
     // The console and stdout prints are equivalent.
     if (console)
         console->Print(str);
     else // The Console API is already dead for some reason, print directly to stdout to guarantee we don't lose any logging messags.
         printf("%s", str);
+
+    // Restore the text color to normal.
+#ifdef WIN32
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#endif
 }
 
 bool IsLogChannelEnabled(u32 logChannel)

@@ -22,7 +22,9 @@
 #include <QLocale>
 #include <QIcon>
 #include <QWebSettings>
+#ifdef ENABLE_SPLASH_SCREEN
 #include <QSplashScreen>
+#endif
 
 #ifdef Q_WS_MAC
 #include <QMouseEvent>
@@ -43,15 +45,19 @@
 
 #include "MemoryLeakCheck.h"
 
+const QString Application::applicationName = "Tundra";
+
 Application::Application(Framework *framework_, int &argc, char **argv) :
     QApplication(argc, argv),
     framework(framework_),
     appActivated(true),
     nativeTranslator(new QTranslator),
-    appTranslator(new QTranslator),
-    splashScreen(0)
+    appTranslator(new QTranslator)
+#ifdef ENABLE_SPLASH_SCREEN
+    ,splashScreen(0)
+#endif
 {
-    QApplication::setApplicationName("Tundra");
+    QApplication::setApplicationName(ApplicationName());
 
     // Make sure that the required Tundra data directories exist.
     boost::filesystem::wpath path(QStringToWString(UserDataDirectory()));
@@ -89,12 +95,12 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     this->installTranslator(nativeTranslator);
 
     if (!framework_->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language"))
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/naali_en");
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en");
 
     QString default_language = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
     ChangeLanguage(default_language);
 
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enablig flash
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enable flash
 
     InitializeSplash();
 }
@@ -127,6 +133,7 @@ void Application::InitializeSplash()
 
 void Application::SetSplashMessage(const QString &message)
 {
+#ifdef ENABLE_SPLASH_SCREEN
     if (framework->IsHeadless())
         return;
 
@@ -142,6 +149,7 @@ void Application::SetSplashMessage(const QString &message)
         splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
         processEvents();
     }
+#endif
 }
 
 QStringList Application::GetQmFiles(const QDir& dir)
@@ -158,11 +166,13 @@ QStringList Application::GetQmFiles(const QDir& dir)
 
 void Application::Go()
 {
+#ifdef ENABLE_SPLASH_SCREEN
     if (splashScreen)
     {
         splashScreen->close();
         SAFE_DELETE(splashScreen);
     }
+#endif
 
     installEventFilter(this);
 
@@ -258,7 +268,6 @@ QString Application::InstallationDirectory()
 
 QString Application::UserDataDirectory()
 {
-    const QString applicationName = "Tundra"; ///\todo Move applicationName from Config API to the Application class. Make it static without a runtime setter.
 #ifdef _WINDOWS
     LPITEMIDLIST pidl;
 
@@ -269,7 +278,7 @@ QString Application::UserDataDirectory()
     SHGetPathFromIDListW(pidl, str);
     CoTaskMemFree(pidl);
 
-    return WStringToQString(str) + "\\" + applicationName;
+    return WStringToQString(str) + "\\" + ApplicationName();
 #else
     ///\todo Convert to QString instead of std::string.
     char *ppath = 0;
@@ -278,7 +287,7 @@ QString Application::UserDataDirectory()
         throw Exception("Failed to get HOME environment variable.");
 
     std::string path(ppath);
-    return QString((path + "/." + applicationName.toStdString()).c_str());
+    return QString((path + "/." + ApplicationName().toStdString()).c_str());
 #endif
 }
 
@@ -294,8 +303,7 @@ QString Application::UserDocumentsDirectory()
     SHGetPathFromIDListW(pidl, str);
     CoTaskMemFree(pidl);
 
-    const QString applicationName = "Tundra"; ///\todo Move applicationName from Config API to the Application class. Make it static without a runtime setter.
-    return WStringToQString(str) + '\\' + applicationName;
+    return WStringToQString(str) + '\\' + ApplicationName();
 #else
     ///\todo Review. Is this desirable?
     return UserDataDirectory();
@@ -326,6 +334,11 @@ QString Application::ParseWildCardFilename(const QString& input)
             break;
     }
     return filename;
+}
+
+QString Application::ApplicationName()
+{
+    return applicationName;
 }
 
 bool Application::eventFilter(QObject *obj, QEvent *event)

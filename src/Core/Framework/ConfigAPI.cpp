@@ -4,7 +4,7 @@
 #include "Framework.h"
 #include "ConfigAPI.h"
 #include "Application.h"
-
+#include "AssetAPI.h"
 #include "LoggingFunctions.h"
 
 #include <QSettings>
@@ -25,27 +25,20 @@ ConfigAPI::ConfigAPI(Framework *framework) :
 {
 }
 
-void ConfigAPI::PrepareDataFolder(const QString &configFolderName)
+void ConfigAPI::PrepareDataFolder(QString configFolder)
 {
-    /// \todo Should get the unicode GetApplicationDataDirectoryW() QString::fromStdWString seems to give a weird linker error, types wont match?
-    QString applicationDataDir = Application::UserDataDirectory();
-    
-    // Prepare application data dir path
-    applicationDataDir.replace("\\", "/");
-    if (!applicationDataDir.endsWith("/"))
-        applicationDataDir.append("/");
-
-    // Create directory if does not exist
-    QDir configDataDir(applicationDataDir);
-    if (!configDataDir.exists(configFolderName))
-        configDataDir.mkdir(configFolderName);
-    configDataDir.cd(configFolderName);
-
-    configFolder_ = configDataDir.absolutePath();
-
-    // Be sure the path ends with a forward slash
-    if (!configFolder_.endsWith("/"))
-        configFolder_.append("/");
+    QDir config = QDir(Application::ParseWildCardFilename(configFolder.trimmed()));
+    if (!config.exists())
+    {
+        bool success = config.mkpath(".");
+        if (!success)
+        {
+            LogError("Failed to create configuration folder \"" + config.absolutePath() + "\"! Check that this path is valid, and it is write-accessible!");
+            return;
+        }
+    }
+    configFolder_ = GuaranteeTrailingSlash(config.absolutePath());
+    LogInfo("Opened up Tundra config in folder \"" + configFolder_ + "\".");
 }
 
 QString ConfigAPI::GetFilePath(const QString &file) const

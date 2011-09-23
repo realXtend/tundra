@@ -274,9 +274,9 @@ macro (update_translation_files TRANSLATION_FILES)
 	
 	foreach(file ${FILES_TO_TRANSLATE})
 		if(CREATED_PRO_FILE)
-			FILE(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/naali_translations.pro "SOURCES += ${file} \n")
+			FILE(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/tundra_translations.pro "SOURCES += ${file} \n")
 		else()
-			FILE(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/naali_translations.pro "SOURCES = ${file} \n")
+			FILE(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/tundra_translations.pro "SOURCES = ${file} \n")
 			SET(CREATED_PRO_FILE "true")
 		endif()
 	endforeach()
@@ -287,7 +287,7 @@ macro (update_translation_files TRANSLATION_FILES)
 		execute_process(COMMAND ${QT_LUPDATE_EXECUTABLE} -silent ${PRO_FILE} -ts ${ts_file} )
 	endforeach()
 	
-	FILE(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/naali_translations.pro)
+	FILE(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/bin/data/translations/tundra_translations.pro)
 	
 endmacro()
 

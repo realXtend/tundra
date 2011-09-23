@@ -20,9 +20,6 @@
 namespace Physics
 {
 
-// Assume we generate at least 10 frames per second. If less, the physics will start to slow down.
-static const float cMinFps = 10.0f;
-
 void TickCallback(btDynamicsWorld *world, btScalar timeStep)
 {
     static_cast<Physics::PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
@@ -36,6 +33,7 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
     solver_(0),
     world_(0),
     physicsUpdatePeriod_(1.0f / 60.0f),
+    maxSubSteps_(6), // If fps is below 10, we start to slow down physics
     isClient_(isClient),
     runPhysics_(true),
     drawDebugGeometry_(false),
@@ -78,6 +76,12 @@ void PhysicsWorld::SetPhysicsUpdatePeriod(float updatePeriod)
     physicsUpdatePeriod_ = updatePeriod;
 }
 
+void PhysicsWorld::SetMaxSubSteps(int steps)
+{
+    if (steps > 0)
+        maxSubSteps_ = steps;
+}
+
 void PhysicsWorld::SetGravity(const float3& gravity)
 {
     world_->setGravity(gravity);
@@ -102,10 +106,9 @@ void PhysicsWorld::Simulate(f64 frametime)
     
     emit AboutToUpdate((float)frametime);
     
-    int maxSubSteps = (int)((1.0f / physicsUpdatePeriod_) / cMinFps);
     {
         PROFILE(Bullet_stepSimulation); ///\note Do not delete or rename this PROFILE() block. The DebugStats profiler uses this string as a label to know where to inject the Bullet internal profiling data.
-        world_->stepSimulation((float)frametime, maxSubSteps, physicsUpdatePeriod_);
+        world_->stepSimulation((float)frametime, maxSubSteps_, physicsUpdatePeriod_);
     }
     
     // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies

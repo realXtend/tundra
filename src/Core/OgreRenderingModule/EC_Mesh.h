@@ -455,8 +455,6 @@ private:
     /// detaches entity from placeable
     void DetachEntity();
 
-    bool HasMaterialsChanged() const;
-
     /// placeable component 
     ComponentPtr placeable_;
 

@@ -67,7 +67,7 @@ namespace OgreRenderer
         void DoFullUIRedraw();
 
         /// Do raycast into the currently active world from viewport coordinates, using all selection layers
-        /// \todo This function will be removed and replaced with a function Scene::Intersect.
+        /// \todo This function is deprecated. You should use the OgreWorld::Raycast function instead.
         /** The coordinates are a position in the render window, not scaled to [0,1].
             @param x Horizontal position for the origin of the ray
             @param y Vertical position for the origin of the ray

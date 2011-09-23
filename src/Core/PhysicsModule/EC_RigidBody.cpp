@@ -43,7 +43,7 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
     size(this, "Size", float3(1,1,1)),
-    collisionMeshRef(this, "Collision mesh ref"),
+    collisionMeshRef(this, "Collision mesh ref", AssetReference("", "OgreMesh")),
     friction(this, "Friction", 0.5f),
     restitution(this, "Restitution", 0.0f),
     linearDamping(this, "Linear damping", 0.0f),
@@ -558,8 +558,11 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     }
     
     // Request mesh if its id changes
-    if ((attribute == &collisionMeshRef) && ((shapeType.Get() == Shape_TriMesh) || (shapeType.Get() == Shape_ConvexHull)))
-        RequestMesh();
+    if (attribute == &collisionMeshRef)
+    {
+        if (shapeType.Get() == Shape_TriMesh || shapeType.Get() == Shape_ConvexHull)
+            RequestMesh();
+    }
     
     if (attribute == &phantom || attribute == &kinematic)
         // Readd body to the world in case phantom or kinematic classification changed

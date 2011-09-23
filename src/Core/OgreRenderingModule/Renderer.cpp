@@ -71,9 +71,30 @@ namespace OgreRenderer
 {
     class OgreLogListener : public Ogre::LogListener
     {
+        bool hideBenignOgreMessages;
     public:
+        explicit OgreLogListener(bool hideBenignOgreMessages_)
+        :hideBenignOgreMessages(hideBenignOgreMessages_)
+        {
+        }
+
         void messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
         {
+            QString str = message.c_str();
+
+            // We can ignore some Ogre messages which don't give any extra information, if requested.
+            if (hideBenignOgreMessages)
+            {
+                if (str.contains("disabling VSync in windowed"))  // "D3D9 : WARNING - disabling VSync in windowed mode can cause timing issues at lower frame rates, turn VSync on if you observe this problem."
+                    return;
+                if (str.contains("Cannot locate resource") && str.contains(".skeleton in resource group")) // "Error: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource filename.skeleton in resource group General or any other group. in ResourceGroupManager::openResource at .\src\OgreResourceGroupManager.cpp (line 753)"
+                    return; // We download assets through the network, and by the time the mesh is loaded, its skeleton will often not be, but Ogre will not like this.
+                if (str.contains("is an older format ([MeshSerializer_")) // "Warning: WARNING: filename.mesh is an older format ([MeshSerializer_v1.40]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool."
+                    return; // Loading an old mesh version. Ogre can still load them up fine, and the end user should not be conserned of the version number.
+                if (str.contains("more than 4 bone assignments.")) // "Warning: WARNING: the mesh 'EC_Mesh_clone_169' includes vertices with more than 4 bone assignments. The lowest weighted assignments beyond this limit have been removed, so your animation may look slightly different. To eliminate this, reduce the number of bone assignments per vertex on your mesh to 4."
+                    return; // The end user cannot control this.
+            }
+
             if (lml == Ogre::LML_CRITICAL)
                 // Some Ogre Critical messages are actually not errors. For example MaterialSerializer's log messages.
                 LogError(message);
@@ -81,9 +102,9 @@ namespace OgreRenderer
                 LogDebug(message);
             else // lml == Ogre::LML_NORMAL here.
             {
-                // Because Ogre distinguishes different log levels *VERY POORLY* (practically all messages come in the LML_NORMAL), we use manual format checks to decide between Info/Warning/Error/Critical channels.
-                QString str = message.c_str();
-                if (str.contains("error", Qt::CaseInsensitive) || str.contains("critical", Qt::CaseInsensitive))
+                // Because Ogre distinguishes different log levels *VERY POORLY* (practically all messages come in the LML_NORMAL), 
+                // we need to use manual format checks to guess between Info/Warning/Error/Critical channels.
+                if ((str.contains("error ", Qt::CaseInsensitive) || str.contains("error:", Qt::CaseInsensitive)) || str.contains("critical", Qt::CaseInsensitive))
                     LogError(message);
                 else if (str.contains("warning", Qt::CaseInsensitive) || str.contains("unexpected", Qt::CaseInsensitive) || str.contains("unknown", Qt::CaseInsensitive) || str.contains("cannot", Qt::CaseInsensitive) || str.contains("can not", Qt::CaseInsensitive))
                     LogWarning(message);
@@ -117,7 +138,7 @@ namespace OgreRenderer
         texturequality_(Texture_Normal)
     {
         c_handler_ = new CompositionHandler;
-        logListener = new OgreLogListener; 
+        logListener = new OgreLogListener(framework_->HasCommandLineParameter("--hide_benign_ogre_messages"));
 
         timerFrequency = GetCurrentClockFreq();
         PrepareConfig();

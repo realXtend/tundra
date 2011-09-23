@@ -1,5 +1,9 @@
 !include "fileassoc.nsh"
+
+# Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
+!ifndef VERSION
 !define VERSION "2.0"
+!endif
 
 Name "Tundra ${VERSION}"
 
@@ -34,12 +38,12 @@ Section ""
                    "QuietUninstallString" "$INSTDIR\uninstaller.exe /S"
 
   # Register file extensions for .txml and .tbin.
-  !insertmacro APP_ASSOCIATE "txml" "Tundra.Scenexmlfile" "Tundra XML Scene File" "$INSTDIR\data\ui\images\icon\naali_logo_32px_RC1.ico,0" "Edit in Tundra" "$INSTDIR\tundra.exe --file $\"%1$\""
+  !insertmacro APP_ASSOCIATE "txml" "Tundra.Scenexmlfile" "Tundra XML Scene File" "$INSTDIR\data\ui\images\icon\TundraLogo32px.ico,0" "Edit in Tundra" "$INSTDIR\tundra.exe --file $\"%1$\""
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "hostserverheadless" "Host in Tundra Server (UDP 2345)" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp --headless"
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "hostwindowedserver" "Host in Windowed Tundra Server (UDP 2345)" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp"
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "openviewer" "Open Tundra Viewer in this Project Folder" "$INSTDIR\tundra.exe --config viewer.xml --storage $\"%1$\""
 
-  !insertmacro APP_ASSOCIATE "tbin" "Tundra.Scenexmlfile" "Tundra Binary Scene File" "$INSTDIR\data\ui\images\icon\naali_logo_32px_RC1.ico,0" "Edit in Tundra" "$INSTDIR\tundra.exe --file $\"%1$\""
+  !insertmacro APP_ASSOCIATE "tbin" "Tundra.Scenexmlfile" "Tundra Binary Scene File" "$INSTDIR\data\ui\images\icon\TundraLogo32px.ico,0" "Edit in Tundra" "$INSTDIR\tundra.exe --file $\"%1$\""
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "hostserverheadless" "Host in Tundra Server (UDP 2345)" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp --headless"
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "hostwindowedserver" "Host in Windowed Tundra Server (UDP 2345)" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp"
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "openviewer" "Open Tundra Viewer in this Project Folder" "$INSTDIR\tundra.exe --config viewer.xml --storage $\"%1$\""

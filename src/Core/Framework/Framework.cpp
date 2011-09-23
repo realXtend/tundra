@@ -140,8 +140,10 @@ Framework::Framework(int argc, char** argv) :
     cmdLineDescs.commands["--assetcachedir"] = "Specify asset cache directory to use.";
     cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
     cmdLineDescs.commands["--loglevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'";
-    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--loglevel TundraLogFile.txt";
-
+    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt";
+    cmdLineDescs.commands["--physicsrate"] = "Specifies the number of physics simulation steps per second. Default: 60"; // PhysicsModule
+    cmdLineDescs.commands["--physicsmaxsteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6"; // PhysicsModule
+    
     if (HasCommandLineParameter("--help"))
     {
         std::cout << "Supported command line arguments: " << std::endl;
@@ -159,7 +161,13 @@ Framework::Framework(int argc, char** argv) :
         profilerQObj = new ProfilerQObj;
         // Create ConfigAPI, pass application data and prepare data folder.
         config = new ConfigAPI(this);
-        config->PrepareDataFolder("configuration");
+        QStringList configDirs = CommandLineParameters("--configdir");
+        QString configDir = "$(USERDATA)/configuration"; // The default configuration goes to "C:\Users\username\AppData\Roaming\Tundra\configuration"
+        if (configDirs.size() >= 1)
+            configDir = configDirs.last();
+        if (configDirs.size() > 1)
+            LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");        
+        config->PrepareDataFolder(configDir);
 
         // Create QApplication
         application = new Application(this, argc_, argv_);
@@ -171,7 +179,9 @@ Framework::Framework(int argc, char** argv) :
         
         QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
         if (CommandLineParameters("--assetcachedir").size() > 0)
-            assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir")[0]);
+            assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir").last());
+        if (CommandLineParameters("--assetcachedir").size() > 1)
+            LogWarning("Multiple --assetcachedir parameters specified! Using \"" + CommandLineParameters("--assetcachedir").last() + "\" as the assetcache directory.");
         
         if (!HasCommandLineParameter("--noassetcache"))
             asset->OpenAssetCache(assetCacheDir);

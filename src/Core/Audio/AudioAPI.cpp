@@ -25,8 +25,6 @@
 
 #include "MemoryLeakCheck.h"
 
-//#include <boost/thread/mutex.hpp>
-
 using namespace std;
 
 struct AudioApiImpl
@@ -69,8 +67,6 @@ public:
     float masterGain;
     /// Master gain for individual sound types
     std::map<SoundChannel::SoundType, float> soundMasterGain;
-
-//    boost::mutex mutex;
 };
 
 AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_)
@@ -90,8 +86,13 @@ assetAPI(assetAPI_)
     impl->soundMasterGain[SoundChannel::Voice] = 1.f;
     impl->listenerPosition = float3(0.0, 0.0, 0.0);
     
-    // By default, initialize default playback device
-    Initialize();
+    QStringList audioDevice = fw->CommandLineParameters("--audiodevice");
+    QString device = "";
+    if (audioDevice.size() >= 1)
+        device = audioDevice.back();
+    if (audioDevice.size() > 1)
+        LogWarning("Specified multiple --audiodevice parameters. Using \"" + device + "\".");
+    Initialize(device);
         
     // Set default master gains for sound types
     /*
@@ -148,7 +149,10 @@ bool AudioAPI::Initialize(const QString &playbackDeviceName)
     }
        
     alcMakeContextCurrent(impl->context);
-    LogInfo("Opened OpenAL playback device " + playbackDeviceName);
+    if (playbackDeviceName.isEmpty())
+        LogInfo("Opened default OpenAL playback device.");
+    else
+        LogInfo("Opened OpenAL playback device '" + playbackDeviceName + "'.");
     impl->initialized = true;
     return true;
 }

@@ -1091,6 +1091,34 @@ QString GuaranteeTrailingSlash(const QString &source)
     return s;
 }
 
+std::map<QString, QString> ParseAssetRefArgs(const QString &url, QString *body)
+{
+    std::map<QString, QString> keyValues;
+
+    int paramsStartIndex = url.indexOf("?");
+    if (paramsStartIndex == -1)
+    {
+        if (body)
+            *body = url;
+        return keyValues;
+    }
+    QString args = url.mid(paramsStartIndex+1);
+    if (body)
+        *body = url.left(paramsStartIndex);
+    QStringList params = args.split("&");
+    foreach(QString param, params)
+    {
+        QStringList keyValue = param.split("=");
+        if (keyValue.size() == 0 || keyValue.size() > 2)
+            continue; // Silently ignore malformed data.
+        QString key = keyValue[0].trimmed();
+        QString value = keyValue[1].trimmed();
+
+        keyValues[key] = value;
+    }
+    return keyValues;
+}
+
 AssetAPI::AssetTransferMap::iterator AssetAPI::FindTransferIterator(QString assetRef)
 {
     return currentTransfers.find(assetRef);

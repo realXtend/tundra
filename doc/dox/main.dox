@@ -11,8 +11,8 @@ Welcome to the Tundra developer documentation. This page is a site map that asse
 Obtain Tundra from
 <ul>
 <li><a href="http://code.google.com/p/realxtend-naali/downloads/list">A binary distribution</a>.
-<li><a href="http://github.com/realXtend">Source repository on github</a>. Remember to checkout to the <b>tundra</b> branch.
-<li><a href="http://code.google.com/p/realxtend-naali-deps/">Binary dependencies repository on Google code</a>.   
+<li><a href="http://github.com/realXtend">Source repository on github</a>. Remember to checkout to the <b>tundra2</b> branch.
+<li><a href="http://code.google.com/p/realxtend-tundra-deps/">Binary dependencies repository on Google code</a>.
 </ul>
 <a href="http://github.com/realXtend/naali/blob/develop/license.txt">Tundra distribution license</a>.
 </td>
@@ -20,9 +20,8 @@ Obtain Tundra from
 <h2>Getting Started</h2>
 Follow these first steps.
 <ul>
+<li>todo What is Tundra?
 <li>\ref BuildOnWindows "Building and Running Tundra on Windows".
-<li><a href="http://wiki.realxtend.org/index.php/Getting_Started_with_Naali">Getting started with Naali</a> (old).
-<li><a href="http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk">Building the sources</a> (old).
 <li>\ref RunningTundra "Configuring and Running Tundra."
 </ul>
 </td>
@@ -35,7 +34,6 @@ Contact Tundra developers and users at
 <ul>
 <li><a href="http://groups.google.com/group/realxtend-dev">Developer mailing list</a>.
 <li><a href="http://groups.google.com/group/realxtend">End-user mailing list</a>.
-<li><a href="http://wiki.realxtend.org/index.php/Main_Page">Naali community wiki</a> (old for Tundra content).
 <li>IRC channels: #realxtend and #realxtend-dev on <a href="http://freenode.net/">freenode</a>.
 <li>Bug tracker: <a href="http://github.com/realXtend/naali/issues">github</a>
 </ul>
@@ -301,20 +299,52 @@ In addition to providing the core API, Tundra contains the following functional 
 This subsystem consists of the rendering library and the graphics-related Tundra scene features.  
 
 See the following topics for more information:
-	- \ref OgreRenderingModule "Using the Ogre renderer module".
-	
+    - \ref OgreRenderingModule "Using the Ogre renderer module".
+
 <p>Implemented by modules
 <ul>
-<li>OgreRenderingModule
-<ul><li>Exposes the components OgrePlaceable, OgreMesh, OgreLight, OgreSky, OgreCustomObject, OgreConsoleOverlay, OgreMovableTextOverlay, OgreParticleSystem, OgreAnimationController, OgreEnvironment, OgreCamera.</ul> 
+<li>OgreRenderer::OgreRenderingModule
+<ul><li>Exposes the components EC_Placeable, EC_Mesh, EC_Light, EC_ParticleSystem, EC_AnimationController, EC_Camera, EC_Material, EC_OgreCompositor, EC_RttCamera.</ul> 
 <li>EnvironmentModule
-<ul><li>Exposes the components Terrain, Water.</ul> 
+<ul><li>Exposes the components EC_Sky, EC_Terrain, EC_WaterPlane, EC_Fog.</ul> 
 </ul>
 
 </td>
 </tr>
 </table>
 
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
+<h3>Physics</h3>
+Physics simulation using Bullet.
+
+<p>Implemented by modules
+<ul>
+<li>Physics::PhysicsModule
+<ul><li>Exposes the components EC_RigidBody, EC_VolumeTrigger.</ul>
+</ul>
+</td>
+</tr>
+</table>
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
+<h3>Script</h3>
+Allows implementing modules using the Python script language as well as embedding new functionality into scene entities by using JavaScript or Python.
+
+<p>Implemented by modules and components
+<ul>
+<li>PythonScript::PythonScriptModule
+<li>JavascriptModule
+<li>EC_Script
+<li>EC_DynamicComponent
+</ul>
+
+</td>
+</tr>
+</table>
 
 <table style="margin: 20px;">
 <tr>
@@ -327,30 +357,11 @@ See the following topics for more information:
 
 <p>Implemented by modules
 <ul>
-<li>CommunicationsModule
-<li>MumbleVoipModule
-<li>PhononPlayerModule
+<li>MumbleVoip::MumbleVoipModule
+<li>VlcPlugin
 </ul>
 
 </td>
 </tr>
 </table>
-
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
-<h3>Script</h3>
-Allows implementing modules using the Python script language as well as embedding new functionality into scene entities by using JavaScript or Python.
-
-<p>Implemented by modules
-<ul>
-<li>PythonScriptModule
-<ul><li>Exposes the component DynamicComponent.</ul>
-<li>JavascriptScriptModule
-</ul>
- 
-</td>
-</tr>
-</table>
-
 */
