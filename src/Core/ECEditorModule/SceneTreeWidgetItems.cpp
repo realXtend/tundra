@@ -321,7 +321,7 @@ AssetStorageItem::AssetStorageItem(const AssetStoragePtr &storage, QTreeWidgetIt
     QTreeWidgetItem(parent),
     assetStorage(storage)
 {
-    setText(0, storage->ToString());//Name());
+    setText(0, storage->ToString() + (!storage->Writable() ?  QApplication::translate("AssetStorageItem", " (Read-only)") : QString()));
 }
 
 AssetStoragePtr AssetStorageItem::Storage() const
