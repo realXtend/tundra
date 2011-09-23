@@ -54,6 +54,9 @@ public slots:
     /// @return bool True if playing, false if paused.
     bool TogglePlay();
 
+    /// Return the current media state.
+    libvlc_state_t GetMediaState() const;
+
 	/// Start playback
 	void Play();
 
@@ -70,7 +73,7 @@ public slots:
     void ShutDown();
 
     /// Return if initialized and ready for playback
-    bool Initialized();
+    bool Initialized() const;
 
     /// Force to emit the idle image.
     void ForceUpdateImage();

@@ -3,6 +3,7 @@
 #include "DebugOperatorNew.h"
 #include "EC_MediaPlayer.h"
 #include "VlcMediaPlayer.h"
+#include "VlcVideoWidget.h"
 
 #include "Framework.h"
 #include "SceneAPI.h"
@@ -118,6 +119,20 @@ EC_MediaPlayer::~EC_MediaPlayer()
 
 // Public slots
 
+QAbstractAnimation::State EC_MediaPlayer::GetMediaState() const
+{
+    if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
+        return QAbstractAnimation::Stopped;
+
+    libvlc_state_t state = mediaPlayer_->GetVideoWidget()->GetMediaState();
+    if (state == libvlc_Playing)
+        return QAbstractAnimation::Running;
+    else if (state == libvlc_Paused)
+        return QAbstractAnimation::Paused;
+    else
+        return QAbstractAnimation::Stopped;
+}
+
 void EC_MediaPlayer::PlayPauseToggle()
 {
     // Don't do anything if rendering is not enabled
@@ -129,6 +144,41 @@ void EC_MediaPlayer::PlayPauseToggle()
         return;
     mediaPlayer_->PlayPause();
 }
+
+void EC_MediaPlayer::Play()
+{
+    // Don't do anything if rendering is not enabled
+    if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return;
+    if (!componentPrepared_)
+        return;
+    if (!mediaPlayer_ || mediaPlayer_->Media().isEmpty())
+        return;
+    if (!mediaPlayer_->GetVideoWidget())
+        return;
+
+    QAbstractAnimation::State state = GetMediaState();
+    if (state != QAbstractAnimation::Running)
+        mediaPlayer_->GetVideoWidget()->Play();
+}
+
+void EC_MediaPlayer::Pause()
+{
+    // Don't do anything if rendering is not enabled
+    if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return;
+    if (!componentPrepared_)
+        return;
+    if (!mediaPlayer_ || mediaPlayer_->Media().isEmpty())
+        return;
+    if (!mediaPlayer_->GetVideoWidget())
+        return;
+
+    QAbstractAnimation::State state = GetMediaState();
+    if (state == QAbstractAnimation::Running)
+        mediaPlayer_->GetVideoWidget()->Pause();
+}
+
 
 void EC_MediaPlayer::Stop()
 {

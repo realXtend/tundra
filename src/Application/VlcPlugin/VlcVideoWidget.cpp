@@ -94,7 +94,7 @@ VlcVideoWidget::~VlcVideoWidget()
         ShutDown();
 }
 
-bool VlcVideoWidget::Initialized()
+bool VlcVideoWidget::Initialized() const
 {
     if (!vlcInstance_ || !vlcPlayer_)
         return false;
@@ -152,6 +152,13 @@ bool VlcVideoWidget::OpenSource(const QString &videoUrl)
     return false;
 }
 
+libvlc_state_t VlcVideoWidget::GetMediaState() const
+{
+    if (!Initialized() || !vlcMedia_)
+        return libvlc_Error;
+    return libvlc_media_get_state(vlcMedia_);
+}
+
 bool VlcVideoWidget::TogglePlay()
 {
     statusAccess.lock();
@@ -171,16 +178,18 @@ bool VlcVideoWidget::TogglePlay()
 
 void VlcVideoWidget::Play() 
 {
-    if (vlcPlayer_)
-        if (!libvlc_media_player_is_playing(vlcPlayer_))
-            libvlc_media_player_play(vlcPlayer_);
+    if (!vlcPlayer_)
+        return;
+    if (!libvlc_media_player_is_playing(vlcPlayer_))
+        libvlc_media_player_play(vlcPlayer_);
 }
 
 void VlcVideoWidget::Pause() 
 {
-    if (vlcPlayer_)
-        if (libvlc_media_player_can_pause(vlcPlayer_))
-            libvlc_media_player_pause(vlcPlayer_);
+    if (!vlcPlayer_)
+        return;
+    if (libvlc_media_player_can_pause(vlcPlayer_))
+        libvlc_media_player_pause(vlcPlayer_);
 }
 
 void VlcVideoWidget::Stop() 

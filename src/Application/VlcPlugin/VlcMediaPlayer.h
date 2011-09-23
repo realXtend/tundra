@@ -52,6 +52,9 @@ public slots:
     /// Force to emit the idle image
     void ForceUpdateImage();
 
+    /// Returns the underlying VlcVideoWidget ptr.
+    VlcVideoWidget *GetVideoWidget() { return videoWidget_; }
+
 signals:
     /// Rendering frame update.
     void FrameUpdate(QImage frame);

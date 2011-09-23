@@ -14,6 +14,7 @@
 #include <QImage>
 #include <QTimer>
 #include <QMenu>
+#include <QAbstractAnimation>
 
 class EC_Mesh;
 class EC_WidgetCanvas;
@@ -70,8 +71,18 @@ public:
     COMPONENT_NAME("EC_MediaPlayer", 37)
 
 public slots:
+    /// Returns current video state. QAbstractAnimation::State can be Running (2), Paused (1) and Stopped (0).
+    /// This enum is used because its auto exposed to scripting etc. and suits our purposes here.
+    QAbstractAnimation::State GetMediaState() const;
+
     /// Plays video is stopped or paused, pauses otherwise.
     void PlayPauseToggle();
+
+    /// Starts playing the video if stopped or paused.
+    void Play();
+
+    /// Pauses the video if playing.
+    void Pause();
 
     /// Stop video playback. This will reset the timer to the start of the video.
     void Stop();
