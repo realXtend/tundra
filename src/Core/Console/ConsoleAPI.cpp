@@ -121,6 +121,18 @@ void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObje
     commands[name] = command;
 }
 
+void ConsoleAPI::UnregisterCommand(const QString &name)
+{
+    CommandMap::iterator it = commands.find(name);
+    if (it == commands.end())
+    {
+        LogWarning("ConsoleAPI: Trying to unregister non-existing command " + name + ".");
+        return;
+    }
+
+    commands.erase(it);
+}
+
 /// Splits a string of form "MyFunctionName(param1, param2, param3, ...)" into
 /// a commandName = "MyFunctionName" and a list of parameters as a StringList.
 void ParseCommand(QString command, QString &commandName, QStringList &parameterList)
