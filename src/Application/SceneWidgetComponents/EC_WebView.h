@@ -145,8 +145,18 @@ public slots:
     /// \note If you do custom menu handling set the 'interactive' boolean to false so we wont try to double popup QMenus.
     QMenu *GetInteractionMenu(bool createSubmenu = true);
 
+    //public 
     /// Enables/disables the QWebView scrollbars.
     void EnableScrollbars(bool enabled);
+
+    /// Handles request to show the QWebView
+    void InteractShowRequest();
+
+    /// Handles requests to take control of sharing
+    void InteractControlRequest();
+
+    /// Handles requests to release control of sharing
+    void InteractControlReleaseRequest();
 
 private slots:
     /// Server side handler for user disconnects.
@@ -220,15 +230,6 @@ private slots:
 
     /// Monitors entity mouse clicks.
     void EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
-
-    /// Handles request to show the QWebView
-    void InteractShowRequest();
-
-    /// Handles requests to take control of sharing
-    void InteractControlRequest();
-
-    /// Handles requests to release control of sharing
-    void InteractControlReleaseRequest();
 
     /// Handles entity action WebViewControllerChanged
     /// \note The action signature is (string)"WebViewControllerChanged", (int)"id", (string)"name"
