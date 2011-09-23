@@ -102,8 +102,9 @@ namespace OgreRenderer
                 LogDebug(message);
             else // lml == Ogre::LML_NORMAL here.
             {
-                // Because Ogre distinguishes different log levels *VERY POORLY* (practically all messages come in the LML_NORMAL), we use manual format checks to decide between Info/Warning/Error/Critical channels.
-                if (str.contains("error", Qt::CaseInsensitive) || str.contains("critical", Qt::CaseInsensitive))
+                // Because Ogre distinguishes different log levels *VERY POORLY* (practically all messages come in the LML_NORMAL), 
+                // we need to use manual format checks to guess between Info/Warning/Error/Critical channels.
+                if ((str.contains("error ", Qt::CaseInsensitive) || str.contains("error:", Qt::CaseInsensitive)) || str.contains("critical", Qt::CaseInsensitive))
                     LogError(message);
                 else if (str.contains("warning", Qt::CaseInsensitive) || str.contains("unexpected", Qt::CaseInsensitive) || str.contains("unknown", Qt::CaseInsensitive) || str.contains("cannot", Qt::CaseInsensitive) || str.contains("can not", Qt::CaseInsensitive))
                     LogWarning(message);
