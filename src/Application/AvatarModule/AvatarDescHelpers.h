@@ -19,6 +19,7 @@ struct AV_MODULE_API AvatarTransform
     float3 scale_;
     
     AvatarTransform() : position_(float3::zero),
+        orientation_(Quat::identity),
         scale_(1.0f, 1.0f, 1.0f)
     {
     }

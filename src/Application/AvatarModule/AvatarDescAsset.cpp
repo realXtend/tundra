@@ -426,15 +426,8 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     
     QDomElement name = elem.firstChildElement("name");
     if (!name.isNull())
-    {
         attachment.name_ = name.attribute("value").toStdString();
-    }
-    else
-    {
-        LogError("Attachment without name element");
-        return;
-    }
-    
+
     // Awesome new feature: we may define material(s) for attachment
     QDomElement material = elem.firstChildElement("material");
     while (!material.isNull())
@@ -470,9 +463,12 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
             attachment.bone_name_ = bone.attribute("name").toStdString();
             if (attachment.bone_name_ == "None")
                 attachment.bone_name_ = std::string();
-            attachment.transform_.position_ = float3::FromString(bone.attribute("offset"));
-            attachment.transform_.orientation_ = QuatFromLegacyRexString(bone.attribute("rotation"));
-            attachment.transform_.scale_ = float3::FromString(bone.attribute("scale"));
+            if (!bone.attribute("offset").isNull())
+                attachment.transform_.position_ = float3::FromString(bone.attribute("offset"));
+            if (!bone.attribute("rotation").isNull())
+                attachment.transform_.orientation_ = QuatFromLegacyRexString(bone.attribute("rotation"));
+            if (!bone.attribute("scale").isNull())
+                attachment.transform_.scale_ = float3::FromString(bone.attribute("scale"));
         }
         
         QDomElement polygon = avatar.firstChildElement("avatar_polygon");
