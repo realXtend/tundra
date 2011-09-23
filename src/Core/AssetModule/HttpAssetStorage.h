@@ -52,7 +52,7 @@ public slots:
     virtual bool Trusted() const;
 
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
-    virtual QString GetFullAssetURL(const QString &localName) { return GuaranteeTrailingSlash(baseAddress) + localName; }
+    virtual QString GetFullAssetURL(const QString &localName);
 
     /// Returns the type of this storage: "HttpAssetStorage".
     virtual QString Type() const;
@@ -72,10 +72,10 @@ public slots:
     /// Serializes this storage to a string for machine transfer.
     virtual QString SerializeToString() const;
 
-    /// Add an assetref. Emit AssetRefsChanged() if did not exist already. Called by HttpAssetProvider
+    /// Adds an assetref. Emits AssetChanged() if did not exist already. Called by HttpAssetProvider
     void AddAssetRef(const QString& ref);
 
-    /// Delete an assetref. Emit AssetRefsChanged() if found. Called by HttpAssetProvider
+    /// Deletes an assetref. Emits AssetChanged() if found. Called by HttpAssetProvider
     void DeleteAssetRef(const QString& ref);
     
     /// Returns the local directory of this storage. Empty if not local.

@@ -431,7 +431,7 @@ private slots:
     void OnAssetStorageRefsChanged(AssetStoragePtr storage);
 
     /// Contents of asset storage has been changed.
-//    void OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change);
+    void OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change);
 
 private:
     AssetTransferMap::iterator FindTransferIterator(QString assetRef);

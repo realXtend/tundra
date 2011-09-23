@@ -35,6 +35,16 @@ LocalAssetStorage::~LocalAssetStorage()
 
 void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType)
 {
+    ///\todo Profile which ones are better: Boost's or Qt's directory iterators. Preliminary tests by me (Stinkfist) show that Qt's are better.
+    foreach(QString str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+        if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
+        {
+            int lastSlash = str.lastIndexOf('/');
+            if (lastSlash != -1)
+                str = str.right(str.length() - lastSlash - 1);
+            assetAPI->RequestAsset("local://" + str, assetType);
+        }
+/*
     try
     {
         if (recursive)
@@ -77,13 +87,13 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
     catch (...)
     {
     }
+*/
 }
 
 void LocalAssetStorage::RefreshAssetRefs()
 {
+    ///\todo Profile which ones are better: Boost's or Qt's directory iterators. Preliminary tests by me (Stinkfist) show that Qt's are better.
     PROFILE(LocalAssetStorage_RefreshAssetRefs)
-    assetRefs.clear();
-/*
     {
         PROFILE(LocalAssetStorage_RefreshAssetRefs_QtDirectorySearch)
         foreach(QString str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
@@ -93,11 +103,18 @@ void LocalAssetStorage::RefreshAssetRefs()
                 int lastSlash = str.lastIndexOf('/');
                 if (lastSlash != -1)
                     str = str.right(str.length() - lastSlash - 1);
-                assetRefs.append("local://" + str);
-                emit AssetChanged(str, diskSource, IAssetStorage::AssetCreate);
+                QString localName = str;
+                str.prepend("local://");
+                if (!assetRefs.contains(str))
+                {
+                    assetRefs.append(str);
+                    emit AssetChanged(localName, diskSource, IAssetStorage::AssetCreate);
+                }
             }
     }
-*/
+
+/*
+    assetRefs.clear();
     PROFILE(LocalAssetStorage_RefreshAssetRefs_boost)
     {
         try
@@ -145,6 +162,7 @@ void LocalAssetStorage::RefreshAssetRefs()
     }
 
     emit AssetRefsChanged(this->shared_from_this());
+*/
 }
 
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)

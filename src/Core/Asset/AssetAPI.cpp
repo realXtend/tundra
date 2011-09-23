@@ -116,14 +116,12 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
     {
         AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
         // The above function will call back to AssetAPI::EmitAssetStorageAdded.
-
         if (assetStorage)
         {
             // Make this storage the default storage if it was requested so.
             QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
             if (s.contains("default") && ParseBool(s["default"]))
                 SetDefaultAssetStorage(assetStorage);
-
             return assetStorage;
         }
     }
@@ -1538,9 +1536,11 @@ void AssetAPI::EmitAssetDeletedFromStorage(const QString &assetRef)
 
 void AssetAPI::EmitAssetStorageAdded(AssetStoragePtr newStorage)
 {
-    // Connect to the asset storage's refs refreshed signal, so that we can create actual empty assets from its refs whenever new assets are added to 
-    // this storage from external sources.
-    connect(newStorage.get(), SIGNAL(AssetRefsChanged(AssetStoragePtr)), this, SLOT(OnAssetStorageRefsChanged(AssetStoragePtr)), Qt::UniqueConnection);            
+    // Connect to the asset storage's AssetChanged signal, so that we can create actual empty assets
+    // from its refs whenever new assets are added to this storage from external sources.
+    connect(newStorage.get(), SIGNAL(AssetChanged(QString,QString,IAssetStorage::ChangeType)),
+        SLOT(OnAssetChanged(QString,QString,IAssetStorage::ChangeType)), Qt::UniqueConnection);
+//    connect(newStorage.get(), SIGNAL(AssetRefsChanged(AssetStoragePtr)), this, SLOT(OnAssetStorageRefsChanged(AssetStoragePtr)), Qt::UniqueConnection);
     emit AssetStorageAdded(newStorage);
 }
 
@@ -1622,7 +1622,6 @@ void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
     }
 }
 
-/*
 void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change)
 {
     IAssetStorage *storage = dynamic_cast<IAssetStorage *>(sender());
@@ -1636,7 +1635,7 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
     switch(change)
     {
     case IAssetStorage::AssetCreate:
-        LogDebug("AssetAPI::OnAssetChanged:AssetCreate");
+//        LogDebug("AssetAPI::OnAssetChanged:AssetCreate " + assetRef);
         //assert(!existing);
         if (existing)
         {
@@ -1654,7 +1653,7 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
         }
         break;
     case IAssetStorage::AssetModify:
-        LogDebug("AssetAPI::OnAssetChanged:AssetModify");
+//        LogDebug("AssetAPI::OnAssetChanged:AssetModify " + assetRef);
         //assert(existing);
         if (existing)
             //if (existing->IsLoaded())
@@ -1663,7 +1662,7 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
             LogError("AssetAPI::OnAssetChanged: Received AssetModify notification for non-existing asset.");
         break;
     case IAssetStorage::AssetDelete:
-        //LogInfo("AssetAPI::OnAssetChanged:AssetDelete");
+//        LogDebug("AssetAPI::OnAssetChanged:AssetDelete " + assetRef);
         //assert(existing);
         if (existing)
             ForgetAsset(existing, false); // The asset should be already deleted; do not delete disk source.
@@ -1673,7 +1672,6 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
         break;
     }
 }
-*/
 
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
 {
