@@ -87,6 +87,13 @@ UiAPI::UiAPI(Framework *owner_) :
     // Prepare graphics view and scene
     graphicsView = new UiGraphicsView(mainWindow);
 
+    // If debugging the compositing system, restore back default Qt window state.
+    if (owner_->HasCommandLineParameter("--nouicompositing"))
+    {
+        graphicsView->setUpdatesEnabled(true);
+        graphicsView->setAttribute(Qt::WA_DontShowOnScreen, false);
+    }
+
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
 
     // QMainWindow has a layout by default. It will not let you set another.
