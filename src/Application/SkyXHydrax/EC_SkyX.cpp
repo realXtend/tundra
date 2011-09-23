@@ -28,6 +28,7 @@
 
 #include "MemoryLeakCheck.h"
 
+/// @cond PRIVATE
 struct EC_SkyXImpl
 {
     EC_SkyXImpl() : skyX(0), sunlight(0), cloudLayer(0) {}
@@ -48,6 +49,7 @@ struct EC_SkyXImpl
     Ogre::Light *sunlight;
     SkyX::CloudLayer *cloudLayer; ///< Currently just one cloud layer used.
 };
+/// @endcond
 
 EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
