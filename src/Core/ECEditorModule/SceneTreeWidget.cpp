@@ -320,7 +320,6 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         connect(functionsAction, SIGNAL(triggered()), SLOT(OpenFunctionDialog()));
         connect(toLocalAction, SIGNAL(triggered()), SLOT(ConvertEntityToLocal()));
         connect(toReplicatedAction, SIGNAL(triggered()), SLOT(ConvertEntityToReplicated()));
-        connect(temporaryAction, SIGNAL(toggled(bool)), SLOT(SetAsTemporary(bool)));
     }
 
     // "Rename" action is possible only if have one entity selected.
@@ -375,6 +374,9 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
             temporaryAction->setDisabled(true);
         }
     }
+
+    if (temporaryAction)
+        connect(temporaryAction, SIGNAL(toggled(bool)), SLOT(SetAsTemporary(bool)));
 
     if (pastePossible)
         menu->addAction(pasteAction);
