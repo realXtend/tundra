@@ -9,7 +9,6 @@
 #include "QtUtils.h"
 #include "Profiler.h"
 
-#include <boost/filesystem.hpp>
 #include <QFileSystemWatcher>
 #include <QDir>
 #include <utility>
@@ -64,26 +63,18 @@ void LocalAssetStorage::RefreshAssetRefs()
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)
 {
     QDir dir(GuaranteeTrailingSlash(directory) + assetname);
-    if (boost::filesystem::exists(dir.absolutePath().toStdString()))
+    if (QFile::exists(dir.absolutePath()))
         return directory;
 
     if (!recursive || !recursiveLookup)
         return "";
 
-    try
+    foreach(const QString &str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
     {
-        boost::filesystem::recursive_directory_iterator iter(directory.toStdString()), end_iter;
-        for(; iter != end_iter; ++iter)
-        {
-            QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname);
-            if (!boost::filesystem::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
-                return iter->path().string().c_str();
-        }
+        QDir dir(GuaranteeTrailingSlash(str) + assetname);
+        if (dir.exists())
+            return dir.path();
     }
-    catch(...)
-    {
-    }
-
     return "";
 }
 

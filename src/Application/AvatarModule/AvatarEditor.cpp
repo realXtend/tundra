@@ -14,7 +14,6 @@
 #include "Entity.h"
 
 #include "ConfigAPI.h"
-#include <boost/filesystem.hpp>
 #include <QUiLoader>
 #include <QFile>
 #include <QLineEdit>
