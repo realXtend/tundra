@@ -12,7 +12,7 @@
     <td>
     <h2>Environment fog</h2>
 
-    Registered by Enviroment::EnvironmentModule.
+    Registered by EnviromentComponents plugin.
     Defines the overall fog settings for the whole scene, hence only one component per scene is applicable.
     Sets also the background color of the viewport same as the fog color.
 

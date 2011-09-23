@@ -26,12 +26,12 @@ class UserConnection;
 
 namespace TundraLogic { class Server; }
 
-//! A web browser on who's content can be rendered into a 3D scene object.
+/// A web browser of which content can be rendered into a 3D scene object.
 /**
 <table class="header"><tr><td>
 <h2>WebView</h2>
 
-A web browser on who's content can be rendered into a 3D scene object. The component also support sharing your browsing with across all clients in the world.
+A web browser of which content can be rendered into a 3D scene object. The component also support sharing your browsing with across all clients in the world.
 You can set the 'interactive' attribute boolean to true. After this clients will get a context menu when clicking mouse on the 3D object the web browser is rendered to.
 This menu will provide you to get a 2D UI of the browser and let you take control of shared browsing.
 

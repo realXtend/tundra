@@ -63,10 +63,6 @@ void ECEditorModule::Uninitialize()
     SAFE_DELETE_LATER(xmlEditor);
 }
 
-void ECEditorModule::Update(f64 frametime)
-{
-}
-
 ECEditorWindow *ECEditorModule::ActiveEditor() const
 {
     return activeEditor;

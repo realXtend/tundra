@@ -22,8 +22,8 @@ namespace Ogre
 
 class QTimer;
 
+/// Paints UI widgets on to a 3D object surface
 /**
-
 <table class="header">
 <tr>
 <td>
@@ -58,10 +58,7 @@ Registered by SceneWidgetComponents plugin.
 Does not emit any actions.
 
 <b>Depends on the component OgreCustomObject and OgreMesh</b>. 
-</table>
-
-*/
-
+</table> */
 class SCENEWIDGET_MODULE_API EC_WidgetCanvas : public IComponent
 {
     Q_OBJECT

@@ -20,6 +20,7 @@ namespace kNet
     typedef unsigned long message_id_t;
 }
 
+/// Implements asset providers and storages for local disk assets and HTTP assets.
 class ASSET_MODULE_API AssetModule : public IModule
 {
     Q_OBJECT

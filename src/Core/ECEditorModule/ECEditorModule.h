@@ -16,9 +16,11 @@ class EcXmlEditorWidget;
 class TreeWidgetItemExpandMemory;
 typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
 
-/// Entity-component editor module.
-/** @defgroup ECEditorModuleClient ECEditorModule Client interface.
-    Implements and enables visual editing of ECs. */
+/// Implements and enables visual editing of ECs.
+/** @defgroup ECEditorModuleClient ECEditorModule Client interface. */
+
+/// Implements and enables visual editing of ECs.
+/** @ingroup ECEditorModuleClient */
 class ECEDITOR_MODULE_API ECEditorModule : public IModule
 {
     Q_OBJECT
@@ -29,7 +31,6 @@ public:
 
     void Initialize();
     void Uninitialize();
-    void Update(f64 frametime);
 
 public slots:
     /// Shows the entity-component editor window.
