@@ -49,6 +49,8 @@ whenever it improves readability.
 
 Use unnamed namespaces over the C-like <b>static</b> keyword.
 
+<b>Do not use "Get"-prefix for getters.</b>
+
 \subsection Identifier Naming
 The following identifiers are written in <b>title case</b>:
 \verbatim
@@ -63,7 +65,7 @@ Interfaces should be prefixed with 'I'. ex: IMyNewClass.
 Local variables and public/protected member variables are written in camel case:
 \verbatim
 int localVar;
-AvatarPtr userAgent = manager->GetUserAgent();
+AvatarPtr userAgent = manager->UserAgent();
 int AvatarNode::numOfFriends;
 Q_PROPERTY(QString name ...)
 \endverbatim
