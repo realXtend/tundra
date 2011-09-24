@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_InputMapper.h
- *  @brief  Registers an InputContext from the Input API and uses it to translate
- *          given set of key and mouse sequences to Entity Actions on the entity the component is part of.
+ *  @brief  Translates given set of key and mouse sequences to Entity Actions on the entity the component is part of.
  */
 
 #pragma once
@@ -17,8 +16,7 @@
 #include <QKeySequence>
 #include <QVariant>
 
-/// Registers an InputContext from the Input API and uses it to translate
-/// given set of key and mouse sequences to Entity Actions on the entity the component is part of.
+/// Translates given set of key and mouse sequences to Entity Actions on the entity the component is part of.
 /**
 <table class="header">
 <tr>
