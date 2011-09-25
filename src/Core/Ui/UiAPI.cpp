@@ -102,7 +102,9 @@ UiAPI::UiAPI(Framework *owner_) :
         mainWindow->setLayout(new QVBoxLayout());
     mainWindow->layout()->setMargin(0);
     mainWindow->layout()->setContentsMargins(0,0,0,0);
-    mainWindow->setCentralWidget(graphicsView);
+    mainWindow->layout()->addWidget(graphicsView);
+    // The Qt APIs want us to do this, but it causes improper scrollarea sizing.
+//    mainWindow->setCentralWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
