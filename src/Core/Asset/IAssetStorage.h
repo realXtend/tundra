@@ -73,7 +73,9 @@ public slots:
     virtual QString ToString() const { return Name() + " (" + BaseURL() + ")"; }
 
     /// Serializes this storage to a string for machine transfer.
-    virtual QString SerializeToString() const = 0;
+    /// @param networkTransfer If false, the storage configuration is to be serialized for saving the configuration to disk (all values need to be stored).
+    ///                        If true, the storage configuration is to be serialized for transfer to another computer via network.
+    virtual QString SerializeToString(bool networkTransfer = false) const = 0;
 
 signals:
     /// Asset refs have changed, either as a result of refresh, or upload / delete

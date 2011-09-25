@@ -92,7 +92,7 @@ public slots:
     QString ToString() const { return Name() + " (" + directory + ")"; }
 
     /// Serializes this storage to a string for machine transfer.
-    virtual QString SerializeToString() const;
+    virtual QString SerializeToString(bool networkTransfer = false) const;
 
     /// If @c change is IAssetStorage::AssetCreate, adds file to the list of asset refs and signal
     void EmitAssetChanged(QString absoluteFilename, IAssetStorage::ChangeType change);

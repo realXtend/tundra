@@ -50,11 +50,14 @@ void HttpAssetStorage::RefreshAssetRefs()
     PerformSearch(baseUrl.path());
 }
 
-QString HttpAssetStorage::SerializeToString() const
+QString HttpAssetStorage::SerializeToString(bool networkTransfer) const
 {
-    return "type=" + Type() + ";name=" + storageName + (localDir.isEmpty() ? QString() : ";localdir=" + localDir) +
-        ";src=" + baseAddress + ";readonly=" + (!writable ? "true" : "false") + ";liveupdate=" + (liveUpdate ? "true" : "false") +
-        ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
+    QString str = "type=" + Type() + ";name=" + storageName + 
+            ";src=" + baseAddress + ";readonly=" + (!writable ? "true" : "false") + ";liveupdate=" + (liveUpdate ? "true" : "false") +
+            ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
+    if (!networkTransfer)
+        str = str + (localDir.isEmpty() ? QString() : ";localdir=" + localDir);
+    return str;
 }
 
 void HttpAssetStorage::PerformSearch(QString path)

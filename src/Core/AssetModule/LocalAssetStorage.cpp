@@ -91,10 +91,13 @@ QString LocalAssetStorage::Type() const
     return "LocalAssetStorage";
 }
 
-QString LocalAssetStorage::SerializeToString() const
+QString LocalAssetStorage::SerializeToString(bool networkTransfer) const
 {
-    return "type=" + Type() + ";name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false") + ";readonly=" + (!writable ? "true" : "false") +
-        ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
+    if (networkTransfer)
+        return ""; // Cannot transfer a LocalAssetStorage through network to another computer, since it is local to this system!
+    else
+        return "type=" + Type() + ";name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false") + ";readonly=" + (!writable ? "true" : "false") +
+            ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
 }
 
 void LocalAssetStorage::EmitAssetChanged(QString absoluteFilename, IAssetStorage::ChangeType change)

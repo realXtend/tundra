@@ -193,9 +193,11 @@ void AssetModule::ServerNewUserConnected(int connectionID, UserConnection *conne
     QDomElement assetRoot = doc.createElement("asset");
     doc.appendChild(assetRoot);
     
+    // Did we get a new user from the same computer the server is running at?
     bool isLocalhostConnection = (connection->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
         connection->connection->LocalEndPoint().IPToString() == connection->connection->RemoteEndPoint().IPToString());
 
+    // Serialize all storages to the client. If the client is from the same computer than the server, we can also serialize the LocalAssetStorages.
     std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();
     for(size_t i = 0; i < storages.size(); ++i)
     {
@@ -203,10 +205,12 @@ void AssetModule::ServerNewUserConnected(int connectionID, UserConnection *conne
         if (!isLocalStorage || isLocalhostConnection)
         {
             QDomElement storage = doc.createElement("storage");
-            storage.setAttribute("data", storages[i]->SerializeToString());
+            storage.setAttribute("data", storages[i]->SerializeToString(!isLocalhostConnection));
             assetRoot.appendChild(storage);
         }
     }
+
+    // Specify which storage to use as default.
     AssetStoragePtr defaultStorage = framework_->Asset()->GetDefaultAssetStorage();
     bool defaultStorageIsLocal = (dynamic_cast<LocalAssetStorage*>(defaultStorage.get()) != 0);
     if (defaultStorage && (!defaultStorageIsLocal || isLocalhostConnection))

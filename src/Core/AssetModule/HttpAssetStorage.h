@@ -71,7 +71,7 @@ public slots:
     virtual void RefreshAssetRefs();
 
     /// Serializes this storage to a string for machine transfer.
-    virtual QString SerializeToString() const;
+    virtual QString SerializeToString(bool networkTransfer = false) const;
 
     /// Adds an assetref. Emits AssetChanged() if did not exist already. Called by HttpAssetProvider
     void AddAssetRef(const QString& ref);
