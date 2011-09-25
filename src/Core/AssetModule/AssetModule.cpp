@@ -48,7 +48,8 @@ void AssetModule::Initialize()
     framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
     
     QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
-    AssetStoragePtr storage = local->AddStorageDirectory(systemAssetDir, "System", true, QFileInfo(systemAssetDir).isWritable());
+    AssetStoragePtr storage = local->AddStorageDirectory(systemAssetDir, "System", true, false);
+//    AssetStoragePtr storage = local->AddStorageDirectory(systemAssetDir, "System", true, QFileInfo(systemAssetDir).isWritable());
     storage->SetReplicated(false); // If we are a server, don't pass this storage to the client.
 
     QString jsAssetDir = Application::InstallationDirectory() + "jsmodules";
