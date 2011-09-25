@@ -60,7 +60,7 @@ public:
 
     virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
-    virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
+    virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage, bool fromNetwork);
 
     QString GenerateUniqueStorageName() const;
 
@@ -90,7 +90,10 @@ private:
     QSet<QString> changedFiles; ///< Pending file changes.
     QSet<QString> changedDirectories; ///< Pending directory changes.
 
-    private slots:
-        void OnFileChanged(const QString &path);
-        void OnDirectoryChanged(const QString &path);
+    /// If true, assets outside any known local storages are allowed. Otherwise, requests to them will fail.
+    bool enableRequestsOutsideStorages;
+
+private slots:
+    void OnFileChanged(const QString &path);
+    void OnDirectoryChanged(const QString &path);
 };

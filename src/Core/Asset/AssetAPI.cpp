@@ -110,11 +110,11 @@ bool AssetAPI::RemoveAssetStorage(const QString &name)
     return false;
 }
 
-AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &storage)
+AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &storage, bool fromNetwork)
 {
     for(size_t i = 0; i < providers.size(); ++i)
     {
-        AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
+        AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage, fromNetwork);
         // The above function will call back to AssetAPI::EmitAssetStorageAdded.
         if (assetStorage)
         {
@@ -1450,10 +1450,17 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
 bool AssetAPI::ShouldReplicateAssetDiscovery(const QString& assetRef)
 {
     AssetAPI::AssetRefType type = ParseAssetRef(assetRef);
-    if ((type == AssetAPI::AssetRefInvalid) || (type == AssetAPI::AssetRefLocalPath) || (type == AssetAPI::AssetRefLocalUrl) || (type == AssetAPI::AssetRefRelativePath))
+    if (type == AssetAPI::AssetRefInvalid || type == AssetAPI::AssetRefLocalPath || type == AssetAPI::AssetRefLocalUrl || type == AssetAPI::AssetRefRelativePath)
         return false;
     else
-        return true;
+    {
+        AssetPtr asset = GetAsset(assetRef);
+        AssetStoragePtr storage = asset ? asset->GetAssetStorage() : AssetStoragePtr();
+        if (storage && !storage->IsReplicated())
+            return false;
+        else
+            return true;
+    }
 }
 
 int AssetAPI::NumPendingDependencies(AssetPtr asset) const

@@ -48,13 +48,16 @@ void AssetModule::Initialize()
     framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
     
     QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
-    local->AddStorageDirectory(systemAssetDir, "System", true, QFileInfo(systemAssetDir).isWritable());
+    AssetStoragePtr storage = local->AddStorageDirectory(systemAssetDir, "System", true, QFileInfo(systemAssetDir).isWritable());
+    storage->SetReplicated(false); // If we are a server, don't pass this storage to the client.
 
     QString jsAssetDir = Application::InstallationDirectory() + "jsmodules";
-    local->AddStorageDirectory(jsAssetDir, "Javascript", true, false);
+    storage = local->AddStorageDirectory(jsAssetDir, "Javascript", true, false);
+    storage->SetReplicated(false); // If we are a server, don't pass this storage to the client.
 
     QString ogreAssetDir = Application::InstallationDirectory() + "media";
-    local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true, false);
+    storage = local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true, false);
+    storage->SetReplicated(false); // If we are a server, don't pass this storage to the client.
 
     framework_->RegisterDynamicObject("assetModule", this);
 
@@ -115,12 +118,12 @@ void AssetModule::ProcessCommandLineOptions()
         LogError("AssetModule: --storage specified without a value.");
     foreach(const QString &file, files)
     {
-        AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(file.trimmed());
+        AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(file.trimmed(), false);
         framework_->Asset()->SetDefaultAssetStorage(storage);
     }
     foreach(const QString &storageName, storages)
     {
-        AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(storageName.trimmed());
+        AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(storageName.trimmed(), false);
         if (files.isEmpty()) // If "--file" was not specified, then use "--storage" as the default. (If both are specified, "--file" takes precedence over "--storage").
             framework_->Asset()->SetDefaultAssetStorage(storage);
     }
@@ -152,7 +155,7 @@ void AssetModule::ConsoleRequestAsset(const QString &assetRef, const QString &as
 
 void AssetModule::AddAssetStorage(const QString &storageString)
 {
-    AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(storageString);
+    AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(storageString, false);
 }
 
 void AssetModule::ListAssetStorages()
@@ -202,7 +205,7 @@ void AssetModule::ServerNewUserConnected(int connectionID, UserConnection *conne
     for(size_t i = 0; i < storages.size(); ++i)
     {
         bool isLocalStorage = (dynamic_cast<LocalAssetStorage*>(storages[i].get()) != 0);
-        if (!isLocalStorage || isLocalhostConnection)
+        if (storages[i]->IsReplicated() && (!isLocalStorage || isLocalhostConnection))
         {
             QDomElement storage = doc.createElement("storage");
             storage.setAttribute("data", storages[i]->SerializeToString(!isLocalhostConnection));
@@ -218,6 +221,20 @@ void AssetModule::ServerNewUserConnected(int connectionID, UserConnection *conne
         QDomElement storage = doc.createElement("defaultStorage");
         storage.setAttribute("name", defaultStorage->Name());
         assetRoot.appendChild(storage);
+        if (!defaultStorage->IsReplicated())
+            LogWarning("Server specified the client to use the storage \"" + defaultStorage->Name() + "\" as default, but it is not a replicated storage!");
+    }
+}
+
+void AssetModule::DetermineStorageTrustStatus(AssetStoragePtr storage)
+{
+    // If the --trustserverstorages command line parameter is set, we trust each storage exactly the way the server does.
+    ///\todo Make the a end-user option at runtime/connection time to specify per-server instance whether --trustserverstorages is in effect.
+    if (!framework_->HasCommandLineParameter("--trustserverstorages"))
+    {
+        ///\todo Read from ConfigAPI whether to set false/ask/true here.
+        ///\todo If the trust state is 'ask', show a *non-modal* notification -> config dialog if the user wants to trust content from this source.
+        storage->SetTrustState(IAssetStorage::StorageAskTrust);
     }
 }
 
@@ -231,11 +248,18 @@ void AssetModule::ClientConnectedToServer(UserConnectedResponseData *responseDat
             storage = storage.nextSiblingElement("storage"))
         {
             QString storageData = storage.attribute("data");
-            AssetStoragePtr assetStorage = framework_->Asset()->DeserializeAssetStorageFromString(storageData);
+            bool connectedToRemoteServer = true; // If false, we connected to localhost.
+            ///\todo Determine here whether we connected to localhost, and if so, set connectedToRemoteServer = false.
+            AssetStoragePtr assetStorage = framework_->Asset()->DeserializeAssetStorageFromString(storageData, connectedToRemoteServer);
 
             // Remember that this storage was received from the server, so we can later stop using it when we disconnect (and possibly reconnect to another server).
             if (assetStorage)
+            {
+                assetStorage->SetReplicated(true); // We got this from the server.
+                if (connectedToRemoteServer) // If connected to localhost, we always trust the same storages the server is trusting, so don't need to call DetermineStorageTrustStatus.
+                    DetermineStorageTrustStatus(assetStorage);
                 storagesReceivedFromServer.push_back(assetStorage);
+            }
         }
 
         QDomElement defaultStorage = assetRoot.firstChildElement("defaultStorage");

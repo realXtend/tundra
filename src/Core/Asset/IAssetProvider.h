@@ -58,5 +58,5 @@ public:
 
     /// Reads the given storage string and tries to deserialize it to an asset storage in this provider.
     /// Returns a pointer to the newly created storage, or 0 if the storage string is not of the type of this asset provider.
-    virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage) = 0;
+    virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage, bool fromNetwork) = 0;
 };

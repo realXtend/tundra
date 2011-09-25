@@ -57,7 +57,7 @@ public:
     /// @param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
     virtual bool RemoveAssetStorage(QString storageName);
 
-    virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
+    virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage, bool fromNetwork);
 
     QString GenerateUniqueStorageName() const;
 
@@ -95,5 +95,8 @@ private:
     typedef std::map<QNetworkReply*, AssetUploadTransferPtr> UploadTransferMap;
     UploadTransferMap uploadTransfers;
 
+    /// If true, asset requests outside any registered storages are also accepted, and will appear as
+    /// assets with no storage. If false, all requests to assets outside any registered storage will fail.
+    bool enableRequestsOutsideStorages;
 };
 

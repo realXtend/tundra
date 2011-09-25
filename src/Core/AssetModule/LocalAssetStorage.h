@@ -17,7 +17,7 @@ class ASSET_MODULE_API LocalAssetStorage : public IAssetStorage
 
 public:
     /// recursive, writable, liveUpdate and autoDiscoverable all set to true by default.
-    LocalAssetStorage();
+    LocalAssetStorage(bool writable, bool liveUpdate, bool autoDiscoverable);
     ~LocalAssetStorage();
 
     /// Specifies the absolute path of the storage.
@@ -28,15 +28,6 @@ public:
 
     /// If true, all subdirectories of the storage directory are automatically looked in when loading an asset.
     bool recursive;
-
-    /// If true, assets can be written to the storage.
-    bool writable;
-
-    /// If true, assets in this storage are subject to live update after loading.
-    bool liveUpdate;
-    
-    /// If true, storage has automatic discovery of new assets enabled.
-    bool autoDiscoverable;
     
     /// Starts listening on the local directory this asset storage points to.
     void SetupWatcher();
@@ -53,17 +44,11 @@ public:
     QFileSystemWatcher *changeWatcher;
 
 public slots:
-    /// Specifies whether data can be uploaded to this asset storage.
-    virtual bool Writable() const { return writable; }
+    /// Local storages are always trusted.
+    virtual bool Trusted() const { return true; }
 
-    /// Specifies whether the assets in the storage should be subject to live update, once loaded
-    virtual bool HasLiveUpdate() const { return liveUpdate; }
-    
-    /// Specifies whether the asset storage has automatic discovery of new assets enabled
-    virtual bool AutoDiscoverable() const { return autoDiscoverable; }
-    
-    /// Local storages are always assumed to be trusted.
-    bool Trusted() const { return true; }
+    // Returns the current trust state of this storage.
+    virtual TrustState GetTrustState() const { return StorageTrusted; }
 
     /// Returns the full local filesystem path name of the given asset in this storage, if it exists.
     /// Example: GetFullPathForAsset("my.mesh", true) might return "C:\Projects\Tundra\bin\data\assets".
@@ -99,4 +84,6 @@ public slots:
 
 private:
     Q_DISABLE_COPY(LocalAssetStorage)
+
+    friend class LocalAssetProvider;
 };

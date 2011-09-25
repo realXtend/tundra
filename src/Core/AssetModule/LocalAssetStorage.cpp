@@ -15,13 +15,14 @@
 
 #include "MemoryLeakCheck.h"
 
-LocalAssetStorage::LocalAssetStorage() :
+LocalAssetStorage::LocalAssetStorage(bool writable_, bool liveUpdate_, bool autoDiscoverable_) :
     recursive(true),
-    writable(true),
-    liveUpdate(true),
-    autoDiscoverable(true),
     changeWatcher(0)
 {
+    // Override the parameters for the base class.
+    writable = writable_;
+    liveUpdate = liveUpdate_;
+    autoDiscoverable = autoDiscoverable_;
 }
 
 LocalAssetStorage::~LocalAssetStorage()
@@ -97,7 +98,8 @@ QString LocalAssetStorage::SerializeToString(bool networkTransfer) const
         return ""; // Cannot transfer a LocalAssetStorage through network to another computer, since it is local to this system!
     else
         return "type=" + Type() + ";name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false") + ";readonly=" + (!writable ? "true" : "false") +
-            ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
+        ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false") + ";replicated=" + (isReplicated ? "true" : "false")
+        + ";trusted=" + TrustStateToString(GetTrustState());
 }
 
 void LocalAssetStorage::EmitAssetChanged(QString absoluteFilename, IAssetStorage::ChangeType change)

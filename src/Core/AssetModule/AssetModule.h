@@ -34,6 +34,8 @@ public:
 public slots:
     void ConsoleRequestAsset(const QString &assetRef, const QString &assetType);
 
+    /// Adds a new storage to the system.
+    /// \important Call this function only for locally originating storages! (Not ones deserialized from network)
     void AddAssetStorage(const QString &storageString);
 
     void ListAssetStorages();
@@ -77,6 +79,9 @@ private slots:
     
 private:
     void ProcessCommandLineOptions();
+
+    /// Whenever we receive a new asset storage from the server, this function is called to determine if the storage is to be trusted.
+    void DetermineStorageTrustStatus(AssetStoragePtr storage);
 
     /// When the client connects to the server, it adds to its list of known storages all the storages on the server side.
     /// To be able to also remove these storages from being used after we disconnect, we track all the server-originated storages here.

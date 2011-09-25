@@ -16,6 +16,15 @@ class IAssetStorage : public QObject, public boost::enable_shared_from_this<IAss
     Q_ENUMS(ChangeType)
 
 public:
+    IAssetStorage()
+    :writable(true),
+    liveUpdate(true),
+    autoDiscoverable(true),
+    isReplicated(true),
+    trustState(StorageAskTrust)
+    {
+    }
+
     virtual ~IAssetStorage() {}
 
     /// Points to the asset provider that is used to communicate with this storage.
@@ -30,6 +39,34 @@ public:
         AssetDelete
     };
 
+    /// Specifies how the assets from this source are to be treated security-wise.
+    enum TrustState
+    {
+        StorageUntrusted,
+        StorageTrusted,
+        StorageAskTrust
+    };
+
+public:
+    void SetReplicated(bool isReplicated_) { isReplicated = isReplicated_; }
+
+    static QString TrustStateToString(TrustState s)
+    {
+        if (s == StorageTrusted) return "true";
+        if (s == StorageAskTrust) return "ask";
+        return "false";
+    }
+    static TrustState TrustStateFromString(const QString &s)
+    {
+        if (!s.compare("true", Qt::CaseInsensitive)) return StorageTrusted;
+        if (!s.compare("ask", Qt::CaseInsensitive)) return StorageAskTrust;
+        return StorageUntrusted;
+    }
+
+    /// Specifies whether to trust content from this asset storage.
+    /// \important This function shall never be exposed for scene scripts to use.
+    void SetTrustState(TrustState trustState_) { trustState = trustState_; }
+
 public slots:
     /// Returns all assetrefs currently known to exist in this asset storage. Does not load the assets, and does not refresh the list automatically
     virtual QStringList GetAllAssetRefs() { return QStringList(); }
@@ -43,19 +80,25 @@ public slots:
 //    virtual IAssetTransfer *UploadAsset(const char *data, size_t numBytes, QString url) { return 0; }
 
     /// Specifies whether data can be uploaded to this asset storage.
-    virtual bool Writable() const { return false; }
+    virtual bool Writable() const { return writable; }
 
     /// Specifies whether the assets in the storage should be subject to live update, once loaded
-    virtual bool HasLiveUpdate() const { return false; }
+    virtual bool HasLiveUpdate() const { return liveUpdate; }
     
     /// Specifies whether the asset storage has automatic discovery of new assets enabled
-    virtual bool AutoDiscoverable() const { return false; }
+    virtual bool AutoDiscoverable() const { return autoDiscoverable; }
+
+    /// If we are a server, this field specifies whether this storage will be passed on to all clients when they connect.
+    bool IsReplicated() const { return isReplicated; }
 
     /// If this function returns true, we have approved the content inside this storage to be trusted and safe.
     /// Local content is always assumed safe (content from LocalAssetProvider).
     /// Content from HttpAssetProvider is assumed safe if it points to the local system.
     /// Other storages need to be approved by other means, e.g. by the user, or by some other configuration or authentication.
-    virtual bool Trusted() const { return false; }
+    virtual bool Trusted() const { return trustState == StorageTrusted; }
+
+    // Returns the current trust state of this storage.
+    virtual TrustState GetTrustState() const { return trustState; }
 
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
     virtual QString GetFullAssetURL(const QString &localName) { return ""; }
@@ -87,4 +130,20 @@ signals:
         @param diskSource If the original copy of this asset exists on the local system, this string points to the original disk copy.
         @param change Type of change. */
     void AssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change);
+
+protected:
+    /// If true, assets can be written to the storage.
+    bool writable;
+
+    /// If true, assets in this storage are subject to live update after loading.
+    bool liveUpdate;
+    
+    /// If true, storage has automatic discovery of new assets enabled.
+    bool autoDiscoverable;
+
+    /// Specifies if this storage is replicated over the network.
+    bool isReplicated;
+
+    /// Specifies whether assets from this storage are trusted security-wise.
+    TrustState trustState;
 };

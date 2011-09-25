@@ -28,6 +28,7 @@
 LocalAssetProvider::LocalAssetProvider(Framework* framework_)
 :framework(framework_)
 {
+    enableRequestsOutsideStorages = framework_->HasCommandLineParameter("--accept_unknown_local_sources");
 }
 
 LocalAssetProvider::~LocalAssetProvider()
@@ -62,6 +63,16 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
         assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef);
+
+    if (!enableRequestsOutsideStorages)
+    {
+        AssetStoragePtr storage = GetStorageForAssetRef(assetRef);
+        if (!storage)
+        {
+            LogError("LocalAssetProvider::RequestAsset: Discarding asset request to path \"" + assetRef + "\" because requests to sources outside registered LocalAssetStorages have been forbidden. (See --accept_unknown_local_sources).");
+            return AssetTransferPtr();
+        }
+    }
 
     AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();
@@ -201,13 +212,10 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
         }
 
     //LogInfo("LocalAssetProvider::AddStorageDirectory " + directory);
-    LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
+    LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage(writable, liveUpdate, autoDiscoverable));
     storage->directory = QDir::toNativeSeparators(GuaranteeTrailingSlash(directory));
     storage->name = storageName;
     storage->recursive = recursive;
-    storage->writable = writable;
-    storage->liveUpdate = liveUpdate;
-    storage->autoDiscoverable = autoDiscoverable;
     storage->provider = shared_from_this();
     storage->SetupWatcher(); // Start listening on file change notifications. Note: it's important that recursive is set before calling this!
     connect(storage->changeWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(OnDirectoryChanged(const QString &)), Qt::UniqueConnection);
@@ -321,7 +329,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
     }
 }
 
-AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QString &storage)
+AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QString &storage, bool /*fromNetwork*/)
 {
     QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
     if (s.contains("type") && s["type"].compare("LocalAssetStorage", Qt::CaseInsensitive) != 0)
@@ -358,8 +366,19 @@ AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QStrin
     
     if (s.contains("autodiscoverable"))
         autoDiscoverable = ParseBool(s["autodiscoverable"]);
-    
-    return AddStorageDirectory(path, name, recursive, writable, liveUpdate, autoDiscoverable);
+
+    LocalAssetStoragePtr storagePtr = AddStorageDirectory(path, name, recursive, writable, liveUpdate, autoDiscoverable);
+
+    ///\bug Refactor these sets to occur inside AddStorageDirectory so that when the NewStorageAdded signal is emitted, these values are up to date.
+    if (storagePtr)
+    {
+        if (s.contains("replicated"))
+            storagePtr->SetReplicated(ParseBool(s["replicated"]));
+        if (s.contains("trusted"))
+            storagePtr->trustState = IAssetStorage::TrustStateFromString(s["trusted"]);
+    }
+
+    return storagePtr;
 }
 
 QString LocalAssetProvider::GenerateUniqueStorageName() const

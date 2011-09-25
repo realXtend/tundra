@@ -72,7 +72,10 @@ public slots:
 
     /// Returns true if the asset is empty. An empty asset is unloaded, and has an empty disk source.
     bool IsEmpty() const;
-    
+
+    /// Returns true if this asset content is trusted.
+    bool IsTrusted();
+
     /// Marks the asset to be have been modified in memory.
     void MarkModified();
     

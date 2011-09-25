@@ -250,7 +250,8 @@ public slots:
 
     /// Creates an asset storage from the given serialized string form.
     /// Returns a null pointer if the given storage could not be added.
-    AssetStoragePtr DeserializeAssetStorageFromString(const QString &storage);
+    /// @param fromNetwork If true, treats the storage specifier as if the storage had been received from the network, and not from the local computer.
+    AssetStoragePtr DeserializeAssetStorageFromString(const QString &storage, bool fromNetwork);
 
     /// Returns the AssetStorage that should be used by default when assets are requested by their local name only, e.g. when an assetRef only contains
     /// a string "texture.png" and nothing else.

@@ -8,7 +8,7 @@
 #include <QBuffer>
 #include <QDomDocument>
 
-HttpAssetStorage::HttpAssetStorage() : writable(true), liveUpdate(true), autoDiscoverable(false)
+HttpAssetStorage::HttpAssetStorage()
 {
 }
 
@@ -27,7 +27,16 @@ QString HttpAssetStorage::Type() const
 
 bool HttpAssetStorage::Trusted() const
 {
-    return !localDir.isEmpty();
+    // HttpAssetStorages from the local system area always trusted. Otherwise, use the specified trust setting.
+    return !localDir.isEmpty() || trustState == StorageTrusted;
+}
+
+IAssetStorage::TrustState HttpAssetStorage::GetTrustState() const
+{ 
+    if (!localDir.isEmpty())
+        return StorageTrusted;
+    else
+        return trustState;
 }
 
 void HttpAssetStorage::RefreshAssetRefs()
@@ -54,7 +63,7 @@ QString HttpAssetStorage::SerializeToString(bool networkTransfer) const
 {
     QString str = "type=" + Type() + ";name=" + storageName + 
             ";src=" + baseAddress + ";readonly=" + (!writable ? "true" : "false") + ";liveupdate=" + (liveUpdate ? "true" : "false") +
-            ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
+            ";autodiscoverable=" + (autoDiscoverable ? "true" : "false") + ";replicated=" + (isReplicated ? "true" : "false") + ";trusted=" + TrustStateToString(trustState);
     if (!networkTransfer)
         str = str + (localDir.isEmpty() ? QString() : ";localdir=" + localDir);
     return str;

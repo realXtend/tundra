@@ -25,6 +25,8 @@ HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
 {
     CreateAccessManager();
     connect(framework->App(), SIGNAL(ExitRequested()), SLOT(AboutToExit()));
+
+    enableRequestsOutsideStorages = framework_->HasCommandLineParameter("--accept_unknown_http_sources");
 }
 
 HttpAssetProvider::~HttpAssetProvider()
@@ -83,6 +85,16 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     if (!networkAccessManager)
         CreateAccessManager();
 
+    if (!enableRequestsOutsideStorages)
+    {
+        AssetStoragePtr storage = GetStorageForAssetRef(assetRef);
+        if (!storage)
+        {
+            LogError("HttpAssetProvider::RequestAsset: Discarding asset request to URL \"" + assetRef + "\" because requests to sources outside HttpAssetStorages have been forbidden. (See --accept_unknown_http_sources).");
+            return AssetTransferPtr();
+        }
+    }
+
     QString originalAssetRef = assetRef;
     assetRef = assetRef.trimmed();
     QString assetRefWithoutSubAssetName;
@@ -93,6 +105,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
         LogError("HttpAssetProvider::RequestAsset: Cannot get asset from invalid URL \"" + assetRef + "\"!");
         return AssetTransferPtr();
     }
+
     QNetworkRequest request;
     request.setUrl(QUrl(assetRef));
     request.setRawHeader("User-Agent", "realXtend Tundra");
@@ -163,7 +176,7 @@ bool HttpAssetProvider::RemoveAssetStorage(QString storageName)
     return false;
 }
 
-AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString &storage)
+AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString &storage, bool fromNetwork)
 {
     QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
     if (s.contains("type") && s["type"].compare("HttpAssetStorage", Qt::CaseInsensitive) != 0)
@@ -190,12 +203,17 @@ AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString
     HttpAssetStoragePtr newStorage = AddStorageAddress(protocolPath, name, liveUpdate, autoDiscoverable);
 
     // Set local dir if specified
+    ///\bug Refactor these sets to occur inside AddStorageAddress so that when the NewStorageAdded signal is emitted, these values are up to date.
     if (newStorage)
     {
-        if (s.contains("localdir"))
+        if (!fromNetwork && s.contains("localdir")) // If we get a storage from a remote computer, discard the localDir parameter if it had been set.
             newStorage->localDir = GuaranteeTrailingSlash(s["localdir"]);
         if (s.contains("readonly"))
             newStorage->writable = !ParseBool(s["readonly"]);
+        if (s.contains("replicated"))
+            newStorage->SetReplicated(ParseBool(s["replicated"]));
+        if (s.contains("trusted"))
+            newStorage->trustState = IAssetStorage::TrustStateFromString(s["trusted"]);
     }
     
     return newStorage;

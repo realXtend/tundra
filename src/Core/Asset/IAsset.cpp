@@ -58,6 +58,17 @@ bool IAsset::IsEmpty() const
     return !IsLoaded() && diskSource.isEmpty();
 }
 
+bool IAsset::IsTrusted()
+{
+    AssetStoragePtr storage = GetAssetStorage();
+    if (!storage)
+    {
+        AssetAPI::AssetRefType type = AssetAPI::ParseAssetRef(Name());
+        return type == AssetAPI::AssetRefLocalPath || type == AssetAPI::AssetRefLocalUrl;
+    }
+    return storage->Trusted();
+}
+
 void IAsset::MarkModified()
 {
     if (!modified)
