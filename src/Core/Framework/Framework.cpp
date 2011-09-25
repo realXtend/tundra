@@ -28,6 +28,7 @@
 #endif
 #include <iostream>
 #include <QDir>
+#include <QDomDocument>
 
 #include "MemoryLeakCheck.h"
 
@@ -114,6 +115,20 @@ Framework::Framework(int argc, char** argv) :
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
 
+    // Remember all startup command line options.
+    // Skip argv[0], since it is the program name.
+    for(int i = 1; i < argc; ++i)
+        startupOptions << argv[i];
+
+    //  Load command line options from each config XML file.
+    QStringList cmdLineParams = CommandLineParameters("--config");
+    if (cmdLineParams.size() == 0)
+        LoadStartupOptionsFromXML("plugins.xml");
+    foreach(const QString &config, cmdLineParams)
+        LoadStartupOptionsFromXML(config);
+
+    PrintStartupOptions();
+
     // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
     /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
     apiVersionInfo = new ApiVersionInfo(2, 0, 0, 0);
@@ -175,6 +190,7 @@ Framework::Framework(int argc, char** argv) :
         // Create core APIs
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
+        plugin = new PluginAPI(this);
         asset = new AssetAPI(this, headless_);
         
         QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
@@ -188,7 +204,6 @@ Framework::Framework(int argc, char** argv) :
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);
-        plugin = new PluginAPI(this);
         console = new ConsoleAPI(this);
         console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
 
@@ -418,17 +433,7 @@ ConfigAPI *Framework::Config() const
 {
     return config;
 }
-/*
-ConnectionAPI *Framework::Connection() const
-{
-    return connection;
-}
 
-ServerAPI *Framework::Server() const
-{
-    return server;
-}
-*/
 PluginAPI *Framework::Plugins() const
 {
     return plugin;
@@ -483,10 +488,57 @@ bool Framework::RegisterDynamicObject(QString name, QObject *object)
     return true;
 }
 
+QString LookupRelativePath(QString path);
+
+void Framework::LoadStartupOptionsFromXML(QString configurationFile)
+{
+    configurationFile = LookupRelativePath(configurationFile);
+
+    QDomDocument doc("plugins");
+    QFile file(configurationFile);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        LogError("Framework::LoadStartupOptionsFromXML: Failed to open file \"" + configurationFile + "\"!");
+        return;
+    }
+    if (!doc.setContent(&file))
+    {
+        LogError("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"" + configurationFile + "\"!");
+        file.close();
+        return;
+    }
+    file.close();
+
+    QDomElement docElem = doc.documentElement();
+
+    QDomNode n = docElem.firstChild();
+    while(!n.isNull())
+    {
+        QDomElement e = n.toElement(); // try to convert the node to an element.
+        if (!e.isNull() && e.tagName() == "option" && e.hasAttribute("name"))
+        {
+#ifdef _DEBUG
+            QString build = "debug";
+#else
+            QString build = "release";
+#endif
+            if (e.hasAttribute("build") && build.compare(e.attribute("build"), Qt::CaseInsensitive) != 0)
+                continue; // The command line parameter was specified to be included only in the given build (debug/release), but we are not running that build.
+
+            /// \bug Appended in this way, the parsing is not perfect (one configuration can continue from the other)
+            startupOptions << e.attribute("name");
+
+            if (e.hasAttribute("value"))
+                startupOptions << e.attribute("value");
+        }
+        n = n.nextSibling();
+    }
+}
+
 bool Framework::HasCommandLineParameter(const QString &value) const
 {
-    for(int i = 0; i < argc_; ++i)
-        if (QString(argv_[i]) == value)
+    for(int i = 0; i < startupOptions.size(); ++i)
+        if (!startupOptions[i].compare(value, Qt::CaseInsensitive))
             return true;
     return false;
 }
@@ -494,9 +546,29 @@ bool Framework::HasCommandLineParameter(const QString &value) const
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
     QStringList ret;
-    for(int i = 0; i < argc_; ++i)
-        if (QString(argv_[i]) == key && i+1 < argc_ && !QString(argv_[i+1]).startsWith("--"))
-            ret.append(argv_[++i]);
+    for(int i = 0; i+1 < startupOptions.size(); ++i)
+        if (!startupOptions[i].compare(key, Qt::CaseInsensitive) && !startupOptions[i+1].startsWith("--"))
+            ret.append(startupOptions[++i]);
     return ret;
 }
 
+void Framework::PrintStartupOptions()
+{
+    int i = 0;
+    LogInfo("Startup options:");
+    while(i < startupOptions.size())
+    {
+        if (!startupOptions[i].startsWith("--"))
+            LogWarning("Warning: Orphaned startup option parameter value \"" + startupOptions[i] + "\" specified!");
+        if (i+1 < startupOptions.size() && !startupOptions[i+1].startsWith("--"))
+        {
+            LogInfo("   '" + startupOptions[i] + "' '" + startupOptions[i+1] + "'");
+            i += 2;
+        }
+        else
+        {
+            LogInfo("   '" + startupOptions[i] + "'");
+            ++i;
+        }
+    }
+}

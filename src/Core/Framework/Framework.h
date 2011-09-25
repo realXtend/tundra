@@ -98,12 +98,6 @@ public slots:
     /// Returns core API Config object.
     ConfigAPI *Config() const;
 
-    /// Returns core API Connection object.
-//    ConnectionAPI *Connection() const;
-
-    /// Returns core API Server object if we're acting as a network server.
-//    ServerAPI *Server() const;
-
     PluginAPI *Plugins() const;
 
     void RegisterRenderer(IRenderer *renderer);
@@ -115,9 +109,11 @@ public slots:
     IRenderer *Renderer() const;
 
     /// Returns Tundra API version info object.
+    ///\todo Delete/simplify.
     ApiVersionInfo *ApiVersion() const;
 
     /// Returns Tundra application version info object.
+    ///\todo Delete/simplify.
     ApplicationVersionInfo *ApplicationVersion() const;
 
     /// Returns the global Framework instance.
@@ -156,6 +152,9 @@ public slots:
         @param key Key with possible prefixes. */
     QStringList CommandLineParameters(const QString &key) const;
 
+    /// Prints to console all the used startup options.
+    void PrintStartupOptions();
+
 private:
     Q_DISABLE_COPY(Framework)
 
@@ -176,14 +175,20 @@ private:
     ConfigAPI *config; ///< The Config API.
     PluginAPI *plugin;
     IRenderer *renderer;
-//    ConnectionAPI *connection; ///< The Connection API.
-//    ServerAPI *server; ///< The Server API, null if we're not operating as a server.
+
+    /// Appends all found startup options from the given file to the startupOptions member.
+    void LoadStartupOptionsFromXML(QString configurationFile);
+
+    /// Stores all command line parameters and startup options specified in the Config XML files.
+    QStringList startupOptions;
 
     /// The Tundra API version info of this build. May differ from the end user 
     /// application version of the default distribution, i.e. app may change when api stays same.
+    ///\todo Delete/simplify.
     ApiVersionInfo *apiVersionInfo;
 
     /// The Tundra application version info for this build.
+    ///\todo Delete/simplify.
     ApplicationVersionInfo *applicationVersionInfo;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
