@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneStructureModule.cpp
- *  @brief  Provides Scene Structure and Assets windows and raycast drag-and-drop import of
- *          various content file formats to the main window.
+ *  @brief  Provides UIs for scene and asset maintenance and content import.
  */
 
 #include "StableHeaders.h"
@@ -11,7 +10,7 @@
 
 #include "SceneStructureModule.h"
 #include "SceneStructureWindow.h"
-#include "AssetsWindow.h"
+#include "AssetsWindow.h"tai
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 

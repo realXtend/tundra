@@ -9,6 +9,7 @@
 
 class AvatarEditor;
 
+/// Provides EC_Avatar.
 class AV_MODULE_API AvatarModule : public IModule
 {
     Q_OBJECT
