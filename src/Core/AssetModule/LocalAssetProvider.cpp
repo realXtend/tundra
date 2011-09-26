@@ -458,7 +458,6 @@ void LocalAssetProvider::CompletePendingFileUploads()
 
 void LocalAssetProvider::CheckForPendingFileSystemChanges()
 {
-/*
     QStringList files = changedFiles.toList();
     while(!files.isEmpty())
     {
@@ -478,6 +477,14 @@ void LocalAssetProvider::CheckForPendingFileSystemChanges()
         LocalAssetStoragePtr storage = FindStorageForPath(file);
         if (storage)
         {
+            if (!storage->AutoDiscoverable())
+            {
+                LogWarning("Received file change notification for storage of which auto-discovery is false.");
+                continue;
+            }
+
+            assert(storage->changeWatcher);
+
             //QString assetRef = storage->GetFullAssetURL(file);
             QString assetRef = file;
             int lastSlash = assetRef.lastIndexOf('/');
@@ -487,19 +494,20 @@ void LocalAssetProvider::CheckForPendingFileSystemChanges()
             AssetPtr asset = framework->Asset()->GetAsset(assetRef);
             if (!asset)
                 LogError("Could not find asset for assetRef " + assetRef);
-
             // Note: if file was removed, it's removed automatically from tracked files of QFileSystemWatcher.
             const QStringList watchedFiles = storage->changeWatcher->files();
             if (qFind(watchedFiles, file) == watchedFiles.end() && !QFile::exists(file))
             {
                 // Tracked file was not found from the list of tracked files and it doesn't exist so 
                 // it must be deleted (info about new files is retrieved by directoryChanged signal).
+                LogInfo("File " + file + " not found from watch list. So it must be deleted.");
+                storage->EmitAssetChanged(file, IAssetStorage::AssetDelete);
                 // Forget the asset.
-                LogError("File " + file + " not found from watch list. So it must be deleted.");
-                framework->Asset()->ForgetAsset(asset, false);
+//                framework->Asset()->ForgetAsset(asset, false);
             }
             else
             {
+/*
                 // File was tracked and found from watched files: must've been modified.
                 //QString assetRef = storage->GetFullAssetURL(file);
                 LogError("File " + file + " found from watch list so it must be modified. Asset ref: " + assetRef);
@@ -514,6 +522,7 @@ void LocalAssetProvider::CheckForPendingFileSystemChanges()
                 
                 //LogError("Forcing request of " + assetRef + " " + assetType);
                 //framework->Asset()->RequestAsset(assetRef, assetType, true);
+*/
             }
         }
         else
@@ -521,7 +530,7 @@ void LocalAssetProvider::CheckForPendingFileSystemChanges()
             LogError("LocalAssetProvider::CheckForPendingFileSystemChanges: Could not find storage for file " + file);
         }
     }
-*/
+
     QStringList dirs = changedDirectories.toList();
     while(!dirs.isEmpty())
     {
@@ -532,7 +541,7 @@ void LocalAssetProvider::CheckForPendingFileSystemChanges()
         {
             if (!storage->AutoDiscoverable())
             {
-                LogWarning("Received file change notification for storage of which auto-discovery is false.");
+                LogWarning("Received directory change notification for storage of which auto-discovery is false.");
                 continue;
             }
 
