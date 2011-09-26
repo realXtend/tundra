@@ -796,7 +796,7 @@ void SceneTreeWidget::NewEntity()
     connect(buttonCancel, SIGNAL(clicked()), &newEntDialog, SLOT(reject()));
 
     // Execute dialog
-    newEntDialog.resize(300, newEntDialog.width() + 30);
+    newEntDialog.resize(300, 130);
     newEntDialog.activateWindow();
     int ret = newEntDialog.exec();
     if (ret == QDialog::Rejected)
