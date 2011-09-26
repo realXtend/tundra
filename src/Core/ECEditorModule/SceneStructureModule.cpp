@@ -10,7 +10,7 @@
 
 #include "SceneStructureModule.h"
 #include "SceneStructureWindow.h"
-#include "AssetsWindow.h"tai
+#include "AssetsWindow.h"
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 
