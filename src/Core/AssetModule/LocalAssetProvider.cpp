@@ -484,16 +484,12 @@ void LocalAssetProvider::CheckForPendingFileSystemChanges()
             }
 
             assert(storage->changeWatcher);
-
-            //QString assetRef = storage->GetFullAssetURL(file);
             QString assetRef = file;
             int lastSlash = assetRef.lastIndexOf('/');
             if (lastSlash != -1)
                 assetRef = assetRef.right(assetRef.length() - lastSlash - 1);
             assetRef.prepend("local://");
-            AssetPtr asset = framework->Asset()->GetAsset(assetRef);
-            if (!asset)
-                LogError("Could not find asset for assetRef " + assetRef);
+
             // Note: if file was removed, it's removed automatically from tracked files of QFileSystemWatcher.
             const QStringList watchedFiles = storage->changeWatcher->files();
             if (qFind(watchedFiles, file) == watchedFiles.end() && !QFile::exists(file))
@@ -502,27 +498,12 @@ void LocalAssetProvider::CheckForPendingFileSystemChanges()
                 // it must be deleted (info about new files is retrieved by directoryChanged signal).
                 LogInfo("File " + file + " not found from watch list. So it must be deleted.");
                 storage->EmitAssetChanged(file, IAssetStorage::AssetDelete);
-                // Forget the asset.
-//                framework->Asset()->ForgetAsset(asset, false);
             }
             else
             {
-/*
                 // File was tracked and found from watched files: must've been modified.
-                //QString assetRef = storage->GetFullAssetURL(file);
-                LogError("File " + file + " found from watch list so it must be modified. Asset ref: " + assetRef);
-                if (asset)
-                {
-                    bool success = asset->LoadFromCache();
-                    if (!success)
-                        LogError("Failed to reload changed asset \"" + asset->ToString() + "\" from file \"" + file + "\"!");
-                    else
-                        LogDebug("Reloaded changed asset \"" + asset->ToString() + "\" from file \"" + file + "\".");
-                }
-                
-                //LogError("Forcing request of " + assetRef + " " + assetType);
-                //framework->Asset()->RequestAsset(assetRef, assetType, true);
-*/
+                LogInfo("File " + file + " found from watch list so it must be modified. Asset ref: " + assetRef);
+                storage->EmitAssetChanged(file, IAssetStorage::AssetModify);
             }
         }
         else
@@ -708,12 +689,12 @@ void LocalAssetProvider::CheckForPendingFileSystemChanges()
 
 void LocalAssetProvider::OnFileChanged(const QString &path)
 {
-    LogInfo("LocalAssetProvider: File " + path + " changed.");
+    LogDebug("LocalAssetProvider: File " + path + " changed.");
     changedFiles << path;
 }
 
 void LocalAssetProvider::OnDirectoryChanged(const QString &path)
 {
-    LogInfo("LocalAssetProvider: Directory " + path + " changed.");
+    LogDebug("LocalAssetProvider: Directory " + path + " changed.");
     changedDirectories << path;
 }

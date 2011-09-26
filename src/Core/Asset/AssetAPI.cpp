@@ -1642,10 +1642,9 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
     switch(change)
     {
     case IAssetStorage::AssetCreate:
-//        LogDebug("AssetAPI::OnAssetChanged:AssetCreate " + assetRef);
         if (existing && existing->IsLoaded())
         {
-            LogDebug("AssetAPI::OnAssetChanged: Received AssetCreate notification for existing and loaded asset " + assetRef + ". Handling this as AssetModify.");
+            LogDebug("AssetAPI: Received AssetCreate notification for existing and loaded asset " + assetRef + ". Handling this as AssetModify.");
             RequestAsset(assetRef, assetType, true); // If asset exists and is already loaded, forcibly request updated data
         }
         else
@@ -1660,18 +1659,21 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
         }
         break;
     case IAssetStorage::AssetModify:
-//        LogDebug("AssetAPI::OnAssetChanged:AssetModify " + assetRef);
-        if (existing && existing->IsLoaded())
-            RequestAsset(assetRef, assetType, true); // If asset exists and is already loaded, forcibly request updated data
+        if (existing)
+        {
+            if (existing->IsLoaded())
+                RequestAsset(assetRef, assetType, true); // If asset exists and is already loaded, forcibly request updated data
+            else
+                LogDebug("AssetAPI: Ignoring AssetModify notification for unloaded asset " + assetRef + ".");
+        }
         else
-            LogWarning("AssetAPI::OnAssetChanged: Received AssetModify notification for non-existing asset " + assetRef + ".");
+            LogWarning("AssetAPI: Received AssetModify notification for non-existing asset " + assetRef + ".");
         break;
     case IAssetStorage::AssetDelete:
-//        LogDebug("AssetAPI::OnAssetChanged:AssetDelete " + assetRef);
         if (existing)
             ForgetAsset(existing, false); // The asset should be already deleted; do not delete disk source.
         else
-            LogWarning("AssetAPI::OnAssetChanged: Received AssetDelete notification for non-existing asset " + assetRef + ".");
+            LogWarning("AssetAPI: Received AssetDelete notification for non-existing asset " + assetRef + ".");
         break;
     default:
         assert(false);
