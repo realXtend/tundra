@@ -71,7 +71,7 @@ void UiGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
 
 bool UiGraphicsView::event(QEvent *event)
 {
-    if (event->type() == QEvent::UpdateRequest || event->type() == QEvent::Paint || event->type() == QEvent::Wheel)// || event->type() == QEvent::Resize)
+    if (event->type() == QEvent::UpdateRequest || event->type() == QEvent::Paint || event->type() == QEvent::Wheel)
         return true;
 /*
     if (event->type() == QEvent::MetaCall)

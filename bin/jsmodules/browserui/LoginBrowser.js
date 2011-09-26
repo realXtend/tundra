@@ -164,8 +164,8 @@ var BrowserManager = Class.extend
         
         // Connect signals
         this.addressBar.lineEdit().returnPressed.connect(this.onAddressBarRequest);
-        this.tabs.tabCloseRequested.connect(this.onTabCloseRequest);
-        this.tabs['currentChanged(int)'].connect(this.onTabIndexChanged);
+        this.tabs.tabCloseRequested.connect(this, this.onTabCloseRequest);
+        this.tabs['currentChanged(int)'].connect(this, this.onTabIndexChanged);
         
         newTabButton.clicked.connect(this.onTabNewRequest);
         
@@ -298,6 +298,7 @@ var BrowserManager = Class.extend
         {
             this.browser.maximumHeight = 10000;
             this.squeezeEnabled = false;
+            this.windowResized(ui.GraphicsScene().sceneRect);
         }
     },
     

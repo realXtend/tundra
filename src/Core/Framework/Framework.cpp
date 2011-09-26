@@ -546,18 +546,17 @@ bool Framework::HasCommandLineParameter(const QString &value) const
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
     QStringList ret;
-<<<<<<< HEAD
-    for(int i = 0; i < argc_; ++i)
+    for(int i = 0; i+1 < startupOptions.size(); ++i)
     {
-        if (QString(argv_[i]) == key && i+1 < argc_ && !QString(argv_[i+1]).startsWith("--"))
+        if (!startupOptions[i].compare(key, Qt::CaseInsensitive) && !startupOptions[i+1].startsWith("--"))
         {
             // Inspect for quoted parameters.
-            QString quotedParam = argv_[i+1];
+            QString quotedParam = startupOptions[i+1];
             if (quotedParam.startsWith("\""))
             {
-                for(int pi=i+2; pi < argc_; ++pi)
+                for(int pi=i+2; pi+1 < startupOptions.size(); ++pi)
                 {
-                    QString param = argv_[pi];
+                    QString param = startupOptions[pi];
 
                     // If a new -- key is found before an end quote we have a error.
                     // Report and don't add anything to the return list as the param is malformed.
@@ -587,14 +586,9 @@ QStringList Framework::CommandLineParameters(const QString &key) const
             }
             // No quote start, push as is
             else
-                ret.append(argv_[++i]);
+                ret.append(startupOptions[++i]);
         }
     }
-=======
-    for(int i = 0; i+1 < startupOptions.size(); ++i)
-        if (!startupOptions[i].compare(key, Qt::CaseInsensitive) && !startupOptions[i+1].startsWith("--"))
-            ret.append(startupOptions[++i]);
->>>>>>> ludo/tundra2_withhistory
     return ret;
 }
 
