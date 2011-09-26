@@ -75,6 +75,25 @@ template<> u32 Attribute<QVariantList>::TypeId() const { return cAttributeQVaria
 template<> u32 Attribute<Transform>::TypeId() const { return cAttributeTransform; }
 template<> u32 Attribute<QPoint>::TypeId() const { return cAttributeQPoint; }
 
+// DefaultValue implementations
+template<> QString Attribute<QString>::DefaultValue() const { return QString(); }
+template<> int Attribute<int>::DefaultValue() const { return 0; }
+template<> float Attribute<float>::DefaultValue() const { return 0.f; }
+template<> Color Attribute<Color>::DefaultValue() const { return Color(); }
+template<> float2 Attribute<float2>::DefaultValue() const { return float2::zero; }
+template<> float3 Attribute<float3>::DefaultValue() const { return float3::zero; }
+template<> float4 Attribute<float4>::DefaultValue() const { return float4::zero; }
+template<> bool Attribute<bool>::DefaultValue() const { return false; }
+template<> uint Attribute<uint>::DefaultValue() const { return 0; }
+template<> Quat Attribute<Quat>::DefaultValue() const { return Quat::identity; }
+template<> AssetReference Attribute<AssetReference>::DefaultValue() const { return AssetReference(); }
+template<> AssetReferenceList Attribute<AssetReferenceList>::DefaultValue() const { return AssetReferenceList(); }
+template<> EntityReference Attribute<EntityReference>::DefaultValue() const { return EntityReference(); }
+template<> QVariant Attribute<QVariant>::DefaultValue() const { return QVariant(); }
+template<> QVariantList Attribute<QVariantList>::DefaultValue() const { return QVariantList(); }
+template<> Transform Attribute<Transform>::DefaultValue() const { return Transform(); }
+template<> QPoint Attribute<QPoint>::DefaultValue() const { return QPoint(); }
+
 // TOSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> std::string Attribute<QString>::ToString() const

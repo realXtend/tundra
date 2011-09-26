@@ -731,11 +731,10 @@ void ECBrowser::CreateAttribute()
         if (!component)
             continue;
         EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(component.get());
-        if (dc)
-        {
-            if (dc->CreateAttribute(typeName, name))
-                dc->ComponentChanged(AttributeChange::Default);
-        }
+        if (dc && dc->CreateAttribute(typeName, name))
+            dc->ComponentChanged(AttributeChange::Default);
+        else
+            LogError("ECBrowser::CreateAttribute: failed to create attribute " + typeName + " " + name + ".");
     }
 }
 

@@ -136,11 +136,13 @@ class Attribute : public IAttribute
 {
 public:
     /** Constructor.
+        value is set to DefaultValue.
         @param owner Owner component.
         @param name Name. */
     Attribute(IComponent* owner, const char* name) :
         IAttribute(owner, name)
     {
+        value = DefaultValue();
     }
 
     /** Constructor taking also value.
@@ -213,6 +215,10 @@ public:
     /// Convert QScriptValue to attribute value (QtScript Spesific).
     /// /todo Remove this when possible.
     virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change);
+
+    /// Returns pre-defined default value for the attribute.
+    /** Usually zero for primitive data types and for classes/structs that are collections of primitive data types (e.g. float3::zero), or the default consturctor. */
+    T DefaultValue() const;
 
 private:
     T value; ///< Attribute's value.
