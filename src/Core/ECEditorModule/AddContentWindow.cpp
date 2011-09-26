@@ -25,11 +25,13 @@
 #include "Transform.h"
 #include "LoggingFunctions.h"
 #include "CoreException.h"
+#include "ConfigAPI.h"
 
 #include "MemoryLeakCheck.h"
 
 typedef QMap<QString, QString> RefMap;
 
+/// @cond PRIVATE
 void ReplaceReferences(QByteArray &material, const RefMap &refs)
 {
     QString matString(material);
@@ -55,6 +57,7 @@ void ReplaceReferences(QByteArray &material, const RefMap &refs)
 
     material = lines.join("\n").toAscii();
 }
+/// @endcond
 
 // Entity tree widget column index enumeration.
 const int cColumnEntityCreate = 0; ///< Create column index.
@@ -69,6 +72,7 @@ const int cColumnAssetSubname = 3; ///< Subname column index.
 const int cColumnAssetDestName = 4; ///< Destination name column index.
 
 /// Tree widget item representing an entity.
+/// @cond PRIVATE
 class EntityWidgetItem : public QTreeWidgetItem
 {
 public:
@@ -95,8 +99,10 @@ public:
 
     EntityDesc desc; ///< Entity description of the item.
 };
+/// @endcond
 
 /// Tree widget item representing an asset.
+/// @cond PRIVATE
 class AssetWidgetItem : public QTreeWidgetItem
 {
 public:
@@ -129,11 +135,15 @@ public:
 
     AssetDesc desc; ///< Asset description of the item.
 };
+/// @endcond PRIVATE
 
 /// A special case identifier for using the default storage.
 const QString cDefaultStorage("DefaultStorage");
 /// A special case identifier for not altering asset refs when uploading assets.
 const QString cDoNotAlterAssetReferences("DoNotAlterAssetReferences");
+// Used for saving the recently used storage to config.
+const QString cRecentStorageSetting("recent strorage");
+const QString cAddContentDialogSetting("AddContentDialog");
 
 AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
@@ -142,7 +152,11 @@ AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget 
     parentEntities_(0),
     parentAssets_(0),
     contentAdded_(false),
-    position(float3::zero)
+    position(float3::zero),
+    progressStep_(0),
+    failedUploads_(0),
+    successfullUploads_(0),
+    totalUploads_(0)
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -188,7 +202,6 @@ AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget 
     entityTreeWidget->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
     entityTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
     entityTreeWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
 
     QPushButton *selectAllEntitiesButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllEntitiesButton = new QPushButton(tr("Deselect All"));
@@ -282,14 +295,19 @@ AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget 
     connect(deselectAllEntitiesButton, SIGNAL(clicked()), SLOT(DeselectAllEntities()));
     connect(selectAllAssetsButton, SIGNAL(clicked()), SLOT(SelectAllAssets()));
     connect(deselectAllAssetsButton, SIGNAL(clicked()), SLOT(DeselectAllAssets()));
-    connect(assetTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
-        SLOT(CheckIfColumnIsEditable(QTreeWidgetItem *, int)));
+    connect(assetTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), SLOT(CheckIfColumnIsEditable(QTreeWidgetItem *, int)));
     connect(storageComboBox, SIGNAL(currentIndexChanged(int)), SLOT(RewriteDestinationNames()));
 
-    progressStep_ = 0;
-    failedUploads_ = 0;
-    successfullUploads_ = 0;
-    totalUploads_ = 0;
+    // If we saved recently used storage, and the storage exists in the current combo box, set it as current index.
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, cAddContentDialogSetting, cRecentStorageSetting);
+    QString storageName = framework->Config()->Get(configData).toString();
+    if (!storageName.isEmpty())
+        for(int i = 0; i < storageComboBox->count(); ++i)
+            if (storageComboBox->itemData(i) == storageName)
+            {
+                storageComboBox->setCurrentIndex(i);
+                break;
+            }
 }
 
 AddContentWindow::~AddContentWindow()
@@ -544,7 +562,7 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
     }
 }
 
-QString AddContentWindow::GetCurrentStorageName() const
+QString AddContentWindow::CurrentStorageName() const
 {
     return storageComboBox->itemData(storageComboBox->currentIndex()).toString();
 }
@@ -575,7 +593,7 @@ void AddContentWindow::AddContent()
     uploadProgress_->setValue(0);
     entitiesStatus_->setText(tr("Waiting for asset uploads to finish..."));
     entitiesProgress_->setValue(0);
-
+    bool uploadFailed = false;
     if (CreateNewDesctiption())
     {
         // If no uploads are queued then AddEntities will be called automatically
@@ -594,17 +612,24 @@ void AddContentWindow::AddContent()
 
             addContentButton->setEnabled(false);
             storageComboBox->setEnabled(false);
+
+            // Upload succesful, save most recently used storage to config.
+            ConfigData configData(ConfigAPI::FILE_FRAMEWORK, cAddContentDialogSetting, cRecentStorageSetting, CurrentStorageName());
+            framework->Config()->Set(configData);
         }
         else
-            QMessageBox::critical(this, tr("Uploading"), tr("Starting uploads failed"));
+            uploadFailed = true;
     }
     else
+        uploadFailed = true;
+
+    if (uploadFailed)
         QMessageBox::critical(this, tr("Uploading"), tr("Starting uploads failed"));
 }
 
 bool AddContentWindow::CreateNewDesctiption()
 {
-    QString storageName = GetCurrentStorageName();
+    QString storageName = CurrentStorageName();
     AssetStoragePtr dest;
     if (storageName != cDoNotAlterAssetReferences)
     {
@@ -686,7 +711,7 @@ bool AddContentWindow::CreateNewDesctiption()
 bool AddContentWindow::UploadAssets()
 {
     AssetStoragePtr dest;
-    QString storageName = GetCurrentStorageName();
+    QString storageName = CurrentStorageName();
     bool doNotAlter = storageName == cDoNotAlterAssetReferences;
     // No upload if we don't touch asset refs
     if (!doNotAlter)
@@ -755,7 +780,7 @@ bool AddContentWindow::UploadAssets()
 void AddContentWindow::AddEntities()
 {
     AssetStoragePtr dest;
-    QString storageName = GetCurrentStorageName();
+    QString storageName = CurrentStorageName();
     bool doNotAlter = storageName == cDoNotAlterAssetReferences;
     // No upload if we don't touch asset refs
     if (!doNotAlter)
@@ -870,7 +895,7 @@ void AddContentWindow::SetAssetsVisible(bool visible)
 
 void AddContentWindow::Close()
 {
-    AssetStoragePtr storage = framework->Asset()->GetAssetStorageByName(GetCurrentStorageName());
+    AssetStoragePtr storage = framework->Asset()->GetAssetStorageByName(CurrentStorageName());
     QString currentStorageBaseUrl = storage ? storage->BaseURL() : "";
     emit Completed(contentAdded_, currentStorageBaseUrl);
     close();
@@ -906,7 +931,7 @@ void AddContentWindow::GenerateStorageComboBoxContents()
 
 void AddContentWindow::RewriteDestinationNames()
 {
-    QString storageName = GetCurrentStorageName();
+    QString storageName = CurrentStorageName();
     AssetStoragePtr dest;
     bool doNotAlter = storageName == cDoNotAlterAssetReferences;
     bool useDefault = storageName == cDefaultStorage;

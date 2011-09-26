@@ -73,12 +73,11 @@ private:
     /// Rewrites values of AssetReference or AssetReferenceList attributes.
     /** @param sceneDesc Scene description.
         @param dest Destination asset storage.
-        @param useDefaultStorage Do we want to use the default asset storage.
-    */
+        @param useDefaultStorage Do we want to use the default asset storage. */
     void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage);
 
     /// Returns name of the currently selected asset storage.
-    QString GetCurrentStorageName() const;
+    QString CurrentStorageName() const;
 
     /// Generates contents of asset storage combo box. Sets default storage selected as default.
     void GenerateStorageComboBoxContents();
