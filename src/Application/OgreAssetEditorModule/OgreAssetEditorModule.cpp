@@ -89,7 +89,6 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     if (asset->Type() == "OgreMesh")
     {
         MeshPreviewEditor *meshEditor = new MeshPreviewEditor(asset, framework_);
-        meshEditor->Open();
         editor = meshEditor;
     }
     else if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")

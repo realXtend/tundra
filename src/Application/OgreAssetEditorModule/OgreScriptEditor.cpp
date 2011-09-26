@@ -104,8 +104,8 @@ void OgreScriptEditor::SetScriptAsset(const AssetPtr &scriptAsset)
         connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetTransferSucceeded(AssetPtr)));
         connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
     }
-
-    Open();
+    else
+        Open();
 }
 
 void OgreScriptEditor::Open()
@@ -329,9 +329,9 @@ void OgreScriptEditor::CreatePropertyEditor()
     connect(propertyTable, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
 }
 
-void OgreScriptEditor::OnAssetTransferSucceeded(AssetPtr audioAsset)
+void OgreScriptEditor::OnAssetTransferSucceeded(AssetPtr scriptAsset)
 {
-    asset = audioAsset;
+    SetScriptAsset(scriptAsset);
 }
 
 void OgreScriptEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
