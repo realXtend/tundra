@@ -304,6 +304,8 @@ namespace OgreRenderer
                 // graphical issues, so it cannot be used as a permanent mechanism. Therefore this workaround is enabled only as a command-line switch.
                 if (framework_->HasCommandLineParameter("--ogrecapturetopwindow"))
                     renderWindow->CreateRenderWindow(framework_->Ui()->MainWindow(), window_title_.c_str(), width, height, window_left, window_top, false);
+                else if (framework_->HasCommandLineParameter("--nouicompositing"))
+                    renderWindow->CreateRenderWindow(0, window_title_.c_str(), width, height, window_left, window_top, false);
                 else // Normally, we want to render Ogre onto the UiGraphicsview viewport window.
                     renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
 

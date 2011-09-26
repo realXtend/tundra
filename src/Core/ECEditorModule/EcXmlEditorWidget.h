@@ -16,7 +16,7 @@ class QTextEdit;
 class Framework;
 
 /// Widget for entity-component XML editing.
-/// \ingroup ECEditorModuleClient.
+/** \ingroup ECEditorModuleClient. */
 class EcXmlEditorWidget : public QWidget
 {
     Q_OBJECT

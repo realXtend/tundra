@@ -38,7 +38,8 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
     Ogre::NameValuePairList params;
 
 #ifdef WIN32
-    params["externalWindowHandle"] = Ogre::StringConverter::toString((unsigned int)targetWindow->winId());
+    if (targetWindow)
+        params["externalWindowHandle"] = Ogre::StringConverter::toString((unsigned int)targetWindow->winId());
 #endif
 
 #ifdef Q_WS_MAC
@@ -48,7 +49,7 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
 
     QWidget* nativewin = targetWindow;
 
-    while(nativewin->parentWidget())
+    while(nativewin && nativewin->parentWidget())
         nativewin = nativewin->parentWidget();
 #if 0
     HIViewRef vref = (HIViewRef) nativewin-> winId ();
@@ -59,7 +60,7 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
     // according to
     // http://www.ogre3d.org/forums/viewtopic.php?f=2&t=27027 does
     winhandle = Ogre::StringConverter::toString(
-                 (unsigned long) nativewin->winId());
+        (unsigned long)nativewin ? nativewin->winId() : 0);
 #endif
     //Add the external window handle parameters to the existing params set.
     params["externalWindowHandle"] = winhandle;
@@ -67,7 +68,7 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
 
 #ifdef Q_WS_X11
     QWidget *parent = targetWindow;
-    while(parent->parentWidget())
+    while(parent && parent->parentWidget())
         parent = parent->parentWidget();
 
     // GLX - According to Ogre Docs:
@@ -76,7 +77,7 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
 
     Ogre::String winhandle = Ogre::StringConverter::toString((unsigned long)(info.display()));
     winhandle += ":" + Ogre::StringConverter::toString((unsigned int)(info.screen()));
-    winhandle += ":" + Ogre::StringConverter::toString((unsigned long)parent->winId());
+    winhandle += ":" + Ogre::StringConverter::toString((unsigned long)parent ? parent->winId() : 0);
 
     //Add the external window handle parameters to the existing params set.
     params["parentWindowHandle"] = winhandle;

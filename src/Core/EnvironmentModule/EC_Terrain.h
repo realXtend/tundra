@@ -23,7 +23,7 @@ namespace Ogre { class Matrix4; }
 Adds a heightmap-based terrain to the scene. A Terrain is composed of a rectangular grid of adjacent "patches".
 Each patch is a fixed-size 16x16 height map.
 
-Registered by Environment::EnvironmentModule.
+Registered by EnvironmentComponents plugin.
 
 <b>Attributes:</b>
 <ul>

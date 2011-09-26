@@ -24,35 +24,22 @@ public:
     
     QString baseAddress;
     QString storageName;
+    ///\todo Evaluate if could be removed. Now both AssetAPI and HttpAssetStorage manage list of asset refs.
     QStringList assetRefs;
-    ///\todo Disallow scripts from changing this after the storage has been created. (security issue) -jj.
-    QString localDir;
-    
-    /// If true, uploads are supported.
-    bool writable;
-    
-    /// If true, assets in this storage are subject to live update after loading.
-    bool liveUpdate;
-    
-    /// If true, storage has automatic discovery of new assets enabled.
-    bool autoDiscoverable;
-    
-public slots:
-    /// Specifies whether data can be uploaded to this asset storage.
-    virtual bool Writable() const { return writable; }
 
-    /// Specifies whether the assets in the storage should be subject to live update, once loaded
-    virtual bool HasLiveUpdate() const { return liveUpdate; }
-    
-    /// Specifies whether the asset storage has automatic discovery of new assets enabled
-    virtual bool AutoDiscoverable() const { return autoDiscoverable; }
-    
+    /// If the HttpAssetStorage points to a filesystem that is local to this server, this specifies the absolute path of
+    /// the storage.
+    QString localDir;
+        
+public slots:    
     /// HttpAssetStorages are trusted if they point to a web server on the local system.
-    /// \todo Make this bit configurable per-HttpAssetStorage.
     virtual bool Trusted() const;
 
+    // Returns the current trust state of this storage.
+    virtual TrustState GetTrustState() const;
+
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
-    virtual QString GetFullAssetURL(const QString &localName) { return GuaranteeTrailingSlash(baseAddress) + localName; }
+    virtual QString GetFullAssetURL(const QString &localName);
 
     /// Returns the type of this storage: "HttpAssetStorage".
     virtual QString Type() const;
@@ -70,12 +57,12 @@ public slots:
     virtual void RefreshAssetRefs();
 
     /// Serializes this storage to a string for machine transfer.
-    virtual QString SerializeToString() const;
+    virtual QString SerializeToString(bool networkTransfer = false) const;
 
-    /// Add an assetref. Emit AssetRefsChanged() if did not exist already. Called by HttpAssetProvider
+    /// Adds an assetref. Emits AssetChanged() if did not exist already. Called by HttpAssetProvider
     void AddAssetRef(const QString& ref);
 
-    /// Delete an assetref. Emit AssetRefsChanged() if found. Called by HttpAssetProvider
+    /// Deletes an assetref. Emits AssetChanged() if found. Called by HttpAssetProvider
     void DeleteAssetRef(const QString& ref);
     
     /// Returns the local directory of this storage. Empty if not local.
@@ -93,5 +80,7 @@ private:
 
     /// Ongoing network requests for querying asset refs
     std::vector<SearchRequest> searches;
+
+    friend class HttpAssetProvider;
 };
 

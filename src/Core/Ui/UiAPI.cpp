@@ -87,6 +87,13 @@ UiAPI::UiAPI(Framework *owner_) :
     // Prepare graphics view and scene
     graphicsView = new UiGraphicsView(mainWindow);
 
+    // If debugging the compositing system, restore back default Qt window state.
+    if (owner_->HasCommandLineParameter("--nouicompositing"))
+    {
+        graphicsView->setUpdatesEnabled(true);
+        graphicsView->setAttribute(Qt::WA_DontShowOnScreen, false);
+    }
+
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
 
     // QMainWindow has a layout by default. It will not let you set another.
@@ -95,7 +102,9 @@ UiAPI::UiAPI(Framework *owner_) :
         mainWindow->setLayout(new QVBoxLayout());
     mainWindow->layout()->setMargin(0);
     mainWindow->layout()->setContentsMargins(0,0,0,0);
-    mainWindow->setCentralWidget(graphicsView);
+    mainWindow->layout()->addWidget(graphicsView);
+    // The Qt APIs want us to do this, but it causes improper scrollarea sizing.
+//    mainWindow->setCentralWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);

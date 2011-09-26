@@ -44,15 +44,17 @@ See the following pages for help on working on the Tundra codebase.
 <ul>
 <li>\ref progconv "Coding conventions."
 <li><a href="http://wiki.realxtend.org/index.php/Header_Usage_Best_Practices">Header usage best practices</a>.
-<li><a href="http://doc.qt.nokia.com/">Qt documentation</a>.
-<li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.
-<li>\ref TundraArchitectureOverview "Naali and Tundra Architecture Overview."
+<li>\ref TundraArchitectureOverview "Tundra Architecture Overview."
 <li>\ref component_base "Entity-Component reference."
 <li>\ref TundraScriptReference "Tundra scripting reference."
 <li>\ref TundraDocumentfiles "Working with Tundra document files."
 <li>\ref MumbleVoipSetup "Setting up Mumble VOIP."
-<li>\ref UsingPdfDocuments "Using PDF documents with Tundra."
 <li>\ref SettingUpWebdav "Setting up an http asset storage with WebDAV."
+<li>Documentations of major external libraries used with Tundra:
+<ul><li><a href="http://doc.qt.nokia.com/">Qt documentation</a>.</ul>
+<ul><li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.</ul>
+<ul><li><a href="http://clb.demon.fi/knet/">kNet documentation</a>.</ul>
+</ul>
 </ul>
 </td>
 </tr>

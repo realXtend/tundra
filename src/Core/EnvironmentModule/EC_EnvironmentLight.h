@@ -16,7 +16,7 @@
 
     Gives an access to scene-related environment settings, such as sunlight and ambient light.
 
-    Enviroment light component is registered by Enviroment::EnvironmentModule. 
+    Enviroment light component is registered by EnviromentComponets plugin.
 
     <b>Attributes</b>:
     <ul>

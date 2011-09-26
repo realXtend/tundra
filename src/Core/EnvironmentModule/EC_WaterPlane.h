@@ -22,7 +22,7 @@
 Water plane component creates a cubic water plane. Inside the water cube scene fog is overridden by underwater fog properties.
 Despite the cubic nature, water plane is visible for the outside viewer only as a plane.
 
-Registered by Enviroment::EnvironmentModule.
+Registered by EnviromentComponents plugin.
 
 <b>Attributes</b>:
 <ul>

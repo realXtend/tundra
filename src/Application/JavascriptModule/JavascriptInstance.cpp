@@ -97,12 +97,7 @@ void JavascriptInstance::Load()
     {
         trusted_ = true;
         for(unsigned i = 0; i < scriptRefs_.size(); ++i)
-        {
-            AssetStoragePtr storage = scriptRefs_[i]->GetAssetStorage();
-            if (!storage)
-                LogError("Error: Script asset \"" + scriptRefs_[i]->Name() + "\" does not have a source asset storage!");
-            trusted_ = trusted_ && storage && storage->Trusted();
-        }
+            trusted_ = trusted_ && scriptRefs_[i]->IsTrusted();
     }
     else // Local file: always trusted.
     {

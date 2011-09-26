@@ -96,32 +96,8 @@ int run(int argc, char **argv)
     int return_value = EXIT_SUCCESS;
 
     // Initilizing prints
-    LogInfo("Starting up Tundra");
+    LogInfo("Starting up Tundra.");
     LogInfo("* Working directory: " + QDir::currentPath());
-
-    // Parse and print command arguments
-    QStringList arguments;
-    for(int i = 1; i < argc; ++i)
-        arguments << argv[i];
-    QString fullArguments = arguments.join(" ");
-    if (fullArguments.contains("--"))
-    {
-        LogInfo("* Command arguments:");
-        int iStart = fullArguments.indexOf("--");
-        while (iStart != -1)
-        {
-            int iStop = fullArguments.indexOf("--", iStart+1);
-            QString subStr = fullArguments.mid(iStart, iStop-iStart);
-            if (!subStr.isEmpty() && !subStr.isNull())
-            {
-                LogInfo("  " + subStr);
-                iStart = fullArguments.indexOf("--", iStart+1);
-            }
-            else
-                iStart = -1;
-        }
-    }   
-    LogInfo(""); // endl
 
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)

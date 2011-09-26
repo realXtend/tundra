@@ -27,6 +27,7 @@
 
 using namespace std;
 
+/// @cond PRIVATE
 struct AudioApiImpl
 {
 public:
@@ -68,6 +69,7 @@ public:
     /// Master gain for individual sound types
     std::map<SoundChannel::SoundType, float> soundMasterGain;
 };
+/// @endcond PRIVATE
 
 AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_)
 :impl(new AudioApiImpl),
@@ -121,8 +123,7 @@ AudioAPI::~AudioAPI()
 void AudioAPI::Reset()
 {
     Uninitialize();
-    delete impl;
-    impl = 0;
+    SAFE_DELETE(impl);
 }
 
 bool AudioAPI::Initialize(const QString &playbackDeviceName)

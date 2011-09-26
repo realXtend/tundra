@@ -16,6 +16,8 @@ class EC_WidgetCanvas;
 class EC_Mesh;
 class RaycastResult;
 
+/// Shows a slideshow of texture on 3D object.
+/** Depends on EC_WidgetCanvas and EC_Mesh. */
 class SCENEWIDGET_MODULE_API EC_SlideShow : public IComponent
 {
     Q_OBJECT

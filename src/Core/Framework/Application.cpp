@@ -107,7 +107,9 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
 
 Application::~Application()
 {
+#ifdef ENABLE_SPLASH_SCREEN
     SAFE_DELETE(splashScreen);
+#endif
     SAFE_DELETE(nativeTranslator);
     SAFE_DELETE(appTranslator);
 }

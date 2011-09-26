@@ -6,23 +6,23 @@
 #include "LocalAssetStorage.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
+#include "QtUtils.h"
+#include "Profiler.h"
 
-#include <boost/filesystem.hpp>
 #include <QFileSystemWatcher>
 #include <QDir>
 #include <utility>
 
 #include "MemoryLeakCheck.h"
 
-namespace Asset
+LocalAssetStorage::LocalAssetStorage(bool writable_, bool liveUpdate_, bool autoDiscoverable_) :
+    recursive(true),
+    changeWatcher(0)
 {
-
-LocalAssetStorage::LocalAssetStorage()  :
-    recursive(true), /// \todo This was uninitialized so set to true, which one do we want as default behavior?
-    writable(true),
-    liveUpdate(true),
-    autoDiscoverable(true)
-{
+    // Override the parameters for the base class.
+    writable = writable_;
+    liveUpdate = liveUpdate_;
+    autoDiscoverable = autoDiscoverable_;
 }
 
 LocalAssetStorage::~LocalAssetStorage()
@@ -32,133 +32,50 @@ LocalAssetStorage::~LocalAssetStorage()
 
 void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType)
 {
-    try
-    {
-        if (recursive)
+    foreach(QString str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+        if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
         {
-            boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
-            boost::filesystem::recursive_directory_iterator end_iter;
-            // Check the subdir
-            for(; iter != end_iter; ++iter)
-            {
-                if (boost::filesystem::is_regular_file(iter->status()))
-                {
-                    QString str = iter->path().string().c_str();
-                    if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-                    {
-                        int lastSlash = str.lastIndexOf('/');
-                        if (lastSlash != -1)
-                            str = str.right(str.length() - lastSlash - 1);
-                        assetAPI->RequestAsset("local://" + str, assetType);
-                    }
-                }
-            }
+            int lastSlash = str.lastIndexOf('/');
+            if (lastSlash != -1)
+                str = str.right(str.length() - lastSlash - 1);
+            assetAPI->RequestAsset("local://" + str, assetType);
         }
-        else
-        {
-            boost::filesystem::directory_iterator iter(directory.toStdString());
-            boost::filesystem::directory_iterator end_iter;
-            // Check the subdir
-            for(; iter != end_iter; ++iter)
-            {
-                if (boost::filesystem::is_regular_file(iter->status()))
-                {
-                    QString str = iter->path().string().c_str();
-                    if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-                    {
-                        int lastSlash = str.lastIndexOf('/');
-                        if (lastSlash != -1)
-                            str = str.right(str.length() - lastSlash - 1);
-                        assetAPI->RequestAsset("local://" + str, assetType);
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-    }
 }
 
 void LocalAssetStorage::RefreshAssetRefs()
 {
-    assetRefs.clear();
-    
-    try
-    {
-        if (recursive)
+    foreach(QString str, DirectorySearch(directory, recursive, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+        if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
         {
-            boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
-            boost::filesystem::recursive_directory_iterator end_iter;
-            // Check the subdir
-            for(; iter != end_iter; ++iter)
+            QString diskSource = str;
+            int lastSlash = str.lastIndexOf('/');
+            if (lastSlash != -1)
+                str = str.right(str.length() - lastSlash - 1);
+            QString localName = str;
+            str.prepend("local://");
+            if (!assetRefs.contains(str))
             {
-                if (boost::filesystem::is_regular_file(iter->status()))
-                {
-                    QString str = iter->path().string().c_str();
-                    if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-                    {
-                        int lastSlash = str.lastIndexOf('/');
-                        if (lastSlash != -1)
-                            str = str.right(str.length() - lastSlash - 1);
-                        assetRefs.append("local://" + str);
-                    }
-                }
+                assetRefs.append(str);
+                emit AssetChanged(localName, diskSource, IAssetStorage::AssetCreate);
             }
         }
-        else
-        {
-            boost::filesystem::directory_iterator iter(directory.toStdString());
-            boost::filesystem::directory_iterator end_iter;
-            // Check the subdir
-            for(; iter != end_iter; ++iter)
-            {
-                if (boost::filesystem::is_regular_file(iter->status()))
-                {
-                    QString str = iter->path().string().c_str();
-                    if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
-                    {
-                        int lastSlash = str.lastIndexOf('/');
-                        if (lastSlash != -1)
-                            str = str.right(str.length() - lastSlash - 1);
-                        assetRefs.append("local://" + str);
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-    }
-    
-    emit AssetRefsChanged(this->shared_from_this());
 }
 
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)
 {
     QDir dir(GuaranteeTrailingSlash(directory) + assetname);
-    if (boost::filesystem::exists(dir.absolutePath().toStdString()))
+    if (QFile::exists(dir.absolutePath()))
         return directory;
 
     if (!recursive || !recursiveLookup)
         return "";
 
-    try
+    foreach(const QString &str, DirectorySearch(directory, recursive, QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks))
     {
-        boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
-        boost::filesystem::recursive_directory_iterator end_iter;
-        // Check the subdir
-        for(; iter != end_iter; ++iter)
-        {
-            QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname);
-            if (!boost::filesystem::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
-                return iter->path().string().c_str();
-        }
+        QFileInfo file(GuaranteeTrailingSlash(str) + assetname);
+        if (file.exists())
+            return file.dir().path();
     }
-    catch(...)
-    {
-    }
-
     return "";
 }
 
@@ -175,41 +92,47 @@ QString LocalAssetStorage::Type() const
     return "LocalAssetStorage";
 }
 
-QString LocalAssetStorage::SerializeToString() const
+QString LocalAssetStorage::SerializeToString(bool networkTransfer) const
 {
-    return "type=" + Type() + ";name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false") + ";readonly=" + (!writable ? "true" : "false") +
-        ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
+    if (networkTransfer)
+        return ""; // Cannot transfer a LocalAssetStorage through network to another computer, since it is local to this system!
+    else
+        return "type=" + Type() + ";name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false") + ";readonly=" + (!writable ? "true" : "false") +
+        ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false") + ";replicated=" + (isReplicated ? "true" : "false")
+        + ";trusted=" + TrustStateToString(GetTrustState());
+}
+
+void LocalAssetStorage::EmitAssetChanged(QString absoluteFilename, IAssetStorage::ChangeType change)
+{
+    QString localName;
+    int lastSlash = absoluteFilename.lastIndexOf('/');
+    if (lastSlash != -1)
+        localName = absoluteFilename.right(absoluteFilename.length() - lastSlash - 1);
+    QString assetRef = "local://" + localName;
+    if (assetRefs.contains(assetRef) && change == IAssetStorage::AssetCreate)
+        LogWarning("LocalAssetStorage::EmitAssetChanged: AssetCreate signaled for already existing asset.");
+    else
+        emit AssetChanged(localName, absoluteFilename, change);
 }
 
 void LocalAssetStorage::SetupWatcher()
 {
-    /* This watcher is not used for now. -jj. will be removed.
     if (changeWatcher) // Remove the old watcher if one exists.
         RemoveWatcher();
 
     changeWatcher = new QFileSystemWatcher();
 
-    // Add a watcher to listen to if the directory contents change.
-    changeWatcher->addPath(directory);
+    // Add directory contents to watch list.
+    LogDebug("LocalAssetStorage::SetupWatcher: adding " + directory + " recursive=" + (recursive ? "true" : "false"));
 
-    // Add a watcher to each file in the directory.
-    QDir dir(directory);
-    QFileInfoList files = dir.entryInfoList(QDir::Files);
-    foreach(QFileInfo i, files)
-        changeWatcher->addPath(i.absoluteFilePath());
+    QStringList paths = DirectorySearch(directory, recursive, QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+    changeWatcher->addPath(QDir::fromNativeSeparators(directory));
+    changeWatcher->addPaths(paths);
 
-    ///\todo The QFileSystemWatcher is severely lacking in functionality. Replace the above with some custom method that can tell
-    /// which files change.
-    */
+    LogDebug("Total of " + QString::number(paths.count()) + " dirs and files added to watch list.");
 }
 
 void LocalAssetStorage::RemoveWatcher()
 {
-    /* This watcher is not used for now. -jj. will be removed.
-    delete changeWatcher;
-    changeWatcher = 0;
-    */
+    SAFE_DELETE(changeWatcher);
 }
-
-} // ~Asset
-

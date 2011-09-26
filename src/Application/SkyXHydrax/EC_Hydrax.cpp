@@ -40,6 +40,7 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
+/// @cond PRIVATE
 struct EC_HydraxImpl
 {
     EC_HydraxImpl() : hydrax(0), module(0) {}
@@ -57,6 +58,7 @@ struct EC_HydraxImpl
     boost::weak_ptr<EC_SkyX> skyX;
 #endif
 };
+/// @endcond PRIVATE
 
 EC_Hydrax::EC_Hydrax(Scene* scene) :
     IComponent(scene),

@@ -24,7 +24,6 @@ UiGraphicsView::UiGraphicsView(QWidget *parent)
 :QGraphicsView(parent), backBuffer(0)
 {
     setAutoFillBackground(false);
-    setUpdatesEnabled(false);
     setAttribute(Qt::WA_NoSystemBackground, true);
     setAttribute(Qt::WA_PaintOnScreen, true);
 
@@ -33,6 +32,7 @@ UiGraphicsView::UiGraphicsView(QWidget *parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setLineWidth(0);
 
+    setUpdatesEnabled(false);
     setAttribute(Qt::WA_DontShowOnScreen, true);
 }
 

@@ -16,7 +16,7 @@
 <td>
 <h2>Makes the entity a sky.</h2>
 
-Registered by Enviroment::EnvironmentModule. 
+Registered by EnviromentComponents plugin.
 
 <b>Attributes</b>:
 <ul>

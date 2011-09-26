@@ -12,6 +12,7 @@
 #include "ScriptMetaTypeDefines.h"
 #include "JavascriptInstance.h"
 #include "ScriptCoreTypeDefines.h"
+
 #include "Profiler.h"
 #include "Application.h"
 #include "SceneAPI.h"
@@ -30,9 +31,7 @@
 #include "IComponentFactory.h"
 #include "TundraLogicModule.h"
 #include "LoggingFunctions.h"
-
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include "QtUtils.h"
 
 #include <QtScript>
 #include <QDomElement>
@@ -533,38 +532,21 @@ QStringList JavascriptModule::ParseStartupScriptConfig()
 void JavascriptModule::LoadStartupScripts()
 {
     UnloadStartupScripts();
-    
-    std::string path = Application::InstallationDirectory().toStdString() + "jsmodules/startup";
-    std::vector<std::string> scripts;
 
-    try
-    {
-        boost::filesystem::directory_iterator i(path);
-        boost::filesystem::directory_iterator end_iter;
-        while(i != end_iter)
-        {
-            if (boost::filesystem::is_regular_file(i->status()))
-            {
-                std::string ext = i->path().extension();
-                boost::algorithm::to_lower(ext);
-                if (ext == ".js")
-                    scripts.push_back(i->path().string());
-            }
-            ++i;
-        }
-    }
-    catch(std::exception &/*e*/)
-    {
-    }
-    
+    QString path = Application::InstallationDirectory() + "jsmodules/startup";
+    QStringList scripts;
+    foreach(const QString &file, DirectorySearch(path, false, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+    if (file.endsWith(".js", Qt::CaseInsensitive))
+        scripts.append(file);
+
     QStringList startupScriptsToLoad = ParseStartupScriptConfig();
 
     // Create a script instance for each of the files, register services for it and try to run.
     if (scripts.size() || startupScriptsToLoad.size())
         LogInfo("Loading JS startup scripts...");
-    for(uint i = 0; i < scripts.size(); ++i)
+    for(int i = 0; i < scripts.size(); ++i)
     {
-        QString startupScript = scripts[i].c_str();
+        QString startupScript = scripts[i];
         startupScript = startupScript.replace("\\", "/");
         QString baseName = startupScript.mid(startupScript.lastIndexOf("/")+1);
         if (startupScriptsToLoad.contains(startupScript) || startupScriptsToLoad.contains(baseName))

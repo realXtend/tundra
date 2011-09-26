@@ -10,6 +10,7 @@
 #include "CoreTypes.h"
 #include "CoreStringUtils.h"
 #include "AssetFwd.h"
+#include "IAssetStorage.h"
 
 class QFileSystemWatcher;
 
@@ -42,7 +43,7 @@ class AssetAPI : public QObject
     Q_OBJECT
 
 public:
-    AssetAPI(Framework *fw, bool isHeadless);
+    AssetAPI(Framework *fw, bool headless);
 
     ~AssetAPI();
 
@@ -53,7 +54,8 @@ public:
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
 
-    /// Returns all registered asset type factories. You can use this list to query which asset types the system can handle.
+    /// Returns all registered asset type factories.
+    /** You can use this list to query which asset types the system can handle. */
     std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() const { return assetTypeFactories; }
 
     /// Returns the asset provider of the given type.
@@ -61,7 +63,8 @@ public:
     template<typename T>
     boost::shared_ptr<T> GetAssetProvider() const;
 
-    /// Registers a new asset provider to the Asset API. Use this to add a new provider type you have instantiated to the system.
+    /// Registers a new asset provider to the Asset API.
+    /** Use this to add a new provider type you have instantiated to the system. */
     void RegisterAssetProvider(AssetProviderPtr provider);
 
     /// Returns all the asset providers that are registered to the Asset API.
@@ -70,23 +73,24 @@ public:
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<AssetTransferPtr> PendingTransfers() const;
 
-    /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
-    /// it yourself.
+    /// Performs internal tick-based updates of the whole asset system.
+    /** This function is intended to be called only by the core, do not call it yourself. */
     void Update(f64 frametime);
 
-    /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
+    /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed.
+    /** Do not call this function from client code. */
     void AssetTransferCompleted(IAssetTransfer *transfer);
 
-    /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and
-    /// also fail any transfers of assets which depended on this transfer.
+    /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure.
+    /** The Asset API will erase this transfer and also fail any transfers of assets which depended on this transfer. */
     void AssetTransferFailed(IAssetTransfer *transfer, QString reason);
 
-    /// Called by each IAsset when it has completed loading successfully. Typically inside 
-    /// IAsset::DeserializeFromData or later on if it is loading asynchronously.
+    /// Called by each IAsset when it has completed loading successfully.
+    /** Typically inside IAsset::DeserializeFromData or later on if it is loading asynchronously. */
     void AssetLoadCompleted(const QString assetRef);
 
-    /// Called by each IAsset when it has failed to load. Typically inside 
-    /// IAsset::DeserializeFromData or later on if it is loading asynchronously.
+    /// Called by each IAsset when it has failed to load.
+    /** Typically inside IAsset::DeserializeFromData or later on if it is loading asynchronously. */
     void AssetLoadFailed(const QString assetRef);
 
     /// Called by each AssetProvider to notify the Asset API that an asset upload transfer has completed. Do not call this function from client code.
@@ -96,7 +100,7 @@ public:
 
     void NotifyAssetDependenciesChanged(AssetPtr asset);
 
-    bool IsHeadless() const { return isHeadless_; }
+    bool IsHeadless() const { return isHeadless; }
 
     /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
     std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
@@ -120,22 +124,23 @@ public:
     };
 
     /// Breaks the given assetRef into pieces, and returns the parsed type.
-    /// @param assetRef The assetRef to parse.
-    /// @param outProtocolPart [out] Receives the protocol part of the ref, e.g. "http://server.com/asset.png" -> "http". If it doesn't exist, returns an empty string.
-    /// @param outNamedStorage [out] Receives the named storage specifier in the ref, e.g. "myStorage:asset.png" -> "myStorage". If it doesn't exist, returns an empty string.
-    /// @param outProtocol_Path [out] Receives the "path name" identifying where the asset is stored in.
-    ///                                e.g. "http://server.com/path/folder2/asset.png" -> "http://server.com/path/folder2/". 
-    ///                                     "myStorage:asset.png" -> "myStorage:". Always has a trailing slash if necessary.
-    /// @param outPath_Filename_SubAssetName [out] Gets the combined path name, asset filename and asset subname in the ref.
-    ///                                e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
-    ///                                     "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
-    /// @param outPath_Filename [out] Gets the combined path name and asset filename in the ref.
-    ///                                e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png".
-    ///                                     "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png".
-    /// @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/". Has a trailing slash when necessary.
-    /// @param outFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
-    /// @param outSubAssetName [out] Returns the subasset name in the ref. e.g. "local://path/folder/asset.png, subAsset" -> "subAsset".
-    /// @param outFullRef [out] Returns a cleaned or "canonicalized" version of the asset ref in full.
+    /** @param assetRef The assetRef to parse.
+        @param outProtocolPart [out] Receives the protocol part of the ref, e.g. "http://server.com/asset.png" -> "http". If it doesn't exist, returns an empty string.
+        @param outNamedStorage [out] Receives the named storage specifier in the ref, e.g. "myStorage:asset.png" -> "myStorage". If it doesn't exist, returns an empty string.
+        @param outProtocol_Path [out] Receives the "path name" identifying where the asset is stored in.
+                                        e.g. "http://server.com/path/folder2/asset.png" -> "http://server.com/path/folder2/". 
+                                            "myStorage:asset.png" -> "myStorage:". Always has a trailing slash if necessary.
+        @param outPath_Filename_SubAssetName [out] Gets the combined path name, asset filename and asset subname in the ref.
+                                       e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
+                                            "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
+        @param outPath_Filename [out] Gets the combined path name and asset filename in the ref.
+                                       e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png".
+                                            "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png".
+        @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/". Has a trailing slash when necessary.
+        @param outFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
+        @param outSubAssetName [out] Returns the subasset name in the ref. e.g. "local://path/folder/asset.png, subAsset" -> "subAsset".
+        @param outFullRef [out] Returns a cleaned or "canonicalized" version of the asset ref in full.
+        @param outFullRefNoSubAssetName [out] Returns a cleaned or "canonicalized" version of the asset ref in full without possible subasset. */
     static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart = 0, QString *outNamedStorage = 0, QString *outProtocol_Path = 0, 
         QString *outPath_Filename_SubAssetName = 0, QString *outPath_Filename = 0, QString *outPath = 0, QString *outFilename = 0, QString *outSubAssetName = 0,
         QString *outFullRef = 0, QString *outFullRefNoSubAssetName = 0);
@@ -143,15 +148,17 @@ public:
     typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
     typedef std::vector<std::pair<QString, QString> > AssetDependenciesMap;
     
-    /// Sanitates an assetref so that it can be used as a filename for caching. Characters like : / \\ * will be replaced with $1, $2, $3, $4 .. respectively, in a reversible way.
-    /** Note that sanitated assetrefs will not work when querying from the asset system, for that you need the desanitated form. */
+    /// Sanitates an assetref so that it can be used as a filename for caching.
+    /** Characters like ':'. '/', '\' and '*' will be replaced with $1, $2, $3, $4 .. respectively, in a reversible way.
+        Note that sanitated assetrefs will not work when querying from the asset system, for that you need the desanitated form. */
     static QString SanitateAssetRef(const QString& ref);
 
     /// Desanitates an assetref with $1 $2 $3 $4 ... into original form.
     static QString DesanitateAssetRef(const QString& ref);
 
-    /// Sanitates an assetref so that it can be used as a filename for caching. Characters like : / \\ * will be replaced with $1, $2, $3, $4 .. respectively, in a reversible way.
-    /** Note that sanitated assetrefs will not work when querying from the asset system, for that you need the desanitated form. */
+    /// Sanitates an assetref so that it can be used as a filename for caching.
+    /** Characters like ':'. '/', '\' and '*' will be replaced with $1, $2, $3, $4 .. respectively, in a reversible way.
+        Note that sanitated assetrefs will not work when querying from the asset system, for that you need the desanitated form. */
     static std::string SanitateAssetRef(const std::string& ref);
 
     /// Desanitates an assetref with $1 $2 $3 $4 ... into original form.
@@ -160,6 +167,8 @@ public:
     /// Explodes the given asset storage description string to key-value pairs.
     static QMap<QString, QString> ParseAssetStorageString(QString storageString);
 
+    Framework *GetFramework() const { return fw; }
+
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap GetAllAssets() const { return assets; }
@@ -167,15 +176,15 @@ public slots:
     /// Returns the known asset storage instances in the system.
     AssetStorageVector GetAssetStorages() const;
 
-    /// Opens the internal Asset API asset cache to the given directory. When the Asset API starts up, the asset cache is not created. This allows
-    /// the Asset API to be operated in a mode that does not perform writes to the disk when assets are fetched. This will cause assets fetched from
-    /// remote hosts to have a null disk source.
-    /// @note Once the asset cache has been created with a call to this function, there is no way to close the asset cache (except to close and restart).
+    /// Opens the internal Asset API asset cache to the given directory.
+    /** When the Asset API starts up, the asset cache is not created. This allows the Asset API to be operated in a mode that does not 
+        perform writes to the disk when assets are fetched. This will cause assets fetched from remote hosts to have a null disk source.
+        @note Once the asset cache has been created with a call to this function, there is no way to close the asset cache (except to close and restart). */
     void OpenAssetCache(QString directory);
 
-    /// Requests the given asset to be downloaded. The transfer will go to a pending transfers queue
-    /// and will be processed when possible.
-    /** @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
+    /// Requests the given asset to be downloaded.
+    /** The transfer will go to a pending transfers queue and will be processed when possible.
+        @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
               that is used to load it.
         @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
         @param forceTransfer Force transfer even if the asset is in the loaded state
@@ -210,9 +219,9 @@ public slots:
         @return A string of the form "Asset_<assetTypePrefix>_<assetNamePrefix>_<number>". */
     QString GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix) const;
 
-    /// Generates an absolute path name to a file on the local system that is guaranteed to be writable to and nonexisting. This file can be used as temporary workspace
-    /// for asset serialization/deserialization routines. This is used especially with Ogre-related data (de)serializers, since they don't have support for loading/saving data
-    /// from memory and need to access a file.
+    /// Generates an absolute path name to a file on the local system that is guaranteed to be writable to and nonexisting.
+    /** This file can be used as temporary workspace for asset serialization/deserialization routines. This is used especially with
+        Ogre-related data (de)serializers, since they don't have support for loading/saving data from memory and need to access a file. */
     QString GenerateTemporaryNonexistingAssetFilename(QString filename) const;
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
@@ -241,7 +250,8 @@ public slots:
 
     /// Creates an asset storage from the given serialized string form.
     /// Returns a null pointer if the given storage could not be added.
-    AssetStoragePtr DeserializeAssetStorageFromString(const QString &storage);
+    /// @param fromNetwork If true, treats the storage specifier as if the storage had been received from the network, and not from the local computer.
+    AssetStoragePtr DeserializeAssetStorageFromString(const QString &storage, bool fromNetwork);
 
     /// Returns the AssetStorage that should be used by default when assets are requested by their local name only, e.g. when an assetRef only contains
     /// a string "texture.png" and nothing else.
@@ -255,22 +265,23 @@ public slots:
         "local://collada.dae,subMeshName" returns "collada.dae". */
     static QString ExtractFilenameFromAssetRef(QString ref);
 
-    /// Returns an asset type name of the given assetRef. e.g. "asset.png" -> "Texture". The Asset type name is a unique type identifier string
-    /// each asset type has.
+    /// Returns an asset type name of the given assetRef. e.g. "asset.png" -> "Texture".
+    /** The Asset type name is a unique type identifier string each asset type has. */
     static QString GetResourceTypeFromAssetRef(QString assetRef);
-
+    /// This is an overloaded function.
     static QString GetResourceTypeFromAssetRef(const AssetReference &ref);
 
     /// Parses a (relative) assetRef in the given context, and returns an assetRef pointing to the same asset as an absolute asset ref.
-    /// For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".
-    /// context: "http://myserver.com/path/myasset.material", ref: "texture.png" returns "http://myserver.com/path/texture.png".
-    /// The context string may be left empty, in which case the current default storage (GetDefaultAssetStorage()) is used as the context.
-    /// If ref is an absolute asset reference, it is returned unmodified (no need for context).
+    /** For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".
+        context: "http://myserver.com/path/myasset.material", ref: "texture.png" returns "http://myserver.com/path/texture.png".
+        The context string may be left empty, in which case the current default storage (GetDefaultAssetStorage()) is used as the context.
+        If ref is an absolute asset reference, it is returned unmodified (no need for context). */
     QString ResolveAssetRef(QString context, QString ref) const;
 
-    /// Given an assetRef, turns it into a native OS file path to the asset. The given ref is resolved in the context of "local://", if it is
-    /// a relative asset ref. If ref contains a subAssetName, it is stripped from outFilePath, and returned in subAssetName.
-    /// If the assetRef doesn't represent a file on the local filesystem, FileQueryExternalFile is returned and outFilePath is set to equal best effort to parse 'ref' locally.
+    /// Given an assetRef, turns it into a native OS file path to the asset.
+    /** The given ref is resolved in the context of "local://", if it is a relative asset ref.
+        If ref contains a subAssetName, it is stripped from outFilePath, and returned in subAssetName.
+        If the assetRef doesn't represent a file on the local filesystem, FileQueryExternalFile is returned and outFilePath is set to equal best effort to parse 'ref' locally. */
     FileQueryResult ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName = 0) const;
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
@@ -340,16 +351,17 @@ public slots:
         @note Do not dereference any asset pointers that might have been left over after calling this function. */
     void ForgetAllAssets();
 
-    /// Cleans up everything in the Asset API. Forgets all assets, kills all asset transfers, frees all storages, providers, and type factories.
-    /// Deletes the asset cache and the disk watcher.
+    /// Cleans up everything in the Asset API.
+    /** Forgets all assets, kills all asset transfers, frees all storages, providers, and type factories.
+        Deletes the asset cache and the disk watcher. */
     void Reset();
 
-    /// Returns a pointer to an existing asset transfer if one is in-progress for the given assetRef. Returns a null pointer if no transfer exists, in which
-    /// case the asset may already have been loaded to the system (or not). It can be that an asset is loaded to the system, but one or more of its dependencies
-    /// have not, in which case there exists both an IAssetTransfer and IAsset to this particular assetRef (so the existence of these two objects is not
-    /// mutually exclusive).
-    /// @note Client code should not need to worry about whether a particular transfer is pending or not, but simply call RequestAsset whenever an asset
-    /// request is needed. AssetAPI will optimize away any duplicate transfers to the same asset.
+    /// Returns a pointer to an existing asset transfer if one is in-progress for the given assetRef.
+    /** Returns a null pointer if no transfer exists, in which case the asset may already have been loaded to the system (or not).
+        It can be that an asset is loaded to the system, but one or more of its dependencies have not, in which case there exists
+        both an IAssetTransfer and IAsset to this particular assetRef (so the existence of these two objects is not mutually exclusive).
+        @note Client code should not need to worry about whether a particular transfer is pending or not, but simply call RequestAsset whenever an asset
+        request is needed. AssetAPI will optimize away any duplicate transfers to the same asset. */
     AssetTransferPtr GetPendingTransfer(QString assetRef) const;
 
     /// Starts an asset transfer for each dependency the given asset has.
@@ -370,7 +382,8 @@ public slots:
     /// Cause AssetAPI to emit AssetDeletedFromStorage. Called by asset providers
     void EmitAssetDeletedFromStorage(const QString &assetRef);
     
-    Framework *GetFramework() { return fw; }
+    /// Called by all providers to inform Asset API whenever they have added a new asset storage to the provider.
+    void EmitAssetStorageAdded(AssetStoragePtr newStorage);
 
     /// Return current asset transfers
     const AssetTransferMap& GetCurrentTransfers() const { return currentTransfers; }
@@ -379,11 +392,11 @@ public slots:
     const AssetDependenciesMap& DebugGetAssetDependencies() const { return assetDependencies; }
     
     /// Return ready asset transfers (debugging)
-    const std::vector<AssetTransferPtr> DebugGetReadyTransfers() const{ return readyTransfers; }
+    const std::vector<AssetTransferPtr>& DebugGetReadyTransfers() const { return readyTransfers; }
 
 signals:
-    /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
-    /// may not yet have been loaded.
+    /// Emitted for each new asset that was created and added to the system.
+    /** When this signal is triggered, the dependencies of an asset may not yet have been loaded. */
     void AssetCreated(AssetPtr asset);
 
     /// Emitted before an asset is going to be forgotten.
@@ -415,13 +428,29 @@ private slots:
     void OnAssetDiskSourceChanged(const QString &path);
 
     /// An asset storage refreshed its references. Create empty assets from the new refs as necessary
+    ///\todo Delete this whole function and logic when OnAssetChanged is implemented
     void OnAssetStorageRefsChanged(AssetStoragePtr storage);
 
-private:
-    bool isHeadless_;
+    /// Contents of asset storage has been changed.
+    void OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change);
 
+private:
     AssetTransferMap::iterator FindTransferIterator(QString assetRef);
+    AssetTransferMap::const_iterator FindTransferIterator(QString assetRef) const;
+
     AssetTransferMap::iterator FindTransferIterator(IAssetTransfer *transfer);
+    AssetTransferMap::const_iterator FindTransferIterator(IAssetTransfer *transfer) const;
+
+    /// Removes from AssetDependenciesMap all dependencies the given asset has.
+    void RemoveAssetDependencies(QString asset);
+
+    /// Handle discovery of a new asset, when the storage is already known. This is used internally for optimization, so that providers don't need to be queried
+    void HandleAssetDiscovery(const QString &assetRef, const QString &assetType, AssetStoragePtr storage);
+    
+    /// Create new asset, when the storage is already known. This is used internally for optimization
+    AssetPtr CreateNewAsset(QString type, QString name, AssetStoragePtr storage);
+
+    bool isHeadless;
 
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
@@ -434,15 +463,6 @@ private:
     /// \todo Find a more effective data structure for this. Needs something like boost::bimap but for multi-indices.
     AssetDependenciesMap assetDependencies;
 
-    /// Removes from AssetDependenciesMap all dependencies the given asset has.
-    void RemoveAssetDependencies(QString asset);
-
-    /// Handle discovery of a new asset, when the storage is already known. This is used internally for optimization, so that providers don't need to be queried
-    void HandleAssetDiscovery(const QString &assetRef, const QString &assetType, AssetStoragePtr storage);
-    
-    /// Create new asset, when the storage is already known. This is used internally for optimization
-    AssetPtr CreateNewAsset(QString type, QString name, AssetStoragePtr storage);
-    
     /// Stores a list of asset requests to assets that have already been downloaded into the system. These requests don't go to the asset providers
     /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
     /// by one frame, so that the client gets a chance to connect his handler's Qt signals to the AssetTransferPtr slots.

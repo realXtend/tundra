@@ -7,7 +7,6 @@ vertex_program Rex/TerrainPCFVS_weighted cg
 	default_params
 	{
 		param_named_auto worldViewProjMatrix worldviewproj_matrix
-		param_named_auto worldMatrix world_matrix
 
 		//Directional lighting
 		param_named_auto lightDir0 light_position_object_space 0

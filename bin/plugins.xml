@@ -26,4 +26,10 @@
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
   <!-- pyplugin path="pythonqt_console.py" /-->         <!-- shows qt py console. could enable by default when add to menu etc. for controls, now just shows directly when is enabled here -->
+  
+  <option name="--accept_unknown_http_sources" />
+  <option name="--accept_unknown_local_sources" />
+  <option name="--fpslimit" value="60" />
+  <option name="--hide_benign_ogre_messages" />
+
 </Tundra>

@@ -144,8 +144,8 @@ void AssetsWindow::AddAsset(AssetPtr asset)
     if (storage)
         for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         {
-            QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
-            if (storageItem->text(0) == storage->ToString())
+            AssetStorageItem *storageItem = dynamic_cast<AssetStorageItem *>(treeWidget->topLevelItem(i));
+            if (storageItem && storageItem->Storage() == storage)
             {
                 storageItem->addChild(item);
                 storageFound = true;

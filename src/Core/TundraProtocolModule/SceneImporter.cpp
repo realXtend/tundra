@@ -22,8 +22,8 @@
 #include "SceneAPI.h"
 #include "OgreRenderingModule.h"
 #include "CoreException.h"
+#include "QtUtils.h"
 
-#include <boost/filesystem.hpp>
 #include <Ogre.h>
 
 #include <QDomDocument>
@@ -895,15 +895,9 @@ MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename
 QStringList SceneImporter::FindMaterialFiles(const QString &dir) const
 {
     QStringList files;
-
-    boost::filesystem::recursive_directory_iterator iter(dir.toStdString()), end_iter;
-    for(; iter != end_iter; ++iter)
-        if (boost::filesystem::is_regular_file(iter->status()))
-        {
-            QString ext(iter->path().extension().c_str());
-            if (ext.contains(".material", Qt::CaseInsensitive))
-                files.push_back(iter->path().string().c_str());
-        }
+    foreach(const QString &file, DirectorySearch(dir, true, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
+        if (file.endsWith(".material", Qt::CaseInsensitive))
+            files.append(file);
 
     return files;
 }

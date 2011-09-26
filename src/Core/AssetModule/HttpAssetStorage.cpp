@@ -8,8 +8,16 @@
 #include <QBuffer>
 #include <QDomDocument>
 
-HttpAssetStorage::HttpAssetStorage() : writable(true), liveUpdate(true), autoDiscoverable(false)
+HttpAssetStorage::HttpAssetStorage()
 {
+}
+
+QString HttpAssetStorage::GetFullAssetURL(const QString &localName)
+{
+    if (localName.startsWith("http://") || localName.startsWith("https://"))
+        return localName;
+    else
+        return GuaranteeTrailingSlash(baseAddress) + localName;
 }
 
 QString HttpAssetStorage::Type() const
@@ -19,7 +27,16 @@ QString HttpAssetStorage::Type() const
 
 bool HttpAssetStorage::Trusted() const
 {
-    return !localDir.isEmpty();
+    // HttpAssetStorages from the local system area always trusted. Otherwise, use the specified trust setting.
+    return !localDir.isEmpty() || trustState == StorageTrusted;
+}
+
+IAssetStorage::TrustState HttpAssetStorage::GetTrustState() const
+{ 
+    if (!localDir.isEmpty())
+        return StorageTrusted;
+    else
+        return trustState;
 }
 
 void HttpAssetStorage::RefreshAssetRefs()
@@ -28,7 +45,7 @@ void HttpAssetStorage::RefreshAssetRefs()
     if (!searches.empty())
         return;
     
-    assetRefs.clear();
+//    assetRefs.clear();
     
     QNetworkAccessManager* mgr = GetNetworkAccessManager();
     if (!mgr)
@@ -42,10 +59,14 @@ void HttpAssetStorage::RefreshAssetRefs()
     PerformSearch(baseUrl.path());
 }
 
-QString HttpAssetStorage::SerializeToString() const
+QString HttpAssetStorage::SerializeToString(bool networkTransfer) const
 {
-    return "type=" + Type() + ";name=" + storageName + (localDir.isEmpty() ? QString() : ";localdir=" + localDir) + ";src=" + baseAddress + ";readonly=" + (!writable ? "true" : "false") +
-        ";liveupdate=" + (liveUpdate ? "true" : "false") + ";autodiscoverable=" + (autoDiscoverable ? "true" : "false");
+    QString str = "type=" + Type() + ";name=" + storageName + 
+            ";src=" + baseAddress + ";readonly=" + (!writable ? "true" : "false") + ";liveupdate=" + (liveUpdate ? "true" : "false") +
+            ";autodiscoverable=" + (autoDiscoverable ? "true" : "false") + ";replicated=" + (isReplicated ? "true" : "false") + ";trusted=" + TrustStateToString(trustState);
+    if (!networkTransfer)
+        str = str + (localDir.isEmpty() ? QString() : ";localdir=" + localDir);
+    return str;
 }
 
 void HttpAssetStorage::PerformSearch(QString path)
@@ -134,7 +155,10 @@ void HttpAssetStorage::OnHttpTransferFinished(QNetworkReply *reply)
                             QUrl baseUrl(baseAddress);
                             QString newAssetRef = baseUrl.scheme() + "://" + baseUrl.authority() + refUrl;
                             if (!assetRefs.contains(newAssetRef))
+                            {
                                 assetRefs.push_back(newAssetRef);
+                                emit AssetChanged(refUrl, "", IAssetStorage::AssetCreate);
+                            }
                             LogDebug("PROPFIND found assetref " + newAssetRef);
                         }
                     }
@@ -145,10 +169,10 @@ void HttpAssetStorage::OnHttpTransferFinished(QNetworkReply *reply)
         }
         break;
     }
-    
+
     // If no outstanding searches, asset discovery is done
-    if (searches.empty())
-        emit AssetRefsChanged(this->shared_from_this());
+//    if (searches.empty())
+//        emit AssetRefsChanged(this->shared_from_this());
 }
 
 void HttpAssetStorage::AddAssetRef(const QString& ref)
@@ -156,7 +180,8 @@ void HttpAssetStorage::AddAssetRef(const QString& ref)
     if (!assetRefs.contains(ref))
     {
         assetRefs.push_back(ref);
-        emit AssetRefsChanged(this->shared_from_this());
+        emit AssetChanged(QUrl(ref).authority(), "", IAssetStorage::AssetCreate);
+        //emit AssetRefsChanged(this->shared_from_this());
     }
 }
 
@@ -165,6 +190,7 @@ void HttpAssetStorage::DeleteAssetRef(const QString& ref)
     if (assetRefs.contains(ref))
     {
         assetRefs.removeAll(ref);
-        emit AssetRefsChanged(this->shared_from_this());
+        emit AssetChanged(QUrl(ref).authority(), "", IAssetStorage::AssetDelete);
+        //emit AssetRefsChanged(this->shared_from_this());
     }
 }
