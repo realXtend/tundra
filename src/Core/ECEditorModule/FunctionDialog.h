@@ -23,13 +23,14 @@ class QCheckBox;
 class IArgumentType;
 class FunctionInvoker;
 struct InvokeItem;
-struct FunctionMetaData;
+struct FunctionMetadata;
 
 /// Utility data structure for indentifying and handling of function signatures.
-struct FunctionMetaData
+/// @cond PRIVATE
+struct FunctionMetadata
 {
     /// Less than operator. Needed for qSort().
-    bool operator <(const FunctionMetaData &rhs) const { return signature < rhs.signature; }
+    bool operator <(const FunctionMetadata &rhs) const { return signature < rhs.signature; }
     QString className; ///< Class name.
     QString function; ///< Function name in the simplest form.
     QString returnType; ///< Return type of the function.
@@ -38,8 +39,10 @@ struct FunctionMetaData
     typedef QPair<QString, QString> Parameter; /// <Type name - name pair
     QList<Parameter> parameters; ///< Parameters of the function.
 };
+/// @endcond PRIVATE
 
 /// Combo box containing function meta data items.
+/// @cond 
 class FunctionComboBox : public QComboBox
 {
     Q_OBJECT
@@ -51,11 +54,11 @@ public:
 
     /// Adds new function to the combo box
     /** @param f Function. */
-//    void AddFunction(const FunctionMetaData &f);
+//    void AddFunction(const FunctionMetadata &f);
 
     /// Sets list of functions to the combo box. Overrides existing functions.
     /** @param funcs List of functions. */
-    void SetFunctions(const std::set<FunctionMetaData> &funcs);
+    void SetFunctions(const std::set<FunctionMetadata> &funcs);
 
     /// Set currently active.
     /** @param function Function name.
@@ -63,14 +66,15 @@ public:
     void SetCurrentFunction(const QString &function, const QStringList &paramTypeNames);
 
     /// Returns meta data structure of the currently selected function.
-    FunctionMetaData CurrentFunction() const;
+    FunctionMetadata CurrentFunction() const;
 
     /// Clears functions list and items at the combo box.
     void Clear();
 
     /// All available functions.
-    QList<FunctionMetaData> functions;
+    QList<FunctionMetadata> functions;
 };
+/// @endcond
 
 typedef boost::weak_ptr<QObject> QObjectWeakPtr;
 typedef QList<QObjectWeakPtr> QObjectWeakPtrList;
@@ -122,7 +126,7 @@ private:
     void hideEvent(QHideEvent *);
 
     void Initialize();
-    void Populate(const QMetaObject *mo, std::set<FunctionMetaData> &fmds);
+    void Populate(const QMetaObject *mo, std::set<FunctionMetadata> &fmds);
 
     FunctionInvoker *invoker; ///< Function invoker object.
     QLabel *targetsLabel; ///< Label showing the target objects.

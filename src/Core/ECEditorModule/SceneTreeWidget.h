@@ -27,6 +27,7 @@ struct InvokeItem;
 struct Selection;
 
 /// Context menu for SceneTreeWidget.
+/// @cond PRIVATE
 class Menu : public QMenu
 {
     Q_OBJECT
@@ -45,6 +46,7 @@ private:
     /// QWidget override. Checks if shift is released.
     void keyReleaseEvent(QKeyEvent *e);
 };
+/// @endcond
 
 /// Tree widget showing the scene structure.
 class SceneTreeWidget : public QTreeWidget
