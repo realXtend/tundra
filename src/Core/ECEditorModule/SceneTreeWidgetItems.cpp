@@ -55,8 +55,8 @@ void EntityItem::SetText(::Entity *entity)
 
     if (!info.isEmpty())
     {
-        info.prepend(" (");
-        info.append(")");
+        info.prepend(" [");
+        info.append("]");
         setText(0, name + info);
     }
     else
