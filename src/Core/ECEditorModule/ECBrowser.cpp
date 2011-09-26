@@ -170,8 +170,8 @@ void ECBrowser::UpdateBrowser()
         if((*iter).expired())
             continue;
 
-        const Entity::ComponentMap components = (*iter).lock()->Components();
-        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+        const Entity::ComponentMap &components = (*iter).lock()->Components();
+        for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             AddNewComponentToGroup(i->second);
     }
 
@@ -197,7 +197,7 @@ void ECBrowser::ExpandOrCollapseAll()
 
 void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
 {
-    ///\todo "application/vnd.inventory.item" deprecated, reimplement
+    ///\todo Regression, "application/vnd.inventory.item" deprecated, reimplement
     QTreeWidgetItem *item = treeWidget_->itemAt(event->pos().x(), event->pos().y() - 20);
     if (event->mimeData()->hasFormat("application/vnd.inventory.item") && item && !item->childCount())
         event->acceptProposedAction();
@@ -644,8 +644,8 @@ void ECBrowser::PasteComponent()
 
 void ECBrowser::DynamicComponentChanged()
 {
-    EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender()); 
-    if (!component) 
+    EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender());
+    if (!component)
     {
         LogError("EC_Browser::DynamicComponentChanged: Failed to dynamic cast sender object to EC_DynamicComponent.");
         return;
@@ -668,6 +668,16 @@ void ECBrowser::DynamicComponentChanged()
         group->editor_->UpdateUi();
 }
 
+void ECBrowser::RemoveAttributeFromDynamicComponent(IAttribute *attr)
+{
+    if (!attr)
+        return;
+    ComponentPtr component = attr->Owner()->shared_from_this();
+    ComponentGroup *group = FindSuitableGroup(component);
+    if (group)
+        group->editor_->RemoveAttribute(component, attr);
+}
+
 void ECBrowser::OnComponentNameChanged(const QString &newName)
 {
     IComponent *component = dynamic_cast<IComponent*>(sender());
@@ -680,7 +690,7 @@ void ECBrowser::OnComponentNameChanged(const QString &newName)
         comp_ptr = component->shared_from_this();
     } catch(...)
     {
-        LogError("Couldn't update component name, cause parent entity was null.");
+        LogError("EC_Browser::OnComponentNameChanged: IComponent::shared_from_this failed! Component must have been deleted!");
         return;
     }
 
@@ -706,7 +716,7 @@ void ECBrowser::CreateAttribute()
 
     /// @todo Should this dialog be converted to modeless?
     bool ok = false;
-    QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
+    QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Type name:"),
         framework_->Scene()->AttributeTypes(), 0, false, &ok);
     if (!ok)
         return;
@@ -778,15 +788,14 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
         {
             EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
             connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
-            connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
-            connect(dc, SIGNAL(ComponentNameChanged(const QString&, const QString&)),
-                    SLOT(OnComponentNameChanged(const QString&)), Qt::UniqueConnection);
+            //connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
+            connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(RemoveAttributeFromDynamicComponent(IAttribute *)), Qt::UniqueConnection);
+            connect(dc, SIGNAL(ComponentNameChanged(const QString&, const QString&)), SLOT(OnComponentNameChanged(const QString&)), Qt::UniqueConnection);
         }
         return;
     }
 
-    QSet<QTreeWidgetItem*> oldList;
-    QSet<QTreeWidgetItem*> newList;
+    QSet<QTreeWidgetItem*> oldList, newList;
 
     // Find a new QTreeWidgetItem from the browser and save the information to ComponentGroup object.
     for(uint i = 0; i < (uint)treeWidget_->topLevelItemCount(); i++)
@@ -821,11 +830,12 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     }
 
     bool dynamic = comp->TypeName() == EC_DynamicComponent::TypeNameStatic();
-    if(dynamic)
+    if (dynamic)
     {
-        EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
+        EC_DynamicComponent *dc = static_cast<EC_DynamicComponent *>(comp.get());
         connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
-        connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
+        //connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
+        connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(RemoveAttributeFromDynamicComponent(IAttribute *)), Qt::UniqueConnection);
         connect(dc, SIGNAL(ComponentNameChanged(const QString &, const QString &)), SLOT(OnComponentNameChanged(const QString&)), Qt::UniqueConnection);
     }
 
@@ -854,10 +864,10 @@ void ECBrowser::RemoveComponentFromGroup(ComponentPtr comp)
         {
             if (comp_group->IsDynamic())
             {
-                EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp.get());
-                assert(dc);
+                EC_DynamicComponent *dc = checked_static_cast<EC_DynamicComponent *>(comp.get());
                 disconnect(dc, SIGNAL(AttributeAdded(IAttribute *)), this, SLOT(DynamicComponentChanged()));
-                disconnect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), this, SLOT(DynamicComponentChanged()));
+                //disconnect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), this, SLOT(DynamicComponentChanged()));
+                disconnect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), this, SLOT(RemoveAttributeFromDynamicComponent(IAttribute *)));
                 disconnect(dc, SIGNAL(ComponentNameChanged(const QString&, const QString &)), this, SLOT(OnComponentNameChanged(const QString&)));
             }
             comp_group->RemoveComponent(comp);

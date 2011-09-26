@@ -12,9 +12,7 @@
 #include <QtProperty>
 #include "MemoryLeakCheck.h"
 
-ComponentGroup::ComponentGroup(ComponentPtr component,
-                               ECComponentEditor *editor,
-                               bool isDynamic):
+ComponentGroup::ComponentGroup(ComponentPtr component, ECComponentEditor *editor, bool isDynamic):
     editor_(editor),
     isDynamic_(isDynamic)
 {
@@ -33,8 +31,7 @@ ComponentGroup::~ComponentGroup()
     SAFE_DELETE(editor_)
 }
 
-/// Checks if components type and name are same.
-/// @todo made some major changes to this mehtod ensure that everything is working right.
+/// @todo made some major changes to this function - ensure that everything is working right.
 bool ComponentGroup::IsSameComponent(ComponentPtr component) const
 {
     assert(component);
@@ -42,8 +39,7 @@ bool ComponentGroup::IsSameComponent(ComponentPtr component) const
         return false;
 
     PROFILE(ComponentGroup_IsSameComponent);
-    if(component->TypeName() != typeName_ ||
-       component->Name() != name_)
+    if(component->TypeName() != typeName_ || component->Name() != name_)
         return false;
 
     // If component type is dynamic component we need to compere their attributes aswell. To ensure
@@ -117,8 +113,7 @@ bool ComponentGroup::RemoveComponent(ComponentPtr comp)
     return false;
 }
 
-/// Check if spesific QtProperty is owned by this component.
 bool ComponentGroup::HasRootProperty(QtProperty *property) const 
-{ 
+{
     return editor_->RootProperty() == property;
 }

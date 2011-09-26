@@ -133,6 +133,9 @@ private slots:
     /// for the component. If any group cant be found create new and insert component into that group.
     void DynamicComponentChanged();
 
+    /// Removes single attribute of dynamic component from the UI.
+    void RemoveAttributeFromDynamicComponent(IAttribute *attr);
+
     /// Component's name has been changed and we need to remove component from it's previous
     /// ComponentGroup and insert component to another componentgroup.
     /** @param newName component's new name. */

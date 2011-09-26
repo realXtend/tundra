@@ -15,13 +15,14 @@ class QtGroupPropertyManager;
 
 class ECAttributeEditorBase;
 
-/// ECComponentEditor is responsible to create the all attribute editors for each component (Note! every component must contain exatly the same attributes).
-/** If the attribute type is supported in ECAttributeEditor component editor will create a new instance of it and store it to a list.
- *  \ingroup ECEditorModuleClient.
- */
+/// ECComponentEditor is responsible for creating all attribute editors for each component.
+/** @note Every component must contain exatly the same attributes.
+    If the attribute type is supported in ECAttributeEditor component editor will create a new instance of it and store it to a list.
+    @ingroup ECEditorModuleClient. */
 class ECComponentEditor : public QObject
 {
     Q_OBJECT
+
 public:
     ECComponentEditor(ComponentPtr component, QtAbstractPropertyBrowser *propertyBrowser);
     virtual ~ECComponentEditor();
@@ -38,6 +39,11 @@ public:
     /// Remove component from the editor.
     void RemoveComponent(ComponentPtr component);
 
+    /// Removes attribute from the editor.
+    /** Needed for dynamic components. Updates the UI right away. */
+    void RemoveAttribute(ComponentPtr comp, IAttribute *attr);
+
+    /// Updates the UI.
     void UpdateUi();
 
     /// Return attribute type for given name.
@@ -49,18 +55,12 @@ public slots:
     void OnEditorChanged(const QString &name);
 
 private:
-    /// Factory method that is trying to find the right attribute type by using a dynamic_cast and if the attribute is succefully casted 
-    /// new ECAttributeEditor instance is created and returned to user.
-    /// @return ECAttributeEditor object is returned if attribute type is supported by the ECEditor. Incase attribute type
-    /// isn't supported this method will return a null pointer.
-    static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser,
-                                                        ECComponentEditor *editor,
-                                                        ComponentPtr component,
-                                                        const QString &name,
-                                                        const QString &type);
+    /// Factory method for creating attribute editors.
+    static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser, ECComponentEditor *editor,
+        ComponentPtr component, const QString &name, const QString &type);
 
     /// Initialize component editor and create attribute editors.
-    /// @param component component is used to figure out what attrubtes it contain and what
+    /// @param component component is used to figure out what attributes it contain and what
     /// attribute editors need to get created to this component editor.
     void InitializeEditor(ComponentPtr component);
 
@@ -80,4 +80,3 @@ private:
     QString typeName_;
     QString name_;
 };
-
