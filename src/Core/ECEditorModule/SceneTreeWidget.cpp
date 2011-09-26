@@ -24,6 +24,7 @@
 #include "ECEditorModule.h"
 #include "EntityActionDialog.h"
 #include "AddComponentDialog.h"
+#include "NewEntityDialog.h"
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
 #include "InvokeItem.h"
@@ -739,63 +740,8 @@ void SceneTreeWidget::NewEntity()
     if (scene.expired())
         return;
 
-    // Create the dialog
-    QStringList types(QStringList() << tr("Replicated") << tr("Local"));
-
-    QDialog newEntDialog(framework->Ui()->MainWindow());
-    newEntDialog.setModal(true);
-    newEntDialog.setWindowFlags(Qt::Tool);
-    newEntDialog.setWindowTitle(tr("Create New Entity"));
-    newEntDialog.setStyleSheet("font-size: 9pt;");
-
-    QPushButton *buttonCreate = new QPushButton(tr("Create"));
-    QPushButton *buttonCancel = new QPushButton(tr("Cancel"));
-    buttonCreate->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    buttonCancel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    buttonCreate->setDefault(true);
-    buttonCancel->setAutoDefault(false);
-
-    QComboBox *comboTypes = new QComboBox();
-    comboTypes->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    comboTypes->addItems(types);
-
-    QLineEdit *nameEdit = new QLineEdit();
-    nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    nameEdit->setFocus(Qt::ActiveWindowFocusReason);
-
-    QCheckBox *checkTemporary = new QCheckBox();
-    checkTemporary->setChecked(false);
-
-    QLabel *lName = new QLabel(tr("Name"));
-    QLabel *lType = new QLabel(tr("Type"));
-    QLabel *lTemp = new QLabel(tr("Temporary"));
-    lTemp->setMinimumWidth(70);
-
-    QGridLayout *grid = new QGridLayout();
-    grid->setVerticalSpacing(8);
-    grid->addWidget(lName, 0, 0);
-    grid->addWidget(nameEdit, 0, 1, Qt::AlignLeft, 1);
-    grid->addWidget(lType, 1, 0);
-    grid->addWidget(comboTypes, 1, 1, Qt::AlignLeft, 1);
-    grid->addWidget(lTemp, 2, 0);
-    grid->addWidget(checkTemporary, 2, 1);
-
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(buttonCreate);
-    buttonLayout->addWidget(buttonCancel);
-
-    QVBoxLayout *vertLayout = new QVBoxLayout();
-    vertLayout->addLayout(grid);
-    vertLayout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
-    vertLayout->addLayout(buttonLayout);
-
-    newEntDialog.setLayout(vertLayout);
-
-    connect(nameEdit, SIGNAL(returnPressed()), &newEntDialog, SLOT(accept()));
-    connect(buttonCreate, SIGNAL(clicked()), &newEntDialog, SLOT(accept()));
-    connect(buttonCancel, SIGNAL(clicked()), &newEntDialog, SLOT(reject()));
-
-    // Execute dialog
+    // Create and execute dialog
+    AddEntityDialog newEntDialog(framework->Ui()->MainWindow(), Qt::Tool);
     newEntDialog.resize(300, 130);
     newEntDialog.activateWindow();
     int ret = newEntDialog.exec();
@@ -803,26 +749,10 @@ void SceneTreeWidget::NewEntity()
         return;
 
     // Process the results
-    QString type = comboTypes->currentText();
-    QString name = nameEdit->text().trimmed();
-    bool temporary = checkTemporary->isChecked();
-
-    AttributeChange::Type changeType;
-    bool replicated = true;
-    if (type == tr("Replicated"))
-    {
-        changeType = AttributeChange::Replicate;
-    }
-    else if(type == tr("Local"))
-    {
-        changeType = AttributeChange::LocalOnly;
-        replicated = false;
-    }
-    else
-    {
-        LogError("SceneTreeWidget::NewEntity: Invalid entity type:" + type);
-        return;
-    }
+    QString name = newEntDialog.EntityName().trimmed();
+    bool replicated = newEntDialog.IsReplicated();
+    bool temporary = newEntDialog.IsTemporary();
+    AttributeChange::Type changeType = replicated ? AttributeChange::Replicate : AttributeChange::LocalOnly;
 
     // Create entity.
     EntityPtr entity = scene.lock()->CreateEntity(0, QStringList(), changeType, replicated);

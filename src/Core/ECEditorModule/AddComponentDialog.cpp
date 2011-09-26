@@ -31,7 +31,7 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
     setStyleSheet("font-size: 9pt;");
     setWindowTitle(tr("Add New Component"));
     if (graphicsProxyWidget())
-        graphicsProxyWidget()->setWindowTitle(tr("Add New Component"));
+        graphicsProxyWidget()->setWindowTitle(windowTitle());
 
     // Create widgets
     QLabel *component_type_label = new QLabel(tr("Component"), this);
