@@ -30,6 +30,8 @@
   <jsplugin path="MenuBar.js" />
   <jsplugin path="browserui/LoginBrowser.js" />
   
-  <!-- Python plugins -->
-  <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
+  <option name="--accept_unknown_http_sources" />
+  <option name="--accept_unknown_local_sources" />
+  <option name="--fpslimit" value="60" />
+  <option name="--hide_benign_ogre_messages" />
 </Tundra>
