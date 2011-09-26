@@ -94,8 +94,10 @@ EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
         widgetContainer_->setMouseTracking(true);
 
         QGraphicsScene *scene = new QGraphicsScene(widgetContainer_);
-        connect(scene, SIGNAL(changed(const QList<QRectF>&)), SLOT(RenderDelayed()));
         widgetContainer_->setScene(scene);
+
+        connect(scene, SIGNAL(changed(const QList<QRectF>&)), SLOT(RenderDelayed()));
+        connect(framework->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), SLOT(RenderDelayed())); 
     }
     else
         LogError("EC_WidgetBillboard: Failed to get OgreRenderingModule!");
