@@ -31,4 +31,8 @@
 
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
+
+  <!--  AssetAPI's file system watcher currently disabled because LocalAssetProvider implements
+        the same functionality for LocalAssetStorages and HTTPAssetProviders do not yet support live-update. -->
+  <option name="--nofilewatcher" />
 </Tundra>
