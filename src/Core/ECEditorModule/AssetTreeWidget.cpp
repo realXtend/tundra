@@ -160,7 +160,11 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         menu->addAction(openFileLocationAction);
         connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
 
-        // Delete from Source, Delete from Cache, Reload from Source, Unload, Open File Location
+        QAction *openInExternalEditor = new QAction(tr("Open in external editor"), menu);
+        menu->addAction(openInExternalEditor);
+        connect(openInExternalEditor, SIGNAL(triggered()), SLOT(OpenInExternalEditor()));
+
+        // Delete from Source, Delete from Cache, Reload from Source, Unload, Open File Location, and Open in external editor
         // are not applicable for assets which have been created programmatically (disk source is empty).
         ///\todo Currently disk source is empty for unloaded assets, and open file location is disabled for them. This should not happen.
         foreach(AssetItem *item, sel.assets)
@@ -171,6 +175,7 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
                 reloadFromSourceAction->setDisabled(true);
                 unloadAction->setDisabled(true);
                 openFileLocationAction->setDisabled(true);
+                openInExternalEditor->setDisabled(true);
                 break;
             }
 
@@ -487,8 +492,21 @@ void AssetTreeWidget::OpenFileLocation()
     if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
     {
         QString path = QDir::toNativeSeparators(QFileInfo(item->Asset()->DiskSource()).dir().path());
-        QDesktopServices::openUrl("file:///" + path);
+        if (!QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode)))
+            LogError("AssetTreeWidget::OpenFileLocation: failed to open " + path);
     }
+}
+
+void AssetTreeWidget::OpenInExternalEditor()
+{
+    QList<AssetItem *> selection = GetSelection().assets;
+    if (selection.isEmpty() || selection.size() < 1)
+        return;
+
+    AssetItem *item = selection.first();
+    if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
+        if (!QDesktopServices::openUrl(QUrl("file:///" + item->Asset()->DiskSource(), QUrl::TolerantMode)))
+            LogError("AssetTreeWidget::OpenInExternalEditor: failed to open " + item->Asset()->DiskSource());
 }
 
 void AssetTreeWidget::OpenFunctionDialog()
