@@ -1,0 +1,49 @@
+material WeightedBlendLightmapAlphamask
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			ambient 0 0 0
+			
+			fragment_program_ref WeightedBlendLightmapAlphamaskFS
+			{
+			}
+
+			vertex_program_ref WeightedBlendLightmapAlphamaskVS
+			{
+			}
+
+			// Texture 1
+			texture_unit tex0
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			// Texture 2
+			texture_unit tex1
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			// Texture 3
+			texture_unit tex2
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			// Blend mask (rgb + a opacity)
+			texture_unit blend
+			{
+				texture terr_dirt-grass.jpg
+			}
+			
+			// Lightmap
+			texture_unit lightmap
+			{
+				texture terr_dirt-grass.jpg
+			}
+		}
+	}
+}
