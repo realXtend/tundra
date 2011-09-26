@@ -30,6 +30,7 @@
 
 #include "EC_Name.h"
 #include "EC_DynamicComponent.h"
+#include "EC_InputMapper.h"
 
 #ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
@@ -46,12 +47,6 @@
 #ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
 #include "EC_SoundListener.h"
-#endif
-
-#include "EC_InputMapper.h"
-
-#ifdef EC_VideoSource_ENABLED
-#include "EC_VideoSource.h"
 #endif
 
 #ifdef EC_Gizmo_ENABLED
@@ -88,8 +83,6 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 
-#include <boost/filesystem.hpp>
-
 namespace TundraLogic
 {
 
@@ -109,9 +102,10 @@ TundraLogicModule::~TundraLogicModule()
 
 void TundraLogicModule::Load()
 {
-    // Name and DynamicComponent are present always.
+    // Name, DynamicComponent (from Scene) and InputMapper (from Input) are present always.
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Name>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_DynamicComponent>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_InputMapper>));
 
     // External EC's
 #ifdef EC_Highlight_ENABLED
@@ -133,17 +127,9 @@ void TundraLogicModule::Load()
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sound>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundListener>));
 #endif
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_InputMapper>));
-#ifdef EC_Movable_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Movable>));
-#endif
-#ifdef EC_VideoSource_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_VideoSource>));
-#endif
 #ifdef EC_Gizmo_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Gizmo>));
 #endif
-
 #ifdef EC_PlanarMirror_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PlanarMirror>));
 #endif
