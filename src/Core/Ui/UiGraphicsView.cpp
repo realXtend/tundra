@@ -9,6 +9,8 @@
 #include <QEvent>
 #include <QResizeEvent>
 #include <QGraphicsItem>
+#include <QMainWindow>
+#include <QMenuBar>
 
 #include <utility>
 
@@ -84,6 +86,13 @@ bool UiGraphicsView::event(QEvent *event)
 
 void UiGraphicsView::Resize(int newWidth, int newHeight)
 {
+    /// @note As long as this UiGraphicsView is the central widget of our mainwindow
+    /// we cannot set the size with plain mainwindow size. We will get auto resized.
+    /// Also this size does not take into account possible menubar in the mainwindow and
+    /// so this input size is not correct. We will do calculations in resizeEvent(), see there for more info.
+
+/*  Old way that works properly only when this UiGraphicsView was inserted (forcibly) to the main layout of our mainwindow.
+ 
     newWidth = max(1, newWidth);
     newHeight = max(1, newHeight);
 
@@ -96,11 +105,46 @@ void UiGraphicsView::Resize(int newWidth, int newHeight)
     backBuffer = new QImage(newWidth, newHeight, QImage::Format_ARGB32);
 
     emit WindowResized(newWidth, newHeight);
+
+    qDebug() << "Internal resize: " << size() << " viewport" << viewport()->size() << " scene size: " << sceneRect().size();
+*/
+
 }
 
 void UiGraphicsView::resizeEvent(QResizeEvent *e)
 {
     QGraphicsView::resizeEvent(e);
+
+    /// @bug Qt has a nasty bug with QGraphicsView/QGraphicsScene that leaves 1 pixel padding around
+    /// the scene and the view. For us this is problematic as we have no Qt rendering in the parent that would
+    /// fill out the gap with something eye pleasing. For us it leaves rendering artifacts in the 'backbuffer'.
+    /// Also if we try to keep the view/scene sizes in sync we end up with a bigger scene than the view has to offer space for.
+    /// This introduces then a 'mouse scroll' bug that scroll the scene when mouse scroll is done over certain QGraphicsObjects
+    /// that don't accept mouse scroll and it get propagated to the view that in turn moves the viewport to show the out of bounds scene.
+    /// Here we try to go around this issue, earlier we had a similar hack and this is the replacing hack when the UiGraphicsView is the 
+    /// central widget of the mainwindow. Inlike mainwindow->height() we need to take into considerations the menubar that is outside
+    /// or the central widgets rendering space, we cannot use mainwindow->height() directly as we could before.
+    /// TL;DR This is a hack to get rid of rendering artifacts and it will remain as such untill Qt fixes this or we find a proper solution.
+
+    QMainWindow *parentMainWin = dynamic_cast<QMainWindow*>(parentWidget());
+    int parentWidth = max(1, parentMainWin ? parentMainWin->geometry().width() : 0);
+    int parentHeight = max(1, parentWidget() ? parentMainWin->geometry().height() : 0);
+    parentHeight -= (parentMainWin && parentMainWin->menuBar()) ? parentMainWin->menuBar()->geometry().height() : 0;
+
+    QRect newGeom(0, 0, max(parentWidth, e->size().width()), max(parentHeight, e->size().height()));
+
+    // Always keep the scene same size as the view is.
+    if (viewport())
+        viewport()->setGeometry(newGeom);
+    if (scene())
+        scene()->setSceneRect(viewport()->geometry());
+
+    // Update our rendering backbuffer.
+    delete backBuffer;
+    backBuffer = new QImage(newGeom.width(), newGeom.height(), QImage::Format_ARGB32);
+
+    emit WindowResized(newGeom.width(), newGeom.height());
+
 /*
     if (!viewport() || !scene())
         return; ///\todo LogWarning.
