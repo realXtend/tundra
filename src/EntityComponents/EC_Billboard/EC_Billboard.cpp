@@ -199,7 +199,23 @@ void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
         if (!ViewEnabled())
             return;
         
+        // In the case of empty ref setting it to the ref listener will
+        // make sure we don't get called to OnMaterialAssetLoaded. This would happen 
+        // if something touches the previously set material in the asset system (eg. reload).
         materialAsset_->HandleAssetRefChange(&materialRef);
+
+        try
+        {
+            // If we previously had a material set and its not removed, updated the visuals from ogre.
+            if (materialRef.Get().ref.isEmpty() && billboardSet_)
+                if (billboardSet_->getMaterialName() != "")
+                    billboardSet_->setMaterial(Ogre::MaterialPtr());
+        }
+        catch (Ogre::Exception &e)
+        {
+            LogError("EC_Billboard: Failed to reset visuals after material was removed: " + std::string(e.what()));
+        }
+
     }
     
     if (attribute == &show)
