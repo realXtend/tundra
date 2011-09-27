@@ -107,7 +107,7 @@
         <number>0</number>
        </property>
        <property name="text">
-        <string>AssetID:</string>
+        <string>Texture: </string>
        </property>
        <property name="scaledContents">
         <bool>false</bool>
@@ -132,7 +132,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
        </property>
        <property name="textInteractionFlags">
         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
