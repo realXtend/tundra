@@ -37,7 +37,6 @@
 
 ECBrowser::ECBrowser(Framework *framework, QWidget *parent):
     QtTreePropertyBrowser(parent),
-    menu_(0),
     treeWidget_(0),
     framework_(framework)
 {
@@ -398,49 +397,43 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
     else
         treeWidget_->setCurrentItem(0);
 
-    SAFE_DELETE(menu_);
-    menu_ = new QMenu(this);
-    menu_->setAttribute(Qt::WA_DeleteOnClose);
-    if(treeWidgetItem)
+    QMenu contextMenu;
+    contextMenu.setTitle("ComponentContextMenu");
+    if (treeWidgetItem)
     {
-        QAction *copyComponent = new QAction(tr("Copy"), menu_);
-        QAction *pasteComponent = new QAction(tr("Paste"), menu_);
-        QAction *editXml = new QAction(tr("Edit XML..."), menu_);
-        // Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
-        // If root item is selected we assume that we want to remove component and non root items are attributes
-        // that need to removed (attribute delete is only enabled with EC_DynamicComponent).
-        QAction *deleteAction = new QAction(tr("Delete"), menu_);
-
-        //Add shortcuts for actions
-        copyComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
-        pasteComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_V));
-        deleteAction->setShortcut(QKeySequence::Delete);
-
         QTreeWidgetItem *parentItem = treeWidgetItem;
         while(parentItem->parent())
             parentItem = parentItem->parent();
         TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(parentItem);//FindSuitableGroup(*parentItem);
 
-        if(parentItem == treeWidgetItem)
+        if (parentItem == treeWidgetItem)
         {
+            QAction *copyComponent = contextMenu.addAction(tr("Copy"));
+            QAction *pasteComponent = contextMenu.addAction(tr("Paste"));
+            QAction *editXml = contextMenu.addAction(tr("Edit XML..."));
+
+            //Add shortcuts for actions
+            copyComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
+            pasteComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_V));
+            
             connect(copyComponent, SIGNAL(triggered()), this, SLOT(CopyComponent()), Qt::UniqueConnection);
             connect(pasteComponent, SIGNAL(triggered()), this, SLOT(PasteComponent()), Qt::UniqueConnection);
             connect(editXml, SIGNAL(triggered()), this, SLOT(OpenComponentXmlEditor()), Qt::UniqueConnection);
-            menu_->addAction(copyComponent);
-            menu_->addAction(pasteComponent);
-            menu_->addAction(editXml);
         }
 
+        // Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
+        // If root item is selected we assume that we want to remove component and non root items are attributes
+        // that need to removed (attribute delete is only enabled with EC_DynamicComponent).
+        QAction *deleteAction = contextMenu.addAction(tr("Delete"));
+        deleteAction->setShortcut(QKeySequence::Delete);
         connect(deleteAction, SIGNAL(triggered()), this, SLOT(OnDeleteAction()), Qt::UniqueConnection);
-        menu_->addAction(deleteAction);
 
         if (iter != itemToComponentGroups_.end())
         {
             if ((*iter)->isDynamic_)
             {
-                QAction *addAttribute = new QAction(tr("Add new attribute..."), menu_);
+                QAction *addAttribute = contextMenu.addAction(tr("Add new attribute..."));
                 connect(addAttribute, SIGNAL(triggered()), this, SLOT(CreateAttribute()), Qt::UniqueConnection);
-                menu_->addAction(addAttribute);
             }
             else
             {
@@ -456,19 +449,17 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
                 if (comp)
                     targets.push_back(comp);
             }
-            framework_->Ui()->EmitContextMenuAboutToOpen(menu_, targets);
+            framework_->Ui()->EmitContextMenuAboutToOpen(&contextMenu, targets);
         }
     }
     else
     {
-        QAction *addComponent = new QAction(tr("Add new component ..."), menu_);
-        QAction *pasteComponent = new QAction(tr("Paste"), menu_);
-        menu_->addAction(addComponent);
-        menu_->addAction(pasteComponent);
+        QAction *addComponent = contextMenu.addAction(tr("Add new component ..."));
+        QAction *pasteComponent = contextMenu.addAction(tr("Paste"));
         connect(addComponent, SIGNAL(triggered()), this, SIGNAL(CreateNewComponent()), Qt::UniqueConnection);
         connect(pasteComponent, SIGNAL(triggered()), this, SLOT(PasteComponent()), Qt::UniqueConnection);
     }
-    menu_->popup(mapToGlobal(pos));
+    contextMenu.exec(mapToGlobal(pos));
 }
 
 void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)

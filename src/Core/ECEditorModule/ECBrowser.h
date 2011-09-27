@@ -12,7 +12,6 @@
 #include <QMap>
 
 class QTreeWidget;
-class QMenu;
 class QMimeData;
 
 class Framework;
@@ -187,7 +186,6 @@ private:
     TreeItemToComponentGroup itemToComponentGroups_;
     typedef QList<EntityWeakPtr> EntityWeakPtrList;
     EntityWeakPtrList entities_;
-    QMenu *menu_;
     QTreeWidget *treeWidget_;
     Framework *framework_;
     boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
