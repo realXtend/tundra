@@ -40,11 +40,11 @@ EC_Billboard::EC_Billboard(Scene* scene) :
     width(this, "Size X", 1.0f),
     height(this, "Size Y", 1.0f),
     rotation(this, "Rotation", 0.0f),
-    show(this, "Show billboard", true),
-    autoHideTime(this, "Auto-hide time", -1.0f)
+    show(this, "Show billboard", true)
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
+
     materialAsset_ = AssetRefListenerPtr(new AssetRefListener());
     connect(materialAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(materialAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
@@ -154,11 +154,6 @@ void EC_Billboard::DestroyBillboard()
 void EC_Billboard::Show()
 {
     AttachBillboard();
-    
-    // Optionally autohide
-    float hideTime = autoHideTime.Get();
-    if (hideTime >= 0.0f)
-        QTimer::singleShot((int)(hideTime*1000), this, SLOT(Hide()));
 }
 
 void EC_Billboard::Hide()

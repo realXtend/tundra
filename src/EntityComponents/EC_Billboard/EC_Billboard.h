@@ -47,13 +47,11 @@ Registered by TundraLogicModule.
 <div>Billboard rotation in degrees.</div>
 <li>bool: show
 <div>Whether to show the billboard.</div>
-<li>float: autoHideTime
-<div>Time in seconds after which the billboard will hide itself automatically after showing. Negative values will not hide.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"Show": Shows billboard (and autohides after autoHideTime seconds, if it's positive). Does not affect the "show" -attribute.
+<li>"Show": Shows billboard. Does not affect the "show" -attribute.
 <li>"Hide: Hides the billboard. Does not affect the "show" -attribute.
 </ul>
 
@@ -105,15 +103,11 @@ public:
     Q_PROPERTY(bool show READ getshow WRITE setshow);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, show);
 
-    /// Time (in seconds) in which to autohide the billboard after showing. Negative values never hide
-    Q_PROPERTY(float autoHideTime READ getautoHideTime WRITE setautoHideTime);
-    DEFINE_QPROPERTY_ATTRIBUTE(float, autoHideTime);
-
 public slots:
-    /// Show billboard. If autoHideTime is positive, it will be autohidden after the time has passed
+    /// Show billboard.
     void Show();
     
-    /// Hide billboard
+    /// Hide billboard.
     void Hide();
 
 public:
