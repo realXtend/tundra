@@ -1368,7 +1368,7 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
     transfer->EmitTransferSucceeded();
     
     // This asset transfer has finished - remove it from the internal list of ongoing transfers.
-    AssetTransferMap::const_iterator iter = FindTransferIterator(transfer.get());
+    AssetTransferMap::iterator iter = FindTransferIterator(transfer.get());
     if (iter != currentTransfers.end())
         currentTransfers.erase(iter);
     else // Even if we didn't know about this transfer, just print a warning and continue execution here nevertheless.
