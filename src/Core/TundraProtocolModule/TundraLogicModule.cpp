@@ -8,8 +8,6 @@
 #include "Server.h"
 #include "SceneImporter.h"
 #include "SyncManager.h"
-#include "PhysicsModule.h"
-#include "PhysicsWorld.h"
 #include "Profiler.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"

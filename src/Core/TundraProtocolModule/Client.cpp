@@ -10,7 +10,6 @@
 #include "CoreStringUtils.h"
 #include "SyncManager.h"
 #include "TundraMessages.h"
-#include "PhysicsModule.h"
 
 #include "SceneAPI.h"
 #include "Scene.h"
