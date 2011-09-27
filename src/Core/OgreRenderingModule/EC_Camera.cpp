@@ -63,7 +63,10 @@ EC_Camera::~EC_Camera()
     if (camera_)
     {
         Renderer *renderer = world->GetRenderer();
-        if (renderer->MainOgreCamera() == camera_)
+        // The entity is already gone by this point, so can not use renderer->MainOgreCamera(), which would return null in that case.
+        // Instead query from the Ogre viewport directly.
+        ///\todo Currently fixed differently in the github/realXtend repository.
+        if (renderer->MainViewport() && renderer->MainViewport()->getCamera() == camera_)
             renderer->SetMainCamera(0);
         Ogre::SceneManager* sceneMgr = world->GetSceneManager();
         sceneMgr->destroyCamera(camera_);
