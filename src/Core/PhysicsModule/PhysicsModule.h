@@ -29,6 +29,7 @@ namespace Physics
 struct ConvexHullSet;
 class PhysicsWorld;
 
+/// Provides physics rendering by utilizing Bullet.
 class PHYSICS_MODULE_API PhysicsModule : public IModule
 {
     Q_OBJECT
@@ -43,13 +44,11 @@ public:
     void Uninitialize();
    
     /// Get a Bullet triangle mesh corresponding to an Ogre mesh.
-    /** If already has been generated, returns the previously created one
-     */
+    /** If already has been generated, returns the previously created one */
     boost::shared_ptr<btTriangleMesh> GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh);
 
     /// Get a Bullet convex hull set (using minimum recursion, not very accurate but fast) corresponding to an Ogre mesh.
-    /** If already has been generated, returns the previously created one
-     */
+    /** If already has been generated, returns the previously created one */
     boost::shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
 
 public slots:

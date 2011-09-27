@@ -9,6 +9,7 @@
 #include "Math/float3.h"
 
 /// Ogre custom object component
+/// @todo Delete this class.
 /**
 <table class="header">
 <tr>

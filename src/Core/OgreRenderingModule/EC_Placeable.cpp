@@ -290,7 +290,6 @@ void EC_Placeable::AttachNode()
             }
             if (parentEntity)
             {
-                // Note: if we don't find the correct bone, we attach to the root
                 QString boneName = parentBone.Get();
                 if (!boneName.isEmpty())
                 {
@@ -321,8 +320,9 @@ void EC_Placeable::AttachNode()
                         else
                         {
                             // Could not find the bone. Connect to the parent mesh MeshChanged signal to wait for the proper mesh to be assigned.
+                            LogWarning("EC_Placeable::AttachNode: Could not find bone " + boneName + " to attach to, attaching to the parent scene node instead.");
                             connect(parentMesh, SIGNAL(MeshChanged()), this, SLOT(OnParentMeshChanged()), Qt::UniqueConnection);
-                            return;
+                            // While we wait, fall through to attaching to the scene node instead
                         }
                     }
                     else
@@ -342,7 +342,7 @@ void EC_Placeable::AttachNode()
                     {
                         if (parentCheck == this)
                         {
-                            LogWarning("Cyclic scene node parenting attempt detected! Parenting to the scene root node instead.");
+                            LogWarning("EC_Placeable::AttachNode: Cyclic scene node parenting attempt detected! Parenting to the scene root node instead.");
                             root_node->addChild(sceneNode_);
                             attached_ = true;
                             return;

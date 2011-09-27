@@ -70,3 +70,5 @@ rmdir build\pymodules /S /Q
 @rem del build\pymodules\estatemanagement\*.pyc
 @rem del build\pymodules\loadurlhandler\*.pyc
 @rem del build\pymodules\DLLs\*_d.pyd
+del /Q build\vlcplugins\*.*
+rmdir /S /Q build\vlcplugins

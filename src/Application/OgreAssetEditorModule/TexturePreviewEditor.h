@@ -51,7 +51,7 @@ public:
     void Open();
 
     /// Sets the texture for viewing.
-    void SetTexture(const AssetPtr &textureAsset);
+    void SetTextureAsset(const AssetPtr &textureAsset);
 
 public slots:
     /// Listens when image label has been pressed.

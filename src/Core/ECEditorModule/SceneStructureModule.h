@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneStructureModule.h
- *  @brief  Provides Scene Structure and Assets windows and raycast drag-and-drop import of
- *          various content file formats to the main window.
+ *  @brief  Provides UIs for scene and asset maintenance and content import.
  */
 
 #pragma once
@@ -30,6 +29,7 @@ class float3;
 
 class EC_Mesh;
 
+/// @cond PRIVATE
 struct SceneMaterialDropData
 {
     SceneMaterialDropData() : mesh(0) {}
@@ -37,9 +37,10 @@ struct SceneMaterialDropData
     AssetReferenceList materials;
     QList<uint> affectedIndexes;
 };
+/// @endcond
 
-/// Provides Scene Structure and Assets windows and raycast drag-and-drop import of
-/// various content file formats to the main window.
+/// Provides UIs for scene and asset maintenanc and content import.
+/** Also implements raycast drag-and-drop import of various content file formats to the main window. */
 class SceneStructureModule : public IModule
 {
     Q_OBJECT

@@ -26,6 +26,9 @@ namespace Ogre
     class SceneNode;
     class ManualObject;
 }
+
+/// @todo Remove this EC and move the usable code part to ECEditorModule classes if seen applicable.
+/// Ruler provides visualisation for transformations.
 /**
 <table class="header">
 <tr>

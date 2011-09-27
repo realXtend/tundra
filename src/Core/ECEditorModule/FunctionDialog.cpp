@@ -31,7 +31,7 @@ FunctionComboBox::FunctionComboBox(QWidget *parent) : QComboBox(parent)
 }
 
 /*
-void FunctionComboBox::AddFunction(const FunctionMetaData &f)
+void FunctionComboBox::AddFunction(const FunctionMetadata &f)
 {
     addItem(f.function);
     functions.append(f);
@@ -41,10 +41,10 @@ void FunctionComboBox::AddFunction(const FunctionMetaData &f)
 }
 */
 
-void FunctionComboBox::SetFunctions(const std::set<FunctionMetaData> &funcs)
+void FunctionComboBox::SetFunctions(const std::set<FunctionMetadata> &funcs)
 {
-    QList<FunctionMetaData> fmdsAsList;
-    foreach(const FunctionMetaData &f, funcs)
+    QList<FunctionMetadata> fmdsAsList;
+    foreach(const FunctionMetadata &f, funcs)
     {
         addItem(f.signature);
         fmdsAsList << f;
@@ -66,13 +66,13 @@ void FunctionComboBox::SetFunctions(const std::set<FunctionMetaData> &funcs)
 
 void FunctionComboBox::SetCurrentFunction(const QString &function, const QStringList &paramTypeNames)
 {
-    FunctionMetaData matchingFmd;
-    foreach(FunctionMetaData f, functions)
+    FunctionMetadata matchingFmd;
+    foreach(FunctionMetadata f, functions)
         if (f.function == function && f.parameters.size() == paramTypeNames.size())
         {
             int matchingTypes = 0;
             int idx = 0;
-            foreach(FunctionMetaData::Parameter p, f.parameters)
+            foreach(FunctionMetadata::Parameter p, f.parameters)
             {
                 if (p.first == paramTypeNames[idx])
                     ++matchingTypes;
@@ -92,13 +92,13 @@ void FunctionComboBox::SetCurrentFunction(const QString &function, const QString
                 setCurrentIndex(i);
 }
 
-FunctionMetaData FunctionComboBox::CurrentFunction() const
+FunctionMetadata FunctionComboBox::CurrentFunction() const
 {
-    foreach(FunctionMetaData f, functions)
+    foreach(FunctionMetadata f, functions)
         if (f.fullSignature == currentText())
             return f;
 
-    return FunctionMetaData();
+    return FunctionMetadata();
 }
 
 void FunctionComboBox::Clear()
@@ -292,7 +292,7 @@ void FunctionDialog::UpdateEditors()
         SAFE_DELETE(w);
     }
 
-    FunctionMetaData fmd = functionComboBox->CurrentFunction();
+    FunctionMetadata fmd = functionComboBox->CurrentFunction();
     if (fmd.function.isEmpty())
         return;
 
@@ -337,7 +337,7 @@ void FunctionDialog::UpdateEditors()
     move(orgPos);
 }
 
-void FunctionDialog::Populate(const QMetaObject *mo, std::set<FunctionMetaData> &fmds)
+void FunctionDialog::Populate(const QMetaObject *mo, std::set<FunctionMetadata> &fmds)
 {
     if (!mo)
         return;
@@ -400,8 +400,8 @@ void FunctionDialog::Populate(const QMetaObject *mo, std::set<FunctionMetaData> 
             returnType = "void";
         fullSig.prepend(returnType + ' ');
 
-        // Construct FunctionMetaData struct.
-        FunctionMetaData f;
+        // Construct FunctionMetadata struct.
+        FunctionMetadata f;
         f.className = mo->className();
         int start = fullSig.indexOf(' ');
         int end = fullSig.indexOf('(');
@@ -424,7 +424,7 @@ void FunctionDialog::Populate(const QMetaObject *mo, std::set<FunctionMetaData> 
 void FunctionDialog::GenerateTargetLabelAndFunctions()
 {
     // Generate functions for the function combo box.
-    std::set<FunctionMetaData> fmds;
+    std::set<FunctionMetadata> fmds;
 
     QString targetText;
     assert(objects.size());

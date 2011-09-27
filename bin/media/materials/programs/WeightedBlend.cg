@@ -1,0 +1,159 @@
+#ifdef SHADOW_MAPPING
+#ifdef LOWEND_SHADOWS
+#include "Shadow1Tap.cg"
+#else
+#include "Shadow4Tap.cg"
+#endif
+#endif
+
+void mainVS(float4 pos    : POSITION,
+          float3 normal : NORMAL,
+          float2 tex0    : TEXCOORD0, // Diffuse texture channel.
+          float2 tex1    : TEXCOORD1, // Blend texture channel.
+
+          uniform float4x4 worldViewProjMatrix,
+          uniform float4x4 worldMatrix,
+
+          //Directional light
+          uniform float4 lightDir0,
+          uniform float4 lightDiffuseColor0,
+
+          //Fog
+          uniform float4 fogParams,
+          uniform float4 fogColor,
+
+          out float4 oPos      : POSITION,
+          out float4 oDirectionalColor : TEXCOORD6, // Dynamic color based on the single sun directional light. the w value is just the z-coordinate of the vertex, packed here.
+          out float2 oTex0     : TEXCOORD0, // Diffuse texture channel.
+          out float2 oTex1     : TEXCOORD1, // Blend/lightmap texture channel.
+#ifdef SHADOW_MAPPING
+          out float4 oShadowTex0 : TEXCOORD3,
+#ifdef PSSM_SHADOWS
+          out float4 oShadowTex1 : TEXCOORD4,
+          out float4 oShadowTex2 : TEXCOORD5, // Stores the generated texcoords for the shadow map. We support only one dynamic light at a time.
+#endif
+#endif
+          out float4 oFog      : TEXCOORD2
+    )
+{
+    oPos = mul(worldViewProjMatrix, pos);
+
+    oTex0 = tex0;
+    oTex1 = tex1;
+
+    //Fog params packed as: exp_density, linear_start, linear_end, 1.0 / (linear_end - linear_start)
+    //Store fog density to w
+    oFog.w = clamp((fogParams.z-oPos.z)/(fogParams.z-fogParams.y), 0, 1);
+    //And color to xyz
+    oFog.xyz = fogColor.rgb;
+
+	normal = normalize(mul(worldMatrix, float4(normal, 0)).xyz);
+    oDirectionalColor = float4(saturate(dot(lightDir0.xyz, normal)) * lightDiffuseColor0.rgb, oPos.z);
+
+#ifdef SHADOW_MAPPING
+    float4 worldPos = mul(worldMatrix, pos);
+    // Shadow view-proj. Need to output all four coordinates for proper clipping (well, could potentially optimize one away, but not that useful).
+    oShadowTex0 = mul(lightViewProj0, worldPos);
+#ifdef PSSM_SHADOWS
+    oShadowTex1 = mul(lightViewProj1, worldPos);
+    oShadowTex2 = mul(lightViewProj2, worldPos);
+#endif
+#endif
+}
+
+void mainPS(float4 pos    : POSITION,
+          float4 directionalColor : TEXCOORD6,
+          float2 tex0   : TEXCOORD0, // Diffuse texture channel.
+          float2 tex1   : TEXCOORD1, // Blend texture channel.
+          float4 fog    : TEXCOORD2,
+#ifdef SHADOW_MAPPING
+          float4 shadowTex0 : TEXCOORD3,
+#ifdef PSSM_SHADOWS
+          float4 shadowTex1 : TEXCOORD4,
+          float4 shadowTex2 : TEXCOORD5,
+#endif
+#endif
+          uniform float4 ambient,
+          uniform sampler2D map1 : register(s0),
+          uniform sampler2D map2 : register(s1),
+          uniform sampler2D map3 : register(s2),
+          uniform sampler2D blend : register(s3),
+          uniform sampler2D lightMap : register(s4),
+#ifdef SHADOW_MAPPING
+          uniform sampler2D shadowMap0 : register(s5),
+#ifdef PSSM_SHADOWS
+	  uniform sampler2D shadowMap1 : register(s6),
+	  uniform sampler2D shadowMap2 : register(s7),
+#endif
+#endif
+          out float4 col : COLOR)
+{
+    //Get texture and their weights
+	float4 weights = tex2D(blend, tex1);
+	weights.xyz /= (weights.x + weights.y + weights.z);
+
+#ifdef ALPHAMASK
+    if (weights.a < 0.5)
+        discard;
+#endif
+
+    float4 c1 = tex2D(map1, tex0) * weights.x;
+    float4 c2 = tex2D(map2, tex0) * weights.y;
+    float4 c3 = tex2D(map3, tex0) * weights.z;
+
+    float3 light;
+    float lightness = 1.f;
+
+#ifdef SHADOW_MAPPING
+    // Do shadow. note: shadow color is superceded by fog - intentional to provide a nice fade.
+    
+#ifdef PSSM_SHADOWS
+			if (directionalColor.w <= 3.5f)	
+			{
+				#ifdef LOWEND_SHADOWS
+				lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex0);
+				#else
+				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize, directionalColor.w);
+				#endif
+
+			}
+			else if (directionalColor.w <= 11.f)
+			{
+				#ifdef LOWEND_SHADOWS
+				lightness = SampleShadowMap1TapPCF(shadowMap1, shadowTex1);
+				#else
+				lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1, invShadowmapSize, directionalColor.w);
+				#endif
+			}
+			else
+			{
+				#ifdef LOWEND_SHADOWS
+				lightness = SampleShadowMap1TapPCF(shadowMap2, shadowTex2);
+				#else
+				lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize, directionalColor.w);
+				#endif
+
+			}
+#else
+			#ifdef LOWEND_SHADOWS
+			lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex0);
+			#else
+			lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize, directionalColor.w);
+			#endif
+#endif
+#endif
+
+
+#ifdef LIGHTMAP
+    light = tex2D(lightMap, tex1).rgb;
+#else
+    light = ambient.rgb + lightness * directionalColor.rgb;
+#endif
+
+    col.rgb = (c1.rgb + c2.rgb + c3.rgb) * light;
+    col.a = 1.0;
+
+    // Fog
+    col.rgb = col.rgb * fog.w + fog.xyz * (1.f - fog.w);
+}
+

@@ -10,8 +10,6 @@
 #include "KristalliProtocolModule.h"
 #include "CoreStringUtils.h"
 #include "TundraMessages.h"
-#include "PhysicsModule.h"
-#include "PhysicsWorld.h"
 
 #include "SceneAPI.h"
 #include "ConfigAPI.h"

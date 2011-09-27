@@ -313,7 +313,7 @@ EXTRACT_ALL            = YES
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
 # will be included in the documentation.
 
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file 
 # will be included in the documentation.
@@ -584,7 +584,8 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = ../
+INPUT                  =    ../src \
+                            ../doc
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
@@ -647,7 +648,12 @@ EXCLUDE                = ../.git \
                          ../lib \
                          ../tools \
                          ../ZERO_CHECK.dir \
-
+                         ../src/EntityComponents/EC_Ruler \
+                         ../src/EntityComponents/EC_Gizmo \
+                         ../src/Core/OgreRenderingModule/EC_SelectionBox.h \
+                         ../src/Core/OgreRenderingModule/EC_SelectionBox.cpp \
+                         ../src/Core/OgreRenderingModule/EC_OgreCustomObject.h \
+                         ../src/Core/OgreRenderingModule/EC_OgreCustomObject.cpp
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -677,7 +683,7 @@ EXCLUDE_PATTERNS       = *.git* \
 EXCLUDE_SYMBOLS        =    StanHull \
                             kNet \
                             TiXml*\
-                            json
+                            json \
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 

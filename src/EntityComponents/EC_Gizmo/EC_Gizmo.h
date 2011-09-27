@@ -20,6 +20,7 @@
 #include <QVector3D>
 #include <QQuaternion>
 
+/// @todo Remove this EC and move the usable code part to ECEditorModule classes if seen applicable.
 /// Enables manipulators for values
 /**
 <table class="header">

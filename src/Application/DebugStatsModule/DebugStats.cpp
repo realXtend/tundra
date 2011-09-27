@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   DebugStats.cpp
- *  @brief  DebugStatsModule shows information about internal core data structures in separate windows.
- *          Useful for verifying and understanding the internal state of the application.
+ *  @brief  Shows information about internal core data structures in separate windows.
  */
 
 #include "StableHeaders.h"

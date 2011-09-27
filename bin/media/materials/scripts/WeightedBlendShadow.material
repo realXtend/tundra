@@ -1,0 +1,66 @@
+material WeightedBlendShadow
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			ambient 0 0 0
+			
+			fragment_program_ref WeightedBlendShadowFS
+			{
+			}
+
+			vertex_program_ref WeightedBlendShadowVS
+			{
+			}
+
+			// Texture 1
+			texture_unit tex0
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			// Texture 2
+			texture_unit tex1
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			// Texture 3
+			texture_unit tex2
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			// Blend mask (rgb + a opacity)
+			texture_unit blend
+			{
+				texture terr_dirt-grass.jpg
+			}
+			
+			// Lightmap
+			texture_unit lightmap
+			{
+				texture terr_dirt-grass.jpg
+			}
+			
+			// Shadowmaps
+			texture_unit shadowMap0
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap1
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap2
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+		}
+	}
+}

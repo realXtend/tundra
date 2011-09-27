@@ -7,6 +7,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 
+/// @todo Remove this EC and move the usable code part to ECEditorModule classes if seen applicable.
 /// Ogre selection box component
 /**
 <table class="header">

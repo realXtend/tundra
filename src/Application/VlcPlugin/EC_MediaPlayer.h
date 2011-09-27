@@ -20,6 +20,8 @@ class EC_Mesh;
 class EC_WidgetCanvas;
 class RaycastResult;
 
+/// Shows various media formats supported by VLC on 3D object.
+/** Depends on EC_Mesh and EC_WidgetCanvas. */
 class EC_MediaPlayer : public IComponent
 {
     Q_OBJECT
@@ -31,7 +33,7 @@ public:
     /// Destructor.
     virtual ~EC_MediaPlayer();
 
-    /*! Media source reference. Accepted formats are.
+    /*! Media source reference. Accepted formats are:
         [file://]filename              Plain media file
         http://ip:port/file            HTTP URL
         ftp://ip:port/file             FTP URL
@@ -41,7 +43,7 @@ public:
         [vcd://][device]               VCD device
         [cdda://][device]              Audio CD device
         udp:[[<source address>]@[<bind address>][:<bind port>]]
-	*/
+    */
     Q_PROPERTY(AssetReference sourceRef READ getsourceRef WRITE setsourceRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, sourceRef);
 

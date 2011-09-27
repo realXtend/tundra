@@ -110,7 +110,7 @@ void LocalAssetStorage::EmitAssetChanged(QString absoluteFilename, IAssetStorage
         localName = absoluteFilename.right(absoluteFilename.length() - lastSlash - 1);
     QString assetRef = "local://" + localName;
     if (assetRefs.contains(assetRef) && change == IAssetStorage::AssetCreate)
-        LogWarning("LocalAssetStorage::EmitAssetChanged: AssetCreate signaled for already existing asset.");
+        LogWarning("LocalAssetStorage::EmitAssetChanged: not emitting AssetCreate signal for already existing asset.");
     else
         emit AssetChanged(localName, absoluteFilename, change);
 }

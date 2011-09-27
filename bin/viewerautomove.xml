@@ -5,15 +5,15 @@
   <plugin path="EnvironmentModule" />           <!-- EnvironmentModule depends on OgreRenderingModule -->
   <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
-  <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on KristalliProtocolModule, OgreRenderingModule and PhysicsModule -->
-  <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraLogicModule -->
-  <plugin path="AssetModule" />                 <!-- AssetModule depends on KristalliProtocolModule and TundraLogicModule -->
+  <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on OgreRenderingModule -->
+  <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraProtocolModule --> 
+  <plugin path="AssetModule" />                 <!-- AssetModule depends on TundraProtocolModule -->
   <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
-  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule, TundraLogicModule, OgreRenderingModule and AssetModule -->
+  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule, TundraProtocolModule, OgreRenderingModule and AssetModule -->
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
-  <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraLogicModule -->
-  <plugin path="PythonScriptModule" />          <!-- PythonScriptModule depends on OgreRenderingModule, TundraLogicModule -->
+  <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraProtocolModule -->
+  <plugin path="PythonScriptModule" />          <!-- Depends on OgreRenderingModule, TundraProtocolModule -->
   
   <!-- The following are commented out as they are not a part of the default build -->
   <!-- <plugin path="MumbleVoipModule" /> -->           <!-- Depends on OgreRenderingModule and TundraLogicModule -->
@@ -31,4 +31,8 @@
 
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
+
+  <!--  AssetAPI's file system watcher currently disabled because LocalAssetProvider implements
+        the same functionality for LocalAssetStorages and HTTPAssetProviders do not yet support live-update. -->
+  <option name="--nofilewatcher" />
 </Tundra>

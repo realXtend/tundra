@@ -1,7 +1,7 @@
 particle_system ParticleAssetLoadError
 {
 	quota	10
-	material AssetLoadError
+	material AssetLoadError.material
 	particle_width	0.5
 	particle_height	0.5
 	cull_each	true

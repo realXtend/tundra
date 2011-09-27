@@ -24,57 +24,6 @@
 
 #include "MemoryLeakCheck.h"
 
-// static
-ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
-    QtAbstractPropertyBrowser *browser,
-    ECComponentEditor *editor,
-    ComponentPtr component,
-    const QString &name,
-    const QString &type)
-{
-    ECAttributeEditorBase *attributeEditor = 0;
-    if (type == "real")
-        attributeEditor = new ECAttributeEditor<float>(browser, component, name, type, editor);
-    else if(type == "int")
-        attributeEditor = new ECAttributeEditor<int>(browser, component, name, type, editor);
-    else if(type == "float2")
-        attributeEditor = new ECAttributeEditor<float2>(browser, component, name, type, editor);
-    else if(type == "float3")
-        attributeEditor = new ECAttributeEditor<float3>(browser, component, name, type, editor);
-    else if(type == "float4")
-        attributeEditor = new ECAttributeEditor<float4>(browser, component, name, type, editor);
-    else if(type == "quat")
-        attributeEditor = new ECAttributeEditor<Quat>(browser, component, name, type, editor);
-    else if(type == "color")
-        attributeEditor = new ECAttributeEditor<Color>(browser, component, name, type, editor);
-    else if(type == "string")
-        attributeEditor = new ECAttributeEditor<QString>(browser, component, name, type, editor);
-    else if(type == "bool")
-        attributeEditor = new ECAttributeEditor<bool>(browser, component, name, type, editor);
-    else if(type == "qvariant")
-        attributeEditor = new ECAttributeEditor<QVariant>(browser, component, name, type, editor);
-    else if(type == "qvariantlist")
-        attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, type, editor);
-    else if(type == "entityreference")
-        attributeEditor = new ECAttributeEditor<EntityReference>(browser, component, name, type, editor);
-    else if(type == "assetreference")
-        // AssetReference uses own special case editor.
-        //attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, type, editor);
-        attributeEditor = new AssetReferenceAttributeEditor(browser, component, name, type, editor);
-    else if(type == "assetreferencelist")
-        // AssetReferenceList uses own special case editor.
-        //attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
-        attributeEditor = new AssetReferenceListAttributeEditor(browser, component, name, type, editor);
-    else if(type == "transform")
-        attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
-    else if(type == "qpoint")
-        attributeEditor = new ECAttributeEditor<QPoint>(browser, component, name, type, editor);
-    else
-        LogWarning("Unknown attribute type " + type + " for ECAttributeEditorBase creation.");
-
-    return attributeEditor;
-}
-
 ECComponentEditor::ECComponentEditor(ComponentPtr component, QtAbstractPropertyBrowser *propertyBrowser):
     QObject(propertyBrowser),
     groupProperty_(0),
@@ -259,14 +208,49 @@ void ECComponentEditor::RemoveComponent(ComponentPtr component)
     UpdateGroupPropertyText();
 }
 
+void ECComponentEditor::RemoveAttribute(ComponentPtr comp, IAttribute *attr)
+{
+    if (!comp)
+        return;
+    if (comp->TypeName() != typeName_)
+        return;
+
+    ComponentSet::const_iterator iter = components_.begin();
+    while(iter != components_.end())
+    {
+        ComponentPtr component = (*iter).lock();
+        if (component == comp)
+        {
+            AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
+            while(attributeIter != attributeEditors_.end())
+            {
+                IAttribute *attribute = component->GetAttribute(attributeIter.value()->GetAttributeName());
+                if (attribute == attr)
+                {
+                    SAFE_DELETE(attributeIter.value())
+                    attributeEditors_.erase(attributeIter);
+                    return;
+                }
+                else
+                    ++attributeIter;
+            }
+        }
+        ++iter;
+    }
+}
+
 void ECComponentEditor::UpdateUi()
 {
-    for(AttributeEditorMap::iterator iter = attributeEditors_.begin();
-        iter != attributeEditors_.end();
-        iter++)
-    {
+    for(AttributeEditorMap::iterator iter = attributeEditors_.begin(); iter != attributeEditors_.end(); ++iter)
         iter.value()->UpdateEditorUI();
-    }
+}
+
+QString ECComponentEditor::GetAttributeType(const QString &name) const
+{
+    AttributeEditorMap::iterator iter = attributeEditors_.find(name);
+    if (iter != attributeEditors_.end())
+        return (*iter)->GetAttributeType();
+    return QString();
 }
 
 void ECComponentEditor::OnEditorChanged(const QString &name)
@@ -281,10 +265,52 @@ void ECComponentEditor::OnEditorChanged(const QString &name)
     groupProperty_->addSubProperty(editor->GetProperty());
 }
 
-QString ECComponentEditor::GetAttributeType(const QString &name) const
+ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
+    QtAbstractPropertyBrowser *browser,
+    ECComponentEditor *editor,
+    ComponentPtr component,
+    const QString &name,
+    const QString &type)
 {
-    AttributeEditorMap::const_iterator iter = attributeEditors_.find(name);
-    if (iter != attributeEditors_.end())
-        return (*iter)->GetAttributeType();
-    return QString();
+    ECAttributeEditorBase *attributeEditor = 0;
+    if (type == "real")
+        attributeEditor = new ECAttributeEditor<float>(browser, component, name, type, editor);
+    else if(type == "int")
+        attributeEditor = new ECAttributeEditor<int>(browser, component, name, type, editor);
+    else if(type == "float2")
+        attributeEditor = new ECAttributeEditor<float2>(browser, component, name, type, editor);
+    else if(type == "float3")
+        attributeEditor = new ECAttributeEditor<float3>(browser, component, name, type, editor);
+    else if(type == "float4")
+        attributeEditor = new ECAttributeEditor<float4>(browser, component, name, type, editor);
+    else if(type == "quat")
+        attributeEditor = new ECAttributeEditor<Quat>(browser, component, name, type, editor);
+    else if(type == "color")
+        attributeEditor = new ECAttributeEditor<Color>(browser, component, name, type, editor);
+    else if(type == "string")
+        attributeEditor = new ECAttributeEditor<QString>(browser, component, name, type, editor);
+    else if(type == "bool")
+        attributeEditor = new ECAttributeEditor<bool>(browser, component, name, type, editor);
+    else if(type == "qvariant")
+        attributeEditor = new ECAttributeEditor<QVariant>(browser, component, name, type, editor);
+    else if(type == "qvariantlist")
+        attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, type, editor);
+    else if(type == "entityreference")
+        attributeEditor = new ECAttributeEditor<EntityReference>(browser, component, name, type, editor);
+    else if(type == "assetreference")
+        // AssetReference uses own special case editor.
+        //attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, type, editor);
+        attributeEditor = new AssetReferenceAttributeEditor(browser, component, name, type, editor);
+    else if(type == "assetreferencelist")
+        // AssetReferenceList uses own special case editor.
+        //attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
+        attributeEditor = new AssetReferenceListAttributeEditor(browser, component, name, type, editor);
+    else if(type == "transform")
+        attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
+    else if(type == "qpoint")
+        attributeEditor = new ECAttributeEditor<QPoint>(browser, component, name, type, editor);
+    else
+        LogWarning("Unknown attribute type " + type + " for ECAttributeEditorBase creation.");
+
+    return attributeEditor;
 }

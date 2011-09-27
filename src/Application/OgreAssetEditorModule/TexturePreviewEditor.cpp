@@ -95,14 +95,14 @@ TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, Framewo
     imageLabel_->setPixmap(QPixmap::fromImage(emptyImage));
     headerLabel_->setText(objectName());
 
-    SetTexture(textureAsset);
+    SetTextureAsset(textureAsset);
 }
 
 TexturePreviewEditor::~TexturePreviewEditor()
 {
 }
 
-void TexturePreviewEditor::SetTexture(const AssetPtr &textureAsset)
+void TexturePreviewEditor::SetTextureAsset(const AssetPtr &textureAsset)
 {
     asset = textureAsset;
     assert(asset.lock());
@@ -120,8 +120,8 @@ void TexturePreviewEditor::SetTexture(const AssetPtr &textureAsset)
         connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetTransferSucceeded(AssetPtr)));
         connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
     }
-
-    Open();
+    else
+        Open();
 }
 ///\todo Move the code below to Open().
 /*
@@ -384,7 +384,7 @@ QImage TexturePreviewEditor::ConvertToQImage(const u8 *raw_image_data, uint widt
 */
 void TexturePreviewEditor::OnAssetTransferSucceeded(AssetPtr asset)
 {
-    Open();
+    SetTextureAsset(asset);
 }
 
 void TexturePreviewEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)

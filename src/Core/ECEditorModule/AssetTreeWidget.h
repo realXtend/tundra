@@ -113,6 +113,9 @@ private slots:
     /// Opens the location folder of an asset in operating system's file explorer.
     void OpenFileLocation();
 
+    /// Opens the location folder of an asset in operating system's file explorer.
+    void OpenInExternalEditor();
+
     /// Shows dialog for invoking functions for currently selected assets.
     void OpenFunctionDialog();
 

@@ -18,6 +18,7 @@
 class OgreWorld;
 
 /// Represents weak pointer to Transform attribute.
+/// @cond PRIVATE
 struct AttributeWeakPtr
 {
     /// Constructor.
@@ -46,6 +47,7 @@ struct AttributeWeakPtr
     IAttribute *attribute; ///< The actual attribute.
     EntityWeakPtr parentPlaceableEntity; ///< If the placeable component is parented, points to the parent placeable entity.
 };
+///endcond
 
 /// Controls Transform attributes for groups of entities.
 /** Can be used to alter transforms of entities even without the visual gizmo (EC_TransformGizmo).*/
@@ -56,7 +58,7 @@ class ECEDITOR_MODULE_API TransformEditor : public QObject
 public:
     /// Constructs the editor.
     /** Creates EC_TransformGizmo if it is available.
-        @scene Scene in which the edited entities reside. */
+        @param scene Scene in which the edited entities reside. */
     TransformEditor(const ScenePtr &scene);
 
     /// Destroys the editor.
@@ -131,6 +133,7 @@ private:
     QWidget* editorSettings; ///< Editor settings window
     QWidget* commandingWidget;
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
+
 private slots:
     /// Handles KeyEvents and changes gizmo's mode.
     /** @param e Key event. */
