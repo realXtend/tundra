@@ -19,6 +19,7 @@
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
+#include <QDebug>
 
 #include "MemoryLeakCheck.h"
 
@@ -62,9 +63,6 @@ EC_Camera::~EC_Camera()
 
     if (camera_)
     {
-        Renderer *renderer = world->GetRenderer();
-        if (renderer->MainOgreCamera() == camera_)
-            renderer->SetMainCamera(0);
         Ogre::SceneManager* sceneMgr = world->GetSceneManager();
         sceneMgr->destroyCamera(camera_);
         camera_ = 0;
@@ -74,6 +72,13 @@ EC_Camera::~EC_Camera()
             sceneMgr->destroyQuery(query_);
             query_ = 0;
         }
+
+        // We cant compare the camera ptr with the current active camera
+        // in renderer. Because our parent entity is already null.
+        // Ask render to validate main camera, this will reset it to null if its not valid.
+        Renderer *renderer = world->GetRenderer();
+        if (renderer)
+            renderer->ValidateMainCamera();
     }
 }
 

@@ -747,6 +747,27 @@ namespace OgreRenderer
         view->MarkViewUndirty();
     }
 
+    void Renderer::ValidateMainCamera()
+    {
+        if (!mainViewport)
+        {
+            LogError("Renderer::ValidateMainCamera(): Main viewport is null, cannot proceed.");
+            return;
+        }
+
+        // If we cant find the main camera, the entity has been destroyed.
+        // Reset back to our default empty camera.
+        if (!MainCamera() && mainViewport->getCamera() != dummyDefaultCamera)
+        {
+            mainViewport->setCamera(dummyDefaultCamera);
+            if (c_handler_)
+                c_handler_->CameraChanged(mainViewport, dummyDefaultCamera);
+
+            activeMainCamera.reset();
+            emit MainCameraChanged(activeMainCamera);
+        }
+    }
+
     Entity *Renderer::MainCamera()
     {
         Entity *mainCameraEntity = activeMainCamera.lock().get();
