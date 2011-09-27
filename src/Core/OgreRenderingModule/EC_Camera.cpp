@@ -19,7 +19,6 @@
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
-#include <QDebug>
 
 #include "MemoryLeakCheck.h"
 
