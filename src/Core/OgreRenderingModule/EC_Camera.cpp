@@ -165,6 +165,9 @@ void EC_Camera::SetVerticalFov(float fov)
 
 void EC_Camera::SetActive()
 {
+    if (!ViewEnabled())
+        return;
+
     if (!camera_)
     {
         LogError("EC_Camera::SetActive failed: No Ogre camera initialized to EC_Camera!");
