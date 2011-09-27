@@ -171,8 +171,8 @@ void HttpAssetStorage::OnHttpTransferFinished(QNetworkReply *reply)
     }
 
     // If no outstanding searches, asset discovery is done
-//    if (searches.empty())
-//        emit AssetRefsChanged(this->shared_from_this());
+    if (searches.empty())
+        LogDebug("HttpAssetStorage::OnHttpTransferFinished: Asset discovery done.");
 }
 
 void HttpAssetStorage::AddAssetRef(const QString& ref)
@@ -181,7 +181,6 @@ void HttpAssetStorage::AddAssetRef(const QString& ref)
     {
         assetRefs.push_back(ref);
         emit AssetChanged(QUrl(ref).authority(), "", IAssetStorage::AssetCreate);
-        //emit AssetRefsChanged(this->shared_from_this());
     }
 }
 
@@ -191,6 +190,5 @@ void HttpAssetStorage::DeleteAssetRef(const QString& ref)
     {
         assetRefs.removeAll(ref);
         emit AssetChanged(QUrl(ref).authority(), "", IAssetStorage::AssetDelete);
-        //emit AssetRefsChanged(this->shared_from_this());
     }
 }

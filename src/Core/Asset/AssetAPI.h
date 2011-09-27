@@ -429,7 +429,7 @@ private slots:
 
     /// An asset storage refreshed its references. Create empty assets from the new refs as necessary
     ///\todo Delete this whole function and logic when OnAssetChanged is implemented
-    void OnAssetStorageRefsChanged(AssetStoragePtr storage);
+//    void OnAssetStorageRefsChanged(AssetStoragePtr storage);
 
     /// Contents of asset storage has been changed.
     void OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change);

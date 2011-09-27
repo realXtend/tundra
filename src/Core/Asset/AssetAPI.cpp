@@ -1616,6 +1616,7 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 }
 
 ///\todo Delete this whole function and logic when OnAssetChanged is implemented
+/*
 void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
 {
     QStringList refs = storage->GetAllAssetRefs();
@@ -1628,6 +1629,7 @@ void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
             HandleAssetDiscovery(refs[i], "", storage);
     }
 }
+*/
 
 void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change)
 {

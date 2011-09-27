@@ -66,7 +66,7 @@ public slots:
     /// Returns all assetrefs currently known in this asset storage. Does not load the assets
     virtual QStringList GetAllAssetRefs() { return assetRefs; }
     
-    /// Refresh asset refs. Issues a directory query and emits AssetRefsChanged immediately
+    /// Refresh asset refs. Issues a directory query and emits AssetChanged signals immediately
     virtual void RefreshAssetRefs();
 
     QString Name() const { return name; }
