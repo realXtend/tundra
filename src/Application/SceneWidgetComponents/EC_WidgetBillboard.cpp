@@ -124,16 +124,12 @@ EC_WidgetBillboard::~EC_WidgetBillboard()
     }
 
     // Release in code created assets
-    if (materialAsset_)
-    {
+    if (materialAsset_.get() && framework->Asset()->GetAsset(materialAsset_->Name()).get())
         framework->Asset()->ForgetAsset(materialAsset_, false);
-        materialAsset_.reset();
-    }
-    if (textureAsset_)
-    {
+    materialAsset_.reset();
+    if (textureAsset_.get() && framework->Asset()->GetAsset(textureAsset_->Name()).get())
         framework->Asset()->ForgetAsset(textureAsset_, false);
-        textureAsset_.reset();
-    }
+    textureAsset_.reset();
 }
 
 // Public slots
