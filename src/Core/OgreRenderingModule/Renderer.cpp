@@ -764,7 +764,7 @@ namespace OgreRenderer
                 c_handler_->CameraChanged(mainViewport, dummyDefaultCamera);
 
             activeMainCamera.reset();
-            emit MainCameraChanged(activeMainCamera);
+            emit MainCameraChanged(0);
         }
     }
 
