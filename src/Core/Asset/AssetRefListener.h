@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include "AssetFwd.h"
+#include "AssetReference.h"
 
 class IAttribute;
 
@@ -13,6 +14,8 @@ class AssetRefListener : public QObject
     Q_OBJECT;
 
 public:
+    AssetRefListener() : myAssetAPI(0), requestedRef(""), inspectCreated(false) {};
+
     /// Issues a new asset request to the given AssetReference.
     /// @param assetRef A pointer to an attribute of type AssetReference.
     /// @param assetType Optional asset type name
@@ -40,9 +43,13 @@ private slots:
     void OnTransferSucceeded(AssetPtr asset);
     void OnAssetLoaded(AssetPtr asset);
     void OnTransferFailed(IAssetTransfer *transfer, QString reason);
+    void OnAssetCreated(AssetPtr asset);
 
 private:
+    AssetAPI *myAssetAPI;
     AssetWeakPtr asset;
     AssetTransferWeakPtr currentTransfer;
+    AssetReference requestedRef;
+    bool inspectCreated;
 };
 
