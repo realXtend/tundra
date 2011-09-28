@@ -173,12 +173,12 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
         else
         {
 #ifdef ASSIMP_ENABLED
-            boost::filesystem::path path(filename.toStdString());
+            QFileInfo path(filename);
             AssImp::OpenAssetImport assimporter;
-            QString extension = QString(path.extension().c_str()).toLower();
+            QString extension = "." + path.extension();
             if (assimporter.IsSupportedExtension(extension))
             {
-                std::string dirname = path.branch_path().string();
+                std::string dirname = path.dir.path().toStdString();
                 std::vector<AssImp::MeshData> meshNames;
                 assimporter.GetMeshData(filename, meshNames);
 
@@ -270,9 +270,9 @@ bool SceneStructureModule::IsSupportedFileType(const QString &fileRef)
     else
     {
 #ifdef ASSIMP_ENABLED
-        boost::filesystem::path path(fileRef.toStdString());
+        QFileInfo path(fileRef);
         AssImp::OpenAssetImport assimporter;
-        QString extension = QString(path.extension().c_str()).toLower();
+        QString extension = "." path.extension();
         if (assimporter.IsSupportedExtension(extension))
             return true;
 #endif

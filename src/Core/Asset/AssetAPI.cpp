@@ -19,6 +19,7 @@
 #include "Application.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
+#include "QtUtils.h"
 
 #include <QDir>
 #include <QFileSystemWatcher>
@@ -28,7 +29,6 @@
 #include <boost/thread.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
-#include <boost/filesystem.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -396,30 +396,21 @@ QString AssetAPI::ExtractFilenameFromAssetRef(QString ref)
 
 QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
 {
-    basePath = basePath.trimmed();
+    basePath = QDir::fromNativeSeparators(basePath.trimmed());
     filename = ExtractFilenameFromAssetRef(filename.trimmed());
 
-    QDir dir(GuaranteeTrailingSlash(basePath) + filename);
-    if (boost::filesystem::exists(dir.absolutePath().toStdString()))
-        return dir.absolutePath();
+    QFileInfo fileInfo(GuaranteeTrailingSlash(basePath) + filename);
+    if (fileInfo.exists())
+        return fileInfo.absoluteFilePath();
 
-    try
+    foreach(QString dir, DirectorySearch(basePath, true, QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks))
     {
-        boost::filesystem::recursive_directory_iterator iter(basePath.toStdString());
-        boost::filesystem::recursive_directory_iterator end_iter;
-        // Check the subdir
-        for(; iter != end_iter; ++iter)
-        {
-            QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + filename);
-            if (!boost::filesystem::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
-                return dir.absolutePath();
-        }
-    }
-    catch(...)
-    {
+        QFileInfo fileInfo(GuaranteeTrailingSlash(dir) + filename);
+        if (fileInfo.exists())
+            return fileInfo.absoluteFilePath();
     }
 
-    return "";    
+    return "";
 }
 
 AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)

@@ -6,8 +6,9 @@
 # remain generic.
 
 macro (configure_boost)
-    #boost filesystem version used
-    add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
+    # boost filesystem version used
+    # Disabled, as boost filesystem no longer used. If taken back in use, enable.
+    # add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
 
     if (MSVC)
         set(Boost_USE_MULTITHREADED TRUE)
@@ -17,9 +18,9 @@ macro (configure_boost)
     endif ()
 
     if (UNIX)
-            set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_regex boost_program_options)
+            set (BOOST_COMPONENTS boost_thread boost_regex)
     else ()
-            set (BOOST_COMPONENTS date_time filesystem system thread regex program_options)
+            set (BOOST_COMPONENTS thread regex)
     endif ()
  
     sagase_configure_package (BOOST 
