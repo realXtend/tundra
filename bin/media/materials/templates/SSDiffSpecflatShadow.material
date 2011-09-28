@@ -15,7 +15,7 @@ material rex/DiffSpecflatShadow
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 			texture_unit shadowMap0
 			{

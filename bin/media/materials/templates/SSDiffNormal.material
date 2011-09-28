@@ -14,11 +14,11 @@ material rex/DiffNormal
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 			texture_unit normalMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 		}
 	}

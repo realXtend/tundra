@@ -14,7 +14,7 @@ material rex/Diff
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 		}
 	}

@@ -21,7 +21,7 @@ material rex/DiffAlphamask
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 		}
 	}

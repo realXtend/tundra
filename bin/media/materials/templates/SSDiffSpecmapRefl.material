@@ -15,15 +15,15 @@ material rex/DiffSpecmapRefl
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 			texture_unit specularMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 			texture_unit reflectionMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 		}
 	}

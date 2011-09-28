@@ -18,11 +18,11 @@ material rex/DiffSpecmapShadowOpa
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 			texture_unit specularMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 			texture_unit shadowMap0
 			{
@@ -41,7 +41,7 @@ material rex/DiffSpecmapShadowOpa
 			}
 			texture_unit opacityMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 		}
 	}
