@@ -12,7 +12,6 @@
 #include "CoreException.h"
 #include "LoggingFunctions.h"
 
-#include <boost/filesystem.hpp>
 #include <iostream>
 #include <utility>
 
@@ -60,19 +59,17 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     QApplication::setApplicationName(ApplicationName());
 
     // Make sure that the required Tundra data directories exist.
-    boost::filesystem::wpath path(QStringToWString(UserDataDirectory()));
-    if (!boost::filesystem::exists(path))
-        boost::filesystem::create_directory(path);
+    QDir path = UserDataDirectory();
+    if (!path.exists())
+        path.mkpath(".");
 
-    path = boost::filesystem::wpath(QStringToWString(UserDocumentsDirectory()));
-    if (!boost::filesystem::exists(path))
-        boost::filesystem::create_directory(path);
+    path = UserDocumentsDirectory();
+    if (!path.exists())
+        path.mkpath(".");
 
     // Add <install_dir>/qtplugins for qt to search plugins
-    QString runDirectory = InstallationDirectory() + "/qtplugins";
-    runDirectory.replace('\\', '/');
+    QString runDirectory = QDir::fromNativeSeparators(InstallationDirectory() + "/qtplugins");
     addLibraryPath(runDirectory);
-
     // In headless mode, we create windows that are never shown.
     // Also, the user can open up debugging windows like the profiler or kNet network stats from the console,
     // so disable the whole application from closing when these are shut down.
@@ -220,8 +217,9 @@ void Application::Message(const std::wstring &title, const std::wstring &text)
 
 void Application::SetCurrentWorkingDirectory(QString newCwd)
 {
-    ///\todo UNICODE support!
-    boost::filesystem::current_path(newCwd.toStdString());
+    bool successful = QDir::setCurrent(newCwd);
+    assert(successful);
+    UNREFERENCED_PARAM(successful);
 }
 
 QString Application::CurrentWorkingDirectory()

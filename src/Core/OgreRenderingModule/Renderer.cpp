@@ -28,7 +28,6 @@
 #include <QScriptEngine>
 #include "QScriptEngineHelpers.h"
 
-#include <boost/filesystem.hpp>
 #include <Ogre.h>
 
 Q_DECLARE_METATYPE(EC_Placeable*);
@@ -131,7 +130,6 @@ namespace OgreRenderer
         renderWindow(0),
         last_width_(0),
         last_height_(0),
-        capture_screen_pixel_data_(0),
         resized_dirty_(0),
         view_distance_(500.0f),
         shadowquality_(Shadows_High),
@@ -212,7 +210,7 @@ namespace OgreRenderer
             logDir.mkdir("logs");
         logDir.cd("logs");
 
-        logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString();
+        logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString(); ///<\todo Unicode support
 #include "DisableMemoryLeakCheck.h"
         static Ogre::LogManager *overriddenLogManager = 0;
         overriddenLogManager = new Ogre::LogManager; ///\bug This pointer is never freed. We leak memory here, but cannot free due to Ogre singletons being accessed.
@@ -386,21 +384,12 @@ namespace OgreRenderer
 
         Ogre::String plugin_dir = file.getSetting("PluginFolder");
         if (plugin_dir == ".")
-            plugin_dir = boost::filesystem::path(plugin_filename).branch_path().string();
+            plugin_dir = QDir::toNativeSeparators(QFileInfo(plugin_filename.c_str()).dir().path()).toStdString(); ///<\todo Unicode support?
         Ogre::StringVector plugins = file.getMultiSetting("Plugin");
-        
-        if (plugin_dir.length())
-        {
-            if ((plugin_dir[plugin_dir.length() - 1] != '\\') && (plugin_dir[plugin_dir.length() - 1] != '/'))
-            {
-#ifdef _WINDOWS
-                plugin_dir += "\\";
-#else
-                plugin_dir += "/";
-#endif
-            }
-        }
-        
+
+        if (plugin_dir.length() && plugin_dir[plugin_dir.length() - 1] != '\\' && plugin_dir[plugin_dir.length() - 1] != '/')
+            plugin_dir += QDir::separator().toAscii();
+
         for(uint i = 0; i < plugins.size(); ++i)
         {
             try
@@ -435,26 +424,29 @@ namespace OgreRenderer
                 type_name = i->first;
                 arch_name = i->second;
                 if (QDir::isRelativePath(arch_name.c_str()))
-                    arch_name = QDir::cleanPath(Application::InstallationDirectory() + arch_name.c_str()).toStdString();
+                    arch_name = QDir::cleanPath(Application::InstallationDirectory() + arch_name.c_str()).toStdString(); ///<\todo Unicode support
 
                 Ogre::ResourceGroupManager::getSingleton().addResourceLocation(arch_name, type_name, sec_name);
             }
         }
 
         // Add supershader program definitions directory according to the shadow quality level
-        switch (shadowquality_)
+        std::string shadowPath = Application::InstallationDirectory().toStdString(); ///<\todo Unicode support
+        switch(shadowquality_)
         {
         case Shadows_Off:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_off", "FileSystem", "General");
+            shadowPath.append("media/materials/scripts/shadows_off");
             break;
         case Shadows_High:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_high", "FileSystem", "General");
+            shadowPath.append("media/materials/scripts/shadows_high");
             break;
         default:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_low", "FileSystem", "General");
+            shadowPath.append("media/materials/scripts/shadows_low");
             break;
         }
-        
+
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(shadowPath, "FileSystem", "General");
+
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
     

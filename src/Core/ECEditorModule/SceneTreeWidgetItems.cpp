@@ -174,17 +174,17 @@ AssetRefItem::AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent) :
 {
     Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
     assert(assetRef);
-    this->name = assetRef->Name();
+    name = assetRef->Name();
     id = assetRef->Get().ref;
     SetText(assetRef);
 }
 
-AssetRefItem::AssetRefItem(const QString &name_, const QString &ref, QTreeWidgetItem *parent) :
-    QTreeWidgetItem(parent)
+AssetRefItem::AssetRefItem(const QString &assetName, const QString &assetRef, QTreeWidgetItem *parent) :
+    QTreeWidgetItem(parent),
+    name(assetName),
+    id(assetRef)
 {
-    name = name_;
-    id = ref;
-    setText(0, QString("%1: %2").arg(name).arg(ref));
+    setText(0, QString("%1: %2").arg(name).arg(id));
 }
 
 void AssetRefItem::SetText(IAttribute *attr)
@@ -224,7 +224,6 @@ QList<entity_id_t> Selection::EntityIds() const
         ids.insert(e->Id());
     foreach(ComponentItem *c, components)
         ids.insert(c->Parent()->Id());
-
     return ids.toList();
 }
 
@@ -268,6 +267,11 @@ void AssetItem::SetText(IAsset *asset)
     bool diskSourceMissing = asset->DiskSource().isEmpty();
     bool isModified = asset->IsModified();
 
+    ///\todo Enable when source type is set properly for AssetCreated signal (see the bug in AssetAPI::CreateNewAsset).
+//    if (!asset->DiskSource().isEmpty() && asset->DiskSourceType() == IAsset::Programmatic)
+//        LogWarning("AssetItem::SetText: Encountered asset (" + asset->Name() +
+//            ") which is programmatic but has also disk source " + asset->DiskSource().isEmpty() + ".");
+
 /*
     LogInfo(QString("unloaded")+(unloaded?"1":"0"));
     LogInfo(QString("fileMissing")+(fileMissing?"1":"0"));
@@ -281,14 +285,14 @@ void AssetItem::SetText(IAsset *asset)
         setTextColor(0, QColor(Qt::red));
         info.append(fileMissingText);
     }
-    if (diskSourceMissing)
+    if (!memoryOnly && diskSourceMissing)
     {
         setTextColor(0, QColor(Qt::red));
         if (!info.isEmpty())
             info.append(" ");
         info.append(noDiskSourceText);
     }
-    if (unloaded)
+    if (!memoryOnly && unloaded)
     {
         setTextColor(0, QColor(Qt::gray));
         if (!info.isEmpty())
@@ -297,7 +301,7 @@ void AssetItem::SetText(IAsset *asset)
     }
     if (memoryOnly)
     {
-        setTextColor(0, QColor(Qt::red));
+        setTextColor(0, QColor(Qt::darkCyan));
         if (!info.isEmpty())
             info.append(" ");
         info.append(memoryOnlyText);

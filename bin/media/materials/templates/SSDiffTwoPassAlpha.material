@@ -22,7 +22,7 @@ material rex/DiffTwoPassAlpha
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 		}
 		pass
@@ -47,7 +47,7 @@ material rex/DiffTwoPassAlpha
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 		}		
 	}

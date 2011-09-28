@@ -77,7 +77,7 @@ public:
     /** @param name Name of the asset.
         @param ref Asset reference.
         @param parent Parent item. */
-    AssetRefItem(const QString &name, const QString &ref, QTreeWidgetItem *parent = 0);
+    AssetRefItem(const QString &assetName, const QString &assetRef, QTreeWidgetItem *parent = 0);
 
     /// Sets the item text accordingly to the attribute information.
     /** @param attr Asset reference attribute. */

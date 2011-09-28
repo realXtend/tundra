@@ -53,7 +53,7 @@ public slots:
     /// Returns all assetrefs currently known in this asset storage. Does not load the assets
     virtual QStringList GetAllAssetRefs() { return assetRefs; }
     
-    /// Refresh http asset refs, issues webdav PROPFIND requests. AssetRefsChanged() will be emitted when complete.
+    /// Refresh http asset refs, issues webdav PROPFIND requests. AssetChanged signals will be emitted if new assets are found.
     virtual void RefreshAssetRefs();
 
     /// Serializes this storage to a string for machine transfer.

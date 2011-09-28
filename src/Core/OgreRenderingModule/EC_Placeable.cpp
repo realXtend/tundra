@@ -320,7 +320,8 @@ void EC_Placeable::AttachNode()
                         else
                         {
                             // Could not find the bone. Connect to the parent mesh MeshChanged signal to wait for the proper mesh to be assigned.
-                            LogWarning("EC_Placeable::AttachNode: Could not find bone " + boneName + " to attach to, attaching to the parent scene node instead.");
+                            if (ViewEnabled())
+                                LogWarning("EC_Placeable::AttachNode: Could not find bone " + boneName + " to attach to, attaching to the parent scene node instead.");
                             connect(parentMesh, SIGNAL(MeshChanged()), this, SLOT(OnParentMeshChanged()), Qt::UniqueConnection);
                             // While we wait, fall through to attaching to the scene node instead
                         }

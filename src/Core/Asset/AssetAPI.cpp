@@ -19,6 +19,7 @@
 #include "Application.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
+#include "QtUtils.h"
 
 #include <QDir>
 #include <QFileSystemWatcher>
@@ -28,7 +29,6 @@
 #include <boost/thread.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
-#include <boost/filesystem.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -396,30 +396,21 @@ QString AssetAPI::ExtractFilenameFromAssetRef(QString ref)
 
 QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
 {
-    basePath = basePath.trimmed();
+    basePath = QDir::fromNativeSeparators(basePath.trimmed());
     filename = ExtractFilenameFromAssetRef(filename.trimmed());
 
-    QDir dir(GuaranteeTrailingSlash(basePath) + filename);
-    if (boost::filesystem::exists(dir.absolutePath().toStdString()))
-        return dir.absolutePath();
+    QFileInfo fileInfo(GuaranteeTrailingSlash(basePath) + filename);
+    if (fileInfo.exists())
+        return fileInfo.absoluteFilePath();
 
-    try
+    foreach(QString dir, DirectorySearch(basePath, true, QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks))
     {
-        boost::filesystem::recursive_directory_iterator iter(basePath.toStdString());
-        boost::filesystem::recursive_directory_iterator end_iter;
-        // Check the subdir
-        for(; iter != end_iter; ++iter)
-        {
-            QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + filename);
-            if (!boost::filesystem::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
-                return dir.absolutePath();
-        }
-    }
-    catch(...)
-    {
+        QFileInfo fileInfo(GuaranteeTrailingSlash(dir) + filename);
+        if (fileInfo.exists())
+            return fileInfo.absoluteFilePath();
     }
 
-    return "";    
+    return "";
 }
 
 AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
@@ -1545,9 +1536,8 @@ void AssetAPI::EmitAssetStorageAdded(AssetStoragePtr newStorage)
 {
     // Connect to the asset storage's AssetChanged signal, so that we can create actual empty assets
     // from its refs whenever new assets are added to this storage from external sources.
-    connect(newStorage.get(), SIGNAL(AssetChanged(QString,QString,IAssetStorage::ChangeType)),
-        SLOT(OnAssetChanged(QString,QString,IAssetStorage::ChangeType)), Qt::UniqueConnection);
-//    connect(newStorage.get(), SIGNAL(AssetRefsChanged(AssetStoragePtr)), this, SLOT(OnAssetStorageRefsChanged(AssetStoragePtr)), Qt::UniqueConnection);
+    connect(newStorage.get(), SIGNAL(AssetChanged(QString, QString, IAssetStorage::ChangeType)),
+        SLOT(OnAssetChanged(QString, QString, IAssetStorage::ChangeType)), Qt::UniqueConnection);
     emit AssetStorageAdded(newStorage);
 }
 
@@ -1616,6 +1606,7 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 }
 
 ///\todo Delete this whole function and logic when OnAssetChanged is implemented
+/*
 void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
 {
     QStringList refs = storage->GetAllAssetRefs();
@@ -1628,6 +1619,7 @@ void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
             HandleAssetDiscovery(refs[i], "", storage);
     }
 }
+*/
 
 void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change)
 {
@@ -1639,15 +1631,15 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
     QString assetRef = storage->GetFullAssetURL(localName);
     QString assetType = GetResourceTypeFromAssetRef(assetRef);
     AssetPtr existing = GetAsset(assetRef);
+    if (change == IAssetStorage::AssetCreate && existing)
+    {
+        LogDebug("AssetAPI: Received AssetCreate notification for existing and loaded asset " + assetRef + ". Handling this as AssetModify.");
+        change = IAssetStorage::AssetModify;
+    }
+
     switch(change)
     {
     case IAssetStorage::AssetCreate:
-        if (existing && existing->IsLoaded())
-        {
-            LogDebug("AssetAPI: Received AssetCreate notification for existing and loaded asset " + assetRef + ". Handling this as AssetModify.");
-            RequestAsset(assetRef, assetType, true); // If asset exists and is already loaded, forcibly request updated data
-        }
-        else
         {
             AssetPtr asset = CreateNewAsset(assetType, assetRef, storage->shared_from_this());
             if (asset && !diskSource.isEmpty())
@@ -1661,17 +1653,23 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
     case IAssetStorage::AssetModify:
         if (existing)
         {
-            if (existing->IsLoaded())
+            //if (existing->IsLoaded())
+                // Note: exists->LoadFromCache() could be used here as well.
                 RequestAsset(assetRef, assetType, true); // If asset exists and is already loaded, forcibly request updated data
-            else
-                LogDebug("AssetAPI: Ignoring AssetModify notification for unloaded asset " + assetRef + ".");
+            //else
+                //LogDebug("AssetAPI: Ignoring AssetModify notification for unloaded asset " + assetRef + ".");
         }
         else
             LogWarning("AssetAPI: Received AssetModify notification for non-existing asset " + assetRef + ".");
         break;
     case IAssetStorage::AssetDelete:
         if (existing)
-            ForgetAsset(existing, false); // The asset should be already deleted; do not delete disk source.
+        {
+            if (existing->IsLoaded()) // Deleted asset is currently loaded. Invalidate disk source, but do not forget asset.
+                existing->SetDiskSource("");
+            else
+                ForgetAsset(existing, false); // The asset should be already deleted; do not delete disk source.
+        }
         else
             LogWarning("AssetAPI: Received AssetDelete notification for non-existing asset " + assetRef + ".");
         break;

@@ -252,10 +252,7 @@ namespace OgreRenderer
 
         /// Texture quality
         TextureQuality texturequality_;
-        
-        /// Pixel buffer used with screen captures
-        Ogre::uchar *capture_screen_pixel_data_;
-        
+
         /// Stores the wall clock time that specifies when the last frame was displayed.
         tick_t lastPresentTime;
         /// Caches the system clock frequency.

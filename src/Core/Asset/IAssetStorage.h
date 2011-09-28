@@ -71,7 +71,7 @@ public slots:
     /// Returns all assetrefs currently known to exist in this asset storage. Does not load the assets, and does not refresh the list automatically
     virtual QStringList GetAllAssetRefs() { return QStringList(); }
 
-    /// Refresh assetrefs. Depending on storage type, may either finish immediately or take some time. AssetRefsChanged will be emitted when done
+    /// Refresh assetrefs. Depending on storage type, may either finish immediately or take some time. AssetChanged signals will be emitted.
     virtual void RefreshAssetRefs() {}
 
     /// Starts a new asset upload to this storage. If the given asset exists already in the storage, it is replaced.

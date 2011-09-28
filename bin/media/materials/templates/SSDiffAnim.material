@@ -15,7 +15,7 @@ material rex/DiffAnim
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 				scroll_anim 1 1
 				rotate_anim 2
 			}

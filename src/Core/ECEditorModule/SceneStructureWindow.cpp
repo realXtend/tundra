@@ -3,9 +3,6 @@
  *
  *  @file   SceneStructureWindow.cpp
  *  @brief  Window with tree view of contents of scene.
- *
- *          This class will only handle adding and removing of entities and components and updating
- *          their names. The SceneTreeWidget implements most of the functionality.
  */
 
 #include "StableHeaders.h"
@@ -38,8 +35,6 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     expandAndCollapseButton(0),
     searchField(0)
 {
-    setAttribute(Qt::WA_DeleteOnClose);
-
     // Init main widget
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -99,20 +94,20 @@ SceneStructureWindow::~SceneStructureWindow()
     SetScene(ScenePtr());
 }
 
-void SceneStructureWindow::SetScene(const ScenePtr &s)
+void SceneStructureWindow::SetScene(const ScenePtr &newScene)
 {
-    if (!scene.expired() && (s == scene.lock()))
+    if (!scene.expired() && (newScene == scene.lock()))
         return;
 
-    if (s == 0)
+    if (newScene == 0)
     {
-        disconnect(s.get());
+        disconnect(scene.lock().get());
         Clear();
         return;
     }
 
-    scene = s;
-    treeWidget->SetScene(s);
+    scene = newScene;
+    treeWidget->SetScene(newScene);
 
     Scene *scenePtr = scene.lock().get();
     connect(scenePtr, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));

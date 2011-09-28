@@ -15,11 +15,11 @@ material rex/DiffSpecmapShadowLum
 			}
 			texture_unit baseMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 			texture_unit specularMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 			texture_unit shadowMap0
 			{
@@ -38,7 +38,7 @@ material rex/DiffSpecmapShadowLum
 			}
 			texture_unit luminanceMap
 			{
-				texture AddTextureNameHere
+				texture TextureMissing.png
 			}
 		}
 	}
