@@ -247,7 +247,7 @@ void ECComponentEditor::UpdateUi()
 
 QString ECComponentEditor::GetAttributeType(const QString &name) const
 {
-    AttributeEditorMap::iterator iter = attributeEditors_.find(name);
+    AttributeEditorMap::const_iterator iter = attributeEditors_.find(name);
     if (iter != attributeEditors_.end())
         return (*iter)->GetAttributeType();
     return QString();
