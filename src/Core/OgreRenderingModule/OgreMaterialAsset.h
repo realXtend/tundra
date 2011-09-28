@@ -45,11 +45,11 @@ public:
     std::vector<AssetReference> references_;
 
     /// Function that safely returns a technique, or 0 if did not exist
-    Ogre::Technique* GetTechnique(int techIndex);
+    Ogre::Technique* GetTechnique(int techIndex) const;
     /// Function that safely returns a pass, or 0 if did not exist
-    Ogre::Pass* GetPass(int techIndex, int passIndex);
+    Ogre::Pass* GetPass(int techIndex, int passIndex) const;
     /// Function that safely returns a texture unit, or 0 if did not exist
-    Ogre::TextureUnitState* GetTextureUnit(int techIndex, int passIndex, int texUnitIndex);
+    Ogre::TextureUnitState* GetTextureUnit(int techIndex, int passIndex, int texUnitIndex) const;
 
 public slots:
     /// Makes a clone of this asset.
@@ -60,8 +60,9 @@ public slots:
     /// Copy content from another OgreMaterialAsset using Ogre internal functions, without having to serialize/deserialize
     void CopyContent(AssetPtr source);
     
-    /// Set a material attribute using a key-value format, where key is "t<x> p<y> tu<z> paramname", to access technique, pass and
-    /// texture unit specific attributes. These can also be omitted to affect all techniques, passes or units as applicable.
+    /// Set a material attribute using a key-value format.
+    /** Format: key is "t<x> p<y> tu<z> paramname", to access technique, pass and texture unit specific attributes.
+        These can also be omitted to affect all techniques, passes or units as applicable. */
     void SetAttribute(const QString& key, const QString& value);
 
     /// Return number of material techniques. Returns -1 if the material is unloaded
@@ -87,33 +88,63 @@ public slots:
     bool RemovePass(int techIndex, int passIndex);
     /// Remove a technique. Returns true if successful. Note: technique indices will be adjusted so that they are continuous
     bool RemoveTechnique(int techIndex);
-    
+
     /// Set texture in a texture unit. Return true if successful.
     bool SetTexture(int techIndex, int passIndex, int texUnitIndex, const QString& assetRef);
+    QString Texture(int techIndex, int passIndex, int texUnitIndex) const;
+
     /// Set vertex shader of the pass. Depending on Ogre, this may cause any nasty things to happen. Return true if did not cause an Ogre exception
     bool SetVertexShader(int techIndex, int passIndex, const QString& vertexShaderName);
+    QString VertexShader(int techIndex, int passIndex) const;
+
     /// Set pixel shader of the pass. Depending on Ogre, this may cause any nasty things to happen. Return true if did not cause an Ogre exception
     bool SetPixelShader(int techIndex, int passIndex, const QString& pixelShaderName);
+    QString PixelShader(int techIndex, int passIndex) const;
+
     /// Enable or disable lighting in a pass
     bool SetLighting(int techIndex, int passIndex, bool enable);
+    bool IsLightingEnabled(int techIndex, int passIndex) const;
+
     /// Set diffuse color of a pass. Return true if successful.
     bool SetDiffuseColor(int techIndex, int passIndex, const Color& color);
+    Color DiffuseColor(int techIndex, int passIndex) const;
+
     /// Set ambient color of a pass
     bool SetAmbientColor(int techIndex, int passIndex, const Color& color);
+    Color AmbientColor(int techIndex, int passIndex) const;
+
     /// Set specular color of a pass
     bool SetSpecularColor(int techIndex, int passIndex, const Color& color);
+    Color SpecularColor(int techIndex, int passIndex) const;
+
     /// Set emissive color of a pass
     bool SetEmissiveColor(int techIndex, int passIndex, const Color& color);
+    Color EmissiveColor(int techIndex, int passIndex) const;
+
     /// Set scene blend mode of a pass
+    /** See Ogre::SceneBlendType for @c blendMode */
     bool SetSceneBlend(int techIndex, int passIndex, unsigned blendMode);
+    /** See Ogre::SceneBlendFactor for @c srcFactor and @c dstFactor. */
+    bool SetSceneBlend(int techIndex, int passIndex, unsigned srcFactor, unsigned dstFactor);
+    unsigned SourceSceneBlendFactor(int techIndex, int passIndex) const;
+    unsigned DestinationSceneBlendFactor(int techIndex, int passIndex) const;
+
     /// Set polygon mode of a pass
+    /** See Ogre::PolygonMode for @c polygonMode */
     bool SetPolygonMode(int techIndex, int passIndex, unsigned polygonMode);
+    unsigned PolygonMode(int techIndex, int passIndex) const;
+
     /// Set depth check on/off
     bool SetDepthCheck(int techIndex, int passIndex, bool enable);
+    bool IsDepthCheckEnabled(int techIndex, int passIndex) const;
+
     /// Set depth write on/off
     bool SetDepthWrite(int techIndex, int passIndex, bool enable);
+    bool IsDepthWriteEnabled(int techIndex, int passIndex) const;
+
     /// Set constant depth bias
     bool SetDepthBias(int techIndex, int passIndex, float bias);
+    float DepthBias(int techIndex, int passIndex) const;
 
 private slots:
     /// Asset transfer (for texture apply operation) succeeded
