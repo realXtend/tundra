@@ -610,7 +610,7 @@ void OgreMaterialAsset::SetAttribute(const QString& key, const QString& value)
     }
 }
 
-Ogre::Technique* OgreMaterialAsset::GetTechnique(int techIndex)
+Ogre::Technique* OgreMaterialAsset::GetTechnique(int techIndex) const
 {
     if (ogreMaterial.isNull())
         return 0;
@@ -619,7 +619,7 @@ Ogre::Technique* OgreMaterialAsset::GetTechnique(int techIndex)
     return ogreMaterial->getTechnique(techIndex);
 }
 
-Ogre::Pass* OgreMaterialAsset::GetPass(int techIndex, int passIndex)
+Ogre::Pass* OgreMaterialAsset::GetPass(int techIndex, int passIndex) const
 {
     Ogre::Technique* tech = GetTechnique(techIndex);
     if (!tech)
@@ -629,7 +629,7 @@ Ogre::Pass* OgreMaterialAsset::GetPass(int techIndex, int passIndex)
     return tech->getPass(passIndex);
 }
 
-Ogre::TextureUnitState* OgreMaterialAsset::GetTextureUnit(int techIndex, int passIndex, int texUnitIndex)
+Ogre::TextureUnitState* OgreMaterialAsset::GetTextureUnit(int techIndex, int passIndex, int texUnitIndex) const
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
@@ -875,6 +875,18 @@ bool OgreMaterialAsset::SetTexture(int techIndex, int passIndex, int texUnitInde
     return true;
 }
 
+QString OgreMaterialAsset::Texture(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::Texture::VertexShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return "";
+    }
+
+    return texUnit->getName().c_str(); ///< Check that this is the right getter.
+}
+
 bool OgreMaterialAsset::SetVertexShader(int techIndex, int passIndex, const QString& vertexShaderName)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
@@ -889,6 +901,17 @@ bool OgreMaterialAsset::SetVertexShader(int techIndex, int passIndex, const QStr
     {
         return false;
     }
+}
+
+QString OgreMaterialAsset::VertexShader(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::VertexShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return "";
+    }
+    return pass->getVertexProgramName().c_str();
 }
 
 bool OgreMaterialAsset::SetPixelShader(int techIndex, int passIndex, const QString& pixelShaderName)
@@ -907,6 +930,18 @@ bool OgreMaterialAsset::SetPixelShader(int techIndex, int passIndex, const QStri
     }
 }
 
+QString OgreMaterialAsset::PixelShader(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::PixelShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return "";
+    }
+
+    return pass->getFragmentProgramName().c_str();
+}
+
 bool OgreMaterialAsset::SetLighting(int techIndex, int passIndex, bool enable)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
@@ -914,6 +949,18 @@ bool OgreMaterialAsset::SetLighting(int techIndex, int passIndex, bool enable)
         return false;
     pass->setLightingEnabled(enable);
     return true;
+}
+
+bool OgreMaterialAsset::IsLightingEnabled(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::IsLightingEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return false;
+    }
+
+    return pass->getLightingEnabled();
 }
 
 bool OgreMaterialAsset::SetDiffuseColor(int techIndex, int passIndex, const Color& color)
@@ -925,6 +972,18 @@ bool OgreMaterialAsset::SetDiffuseColor(int techIndex, int passIndex, const Colo
     return true;
 }
 
+Color OgreMaterialAsset::DiffuseColor(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::DiffuseColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return Color();
+    }
+
+    return pass->getDiffuse();
+}
+
 bool OgreMaterialAsset::SetAmbientColor(int techIndex, int passIndex, const Color& color)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
@@ -932,6 +991,18 @@ bool OgreMaterialAsset::SetAmbientColor(int techIndex, int passIndex, const Colo
         return false;
     pass->setAmbient(color);
     return true;
+}
+
+Color OgreMaterialAsset::AmbientColor(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::AmbientColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return Color();
+    }
+
+    return pass->getAmbient();
 }
 
 bool OgreMaterialAsset::SetSpecularColor(int techIndex, int passIndex, const Color& color)
@@ -943,6 +1014,18 @@ bool OgreMaterialAsset::SetSpecularColor(int techIndex, int passIndex, const Col
     return true;
 }
 
+Color OgreMaterialAsset::SpecularColor(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::SpecularColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return Color();
+    }
+
+    return pass->getSpecular();
+}
+
 bool OgreMaterialAsset::SetEmissiveColor(int techIndex, int passIndex, const Color& color)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
@@ -950,6 +1033,18 @@ bool OgreMaterialAsset::SetEmissiveColor(int techIndex, int passIndex, const Col
         return false;
     pass->setSelfIllumination(color);
     return true;
+}
+
+Color OgreMaterialAsset::EmissiveColor(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::EmissiveColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return Color();
+    }
+
+    return pass->getSelfIllumination();
 }
 
 bool OgreMaterialAsset::SetSceneBlend(int techIndex, int passIndex, unsigned blendMode)
@@ -961,6 +1056,39 @@ bool OgreMaterialAsset::SetSceneBlend(int techIndex, int passIndex, unsigned ble
     return true;
 }
 
+bool OgreMaterialAsset::SetSceneBlend(int techIndex, int passIndex, unsigned srcFactor, unsigned dstFactor)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setSceneBlending((Ogre::SceneBlendFactor)srcFactor, (Ogre::SceneBlendFactor)dstFactor);
+    return true;
+}
+
+unsigned OgreMaterialAsset::SourceSceneBlendFactor(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::SourceSceneBlendFactor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return 0;
+    }
+
+    return pass->getSourceBlendFactor();
+}
+
+unsigned OgreMaterialAsset::DestinationSceneBlendFactor(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::DestinationSceneBlendFactor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return 0;
+    }
+
+    return pass->getDestBlendFactor();
+}
+
 bool OgreMaterialAsset::SetPolygonMode(int techIndex, int passIndex, unsigned polygonMode)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
@@ -968,6 +1096,18 @@ bool OgreMaterialAsset::SetPolygonMode(int techIndex, int passIndex, unsigned po
         return false;
     pass->setPolygonMode((Ogre::PolygonMode)polygonMode);
     return true;
+}
+
+unsigned OgreMaterialAsset::PolygonMode(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::PolygonMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return 0;
+    }
+
+    return pass->getPolygonMode();
 }
 
 bool OgreMaterialAsset::SetDepthCheck(int techIndex, int passIndex, bool enable)
@@ -979,6 +1119,18 @@ bool OgreMaterialAsset::SetDepthCheck(int techIndex, int passIndex, bool enable)
     return true;
 }
 
+bool OgreMaterialAsset::IsDepthCheckEnabled(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::IsDepthCheckEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return false;
+    }
+
+    return pass->getDepthCheckEnabled();
+}
+
 bool OgreMaterialAsset::SetDepthWrite(int techIndex, int passIndex, bool enable)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
@@ -986,6 +1138,18 @@ bool OgreMaterialAsset::SetDepthWrite(int techIndex, int passIndex, bool enable)
         return false;
     pass->setDepthWriteEnabled(enable);
     return true;
+}
+
+bool OgreMaterialAsset::IsDepthWriteEnabled(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::IsDepthWriteEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return false;
+    }
+
+    return pass->getDepthWriteEnabled();
 }
 
 bool OgreMaterialAsset::SetDepthBias(int techIndex, int passIndex, float bias)
@@ -997,6 +1161,17 @@ bool OgreMaterialAsset::SetDepthBias(int techIndex, int passIndex, float bias)
     return true;
 }
 
+float OgreMaterialAsset::DepthBias(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::DepthBias: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return false;
+    }
+
+    return false;
+}
 
 bool OgreMaterialAsset::SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal)
 {
