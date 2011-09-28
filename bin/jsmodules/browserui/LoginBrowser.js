@@ -42,6 +42,10 @@ var BrowserManager = Class.extend
         this.browser = ui.LoadFromFile(uiBase + "LoginWebWidget.ui", false);
         this.browser.windowFlags = Qt.Widget;
         
+        var styleSheet = this.browser.styleSheet;
+        styleSheet = styleSheet.replace(/APPINSTALLDIR/g, appInstallDir);
+        this.browser.styleSheet = styleSheet;
+        
         this.browserProxy = ui.AddWidgetToScene(this.browser, Qt.Widget);
         this.browserProxy.windowFlags = Qt.Widget;
         this.browserProxy.effect = 0;
@@ -179,10 +183,12 @@ var BrowserManager = Class.extend
         
         // Menu entry to show/hide browser ui
         var mainwin = ui.MainWindow();
-        var hideshowact = mainwin.AddMenuAction("Browser", "Toggle Browser Visibility");
-        hideshowact.triggered.connect(this, this.toggleVisible);
-        mainwin.AddMenuAction("Browser", "Manage Bookmarks").triggered.connect(this.bookmarks, this.bookmarks.manageBookmarks);
-        mainwin.AddMenuAction("Browser", "Settings").triggered.connect(this.settings, this.settings.onSettingsPressed);
+        this.hideshowact = mainwin.AddMenuAction("Browser", "Hide Browser Interface", new QIcon(uiBase + "web.png"));
+        this.hideshowact.checkable = true;
+        this.hideshowact.checked = false;
+        this.hideshowact.triggered.connect(this, this.toggleVisible);
+        mainwin.AddMenuAction("Browser", "Manage Bookmarks", new QIcon(uiBase + "bookmarks.png")).triggered.connect(this.bookmarks, this.bookmarks.manageBookmarks);
+        mainwin.AddMenuAction("Browser", "Settings", new QIcon(uiBase + "settings.png")).triggered.connect(this.settings, this.settings.onSettingsPressed);
         
         this.windowResized(ui.GraphicsScene().sceneRect);
     },
@@ -223,8 +229,13 @@ var BrowserManager = Class.extend
         this.browser.visible = visible;
     },
 
-    toggleVisible: function() {
+    toggleVisible: function() 
+    {
         p_.browser.visible = !p_.browser.visible;
+        if (p_.browser.visible)
+            this.hideshowact.text = "Hide Browser Interface";
+        else
+            this.hideshowact.text = "Show Browser Interface";
     },
 
     getCurrentWidget: function()
@@ -839,10 +850,14 @@ var BrowserSettings = Class.extend
         this.urlSection = "url";
         this.behaviourSection = "behaviour";
         
-        this.widget = ui.LoadFromFile(uiBase + "LoginWebSettings.ui", false);
+        this.widget = ui.LoadFromFile(uiBase + "LoginWebSettings.ui", false);        
         this.widget.setParent(ui.MainWindow());
         this.widget.setWindowFlags(Qt.Tool);
         this.widget.visible = false;
+        
+        var styleSheet = this.widget.styleSheet;
+        styleSheet = styleSheet.replace(/APPINSTALLDIR/g, appInstallDir);
+        this.widget.styleSheet = styleSheet;
 
         var prxyhst = findChild(this.widget, "proxyHostLineEdit");
         var prxyprt = findChild(this.widget, "proxyPortLineEdit");
@@ -1580,7 +1595,7 @@ var ClassicLogin = Class.extend
 		this.udpButton = findChild(this.widget, "radioButton_ProtocolUDP");
 
 		var logoLabel = findChild(this.widget, "label_ClientLogo");
-		logoLabel.pixmap = new QPixmap("./data/ui/images/realxtend_logo.png");
+		logoLabel.pixmap = new QPixmap(appInstallDir + "data/ui/images/realxtend_logo.png");
 
 		// Connections
 		this.loginButton.clicked.connect(this, this.loginPressed);

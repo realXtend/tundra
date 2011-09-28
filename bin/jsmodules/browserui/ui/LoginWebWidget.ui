@@ -27,7 +27,7 @@ QFrame#mainFrame {
 }
 
 QSplitter::handle {
-	image: url(&quot;./jsmodules/browserui/ui/splitter.png&quot;);
+	image: url(&quot;APPINSTALLDIRjsmodules/browserui/ui/splitter.png&quot;);
 }
 
 QProgressBar {
@@ -70,12 +70,12 @@ QTabBar::tab:selected {
 }
 
 QTabBar::close-button {
-	image: url(&quot;./jsmodules/browserui/ui/tab-close.png&quot;);
+	image: url(&quot;APPINSTALLDIRjsmodules/browserui/ui/tab-close.png&quot;);
 	subcontrol-position: right;
 }
 
 QTabBar::close-button:hover {
-	image: url(&quot;./jsmodules/browserui/ui/tab-close-hover.png&quot;);
+	image: url(&quot;APPINSTALLDIRjsmodules/browserui/ui/tab-close-hover.png&quot;);
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">

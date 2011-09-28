@@ -25,7 +25,7 @@ QLabel#titleLabel {
 }
 
 QLabel#titleIcon {
-	background-image: url(&quot;./jsmodules/browserui/ui/settings.png&quot;);
+	background-image: url(&quot;APPINSTALLDIRjsmodules/browserui/ui/settings.png&quot;);
 }
 
 QCheckBox#connectToHomePage {
