@@ -248,7 +248,7 @@ void TundraLogicModule::Uninitialize()
 void TundraLogicModule::Update(f64 frametime)
 {
     PROFILE(TundraLogicModule_Update);
-
+    ///\todo Remove this hack and find a better solution
     static bool checkDefaultServerStart = true;
     if (checkDefaultServerStart)
     {
@@ -260,7 +260,7 @@ void TundraLogicModule::Update(f64 frametime)
 
         checkDefaultServerStart = false;
     }
-
+    ///\todo Remove this hack and find a better solution
     static bool checkLoginStart = true;
     if (checkLoginStart)
     {
@@ -276,7 +276,7 @@ void TundraLogicModule::Update(f64 frametime)
 
         checkLoginStart = false;
     }
-
+    ///\todo Remove this hack and find a better solution
     static bool checkConnectStart = true;
     if (checkConnectStart)
     {
