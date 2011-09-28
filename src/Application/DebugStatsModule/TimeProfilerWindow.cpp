@@ -2255,6 +2255,7 @@ void TimeProfilerWindow::RefreshTextureProfilingData()
 }
 
 /// Derive the tree widget item to implement a custom sort predicate that sorts certain columns by numbers. 
+/// @cond PRIVATE
 class OgreAssetTreeWidgetItem : public QTreeWidgetItem
 {
 public:
@@ -2338,6 +2339,7 @@ public:
         }
     }
 };
+/// @endcond
 
 void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType)
 {

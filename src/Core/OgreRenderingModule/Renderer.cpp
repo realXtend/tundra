@@ -68,6 +68,7 @@ static const float MAX_FRAME_TIME = 0.1f;
 
 namespace OgreRenderer
 {
+    /// @cond PRIVATE
     class OgreLogListener : public Ogre::LogListener
     {
         bool hideBenignOgreMessages;
@@ -114,6 +115,7 @@ namespace OgreRenderer
             }
         }
     };
+    /// @endcond
 
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
