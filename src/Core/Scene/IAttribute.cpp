@@ -55,8 +55,10 @@ void IAttribute::Changed(AttributeChange::Type change)
         owner->EmitAttributeChanged(this, change);
 }
 
-// TYPEID TEMPLATE IMPLEMENTATIONS
+// Hide all template implementations from being included to public documentation
+/// @cond PRIVATE
 
+// TYPEID TEMPLATE IMPLEMENTATIONS
 template<> u32 Attribute<QString>::TypeId() const { return cAttributeString; }
 template<> u32 Attribute<int>::TypeId() const { return cAttributeInt; }
 template<> u32 Attribute<float>::TypeId() const { return cAttributeReal; }
@@ -1186,3 +1188,5 @@ template<> void Attribute<QPoint>::Interpolate(IAttribute* start, IAttribute* en
         Set(newValue, change);
     }
 }
+
+/// @endcond
