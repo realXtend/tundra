@@ -542,8 +542,10 @@ void JavascriptModule::LoadStartupScripts()
     QStringList startupScriptsToLoad = ParseStartupScriptConfig();
 
     // Create a script instance for each of the files, register services for it and try to run.
-    if (scripts.size() || startupScriptsToLoad.size())
-        LogInfo("Loading JS startup scripts...");
+    LogInfo(Name() + ": Loading startup scripts from /jsmodules/startup");
+    if (scripts.empty())
+        LogInfo(Name() + ": ** No scripts in /jsmodules/startup");
+
     for(int i = 0; i < scripts.size(); ++i)
     {
         QString startupScript = scripts[i];
@@ -551,7 +553,7 @@ void JavascriptModule::LoadStartupScripts()
         QString baseName = startupScript.mid(startupScript.lastIndexOf("/")+1);
         if (startupScriptsToLoad.contains(startupScript) || startupScriptsToLoad.contains(baseName))
         {
-            LogInfo("Loading JS script " + baseName + ".");
+            LogInfo(Name() + ": ** " + baseName);
             JavascriptInstance* jsInstance = new JavascriptInstance(startupScript, this);
             PrepareScriptInstance(jsInstance);
             startupScripts_.push_back(jsInstance);
@@ -562,6 +564,10 @@ void JavascriptModule::LoadStartupScripts()
             startupScriptsToLoad.removeAll(baseName);
         }
     }
+
+    LogInfo(Name() + ": Loading scripts from startup config");
+    if (startupScriptsToLoad.empty())
+        LogInfo(Name() + ": ** No scripts in config");
 
     // Allow relative paths from '/<install_dir>' and '/<install_dir>/jsmodules'  to start also
     QDir jsPluginsDir("./jsmodules");
@@ -578,11 +584,11 @@ void JavascriptModule::LoadStartupScripts()
             pathToFile = startupScript;
         else
         {
-            LogWarning("JavascriptModule::LoadStartupScripts: Could not find startup file for: " + startupScript);
+            LogWarning(Name() + "** Could not find startup file for: " + startupScript);
             continue;
         }
 
-        LogInfo("JavascriptModule::LoadStartupScripts: Loading " + startupScript);
+        LogInfo(Name() + ": ** " + startupScript);
         JavascriptInstance* jsInstance = new JavascriptInstance(pathToFile, this);
         PrepareScriptInstance(jsInstance);
         startupScripts_.push_back(jsInstance);

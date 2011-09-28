@@ -263,7 +263,10 @@ namespace PythonScript
             }
         }
 
-        LogInfo(Name() + ": Loading startup scripts");
+        LogInfo(Name() + ": Loading scripts from startup config");
+        if (pluginsToLoad.empty())
+            LogInfo(Name() + ": ** No scripts in config");
+
         QDir pythonPlugins(Application::InstallationDirectory() + "pyplugins");
         foreach(QString pluginPath, pluginsToLoad)
         {
@@ -276,8 +279,7 @@ namespace PythonScript
             else
                 LogWarning(Name() + ": ** Could not locate startup pyplugin '" + pluginPath +"'. Make sure your path is relative to /pyplugins folder.");
         }
-        if (pluginsToLoad.empty())
-            LogInfo(Name() + ": ** No python scripts in startup config");
+
     }
 
     void PythonScriptModule::StartPythonQt()
