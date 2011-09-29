@@ -554,34 +554,46 @@ QStringList Framework::CommandLineParameters(const QString &key) const
             QString quotedParam = startupOptions[i+1];
             if (quotedParam.startsWith("\""))
             {
-                for(int pi=i+2; pi+1 < startupOptions.size(); ++pi)
+                // End quote is in the argv
+                if (quotedParam.endsWith("\""))
                 {
-                    QString param = startupOptions[pi];
-
-                    // If a new -- key is found before an end quote we have a error.
-                    // Report and don't add anything to the return list as the param is malformed.
-                    if (param.startsWith("--"))
-                    {
-                        LogError("Could not find an end quote for '" + key + "' parameter: " + quotedParam);
-                        i = pi - 1; // Step one back so the main for loop will inspect this element next.
-                        break;
-                    }
-                    // We found the end of the quoted param.
                     // Remove quotes and append to the return list.
-                    else if (param.endsWith("\""))
+                    quotedParam = quotedParam.right(quotedParam.length() -1);
+                    quotedParam.chop(1);
+                    ret.append(quotedParam);
+                }
+                // End quote is not in the same argv
+                else
+                {
+                    for(int pi=i+2; pi+1 < startupOptions.size(); ++pi)
                     {
-                        i = pi; // Set the main for loops index so it will process the proper elements next.
-                        quotedParam += " " + param;
-                        if (quotedParam.startsWith("\""))
-                            quotedParam = quotedParam.right(quotedParam.length() -1);
-                        if (quotedParam.endsWith("\""))
-                            quotedParam.chop(1);
-                        ret.append(quotedParam);
-                        break;
+                        QString param = startupOptions[pi];
+
+                        // If a new -- key is found before an end quote we have a error.
+                        // Report and don't add anything to the return list as the param is malformed.
+                        if (param.startsWith("--"))
+                        {
+                            LogError("Could not find an end quote for '" + key + "' parameter: " + quotedParam);
+                            i = pi - 1; // Step one back so the main for loop will inspect this element next.
+                            break;
+                        }
+                        // We found the end of the quoted param.
+                        // Remove quotes and append to the return list.
+                        else if (param.endsWith("\""))
+                        {
+                            i = pi; // Set the main for loops index so it will process the proper elements next.
+                            quotedParam += " " + param;
+                            if (quotedParam.startsWith("\""))
+                                quotedParam = quotedParam.right(quotedParam.length() -1);
+                            if (quotedParam.endsWith("\""))
+                                quotedParam.chop(1);
+                            ret.append(quotedParam);
+                            break;
+                        }
+                        // Append to param.
+                        else
+                            quotedParam += " " + param;
                     }
-                    // Append to param.
-                    else
-                        quotedParam += " " + param;
                 }
             }
             // No quote start, push as is
