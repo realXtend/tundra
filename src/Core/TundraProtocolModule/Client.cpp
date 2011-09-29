@@ -11,6 +11,7 @@
 #include "SyncManager.h"
 #include "TundraMessages.h"
 
+#include "VersionInfo.h"
 #include "SceneAPI.h"
 #include "Scene.h"
 
@@ -128,6 +129,10 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         SetLoginProperty("protocol", p);
         SetLoginProperty("port", QString::number(port));
     }
+
+    SetLoginProperty("client-version", framework_->ApplicationVersion()->GetVersion());
+    SetLoginProperty("client-name", framework_->ApplicationVersion()->GetName());
+    SetLoginProperty("client-organization", framework_->ApplicationVersion()->GetOrganization());
 
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
