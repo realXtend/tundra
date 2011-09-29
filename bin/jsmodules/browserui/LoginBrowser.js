@@ -723,7 +723,7 @@ var BrowserManager = Class.extend
                         p_.tabs.currentIndex = 0;
                         p_.tabs.removeTab(index);
                     }
-                    p_.loginscreen.visible = false;
+                    p_.classiclogin.visible = false;
                     // Perform login
                     var qLoginUrl = new QUrl.fromUserInput(param);
                     client.Login(qLoginUrl);
