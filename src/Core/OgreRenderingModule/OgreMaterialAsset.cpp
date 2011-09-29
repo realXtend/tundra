@@ -1167,10 +1167,95 @@ float OgreMaterialAsset::DepthBias(int techIndex, int passIndex) const
     if (!pass)
     {
         LogError("OgreMaterialAsset::DepthBias: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return 0.f;
+    }
+
+    return pass->getDepthBiasConstant();
+}
+
+
+bool OgreMaterialAsset::SetHardwareCullingMode(int techIndex, int passIndex, unsigned mode)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setCullingMode((Ogre::CullingMode)mode);
+    return true;
+}
+
+unsigned OgreMaterialAsset::HardwareCullingMode(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::HardwareCullingMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
         return false;
     }
 
-    return false;
+    return pass->getCullingMode();
+}
+
+bool OgreMaterialAsset::SetShadingMode(int techIndex, int passIndex, unsigned mode)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setShadingMode((Ogre::ShadeOptions)mode);
+    return true;
+}
+
+unsigned OgreMaterialAsset::ShadingMode(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::ShadingMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return false;
+    }
+
+    return pass->getShadingMode();
+}
+
+bool OgreMaterialAsset::SetFillMode(int techIndex, int passIndex, unsigned mode)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setPolygonMode((Ogre::PolygonMode)mode);
+    return true;
+}
+
+unsigned OgreMaterialAsset::FillMode(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::FillMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return false;
+    }
+
+    return pass->getPolygonMode();
+}
+
+bool OgreMaterialAsset::SetColorWrite(int techIndex, int passIndex, bool enable)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setColourWriteEnabled(enable);
+    return true;
+}
+
+bool OgreMaterialAsset::IsColorWriteEnabled(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError("OgreMaterialAsset::IsColorWriteEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        return false;
+    }
+
+    return pass->getColourWriteEnabled();
 }
 
 bool OgreMaterialAsset::SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal)

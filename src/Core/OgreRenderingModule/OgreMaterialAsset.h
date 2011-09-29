@@ -146,6 +146,25 @@ public slots:
     bool SetDepthBias(int techIndex, int passIndex, float bias);
     float DepthBias(int techIndex, int passIndex) const;
 
+    /// Sets the hardware culling mode.
+    /** See Ogre::CullingMode for @c mode. */
+    bool SetHardwareCullingMode(int techIndex, int passIndex, unsigned mode);
+    unsigned HardwareCullingMode(int techIndex, int passIndex) const;
+
+    /// Sets the (polygon) shading mode.
+    /** See Ogre::ShadeOptions for @c mode. */
+    bool SetShadingMode(int techIndex, int passIndex, unsigned mode);
+    unsigned ShadingMode(int techIndex, int passIndex) const;
+
+    /// Sets the (polygon) fill mode.
+    /** See Ogre::PolygonMode for @c mode. */
+    bool SetFillMode(int techIndex, int passIndex, unsigned mode);
+    unsigned FillMode(int techIndex, int passIndex) const;
+
+    /// Sets color write on/off
+    bool SetColorWrite(int techIndex, int passIndex, bool enable);
+    bool IsColorWriteEnabled(int techIndex, int passIndex) const;
+
 private slots:
     /// Asset transfer (for texture apply operation) succeeded
     void OnTransferSucceeded(AssetPtr asset);
