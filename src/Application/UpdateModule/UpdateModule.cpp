@@ -23,7 +23,7 @@ UpdateModule::~UpdateModule()
 {
 }
 
-void UpdateModule::PostInitialize()
+void UpdateModule::Initialize()
 {
     if (!GetFramework()->IsHeadless())
         RunUpdater("/silent");
