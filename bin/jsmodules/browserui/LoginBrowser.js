@@ -174,6 +174,7 @@ var BrowserManager = Class.extend
         newTabButton.clicked.connect(this.onTabNewRequest);
         
         // Framework signals
+        client.LoginFailed.connect(this, this.onLoginFailed);
         client.Connected.connect(this, this.onConnected);
         client.Disconnected.connect(this, this.onDisconnected);
         ui.GraphicsScene().sceneRectChanged.connect(this, this.windowResized);
@@ -317,6 +318,16 @@ var BrowserManager = Class.extend
     {
         tab = new BrowserTab(p_.tabs, p_.tabCallBack, focusNewTab);
         tab.load(url);
+    },
+    
+    onLoginFailed: function(reason)
+    {
+        // @todo Make a bit more nicer, for now just a modal dialog to
+        // let the user know whats going on.
+        var failReason = reason;
+        if (failReason == null || failReason == "")
+            failReason = "Login failed with unknown reason";
+        QMessageBox.warning(ui.MainWindow(), "Login Failed", failReason);
     },
 
     onConnected: function()
