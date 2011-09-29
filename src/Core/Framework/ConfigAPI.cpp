@@ -38,7 +38,7 @@ void ConfigAPI::PrepareDataFolder(QString configFolder)
         }
     }
     configFolder_ = GuaranteeTrailingSlash(config.absolutePath());
-    LogInfo("Opened up Tundra config in folder \"" + configFolder_ + "\".");
+    LogInfo("* Config directory: " + configFolder_);
 }
 
 QString ConfigAPI::GetFilePath(const QString &file) const

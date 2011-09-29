@@ -23,7 +23,7 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     assetAPI(owner),
     cacheDirectory(GuaranteeTrailingSlash(QDir::fromNativeSeparators(assetCacheDirectory)))
 {
-    LogInfo("AssetCache: Using directory '" + cacheDirectory + "'");  
+    LogInfo("* Asset cache directory: " + cacheDirectory);  
 
     // Check that the main directory exists
     QDir assetDir(cacheDirectory);
