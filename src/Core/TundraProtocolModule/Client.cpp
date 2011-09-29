@@ -269,12 +269,16 @@ void Client::OnConnectionAttemptFailed()
     // Provide a reason why the connection failed.
     QString address = GetLoginProperty("address");
     QString port = GetLoginProperty("port");
+    QString protocol = GetLoginProperty("protocol");
+
     QString failReason = "Could not connect to host";
     if (!address.isEmpty())
     {
         failReason.append(" " + address);
         if (!port.isEmpty())
             failReason.append(":" + port);
+        if (!protocol.isEmpty())
+            failReason.append(" with " + protocol.toUpper());
     }
 
     SetLoginProperty("LoginFailed", failReason);
