@@ -175,7 +175,8 @@ void Client::DoLogout(bool fail)
     
     if (fail)
     {
-        emit LoginFailed();
+        QString failreason = GetLoginProperty("LoginFailed");
+        emit LoginFailed(failreason);
     }
     else // An user deliberately disconnected from the world, and not due to a connection error.
     {
@@ -265,6 +266,18 @@ kNet::MessageConnection* Client::GetConnection()
 
 void Client::OnConnectionAttemptFailed()
 {
+    // Provide a reason why the connection failed.
+    QString address = GetLoginProperty("address");
+    QString port = GetLoginProperty("port");
+    QString failReason = "Could not connect to host";
+    if (!address.isEmpty())
+    {
+        failReason.append(" " + address);
+        if (!port.isEmpty())
+            failReason.append(":" + port);
+    }
+
+    SetLoginProperty("LoginFailed", failReason);
     DoLogout(true);
 }
 
