@@ -163,6 +163,12 @@ Framework::Framework(int argc, char** argv) :
     {
         std::cout << "Supported command line arguments: " << std::endl;
         cmdLineDescs.Print();
+#ifdef WINDOWS_APP
+        // Pause if WINDOWS_APP is defined, otherwise user can never read the params
+        // as the console will disappear after the prints.
+        std::cout << std::endl;
+        system("pause");
+#endif
         Exit();
     }
     else
