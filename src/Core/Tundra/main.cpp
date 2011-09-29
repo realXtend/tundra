@@ -167,6 +167,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     unsigned cmdEnd = 0;
     bool cmd = false;
     bool quote = false;
+
+    // Inject executable name as Framework will expect it to be there.
+    // Otherwise the first param will be ignored (it assumes its the executable name).
+    // In WinMain() its not included in the 'lpCmdLine' param.
+    arguments.push_back("Tundra.exe");
+
     for(i = 0; i < cmdLine.length(); ++i)
     {
         if (cmdLine[i] == '\"')
