@@ -1,0 +1,5 @@
+[atrpms]
+name=RHEL 6 - x86_64 - ATrpms
+baseurl=http://dl.atrpms.net/el$releasever-x86_64/atrpms/stable
+gpgkey=http://ATrpms.net/RPM-GPG-KEY.atrpms
+gpgcheck=1

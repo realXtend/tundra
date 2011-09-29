@@ -35,26 +35,48 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
-private_ogre=false
+private_ogre=true
 
 if [ x$private_ogre != xtrue ]; then
             more="$more ogre-devel"
 fi
 
-yum localinstall -y --nogpgcheck http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
+yum install -y wget
+
+if test -f /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6; then
+    echo "Additional repos exists"
+else
+    wget http://packages.sw.be/rpmforge-release/rpmforge-release-0.5.2-2.el6.rf.x86_64.rpm
+    wget http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-5.noarch.rpm
+    #rpm --import http://packages.atrpms.net/RPM-GPG-KEY.atrpms
+    wget http://packages.atrpms.net/RPM-GPG-KEY.atrpms
+    wget http://apt.sw.be/RPM-GPG-KEY.dag.txt
+    wget http://fedoraproject.org/static/0608B895.txt
+    rpm --import RPM-GPG-KEY.atrpms    
+    rpm --import RPM-GPG-KEY.dag.txt
+    rpm --import 0608B895.txt
+    cp atrpms.repo /etc/yum.repos.d/
+    rpm -K rpmforge-release-0.5.2-2.el6.rf.*.rpm
+    yum localinstall -y rpmforge-release-0.5.2-2.el6.rf.*.rpm
+    yum localinstall -y epel-release-6-5.noarch.rpm
+fi
 
 yum groupinstall -y "Development Tools"
 yum install -y scons libogg-devel python-devel libvorbis-devel openjpeg-devel \
-libcurl-devel expat-devel phonon-devel boost-devel poco-devel \
-pygtk2-devel dbus-devel ccache qt-devel telepathy-farsight-devel libnice-devel \
-bison flex libxml2-devel ois-devel cmake freealut-devel liboil-devel pango-devel \
-wget qt qt4 mercurial unzip libxslt qtscriptbindings freeglut-devel Cg libXaw-devel freetype-devel \
-ois-devel doxygen cppunit-devel zziplib-devel libXrandr-devel freeimage-devel $more\
+libcurl-devel expat-devel boost-devel poco-devel \
+pygtk2-devel dbus-devel ccache qt-devel libnice-devel \
+bison flex libxml2-devel cmake freealut-devel liboil-devel pango-devel \
+qt qt4 mercurial unzip libxslt freeglut-devel Cg libXaw-devel freetype-devel \
+doxygen cppunit-devel zziplib-devel libXrandr-devel freeimage-devel telepathy-glib \
+pcre-devel qtwebkit-devel dbus-glib-devel telepathy-glib-devel $more\
+
+ yum localinstall -y --nogpgcheck qt4.6-scriptgenerator-0.0-el6.x86_64.rpm
+ yum localinstall -y --nogpgcheck Cg-3.0_February2011_x86_64.rpm
 
 if test -f /usr/bin/qmake; then
 	echo qmake exists
 else
-	ln -s /usr/bin/qmake-qt4 /usr/bin/qmake
+	 ln -s /usr/bin/qmake-qt4 /usr/bin/qmake
 fi
 
 function build-regular {
@@ -133,6 +155,42 @@ if [ x$private_ogre = xtrue ]; then
     fi
 fi
 
+what=ois_v1-3
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    cd $build
+    rm -rf $what
+    test -f $tarballs/$what.tar.gz || wget -P $tarballs http://sourceforge.net/projects/wgois/files/Source%20Release/1.3/$what.tar.gz
+    tar zxf $tarballs/$what.tar.gz
+    cd ois-v1-3
+    chmod 755 bootstrap
+    ./bootstrap
+    ./configure --prefix=$prefix
+    make -j $nprocs
+    make install
+    touch $tags/$what-done
+fi
+
+what=CEGUI-0.7.5
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    cd $build
+    rm -rf $what
+    test -f $tarballs/$what.tar.gz || wget -P $tarballs http://sourceforge.net/projects/crayzedsgui/files/CEGUI%20Mk-2/0.7.5/$what.tar.gz
+    tar zxf $tarballs/$what.tar.gz
+    cd $what
+    export OIS_CFLAGS="-I$prefix/include/OIS -I$prefix/include"
+    export OIS_LIBS="-L$prefix/lib -lOIS" 
+    export Ogre_CFLAGS="-pthread -I$prefix/include -I$prefix/include/OGRE"
+    export Ogre_LIBS="-L$prefix/lib -lOgreMain -lpthread" 
+    ./configure --prefix=$prefix
+    make -j $nprocs
+    make install
+    touch $tags/$what-done
+fi
+
 what=Caelum
 if test -f $tags/$what-done; then
     echo $what is done
@@ -144,6 +202,8 @@ else
     test -f $zip || wget -O $zip http://ovh.dl.sourceforge.net/project/caelum/caelum/0.5/$pkgbase.zip
     unzip $zip
     cd $pkgbase
+    sed -e "s/if ceguiDemoEnv:/#if ceguiDemoEnv/" -e "s/ceguiDemoEnv.Program/#ceguiDemoEnv.Program/" SConstruct > x
+    mv x SConstruct
     scons extra_ccflags="-fPIC -DPIC"
     mkdir -p $prefix/etc/OGRE
     cp plugins.cfg $prefix/etc/OGRE/
@@ -211,20 +271,6 @@ else
 	touch $tags/$what-done
 fi
 
-what=Assimp
-if test -f $tags/$what-done; then
-	echo $what is done
-else
-	cd $build
-	rm -fr $what
-	git clone git://github.com/assimp/assimp.git $what
-	cd $what
-	cmake -DCMAKE_INSTALL_PREFIX=$prefix .
-	make -j $nprocs
-	make install
-	touch $tags/$what-done
-fi
-
 cd $build
 what=xmlrpc-epi
 if [ test -f /usr/local/lib/libxmlrpc-epi-0.0.3.so ]; then
@@ -238,14 +284,14 @@ else
 	    cd $pkgbase
 	    echo yes | ./configure --disable-debug --disable-static
 	    make -j $nprocs
-	    make install
+	     make install
 	    cp /usr/local/lib/libxmlrpc-epi* $prefix/lib/
 	    touch $tags/$what-done
 fi
 
 
 
-ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
+ ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
 
     build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
     build-regular http://gstreamer.freedesktop.org/src/gstreamer/ gstreamer 0.10.25
@@ -253,7 +299,7 @@ ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
     build-regular http://gstreamer.freedesktop.org/src/gst-python/ gst-python 0.10.17
     build-regular http://farsight.freedesktop.org/releases/farsight2/ farsight2 0.0.17
     build-regular http://farsight.freedesktop.org/releases/obsolete/gst-plugins-farsight/ gst-plugins-farsight 0.12.11
-    build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.13.0
+    #build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.13.0
     build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.13
     build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.1
     build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=realXtend Tundra server
+GenericName=Virtual worlds server
+Comment=Browse 3D virtual worlds
+Exec=bash /opt/realXtend/run-server.sh
+Terminal=false
+Type=Application
+Icon=/usr/share/pixmaps/tundra.png
+Categories=Network;
+StartupNotify=false

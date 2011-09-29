@@ -200,6 +200,36 @@ else
     touch $tags/$what-done
 fi
 
+what=quazip
+ver=0.2.3
+if test -f $tags/$what-done; then
+	echo $what is done
+else
+	cd $build
+	rm -rf $what-$ver
+    test -f $tarballs/$what-$ver.tgz || wget -P $tarballs http://sourceforge.net/projects/quazip/files/quazip/$ver/$what-$ver.tar.gz
+	tar zxf $tarballs/$what-$ver.tar.gz
+	cd $what-$ver/$what
+	qmake
+	make -j4
+	cp *.so* $prefix/lib/
+	cp *.h $prefix/include/
+	touch $tags/$what-done
+fi
+
+what=Assimp
+if test -f $tags/$what-done; then
+	echo $what is done
+else
+	cd $build
+	rm -fr $what
+	git clone git://github.com/assimp/assimp.git $what
+	cd $what
+	cmake -DCMAKE_INSTALL_PREFIX=$prefix .
+	make -j $nprocs
+	make install
+	touch $tags/$what-done
+fi
 
 
 ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
