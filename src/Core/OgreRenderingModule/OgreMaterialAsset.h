@@ -172,6 +172,7 @@ private slots:
     void OnTransferFailed(IAssetTransfer *transfer, QString reason);
     
 private:
+    bool CreateOgreMaterial();
     bool SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal);
     bool SetTechniqueAttribute(Ogre::Technique* tech, int techIndex, const QString& attr, const QString& val, const QString& origVal);
     bool SetPassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr, const QString& val, const QString& origVal);

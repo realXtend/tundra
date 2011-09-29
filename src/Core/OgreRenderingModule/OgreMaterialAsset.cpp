@@ -414,18 +414,8 @@ void OgreMaterialAsset::CopyContent(AssetPtr source)
     
     // If we are unloaded, create an empty material first
     if (ogreMaterial.isNull())
-    {
-        try
-        {
-            std::string sanitatedName = AssetAPI::SanitateAssetRef(Name()).toStdString();
-            ogreMaterial = Ogre::MaterialManager::getSingleton().create(sanitatedName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        }
-        catch (Ogre::Exception& e)
-        {
-            LogError("CopyContent: Failed to create empty material " + Name().toStdString() + ", reason: " + e.what());
+        if (!CreateOgreMaterial())
             return;
-        }
-    }
     
     Ogre::Material* sourceOgreMat = sourceMat->ogreMaterial.get();
     
@@ -672,10 +662,30 @@ bool OgreMaterialAsset::HasPass(int techIndex, int passIndex)
     return GetPass(techIndex, passIndex) != 0;
 }
 
+bool OgreMaterialAsset::CreateOgreMaterial()
+{
+    if (!ogreMaterial.isNull())
+        return true;
+    
+    try
+    {
+        std::string sanitatedName = AssetAPI::SanitateAssetRef(Name()).toStdString();
+        ogreMaterial = Ogre::MaterialManager::getSingleton().create(sanitatedName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    }
+    catch (Ogre::Exception& e)
+    {
+        LogError("OgreMaterialAsset: Failed to create empty material " + Name().toStdString() + ", reason: " + e.what());
+        return false;
+    }
+    
+    return true;
+}
+
 int OgreMaterialAsset::CreateTechnique()
 {
     if (ogreMaterial.isNull())
-        return -1;
+        if (!CreateOgreMaterial())
+            return -1;
     
     try
     {
@@ -698,6 +708,10 @@ int OgreMaterialAsset::CreateTechnique()
 
 int OgreMaterialAsset::CreatePass(int techIndex)
 {
+    if (ogreMaterial.isNull())
+        if (!CreateOgreMaterial())
+            return -1;
+    
     Ogre::Technique* tech = GetTechnique(techIndex);
     if (!tech)
         return -1;
@@ -722,6 +736,10 @@ int OgreMaterialAsset::CreatePass(int techIndex)
 
 int OgreMaterialAsset::CreateTextureUnit(int techIndex, int passIndex)
 {
+    if (ogreMaterial.isNull())
+        if (!CreateOgreMaterial())
+            return -1;
+    
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return -1;
