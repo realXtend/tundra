@@ -1276,6 +1276,186 @@ bool OgreMaterialAsset::IsColorWriteEnabled(int techIndex, int passIndex) const
     return pass->getColourWriteEnabled();
 }
 
+bool OgreMaterialAsset::SetTextureCoordSet(int techIndex, int passIndex, int texUnitIndex, uint value)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setTextureCoordSet(value);
+    return true;
+}
+
+uint OgreMaterialAsset::TextureCoordSet(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::TextureCoordSet: Could not find texture unit " +  QString::number(techIndex) +
+            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        return 0;
+    }
+    return texUnit->getTextureCoordSet();
+}
+
+bool OgreMaterialAsset::SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned mode)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setTextureAddressingMode((Ogre::TextureUnitState::TextureAddressingMode)mode);
+    return true;
+}
+
+bool OgreMaterialAsset::SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned uMode, unsigned vMode, unsigned wMode)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setTextureAddressingMode(
+        (Ogre::TextureUnitState::TextureAddressingMode)uMode,
+        (Ogre::TextureUnitState::TextureAddressingMode)vMode,
+        (Ogre::TextureUnitState::TextureAddressingMode)wMode);
+    return true;
+}
+
+unsigned OgreMaterialAsset::TextureAddressingModeU(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::TextureAddressingMode: Could not find texture unit " +  QString::number(techIndex) +
+            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        return 0;
+    }
+    return texUnit->getTextureAddressingMode().u;
+}
+
+unsigned OgreMaterialAsset::TextureAddressingModeV(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::TextureAddressingMode: Could not find texture unit " +  QString::number(techIndex) +
+            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        return 0;
+    }
+    return texUnit->getTextureAddressingMode().v;
+}
+
+unsigned OgreMaterialAsset::TextureAddressingModeW(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::TextureAddressingMode: Could not find texture unit " +  QString::number(techIndex) +
+            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        return 0;
+    }
+    return texUnit->getTextureAddressingMode().w;
+}
+
+bool OgreMaterialAsset::SetScrollAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, float vSpeed)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setScrollAnimation(uSpeed, vSpeed);
+    return true;
+}
+
+float OgreMaterialAsset::ScrollAnimationU(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::ScrollAnimationU: Could not find texture unit " +  QString::number(techIndex) +
+            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        return 0.f;
+    }
+
+    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_UVSCROLL);
+    if (it == effects.end())
+    {
+         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
+         return 0.f;
+    }
+
+    return (*it).second.arg1;
+}
+
+float OgreMaterialAsset::ScrollAnimationV(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::ScrollAnimationV: Could not find texture unit " +  QString::number(techIndex) +
+            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        return 0.f;
+    }
+
+    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_UVSCROLL);
+    if (it == effects.end())
+    {
+         LogError("OgreMaterialAsset::ScrollAnimationV: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
+         return 0.f;
+    }
+
+    return (*it).second.arg2;
+}
+
+bool OgreMaterialAsset::SetRotateAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, int vSpeed)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setScrollAnimation(uSpeed, vSpeed);
+    return true;
+}
+
+float OgreMaterialAsset::RotateAnimationU(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::RotateAnimationX: Could not find texture unit " +  QString::number(techIndex) +
+            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        return 0.f;
+    }
+
+    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_ROTATE);
+    if (it == effects.end())
+    {
+         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
+         return 0.f;
+    }
+
+    return (*it).second.arg1;
+}
+
+float OgreMaterialAsset::RotateAnimationV(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError("OgreMaterialAsset::RotateAnimationY: Could not find texture unit " +  QString::number(techIndex) +
+            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        return 0.f;
+    }
+
+    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_ROTATE);
+    if (it == effects.end())
+    {
+         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
+         return 0.f;
+    }
+
+    return (*it).second.arg2;
+}
+
 bool OgreMaterialAsset::SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal)
 {
     if (attr == "receive_shadows")

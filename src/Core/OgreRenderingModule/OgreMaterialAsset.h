@@ -165,12 +165,37 @@ public slots:
     bool SetColorWrite(int techIndex, int passIndex, bool enable);
     bool IsColorWriteEnabled(int techIndex, int passIndex) const;
 
+    /// Sets texture coordinate set for texture layer.
+    bool SetTextureCoordSet(int techIndex, int passIndex, int texUnitIndex, uint value);
+    uint TextureCoordSet(int techIndex, int passIndex, int texUnitIndex) const;
+
+    /// Sets the (polygon) fill mode.
+    /** Sets the same mode for u, v and w.
+        See Ogre::TextureUnitState::TextureAddressingMode for @c mode. */
+    bool SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned mode);
+    /// This is an overloaded function. 
+    /** Specifies the mode for u, v and w separately */
+    bool SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned uMode, unsigned vMode, unsigned wMode);
+    unsigned TextureAddressingModeU(int techIndex, int passIndex, int texUnitIndex) const;
+    unsigned TextureAddressingModeV(int techIndex, int passIndex, int texUnitIndex) const;
+    unsigned TextureAddressingModeW(int techIndex, int passIndex, int texUnitIndex) const;
+
+    /// Sets animated scroll for texture layer.
+    bool SetScrollAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, float vSpeed);
+    float ScrollAnimationU(int techIndex, int passIndex, int texUnitIndex) const;
+    float ScrollAnimationV(int techIndex, int passIndex, int texUnitIndex) const;
+
+    /// Sets animated rotation for texture layer.
+    bool SetRotateAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, int vSpeed);
+    float RotateAnimationU(int techIndex, int passIndex, int texUnitIndex) const;
+    float RotateAnimationV(int techIndex, int passIndex, int texUnitIndex) const;
+
 private slots:
     /// Asset transfer (for texture apply operation) succeeded
     void OnTransferSucceeded(AssetPtr asset);
     /// Asset transfer (for texture apply operation) failed
     void OnTransferFailed(IAssetTransfer *transfer, QString reason);
-    
+
 private:
     bool CreateOgreMaterial();
     bool SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal);
