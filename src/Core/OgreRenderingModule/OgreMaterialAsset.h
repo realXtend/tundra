@@ -186,9 +186,12 @@ public slots:
     float ScrollAnimationV(int techIndex, int passIndex, int texUnitIndex) const;
 
     /// Sets animated rotation for texture layer.
-    bool SetRotateAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, int vSpeed);
-    float RotateAnimationU(int techIndex, int passIndex, int texUnitIndex) const;
-    float RotateAnimationV(int techIndex, int passIndex, int texUnitIndex) const;
+    bool SetRotateAnimation(int techIndex, int passIndex, int texUnitIndex, float speed);
+    float RotateAnimation(int techIndex, int passIndex, int texUnitIndex) const;
+
+    /// Returns whether or not texture unit has specific effect.
+    /** See Ogre::TextureUnitState::TextureEffectType for @c effect. */
+    bool HasTextureEffect(int techIndex, int passIndex, int texUnitIndex, unsigned effect) const;
 
 private slots:
     /// Asset transfer (for texture apply operation) succeeded

@@ -898,7 +898,7 @@ QString OgreMaterialAsset::Texture(int techIndex, int passIndex, int texUnitInde
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::Texture::VertexShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::Texture: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return "";
     }
 
@@ -926,7 +926,7 @@ QString OgreMaterialAsset::VertexShader(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::VertexShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::VertexShader: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return "";
     }
     return pass->getVertexProgramName().c_str();
@@ -953,7 +953,7 @@ QString OgreMaterialAsset::PixelShader(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::PixelShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::PixelShader: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return "";
     }
 
@@ -974,7 +974,7 @@ bool OgreMaterialAsset::IsLightingEnabled(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::IsLightingEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::IsLightingEnabled: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -995,7 +995,7 @@ Color OgreMaterialAsset::DiffuseColor(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::DiffuseColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::DiffuseColor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return Color();
     }
 
@@ -1016,7 +1016,7 @@ Color OgreMaterialAsset::AmbientColor(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::AmbientColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::AmbientColor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return Color();
     }
 
@@ -1037,7 +1037,7 @@ Color OgreMaterialAsset::SpecularColor(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::SpecularColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::SpecularColor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return Color();
     }
 
@@ -1058,7 +1058,7 @@ Color OgreMaterialAsset::EmissiveColor(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::EmissiveColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::EmissiveColor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return Color();
     }
 
@@ -1088,7 +1088,7 @@ unsigned OgreMaterialAsset::SourceSceneBlendFactor(int techIndex, int passIndex)
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::SourceSceneBlendFactor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::SourceSceneBlendFactor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return 0;
     }
 
@@ -1100,7 +1100,7 @@ unsigned OgreMaterialAsset::DestinationSceneBlendFactor(int techIndex, int passI
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::DestinationSceneBlendFactor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::DestinationSceneBlendFactor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return 0;
     }
 
@@ -1121,7 +1121,7 @@ unsigned OgreMaterialAsset::PolygonMode(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::PolygonMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::PolygonMode: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return 0;
     }
 
@@ -1142,7 +1142,7 @@ bool OgreMaterialAsset::IsDepthCheckEnabled(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::IsDepthCheckEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::IsDepthCheckEnabled: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -1163,7 +1163,7 @@ bool OgreMaterialAsset::IsDepthWriteEnabled(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::IsDepthWriteEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::IsDepthWriteEnabled: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -1184,7 +1184,7 @@ float OgreMaterialAsset::DepthBias(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::DepthBias: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+      LogError(QString("OgreMaterialAsset::DepthBias: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return 0.f;
     }
 
@@ -1206,7 +1206,7 @@ unsigned OgreMaterialAsset::HardwareCullingMode(int techIndex, int passIndex) co
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::HardwareCullingMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::HardwareCullingMode: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -1227,7 +1227,7 @@ unsigned OgreMaterialAsset::ShadingMode(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::ShadingMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::ShadingMode: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -1248,7 +1248,7 @@ unsigned OgreMaterialAsset::FillMode(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::FillMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::FillMode: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -1269,7 +1269,7 @@ bool OgreMaterialAsset::IsColorWriteEnabled(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::IsColorWriteEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::IsColorWriteEnabled: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -1290,8 +1290,7 @@ uint OgreMaterialAsset::TextureCoordSet(int techIndex, int passIndex, int texUni
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::TextureCoordSet: Could not find texture unit " +  QString::number(techIndex) +
-            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        LogError(QString("OgreMaterialAsset::TextureCoordSet: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
         return 0;
     }
     return texUnit->getTextureCoordSet();
@@ -1323,8 +1322,7 @@ unsigned OgreMaterialAsset::TextureAddressingModeU(int techIndex, int passIndex,
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::TextureAddressingMode: Could not find texture unit " +  QString::number(techIndex) +
-            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        LogError(QString("OgreMaterialAsset::TextureAddressingModeU: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
         return 0;
     }
     return texUnit->getTextureAddressingMode().u;
@@ -1335,8 +1333,7 @@ unsigned OgreMaterialAsset::TextureAddressingModeV(int techIndex, int passIndex,
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::TextureAddressingMode: Could not find texture unit " +  QString::number(techIndex) +
-            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        LogError(QString("OgreMaterialAsset::TextureAddressingModeV: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
         return 0;
     }
     return texUnit->getTextureAddressingMode().v;
@@ -1347,8 +1344,7 @@ unsigned OgreMaterialAsset::TextureAddressingModeW(int techIndex, int passIndex,
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::TextureAddressingMode: Could not find texture unit " +  QString::number(techIndex) +
-            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        LogError(QString("OgreMaterialAsset::TextureAddressingModeW: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
         return 0;
     }
     return texUnit->getTextureAddressingMode().w;
@@ -1368,13 +1364,12 @@ float OgreMaterialAsset::ScrollAnimationU(int techIndex, int passIndex, int texU
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::ScrollAnimationU: Could not find texture unit " +  QString::number(techIndex) +
-            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        LogError(QString("OgreMaterialAsset::ScrollAnimationU: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
         return 0.f;
     }
 
     const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
-    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_UVSCROLL);
+    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_USCROLL);
     if (it == effects.end())
     {
          LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
@@ -1389,38 +1384,36 @@ float OgreMaterialAsset::ScrollAnimationV(int techIndex, int passIndex, int texU
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::ScrollAnimationV: Could not find texture unit " +  QString::number(techIndex) +
-            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        LogError(QString("OgreMaterialAsset::ScrollAnimationV: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
         return 0.f;
     }
 
     const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
-    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_UVSCROLL);
+    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_VSCROLL);
     if (it == effects.end())
     {
          LogError("OgreMaterialAsset::ScrollAnimationV: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
          return 0.f;
     }
 
-    return (*it).second.arg2;
+    return (*it).second.arg1;
 }
 
-bool OgreMaterialAsset::SetRotateAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, int vSpeed)
+bool OgreMaterialAsset::SetRotateAnimation(int techIndex, int passIndex, int texUnitIndex, float speed)
 {
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
         return false;
-    texUnit->setScrollAnimation(uSpeed, vSpeed);
+    texUnit->setRotateAnimation(speed);
     return true;
 }
 
-float OgreMaterialAsset::RotateAnimationU(int techIndex, int passIndex, int texUnitIndex) const
+float OgreMaterialAsset::RotateAnimation(int techIndex, int passIndex, int texUnitIndex) const
 {
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::RotateAnimationX: Could not find texture unit " +  QString::number(techIndex) +
-            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
+        LogError(QString("OgreMaterialAsset::RotateAnimation: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
         return 0.f;
     }
 
@@ -1428,32 +1421,24 @@ float OgreMaterialAsset::RotateAnimationU(int techIndex, int passIndex, int texU
     Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_ROTATE);
     if (it == effects.end())
     {
-         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
+         LogError("OgreMaterialAsset::RotateAnimation: Could not find Ogre::TextureUnitState::ET_ROTATE from effects map.");
          return 0.f;
     }
 
     return (*it).second.arg1;
 }
 
-float OgreMaterialAsset::RotateAnimationV(int techIndex, int passIndex, int texUnitIndex) const
+bool OgreMaterialAsset::HasTextureEffect(int techIndex, int passIndex, int texUnitIndex, unsigned effect) const
 {
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::RotateAnimationY: Could not find texture unit " +  QString::number(techIndex) +
-            " pass " + QString::number(passIndex) + " texture unit " + QString::number(texUnitIndex) + ".");
-        return 0.f;
+        LogError(QString("OgreMaterialAsset::HasTextureEffect: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        false;
     }
-
-    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
-    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_ROTATE);
-    if (it == effects.end())
-    {
-         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
-         return 0.f;
-    }
-
-    return (*it).second.arg2;
+    Ogre::TextureUnitState::EffectMap map = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find((Ogre::TextureUnitState::TextureEffectType)effect);
+    return it != texUnit->getEffects().end();
 }
 
 bool OgreMaterialAsset::SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal)
