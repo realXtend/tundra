@@ -13,6 +13,7 @@
 #include <Windows.h>
 #endif
 #ifdef WINDOWS_APP
+#include <tchar.h>
 #include <io.h>
 #include <iostream>
 #include <fcntl.h>
@@ -124,11 +125,12 @@ int run(int argc, char **argv)
 }
 
 #if defined(_MSC_VER) && defined(WINDOWS_APP)
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPWSTR lpCmdLine, int /*nShowCmd*/)
 {
-    std::string cmdLine(lpCmdLine);
+    lpCmdLine = GetCommandLine();
+    std::wstring cmdLine(lpCmdLine);
     // If trying to run Windows GUI application in headless mode, we must set up the console in order to be able to proceed.
-    if (cmdLine.find("--headless") != std::string::npos)
+    if (cmdLine.find(__T("--headless")) != std::wstring::npos)
     {
         // Code below adapted from http://dslweb.nwnexus.com/~ast/dload/guicon.htm
         BOOL ret = AllocConsole();
@@ -161,7 +163,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // Parse the Windows command line.
-    std::vector<std::string> arguments;
+    std::vector<std::wstring> arguments;
     unsigned i;
     unsigned cmdStart = 0;
     unsigned cmdEnd = 0;
@@ -192,7 +194,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (cmd)
         arguments.push_back(cmdLine.substr(cmdStart, i-cmdStart));
 
-    std::vector<const char*> argv;
+    std::vector<const wchar_t*> argv;
     for(size_t i = 0; i < arguments.size(); ++i)
         argv.push_back(arguments[i].c_str());
     
