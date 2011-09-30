@@ -1,11 +1,13 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   OgreMaterialProperties.h
  *  @brief  Dynamically created QProperties for OGRE material scripts.
  */
 
 #pragma once
+
+/// @cond PRIVATE
 
 #include <boost/shared_ptr.hpp>
 
@@ -24,6 +26,13 @@ typedef QMap<QString, QVariant> PropertyMap;
 typedef QMap<QString, QVariant> TypeValuePair;
 typedef QMapIterator<QString, QVariant> PropertyMapIter;
 
+/// Gathers name-value map of shader parameters of Ogre material.
+/** @param matPtr Material to be inspected.
+    @return Property map QMap[QString(name), QVariant[QMap[QString(type), QVariant(value)]]]. */
+PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr);
+
+/// Dynamically created QProperties for OGRE material scripts.
+///\todo Reuse the code for applicable parts and delete this class.
 class OgreMaterialProperties : public QObject
 {
     Q_OBJECT
@@ -70,4 +79,4 @@ private:
     ///\todo Regression. Reimplement using the new Asset API. -jj.
 //    OgreRenderer::OgreMaterialResource *material_;
 };
-
+/// @endcond
