@@ -1,0 +1,65 @@
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   OgreMaterialEditor.h
+ *  @brief  Non-text high-level editing tool for OGRE material scripts.
+ */
+
+#pragma once
+
+#include "OgreAssetEditorModuleApi.h"
+#include "AssetFwd.h"
+
+#include <QWidget>
+
+class QTabWidget;
+
+class PropertyTableWidget;
+
+/// Non-text high-level editing tool for OGRE material scripts.
+class ASSET_EDITOR_MODULE_API OgreMaterialEditor : public QWidget
+{
+    Q_OBJECT
+
+public:
+    OgreMaterialEditor(const AssetPtr &materialAsset, Framework *fw, QWidget *parent = 0);
+    ~OgreMaterialEditor();
+
+    void SetMaterialAsset(const AssetPtr &scriptAsset);
+    void Populate();
+
+private:
+    Q_DISABLE_COPY(OgreMaterialEditor);
+    QTabWidget *tabWidget;
+    Framework *framework;
+    AssetWeakPtr asset;
+    PropertyTableWidget *shaderAttributeTable;
+
+private slots:
+    // Pass attribute setters
+    void OpenColorPicker();
+    void SetColor(const QColor &color);
+    void SetSrcBlendFactor(int);
+    void SetDstBlendFactor(int);
+    void SetDepthTest(int);
+    void SetDepthWrite(int);
+    void SetDepthBias(double);
+    void SetCullingMode(int);
+    void SetLighting(int);
+    void SetShadingMode(int);
+    void SetFillMode(int);
+    void SetColorWrite(int);
+    void SetShader(const QString &);
+    // TU attribute setters
+    void SetTexAssetRef();
+    void SetTexCoordSet(int);
+    void SetAddrMode(int);
+    void SetScrollAnimU(double);
+    void SetScrollAnimV(double);
+    void SetRotateAnim(double);
+
+    void PopulateShaderAttributes();
+
+    void OnAssetTransferSucceeded(AssetPtr asset);
+    void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
+};
