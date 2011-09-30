@@ -187,8 +187,8 @@ void mainPS(
 	
 	// Start with ambient color.
 #ifdef LIGHT_MAPPING	
-	float3 diffuseLightFactor = tex2D(lightMap, tex2).xyz;
-#else	
+	float3 diffuseLightFactor = tex2D(lightMap, tex2).xyz * lightMapFactor;
+#else
 	float3 diffuseLightFactor = ambientLight.xyz;
 #endif
 

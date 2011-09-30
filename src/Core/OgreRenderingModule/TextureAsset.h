@@ -41,7 +41,7 @@ public:
     ///\todo Add individual surface set option.
     /// @param data The new contents of the texture. If you only want to resize the texture, and not fill it
     ///     with any data at this time, you may pass in a null pointer here.
-    void SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic);
+    void SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic, bool renderTarget = false);
 
     /// Sets this texture to the given size and fills it with the given color value.
     void SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic);

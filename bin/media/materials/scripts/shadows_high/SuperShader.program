@@ -1194,6 +1194,9 @@ fragment_program rex/DiffShadowLightmapFP cg
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
         param_named invShadowmapSize float 0.000976562
+        
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
     }
 }
 
@@ -1245,6 +1248,9 @@ fragment_program rex/DiffNormalShadowLightmapFP cg
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
         param_named invShadowmapSize float 0.000976562
+        
+		// Light mapping parameters.
+		param_named lightMapFactor float 1        
     }
 }
 
@@ -1368,7 +1374,7 @@ vertex_program rex/DiffNormalLightmapVP cg
 		param_named_auto lightAtt1 light_attenuation 2
 
 		param_named_auto fogParams fog_params
-		param_named_auto fogColor fog_colour
+		param_named_auto fogColor fog_colour	
 	}
 }
 
@@ -1385,6 +1391,8 @@ fragment_program rex/DiffNormalLightmapFP cg
 
 		param_named_auto lightCol0 light_diffuse_colour 1
 		param_named_auto lightCol1 light_diffuse_colour 2
-
+		
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
 	}
 }

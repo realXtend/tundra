@@ -109,6 +109,8 @@ fragment_program WeightedBlendLightmapFS cg
 
 	default_params
 	{
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
 	}
 }
 
@@ -225,5 +227,7 @@ fragment_program WeightedBlendLightmapAlphamaskFS cg
 
 	default_params
 	{
+		// Light mapping parameters.
+		param_named lightMapFactor float 1	
 	}
 }

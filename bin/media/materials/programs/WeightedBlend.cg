@@ -73,6 +73,11 @@ void mainPS(float4 pos    : POSITION,
           float4 shadowTex2 : TEXCOORD5,
 #endif
 #endif
+
+#ifdef LIGHTMAP
+          uniform float lightMapFactor,
+#endif
+
           uniform float4 ambient,
           uniform sampler2D map1 : register(s0),
           uniform sampler2D map2 : register(s1),
@@ -145,7 +150,7 @@ void mainPS(float4 pos    : POSITION,
 
 
 #ifdef LIGHTMAP
-    light = tex2D(lightMap, tex1).rgb;
+    light = tex2D(lightMap, tex1).rgb * lightMapFactor;
 #else
     light = ambient.rgb + lightness * directionalColor.rgb;
 #endif

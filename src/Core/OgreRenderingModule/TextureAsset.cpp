@@ -276,13 +276,15 @@ void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 co
     SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps, dynamic);
 }
 
-void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps, bool dynamic)
+void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps, bool dynamic, bool renderTarget)
 {
     PROFILE(TextureAsset_SetContents);
 
     int usage = dynamic ? Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE : Ogre::TU_STATIC_WRITE_ONLY;
     if (regenerateMipMaps)
         usage |= Ogre::TU_AUTOMIPMAP;
+    if (renderTarget)
+        usage |= Ogre::TU_RENDERTARGET;
 
     if (numBytes != newWidth * newHeight * 4)
     {

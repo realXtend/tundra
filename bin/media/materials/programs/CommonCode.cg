@@ -81,6 +81,7 @@ uniform sampler2D normalMap;
 #endif
 #ifdef LIGHT_MAPPING
 uniform sampler2D lightMap;
+uniform float lightMapFactor;
 #endif
 #ifdef SHADOW_MAPPING
 

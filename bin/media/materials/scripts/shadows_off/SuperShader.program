@@ -1089,6 +1089,8 @@ fragment_program rex/DiffShadowLightmapFP cg
 		param_named_auto lightCol0 light_diffuse_colour 1
 		param_named_auto lightCol1 light_diffuse_colour 2
 
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
     }
 }
 
@@ -1132,6 +1134,8 @@ fragment_program rex/DiffNormalShadowLightmapFP cg
 		param_named_auto lightCol0 light_diffuse_colour 1
 		param_named_auto lightCol1 light_diffuse_colour 2
 
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
     }
 }
 
@@ -1265,5 +1269,7 @@ fragment_program rex/DiffNormalLightmapFP cg
 		param_named_auto lightCol0 light_diffuse_colour 1
 		param_named_auto lightCol1 light_diffuse_colour 2
 
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
 	}
 }
