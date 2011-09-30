@@ -1,0 +1,31 @@
+material rex/DiffNormalLightmap
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+
+			alpha_rejection greater_equal 128
+
+			vertex_program_ref rex/DiffAlphamaskNormalLightmapVP
+			{
+			}
+			fragment_program_ref rex/DiffAlphamaskNormalLightmapFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+			texture_unit normalMap
+			{
+				texture TextureMissing.png
+			}
+			texture_unit lightMap
+			{
+				texture TextureMissing.png
+			}
+		}
+	}
+}

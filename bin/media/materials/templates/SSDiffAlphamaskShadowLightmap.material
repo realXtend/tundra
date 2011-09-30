@@ -1,0 +1,43 @@
+material rex/DiffShadowLightmap
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+
+			alpha_rejection greater_equal 128
+
+			vertex_program_ref rex/DiffAlphamaskShadowLightmapVP
+			{
+			}
+			fragment_program_ref rex/DiffAlphamaskShadowLightmapFP
+			{
+			}
+			
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+			texture_unit lightMap
+			{
+				texture TextureMissing.png
+			}
+			texture_unit shadowMap0
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap1
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap2
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+		}
+	}
+}
