@@ -2,27 +2,28 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   PropertyTableWidget.h
- *  @brief  PropertyTableWidget inherits QTableWidget and add some custom drop-functionality.
+ *  @brief  Inherits QTableWidget and adds custom drop-functionality.
  */
 
 #pragma once
 
 #include <QTableWidget>
 
-
+/// Inherits QTableWidget and adds custom drop-functionality.
+/// @cond PRIVATE
 class PropertyTableWidget : public QTableWidget
 {
     Q_OBJECT
 
 public:
-    /// Default constuctor.
-    /// @param parent Parent widget.
+    /// Constuctor.
+    /** @param parent Parent widget. */
     explicit PropertyTableWidget(QWidget *parent = 0);
 
     /// Constuctor.
-    /// @param rows Number of rows.
-    /// @param columns Number of columns.
-    /// @param parent Parent widget.
+    /** @param rows Number of rows.
+        @param columns Number of columns.
+        @param parent Parent widget. */
     explicit PropertyTableWidget(int rows, int columns, QWidget *parent = 0);
 
     /// Destructor.
@@ -44,7 +45,6 @@ protected:
 private:
     Q_DISABLE_COPY(PropertyTableWidget);
 
-    /// Convenience function for initializing the widget.
     void InitWidget();
 };
-
+/// @endcond

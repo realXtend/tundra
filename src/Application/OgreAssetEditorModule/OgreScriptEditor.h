@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   OgreScriptEditor.h
- *  @brief  Editing tool for OGRE material and particle scripts.
+ *  @brief  Text editing tool for OGRE material and particle scripts.
  */
 
 #pragma once
@@ -20,7 +20,7 @@ class QTextEdit;
 class OgreMaterialProperties;
 class PropertyTableWidget;
 
-/// Editing tool for OGRE material and particle scripts.
+/// Text editing tool for OGRE material and particle scripts.
 class ASSET_EDITOR_MODULE_API OgreScriptEditor : public QWidget
 {
     Q_OBJECT

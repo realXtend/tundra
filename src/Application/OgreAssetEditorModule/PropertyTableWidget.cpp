@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   PropertyTableWidget.cpp
- *  @brief  PropertyTableWidget inherits QTableWidget and add some custom drop-functionality.
+ *  @brief  Inherits QTableWidget and adds custom drop-functionality.
  */
 
 #include "StableHeaders.h"
@@ -30,6 +30,7 @@ PropertyTableWidget::~PropertyTableWidget()
 
 void PropertyTableWidget::dragMoveEvent(QDragMoveEvent *event)
 {
+    ///\todo Regression. Reimplement.
     if (event->mimeData()->hasFormat("application/vnd.inventory.item"))
     {
         QModelIndex index  = indexAt(event->pos());
@@ -49,6 +50,7 @@ void PropertyTableWidget::dragMoveEvent(QDragMoveEvent *event)
 
 QStringList PropertyTableWidget::mimeTypes() const
 {
+    ///\todo Regression. Reimplement.
     QStringList types;
     types << "application/vnd.inventory.item";
     return types;

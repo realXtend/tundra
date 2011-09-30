@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   OgreScriptEditor.cpp
- *  @brief  Editing tool for OGRE material and particle scripts.
+ *  @brief  Text editing tool for OGRE material and particle scripts.
  */
 
 #include "StableHeaders.h"
