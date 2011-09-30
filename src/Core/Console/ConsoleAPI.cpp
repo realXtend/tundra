@@ -291,26 +291,22 @@ void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
 void ConsoleAPI::LogInfo(const QString &message)
 {
     ::LogInfo(message);
-    Print(message);
 }
 
 void ConsoleAPI::LogWarning(const QString &message)
 {
     ::LogWarning(message);
-    Print("Warning: " + message);
 }
 
 void ConsoleAPI::LogError(const QString &message)
 {
     ::LogError(message);
-    Print("Error: " + message);
 }
 
 void ConsoleAPI::LogDebug(const QString &message)
 {
 #ifdef _DEBUG
     ::LogDebug(message);
-    Print("Debug: " + message);
 #endif
 }
 
