@@ -95,6 +95,7 @@ void OgreMaterialEditor::Populate()
     }
 
     QUiLoader loader;
+    loader.setLanguageChangeEnabled(true);
     QFile passFile(Application::InstallationDirectory() + "data/ui/MaterialEditorPassTab.ui");
     if (!passFile.exists())
     {
@@ -222,14 +223,13 @@ void OgreMaterialEditor::Populate()
             QStringList shaderList = shaders.toList();
             shaderList.push_front("NoShader");
 
-            QString vertexShader = mat->VertexShader(techIndex, passIndex);
             //QString pixelShader = mat->PixelShader(techIndex, passIndex);
-
+            QString vertexShader = mat->VertexShader(techIndex, passIndex);
             vertexShader.replace("rex/", "");
             vertexShader.replace("VP", "");
             shaderComboBox->addItems(shaderList);
             for(int idx = 0; idx < shaderComboBox->count(); ++idx)
-                if(shaderComboBox->itemText(idx) == vertexShader)
+                if (shaderComboBox->itemText(idx) == vertexShader)
                 {
                     shaderComboBox->setCurrentIndex(idx);
                     break;
@@ -281,15 +281,25 @@ void OgreMaterialEditor::Populate()
                 if (!(addrModeU == addrModeV && addrModeU == addrModeW))
                     LogWarning("OgreMaterialEditor: Non-uniform texture addressing modes for material " + mat->Name() + ".");
 
-                bool scrollAnimEnabled = (mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_USCROLL) &&
-                    mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_VSCROLL));
+                // Ogre weirdness: if texture has scroll effect of which u and v values are the same, it has Ogre ET_UVSCROLL.
+                // If it has scroll effect with different u and v values it has both ET_USCROLL and ET_VSCROLL.
+                bool uvScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_UVSCROLL);
+                bool uScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_USCROLL);
+                bool vScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_VSCROLL);
                 bool rotateAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_ROTATE);
+                bool scrollAnimEnabled = (uvScrollAnimEnabled || (uScrollAnimEnabled && vScrollAnimEnabled));
                 float scrollU = 0.f, scrollV = 0.f, rotate = 0.f;
-                if (scrollAnimEnabled)
+                if (uvScrollAnimEnabled)
+                {
+                    scrollU = mat->ScrollAnimationUV(techIndex, passIndex, tuIndex);
+                    scrollV = scrollU;
+                }
+                else if (uScrollAnimEnabled && vScrollAnimEnabled)
                 {
                     scrollU = mat->ScrollAnimationU(techIndex, passIndex, tuIndex);
                     scrollV = mat->ScrollAnimationV(techIndex, passIndex, tuIndex);
                 }
+
                 if (rotateAnimEnabled)
                     rotate = mat->RotateAnimation(techIndex, passIndex, tuIndex);
 
@@ -728,7 +738,7 @@ void OgreMaterialEditor::SetTexAssetRef()
         return;
     }
 
-    mat->SetTexture(techIndex, passIndex, tuIndex, "");
+    mat->SetTexture(techIndex, passIndex, tuIndex, assetRefLineEdit->text());
     LogDebug("SetTexAssetRef: " + mat->Texture(techIndex, passIndex, tuIndex));
 }
 
@@ -852,7 +862,7 @@ void OgreMaterialEditor::SetRotateAnim(double value)
     }
 
     mat->SetRotateAnimation(techIndex, passIndex, tuIndex, (float)value);
-    LogDebug("SetRotateAnimation" + QString::number(mat->RotateAnimation(techIndex, passIndex, tuIndex)));
+    LogDebug("SetRotateAnimation " + QString::number(mat->RotateAnimation(techIndex, passIndex, tuIndex)));
 }
 
 void OgreMaterialEditor::PopulateShaderAttributes()
