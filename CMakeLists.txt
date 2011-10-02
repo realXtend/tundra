@@ -300,7 +300,6 @@ endif ()
 # The following two defines are required to compile.
 # These enable implicit conversions of common math types between different libraries and our internal math library.
 add_definitions(-DQT_INTEROP)
-add_definitions(-DIRRLICHT_INTEROP)
 add_definitions(-DMATH_ENABLE_STL_SUPPORT)
 
 # Read the set of optional modules from another file

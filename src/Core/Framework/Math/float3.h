@@ -18,11 +18,7 @@
 #ifdef QT_INTEROP
 #include <QVector3D>
 #endif
-/*
-#ifdef IRRLICHT_INTEROP
-#include "float3.h"
-#endif
-*/
+
 #ifdef OGRE_INTEROP
 #include <OgreVector3.h>
 #endif
@@ -298,12 +294,6 @@ public:
     float3(const Ogre::Vector3 &other) { x = other.x; y = other.y; z = other.z; }
     operator Ogre::Vector3() const { return Ogre::Vector3(x, y, z); }
 #endif
-/*
-#ifdef IRRLICHT_INTEROP
-    float3(const Vector3df &other) { x = other.x; y = other.y; z = other.z; }
-    operator Vector3df() const { return Vector3df(x, y, z); }
-#endif
-*/
 #ifdef QT_INTEROP
     float3(const QVector3D &other) { x = other.x(); y = other.y(); z = other.z(); }
     operator QVector3D() const { return QVector3D(x, y, z); }
