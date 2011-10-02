@@ -181,6 +181,13 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 
         menu->addSeparator();
 
+        if (sel.assets.count() == 1)
+        {
+            QAction *copyAssetRefAction = new QAction(tr("Copy asset reference to clipboard"), menu);
+            menu->addAction(copyAssetRefAction);
+            connect(copyAssetRefAction, SIGNAL(triggered()), SLOT(CopyAssetRef()));
+        }
+
         QAction *cloneAction = new QAction(tr("Clone..."), menu);
         menu->addAction(cloneAction);
         connect(cloneAction, SIGNAL(triggered()), SLOT(Clone()));
@@ -389,6 +396,13 @@ void AssetTreeWidget::RequestNewAssetDialogClosed(int result)
         return;
 
     framework->Asset()->RequestAsset(dialog->Source(), dialog->Type());
+}
+
+void AssetTreeWidget::CopyAssetRef()
+{
+    QList<AssetItem *> sel = GetSelection().assets;
+    if (sel.size() == 1 && sel.first()->Asset())
+        QApplication::clipboard()->setText(sel.first()->Asset()->Name());
 }
 
 void AssetTreeWidget::Export()
