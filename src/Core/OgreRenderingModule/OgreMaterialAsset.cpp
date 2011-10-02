@@ -902,7 +902,7 @@ QString OgreMaterialAsset::Texture(int techIndex, int passIndex, int texUnitInde
         return "";
     }
 
-    return texUnit->getName().c_str(); ///< Check that this is the right getter.
+    return texUnit->getTextureName().c_str();
 }
 
 bool OgreMaterialAsset::SetVertexShader(int techIndex, int passIndex, const QString& vertexShaderName)
