@@ -182,6 +182,7 @@ public slots:
 
     /// Sets animated scroll for texture layer.
     bool SetScrollAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, float vSpeed);
+    float ScrollAnimationUV(int techIndex, int passIndex, int texUnitIndex) const;
     float ScrollAnimationU(int techIndex, int passIndex, int texUnitIndex) const;
     float ScrollAnimationV(int techIndex, int passIndex, int texUnitIndex) const;
 
@@ -190,7 +191,9 @@ public slots:
     float RotateAnimation(int techIndex, int passIndex, int texUnitIndex) const;
 
     /// Returns whether or not texture unit has specific effect.
-    /** See Ogre::TextureUnitState::TextureEffectType for @c effect. */
+    /** See Ogre::TextureUnitState::TextureEffectType for @c effect.
+        @note Ogre weirdness: if texture has scroll effect of which u and v values are the same, it has Ogre Ogre::TextureUnitState::ET_UVSCROLL.
+        If it has scroll effect with different u and v values it has both Ogre::TextureUnitState::ET_USCROLL and Ogre::TextureUnitState::ET_VSCROLL. */
     bool HasTextureEffect(int techIndex, int passIndex, int texUnitIndex, unsigned effect) const;
 
 private slots:
