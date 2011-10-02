@@ -8,12 +8,12 @@
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "Renderer.h"
-#include "CoreMath.h"
 #include "OgreRenderingModule.h"
 #include "RenderWindow.h"
 #include "IAsset.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
+#include "Math/MathConstants.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -209,7 +209,7 @@ void MeshPreviewEditor::AdjustScene()
     if (scene_ == 0)
         return;
 
-    scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));
+    scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * pi/180.0));
 
     Ogre::AxisAlignedBox box = entity_->getBoundingBox();
     Ogre::Vector3 boxCenterPos = box.getHalfSize();
@@ -270,7 +270,7 @@ void MeshPreviewEditor::CreateRenderTexture()
         scene_ = manager_->createSceneNode(renderer_->GetUniqueObjectName(("MeshPreview_" + mesh_id_).toStdString()));
         scene_->attachObject(entity_);
         scene_->showBoundingBox(true);
-        scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));
+        scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * pi/180.0));
 
         root_scene_ = manager_->getRootSceneNode();
         root_scene_->addChild(scene_);

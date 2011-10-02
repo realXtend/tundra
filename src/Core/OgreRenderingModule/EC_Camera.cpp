@@ -90,7 +90,7 @@ float3 EC_Camera::InitialRotation() const
     // Identity rotation corresponds to -Z = forward & Y = up. Calculate which rotation we need to adjust for our up vector.
     Quat rot = Quat::RotateFromTo(float3::unitY, normUpVector);
     
-    float3 euler = rot.ToEulerZYX() * RADTODEG;
+    float3 euler = RadToDeg(rot.ToEulerZYX());
     std::swap(euler.x, euler.z); // Take into account our different convention for storing euler angles. (See Transform class).
     return euler;
 }
@@ -107,10 +107,10 @@ float3 EC_Camera::AdjustedRotation(const float3& rotVec) const
     
     Quat adjustQuat = Quat::RotateFromTo(float3::unitY, normUpVector);
     
-    Quat rotQuat = Quat::FromEulerZYX(rotVec.z * DEGTORAD, rotVec.y * DEGTORAD, rotVec.x * DEGTORAD);
+    Quat rotQuat = Quat::FromEulerZYX(DegToRad(rotVec.z), DegToRad(rotVec.y), DegToRad(rotVec.x));
     Quat final = rotQuat * adjustQuat;
     
-    float3 euler = final.ToEulerZYX() * RADTODEG;
+    float3 euler = RadToDeg(final.ToEulerZYX());
     std::swap(euler.x, euler.z);
     return euler;
 }
@@ -284,7 +284,7 @@ Ray EC_Camera::GetMouseRay(float x, float y)
         LogError(QString("EC_Camera::GetMouseRay takes input (x,y) coordinates normalized in the range [0,1]! (You inputted x=%1, y=%2").arg(x).arg(y));
 
     if (camera_)
-        return camera_->getCameraToViewportRay(clamp(x, 0.f, 1.f), clamp(y, 0.f, 1.f));
+        return camera_->getCameraToViewportRay(Clamp(x, 0.f, 1.f), Clamp(y, 0.f, 1.f));
     else
         return Ray();
 }

@@ -556,7 +556,7 @@ bool EC_AnimationController::SetAnimationRelativeTimePosition(const QString& nam
     AnimationMap::iterator i = animations_.find(name);
     if (i != animations_.end())
     {
-        animstate->setTimePosition(clamp(newPosition, 0.0f, 1.0f) * animstate->getLength());
+        animstate->setTimePosition(Clamp(newPosition, 0.0f, 1.0f) * animstate->getLength());
         return true;
     }
     // Animation not active

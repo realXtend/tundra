@@ -470,8 +470,7 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     if (body_)
     {
         linearVelocity.Set(body_->getLinearVelocity(), AttributeChange::Default);
-        const btVector3& angular = body_->getAngularVelocity();
-        angularVelocity.Set(float3(angular.x() * RADTODEG, angular.y() * RADTODEG, angular.z() * RADTODEG), AttributeChange::Default);
+        angularVelocity.Set(RadToDeg(body_->getAngularVelocity()), AttributeChange::Default);
     }
     
     disconnected_ = false;
@@ -599,8 +598,7 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     
     if (attribute == &angularVelocity)
     {
-        const float3& angular = angularVelocity.Get();
-        body_->setAngularVelocity(btVector3(angular.x * DEGTORAD, angular.y * DEGTORAD, angular.z * DEGTORAD));
+        body_->setAngularVelocity(DegToRad(angularVelocity.Get()));
         body_->activate();
     }
 }
@@ -701,7 +699,7 @@ float3 EC_RigidBody::GetLinearVelocity()
 float3 EC_RigidBody::GetAngularVelocity()
 {
     if (body_)
-        return body_->getAngularVelocity() * RADTODEG;
+        return RadToDeg(body_->getAngularVelocity());
     else
         return angularVelocity.Get();
 }

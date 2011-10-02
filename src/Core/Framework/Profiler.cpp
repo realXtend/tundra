@@ -4,19 +4,13 @@
 #include "DebugOperatorNew.h"
 #include "Profiler.h"
 #include "CoreDefines.h"
-#include "CoreMath.h"
 #include "CoreStringUtils.h"
 #include "HighPerfClock.h"
 #include "MemoryLeakCheck.h"
+#include "Math/MathFunc.h"
+
 #include <iostream>
 #include <utility>
-
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
 
 bool ProfilerBlock::QueryCapability()
 {
@@ -90,7 +84,7 @@ void Profiler::EndBlock(const std::string &name)
     double elapsed = node->block_.ElapsedTimeSeconds();
 
     node->elapsed_current_ += elapsed;
-    node->elapsed_min_current_ = (equals(node->elapsed_min_current_, 0.0) ? elapsed : (elapsed < node->elapsed_min_current_ ? elapsed : node->elapsed_min_current_));
+    node->elapsed_min_current_ = (EqualAbs(node->elapsed_min_current_, 0.0) ? elapsed : (elapsed < node->elapsed_min_current_ ? elapsed : node->elapsed_min_current_));
     node->elapsed_max_current_ = elapsed > node->elapsed_max_current_ ? elapsed : node->elapsed_max_current_;
     node->total_ += elapsed;
 

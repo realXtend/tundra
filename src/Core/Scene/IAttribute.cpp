@@ -21,8 +21,10 @@
 #include "Math/float2.h"
 #include "Math/float3.h"
 #include "Math/float3.h"
+#include "CoreMath.h" // only needed for lerp
 
 #include <boost/algorithm/string.hpp>
+
 #include <QVector3D>
 #include <QVariant>
 #include <QStringList>
