@@ -1,14 +1,11 @@
 
-// !ref: local://LoginWebWidget.ui
-// !ref: local://LoginWebSettings.ui
-
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 engine.ImportExtension("qt.webkit");
 engine.ImportExtension("qt.network");
 
-engine.IncludeFile("jsmodules/lib/class.js");
-engine.IncludeFile("jsmodules/lib/json2.js");
+engine.IncludeFile("lib/class.js");
+engine.IncludeFile("lib/json2.js");
 
 var appInstallDir = QDir.fromNativeSeparators(application.installationDirectory);
 var uiBase = appInstallDir + "jsmodules/browserui/ui/";
