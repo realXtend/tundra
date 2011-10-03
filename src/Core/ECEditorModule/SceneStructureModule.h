@@ -108,18 +108,18 @@ private slots:
 
     /// Handles main window drag enter event.
     /** If event's MIME data contains URL which path has supported file extension we accept it. */
-    void HandleDragEnterEvent(QDragEnterEvent *e);
+    void HandleDragEnterEvent(QDragEnterEvent *e, QGraphicsItem *widget);
 
     /// Handles main window drag leave event.
     void HandleDragLeaveEvent(QDragLeaveEvent *e);
 
     /// Handles main window drag move event.
     /** If event's MIME data contains URL which path has supported file extension we accept it. */
-    void HandleDragMoveEvent(QDragMoveEvent *e);
+    void HandleDragMoveEvent(QDragMoveEvent *e, QGraphicsItem *widget);
 
     /// Handles drop event.
     /** If event's MIME data contains URL which path has supported file extension we accept it. */
-    void HandleDropEvent(QDropEvent *e);
+    void HandleDropEvent(QDropEvent *e, QGraphicsItem *widget);
 
     /// Handles material drop event.
     /** If event's MIME data contains a single URL which is a material the drop is redirected to this function.

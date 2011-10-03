@@ -250,50 +250,31 @@ QGraphicsItem *UiGraphicsView::GetVisibleItemAtCoords(int x, int y) const
 
 void UiGraphicsView::dropEvent(QDropEvent *e)
 {
-    // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
-    if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
-    {
-        QGraphicsView::dropEvent(e);
-        return;
-    }
-
     // There was no widget on top of the are where the event occurred. Pass the drop event on as a global "3D scene drag-n-drop event".
     // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
-    emit DropEvent(e);
+    QGraphicsItem *underMouse = GetVisibleItemAtCoords(e->pos().x(), e->pos().y());
+    emit DropEvent(e, underMouse);
 }
 
 void UiGraphicsView::dragEnterEvent(QDragEnterEvent *e)
 {           
-    // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
-    if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
-    {
-        QGraphicsView::dragEnterEvent(e);
-        return;
-    }
-
     // There was no widget on top of the are where the event occurred. Pass the drop event on as a global "3D scene drag-n-drop event".
     // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
-    emit DragEnterEvent(e);
+    QGraphicsItem *underMouse = GetVisibleItemAtCoords(e->pos().x(), e->pos().y());
+    emit DragEnterEvent(e, underMouse);
 }   
 
 void UiGraphicsView::dragLeaveEvent(QDragLeaveEvent *e)
 {
     emit DragLeaveEvent(e);
-    QGraphicsView::dragLeaveEvent(e);
 }
 
 void UiGraphicsView::dragMoveEvent(QDragMoveEvent *e)
 {
-    // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
-    if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
-    {
-        QGraphicsView::dragMoveEvent(e);
-        return;
-    }
-
     // There was no widget on top of the are where the event occurred. Pass the drop event on as a global "3D scene drag-n-drop event".
     // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
-    emit DragMoveEvent(e);
+    QGraphicsItem *underMouse = GetVisibleItemAtCoords(e->pos().x(), e->pos().y());
+    emit DragMoveEvent(e, underMouse);
 }
 
 #ifdef Q_WS_MAC

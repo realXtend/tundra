@@ -77,10 +77,10 @@ void SceneStructureModule::Initialize()
         inputContext = framework_->Input()->RegisterInputContext("SceneStructureInput", 102);
         connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
-        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragEnterEvent(QDragEnterEvent *)), SLOT(HandleDragEnterEvent(QDragEnterEvent *)));
-        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragLeaveEvent(QDragLeaveEvent *)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent *)));
-        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragMoveEvent(QDragMoveEvent *)), SLOT(HandleDragMoveEvent(QDragMoveEvent *)));
-        connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent *)), SLOT(HandleDropEvent(QDropEvent *)));
+        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragEnterEvent(QDragEnterEvent*, QGraphicsItem*)), SLOT(HandleDragEnterEvent(QDragEnterEvent*, QGraphicsItem*)));
+        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragLeaveEvent(QDragLeaveEvent*)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent*)));
+        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragMoveEvent(QDragMoveEvent*, QGraphicsItem*)), SLOT(HandleDragMoveEvent(QDragMoveEvent*, QGraphicsItem*)));
+        connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent*, QGraphicsItem*)), SLOT(HandleDropEvent(QDropEvent*, QGraphicsItem*)));
 
         toolTipWidget = new QWidget(0, Qt::ToolTip);
         toolTipWidget->setLayout(new QHBoxLayout());
@@ -408,8 +408,12 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
     }
 }
 
-void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
+void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e, QGraphicsItem *widget)
 {
+    // Ignore drag event if widget not null
+    if (widget)
+        return;
+
     // If at least one file is supported, accept.
     bool accept = false;
 
@@ -470,8 +474,16 @@ void SceneStructureModule::HandleDragLeaveEvent(QDragLeaveEvent *e)
     currentToolTipDestination.clear();
 }
 
-void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
+void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e, QGraphicsItem *widget)
 {
+    // Ignore drag event if widget not null
+    if (widget)
+    {
+        if (toolTipWidget)
+            toolTipWidget->hide();
+        e->ignore();
+        return;
+    }
     if (!e->mimeData()->hasUrls())
     {
         e->ignore();
@@ -559,10 +571,14 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
     }
 }
 
-void SceneStructureModule::HandleDropEvent(QDropEvent *e)
+void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
 {
     if (toolTipWidget)
         toolTipWidget->hide();
+
+    // Drop happened on a grapchis view widget, ignore
+    if (widget)
+        return;   
 
     if (e->mimeData()->hasUrls())
     {
