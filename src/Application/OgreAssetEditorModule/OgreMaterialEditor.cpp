@@ -23,6 +23,8 @@
 
 #include "MemoryLeakCheck.h"
 
+const QString cNoShader("NoShader");
+
 OgreMaterialEditor::OgreMaterialEditor(const AssetPtr &materialAsset, Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
@@ -221,7 +223,7 @@ void OgreMaterialEditor::Populate()
                 }
             }
             QStringList shaderList = shaders.toList();
-            shaderList.push_front("NoShader");
+            shaderList.push_front(cNoShader);
 
             //QString pixelShader = mat->PixelShader(techIndex, passIndex);
             QString vertexShader = mat->VertexShader(techIndex, passIndex);
@@ -711,17 +713,20 @@ void OgreMaterialEditor::SetShader(const QString &shader)
         return;
     }
 
-    QString vertexShader = shader;
-    QString pixelShader = shader;
-    vertexShader.prepend("rex/");
-    vertexShader.append("VP");
-    pixelShader.prepend("rex/");
-    pixelShader.append("FP");
-    mat->SetVertexShader(techIndex, passIndex, vertexShader);
-    mat->SetPixelShader(techIndex, passIndex, pixelShader);
+    if (shader != cNoShader)
+    {
+        QString vertexShader = shader;
+        QString pixelShader = shader;
+        vertexShader.prepend("rex/");
+        vertexShader.append("VP");
+        pixelShader.prepend("rex/");
+        pixelShader.append("FP");
+        mat->SetVertexShader(techIndex, passIndex, vertexShader);
+        mat->SetPixelShader(techIndex, passIndex, pixelShader);
 
-    LogDebug("SetShader vertex: " + mat->VertexShader(techIndex, passIndex));
-    LogDebug("SetShader pixel: " + mat->PixelShader(techIndex, passIndex));
+        LogDebug("SetShader vertex: " + mat->VertexShader(techIndex, passIndex));
+        LogDebug("SetShader pixel: " + mat->PixelShader(techIndex, passIndex));
+    }
 
     PopulateShaderAttributes();
 }
