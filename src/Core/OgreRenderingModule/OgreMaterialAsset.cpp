@@ -1359,26 +1359,6 @@ bool OgreMaterialAsset::SetScrollAnimation(int techIndex, int passIndex, int tex
     return true;
 }
 
-float OgreMaterialAsset::ScrollAnimationUV(int techIndex, int passIndex, int texUnitIndex) const
-{
-    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
-    if (!texUnit)
-    {
-        LogError(QString("OgreMaterialAsset::ScrollAnimationU: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
-        return 0.f;
-    }
-
-    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
-    Ogre::TextureUnitState::EffectMap::const_iterator it = effects.find(Ogre::TextureUnitState::ET_UVSCROLL);
-    if (it == effects.end())
-    {
-         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_UVSCROLL from effects map.");
-         return 0.f;
-    }
-
-    return (*it).second.arg1;
-}
-
 float OgreMaterialAsset::ScrollAnimationU(int techIndex, int passIndex, int texUnitIndex) const
 {
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
@@ -1391,8 +1371,10 @@ float OgreMaterialAsset::ScrollAnimationU(int techIndex, int passIndex, int texU
     const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
     Ogre::TextureUnitState::EffectMap::const_iterator it = effects.find(Ogre::TextureUnitState::ET_USCROLL);
     if (it == effects.end())
+        it = effects.find(Ogre::TextureUnitState::ET_UVSCROLL);
+    if (it == effects.end())
     {
-         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_USCROLL from effects map.");
+         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_USCROLL or ET_UVSCROLL from effects map.");
          return 0.f;
     }
 
@@ -1411,8 +1393,10 @@ float OgreMaterialAsset::ScrollAnimationV(int techIndex, int passIndex, int texU
     const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
     Ogre::TextureUnitState::EffectMap::const_iterator it = effects.find(Ogre::TextureUnitState::ET_VSCROLL);
     if (it == effects.end())
+        it = effects.find(Ogre::TextureUnitState::ET_UVSCROLL);
+    if (it == effects.end())
     {
-         LogError("OgreMaterialAsset::ScrollAnimationV: Could not find Ogre::TextureUnitState::ET_VSCROLL from effects map.");
+         LogError("OgreMaterialAsset::ScrollAnimationV: Could not find Ogre::TextureUnitState::ET_VSCROLL or ET_UVSCROLL from effects map.");
          return 0.f;
     }
 

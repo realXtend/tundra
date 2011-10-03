@@ -291,7 +291,7 @@ void OgreMaterialEditor::Populate()
                 float scrollU = 0.f, scrollV = 0.f, rotate = 0.f;
                 if (uvScrollAnimEnabled)
                 {
-                    scrollU = mat->ScrollAnimationUV(techIndex, passIndex, tuIndex);
+                    scrollU = mat->ScrollAnimationU(techIndex, passIndex, tuIndex);
                     scrollV = scrollU;
                 }
                 else if (uScrollAnimEnabled && vScrollAnimEnabled)
@@ -433,13 +433,25 @@ void OgreMaterialEditor::SetColor(const QColor &color)
     }
 
     if (indices.first().contains("ambient"))
+    {
         mat->SetAmbientColor(techIndex, passIndex, color);
+        LogDebug("SetEmissiveColor: " + mat->AmbientColor(techIndex, passIndex));
+    }
     else if (indices.first().contains("diffuse"))
+    {
         mat->SetDiffuseColor(techIndex, passIndex, color);
+        LogDebug("DiffuseColor: " + mat->DiffuseColor(techIndex, passIndex));
+    }
     else if (indices.first().contains("specular"))
+    {
         mat->SetSpecularColor(techIndex, passIndex, color);
+        LogDebug("SpecularColor: " + mat->SpecularColor(techIndex, passIndex));
+    }
     else if (indices.first().contains("emissive"))
+    {
         mat->SetEmissiveColor(techIndex, passIndex, color);
+        LogDebug("SetEmissiveColor: " + mat->EmissiveColor(techIndex, passIndex));
+    }
 
     QPushButton *colorButton = findChild<QPushButton *>(sender()->objectName());
     if (!colorButton)
@@ -493,7 +505,7 @@ void OgreMaterialEditor::SetDstBlendFactor(int mode)
     }
 
     mat->SetSceneBlend(techIndex, passIndex, mat->SourceSceneBlendFactor(techIndex, passIndex), mode);
-    LogDebug("SetDstBlendFactor: " + QString::number(mat->SourceSceneBlendFactor(techIndex, passIndex)));
+    LogDebug("SetDstBlendFactor: " + QString::number(mat->DestinationSceneBlendFactor(techIndex, passIndex)));
 }
 
 void OgreMaterialEditor::SetDepthTest(int enable)
@@ -808,9 +820,16 @@ void OgreMaterialEditor::SetScrollAnimU(double value)
         return;
     }
 
-    mat->SetScrollAnimation(techIndex, passIndex, tuIndex, (float)value, mat->ScrollAnimationV(techIndex, passIndex, tuIndex));
-    LogDebug("SetScrollAnimV: u " + QString::number(mat->ScrollAnimationU(techIndex, passIndex, tuIndex)));
-    LogDebug("SetScrollAnimV: v " + QString::number(mat->ScrollAnimationV(techIndex, passIndex, tuIndex)));
+    bool hasUV = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_UVSCROLL);
+    bool hasV = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_VSCROLL);
+    float uSpeed = (float)value, vSpeed = 0.f;
+    if (hasUV)
+        vSpeed = uSpeed;
+    else if (hasV)
+        vSpeed = mat->ScrollAnimationU(techIndex, passIndex, tuIndex);
+    mat->SetScrollAnimation(techIndex, passIndex, tuIndex, uSpeed, vSpeed);
+    LogDebug("SetScrollAnimU: u " + QString::number(mat->ScrollAnimationU(techIndex, passIndex, tuIndex)));
+    LogDebug("SetScrollAnimU: v " + QString::number(mat->ScrollAnimationV(techIndex, passIndex, tuIndex)));
 }
 
 void OgreMaterialEditor::SetScrollAnimV(double value)
@@ -833,7 +852,15 @@ void OgreMaterialEditor::SetScrollAnimV(double value)
         return;
     }
 
-    mat->SetScrollAnimation(techIndex, passIndex, tuIndex, mat->ScrollAnimationU(techIndex, passIndex, tuIndex), (float)value);
+    bool hasUV = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_UVSCROLL);
+    bool hasU = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_USCROLL);
+    float uSpeed = 0.f, vSpeed = (float)value;
+    if (hasUV)
+        uSpeed = vSpeed;
+    else if (hasU)
+        uSpeed = mat->ScrollAnimationU(techIndex, passIndex, tuIndex);
+
+    mat->SetScrollAnimation(techIndex, passIndex, tuIndex, uSpeed, vSpeed);
     LogDebug("SetScrollAnimV: u " + QString::number(mat->ScrollAnimationU(techIndex, passIndex, tuIndex)));
     LogDebug("SetScrollAnimV: v " + QString::number(mat->ScrollAnimationV(techIndex, passIndex, tuIndex)));
 }
@@ -882,14 +909,9 @@ void OgreMaterialEditor::PopulateShaderAttributes()
     {
         if (label)
             label->show();
-        shaderAttributeTable = new PropertyTableWidget(propMap.size(), 3, this);
-        //label = new QLabel(tr("Shader attributes:"), this);
-        //label->setObjectName("shaderAttributesLabel");
-        static_cast<QGridLayout *>(tabWidget->widget(0)->layout())->addWidget(shaderAttributeTable);
 
-        //int count = static_cast<QVBoxLayout *>(layout())->count();
-        //static_cast<QVBoxLayout *>(layout())->insertWidget(count--, label);
-        //static_cast<QVBoxLayout *>(layout())->insertWidget(count--, shaderAttributeTable);
+        shaderAttributeTable = new PropertyTableWidget(propMap.size(), 3, this);
+        static_cast<QGridLayout *>(tabWidget->widget(0)->layout())->addWidget(shaderAttributeTable);
 
         int row = 0;
         while(it.hasNext())
@@ -913,7 +935,7 @@ void OgreMaterialEditor::PopulateShaderAttributes()
             }
 
             valueItem->setData(Qt::DisplayRole, typeValuePair.begin().value());
-            valueItem->setBackgroundColor(QColor(81, 255, 81));
+//            valueItem->setBackgroundColor(QColor(81, 255, 81));
 
             shaderAttributeTable->setItem(row, 0, nameItem);
             shaderAttributeTable->setItem(row, 1, typeItem);

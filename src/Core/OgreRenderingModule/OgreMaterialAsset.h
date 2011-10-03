@@ -182,7 +182,6 @@ public slots:
 
     /// Sets animated scroll for texture layer.
     bool SetScrollAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, float vSpeed);
-    float ScrollAnimationUV(int techIndex, int passIndex, int texUnitIndex) const;
     float ScrollAnimationU(int techIndex, int passIndex, int texUnitIndex) const;
     float ScrollAnimationV(int techIndex, int passIndex, int texUnitIndex) const;
 
