@@ -155,7 +155,7 @@ void OgreMaterialEditor::Populate()
             QComboBox *srcBlendComboBox = passWidget->findChild<QComboBox *>("srcBlendComboBox");
             srcBlendComboBox->setObjectName(srcBlendComboBox->objectName() + techniquePassId);
             QComboBox *dstBlendComboBox = passWidget->findChild<QComboBox *>("dstBlendComboBox");
-            dstBlendComboBox->setObjectName(srcBlendComboBox->objectName() + techniquePassId);
+            dstBlendComboBox->setObjectName(dstBlendComboBox->objectName() + techniquePassId);
 
             QStringList blendFactors(QStringList() << "one" << "zero" << "dest_colour" << "src_colour" << "one_minus_dest_colour" <<
                 "one_minus_src_colour" << "dest_alpha" << "src_alpha" << "one_minus_dest_alpha" << "one_minus_src_alpha");
@@ -359,9 +359,6 @@ void OgreMaterialEditor::Populate()
                 connect(scrollAnimUSpinBox, SIGNAL(valueChanged(double)), SLOT(SetScrollAnimU(double)), Qt::UniqueConnection);
                 connect(scrollAnimVSpinBox, SIGNAL(valueChanged(double)), SLOT(SetScrollAnimV(double)), Qt::UniqueConnection);
                 connect(rotateAnimSpinBox, SIGNAL(valueChanged(double)), SLOT(SetRotateAnim(double)), Qt::UniqueConnection);
-                connect(depthWriteCheckBox, SIGNAL(stateChanged(int)), SLOT(SetDepthWrite(int)), Qt::UniqueConnection);
-                connect(depthBiasSpinBox, SIGNAL(valueChanged(double)), SLOT(SetDepthBias(double)), Qt::UniqueConnection);
-                connect(cullingComboBox, SIGNAL(currentIndexChanged(int)), SLOT(SetCullingMode(int)), Qt::UniqueConnection);
 
                 QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
                 static_cast<QVBoxLayout *>(tuWidget->layout())->addSpacerItem(spacer);
@@ -519,7 +516,7 @@ void OgreMaterialEditor::SetDepthTest(int enable)
     }
 
     mat->SetDepthCheck(techIndex, passIndex, (bool)enable);
-    LogDebug("SetDstBlendFactor: " + QString::number(mat->IsDepthCheckEnabled(techIndex, passIndex)));
+    LogDebug("SetDepthTest: " + QString::number(mat->IsDepthCheckEnabled(techIndex, passIndex)));
 }
 
 void OgreMaterialEditor::SetDepthWrite(int enable)
@@ -610,8 +607,8 @@ void OgreMaterialEditor::SetLighting(int enable)
         return;
     }
 
-    mat->SetDepthCheck(techIndex, passIndex, (bool)enable);
-    LogDebug("SetDstBlendFactor: " + QString::number(mat->IsDepthCheckEnabled(techIndex, passIndex)));
+    mat->SetLighting(techIndex, passIndex, (bool)enable);
+    LogDebug("SetLighting: " + QString::number(mat->IsLightingEnabled(techIndex, passIndex)));
 }
 
 void OgreMaterialEditor::SetShadingMode(int mode)
