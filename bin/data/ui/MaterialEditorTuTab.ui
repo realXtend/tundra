@@ -124,7 +124,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="scrollAnimUSpinBox"/>
+        <widget class="QDoubleSpinBox" name="scrollAnimUSpinBox">
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="label_7">
@@ -140,14 +144,22 @@
         </widget>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="scrollAnimVSpinBox"/>
+        <widget class="QDoubleSpinBox" name="scrollAnimVSpinBox">
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
      <item row="4" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QDoubleSpinBox" name="rotateAnimSpinBox"/>
+        <widget class="QDoubleSpinBox" name="rotateAnimSpinBox">
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

@@ -469,6 +469,9 @@
      </item>
      <item row="4" column="4">
       <widget class="QDoubleSpinBox" name="depthBiasSpinBox">
+       <property name="decimals">
+        <number>3</number>
+       </property>
        <property name="maximum">
         <double>1.000000000000000</double>
        </property>
