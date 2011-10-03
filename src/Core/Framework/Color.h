@@ -56,7 +56,7 @@ public:
         return QColor(Clamp<int>(r*255.f, 0, 255), Clamp<int>(g*255.f, 0, 255), Clamp<int>(b*255.f, 0, 255), Clamp<int>(a*255.f, 0, 255));
     }
 
-    operator QString() const { return QString("Color(%1,%2,%3,%4)").arg(r).arg(b).arg(b).arg(a); }
+    operator QString() const { return QString("Color(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a); }
     QString ToString() const { return (QString)*this; }
     /// For QtScript
     QString toString() const { return (QString)*this; }
