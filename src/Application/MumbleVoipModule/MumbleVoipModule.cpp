@@ -45,7 +45,7 @@ namespace MumbleVoip
         SAFE_DELETE(settings_);
     }
 
-    void MumbleVoipModule::PostInitialize()
+    void MumbleVoipModule::Initialize()
     {
         settings_ = new Settings(framework_);
         provider_ = new Provider(framework_, settings_);

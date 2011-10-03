@@ -36,7 +36,7 @@ namespace MumbleVoip
         virtual ~MumbleVoipModule();
 
         /// IModule override.
-        void PostInitialize();
+        void Initialize();
 
         /// IModule override.
         void Uninitialize();
