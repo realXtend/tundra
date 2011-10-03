@@ -310,11 +310,9 @@ void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
 QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
 {
     Color newColor;
-    if (ctx->argumentCount() >= 3) //RGB
+    if (ctx->argumentCount() >= 3)
     {
-        if (ctx->argument(0).isNumber() &&
-            ctx->argument(1).isNumber() &&
-            ctx->argument(2).isNumber())
+        if (ctx->argument(0).isNumber() && ctx->argument(1).isNumber() && ctx->argument(2).isNumber())
         {
             newColor.r = (float)ctx->argument(0).toNumber();
             newColor.g = (float)ctx->argument(1).toNumber();
@@ -322,14 +320,18 @@ QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
         }
         else
             return ctx->throwError(QScriptContext::TypeError, "Color(): arguments aren't numbers.");
+
+        if (ctx->argumentCount() == 4) // Has alpha
+        {
+            if (ctx->argument(3).isNumber())
+                newColor.a = (float)ctx->argument(3).toNumber();
+            else
+                return ctx->throwError(QScriptContext::TypeError, "Color(): 4th argument is not a number.");
+        }
     }
-    else if(ctx->argumentCount() == 4) //RGBA
-    {
-        if (ctx->argument(3).isNumber())
-            newColor.a = (float)ctx->argument(3).toNumber();
-        else
-            return ctx->throwError(QScriptContext::TypeError, "Color(): arguments aren't numbers.");
-    }
+    else
+        return ctx->throwError(QScriptContext::TypeError, "Color(): not enought arguments: minimum of 3 needed.");
+
     return engine->toScriptValue(newColor);
 }
 
