@@ -570,7 +570,7 @@ void JavascriptModule::LoadStartupScripts()
         LogInfo(Name() + ": ** No scripts in config");
 
     // Allow relative paths from '/<install_dir>' and '/<install_dir>/jsmodules'  to start also
-    QDir jsPluginsDir("./jsmodules");
+    QDir jsPluginsDir(QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules");
     foreach(QString startupScript, startupScriptsToLoad)
     {
         // Only allow relative paths, maybe allow absolute paths as well, maybe even URLs at some point?
