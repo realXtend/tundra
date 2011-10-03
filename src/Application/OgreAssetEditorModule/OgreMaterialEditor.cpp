@@ -319,7 +319,7 @@ void OgreMaterialEditor::Populate()
                 QComboBox *addrModeComboBox = tuWidget->findChild<QComboBox *>("addrModeComboBox");
                 addrModeComboBox->setObjectName(addrModeComboBox->objectName() + techniquePassTuId);
 
-                QStringList addrModes(QStringList() << "wrap" << "clamp" << "mirror" /*<< "border"*/); // Note: border omitted intentionally.
+                QStringList addrModes(QStringList() << "wrap" << "mirror" << "clamp" /*<< "border"*/); // Note: border omitted intentionally.
                 addrModeComboBox->addItems(addrModes);
                 assert(addrModeU < 4);
                 if (addrModeU > 3)
