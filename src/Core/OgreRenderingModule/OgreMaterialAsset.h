@@ -121,10 +121,12 @@ public slots:
     bool SetEmissiveColor(int techIndex, int passIndex, const Color& color);
     Color EmissiveColor(int techIndex, int passIndex) const;
 
-    /// Set scene blend mode of a pass
+    /// Sets the overall scene blend mode of a pass
     /** See Ogre::SceneBlendType for @c blendMode */
     bool SetSceneBlend(int techIndex, int passIndex, unsigned blendMode);
-    /** See Ogre::SceneBlendFactor for @c srcFactor and @c dstFactor. */
+    /// This is an overloaded function.
+    /** Sets the source and destination blend factors separately.
+        See Ogre::SceneBlendFactor for @c srcFactor and @c dstFactor. */
     bool SetSceneBlend(int techIndex, int passIndex, unsigned srcFactor, unsigned dstFactor);
     unsigned SourceSceneBlendFactor(int techIndex, int passIndex) const;
     unsigned DestinationSceneBlendFactor(int techIndex, int passIndex) const;
