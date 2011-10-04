@@ -1,4 +1,4 @@
-material rex/DiffShadowLightmap
+material rex/DiffAlphamaskShadowLightmap
 {
 	technique
 	{

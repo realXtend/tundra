@@ -1,0 +1,27 @@
+material rex/DiffAlphamaskLightmapUnlit
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			
+			alpha_rejection greater_equal 128
+
+			vertex_program_ref rex/DiffAlphamaskLightmapUnlitVP
+			{
+			}
+			fragment_program_ref rex/DiffAlphamaskLightmapUnlitFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+			texture_unit lightMap
+			{
+				texture TextureMissing.png
+			}
+		}
+	}
+}
