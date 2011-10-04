@@ -21,6 +21,7 @@
 #include "LoggingFunctions.h"
 #include "Math/MathFunc.h"
 #include "Profiler.h"
+#include "Color.h"
 
 #include <Ogre.h>
 
@@ -31,7 +32,8 @@
 /// @cond PRIVATE
 struct EC_SkyXImpl
 {
-    EC_SkyXImpl() : skyX(0), sunlight(0), cloudLayer(0) {}
+    // Ambient and sun diffuse color copied from EC_EnvironmentLight
+    EC_SkyXImpl() : skyX(0), sunlight(0), cloudLayer(0), sunColor(0.639f,0.639f,0.639f), ambientColor(0.364f, 0.364f, 0.364f, 1.f) {}
     ~EC_SkyXImpl()
     {
         if (skyX)
@@ -46,8 +48,10 @@ struct EC_SkyXImpl
     }
 
     SkyX::SkyX *skyX;
-    Ogre::Light *sunlight;
     SkyX::CloudLayer *cloudLayer; ///< Currently just one cloud layer used.
+    Ogre::Light *sunlight;
+    Color sunColor;
+    Color ambientColor;
 };
 /// @endcond
 
@@ -82,23 +86,6 @@ float3 EC_SkyX::SunPosition() const
     if (impl->skyX)
         return impl->skyX->getAtmosphereManager()->getSunPosition();
     return float3();
-}
-
-void EC_SkyX::CreateSunlight()
-{
-    if (impl)
-    {
-        OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
-        Ogre::SceneManager *sm = w->GetSceneManager();
-        impl->sunlight = sm->createLight(w->GetRenderer()->GetUniqueObjectName("SkyXSunlight"));
-        impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
-        impl->sunlight->setDiffuseColour(1.f, 1.f, 1.f);
-        impl->sunlight->setSpecularColour(0.f,0.f,0.f);
-        impl->sunlight->setDirection(-1.f, -1.f, -1.f);
-        impl->sunlight->setCastShadows(true);
-
-        sm->setAmbientLight(Ogre::ColourValue(1.f, 1.f, 1.f));
-    }
 }
 
 void EC_SkyX::Create()
@@ -144,11 +131,30 @@ void EC_SkyX::Create()
 
         connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
         connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)), Qt::UniqueConnection);
+
+        CreateSunlight();
     }
     catch(Ogre::Exception &e)
     {
         // Currently if we try to create more than one SkyX component we end up here due to Ogre internal name collision.
         LogError("Could not create EC_SkyX: " + std::string(e.what()));
+    }
+}
+
+void EC_SkyX::CreateSunlight()
+{
+    if (impl)
+    {
+        OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+        Ogre::SceneManager *sm = w->GetSceneManager();
+        sm->setAmbientLight(impl->ambientColor);
+
+        impl->sunlight = sm->createLight(w->GetRenderer()->GetUniqueObjectName("SkyXSunlight"));
+        impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
+        impl->sunlight->setDiffuseColour(impl->sunColor);
+        impl->sunlight->setSpecularColour(0.f,0.f,0.f);
+        impl->sunlight->setDirection(impl->skyX->getAtmosphereManager()->getSunDirection());
+        impl->sunlight->setCastShadows(true);
     }
 }
 
