@@ -39,7 +39,7 @@ namespace CAVEStereo
         void ChangeColorRight(qreal r, qreal g, qreal b);
         StereoWidget* GetStereoWidget() const;
         void StereoFlip();
-	void TakeScreenshots(QString path, QString filename);
+        void TakeScreenshots(QString path, QString filename);
 
     private:
         void ChangeShaderColour(qreal r, qreal g, qreal b,const Ogre::String& name);
