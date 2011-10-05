@@ -10,6 +10,7 @@
 #include "EC_Placeable.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
+#include "TextureAsset.h"
 #include "Renderer.h"
 
 #include "Entity.h"
@@ -17,8 +18,14 @@
 #include "Scene.h"
 #include "Profiler.h"
 #include "LoggingFunctions.h"
+#include "Application.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 #include <Ogre.h>
+
+#include <QDir>
+#include <QDateTime>
 
 #include "MemoryLeakCheck.h"
 
@@ -34,7 +41,8 @@ EC_Camera::EC_Camera(Scene* scene) :
     nearPlane(this, "Near plane", 0.1f),
     farPlane(this, "Far plane", 2000.f),
     verticalFov(this, "Vertical FOV", 45.f),
-    aspectRatio(this, "Aspect ratio", "")
+    aspectRatio(this, "Aspect ratio", ""),
+    renderTextureName_("")
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
@@ -516,3 +524,167 @@ void EC_Camera::QueryVisibleEntities()
 
 }
 
+QString EC_Camera::SaveScreenshot(bool renderUi)
+{
+    QImage img = ToQImage(renderUi);
+    if (img.isNull())
+        return "";
+
+    // Check that app dir has screenshots folder
+    QDir appdataDir(QDir::fromNativeSeparators(Application::UserDataDirectory()));
+    if (!appdataDir.cd("screenshots"))
+    {
+        appdataDir.mkdir("screenshots");
+        appdataDir.cd("screenshots");
+    }
+
+    // Note you cant use ":" to separate the hours, mins and secs as its not valid as a filename char!
+    QString filename = "Tundra-" + QDateTime::currentDateTime().toString("yyyy-MM-dd_hh.mm.ss");
+    QString ext = ".png";
+
+    // Check if we are creating multiple screenshots during the same second.
+    if (appdataDir.exists(filename + ext))
+    {
+        int runningID = 1;
+        QString filenameWithId = filename + "_" + QString::number(runningID);        
+        while (appdataDir.exists(filenameWithId + ext))
+        {
+            runningID += 1;
+            filenameWithId = filename + "_" + QString::number(runningID);
+
+            // Sanity safe guard. I'd hope no one is trying to take >10000 screenshots in one second.
+            if (runningID >= 10000)
+                return "";
+        }
+
+        filename = filenameWithId;
+    }
+
+    QString absFilePath = appdataDir.absoluteFilePath(filename + ext);
+    if (img.save(absFilePath, "PNG"))
+        return absFilePath;
+    else
+        return "";
+}
+
+QImage EC_Camera::ToQImage(bool renderUi)
+{
+    if (!ViewEnabled() || !framework->Ui()->MainWindow())
+    {
+        LogError("EC_Camera::ToQImage() Cannot take screenshot in headless mode!");
+        return QImage();
+    }
+    OgreWorldPtr world = world_.lock();
+    if (!world.get() || !world.get()->GetRenderer())
+    {
+        LogError("EC_Camera::ToQImage() OgreWorld/Renderer null, cannot proceed!");
+        return QImage();
+    }
+    if (!GetCamera())
+    {
+        LogError("EC_Camera::ToQImage() Ogre::Camera not prepared yet, cannot proceed!");
+        return QImage();
+    }
+
+    QSize size(world.get()->GetRenderer()->GetWindowWidth(), world.get()->GetRenderer()->GetWindowHeight());
+    if (!UpdateRenderTexture(size, renderUi))
+        return QImage();
+
+    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderTextureName_);
+    if (texture.isNull())
+        return QImage();
+
+    return TextureAsset::ToQImage(texture.get());
+}
+
+Ogre::Image EC_Camera::ToOgreImage(bool renderUi)
+{
+    if (!ViewEnabled() || !framework->Ui()->MainWindow())
+    {
+        LogError("EC_Camera::ToOgreImage() Cannot take screenshot in headless mode!");
+        return Ogre::Image();
+    }
+    OgreWorldPtr world = world_.lock();
+    if (!world.get() || !world.get()->GetRenderer())
+    {
+        LogError("EC_Camera::ToOgreImage() OgreWorld/Renderer null, cannot proceed!");
+        return Ogre::Image();
+    }
+    if (!GetCamera())
+    {
+        LogError("EC_Camera::ToOgreImage() Ogre::Camera not prepared yet, cannot proceed!");
+        return Ogre::Image();
+    }
+
+    QSize size(world.get()->GetRenderer()->GetWindowWidth(), world.get()->GetRenderer()->GetWindowHeight());
+    if (!UpdateRenderTexture(size, renderUi))
+        return Ogre::Image();
+
+    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderTextureName_);
+    if (texture.isNull())
+        return Ogre::Image();
+
+    Ogre::Image ogreImage;
+    texture->convertToImage(ogreImage);
+    return ogreImage;
+}
+
+bool EC_Camera::UpdateRenderTexture(QSize textureSize, bool renderUi)
+{
+    if (!ViewEnabled() || !framework->Ui()->MainWindow())
+        return false;
+    OgreWorldPtr world = world_.lock();
+    if (!world.get() || !world->GetRenderer())
+        return false;
+    if (!GetCamera())
+        return false;
+    
+    try
+    {
+        // First run init the texture name.
+        if (renderTextureName_.empty())
+            renderTextureName_ =  world->GetRenderer()->GetUniqueObjectName("EC_Camera_RenderTexture_");
+
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderTextureName_);
+        if (texture.isNull())
+        {
+            texture = Ogre::TextureManager::getSingleton().createManual(renderTextureName_,
+                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, textureSize.width(), textureSize.height(), 0,
+                Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+        }
+        else if ((int)texture->getWidth() != textureSize.width() || (int)texture->getHeight() != textureSize.height())
+        {
+            texture->freeInternalResources();
+            texture->setWidth(textureSize.width());
+            texture->setHeight(textureSize.height());
+            texture->createInternalResources();
+        }
+
+        Ogre::RenderTexture *renderTarget = texture->getBuffer()->getRenderTarget();
+        if (renderTarget)
+        {
+            renderTarget->removeAllViewports();
+            Ogre::Viewport *viewPort = renderTarget->addViewport(GetCamera());
+            if (viewPort)
+            {            
+                // Show/hide overlays. UI layer is a overlay in Tundra.
+                if (renderUi)
+                    viewPort->setOverlaysEnabled(true);
+                else
+                    viewPort->setOverlaysEnabled(false);
+
+                // Update texture
+                renderTarget->update(false);
+                renderTarget->setAutoUpdated(false); 
+
+                return true;
+            }
+        }
+    }
+    catch(Ogre::Exception &e)
+    {
+        LogError("EC_Camera::UpdateRenderTexture() caught and expection: " + std::string(e.what()));
+    }
+
+    return false;
+}

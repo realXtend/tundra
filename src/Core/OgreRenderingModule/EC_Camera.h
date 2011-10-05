@@ -8,7 +8,11 @@
 #include "Math/float3.h"
 #include "Math/Ray.h"
 
+#include <QImage>
+#include <QSize>
 #include <set>
+
+#include <OgreImage.h>
 
 namespace Ogre
 {
@@ -154,15 +158,26 @@ public slots:
     /// Get visible entity ID's in the camera's frustum
     const std::set<entity_id_t>& VisibleEntityIDs() ;
 
-/* The following functions moved here from IRenderer. Reimplement them:
+    /// Takes a screen shot to hard drive. Store location will be users app data directory 
+    /// to make the function script safe. The name will have a timestamp identifier. 
+    /// You can rename/remove etc. the file after this function returns to make it suitable for you usage.
+    /// Tundra rendering viewport size is used as the image size. If you want to a spesific sized image use ToQImage()
+    /// function and resize the returned image to suit your needs.
+    /// @return Absolute filepath to the image file. Empty string if operation fails.
+    /// @note The timestamp format is yyyy-MM-dd-hh:mm. Image format is PNG.
+    QString SaveScreenshot(bool renderUi = true);
 
-    /// take sceenshot to a location
-    /// @param filePath File path.
-    /// @param fileName File name.
-    virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName) = 0;
-
-    /// Render current main window content to texture
-    virtual QPixmap RenderImage(bool use_main_camera = true) = 0; */
+    /// Render current view to a QImage. Returns null QImage if operation fails. 
+    /// Tundra rendering viewport size is used as the image size.
+    /// @param renderUi If the image should have the user interface included.
+    /// @return The render result image.
+    QImage ToQImage(bool renderUi = true);
+   
+    /// Render current view to a Ogre::Image. Returns null Ogre::Image if operation fails.
+    /// Tundra rendering viewport size is used as the image size.
+    /// @param renderUi If the image should have the user interface included.
+    /// @return The render result image.
+    Ogre::Image ToOgreImage(bool renderUi = true);
 
     /// Returns a world space ray as cast from the camera through a viewport position.
     /** @param The x position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
@@ -210,6 +225,9 @@ private:
 
     /// Perform a frustum query for visible entities
     void QueryVisibleEntities();
+
+    /// Update the render texture with the current view.
+    bool UpdateRenderTexture(QSize textureSize, bool renderUi);
     
     /// placeable component 
     ComponentPtr placeable_;
@@ -237,4 +255,7 @@ private:
     
     /// Frustum query
     Ogre::PlaneBoundedVolumeListSceneQuery *query_;
+
+    /// Render texture name used in SaveScreenshot(), ToQImage() and ToOgreImage() functions.
+    std::string renderTextureName_;
 };
