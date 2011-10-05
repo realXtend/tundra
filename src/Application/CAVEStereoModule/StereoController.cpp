@@ -266,4 +266,19 @@ namespace CAVEStereo
     {
         return settings_widget_;
     }
+
+  
+
+    void StereoController::TakeScreenshots(QString path, QString filename)
+    {
+      QString leftname = filename.replace(".jpg", "_left.jpg");
+      QString rightname = filename.replace(".jpg", "_right.jpg");
+      
+      // FIXME relies on that there is only one external window and
+      // its the right side window for stereographical stuff
+      windows_to_dispose_.first()->getRenderWindow()->writeContentsToFile(path.toStdString() + leftname.toStdString());
+      renderer_->TakeScreenshot(path, rightname);
+
+    }
+    
 }

@@ -39,6 +39,7 @@ namespace CAVEStereo
 
         /// Show the cave widget.
         void ShowCaveWindow();
+	void TakeScreenshots(QString path, QString filename);
 
     private:
         /// Manager for stereo.
