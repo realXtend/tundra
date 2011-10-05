@@ -13,6 +13,11 @@ if (!framework.IsHeadless())
     var fileMenu = menu.addMenu("&File");
     if (framework.GetModuleByName("UpdateModule"))
         fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
+        
+    var screenshotAct = fileMenu.addAction("Take Screenshot");
+    screenshotAct.triggered.connect(TakeScreenshot);
+    screenshotAct.enabled = false;
+    
     //fileMenu.addAction("New scene").triggered.connect(NewScene);
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
@@ -21,11 +26,13 @@ if (!framework.IsHeadless())
         disconnectAction.triggered.connect(Disconnect);
         client.Connected.connect(Connected);
         client.Disconnected.connect(Disconnected);
-        Disconnected();
+        disconnectAction.enabled = false;
     }
     fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
+    
     var viewMenu = menu.addMenu("&View");
+    
 
     if (framework.GetModuleByName("SceneStructure"))
     {
@@ -88,15 +95,23 @@ if (!framework.IsHeadless())
     }
 
     function Connected() {
-        disconnectAction.setEnabled(true);
+        disconnectAction.enabled = true;
+        screenshotAct.enabled = true;
     }
 
     function Disconnected() {
-        disconnectAction.setEnabled(false);
+        disconnectAction.enabled = false;
+        screenshotAct.enabled = false;
     }
 
     function Quit() {
         framework.Exit();
+    }
+    
+    function TakeScreenshot() {
+        var mainCamera = renderer.MainCameraComponent();
+        var imgPath = mainCamera.SaveScreenshot();
+        QDesktopServices.openUrl(new QUrl(imgPath));
     }
 
     function CheckForUpdates() {
