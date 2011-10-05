@@ -87,6 +87,18 @@ EC_Camera::~EC_Camera()
         if (renderer)
             renderer->ValidateMainCamera();
     }
+
+    // Release rendering texture if one has been created
+    if (!renderTextureName_.empty())
+    {
+        try
+        {
+            Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderTextureName_);
+            if (!texture.isNull())
+                Ogre::TextureManager::getSingleton().remove(renderTextureName_);
+        }
+        catch(Ogre::Exception) {}
+    }
 }
 
 float3 EC_Camera::InitialRotation() const
