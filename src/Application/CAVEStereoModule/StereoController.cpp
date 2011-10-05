@@ -8,7 +8,6 @@
 #include "StereoWidget.h"
 #include "StereoManager.h"
 #include "ExternalRenderWindow.h"
-#include "VersionInfo.h"
 #include "CAVEStereoModule.h"
 #include <OgreRenderTarget.h>
 #include <OgreRoot.h>
