@@ -778,6 +778,16 @@ void EC_Placeable::SetScale(const float3 &scale)
     transform.Set(newtrans, AttributeChange::Default);
 }
 
+void EC_Placeable::LookAt(const float3 &v)
+{
+    // Don't rely on the stability of the lookat (since it uses previous orientation), 
+    // so start in identity transform
+    sceneNode_->setOrientation(Ogre::Quaternion::IDENTITY);
+    sceneNode_->lookAt(Ogre::Vector3(v.x, v.y, v.z), Ogre::Node::TS_WORLD);
+    const Ogre::Quaternion& ogrequat = sceneNode_->getOrientation();
+    SetOrientation(Quat(ogrequat.x, ogrequat.y, ogrequat.z, ogrequat.w));
+}
+
 void EC_Placeable::SetOrientationAndScale(const float3x3 &tm)
 {
     assume(tm.IsOrthogonal());
