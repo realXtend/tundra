@@ -369,6 +369,10 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
     // Can handle before we are prepared
     if (attribute == &slides)
     {
+        // Don't request textures on the server
+        if (isServer_)
+            return;
+
         foreach(AssetRefListener *listener, assetListeners_)
             SAFE_DELETE(listener);
         assetListeners_.clear();
