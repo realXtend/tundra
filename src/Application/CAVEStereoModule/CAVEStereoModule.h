@@ -39,7 +39,7 @@ namespace CAVEStereo
 
         /// Show the cave widget.
         void ShowCaveWindow();
-	void TakeScreenshots(QString path, QString filename);
+        void TakeScreenshots(QString path, QString filename);
         void EnableStereo(QString tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width);
 
     private:
