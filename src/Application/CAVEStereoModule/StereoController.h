@@ -10,7 +10,10 @@
 
 #include <Ogre.h>
 
-namespace OgreRenderer { class Renderer; }
+namespace OgreRenderer
+{
+    class Renderer;
+}
 
 namespace CAVEStereo
 {
