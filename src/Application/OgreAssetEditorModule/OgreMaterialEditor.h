@@ -31,7 +31,6 @@ public:
 private:
     Q_DISABLE_COPY(OgreMaterialEditor);
     QTabWidget *tabWidget;
-    QTabWidget *tuTabWidget;
     Framework *framework;
     AssetWeakPtr asset;
     PropertyTableWidget *shaderAttributeTable;
@@ -60,7 +59,6 @@ private slots:
     void SetRotateAnim(double);
 
     void PopulateShaderAttributes();
-    void PopulateTextureUnits(int techIndex, int passIndex);
 
     void OnAssetTransferSucceeded(AssetPtr asset);
     void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);

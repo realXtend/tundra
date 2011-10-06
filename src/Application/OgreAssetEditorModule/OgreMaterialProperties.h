@@ -32,7 +32,7 @@ typedef QMapIterator<QString, QVariant> PropertyMapIter;
 PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr);
 
 /// Dynamically created QProperties for OGRE material scripts.
-///\todo Reuse the code for applicable parts and delete this class.
+///\todo Cleanup
 class OgreMaterialProperties : public QObject
 {
     Q_OBJECT
@@ -60,10 +60,10 @@ public:
     QString ToString();
 
     /// Utility function for converting Ogre::GpuConstantType enum to type string.
-    static QString GpuConstantTypeToString(const Ogre::GpuConstantType &type);
+    static QString GpuConstantTypeToString(Ogre::GpuConstantType type);
 
     /// Utility function for converting Ogre::GpuConstantType enum to type string.
-    static QString TextureTypeToString(const Ogre::TextureType &type);
+    static QString TextureTypeToString(Ogre::TextureType type);
 
 private:
     /// Creates the QProperties dynamically for this material.

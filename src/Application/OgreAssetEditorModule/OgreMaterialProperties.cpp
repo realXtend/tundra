@@ -96,7 +96,8 @@ PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr)
 
                             // Add QPROPERTY. Add to "VP" to the end of the parameter name in order to identify VP parameters.
                             QMap<QString, QVariant> typeValuePair;
-                            typeValuePair[OgreMaterialProperties::GpuConstantTypeToString(paramDef.constType)] = *vector_string.string();
+                            //typeValuePair[OgreMaterialProperties::GpuConstantTypeToString(paramDef.constType)] = *vector_string.string();
+                            typeValuePair[QString::number(paramDef.constType)] = *vector_string.string();
                             ret[paramName.append(" VP").toLatin1()] = QVariant(typeValuePair);
                         }
                     }
@@ -161,7 +162,8 @@ PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr)
 
                                 // Add QPROPERTY. Add to " FP" to the end of the parameter name in order to identify FP parameters
                                 TypeValuePair typeValuePair;
-                                typeValuePair[OgreMaterialProperties::GpuConstantTypeToString(paramDef.constType)] = *vector_string.string();
+                                //typeValuePair[OgreMaterialProperties::GpuConstantTypeToString(paramDef.constType)] = *vector_string.string();
+                                typeValuePair[QString::number(paramDef.constType)] = *vector_string.string();
                                 ret[paramName.append(" FP").toLatin1()] = QVariant(typeValuePair);
                             }
                         }
@@ -659,78 +661,79 @@ QString OgreMaterialProperties::ToString()
     return QString(serializer.getQueuedAsString().c_str());
 }
 
-QString OgreMaterialProperties::GpuConstantTypeToString(const Ogre::GpuConstantType &type)
+QString OgreMaterialProperties::GpuConstantTypeToString(Ogre::GpuConstantType type)
 {
     using namespace Ogre;
     ///@note We use GCT_UNKNOWN for texture units' texture names.
     switch(type)
     {
     case GCT_FLOAT1:
-        return "FLOAT1";
+        return "float";
     case GCT_FLOAT2:
-        return "FLOAT2";
+        return "float2";
     case GCT_FLOAT3:
-        return "FLOAT3";
+        return "float3";
     case GCT_FLOAT4:
-        return "FLOAT4";
+        return "float4";
     case GCT_SAMPLER1D:
-        return "SAMPLER1D";
+        return "Sampler1D";
     case GCT_SAMPLER2D:
-        return "SAMPLER2D";
+        return "Sampler2D";
     case GCT_SAMPLER3D:
-        return "SAMPLER3D";
+        return "Sampler3D";
     case GCT_SAMPLERCUBE:
-        return "SAMPLERCUBE";
+        return "SamplerCube";
     case GCT_SAMPLER1DSHADOW:
-        return "SAMPLER1DSHADOW";
+        return "Sampler1DShadow";
     case GCT_SAMPLER2DSHADOW:
-        return "SAMPLER2DSHADOW";
+        return "Sampler2DShadow";
     case GCT_MATRIX_2X2:
-        return "MATRIX_2X2";
+        return "float2x2";
     case GCT_MATRIX_2X3:
-        return "MATRIX_2X3";
+        return "float2x3";
     case GCT_MATRIX_2X4:
-        return "MATRIX_2X4";
+        return "float2x4";
     case GCT_MATRIX_3X2:
-        return "MATRIX_3X2";
+        return "float3x2";
     case GCT_MATRIX_3X3:
-        return "MATRIX_3X3";
+        return "float3x3";
     case GCT_MATRIX_3X4:
-        return "MATRIX_3X4";
+        return "float3x4";
     case GCT_MATRIX_4X2:
-        return "MATRIX_4X2";
+        return "float4x2";
     case GCT_MATRIX_4X3:
-        return "MATRIX_4X3";
+        return "float4x3";
     case GCT_MATRIX_4X4:
-        return "MATRIX_4X4";
+        return "float4x4";
     case GCT_INT1:
-        return "INT1";
+        return "int";
     case GCT_INT2:
-        return "INT2";
+        return "int2";
     case GCT_INT3:
-        return "INT3";
+        return "int3";
     case GCT_INT4:
-        return "INT4";
+        return "int4";
     case GCT_UNKNOWN:
     default:
-        return "UNKNOWN";
+        return "Unknown";
     };
 }
 
-QString OgreMaterialProperties::TextureTypeToString(const Ogre::TextureType &type)
+QString OgreMaterialProperties::TextureTypeToString(Ogre::TextureType type)
 {
     using namespace Ogre;
     switch(type)
     {
     case TEX_TYPE_1D:
-        return "TEX_1D";
+        return "Tex1D";
     case TEX_TYPE_2D:
-        return "TEX_2D";
+        return "Tex2D";
     case TEX_TYPE_3D:
-        return "TEX_3D";
+        return "Tex3D";
     case TEX_TYPE_CUBE_MAP:
-        return "TEX_CUBEMAP";
+        return "TexCubeMap";
     default:
-        return "UNKNOWN";
+        return "Unknown";
     };
 }
+
