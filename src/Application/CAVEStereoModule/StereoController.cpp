@@ -274,7 +274,7 @@ namespace CAVEStereo
       
       if (stereo_views_.count() == 0) 
       {
-          CAVEStereoModule::LogError("StereoController: Cannot take stereographic screenshots. Stereo not enabled!");
+          LogError("StereoController: Cannot take stereographic screenshots. Stereo not enabled!");
           return;
       }
 
@@ -287,7 +287,7 @@ namespace CAVEStereo
 
       if (!comp) 
       {
-          CAVEStereoModule::LogError("StereoController: Wrong stereographic mode. No Compositor. Cannot take screenshots!");
+          LogError("StereoController: Wrong stereographic mode. No Compositor. Cannot take screenshots!");
           return;
       }
 
