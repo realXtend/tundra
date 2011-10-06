@@ -780,12 +780,11 @@ void EC_Placeable::SetScale(const float3 &scale)
 
 void EC_Placeable::LookAt(const float3 &pos)
 {
-    OgreWorldPtr world = world_.lock();
-    if (world) 
+    Scene *scene = ParentScene();
+    if (scene) 
     {
         float3 targetLookatDir = pos - Position().Normalized();
-        ScenePtr scene = world->GetScene();
-        Quat endRot = Quat::LookAt(scene->ForwardVector(), targetLookatDir, scene->UpVector(), scene->UpVector());
+        Quat endRot = Quat::LookAt(scene->ForwardVector(), targetLookatDir, scene->UpVector(), scene->UpVector()); //NOTE: now using worldup for localup, which i figure is wrong when parented
         SetOrientation(endRot);
     }
     else
