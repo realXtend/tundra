@@ -153,7 +153,7 @@ void KristalliProtocolModule::OpenKNetLogWindow()
 }
 #endif
 
-void KristalliProtocolModule::Update(f64 frametime)
+void KristalliProtocolModule::Update(f64 /*frametime*/)
 {
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
