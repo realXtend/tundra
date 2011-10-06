@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include <QScriptEngine>
 #include <QMetaType>
 
@@ -11,7 +13,7 @@ QScriptValue qScriptValueFromQObject(QScriptEngine *engine, Tp const &qobject)
 
 template <typename Tp>
 void qScriptValueToQObject(const QScriptValue &value, Tp &qobject)
-{   
+{
     qobject = qobject_cast<Tp>(value.toQObject());
 }
 

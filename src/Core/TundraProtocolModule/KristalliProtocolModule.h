@@ -11,6 +11,7 @@
 #include <QObject>
 
 #ifdef KNET_USE_QT
+#include <QPointer>
 namespace kNet { class NetworkDialog; }
 #endif
 
@@ -127,7 +128,7 @@ public slots:
         /// Users that are connected to server
         UserConnectionList connections;
 #ifdef KNET_USE_QT
-        kNet::NetworkDialog *networkDialog;
+        QPointer<kNet::NetworkDialog> networkDialog;
 #endif
     };
 }

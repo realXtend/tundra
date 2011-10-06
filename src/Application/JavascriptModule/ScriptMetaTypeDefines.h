@@ -37,32 +37,6 @@ void qScriptValueToBoostSharedPtr(const QScriptValue &value, boost::shared_ptr<T
     ptr = obj->shared_from_this();
 }
 
-// The following functions help register a custom QObject-derived class to a QScriptEngine.
-// See http://lists.trolltech.com/qt-interest/2007-12/thread00158-0.html .
-template <typename Tp>
-QScriptValue qScriptValueFromQObject(QScriptEngine *engine, Tp const &qobject)
-{
-    return engine->newQObject(qobject);
-}
-
-/// @todo qobject_cast needed to replace with dynamic_cast in order to get IComponent type casted.
-/// for some reason qobject_cast will return us a null pointer. Figure out why qobject_cast wont work with IComponent.
-template <typename Tp>
-void qScriptValueToQObject(const QScriptValue &value, Tp &qobject)
-{
-    qobject = dynamic_cast<Tp>(value.toQObject());
-}
-
-template <typename Tp>
-int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &prototype = QScriptValue()
-#ifndef qdoc
-    , Tp * = 0
-#endif
-    )
-{
-    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject, qScriptValueToQObject, prototype);
-}
-
 template<typename T> QScriptValue toScriptValueEnum(QScriptEngine *engine, const T &s)
 {
     QScriptValue obj = engine->newObject();
