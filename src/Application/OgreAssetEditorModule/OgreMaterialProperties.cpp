@@ -177,18 +177,17 @@ PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr)
                 
                 // Don't insert tu's with empty texture names (i.e. shadowMap)
                 // add to " TU" to the end of the parameter name in order to identify texture units.
-                if(tu->getTextureName().size() > 0)
+                //if(tu->getTextureName().size() > 0)
                 {
                     QString tuName(tu->getName().c_str());
 
                     // Add QPROPERTY
                     TypeValuePair typeValuePair;
-                    typeValuePair[TextureTypeToString(tu->getTextureType())] = tu->getTextureName().c_str();
-                    setProperty(tuName.append(" TU").toLatin1(), typeValuePair);
+                    typeValuePair[OgreMaterialProperties::TextureTypeToString(tu->getTextureType())] = tu->getTextureName().c_str();
+                    ret[tuName.append(" TU").toLatin1()] = typeValuePair;
                 }
             }
-*/
-        }
+*/        }
     }
 
 
@@ -218,19 +217,19 @@ OgreMaterialProperties::~OgreMaterialProperties()
 //    SAFE_DELETE(material_);
 }
 
-bool OgreMaterialProperties::HasProperties()
+bool OgreMaterialProperties::HasProperties() const
 {
     return GetPropertyMap().size() > 0;
 }
 
-PropertyMap OgreMaterialProperties::GetPropertyMap()
+PropertyMap OgreMaterialProperties::GetPropertyMap() const
 {
     PropertyMap map;
 
     QListIterator<QByteArray> it(dynamicPropertyNames());
     while(it.hasNext())
     {
-        QString propertyName = it.next();
+        const QString &propertyName = it.next();
         if (propertyName.isNull() || propertyName.isEmpty())
             continue;
         map[propertyName] = property(propertyName.toStdString().c_str()).toMap();
@@ -660,117 +659,78 @@ QString OgreMaterialProperties::ToString()
     return QString(serializer.getQueuedAsString().c_str());
 }
 
-// static
 QString OgreMaterialProperties::GpuConstantTypeToString(const Ogre::GpuConstantType &type)
 {
     using namespace Ogre;
     ///@note We use GCT_UNKNOWN for texture units' texture names.
-
-    QString str("");
     switch(type)
     {
     case GCT_FLOAT1:
-        str = "FLOAT1";
-        break;
+        return "FLOAT1";
     case GCT_FLOAT2:
-        str = "FLOAT2";
-        break;
+        return "FLOAT2";
     case GCT_FLOAT3:
-        str = "FLOAT3";
-        break;
+        return "FLOAT3";
     case GCT_FLOAT4:
-        str = "FLOAT4";
-        break;
+        return "FLOAT4";
     case GCT_SAMPLER1D:
-        str = "SAMPLER1D";
-        break;
+        return "SAMPLER1D";
     case GCT_SAMPLER2D:
-        str = "SAMPLER2D";
-        break;
+        return "SAMPLER2D";
     case GCT_SAMPLER3D:
-        str = "SAMPLER3D";
-        break;
+        return "SAMPLER3D";
     case GCT_SAMPLERCUBE:
-        str = "SAMPLERCUBE";
-        break;
+        return "SAMPLERCUBE";
     case GCT_SAMPLER1DSHADOW:
-        str = "SAMPLER1DSHADOW";
-        break;
+        return "SAMPLER1DSHADOW";
     case GCT_SAMPLER2DSHADOW:
-        str = "SAMPLER2DSHADOW";
-        break;
+        return "SAMPLER2DSHADOW";
     case GCT_MATRIX_2X2:
-        str = "MATRIX_2X2";
-        break;
+        return "MATRIX_2X2";
     case GCT_MATRIX_2X3:
-        str = "MATRIX_2X3";
-        break;
+        return "MATRIX_2X3";
     case GCT_MATRIX_2X4:
-        str = "MATRIX_2X4";
-        break;
+        return "MATRIX_2X4";
     case GCT_MATRIX_3X2:
-        str = "MATRIX_3X2";
-        break;
+        return "MATRIX_3X2";
     case GCT_MATRIX_3X3:
-        str = "MATRIX_3X3";
-        break;
+        return "MATRIX_3X3";
     case GCT_MATRIX_3X4:
-        str = "MATRIX_3X4";
-        break;
+        return "MATRIX_3X4";
     case GCT_MATRIX_4X2:
-        str = "MATRIX_4X2";
-        break;
+        return "MATRIX_4X2";
     case GCT_MATRIX_4X3:
-        str = "MATRIX_4X3";
-        break;
+        return "MATRIX_4X3";
     case GCT_MATRIX_4X4:
-        str = "MATRIX_4X4";
-        break;
+        return "MATRIX_4X4";
     case GCT_INT1:
-        str = "INT1";
-        break;
+        return "INT1";
     case GCT_INT2:
-        str = "INT2";
-        break;
+        return "INT2";
     case GCT_INT3:
-        str = "INT3";
-        break;
+        return "INT3";
     case GCT_INT4:
-        str = "INT4";
-        break;
+        return "INT4";
     case GCT_UNKNOWN:
     default:
-        str = "UNKNOWN";
-        break;
+        return "UNKNOWN";
     };
-
-    return str;
 }
 
-// static
 QString OgreMaterialProperties::TextureTypeToString(const Ogre::TextureType &type)
 {
     using namespace Ogre;
-
-    QString str("");
     switch(type)
     {
     case TEX_TYPE_1D:
-        str = "TEX_1D";
-        break;
+        return "TEX_1D";
     case TEX_TYPE_2D:
-        str = "TEX_2D";
-        break;
+        return "TEX_2D";
     case TEX_TYPE_3D:
-        str = "TEX_3D";
-        break;
+        return "TEX_3D";
     case TEX_TYPE_CUBE_MAP:
-        str = "TEX_CUBEMAP";
-        break;
+        return "TEX_CUBEMAP";
     default:
-        str = "UNKNOWN";
-        break;
+        return "UNKNOWN";
     };
-
-    return str;
 }
