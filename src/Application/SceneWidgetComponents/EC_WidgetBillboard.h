@@ -52,11 +52,12 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(int, ppm);
 
 public slots:
+    /// Update redering.
     void Render();
 
 private slots:
-    /// Delayed rendering.
-    void RenderDelayed();
+    // Internal render called by a delay timer from Render(), due the fact that qt does resize etc operations lazily.
+    void RenderInternal();
 
     /// Returns if the component is prepared.
     bool IsPrepared();

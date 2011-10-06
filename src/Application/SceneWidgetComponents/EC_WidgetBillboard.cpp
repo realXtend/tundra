@@ -34,6 +34,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QUuid>
+#include <QResizeEvent>
 
 EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
     IComponent(scene),
@@ -84,9 +85,9 @@ EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
         connect(refListener_, SIGNAL(Loaded(AssetPtr)), SLOT(OnUiAssetLoaded(AssetPtr)));
         connect(refListener_, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(OnUiAssetLoadFailed(IAssetTransfer*, QString)));
 
-        // Render timer
+        // RenderInternal timer
         renderTimer_.setSingleShot(true);
-        connect(&renderTimer_, SIGNAL(timeout()), SLOT(Render()));
+        connect(&renderTimer_, SIGNAL(timeout()), SLOT(RenderInternal()));
 
         // Init widget container and scene
         widgetContainer_ = new QGraphicsView();
@@ -96,8 +97,8 @@ EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
         QGraphicsScene *scene = new QGraphicsScene(widgetContainer_);
         widgetContainer_->setScene(scene);
 
-        connect(scene, SIGNAL(changed(const QList<QRectF>&)), SLOT(RenderDelayed()));
-        connect(framework->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), SLOT(RenderDelayed())); 
+        connect(scene, SIGNAL(changed(const QList<QRectF>&)), SLOT(Render()));
+        connect(framework->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), SLOT(Render())); 
     }
     else
         LogError("EC_WidgetBillboard: Failed to get OgreRenderingModule!");
@@ -135,6 +136,17 @@ EC_WidgetBillboard::~EC_WidgetBillboard()
 // Public slots
 
 void EC_WidgetBillboard::Render()
+{
+    if (rendering_)
+        return;
+
+    if (!renderTimer_.isActive())
+        renderTimer_.start(10);
+}
+
+// Private slots
+
+void EC_WidgetBillboard::RenderInternal()
 {
     if (!IsPrepared())
         return;
@@ -182,17 +194,6 @@ void EC_WidgetBillboard::Render()
         bb->setshow(getvisible());
 
     rendering_ = false;
-}
-
-// Private slots
-
-void EC_WidgetBillboard::RenderDelayed()
-{
-    if (rendering_)
-        return;
-
-    if (!renderTimer_.isActive())
-        renderTimer_.start(10);
 }
 
 bool EC_WidgetBillboard::IsPrepared()
@@ -260,7 +261,7 @@ void EC_WidgetBillboard::PrepareComponent()
     else
         LogError("EC_WidgetBillboard: Created material assets are null!");
 
-    Render();
+    RenderInternal();
 }
 
 void EC_WidgetBillboard::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
@@ -355,7 +356,7 @@ void EC_WidgetBillboard::OnUiAssetLoaded(AssetPtr asset)
     QGraphicsProxyWidget *proxy = widgetContainer_->scene()->addWidget(widget_, Qt::Widget);
     proxy->setPos(0, 0);
 
-    Render();
+    RenderInternal();
 }
 
 void EC_WidgetBillboard::OnUiAssetLoadFailed(IAssetTransfer *transfer, QString reason)
@@ -372,7 +373,18 @@ bool EC_WidgetBillboard::eventFilter(QObject *obj, QEvent *e)
          e->type() == QEvent::Resize ||
          e->type() == QEvent::UpdateRequest))
     {
-        RenderDelayed();
+        // Keep view/scene in sync with widget size
+        if (widgetContainer_ && e->type() == QEvent::Resize)
+        {
+            QResizeEvent *rEvent = dynamic_cast<QResizeEvent*>(e);
+            if (rEvent)
+            {
+                widgetContainer_->resize(rEvent->size());
+                widgetContainer_->setSceneRect(0, 0, rEvent->size().width(), rEvent->size().height());
+            }
+        }
+
+        Render();
         return true;
     }
 
@@ -414,7 +426,7 @@ void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent)
         if (!mEvent->IsLeftButtonDown())
         {
             SendWidgetMouseEvent(widgetPos, QEvent::MouseMove, Qt::NoButton);
-            RenderDelayed();
+            Render();
         }
         return;
     }
@@ -426,7 +438,7 @@ void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent)
     if (type == QEvent::MouseButtonRelease)
     {
         SendWidgetMouseEvent(widgetPos, QEvent::MouseMove, Qt::NoButton);
-        RenderDelayed();
+        Render();
         leftPressReleased_ = true;
     }
     else
@@ -534,6 +546,6 @@ void EC_WidgetBillboard::CheckWidgetMouseRelease()
         SendWidgetMouseEvent(QPoint(0,0), QEvent::MouseMove, Qt::NoButton);
         leftPressReleased_ = true;
 
-        RenderDelayed();
+        Render();
     }
 }
