@@ -73,7 +73,6 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
             menu->insertAction(menu->actions().size() > 0 ? menu->actions().first() : 0, openAction);
 
             int offset = 1;
-/*
             // Ogre materials are opened in the visual editor by default.
             // Add another action for opening in raw text editor.
             if (asset->Type() == "OgreMaterial")
@@ -84,7 +83,7 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
                 menu->insertAction(*(menu->actions().begin() + offset), openRawAction);
                 ++offset;
             }
-*/
+
             menu->insertSeparator(*(menu->actions().begin() + offset));
         }
     }
@@ -107,10 +106,10 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     }
     else if (asset->Type() == "OgreMaterial")
     {
-//        if (action->objectName() == "EditRaw")
+        if (action->objectName() == "EditRaw")
             editor = new OgreScriptEditor(asset, framework_);
-//        else
-//            editor = new OgreMaterialEditor(asset, framework_);
+        else
+            editor = new OgreMaterialEditor(asset, framework_);
     }
     else if (asset->Type() == "OgreParticle")
     {

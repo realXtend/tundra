@@ -41,7 +41,7 @@
       <number>0</number>
      </property>
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="ambientLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
          <horstretch>0</horstretch>
@@ -205,7 +205,7 @@
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="specularLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
          <horstretch>0</horstretch>
@@ -224,7 +224,7 @@
       </widget>
      </item>
      <item row="0" column="3">
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="diffuseLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
          <horstretch>0</horstretch>
@@ -268,7 +268,7 @@
       </widget>
      </item>
      <item row="2" column="3">
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="emissiveLabel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
          <horstretch>0</horstretch>
