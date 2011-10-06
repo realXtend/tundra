@@ -783,8 +783,8 @@ void EC_Placeable::LookAt(const float3 &pos)
     Scene *scene = ParentScene();
     if (scene) 
     {
-        float3 targetLookatDir = pos - Position().Normalized();
-        Quat endRot = Quat::LookAt(scene->ForwardVector(), targetLookatDir, scene->UpVector(), scene->UpVector()); //NOTE: now using worldup for localup, which i figure is wrong when parented
+        float3 targetLookatDir = (pos - Position()).Normalized();
+        Quat endRot = Quat::LookAt(scene->ForwardVector(), targetLookatDir, scene->UpVector(), scene->UpVector()); //NOTE: now using worldup for localup, which i figure is wrong wh)en parented
         SetOrientation(endRot);
     }
     else
