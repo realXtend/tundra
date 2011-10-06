@@ -122,8 +122,7 @@ public:
     void SetParentEntity(Entity* entity);
 
     /// Returns the list of all Attributes in this component for reflection purposes.
-    /** *Warning*: because attribute reindexing is not performed when dynamic attributes are removed, you *must* be prepared for null pointers when examining this!
-     */
+    /** *Warning*: because attribute reindexing is not performed when dynamic attributes are removed, you *must* be prepared for null pointers when examining this! */
     const AttributeVector& Attributes() const { return attributes; }
 
     /// Returns a list of all attributes with null attributes sanitated away. This is slower than Attributes().
@@ -244,12 +243,14 @@ public slots:
     void ComponentChanged(AttributeChange::Type change);
 
     /// Returns the Entity this Component is part of.
-    /** @note Calling this function will return null if it is called in the ctor of this Component. This is
-              because the parent entity has not yet been set with a call to SetParentEntity at that point. */
+    /** @note Calling this function will return null if it is called in the ctor or dtor of this Component.
+        This is because the parent entity has not yet been set with a call to SetParentEntity at that point,
+        and parent entity is set to null before the actual Component is destroyed. */
     Entity* ParentEntity() const;
 
     /// Returns the scene this Component is part of.
-    /** May return null if component is not in an entity or entity is not in a scene. */
+    /** May return null if component is not in an entity or entity is not in a scene.
+        @sa ParentEntity */
     Scene* ParentScene() const;
 
     /// Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
