@@ -102,12 +102,16 @@ KristalliProtocolModule::KristalliProtocolModule() :
     reconnectAttempts(0),
     connectionPending(false),
     serverPort(0)
+#ifdef KNET_USE_QT
+    ,networkDialog(0)
+#endif
 {
 }
 
 KristalliProtocolModule::~KristalliProtocolModule()
 {
     Disconnect();
+    SAFE_DELETE(networkDialog);
 }
 
 void KristalliProtocolModule::Load()
@@ -140,11 +144,12 @@ void KristalliProtocolModule::Uninitialize()
 #ifdef KNET_USE_QT
 void KristalliProtocolModule::OpenKNetLogWindow()
 {
-    NetworkDialog *networkDialog = new NetworkDialog(0, &network);
-    networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+    if (!networkDialog)
+    {
+        networkDialog = new NetworkDialog(0, &network);
+        networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+    }
     networkDialog->show();
-
-    return;
 }
 #endif
 
