@@ -102,18 +102,15 @@ void OgreMaterialEditor::Populate()
     QFile passFile(Application::InstallationDirectory() + "data/ui/MaterialEditorPassTab.ui");
     if (!passFile.exists())
     {
-        LogError("OgreMaterialEditor: Cannot find material editor ui file!");
+        LogError("OgreMaterialEditor: Cannot find material editor pass ui file!");
         return;
     }
     QFile tuFile(Application::InstallationDirectory() + "data/ui/MaterialEditorTuTab.ui");
-    if (!passFile.exists())
+    if (!tuFile.exists())
     {
-        LogError("OgreMaterialEditor: Cannot find material editor ui file!");
+        LogError("OgreMaterialEditor: Cannot find material editor texture unit ui file!");
         return;
     }
-
-    QWidget *passWidget = loader.load(&passFile, tabWidget);
-    passFile.close();
 
     const int techIndex = 0;
     ///\todo Currently only one technique supported
@@ -122,6 +119,10 @@ void OgreMaterialEditor::Populate()
         const int numPasses = mat->GetNumPasses(techIndex);
         for(int passIndex = 0; passIndex < numPasses; ++passIndex)
         {
+            QFile passFile(Application::InstallationDirectory() + "data/ui/MaterialEditorPassTab.ui");
+            QWidget *passWidget = loader.load(&passFile, tabWidget);
+            passFile.close();
+
             const QString techniquePassId = ";" + QString::number(techIndex) + ";" + QString::number(passIndex);
             // Gather the initial values.
             Color ambientColor = mat->AmbientColor(techIndex, passIndex);
