@@ -66,6 +66,16 @@ namespace CAVEStereo
     {
         cave_->GetCaveWidget()->show();
     }
+
+    void CAVEStereoModule::TakeScreenshots(QString path, QString filename) 
+    {
+        stereo_->TakeScreenshots(path, filename);
+    }
+
+    void CAVEStereoModule::EnableStereo(QString tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width) 
+    {
+        stereo_->EnableStereo(tech_type, eye_dist, focal_l, offset, scrn_width);
+    }
 }
 
 extern "C"
