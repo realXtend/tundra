@@ -20,8 +20,6 @@
 
 #include "AssetFwd.h"
 
-class Framework;
-
 typedef QMap<QString, QVariant> PropertyMap;
 typedef QMap<QString, QVariant> TypeValuePair;
 typedef QMapIterator<QString, QVariant> PropertyMapIter;
@@ -29,7 +27,7 @@ typedef QMapIterator<QString, QVariant> PropertyMapIter;
 /// Gathers name-value map of shader parameters of Ogre material.
 /** @param matPtr Material to be inspected.
     @return Property map QMap[QString(name), QVariant[QMap[QString(type), QVariant(value)]]]. */
-PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr);
+PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr, bool includeTextureUnits = false);
 
 /// Dynamically created QProperties for OGRE material scripts.
 ///\todo Cleanup
