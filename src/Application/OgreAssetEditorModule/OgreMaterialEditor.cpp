@@ -23,21 +23,19 @@
 
 #include "MemoryLeakCheck.h"
 
-const QString cNoShader("NoShader");
+const QString cNoShader("NoShader/Unknown");
 
 OgreMaterialEditor::OgreMaterialEditor(const AssetPtr &materialAsset, Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
     asset(materialAsset),
     shaderAttributeTable(0),
+    tabWidget(0),
     tuTabWidget(0)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
     setLayout(layout);
-
-    tabWidget = new QTabWidget(this);
-    layout->addWidget(tabWidget);
 
     SetMaterialAsset(materialAsset);
 }
@@ -96,6 +94,10 @@ void OgreMaterialEditor::Populate()
         LogError("OgreMaterialEditor: Invalid number of techiques (" + QString::number(numTechniques) + ") for material " + assetPtr->Name() + ".");
         return;
     }
+
+    SAFE_DELETE(tabWidget);
+    tabWidget = new QTabWidget(this);
+    static_cast<QVBoxLayout *>(layout())->addWidget(tabWidget);
 
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
@@ -282,7 +284,7 @@ void OgreMaterialEditor::Populate()
             tabWidget->addTab(passWidget, "Pass" + QString::number(passIndex));
 
             // Populate shader attributes (if any)
-            PopulateShaderAttributes();
+            PopulateShaderAttributes(techIndex, passIndex);
 
             connect(srcBlendComboBox, SIGNAL(currentIndexChanged(int)), SLOT(SetSrcBlendFactor(int)), Qt::UniqueConnection);
             connect(dstBlendComboBox, SIGNAL(currentIndexChanged(int)), SLOT(SetDstBlendFactor(int)), Qt::UniqueConnection);
@@ -661,7 +663,7 @@ void OgreMaterialEditor::SetShader(const QString &shader)
         LogDebug("SetShader pixel: " + mat->PixelShader(techIndex, passIndex));
     }
 
-    PopulateShaderAttributes();
+    PopulateShaderAttributes(techIndex, passIndex);
 
     ///\todo
     // Shader template changed, so so will texture units. Remove the old ones and generate new ones.
@@ -679,6 +681,49 @@ void OgreMaterialEditor::SetShader(const QString &shader)
             PopulateTextureUnits(ti, pi);
     }
 */
+}
+
+void OgreMaterialEditor::SetShaderAttributeValue()
+{
+    assert(sender());
+    if (!sender())
+        return;
+    QStringList indices = sender()->objectName().split(";");
+    if (indices.size() != 4)
+    {
+        LogError("Invalid object name " + sender()->objectName());
+        return;
+    }
+
+    QString attrName = indices[0].split(" ")[0];
+    QString type = indices[0].split(" ")[1];
+    int row = indices[1].toInt(), techIndex = indices[2].toInt(), passIndex = indices[3].toInt();
+    OgreMaterialAsset *mat = dynamic_cast<OgreMaterialAsset *>(asset.lock().get());
+    if (!mat)
+    {
+        LogError("OgreMaterialEditor: Invalid asset.");
+        return;
+    }
+
+    // Gather values for the entire row.
+    QVariantList value;
+    for(int column = 0; column < shaderAttributeTable->columnCount(); ++column)
+    {
+        QTableWidgetItem *item = shaderAttributeTable->item(row, column);
+        if ((item->flags() & Qt::ItemIsEditable) != 0)
+        {
+            LogInfo(item->data(Qt::DisplayRole).toString());
+            value.push_back(item->data(Qt::DisplayRole));
+        }
+    }
+
+    if (type.contains("VP"))
+        mat->SetVertexShaderParameter(techIndex, passIndex, attrName, value);
+    else if (type.contains("FP"))
+        mat->SetPixelShaderParameter(techIndex, passIndex, attrName, value);
+    else
+        LogError("SetShaderAttribute: Invalid type: " + type);
+
 }
 
 void OgreMaterialEditor::SetTexAssetRef()
@@ -844,12 +889,11 @@ void OgreMaterialEditor::SetRotateAnim(double value)
     LogDebug("SetRotateAnimation " + QString::number(mat->RotateAnimation(techIndex, passIndex, tuIndex)));
 }
 
-void OgreMaterialEditor::PopulateShaderAttributes()
+void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
 {
     ///\todo Enable this function
-    QLabel *l = findChild<QLabel *>("shaderAttributesLabel");
-    if (l) l->hide();
-/*
+//    QLabel *l = findChild<QLabel *>("shaderAttributesLabel");
+//    if (l) l->hide();
     OgreMaterialAsset *mat = dynamic_cast<OgreMaterialAsset *>(asset.lock().get());
     if (!mat)
     {
@@ -897,7 +941,7 @@ void OgreMaterialEditor::PopulateShaderAttributes()
                 valueItem->setFlags(flags);
             }
 
-            valueItem->setData(Qt::DisplayRole, typeValuePair.begin().value());
+            //valueItem->setData(Qt::DisplayRole, typeValuePair.begin().value());
 
             shaderAttributeTable->setItem(row, 0, nameItem);
             shaderAttributeTable->setItem(row, 1, typeItem);
@@ -916,7 +960,10 @@ void OgreMaterialEditor::PopulateShaderAttributes()
 
                 // Set custom editor delegate
                 SpinBoxDelegate *spinBoxDelegate = new SpinBoxDelegate(Ogre::GpuConstantDefinition::isFloat(type), shaderAttributeTable);
+                // Set special identifying object name: 'name;rowIndex;techIndex;passIndex'
+                spinBoxDelegate->setObjectName(it.key() + QString(";%1;%2;%3)").arg(row).arg(techIndex).arg(passIndex));
                 shaderAttributeTable->setItemDelegateForRow(row, spinBoxDelegate);
+                connect(spinBoxDelegate, SIGNAL(closeEditor(QWidget *, QAbstractItemDelegate::EndEditHint)), SLOT(SetShaderAttributeValue()), Qt::UniqueConnection);
             }
 
             numColumns = Max(numColumns, numElems+2);
@@ -934,7 +981,6 @@ void OgreMaterialEditor::PopulateShaderAttributes()
 
         shaderAttributeTable->show();
     }
-*/
 }
 
 void OgreMaterialEditor::PopulateTextureUnits(int techIndex, int passIndex)
@@ -1038,13 +1084,9 @@ void OgreMaterialEditor::PopulateTextureUnits(int techIndex, int passIndex)
         QDoubleSpinBox *rotateAnimSpinBox = tuWidget->findChild<QDoubleSpinBox *>("rotateAnimSpinBox");
         rotateAnimSpinBox->setObjectName(rotateAnimSpinBox->objectName() + techniquePassTuId);
         if (rotateAnimEnabled)
-        {
             rotateAnimSpinBox->setValue(rotate);
-        }
         else
-        {
             rotateAnimSpinBox->setDisabled(true);
-        }
 
         connect(assetRefLineEdit, SIGNAL(editingFinished()), SLOT(SetTexAssetRef()), Qt::UniqueConnection);
         connect(texCoordSetSpinBox, SIGNAL(valueChanged(int)), SLOT(SetTexCoordSet(int)), Qt::UniqueConnection);
@@ -1058,7 +1100,6 @@ void OgreMaterialEditor::PopulateTextureUnits(int techIndex, int passIndex)
 
         tuTabWidget->addTab(tuWidget, tu->getName().c_str());
     }
-
 }
 
 void OgreMaterialEditor::OnAssetTransferSucceeded(AssetPtr scriptAsset)
@@ -1071,6 +1112,8 @@ void OgreMaterialEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString
     LogError("OgreMaterialEditor::OnAssetTransferFailed: " + reason);
     //setText("Could not load asset: " + reason);
 }
+
+// SpinBoxDelegate
 
 SpinBoxDelegate::SpinBoxDelegate(bool floatingPoint_, QObject *parent) : QItemDelegate(parent), floatingPoint(floatingPoint_)
 {
@@ -1136,4 +1179,3 @@ void SpinBoxDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionVi
 {
     editor->setGeometry(option.rect);
 }
-

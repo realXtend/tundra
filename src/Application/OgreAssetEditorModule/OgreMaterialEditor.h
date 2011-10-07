@@ -52,6 +52,7 @@ private slots:
     void SetFillMode(int);
     void SetColorWrite(int);
     void SetShader(const QString &);
+    void SetShaderAttributeValue();
     // TU attribute setters
     void SetTexAssetRef();
     void SetTexCoordSet(int);
@@ -60,7 +61,7 @@ private slots:
     void SetScrollAnimV(double);
     void SetRotateAnim(double);
 
-    void PopulateShaderAttributes();
+    void PopulateShaderAttributes(int techIndex, int passIndex);
     void PopulateTextureUnits(int techIndex, int passIndex);
 
     void OnAssetTransferSucceeded(AssetPtr asset);
