@@ -101,6 +101,22 @@ public slots:
     bool SetPixelShader(int techIndex, int passIndex, const QString& pixelShaderName);
     QString PixelShader(int techIndex, int passIndex) const;
 
+    /// Sets vertex shader parameter value.
+    /** Supported value types are int, float, float4/Color, float4x4.
+        @param techIndex Technique index.
+        @param passIndexx Pass index.
+        @param name Name of the shader parameter.
+        @param value List of values to be set. */
+    bool SetVertexShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value);
+
+    /// Sets pixel shader parameter value.
+    /** Supported value types are int, float, float4/Color, float4x4.
+        @param techIndex Technique index.
+        @param passIndexx Pass index.
+        @param name Name of the shader parameter.
+        @param value List of values to be set. */
+    bool SetPixelShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value);
+
     /// Enable or disable lighting in a pass
     bool SetLighting(int techIndex, int passIndex, bool enable);
     bool IsLightingEnabled(int techIndex, int passIndex) const;

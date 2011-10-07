@@ -960,6 +960,184 @@ QString OgreMaterialAsset::PixelShader(int techIndex, int passIndex) const
     return pass->getFragmentProgramName().c_str();
 }
 
+bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::SetVertexShaderParameter: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return false;
+    }
+    const Ogre::GpuProgramPtr &verProg = pass->getVertexProgram();
+    if (verProg.isNull())
+    {
+        LogError("OgreMaterialAsset::SetVertexShaderParameter: pass has not vertext program.");
+        return false;
+    }
+    Ogre::GpuProgramParametersSharedPtr verPtr = pass->getVertexProgramParameters();
+    if (!verPtr->hasNamedParameters())
+    {
+        LogError("OgreMaterialAsset::SetVertexShaderParameter: vertex program has no named parameters.");
+        return false;
+    }
+    Ogre::GpuConstantDefinitionIterator mapIter = verPtr->getConstantDefinitionIterator();
+    while(mapIter.hasMoreElements())
+    {
+        QString paramName(mapIter.peekNextKey().c_str());
+        const Ogre::GpuConstantDefinition &paramDef = mapIter.getNext();
+        if (paramName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
+            continue;
+        if (paramName != name)
+            continue;
+
+        bool isFloat = paramDef.isFloat();
+        size_t size = paramDef.elementSize * paramDef.arraySize;
+
+        if (value.size() == 16)
+        {
+            LogDebug("writing float4x4");
+            Ogre::Matrix4 matrix(
+                value[0].toDouble(), value[1].toDouble(), value[2].toDouble(), value[3].toDouble(),
+                value[4].toDouble(), value[5].toDouble(), value[6].toDouble(), value[7].toDouble(),
+                value[8].toDouble(), value[9].toDouble(), value[10].toDouble(), value[11].toDouble(),
+                value[12].toDouble(), value[13].toDouble(), value[14].toDouble(), value[15].toDouble());
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+            verPtr->_writeRawConstant(paramDef.physicalIndex, matrix);
+#else
+            verPtr->_writeRawConstant(paramDef.physicalIndex, matrix, size);
+            return true;
+#endif
+        }
+        else if (value.size() == 4)
+        {
+            Ogre::Vector4 vector;
+            if (isFloat)
+            {
+                LogDebug("writing float4");
+                vector = Ogre::Vector4(value[0].toDouble(), value[1].toDouble(), value[2].toDouble(), value[3].toDouble());
+            }
+            else
+            {
+                LogDebug("writing int4");
+                vector = Ogre::Vector4(value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt());
+            }
+
+            verPtr->_writeRawConstant(paramDef.physicalIndex, vector);
+            return true;
+        }
+        else if (value.size() == 1)
+        {
+            if (isFloat)
+            {
+                LogDebug("Writing float");
+                verPtr->_writeRawConstant(paramDef.physicalIndex, (Ogre::Real)value[0].toDouble());
+            }
+            else
+            {
+                LogDebug("Writing int.");
+                verPtr->_writeRawConstant(paramDef.physicalIndex, value[0].toInt());
+            }
+            return true;
+        }
+        else
+        {
+            LogError(QString("OgreMaterialAsset::SetVertexShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(name).arg(size));
+            return false;
+        }
+    }
+
+    return false;
+}
+
+bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::SetPixelShaderParameter: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return false;
+    }
+    const Ogre::GpuProgramPtr &fragProg = pass->getFragmentProgram();
+    if (fragProg.isNull())
+    {
+        LogError("OgreMaterialAsset::SetPixelShaderParameter: pass has not fragment program.");
+        return false;
+    }
+    Ogre::GpuProgramParametersSharedPtr fragPtr = pass->getFragmentProgramParameters();
+    if (!fragPtr->hasNamedParameters())
+    {
+        LogError("OgreMaterialAsset::SetPixelShaderParameter: fragment program has no named parameters.");
+        return false;
+    }
+    Ogre::GpuConstantDefinitionIterator mapIter = fragPtr->getConstantDefinitionIterator();
+    while(mapIter.hasMoreElements())
+    {
+        QString paramName(mapIter.peekNextKey().c_str());
+        const Ogre::GpuConstantDefinition &paramDef = mapIter.getNext();
+        if (paramName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
+            continue;
+        if (paramName != name)
+            continue;
+
+        bool isFloat = paramDef.isFloat();
+        size_t size = paramDef.elementSize * paramDef.arraySize;
+
+        if (value.size() == 16)
+        {
+            LogDebug("writing float4x4");
+            Ogre::Matrix4 matrix(
+                value[0].toDouble(), value[1].toDouble(), value[2].toDouble(), value[3].toDouble(),
+                value[4].toDouble(), value[5].toDouble(), value[6].toDouble(), value[7].toDouble(),
+                value[8].toDouble(), value[9].toDouble(), value[10].toDouble(), value[11].toDouble(),
+                value[12].toDouble(), value[13].toDouble(), value[14].toDouble(), value[15].toDouble());
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+            fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix);
+#else
+            fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix, size);
+            return true;
+#endif
+        }
+        else if (value.size() == 4)
+        {
+            Ogre::Vector4 vector;
+            if (isFloat)
+            {
+                LogDebug("writing float4");
+                vector = Ogre::Vector4(value[0].toDouble(), value[1].toDouble(), value[2].toDouble(), value[3].toDouble());
+            }
+            else
+            {
+                LogDebug("writing int4");
+                vector = Ogre::Vector4(value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt());
+            }
+
+            fragPtr->_writeRawConstant(paramDef.physicalIndex, vector);
+            return true;
+        }
+        else if (value.size() == 1)
+        {
+            if (isFloat)
+            {
+                LogDebug("Writing float");
+                fragPtr->_writeRawConstant(paramDef.physicalIndex, (Ogre::Real)value[0].toDouble());
+            }
+            else
+            {
+                LogDebug("Writing int.");
+                fragPtr->_writeRawConstant(paramDef.physicalIndex, value[0].toInt());
+            }
+            return true;
+        }
+        else
+        {
+            LogError(QString("OgreMaterialAsset::SetPixelShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(name).arg(size));
+            return false;
+        }
+    }
+
+    return false;
+}
+
 bool OgreMaterialAsset::SetLighting(int techIndex, int passIndex, bool enable)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
