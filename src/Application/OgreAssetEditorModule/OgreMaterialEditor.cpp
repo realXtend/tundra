@@ -29,7 +29,8 @@ OgreMaterialEditor::OgreMaterialEditor(const AssetPtr &materialAsset, Framework 
     QWidget(parent),
     framework(fw),
     asset(materialAsset),
-    shaderAttributeTable(0)
+    shaderAttributeTable(0),
+    tuTabWidget(0)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -104,6 +105,12 @@ void OgreMaterialEditor::Populate()
         LogError("OgreMaterialEditor: Cannot find material editor ui file!");
         return;
     }
+    QFile tuFile(Application::InstallationDirectory() + "data/ui/MaterialEditorTuTab.ui");
+    if (!passFile.exists())
+    {
+        LogError("OgreMaterialEditor: Cannot find material editor ui file!");
+        return;
+    }
 
     QWidget *passWidget = loader.load(&passFile, tabWidget);
     passFile.close();
@@ -117,6 +124,10 @@ void OgreMaterialEditor::Populate()
         {
             const QString techniquePassId = ";" + QString::number(techIndex) + ";" + QString::number(passIndex);
             // Gather the initial values.
+            Color ambientColor = mat->AmbientColor(techIndex, passIndex);
+            Color diffuseColor = mat->DiffuseColor(techIndex, passIndex);
+            Color specularColor = mat->SpecularColor(techIndex, passIndex);
+            Color emissiveColor = mat->EmissiveColor(techIndex, passIndex);
             unsigned srcFactor = mat->SourceSceneBlendFactor(techIndex, passIndex);
             unsigned dstFactor = mat->DestinationSceneBlendFactor(techIndex, passIndex);
             bool depthCheck = mat->IsDepthCheckEnabled(techIndex, passIndex);
@@ -127,31 +138,61 @@ void OgreMaterialEditor::Populate()
             unsigned fillMode = mat->FillMode(techIndex, passIndex);
             unsigned cullingMode = mat->HardwareCullingMode(techIndex, passIndex);
             bool colorWrite = mat->IsColorWriteEnabled(techIndex, passIndex);
+            //QString pixelShader = mat->PixelShader(techIndex, passIndex);
+            QString vertexShader = mat->VertexShader(techIndex, passIndex);
 
+            // Ambient color
             QPixmap colorIcon(24,24);
-            colorIcon.fill(mat->AmbientColor(techIndex, passIndex));
+            colorIcon.fill(ambientColor);
             QPushButton *btn = passWidget->findChild<QPushButton *>("ambientColor");
             btn->setObjectName(btn->objectName() + techniquePassId);
             btn->setIcon(colorIcon);
             connect(btn, SIGNAL(clicked()), SLOT(OpenColorPicker()), Qt::UniqueConnection);
+            ///\todo SuperShaders don't currently support color. Disable color widgets for them.
+            if (vertexShader.contains("rex/"))
+            {
+                btn->hide();
+                passWidget->findChild<QLabel *>("ambientLabel")->hide();
+            }
 
-            colorIcon.fill(mat->DiffuseColor(techIndex, passIndex));
+            // Diffuse color
+            colorIcon.fill(diffuseColor);
             btn = passWidget->findChild<QPushButton *>("diffuseColor");
             btn->setObjectName(btn->objectName() + techniquePassId);
             btn->setIcon(colorIcon);
             connect(btn, SIGNAL(clicked()), SLOT(OpenColorPicker()), Qt::UniqueConnection);
+            ///\todo SuperShaders don't currently support color. Disable color widgets for them.
+            if (vertexShader.contains("rex/"))
+            {
+                btn->hide();
+                passWidget->findChild<QLabel *>("diffuseLabel")->hide();
+            }
 
-            colorIcon.fill(mat->SpecularColor(techIndex, passIndex));
+            // Specular color
+            colorIcon.fill(specularColor);
             btn = passWidget->findChild<QPushButton *>("specularColor");
             btn->setObjectName(btn->objectName() + techniquePassId);
             btn->setIcon(colorIcon);
             connect(btn, SIGNAL(clicked()), SLOT(OpenColorPicker()), Qt::UniqueConnection);
+            ///\todo SuperShaders don't currently support color. Disable color widgets for them.
+            if (vertexShader.contains("rex/"))
+            {
+                btn->hide();
+                passWidget->findChild<QLabel *>("specularLabel")->hide();
+            }
 
-            colorIcon.fill(mat->EmissiveColor(techIndex, passIndex));
+            // Emissive color
+            colorIcon.fill(emissiveColor);
             btn = passWidget->findChild<QPushButton *>("emissiveColor");
             btn->setObjectName(btn->objectName() + techniquePassId);
             btn->setIcon(colorIcon);
             connect(btn, SIGNAL(clicked()), SLOT(OpenColorPicker()), Qt::UniqueConnection);
+            ///\todo SuperShaders don't currently support color. Disable color widgets for them.
+            if (vertexShader.contains("rex/"))
+            {
+                btn->hide();
+                passWidget->findChild<QLabel *>("emissiveLabel")->hide();
+            }
 
             // Append technique and pass indices to the object names so we can keep track of them when setting new values.
             QComboBox *srcBlendComboBox = passWidget->findChild<QComboBox *>("srcBlendComboBox");
@@ -163,7 +204,7 @@ void OgreMaterialEditor::Populate()
                 "one_minus_src_colour" << "dest_alpha" << "src_alpha" << "one_minus_dest_alpha" << "one_minus_src_alpha");
             srcBlendComboBox->addItems(blendFactors);
             dstBlendComboBox ->addItems(blendFactors);
-            srcBlendComboBox->setCurrentIndex(srcFactor); // All the Ogre enum values map directly to the index in the combo box.
+            srcBlendComboBox->setCurrentIndex(srcFactor); // For these the Ogre enum values map directly to the index in the combo box.
             dstBlendComboBox->setCurrentIndex(dstFactor);
 
             QCheckBox *depthTestCheckBox = passWidget->findChild<QCheckBox *>("depthTestCheckBox");
@@ -182,7 +223,7 @@ void OgreMaterialEditor::Populate()
             cullingComboBox->setObjectName(cullingComboBox->objectName() + techniquePassId);
             QStringList hwCullingModes(QStringList() << "clockwise" << "anticlockwise" << "none");
             cullingComboBox->addItems(hwCullingModes);
-            cullingComboBox->setCurrentIndex(cullingMode);
+            cullingComboBox->setCurrentIndex(cullingMode-1); // Ogre odditities #n: enum values are 1-3
 
             QCheckBox *lightingCheckBox = passWidget->findChild<QCheckBox *>("lightingCheckBox");
             lightingCheckBox->setObjectName(lightingCheckBox->objectName() + techniquePassId);
@@ -196,15 +237,17 @@ void OgreMaterialEditor::Populate()
 
             QComboBox *fillComboBox = passWidget->findChild<QComboBox *>("fillComboBox");
             fillComboBox->setObjectName(fillComboBox->objectName() + techniquePassId);
-            QStringList fillModes(QStringList() << "solid" << "wireframe" << "points");
+            QStringList fillModes(QStringList() << "points" << "wireframe" << "solid" );
             fillComboBox->addItems(fillModes);
-            fillComboBox->setCurrentIndex(fillMode);
+            fillComboBox->setCurrentIndex(fillMode-1); // Ogre odditities #n: enum values are 1-3
 
             QCheckBox *colorWriteCheckBox = passWidget->findChild<QCheckBox *>("colorWriteCheckBox");
             colorWriteCheckBox->setObjectName(colorWriteCheckBox->objectName() + techniquePassId);
             colorWriteCheckBox->setChecked(colorWrite);
 
             QComboBox *shaderComboBox = passWidget->findChild<QComboBox *>("shaderComboBox");
+             ///\todo Enable
+            shaderComboBox->setDisabled(true);
             shaderComboBox->setObjectName(shaderComboBox->objectName() + techniquePassId);
             ///\todo Currently we handle VP and FP as inseparable pairs. Support for choosing different VP than FP will be added later on.
             ///\todo Currently uses the Ogre resources as source for shader. Use ShaderAsset if/when it exists.
@@ -225,8 +268,6 @@ void OgreMaterialEditor::Populate()
             QStringList shaderList = shaders.toList();
             shaderList.push_front(cNoShader);
 
-            //QString pixelShader = mat->PixelShader(techIndex, passIndex);
-            QString vertexShader = mat->VertexShader(techIndex, passIndex);
             vertexShader.replace("rex/", "");
             vertexShader.replace("VP", "");
             shaderComboBox->addItems(shaderList);
@@ -255,118 +296,7 @@ void OgreMaterialEditor::Populate()
             connect(shaderComboBox, SIGNAL(currentIndexChanged(const QString &)), SLOT(SetShader(const QString &)), Qt::UniqueConnection);
 
             // Populate texture units (if any)
-            QTabWidget *tuTab = 0;
-            int numTus = mat->GetNumTextureUnits(techIndex, passIndex);
-            if (numTus > 0)
-            {
-                tuTab = new QTabWidget(this);
-                static_cast<QVBoxLayout *>(layout())->addWidget(tuTab);
-            }
-            for(int tuIndex = 0; tuIndex < numTus; ++tuIndex)
-            {
-                Ogre::TextureUnitState* tu = mat->GetTextureUnit(techIndex, passIndex, tuIndex);
-                assert(tu);
-                if (!tu)
-                    continue;
-
-                QFile tuFile(Application::InstallationDirectory() + "data/ui/MaterialEditorTuTab.ui");
-                QWidget *tuWidget = loader.load(&tuFile, this);
-                tuFile.close();
-
-                const QString techniquePassTuId = techniquePassId + ";" + QString::number(tuIndex);
-
-                QString assetRef = AssetAPI::DesanitateAssetRef(tu->getTextureName()).c_str();
-                uint texCoordSet = mat->TextureCoordSet(techIndex, passIndex, tuIndex);
-                unsigned addrModeU = mat->TextureAddressingModeU(techIndex, passIndex, tuIndex);
-                unsigned addrModeV = mat->TextureAddressingModeV(techIndex, passIndex, tuIndex);
-                unsigned addrModeW = mat->TextureAddressingModeW(techIndex, passIndex, tuIndex);
-                if (!(addrModeU == addrModeV && addrModeU == addrModeW))
-                    LogWarning("OgreMaterialEditor: Non-uniform texture addressing modes for material " + mat->Name() + ".");
-
-                // Ogre weirdness: if texture has scroll effect of which u and v values are the same, it has Ogre ET_UVSCROLL.
-                // If it has scroll effect with different u and v values it has both ET_USCROLL and ET_VSCROLL.
-                bool uvScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_UVSCROLL);
-                bool uScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_USCROLL);
-                bool vScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_VSCROLL);
-                bool rotateAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_ROTATE);
-                bool scrollAnimEnabled = (uvScrollAnimEnabled || (uScrollAnimEnabled && vScrollAnimEnabled));
-                float scrollU = 0.f, scrollV = 0.f, rotate = 0.f;
-                if (uvScrollAnimEnabled)
-                {
-                    scrollU = mat->ScrollAnimationU(techIndex, passIndex, tuIndex);
-                    scrollV = scrollU;
-                }
-                else if (uScrollAnimEnabled && vScrollAnimEnabled)
-                {
-                    scrollU = mat->ScrollAnimationU(techIndex, passIndex, tuIndex);
-                    scrollV = mat->ScrollAnimationV(techIndex, passIndex, tuIndex);
-                }
-
-                if (rotateAnimEnabled)
-                    rotate = mat->RotateAnimation(techIndex, passIndex, tuIndex);
-
-                // Asset ref
-                QLineEdit *assetRefLineEdit = tuWidget->findChild<QLineEdit *>("assetRefLineEdit");
-                assetRefLineEdit->setObjectName(assetRefLineEdit->objectName() + techniquePassTuId);
-                assetRefLineEdit->setText(AssetAPI::DesanitateAssetRef(tu->getTextureName()).c_str());
-
-                // Tex coord set
-                QSpinBox *texCoordSetSpinBox = tuWidget->findChild<QSpinBox *>("texCoordSetSpinBox");
-                texCoordSetSpinBox->setObjectName(texCoordSetSpinBox->objectName() + techniquePassTuId);
-                texCoordSetSpinBox->setValue(texCoordSet);
-
-                // Addr mode
-                QComboBox *addrModeComboBox = tuWidget->findChild<QComboBox *>("addrModeComboBox");
-                addrModeComboBox->setObjectName(addrModeComboBox->objectName() + techniquePassTuId);
-
-                QStringList addrModes(QStringList() << "wrap" << "mirror" << "clamp" /*<< "border"*/); // Note: border omitted intentionally.
-                addrModeComboBox->addItems(addrModes);
-                assert(addrModeU < 4);
-                if (addrModeU > 3)
-                    LogWarning("");
-                else
-                    addrModeComboBox->setCurrentIndex(addrModeU);
-
-                // Scroll anim
-                QDoubleSpinBox *scrollAnimUSpinBox = tuWidget->findChild<QDoubleSpinBox *>("scrollAnimUSpinBox");
-                QDoubleSpinBox *scrollAnimVSpinBox = tuWidget->findChild<QDoubleSpinBox *>("scrollAnimVSpinBox");
-                if (scrollAnimEnabled)
-                {
-                    scrollAnimUSpinBox->setObjectName(scrollAnimUSpinBox->objectName() + techniquePassTuId);
-                    scrollAnimUSpinBox->setValue(scrollU);
-                    scrollAnimVSpinBox->setObjectName(scrollAnimVSpinBox->objectName() + techniquePassTuId);
-                    scrollAnimVSpinBox->setValue(scrollV);
-                }
-                else
-                {
-                    scrollAnimUSpinBox->setDisabled(true);
-                    scrollAnimVSpinBox->setDisabled(true);
-                }
-
-                // Rotate anim
-                QDoubleSpinBox *rotateAnimSpinBox = tuWidget->findChild<QDoubleSpinBox *>("rotateAnimSpinBox");
-                if (rotateAnimEnabled)
-                {
-                    rotateAnimSpinBox->setObjectName(rotateAnimSpinBox->objectName() + techniquePassTuId);
-                    rotateAnimSpinBox->setValue(rotate);
-                }
-                else
-                {
-                    rotateAnimSpinBox->setDisabled(true);
-                }
-
-                connect(assetRefLineEdit, SIGNAL(editingFinished()), SLOT(SetTexAssetRef()), Qt::UniqueConnection);
-                connect(texCoordSetSpinBox, SIGNAL(valueChanged(int)), SLOT(SetTexCoordSet(int)), Qt::UniqueConnection);
-                connect(addrModeComboBox, SIGNAL(currentIndexChanged(int)), SLOT(SetAddrMode(int)), Qt::UniqueConnection);
-                connect(scrollAnimUSpinBox, SIGNAL(valueChanged(double)), SLOT(SetScrollAnimU(double)), Qt::UniqueConnection);
-                connect(scrollAnimVSpinBox, SIGNAL(valueChanged(double)), SLOT(SetScrollAnimV(double)), Qt::UniqueConnection);
-                connect(rotateAnimSpinBox, SIGNAL(valueChanged(double)), SLOT(SetRotateAnim(double)), Qt::UniqueConnection);
-
-                QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
-                static_cast<QVBoxLayout *>(tuWidget->layout())->addSpacerItem(spacer);
-
-                tuTab->addTab(tuWidget, tu->getName().c_str());
-            }
+            PopulateTextureUnits(techIndex, passIndex);
         }
     }
 }
@@ -598,7 +528,8 @@ void OgreMaterialEditor::SetCullingMode(int mode)
         return;
     }
 
-    mat->SetHardwareCullingMode(techIndex, passIndex, mode);
+    // Ogre odditities #n: enum values are 1-3
+    mat->SetHardwareCullingMode(techIndex, passIndex, mode+1);
     LogDebug("SetCullingMode: " + QString::number(mat->HardwareCullingMode(techIndex, passIndex)));
 }
 
@@ -667,7 +598,8 @@ void OgreMaterialEditor::SetFillMode(int mode)
         return;
     }
 
-    mat->SetFillMode(techIndex, passIndex, mode);
+    // Ogre odditities #n: enum values are 1-3
+    mat->SetFillMode(techIndex, passIndex, mode+1);
     LogDebug("SetFillMode: " + QString::number(mat->FillMode(techIndex, passIndex)));
 }
 
@@ -729,6 +661,23 @@ void OgreMaterialEditor::SetShader(const QString &shader)
     }
 
     PopulateShaderAttributes();
+
+    ///\todo
+    // Shader template changed, so so will texture units. Remove the old ones and generate new ones.
+/*
+    const int numOldTus = mat->GetNumTextureUnits(techIndex, passIndex);
+    for(int tuIndex = 0; tuIndex < numOldTus; ++tuIndex)
+        mat->RemoveTextureUnit(techIndex, passIndex, tuIndex);
+    mat->CreateTextureUnit(
+    const int ti = 0;
+    ///\todo Currently only one technique supported
+//    for(int techIndex = 0; techIndex < numTechniques; ++techIndex)
+    {
+        const int numPasses = mat->GetNumPasses(techIndex);
+        for(int pi = 0; passIndex < numPasses; ++passIndex)
+            PopulateTextureUnits(ti, pi);
+    }
+*/
 }
 
 void OgreMaterialEditor::SetTexAssetRef()
@@ -800,9 +749,9 @@ void OgreMaterialEditor::SetAddrMode(int mode)
     }
 
     mat->SetTextureAddressingMode(techIndex, passIndex, tuIndex, mode);
-    LogDebug("SetAddrMode u: " + QString::number(mat->TextureAddressingModeU(techIndex, passIndex, tuIndex)));
-    LogDebug("SetAddrMode v: " + QString::number(mat->TextureAddressingModeV(techIndex, passIndex, tuIndex)));
-    LogDebug("SetAddrMode w: " + QString::number(mat->TextureAddressingModeW(techIndex, passIndex, tuIndex)));
+    LogDebug("SetAddrMode u " + QString::number(mat->TextureAddressingModeU(techIndex, passIndex, tuIndex)) + 
+        " v " + QString::number(mat->TextureAddressingModeV(techIndex, passIndex, tuIndex)) +
+        " w " + QString::number(mat->TextureAddressingModeW(techIndex, passIndex, tuIndex)));
 }
 
 void OgreMaterialEditor::SetScrollAnimU(double value)
@@ -896,6 +845,10 @@ void OgreMaterialEditor::SetRotateAnim(double value)
 
 void OgreMaterialEditor::PopulateShaderAttributes()
 {
+    ///\todo Enable this function
+    QLabel *l = findChild<QLabel *>("shaderAttributesLabel");
+    if (l) l->hide();
+/*
     OgreMaterialAsset *mat = dynamic_cast<OgreMaterialAsset *>(asset.lock().get());
     if (!mat)
     {
@@ -904,6 +857,7 @@ void OgreMaterialEditor::PopulateShaderAttributes()
     }
 
     SAFE_DELETE(shaderAttributeTable);
+
     QLabel *label = findChild<QLabel *>("shaderAttributesLabel");
     if (label)
         label->hide();
@@ -915,9 +869,11 @@ void OgreMaterialEditor::PopulateShaderAttributes()
         if (label)
             label->show();
 
-        shaderAttributeTable = new PropertyTableWidget(propMap.size(), 3, this);
+        // 16 values is the biggest possibile for attribute (float4x4)
+        shaderAttributeTable = new PropertyTableWidget(propMap.size(), 2+16, this);
         static_cast<QGridLayout *>(tabWidget->widget(0)->layout())->addWidget(shaderAttributeTable);
 
+        int numColumns = 3;
         int row = 0;
         while(it.hasNext())
         {
@@ -927,7 +883,8 @@ void OgreMaterialEditor::PopulateShaderAttributes()
             QTableWidgetItem *nameItem = new QTableWidgetItem(it.key());
             nameItem->setFlags(Qt::ItemIsEnabled);
             // Property type, set non-editable.
-            QTableWidgetItem *typeItem = new QTableWidgetItem(typeValuePair.begin().key());
+            Ogre::GpuConstantType type = (Ogre::GpuConstantType)typeValuePair.begin().key().toInt();
+            QTableWidgetItem *typeItem = new QTableWidgetItem(OgreMaterialProperties::GpuConstantTypeToString(type));
             typeItem->setFlags(Qt::ItemIsEnabled);
             // Property value
             QTableWidgetItem *valueItem = new QTableWidgetItem;
@@ -940,16 +897,167 @@ void OgreMaterialEditor::PopulateShaderAttributes()
             }
 
             valueItem->setData(Qt::DisplayRole, typeValuePair.begin().value());
-//            valueItem->setBackgroundColor(QColor(81, 255, 81));
 
             shaderAttributeTable->setItem(row, 0, nameItem);
             shaderAttributeTable->setItem(row, 1, typeItem);
-            shaderAttributeTable->setItem(row, 2, valueItem);
+
+            // The number of elements we really want to show
+            int numElems = Ogre::GpuConstantDefinition::getElementSize(type, false);
+            QStringList values = typeValuePair.begin().value().toString().split(" ");
+            for(int i = 0; i  < values.size(); ++i)
+            {
+                QTableWidgetItem *valueItem = new QTableWidgetItem;
+                if (i < numElems)
+                    valueItem->setData(Qt::DisplayRole, values[i]);
+                else
+                    valueItem->setFlags(Qt::ItemIsEnabled); // Disable editing for surplus cells.
+                shaderAttributeTable->setItem(row, i+2, valueItem);
+
+                // Set custom editor delegate
+                SpinBoxDelegate *spinBoxDelegate = new SpinBoxDelegate(Ogre::GpuConstantDefinition::isFloat(type), shaderAttributeTable);
+                shaderAttributeTable->setItemDelegateForRow(row, spinBoxDelegate);
+            }
+
+            numColumns = Max(numColumns, numElems+2);
             ++row;
         }
 
+        // Resize to fit the value with most elements.
+        shaderAttributeTable->setColumnCount(numColumns);
+
+        QStringList labels;
+        labels << tr("Name") << tr("Type") << tr("Value") + "[0]";
+        for(int i = 2;  i < shaderAttributeTable->columnCount(); ++i)
+            labels << "Value[" + QString::number(i-1) + "]";
+        shaderAttributeTable->setHorizontalHeaderLabels(labels);
+
         shaderAttributeTable->show();
     }
+*/
+}
+
+void OgreMaterialEditor::PopulateTextureUnits(int techIndex, int passIndex)
+{
+    SAFE_DELETE(tuTabWidget);
+
+    OgreMaterialAsset *mat = static_cast<OgreMaterialAsset *>(asset.lock().get());
+    const int numTus = mat->GetNumTextureUnits(techIndex, passIndex);
+    if (numTus > 0)
+    {
+        tuTabWidget = new QTabWidget(this);
+        static_cast<QVBoxLayout *>(layout())->addWidget(tuTabWidget);
+    }
+    for(int tuIndex = 0; tuIndex < numTus; ++tuIndex)
+    {
+        Ogre::TextureUnitState* tu = mat->GetTextureUnit(techIndex, passIndex, tuIndex);
+        assert(tu);
+        if (!tu)
+            continue;
+
+        QFile tuFile(Application::InstallationDirectory() + "data/ui/MaterialEditorTuTab.ui");
+        QUiLoader loader;
+        loader.setLanguageChangeEnabled(true);
+        QWidget *tuWidget = loader.load(&tuFile, tuTabWidget);
+        tuFile.close();
+        assert(tuWidget);
+        //tuWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+        const QString techniquePassTuId = QString(";%1;%2;%3").arg(techIndex).arg(passIndex).arg(tuIndex);
+
+        QString assetRef = AssetAPI::DesanitateAssetRef(tu->getTextureName()).c_str();
+        uint texCoordSet = mat->TextureCoordSet(techIndex, passIndex, tuIndex);
+        unsigned addrModeU = mat->TextureAddressingModeU(techIndex, passIndex, tuIndex);
+        unsigned addrModeV = mat->TextureAddressingModeV(techIndex, passIndex, tuIndex);
+        unsigned addrModeW = mat->TextureAddressingModeW(techIndex, passIndex, tuIndex);
+        if (!(addrModeU == addrModeV && addrModeU == addrModeW))
+            LogWarning("OgreMaterialEditor: Non-uniform texture addressing modes for material " + mat->Name() + ".");
+
+        // Ogre weirdness: if texture has scroll effect of which u and v values are the same, it has Ogre ET_UVSCROLL.
+        // If it has scroll effect with different u and v values it has both ET_USCROLL and ET_VSCROLL.
+        bool uvScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_UVSCROLL);
+        bool uScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_USCROLL);
+        bool vScrollAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_VSCROLL);
+        bool rotateAnimEnabled = mat->HasTextureEffect(techIndex, passIndex, tuIndex, Ogre::TextureUnitState::ET_ROTATE);
+        bool scrollAnimEnabled = (uvScrollAnimEnabled || (uScrollAnimEnabled && vScrollAnimEnabled));
+        float scrollU = 0.f, scrollV = 0.f, rotate = 0.f;
+        if (uvScrollAnimEnabled)
+        {
+            scrollU = mat->ScrollAnimationU(techIndex, passIndex, tuIndex);
+            scrollV = scrollU;
+        }
+        else if (uScrollAnimEnabled && vScrollAnimEnabled)
+        {
+            scrollU = mat->ScrollAnimationU(techIndex, passIndex, tuIndex);
+            scrollV = mat->ScrollAnimationV(techIndex, passIndex, tuIndex);
+        }
+
+        if (rotateAnimEnabled)
+            rotate = mat->RotateAnimation(techIndex, passIndex, tuIndex);
+
+        // Asset ref
+        QLineEdit *assetRefLineEdit = tuWidget->findChild<QLineEdit *>("assetRefLineEdit");
+        assetRefLineEdit->setObjectName(assetRefLineEdit->objectName() + techniquePassTuId);
+        assetRefLineEdit->setText(AssetAPI::DesanitateAssetRef(tu->getTextureName()).c_str());
+        if (assetRefLineEdit->text().trimmed().isEmpty())
+            assetRefLineEdit->setDisabled(true);
+
+        // Tex coord set
+        QSpinBox *texCoordSetSpinBox = tuWidget->findChild<QSpinBox *>("texCoordSetSpinBox");
+        texCoordSetSpinBox->setObjectName(texCoordSetSpinBox->objectName() + techniquePassTuId);
+        texCoordSetSpinBox->setValue(texCoordSet);
+
+        // Addr mode
+        QComboBox *addrModeComboBox = tuWidget->findChild<QComboBox *>("addrModeComboBox");
+        addrModeComboBox->setObjectName(addrModeComboBox->objectName() + techniquePassTuId);
+
+        QStringList addrModes(QStringList() << "wrap" << "mirror" << "clamp" /*<< "border"*/); // Note: border omitted intentionally.
+        addrModeComboBox->addItems(addrModes);
+        if (addrModeU > 3)
+            LogWarning("Material uses tex addr mode 'border', which will not be shown in material editor combo box.");
+        else
+            addrModeComboBox->setCurrentIndex(addrModeU);
+
+        // Scroll anim
+        QDoubleSpinBox *scrollAnimUSpinBox = tuWidget->findChild<QDoubleSpinBox *>("scrollAnimUSpinBox");
+        QDoubleSpinBox *scrollAnimVSpinBox = tuWidget->findChild<QDoubleSpinBox *>("scrollAnimVSpinBox");
+        scrollAnimUSpinBox->setObjectName(scrollAnimUSpinBox->objectName() + techniquePassTuId);
+        scrollAnimVSpinBox->setObjectName(scrollAnimVSpinBox->objectName() + techniquePassTuId);
+        if (scrollAnimEnabled)
+        {
+            scrollAnimUSpinBox->setValue(scrollU);
+            scrollAnimVSpinBox->setValue(scrollV);
+        }
+        else
+        {
+            scrollAnimUSpinBox->setDisabled(true);
+            scrollAnimVSpinBox->setDisabled(true);
+        }
+
+        // Rotate anim
+        QDoubleSpinBox *rotateAnimSpinBox = tuWidget->findChild<QDoubleSpinBox *>("rotateAnimSpinBox");
+        rotateAnimSpinBox->setObjectName(rotateAnimSpinBox->objectName() + techniquePassTuId);
+        if (rotateAnimEnabled)
+        {
+            rotateAnimSpinBox->setValue(rotate);
+        }
+        else
+        {
+            rotateAnimSpinBox->setDisabled(true);
+        }
+
+        connect(assetRefLineEdit, SIGNAL(editingFinished()), SLOT(SetTexAssetRef()), Qt::UniqueConnection);
+        connect(texCoordSetSpinBox, SIGNAL(valueChanged(int)), SLOT(SetTexCoordSet(int)), Qt::UniqueConnection);
+        connect(addrModeComboBox, SIGNAL(currentIndexChanged(int)), SLOT(SetAddrMode(int)), Qt::UniqueConnection);
+        connect(scrollAnimUSpinBox, SIGNAL(valueChanged(double)), SLOT(SetScrollAnimU(double)), Qt::UniqueConnection);
+        connect(scrollAnimVSpinBox, SIGNAL(valueChanged(double)), SLOT(SetScrollAnimV(double)), Qt::UniqueConnection);
+        connect(rotateAnimSpinBox, SIGNAL(valueChanged(double)), SLOT(SetRotateAnim(double)), Qt::UniqueConnection);
+
+        QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
+        static_cast<QVBoxLayout *>(tuWidget->layout())->addSpacerItem(spacer);
+
+        tuTabWidget->addTab(tuWidget, tu->getName().c_str());
+    }
+
 }
 
 void OgreMaterialEditor::OnAssetTransferSucceeded(AssetPtr scriptAsset)
@@ -962,3 +1070,69 @@ void OgreMaterialEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString
     LogError("OgreMaterialEditor::OnAssetTransferFailed: " + reason);
     //setText("Could not load asset: " + reason);
 }
+
+SpinBoxDelegate::SpinBoxDelegate(bool floatingPoint_, QObject *parent) : QItemDelegate(parent), floatingPoint(floatingPoint_)
+{
+}
+
+QWidget *SpinBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/*option*/, const QModelIndex &/*index*/) const
+{
+    QWidget *w = 0;
+    if (floatingPoint)
+    {
+        QDoubleSpinBox *editor = new QDoubleSpinBox(parent);
+        editor->setMinimum(0.0);
+        editor->setMaximum(10000.0);
+        editor->setSingleStep(0.001);
+        editor->setDecimals(6);
+        w = editor;
+    }
+    else
+    {
+        QSpinBox *editor = new QSpinBox(parent);
+        editor->setMinimum(0);
+        editor->setMaximum(10000);
+        w = editor;
+    }
+    return w;
+}
+
+void SpinBoxDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    if (floatingPoint)
+    {
+        double value = index.model()->data(index, Qt::EditRole).toDouble();
+        QDoubleSpinBox *spinBox = static_cast<QDoubleSpinBox *>(editor);
+        spinBox->setValue(value);
+    }
+    else
+    {
+        int value = index.model()->data(index, Qt::EditRole).toInt();
+        QSpinBox *spinBox = static_cast<QSpinBox *>(editor);
+        spinBox->setValue(value);
+    }
+}
+
+void SpinBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    if (floatingPoint)
+    {
+        QDoubleSpinBox *spinBox = static_cast<QDoubleSpinBox *>(editor);
+        spinBox->interpretText();
+        double value = spinBox->value();
+        model->setData(index, value, Qt::EditRole);
+    }
+    else
+    {
+        QSpinBox *spinBox = static_cast<QSpinBox *>(editor);
+        spinBox->interpretText();
+        int value = spinBox->value();
+        model->setData(index, value, Qt::EditRole);
+    }
+}
+
+void SpinBoxDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/*index*/) const
+{
+    editor->setGeometry(option.rect);
+}
+

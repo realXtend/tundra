@@ -11,6 +11,7 @@
 #include "AssetFwd.h"
 
 #include <QWidget>
+#include <QItemDelegate>
 
 class QTabWidget;
 
@@ -31,6 +32,7 @@ public:
 private:
     Q_DISABLE_COPY(OgreMaterialEditor);
     QTabWidget *tabWidget;
+    QTabWidget *tuTabWidget;
     Framework *framework;
     AssetWeakPtr asset;
     PropertyTableWidget *shaderAttributeTable;
@@ -59,7 +61,29 @@ private slots:
     void SetRotateAnim(double);
 
     void PopulateShaderAttributes();
+    void PopulateTextureUnits(int techIndex, int passIndex);
 
     void OnAssetTransferSucceeded(AssetPtr asset);
     void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
 };
+
+///@cond PRIVATE
+class SpinBoxDelegate : public QItemDelegate
+{
+    Q_OBJECT
+
+public:
+    SpinBoxDelegate(bool floatingPoint, QObject *parent = 0);
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+    void setEditorData(QWidget *editor, const QModelIndex &index) const;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+
+    void updateEditorGeometry(QWidget *editor,
+    const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+private:
+    bool floatingPoint;
+};
+///@endcond

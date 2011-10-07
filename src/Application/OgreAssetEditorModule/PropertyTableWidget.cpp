@@ -122,7 +122,7 @@ void PropertyTableWidget::InitWidget()
     setDragDropOverwriteMode(true);
 
     // Set up headers and size.
-    setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Type") << tr("Value"));
+//    setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Type") << tr("Value"));
     verticalHeader()->setVisible(false);
     resizeColumnToContents(0);
     horizontalHeader()->setStretchLastSection(true);
