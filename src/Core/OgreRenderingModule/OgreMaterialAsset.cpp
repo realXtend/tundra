@@ -971,7 +971,7 @@ bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, c
     const Ogre::GpuProgramPtr &verProg = pass->getVertexProgram();
     if (verProg.isNull())
     {
-        LogError("OgreMaterialAsset::SetVertexShaderParameter: pass has not vertext program.");
+        LogError("OgreMaterialAsset::SetVertexShaderParameter: pass has no vertex program.");
         return false;
     }
     Ogre::GpuProgramParametersSharedPtr verPtr = pass->getVertexProgramParameters();
@@ -1060,7 +1060,7 @@ bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, co
     const Ogre::GpuProgramPtr &fragProg = pass->getFragmentProgram();
     if (fragProg.isNull())
     {
-        LogError("OgreMaterialAsset::SetPixelShaderParameter: pass has not fragment program.");
+        LogError("OgreMaterialAsset::SetPixelShaderParameter: pass has no fragment program.");
         return false;
     }
     Ogre::GpuProgramParametersSharedPtr fragPtr = pass->getFragmentProgramParameters();
