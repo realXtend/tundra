@@ -15,8 +15,6 @@
 
 class QTabWidget;
 
-class PropertyTableWidget;
-
 /// Non-text high-level editing tool for OGRE material scripts.
 class ASSET_EDITOR_MODULE_API OgreMaterialEditor : public QWidget
 {
@@ -26,16 +24,18 @@ public:
     OgreMaterialEditor(const AssetPtr &materialAsset, Framework *fw, QWidget *parent = 0);
     ~OgreMaterialEditor();
 
-    void SetMaterialAsset(const AssetPtr &scriptAsset);
+    /// Sets the material to be edited.
+    /** If the asset is unloaded, it will be loaded automatically. */
+    void SetMaterialAsset(const AssetPtr &materialAsset);
+
+    /// (Re)generates the contents of the widget.
     void Populate();
 
 private:
     Q_DISABLE_COPY(OgreMaterialEditor);
-    QTabWidget *tabWidget;
-    QTabWidget *tuTabWidget;
     Framework *framework;
     AssetWeakPtr asset;
-    PropertyTableWidget *shaderAttributeTable;
+    QTabWidget *techniqueTabWidget;
 
 private slots:
     // Pass attribute setters

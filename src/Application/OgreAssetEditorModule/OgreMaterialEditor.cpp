@@ -29,13 +29,12 @@ OgreMaterialEditor::OgreMaterialEditor(const AssetPtr &materialAsset, Framework 
     QWidget(parent),
     framework(fw),
     asset(materialAsset),
-    shaderAttributeTable(0),
-    tabWidget(0),
-    tuTabWidget(0)
+    techniqueTabWidget(0)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
     setLayout(layout);
+    resize(450, 550);
 
     SetMaterialAsset(materialAsset);
 }
@@ -95,9 +94,19 @@ void OgreMaterialEditor::Populate()
         return;
     }
 
-    SAFE_DELETE(tabWidget);
-    tabWidget = new QTabWidget(this);
-    static_cast<QVBoxLayout *>(layout())->addWidget(tabWidget);
+    // Init technique tab widget
+    SAFE_DELETE(techniqueTabWidget);
+    techniqueTabWidget = new QTabWidget(this);
+    static_cast<QVBoxLayout *>(layout())->addWidget(techniqueTabWidget);
+    QVBoxLayout *techLayout = new QVBoxLayout(techniqueTabWidget);
+    techLayout->setContentsMargins(5, 5, 5, 5);
+    //techniqueTabWidget->setLayout(techLayout);
+
+    // Init pass tab widget
+
+//    static_cast<QVBoxLayout *>(layout())->addWidget(tabWidget);
+
+//    techniqueTabWidget->addWidget(passTabWidget);
 
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
@@ -114,16 +123,25 @@ void OgreMaterialEditor::Populate()
         return;
     }
 
-    const int techIndex = 0;
-    ///\todo Currently only one technique supported
-//    for(int techIndex = 0; techIndex < numTechniques; ++techIndex)
+    for(int techIndex = 0; techIndex < numTechniques; ++techIndex)
     {
+        QTabWidget *passTabWidget = 0;
         const int numPasses = mat->GetNumPasses(techIndex);
+        if (numPasses > 0)
+        {
+            passTabWidget = new QTabWidget(techniqueTabWidget);
+            QVBoxLayout *passLayout = new QVBoxLayout(passTabWidget);
+            passLayout->setContentsMargins(5, 5, 5, 5);
+            passTabWidget->setLayout(passLayout);
+        }
         for(int passIndex = 0; passIndex < numPasses; ++passIndex)
         {
             QFile passFile(Application::InstallationDirectory() + "data/ui/MaterialEditorPassTab.ui");
-            QWidget *passWidget = loader.load(&passFile, tabWidget);
+            QWidget *passWidget = loader.load(&passFile, passTabWidget);
             passFile.close();
+
+            techniqueTabWidget->addTab(passTabWidget, "Technique" + QString::number(techIndex));
+            passTabWidget->addTab(passWidget, "Pass" + QString::number(passIndex));
 
             const QString techniquePassId = ";" + QString::number(techIndex) + ";" + QString::number(passIndex);
             // Gather the initial values.
@@ -281,8 +299,6 @@ void OgreMaterialEditor::Populate()
                     break;
                 }
 
-            tabWidget->addTab(passWidget, "Pass" + QString::number(passIndex));
-
             // Populate shader attributes (if any)
             PopulateShaderAttributes(techIndex, passIndex);
 
@@ -302,6 +318,8 @@ void OgreMaterialEditor::Populate()
             PopulateTextureUnits(techIndex, passIndex);
         }
     }
+
+    static_cast<QVBoxLayout *>(layout())->addItem(new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding));
 }
 
 void OgreMaterialEditor::OpenColorPicker()
@@ -705,16 +723,15 @@ void OgreMaterialEditor::SetShaderAttributeValue()
         return;
     }
 
+    QWidget *parentPassTab = static_cast<QTabWidget *>(techniqueTabWidget->widget(techIndex))->widget(passIndex);
+    PropertyTableWidget *shaderAttributeTable = parentPassTab->findChild<PropertyTableWidget *>("shaderAttributeTable");
     // Gather values for the entire row.
     QVariantList value;
     for(int column = 0; column < shaderAttributeTable->columnCount(); ++column)
     {
         QTableWidgetItem *item = shaderAttributeTable->item(row, column);
         if ((item->flags() & Qt::ItemIsEditable) != 0)
-        {
-            LogInfo(item->data(Qt::DisplayRole).toString());
             value.push_back(item->data(Qt::DisplayRole));
-        }
     }
 
     if (type.contains("VP"))
@@ -722,7 +739,7 @@ void OgreMaterialEditor::SetShaderAttributeValue()
     else if (type.contains("FP"))
         mat->SetPixelShaderParameter(techIndex, passIndex, attrName, value);
     else
-        LogError("SetShaderAttribute: Invalid type: " + type);
+        LogError("SetShaderAttribute: Invalid type identifier: " + type);
 
 }
 
@@ -891,9 +908,6 @@ void OgreMaterialEditor::SetRotateAnim(double value)
 
 void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
 {
-    ///\todo Enable this function
-//    QLabel *l = findChild<QLabel *>("shaderAttributesLabel");
-//    if (l) l->hide();
     OgreMaterialAsset *mat = dynamic_cast<OgreMaterialAsset *>(asset.lock().get());
     if (!mat)
     {
@@ -901,9 +915,7 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
         return;
     }
 
-    SAFE_DELETE(shaderAttributeTable);
-
-    QLabel *label = findChild<QLabel *>("shaderAttributesLabel");
+    QLabel *label = techniqueTabWidget->widget(techIndex)->findChild<QLabel *>("shaderAttributesLabel");
     if (label)
         label->hide();
 
@@ -914,9 +926,12 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
         if (label)
             label->show();
 
+        QWidget *parentPassTab = static_cast<QTabWidget *>(techniqueTabWidget->widget(techIndex))->widget(passIndex);
         // 16 values is the biggest possibile for attribute (float4x4)
-        shaderAttributeTable = new PropertyTableWidget(propMap.size(), 2+16, this);
-        static_cast<QGridLayout *>(tabWidget->widget(0)->layout())->addWidget(shaderAttributeTable);
+        PropertyTableWidget *shaderAttributeTable = new PropertyTableWidget(propMap.size(), 2+16, parentPassTab);
+        shaderAttributeTable->setObjectName("shaderAttributeTable");
+        QTabWidget *passTabWidget = static_cast<QTabWidget *>(techniqueTabWidget->widget(techIndex));
+        static_cast<QGridLayout *>(passTabWidget->widget(passIndex)->layout())->addWidget(shaderAttributeTable);
 
         int numColumns = 3;
         int row = 0;
@@ -985,14 +1000,17 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
 
 void OgreMaterialEditor::PopulateTextureUnits(int techIndex, int passIndex)
 {
-    SAFE_DELETE(tuTabWidget);
+    QTabWidget *tuTabWidget = 0;
 
     OgreMaterialAsset *mat = static_cast<OgreMaterialAsset *>(asset.lock().get());
     const int numTus = mat->GetNumTextureUnits(techIndex, passIndex);
     if (numTus > 0)
     {
-        tuTabWidget = new QTabWidget(this);
-        static_cast<QVBoxLayout *>(layout())->addWidget(tuTabWidget);
+        QTabWidget *parentPassTab = static_cast<QTabWidget *>(techniqueTabWidget->widget(techIndex));
+        QWidget *parentPassWidget = static_cast<QWidget *>(parentPassTab->widget(passIndex));
+        tuTabWidget = new QTabWidget(parentPassWidget);
+        tuTabWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        static_cast<QVBoxLayout *>(parentPassWidget->layout())->addWidget(tuTabWidget);
     }
     for(int tuIndex = 0; tuIndex < numTus; ++tuIndex)
     {
@@ -1095,8 +1113,8 @@ void OgreMaterialEditor::PopulateTextureUnits(int techIndex, int passIndex)
         connect(scrollAnimVSpinBox, SIGNAL(valueChanged(double)), SLOT(SetScrollAnimV(double)), Qt::UniqueConnection);
         connect(rotateAnimSpinBox, SIGNAL(valueChanged(double)), SLOT(SetRotateAnim(double)), Qt::UniqueConnection);
 
-        QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
-        static_cast<QVBoxLayout *>(tuWidget->layout())->addSpacerItem(spacer);
+//        QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
+//        static_cast<QVBoxLayout *>(tuWidget->layout())->addSpacerItem(spacer);
 
         tuTabWidget->addTab(tuWidget, tu->getName().c_str());
     }
@@ -1110,12 +1128,13 @@ void OgreMaterialEditor::OnAssetTransferSucceeded(AssetPtr scriptAsset)
 void OgreMaterialEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
 {
     LogError("OgreMaterialEditor::OnAssetTransferFailed: " + reason);
-    //setText("Could not load asset: " + reason);
 }
 
 // SpinBoxDelegate
 
-SpinBoxDelegate::SpinBoxDelegate(bool floatingPoint_, QObject *parent) : QItemDelegate(parent), floatingPoint(floatingPoint_)
+SpinBoxDelegate::SpinBoxDelegate(bool floatingPoint_, QObject *parent) :
+    QItemDelegate(parent),
+    floatingPoint(floatingPoint_)
 {
 }
 
