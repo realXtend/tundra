@@ -199,6 +199,10 @@ public slots:
     /// Updates the billboard world space size.
     void SetBillboardSize(float width, float height);
 
+    /// Gets the name of the material that this component has created for displaying the text.
+    /// Useful for using this just to create the material, and using e.g. a mesh to display it.
+    QString GetMaterialName() { return QString::fromStdString(materialName_); }
+
 private slots:
     /// Redraws the hovering text with the current text, font and color.
     void Redraw();
