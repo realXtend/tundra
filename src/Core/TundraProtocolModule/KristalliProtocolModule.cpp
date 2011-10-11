@@ -111,7 +111,9 @@ KristalliProtocolModule::KristalliProtocolModule() :
 KristalliProtocolModule::~KristalliProtocolModule()
 {
     Disconnect();
+#ifdef KNET_USE_QT
     SAFE_DELETE(networkDialog);
+#endif
 }
 
 void KristalliProtocolModule::Load()

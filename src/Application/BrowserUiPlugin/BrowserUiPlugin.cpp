@@ -11,6 +11,8 @@
 #include "ScriptMetaTypeDefines.h"
 #include <QScriptEngine>
 
+#include "QScriptEngineHelpers.h"
+
 Q_DECLARE_METATYPE(CookieJar*);
 
 BrowserUiPlugin::BrowserUiPlugin(Framework *framework) :

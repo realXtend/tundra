@@ -17,6 +17,8 @@
 #include "Settings.h"
 #include "ConsoleAPI.h"
 
+#include "QScriptEngineHelpers.h"
+
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
 #include <QScriptEngine>
