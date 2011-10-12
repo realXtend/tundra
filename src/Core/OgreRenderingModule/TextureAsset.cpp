@@ -312,6 +312,10 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
         ogreTexture->setWidth(newWidth);
         ogreTexture->setHeight(newHeight);
         ogreTexture->setFormat(ogreFormat);
+#ifdef Q_WS_MAC
+        // If this is not called right after freeInternalResources, buffer is always null in Mac OS X
+        ogreTexture->createInternalResources();
+#endif
     }
     if (ogreTexture->getBuffer().isNull())
     {
