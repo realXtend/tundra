@@ -179,7 +179,7 @@ void EC_WidgetBillboard::RenderInternal()
 
     // Update ogre texture
     ogreTextureAsset->SetContents(renderBuffer_.width(), renderBuffer_.height(), renderBuffer_.bits(), renderBuffer_.byteCount(), 
-                                  Ogre::PF_A8R8G8B8, false, false);
+                                  Ogre::PF_A8R8G8B8, false, true);
 
     // Set texture to material if needed
     Ogre::TextureUnitState *texUnit = ogreMaterialAsset->GetTextureUnit(0, 0, 0);
