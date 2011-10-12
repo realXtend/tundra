@@ -315,7 +315,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
     }
     if (ogreTexture->getBuffer().isNull())
     {
-        LogError("DeserializeFromData: Failed to create texture " + this->Name() + ": OgreTexture::getBuffer() was null!");
+        LogError("TextureAsset::SetContents: Failed to create texture " + this->Name() + ": OgreTexture::getBuffer() was null!");
         return;
     }
 
