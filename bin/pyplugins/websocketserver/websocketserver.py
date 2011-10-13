@@ -6,6 +6,8 @@ import socket #just for exception handling for restarts here
 import sys
 sys.path.append('/usr/lib/pymodules/python2.7/') #wtf
 sys.path.append('/usr/lib/python2.7/dist-packages/')
+sys.path.append('/usr/local/lib/python2.7/dist-packages/eventlet-0.9.16-py2.7.egg') #dum-di-dum..
+sys.path.append('/usr/local/lib/python2.7/dist-packages/greenlet-0.3.1-py2.7-linux-i686.egg')
 import eventlet
 from eventlet import websocket
 from PythonQt.QtGui import QVector3D as Vec3
@@ -42,16 +44,15 @@ def on_sceneadded(name):
     '''Connects to various signal when scene is added'''
     global scene
     sceneapi = tundra.Scene()
-    sceneapi.SetDefaultScene(name)
-    scene = sceneapi.GetDefaultSceneRaw() #name)
+    scene = sceneapi.GetSceneRaw(name)
     print "Using scene:", scene.name, scene
 
-    scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
-    scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)", onNewEntity)
+    assert scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
+    assert scene.connect("EntityCreated(Entity*, AttributeChange::Type)", onNewEntity)
 
-    scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
+    assert scene.connect("ComponentAdded(Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
 
-    scene.connect("EntityRemoved(Scene::Entity*, AttributeChange::Type)", onEntityRemoved)
+    assert scene.connect("EntityRemoved(Entity*, AttributeChange::Type)", onEntityRemoved)
 
     
 def update(t):
@@ -198,10 +199,9 @@ def handle_clients(ws):
     print 'END', ws
 
 server = async_eventlet_wsgiserver.server(sock, handle_clients)
-tundra.Frame().connect("Updated(float)", update)
+assert tundra.Frame().connect("Updated(float)", update)
 
 sceneapi = tundra.Scene()
-sceneapi.SetDefaultScene("TundraServer")
 print "Websocket Server connecting to OnSceneAdded:", sceneapi.connect("SceneAdded(QString)", on_sceneadded)
 #on_sceneadded("TundraServer")
 

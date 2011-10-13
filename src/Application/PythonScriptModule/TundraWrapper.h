@@ -23,6 +23,9 @@ namespace PythonScript
     public slots:
         // Scene: Member functions, this is a knows QObject for PythonQt, we are adding functionality to the existing object.
         QObject *CreateEntityLocalRaw(Scene *scene, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::LocalOnly, bool defaultNetworkSync = false);
+	
+	// SceneAPI too..
+	QObject *GetSceneRaw(SceneAPI *sceneapi, const QString &scenename);
 
         // Entity: Member functions, this is a knows QObject for PythonQt, we are adding functionality to the existing object.
         QObject *GetComponentRaw(Entity *entity, const QString &componentType);
@@ -41,6 +44,8 @@ namespace PythonScript
     Q_OBJECT
 
     public slots:
+      //QObject *get(ScenePtr self); //if can't autoconvert boost pointers, perhaps can make a generic raw pointer getter?
+
         // AssetReference: Construct and destruct
         AssetReference *new_AssetReference();
         AssetReference *new_AssetReference(const QString &reference);

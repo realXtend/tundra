@@ -401,6 +401,7 @@ namespace PythonScript
             PythonQt::self()->addInstanceDecorators(new TundraInstanceDecorator());
             PythonQt::self()->addDecorators(new TundraDecorator());
             PythonQt::self()->registerCPPClass("AssetReference");
+            PythonQt::self()->registerCPPClass("ScenePtr");
 
             pythonQtStarted_ = true;
         }
