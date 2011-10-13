@@ -28,6 +28,8 @@
     <!-- ENTITY ACTIONS -->
 
     <!-- Replicates entity action. Client<->Server -->
+    <!-- EntityAction commented out due the by hand changes in MsgEntityAction.h. 
+         "parameter" dynamicCount changed to 16 and AddVLE/ReadVLE funtions are being used.
     <message id="120" name="EntityAction" reliable="true" inOrder="true" priority="100">
         <u32 name="entityId" />
         <s8 name="name" dynamicCount="8"/>
@@ -35,7 +37,7 @@
         <struct name="parameters" dynamicCount="8">
             <s8 name="parameter" dynamicCount="8" />
         </struct>
-    </message>
+    </message> -->
     
     <!-- ASSET DISCOVERY and DELETION -->
 
