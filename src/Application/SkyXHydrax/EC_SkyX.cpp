@@ -21,6 +21,7 @@
 #include "LoggingFunctions.h"
 #include "Math/MathFunc.h"
 #include "Profiler.h"
+#include "Color.h"
 
 #include <Ogre.h>
 
@@ -37,17 +38,25 @@ struct EC_SkyXImpl
         if (skyX)
         {
             skyX->remove();
-            if (sunlight && skyX->getSceneManager())
-                skyX->getSceneManager()->destroyLight(sunlight);
+            Ogre::SceneManager *sm = skyX->getSceneManager();
+            if (sm)
+            {
+                if (sunlight)
+                    sm->destroyLight(sunlight);
+                sm->setAmbientLight(originalAmbientColor);
+            }
         }
 
         sunlight = 0;
         SAFE_DELETE(skyX)
     }
 
+    operator bool () const { return skyX != 0; }
+
     SkyX::SkyX *skyX;
-    Ogre::Light *sunlight;
     SkyX::CloudLayer *cloudLayer; ///< Currently just one cloud layer used.
+    Ogre::Light *sunlight;
+    Color originalAmbientColor;
 };
 /// @endcond
 
@@ -79,26 +88,9 @@ EC_SkyX::~EC_SkyX()
 
 float3 EC_SkyX::SunPosition() const
 {
-    if (impl->skyX)
+    if (impl)
         return impl->skyX->getAtmosphereManager()->getSunPosition();
     return float3();
-}
-
-void EC_SkyX::CreateSunlight()
-{
-    if (impl)
-    {
-        OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
-        Ogre::SceneManager *sm = w->GetSceneManager();
-        impl->sunlight = sm->createLight(w->GetRenderer()->GetUniqueObjectName("SkyXSunlight"));
-        impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
-        impl->sunlight->setDiffuseColour(1.f, 1.f, 1.f);
-        impl->sunlight->setSpecularColour(0.f,0.f,0.f);
-        impl->sunlight->setDirection(-1.f, -1.f, -1.f);
-        impl->sunlight->setCastShadows(true);
-
-        sm->setAmbientLight(Ogre::ColourValue(1.f, 1.f, 1.f));
-    }
 }
 
 void EC_SkyX::Create()
@@ -120,16 +112,13 @@ void EC_SkyX::Create()
             return; // Can't create SkyX just yet, no main camera set.
 
         Ogre::SceneManager *sm = w->GetSceneManager();
-
-        impl = new EC_SkyXImpl();
-
-        // Create Sky
         Entity *mainCamera = w->GetRenderer()->MainCamera();
         if (!mainCamera)
         {
             LogError("Cannot create SkyX: No main camera set!");
             return;
         }
+        impl = new EC_SkyXImpl();
         impl->skyX = new SkyX::SkyX(sm, mainCamera->GetComponent<EC_Camera>()->GetCamera());
         impl->skyX->create();
 
@@ -144,11 +133,32 @@ void EC_SkyX::Create()
 
         connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
         connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)), Qt::UniqueConnection);
+
+        CreateSunlight();
     }
     catch(Ogre::Exception &e)
     {
         // Currently if we try to create more than one SkyX component we end up here due to Ogre internal name collision.
         LogError("Could not create EC_SkyX: " + std::string(e.what()));
+    }
+}
+
+void EC_SkyX::CreateSunlight()
+{
+    if (impl)
+    {
+        // Ambient and sun diffuse color copied from EC_EnvironmentLight
+        OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+        Ogre::SceneManager *sm = w->GetSceneManager();
+        impl->originalAmbientColor = sm->getAmbientLight();
+        sm->setAmbientLight(Color(0.364f, 0.364f, 0.364f, 1.f));
+
+        impl->sunlight = sm->createLight(w->GetRenderer()->GetUniqueObjectName("SkyXSunlight"));
+        impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
+        impl->sunlight->setDiffuseColour(Color(0.639f,0.639f,0.639f));
+        impl->sunlight->setSpecularColour(0.f,0.f,0.f);
+        impl->sunlight->setDirection(impl->skyX->getAtmosphereManager()->getSunDirection());
+        impl->sunlight->setCastShadows(true);
     }
 }
 
@@ -163,13 +173,13 @@ void EC_SkyX::OnActiveCameraChanged(Entity *newActiveCamera)
     if (!impl)
         Create();
     else // Otherwise, update the camera to an existing initialized SkyX instance.
-        if (impl && impl->skyX)
+        if (impl)
             impl->skyX->setCamera(newActiveCamera->GetComponent<EC_Camera>()->GetCamera());
 }
 
 void EC_SkyX::UpdateAttribute(IAttribute *attr)
 {
-    if (!impl->skyX)
+    if (!impl)
         return;
 
     if (attr == &volumetricClouds)
@@ -228,7 +238,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr)
 
 void EC_SkyX::Update(float frameTime)
 {
-    if (impl && impl->skyX)
+    if (impl)
     {
         PROFILE(EC_SkyX_Update);
         if (impl->sunlight)

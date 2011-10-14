@@ -414,18 +414,8 @@ void OgreMaterialAsset::CopyContent(AssetPtr source)
     
     // If we are unloaded, create an empty material first
     if (ogreMaterial.isNull())
-    {
-        try
-        {
-            std::string sanitatedName = AssetAPI::SanitateAssetRef(Name()).toStdString();
-            ogreMaterial = Ogre::MaterialManager::getSingleton().create(sanitatedName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        }
-        catch (Ogre::Exception& e)
-        {
-            LogError("CopyContent: Failed to create empty material " + Name().toStdString() + ", reason: " + e.what());
+        if (!CreateOgreMaterial())
             return;
-        }
-    }
     
     Ogre::Material* sourceOgreMat = sourceMat->ogreMaterial.get();
     
@@ -672,10 +662,30 @@ bool OgreMaterialAsset::HasPass(int techIndex, int passIndex)
     return GetPass(techIndex, passIndex) != 0;
 }
 
+bool OgreMaterialAsset::CreateOgreMaterial()
+{
+    if (!ogreMaterial.isNull())
+        return true;
+    
+    try
+    {
+        std::string sanitatedName = AssetAPI::SanitateAssetRef(Name()).toStdString();
+        ogreMaterial = Ogre::MaterialManager::getSingleton().create(sanitatedName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    }
+    catch (Ogre::Exception& e)
+    {
+        LogError("OgreMaterialAsset: Failed to create empty material " + Name().toStdString() + ", reason: " + e.what());
+        return false;
+    }
+    
+    return true;
+}
+
 int OgreMaterialAsset::CreateTechnique()
 {
     if (ogreMaterial.isNull())
-        return -1;
+        if (!CreateOgreMaterial())
+            return -1;
     
     try
     {
@@ -698,6 +708,10 @@ int OgreMaterialAsset::CreateTechnique()
 
 int OgreMaterialAsset::CreatePass(int techIndex)
 {
+    if (ogreMaterial.isNull())
+        if (!CreateOgreMaterial())
+            return -1;
+    
     Ogre::Technique* tech = GetTechnique(techIndex);
     if (!tech)
         return -1;
@@ -722,6 +736,10 @@ int OgreMaterialAsset::CreatePass(int techIndex)
 
 int OgreMaterialAsset::CreateTextureUnit(int techIndex, int passIndex)
 {
+    if (ogreMaterial.isNull())
+        if (!CreateOgreMaterial())
+            return -1;
+    
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return -1;
@@ -880,11 +898,11 @@ QString OgreMaterialAsset::Texture(int techIndex, int passIndex, int texUnitInde
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
     {
-        LogError("OgreMaterialAsset::Texture::VertexShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::Texture: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return "";
     }
 
-    return texUnit->getName().c_str(); ///< Check that this is the right getter.
+    return texUnit->getTextureName().c_str();
 }
 
 bool OgreMaterialAsset::SetVertexShader(int techIndex, int passIndex, const QString& vertexShaderName)
@@ -908,7 +926,7 @@ QString OgreMaterialAsset::VertexShader(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::VertexShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::VertexShader: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return "";
     }
     return pass->getVertexProgramName().c_str();
@@ -935,11 +953,189 @@ QString OgreMaterialAsset::PixelShader(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::PixelShader: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::PixelShader: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return "";
     }
 
     return pass->getFragmentProgramName().c_str();
+}
+
+bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::SetVertexShaderParameter: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return false;
+    }
+    const Ogre::GpuProgramPtr &verProg = pass->getVertexProgram();
+    if (verProg.isNull())
+    {
+        LogError("OgreMaterialAsset::SetVertexShaderParameter: pass has no vertex program.");
+        return false;
+    }
+    Ogre::GpuProgramParametersSharedPtr verPtr = pass->getVertexProgramParameters();
+    if (!verPtr->hasNamedParameters())
+    {
+        LogError("OgreMaterialAsset::SetVertexShaderParameter: vertex program has no named parameters.");
+        return false;
+    }
+    Ogre::GpuConstantDefinitionIterator mapIter = verPtr->getConstantDefinitionIterator();
+    while(mapIter.hasMoreElements())
+    {
+        QString paramName(mapIter.peekNextKey().c_str());
+        const Ogre::GpuConstantDefinition &paramDef = mapIter.getNext();
+        if (paramName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
+            continue;
+        if (paramName != name)
+            continue;
+
+        bool isFloat = paramDef.isFloat();
+        size_t size = paramDef.elementSize * paramDef.arraySize;
+
+        if (value.size() == 16)
+        {
+            LogDebug("writing float4x4");
+            Ogre::Matrix4 matrix(
+                value[0].toDouble(), value[1].toDouble(), value[2].toDouble(), value[3].toDouble(),
+                value[4].toDouble(), value[5].toDouble(), value[6].toDouble(), value[7].toDouble(),
+                value[8].toDouble(), value[9].toDouble(), value[10].toDouble(), value[11].toDouble(),
+                value[12].toDouble(), value[13].toDouble(), value[14].toDouble(), value[15].toDouble());
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+            verPtr->_writeRawConstant(paramDef.physicalIndex, matrix);
+#else
+            verPtr->_writeRawConstant(paramDef.physicalIndex, matrix, size);
+            return true;
+#endif
+        }
+        else if (value.size() == 4)
+        {
+            Ogre::Vector4 vector;
+            if (isFloat)
+            {
+                LogDebug("writing float4");
+                vector = Ogre::Vector4(value[0].toDouble(), value[1].toDouble(), value[2].toDouble(), value[3].toDouble());
+            }
+            else
+            {
+                LogDebug("writing int4");
+                vector = Ogre::Vector4(value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt());
+            }
+
+            verPtr->_writeRawConstant(paramDef.physicalIndex, vector);
+            return true;
+        }
+        else if (value.size() == 1)
+        {
+            if (isFloat)
+            {
+                LogDebug("Writing float");
+                verPtr->_writeRawConstant(paramDef.physicalIndex, (Ogre::Real)value[0].toDouble());
+            }
+            else
+            {
+                LogDebug("Writing int.");
+                verPtr->_writeRawConstant(paramDef.physicalIndex, value[0].toInt());
+            }
+            return true;
+        }
+        else
+        {
+            LogError(QString("OgreMaterialAsset::SetVertexShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(name).arg(size));
+            return false;
+        }
+    }
+
+    return false;
+}
+
+bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::SetPixelShaderParameter: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return false;
+    }
+    const Ogre::GpuProgramPtr &fragProg = pass->getFragmentProgram();
+    if (fragProg.isNull())
+    {
+        LogError("OgreMaterialAsset::SetPixelShaderParameter: pass has no fragment program.");
+        return false;
+    }
+    Ogre::GpuProgramParametersSharedPtr fragPtr = pass->getFragmentProgramParameters();
+    if (!fragPtr->hasNamedParameters())
+    {
+        LogError("OgreMaterialAsset::SetPixelShaderParameter: fragment program has no named parameters.");
+        return false;
+    }
+    Ogre::GpuConstantDefinitionIterator mapIter = fragPtr->getConstantDefinitionIterator();
+    while(mapIter.hasMoreElements())
+    {
+        QString paramName(mapIter.peekNextKey().c_str());
+        const Ogre::GpuConstantDefinition &paramDef = mapIter.getNext();
+        if (paramName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
+            continue;
+        if (paramName != name)
+            continue;
+
+        bool isFloat = paramDef.isFloat();
+        size_t size = paramDef.elementSize * paramDef.arraySize;
+
+        if (value.size() == 16)
+        {
+            LogDebug("writing float4x4");
+            Ogre::Matrix4 matrix(
+                value[0].toDouble(), value[1].toDouble(), value[2].toDouble(), value[3].toDouble(),
+                value[4].toDouble(), value[5].toDouble(), value[6].toDouble(), value[7].toDouble(),
+                value[8].toDouble(), value[9].toDouble(), value[10].toDouble(), value[11].toDouble(),
+                value[12].toDouble(), value[13].toDouble(), value[14].toDouble(), value[15].toDouble());
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+            fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix);
+#else
+            fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix, size);
+            return true;
+#endif
+        }
+        else if (value.size() == 4)
+        {
+            Ogre::Vector4 vector;
+            if (isFloat)
+            {
+                LogDebug("writing float4");
+                vector = Ogre::Vector4(value[0].toDouble(), value[1].toDouble(), value[2].toDouble(), value[3].toDouble());
+            }
+            else
+            {
+                LogDebug("writing int4");
+                vector = Ogre::Vector4(value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt());
+            }
+
+            fragPtr->_writeRawConstant(paramDef.physicalIndex, vector);
+            return true;
+        }
+        else if (value.size() == 1)
+        {
+            if (isFloat)
+            {
+                LogDebug("Writing float");
+                fragPtr->_writeRawConstant(paramDef.physicalIndex, (Ogre::Real)value[0].toDouble());
+            }
+            else
+            {
+                LogDebug("Writing int.");
+                fragPtr->_writeRawConstant(paramDef.physicalIndex, value[0].toInt());
+            }
+            return true;
+        }
+        else
+        {
+            LogError(QString("OgreMaterialAsset::SetPixelShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(name).arg(size));
+            return false;
+        }
+    }
+
+    return false;
 }
 
 bool OgreMaterialAsset::SetLighting(int techIndex, int passIndex, bool enable)
@@ -956,7 +1152,7 @@ bool OgreMaterialAsset::IsLightingEnabled(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::IsLightingEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::IsLightingEnabled: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -977,7 +1173,7 @@ Color OgreMaterialAsset::DiffuseColor(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::DiffuseColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::DiffuseColor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return Color();
     }
 
@@ -998,7 +1194,7 @@ Color OgreMaterialAsset::AmbientColor(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::AmbientColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::AmbientColor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return Color();
     }
 
@@ -1019,7 +1215,7 @@ Color OgreMaterialAsset::SpecularColor(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::SpecularColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::SpecularColor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return Color();
     }
 
@@ -1040,7 +1236,7 @@ Color OgreMaterialAsset::EmissiveColor(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::EmissiveColor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::EmissiveColor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return Color();
     }
 
@@ -1070,7 +1266,7 @@ unsigned OgreMaterialAsset::SourceSceneBlendFactor(int techIndex, int passIndex)
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::SourceSceneBlendFactor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::SourceSceneBlendFactor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return 0;
     }
 
@@ -1082,7 +1278,7 @@ unsigned OgreMaterialAsset::DestinationSceneBlendFactor(int techIndex, int passI
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::DestinationSceneBlendFactor: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::DestinationSceneBlendFactor: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return 0;
     }
 
@@ -1103,7 +1299,7 @@ unsigned OgreMaterialAsset::PolygonMode(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::PolygonMode: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::PolygonMode: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return 0;
     }
 
@@ -1124,7 +1320,7 @@ bool OgreMaterialAsset::IsDepthCheckEnabled(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::IsDepthCheckEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::IsDepthCheckEnabled: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -1145,7 +1341,7 @@ bool OgreMaterialAsset::IsDepthWriteEnabled(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::IsDepthWriteEnabled: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+        LogError(QString("OgreMaterialAsset::IsDepthWriteEnabled: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
@@ -1166,11 +1362,266 @@ float OgreMaterialAsset::DepthBias(int techIndex, int passIndex) const
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
     {
-        LogError("OgreMaterialAsset::DepthBias: Could not find technique " + QString::number(techIndex) + " pass " + QString::number(passIndex) + ".");
+      LogError(QString("OgreMaterialAsset::DepthBias: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return 0.f;
+    }
+
+    return pass->getDepthBiasConstant();
+}
+
+
+bool OgreMaterialAsset::SetHardwareCullingMode(int techIndex, int passIndex, unsigned mode)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setCullingMode((Ogre::CullingMode)mode);
+    return true;
+}
+
+unsigned OgreMaterialAsset::HardwareCullingMode(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::HardwareCullingMode: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
         return false;
     }
 
-    return false;
+    return pass->getCullingMode();
+}
+
+bool OgreMaterialAsset::SetShadingMode(int techIndex, int passIndex, unsigned mode)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setShadingMode((Ogre::ShadeOptions)mode);
+    return true;
+}
+
+unsigned OgreMaterialAsset::ShadingMode(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::ShadingMode: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return false;
+    }
+
+    return pass->getShadingMode();
+}
+
+bool OgreMaterialAsset::SetFillMode(int techIndex, int passIndex, unsigned mode)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setPolygonMode((Ogre::PolygonMode)mode);
+    return true;
+}
+
+unsigned OgreMaterialAsset::FillMode(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::FillMode: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return false;
+    }
+
+    return pass->getPolygonMode();
+}
+
+bool OgreMaterialAsset::SetColorWrite(int techIndex, int passIndex, bool enable)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setColourWriteEnabled(enable);
+    return true;
+}
+
+bool OgreMaterialAsset::IsColorWriteEnabled(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::IsColorWriteEnabled: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return false;
+    }
+
+    return pass->getColourWriteEnabled();
+}
+
+bool OgreMaterialAsset::SetTextureCoordSet(int techIndex, int passIndex, int texUnitIndex, uint value)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setTextureCoordSet(value);
+    return true;
+}
+
+uint OgreMaterialAsset::TextureCoordSet(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError(QString("OgreMaterialAsset::TextureCoordSet: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        return 0;
+    }
+    return texUnit->getTextureCoordSet();
+}
+
+bool OgreMaterialAsset::SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned mode)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setTextureAddressingMode((Ogre::TextureUnitState::TextureAddressingMode)mode);
+    return true;
+}
+
+bool OgreMaterialAsset::SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned uMode, unsigned vMode, unsigned wMode)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setTextureAddressingMode(
+        (Ogre::TextureUnitState::TextureAddressingMode)uMode,
+        (Ogre::TextureUnitState::TextureAddressingMode)vMode,
+        (Ogre::TextureUnitState::TextureAddressingMode)wMode);
+    return true;
+}
+
+unsigned OgreMaterialAsset::TextureAddressingModeU(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError(QString("OgreMaterialAsset::TextureAddressingModeU: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        return 0;
+    }
+    return texUnit->getTextureAddressingMode().u;
+}
+
+unsigned OgreMaterialAsset::TextureAddressingModeV(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError(QString("OgreMaterialAsset::TextureAddressingModeV: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        return 0;
+    }
+    return texUnit->getTextureAddressingMode().v;
+}
+
+unsigned OgreMaterialAsset::TextureAddressingModeW(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError(QString("OgreMaterialAsset::TextureAddressingModeW: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        return 0;
+    }
+    return texUnit->getTextureAddressingMode().w;
+}
+
+bool OgreMaterialAsset::SetScrollAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, float vSpeed)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setScrollAnimation(uSpeed, vSpeed);
+    return true;
+}
+
+float OgreMaterialAsset::ScrollAnimationU(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError(QString("OgreMaterialAsset::ScrollAnimationU: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        return 0.f;
+    }
+
+    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = effects.find(Ogre::TextureUnitState::ET_USCROLL);
+    if (it == effects.end())
+        it = effects.find(Ogre::TextureUnitState::ET_UVSCROLL);
+    if (it == effects.end())
+    {
+         LogError("OgreMaterialAsset::ScrollAnimationU: Could not find Ogre::TextureUnitState::ET_USCROLL or ET_UVSCROLL from effects map.");
+         return 0.f;
+    }
+
+    return (*it).second.arg1;
+}
+
+float OgreMaterialAsset::ScrollAnimationV(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError(QString("OgreMaterialAsset::ScrollAnimationV: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        return 0.f;
+    }
+
+    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = effects.find(Ogre::TextureUnitState::ET_VSCROLL);
+    if (it == effects.end())
+        it = effects.find(Ogre::TextureUnitState::ET_UVSCROLL);
+    if (it == effects.end())
+    {
+         LogError("OgreMaterialAsset::ScrollAnimationV: Could not find Ogre::TextureUnitState::ET_VSCROLL or ET_UVSCROLL from effects map.");
+         return 0.f;
+    }
+
+    return (*it).second.arg1;
+}
+
+bool OgreMaterialAsset::SetRotateAnimation(int techIndex, int passIndex, int texUnitIndex, float speed)
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    texUnit->setRotateAnimation(speed);
+    return true;
+}
+
+float OgreMaterialAsset::RotateAnimation(int techIndex, int passIndex, int texUnitIndex) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError(QString("OgreMaterialAsset::RotateAnimation: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        return 0.f;
+    }
+
+    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_ROTATE);
+    if (it == effects.end())
+    {
+         LogError("OgreMaterialAsset::RotateAnimation: Could not find Ogre::TextureUnitState::ET_ROTATE from effects map.");
+         return 0.f;
+    }
+
+    return (*it).second.arg1;
+}
+
+bool OgreMaterialAsset::HasTextureEffect(int techIndex, int passIndex, int texUnitIndex, unsigned effect) const
+{
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+    {
+        LogError(QString("OgreMaterialAsset::HasTextureEffect: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
+        false;
+    }
+
+    const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
+    Ogre::TextureUnitState::EffectMap::const_iterator it = effects.find((Ogre::TextureUnitState::TextureEffectType)effect);
+    return it != effects.end();
 }
 
 bool OgreMaterialAsset::SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal)

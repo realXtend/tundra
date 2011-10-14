@@ -1078,12 +1078,12 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                     
                     Transform entity_transform;
                     
-                    /// Todo: allow any transformation of coordinate axes, not just fixed y/z flip
+                    /// \todo Allow any transformation of coordinate axes, not just fixed y/z flip
                     if (flipyz)
                     {
                         float3 rot_euler;
                         Quat adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
-                        adjustedrot = Quat::FromEulerZYX(0, PI, 0) * adjustedrot;
+                        adjustedrot = Quat::FromEulerZYX(0, pi, 0) * adjustedrot;
                         entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
                         entity_transform.SetOrientation(adjustedrot);
                         entity_transform.SetScale(newscale.x, newscale.z, newscale.y);

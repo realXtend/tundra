@@ -178,6 +178,8 @@ void OgreRenderingModule::ShowSettingsWindow()
 
 void OgreRenderingModule::ConsoleStats()
 {
+    if (framework_->IsHeadless())
+        return;
     if (renderer)
     {
         const Ogre::RenderTarget::FrameStats& stats = renderer->GetCurrentRenderWindow()->getStatistics();

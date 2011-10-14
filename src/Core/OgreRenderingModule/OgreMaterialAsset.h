@@ -101,6 +101,22 @@ public slots:
     bool SetPixelShader(int techIndex, int passIndex, const QString& pixelShaderName);
     QString PixelShader(int techIndex, int passIndex) const;
 
+    /// Sets vertex shader parameter value.
+    /** Supported value types are int, float, float4/Color, float4x4.
+        @param techIndex Technique index.
+        @param passIndexx Pass index.
+        @param name Name of the shader parameter.
+        @param value List of values to be set. */
+    bool SetVertexShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value);
+
+    /// Sets pixel shader parameter value.
+    /** Supported value types are int, float, float4/Color, float4x4.
+        @param techIndex Technique index.
+        @param passIndexx Pass index.
+        @param name Name of the shader parameter.
+        @param value List of values to be set. */
+    bool SetPixelShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value);
+
     /// Enable or disable lighting in a pass
     bool SetLighting(int techIndex, int passIndex, bool enable);
     bool IsLightingEnabled(int techIndex, int passIndex) const;
@@ -121,10 +137,12 @@ public slots:
     bool SetEmissiveColor(int techIndex, int passIndex, const Color& color);
     Color EmissiveColor(int techIndex, int passIndex) const;
 
-    /// Set scene blend mode of a pass
+    /// Sets the overall scene blend mode of a pass
     /** See Ogre::SceneBlendType for @c blendMode */
     bool SetSceneBlend(int techIndex, int passIndex, unsigned blendMode);
-    /** See Ogre::SceneBlendFactor for @c srcFactor and @c dstFactor. */
+    /// This is an overloaded function.
+    /** Sets the source and destination blend factors separately.
+        See Ogre::SceneBlendFactor for @c srcFactor and @c dstFactor. */
     bool SetSceneBlend(int techIndex, int passIndex, unsigned srcFactor, unsigned dstFactor);
     unsigned SourceSceneBlendFactor(int techIndex, int passIndex) const;
     unsigned DestinationSceneBlendFactor(int techIndex, int passIndex) const;
@@ -146,13 +164,63 @@ public slots:
     bool SetDepthBias(int techIndex, int passIndex, float bias);
     float DepthBias(int techIndex, int passIndex) const;
 
+    /// Sets the hardware culling mode.
+    /** See Ogre::CullingMode for @c mode. */
+    bool SetHardwareCullingMode(int techIndex, int passIndex, unsigned mode);
+    unsigned HardwareCullingMode(int techIndex, int passIndex) const;
+
+    /// Sets the (polygon) shading mode.
+    /** See Ogre::ShadeOptions for @c mode. */
+    bool SetShadingMode(int techIndex, int passIndex, unsigned mode);
+    unsigned ShadingMode(int techIndex, int passIndex) const;
+
+    /// Sets the (polygon) fill mode.
+    /** See Ogre::PolygonMode for @c mode. */
+    bool SetFillMode(int techIndex, int passIndex, unsigned mode);
+    unsigned FillMode(int techIndex, int passIndex) const;
+
+    /// Sets color write on/off
+    bool SetColorWrite(int techIndex, int passIndex, bool enable);
+    bool IsColorWriteEnabled(int techIndex, int passIndex) const;
+
+    /// Sets texture coordinate set for texture layer.
+    bool SetTextureCoordSet(int techIndex, int passIndex, int texUnitIndex, uint value);
+    uint TextureCoordSet(int techIndex, int passIndex, int texUnitIndex) const;
+
+    /// Sets the (polygon) fill mode.
+    /** Sets the same mode for u, v and w.
+        See Ogre::TextureUnitState::TextureAddressingMode for @c mode. */
+    bool SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned mode);
+    /// This is an overloaded function. 
+    /** Specifies the mode for u, v and w separately */
+    bool SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned uMode, unsigned vMode, unsigned wMode);
+    unsigned TextureAddressingModeU(int techIndex, int passIndex, int texUnitIndex) const;
+    unsigned TextureAddressingModeV(int techIndex, int passIndex, int texUnitIndex) const;
+    unsigned TextureAddressingModeW(int techIndex, int passIndex, int texUnitIndex) const;
+
+    /// Sets animated scroll for texture layer.
+    bool SetScrollAnimation(int techIndex, int passIndex, int texUnitIndex, float uSpeed, float vSpeed);
+    float ScrollAnimationU(int techIndex, int passIndex, int texUnitIndex) const;
+    float ScrollAnimationV(int techIndex, int passIndex, int texUnitIndex) const;
+
+    /// Sets animated rotation for texture layer.
+    bool SetRotateAnimation(int techIndex, int passIndex, int texUnitIndex, float speed);
+    float RotateAnimation(int techIndex, int passIndex, int texUnitIndex) const;
+
+    /// Returns whether or not texture unit has specific effect.
+    /** See Ogre::TextureUnitState::TextureEffectType for @c effect.
+        @note Ogre weirdness: if texture has scroll effect of which u and v values are the same, it has Ogre Ogre::TextureUnitState::ET_UVSCROLL.
+        If it has scroll effect with different u and v values it has both Ogre::TextureUnitState::ET_USCROLL and Ogre::TextureUnitState::ET_VSCROLL. */
+    bool HasTextureEffect(int techIndex, int passIndex, int texUnitIndex, unsigned effect) const;
+
 private slots:
     /// Asset transfer (for texture apply operation) succeeded
     void OnTransferSucceeded(AssetPtr asset);
     /// Asset transfer (for texture apply operation) failed
     void OnTransferFailed(IAssetTransfer *transfer, QString reason);
-    
+
 private:
+    bool CreateOgreMaterial();
     bool SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal);
     bool SetTechniqueAttribute(Ogre::Technique* tech, int techIndex, const QString& attr, const QString& val, const QString& origVal);
     bool SetPassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr, const QString& val, const QString& origVal);

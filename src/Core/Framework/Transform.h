@@ -1,9 +1,8 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #pragma once
 
-#include "CoreMath.h"
 #include "Math/float3.h"
-
-#include <QMetaType>
 #include "Math/float4.h"
 #include "Math/float3x4.h"
 #include "Math/float4x4.h"
@@ -11,6 +10,10 @@
 #include "Math/Quat.h"
 #include "Math/MathFunc.h"
 
+#include <QMetaType>
+
+/// Describes transformation of an object in 3D space.
+/** Can be used as entity-component attribute. */
 class Transform
 {
 public:
@@ -218,4 +221,3 @@ public:
 
 Q_DECLARE_METATYPE(Transform)
 Q_DECLARE_METATYPE(Transform*)
-

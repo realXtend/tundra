@@ -37,6 +37,7 @@
 #include "LoggingFunctions.h"
 #include "AssetAPI.h"
 #include "Math/MathFunc.h"
+#include "QScriptEngineHelpers.h"
 
 #include <QUiLoader>
 #include <QFile>

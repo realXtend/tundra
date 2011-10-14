@@ -165,9 +165,10 @@ void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)
         LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + pluginConfigurationFile + "\"!");
         return;
     }
-    if (!doc.setContent(&file))
+    QString errorMsg;
+    if (!doc.setContent(&file, false, &errorMsg))
     {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginConfigurationFile + "\"!");
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginConfigurationFile + "\":" + errorMsg);
         file.close();
         return;
     }

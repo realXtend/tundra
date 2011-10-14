@@ -4,6 +4,14 @@
 
 // types
 
+#include <boost/shared_ptr.hpp>
+
+#include <vector>
+#include <list>
+
+#include <QString>
+#include <QStringList>
+
 #if defined(unix) || defined(__APPLE__)
 
 #include <cmath>
@@ -15,15 +23,6 @@ template <class T> inline bool _finite(T f) { return f != std::numeric_limits<T>
 template <class T> inline bool _isnan(T f) { return f != f; }
 
 #endif 
-
-#include <boost/shared_ptr.hpp>
-
-#include <vector>
-#include <list>
-
-#include <QString>
-#include <QVector>
-#include <QStringList>
 
 // If we have C99, take the types from there.
 #if (__STDC_VERSION__ >= 199901L) || (_MSC_VER >= 1600)
@@ -56,20 +55,22 @@ typedef boost::int64_t s64; ///< 8 bytes signed. 9,223,372,036,854,775,807 ~ 9e1
 
 #endif
 
+// Floating-point types
 typedef float f32;
 typedef double f64;
 
+// Unsigned types
 typedef unsigned char uchar;
 typedef unsigned int uint;
+typedef unsigned short ushort;
 typedef unsigned long ulong;
 
+// Special Tundra identifiers
 typedef unsigned int entity_id_t;
 typedef unsigned int component_id_t;
 
 typedef std::vector<std::string> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;
-
-typedef QVector<QString> QStringVector;
 
 typedef std::list<std::string> StringList;
 typedef boost::shared_ptr<StringList> StringListPtr;

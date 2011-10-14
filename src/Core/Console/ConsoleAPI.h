@@ -24,7 +24,8 @@ class ShellInputThread;
 class ConsoleCommand;
 
 /// Console core API.
-/** Allows printing text to console, executing console commands programmatically and registering new console commands. */
+/** Allows printing text to console, executing console commands programmatically and registering new console commands.
+    @note Console commands are case-insensitive. */
 class ConsoleAPI : public QObject
 {
     Q_OBJECT

@@ -170,7 +170,6 @@ SceneAPI is available as 'scene' in Javascript and 'naali.scene' in Python.
 Topics:
 <ul>
 <li>\ref SceneModelPage "Scenes, entities and components."
-<li>\ref QmlScenePage "Accessing the scene from Qml."
 <li>Attributes and attribute metadata.
 <li>\ref EntityActionPage "Entity actions".
 <li>Accessing scene contents from C++ code.
@@ -214,6 +213,7 @@ Classes:
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Console</h3>
 Allows modules to register new commands that are invokeable from a command line console.
+Also provides logging mechanism for dynamic languages.
 
 ConsoleAPI is available as 'console' in Javascript and 'naali.console' in Python with the support for:
 - Registering new console commands.
@@ -306,7 +306,7 @@ See the following topics for more information:
 <p>Implemented by modules
 <ul>
 <li>OgreRenderer::OgreRenderingModule
-<ul><li>Exposes the components EC_Placeable, EC_Mesh, EC_Light, EC_ParticleSystem, EC_AnimationController, EC_Camera, EC_Material, EC_OgreCompositor, EC_RttCamera.</ul> 
+<ul><li>Exposes the components EC_Placeable, EC_Mesh, EC_Light, EC_ParticleSystem, EC_AnimationController, EC_Camera, EC_Material, EC_OgreCompositor, EC_RttTarget.</ul> 
 <li>EnvironmentModule
 <ul><li>Exposes the components EC_Sky, EC_Terrain, EC_WaterPlane, EC_Fog.</ul> 
 </ul>

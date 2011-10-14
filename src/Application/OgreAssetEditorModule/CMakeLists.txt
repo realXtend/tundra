@@ -7,7 +7,8 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 file (GLOB MOC_FILES OgreAssetEditorModule.h OgreScriptEditor.h PropertyTableWidget.h OgreMaterialProperties.h
-    MaterialWizard.h TexturePreviewEditor.h AudioPreviewEditor.h AudioSignalLabel.h MeshPreviewEditor.h OgreScriptHighlighter.h)
+    MaterialWizard.h TexturePreviewEditor.h AudioPreviewEditor.h AudioSignalLabel.h MeshPreviewEditor.h OgreScriptHighlighter.h
+    OgreMaterialEditor.h)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
@@ -23,15 +24,14 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-use_core_modules (Framework AssetModule OgreRenderingModule Input Audio)
+use_core_modules (Framework OgreRenderingModule Asset Audio)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Framework OgreRenderingModule Input Audio)
+link_modules (Framework OgreRenderingModule Asset Audio)
 
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-
 
 final_target ()

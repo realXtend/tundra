@@ -1653,11 +1653,11 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
     case IAssetStorage::AssetModify:
         if (existing)
         {
-            //if (existing->IsLoaded())
-                // Note: exists->LoadFromCache() could be used here as well.
+            ///\todo Profile performance difference between LoadFromCache and RequestAsset
+            if (existing->IsLoaded()) // Note: exists->LoadFromCache() could be used here as well.
                 RequestAsset(assetRef, assetType, true); // If asset exists and is already loaded, forcibly request updated data
-            //else
-                //LogDebug("AssetAPI: Ignoring AssetModify notification for unloaded asset " + assetRef + ".");
+            else
+                LogDebug("AssetAPI: Ignoring AssetModify notification for unloaded asset " + assetRef + ".");
         }
         else
             LogWarning("AssetAPI: Received AssetModify notification for non-existing asset " + assetRef + ".");

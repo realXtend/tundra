@@ -43,38 +43,40 @@ void mainVS
 #ifdef VERTEX_COLOR
 	in float4 color : COLOR,
 #endif
-#ifdef NORMAL_MAPPING	
+#ifdef NORMAL_MAPPING
 	in float3 tangent : TANGENT,
-#endif	
+#endif
 	in float2 tex : TEXCOORD0,
 #ifdef LIGHT_MAPPING
-	in float2 tex2 : TEXCOORD1, 
-#endif	
-	out float4 oPos : POSITION,
+	in float2 tex2 : TEXCOORD1,
+#endif
 	out float3 oTex,
 #ifdef VERTEX_COLOR
 	out float4 oColor : COLOR,
 #endif
 #ifdef LIGHT_MAPPING
-	out float2 oTex2, 
-#endif		
+	out float2 oTex2,
+#endif
 	out float4 oFog,
 #if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
 	out float3 oViewDir, // in tangent space
 #endif
 	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
-	out float4 oLightDir[cNumPerPixelLights]
+#ifndef UNLIT
+	out float4 oLightDir[cNumPerPixelLights],
+#endif
 #ifdef SHADOW_MAPPING
-	,out float4 oShadowTex0      
+	out float4 oShadowTex0,
 #ifdef PSSM_SHADOWS
-	,out float4 oShadowTex1
-	,out float4 oShadowTex2
+	out float4 oShadowTex1,
+	out float4 oShadowTex2,
 #endif
 #endif
 
 #if !defined(NORMAL_MAPPING)
-	, out float3 oNormal
+	out float3 oNormal,
 #endif
+	out float4 oPos : POSITION
 )
 {
 	float4 worldPos = mul(worldMatrix, pos);
@@ -92,23 +94,27 @@ void mainVS
 	oNormal = mul(worldMatrix, float4(normal, 0)).xyz;
 #endif
 
+#ifndef UNLIT
 	// Process all point lights.
 	oLightDir[0] = float4(sunLightDir.xyz, 1.f);
 	oLightDir[1] = ComputePointLightDirAndAttenuation(worldPos.xyz, lightPos0, lightAtt0);
 	oLightDir[2] = ComputePointLightDirAndAttenuation(worldPos.xyz, lightPos1, lightAtt1);
+#endif
 
 #ifdef NORMAL_MAPPING
 	// Reconstruct tangent coordinate frame.
 	float4x4 mWorldToTangent = ComputeWorldToTangentSpaceTransform(normal, tangent);
-	
+
+#ifndef UNLIT
 	oLightDir[0] = float4(mul(mWorldToTangent, float4(sunLightDir.xyz,0)).xyz, 1.f);
 	oLightDir[1].xyz = mul(mWorldToTangent, float4(oLightDir[1].xyz, 0)).xyz;
 	oLightDir[2].xyz = mul(mWorldToTangent, float4(oLightDir[2].xyz, 0)).xyz;
+#endif
 
 #if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
 	oViewDir = mul(mWorldToTangent, float4(oViewDir,0)).xyz;
 #endif
-	
+
 #endif
 
 #ifdef VERTEX_COLOR
@@ -187,8 +193,8 @@ void mainPS(
 	
 	// Start with ambient color.
 #ifdef LIGHT_MAPPING	
-	float3 diffuseLightFactor = tex2D(lightMap, tex2).xyz;
-#else	
+	float3 diffuseLightFactor = tex2D(lightMap, tex2).xyz * lightMapFactor;
+#else
 	float3 diffuseLightFactor = ambientLight.xyz;
 #endif
 
@@ -196,6 +202,7 @@ void mainPS(
 	float3 specularLightFactor = float3(0,0,0);
 #endif
 
+#ifndef UNLIT
 	const float3 lightDiffuseColors[cNumPerPixelLights] = { sunLightCol.xyz, lightCol0.xyz, lightCol1.xyz };
 	const float3 lightSpecularColors[cNumPerPixelLights] = { sunLightCol.xyz, lightCol0.xyz, lightCol1.xyz };
 	
@@ -257,6 +264,7 @@ void mainPS(
 		specularLightFactor += lightness * specularFactor * lightSpecularColors[i];
 #endif
 	}
+#endif
 
 #ifdef LUMINANCE_MAPPING
 	// Process the light accumulated from the luminance map.

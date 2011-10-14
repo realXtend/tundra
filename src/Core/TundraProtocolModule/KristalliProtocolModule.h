@@ -10,6 +10,11 @@
 
 #include <QObject>
 
+#ifdef KNET_USE_QT
+#include <QPointer>
+namespace kNet { class NetworkDialog; }
+#endif
+
 namespace KristalliProtocol
 {
     /// Implements kNet protocol -based server and client functionality.
@@ -122,6 +127,9 @@ public slots:
         
         /// Users that are connected to server
         UserConnectionList connections;
+#ifdef KNET_USE_QT
+        QPointer<kNet::NetworkDialog> networkDialog;
+#endif
     };
 }
 

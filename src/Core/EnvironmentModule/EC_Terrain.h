@@ -229,7 +229,7 @@ public slots:
     /// Helper function, which returns for given world coordinate point terrain rotation in Euler angles. 
     /// @note This assumes that "mesh" which is rotation for terrain is searched is orginally authored to look -y - axis.
     /// \todo This function will be deleted.
-    float3 GetTerrainRotationAngles(float x, float y, float z, const float3& direction) const;
+//    float3 GetTerrainRotationAngles(float x, float y, float z, const float3& direction) const;
 
     /// Removes all stored terrain patches and the associated Ogre scene nodes.
     void Destroy();

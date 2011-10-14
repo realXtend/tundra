@@ -17,11 +17,6 @@
 #ifdef QT_INTEROP
 #include <QQuaternion>
 #endif
-/*
-#ifdef IRRLICHT_INTEROP
-#include "Quaternion.h"
-#endif
-*/
 #ifdef OGRE_INTEROP
 #include <OgreQuaternion.h>
 #endif
@@ -277,12 +272,6 @@ public:
     Quat(const Ogre::Quaternion &other) { w = other.w; x = other.x; y = other.y; z = other.z; }
     operator Ogre::Quaternion() const { return Ogre::Quaternion(w, x, y, z); }
 #endif
-/*
-#ifdef IRRLICHT_INTEROP
-    Quat(const Quaternion &other) { w = other.w; x = other.x; y = other.y; z = other.z; }
-    operator Quaternion() const { return Quaternion(x, y, z, w); }
-#endif
-*/
 #ifdef QT_INTEROP
     Quat(const QQuaternion &other) { w = other.scalar(); x = other.x(); y = other.y(); z = other.z(); }
     operator QQuaternion() const { return QQuaternion(w, x, y, z); }

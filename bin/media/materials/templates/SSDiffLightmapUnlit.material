@@ -1,0 +1,25 @@
+material rex/DiffLightmapUnlit
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+			
+			vertex_program_ref rex/DiffLightmapUnlitVP
+			{
+			}
+			fragment_program_ref rex/DiffLightmapUnlitFP
+			{
+			}
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+			texture_unit lightMap
+			{
+				texture TextureMissing.png
+			}
+		}
+	}
+}

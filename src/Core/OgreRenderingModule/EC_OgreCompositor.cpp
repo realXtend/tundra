@@ -19,14 +19,13 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     compositorref(this, "Compositor ref", ""),
     priority(this, "Priority", -1),
     parameters(this, "Parameters"),
-    previous_priority_(-1),
-    owner_(0),
-    handler_(0)
+    previousPriority(-1),
+    compositionHandler(0)
 {
-    owner_ = framework->GetModule<OgreRenderer::OgreRenderingModule>();
-    assert(owner_ && "No OgrerenderingModule.");
-    handler_ = owner_->GetRenderer()->GetCompositionHandler();
-    assert (handler_ && "No CompositionHandler.");
+    OgreRenderer::OgreRenderingModule *owner = framework->GetModule<OgreRenderer::OgreRenderingModule>();
+    assert(owner && "No OgrerenderingModule.");
+    compositionHandler = owner->GetRenderer()->GetCompositionHandler();
+    assert(compositionHandler && "No CompositionHandler.");
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
     
     // Ogre sucks. Enable a timed one-time refresh to overcome issue with black screen.
@@ -35,8 +34,8 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
 
 EC_OgreCompositor::~EC_OgreCompositor()
 {
-    if ((handler_) && (!previous_ref_.isEmpty()))
-        handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
+    if (compositionHandler && !previousRef.isEmpty())
+        compositionHandler->RemoveCompositorFromViewport(previousRef.toStdString());
 }
 
 void EC_OgreCompositor::OnAttributeUpdated(IAttribute* attribute)
@@ -45,20 +44,13 @@ void EC_OgreCompositor::OnAttributeUpdated(IAttribute* attribute)
     {
         UpdateCompositor(compositorref.Get());
         UpdateCompositorParams(compositorref.Get());
-        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), enabled.Get());
+        compositionHandler->SetCompositorEnabled(compositorref.Get().toStdString(), enabled.Get());
     }
-
-    if (attribute == &compositorref)
+    else if (attribute == &compositorref || attribute == &priority)
     {
         UpdateCompositor(compositorref.Get());
     }
-
-    if (attribute == &priority)
-    {
-        UpdateCompositor(compositorref.Get());
-    }
-
-    if (attribute == &parameters)
+    else if (attribute == &parameters)
     {
         UpdateCompositorParams(compositorref.Get());
     }
@@ -68,21 +60,21 @@ void EC_OgreCompositor::UpdateCompositor(const QString &compositor)
 {
     if (ViewEnabled() && enabled.Get())
     {
-        if ((previous_ref_ != compositorref.Get()) || (previous_priority_ != priority.Get()))
+        if (previousRef != compositorref.Get() || previousPriority != priority.Get())
         {
-            if (!previous_ref_.isEmpty())
-                handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
+            if (!previousRef.isEmpty())
+                compositionHandler->RemoveCompositorFromViewport(previousRef.toStdString());
 
             if (!compositorref.Get().isEmpty())
             {
                 if (priority.Get() == -1)
-                    handler_->AddCompositorForViewport(compositor.toStdString());
+                    compositionHandler->AddCompositorForViewport(compositor.toStdString());
                 else
-                    handler_->AddCompositorForViewportPriority(compositor.toStdString(), priority.Get());
+                    compositionHandler->AddCompositorForViewportPriority(compositor.toStdString(), priority.Get());
             }
             
-            previous_ref_ = compositor;
-            previous_priority_ = priority.Get();
+            previousRef = compositor;
+            previousPriority = priority.Get();
         }
     }
 }
@@ -98,24 +90,24 @@ void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
             QStringList sepParams = params.split('=');
             if (sepParams.size() > 1)
             {
-                try
-                {
-                    Ogre::Vector4 value(0, 0, 0, 0);
-                    QStringList valueList = sepParams[1].split(" ", QString::SkipEmptyParts);
-                    if (valueList.size() > 0) value.x = boost::lexical_cast<Ogre::Real>(valueList[0].toStdString());
-                    if (valueList.size() > 1) value.y = boost::lexical_cast<Ogre::Real>(valueList[1].toStdString());
-                    if (valueList.size() > 2) value.z = boost::lexical_cast<Ogre::Real>(valueList[2].toStdString());
-                    if (valueList.size() > 3) value.w = boost::lexical_cast<Ogre::Real>(valueList[3].toStdString());
-                    std::string name = sepParams[0].toStdString();
+                Ogre::Vector4 value(0, 0, 0, 0);
+                QStringList valueList = sepParams[1].split(" ", QString::SkipEmptyParts);
+                if (valueList.size() > 0)
+                    value.x = valueList[0].toDouble();
+                if (valueList.size() > 1)
+                    value.y = valueList[1].toDouble();
+                if (valueList.size() > 2)
+                    value.z = valueList[2].toDouble();
+                if (valueList.size() > 3)
+                    value.w = valueList[3].toDouble();
+                std::string name = sepParams[0].toStdString();
 
-                    programParams.push_back(std::make_pair(name, value));
-                }
-                catch(boost::bad_lexical_cast &) {}
+                programParams.push_back(std::make_pair(name, value));
             }
         }
-        handler_->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
-        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), false);
-        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), true);
+        compositionHandler->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
+        compositionHandler->SetCompositorEnabled(compositorref.Get().toStdString(), false);
+        compositionHandler->SetCompositorEnabled(compositorref.Get().toStdString(), true);
     }
 }
 

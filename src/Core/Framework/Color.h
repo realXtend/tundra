@@ -6,14 +6,14 @@
 #include "Math/MathFunc.h"
 
 #include <QMetaType>
-#ifdef QT_INTEROP
 #include <QColor>
-#endif
+
 #ifdef OGRE_INTEROP
 #include <OgreColourValue.h>
 #endif
 
 /// A 4-component color value, component values are floating-points [0.0, 1.0]
+///\todo Expose to QtScript by using QtScriptGenerator instead of manual exposing.
 class Color
 {
 public:
@@ -49,13 +49,18 @@ public:
         return !(*this == rhs);
     }
 
-#ifdef QT_INTEROP
     Color(const QColor &other) { r = other.redF(); g = other.greenF(); b = other.blueF(); a = other.alphaF(); }
+
     operator QColor() const
     {
         return QColor(Clamp<int>(r*255.f, 0, 255), Clamp<int>(g*255.f, 0, 255), Clamp<int>(b*255.f, 0, 255), Clamp<int>(a*255.f, 0, 255));
     }
-#endif
+
+    operator QString() const { return QString("Color(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a); }
+    QString ToString() const { return (QString)*this; }
+    /// For QtScript
+    QString toString() const { return (QString)*this; }
+
 #ifdef OGRE_INTEROP
     Color(const Ogre::ColourValue &other) { r = other.r; g = other.g; b = other.b; a = other.a; }
     operator Ogre::ColourValue() const { return Ogre::ColourValue(r, g, b, a); }
@@ -63,3 +68,4 @@ public:
 };
 
 Q_DECLARE_METATYPE(Color)
+Q_DECLARE_METATYPE(Color*)

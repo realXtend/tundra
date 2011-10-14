@@ -61,13 +61,12 @@ public slots:
     /// Returns position of the sun.
     float3 SunPosition() const;
 
-    void CreateSunlight();
-
 private:
     EC_SkyXImpl *impl;
 
 private slots:
     void Create();
+    void CreateSunlight();
 
     /// Called when the main view active camera has changed.
     void OnActiveCameraChanged(Entity *newActiveCamera);

@@ -7,13 +7,6 @@ material rex/DiffTwoPassAlpha
 			iteration once
 			alpha_rejection greater_equal 255
 
-//          Can use these only in Ogre 1.6
-//			shadow_caster_vertex_program_ref rex/ShadowCasterAlphaVP
-//			{
-//			}			
-//			shadow_caster_fragment_program_ref rex/ShadowCasterAlphaFP
-//			{
-//			}						
 			vertex_program_ref rex/DiffAlphamaskVP
 			{
 			}
@@ -31,14 +24,7 @@ material rex/DiffTwoPassAlpha
 			alpha_rejection less_equal 254
 			scene_blend alpha_blend
 			depth_write off
-			
-//          Can use these only in Ogre 1.6
-//			shadow_caster_vertex_program_ref rex/ShadowCasterAlphaVP
-//			{
-//			}			
-//			shadow_caster_fragment_program_ref rex/ShadowCasterAlphaFP
-//			{
-//			}						
+
 			vertex_program_ref rex/DiffaVP
 			{
 			}
@@ -49,6 +35,6 @@ material rex/DiffTwoPassAlpha
 			{
 				texture TextureMissing.png
 			}
-		}		
+		}
 	}
 }

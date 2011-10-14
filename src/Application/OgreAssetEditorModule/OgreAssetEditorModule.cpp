@@ -13,6 +13,7 @@
 #include "TexturePreviewEditor.h"
 #include "AudioPreviewEditor.h"
 #include "MeshPreviewEditor.h"
+#include "OgreMaterialEditor.h"
 
 #include "LoggingFunctions.h"
 #include "Framework.h"
@@ -69,8 +70,21 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
             EditorAction *openAction = new EditorAction(asset, tr("Open"), menu);
             openAction->setObjectName("Edit");
             connect(openAction, SIGNAL(triggered()), SLOT(OpenAssetInEditor()));
-            menu->insertAction(menu->actions().first(), openAction);
-            menu->insertSeparator(*(menu->actions().begin()+1));
+            menu->insertAction(menu->actions().size() > 0 ? menu->actions().first() : 0, openAction);
+
+            int offset = 1;
+            // Ogre materials are opened in the visual editor by default.
+            // Add another action for opening in raw text editor.
+            if (asset->Type() == "OgreMaterial")
+            {
+                EditorAction *openRawAction = new EditorAction(asset, tr("Open as text"), menu);
+                connect(openRawAction, SIGNAL(triggered()), SLOT(OpenAssetInEditor()));
+                openRawAction->setObjectName("EditRaw");
+                menu->insertAction(*(menu->actions().begin() + offset), openRawAction);
+                ++offset;
+            }
+
+            menu->insertSeparator(*(menu->actions().begin() + offset));
         }
     }
 }
@@ -88,23 +102,26 @@ void OgreAssetEditorModule::OpenAssetInEditor()
 
     if (asset->Type() == "OgreMesh")
     {
-        MeshPreviewEditor *meshEditor = new MeshPreviewEditor(asset, framework_);
-        editor = meshEditor;
+        editor = new MeshPreviewEditor(asset, framework_);
     }
-    else if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")
+    else if (asset->Type() == "OgreMaterial")
     {
-        OgreScriptEditor *scriptEditor = new OgreScriptEditor(asset, framework_);
-        editor = scriptEditor;
+        if (action->objectName() == "EditRaw")
+            editor = new OgreScriptEditor(asset, framework_);
+        else
+            editor = new OgreMaterialEditor(asset, framework_);
+    }
+    else if (asset->Type() == "OgreParticle")
+    {
+        editor = new OgreScriptEditor(asset, framework_);
     }
     else if (asset->Type() == "Audio")
     {
-        AudioPreviewEditor *audioEditor = new AudioPreviewEditor(asset, framework_);
-        editor = audioEditor;
+        editor = new AudioPreviewEditor(asset, framework_);
     }
     else if (asset->Type() == "Texture")
     {
-        TexturePreviewEditor *texEditor = new TexturePreviewEditor(asset, framework_);
-        editor = texEditor;
+        editor = new TexturePreviewEditor(asset, framework_);
     }
 
     if (editor)

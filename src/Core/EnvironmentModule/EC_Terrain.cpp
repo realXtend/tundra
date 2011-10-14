@@ -400,10 +400,10 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
     int yFloor = (int)floor(y);
     int yCeil = (int)ceil(y);
 
-    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
-    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
-    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
-    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
+    xFloor = Clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
+    xCeil = Clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
+    yFloor = Clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
+    yCeil = Clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
 
     float u = fmod(x, 1.f);
     float v = fmod(y, 1.f);
@@ -427,12 +427,12 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
     return h1 * (1.f - u - v) + h2 * u + h3 * v;
 }
 
+///\todo Delete this function and provide a proper replacement which returns local coordinate frames
+/// at the given point.
+///\bug Whether this is actually working at all is a result of random tweaking.
+/*
 float3 EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const float3& direction) const
 {
-    ///\todo Delete this function and provide a proper replacement which returns local coordinate frames
-    /// at the given point.
-    ///\bug Whether this is actually working at all is a result of random tweaking.
-
     if (!rootNode)
     {
         LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
@@ -470,8 +470,8 @@ float3 EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const flo
     
     rotations *= RADTODEG;
     return rotations;
-
 }
+*/
 
 void EC_Terrain::GetTriangleNormals(float x, float y, float3 &n1, float3 &n2, float3 &n3, float &u, float &v) const
 {
@@ -483,10 +483,10 @@ void EC_Terrain::GetTriangleNormals(float x, float y, float3 &n1, float3 &n2, fl
     int yFloor = (int)floor(y);
     int yCeil = (int)ceil(y);
 
-    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
-    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
-    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
-    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
+    xFloor = Clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
+    xCeil = Clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
+    yFloor = Clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
+    yCeil = Clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
 
     float xFrac = fmod(x, 1.f);
     float yFrac = fmod(y, 1.f);
@@ -522,10 +522,10 @@ void EC_Terrain::GetTriangleVertices(float x, float y, float3 &v1, float3 &v2, f
     int yFloor = (int)floor(y);
     int yCeil = (int)ceil(y);
 
-    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
-    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
-    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
-    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
+    xFloor = Clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
+    xCeil = Clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
+    yFloor = Clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
+    yCeil = Clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
 
     float xFrac = fmod(x, 1.f);
     float yFrac = fmod(y, 1.f);
@@ -580,10 +580,10 @@ float3 EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) const
     int px = x * cPatchSize + xinside;
     int py = y * cPatchSize + yinside;
 
-    int xNext = clamp(px+1, 0, patchWidth * cPatchSize - 1);
-    int yNext = clamp(py+1, 0, patchHeight * cPatchSize - 1);
-    int xPrev = clamp(px-1, 0, patchWidth * cPatchSize - 1);
-    int yPrev = clamp(py-1, 0, patchHeight * cPatchSize - 1);
+    int xNext = Clamp(px+1, 0, patchWidth * cPatchSize - 1);
+    int yNext = Clamp(py+1, 0, patchHeight * cPatchSize - 1);
+    int xPrev = Clamp(px-1, 0, patchWidth * cPatchSize - 1);
+    int yPrev = Clamp(py-1, 0, patchHeight * cPatchSize - 1);
 
     float x_slope = GetPoint(xPrev, py) - GetPoint(xNext, py);
     if ((px <= 0) || (px >= patchWidth * cPatchSize))
@@ -740,10 +740,10 @@ void EC_Terrain::NormalizeImage(QString filename) const
             Ogre::ColourValue color = image.getColourAt(x, y, 0);
             color.a = 0;
             color /= (color.r + color.g + color.b + color.a);
-            *imagePos++ = (uchar)clamp((int)(color.b * 255), 0, 255);
-            *imagePos++ = (uchar)clamp((int)(color.g * 255), 0, 255);
-            *imagePos++ = (uchar)clamp((int)(color.r * 255), 0, 255);
-            *imagePos++ = (uchar)clamp((int)(color.a * 255), 0, 255);
+            *imagePos++ = (uchar)Clamp((int)(color.b * 255), 0, 255);
+            *imagePos++ = (uchar)Clamp((int)(color.g * 255), 0, 255);
+            *imagePos++ = (uchar)Clamp((int)(color.r * 255), 0, 255);
+            *imagePos++ = (uchar)Clamp((int)(color.a * 255), 0, 255);
         }
     
     try
