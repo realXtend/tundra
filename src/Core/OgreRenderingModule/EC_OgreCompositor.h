@@ -6,7 +6,7 @@
 #include "CoreDefines.h"
 #include "OgreModuleApi.h"
 
-namespace OgreRenderer { class OgreRenderingModule; class CompositionHandler; };
+namespace OgreRenderer { class CompositionHandler; };
 
 /// Ogre compositor component
 /**
@@ -50,11 +50,11 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_OgreCompositor : public IComponent
 {
     Q_OBJECT
-    
+    COMPONENT_NAME("EC_OgreCompositor", 18)
+
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_OgreCompositor(Scene* scene);
-
     virtual ~EC_OgreCompositor();
 
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
@@ -69,14 +69,14 @@ public:
     Q_PROPERTY(QVariantList parameters READ getparameters WRITE setparameters);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, parameters);
 
-    COMPONENT_NAME("EC_OgreCompositor", 18)
-public slots:
+    ///\todo Implement ApplicableParameters function which returns names (or maybe even names + current values).
+//public slots:
+//  QStringList ApplicableParameters() const;
 
 private slots:
     void OnAttributeUpdated(IAttribute* attribute);
-
     void OneTimeRefresh();
-    
+
 private:
     /// Enables or disables and sets the priority of the specified compositor based on the attributes
     void UpdateCompositor(const QString &compositor);
@@ -84,13 +84,10 @@ private:
     /// Updates compositor shader parameters
     void UpdateCompositorParams(const QString &compositor);
 
-    /// Owner module of this component
-    OgreRenderer::OgreRenderingModule *owner_;
     /// Compositor handler. Used to actually add / remove post process effects.
-    OgreRenderer::CompositionHandler *handler_;
+    OgreRenderer::CompositionHandler *compositionHandler;
     /// Stored compositor ref for internal use
-    QString previous_ref_;
+    QString previousRef;
     /// Stored previous priority for internal use
-    int previous_priority_;
+    int previousPriority;
 };
-
