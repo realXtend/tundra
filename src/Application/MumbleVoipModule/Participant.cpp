@@ -82,6 +82,13 @@ namespace MumbleVoip
         return user_;
     }
 
+    int Participant::Id() const
+    {
+        if (!user_)
+            return -1;
+        return user_->Id();
+    }
+
     void Participant::OnUserLeft()
     {
         emit Left();

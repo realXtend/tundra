@@ -62,8 +62,11 @@ namespace MumbleLib
     
     int User::Id() const
     {
-        if (left_)
-            return 0;
+        // We want to return the ID if user ptr is not null
+        // this is the only unique identifier we have for users.
+        // Logic like listing users will not work with only name as they are not unique.
+        //if (left_)
+        //    return 0;
         return user_.user_id;
     }
     
