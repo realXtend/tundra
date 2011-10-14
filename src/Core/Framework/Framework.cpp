@@ -131,8 +131,8 @@ Framework::Framework(int argc, char** argv) :
 
     // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
     /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
-    apiVersionInfo = new ApiVersionInfo(2, 1, 0, 0);
-    applicationVersionInfo = new ApplicationVersionInfo(2, 1, 0, 0, "realXtend", "Tundra");
+    apiVersionInfo = new ApiVersionInfo(2, 1, 2, 0);
+    applicationVersionInfo = new ApplicationVersionInfo(2, 1, 2, 0, "realXtend", "Tundra");
 
     CommandLineParameterMap cmdLineDescs;
     ///\todo Make it possible for modules to know when "--help" command was issued and list the command line parameters they support.
