@@ -17,21 +17,22 @@
 
 using namespace OgreRenderer;
 
+///@cond PRIVATE
 struct EnumStr
 {
-    EnumStr(QString name, unsigned value) :
-        name_(name),
-        value_(value)
+    EnumStr(QString enumName, unsigned enumValue) :
+        name(enumName),
+        value(enumValue)
     {
     }
     
     EnumStr() :
-        value_(0xffffffff)
+        value(0xffffffff)
     {
     }
-    
-    QString name_;
-    unsigned value_;
+
+    QString name;
+    unsigned value;
 };
 
 EnumStr sceneBlendTypes[] =
@@ -159,29 +160,16 @@ EnumStr waveformTypes[] =
 unsigned GetEnumValue(const QString& name, EnumStr* enums)
 {
     EnumStr* ptr = enums;
-    while (ptr && ptr->name_.length() > 0)
+    while (ptr && ptr->name.length() > 0)
     {
-        if (ptr->name_ == name)
-            return ptr->value_;
+        if (ptr->name == name)
+            return ptr->value;
         ++ptr;
     }
     
-    return enums->value_;
+    return enums->value;
 }
-
-// Convert lowercase text to bool. Accepted variations are on/off, true/false & 0/1
-bool GetBoolValue(const QString& value)
-{
-    if (value.isEmpty())
-        return false;
-    if (value == "1")
-        return true;
-    if (value == "on")
-        return true;
-    if (value == "true")
-        return true;
-    return false;
-}
+/// @endcond
 
 OgreMaterialAsset::~OgreMaterialAsset()
 {
@@ -1627,12 +1615,12 @@ bool OgreMaterialAsset::SetMaterialAttribute(const QString& attr, const QString&
 {
     if (attr == "receive_shadows")
     {
-        ogreMaterial->setReceiveShadows(GetBoolValue(val));
+        ogreMaterial->setReceiveShadows(ParseBool(val));
         return true;
     }
     if (attr == "transparency_casts_shadows")
     {
-        ogreMaterial->setTransparencyCastsShadows(GetBoolValue(val));
+        ogreMaterial->setTransparencyCastsShadows(ParseBool(val));
         return true;
     }
     return false;
@@ -1714,12 +1702,12 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
 #endif
     if (attr == "depth_check")
     {
-        SetDepthCheck(techIndex, passIndex, GetBoolValue(val));
+        SetDepthCheck(techIndex, passIndex, ParseBool(val));
         return true;
     }
     if (attr == "depth_write")
     {
-        SetDepthWrite(techIndex, passIndex, GetBoolValue(val));
+        SetDepthWrite(techIndex, passIndex, ParseBool(val));
         return true;
     }
     if (attr == "depth_func")
@@ -1748,12 +1736,12 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
     }
     if (attr == "normalise_normals")
     {
-        pass->setNormaliseNormals(GetBoolValue(val));
+        pass->setNormaliseNormals(ParseBool(val));
         return true;
     }
     if (attr == "transparent_sorting")
     {
-        pass->setTransparentSortingEnabled(GetBoolValue(val));
+        pass->setTransparentSortingEnabled(ParseBool(val));
         return true;
     }
     if (attr == "cull_hardware")
@@ -1763,7 +1751,7 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
     }
     if (attr == "lighting")
     {
-        SetLighting(techIndex, passIndex, GetBoolValue(val));
+        SetLighting(techIndex, passIndex, ParseBool(val));
         return true;
     }
     if (attr == "shading")
@@ -1778,7 +1766,7 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
     }
     if (attr == "colour_write")
     {
-        pass->setColourWriteEnabled(GetBoolValue(val));
+        pass->setColourWriteEnabled(ParseBool(val));
         return true;
     }
     if (attr == "vertex_program_ref")
