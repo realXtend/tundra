@@ -86,6 +86,10 @@ namespace OgreRenderer
         /** The compositor should be enabled of course */
         void SetCompositorParameter(const std::string &compositorName, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
 
+        /// Returns list of compositor parameter names and their current values in format "name=value".
+        /** @note Currently only returns parameters from compositor's composition techniques' output target pass. */
+        QStringList CompositorParameters(const std::string &compositorName) const;
+
         /// Enable or disable a compositor that has already been added to the default viewport
         void SetCompositorEnabled(const std::string &compositor, bool enable) const;
 
@@ -94,6 +98,9 @@ namespace OgreRenderer
 
         /// Camera has been changed. Update it to the compositor chain
         void CameraChanged(Ogre::Viewport* vp, Ogre::Camera* newCamera);
+
+        /// Returns list of names for available compositors.
+        QStringList AvailableCompositors() const;
 
     private:
         struct Compositor
