@@ -19,7 +19,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QString: compositorref
+<li>QString: compositorName
 <div>Name of the compositor (Ogre resource name), f.ex. "HDR"</div>
 <li>bool: enabled
 <div>Enables or disables this compositor effect. Useful for when you don't want to recreate and delete the component just to enable / disable an effect.</div>
@@ -60,8 +60,8 @@ public:
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
 
-    Q_PROPERTY(QString compositorref READ getcompositorref WRITE setcompositorref);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, compositorref);
+    Q_PROPERTY(QString compositorName READ getcompositorName WRITE setcompositorName);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, compositorName);
 
     Q_PROPERTY(int priority READ getpriority WRITE setpriority);
     DEFINE_QPROPERTY_ATTRIBUTE(int, priority);
@@ -69,9 +69,12 @@ public:
     Q_PROPERTY(QVariantList parameters READ getparameters WRITE setparameters);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, parameters);
 
-    ///\todo Implement ApplicableParameters function which returns names (or maybe even names + current values).
-//public slots:
-//  QStringList ApplicableParameters() const;
+public slots:
+    /// Returns list of names for available compositors.
+    QStringList AvailableCompositors() const;
+
+    /// Returns applicable compositor parameter names and their current values in format "name=value" for the currently active compositor.
+    QStringList ApplicableParameters() const;
 
 private slots:
     void OnAttributeUpdated(IAttribute* attribute);
@@ -84,10 +87,7 @@ private:
     /// Updates compositor shader parameters
     void UpdateCompositorParams(const QString &compositor);
 
-    /// Compositor handler. Used to actually add / remove post process effects.
-    OgreRenderer::CompositionHandler *compositionHandler;
-    /// Stored compositor ref for internal use
-    QString previousRef;
-    /// Stored previous priority for internal use
-    int previousPriority;
+    OgreRenderer::CompositionHandler *compositionHandler; ///< Compositor handler used to actually add and remove post-process effects.
+    QString previousRef; ///< Stored compositor ref for internal use
+    int previousPriority; ///< Stored previous priority for internal use
 };
