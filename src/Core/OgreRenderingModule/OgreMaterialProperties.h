@@ -23,12 +23,13 @@ typedef QMap<QString, QVariant> TypeValuePair;
 typedef QMapIterator<QString, QVariant> PropertyMapIter;
 
 /// Gathers name-value map of shader parameters of Ogre material.
-/** @param material Material to be inspected.
+/** Vertex shader, fragment/pixel shader and texture unit names are appended with " VP", " FP" and " TU" respectively.
+    @param material Material to be inspected.
     @return Property map QMap[QString(name), QVariant[QMap[QString(type), QVariant(value)]]]. */
 PropertyMap OGRE_MODULE_API GatherShaderParameters(const Ogre::MaterialPtr &material, bool includeTextureUnits = false);
 
 /// Dynamically created QProperties for OGRE material scripts.
-///\todo Cleanup
+///\todo Cleanup/merge with OgreMaterialUtils.h
 class OGRE_MODULE_API OgreMaterialProperties : public QObject
 {
     Q_OBJECT
