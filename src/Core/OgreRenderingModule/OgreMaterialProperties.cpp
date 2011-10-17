@@ -21,14 +21,14 @@
 #include <QVector>
 #include <QTextStream>
 
-PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr, bool includeTextureUnits)
+PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &material, bool includeTextureUnits)
 {
     PropertyMap ret;
-    if (matPtr.isNull())
+    if (material.isNull())
         return ret;
 
     // Material
-    Ogre::Material::TechniqueIterator tIter = matPtr->getTechniqueIterator();
+    Ogre::Material::TechniqueIterator tIter = material->getTechniqueIterator();
     while(tIter.hasMoreElements())
     {
         // Technique

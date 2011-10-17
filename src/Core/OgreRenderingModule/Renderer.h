@@ -148,7 +148,7 @@ namespace OgreRenderer
         void Initialize();
 
         /// returns the composition handler responsible of the post-processing effects
-        CompositionHandler *GetCompositionHandler() const { return c_handler_; }
+        CompositionHandler *GetCompositionHandler() const { return compositionHandler; }
 
         /// Returns shadow quality
         ShadowQuality GetShadowQuality() const { return shadowquality_; }
@@ -238,7 +238,7 @@ namespace OgreRenderer
         StringVector added_resource_directories_;
 
         /// handler for post-processing effects
-        CompositionHandler *c_handler_;
+        CompositionHandler *compositionHandler;
         
         /// last width/height
         int last_height_;

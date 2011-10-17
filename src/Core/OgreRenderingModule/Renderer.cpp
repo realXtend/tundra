@@ -25,7 +25,6 @@
 #include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 #include "ConfigAPI.h"
-#include <QScriptEngine>
 #include "QScriptEngineHelpers.h"
 
 #include <Ogre.h>
@@ -49,16 +48,9 @@ static const float MAX_FRAME_TIME = 0.1f;
 #include <RenderSystems/Direct3D9/OgreD3D9RenderWindow.h>
 #endif
 
-#include <QApplication>
-#include <QDesktopWidget>
-#include <QIcon>
-#include <QVBoxLayout>
-#include <QGraphicsScene>
 #include <QCloseEvent>
 #include <QSize>
-#include <QScrollBar>
 #include <QDir>
-#include <QUuid>
 
 #ifdef PROFILING
 #include "InputAPI.h"
@@ -137,7 +129,7 @@ namespace OgreRenderer
         shadowquality_(Shadows_High),
         texturequality_(Texture_Normal)
     {
-        c_handler_ = new CompositionHandler;
+        compositionHandler = new CompositionHandler();
         logListener = new OgreLogListener(framework_->HasCommandLineParameter("--hide_benign_ogre_messages"));
 
         timerFrequency = GetCurrentClockFreq();
@@ -162,7 +154,7 @@ namespace OgreRenderer
         }
         
         root_.reset();
-        SAFE_DELETE(c_handler_);
+        SAFE_DELETE(compositionHandler);
         SAFE_DELETE(logListener);
         SAFE_DELETE(renderWindow);
     }
@@ -331,7 +323,7 @@ namespace OgreRenderer
             dummyDefaultCamera = defaultScene_->createCamera("DefaultCamera");
         
             mainViewport = renderWindow->OgreRenderWindow()->addViewport(dummyDefaultCamera);
-            c_handler_->Initialize(framework_ ,mainViewport);
+            compositionHandler->SetViewport(mainViewport);
         }
 
         initialized_ = true;
@@ -829,8 +821,8 @@ namespace OgreRenderer
         if (mainViewport)
         {
             mainViewport->setCamera(newActiveCamera);
-            if (c_handler_)
-                c_handler_->CameraChanged(mainViewport, newActiveCamera);
+            if (compositionHandler)
+                compositionHandler->CameraChanged(mainViewport, newActiveCamera);
         }
 
         emit MainCameraChanged(mainCameraEntity);

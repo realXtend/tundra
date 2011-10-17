@@ -1,20 +1,19 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #pragma once
 
+#include "CoreTypes.h"
 #include "OgreModuleApi.h"
 
 #include <OgreMaterial.h>
 #include <OgreCompositorInstance.h>
-#include "CoreTypes.h"
-#include <QVector>
-#include <QString>
-#include <QObject>
 
-class Framework;
+#include <QString>
 
 namespace OgreRenderer
 {
-    ///@note This class and its implementation is taken from the Ogre samples
+    /// @note This class and its implementation is taken from the Ogre samples
+    /// @cond PRIVATE
     class HDRListener: public Ogre::CompositorInstance::Listener
     {
     public:
@@ -55,19 +54,18 @@ namespace OgreRenderer
         float mBloomTexOffsetsHorz[15][4];
         float mBloomTexOffsetsVert[15][4];
     };
+    /// @endcond PRIVATE
 
     /// Handles the post-processing effects
     class OGRE_MODULE_API CompositionHandler 
     {
     public:
-        /// Default constructor.
         CompositionHandler();
-
-        /// Destructor.
         virtual ~CompositionHandler();
 
-        /// Initialize the composition handler. This has to be called before trying to enable/disable effects
-        bool Initialize(Framework* framework, Ogre::Viewport *vp);
+        /// Sets viewport.
+        /** This has to be called before trying to enable/disable effects */
+        void SetViewport(Ogre::Viewport *vp);
 
         /// Adds specified compositor for the viewport if it's found. Effect is appended last in the chain if position is not specified (Except HDR)
         bool AddCompositorForViewport(const std::string &compositor, Ogre::Viewport *vp, int position = -1);
@@ -85,19 +83,25 @@ namespace OgreRenderer
         void RemoveCompositorFromViewport(const std::string &compositor);
 
         /// Apply a shader parameter to the specified compositor.
-        /** The compositor should be enabled of course
-        */
+        /** The compositor should be enabled of course */
         void SetCompositorParameter(const std::string &compositorName, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
+
+        /// Returns list of compositor parameter names and their current values in format "name=value".
+        /** @note Currently only returns parameters from compositor's composition techniques' output target pass. */
+        QStringList CompositorParameters(const std::string &compositorName) const;
 
         /// Enable or disable a compositor that has already been added to the default viewport
         void SetCompositorEnabled(const std::string &compositor, bool enable) const;
 
         /// Disable all compositors from the viewport
         void RemoveAllCompositors();
-        
+
         /// Camera has been changed. Update it to the compositor chain
         void CameraChanged(Ogre::Viewport* vp, Ogre::Camera* newCamera);
-        
+
+        /// Returns list of names for available compositors.
+        QStringList AvailableCompositors() const;
+
     private:
         struct Compositor
         {
@@ -115,9 +119,6 @@ namespace OgreRenderer
         /// Set gpu program parameters for the specified material
         void SetMaterialParameters(const Ogre::MaterialPtr &material, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
 
-        /// Compositor manager
-        Ogre::CompositorManager* c_manager_;
-
         /// Ogre viewport.
         Ogre::Viewport* viewport_;
 
@@ -129,9 +130,5 @@ namespace OgreRenderer
 
         /// Stores priorities for compositors. Compositor name is used for the key to make sure each compositor only has one priority.
         std::map<std::string, int> priorities_;
-
-        /// handle to framework
-        Framework* framework_;
     };
 }
-

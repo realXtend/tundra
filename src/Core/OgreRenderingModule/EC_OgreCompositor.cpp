@@ -16,7 +16,7 @@
 EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     IComponent(scene),
     enabled(this, "Enabled", true),
-    compositorref(this, "Compositor ref", ""),
+    compositorName(this, "Compositor ref", ""), ///<\todo Rename to "Compositor" or "Compositor name".
     priority(this, "Priority", -1),
     parameters(this, "Parameters"),
     previousPriority(-1),
@@ -27,7 +27,7 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     compositionHandler = owner->GetRenderer()->GetCompositionHandler();
     assert(compositionHandler && "No CompositionHandler.");
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
-    
+
     // Ogre sucks. Enable a timed one-time refresh to overcome issue with black screen.
     framework->Frame()->DelayedExecute(0.01f, this, SLOT(OneTimeRefresh()));
 }
@@ -38,21 +38,37 @@ EC_OgreCompositor::~EC_OgreCompositor()
         compositionHandler->RemoveCompositorFromViewport(previousRef.toStdString());
 }
 
+QStringList EC_OgreCompositor::AvailableCompositors() const
+{
+    if (compositionHandler)
+        return compositionHandler->AvailableCompositors();
+    else
+        return QStringList();
+}
+
+QStringList EC_OgreCompositor::ApplicableParameters() const
+{
+    if (compositionHandler)
+        return compositionHandler->CompositorParameters(compositorName.Get().toStdString());
+    else
+        return QStringList();
+}
+
 void EC_OgreCompositor::OnAttributeUpdated(IAttribute* attribute)
 {
     if (attribute == &enabled)
     {
-        UpdateCompositor(compositorref.Get());
-        UpdateCompositorParams(compositorref.Get());
-        compositionHandler->SetCompositorEnabled(compositorref.Get().toStdString(), enabled.Get());
+        UpdateCompositor(compositorName.Get());
+        UpdateCompositorParams(compositorName.Get());
+        compositionHandler->SetCompositorEnabled(compositorName.Get().toStdString(), enabled.Get());
     }
-    else if (attribute == &compositorref || attribute == &priority)
+    else if (attribute == &compositorName || attribute == &priority)
     {
-        UpdateCompositor(compositorref.Get());
+        UpdateCompositor(compositorName.Get());
     }
     else if (attribute == &parameters)
     {
-        UpdateCompositorParams(compositorref.Get());
+        UpdateCompositorParams(compositorName.Get());
     }
 }
 
@@ -60,12 +76,12 @@ void EC_OgreCompositor::UpdateCompositor(const QString &compositor)
 {
     if (ViewEnabled() && enabled.Get())
     {
-        if (previousRef != compositorref.Get() || previousPriority != priority.Get())
+        if (previousRef != compositorName.Get() || previousPriority != priority.Get())
         {
             if (!previousRef.isEmpty())
                 compositionHandler->RemoveCompositorFromViewport(previousRef.toStdString());
 
-            if (!compositorref.Get().isEmpty())
+            if (!compositorName.Get().isEmpty())
             {
                 if (priority.Get() == -1)
                     compositionHandler->AddCompositorForViewport(compositor.toStdString());
@@ -83,11 +99,10 @@ void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
 {
     if (ViewEnabled() && enabled.Get())
     {
-        QList< std::pair<std::string, Ogre::Vector4> > programParams;
+        QList<std::pair<std::string, Ogre::Vector4> > programParams;
         foreach(QVariant keyvalue, parameters.Get())
         {
-            QString params = keyvalue.toString();
-            QStringList sepParams = params.split('=');
+            QStringList sepParams = keyvalue.toString().split('=');
             if (sepParams.size() > 1)
             {
                 Ogre::Vector4 value(0, 0, 0, 0);
@@ -105,14 +120,14 @@ void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
                 programParams.push_back(std::make_pair(name, value));
             }
         }
-        compositionHandler->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
-        compositionHandler->SetCompositorEnabled(compositorref.Get().toStdString(), false);
-        compositionHandler->SetCompositorEnabled(compositorref.Get().toStdString(), true);
+        compositionHandler->SetCompositorParameter(compositorName.Get().toStdString(), programParams);
+        compositionHandler->SetCompositorEnabled(compositorName.Get().toStdString(), false);
+        compositionHandler->SetCompositorEnabled(compositorName.Get().toStdString(), true);
     }
 }
 
 void EC_OgreCompositor::OneTimeRefresh()
 {
-    if (!compositorref.Get().isEmpty())
+    if (!compositorName.Get().isEmpty())
         OnAttributeUpdated(&enabled);
 }

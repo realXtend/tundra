@@ -7,7 +7,7 @@
 
 #pragma once
 
-/// @cond PRIVATE
+#include "OgreModuleApi.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -18,20 +18,19 @@
 #include <QMap>
 #include <QString>
 
-#include "AssetFwd.h"
-
 typedef QMap<QString, QVariant> PropertyMap;
 typedef QMap<QString, QVariant> TypeValuePair;
 typedef QMapIterator<QString, QVariant> PropertyMapIter;
 
 /// Gathers name-value map of shader parameters of Ogre material.
-/** @param matPtr Material to be inspected.
+/** Vertex shader, fragment/pixel shader and texture unit names are appended with " VP", " FP" and " TU" respectively.
+    @param material Material to be inspected.
     @return Property map QMap[QString(name), QVariant[QMap[QString(type), QVariant(value)]]]. */
-PropertyMap GatherShaderParameters(const Ogre::MaterialPtr &matPtr, bool includeTextureUnits = false);
+PropertyMap OGRE_MODULE_API GatherShaderParameters(const Ogre::MaterialPtr &material, bool includeTextureUnits = false);
 
 /// Dynamically created QProperties for OGRE material scripts.
-///\todo Cleanup
-class OgreMaterialProperties : public QObject
+///\todo Cleanup/merge with OgreMaterialUtils.h
+class OGRE_MODULE_API OgreMaterialProperties : public QObject
 {
     Q_OBJECT
 
@@ -72,4 +71,3 @@ private:
     ///\todo Regression. Reimplement using the new Asset API. -jj.
 //    OgreRenderer::OgreMaterialResource *material_;
 };
-/// @endcond
