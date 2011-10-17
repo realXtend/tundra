@@ -250,6 +250,7 @@ int EC_DynamicComponent::GetInternalAttributeIndex(int index) const
 
 void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeChange::Type change)
 {
+    LogWarning("EC_DynamicComponent::AddQVariantAttribute is deprecated and will be removed. Use CreateAttribute(\"qvariant\",...) instead.");
     //Check if the attribute has already been created.
     if(!ContainsAttribute(name))
     {
@@ -289,6 +290,7 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
 
 void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change)
 {
+    LogWarning("EC_DynamicComponent::SetAttributeQScript is deprecated and will be removed. Use SetAttribute instead.");
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
         if((*iter) && (*iter)->Name() == name)
         {
