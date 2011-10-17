@@ -21,7 +21,6 @@
 #include "Scene.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
-#include "OgreConversionUtils.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "FrameAPI.h"

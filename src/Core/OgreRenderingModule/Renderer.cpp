@@ -6,7 +6,6 @@
 #include "Application.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
-#include "OgreConversionUtils.h"
 #include "OgreWorld.h"
 #include "EC_Placeable.h"
 #include "EC_Camera.h"

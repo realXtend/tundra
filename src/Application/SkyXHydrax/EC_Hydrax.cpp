@@ -22,7 +22,6 @@
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "Entity.h"
-#include "OgreConversionUtils.h"
 #include "Profiler.h"
 
 #include "AttributeMetadata.h"

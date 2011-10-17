@@ -21,7 +21,6 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "IAsset.h"
-#include "OgreConversionUtils.h"
 
 #include "MemoryLeakCheck.h"
 

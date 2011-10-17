@@ -13,7 +13,6 @@
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreMaterialAsset.h"
-#include "OgreConversionUtils.h"
 #include "OgreWorld.h"
 #include "Framework.h"
 #include "OgreRenderingModule.h"

@@ -13,6 +13,14 @@
 
 namespace OgreRenderer
 {
+    /// If string @c str contains space, wraps the string with double quotes.
+    std::string OGRE_MODULE_API AddDoubleQuotesIfNecessary(const std::string &str);
+
+    /// Desanitates asset references in Ogre scripts.
+    /** @param script Ogre script data as string.
+        @param keywords List of keywords/IDs <b> appended with a space </b>, e.g. "material ", "texture " and "particle_system ". */
+    void OGRE_MODULE_API DesanitateAssetIds(std::string &script, const QStringList &keywords);
+
     /// Returns an Ogre material with the given name, or creates it if it doesn't exist.
     /** The material is derived from an UnlitTextured material, that's a simple one to use for debugging visualizations. */
     Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateUnlitTexturedMaterial(const std::string& materialName);

@@ -17,7 +17,6 @@
 #include <Ogre.h>
 #include <OgreQuaternion.h>
 #include <OgreColourValue.h>
-#include <OgreConversionUtils.h>
 
 #include "MemoryLeakCheck.h"
 

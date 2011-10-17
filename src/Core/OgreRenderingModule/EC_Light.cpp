@@ -7,7 +7,6 @@
 #include "EC_Light.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
-#include "OgreConversionUtils.h"
 
 #include "Entity.h"
 #include "Scene.h"

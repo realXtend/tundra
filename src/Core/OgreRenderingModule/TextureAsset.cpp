@@ -5,7 +5,6 @@
 
 #include "Profiler.h"
 #include "TextureAsset.h"
-#include "OgreConversionUtils.h"
 #include "AssetCache.h"
 
 #include <QPixmap>

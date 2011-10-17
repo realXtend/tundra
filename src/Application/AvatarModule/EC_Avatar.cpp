@@ -11,7 +11,6 @@
 #include "IAssetTransfer.h"
 #include "AvatarDescAsset.h"
 #include "Entity.h"
-#include "OgreConversionUtils.h"
 #include "Profiler.h"
 #include <Ogre.h>
 #include <QDomDocument>

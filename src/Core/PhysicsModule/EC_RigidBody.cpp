@@ -12,7 +12,6 @@
 #include "PhysicsWorld.h"
 #include "Profiler.h"
 #include "OgreMeshAsset.h"
-#include "OgreConversionUtils.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "EC_Mesh.h"
