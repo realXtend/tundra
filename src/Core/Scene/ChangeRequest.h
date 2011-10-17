@@ -2,14 +2,14 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   ChangeRequest.h
- *  @brief  A result object to get return values from qt signal handlers in the permission system (AboutToModifyEntity etc)
+ *  @brief  A result object to get return values from Qt signal handlers in the permission system (AboutToModifyEntity etc)
  */
 
-#ifndef incl_SceneManager_ChangeRequest_h
-#define incl_SceneManager_ChangeRequest_h
+#pragma once
 
 #include <QObject>
 
+/// A result object to get return values from Qt signal handlers in the permission system (AboutToModifyEntity etc)
 class ChangeRequest : public QObject
 {
     Q_OBJECT
@@ -25,5 +25,3 @@ public slots:
     void SetAllowed(bool allow);
     void Deny();
 };
-
-#endif

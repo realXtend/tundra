@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   MaterialWizard.h
- *  @brief  Utitility tool for choosing right material script for your purpose from
- *          the material script template library.
+ *  @brief  Utitility tool for choosing right material script from the material script template library.
  */
 
 #pragma once
@@ -15,6 +14,9 @@ class Framework;
 
 class QVBoxLayout;
 
+/// Utitility tool for choosing right material script from the material script template library.
+/** @cond PRIVATE
+    @todo Delete this class / evaluate if contains any reusable code.*/
 class MaterialWizard : public QWidget
 {
     Q_OBJECT
@@ -119,4 +121,4 @@ private:
     MaterialWizardOptions currentOptions_; ///< Bit mask of current material configuration options.
     QString scriptName_; ///< Name of the script.
 };
-
+/** @endcond */

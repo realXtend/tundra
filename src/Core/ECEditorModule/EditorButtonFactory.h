@@ -6,6 +6,7 @@
 
 class QPushButton;
 
+/// @cond PRIVATE
 class EditorButtonFactory : public QWidget
 {
 public:
@@ -18,3 +19,4 @@ public:
 private:
     QList<QPushButton*> buttons;
 };
+/// @endcond

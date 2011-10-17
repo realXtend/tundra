@@ -22,18 +22,21 @@ class QListWidget;
 class QTreeWidget;
 class QPoint;
 
+/// @cond PRIVATE
 struct EntityComponentSelection
 {
     EntityPtr entity;
     std::vector<ComponentPtr> components;
 };
+/// @endcond
 
 class Framework;
 class ECBrowser;
 class TransformEditor;
 
-/// List widget item representing entity. Holds a weak pointer to the represented entity.
-/// \ingroup ECEditorModuleClient.
+/// List widget item representing entity.
+/** Holds a weak pointer to the represented entity.
+    @ingroup ECEditorModuleClient. */
 class EntityListWidgetItem: public QListWidgetItem
 {
 public:
@@ -48,7 +51,7 @@ private:
 };
 
 /// Entity-component editor window.
-/** \ingroup ECEditorModuleClient. */
+/** @ingroup ECEditorModuleClient. */
 class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
 {
     Q_OBJECT

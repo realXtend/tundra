@@ -2,23 +2,19 @@
 
 #pragma once
 
-#include "Math/float3.h"
-#include "Math/Quat.h"
-
 #include "CoreTypes.h"
+#include "Math/float3.h"
 
 #include <QObject>
-#include <QVariant>
-#include <set>
-
-class QRect;
 
 class Scene;
 class Entity;
 class EC_Camera;
 
-/// Result of a raycast. Other fields are valid only if entity_ is non-null
-///\todo Remove the QObject inheritance here, and expose as a struct to scripts.
+/// Result of a raycast to the rendered representation of a scene.
+/** Other fields are valid only if entity is non-null
+    @sa OgreWorld
+    @todo Remove the QObject inheritance here, and expose as a struct to scripts. */
 class RaycastResult : public QObject
 {
     Q_OBJECT
@@ -56,9 +52,9 @@ public:
 };
 
 /// Describes the system renderer.
-/// \note This class is not an abstract reimplementable interface, but exists only internally for DLL dependency inversion
-///    purposes between Framework and OgreRenderingModule. This interface is only internal to Framework. Do not extend this 
-///    interface. Avoid using it in client code, and prefer directly getting the Renderer object from OgreRenderingModule.
+/** @note This class is not an abstract reimplementable interface, but exists only internally for DLL dependency inversion
+        purposes between Framework and OgreRenderingModule. This interface is only internal to Framework. Do not extend this 
+        interface. Avoid using it in client code, and prefer directly getting the Renderer object from OgreRenderingModule. */
 class IRenderer
 {
 public:
@@ -83,7 +79,7 @@ public:
     /// Returns an unique string name for a new object. This function is intended to be used to generate unique names for Ogre resources.
     virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
 
-    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
+    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or Physics::PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
     /// \todo This will be removed as soon as SceneInteract is out of core.
     virtual RaycastResult *Raycast(int x, int y) = 0;
 };

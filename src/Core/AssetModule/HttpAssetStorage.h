@@ -9,10 +9,12 @@ class QNetworkReply;
 class QBuffer;
 class QNetworkAccessManager;
 
+/// @cond PRIVATE
 struct SearchRequest
 {
     QNetworkReply* reply;
 };
+/// @endcond
 
 /// Represents a network source storage for assets.
 class HttpAssetStorage : public IAssetStorage

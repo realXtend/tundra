@@ -26,6 +26,7 @@
 
 using namespace OgreRenderer;
 
+/** @cond PRIVATE */
 class CustomTagPoint : public Ogre::TagPoint
 {
 public:
@@ -162,6 +163,7 @@ void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)
             SetShowBoundingBoxRecursive(childNode, enable);
     }
 }
+/** @endcond */
 
 EC_Placeable::EC_Placeable(Scene* scene) :
     IComponent(scene),

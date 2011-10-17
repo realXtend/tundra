@@ -12,8 +12,8 @@
 #include <OgreColourValue.h>
 #endif
 
-/// A 4-component color value, component values are floating-points [0.0, 1.0]
-///\todo Expose to QtScript by using QtScriptGenerator instead of manual exposing.
+/// A 4-component color value, component values are floating-points [0.0, 1.0].
+/** @todo Expose to QtScript by using QtScriptGenerator instead of manual exposing. */
 class Color
 {
 public:

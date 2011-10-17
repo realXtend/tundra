@@ -1,10 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   AudioSignalLabel.h
- *  @brief  Inherited by QLabel will convert the audio signal into visual format.
- *  Label will resize the signal image when it's size is changed.
- */ 
+ *  @brief  Shows audio signal's wave form.
+ */
 
 #pragma once
 
@@ -12,9 +11,13 @@
 
 #include <QLabel>
 
+// Shows audio signal's wave form.
+/** Label will resize the signal image when it's size is changed.
+    @cond PRIVATE */
 class AudioSignalLabel: public QLabel
 {
     Q_OBJECT
+
 public:
     AudioSignalLabel(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     virtual ~AudioSignalLabel();
@@ -22,9 +25,10 @@ public:
     void SetAudioData(std::vector<u8> &data, uint frequency, uint bits, bool stereo);
     /// Get audio clip durtation in seconds.
     float GetAudioDuration() const;
+
 private slots:
     /// Generate new audio signal using soundBuffer information.
-    /// @TODO add support for stereo sound drawing, Cant test it cause all uploaded sounds are now converted into Mono format.
+    /// @todo add support for stereo sound drawing, can't test it because all uploaded sounds are now converted into Mono format.
     void GenerateAudioSignalImage();
 
 protected:
@@ -47,4 +51,4 @@ private:
     /// Is widget resized
     bool widget_resized_;
 };
-
+/** @endcond */

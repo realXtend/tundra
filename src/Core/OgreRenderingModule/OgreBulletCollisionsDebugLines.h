@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "Math/float3.h"
 #include "Color.h"
 
+/** @cond PRIVATE */
 struct DebugLine
 {
     Ogre::Vector3 _start;
@@ -76,6 +77,5 @@ protected:
     std::vector<DebugLine> _lines;
     Ogre::HardwareVertexBufferSharedPtr _vbuf;
 };
-
+/** @endcond */
 #endif //_OgreBulletCollisions_DEBUGLines_H_
-

@@ -19,6 +19,7 @@
 
 #include <QString>
 
+/// @cond PRIVATE
 class QStringLessThanNoCase
 {
 public:
@@ -27,6 +28,7 @@ public:
         return QString::compare(a, b, Qt::CaseInsensitive) < 0;
     }
 };
+/// @endcond
 
 QString QStringfromWCharArray(const wchar_t *string, int size);
 int QStringtoWCharArray(QString qstr, wchar_t *array);
