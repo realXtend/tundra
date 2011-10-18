@@ -33,11 +33,13 @@
 #include "MemoryLeakCheck.h"
 
 /// Temporary utility structure for storing supported command line parameters and their descriptions.
+/** @cond PRIVATE */
 struct CommandLineParameterMap
 {
-    /// Prints the structure to std::cout.
-    void Print() const
+    /// Returns the command line structure in printable format.
+    std::string ToString() const
     {
+        std::stringstream ss;
         QMap<QString, QString>::const_iterator it = commands.begin();
         while(it != commands.end())
         {
@@ -56,36 +58,38 @@ struct CommandLineParameterMap
             const int maxLineWidth = (int)w.ws_row;
 #endif
             int cmdLength = it.key().length();
-            std::cout << it.key().toStdString();
+            ss << it.key().toStdString();
             if (cmdLength >= treshold)
             {
-                std::cout << std::endl;
+                ss << std::endl;
                 for(charIdx = 0; charIdx < treshold ; ++charIdx)
-                    std::cout << " ";
+                    ss << " ";
             }
             else
                 for(charIdx = cmdLength; charIdx < treshold ; ++charIdx)
-                    std::cout << " ";
+                    ss << " ";
 
             for(int i = 0; i < it.value().length(); ++i)
             {
-                std::cout << it.value()[i].toAscii();
+                ss << it.value()[i].toAscii();
                 ++charIdx;
                 if (charIdx >= maxLineWidth)
                 {
                     charIdx = 0;
                     for(charIdx; charIdx < treshold ; ++charIdx)
-                        std::cout << " ";
+                        ss << " ";
                 }
             }
 
-            std::cout << std::endl;
+            ss << std::endl;
             ++it;
         }
+        return ss.str();
     }
 
     QMap<QString, QString> commands;
 };
+/** @endcond */
 
 Framework *Framework::instance = 0;
 
@@ -162,7 +166,7 @@ Framework::Framework(int argc, char** argv) :
     if (HasCommandLineParameter("--help"))
     {
         std::cout << "Supported command line arguments: " << std::endl;
-        cmdLineDescs.Print();
+        std::cout << cmdLineDescs.ToString();
         Exit();
     }
     else
