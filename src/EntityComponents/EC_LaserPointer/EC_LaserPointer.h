@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_LaserPointer.h
- *  @brief  EC_LaserPointer adds laser pointer to entities.
+ *  @brief  Adds laser pointer to entity.
  */
 
 #pragma once
@@ -15,7 +15,7 @@
 
 #include <OgreMaterial.h>
 
-/// EC_LaserPointer adds laser pointer to entities.
+/// Adds laser pointer to entity.
 /** The laser is drawn from the parent entity's placeable position to the position hit by raycast made from the mouse position.
     @note The entity must have EC_Placeable available in advance. */
 class EC_LaserPointer : public IComponent

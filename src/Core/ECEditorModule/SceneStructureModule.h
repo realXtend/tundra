@@ -29,17 +29,7 @@ class float3;
 
 class EC_Mesh;
 
-/// @cond PRIVATE
-struct SceneMaterialDropData
-{
-    SceneMaterialDropData() : mesh(0) {}
-    EC_Mesh *mesh;
-    AssetReferenceList materials;
-    QList<uint> affectedIndexes;
-};
-/// @endcond
-
-/// Provides UIs for scene and asset maintenanc and content import.
+/// Provides UIs for scene and asset maintenance and content import.
 /** Also implements raycast drag-and-drop import of various content file formats to the main window. */
 class SceneStructureModule : public IModule
 {
@@ -90,6 +80,14 @@ public slots:
     void ToggleAssetsWindow();
 
 private:
+    struct SceneMaterialDropData
+    {
+        SceneMaterialDropData() : mesh(0) {}
+        EC_Mesh *mesh;
+        AssetReferenceList materials;
+        QList<uint> affectedIndexes;
+    };
+
     QPointer<SceneStructureWindow> sceneWindow; ///< Scene Structure window.
     QPointer<AssetsWindow> assetsWindow;///< Assets window.
     boost::shared_ptr<InputContext> inputContext; ///< Input context.
