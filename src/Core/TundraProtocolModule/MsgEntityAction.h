@@ -3,6 +3,7 @@
 #include "kNet/DataDeserializer.h"
 #include "kNet/DataSerializer.h"
 
+/// Network message for entity-action replication.
 struct MsgEntityAction
 {
 	MsgEntityAction()
