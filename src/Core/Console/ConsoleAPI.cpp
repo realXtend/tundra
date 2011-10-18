@@ -156,6 +156,9 @@ void ParseCommand(QString command, QString &commandName, QStringList &parameterL
     if (endOfSplit != -1 && endOfSplit == command.length()-1)
         command.remove(endOfSplit, 1);
     parameterList = command.mid(split+1).split(",");
+    // Trim parameters in order to avoid errors if/when converting strings to other data types.
+    for(int i = 0; i < parameterList.size(); ++i)
+        parameterList[i] = parameterList[i].trimmed();
 }
 
 void ConsoleAPI::ExecuteCommand(const QString &command)
