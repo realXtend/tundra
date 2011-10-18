@@ -19,7 +19,7 @@ class Framework;
 /// Enables audio playback functionality.
 class AUDIO_API AudioAPI : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     /// The Audio API constructor initializes OpenAL audio using default device.

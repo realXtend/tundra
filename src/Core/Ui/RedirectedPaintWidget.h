@@ -1,8 +1,11 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #pragma once
 
 #include <iostream>
 #include <QWidget>
 
+/// @cond PRIVATE
 class RedirectedPaintWidget : public QWidget
 {
 public:
@@ -34,3 +37,4 @@ public:
         ResizeSurface(size());
     }
 };
+/// @endcond

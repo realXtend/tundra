@@ -9,17 +9,10 @@ class QNetworkReply;
 class QBuffer;
 class QNetworkAccessManager;
 
-/// @cond PRIVATE
-struct SearchRequest
-{
-    QNetworkReply* reply;
-};
-/// @endcond
-
 /// Represents a network source storage for assets.
 class HttpAssetStorage : public IAssetStorage
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     HttpAssetStorage();
@@ -32,8 +25,8 @@ public:
     /// If the HttpAssetStorage points to a filesystem that is local to this server, this specifies the absolute path of
     /// the storage.
     QString localDir;
-        
-public slots:    
+
+public slots:
     /// HttpAssetStorages are trusted if they point to a web server on the local system.
     virtual bool Trusted() const;
 
@@ -74,6 +67,11 @@ private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
 
 private:
+    struct SearchRequest
+    {
+        QNetworkReply* reply;
+    };
+
     /// Perform a PROPFIND search on a path in the http storage
     void PerformSearch(QString path);
 
@@ -85,4 +83,3 @@ private:
 
     friend class HttpAssetProvider;
 };
-

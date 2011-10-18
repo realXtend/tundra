@@ -20,8 +20,8 @@ class QString;
 class QScrollArea;
 
 /// TextureLabel widget is used only in texture preview window.
-/// Widget is listening it's mousePressEvents and will send a signal when user will click the label.
-/// @cond PRIVATE
+/** Widget is listening it's mousePressEvents and will send a signal when user will click the label.
+    @cond PRIVATE */
 class TextureLabel: public QLabel
 {
     Q_OBJECT
@@ -37,7 +37,7 @@ protected:
     /// Override mousePressEvent and emit a signal when user is clicking the widget.
     virtual void mousePressEvent(QMouseEvent *ev);
 };
-/// @endcond
+/** @endcond */
 
 /// Preview window for textures.
 /** Will convert texture asset into Qt image format and display the image in image label. */

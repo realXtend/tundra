@@ -11,7 +11,7 @@
 /// An OpenAL sound channel (source).
 class AUDIO_API SoundChannel : public QObject, public boost::enable_shared_from_this<SoundChannel>
 {
-    Q_OBJECT;
+    Q_OBJECT
     Q_ENUMS(SoundState)
     Q_ENUMS(SoundType)
 

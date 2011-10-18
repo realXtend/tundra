@@ -10,7 +10,7 @@ class btConvexHullShape;
 
 namespace Physics
 {
-
+/** @cond PRIVATE */
 struct ConvexHull
 {
     float3 position_;
@@ -21,6 +21,5 @@ struct ConvexHullSet
 {
     std::vector<ConvexHull> hulls_;
 };
-
+/** @endcond */
 }
-

@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+///\todo Not used anywhere - delete?
+/** @cond PRIVATE */
 template <typename T>
 struct GlobalAllocObject
 {
@@ -40,3 +42,4 @@ struct SharedGlobalObject : public boost::shared_ptr<GlobalAllocObject<T> >
 
     operator T*() { return get()->handle(); }
 };
+/** @endcond */

@@ -19,6 +19,7 @@
 
 #include "MemoryLeakCheck.h"
 
+/** @cond PRIVATE */
 struct DeserializeData
 {
     DeserializeData(const QString &name = "", const QString &type = "", const QString &value = ""):
@@ -50,6 +51,8 @@ bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
 {
     return a.name_ < b.name_;
 }
+
+/** @endcond */
 
 EC_DynamicComponent::EC_DynamicComponent(Scene* scene):
     IComponent(scene)

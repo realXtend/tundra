@@ -10,7 +10,7 @@ class IAttribute;
 /// Tracks and notifies about asset change events.
 class AssetRefListener : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     /// Issues a new asset request to the given AssetReference.
@@ -45,4 +45,3 @@ private:
     AssetWeakPtr asset;
     AssetTransferWeakPtr currentTransfer;
 };
-

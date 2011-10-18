@@ -14,7 +14,7 @@
 /// Represents a texture on the GPU.
 class OGRE_MODULE_API TextureAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     TextureAsset(AssetAPI *owner, const QString &type, const QString &name);

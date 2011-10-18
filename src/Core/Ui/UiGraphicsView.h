@@ -15,11 +15,10 @@ class QWheelEvent;
 
 /// The main view consists of a single QGraphicsView that spans the whole viewport.
 /** UiGraphicsView implements pixel-perfect alpha-tested mouse hotspots for Qt widgets to
-    determine whether clicks should go to the scene or to Qt widgets.
-*/
+    determine whether clicks should go to the scene or to Qt widgets. */
 class UI_API UiGraphicsView : public QGraphicsView
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     explicit UiGraphicsView(QWidget *parent);
@@ -47,26 +46,22 @@ public slots:
 
 signals:
     /// Emitted when this widget has been resized to a new size.
-    void WindowResized(int newWidth, int newHeight);    
+    void WindowResized(int newWidth, int newHeight);
 
     /// Emitted when DragEnterEvent is received for the main window.
-    /** @param e Event.
-    */
+    /** @param e Event. */
     void DragEnterEvent(QDragEnterEvent *e);
 
     /// Emitted when DragLeaveEvent is received for the main window.
-    /** @param e Event.
-    */
+    /** @param e Event. */
     void DragLeaveEvent(QDragLeaveEvent *e);
 
     /// Emitted when DragMoveEvent is received for the main window.
-    /** @param e Event.
-    */
+    /** @param e Event. */
     void DragMoveEvent(QDragMoveEvent *e);
 
     /// Emitted when DropEvent is received for the main window.
-    /** @param e Event.
-    */
+    /** @param e Event. */
     void DropEvent(QDropEvent *e);
 
 private:
@@ -102,4 +97,3 @@ public:
     void wheelEvent(QWheelEvent *event);
 #endif
 };
-

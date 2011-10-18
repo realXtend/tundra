@@ -13,17 +13,6 @@ class EditorButtonFactory;
 
 class QPushButton;
 
-/// @cond PRIVATE
-class MultiEditButton : public QWidget
-{
-    Q_OBJECT
-
-public:
-    explicit MultiEditButton(QWidget *parent = 0);
-    QPushButton *button;
-};
-/// @endcond
-
 /// Responsible for creating all nessessary UI elements for each property.
 /** When user set focus for attribute, factory's createEditor method is called and the widget that factory
     created will be released when it's focus is lost.
@@ -66,3 +55,14 @@ private:
     QMap<const QtProperty *, QDialog *> createdEditors_;
     QMap<QDialog *,const QtProperty *> editorToProperty_;
 };
+
+/// @cond PRIVATE
+class MultiEditButton : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit MultiEditButton(QWidget *parent = 0);
+    QPushButton *button;
+};
+/// @endcond
