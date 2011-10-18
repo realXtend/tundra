@@ -25,10 +25,12 @@
 
 #include "MemoryLeakCheck.h"
 
-/// The SuppressedPaintWidget is used as a viewport for the main QGraphicsView.
+/// Used as a viewport for the main QGraphicsView.
 /** Its purpose is to disable all automatic drawing of the QGraphicsView to screen so that
-    we can composite an Ogre 3D render with the Qt widgets added to a QGraphicsScene. */
-class SuppressedPaintWidget : public QWidget {
+    we can composite an Ogre 3D render with the Qt widgets added to a QGraphicsScene.
+    @cond PRIVATE */
+class SuppressedPaintWidget : public QWidget
+{
 public:
     SuppressedPaintWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~SuppressedPaintWidget() {}
@@ -64,6 +66,7 @@ void SuppressedPaintWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
 }
+/** @endcond */
 
 UiAPI::UiAPI(Framework *owner_) :
     owner(owner_),
