@@ -11,6 +11,7 @@ class Framework;
 namespace OgreRenderer
 {
     /// Widget for renderer settings
+    /// @todo Implement from script
     class RendererSettingsWindow : public QWidget
     {
         Q_OBJECT

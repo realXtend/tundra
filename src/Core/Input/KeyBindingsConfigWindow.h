@@ -12,7 +12,7 @@ class QTreeWidgetItem;
 
 class Framework;
 
-/// @todo Re-implement, re-enable, hidden from documentation for now.
+/// @todo Re-implement from script and re-enable functionality, hidden from documentation for now.
 /// @cond PRIVATE
 class KeyBindingsConfigWindow : public QWidget
 {
