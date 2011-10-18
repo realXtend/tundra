@@ -130,6 +130,7 @@ void EC_Camera::SetPlaceable(ComponentPtr placeable)
 
 void EC_Camera::SetNearClip(float nearclip)
 {
+    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute nearPlane direcly.");
     if (!camera_)
         return;
 
@@ -138,6 +139,7 @@ void EC_Camera::SetNearClip(float nearclip)
 
 void EC_Camera::SetFarClip(float farclip)
 {
+    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute farPlane direcly.");
     if (!camera_)
         return;
     if (world_.expired())
@@ -156,6 +158,7 @@ void EC_Camera::SetFarClip(float farclip)
 
 void EC_Camera::SetVerticalFov(float fov)
 {
+    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute verticalFov direcly.");
     if (!camera_)
         return;
 
@@ -185,6 +188,7 @@ void EC_Camera::SetActive()
 
 float EC_Camera::NearClip() const
 {
+    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute nearPlane direcly.");
     if (!camera_)
         return 0.0f;
 
@@ -193,6 +197,7 @@ float EC_Camera::NearClip() const
 
 float EC_Camera::FarClip() const
 {
+    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute farPlane direcly.");
     if (!camera_)
         return 0.0f;
 
@@ -201,6 +206,7 @@ float EC_Camera::FarClip() const
 
 float EC_Camera::VerticalFov() const
 {
+    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute verticalFov direcly.");
     if (!camera_)
         return 0.0f;
 
