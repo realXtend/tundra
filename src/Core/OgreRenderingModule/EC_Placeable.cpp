@@ -735,7 +735,7 @@ void EC_Placeable::CheckParentEntityCreated(Entity* entity, AttributeChange::Typ
 
 void EC_Placeable::OnParentMeshChanged()
 {
-    if (!attached_)
+    if (!attached_ || !parentBone.Get().trimmed().isEmpty())
         AttachNode();
 }
 
