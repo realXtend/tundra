@@ -746,8 +746,8 @@ namespace OgreRenderer
         if (!MainCamera() && mainViewport->getCamera() != dummyDefaultCamera)
         {
             mainViewport->setCamera(dummyDefaultCamera);
-            if (c_handler_)
-                c_handler_->CameraChanged(mainViewport, dummyDefaultCamera);
+            if (compositionHandler)
+                compositionHandler->CameraChanged(mainViewport, dummyDefaultCamera);
 
             activeMainCamera.reset();
             emit MainCameraChanged(0);
