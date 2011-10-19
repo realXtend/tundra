@@ -84,6 +84,8 @@ namespace OgreRenderer
                     return; // Loading an old mesh version. Ogre can still load them up fine, and the end user should not be conserned of the version number.
                 if (str.contains("more than 4 bone assignments.")) // "Warning: WARNING: the mesh 'EC_Mesh_clone_169' includes vertices with more than 4 bone assignments. The lowest weighted assignments beyond this limit have been removed, so your animation may look slightly different. To eliminate this, reduce the number of bone assignments per vertex on your mesh to 4."
                     return; // The end user cannot control this.
+                if (str.contains("Cannot locate an appropriate 2D texture coordinate set")) // "Cannot locate an appropriate 2D texture coordinate set for all the vertex data in this mesh to create tangents from."
+                    return; // This is benign, meshes without normals do not need to get tangents either.
             }
 
             if (lml == Ogre::LML_CRITICAL)
