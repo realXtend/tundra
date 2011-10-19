@@ -44,7 +44,10 @@
 
 #include "MemoryLeakCheck.h"
 
-const QString Application::applicationName = "Tundra";
+/// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
+const char *Application::organizationName = "realXtend";
+const char *Application::applicationName = "Tundra";
+const char *Application::version = "2.0.0";
 
 Application::Application(Framework *framework_, int &argc, char **argv) :
     QApplication(argc, argv),
@@ -78,7 +81,7 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     setQuitOnLastWindowClosed(false);
 
     QDir dir("data/translations/qt_native_translations");
-    QStringList qmFiles = GetQmFiles(dir);
+    QStringList qmFiles = FindQmFiles(dir);
 
     // Search then that is there corresponding native translations for system locals.
     QString loc = QLocale::system().name();
@@ -151,7 +154,7 @@ void Application::SetSplashMessage(const QString &message)
 #endif
 }
 
-QStringList Application::GetQmFiles(const QDir& dir)
+QStringList Application::FindQmFiles(const QDir& dir)
 {
      QStringList fileNames = dir.entryList(QStringList("*.qm"), QDir::Files, QDir::Name);
      QMutableStringListIterator i(fileNames);
@@ -336,9 +339,34 @@ QString Application::ParseWildCardFilename(const QString& input)
     return filename;
 }
 
+QString Application::OrganizationName()
+{
+    return organizationName;
+}
+
+const char *Application::OrganizationNameCStr()
+{
+    return organizationName;
+}
+
 QString Application::ApplicationName()
 {
     return applicationName;
+}
+
+const char *Application::ApplicationNameCStr()
+{
+    return applicationName;
+}
+
+QString Application::Version()
+{
+    return version;
+}
+
+const char *Application::VersionCStr()
+{
+    return version;
 }
 
 bool Application::eventFilter(QObject *obj, QEvent *event)
