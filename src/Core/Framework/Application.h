@@ -44,7 +44,7 @@ public:
     /// This is an overloaded function.
     static void Message(const std::wstring &title, const std::wstring &text);
 
-    /// Sets the cuyrrent working directory. Use with caution.
+    /// Sets the current working directory. Use with caution.
     static void SetCurrentWorkingDirectory(QString newCwd);
 
     /// Returns the cwd of the current environment.
