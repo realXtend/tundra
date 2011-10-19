@@ -142,6 +142,7 @@ Framework::Framework(int argc, char** argv) :
     ///\todo Make it possible for modules to know when "--help" command was issued and list the command line parameters they support.
     ///\todo Remove non-Framework parameters from the list below.
     cmdLineDescs.commands["--help"] = "Produce help message"; // Framework
+    cmdLineDescs.commands["--version"] = "Prints the version of application and exits immediately."; // main.cpp
     cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework & OgreRenderingModule
     cmdLineDescs.commands["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically"; //JavascriptModule
     cmdLineDescs.commands["--server"] = "Start Tundra server"; // TundraLogicModule

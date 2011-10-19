@@ -97,7 +97,15 @@ int run(int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
-    // Initilizing prints
+    // Check for --version.
+    for(int i = 0; i < argc; ++i)
+        if (strcmp(argv[i], "--version") == 0)
+        {
+            LogInfo(Application::OrganizationName() + " " + Application::ApplicationName() + " " + Application::Version());
+            return return_value;
+        }
+
+    // Initialization prints
     LogInfo("Starting up Tundra.");
     LogInfo("* Working directory: " + QDir::currentPath());
 
