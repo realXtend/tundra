@@ -48,7 +48,7 @@ private:
     void AddAvailableActions(QMenu *menu);
 
     /// Returns list of selected asset and storage items.
-    AssetTreeWidgetSelection GetSelection() const;
+    AssetTreeWidgetSelection SelectedItems() const;
 
     Framework *framework; ///< Framework.
     QMenu *contextMenu; ///< Right-click context menu.
