@@ -199,7 +199,7 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     }
 
     QAction *functionsAction = new QAction(tr("Functions..."), menu);
-    connect(functionsAction, SIGNAL(triggered()), this, SLOT(OpenFunctionDialog()));
+    connect(functionsAction, SIGNAL(triggered()), SLOT(OpenFunctionDialog()));
     menu->addAction(functionsAction);
     // "Functions..." is disabled if we have both assets and storages selected simultaneously.
     if (sel.HasAssets() && sel.HasStorages())
@@ -212,6 +212,16 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     QAction *requestNewAssetAction = new QAction(tr("Request new asset..."), menu);
     connect(requestNewAssetAction, SIGNAL(triggered()), SLOT(RequestNewAsset()));
     menu->addAction(requestNewAssetAction);
+
+    QMenu *createMenu = new QMenu(tr("Create"), menu);
+    menu->addMenu(createMenu);
+    foreach(const AssetTypeFactoryPtr &factory, framework->Asset()->GetAssetTypeFactories())
+    {
+        QAction *createAsset = new QAction(factory->Type(), createMenu);
+        createAsset->setObjectName(factory->Type());
+        connect(createAsset, SIGNAL(triggered()), SLOT(CreateAsset()));
+        createMenu->addAction(createAsset);
+    }
 
     if (sel.storages.count() == 1)
     {
@@ -300,14 +310,7 @@ void AssetTreeWidget::Unload()
 {
     foreach(AssetItem *item, SelectedItems().assets)
         if (item->Asset())
-        {
             item->Asset()->Unload();
-            // Do not delete item, instead mark it as unloaded in AssetsWindow.
-            //QTreeWidgetItem *parent = item->parent();
-            //parent->removeChild(item);
-            //SAFE_DELETE(item);
-            ///\todo Preferably use the AssetDeleted() or similar signal from AssetAPI for deleting items.
-        }
 }
 
 void AssetTreeWidget::ReloadFromCache()
@@ -355,6 +358,17 @@ void AssetTreeWidget::RequestNewAsset()
     RequestNewAssetDialog *dialog = new RequestNewAssetDialog(framework->Asset(), this);
     connect(dialog, SIGNAL(finished(int)), SLOT(RequestNewAssetDialogClosed(int)));
     dialog->show();
+}
+
+void AssetTreeWidget::CreateAsset()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    assert(action);
+    if (!action)
+        return;
+    QString assetType = action->objectName();
+    QString assetName = framework->Asset()->GenerateUniqueAssetName(assetType, tr("New"));
+    framework->Asset()->CreateNewAsset(assetType, assetName);
 }
 
 void AssetTreeWidget::MakeDefaultStorage()
@@ -541,7 +555,7 @@ void AssetTreeWidget::OpenFunctionDialog()
     if (objs.size())
     {
         FunctionDialog *d = new FunctionDialog(objs, this);
-        connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
+        connect(d, SIGNAL(finished(int)), SLOT(FunctionDialogFinished(int)));
         d->show();
     }
 }

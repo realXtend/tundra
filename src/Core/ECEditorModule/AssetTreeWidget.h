@@ -82,6 +82,9 @@ private slots:
     /// Opens Request New Asset dialog.
     void RequestNewAsset();
 
+    /// Creates new programmatic asset.
+    void CreateAsset();
+
     /// Makes the currently selected asset storage the default system storage.
     void MakeDefaultStorage();
 
