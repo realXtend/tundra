@@ -9,12 +9,18 @@
 #include "AssetFwd.h"
 
 #include <QTimer>
+#include <QImage>
 #include <QString>
 #include <QMenu>
 
 class EC_WidgetCanvas;
 class EC_Mesh;
 class RaycastResult;
+
+namespace Ogre
+{
+    class TextureUnitState;
+}
 
 /// Shows a slideshow of texture on 3D object.
 /** Depends on EC_WidgetCanvas and EC_Mesh. */
@@ -81,11 +87,26 @@ public slots:
     QMenu *GetContextMenu();
 
 private slots:
+    /// Handler for window resizes.
+    void WindowResized();
+
+    /// Resize timeout to update the rendering.
+    void ResizeTimeout();
+
     /// Prepares everything related to the parent widget and other needed components.
     void PrepareComponent();
 
     /// One of our listeners is signaling that a texture has been loaded.
     void TextureLoaded(AssetPtr asset);
+    
+    /// One of our listeners is signaling asset transfer failed.
+    void TextureLoadFailed(IAssetTransfer *transfer, QString reason);
+
+    /// Draws a message texture. Used for info and error textures in the 3D object.    
+    QImage DrawMessageTexture(QString message, bool error = false);
+
+    /// Get render target texture unit state.
+    Ogre::TextureUnitState *GetRenderTextureUnit();
 
     /// Returns if all the internals have been prepared and we are ready for use.
     bool IsPrepared();
@@ -121,6 +142,9 @@ private slots:
 private:
     /// Timer that changes slides automatically according to slideChangeInterval attribute.
     QTimer changeTimer_;
+
+    /// Timer for window resize event render updates.
+    QTimer resizeRenderTimer_;
 
     /// Unique scene canvas component name for this component to utilize.
     QString sceneCanvasName_;

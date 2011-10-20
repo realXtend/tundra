@@ -11,6 +11,9 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "AssetRefListener.h"
+#include "IAssetTransfer.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 #include "EC_WidgetCanvas.h"
 #include "EC_Mesh.h"
@@ -23,6 +26,9 @@
 #include "IRenderer.h"
 #include "TundraLogicModule.h"
 
+#include <QPainter>
+#include <QColor>
+#include <QFont>
 #include <QUuid>
 #include <QStringList>
 
@@ -76,9 +82,14 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
     // Prepare scene interactions
     SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
     if (sceneInteract)
+        connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
+    
+    // Handle window resizing to update the rendering (otherwise will get black screen on manually blitted textures)
+    if (GetFramework()->Ui()->MainWindow())
     {
-        connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
-                SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
+        resizeRenderTimer_.setSingleShot(true);
+        connect(&resizeRenderTimer_, SIGNAL(timeout()), SLOT(ResizeTimeout()), Qt::UniqueConnection);
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(WindowResized()), Qt::UniqueConnection);
     }
 }
 
@@ -89,6 +100,8 @@ EC_SlideShow::~EC_SlideShow()
 void EC_SlideShow::ShowSlide(int index)
 {
     if (!IsPrepared())
+        return;
+    if (!getenabled())
         return;
 
     QVariantList slideRefs = getslides();
@@ -105,14 +118,19 @@ void EC_SlideShow::ShowSlide(int index)
         return;
     }
 
+    // Get scene canvas
+    EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
+    if (!canvas)
+        return;
+    canvas->SetSubmesh(getrenderSubmeshIndex());
+
     // Don't do anything if the ref is not a proper texture, people can put anything into 'slides' list.
     // Lets still do some log warnings so users know to move to the next slide.
-    QString slideRef = slideRefs.at(index).toString();
+    QString slideRef = slideRefs.at(index).toString().trimmed();
     if (slideRef.isEmpty())
-        return;
-    if (framework->Asset()->GetResourceTypeFromAssetRef(slideRef) != "Texture")
     {
-        LogWarning("EC_SlideShow: Index " + QString::number(index) + " slide ref is not a texture.");
+        QImage img = DrawMessageTexture(QString("No texture set for slide %1").arg(index), false);
+        canvas->Update(img);
         return;
     }
 
@@ -122,44 +140,68 @@ void EC_SlideShow::ShowSlide(int index)
     {
         if (!listener)
             return;
+
+        // Find the correct texture for this slide
+        int textureIndex = listener->property("slideIndex").toInt();
+        QString textureRef = listener->property("textureRef").toString();
+        bool tranferFailed = listener->property("transferFailed").toBool();
+        bool isEmpty = listener->property("isEmpty").toBool();
+        bool isTexture = listener->property("isTexture").toBool();
+        if (textureIndex != index)
+            continue;
+
+        // Empty ref
+        if (isEmpty)
+        {
+            QImage img = DrawMessageTexture(QString("No texture set for slide %1").arg(index), false);
+            canvas->Update(img);
+            return;
+        }
+        // Non texture ref
+        if (!isTexture)
+        {
+            QImage img = DrawMessageTexture(QString("Slide %1 reference is not a texture").arg(index), true);
+            canvas->Update(img);
+            return;
+        }
+        // Asset is null, but transfer has not failed. Wait.
+        if (!listener->Asset().get() && !tranferFailed)
+        {
+            QImage img = DrawMessageTexture(QString("Downloading texture for slide %1...").arg(index), false);
+            canvas->Update(img);
+            return;
+        }
+        // Asset is null and transfer had failed. Draw informative texture to target.
+        if (!listener->Asset().get() && tranferFailed)
+        {
+            QImage img = DrawMessageTexture(QString("Texture download failed for slide %1").arg(index), true);
+            canvas->Update(img);
+            return;
+        }
+        // Here is has just failed, the above ones should cover this situation.
         if (!listener->Asset().get())
             return;
         if (!listener->Asset()->IsLoaded())
+        {
+            QImage img = DrawMessageTexture(QString("Loading texture for slide %1...").arg(index), false);
+            canvas->Update(img);
             return;
+        }
 
         // This should never get here having a listener with non 'Texture' type assets, but double check.
         TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(listener->Asset().get());
         if (!textureAsset)
         {
-            LogWarning("EC_SlideShow: My slide assets list seems to have non 'Texture' asset reference!");
-            continue;               
+            LogWarning("EC_SlideShow: My slide assets list seems to have non 'Texture' type asset reference! " + listener->Asset()->Name());
+            continue;
         }
-
-        if (textureAsset->Name() == slideRef)
-        {
-            EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
-            if (!canvas)
-                return;
-
-            const QString ogreTextureName = textureAsset->ogreAssetName;
-            const QString ogreMaterialName = canvas->GetMaterialName();
-            Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(ogreMaterialName.toStdString());
-            if (!material.isNull())
-            {
-                if (!material->getTechnique(0) || !material->getTechnique(0)->getPass(0) ||
-                    !material->getTechnique(0)->getPass(0)->getTextureUnitState(0))
-                {
-                    LogError("EC_SlideShow: Seems that EC_WidgetCanvas has failed to create our material tech, pass or texture unit!");
-                    return;
-                }
-
-                Ogre::TextureUnitState *textureUnit = material->getTechnique(0)->getPass(0)->getTextureUnitState(0);
-                textureUnit->setTextureName(ogreTextureName.toStdString());
-            }
-            break;
-        }
+        
+        const QString ogreTextureName = textureAsset->ogreAssetName;
+        Ogre::TextureUnitState *textureUnit = GetRenderTextureUnit();
+        if (textureUnit)
+            textureUnit->setTextureName(ogreTextureName.toStdString());
+        break;
     }
-
 }
 
 void EC_SlideShow::NextSlide()
@@ -209,6 +251,17 @@ QMenu *EC_SlideShow::GetContextMenu()
     return actionMenu;
 }
 
+void EC_SlideShow::WindowResized()
+{
+    if (!resizeRenderTimer_.isActive())
+        resizeRenderTimer_.start(500);
+}
+
+void EC_SlideShow::ResizeTimeout()
+{
+    ShowSlide(getcurrentSlideIndex());
+}
+
 void EC_SlideShow::PrepareComponent()
 {
     if (framework->IsHeadless())
@@ -225,7 +278,7 @@ void EC_SlideShow::PrepareComponent()
     }
     else
     {
-        LogError("EC_MediaPlayer: Could not get parent entity pointer!");
+        LogError("EC_SlideShow: Could not get parent entity pointer!");
         return;
     }
 
@@ -256,7 +309,7 @@ void EC_SlideShow::PrepareComponent()
     EC_WidgetCanvas *sceneCanvas = dynamic_cast<EC_WidgetCanvas*>(iComponent.get());
     if (!sceneCanvas)
     {
-        LogError("EC_MediaPlayer: Could not get or create EC_WidgetCanvas component!");
+        LogError("EC_SlideShow: Could not get or create EC_WidgetCanvas component!");
         return;
     }
     sceneCanvas->SetTemporary(true);
@@ -266,9 +319,52 @@ void EC_SlideShow::PrepareComponent()
     if (!sceneCanvas->GetSubMeshes().contains(getrenderSubmeshIndex()))
         sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
 
-    // We are now prepared, check enabled state and restore possible materials now
+    // We are now prepared, check enabled state and restore possible materials now.
+    // If enabled try to show current slide.
     if (!getenabled())
         sceneCanvas->RestoreOriginalMeshMaterials();
+    else
+        ShowSlide(getcurrentSlideIndex());
+}
+
+QImage EC_SlideShow::DrawMessageTexture(QString message, bool error)
+{
+    QImage img(QSize(500,500), QImage::Format_ARGB32);
+    
+    QPainter p(&img);
+    p.fillRect(img.rect(), QColor(240,240,240));
+
+    QFont f = p.font();
+    f.setPointSize(20);
+    p.setFont(f);
+    if (error)
+        p.setPen(Qt::red);
+
+    p.drawText(img.rect(), Qt::AlignCenter|Qt::TextWordWrap, message);
+    p.end();
+    return img;
+}
+
+Ogre::TextureUnitState *EC_SlideShow::GetRenderTextureUnit()
+{
+    EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
+    if (!canvas)
+        return 0;
+
+    const QString ogreMaterialName = canvas->GetMaterialName();
+    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(ogreMaterialName.toStdString());
+    if (!material.isNull())
+    {
+        if (!material->getTechnique(0) || !material->getTechnique(0)->getPass(0) ||
+            !material->getTechnique(0)->getPass(0)->getTextureUnitState(0))
+        {
+            LogError("EC_SlideShow: Seems that EC_WidgetCanvas has failed to create our material tech, pass or texture unit!");
+            return 0;
+        }
+
+        return material->getTechnique(0)->getPass(0)->getTextureUnitState(0);
+    }
+    return 0;
 }
 
 void EC_SlideShow::TextureLoaded(AssetPtr asset)
@@ -276,14 +372,45 @@ void EC_SlideShow::TextureLoaded(AssetPtr asset)
     if (!IsPrepared())
         return;
 
-    // Check if the loaded texture is the current index
-    QString slideRef = asset->Name();
-    QVariantList slideRefs = getslides();
-    if (getcurrentSlideIndex() >= slideRefs.length())
-        return;
-    QVariant currentSlideRef = slideRefs.at(getcurrentSlideIndex());
-    if (slideRef == currentSlideRef.toString())
-        ShowSlide(getcurrentSlideIndex());
+    int currentSlideIndex = getcurrentSlideIndex();
+    QString loadedRef = asset->Name();
+
+    foreach(AssetRefListener *listener, assetListeners_)
+    {
+        if (!listener)
+            continue;
+
+        QString textureRef = listener->property("textureRef").toString();
+        int slideIndex = listener->property("slideIndex").toInt();
+        if (textureRef == loadedRef && slideIndex == currentSlideIndex)
+        {
+            // If loaded texture is the current slide index, update the rendering
+            ShowSlide(currentSlideIndex);
+            break;
+        }
+    }
+}
+
+void EC_SlideShow::TextureLoadFailed(IAssetTransfer *transfer, QString reason)
+{
+    int currentSlideIndex = getcurrentSlideIndex();
+    QString failedRef = transfer->SourceUrl();
+    foreach(AssetRefListener *listener, assetListeners_)
+    {
+        if (!listener)
+            continue;
+
+        QString textureRef = listener->property("textureRef").toString();
+        int slideIndex = listener->property("slideIndex").toInt();
+        if (textureRef == failedRef)
+        {
+            listener->setProperty("transferFailed", true);
+
+            // If failed texture is the current index, update the rendering
+            if (currentSlideIndex == slideIndex)
+                ShowSlide(currentSlideIndex);
+        }
+    }
 }
 
 bool EC_SlideShow::IsPrepared()
@@ -369,30 +496,46 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
     // Can handle before we are prepared
     if (attribute == &slides)
     {
-        // Don't request textures on the server
-        if (isServer_)
+        // Don't request textures on the server or headless
+        if (isServer_ || framework->IsHeadless())
             return;
 
         foreach(AssetRefListener *listener, assetListeners_)
             SAFE_DELETE(listener);
         assetListeners_.clear();
         QVariantList newSlides = getslides();
-        foreach(QVariant slideRefVar, newSlides)
+
+        for (int i=0; i<newSlides.size(); i++)
         {
-            if (slideRefVar.isNull())
-                continue;
-            QString slideRef = slideRefVar.toString();
-            if (slideRef.isEmpty())
-                continue;
-            if (framework->Asset()->GetResourceTypeFromAssetRef(slideRef) != "Texture")
+            QString slideRef = newSlides.at(i).toString().trimmed();
+
+            // New listener
+            AssetRefListener *listener = new AssetRefListener();
+
+            // Set dynamic properties
+            listener->setProperty("slideIndex", i);
+            listener->setProperty("transferFailed", false);
+            listener->setProperty("textureRef", slideRef);
+            listener->setProperty("isEmpty", false);
+            listener->setProperty("isTexture", true);
+            assetListeners_.append(listener);
+
+            // Stop here if empty ref or not a texture
+            if (slideRef.isEmpty() || framework->Asset()->GetResourceTypeFromAssetRef(slideRef) != "Texture")
             {
-                LogWarning("EC_SlideShow: Given slide is not a texture: " + slideRef);
+                if (slideRef.isEmpty())
+                    listener->setProperty("isEmpty", true);
+                else if (framework->Asset()->GetResourceTypeFromAssetRef(slideRef) != "Texture")
+                    listener->setProperty("isTexture", false);
                 continue;
             }
-            AssetRefListener *listener = new AssetRefListener();
+            
+            // Connect signals
             connect(listener, SIGNAL(Loaded(AssetPtr)), SLOT(TextureLoaded(AssetPtr)));
-            listener->HandleAssetRefChange(framework->Asset(), slideRef);
-            assetListeners_.append(listener);
+            connect(listener, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(TextureLoadFailed(IAssetTransfer*, QString)));
+            
+            // Request the asset
+            listener->HandleAssetRefChange(framework->Asset(), slideRef, "Texture");
         }
     }
     else if (attribute == &slideChangeInterval)
