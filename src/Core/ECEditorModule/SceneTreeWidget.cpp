@@ -1100,7 +1100,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
                 IComponent *c = dynamic_cast<IComponent *>(obj);
                 if (e)
                     objNameWithId.append('(' + QString::number((uint)e->Id()) + ')');
-                else if (c)
+                else if (c && !c->Name().trimmed().isEmpty())
                     objNameWithId.append('(' + c->Name() + ')');
             }
 
@@ -1116,6 +1116,8 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             if (ret.type() == QVariant::StringList)
                 foreach(QString s, ret.toStringList())
                     retValStr.append("\n" + s);
+            else
+                retValStr = ret.toString();
 
             if (errorMsg.isEmpty())
                 dialog->AppendReturnValueText(objNameWithId + " " + retValStr);

@@ -27,6 +27,7 @@
 #include "UiAPI.h"
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
+#include "IAssetTypeFactory.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -200,7 +201,7 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     QAction *functionsAction = new QAction(tr("Functions..."), menu);
     connect(functionsAction, SIGNAL(triggered()), this, SLOT(OpenFunctionDialog()));
     menu->addAction(functionsAction);
-    // "Functions..." is disabled if we have both entities and components selected simultaneously.
+    // "Functions..." is disabled if we have both assets and storages selected simultaneously.
     if (sel.HasAssets() && sel.HasStorages())
         functionsAction->setDisabled(true);
 
@@ -582,8 +583,17 @@ void AssetTreeWidget::FunctionDialogFinished(int result)
             FunctionInvoker invoker;
             invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
 
+            QString retValStr;
+            ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
+            /// Convert it manually here.
+            if (ret.type() == QVariant::StringList)
+                foreach(QString s, ret.toStringList())
+                    retValStr.append("\n" + s);
+            else
+                retValStr = ret.toString();
+
             if (errorMsg.isEmpty())
-                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+                dialog->AppendReturnValueText(objNameWithId + ' ' + retValStr);
             else
                 dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
         }

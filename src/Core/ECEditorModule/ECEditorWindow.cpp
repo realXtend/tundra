@@ -413,7 +413,7 @@ void ECEditorWindow::FunctionDialogFinished(int result)
                 IComponent *c = dynamic_cast<IComponent *>(obj);
                 if (e)
                     objNameWithId.append('(' + QString::number((uint)e->Id()) + ')');
-                else if (c)
+                else if (c && !c->Name().trimmed().isEmpty())
                     objNameWithId.append('(' + c->Name() + ')');
             }
 
@@ -422,8 +422,17 @@ void ECEditorWindow::FunctionDialogFinished(int result)
             FunctionInvoker invoker;
             invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
 
+            QString retValStr;
+            ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
+            /// Convert it manually here.
+            if (ret.type() == QVariant::StringList)
+                foreach(QString s, ret.toStringList())
+                    retValStr.append("\n" + s);
+            else
+                retValStr = ret.toString();
+
             if (errorMsg.isEmpty())
-                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+                dialog->AppendReturnValueText(objNameWithId + ' ' + retValStr);
             else
                 dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
         }
