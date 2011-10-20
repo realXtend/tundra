@@ -156,8 +156,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         // Make C++ IO streams cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well.
         std::ios::sync_with_stdio();
-
-        printf("Tried to start Tundra as a Windows GUI application in headless mode: console window created.\n");
     }
 
     // Parse the Windows command line.
