@@ -16,6 +16,7 @@
   <plugin path="BrowserUiPlugin" />             <!-- Depends on JavascriptModule -->    
   <plugin path="MumbleVoipModule" />            <!-- Depends on OgreRenderingModule, JavascriptModule and TundraLogicModule -->
   <plugin path="PythonScriptModule" />          <!-- Depends on OgreRenderingModule, TundraProtocolModule -->
+  <plugin path="CAVEStereoModule" />            <!-- CAVEStereoModule depends on OgreRenderingModule -->
   <plugin path="VlcPlugin" />
   <plugin path="UpdateModule" />
   
