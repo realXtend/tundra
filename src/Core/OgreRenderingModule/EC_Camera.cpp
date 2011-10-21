@@ -33,25 +33,22 @@ using namespace OgreRenderer;
 
 EC_Camera::EC_Camera(Scene* scene) :
     IComponent(scene),
-    attached_(false),
-    camera_(0),
-    query_(0),
-    queryFrameNumber_(-1),
     upVector(this, "Up vector", float3::unitY),
     nearPlane(this, "Near plane", 0.1f),
     farPlane(this, "Far plane", 2000.f),
     verticalFov(this, "Vertical FOV", 45.f),
     aspectRatio(this, "Aspect ratio", ""),
+    attached_(false),
+    camera_(0),
+    query_(0),
+    queryFrameNumber_(-1),
     renderTextureName_("")
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
-
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    
     if (framework)
-        connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
-
+        connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
@@ -143,38 +140,20 @@ void EC_Camera::SetPlaceable(ComponentPtr placeable)
 void EC_Camera::SetNearClip(float nearclip)
 {
     LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute nearPlane direcly.");
-    if (!camera_)
-        return;
-
-    camera_->setNearClipDistance(nearclip);
+    SetNearClipDistance(nearclip);
 }
 
 void EC_Camera::SetFarClip(float farclip)
 {
     LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute farPlane direcly.");
-    if (!camera_)
-        return;
-    if (world_.expired())
-        return;
+    SetFarClipDistance(farclip);
 
-    // Commented out as it can cause SkyX missing bug, depending on the view distance.
-    /*
-    // Enforce that farclip doesn't go past renderer's view distance
-    OgreWorldPtr world = world_.lock();
-    Renderer* renderer = world->GetRenderer();
-    if (farclip > renderer->ViewDistance())
-        farclip = renderer->ViewDistance();
-    */
-    camera_->setFarClipDistance(farclip);
 }
 
 void EC_Camera::SetVerticalFov(float fov)
 {
-    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute verticalFov direcly.");
-    if (!camera_)
-        return;
-
-    camera_->setFOVy(Ogre::Radian(fov));
+    LogWarning("EC_Camera::SetVerticalFov: this functions is deprecated and will be removed. Use attribute verticalFov direcly.");
+    SetFovY(fov);
 }
 
 void EC_Camera::SetActive()
@@ -203,7 +182,7 @@ void EC_Camera::SetActive()
 
 float EC_Camera::NearClip() const
 {
-    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute nearPlane direcly.");
+    LogWarning("EC_Camera::NearClip: this functions is deprecated and will be removed. Use attribute nearPlane direcly.");
     if (!camera_)
         return 0.0f;
 
@@ -212,7 +191,7 @@ float EC_Camera::NearClip() const
 
 float EC_Camera::FarClip() const
 {
-    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute farPlane direcly.");
+    LogWarning("EC_Camera::FarClip: this functions is deprecated and will be removed. Use attribute farPlane direcly.");
     if (!camera_)
         return 0.0f;
 
@@ -221,7 +200,7 @@ float EC_Camera::FarClip() const
 
 float EC_Camera::VerticalFov() const
 {
-    LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute verticalFov direcly.");
+    LogWarning("EC_Camera::VerticalFov: this functions is deprecated and will be removed. Use attribute verticalFov direcly.");
     if (!camera_)
         return 0.0f;
 
@@ -321,7 +300,7 @@ void EC_Camera::DestroyOgreCamera()
     camera_ = 0;
 }
 
-Ray EC_Camera::GetMouseRay(float x, float y)
+Ray EC_Camera::GetMouseRay(float x, float y) const
 {
     // Do a bit of sanity checking that the user didn't go and input absolute window coordinates.
     if (fabs(x) >= 10.f || fabs(y) >= 10.f || !isfinite(x) || !isfinite(y))
@@ -355,9 +334,9 @@ void EC_Camera::UpdateSignals()
         camera_ = sceneMgr->createCamera(world->GetUniqueObjectName("EC_Camera"));
         
         // Set default values for the camera
-        SetNearClip(nearPlane.Get());
-        SetFarClip(farPlane.Get());
-        SetVerticalFov(Ogre::Math::DegreesToRadians(verticalFov.Get()));
+        SetNearClipDistance(nearPlane.Get());
+        SetFarClipDistance(farPlane.Get());
+        SetFovY(verticalFov.Get());
         camera_->setAspectRatio(AspectRatio());
         camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); ///\note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). 
 
@@ -382,11 +361,11 @@ void EC_Camera::OnComponentStructureChanged()
 void EC_Camera::OnAttributeUpdated(IAttribute *attribute)
 {
     if (attribute == &nearPlane)
-        SetNearClip(nearPlane.Get());
+        SetNearClipDistance(nearPlane.Get());
     else if (attribute == &farPlane)
-        SetFarClip(farPlane.Get());
+        SetFarClipDistance(farPlane.Get());
     else if (attribute == &verticalFov)
-        SetVerticalFov(Ogre::Math::DegreesToRadians(verticalFov.Get()));
+        SetFovY(verticalFov.Get());
     else if (attribute == &aspectRatio && camera_)
     {
         camera_->setAspectRatio(AspectRatio());
@@ -553,7 +532,15 @@ void EC_Camera::QueryVisibleEntities()
     visibleEntities_.clear();
     LogWarning("EC_Camera::QueryVisibleEntities: Not supported on your Ogre version!"); ///\todo Check which exact version has the above getPlaneBoundedVolume(), 1.6.4 doesn't seem to, 1.7.1 does.
 #endif
+}
 
+void EC_Camera::SetNearClipDistance(float distance)
+{
+    if (!camera_)
+        return;
+    if (world_.expired())
+        return;
+    camera_->setNearClipDistance(distance);
 }
 
 QString EC_Camera::SaveScreenshot(bool renderUi)
@@ -719,4 +706,30 @@ bool EC_Camera::UpdateRenderTexture(QSize textureSize, bool renderUi)
     }
 
     return false;
+}
+void EC_Camera::SetFarClipDistance(float distance)
+{
+    if (!camera_)
+        return;
+    if (world_.expired())
+        return;
+
+    // Commented out as it can cause SkyX missing bug, depending on the view distance.
+    /*
+    // Enforce that farclip doesn't go past renderer's view distance
+    OgreWorldPtr world = world_.lock();
+    Renderer* renderer = world->GetRenderer();
+    if (farclip > renderer->ViewDistance())
+        farclip = renderer->ViewDistance();
+    */
+    camera_->setFarClipDistance(distance);
+}
+
+void EC_Camera::SetFovY(float fov)
+{
+    if (!camera_)
+        return;
+    if (world_.expired())
+        return;
+    camera_->setFOVy(Ogre::Radian(Ogre::Math::DegreesToRadians(fov)));
 }
