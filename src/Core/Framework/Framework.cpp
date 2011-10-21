@@ -134,9 +134,9 @@ Framework::Framework(int argc, char** argv) :
     PrintStartupOptions();
 
     /// @note Modify the line below if wanting to set custom API version.
-    apiVersionInfo = new ApiVersionInfo(Application::VersionCStr());
+    apiVersionInfo = new ApiVersionInfo(Application::Version());
     /// @note Modify Application.cpp if/when making a custom Tundra build.
-    applicationVersionInfo = new ApplicationVersionInfo(Application::OrganizationNameCStr(), Application::ApplicationNameCStr(), Application::VersionCStr());
+    applicationVersionInfo = new ApplicationVersionInfo(Application::OrganizationName(), Application::ApplicationName(), Application::Version());
 
     CommandLineParameterMap cmdLineDescs;
     ///\todo Make it possible for modules to know when "--help" command was issued and list the command line parameters they support.

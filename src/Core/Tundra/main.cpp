@@ -97,10 +97,13 @@ int run(int argc, char **argv)
     int return_value = EXIT_SUCCESS;
 
     // Check for --version.
+    // The reason this is done at this point is that as nothing is not printed to stdout yet,
+    // it's easy for possible external applications/processes to parse the version information.
+    // Also, the construction of Framework adds a little computational overhead which delays the printing a bit.
     for(int i = 0; i < argc; ++i)
         if (strcmp(argv[i], "--version") == 0)
         {
-            LogInfo(Application::OrganizationName() + " " + Application::ApplicationName() + " " + Application::Version());
+            LogInfo(QString(Application::OrganizationName()) + " " + QString(Application::ApplicationName()) + " " + QString(Application::Version()));
             return return_value;
         }
 
@@ -240,9 +243,9 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     WCHAR szAppName[MAX_PATH];
     WCHAR szVer[MAX_PATH];
     // Note: all the following Application functions access static const char * variables so it's safe to call them.
-    MultiByteToWideChar(CP_ACP, 0, Application::OrganizationNameCStr(), -1, szOrgName, NUMELEMS(szOrgName));
-    MultiByteToWideChar(CP_ACP, 0, Application::ApplicationNameCStr(), -1, szAppName, NUMELEMS(szAppName));
-    MultiByteToWideChar(CP_ACP, 0, Application::VersionCStr(), -1, szVer, NUMELEMS(szVer));
+    MultiByteToWideChar(CP_ACP, 0, Application::OrganizationName(), -1, szOrgName, NUMELEMS(szOrgName));
+    MultiByteToWideChar(CP_ACP, 0, Application::ApplicationName(), -1, szAppName, NUMELEMS(szAppName));
+    MultiByteToWideChar(CP_ACP, 0, Application::Version(), -1, szVer, NUMELEMS(szVer));
     WCHAR szVersion[MAX_PATH]; // Will contain "<AppName>_v<Version>".
     StringCchPrintf(szVersion, MAX_PATH, L"%s_v%s", szAppName, szVer);
 
@@ -271,14 +274,11 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
                     hDumpFile, MiniDumpWithDataSegs, &ExpParam, 0, 0);
-   
-    std::wstring message(L"Program ");
-    message += szAppName;
-    message += L" encountered an unexpected error.\n\nCrashdump was saved to location:\n";
-    message += szFileName;
 
+    WCHAR szMessage[MAX_PATH];
+    StringCchPrintf(szMessage, MAX_PATH, L"Program %s encountered an unexpected error.\n\nCrashdump was saved to location:\n%s", szAppName, szFileName);
     if (bMiniDumpSuccessful)
-        Application::Message(L"Minidump generated!", message);
+        Application::Message(L"Minidump generated!", szMessage);
     else
         Application::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
 

@@ -40,8 +40,9 @@ public:
     void Go();
 
     /// Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
+    static void Message(const char *title, const char *text);
     static void Message(const std::string &title, const std::string &text);
-    /// This is an overloaded function.
+    static void Message(const wchar_t *title, const wchar_t *text);
     static void Message(const std::wstring &title, const std::wstring &text);
 
     /// Sets the current working directory. Use with caution.
@@ -78,19 +79,16 @@ public:
     static QString ParseWildCardFilename(const QString& input);
 
     /// Return organization of application, e.g. "realXtend".
-    static QString OrganizationName();
-    /// Same as OrganizationName but without memory allocation. Required for generating minidumps on Windows.
-    static const char *OrganizationNameCStr();
+    /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
+    static const char *OrganizationName();
 
     /// Returns name of the application, "Tundra" usually.
-    static QString ApplicationName();
-    /// Same as ApplicationName but without memory allocation. Required for generating minidumps on Windows.
-    static const char *ApplicationNameCStr();
+    /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
+    static const char *ApplicationName();
 
     /// Returns version information of the application as string, e.g. "2.0.0".
-    static QString Version();
-    /// Same as Version but without memory allocation. Required for generating minidumps on Windows.
-    static const char *VersionCStr();
+    /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
+    static const char *Version();
 
 public slots:
     void UpdateFrame();

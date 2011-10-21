@@ -178,7 +178,7 @@ void Application::Go()
 
     installEventFilter(this);
 
-    QObject::connect(&frameUpdateTimer, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
+    connect(&frameUpdateTimer, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
     frameUpdateTimer.setSingleShot(true);
     frameUpdateTimer.start(0);
 
@@ -198,10 +198,24 @@ void Application::Go()
     }
 }
 
-void Application::Message(const std::string &title, const std::string &text)
+void Application::Message(const char *title, const char *text)
 {
 #ifdef WIN32
-    MessageBoxA(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+    MessageBoxA(0, text != 0 ? text : "", title != 0 ? title : "", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
+    std::cerr << "Application::Message not implemented for current platform!" << std::endl;
+    assert(false && "Not implemented!");
+#endif
+}
+void Application::Message(const std::string &title, const std::string &text)
+{
+    Message(title.c_str(), text.c_str());
+}
+
+void Application::Message(const wchar_t *title, const wchar_t *text)
+{
+#ifdef WIN32
+    MessageBoxW(0, text != 0 ? text : L"", title != 0 ? title : L"", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
     std::cerr << "Application::Message not implemented for current platform!" << std::endl;
     assert(false && "Not implemented!");
@@ -210,12 +224,7 @@ void Application::Message(const std::string &title, const std::string &text)
 
 void Application::Message(const std::wstring &title, const std::wstring &text)
 {
-#ifdef WIN32
-    MessageBoxW(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#else
-    std::cerr << "Application::Message not implemented for current platform!" << std::endl;
-    assert(false && "Not implemented!");
-#endif
+    Message(title.c_str(), text.c_str());
 }
 
 void Application::SetCurrentWorkingDirectory(QString newCwd)
@@ -231,14 +240,11 @@ QString Application::CurrentWorkingDirectory()
     WCHAR str[MAX_PATH+1] = {};
     GetCurrentDirectoryW(MAX_PATH, str);
     QString qstr = WStringToQString(str);
-    if (!qstr.endsWith('\\'))
-        qstr += '\\';
 #else
     QString qstr =  QDir::currentPath();
-    if (!qstr.endsWith('/'))
-        qstr += '/';
 #endif
-
+    if (!qstr.endsWith(QDir::separator()))
+        qstr += QDir::separator();
     return qstr;
 }
 
@@ -339,32 +345,17 @@ QString Application::ParseWildCardFilename(const QString& input)
     return filename;
 }
 
-QString Application::OrganizationName()
+const char *Application::OrganizationName()
 {
     return organizationName;
 }
 
-const char *Application::OrganizationNameCStr()
-{
-    return organizationName;
-}
-
-QString Application::ApplicationName()
+const char *Application::ApplicationName()
 {
     return applicationName;
 }
 
-const char *Application::ApplicationNameCStr()
-{
-    return applicationName;
-}
-
-QString Application::Version()
-{
-    return version;
-}
-
-const char *Application::VersionCStr()
+const char *Application::Version()
 {
     return version;
 }
