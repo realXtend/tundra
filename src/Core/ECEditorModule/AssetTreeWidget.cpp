@@ -250,7 +250,6 @@ AssetTreeWidgetSelection AssetTreeWidget::SelectedItems() const
     AssetTreeWidgetSelection sel;
     foreach(QTreeWidgetItem *item, selectedItems())
     {
-        // Omit top-level i.e. asset storage items
         AssetItem *aItem = dynamic_cast<AssetItem *>(item);
         if (aItem)
             sel.assets << aItem;
