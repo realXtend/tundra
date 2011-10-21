@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   IComponent.cpp
- *  @brief  Base class for all components. Inherit from this class when creating new components.
+ *  @brief  The common interface for all components, which are the building blocks the scene entities are formed of.
  */
 
 #include "StableHeaders.h"
