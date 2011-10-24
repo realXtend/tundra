@@ -308,6 +308,12 @@ namespace CAVEStereo
         compositor_viewport_ = NULL;
     }
 
+    Ogre::CompositorInstance* StereoManager::GetCompositor()
+    {
+        return compositor_instance_;
+    }
+
+
     void StereoManager::shutdown(void)
     {
         if(stereo_mode_ == SM_NONE)

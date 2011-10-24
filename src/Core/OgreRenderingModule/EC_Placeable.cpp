@@ -780,6 +780,21 @@ void EC_Placeable::SetScale(const float3 &scale)
     transform.Set(newtrans, AttributeChange::Default);
 }
 
+void EC_Placeable::LookAt(const float3 &pos)
+{
+    Scene *scene = ParentScene();
+    if (scene) 
+    {
+        float3 targetLookatDir = (pos - Position()).Normalized();
+        Quat endRot = Quat::LookAt(scene->ForwardVector(), targetLookatDir, scene->UpVector(), scene->UpVector()); //NOTE: now using worldup for localup, which i figure is wrong wh)en parented
+        SetOrientation(endRot);
+    }
+    else
+    {
+        //XXX \todo log warning
+    }
+}
+
 void EC_Placeable::SetOrientationAndScale(const float3x3 &tm)
 {
     assume(tm.IsOrthogonal());

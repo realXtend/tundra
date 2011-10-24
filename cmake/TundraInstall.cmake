@@ -16,15 +16,19 @@ endmacro ()
 #
 # Example: setup_install_directory (media) will copy <project_dir>/media to <prefix>/bin/media
 #
-function (setup_install_directory DATA_SRC_DIR_PATH)
+function (setup_install_directory)
     # Resolve destination dir
-    if (NOT ARGV1)
+    if (ARGC EQUAL 0)
+        message(FATAL_ERROR "setup_install_directory() called without parameters. At minumum give the folder you want to install.")
+    endif ()
+    
+    if (ARGC EQUAL 1)
         set (DATA_DEST_DIR_PATH_FINAL "bin")
     else ()
         set (DATA_DEST_DIR_PATH_FINAL "bin/${ARGV1}")
     endif ()
     # Install directory
-    install (DIRECTORY ${DATA_SRC_DIR_PATH} DESTINATION ${DATA_DEST_DIR_PATH_FINAL})
+    install (DIRECTORY ${ARGV0} DESTINATION ${DATA_DEST_DIR_PATH_FINAL})
 endfunction ()
 
 # Macro for installing a file into the install prefix.
@@ -38,15 +42,15 @@ endfunction ()
 #           NOTE: Must have" " around ${MY_INSTALL_FILES} for lists! seem to be needed if you 
 #           are not using ARGN which we cant coz we have multiple params (right?)
 #
-function (setup_install_files DATA_SRC_FILES)   
+function (setup_install_files)   
     # Resolve destination dir
-    if (NOT ARGV1)
+    if (ARGC EQUAL 1)
         set (DATA_DEST_PATH_FINAL "bin")
     else ()
         set (DATA_DEST_PATH_FINAL "bin/${ARGV1}")
     endif ()
     # Install file
-    install (FILES ${DATA_SRC_FILES} DESTINATION ${DATA_DEST_PATH_FINAL})
+    install (FILES ${ARGV0} DESTINATION ${DATA_DEST_PATH_FINAL})
 endfunction ()
 
 # Macro for finding install files from a dir with a glob.

@@ -38,7 +38,7 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
-if lsb_release -c | egrep -q "lucid|maverick|natty"; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric"; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libogre-dev libboost-all-dev \
@@ -56,12 +56,17 @@ else
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
     cd $what
+    # This patch is for GCC 4.6. It overrides a known issue with bullet 2.77 and gcc 4.6
+    # When Tundra upgrades to bullet 2.78 or later, this should be removed.
+    if [ "`gcc --version |head -n 1|cut -f 4 -d " "|cut -c -3`" == "4.6" ]; then
+        sed -i "s/static const T[\t]zerodummy/memset(\&value, 0, sizeof(T))/" ./src/BulletSoftBody/btSoftBodyInternals.h
+        sed -i "s/value=zerodummy;//" ./src/BulletSoftBody/btSoftBodyInternals.h
+    fi
     cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -fPIC -DNDEBUG -DBT_NO_PROFILE" .
     make -j $nprocs
     make install
     touch $tags/$what-done
 fi
-
 
 #what=hydrax
 #if test -f $tags/$what-done; then
@@ -134,7 +139,7 @@ if false && test -f $tags/$what-done; then
 else
     cd $build
     rm -rf knet
-    hg clone -r stable http://bitbucket.org/clb/knet
+    hg clone http://bitbucket.org/clb/knet
     cd knet
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
     mv x CMakeLists.txt
@@ -155,14 +160,21 @@ depdir=realxtend-tundra-deps
 if [ ! -e $depdir ]
 then
     echo "Cloning source of HydraX/SkyX/PythonQT/NullRenderer..."
-    git clone https://code.google.com/p/realxtend-tundra-deps
+    git init $depdir
+    cd $depdir
+    git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    git remote add origin https://code.google.com/p/realxtend-tundra-deps/
+    git checkout sources
+else
+    cd $depdir
+    git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    if [ -z "`git merge sources origin/sources|grep "Already"`" ]; then
+        echo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
+        rm -f $tags/hydrax-done $tags/skyx-done $tags/pythonqt-done
+    else
+        echo "No changes in realxtend deps git."
+    fi
 fi
-cd $depdir
-if [ -z "`git pull|grep "Already up\-to\-date"`" ]; then
-    echo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
-    rm -f $tags/hydrax-done $tags/skyx-done $tags/pythonqt-done
-fi
-git checkout sources
 # HydraX build:
 if test -f $tags/hydrax-done; then
     echo "Hydrax-done"

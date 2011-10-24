@@ -12,6 +12,7 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
+#include "LoggingFunctions.h"
 
 AssetPtr AssetRefListener::Asset()
 {
@@ -40,7 +41,14 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
     
     assert(assetApi);
 
+    // Connect to AssetAPI signal once. Must keep as Qt::QueuedConnection for a delayed signal.
+    if (!myAssetAPI)
+        myAssetAPI = assetApi;
+    disconnect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)));    
+
     assetRef = assetRef.trimmed();
+    requestedRef = AssetReference(assetRef, assetType);
+    inspectCreated = false;
 
     AssetTransferPtr transfer = assetApi->RequestAsset(assetRef, assetType);
     if (!transfer)
@@ -74,10 +82,33 @@ void AssetRefListener::OnTransferSucceeded(AssetPtr assetData)
 void AssetRefListener::OnAssetLoaded(AssetPtr assetData)
 {
     if (assetData == asset.lock())
+    {
+        inspectCreated = false;
         emit Loaded(assetData);
+    }
 }
 
 void AssetRefListener::OnTransferFailed(IAssetTransfer* transfer, QString reason)
 {
+    if (myAssetAPI)
+        connect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)), Qt::QueuedConnection);
+
+    inspectCreated = true;
     emit TransferFailed(transfer, reason);
+}
+
+void AssetRefListener::OnAssetCreated(AssetPtr asset)
+{
+    if (!asset.get() || !myAssetAPI || !inspectCreated)
+        return;
+
+    // If out latest failed ref is the same as the created asset.
+    // Request it now so we can emit the Loaded signal.
+    if (requestedRef.ref == asset->Name())
+    {
+        disconnect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)));
+
+        LogInfo("AssetRefListener: Asset \"" + asset->Name() + "\" was created, re-requesting asset.");
+        HandleAssetRefChange(myAssetAPI, requestedRef.ref, requestedRef.type);
+    }
 }

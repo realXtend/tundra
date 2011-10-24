@@ -1,16 +1,15 @@
-// !ref: local://LoginWebWidget.ui
-// !ref: local://LoginWebSettings.ui
 
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 engine.ImportExtension("qt.webkit");
 engine.ImportExtension("qt.network");
 
-engine.IncludeFile("jsmodules/lib/class.js");
-engine.IncludeFile("jsmodules/lib/json2.js");
+engine.IncludeFile("lib/class.js");
+engine.IncludeFile("lib/json2.js");
 
-var uiBase = "./jsmodules/browserui/ui/"
-		
+var appInstallDir = QDir.fromNativeSeparators(application.installationDirectory);
+var uiBase = appInstallDir + "jsmodules/browserui/ui/";
+
 var iconRefresh = new QIcon(uiBase + "refresh.png");
 var iconStop = new QIcon(uiBase + "stop.png");
 var defaultIcon = new QIcon(uiBase + "default-tool.png");
@@ -19,7 +18,7 @@ var defaultIcon = new QIcon(uiBase + "default-tool.png");
 // of the UI same if you are in 3D tab or web tab. Hopefully the linux
 // and other operating systems wont get into trouble here (like different font height etc).
 // There are minimum sizes for all widgets
-var magicHeightValue = 81;
+var magicHeightValue = 61;
 
 // Browser manager controls the web login widget.
 // This object will use private p_ variable in 
@@ -38,8 +37,11 @@ var BrowserManager = Class.extend
 
         // Load widget and init children etc.
         this.browser = ui.LoadFromFile(uiBase + "LoginWebWidget.ui", false);
-        this.browser.setWindowState(Qt.WindowFullScreen);
         this.browser.windowFlags = Qt.Widget;
+        
+        var styleSheet = this.browser.styleSheet;
+        styleSheet = styleSheet.replace(/APPINSTALLDIR/g, appInstallDir);
+        this.browser.styleSheet = styleSheet;
         
         this.browserProxy = ui.AddWidgetToScene(this.browser, Qt.Widget);
         this.browserProxy.windowFlags = Qt.Widget;
@@ -50,8 +52,7 @@ var BrowserManager = Class.extend
         this.tabs.clear();
         
         this.mainFrame = findChild(this.browser, "mainFrame");
-        if (ui.MainWindow() && ui.MainWindow().menuBar())
-            this.mainFrame.layout().setContentsMargins(0,ui.MainWindow().menuBar().height-5,0,0)
+        this.mainFrame.layout().setContentsMargins(0, 5, 0, 0);
 
         // Load the classic login screen
         this.tabs.addTab(this.classiclogin.widget, "Tundra");
@@ -62,7 +63,7 @@ var BrowserManager = Class.extend
         newTabButton.flat = true;
         newTabButton.setFixedSize(16,16);
         newTabButton.setStyleSheet("background-image: url(" + uiBase + "tab-new.png); border: 0px;");
-        newTabButton.move(3,60); // Here be dragons
+        newTabButton.move(3, 41); // Here be dragons
         
         // Address and progress bar
         this.addressBar = new QComboBox();
@@ -164,21 +165,30 @@ var BrowserManager = Class.extend
         
         // Connect signals
         this.addressBar.lineEdit().returnPressed.connect(this.onAddressBarRequest);
-        this.tabs.tabCloseRequested.connect(this.onTabCloseRequest);
-        this.tabs['currentChanged(int)'].connect(this.onTabIndexChanged);
+        this.tabs.tabCloseRequested.connect(this, this.onTabCloseRequest);
+        this.tabs['currentChanged(int)'].connect(this, this.onTabIndexChanged);
         
         newTabButton.clicked.connect(this.onTabNewRequest);
         
-        client.Connected.connect(this.onConnected);
-        client.Disconnected.connect(this.onDisconnected);
+        // Framework signals
+        client.LoginFailed.connect(this, this.onLoginFailed);
+        client.Connected.connect(this, this.onConnected);
+        client.Disconnected.connect(this, this.onDisconnected);
+        ui.GraphicsScene().sceneRectChanged.connect(this, this.windowResized);
         
         browserplugin.ActionAddRequest.connect(this.addTool);
         browserplugin.OpenUrlRequest.connect(this.openUrl);
         
         // Menu entry to show/hide browser ui
         var mainwin = ui.MainWindow();
-        var hideshowact = mainwin.AddMenuAction("Browser", "Hide/Show Browser UI");
-        hideshowact.triggered.connect(this.toggleVisible);
+        this.hideshowact = mainwin.AddMenuAction("Browser", "Hide Browser Interface", new QIcon(uiBase + "web.png"));
+        this.hideshowact.checkable = true;
+        this.hideshowact.checked = false;
+        this.hideshowact.triggered.connect(this, this.toggleVisible);
+        mainwin.AddMenuAction("Browser", "Manage Bookmarks", new QIcon(uiBase + "bookmarks.png")).triggered.connect(this.bookmarks, this.bookmarks.manageBookmarks);
+        mainwin.AddMenuAction("Browser", "Settings", new QIcon(uiBase + "settings.png")).triggered.connect(this.settings, this.settings.onSettingsPressed);
+        
+        this.windowResized(ui.GraphicsScene().sceneRect);
     },
     
     start: function()
@@ -203,6 +213,13 @@ var BrowserManager = Class.extend
                     return;
             this.openUrl(this.settings.homepage);
         }
+        
+        this.classiclogin.focus();
+    },
+    
+    windowResized: function(rect)
+    {
+        this.browser.setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
     },
     
     setVisible: function(visible)
@@ -210,8 +227,13 @@ var BrowserManager = Class.extend
         this.browser.visible = visible;
     },
 
-    toggleVisible: function() {
+    toggleVisible: function() 
+    {
         p_.browser.visible = !p_.browser.visible;
+        if (p_.browser.visible)
+            this.hideshowact.text = "Hide Browser Interface";
+        else
+            this.hideshowact.text = "Show Browser Interface";
     },
 
     getCurrentWidget: function()
@@ -284,8 +306,8 @@ var BrowserManager = Class.extend
         else
         {
             this.browser.maximumHeight = 10000;
-            this.browser.size = ui.MainWindow().size;
             this.squeezeEnabled = false;
+            this.windowResized(ui.GraphicsScene().sceneRect);
         }
     },
     
@@ -293,6 +315,16 @@ var BrowserManager = Class.extend
     {
         tab = new BrowserTab(p_.tabs, p_.tabCallBack, focusNewTab);
         tab.load(url);
+    },
+    
+    onLoginFailed: function(reason)
+    {
+        // @todo Make a bit more nicer, for now just a modal dialog to
+        // let the user know whats going on.
+        var failReason = reason;
+        if (failReason == null || failReason == "")
+            failReason = "Login failed with unknown reason";
+        QMessageBox.warning(ui.MainWindow(), "Login Failed", failReason);
     },
 
     onConnected: function()
@@ -330,10 +362,13 @@ var BrowserManager = Class.extend
             if (container != null)
                 container.deleteLater();
         }
+        
         p_.toolBarGroups = {};
         p_.toolBarContainers = {};
         p_.toolBar.clear();
         p_.refreshSplitter();
+
+        p_.windowResized(ui.GraphicsScene().sceneRect);
     },
     
     onBookmarksPressed: function()
@@ -685,7 +720,7 @@ var BrowserManager = Class.extend
                         p_.tabs.currentIndex = 0;
                         p_.tabs.removeTab(index);
                     }
-                    p_.loginscreen.visible = false;
+                    p_.classiclogin.visible = false;
                     // Perform login
                     var qLoginUrl = new QUrl.fromUserInput(param);
                     client.Login(qLoginUrl);
@@ -823,10 +858,14 @@ var BrowserSettings = Class.extend
         this.urlSection = "url";
         this.behaviourSection = "behaviour";
         
-        this.widget = ui.LoadFromFile(uiBase + "LoginWebSettings.ui", false);
+        this.widget = ui.LoadFromFile(uiBase + "LoginWebSettings.ui", false);        
         this.widget.setParent(ui.MainWindow());
         this.widget.setWindowFlags(Qt.Tool);
         this.widget.visible = false;
+        
+        var styleSheet = this.widget.styleSheet;
+        styleSheet = styleSheet.replace(/APPINSTALLDIR/g, appInstallDir);
+        this.widget.styleSheet = styleSheet;
 
         var prxyhst = findChild(this.widget, "proxyHostLineEdit");
         var prxyprt = findChild(this.widget, "proxyPortLineEdit");
@@ -1274,11 +1313,15 @@ var BrowserBookmarks = Class.extend
         var w = p_.bookmarks.bookmarkmanager;
         
         // Calculate center pos on our main window
-        var mainWinPosi = ui.MainWindow().pos;
-        var mainWinSize = ui.MainWindow().size;
-        var center_x = mainWinPosi.x() + (mainWinSize.width() / 2);
-        var center_y = mainWinPosi.y() + (mainWinSize.height() / 2);       
-
+        var framegeom = ui.MainWindow().frameGeometry;
+        var center_x = framegeom.x() + (framegeom.width() / 2);
+        var center_y = framegeom.y() + (framegeom.height() / 2);
+        
+        if (center_x <= 0)
+            center_x = 50;
+        if (center_y <= 0)
+            center_y = 50;
+            
         // Populate list views
         p_.bookmarks.listworlds.clear();
         p_.bookmarks.listweb.clear();
@@ -1305,8 +1348,8 @@ var BrowserBookmarks = Class.extend
             p_.bookmarks.listweb.addItem(item);
         }
         
-        w.pos = new QPoint(center_x - (w.width / 2), center_y - (w.height / 2));
         w.visible = true;
+        w.move(center_x - (w.width / 2), center_y - (w.height / 2));
     },
     
     moveUpWorld: function()
@@ -1560,15 +1603,23 @@ var ClassicLogin = Class.extend
 		this.udpButton = findChild(this.widget, "radioButton_ProtocolUDP");
 
 		var logoLabel = findChild(this.widget, "label_ClientLogo");
-		logoLabel.pixmap = new QPixmap("./data/ui/images/realxtend_logo.png");
+		logoLabel.pixmap = new QPixmap(appInstallDir + "data/ui/images/realxtend_logo.png");
 
 		// Connections
 		this.loginButton.clicked.connect(this, this.loginPressed);
+		this.serverAddressLineEdit.returnPressed.connect(this, this.loginPressed);
+		this.usernameLineEdit.returnPressed.connect(this, this.loginPressed);
+		this.passwordLineEdit.returnPressed.connect(this, this.loginPressed);
 		this.exitButton.clicked.connect(this, this.exit);
 		client.Connected.connect(this, this.onConnected);
 		client.Disconnected.connect(this, this.onDisconnected);
 
 		this.readConfigToUi();
+	},
+	
+	focus: function()
+	{
+	    this.serverAddressLineEdit.setFocus(Qt.ActiveWindowFocusReason);
 	},
 	
 	readConfigToUi: function()
@@ -1595,7 +1646,7 @@ var ClassicLogin = Class.extend
 		
 	writeConfigFromUi: function() 
 	{
-		// Downside of this is that user may do something to the UI elements while loggin in.
+		// Downside of this is that user may do something to the UI elements while logging in.
 		// In Tundra its so fast that doubt that will happen. Can be fixed to read in to configX values in LoginPresse()
 		framework.Config().Set(this.configFile, this.configSection, "login_server", this.trimField(this.serverAddressLineEdit.text));
 		framework.Config().Set(this.configFile, this.configSection, "login_username", this.trimField(this.usernameLineEdit.text));
@@ -1641,13 +1692,13 @@ var ClassicLogin = Class.extend
 
 	onConnected: function()
 	{
-		this.widget.setVisible(false);
+		this.widget.visible = false;
 		this.writeConfigFromUi();
 	},
 
 	onDisconnected: function()
-	{
-		this.widget.setVisible(true);
+    {
+		this.widget.visible = true;
 	},
 
 	exit: function() 

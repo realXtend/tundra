@@ -28,7 +28,9 @@ namespace MumbleVoip
         virtual float3 Position() const;
         
         virtual void Add(MumbleLib::User* user);
-        virtual MumbleLib::User* UserPtr() const;       
+        virtual MumbleLib::User* UserPtr() const;     
+
+        virtual int Id() const;
 
     private:
         bool muted_;

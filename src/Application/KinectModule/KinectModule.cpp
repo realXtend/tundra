@@ -61,7 +61,7 @@ KinectModule::~KinectModule()
     SAFE_DELETE(skeletonPreviewLabel_);
 }
 
-void KinectModule::PostInitialize()
+void KinectModule::Initialize()
 {
     QString message;
     HRESULT result = NuiInitialize(NUI_INITIALIZE_FLAG_USES_DEPTH_AND_PLAYER_INDEX | 

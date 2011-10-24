@@ -85,8 +85,10 @@ bool Server::Start(unsigned short port, const QString &protocol)
     if (userSetProtocol != "udp" && userSetProtocol != "tcp")
         ::LogWarning("Server::Start: Server config has an invalid server protocol '" + userSetProtocol + "'. Use tcp or udp. Resetting to default protocol.");
     else
+    {
         transportLayer = userSetProtocol == "udp" ? kNet::SocketOverUDP : kNet::SocketOverTCP;
-
+        framework_->Config()->Set(configData, "protocol", userSetProtocol);
+    }
 
     // Start server
     if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
@@ -142,10 +144,7 @@ bool Server::IsRunning() const
 
 bool Server::IsAboutToStart() const
 {
-    QStringList cmdLineParams = framework_->CommandLineParameters("--server");
-    if (cmdLineParams.size() > 0)
-        return true;
-    return false;
+    return framework_->HasCommandLineParameter("--server");
 }
 
 int Server::GetPort() const

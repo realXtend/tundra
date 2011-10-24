@@ -76,6 +76,8 @@ bool VlcMediaPlayer::Initialized()
     return true;
 }
 
+// Public slots
+
 bool VlcMediaPlayer::PlayPause()
 {
     if (!Initialized())

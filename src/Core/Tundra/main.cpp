@@ -13,7 +13,6 @@
 #include <Windows.h>
 #endif
 #ifdef WINDOWS_APP
-#include <tchar.h>
 #include <io.h>
 #include <iostream>
 #include <fcntl.h>
@@ -125,12 +124,11 @@ int run(int argc, char **argv)
 }
 
 #if defined(_MSC_VER) && defined(WINDOWS_APP)
-int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPWSTR lpCmdLine, int /*nShowCmd*/)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-    lpCmdLine = GetCommandLine();
-    std::wstring cmdLine(lpCmdLine);
+    std::string cmdLine(lpCmdLine);
     // If trying to run Windows GUI application in headless mode, we must set up the console in order to be able to proceed.
-    if (cmdLine.find(__T("--headless")) != std::wstring::npos)
+    if (cmdLine.find("--headless") != std::string::npos)
     {
         // Code below adapted from http://dslweb.nwnexus.com/~ast/dload/guicon.htm
         BOOL ret = AllocConsole();
@@ -163,12 +161,18 @@ int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPWST
     }
 
     // Parse the Windows command line.
-    std::vector<std::wstring> arguments;
+    std::vector<std::string> arguments;
     unsigned i;
     unsigned cmdStart = 0;
     unsigned cmdEnd = 0;
     bool cmd = false;
     bool quote = false;
+
+    // Inject executable name as Framework will expect it to be there.
+    // Otherwise the first param will be ignored (it assumes its the executable name).
+    // In WinMain() its not included in the 'lpCmdLine' param.
+    arguments.push_back("Tundra.exe");
+
     for(i = 0; i < cmdLine.length(); ++i)
     {
         if (cmdLine[i] == '\"')
@@ -194,7 +198,7 @@ int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPWST
     if (cmd)
         arguments.push_back(cmdLine.substr(cmdStart, i-cmdStart));
 
-    std::vector<const wchar_t*> argv;
+    std::vector<const char*> argv;
     for(size_t i = 0; i < arguments.size(); ++i)
         argv.push_back(arguments[i].c_str());
     
@@ -227,7 +231,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v2.0";
+    WCHAR* szVersion = L"Tundra_v2.1.2";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;

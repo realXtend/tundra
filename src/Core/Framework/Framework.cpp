@@ -135,8 +135,8 @@ Framework::Framework(int argc, char** argv) :
 
     // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
     /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
-    apiVersionInfo = new ApiVersionInfo(2, 0, 0, 0);
-    applicationVersionInfo = new ApplicationVersionInfo(2, 0, 0, 0, "realXtend", "Tundra");
+    apiVersionInfo = new ApiVersionInfo(2, 1, 2, 0);
+    applicationVersionInfo = new ApplicationVersionInfo(2, 1, 2, 0, "realXtend", "Tundra");
 
     CommandLineParameterMap cmdLineDescs;
     ///\todo Make it possible for modules to know when "--help" command was issued and list the command line parameters they support.
@@ -167,6 +167,12 @@ Framework::Framework(int argc, char** argv) :
     {
         std::cout << "Supported command line arguments: " << std::endl;
         std::cout << cmdLineDescs.ToString();
+#ifdef WINDOWS_APP
+        // Pause if WINDOWS_APP is defined, otherwise user can never read the params
+        // as the console will disappear after the prints.
+        std::cout << std::endl;
+        system("pause");
+#endif
         Exit();
     }
     else
@@ -551,8 +557,60 @@ QStringList Framework::CommandLineParameters(const QString &key) const
 {
     QStringList ret;
     for(int i = 0; i+1 < startupOptions.size(); ++i)
+    {
         if (!startupOptions[i].compare(key, Qt::CaseInsensitive) && !startupOptions[i+1].startsWith("--"))
-            ret.append(startupOptions[++i]);
+        {
+            // Inspect for quoted parameters.
+            QString quotedParam = startupOptions[i+1];
+            if (quotedParam.startsWith("\""))
+            {
+                // End quote is in the argv
+                if (quotedParam.endsWith("\""))
+                {
+                    // Remove quotes and append to the return list.
+                    quotedParam = quotedParam.right(quotedParam.length() -1);
+                    quotedParam.chop(1);
+                    ret.append(quotedParam);
+                }
+                // End quote is not in the same argv
+                else
+                {
+                    for(int pi=i+2; pi+1 < startupOptions.size(); ++pi)
+                    {
+                        QString param = startupOptions[pi];
+
+                        // If a new -- key is found before an end quote we have a error.
+                        // Report and don't add anything to the return list as the param is malformed.
+                        if (param.startsWith("--"))
+                        {
+                            LogError("Could not find an end quote for '" + key + "' parameter: " + quotedParam);
+                            i = pi - 1; // Step one back so the main for loop will inspect this element next.
+                            break;
+                        }
+                        // We found the end of the quoted param.
+                        // Remove quotes and append to the return list.
+                        else if (param.endsWith("\""))
+                        {
+                            i = pi; // Set the main for loops index so it will process the proper elements next.
+                            quotedParam += " " + param;
+                            if (quotedParam.startsWith("\""))
+                                quotedParam = quotedParam.right(quotedParam.length() -1);
+                            if (quotedParam.endsWith("\""))
+                                quotedParam.chop(1);
+                            ret.append(quotedParam);
+                            break;
+                        }
+                        // Append to param.
+                        else
+                            quotedParam += " " + param;
+                    }
+                }
+            }
+            // No quote start, push as is
+            else
+                ret.append(startupOptions[++i]);
+        }
+    }
     return ret;
 }
 

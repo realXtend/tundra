@@ -21,6 +21,7 @@
 #include "OgrePass.h"
 #include "OgreTextureUnitState.h"
 #include "IRenderer.h"
+#include "TundraLogicModule.h"
 
 #include <QUuid>
 #include <QStringList>
@@ -36,7 +37,8 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
     renderSubmeshIndex(this, "Render Submesh", 0),
     enabled(this, "Enabled", true),
     interactive(this, "Interactive", false),
-    illuminating(this, "Illuminating", true)
+    illuminating(this, "Illuminating", true),
+    isServer_(false)
 {
     static AttributeMetadata zeroIndexMetadata;
     static AttributeMetadata slideIndexMetadata;
@@ -53,14 +55,24 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
     slideChangeInterval.SetMetadata(&zeroIndexMetadata);
     currentSlideIndex.SetMetadata(&slideIndexMetadata);
 
+    // Connect signals both for headless and non-headless
+    connect(&changeTimer_, SIGNAL(timeout()), SLOT(NextSlide()));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+
+    // Server controls the slide change timer, so detect if we are on one.
+    TundraLogic::TundraLogicModule *tundraLogic = framework->GetModule<TundraLogic::TundraLogicModule>();
+    if (tundraLogic)
+        isServer_ = tundraLogic->IsServer();
+    else
+        LogError("EC_SlideShow: Could not detect if in server on client. Slide change timer will not work. (TundraLogicModule not found!)");
+
     // Don't do anything beyond if rendering is not enabled
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
 
-    // Connect signals from IComponent
+    // Connect signals for non headless
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
-
+    
     // Prepare scene interactions
     SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
     if (sceneInteract)
@@ -68,8 +80,6 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
         connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
                 SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
     }
-
-    connect(&changeTimer_, SIGNAL(timeout()), SLOT(NextSlide()));
 }
 
 EC_SlideShow::~EC_SlideShow()
@@ -154,8 +164,6 @@ void EC_SlideShow::ShowSlide(int index)
 
 void EC_SlideShow::NextSlide()
 {
-    if (!IsPrepared())
-        return;
     // Nothing to do if we have 0 or 1 slides.
     QVariantList slideRefs = getslides();
     if (slideRefs.length() <= 1)
@@ -166,8 +174,6 @@ void EC_SlideShow::NextSlide()
 
 void EC_SlideShow::PreviousSlide()
 {
-    if (!IsPrepared())
-        return;
     // Nothing to do if we have 0 or 1 slides.
     QVariantList slideRefs = getslides();
     if (slideRefs.length() <= 1)
@@ -205,6 +211,8 @@ QMenu *EC_SlideShow::GetContextMenu()
 
 void EC_SlideShow::PrepareComponent()
 {
+    if (framework->IsHeadless())
+        return;
     if (IsPrepared())
         return;
 
@@ -280,6 +288,8 @@ void EC_SlideShow::TextureLoaded(AssetPtr asset)
 
 bool EC_SlideShow::IsPrepared()
 {
+    if (framework->IsHeadless())
+        return false;
     if (!ParentEntity())
         return false;
     EC_Mesh *mesh = GetMeshComponent();
@@ -359,6 +369,10 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
     // Can handle before we are prepared
     if (attribute == &slides)
     {
+        // Don't request textures on the server
+        if (isServer_)
+            return;
+
         foreach(AssetRefListener *listener, assetListeners_)
             SAFE_DELETE(listener);
         assetListeners_.clear();
@@ -383,11 +397,14 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
     }
     else if (attribute == &slideChangeInterval)
     {
-        int timerSec = getslideChangeInterval();
-        if (timerSec <= 0)
-            changeTimer_.stop();
-        else
-            changeTimer_.start(timerSec * 1000);
+        if (isServer_)
+        {
+            int timerSec = getslideChangeInterval();
+            if (timerSec <= 0)
+                changeTimer_.stop();
+            else
+                changeTimer_.start(timerSec * 1000);
+        }
     }
 
     // Cant handle yet, not prepared

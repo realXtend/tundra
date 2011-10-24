@@ -92,10 +92,57 @@ void ECComponentEditor::UpdateGroupPropertyText()
     QString componentName = typeName_;
     componentName.replace("EC_", "");
     QString groupPropertyName = componentName;
+    
     if(!name_.isEmpty())
-        groupPropertyName += " (" + name_ + ") ";
+        groupPropertyName += ": " + name_;
     if(components_.size() > 1)
         groupPropertyName += QString(" (%1 components)").arg(components_.size());
+    
+    /// @todo This starts to get a little hard to read with all this data in the field.
+    /// Icons or more columns would be nice here, but untill then this is what we get.
+    int temporary = 0;
+    int local = 0;
+    ComponentSet::iterator iter = components_.begin();
+    while(iter != components_.end())
+    {
+        ComponentPtr comp_ptr = (*iter).lock();
+        if (comp_ptr.get())
+        {
+            if (comp_ptr->IsTemporary())
+                temporary++;
+            if (comp_ptr->IsLocal())
+                local++;
+        }
+        ++iter;
+    }
+    if (temporary > 0 || local > 0)
+    {
+        groupPropertyName.append(" [");
+        if (components_.size() == 1)
+        {
+            if (local > 0)
+                groupPropertyName.append("Local");
+            if (local > 0 && temporary > 0)
+                groupPropertyName.append(" ");
+            if (temporary > 0)
+                groupPropertyName.append("Temporary");
+        } 
+        else if (components_.size() > 1)
+        {
+            if (local > 0 && local < components_.size())
+                groupPropertyName.append(QString("%1/%2 is Local").arg(local).arg(components_.size()));
+            else if (local > 0 && local == components_.size())
+                groupPropertyName.append(QString("%1 Local").arg(local));
+            if (local > 0 && temporary > 0)
+                groupPropertyName.append(" ");
+            if (temporary > 0 && temporary < components_.size())
+                groupPropertyName.append(QString("%1/%2 is Temporary").arg(temporary).arg(components_.size()));
+            else if (temporary > 0 && local == components_.size())
+                groupPropertyName.append(QString("%1 Temporary").arg(temporary));
+        }
+        groupPropertyName.append("]");
+    }
+
     groupProperty_->setPropertyName(groupPropertyName);
 }
 
@@ -200,7 +247,7 @@ void ECComponentEditor::UpdateUi()
 
 QString ECComponentEditor::GetAttributeType(const QString &name) const
 {
-    AttributeEditorMap::iterator iter = attributeEditors_.find(name);
+    AttributeEditorMap::const_iterator iter = attributeEditors_.find(name);
     if (iter != attributeEditors_.end())
         return (*iter)->GetAttributeType();
     return QString();

@@ -15,9 +15,11 @@
 #include "EC_Script.h"
 #include "ScriptAsset.h"
 #include "AssetAPI.h"
+#include "Application.h"
 #include "IAssetStorage.h"
 #include "LoggingFunctions.h"
 
+#include <QDir>
 #include <QFile>
 #include <sstream>
 
@@ -137,9 +139,25 @@ QString JavascriptInstance::LoadScript(const QString &fileName)
             return asset->scriptContent;
     }
 
-    // Otherwise, treat fileName as a local file to load up.
+    /// @bug When including other scripts from startup scripts the only way to include is with relative paths.
+    /// As you cannot use !rel: ref in startup scripts (loaded without EC_Script) so you cannot use local:// refs either. 
+    /// You have to do engine.IncludeFile("lib/class.js") etc. and this below code needs to find the file whatever the working dir is, a plain QFile::open() wont cut it!
 
-    QFile scriptFile(filename);
+    // Otherwise, treat fileName as a local file to load up.
+    // Check install dir and the clean rel path.
+    QString pathToFile = "";
+    QDir jsPluginDir(QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules");
+    if (jsPluginDir.exists(filename))
+        pathToFile = jsPluginDir.filePath(filename);
+    else if (QFile::exists(filename))
+        pathToFile = filename;
+    if (pathToFile.isEmpty())
+    {
+        LogError("JavascriptInstance::LoadScript: Failed to load script from file " + filename + "!");
+        return "";
+    }
+
+    QFile scriptFile(pathToFile);
     if (!scriptFile.open(QIODevice::ReadOnly))
     {
         LogError("JavascriptInstance::LoadScript: Failed to load script from file " + filename + "!");

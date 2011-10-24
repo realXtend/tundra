@@ -29,6 +29,7 @@ namespace MumbleVoip
         virtual bool IsMuted() const = 0;
         virtual float3 Position() const = 0;
         virtual double VoiceActivity() const = 0;
+        virtual int Id() const = 0;
     
     signals:
         void StartSpeaking(); 

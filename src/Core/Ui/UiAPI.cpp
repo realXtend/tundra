@@ -105,9 +105,9 @@ UiAPI::UiAPI(Framework *owner_) :
         mainWindow->setLayout(new QVBoxLayout());
     mainWindow->layout()->setMargin(0);
     mainWindow->layout()->setContentsMargins(0,0,0,0);
-    mainWindow->layout()->addWidget(graphicsView);
-    // The Qt APIs want us to do this, but it causes improper scrollarea sizing.
-//    mainWindow->setCentralWidget(graphicsView);
+    // Old way: force insert into the main layout. Will make view/scene be behind menu bar etc.
+    //mainWindow->layout()->addWidget(graphicsView);
+    mainWindow->setCentralWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);

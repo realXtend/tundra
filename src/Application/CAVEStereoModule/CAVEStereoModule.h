@@ -16,7 +16,7 @@ namespace CAVEStereo
     class StereoController;
     class CAVEManager;
 
-    class CAVESTEREO_MODULE_API CAVEStereoModule : public QObject, public IModule
+    class CAVESTEREO_MODULE_API CAVEStereoModule : public IModule
     {
         Q_OBJECT
 
@@ -28,7 +28,7 @@ namespace CAVEStereo
         ~CAVEStereoModule();
 
         /// IModule override.
-        virtual void PostInitialize();
+        void Initialize();
 
         /// Get current Ogre renderer windows.
         QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
@@ -39,6 +39,8 @@ namespace CAVEStereo
 
         /// Show the cave widget.
         void ShowCaveWindow();
+        void TakeScreenshots(QString path, QString filename);
+        void EnableStereo(QString tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width);
 
     private:
         /// Manager for stereo.

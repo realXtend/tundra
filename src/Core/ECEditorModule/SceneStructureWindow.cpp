@@ -40,7 +40,8 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     layout->setContentsMargins(5, 5, 5, 5);
     setLayout(layout);
     setWindowTitle(tr("Scene Structure"));
-    resize(300, 400);
+    setObjectName("SceneStructureWidget");
+    resize(325, 400);
 
     // Create child widgets
     treeWidget = new SceneTreeWidget(fw, this);

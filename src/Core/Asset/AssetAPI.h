@@ -367,10 +367,10 @@ public slots:
     /// Starts an asset transfer for each dependency the given asset has.
     void RequestAssetDependencies(AssetPtr transfer);
 
-    /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
+    /// A utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset) const;
 
-    /// Utility function that checks whether an asset ref's discovery or deletion should be replicated
+    /// A utility function that checks whether an asset ref's discovery or deletion should be replicated
     bool ShouldReplicateAssetDiscovery(const QString &assetRef);
     
     /// Handle discovery of a new asset through the AssetDiscovery network message
@@ -387,6 +387,9 @@ public slots:
 
     /// Return current asset transfers
     const AssetTransferMap& GetCurrentTransfers() const { return currentTransfers; }
+
+    /// A utility function that counts the number of current asset transfers.
+    int NumCurrentTransfers() const { return currentTransfers.size(); }
     
     /// Return the current asset dependency map (debugging)
     const AssetDependenciesMap& DebugGetAssetDependencies() const { return assetDependencies; }

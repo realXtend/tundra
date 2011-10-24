@@ -3,25 +3,36 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
+    // Use absolute paths for rel image files so they always work!
+    var installDir = QDir.fromNativeSeparators(application.installationDirectory);
+    
+    // Get the menubar
     var menu = ui.MainWindow().menuBar();
     menu.clear();
 
     var fileMenu = menu.addMenu("&File");
     if (framework.GetModuleByName("UpdateModule"))
-        fileMenu.addAction(new QIcon("./data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
+        fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
+        
+    var screenshotAct = fileMenu.addAction("Take Screenshot");
+    screenshotAct.triggered.connect(TakeScreenshot);
+    screenshotAct.enabled = false;
+    
     //fileMenu.addAction("New scene").triggered.connect(NewScene);
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
     {
-        var disconnectAction = fileMenu.addAction(new QIcon("./data/ui/images/icon/disconnect.ico"), "Disconnect");
+        var disconnectAction = fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/disconnect.ico"), "Disconnect");
         disconnectAction.triggered.connect(Disconnect);
         client.Connected.connect(Connected);
         client.Disconnected.connect(Disconnected);
-        Disconnected();
+        disconnectAction.enabled = false;
     }
-    fileMenu.addAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
+    fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
+    
     var viewMenu = menu.addMenu("&View");
+    
 
     if (framework.GetModuleByName("SceneStructure"))
     {
@@ -67,9 +78,9 @@ if (!framework.IsHeadless())
     }
 
     var helpMenu = menu.addMenu("&Help");
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
+    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
+    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
+    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
 
     function NewScene() {
         scene.RemoveAllEntities();
@@ -84,15 +95,23 @@ if (!framework.IsHeadless())
     }
 
     function Connected() {
-        disconnectAction.setEnabled(true);
+        disconnectAction.enabled = true;
+        screenshotAct.enabled = true;
     }
 
     function Disconnected() {
-        disconnectAction.setEnabled(false);
+        disconnectAction.enabled = false;
+        screenshotAct.enabled = false;
     }
 
     function Quit() {
         framework.Exit();
+    }
+    
+    function TakeScreenshot() {
+        var mainCamera = renderer.MainCameraComponent();
+        var imgPath = mainCamera.SaveScreenshot();
+        QDesktopServices.openUrl(new QUrl(imgPath));
     }
 
     function CheckForUpdates() {

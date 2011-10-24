@@ -4,9 +4,9 @@
 
 #include "Framework.h"
 #include "CoreDefines.h"
-#include "UiAPI.h"
-#include "UiMainWindow.h"
+#include "Application.h"
 
+#include <QDir>
 #include <QFile>
 #include <QProcess>
 #include <QAction>
@@ -23,7 +23,7 @@ UpdateModule::~UpdateModule()
 {
 }
 
-void UpdateModule::PostInitialize()
+void UpdateModule::Initialize()
 {
     if (!GetFramework()->IsHeadless())
         RunUpdater("/silent");
@@ -32,8 +32,9 @@ void UpdateModule::PostInitialize()
 void UpdateModule::RunUpdater(QString parameter)
 {
 #ifdef Q_WS_WIN
-    QFile executable(updateExecutable);
-    QFile config(updateConfig);
+    QDir installDir(QDir::fromNativeSeparators(Application::InstallationDirectory()));
+    QFile executable(installDir.absoluteFilePath(updateExecutable));
+    QFile config(installDir.absoluteFilePath(updateConfig));
     if (executable.exists() && config.exists())
         QProcess::startDetached(executable.fileName(), QStringList() << parameter);
 #endif

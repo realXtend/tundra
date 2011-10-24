@@ -12,6 +12,7 @@
 #include "Profiler.h"
 #include "SceneAPI.h"
 #include "UiAPI.h"
+#include "UiMainWindow.h"
 #include "Entity.h"
 #include "IComponent.h"
 #include "Scene.h"
@@ -25,12 +26,17 @@
 #include <QMenu>
 #include <QDomDocument>
 #include <QMimeData>
+#include <QDialog>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 #include "MemoryLeakCheck.h"
 
 ECBrowser::ECBrowser(Framework *framework, QWidget *parent):
     QtTreePropertyBrowser(parent),
-    menu_(0),
     treeWidget_(0),
     framework_(framework)
 {
@@ -391,49 +397,43 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
     else
         treeWidget_->setCurrentItem(0);
 
-    SAFE_DELETE(menu_);
-    menu_ = new QMenu(this);
-    menu_->setAttribute(Qt::WA_DeleteOnClose);
-    if(treeWidgetItem)
+    QMenu contextMenu;
+    contextMenu.setTitle("ComponentContextMenu");
+    if (treeWidgetItem)
     {
-        QAction *copyComponent = new QAction(tr("Copy"), menu_);
-        QAction *pasteComponent = new QAction(tr("Paste"), menu_);
-        QAction *editXml = new QAction(tr("Edit XML..."), menu_);
-        // Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
-        // If root item is selected we assume that we want to remove component and non root items are attributes
-        // that need to removed (attribute delete is only enabled with EC_DynamicComponent).
-        QAction *deleteAction = new QAction(tr("Delete"), menu_);
-
-        //Add shortcuts for actions
-        copyComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
-        pasteComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_V));
-        deleteAction->setShortcut(QKeySequence::Delete);
-
         QTreeWidgetItem *parentItem = treeWidgetItem;
         while(parentItem->parent())
             parentItem = parentItem->parent();
         TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(parentItem);//FindSuitableGroup(*parentItem);
 
-        if(parentItem == treeWidgetItem)
+        if (parentItem == treeWidgetItem)
         {
+            QAction *copyComponent = contextMenu.addAction(tr("Copy"));
+            QAction *pasteComponent = contextMenu.addAction(tr("Paste"));
+            QAction *editXml = contextMenu.addAction(tr("Edit XML..."));
+
+            //Add shortcuts for actions
+            copyComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
+            pasteComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_V));
+            
             connect(copyComponent, SIGNAL(triggered()), this, SLOT(CopyComponent()), Qt::UniqueConnection);
             connect(pasteComponent, SIGNAL(triggered()), this, SLOT(PasteComponent()), Qt::UniqueConnection);
             connect(editXml, SIGNAL(triggered()), this, SLOT(OpenComponentXmlEditor()), Qt::UniqueConnection);
-            menu_->addAction(copyComponent);
-            menu_->addAction(pasteComponent);
-            menu_->addAction(editXml);
         }
 
+        // Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
+        // If root item is selected we assume that we want to remove component and non root items are attributes
+        // that need to removed (attribute delete is only enabled with EC_DynamicComponent).
+        QAction *deleteAction = contextMenu.addAction(tr("Delete"));
+        deleteAction->setShortcut(QKeySequence::Delete);
         connect(deleteAction, SIGNAL(triggered()), this, SLOT(OnDeleteAction()), Qt::UniqueConnection);
-        menu_->addAction(deleteAction);
 
         if (iter != itemToComponentGroups_.end())
         {
             if ((*iter)->isDynamic_)
             {
-                QAction *addAttribute = new QAction(tr("Add new attribute..."), menu_);
+                QAction *addAttribute = contextMenu.addAction(tr("Add new attribute..."));
                 connect(addAttribute, SIGNAL(triggered()), this, SLOT(CreateAttribute()), Qt::UniqueConnection);
-                menu_->addAction(addAttribute);
             }
             else
             {
@@ -449,19 +449,17 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
                 if (comp)
                     targets.push_back(comp);
             }
-            framework_->Ui()->EmitContextMenuAboutToOpen(menu_, targets);
+            framework_->Ui()->EmitContextMenuAboutToOpen(&contextMenu, targets);
         }
     }
     else
     {
-        QAction *addComponent = new QAction(tr("Add new component ..."), menu_);
-        QAction *pasteComponent = new QAction(tr("Paste"), menu_);
-        menu_->addAction(addComponent);
-        menu_->addAction(pasteComponent);
+        QAction *addComponent = contextMenu.addAction(tr("Add new component ..."));
+        QAction *pasteComponent = contextMenu.addAction(tr("Paste"));
         connect(addComponent, SIGNAL(triggered()), this, SIGNAL(CreateNewComponent()), Qt::UniqueConnection);
         connect(pasteComponent, SIGNAL(triggered()), this, SLOT(PasteComponent()), Qt::UniqueConnection);
     }
-    menu_->popup(mapToGlobal(pos));
+    contextMenu.exec(mapToGlobal(pos));
 }
 
 void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
@@ -714,27 +712,116 @@ void ECBrowser::CreateAttribute()
     if (!(*iter)->IsDynamic())
         return;
 
-    /// @todo Should this dialog be converted to modeless?
-    bool ok = false;
-    QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Type name:"),
-        framework_->Scene()->AttributeTypes(), 0, false, &ok);
-    if (!ok)
-        return;
-    QString name = QInputDialog::getText(this, tr("Give attribute name"), tr("Name:"), QLineEdit::Normal, QString(), &ok);
-    if (!ok)
-        return;
-
+    // Find the dynamic component
+    EC_DynamicComponent *dynComp = 0;
     std::vector<ComponentWeakPtr> components = (*iter)->components_;
     for(uint i = 0; i < components.size(); i++)
     {
         ComponentPtr component = components[i].lock();
         if (!component)
             continue;
-        EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(component.get());
-        if (dc && dc->CreateAttribute(typeName, name))
-            dc->ComponentChanged(AttributeChange::Default);
+        dynComp = dynamic_cast<EC_DynamicComponent*>(component.get());
+        if (dynComp)
+            break;
+    }
+
+    if (!dynComp)
+    {
+        LogError("ECBrowser:CreateAttribute() Could not find EC_DynamicCompoent in selection.");
+        return;
+    }
+
+    // Create the dialog
+    QStringList types = framework_->Scene()->AttributeTypes();
+
+    QDialog newAttrDialog(framework_->Ui()->MainWindow());
+    newAttrDialog.setModal(true);
+    newAttrDialog.setWindowFlags(Qt::Tool);
+    newAttrDialog.setWindowTitle(tr("Create New Attribute"));
+    newAttrDialog.setStyleSheet("font-size: 9pt;");
+
+    QPushButton *buttonCreate = new QPushButton(tr("Create"));
+    QPushButton *buttonCancel = new QPushButton(tr("Cancel"));
+    buttonCreate->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    buttonCancel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    buttonCreate->setDefault(true);
+    buttonCancel->setAutoDefault(false);
+
+    QComboBox *comboTypes = new QComboBox();
+    comboTypes->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    comboTypes->addItems(types);
+
+    QLineEdit *nameEdit = new QLineEdit();
+    nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    nameEdit->setFocus(Qt::ActiveWindowFocusReason);
+
+    QLabel *lName = new QLabel(tr("Name"));
+    QLabel *lType = new QLabel(tr("Type"));
+    lName->setMinimumWidth(50);
+
+    QLabel *errorLabel = new QLabel();
+    errorLabel->setStyleSheet("QLabel { background-color: rgba(255,0,0,150); padding: 4px; border: 1px solid grey; }");
+    errorLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    errorLabel->setAlignment(Qt::AlignCenter);
+    errorLabel->hide();
+
+    QGridLayout *grid = new QGridLayout();
+    grid->setVerticalSpacing(8);
+    grid->addWidget(lName, 0, 0);
+    grid->addWidget(nameEdit, 0, 1, Qt::AlignLeft, 1);
+    grid->addWidget(lType, 1, 0);
+    grid->addWidget(comboTypes, 1, 1, Qt::AlignLeft, 1);
+
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(buttonCreate);
+    buttonLayout->addWidget(buttonCancel);
+
+    QVBoxLayout *vertLayout = new QVBoxLayout();
+    vertLayout->addLayout(grid);
+    vertLayout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+    vertLayout->addWidget(errorLabel);
+    vertLayout->addLayout(buttonLayout);
+
+    newAttrDialog.setLayout(vertLayout);
+
+    connect(nameEdit, SIGNAL(returnPressed()), &newAttrDialog, SLOT(accept()));
+    connect(buttonCreate, SIGNAL(clicked()), &newAttrDialog, SLOT(accept()));
+    connect(buttonCancel, SIGNAL(clicked()), &newAttrDialog, SLOT(reject()));
+
+    // Execute dialog
+    newAttrDialog.resize(300, 120);
+    newAttrDialog.activateWindow();
+    bool dialogDone = false;
+    while (!dialogDone)
+    {
+        int ret = newAttrDialog.exec();
+        if (ret == QDialog::Rejected)
+            break;
+
+        QString typeName = comboTypes->currentText();
+        QString name = nameEdit->text().trimmed();
+
+        if (name.isEmpty())
+        {
+            errorLabel->setText("Attribute name cannot be empty.");
+            errorLabel->show();
+            continue;
+        }
+
+        if (!dynComp->ContainsAttribute(name))
+        {
+            dialogDone = true;
+            if (dynComp->CreateAttribute(typeName, name))
+                dynComp->ComponentChanged(AttributeChange::Default);
+            else
+                QMessageBox::information(framework_->Ui()->MainWindow(), "Failed to create attribute",
+                    "Failed to create " + typeName + " attribute \"" + name + "\", please try again.");
+        }
         else
-            LogError("ECBrowser::CreateAttribute: failed to create attribute " + typeName + " " + name + ".");
+        {
+            errorLabel->setText("Attribute \"" + name + "\" already exists in this component. Pick a unique name.");
+            errorLabel->show();
+        }
     }
 }
 

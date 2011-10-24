@@ -137,7 +137,7 @@ signals:
     void Disconnected();
 
     /// Emitted when a login attempt failed to a server.
-    void LoginFailed();
+    void LoginFailed(const QString &reason);
 
 private slots:
     /// Handles a Kristalli protocol message

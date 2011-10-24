@@ -29,8 +29,25 @@ namespace PythonScript
         ComponentPtr compSharedPtr = entity->GetOrCreateComponent(typeName);
         return compSharedPtr.get();
     }
+
+  /*QObject* TundraInstanceDecorator::get(ScenePtr self)
+    {
+        return self.get();
+	}
+  */
+
+    QObject *TundraInstanceDecorator::GetSceneRaw(SceneAPI *sceneapi, const QString &scenename)
+    {
+        ScenePtr scenePtr = sceneapi->GetScene(scenename);
+	return scenePtr.get();
+    }
     
     // TundraDecorator
+
+    /*QObject* TundraDecorator::get(ScenePtr self)
+    {
+        return self.get();
+    }*/
 
     AssetReference *TundraDecorator::new_AssetReference() 
     {

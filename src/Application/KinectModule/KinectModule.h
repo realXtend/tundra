@@ -36,7 +36,7 @@ public:
     virtual ~KinectModule();
 
     /// IModule override
-    void PostInitialize();
+    void Initialize();
 
     /// IModule override
     void Uninitialize();

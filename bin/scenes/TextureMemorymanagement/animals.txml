@@ -1,0 +1,101 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="http://www.realxtend.org/world/lvm/wt_deer.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="http://www.realxtend.org/world/lvm/wt_deer.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+   <attribute value="-1" name="Raycast submesh mask"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0,-1.75439,-5.95922,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+ </entity>
+ <entity id="2" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,90,0,1,1,1" name="Transform"/>
+   <attribute value="http://www.realxtend.org/world/lvm/opossum.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="http://www.realxtend.org/world/lvm/opossum.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+   <attribute value="-1" name="Raycast submesh mask"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="1.3421,-1.5022,-5.66074,0,0.21522,0,0.249625,0.249626,0.249625" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+ </entity>
+ <entity id="3" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,180,0,1,1,1" name="Transform"/>
+   <attribute value="http://www.realxtend.org/world/lvm/Mallard.male.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="http://www.realxtend.org/world/lvm/male_mallard.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+   <attribute value="-1" name="Raycast submesh mask"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-1.31731,-1.46928,-6.01785,0,-1.94449,0,0.999995,1,0.999995" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+ </entity>
+ <entity id="4" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,180,0,1,1,1" name="Transform"/>
+   <attribute value="http://www.realxtend.org/world/lvm/Mallard.male.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="http://www.realxtend.org/world/lvm/female_mallard.material;http://www.realxtend.org/world/lvm/body.001.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+   <attribute value="-1" name="Raycast submesh mask"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="2.70976,-1.46928,-5.96053,0,-0.83447,0,0.999999,1,0.999999" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+ </entity>
+ <entity id="5" sync="1">
+  <component type="EC_EnvironmentLight" sync="1">
+   <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sunlight color"/>
+   <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient light color"/>
+   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sunlight diffuse color"/>
+   <attribute value="-1.000000 -1.000000 -1.000000" name="Sunlight direction vector"/>
+   <attribute value="true" name="Sunlight cast shadows"/>
+  </component>
+ </entity>
+ <entity id="6" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="texmanager" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="texmanager.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+</scene>

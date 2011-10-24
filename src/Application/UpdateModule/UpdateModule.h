@@ -15,7 +15,7 @@ public:
     UpdateModule();
     virtual ~UpdateModule();
 
-    void PostInitialize();
+    void Initialize();
 
 public slots:
     void RunUpdater(QString parameter = "/checknow");

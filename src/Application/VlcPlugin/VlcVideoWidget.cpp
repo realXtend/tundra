@@ -94,7 +94,7 @@ VlcVideoWidget::~VlcVideoWidget()
         ShutDown();
 }
 
-bool VlcVideoWidget::Initialized()
+bool VlcVideoWidget::Initialized() const
 {
     if (!vlcInstance_ || !vlcPlayer_)
         return false;
@@ -152,6 +152,41 @@ bool VlcVideoWidget::OpenSource(const QString &videoUrl)
     return false;
 }
 
+libvlc_state_t VlcVideoWidget::GetMediaState() const
+{
+    if (!Initialized() || !vlcMedia_)
+        return libvlc_Error;
+    return libvlc_media_get_state(vlcMedia_);
+}
+
+boost::uint_least64_t VlcVideoWidget::GetMediaLenght()
+{
+    boost::uint_least64_t len = 0.0;
+    if (!Initialized() || !vlcMedia_)
+        return len;
+
+    if (statusAccess.tryLock(5))
+    {
+        len = status.lenght;
+        statusAccess.unlock();
+    }
+    return len;
+}
+
+boost::uint_least64_t VlcVideoWidget::GetMediaTime()
+{
+    boost::uint_least64_t time = 0.0;
+    if (!Initialized() || !vlcMedia_)
+        return time;
+
+    if (statusAccess.tryLock(5))
+    {
+        time = status.time;
+        statusAccess.unlock();
+    }
+    return time;
+}
+
 bool VlcVideoWidget::TogglePlay()
 {
     statusAccess.lock();
@@ -171,16 +206,18 @@ bool VlcVideoWidget::TogglePlay()
 
 void VlcVideoWidget::Play() 
 {
-    if (vlcPlayer_)
-        if (!libvlc_media_player_is_playing(vlcPlayer_))
-            libvlc_media_player_play(vlcPlayer_);
+    if (!vlcPlayer_)
+        return;
+    if (!libvlc_media_player_is_playing(vlcPlayer_))
+        libvlc_media_player_play(vlcPlayer_);
 }
 
 void VlcVideoWidget::Pause() 
 {
-    if (vlcPlayer_)
-        if (libvlc_media_player_can_pause(vlcPlayer_))
-            libvlc_media_player_pause(vlcPlayer_);
+    if (!vlcPlayer_)
+        return;
+    if (libvlc_media_player_can_pause(vlcPlayer_))
+        libvlc_media_player_pause(vlcPlayer_);
 }
 
 void VlcVideoWidget::Stop() 
@@ -198,14 +235,20 @@ void VlcVideoWidget::Stop()
     }
 }
 
-void VlcVideoWidget::Seek(boost::uint_least64_t time)
+bool VlcVideoWidget::Seek(boost::uint_least64_t time)
 {
     if (vlcPlayer_)
     {
         if (libvlc_media_player_is_playing(vlcPlayer_))
+        {
             if (libvlc_media_player_is_seekable(vlcPlayer_))
+            {
                 libvlc_media_player_set_time(vlcPlayer_, time);
+                return true;
+            }
+        }
     }
+    return false;
 }
 
 void VlcVideoWidget::ForceUpdateImage()
@@ -556,6 +599,7 @@ void VlcVideoWidget::VlcEventHandler(const libvlc_event_t *event, void *widget)
             w->status.playing = false;
             w->status.paused = false;
             w->status.stopped = true;
+            w->status.time = 0.0;
             w->status.change = PlayerStatus::MediaState;
             break;
         }

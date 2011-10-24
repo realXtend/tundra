@@ -80,7 +80,6 @@
 #include "EC_DynamicComponent.h"
 #include "EC_Name.h"
 #include "EC_OgreCompositor.h"
-#include "EC_Sound.h"
 #include "EC_InputMapper.h"
 #include "EC_SelectionBox.h"
 
@@ -148,7 +147,7 @@ namespace PythonScript
             framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory()));
     }
 
-    void PythonScriptModule::PostInitialize()
+    void PythonScriptModule::Initialize()
     {
         // An error has occurred on startup.
         if (!pythonQtStarted_)
@@ -264,7 +263,10 @@ namespace PythonScript
             }
         }
 
-        LogInfo(Name() + ": Loading startup scripts");
+        LogInfo(Name() + ": Loading scripts from startup config");
+        if (pluginsToLoad.empty())
+            LogInfo(Name() + ": ** No scripts in config");
+
         QDir pythonPlugins(Application::InstallationDirectory() + "pyplugins");
         foreach(QString pluginPath, pluginsToLoad)
         {
@@ -277,8 +279,7 @@ namespace PythonScript
             else
                 LogWarning(Name() + ": ** Could not locate startup pyplugin '" + pluginPath +"'. Make sure your path is relative to /pyplugins folder.");
         }
-        if (pluginsToLoad.empty())
-            LogInfo(Name() + ": ** No python scripts in startup config");
+
     }
 
     void PythonScriptModule::StartPythonQt()
@@ -324,7 +325,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EC_DynamicComponent::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Name::staticMetaObject);
             PythonQt::self()->registerClass(&EC_OgreCompositor::staticMetaObject);
-            PythonQt::self()->registerClass(&EC_Sound::staticMetaObject);
             PythonQt::self()->registerClass(&EC_InputMapper::staticMetaObject);
             PythonQt::self()->registerClass(&EC_SelectionBox::staticMetaObject);
 
@@ -401,6 +401,7 @@ namespace PythonScript
             PythonQt::self()->addInstanceDecorators(new TundraInstanceDecorator());
             PythonQt::self()->addDecorators(new TundraDecorator());
             PythonQt::self()->registerCPPClass("AssetReference");
+            PythonQt::self()->registerCPPClass("ScenePtr");
 
             pythonQtStarted_ = true;
         }
@@ -616,11 +617,11 @@ namespace PythonScript
         const QString logTypeUpper = logType.toUpper();
         if (logTypeUpper == "WARNING")
             LogWarning(message);
-        else if (logTypeUpper == "ERROR" || logTypeUpper == "FATAL")
+        else if (logTypeUpper == "ERROR")
             LogError(message);
         else if (logTypeUpper == "DEBUG")
             LogDebug(message);
-        else // "INFO" and everything else
+        else
             LogInfo(message);
     }
 }

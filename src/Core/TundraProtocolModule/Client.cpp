@@ -11,6 +11,7 @@
 #include "SyncManager.h"
 #include "TundraMessages.h"
 
+#include "VersionInfo.h"
 #include "SceneAPI.h"
 #include "Scene.h"
 
@@ -129,6 +130,10 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         SetLoginProperty("port", QString::number(port));
     }
 
+    SetLoginProperty("client-version", framework_->ApplicationVersion()->GetVersion());
+    SetLoginProperty("client-name", framework_->ApplicationVersion()->GetName());
+    SetLoginProperty("client-organization", framework_->ApplicationVersion()->GetOrganization());
+
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
@@ -170,7 +175,8 @@ void Client::DoLogout(bool fail)
     
     if (fail)
     {
-        emit LoginFailed();
+        QString failreason = GetLoginProperty("LoginFailed");
+        emit LoginFailed(failreason);
     }
     else // An user deliberately disconnected from the world, and not due to a connection error.
     {
@@ -195,7 +201,6 @@ bool Client::IsConnected() const
 
 void Client::SetLoginProperty(QString key, QString value)
 {
-    ::LogInfo(key + ":" + value);
     key = key.trimmed();
     value = value.trimmed();
     if (value.isEmpty())
@@ -261,6 +266,22 @@ kNet::MessageConnection* Client::GetConnection()
 
 void Client::OnConnectionAttemptFailed()
 {
+    // Provide a reason why the connection failed.
+    QString address = GetLoginProperty("address");
+    QString port = GetLoginProperty("port");
+    QString protocol = GetLoginProperty("protocol");
+
+    QString failReason = "Could not connect to host";
+    if (!address.isEmpty())
+    {
+        failReason.append(" " + address);
+        if (!port.isEmpty())
+            failReason.append(":" + port);
+        if (!protocol.isEmpty())
+            failReason.append(" with " + protocol.toUpper());
+    }
+
+    SetLoginProperty("LoginFailed", failReason);
     DoLogout(true);
 }
 

@@ -9,7 +9,13 @@ macro (PrintUsedEnvVariables)
     message ("\n=========== Used Environment Variables ===========\n")
     message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
     message (STATUS "QTDIR            = " ${ENV_QT_DIR})
+    message (STATUS "BOOST_ROOT       = " ${ENV_BOOST_ROOT})
     message (STATUS "OGRE_HOME        = " ${ENV_OGRE_HOME})
+    message (STATUS "SKYX_HOME        = " ${ENV_SKYX_HOME})
+    message (STATUS "HYDRAX_HOME      = " ${ENV_HYDRAX_HOME})
+    message (STATUS "KNET_DIR_QT47    = " ${ENV_KNET_DIR_QT47})
+    message (STATUS "BULLET_DIR       = " ${BULLET_DIR})
+    message (STATUS "ASSIMP_DIR       = " ${ASSIMP_DIR})
 endmacro ()
 
 macro (PrintUsedBuildConfig)
@@ -30,31 +36,69 @@ macro (PrintUsedBuildConfig)
     message ("")
 endmacro ()
 
+macro(GetLastElementFromPath dirPath outputParam)
+    string (FIND ${dirPath} "/" lastPathSepIndex REVERSE)
+    # This path does not have any subdirs in it
+    if (${lastPathSepIndex} STREQUAL "-1")
+        set (${outputParam} ${dirPath})
+    # Path has subdirs, pick the last
+    else ()
+        math(EXPR lastPathSepIndex "${lastPathSepIndex} + 1")
+        string(SUBSTRING ${dirPath} ${lastPathSepIndex} -1 ${outputParam})
+    endif ()
+endmacro ()
+
 # The AddEntityComponent macro adds the static EC lib from the given sourceFolder directory to the build.
-# The componentName must be the name of the EC that will be added. E.g. AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
+# The componentName == A subfolder in src/EntityComponents/ or a relative path to the EC directory where the CMakeLists.txt is located.
 # Use this macro when adding ECs to the build, since this macro tracks the set of ECs that are added, so that the individual
 # modules get #defines in C++ code for each EC that is present. This allows conditionally excluding ECs from the build.
+# Note that for eg. AddEntityComponent(3rdparty/myecs/EC_Thingie) the define will be EC_Thingie_ENABLED and you would expect.
+# Examples:     AddEntityComponent(EC_Sound)
+#               AddEntityComponent(3rdparty/myecs/EC_Thingie)
 macro(AddEntityComponent componentName)
-   add_subdirectory(src/EntityComponents/${componentName})
-   set(${componentName}_ENABLED 1)
-   set(USED_ENTITYCOMPONENTS ${USED_ENTITYCOMPONENTS} ${componentName})
+    # Chekc if the component is in our default entity components location
+    # note: from cmake docs: IS_DIRECTORY Behavior is well-defined only for full paths.
+    if (IS_DIRECTORY ${PROJECT_BINARY_DIR}/src/EntityComponents/${componentName})
+        add_subdirectory (src/EntityComponents/${componentName})
+        set (${componentName}_ENABLED 1)
+        set (USED_ENTITYCOMPONENTS ${USED_ENTITYCOMPONENTS} ${componentName})
+    elseif (IS_DIRECTORY ${PROJECT_BINARY_DIR}/${componentName})
+        add_subdirectory (${componentName})
+        GetLastElementFromPath(${componentName} compNameFromRelPath)
+        set(${compNameFromRelPath}_ENABLED 1)
+        set(USED_ENTITYCOMPONENTS ${USED_ENTITYCOMPONENTS} ${compNameFromRelPath})
+    else ()
+        message(FATAL_ERROR "Could not resolve AddEntityComponent() call with path " ${componentName} ". Are you sure the component is there?")
+    endif ()
 endmacro()
 
-# The AddProject takes in two parameters: projectType == Core or Application and projectName that should essentially be the folder name of the project.
-macro(AddProject projectType projectName)
-    set (addProjectSubdirectory 1)
-    if (NOT ${projectType} STREQUAL "Core" AND NOT ${projectType} STREQUAL "Application")
-        message (FATAL_ERROR "You are trying to use AddProject macro with invalid project type parameter: " ${projectType} " with project name " ${projectName})
-        set (addProjectSubdirectory 0)
-    endif()
-    if (BUILD_SDK_ONLY AND ${projectType} STREQUAL "Application")
-        message (STATUS "** Omitting Application level project " ${projectName} " because BUILD_SDK_ONLY is set to TRUE")
-        set (addProjectSubdirectory 0)
+# AddProject takes in one or two parameters: 
+# - One param  : argv0 == the relative directory (to the root CMakeLists.txt) where you project is and that contains the CMakeLists.txt for this project.
+# - Two params : argv0 == 'Core'|'Application'. argv1 folder name of the project in the src/argv0/
+# More useful for building the Tundra project when including platform provided projects.
+# Note: One param projects or two param "Application" type plugins will always be omitted if BUILD_SDK_ONLY is true!
+# Note: Due to the cmake add_subdirectory restrictions, the directory cannot be outside the Tundra source tree, hopefully we can go around this one day.
+# Examples:     AddProject(Core Input)
+#               AddProject(Application JavascriptModule)
+#               AddProject(mysubdir/MyPlugin)
+function(AddProject)
+    if (NOT ARGV1)
+        if (BUILD_SDK_ONLY)
+            message (STATUS "** Omitting Application level project " ${ARGV0} " because BUILD_SDK_ONLY is set to TRUE")
+        else ()
+            add_subdirectory(${ARGV0})
+        endif ()
+    else ()
+        if (NOT ${ARGV0} STREQUAL "Core" AND NOT ${ARGV0} STREQUAL "Application")
+            message (FATAL_ERROR "You are trying to use AddProject macro with invalid project type parameter: " ${ARGV0} " with project name " ${ARGV1})
+        endif()
+        if (BUILD_SDK_ONLY AND ${ARGV0} STREQUAL "Application")
+            message (STATUS "** Omitting Application level project " ${ARGV1} " because BUILD_SDK_ONLY is set to TRUE")
+        else ()
+            add_subdirectory(src/${ARGV0}/${ARGV1})
+        endif ()
     endif ()
-    if (addProjectSubdirectory)
-        add_subdirectory(src/${projectType}/${projectName})
-    endif()
-endmacro()
+endfunction()
 
 # Generates in the current project a #define for each EC that has been added to the build. Use this macro in your module CMakeLists.txt
 # to receive information in C++ about which ECs have been added to the project. This allows supporting conditional compilation of the ECs in your module.
@@ -223,9 +267,18 @@ set (TUNDRA_BIN ${PROJECT_BINARY_DIR}/bin)
 setup_clean_install_step()
 
 # Set normalized path for common environment variables
+# If you want to use custom built dependencies along side with TUNDRA_DEP_PATH
+# you can define the following env variables: 
+# OGRE_HOME, SKYX_HOME, HYDRAX_HOME, KNET_DIR_QT47, BULLET_DIR, ASSIMP_DIR
 file (TO_CMAKE_PATH "$ENV{TUNDRA_DEP_PATH}" ENV_TUNDRA_DEP_PATH)
 file (TO_CMAKE_PATH "$ENV{QTDIR}" ENV_QT_DIR)
+file (TO_CMAKE_PATH "$ENV{BOOST_ROOT}" ENV_BOOST_ROOT)
 file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
+file (TO_CMAKE_PATH "$ENV{SKYX_HOME}" ENV_SKYX_HOME)
+file (TO_CMAKE_PATH "$ENV{HYDRAX_HOME}" ENV_HYDRAX_HOME)
+file (TO_CMAKE_PATH "$ENV{KNET_DIR_QT47}" ENV_KNET_DIR_QT47)
+file (TO_CMAKE_PATH "$ENV{BULLET_DIR}" ENV_BULLET_DIR)
+file (TO_CMAKE_PATH "$ENV{ASSIMP_DIR}" ENV_ASSIMP_DIR)
 
 # Utilize cmakes cache for the environment variables. This is needed if eg. TUNDRA_DEP_PATH
 # was set on the first run of cmake, but once eg. Visual Studio auto runs cmake (after changes to any CMakeLists.txt)

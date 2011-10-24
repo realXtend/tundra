@@ -24,6 +24,7 @@
 #include "ECEditorModule.h"
 #include "EntityActionDialog.h"
 #include "AddComponentDialog.h"
+#include "NewEntityDialog.h"
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
 #include "InvokeItem.h"
@@ -39,6 +40,13 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDebug>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QDialog>
 
 #include <kNet/DataSerializer.h>
 
@@ -312,7 +320,6 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         connect(functionsAction, SIGNAL(triggered()), SLOT(OpenFunctionDialog()));
         connect(toLocalAction, SIGNAL(triggered()), SLOT(ConvertEntityToLocal()));
         connect(toReplicatedAction, SIGNAL(triggered()), SLOT(ConvertEntityToReplicated()));
-        connect(temporaryAction, SIGNAL(toggled(bool)), SLOT(SetAsTemporary(bool)));
     }
 
     // "Rename" action is possible only if have one entity selected.
@@ -367,6 +374,9 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
             temporaryAction->setDisabled(true);
         }
     }
+
+    if (temporaryAction)
+        connect(temporaryAction, SIGNAL(toggled(bool)), SLOT(SetAsTemporary(bool)));
 
     if (pastePossible)
         menu->addAction(pasteAction);
@@ -588,17 +598,21 @@ void SceneTreeWidget::Edit()
             }
         }
 
+        // Check for active editor
         ECEditorWindow *editor = framework->GetModule<ECEditorModule>()->ActiveEditor();
         if (editor && !ecEditors.contains(editor))
         {
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
         }
-        else // If there isn't any active editors in ECEditorModule, create a new one.
+        // If there isn't any active editors in ECEditorModule, create a new one.
+        else 
         {
             editor = new ECEditorWindow(framework);
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
+
+            framework->GetModule<ECEditorModule>()->RepositionEditor(editor);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
         connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
@@ -628,14 +642,14 @@ void SceneTreeWidget::EditInNew()
     ECEditorWindow *editor = new ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
     connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
-    //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
-    editor->hide();
-    editor->AddEntities(selection.EntityIds(), true);
+    //editor->move(mapToGlobal(pos()) + QPoint(50, 50));  
 
     editor->setParent(framework->Ui()->MainWindow());
     editor->setWindowFlags(Qt::Tool);
     editor->show();
     editor->activateWindow();
+    editor->AddEntities(selection.EntityIds(), true);
+
     ecEditors.push_back(editor);
 }
 
@@ -725,35 +739,29 @@ void SceneTreeWidget::NewEntity()
     if (scene.expired())
         return;
 
-    AttributeChange::Type changeType;
-
-    // Show a dialog so that user can choose if he wants to create local or synchronized entity.
-    QStringList types(QStringList() << tr("Replicated") << tr("Local"));
-    bool ok;
-    QString type = QInputDialog::getItem(NULL, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
-    if (!ok || type.isEmpty())
+    // Create and execute dialog
+    AddEntityDialog newEntDialog(framework->Ui()->MainWindow(), Qt::Tool);
+    newEntDialog.resize(300, 130);
+    newEntDialog.activateWindow();
+    int ret = newEntDialog.exec();
+    if (ret == QDialog::Rejected)
         return;
 
-    bool replicated = true;
-
-    if (type == tr("Replicated"))
-    {
-        changeType = AttributeChange::Replicate;
-    }
-    else if(type == tr("Local"))
-    {
-        changeType = AttributeChange::LocalOnly;
-        replicated = false;
-    }
-    else
-    {
-        LogError("Invalid entity type:" + type);
-        return;
-    }
+    // Process the results
+    QString name = newEntDialog.EntityName().trimmed();
+    bool replicated = newEntDialog.IsReplicated();
+    bool temporary = newEntDialog.IsTemporary();
+    AttributeChange::Type changeType = replicated ? AttributeChange::Replicate : AttributeChange::LocalOnly;
 
     // Create entity.
     EntityPtr entity = scene.lock()->CreateEntity(0, QStringList(), changeType, replicated);
     assert(entity);
+
+    // Set additional properties.
+    if (!name.isEmpty())
+        entity->SetName(name);
+    if (temporary)
+        entity->SetTemporary(true);
 }
 
 void SceneTreeWidget::NewComponent()
@@ -762,10 +770,11 @@ void SceneTreeWidget::NewComponent()
     if (sel.IsEmpty())
         return;
 
-    AddComponentDialog *dialog = new AddComponentDialog(framework, sel.EntityIds(), this);
+    AddComponentDialog *dialog = new AddComponentDialog(framework, sel.EntityIds(), framework->Ui()->MainWindow(), Qt::Tool);
     dialog->SetComponentList(framework->Scene()->ComponentTypes());
     connect(dialog, SIGNAL(finished(int)), SLOT(ComponentDialogFinished(int)));
     dialog->show();
+    dialog->activateWindow();
 }
 
 void SceneTreeWidget::ComponentDialogFinished(int result)

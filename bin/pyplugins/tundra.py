@@ -68,9 +68,6 @@ def LogError(m):
     
 def LogDebug(m):
     _pythonscriptmodule.PythonPrintLog("DEBUG", m)
-    
-def LogFatal(m):
-    _pythonscriptmodule.PythonPrintLog("FATAL", m)
 
 """ Python helper """
 

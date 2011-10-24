@@ -39,11 +39,11 @@ EC_Billboard::EC_Billboard(Scene* scene) :
     width(this, "Size X", 1.0f),
     height(this, "Size Y", 1.0f),
     rotation(this, "Rotation", 0.0f),
-    show(this, "Show billboard", true),
-    autoHideTime(this, "Auto-hide time", -1.0f)
+    show(this, "Show billboard", true)
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
+
     materialAsset_ = AssetRefListenerPtr(new AssetRefListener());
     connect(materialAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(materialAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
@@ -153,11 +153,6 @@ void EC_Billboard::DestroyBillboard()
 void EC_Billboard::Show()
 {
     AttachBillboard();
-    
-    // Optionally autohide
-    float hideTime = autoHideTime.Get();
-    if (hideTime >= 0.0f)
-        QTimer::singleShot((int)(hideTime*1000), this, SLOT(Hide()));
 }
 
 void EC_Billboard::Hide()
@@ -198,7 +193,28 @@ void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
         if (!ViewEnabled())
             return;
         
+        // In the case of empty ref setting it to the ref listener will
+        // make sure we don't get called to OnMaterialAssetLoaded. This would happen 
+        // if something touches the previously set material in the asset system (eg. reload).
         materialAsset_->HandleAssetRefChange(&materialRef);
+
+        try
+        {
+            // If we previously had a material set and its not removed, updated the visuals from ogre.
+            if (materialRef.Get().ref.isEmpty() && billboardSet_)
+                if (billboardSet_->getMaterialName() != "") {
+#if OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 7 && OGRE_VERSION_PATCH < 3
+                    billboardSet_->setMaterialName(Ogre::MaterialPtr()->getName());
+#else
+                    billboardSet_->setMaterial(Ogre::MaterialPtr());
+#endif
+                }
+        }
+        catch (Ogre::Exception &e)
+        {
+            LogError("EC_Billboard: Failed to reset visuals after material was removed: " + std::string(e.what()));
+        }
+
     }
     
     if (attribute == &show)

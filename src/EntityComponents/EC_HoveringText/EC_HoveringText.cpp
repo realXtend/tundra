@@ -267,7 +267,7 @@ void EC_HoveringText::Redraw()
             }
         }       
        
-        QBrush brush((QColor)backgroundColor.Get());
+        QBrush brush(backgroundColor.Get());
        
         if (usingGrad.Get())
         {   

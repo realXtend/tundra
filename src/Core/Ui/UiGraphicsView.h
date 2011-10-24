@@ -49,20 +49,26 @@ signals:
     void WindowResized(int newWidth, int newHeight);
 
     /// Emitted when DragEnterEvent is received for the main window.
-    /** @param e Event. */
-    void DragEnterEvent(QDragEnterEvent *e);
+    /** @param e Event.
+        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget.
+    */
+    void DragEnterEvent(QDragEnterEvent *e, QGraphicsItem *widgetUnderMouse);
 
     /// Emitted when DragLeaveEvent is received for the main window.
     /** @param e Event. */
     void DragLeaveEvent(QDragLeaveEvent *e);
 
     /// Emitted when DragMoveEvent is received for the main window.
-    /** @param e Event. */
-    void DragMoveEvent(QDragMoveEvent *e);
+    /** @param e Event.
+        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget.
+    */
+    void DragMoveEvent(QDragMoveEvent *e, QGraphicsItem *widgetUnderMouse);
 
     /// Emitted when DropEvent is received for the main window.
-    /** @param e Event. */
-    void DropEvent(QDropEvent *e);
+    /** @param e Event.
+        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget.
+    */
+    void DropEvent(QDropEvent *e, QGraphicsItem *widgetUnderMouse);
 
 private:
     QImage *backBuffer;
