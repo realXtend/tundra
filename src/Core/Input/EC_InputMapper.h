@@ -104,7 +104,7 @@ public:
 
     /// Modifier mode for key events. Default true. If false, modifiers are not checked for key events
     Q_PROPERTY(bool modifiersEnabled READ getmodifiersEnabled WRITE setmodifiersEnabled)
-    DEFINE_QPROPERTY_ATTRIBUTE(int, modifiersEnabled);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, modifiersEnabled);
 
     /// Is the input mapper enabled
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
