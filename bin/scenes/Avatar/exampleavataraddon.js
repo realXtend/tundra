@@ -37,7 +37,7 @@ ExampleAvatarAddon.prototype.ClientInitialize = function()
         // If simpleavatar.js has not yet run, create the inputmapper here
         var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", 2, false);
         inputmapper.RegisterMapping("Q", "AddonWave()", 1); // 1 = Keypress
-        inputmapper.RegisterMapping("R", "AddonSit()", 1); // 1 = Keypress
+        inputmapper.RegisterMapping("E", "AddonSit()", 1); // 1 = Keypress
     }
 }
 
