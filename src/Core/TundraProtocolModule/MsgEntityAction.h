@@ -42,23 +42,19 @@ struct MsgEntityAction
 
 		inline size_t Size() const
 		{
-			/// @note dynamicCount = 16 to make the maximum lenght bigger. This is not updated to the TundraMessages.xml
-			/// but the EntityAction block from the xml has been commented out so these changed wont get reseted on next msg xml compile.
-			return 2 + parameter.size()*1;
+			return 1 + parameter.size()*1;
 		}
 
 		inline void SerializeTo(kNet::DataSerializer &dst) const
 		{
-			/// @note VLE param support is not yet in the kNet xml compiler. Manual code changes on the next line.
-			dst.AddVLE<kNet::VLE8_16_32>(parameter.size());
+			dst.Add<u8>(parameter.size());
 			if (parameter.size() > 0)
 				dst.AddArray<s8>(&parameter[0], parameter.size());
 		}
 
 		inline void DeserializeFrom(kNet::DataDeserializer &src)
 		{
-			/// @note VLE param support is not yet in the kNet xml compiler. Manual code changes on the next line.
-			parameter.resize(src.ReadVLE<kNet::VLE8_16_32>());
+			parameter.resize(src.Read<u8>());
 			if (parameter.size() > 0)
 				src.ReadArray<s8>(&parameter[0], parameter.size());
 		}
