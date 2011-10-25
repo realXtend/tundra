@@ -130,9 +130,6 @@ namespace OgreRenderer
         /// Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
-        /// Validates that the main camera is not null, if it is reset back to default empty camera.
-        void ValidateMainCamera();
-
         /// Returns currently active Ogre camera
         /** @note in case there is no active camera, will not return the default (dummy) camera, but 0 */
         Ogre::Camera* MainOgreCamera() const;
@@ -184,7 +181,7 @@ namespace OgreRenderer
 
         /// Prepare the config with needed default values if they are not there.
         void PrepareConfig();
-        
+
         /// Successfully initialized flag
         bool initialized_;
 
