@@ -917,20 +917,6 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             return;
 
         AssetReferenceList materials = meshMaterial.Get();
-        
-        // Make a copy, don't alter the existing list as there the indexes are important.
-        AssetReferenceList emptysRemoved(materials); 
-        emptysRemoved.RemoveEmpty();
-
-        // Reset materials that are now set as empty string
-        for(uint iCurrent=0; iCurrent<materialAssets.size(); ++iCurrent)
-        {
-            bool removeIndexMat = emptysRemoved.IsEmpty();
-            if (!removeIndexMat)
-                removeIndexMat = (materials.IsEmpty() || (iCurrent < materials.Size() && materials[iCurrent].ref.isEmpty()));
-            if (removeIndexMat && !GetMatName(iCurrent).isEmpty())
-                SetMaterial(iCurrent, QString(""));
-        }
 
         // Reallocate the number of material asset reflisteners.
         while(materialAssets.size() > (size_t)materials.Size())
