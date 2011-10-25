@@ -593,39 +593,34 @@ void EC_Mesh::RemoveAllAttachments()
     attachment_nodes_.clear();
 }
 
-bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
+bool EC_Mesh::SetMaterial(uint index, const QString& material_name)
 {
     if (!entity_)
     {
         // The mesh is not ready yet, track bending applies 
         // so we can apply it once OnMeshAssetLoaded() is called
-        pendingMaterialApplies[index] = QString::fromStdString(material_name);
+        pendingMaterialApplies[index] = material_name;
         return false;
     }
     
     if (index >= entity_->getNumSubEntities())
     {
-        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
+        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": illegal submesh index " + QString::number(index));
         return false;
     }
     
     try
     {
-        entity_->getSubEntity(index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name));
-        emit MaterialChanged(index, QString(material_name.c_str()));
+        entity_->getSubEntity(index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name.toStdString()));
+        emit MaterialChanged(index, material_name);
     }
     catch(Ogre::Exception& e)
     {
-        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": " + std::string(e.what()));
+        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": " + e.what());
         return false;
     }
     
     return true;
-}
-
-bool EC_Mesh::SetMaterial(uint index, const QString& material_name) 
-{
-    return SetMaterial(index, material_name.toStdString());
 }
 
 bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name)
@@ -917,6 +912,11 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             return;
 
         AssetReferenceList materials = meshMaterial.Get();
+
+        // Reset all the materials from the submeshes which now have an empty material asset reference set.
+        for(uint i = 0; i < GetNumMaterials(); ++i)
+            if (i >= materials.Size() || materials[i].ref.trimmed().isEmpty())
+                SetMaterial(i, "");
 
         // Reallocate the number of material asset reflisteners.
         while(materialAssets.size() > (size_t)materials.Size())

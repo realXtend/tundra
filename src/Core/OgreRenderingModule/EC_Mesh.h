@@ -199,9 +199,9 @@ public slots:
 
     /// Sets material in mesh
     /** @param index submesh index
-        @param material_name material name
+        @param material_name material name. Note that the material name must only contain ASCII characters! Even though
+            this string is a QString, Unicode or other character encodings are not supported by Ogre.
         @return true if successful */
-    bool SetMaterial(uint index, const std::string& material_name);
     bool SetMaterial(uint index, const QString& material_name);
 
     /// (Re)applies the currently set material refs to the currently set mesh ref.
