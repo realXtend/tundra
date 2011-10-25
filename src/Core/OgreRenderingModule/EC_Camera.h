@@ -223,6 +223,10 @@ private:
     /// detaches camera from placeable
     void DetachCamera();
 
+    /// Deletes the Ogre camera associated with this EC_Camera from the Ogre scene.
+    /// After calling this function, the internal camera_ pointer is null.
+    void DestroyOgreCamera();
+
     /// Perform a frustum query for visible entities
     void QueryVisibleEntities();
 

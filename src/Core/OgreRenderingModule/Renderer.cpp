@@ -822,13 +822,8 @@ namespace OgreRenderer
     
     Ogre::Camera *Renderer::MainOgreCamera() const
     {
-        Entity *entity = activeMainCamera.lock().get();
-        if (!entity)
-            return 0;
-        EC_Camera *camera = entity->GetComponent<EC_Camera>().get();
-        if (!camera)
-            return 0;
-        return camera->GetCamera();
+        Ogre::Viewport *mainViewport = MainViewport();
+        return mainViewport ? mainViewport->getCamera() : 0;
     }
 
     Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const

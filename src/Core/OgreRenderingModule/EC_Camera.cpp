@@ -67,21 +67,16 @@ EC_Camera::~EC_Camera()
     OgreWorldPtr world = world_.lock();
     
     DetachCamera();
+    DestroyOgreCamera();
 
-    if (camera_)
+    if (query_)
     {
-        Renderer *renderer = world->GetRenderer();
-        if (renderer->MainOgreCamera() == camera_)
-            renderer->SetMainCamera(0);
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
-        sceneMgr->destroyCamera(camera_);
-        camera_ = 0;
-        
-        if (query_)
-        {
+        Ogre::SceneManager *sceneMgr = world ? world->GetSceneManager() : 0;
+        if (sceneMgr)
             sceneMgr->destroyQuery(query_);
-            query_ = 0;
-        }
+        else
+            LogError("EC_Camera: failed to delete scene query object! SceneManager was null!");
+        query_ = 0;
     }
 
     // Release rendering texture if one has been created
@@ -301,6 +296,29 @@ void EC_Camera::AttachCamera()
     node->attachObject(camera_);
 
     attached_ = true;
+}
+
+void EC_Camera::DestroyOgreCamera()
+{
+    if (!camera_)
+        return;
+
+    OgreWorldPtr world = world_.lock();
+
+    Renderer *renderer = world ? world->GetRenderer() : 0;
+    // If this camera was the current camera, set the current camera to 0.
+    if (renderer && renderer->MainOgreCamera() == camera_)
+        renderer->SetMainCamera(0);
+
+    Ogre::SceneManager *sceneMgr = world ? world->GetSceneManager() : 0;
+    if (!sceneMgr)
+    {
+        LogError("EC_Camera: Cannot delete Ogre camera! Ogre SceneManager was null already!");
+        return;
+    }
+
+    sceneMgr->destroyCamera(camera_);
+    camera_ = 0;
 }
 
 Ray EC_Camera::GetMouseRay(float x, float y)
