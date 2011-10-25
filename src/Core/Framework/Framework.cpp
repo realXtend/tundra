@@ -133,15 +133,16 @@ Framework::Framework(int argc, char** argv) :
 
     PrintStartupOptions();
 
-    // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
-    /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
-    apiVersionInfo = new ApiVersionInfo(2, 1, 2, 0);
-    applicationVersionInfo = new ApplicationVersionInfo(2, 1, 2, 0, "realXtend", "Tundra");
+    /// @note Modify the line below if wanting to set custom API version.
+    apiVersionInfo = new ApiVersionInfo(Application::VersionCStr());
+    /// @note Modify Application.cpp if/when making a custom Tundra build.
+    applicationVersionInfo = new ApplicationVersionInfo(Application::OrganizationNameCStr(), Application::ApplicationNameCStr(), Application::VersionCStr());
 
     CommandLineParameterMap cmdLineDescs;
     ///\todo Make it possible for modules to know when "--help" command was issued and list the command line parameters they support.
     ///\todo Remove non-Framework parameters from the list below.
     cmdLineDescs.commands["--help"] = "Produce help message"; // Framework
+    cmdLineDescs.commands["--version"] = "Prints the version of application and exits immediately."; // main.cpp
     cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework & OgreRenderingModule
     cmdLineDescs.commands["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically"; //JavascriptModule
     cmdLineDescs.commands["--server"] = "Start Tundra server"; // TundraLogicModule

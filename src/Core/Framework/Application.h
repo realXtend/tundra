@@ -21,7 +21,9 @@ class Application : public QApplication
     Q_PROPERTY(QString installationDirectory READ InstallationDirectory)
     Q_PROPERTY(QString userDataDirectory READ UserDataDirectory)
     Q_PROPERTY(QString userDocumentsDirectory READ UserDocumentsDirectory)
+    Q_PROPERTY(QString organizationName READ OrganizationName)
     Q_PROPERTY(QString applicationName READ ApplicationName)
+    Q_PROPERTY(QString version READ Version)
 
 public:
     /// Construcs the application singleton.
@@ -39,10 +41,10 @@ public:
 
     /// Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
     static void Message(const std::string &title, const std::string &text);
-
-    /// Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
+    /// This is an overloaded function.
     static void Message(const std::wstring &title, const std::wstring &text);
 
+    /// Sets the current working directory. Use with caution.
     static void SetCurrentWorkingDirectory(QString newCwd);
 
     /// Returns the cwd of the current environment.
@@ -75,8 +77,20 @@ public:
     ///    $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString .
     static QString ParseWildCardFilename(const QString& input);
 
+    /// Return organization of application, e.g. "realXtend".
+    static QString OrganizationName();
+    /// Same as OrganizationName but without memory allocation. Required for generating minidumps on Windows.
+    static const char *OrganizationNameCStr();
+
     /// Returns name of the application, "Tundra" usually.
     static QString ApplicationName();
+    /// Same as ApplicationName but without memory allocation. Required for generating minidumps on Windows.
+    static const char *ApplicationNameCStr();
+
+    /// Returns version information of the application as string, e.g. "2.0.0".
+    static QString Version();
+    /// Same as Version but without memory allocation. Required for generating minidumps on Windows.
+    static const char *VersionCStr();
 
 public slots:
     void UpdateFrame();
@@ -95,18 +109,18 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 private:
-    QStringList GetQmFiles(const QDir &dir);
+    QStringList FindQmFiles(const QDir &dir);
     void InitializeSplash();
 
     Framework *framework;
     bool appActivated;
-
 #ifdef ENABLE_SPLASH_SCREEN
     QSplashScreen *splashScreen;
 #endif
     QTimer frameUpdateTimer;
     QTranslator *nativeTranslator;
     QTranslator *appTranslator;
-    static const QString applicationName;
+    static const char *organizationName;
+    static const char *applicationName;
+    static const char *version;
 };
-

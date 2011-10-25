@@ -27,6 +27,7 @@
 #include "UiAPI.h"
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
+#include "IAssetTypeFactory.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -115,7 +116,7 @@ void AssetTreeWidget::dropEvent(QDropEvent *e)
 
 void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 {
-    AssetTreeWidgetSelection sel = GetSelection();
+    AssetTreeWidgetSelection sel = SelectedItems();
     if (sel.HasAssets())
     {
         QMenu *deleteMenu = new QMenu(tr("Delete"), menu);
@@ -198,9 +199,9 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     }
 
     QAction *functionsAction = new QAction(tr("Functions..."), menu);
-    connect(functionsAction, SIGNAL(triggered()), this, SLOT(OpenFunctionDialog()));
+    connect(functionsAction, SIGNAL(triggered()), SLOT(OpenFunctionDialog()));
     menu->addAction(functionsAction);
-    // "Functions..." is disabled if we have both entities and components selected simultaneously.
+    // "Functions..." is disabled if we have both assets and storages selected simultaneously.
     if (sel.HasAssets() && sel.HasStorages())
         functionsAction->setDisabled(true);
 
@@ -211,6 +212,16 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     QAction *requestNewAssetAction = new QAction(tr("Request new asset..."), menu);
     connect(requestNewAssetAction, SIGNAL(triggered()), SLOT(RequestNewAsset()));
     menu->addAction(requestNewAssetAction);
+
+    QMenu *createMenu = new QMenu(tr("Create"), menu);
+    menu->addMenu(createMenu);
+    foreach(const AssetTypeFactoryPtr &factory, framework->Asset()->GetAssetTypeFactories())
+    {
+        QAction *createAsset = new QAction(factory->Type(), createMenu);
+        createAsset->setObjectName(factory->Type());
+        connect(createAsset, SIGNAL(triggered()), SLOT(CreateAsset()));
+        createMenu->addAction(createAsset);
+    }
 
     if (sel.storages.count() == 1)
     {
@@ -234,7 +245,7 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
 }
 
-AssetTreeWidgetSelection AssetTreeWidget::GetSelection() const
+AssetTreeWidgetSelection AssetTreeWidget::SelectedItems() const
 {
     AssetTreeWidgetSelection sel;
     foreach(QTreeWidgetItem *item, selectedItems())
@@ -259,7 +270,7 @@ void AssetTreeWidget::DeleteFromSource()
     // AssetAPI::DeleteAssetFromStorage() signals will start deletion of tree widget asset items:
     // Gather the asset refs to a separate list beforehand in order to prevent crash.
     QStringList assetRefs, assetsToBeDeleted;
-    foreach(AssetItem *item, GetSelection().assets)
+    foreach(AssetItem *item, SelectedItems().assets)
         if (item->Asset())
         {
             assetRefs << item->Asset()->Name();
@@ -283,42 +294,35 @@ void AssetTreeWidget::DeleteFromCache()
         LogError("Cannot delete asset from cache: Not running Tundra with an asset cache!");
         return;
     }
-    foreach(AssetItem *item, GetSelection().assets)
+    foreach(AssetItem *item, SelectedItems().assets)
         if (item->Asset())
             framework->Asset()->GetAssetCache()->DeleteAsset(item->Asset()->Name());
 }
 
 void AssetTreeWidget::Forget()
 {
-    foreach(AssetItem *item, GetSelection().assets)
+    foreach(AssetItem *item, SelectedItems().assets)
         if (item->Asset())
             framework->Asset()->ForgetAsset(item->Asset(), false);
 }
 
 void AssetTreeWidget::Unload()
 {
-    foreach(AssetItem *item, GetSelection().assets)
+    foreach(AssetItem *item, SelectedItems().assets)
         if (item->Asset())
-        {
             item->Asset()->Unload();
-            // Do not delete item, instead mark it as unloaded in AssetsWindow.
-            //QTreeWidgetItem *parent = item->parent();
-            //parent->removeChild(item);
-            //SAFE_DELETE(item);
-            ///\todo Preferably use the AssetDeleted() or similar signal from AssetAPI for deleting items.
-        }
 }
 
 void AssetTreeWidget::ReloadFromCache()
 {
-    foreach(AssetItem *item, GetSelection().assets)
+    foreach(AssetItem *item, SelectedItems().assets)
         if (item->Asset())
             item->Asset()->LoadFromCache();
 }
 
 void AssetTreeWidget::ReloadFromSource()
 {
-    foreach(AssetItem *item, GetSelection().assets)
+    foreach(AssetItem *item, SelectedItems().assets)
         if (item->Asset())
         {
             QString assetRef = item->Asset()->Name();
@@ -356,9 +360,20 @@ void AssetTreeWidget::RequestNewAsset()
     dialog->show();
 }
 
+void AssetTreeWidget::CreateAsset()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    assert(action);
+    if (!action)
+        return;
+    QString assetType = action->objectName();
+    QString assetName = framework->Asset()->GenerateUniqueAssetName(assetType, tr("New"));
+    framework->Asset()->CreateNewAsset(assetType, assetName);
+}
+
 void AssetTreeWidget::MakeDefaultStorage()
 {
-    AssetTreeWidgetSelection sel = GetSelection();
+    AssetTreeWidgetSelection sel = SelectedItems();
     if (sel.storages.size() == 1)
     {
         framework->Asset()->SetDefaultAssetStorage(sel.storages.first()->Storage());
@@ -373,7 +388,7 @@ void AssetTreeWidget::MakeDefaultStorage()
 
 void AssetTreeWidget::RemoveStorage()
 {
-    foreach(AssetStorageItem *item, GetSelection().storages)
+    foreach(AssetStorageItem *item, SelectedItems().storages)
     {
         //QString storageName = item->data(0, Qt::UserRole).toString();
         //framework->Asset()->RemoveAssetStorage(storageName);
@@ -400,14 +415,14 @@ void AssetTreeWidget::RequestNewAssetDialogClosed(int result)
 
 void AssetTreeWidget::CopyAssetRef()
 {
-    QList<AssetItem *> sel = GetSelection().assets;
+    QList<AssetItem *> sel = SelectedItems().assets;
     if (sel.size() == 1 && sel.first()->Asset())
         QApplication::clipboard()->setText(sel.first()->Asset()->Name());
 }
 
 void AssetTreeWidget::Export()
 {
-    QList<AssetItem *> sel = GetSelection().assets;
+    QList<AssetItem *> sel = SelectedItems().assets;
     if (sel.isEmpty())
         return;
 
@@ -425,7 +440,7 @@ void AssetTreeWidget::Export()
 
 void AssetTreeWidget::Clone()
 {
-    QList<AssetItem *> sel = GetSelection().assets;
+    QList<AssetItem *> sel = SelectedItems().assets;
     if (sel.isEmpty())
         return;
 
@@ -443,7 +458,7 @@ void AssetTreeWidget::CloneAssetDialogClosed(int result)
     if (result != QDialog::Accepted)
         return;
 
-    if (dialog->Asset().lock())
+    if (!dialog->Asset().expired())
         dialog->Asset().lock()->Clone(dialog->NewName());
 }
 
@@ -457,7 +472,7 @@ void AssetTreeWidget::SaveAssetDialogClosed(int result)
 
     QStringList files = dialog->selectedFiles();
 
-    QList<AssetItem *> sel = GetSelection().assets;
+    QList<AssetItem *> sel = SelectedItems().assets;
 
     bool isDir = QDir(files[0]).exists();
 
@@ -498,7 +513,7 @@ void AssetTreeWidget::Upload(const QStringList &files)
 
 void AssetTreeWidget::OpenFileLocation()
 {
-    QList<AssetItem *> selection = GetSelection().assets;
+    QList<AssetItem *> selection = SelectedItems().assets;
     if (selection.isEmpty() || selection.size() < 1)
         return;
 
@@ -513,7 +528,7 @@ void AssetTreeWidget::OpenFileLocation()
 
 void AssetTreeWidget::OpenInExternalEditor()
 {
-    QList<AssetItem *> selection = GetSelection().assets;
+    QList<AssetItem *> selection = SelectedItems().assets;
     if (selection.isEmpty() || selection.size() < 1)
         return;
 
@@ -525,22 +540,22 @@ void AssetTreeWidget::OpenInExternalEditor()
 
 void AssetTreeWidget::OpenFunctionDialog()
 {
-    AssetTreeWidgetSelection sel = GetSelection();
+    AssetTreeWidgetSelection sel = SelectedItems();
     if (sel.HasAssets() && sel.HasStorages())
         return;
 
     QObjectWeakPtrList objs;
     if (sel.HasAssets())
-        foreach(AssetItem *item, GetSelection().assets)
+        foreach(AssetItem *item, SelectedItems().assets)
             objs << boost::dynamic_pointer_cast<QObject>(item->Asset());
     else if (sel.HasStorages())
-        foreach(AssetStorageItem *item, GetSelection().storages)
+        foreach(AssetStorageItem *item, SelectedItems().storages)
             objs << boost::dynamic_pointer_cast<QObject>(item->Storage());
 
     if (objs.size())
     {
         FunctionDialog *d = new FunctionDialog(objs, this);
-        connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
+        connect(d, SIGNAL(finished(int)), SLOT(FunctionDialogFinished(int)));
         d->show();
     }
 }
@@ -567,7 +582,7 @@ void AssetTreeWidget::FunctionDialogFinished(int result)
     dialog->SetReturnValueText("");
 
     foreach(const QObjectWeakPtr &o, dialog->Objects())
-        if (o.lock())
+        if (!o.expired())
         {
             QObject *obj = o.lock().get();
 
@@ -582,8 +597,17 @@ void AssetTreeWidget::FunctionDialogFinished(int result)
             FunctionInvoker invoker;
             invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
 
+            QString retValStr;
+            ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
+            /// Convert it manually here.
+            if (ret.type() == QVariant::StringList)
+                foreach(QString s, ret.toStringList())
+                    retValStr.append("\n" + s);
+            else
+                retValStr = ret.toString();
+
             if (errorMsg.isEmpty())
-                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+                dialog->AppendReturnValueText(objNameWithId + ' ' + retValStr);
             else
                 dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
         }

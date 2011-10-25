@@ -5,6 +5,7 @@
 #include "Application.h"
 #include "Framework.h"
 #include "LoggingFunctions.h"
+#include "CoreDefines.h"
 
 #include <QDir>
 
@@ -95,7 +96,15 @@ int run(int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
-    // Initilizing prints
+    // Check for --version.
+    for(int i = 0; i < argc; ++i)
+        if (strcmp(argv[i], "--version") == 0)
+        {
+            LogInfo(Application::OrganizationName() + " " + Application::ApplicationName() + " " + Application::Version());
+            return return_value;
+        }
+
+    // Initialization prints
     LogInfo("Starting up Tundra.");
     LogInfo("* Working directory: " + QDir::currentPath());
 
@@ -224,14 +233,19 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     dumpGenerated = true;
 
     BOOL bMiniDumpSuccessful;
-    WCHAR szPath[MAX_PATH]; 
+    WCHAR szPath[MAX_PATH];
     WCHAR szFileName[MAX_PATH];
 
-    // Can't use Application for application name and version,
-    // since it might have not been initialized yet, or it might have caused 
-    // the exception in the first place
-    WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v2.1.2";
+    WCHAR szOrgName[MAX_PATH];
+    WCHAR szAppName[MAX_PATH];
+    WCHAR szVer[MAX_PATH];
+    // Note: all the following Application functions access static const char * variables so it's safe to call them.
+    MultiByteToWideChar(CP_ACP, 0, Application::OrganizationNameCStr(), -1, szOrgName, NUMELEMS(szOrgName));
+    MultiByteToWideChar(CP_ACP, 0, Application::ApplicationNameCStr(), -1, szAppName, NUMELEMS(szAppName));
+    MultiByteToWideChar(CP_ACP, 0, Application::VersionCStr(), -1, szVer, NUMELEMS(szVer));
+    WCHAR szVersion[MAX_PATH]; // Will contain "<AppName>_v<Version>".
+    StringCchPrintf(szVersion, MAX_PATH, L"%s_v%s", szAppName, szVer);
+
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
@@ -240,22 +254,22 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     GetLocalTime( &stLocalTime );
     GetTempPathW( dwBufferSize, szPath );
 
-    StringCchPrintf( szFileName, MAX_PATH, L"%s%s", szPath, szAppName );
-    CreateDirectoryW( szFileName, 0 );
-    StringCchPrintf( szFileName, MAX_PATH, L"%s%s\\%s-%04d%02d%02d-%02d%02d%02d-%ld-%ld.dmp", 
-               szPath, szAppName, szVersion, 
-               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
-               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
+    StringCchPrintf(szFileName, MAX_PATH, L"%s%s", szPath, szOrgName/*szAppName*/);
+    CreateDirectoryW(szFileName, 0);
+    StringCchPrintf(szFileName, MAX_PATH, L"%s%s\\%s-%04d%02d%02d-%02d%02d%02d-%ld-%ld.dmp",
+               szPath, szOrgName/*szAppName*/, szVersion,
+               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay,
+               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
                GetCurrentProcessId(), GetCurrentThreadId());
 
-    hDumpFile = CreateFileW(szFileName, GENERIC_READ|GENERIC_WRITE, 
+    hDumpFile = CreateFileW(szFileName, GENERIC_READ|GENERIC_WRITE,
                 FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
 
     ExpParam.ThreadId = GetCurrentThreadId();
     ExpParam.ExceptionPointers = pExceptionPointers;
     ExpParam.ClientPointers = TRUE;
 
-    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
+    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
                     hDumpFile, MiniDumpWithDataSegs, &ExpParam, 0, 0);
    
     std::wstring message(L"Program ");
