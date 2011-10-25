@@ -42,19 +42,25 @@ struct MsgEntityAction
 
 		inline size_t Size() const
 		{
-			return 1 + parameter.size()*1;
+            // This function has been manually modified, and not generated using the MessageCompiler tool.
+            // kNet does not support setting VLE fields as dynamicCount length fields.
+            return kNet::VLE8_16_32::GetEncodedBitLength(parameter.size()) / 8 + parameter.size()*1;
 		}
 
 		inline void SerializeTo(kNet::DataSerializer &dst) const
 		{
-			dst.Add<u8>(parameter.size());
+            // This function has been manually modified, and not generated using the MessageCompiler tool.
+            // kNet does not support setting VLE fields as dynamicCount length fields.
+			dst.AddVLE<kNet::VLE8_16_32>(parameter.size());
 			if (parameter.size() > 0)
 				dst.AddArray<s8>(&parameter[0], parameter.size());
 		}
 
 		inline void DeserializeFrom(kNet::DataDeserializer &src)
 		{
-			parameter.resize(src.Read<u8>());
+            // This function has been manually modified, and not generated using the MessageCompiler tool.
+            // kNet does not support setting VLE fields as dynamicCount length fields.
+			parameter.resize(src.ReadVLE<kNet::VLE8_16_32>());
 			if (parameter.size() > 0)
 				src.ReadArray<s8>(&parameter[0], parameter.size());
 		}
