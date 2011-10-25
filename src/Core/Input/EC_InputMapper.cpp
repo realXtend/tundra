@@ -194,7 +194,7 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
                 e->Suppress();
         }
     }
-    if (e->relativeZ != 0 && e->relativeZ != -1) // For some reason this is -1 without scroll
+    if (e->eventType == MouseEvent::MouseScroll && e->relativeZ != 0)
     {
         ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
         if (suppressMouseEvents.Get())
