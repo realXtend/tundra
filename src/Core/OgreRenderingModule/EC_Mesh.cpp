@@ -915,7 +915,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
 
         // Reset all the materials from the submeshes which now have an empty material asset reference set.
         for(uint i = 0; i < GetNumMaterials(); ++i)
-            if (i >= materials.Size() || materials[i].ref.trimmed().isEmpty())
+            if ((int)i >= materials.Size() || materials[i].ref.trimmed().isEmpty())
                 SetMaterial(i, "");
 
         // Reallocate the number of material asset reflisteners.
