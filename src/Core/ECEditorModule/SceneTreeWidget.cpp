@@ -207,7 +207,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
 {
     assert(menu);
 
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
 
     if (sel.HasAssets() && !sel.HasComponents() && !sel.HasEntities())
         AddAvailableAssetActions(menu);
@@ -219,7 +219,7 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
 {
     assert(menu);
 
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
 
     // Let other instances add their possible functionality.
     QList<QObject *> targets;
@@ -342,7 +342,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
 
     menu->addAction(newEntityAction);
 
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
 
     if (hasSelection)
     {
@@ -477,9 +477,9 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
 }
 
-Selection SceneTreeWidget::SelectedItems() const
+SceneTreeWidgetSelection SceneTreeWidget::SelectedItems() const
 {
-    Selection ret;
+    SceneTreeWidgetSelection ret;
     QListIterator<QTreeWidgetItem *> it(selectedItems());
     while(it.hasNext())
     {
@@ -506,7 +506,7 @@ Selection SceneTreeWidget::SelectedItems() const
 
 QString SceneTreeWidget::GetSelectionAsXml() const
 {
-    Selection selection = SelectedItems();
+    SceneTreeWidgetSelection selection = SelectedItems();
     if (selection.IsEmpty())
         return QString();
 
@@ -605,7 +605,7 @@ InvokeItem *SceneTreeWidget::FindMruItem()
 
 void SceneTreeWidget::Edit()
 {
-    Selection selection = SelectedItems();
+    SceneTreeWidgetSelection selection = SelectedItems();
     if (selection.IsEmpty())
         return;
 
@@ -660,7 +660,7 @@ void SceneTreeWidget::Edit()
 
 void SceneTreeWidget::EditInNew()
 {
-    Selection selection = SelectedItems();
+    SceneTreeWidgetSelection selection = SelectedItems();
     if (selection.IsEmpty())
         return;
 
@@ -685,7 +685,7 @@ void SceneTreeWidget::Rename()
     if (!index.isValid())
         return;
 
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.entities.size() == 1)
     {
         EntityItem *eItem = sel.entities[0];
@@ -792,7 +792,7 @@ void SceneTreeWidget::NewEntity()
 
 void SceneTreeWidget::NewComponent()
 {
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.IsEmpty())
         return;
 
@@ -852,7 +852,7 @@ void SceneTreeWidget::Delete()
     if (scene.expired())
         return;
 
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     // If we have components selected, remove them first.
     if (sel.HasComponents())
         foreach(ComponentItem *cItem, sel.components)
@@ -947,7 +947,7 @@ void SceneTreeWidget::SaveAs()
     if (fileDialog)
         fileDialog->close();
     fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
-        tr("Save Selection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
+        tr("Save SceneTreeWidgetSelection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
 }
 
 void SceneTreeWidget::SaveSceneAs()
@@ -1009,7 +1009,7 @@ void SceneTreeWidget::OpenEntityActionDialog()
     if (!action)
         return;
 
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.IsEmpty())
         return;
 
@@ -1076,7 +1076,7 @@ void SceneTreeWidget::OpenFunctionDialog()
     if (!action)
         return;
 
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.IsEmpty())
         return;
 
@@ -1228,7 +1228,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
     else
     {
         // Handle all other as binary.
-        Selection sel = SelectedItems();
+        SceneTreeWidgetSelection sel = SelectedItems();
         if (!sel.IsEmpty())
         {
             // Assume 4MB max for now
@@ -1312,7 +1312,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         return;
 
     QSet<QString> assets;
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (!sel.HasEntities())
     {
         // Export all assets
@@ -1440,7 +1440,7 @@ void SceneTreeWidget::InvokeActionTriggered()
     if (!action)
         return;
 
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.IsEmpty())
         return;
 
@@ -1519,7 +1519,7 @@ void SceneTreeWidget::InvokeActionTriggered()
 
 void SceneTreeWidget::SaveAssetAs()
 {
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     QString assetName;
 
     if (fileDialog)
@@ -1545,7 +1545,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         return;
 
     QStringList files = dialog->selectedFiles();
-    Selection sel = SelectedItems();
+    SceneTreeWidgetSelection sel = SelectedItems();
     
     bool isDir = QDir(files[0]).exists();
 

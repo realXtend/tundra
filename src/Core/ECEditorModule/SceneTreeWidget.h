@@ -24,7 +24,7 @@ class IAssetTransfer;
 class EntityItem;
 
 struct InvokeItem;
-struct Selection;
+struct SceneTreeWidgetSelection;
 
 /// Context menu for SceneTreeWidget.
 /// @cond PRIVATE
@@ -95,8 +95,8 @@ private:
     /** @param menu Context menu. */
     void AddAvailableEntityActions(QMenu *menu);
 
-    /// Returns selected items as Selection struct, which contains both selected entities and components.
-    Selection SelectedItems() const;
+    /// Returns selected items as SceneTreeWidgetSelection struct, which contains both selected entities and components.
+    SceneTreeWidgetSelection SelectedItems() const;
 
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
@@ -196,7 +196,7 @@ private slots:
     /** @param result Result of dialog finish. Close is 0, Execute and Close is 1, Execute is 2. */
     void FunctionDialogFinished(int result);
 
-    /// Called by "Save Selection" save file dialog when it's closed.
+    /// Called by "Save SceneTreeWidgetSelection" save file dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void SaveSelectionDialogClosed(int result);
 
