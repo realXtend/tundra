@@ -437,7 +437,7 @@ void IComponent::DeserializeFromBinary(kNet::DataDeserializer& source, Attribute
     u8 num_attributes = source.Read<u8>();
     if (num_attributes != NumAttributes())
     {
-        std::cout << "Wrong number of attributes in DeserializeFromBinary!" << std::endl;
+        LogError("Wrong number of attributes in DeserializeFromBinary!");
         return;
     }
     for(uint i = 0; i < attributes.size(); ++i)
