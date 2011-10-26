@@ -32,14 +32,20 @@
 #include <QGraphicsProxyWidget>
 #include <QApplication>
 #include <QPainter>
-#include <QMouseEvent>
 #include <QUuid>
+#include <QGraphicsSceneEvent>
+#include <QChildEvent>
+#include <QPaintEvent>
+#include <QMouseEvent>
 #include <QResizeEvent>
+
+#include <QDebug>
 
 EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
     IComponent(scene),
     uiRef(this, "UI ref", AssetReference("", "QtUiFile")),
     visible(this, "Visible", true),
+    acceptInput(this, "Accept Input", true),
     position(this, "Position", float3(0.0f, 0.0f, 0.0f)),
     ppm(this, "Pixels per meter", 300),
     cloneMaterialRef_("Ogre Media:LitTextured.material"),
@@ -93,6 +99,7 @@ EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
         widgetContainer_ = new QGraphicsView();
         widgetContainer_->setAttribute(Qt::WA_DontShowOnScreen, true);
         widgetContainer_->setMouseTracking(true);
+        widgetContainer_->installEventFilter(this);
 
         QGraphicsScene *scene = new QGraphicsScene(widgetContainer_);
         widgetContainer_->setScene(scene);
@@ -139,6 +146,8 @@ void EC_WidgetBillboard::Render()
 {
     if (rendering_)
         return;
+    if (!getvisible())
+        return;
 
     if (!renderTimer_.isActive())
         renderTimer_.start(10);
@@ -148,6 +157,8 @@ void EC_WidgetBillboard::Render()
 
 void EC_WidgetBillboard::RenderInternal()
 {
+    if (!getvisible())
+        return;
     if (!IsPrepared())
         return;
     if (!widget_)
@@ -345,7 +356,6 @@ void EC_WidgetBillboard::OnUiAssetLoaded(AssetPtr asset)
     emit WidgetReady(widget_.data());
 
     // Do not render this widget on the viewable desktop
-    // and install our event filter to update internal rendering.
     widget_->setAttribute(Qt::WA_DontShowOnScreen, true);
     widget_->setMouseTracking(true);
     widget_->installEventFilter(this);
@@ -368,24 +378,23 @@ void EC_WidgetBillboard::OnUiAssetLoadFailed(IAssetTransfer *transfer, QString r
 
 bool EC_WidgetBillboard::eventFilter(QObject *obj, QEvent *e)
 {
-    if ((widget_ && obj == widget_) &&
-        (e->type() == QEvent::Paint || 
-         e->type() == QEvent::Resize ||
-         e->type() == QEvent::UpdateRequest))
+    if (e->type() == QEvent::UpdateRequest || e->type() == QEvent::Show || e->type() == QEvent::Hide || e->type() == QEvent::Move ||
+        dynamic_cast<QPaintEvent*>(e) || dynamic_cast<QChildEvent*>(e) || dynamic_cast<QMouseEvent*>(e) || 
+        dynamic_cast<QGraphicsSceneEvent*>(e) || dynamic_cast<QHoverEvent*>(e))
     {
-        // Keep view/scene in sync with widget size
-        if (widgetContainer_ && e->type() == QEvent::Resize)
-        {
-            QResizeEvent *rEvent = dynamic_cast<QResizeEvent*>(e);
-            if (rEvent)
-            {
-                widgetContainer_->resize(rEvent->size());
-                widgetContainer_->setSceneRect(0, 0, rEvent->size().width(), rEvent->size().height());
-            }
-        }
-
         Render();
-        return true;
+    }
+
+    // Keep view/scene in sync with widget size
+    if (obj == widget_ && widgetContainer_ && e->type() == QEvent::Resize)
+    {
+        QResizeEvent *rEvent = dynamic_cast<QResizeEvent*>(e);
+        if (rEvent)
+        {
+            widgetContainer_->resize(rEvent->size());
+            widgetContainer_->setSceneRect(0, 0, rEvent->size().width(), rEvent->size().height());
+            Render();
+        }
     }
 
     return QObject::eventFilter(obj, e);
@@ -393,7 +402,9 @@ bool EC_WidgetBillboard::eventFilter(QObject *obj, QEvent *e)
 
 void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent)
 {
-    if (!IsPrepared() || !widget_ || !getvisible())
+    if (!getacceptInput() || !getvisible())
+        return;
+    if (!IsPrepared() || !widget_)
         return;
 
     MouseEvent::EventType et = mEvent->eventType;
@@ -403,8 +414,6 @@ void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent)
     if (mEvent->handled || mEvent->IsRightButtonDown())
         return;
     else if (et == MouseEvent::MouseScroll)
-        return;
-    else if ((et == MouseEvent::MousePressed || et == MouseEvent::MouseReleased) && mEvent->button != MouseEvent::LeftButton)
         return;
 
     bool hit;
@@ -431,7 +440,7 @@ void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent)
         return;
     }
     else
-        mEvent->handled = SendWidgetMouseEvent(widgetPos, type, Qt::LeftButton);
+        mEvent->handled = SendWidgetMouseEvent(widgetPos, type, (mEvent->button == MouseEvent::LeftButton ? Qt::LeftButton : Qt::RightButton));
 
     // For mouse release we need to send out a move event
     // so the ui gets updated correctly.
@@ -449,7 +458,9 @@ void EC_WidgetBillboard::RaycastBillboard(int mouseX, int mouseY, bool &hit, flo
 {
     hit = false;
     
-    if (!IsPrepared() || !widget_ || !getvisible() || !renderer_.get())
+    if (!getacceptInput() || !getvisible())
+        return;
+    if (!IsPrepared() || !widget_ || !renderer_.get())
         return;
 
     // Gather needed ptrs
@@ -531,7 +542,6 @@ bool EC_WidgetBillboard::SendWidgetMouseEvent(QPoint pos, QEvent::Type type, Qt:
     QMouseEvent qtEvent = QMouseEvent(type, pos, button, button, modifier);
     return QApplication::sendEvent(widgetContainer_->viewport(), &qtEvent);
 }
-
 
 void EC_WidgetBillboard::CheckWidgetMouseRelease()
 {
