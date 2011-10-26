@@ -96,7 +96,7 @@ private:
     void AddAvailableEntityActions(QMenu *menu);
 
     /// Returns selected items as Selection struct, which contains both selected entities and components.
-    Selection GetSelection() const;
+    Selection SelectedItems() const;
 
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
