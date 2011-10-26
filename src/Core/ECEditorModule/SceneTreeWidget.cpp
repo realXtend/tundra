@@ -353,24 +353,50 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         menu->addAction(toReplicatedAction);
         menu->addAction(temporaryAction);
 
-        // (Un)setting temporary property only possible if have only entities selected
+        // Altering temporary, local and replicated properties is only possible if we have only entities selected
         // and if all the entites have currently the same state.
         if (!sel.HasComponents() && sel.HasEntities() && sel.entities.first()->Entity())
         {
-            bool firstState = sel.entities.first()->Entity()->IsTemporary();
+            bool firstStateLocal = sel.entities.first()->Entity()->IsLocal();
+            bool firstStateReplicated = !firstStateLocal; // Entity is always either local or replicated.
+            bool localMismatch = false;
+            bool replicatedMismatch = false;
+            bool firstStateTemporary = sel.entities.first()->Entity()->IsTemporary();
             if (sel.entities.size() > 1)
+            {
                 for(uint i = 1; i < (uint)sel.entities.size(); ++i)
                     if (sel.entities[i]->Entity())
-                        if (firstState != sel.entities[i]->Entity()->IsTemporary())
+                        if (firstStateLocal != sel.entities[i]->Entity()->IsLocal())
+                        {
+                            toLocalAction->setDisabled(true);
+                            localMismatch = true;
+                            break;
+                        }
+                for(uint i = 1; i < (uint)sel.entities.size(); ++i)
+                    if (sel.entities[i]->Entity())
+                        if (firstStateReplicated != sel.entities[i]->Entity()->IsReplicated())
+                        {
+                            toReplicatedAction->setDisabled(true);
+                            replicatedMismatch = true;
+                            break;
+                        }
+                for(uint i = 1; i < (uint)sel.entities.size(); ++i)
+                    if (sel.entities[i]->Entity())
+                        if (firstStateTemporary != sel.entities[i]->Entity()->IsTemporary())
                         {
                             temporaryAction->setDisabled(true);
                             break;
                         }
+            }
 
-            temporaryAction->setChecked(firstState);
+            toLocalAction->setEnabled(localMismatch && replicatedMismatch ? false : !firstStateLocal);
+            toReplicatedAction->setEnabled(localMismatch && replicatedMismatch ? false : !firstStateReplicated);
+            temporaryAction->setChecked(firstStateTemporary);
         }
         else
         {
+            toLocalAction->setDisabled(true);
+            toReplicatedAction->setDisabled(true);
             temporaryAction->setDisabled(true);
         }
     }
