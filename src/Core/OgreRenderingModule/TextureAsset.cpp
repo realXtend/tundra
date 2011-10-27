@@ -278,7 +278,7 @@ void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 co
     ///\todo Could optimize a lot here, don't create this temporary vector.
     ///\todo This only works for 32bpp images.
     std::vector<u32> data(newWidth * newHeight, color);
-    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps, dynamic);
+    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps, dynamic, false);
 }
 
 void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps, bool dynamic, bool renderTarget)
@@ -398,5 +398,5 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
         painter.drawText(rect, flags, text);
     }
 
-    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps, dynamic);
+    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps, dynamic, false);
 }
