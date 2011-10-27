@@ -3,8 +3,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "Application.h"
-#include "VersionInfo.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
@@ -17,9 +15,6 @@
 #include "EC_RttTarget.h"
 #include "EC_SelectionBox.h"
 #include "EC_Material.h"
-#include "Entity.h"
-#include "Scene.h"
-#include "RendererSettings.h"
 #include "OgreWorld.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
@@ -27,17 +22,17 @@
 #include "OgreMaterialAsset.h"
 #include "TextureAsset.h"
 
+#include "Application.h"
+#include "VersionInfo.h"
+#include "Entity.h"
+#include "Scene.h"
 #include "AssetAPI.h"
 #include "AssetCache.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
 #include "ConsoleAPI.h"
-#include "ConfigAPI.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
-#include "Profiler.h"
-#include "UiAPI.h"
-#include "UiMainWindow.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -47,14 +42,12 @@ namespace OgreRenderer
 std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "CACHED_ASSETS_GROUP";
 
 OgreRenderingModule::OgreRenderingModule() : 
-    IModule("OgreRendering"), 
-    settingsWindow(0)
+    IModule("OgreRendering")
 {
 }
 
 OgreRenderingModule::~OgreRenderingModule()
 {
-    SAFE_DELETE(settingsWindow);
 }
 
 void OgreRenderingModule::Load()
@@ -92,22 +85,22 @@ void OgreRenderingModule::Load()
 
 void OgreRenderingModule::Initialize()
 {
-    std::string ogre_config_filename = Application::InstallationDirectory().toStdString() + "ogre.cfg"; ///\todo Unicode support!
+    std::string ogreConfigFilename = Application::InstallationDirectory().toStdString() + "ogre.cfg"; ///\todo Unicode support!
 #if defined (_WINDOWS) && (_DEBUG)
-    std::string plugins_filename = "pluginsd.cfg";
+    std::string pluginsFilename = "pluginsd.cfg";
 #elif defined (_WINDOWS)
-    std::string plugins_filename = "plugins.cfg";
+    std::string pluginsFilename = "plugins.cfg";
 #elif defined(__APPLE__)
-    std::string plugins_filename = "plugins-mac.cfg";
+    std::string pluginsFilename = "plugins-mac.cfg";
 #else
-    std::string plugins_filename = "plugins-unix.cfg";
+    std::string pluginsFilename = "plugins-unix.cfg";
 #endif
 
-    plugins_filename = Application::InstallationDirectory().toStdString() + plugins_filename; ///\todo Unicode support!
+    pluginsFilename = Application::InstallationDirectory().toStdString() + pluginsFilename; ///\todo Unicode support!
 
-    std::string window_title = framework_->ApplicationVersion()->GetFullIdentifier().toStdString();
+    std::string windowTitle = framework_->ApplicationVersion()->GetFullIdentifier().toStdString();
 
-    renderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
+    renderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogreConfigFilename, pluginsFilename, windowTitle));
     assert(renderer);
     assert(!renderer->IsInitialized());
 
@@ -152,28 +145,6 @@ void OgreRenderingModule::Uninitialize()
 
     // Clear up the renderer object, so that it will not be left dangling.
     framework_->RegisterRenderer(0);
-}
-
-void OgreRenderingModule::Update(f64 frametime)
-{
-    PROFILE(OgreRenderingModule_Update);
-}
-
-void OgreRenderingModule::ShowSettingsWindow()
-{
-    if (framework_->IsHeadless())
-        return;
-
-    if (settingsWindow)
-    {
-        settingsWindow->show();
-        return;
-    }
-
-    settingsWindow = new RendererSettingsWindow(framework_, framework_->Ui()->MainWindow());
-    settingsWindow->setWindowFlags(Qt::Tool);
-    settingsWindow->setAttribute(Qt::WA_DeleteOnClose);
-    settingsWindow->show();
 }
 
 void OgreRenderingModule::ConsoleStats()

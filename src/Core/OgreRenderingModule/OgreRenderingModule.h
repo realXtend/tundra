@@ -6,18 +6,14 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 
-#include <QPointer>
-
 namespace OgreRenderer
 {
-    class RendererSettingsWindow;
+    /** @defgroup OgreRenderingModuleClient OgreRenderingModule Client Interface
+        This page lists the public interface of the OgreRenderingModule.
 
-/** @defgroup OgreRenderingModuleClient OgreRenderingModule Client Interface
-    This page lists the public interface of the OgreRenderingModule.
+        For details on how to use the public interface, see \ref OgreRenderingModule "Using the Ogre renderer module"
 
-    For details on how to use the public interface, see \ref OgreRenderingModule "Using the Ogre renderer module"
-
-    @bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton. */
+        @bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton. */
 
     /// A renderer module using Ogre
     class OGRE_MODULE_API OgreRenderingModule : public IModule
@@ -31,7 +27,6 @@ namespace OgreRenderer
         virtual void Load();
         virtual void Initialize();
         virtual void Uninitialize();
-        virtual void Update(f64 frametime);
 
         /// Returns the renderer.
         RendererPtr GetRenderer() const { return renderer; }
@@ -40,9 +35,6 @@ namespace OgreRenderer
         static std::string CACHE_RESOURCE_GROUP;
 
     public slots:
-        /// Shows renderer settings window.
-        void ShowSettingsWindow();
-
         /// Prints renderer stats to console.
         void ConsoleStats();
 
@@ -52,11 +44,11 @@ namespace OgreRenderer
     private slots:
         /// New scene has been created
         void OnSceneAdded(const QString &name);
+
         /// Scene is about to be removed
         void OnSceneRemoved(const QString &name);
-    
+
     private:
         RendererPtr renderer;  ///< Renderer
-        QPointer<RendererSettingsWindow> settingsWindow; ///< Renderer settings window.
     };
 }

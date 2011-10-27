@@ -1,3 +1,6 @@
+// For conditions of distribution and use, see copyright notice in LICENSE.md
+
+// Implements basic menu bar for accessing common Tundra functionality and UIs.
 if (!framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
@@ -13,11 +16,11 @@ if (!framework.IsHeadless())
     var fileMenu = menu.addMenu("&File");
     if (framework.GetModuleByName("UpdateModule"))
         fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
-        
+
     var screenshotAct = fileMenu.addAction("Take Screenshot");
     screenshotAct.triggered.connect(TakeScreenshot);
     screenshotAct.enabled = false;
-    
+
     //fileMenu.addAction("New scene").triggered.connect(NewScene);
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
@@ -30,18 +33,13 @@ if (!framework.IsHeadless())
     }
     fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
-    
     var viewMenu = menu.addMenu("&View");
-    
 
     if (framework.GetModuleByName("SceneStructure"))
     {
         viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
         viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
     }
-
-//    if (framework.GetModuleByName("Console"))
-//        viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
 
     if (framework.GetModuleByName("ECEditor")) {
         viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
@@ -62,19 +60,18 @@ if (!framework.IsHeadless())
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
     // Settings
-    
-    var settingsMenu = menu.addMenu("&Settings");
-    
-    if (framework.GetModuleByName("MumbleVoip"))
-        settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
-
-    if (framework.GetModuleByName("OgreRendering"))
-        settingsMenu.addAction("Renderer Settings").triggered.connect(OpenRendererSettings);
-
-    if (framework.GetModuleByName("CAVEStereo"))
+    if (framework.GetModuleByName("MumbleVoip") || framework.GetModuleByName("CAVEStereo"))
     {
-        settingsMenu.addAction("Cave").triggered.connect(OpenCaveWindow);
-        settingsMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
+        var settingsMenu = menu.addMenu("&Settings");
+        // Set unique object name so that other scripts can query this menu.
+        settingsMenu.objectName = "SettingsMenu";
+        if (framework.GetModuleByName("MumbleVoip"))
+            settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
+        if (framework.GetModuleByName("CAVEStereo"))
+        {
+            settingsMenu.addAction("Cave").triggered.connect(OpenCaveWindow);
+            settingsMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
+        }
     }
 
     var helpMenu = menu.addMenu("&Help");
@@ -177,9 +174,5 @@ if (!framework.IsHeadless())
 
     function OpenCaveWindow() {
         framework.GetModuleByName("CAVEStereo").ShowCaveWindow();
-    }
-
-    function OpenRendererSettings() {
-        framework.GetModuleByName("OgreRendering").ShowSettingsWindow();
     }
 }

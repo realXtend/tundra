@@ -6,7 +6,7 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB UI_FILES *.ui)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES RenderWindow.h RendererSettings.h EC_*.h Renderer.h TextureAsset.h OgreMeshAsset.h
+file (GLOB MOC_FILES RenderWindow.h EC_*.h Renderer.h TextureAsset.h OgreMeshAsset.h
     OgreParticleAsset.h OgreSkeletonAsset.h OgreMaterialAsset.h OgreRenderingModule.h OgreWorld.h
     OgreMaterialProperties.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
@@ -27,7 +27,7 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 #add_definitions (-DUSE_NVIDIA_PERFHUD)
 
 use_package_assimp()
-use_core_modules (Framework Scene Input Ui Asset Console)
+use_core_modules (Framework Scene Ui Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
