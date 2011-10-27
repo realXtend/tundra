@@ -362,6 +362,12 @@ private:
     friend class ::IAttribute;
     friend class Entity;
     
+    /// This function is called by the base class (IComponent) to signal to the derived class that one or more
+    /// of its attributes have changed, and it should update its internal state accordingly.
+    /// The derived class can call IAttribute::ValueChanged() to query which attributes have changed value,
+    /// and after reacting to the change, call IAttribute::ClearChangedFlag().
+    virtual void AttributesChanged() {}
+
     /// Set component id. Called by Entity
     void SetNewId(component_id_t newId);
 };

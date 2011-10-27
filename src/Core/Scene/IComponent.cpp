@@ -69,11 +69,16 @@ void IComponent::SetNetworkSyncEnabled(bool enable)
     LogWarning("SetNetworkSyncEnabled called. This function is deprecated and does not do anything.");
 }
 
-void IComponent::SetUpdateMode(AttributeChange::Type defaultmode)
+void IComponent::SetUpdateMode(AttributeChange::Type defaultMode)
 {
     // Note: we can't allow default mode to be Default, because that would be meaningless
-    if (defaultmode != AttributeChange::Default)
-        updateMode = defaultmode;
+    if (defaultMode == AttributeChange::Disconnected || defaultMode == AttributeChange::LocalOnly ||
+        defaultMode == AttributeChange::Replicate)
+        updateMode = defaultMode;
+    else
+    {
+        LogWarning("IComponent::SetUpdateMode: Trying to set default update mode to an invalid value! (" + QString::number((int)defaultMode) + ")");
+    }
 }
 
 void IComponent::SetParentEntity(Entity* entity)
@@ -168,6 +173,12 @@ int IComponent::NumStaticAttributes() const
 
 IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change)
 {
+    // If this message should be sent with the default attribute change mode specified in the IComponent,
+    // take the change mode from this component.
+    if (change == AttributeChange::Default)
+        change = updateMode;
+    assert(change != AttributeChange::Default);
+
     IAttribute *attribute = SceneAPI::CreateAttribute(typeID, name);
     if(!attribute)
         return 0;
@@ -191,6 +202,12 @@ IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& nam
 
 void IComponent::RemoveAttribute(u8 index, AttributeChange::Type change)
 {
+    // If this message should be sent with the default attribute change mode specified in the IComponent,
+    // take the change mode from this component.
+    if (change == AttributeChange::Default)
+        change = updateMode;
+    assert(change != AttributeChange::Default);
+
     if (index < attributes.size() && attributes[index])
     {
         IAttribute* attr = attributes[index];
@@ -353,8 +370,12 @@ QString IComponent::ReadAttributeType(QDomElement& comp_element, const QString &
 
 void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
+    // If this message should be sent with the default attribute change mode specified in the IComponent,
+    // take the change mode from this component.
     if (change == AttributeChange::Default)
         change = updateMode;
+    assert(change != AttributeChange::Default);
+
     if (change == AttributeChange::Disconnected)
         return; // No signals
     
@@ -365,10 +386,24 @@ void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Ty
     
     // Trigger internal signal
     emit AttributeChanged(attribute, change);
+
+    // Tell the derived class that some attributes have changed.
+    AttributesChanged();
+    // After having notified the derived class, clear all change bits on all attributes,
+    // since the derived class has reacted on them. 
+    for(size_t i = 0; i < attributes.size(); ++i)
+        if (attributes[i])
+            attributes[i]->ClearChangedFlag();
 }
 
 void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeChange::Type change)
 {
+    // If this message should be sent with the default attribute change mode specified in the IComponent,
+    // take the change mode from this component.
+    if (change == AttributeChange::Default)
+        change = updateMode;
+    assert(change != AttributeChange::Default);
+
     if (change == AttributeChange::Disconnected)
         return; // No signals
 
@@ -409,6 +444,12 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     if (!BeginDeserialization(element))
         return;
 
+    // If this message should be sent with the default attribute change mode specified in the IComponent,
+    // take the change mode from this component.
+    if (change == AttributeChange::Default)
+        change = updateMode;
+    assert(change != AttributeChange::Default);
+
     // When we are deserializing the component from XML, only apply those attribute values which are present in that XML element.
     // For all other elements, use the current value in the attribute (if this is a newly allocated component, the current value
     // is the default value for that attribute specified in ctor. If this is an existing component, the DeserializeFrom can be 
@@ -447,6 +488,14 @@ void IComponent::DeserializeFromBinary(kNet::DataDeserializer& source, Attribute
 
 void IComponent::ComponentChanged(AttributeChange::Type change)
 {
+    // If this message should be sent with the default attribute change mode specified in the IComponent,
+    // take the change mode from this component.
+    if (change == AttributeChange::Default)
+        change = updateMode;
+
+    // We are signalling attribute changes, but the desired change type is saying "don't signal about changes".
+    assert(change != AttributeChange::Default && change != AttributeChange::Disconnected);
+
     for(uint i = 0; i < attributes.size(); ++i)
         if (attributes[i])
             EmitAttributeChanged(attributes[i], change);

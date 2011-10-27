@@ -45,7 +45,8 @@ IAttribute::IAttribute(IComponent* owner_, const char* name_) :
     metadata(0),
     dynamic(false),
     owner(0),
-    index(0)
+    index(0),
+    valueChanged(true)
 {
     if (owner_)
         owner_->AddAttribute(this);

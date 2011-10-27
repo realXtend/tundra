@@ -206,13 +206,10 @@ public slots:
 private slots:
     /// Redraws the hovering text with the current text, font and color.
     void Redraw();
-    void UpdateSignals();
-
-    /// Handles attribute updates.
-    void OnAttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:
-    
+    void AttributesChanged();
+
     /// Ogre world pointer.
     OgreWorldWeakPtr world_;
     
