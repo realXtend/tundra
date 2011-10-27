@@ -123,10 +123,10 @@ namespace OgreRenderer
         plugins_filename_(plugins),
         window_title_(window_title),
         renderWindow(0),
-        last_width_(0),
-        last_height_(0),
-        resized_dirty_(0),
-        view_distance_(500.0f),
+        lastWidth(0),
+        lastHeight(0),
+        resizedDirty(0),
+        viewDistance(500.0f),
         shadowQuality(Shadows_High),
         textureQuality(Texture_Normal)
     {
@@ -165,7 +165,7 @@ namespace OgreRenderer
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
         // View distance, as double to keep human readable and configurable
         if (!framework_->Config()->HasValue(configData, "view distance"))
-            framework_->Config()->Set(configData, "view distance", (double)view_distance_);
+            framework_->Config()->Set(configData, "view distance", (double)viewDistance);
         // Shadow quality
         if (!framework_->Config()->HasValue(configData, "shadow quality"))
             framework_->Config()->Set(configData, "shadow quality", 2);
@@ -232,7 +232,7 @@ namespace OgreRenderer
 #include "EnableMemoryLeakCheck.h"
 
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
-        view_distance_ = framework_->Config()->Get(configData, "view distance").toFloat();
+        viewDistance = framework_->Config()->Get(configData, "view distance").toFloat();
 
         // Load plugins
         QStringList loadedPlugins = LoadPlugins(plugins_filename_);
@@ -444,14 +444,14 @@ namespace OgreRenderer
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
 
-    int Renderer::GetWindowWidth() const
+    int Renderer::WindowWidth() const
     {
         if (renderWindow)
             return renderWindow->OgreRenderWindow()->getWidth();
         return 0;
     }
 
-    int Renderer::GetWindowHeight() const
+    int Renderer::WindowHeight() const
     {
         if (renderWindow)
             return renderWindow->OgreRenderWindow()->getHeight();
@@ -461,9 +461,9 @@ namespace OgreRenderer
     void Renderer::SetViewDistance(float distance)
     {
         /// @todo view distance not currently used for anything
-        view_distance_ = distance;
+        viewDistance = distance;
         // As double to keep human readable and configurable
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)view_distance_);
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)viewDistance);
     }
 
     void Renderer::DoFullUIRedraw()
@@ -554,13 +554,13 @@ namespace OgreRenderer
         }
         
         // If rendering into different size window, dirty the UI view for now & next frame
-        if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
+        if (lastWidth != WindowWidth() || lastHeight != WindowHeight())
         {
-            last_width_ = GetWindowWidth();
-            last_height_ = GetWindowHeight();
-            resized_dirty_ = 2;
+            lastWidth = WindowWidth();
+            lastHeight = WindowHeight();
+            resizedDirty = 2;
 #if 0
-            backBuffer = QImage(last_width_, last_height_, QImage::Format_ARGB32);
+            backBuffer = QImage(lastWidth, lastHeight, QImage::Format_ARGB32);
             backBuffer.fill(Qt::transparent);
 #endif
         }
@@ -569,13 +569,13 @@ namespace OgreRenderer
         assert(view);
 
 #ifdef DIRECTX_ENABLED
-        if (view->IsViewDirty() || resized_dirty_)
+        if (view->IsViewDirty() || resizedDirty)
         {
             PROFILE(Renderer_Render_QtBlit);
 
             QRectF dirtyRectangle = view->DirtyRectangle();
-            if (resized_dirty_ > 0)
-                dirtyRectangle = QRectF(0, 0, GetWindowWidth(), GetWindowHeight());
+            if (resizedDirty > 0)
+                dirtyRectangle = QRectF(0, 0, WindowWidth(), WindowHeight());
 
             QSize viewsize(view->viewport()->size());
             QRect viewrect(QPoint(0, 0), viewsize);
@@ -687,14 +687,14 @@ namespace OgreRenderer
             }
         }
 #else // Not using the subrectangle blit - just do a full UI blit.
-        if (view->IsViewDirty() || resized_dirty_)
+        if (view->IsViewDirty() || resizedDirty)
         {
             DoFullUIRedraw();
         }
 #endif
 
-        if (resized_dirty_ > 0)
-            resized_dirty_--;
+        if (resizedDirty > 0)
+            resizedDirty--;
         
 #ifdef PROFILING
         // Performance debugging: Toggle the UI overlay visibility based on a debug key.

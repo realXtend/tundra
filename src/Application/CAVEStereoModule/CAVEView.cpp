@@ -43,13 +43,13 @@ namespace CAVEStereo
     void CAVEView::Initialize(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
         assert(!renderer_.expired());
-        Initialize(name, renderer_.lock()->GetWindowWidth(), renderer_.lock()->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos); 
+        Initialize(name, renderer_.lock()->WindowWidth(), renderer_.lock()->WindowHeight(),top_left, bottom_left, bottom_right, eye_pos); 
     }
 
     void CAVEView::InitializePanorama(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int n)
     {
         assert(!renderer_.expired());
-        InitializePanorama(name, renderer_.lock()->GetWindowWidth(), renderer_.lock()->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos, n); 
+        InitializePanorama(name, renderer_.lock()->WindowWidth(), renderer_.lock()->WindowHeight(),top_left, bottom_left, bottom_right, eye_pos, n); 
     }
 
     void CAVEView::GetProjectionParameters( Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)

@@ -109,8 +109,8 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
     
     result_.entity = 0;
     
-    int width = renderer_->GetWindowWidth();
-    int height = renderer_->GetWindowHeight();
+    int width = renderer_->WindowWidth();
+    int height = renderer_->WindowHeight();
     if ((!width) || (!height))
         return &result_; // Headless
     Ogre::Camera* camera = VerifyCurrentSceneCamera();
@@ -233,8 +233,8 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
 
     QList<Entity*>l;
 
-    int width = renderer_->GetWindowWidth();
-    int height = renderer_->GetWindowHeight();
+    int width = renderer_->WindowWidth();
+    int height = renderer_->WindowHeight();
     if ((!width) || (!height))
         return l; // Headless
     Ogre::Camera* camera = VerifyCurrentSceneCamera();

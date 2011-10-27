@@ -605,7 +605,7 @@ QImage EC_Camera::ToQImage(bool renderUi)
         return QImage();
     }
 
-    QSize size(world.get()->GetRenderer()->GetWindowWidth(), world.get()->GetRenderer()->GetWindowHeight());
+    QSize size(world.get()->GetRenderer()->WindowWidth(), world.get()->GetRenderer()->WindowHeight());
     if (!UpdateRenderTexture(size, renderUi))
         return QImage();
 
@@ -635,7 +635,7 @@ Ogre::Image EC_Camera::ToOgreImage(bool renderUi)
         return Ogre::Image();
     }
 
-    QSize size(world.get()->GetRenderer()->GetWindowWidth(), world.get()->GetRenderer()->GetWindowHeight());
+    QSize size(world.get()->GetRenderer()->WindowWidth(), world.get()->GetRenderer()->WindowHeight());
     if (!UpdateRenderTexture(size, renderUi))
         return Ogre::Image();
 

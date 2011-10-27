@@ -98,12 +98,6 @@ namespace OgreRenderer
         /// Renders the screen. Advances Ogre's time internally by the frameTime specified
         virtual void Render(float frameTime);
 
-        /// Returns window width, or 0 if no render window
-        int GetWindowWidth() const;
-
-        /// Returns window height, or 0 if no render window
-        int GetWindowHeight() const;
-
         /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /** @param directory Directory path to add. */
         void AddResourceDirectory(const QString &directory);
@@ -134,11 +128,17 @@ namespace OgreRenderer
         /// Whenever the main camera is changed, the signal MainCameraChanged is triggered.
         void SetMainCamera(Entity *mainCameraEntity);
 
+        /// Returns window width, or 0 if no render window
+        int WindowWidth() const;
+
+        /// Returns window height, or 0 if no render window
+        int WindowHeight() const;
+
         /// Set maximum view distance.
         virtual void SetViewDistance(float distance);
 
         /// Returns maximum view distance.
-        virtual float ViewDistance()const { return view_distance_; }
+        virtual float ViewDistance()const { return viewDistance; }
 
         /// Toggles fullscreen
         void SetFullScreen(bool value);
@@ -211,7 +211,7 @@ namespace OgreRenderer
         Ogre::Viewport *mainViewport;
 
         /// Maximum view distance
-        float view_distance_;
+        float viewDistance;
 
         /// Dummy scenemanager when we have no scene
         Ogre::SceneManager* defaultScene_;
@@ -241,13 +241,12 @@ namespace OgreRenderer
 
         /// handler for post-processing effects
         CompositionHandler *compositionHandler;
-        
-        /// last width/height
-        int last_height_;
-        int last_width_;
+
+        int lastHeight; ///< Last render window height
+        int lastWidth; ///< Last render window width
 
         /// resized dirty count
-        int resized_dirty_;
+        int resizedDirty;
 
         /// Shadow quality
         ShadowQualitySetting shadowQuality;
