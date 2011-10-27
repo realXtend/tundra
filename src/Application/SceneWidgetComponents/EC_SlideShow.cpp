@@ -44,7 +44,8 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
     enabled(this, "Enabled", true),
     interactive(this, "Interactive", false),
     illuminating(this, "Illuminating", true),
-    isServer_(false)
+    isServer_(false),
+    appliedListener_(0)
 {
     static AttributeMetadata zeroIndexMetadata;
     static AttributeMetadata slideIndexMetadata;
@@ -91,6 +92,9 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
         connect(&resizeRenderTimer_, SIGNAL(timeout()), SLOT(ResizeTimeout()), Qt::UniqueConnection);
         connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(WindowResized()), Qt::UniqueConnection);
     }
+
+    // Monitor unloaded assets from AssetAPI
+    connect(framework->Asset(), SIGNAL(AssetAboutToBeRemoved(AssetPtr)), SLOT(AssetRemoved(AssetPtr)));
 }
 
 EC_SlideShow::~EC_SlideShow()
@@ -143,12 +147,13 @@ void EC_SlideShow::ShowSlide(int index)
 
         // Find the correct texture for this slide
         int textureIndex = listener->property("slideIndex").toInt();
+        if (textureIndex != index)
+            continue;
         QString textureRef = listener->property("textureRef").toString();
         bool tranferFailed = listener->property("transferFailed").toBool();
         bool isEmpty = listener->property("isEmpty").toBool();
         bool isTexture = listener->property("isTexture").toBool();
-        if (textureIndex != index)
-            continue;
+        bool isRequested = listener->property("isRequested").toBool();
 
         // Empty ref
         if (isEmpty)
@@ -162,6 +167,14 @@ void EC_SlideShow::ShowSlide(int index)
         {
             QImage img = DrawMessageTexture(QString("Slide %1 reference is not a texture").arg(index), true);
             canvas->Update(img);
+            return;
+        }
+        // Not requested yet
+        if (!isRequested)
+        {
+            listener->setProperty("isRequested", true);
+            listener->setProperty("transferFailed", false);
+            listener->HandleAssetRefChange(framework->Asset(), textureRef, "Texture");
             return;
         }
         // Asset is null, but transfer has not failed. Wait.
@@ -178,7 +191,7 @@ void EC_SlideShow::ShowSlide(int index)
             canvas->Update(img);
             return;
         }
-        // Here is has just failed, the above ones should cover this situation.
+        // The above ones should always cover this situation.
         if (!listener->Asset().get())
             return;
         if (!listener->Asset()->IsLoaded())
@@ -192,14 +205,38 @@ void EC_SlideShow::ShowSlide(int index)
         TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(listener->Asset().get());
         if (!textureAsset)
         {
-            LogWarning("EC_SlideShow: My slide assets list seems to have non 'Texture' type asset reference! " + listener->Asset()->Name());
-            continue;
+            // If the asset has been loaded with != "Texture" type but is infact texture when the ref
+            // is looked up something has loaded this with improper type before it was set to this SlideShow.
+            // We can easily fix this situation by forgetting the non "Texture" AssetPtr and fetching it again.
+            // In fact we know the type is "Texture" if we got this far in the check chain!
+            if (framework->Asset()->GetResourceTypeFromAssetRef(textureRef) == "Texture")
+            {
+                framework->Asset()->ForgetAsset(textureRef, false);
+                listener->setProperty("isRequested", true);
+                listener->setProperty("transferFailed", false);
+                listener->HandleAssetRefChange(framework->Asset(), textureRef, "Texture");
+            }
+            else
+                LogWarning("EC_SlideShow: My slide assets list seems to have non 'Texture' type asset reference! " + listener->Asset()->Name());
+            return;
         }
         
         const QString ogreTextureName = textureAsset->ogreAssetName;
         Ogre::TextureUnitState *textureUnit = GetRenderTextureUnit();
         if (textureUnit)
+        {
             textureUnit->setTextureName(ogreTextureName.toStdString());
+
+            // Unload previously set texture from asset system and Ogre to save memory.
+            // We don't remove the disk source so its fast to load back.
+            if (appliedListener_ && appliedListener_->Asset().get())
+            {
+                framework->Asset()->ForgetAsset(appliedListener_->Asset()->Name(), false);
+                appliedListener_->setProperty("isRequested", false);
+                appliedListener_->setProperty("transferFailed", false);
+            }
+            appliedListener_ = listener;
+        }
         break;
     }
 }
@@ -413,6 +450,28 @@ void EC_SlideShow::TextureLoadFailed(IAssetTransfer *transfer, QString reason)
     }
 }
 
+void EC_SlideShow::AssetRemoved(AssetPtr asset)
+{
+    QString assetRef = asset->Name();
+    
+    // We are only interested in texture typed assets
+    if (framework->Asset()->GetResourceTypeFromAssetRef(assetRef) != "Texture")
+        return;
+    
+    foreach(AssetRefListener *listener, assetListeners_)
+    {
+        if (!listener)
+            continue;
+
+        QString textureRef = listener->property("textureRef").toString();
+        if (textureRef == assetRef)
+        {
+            listener->setProperty("isRequested", false);
+            listener->setProperty("transferFailed", false);
+        }
+    }
+}
+
 bool EC_SlideShow::IsPrepared()
 {
     if (framework->IsHeadless())
@@ -516,6 +575,7 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
             listener->setProperty("slideIndex", i);
             listener->setProperty("transferFailed", false);
             listener->setProperty("textureRef", slideRef);
+            listener->setProperty("isRequested", false);
             listener->setProperty("isEmpty", false);
             listener->setProperty("isTexture", true);
             assetListeners_.append(listener);
@@ -534,8 +594,12 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
             connect(listener, SIGNAL(Loaded(AssetPtr)), SLOT(TextureLoaded(AssetPtr)));
             connect(listener, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(TextureLoadFailed(IAssetTransfer*, QString)));
             
-            // Request the asset
-            listener->HandleAssetRefChange(framework->Asset(), slideRef, "Texture");
+            // Request the asset only for the current index
+            if (i == getcurrentSlideIndex())
+            {
+                listener->setProperty("isRequested", true);
+                listener->HandleAssetRefChange(framework->Asset(), slideRef, "Texture");
+            }
         }
     }
     else if (attribute == &slideChangeInterval)

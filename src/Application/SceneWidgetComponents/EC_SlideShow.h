@@ -102,6 +102,9 @@ private slots:
     /// One of our listeners is signaling asset transfer failed.
     void TextureLoadFailed(IAssetTransfer *transfer, QString reason);
 
+    /// Handle AssetAPI forget asset signals.
+    void AssetRemoved(AssetPtr asset);
+
     /// Draws a message texture. Used for info and error textures in the 3D object.    
     QImage DrawMessageTexture(QString message, bool error = false);
 
@@ -151,6 +154,8 @@ private:
 
     /// Asset reference listeners for our presentation slides.
     QList<AssetRefListener*> assetListeners_;
+
+    AssetRefListener *appliedListener_;
 
     /// If we are on a server or client.
     bool isServer_;
