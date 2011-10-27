@@ -55,6 +55,8 @@ private:
         int length;
         /// Stores a parsed/sanitized version of the assetRef, to be fed to the AssetAPI for retrieval.
         QString parsedRef;
+        /// Asset type
+        QString type;
     };
 
     /// Stores the found asset refs in the .ui file.

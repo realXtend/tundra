@@ -75,6 +75,13 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool 
             ref.parsedRef = std::string(r[3].first, r[3].second).c_str();
             ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
             ref.parsedRef = assetAPI->ResolveAssetRef(Name(), ref.parsedRef);
+            ref.type = AssetAPI::GetResourceTypeFromAssetRef(ref.parsedRef);
+
+            // Check if AssetAPI has previous knowledge of this ref (eg via storage auto discovery),
+            // if not we enforce "Texture" type to "Binary" so its not unnecessarily loaded to Ogre
+            if (ref.type == "Texture" && !assetAPI->GetAsset(ref.parsedRef).get())
+                ref.type = "Binary";
+
             refs.push_back(ref);
             start = r[0].second;
         }
@@ -98,6 +105,13 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool 
             ref.parsedRef = std::string(r[3].first, r[3].second).c_str();
             ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
             ref.parsedRef = assetAPI->ResolveAssetRef(Name(), ref.parsedRef);
+            ref.type = AssetAPI::GetResourceTypeFromAssetRef(ref.parsedRef);
+
+            // Check if AssetAPI has previous knowledge of this ref (eg via storage auto discovery),
+            // if not we enforce "Texture" type to "Binary" so its not unnecessarily loaded to Ogre
+            if (ref.type == "Texture" && !assetAPI->GetAsset(ref.parsedRef).get())
+                ref.type = "Binary";
+
             refs.push_back(ref);
             start = r[0].second;
         }
@@ -126,9 +140,8 @@ void QtUiAsset::DoUnload()
 std::vector<AssetReference> QtUiAsset::FindReferences() const
 {
     std::vector<AssetReference> assetRefs;
-    
     for(size_t i = 0; i < refs.size(); ++i)
-        assetRefs.push_back(AssetReference(refs[i].parsedRef));
+        assetRefs.push_back(AssetReference(refs[i].parsedRef, refs[i].type));
     return assetRefs;
 }
 
