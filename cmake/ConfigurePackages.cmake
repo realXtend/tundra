@@ -252,6 +252,12 @@ macro (configure_theora)
     sagase_configure_report (THEORA)
 endmacro (configure_theora)
 
+macro (configure_sparkle)
+    FIND_LIBRARY (SPARKLE_LIBRARY NAMES Sparkle)
+    set (SPARKLE_INCLUDE_DIRS ${SPARKLE_LIBRARY}/Headers)
+    set (SPARKLE_LIBRARIES ${SPARKLE_LIBRARY})
+endmacro (configure_sparkle)
+
 macro(use_package_knet)
     message ("** Configuring KNET")
     
