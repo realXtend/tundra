@@ -289,10 +289,10 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
             return false;
         }
         
-        ShadowQuality shadowquality_ = Shadows_High; ///\todo Regression. Read this ahead of time.
+        Renderer::ShadowQualitySetting shadowQuality = Renderer::Shadows_High; ///\todo Regression. Read this ahead of time.
 
         //workaround: if receives shadows, check the amount of shadowmaps. If only 1 specified, add 2 more to support 3 shadowmaps
-        if(ogreMaterial->getReceiveShadows() && shadowquality_ == Shadows_High && ogreMaterial->getNumTechniques() > 0)
+        if(ogreMaterial->getReceiveShadows() && shadowQuality == Renderer::Shadows_High && ogreMaterial->getNumTechniques() > 0)
         {
             Ogre::Technique *tech = ogreMaterial->getTechnique(0);
             if(tech)
@@ -311,7 +311,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
                             shadowmaps++;
                         }
                     }
-                    if(shadowmaps>0 && shadowmaps<3)
+                    if (shadowmaps > 0 && shadowmaps < 3)
                     {
                         Ogre::TextureUnitState* sm2 = pass->createTextureUnitState();
                         sm2->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);

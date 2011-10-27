@@ -391,8 +391,8 @@ void OgreWorld::SetupShadows()
         sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
         return;
 #else
-    OgreRenderer::ShadowQuality quality = renderer_->GetShadowQuality();
-    bool using_pssm = (quality == OgreRenderer::Shadows_High);
+    OgreRenderer::Renderer::ShadowQualitySetting quality = renderer_->ShadowQuality();
+    bool using_pssm = (quality == OgreRenderer::Renderer::Shadows_High);
     bool soft_shadow = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow").toBool();
     
     //unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  */
@@ -414,7 +414,7 @@ void OgreWorld::SetupShadows()
     // for skinned/nonskinned geometry.
     std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
     
-    if (quality == OgreRenderer::Shadows_Off)
+    if (quality == OgreRenderer::Renderer::Shadows_Off)
     {
         sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
         return;

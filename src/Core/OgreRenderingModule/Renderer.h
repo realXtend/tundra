@@ -22,98 +22,27 @@ class Framework;
 
 namespace OgreRenderer
 {
-    /// Shadow quality settings
-    enum ShadowQuality
-    {
-        Shadows_Off = 0, ///< Off
-        Shadows_Low, ///< One focused shadow map
-        Shadows_High ///< PSSM, Direct3D only
-    };
-
-    /// Texture quality settings
-    enum TextureQuality
-    {
-        Texture_Low = 0, ///< Halved resolution
-        Texture_Normal ///< Normal
-    };
-
     class OgreLogListener;
 
     /// Ogre renderer
     /** Created by OgreRenderingModule. Implements the IRenderer.
-        \ingroup OgreRenderingModuleClient */
+        @ingroup OgreRenderingModuleClient */
     class OGRE_MODULE_API Renderer : public QObject, public IRenderer
     {
         Q_OBJECT
-
-    public slots:
-        /// Renders the screen. Advances Ogre's time internally by the frameTime specified
-        virtual void Render(float frameTime);
-
-        /// Returns window width, or 0 if no render window
-        int GetWindowWidth() const;
-
-        /// Returns window height, or 0 if no render window
-        int GetWindowHeight() const;
-
-        /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
-        /** @param directory Directory path to add. */
-        void AddResourceDirectory(const QString &directory);
-
-        /// Toggles fullscreen
-        void SetFullScreen(bool value);
-
-        /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
-        void DoFullUIRedraw();
-
-        /// Do raycast into the currently active world from viewport coordinates, using all selection layers
-        /// \todo This function is deprecated. You should use the OgreWorld::Raycast function instead.
-        /** The coordinates are a position in the render window, not scaled to [0,1].
-            @param x Horizontal position for the origin of the ray
-            @param y Vertical position for the origin of the ray
-            @return Raycast result structure */
-        virtual RaycastResult* Raycast(int x, int y);
-
-        /// Returns the Entity which contains the currently active camera that is used to render on the main window.
-        /// The returned Entity is guaranteed to have an EC_Camera component, and it is guaranteed to be attached to a scene.
-        Entity *MainCamera();
-
-        /// Returns the EC_Camera of the main camera, or 0 if no main camera is active.
-        EC_Camera *MainCameraComponent();
-
-        /// Returns the Scene the current active main camera is in, or 0 if no main camera is active.
-        Scene *MainCameraScene();
-
-        /// Sets the given Entity as the main camera for the main window.
-        /// This function fails if the given Entity does not have an EC_Camera component, or if the given Entity is not attached to a scene.
-        /// Whenever the main camera is changed, the signal MainCameraChanged is triggered.
-        void SetMainCamera(Entity *mainCameraEntity);
-
-    signals:
-        /// Emitted every time the main window active camera changes.
-        /// The pointer specified in this signal may be null, if the main camera was set to null.
-        /// If the specified entity is non-zero, it is guaranteed to have an EC_Camera component, and it is attached to some scene.
-        void MainCameraChanged(Entity *newMainWindowCamera);
+        Q_ENUMS(ShadowQualitySetting)
+        Q_ENUMS(TextureQualitySetting)
 
     public:
         /// Constructor
         /** @param framework Framework pointer.
-            @param config Config filename.
-            @param plugins Plugins filename.
-            @param window_title Renderer window title. */
-        Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title);
+            @param configFile Config filename.
+            @param pluginsFile Plugins filename.
+            @param windowTitle Renderer window title. */
+        Renderer(Framework* framework, const std::string& configFile, const std::string& pluginsFile, const std::string& windowTitle);
 
         /// Destructor
         virtual ~Renderer();
-
-        /// set maximum view distance
-        virtual void SetViewDistance(float distance);
-
-        /// get maximum view distance
-        virtual float ViewDistance()const { return view_distance_; }
-
-        ///Is window fullscreen?
-        bool IsFullScreen() const;
 
         /// Returns framework
         Framework* GetFramework() const { return framework_; }
@@ -147,19 +76,95 @@ namespace OgreRenderer
         /// returns the composition handler responsible of the post-processing effects
         CompositionHandler *GetCompositionHandler() const { return compositionHandler; }
 
-        /// Returns shadow quality
-        ShadowQuality GetShadowQuality() const { return shadowquality_; }
+        /// Returns RenderWindow used to display the 3D scene in.
+        RenderWindow *GetRenderWindow() const { return renderWindow; }
 
-        /// Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
-        void SetShadowQuality(ShadowQuality newquality);
+        /// Shadow quality settings
+        enum ShadowQualitySetting
+        {
+            Shadows_Off = 0, ///< Off
+            Shadows_Low, ///< One focused shadow map
+            Shadows_High ///< PSSM, Direct3D only
+        };
+
+        /// Texture quality settings
+        enum TextureQualitySetting
+        {
+            Texture_Low = 0, ///< Halved resolution
+            Texture_Normal ///< Normal
+        };
+
+    public slots:
+        /// Renders the screen. Advances Ogre's time internally by the frameTime specified
+        virtual void Render(float frameTime);
+
+        /// Returns window width, or 0 if no render window
+        int GetWindowWidth() const;
+
+        /// Returns window height, or 0 if no render window
+        int GetWindowHeight() const;
+
+        /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
+        /** @param directory Directory path to add. */
+        void AddResourceDirectory(const QString &directory);
+
+        /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
+        void DoFullUIRedraw();
+
+        /// Do raycast into the currently active world from viewport coordinates, using all selection layers
+        /// \todo This function is deprecated. You should use the OgreWorld::Raycast function instead.
+        /** The coordinates are a position in the render window, not scaled to [0,1].
+            @param x Horizontal position for the origin of the ray
+            @param y Vertical position for the origin of the ray
+            @return Raycast result structure */
+        virtual RaycastResult* Raycast(int x, int y);
+
+        /// Returns the Entity which contains the currently active camera that is used to render on the main window.
+        /// The returned Entity is guaranteed to have an EC_Camera component, and it is guaranteed to be attached to a scene.
+        Entity *MainCamera();
+
+        /// Returns the EC_Camera of the main camera, or 0 if no main camera is active.
+        EC_Camera *MainCameraComponent();
+
+        /// Returns the Scene the current active main camera is in, or 0 if no main camera is active.
+        Scene *MainCameraScene();
+
+        /// Sets the given Entity as the main camera for the main window.
+        /// This function fails if the given Entity does not have an EC_Camera component, or if the given Entity is not attached to a scene.
+        /// Whenever the main camera is changed, the signal MainCameraChanged is triggered.
+        void SetMainCamera(Entity *mainCameraEntity);
+
+        /// Set maximum view distance.
+        virtual void SetViewDistance(float distance);
+
+        /// Returns maximum view distance.
+        virtual float ViewDistance()const { return view_distance_; }
+
+        /// Toggles fullscreen
+        void SetFullScreen(bool value);
+
+        /// Is window fullscreen?
+        bool IsFullScreen() const;
+
+        /// Sets shadow quality.
+        /** @note Changes need application restart to take effect due to Ogre resource system */
+        void SetShadowQuality(ShadowQualitySetting newquality);
+
+        /// Returns shadow quality
+        ShadowQualitySetting ShadowQuality() const { return shadowQuality; }
+
+        /// Sets texture quality.
+        /** @note Changes need application restart to take effect */
+        void SetTextureQuality(TextureQualitySetting newquality);
 
         /// Returns texture quality
-        TextureQuality GetTextureQuality() const { return texturequality_; }
+        TextureQualitySetting TextureQuality() const { return textureQuality; }
 
-        /// Sets texture quality. Note: changes need viewer restart to take effect
-        void SetTextureQuality(TextureQuality newquality);
-
-        RenderWindow *GetRenderWindow() const { return renderWindow; }
+    signals:
+        /// Emitted every time the main window active camera changes.
+        /// The pointer specified in this signal may be null, if the main camera was set to null.
+        /// If the specified entity is non-zero, it is guaranteed to have an EC_Camera component, and it is attached to some scene.
+        void MainCameraChanged(Entity *newMainWindowCamera);
 
     private slots:
         /// Embeds the Renderer types to the given script engine.
@@ -245,10 +250,10 @@ namespace OgreRenderer
         int resized_dirty_;
 
         /// Shadow quality
-        ShadowQuality shadowquality_;
+        ShadowQualitySetting shadowQuality;
 
         /// Texture quality
-        TextureQuality texturequality_;
+        TextureQualitySetting textureQuality;
 
         /// Stores the wall clock time that specifies when the last frame was displayed.
         tick_t lastPresentTime;

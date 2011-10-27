@@ -64,14 +64,14 @@ RendererSettingsWindow::RendererSettingsWindow(Framework* fw, QWidget *parent) :
     QComboBox* combo = settings_widget_->findChild<QComboBox*>("combo_shadows");
     if (combo)
     {
-        combo->setCurrentIndex((int)renderer->GetShadowQuality());
+        combo->setCurrentIndex((int)renderer->ShadowQuality());
         connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(ShadowQualityChanged(int)));
     }
     
     combo = settings_widget_->findChild<QComboBox*>("combo_texture");
     if (combo)
     {
-        combo->setCurrentIndex((int)renderer->GetTextureQuality());
+        combo->setCurrentIndex((int)renderer->TextureQuality());
         connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(TextureQualityChanged(int)));
     }
 
@@ -122,7 +122,7 @@ void RendererSettingsWindow::ShadowQualityChanged(int value)
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
-    renderer->SetShadowQuality((ShadowQuality)value);
+    renderer->SetShadowQuality((Renderer::ShadowQualitySetting)value);
     QLabel* restart_text = settings_widget_->findChild<QLabel*>("label_restartmessage");
     if (restart_text)
         restart_text->setText(tr("Setting will take effect after viewer restart."));
@@ -136,7 +136,7 @@ void RendererSettingsWindow::TextureQualityChanged(int value)
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
-    renderer->SetTextureQuality((TextureQuality)value);
+    renderer->SetTextureQuality((Renderer::TextureQualitySetting)value);
     QLabel* restart_text = settings_widget_->findChild<QLabel*>("label_restartmessage");
     if (restart_text)
         restart_text->setText(tr("SettingsWidget", "Setting will take effect after viewer restart."));

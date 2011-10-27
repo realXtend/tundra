@@ -127,8 +127,8 @@ namespace OgreRenderer
         last_height_(0),
         resized_dirty_(0),
         view_distance_(500.0f),
-        shadowquality_(Shadows_High),
-        texturequality_(Texture_Normal)
+        shadowQuality(Shadows_High),
+        textureQuality(Texture_Normal)
     {
         compositionHandler = new CompositionHandler();
         logListener = new OgreLogListener(framework_->HasCommandLineParameter("--hide_benign_ogre_messages"));
@@ -249,11 +249,11 @@ namespace OgreRenderer
 
         // Allow PSSM mode shadows only on DirectX
         // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
-        shadowquality_ = (ShadowQuality)framework_->Config()->Get(configData, "shadow quality").toInt();
-        if ((shadowquality_ == Shadows_High) && (rendersystem_name != "Direct3D9 Rendering Subsystem"))
-            shadowquality_ = Shadows_Low;
+        shadowQuality = (Renderer::ShadowQualitySetting)framework_->Config()->Get(configData, "shadow quality").toInt();
+        if ((shadowQuality == Shadows_High) && (rendersystem_name != "Direct3D9 Rendering Subsystem"))
+            shadowQuality = Shadows_Low;
 
-        texturequality_ = (TextureQuality)framework_->Config()->Get(configData, "texture quality").toInt();
+        textureQuality = (Renderer::TextureQualitySetting)framework_->Config()->Get(configData, "texture quality").toInt();
 
         // Ask Ogre if rendering system is available
         rendersystem = root_->getRenderSystemByName(rendersystem_name);
@@ -330,6 +330,18 @@ namespace OgreRenderer
         initialized_ = true;
     }
 
+    void Renderer::SetFullScreen(bool value)
+    {
+        // In headless mode, we can safely ignore Fullscreen mode requests.
+        if (framework_->IsHeadless())
+            return;
+
+        if (value)
+            framework_->Ui()->MainWindow()->showFullScreen();
+        else
+            framework_->Ui()->MainWindow()->showNormal();
+    }
+
     bool Renderer::IsFullScreen() const
     {
         if (!framework_->IsHeadless())
@@ -338,28 +350,16 @@ namespace OgreRenderer
             return false;
     }
 
-    void Renderer::SetFullScreen(bool value)
-    {
-        // In headless mode, we can safely ignore Fullscreen mode requests.
-        if (framework_->IsHeadless())
-            return;
-
-        if(value)
-            framework_->Ui()->MainWindow()->showFullScreen();
-        else
-            framework_->Ui()->MainWindow()->showNormal();
-    }
-
-    void Renderer::SetShadowQuality(ShadowQuality newquality)
+    void Renderer::SetShadowQuality(ShadowQualitySetting quality)
     {
         // We cannot effect the new setting immediately, so save only to config
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow quality", (int)newquality);
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow quality", (int)quality);
     }
 
-    void Renderer::SetTextureQuality(TextureQuality newquality)
+    void Renderer::SetTextureQuality(TextureQualitySetting quality)
     {
         // We cannot effect the new setting immediately, so save only to config
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)newquality);
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)quality);
     }
 
     QStringList Renderer::LoadPlugins(const std::string& plugin_filename)
@@ -427,7 +427,7 @@ namespace OgreRenderer
 
         // Add supershader program definitions directory according to the shadow quality level
         std::string shadowPath = Application::InstallationDirectory().toStdString(); ///<\todo Unicode support
-        switch(shadowquality_)
+        switch(shadowQuality)
         {
         case Shadows_Off:
             shadowPath.append("media/materials/scripts/shadows_off");
@@ -441,10 +441,9 @@ namespace OgreRenderer
         }
 
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(shadowPath, "FileSystem", "General");
-
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
-    
+
     int Renderer::GetWindowWidth() const
     {
         if (renderWindow)
@@ -461,6 +460,7 @@ namespace OgreRenderer
 
     void Renderer::SetViewDistance(float distance)
     {
+        /// @todo view distance not currently used for anything
         view_distance_ = distance;
         // As double to keep human readable and configurable
         framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)view_distance_);
@@ -470,7 +470,7 @@ namespace OgreRenderer
     {
         if (framework_->IsHeadless())
             return;
-            
+
         PROFILE(Renderer_DoFullUIRedraw);
 
         UiGraphicsView *view = framework_->Ui()->GraphicsView();
