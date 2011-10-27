@@ -2,9 +2,10 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_HoveringText.cpp
- *  @brief  EC_HoveringText shows a hovering text attached to an entity.
- *  @note   The entity must EC_Placeable available in advance.
+ *  @brief  Shows a hovering text attached to an entity.
  */
+
+#define OGRE_INTEROP
 
 #include "DebugOperatorNew.h"
 
@@ -39,7 +40,7 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     text(this, "Text"),
     font(this, "Font", "Arial"),
     fontColor(this, "Font Color"),
-    fontSize(this, "Font Size", 100),    
+    fontSize(this, "Font Size", 100),
     backgroundColor(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
     position(this, "Position", float3(0.0f, 0.0f, 0.0f)),
     gradStart(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
@@ -111,12 +112,7 @@ void EC_HoveringText::SetPosition(const float3& position)
         return;
 
     if (billboard_)
-        billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
-}
-
-void EC_HoveringText::SetPosition(const QVector3D &position)
-{
-    SetPosition(float3(position.x(), position.y(), position.z()));
+        billboard_->setPosition(position);
 }
 
 void EC_HoveringText::SetFont(const QFont &font)
@@ -135,7 +131,6 @@ void EC_HoveringText::SetBackgroundGradient(const QColor &start_color, const QCo
 {
     bg_grad_.setColorAt(0.0, start_color);
     bg_grad_.setColorAt(1.0, end_color);
-    //using_gradient_ = true;
 }
 
 void EC_HoveringText::Show()
