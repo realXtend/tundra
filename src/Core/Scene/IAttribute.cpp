@@ -25,7 +25,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include <QVector3D>
 #include <QVariant>
 #include <QStringList>
 #include <QScriptEngine>
