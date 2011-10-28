@@ -83,19 +83,19 @@ if (!framework.IsHeadless())
         }
 */
         var viewDistance = findChild(settingsWidget, "spinbox_viewdistance")
-        viewDistance.setValue(renderer.ViewDistance());
+        viewDistance.setValue(renderer.viewDistace);
         viewDistance["valueChanged(double)"].connect(SetViewDistance);
 
         var fullscreen = findChild(settingsWidget, "fullscreen_toggle");
-        fullscreen.setChecked(renderer.IsFullScreen());
+        fullscreen.setChecked(renderer.fullScreen);
         fullscreen.toggled.connect(SetFullScreenMode);
 
         var shadowQuality = findChild(settingsWidget, "combo_shadows");
-        shadowQuality.setCurrentIndex(renderer.ShadowQuality());
+        shadowQuality.setCurrentIndex(renderer.shadowQuality);
         shadowQuality["currentIndexChanged(int)"].connect(SetShadowQuality);
 
         var textureQuality = findChild(settingsWidget, "combo_texture");
-        textureQuality.setCurrentIndex(renderer.TextureQuality());
+        textureQuality.setCurrentIndex(renderer.textureQuality);
         textureQuality["currentIndexChanged(int)"].connect(SetTextureQuality);
     }
 
@@ -135,12 +135,12 @@ if (!framework.IsHeadless())
     {
         if (e.HasCtrlModifier() && e.keyCode == Qt.Key_F)
         {
-            renderer.SetFullScreen(!renderer.IsFullScreen());
+            renderer.fullScreen = !renderer.fullScreen;
             if (settingsWidget)
             {
                 var fullscreenCheckBox = findChild(settingsWidget, "fullscreen_toggle");
                 if (fullscreenCheckBox)
-                    fullscreenCheckBox.setChecked(renderer.IsFullScreen());
+                    fullscreenCheckBox.setChecked(renderer.fullScreen);
             }
         }
     }
@@ -148,13 +148,13 @@ if (!framework.IsHeadless())
     // Sets new view distance.
     function SetViewDistance(value)
     {
-        renderer.SetViewDistance(value);
+        renderer.viewDistance = value;
     }
 
     // Sets fullscreen mode on/off.
     function SetFullScreenMode(value)
     {
-        renderer.SetFullScreen(value);
+        renderer.fullScreen = value;
     }
 
     // Sets shadow quality. The setting will take effect only after application restart.
@@ -162,8 +162,8 @@ if (!framework.IsHeadless())
     {
         if (value < 0 || value > 2)
             return;
-        renderer.SetShadowQuality(value);
-        findChild(settingsWidget, "label_restartmessage").setText("Setting will take effect after viewer restart.");
+        renderer.shadowQuality = value;
+        findChild(settingsWidget, "messageLabel").setText("Setting will take effect after application restart.");
     }
 
     // Sets texture quality. The setting will take effect only after application restart.
@@ -171,7 +171,7 @@ if (!framework.IsHeadless())
     {
         if (value < 0 || value > 1)
             return;
-        renderer.SetTextureQuality(value);
-        findChild(settingsWidget, "label_restartmessage").setText("Setting will take effect after viewer restart.");
+        renderer.textureQuality = value;
+        findChild(settingsWidget, "messageLabel").setText("Setting will take effect after application restart.");
     }
 }

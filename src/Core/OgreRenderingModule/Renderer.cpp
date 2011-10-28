@@ -13,7 +13,7 @@
 #include "UiGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
-#include "OgreDefaultHardwareBufferManager.h"
+#include "OgreDefaultHardwarebufferManager.h"
 #include "Scene.h"
 #include "CoreException.h"
 #include "Entity.h"
@@ -113,7 +113,7 @@ namespace OgreRenderer
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
         framework_(framework),
-        buffermanager_(0),
+//        bufferManager(0), ///< @todo Unused - delete for good?
         defaultScene_(0),
         dummyDefaultCamera(0),
         mainViewport(0),
@@ -218,14 +218,14 @@ namespace OgreRenderer
 
         //Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_LOW);
         
-// On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
-// On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
+// On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwarebufferManager singleton will crash.
+// On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwarebufferManager singleton will crash.
 ///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)
 #ifdef UNIX 
         if (framework_->IsHeadless())
         {
             // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
-            new Ogre::DefaultHardwareBufferManager();
+            new Ogre::DefaultHardwarebufferManager();
         }
 #endif
 
