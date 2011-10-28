@@ -9,12 +9,14 @@ function OnScriptDestroyed()
 {
     if (!framework.IsHeadless())
     {
-        SaveWindowPositionToSettings();
         if (settingsWidget)
         {
+            SaveWindowPositionToSettings();
             settingsWidget.deleteLater();
             settingsWidget = null;
         }
+
+        input.UnregisterInputContextRaw("RendererSettings");
     }
 }
 
@@ -39,7 +41,7 @@ if (!framework.IsHeadless())
     var rendererSettings = settingsMenu.addAction("Renderer");
     rendererSettings.triggered.connect(ShowRendererSettings);
 
-    // Register Fullscreen shortcut key
+    // Register input context for listening fullscreen shortcut key
     var inputContext = input.RegisterInputContextRaw("RendererSettings", 90);
     inputContext.KeyPressed.connect(HandleKeyPressed);
 
