@@ -1,41 +1,67 @@
-// For conditions of distribution and use, see copyright notice in LICENSE.md
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
 
-// Implements renderer settings widget functionality.
-// Also registers Ctrl+F shortcut for toggling fullscreen mode.
+    Implements renderer settings widget functionality.
+    Also registers Ctrl+F shortcut for toggling fullscreen mode. */
+
+// Saves widget position to config and destroys the widget.
+function OnScriptDestroyed()
+{
+    if (!framework.IsHeadless())
+    {
+        SaveWindowPositionToSettings();
+        if (settingsWidget)
+        {
+            settingsWidget.deleteLater();
+            settingsWidget = null;
+        }
+    }
+}
+
+// Renderer settings widget usable only in headful mode.
 if (!framework.IsHeadless())
 {
-    var settingsWidget = null;
-
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
+    var configFile = "tundra";
+    var configSection = "ui";
+    var configName = "RendererSettingsWindosPos"
+    var settingsWidget = null;
+
+    // Add menu entry to Settings menu
     var settingsMenu = findChild(ui.MainWindow().menuBar(), "SettingsMenu");
     if (!settingsMenu)
+    {
         settingsMenu = ui.MainWindow().menuBar().addMenu("&Settings");
+        settingsMenu.objectName = "SettingsMenu";
+    }
     var rendererSettings = settingsMenu.addAction("Renderer");
     rendererSettings.triggered.connect(ShowRendererSettings);
 
-    // Fullscreen shortcut key
+    // Register Fullscreen shortcut key
     var inputContext = input.RegisterInputContextRaw("RendererSettings", 90);
     inputContext.KeyPressed.connect(HandleKeyPressed);
 
     // Shows renderer settings or hides it if it's already visible.
     function ShowRendererSettings()
     {
-        if (settingsWidget && settingsWidget.visible)
+        if (settingsWidget)
         {
-            settingsWidget.visible = false;
+            settingsWidget.visible = !settingsWidget.visible;
             return;
         }
 
         CreateRendererSettingsWindow();
         settingsWidget.visible = true;
+
+        LoadWindowPositionFromSettings();
     }
 
+    // Creates the widget, but does not show it.
     function CreateRendererSettingsWindow()
     {
         settingsWidget = new QWidget(ui.MainWindow());
-        settingsWidget.setAttribute(Qt.WA_DeleteOnClose);
         settingsWidget.setWindowFlags(Qt.Tool);
         settingsWidget.setLayout(new QVBoxLayout());
         var child = ui.LoadFromFile(application.installationDirectory + "data/ui/renderersettings.ui", false);
@@ -44,6 +70,16 @@ if (!framework.IsHeadless())
 
         settingsWidget.setWindowTitle("Renderer Settings");
 
+        // TODO: ideally we would do the following, but for some reason destroyed is not emitted ever.
+/*
+        settingsWidget.setAttribute(Qt.WA_DeleteOnClose);
+        // Connect to destroyed signal so that we can set the pointer to null when the window is closed and destroyed.
+        settingsWidget.destroyed.connect(SetPointerToNull);
+        function SetPointerToNull()
+        {
+            settingsWidget = null;
+        }
+*/
         var viewDistance = findChild(settingsWidget, "spinbox_viewdistance")
         viewDistance.setValue(renderer.ViewDistance());
         viewDistance["valueChanged(double)"].connect(SetViewDistance);
@@ -61,6 +97,38 @@ if (!framework.IsHeadless())
         textureQuality["currentIndexChanged(int)"].connect(SetTextureQuality);
     }
 
+    // Assures that widget is position within desktop.
+    // param widget Widget to be positioned.
+    // param pos Desired position.
+    function AssurePositionWithinDesktop(widget, pos)
+    {
+        var xMax = ui.MainWindow().desktopWidth;
+        var yMax = ui.MainWindow().desktopHeight;
+        if (pos.x() + widget.height > xMax)
+            pos.setX(xMax - widget.width);
+        if (pos.y() + widget.width > yMax)
+            pos.setY(yMax - widget.height);
+        widget.pos = pos;
+    }
+
+    // Loads window position from config.
+    function LoadWindowPositionFromSettings()
+    {
+        if (settingsWidget)
+        {
+            var pos = config.Get(configFile, configSection, configName);
+            AssurePositionWithinDesktop(settingsWidget, pos);
+        }
+    }
+
+    // Saves window position to config.
+    function SaveWindowPositionToSettings()
+    {
+        if (settingsWidget)
+            config.Set(configFile, configSection, configName, settingsWidget.pos);
+    }
+
+    // Looks for Ctrl+F and toggles fullscreen mode.
     function HandleKeyPressed(e)
     {
         if (e.HasCtrlModifier() && e.keyCode == Qt.Key_F)
@@ -68,23 +136,26 @@ if (!framework.IsHeadless())
             renderer.SetFullScreen(!renderer.IsFullScreen());
             if (settingsWidget)
             {
-                var fullscreen = findChild(settingsWidget, "fullscreen_toggle");
-                if (fullscreen)
-                    fullscreen.setChecked(renderer.IsFullScreen());
+                var fullscreenCheckBox = findChild(settingsWidget, "fullscreen_toggle");
+                if (fullscreenCheckBox)
+                    fullscreenCheckBox.setChecked(renderer.IsFullScreen());
             }
         }
     }
 
+    // Sets new view distance.
     function SetViewDistance(value)
     {
         renderer.SetViewDistance(value);
     }
 
+    // Sets fullscreen mode on/off.
     function SetFullScreenMode(value)
     {
         renderer.SetFullScreen(value);
     }
 
+    // Sets shadow quality. The setting will take effect only after application restart.
     function SetShadowQuality(value)
     {
         if (value < 0 || value > 2)
@@ -93,6 +164,7 @@ if (!framework.IsHeadless())
         findChild(settingsWidget, "label_restartmessage").setText("Setting will take effect after viewer restart.");
     }
 
+    // Sets texture quality. The setting will take effect only after application restart.
     function SetTextureQuality(value)
     {
         if (value < 0 || value > 1)

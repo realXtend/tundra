@@ -1,6 +1,9 @@
-// For conditions of distribution and use, see copyright notice in LICENSE.md
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
 
-// Implements basic menu bar for accessing common Tundra functionality and UIs.
+    Implements basic menu bar for accessing common Tundra functionality and UIs. */
+
+// Applicable only in headful mode.
 if (!framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
