@@ -143,6 +143,9 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     this.me.Action("Stop").Triggered.connect(this, this.ServerHandleStop);
     this.me.Action("ToggleFly").Triggered.connect(this, this.ServerHandleToggleFly);
     this.me.Action("SetRotation").Triggered.connect(this, this.ServerHandleSetRotation);
+    this.me.Action("Rotate").Triggered.connect(this, this.ServerHandleRotate);
+
+    this.serverrotate = 0;
 
     rigidbody.PhysicsCollision.connect(this, this.ServerHandleCollision);
 }
@@ -166,6 +169,14 @@ SimpleAvatar.prototype.ServerUpdate = function(frametime) {
         this.ServerSetFlying(false);
 
     this.CommonUpdateAnimation(frametime);
+
+    //old style rotation handling for webnaali
+     if (this.serverrotate != 0) {
+        var rotateVec = new float3();
+        var rotate_speed = 150.0;
+        rotateVec.y = -rotate_speed * this.serverrotate * frametime;
+        this.me.rigidbody.Rotate(rotateVec);
+    }
 }
 
 SimpleAvatar.prototype.ServerHandleCollision = function(ent, pos, normal, distance, impulse, newCollision) {
@@ -315,6 +326,29 @@ SimpleAvatar.prototype.ServerHandleSetRotation = function(param) {
         this.me.rigidbody.SetRotation(rot);
     }
 }
+
+//these server side Rotate handlers now for webnaali only, which was made against an older version that had these
+SimpleAvatar.prototype.ServerHandleRotate = function(param) {
+    if (param == "left") {
+        this.serverrotate = -1;
+    }
+    if (param == "right") {
+        this.serverrotate = 1;
+    }
+}
+
+SimpleAvatar.prototype.ServerHandleStopRotate = function(param) {
+    if ((param == "left") && (rotate == -1)) {
+        this.serverrotate = 0;
+    }
+    if ((param == "right") && (rotate == 1)) {
+        this.serverrotate = 0;
+    }
+    if (param == "all") {
+        this.serverrotate = 0;
+    }
+}
+
 
 SimpleAvatar.prototype.ServerSetAnimationState = function() {
     // Not flying: Stand, Walk or Crouch
