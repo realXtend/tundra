@@ -20,6 +20,9 @@ void UpdateModule::Initialize()
 {
     CocoaInitializer initializer;
     updater_ = new SparkleAutoUpdater("http://adminotech.data.s3.amazonaws.com/clients/tundra2/appcast.xml");
+    
+    if (updater_)
+        updater_->checkForUpdates();
 }
 
 void UpdateModule::RunUpdater(QString parameter)
