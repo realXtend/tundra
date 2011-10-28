@@ -27,7 +27,8 @@
   <jsplugin path="FirstPersonMouseLook.js" />
   <jsplugin path="LoginScreen.js" />
   <jsplugin path="MenuBar.js" />
-  
+  <jsplugin path="RendererSettings.js" />
+
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
 
