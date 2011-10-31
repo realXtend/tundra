@@ -43,27 +43,30 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
 #endif
 
 #ifdef Q_WS_MAC
-// qt docs say it's a HIViewRef on carbon,
-// carbon docs say HIViewGetWindow gets a WindowRef out of it
     Ogre::String winhandle;
 
     QWidget* nativewin = targetWindow;
 
     while(nativewin && nativewin->parentWidget())
         nativewin = nativewin->parentWidget();
-#if 0
-    HIViewRef vref = (HIViewRef) nativewin-> winId ();
-    WindowRef wref = HIViewGetWindow(vref);
-    winhandle = Ogre::StringConverter::toString(
-       (unsigned long) (HIViewGetRoot(wref)));
-#else
+
     // according to
     // http://www.ogre3d.org/forums/viewtopic.php?f=2&t=27027 does
     winhandle = Ogre::StringConverter::toString(
         (unsigned long)nativewin ? nativewin->winId() : 0);
-#endif
+
     //Add the external window handle parameters to the existing params set.
     params["externalWindowHandle"] = winhandle;
+    
+    /* According to http://doc.qt.nokia.com/stable/qwidget.html#winId
+       "On Mac OS X, the type returned depends on which framework Qt was linked against. 
+       -If Qt is using Carbon, the {WId} is actually an HIViewRef. 
+       -If Qt is using Cocoa, {WId} is a pointer to an NSView."
+      Ogre needs to know that a NSView handle will be passed to its' externalWindowHandle parameter,
+      otherwise it assumes that NSWindow will be used 
+    */
+    params["macAPI"] = "cocoa";
+    params["macAPICocoaUseNSView"] = "true";
 #endif
 
 #ifdef Q_WS_X11
