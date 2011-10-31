@@ -3,17 +3,17 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "Application.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
 #include "EC_Placeable.h"
 #include "EC_Camera.h"
 #include "RenderWindow.h"
-#include "UiGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
-#include "OgreDefaultHardwarebufferManager.h"
+
+#include "Application.h"
+#include "UiGraphicsView.h"
 #include "Scene.h"
 #include "CoreException.h"
 #include "Entity.h"
@@ -27,6 +27,7 @@
 #include "QScriptEngineHelpers.h"
 
 #include <Ogre.h>
+#include <OgreDefaultHardwarebufferManager.h>
 
 Q_DECLARE_METATYPE(EC_Placeable*);
 Q_DECLARE_METATYPE(EC_Camera*);
@@ -217,15 +218,15 @@ namespace OgreRenderer
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
         //Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_LOW);
-        
-// On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwarebufferManager singleton will crash.
-// On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwarebufferManager singleton will crash.
+
+// On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
+// On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
 ///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)
-#ifdef UNIX 
+#ifdef UNIX
         if (framework_->IsHeadless())
         {
             // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
-            new Ogre::DefaultHardwarebufferManager();
+            new Ogre::DefaultHardwareBufferManager();
         }
 #endif
 
