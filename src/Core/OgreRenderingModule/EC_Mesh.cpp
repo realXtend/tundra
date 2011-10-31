@@ -1420,8 +1420,8 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
         Ogre::IndexData* indexData = submesh->indexData;
         Ogre::HardwareIndexBufferSharedPtr ibuf = indexData->indexBuffer;
 
-        unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
+        u32*  pLong = static_cast<u32*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        u16* pShort = reinterpret_cast<u16*>(pLong);
         bool use32BitIndices = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
         
         for (unsigned j = 0; j < indexData->indexCount - 2; j += 3)

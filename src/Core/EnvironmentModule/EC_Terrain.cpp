@@ -930,8 +930,8 @@ void GetUnskinnedMeshGeometry(
         size_t numTris = index_data->indexCount / 3;
         Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
 
-        unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
+        u32*  pLong = static_cast<u32*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        u16* pShort = reinterpret_cast<u16*>(pLong);
         size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
 
         bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
