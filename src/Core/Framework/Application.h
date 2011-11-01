@@ -24,6 +24,7 @@ class Application : public QApplication
     Q_PROPERTY(QString organizationName READ OrganizationName)
     Q_PROPERTY(QString applicationName READ ApplicationName)
     Q_PROPERTY(QString version READ Version)
+    Q_PROPERTY(double targetFpsLimit READ TargetFpsLimit WRITE SetTargetFpsLimit)
 
 public:
     /// Construcs the application singleton.
@@ -71,11 +72,11 @@ public:
     static QString UserDocumentsDirectory();
 
     /// Parse a filename for specific wildcard modifiers, and return as parsed
-    ///    $(CWD) is expanded to the current working directory.
-    ///    $(INSTDIR) is expanded to the Tundra installation directory (Application::InstallationDirectory)
-    ///    $(USERDATA) is expanded to Application::UserDataDirectory.
-    ///    $(USERDOCS) is expanded to Application::UserDocumentsDirectory.
-    ///    $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString .
+    /** $(CWD) is expanded to the current working directory.
+        $(INSTDIR) is expanded to the Tundra installation directory (Application::InstallationDirectory)
+        $(USERDATA) is expanded to Application::UserDataDirectory.
+        $(USERDOCS) is expanded to Application::UserDocumentsDirectory.
+        $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString . */
     static QString ParseWildCardFilename(const QString& input);
 
     /// Return organization of application, e.g. "realXtend".
@@ -89,6 +90,17 @@ public:
     /// Returns version information of the application as string, e.g. "2.0.0".
     /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
     static const char *Version();
+
+    /// Specifies a new FPS limit to use for the main loop.
+    /** Pass in a value of 0 to remove fps limiting altogether. */
+    void SetTargetFpsLimit(double fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.0) targetFpsLimit = 0.0; }
+
+    /// Returns the current FPS limit.
+    /** 0 means the FPS limiting is disabled. */
+    double TargetFpsLimit() const { return targetFpsLimit; }
+
+    /// Reads and applies target FPS limit from config file.
+    void ReadTargetFpsLimitFromConfig();
 
 public slots:
     void UpdateFrame();
@@ -121,4 +133,5 @@ private:
     static const char *organizationName;
     static const char *applicationName;
     static const char *version;
+    double targetFpsLimit;
 };

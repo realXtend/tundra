@@ -192,26 +192,38 @@ Framework::Framework(int argc, char** argv) :
         if (configDirs.size() >= 1)
             configDir = configDirs.last();
         if (configDirs.size() > 1)
-            LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");        
+            LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");
         config->PrepareDataFolder(configDir);
 
-        // Create QApplication
+        // Create QApplication, set target FPS limit, if specified.
         application = new Application(this, argc_, argv_);
+        QStringList fpsLimitParam = CommandLineParameters("--fpslimit");
+        if (fpsLimitParam.size() > 1)
+            LogWarning("Multiple --fpslimit parameters specified! Using " + fpsLimitParam.first() + " as the value.");
+        if (fpsLimitParam.size() > 0)
+        {
+            bool ok;
+            double targetFpsLimit = fpsLimitParam.first().toDouble(&ok);
+            if (ok)
+                application->SetTargetFpsLimit(targetFpsLimit);
+            else
+                LogWarning("Erroneous FPS limit given with --fpslimit: " + fpsLimitParam.first() + ".");
+        }
 
         // Create core APIs
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
         plugin = new PluginAPI(this);
         asset = new AssetAPI(this, headless_);
-        
+        // Prepare asset cache, if used.
         QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
         if (CommandLineParameters("--assetcachedir").size() > 0)
             assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir").last());
         if (CommandLineParameters("--assetcachedir").size() > 1)
             LogWarning("Multiple --assetcachedir parameters specified! Using \"" + CommandLineParameters("--assetcachedir").last() + "\" as the assetcache directory.");
-        
         if (!HasCommandLineParameter("--noassetcache"))
             asset->OpenAssetCache(assetCacheDir);
+
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);
