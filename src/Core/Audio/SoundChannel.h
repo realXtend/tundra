@@ -1,12 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #pragma once
 
-#include "SoundBuffer.h"
-#include "AssetFwd.h"
 #include "AudioApiExports.h"
-#include "Math/float3.h"
 #include "AudioFwd.h"
 #include "AudioAsset.h"
+
+#include "Math/float3.h"
+#include "AssetFwd.h"
 
 /// An OpenAL sound channel (source).
 class AUDIO_API SoundChannel : public QObject, public boost::enable_shared_from_this<SoundChannel>

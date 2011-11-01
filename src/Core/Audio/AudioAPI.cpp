@@ -1,8 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "DebugOperatorNew.h"
-#include <boost/algorithm/string.hpp>
-#include <QList>
 #include "AudioAPI.h"
 #include "CoreTypes.h"
 #include "AssetAPI.h"
@@ -158,7 +156,7 @@ bool AudioAPI::Initialize(const QString &playbackDeviceName)
     return true;
 }
 
-QStringList AudioAPI::GetPlaybackDevices()
+QStringList AudioAPI::GetPlaybackDevices() const
 {
     QStringList names;
     
@@ -175,7 +173,7 @@ QStringList AudioAPI::GetPlaybackDevices()
     return names;
 }
 
-AudioAssetPtr AudioAPI::CreateAudioAssetFromSoundBuffer(const SoundBuffer &buffer)
+AudioAssetPtr AudioAPI::CreateAudioAssetFromSoundBuffer(const SoundBuffer &buffer) const
 {
     // Construct a sound from the buffer
     AudioAssetPtr new_sound(new AudioAsset(assetAPI, "Audio", "buffer"));
@@ -343,7 +341,7 @@ SoundChannelPtr AudioAPI::PlaySoundBuffer(const SoundBuffer &buffer, SoundChanne
     return channel;
 }
 
-SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChannel::SoundType type, float3 position, SoundChannelPtr channel)
+SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChannel::SoundType type, const float3 &position, SoundChannelPtr channel)
 {
     if (!impl->initialized)
         return SoundChannelPtr();
@@ -365,13 +363,13 @@ SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChan
     return channel;
 }
 
-void AudioAPI::Stop(SoundChannelPtr channel)
+void AudioAPI::Stop(SoundChannelPtr channel) const
 {
     if (channel)
         channel->Stop();
 }
 
-sound_id_t AudioAPI::GetNextSoundChannelID()
+sound_id_t AudioAPI::GetNextSoundChannelID() const
 {
     assert(impl);
     if (!impl)
@@ -396,7 +394,7 @@ void AudioAPI::SetMasterGain(float masterGain)
     ApplyMasterGain();
 }
 
-float AudioAPI::GetMasterGain()
+float AudioAPI::GetMasterGain() const
 {
     return impl ? impl->masterGain : 0.f;
 }
@@ -407,7 +405,7 @@ void AudioAPI::SetSoundMasterGain(SoundChannel::SoundType type, float masterGain
     ApplyMasterGain();
 }
 
-float AudioAPI::GetSoundMasterGain(SoundChannel::SoundType type)
+float AudioAPI::GetSoundMasterGain(SoundChannel::SoundType type) const
 {
     return impl ? impl->soundMasterGain[type] : 0.f;
 }
@@ -422,7 +420,7 @@ void AudioAPI::ApplyMasterGain()
     }
 }
 
-QStringList AudioAPI::GetRecordingDevices()
+QStringList AudioAPI::GetRecordingDevices() const
 {
     QStringList names;
     
@@ -496,7 +494,7 @@ void AudioAPI::StopRecording()
     }
 }
 
-uint AudioAPI::GetRecordedSoundSize()
+uint AudioAPI::GetRecordedSoundSize() const
 {
     if (!impl || !impl->captureDevice)
         return 0;
