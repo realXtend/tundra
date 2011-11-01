@@ -529,7 +529,7 @@ void Application::UpdateFrame()
 
         double msecsSpentInFrame = (double)(timeNow - frameStartTime) * 1000.0 / timerFrequency;
 
-        const double msecsPerFrame = 1000.0 / (qFuzzyIsNull(targetFpsLimit) ? 1000.0 : targetFpsLimit);
+        const double msecsPerFrame = 1000.0 / (targetFpsLimit <= 1.0 ? 1000.0 : targetFpsLimit);
 
         ///\note Ideally we should sleep 0 msecs when running at a high fps rate,
         /// but need to avoid QTimer::start() with 0 msecs, since that will cause the timer to immediately fire,
