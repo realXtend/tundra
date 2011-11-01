@@ -144,6 +144,7 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     this.me.Action("ToggleFly").Triggered.connect(this, this.ServerHandleToggleFly);
     this.me.Action("SetRotation").Triggered.connect(this, this.ServerHandleSetRotation);
     this.me.Action("Rotate").Triggered.connect(this, this.ServerHandleRotate);
+    this.me.Action("StopRotate").Triggered.connect(this, this.ServerHandleStopRotate);
 
     this.serverrotate = 0;
 
@@ -338,13 +339,16 @@ SimpleAvatar.prototype.ServerHandleRotate = function(param) {
 }
 
 SimpleAvatar.prototype.ServerHandleStopRotate = function(param) {
-    if ((param == "left") && (rotate == -1)) {
+    if ((param == "left") && (this.serverrotate == -1)) {
+        print("stoprot left");
         this.serverrotate = 0;
     }
-    if ((param == "right") && (rotate == 1)) {
+    if ((param == "right") && (this.serverrotate == 1)) {
+        print("stoprot right");
         this.serverrotate = 0;
     }
     if (param == "all") {
+        print("stoprot all");
         this.serverrotate = 0;
     }
 }
