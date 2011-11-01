@@ -31,6 +31,7 @@
   <jsplugin path="MenuBar.js" />
   <jsplugin path="browserui/LoginBrowser.js" />
   <jsplugin path="RendererSettings.js" />
+  <jsplugin path="SoundSettings.js" />
 
   <option name="--accept_unknown_http_sources" />
   <option name="--accept_unknown_local_sources" />
