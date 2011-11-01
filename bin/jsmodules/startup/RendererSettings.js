@@ -27,8 +27,10 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.gui");
 
     var configFile = "tundra";
-    var configSection = "ui";
-    var configName = "RendererSettingsWindosPos"
+    var configUiSection = "ui";
+    var configRenderingSection = "rendering";
+    var configWinPos = "renderer settings windows pos"
+    var configFpsTargetName = "fps target limit";
     var settingsWidget = null;
 
     // Add menu entry to Settings menu
@@ -97,6 +99,10 @@ if (!framework.IsHeadless())
         var textureQuality = findChild(settingsWidget, "combo_texture");
         textureQuality.setCurrentIndex(renderer.textureQuality);
         textureQuality["currentIndexChanged(int)"].connect(SetTextureQuality);
+
+        var targetFps = findChild(settingsWidget, "targetFpsSpinBox")
+        targetFps.setValue(application.targetFpsLimit);
+        targetFps["valueChanged(double)"].connect(SetTargetFpsLimit);
     }
 
     // Assures that widget is position within desktop.
@@ -116,9 +122,9 @@ if (!framework.IsHeadless())
     // Loads window position from config.
     function LoadWindowPositionFromSettings()
     {
-        if (settingsWidget)
+        if (settingsWidget && config.HasValue(configFile, configUiSection, configWinPos))
         {
-            var pos = config.Get(configFile, configSection, configName);
+            var pos = config.Get(configFile, configUiSection, configWinPos);
             AssurePositionWithinDesktop(settingsWidget, pos);
         }
     }
@@ -127,7 +133,7 @@ if (!framework.IsHeadless())
     function SaveWindowPositionToSettings()
     {
         if (settingsWidget)
-            config.Set(configFile, configSection, configName, settingsWidget.pos);
+            config.Set(configFile, configUiSection, configWinPos, settingsWidget.pos);
     }
 
     // Looks for Ctrl+F and toggles fullscreen mode.
@@ -173,5 +179,14 @@ if (!framework.IsHeadless())
             return;
         renderer.textureQuality = value;
         findChild(settingsWidget, "messageLabel").setText("Setting will take effect after application restart.");
+    }
+
+    // Sets the target FPS limit. 0 disables limitting.
+    function SetTargetFpsLimit(value)
+    {
+        if (value < 0)
+            return;
+        application.targetFpsLimit = value;
+        config.Set(configFile, configRenderingSection, configFpsTargetName, application.targetFpsLimit);
     }
 }
