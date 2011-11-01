@@ -50,6 +50,7 @@ Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
 Q_DECLARE_METATYPE(GestureEvent*)
 Q_DECLARE_METATYPE(InputContext*)
+Q_DECLARE_METATYPE(InputContextPtr);
 
 /// Asset API defines
 Q_DECLARE_METATYPE(AssetPtr);
@@ -64,6 +65,46 @@ Q_DECLARE_METATYPE(ScriptAsset*);
 Q_DECLARE_METATYPE(AssetCache*);
 Q_DECLARE_METATYPE(AssetMap);
 Q_DECLARE_METATYPE(AssetStorageVector);
+
+/// Ui defines
+Q_DECLARE_METATYPE(UiProxyWidget*);
+Q_DECLARE_METATYPE(UiMainWindow*);
+Q_DECLARE_METATYPE(UiGraphicsView*);
+Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
+
+/// Scene API defines.
+Q_DECLARE_METATYPE(SceneAPI*);
+Q_DECLARE_METATYPE(Scene*);
+Q_DECLARE_METATYPE(Entity*);
+Q_DECLARE_METATYPE(EntityAction*);
+Q_DECLARE_METATYPE(EntityAction::ExecType);
+Q_DECLARE_METATYPE(EntityAction::ExecTypeField);
+Q_DECLARE_METATYPE(AttributeChange*);
+Q_DECLARE_METATYPE(ChangeRequest*);
+Q_DECLARE_METATYPE(IComponent*);
+Q_DECLARE_METATYPE(AttributeChange::Type);
+
+/// Frame, Console and Debug API object defines.
+Q_DECLARE_METATYPE(Framework*);
+Q_DECLARE_METATYPE(IModule*);
+Q_DECLARE_METATYPE(FrameAPI*);
+Q_DECLARE_METATYPE(ConsoleAPI*);
+Q_DECLARE_METATYPE(ConsoleCommand*);
+Q_DECLARE_METATYPE(DelayedSignal*);
+
+/// Audio API defines.
+Q_DECLARE_METATYPE(AudioAPI*);
+Q_DECLARE_METATYPE(SoundChannel*);
+Q_DECLARE_METATYPE(SoundChannel::SoundType)
+Q_DECLARE_METATYPE(SoundChannel::SoundState)
+Q_DECLARE_METATYPE(SoundChannelPtr);
+
+/// Config API defines.
+Q_DECLARE_METATYPE(ConfigAPI*);
+Q_DECLARE_METATYPE(ConfigData*);
+
+/// Renderer defines.
+Q_DECLARE_METATYPE(RaycastResult*);
 
 QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
 {
@@ -100,42 +141,6 @@ QScriptValue qScriptValueFromAssetStoragePtrVector(QScriptEngine *engine, const 
 void qScriptValueToAssetStoragePtrVector(const QScriptValue &value, AssetStorageVector& vec)
 {
 }
-
-/// Ui defines
-Q_DECLARE_METATYPE(UiProxyWidget*);
-Q_DECLARE_METATYPE(UiMainWindow*);
-Q_DECLARE_METATYPE(UiGraphicsView*);
-Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
-
-/// Scene API defines.
-Q_DECLARE_METATYPE(SceneAPI*);
-Q_DECLARE_METATYPE(Scene*);
-Q_DECLARE_METATYPE(Entity*);
-Q_DECLARE_METATYPE(EntityAction*);
-Q_DECLARE_METATYPE(EntityAction::ExecType);
-Q_DECLARE_METATYPE(EntityAction::ExecTypeField);
-Q_DECLARE_METATYPE(AttributeChange*);
-Q_DECLARE_METATYPE(ChangeRequest*);
-Q_DECLARE_METATYPE(IComponent*);
-Q_DECLARE_METATYPE(AttributeChange::Type);
-
-/// Frame, Console and Debug API object defines.
-Q_DECLARE_METATYPE(Framework*);
-Q_DECLARE_METATYPE(IModule*);
-Q_DECLARE_METATYPE(FrameAPI*);
-Q_DECLARE_METATYPE(ConsoleAPI*);
-Q_DECLARE_METATYPE(ConsoleCommand*);
-Q_DECLARE_METATYPE(DelayedSignal*);
-
-/// Audio API defines.
-Q_DECLARE_METATYPE(AudioAPI*);
-Q_DECLARE_METATYPE(SoundChannel*);
-
-/// Config API defines.
-Q_DECLARE_METATYPE(ConfigAPI*);
-
-/// Renderer defines.
-Q_DECLARE_METATYPE(RaycastResult*);
 
 QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
 {
@@ -202,9 +207,6 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
 //    engine->importExtension("qt.webkit"); //cvetan hacked this to build with msvc, patch is somewhere
 
 }
-
-Q_DECLARE_METATYPE(SoundChannelPtr);
-Q_DECLARE_METATYPE(InputContextPtr);
 
 QScriptValue register_AABB_prototype(QScriptEngine *engine);
 QScriptValue register_float2_prototype(QScriptEngine *engine);
@@ -281,9 +283,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
     qScriptRegisterQObjectMetaType<ChangeRequest*>(engine);
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
-    //qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
     qScriptRegisterMetaType(engine, toScriptValueEnum<AttributeChange::Type>, fromScriptValueEnum<AttributeChange::Type>);
-    //qRegisterMetaType<EntityAction::ExecType>("EntityAction::ExecutionType");
     qScriptRegisterMetaType(engine, toScriptValueEnum<EntityAction::ExecType>, fromScriptValueEnum<EntityAction::ExecType>);
     qRegisterMetaType<EntityAction::ExecTypeField>("EntityAction::ExecTypeField");
 
@@ -306,6 +306,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     // Config metatypes.
     qScriptRegisterQObjectMetaType<ConfigAPI*>(engine);
+    qScriptRegisterQObjectMetaType<ConfigData*>(engine);
 
     // Asset API
     qRegisterMetaType<AssetPtr>("AssetPtr");
@@ -347,21 +348,12 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     
     // Sound metatypes.
     qRegisterMetaType<sound_id_t>("sound_id_t");
-    qRegisterMetaType<SoundChannel::SoundState>("SoundState");
+    qScriptRegisterMetaType(engine, toScriptValueEnum<SoundChannel::SoundState>, fromScriptValueEnum<SoundChannel::SoundState>);
+    qScriptRegisterMetaType(engine, toScriptValueEnum<SoundChannel::SoundType>, fromScriptValueEnum<SoundChannel::SoundType>);
     qRegisterMetaType<SoundChannelPtr>("SoundChannelPtr");
     qScriptRegisterQObjectMetaType<SoundChannel*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<SoundChannel>, qScriptValueToBoostSharedPtr<SoundChannel>);
-    
-    qRegisterMetaType<SoundChannel::SoundState>("SoundChannel::SoundState");
-    qRegisterMetaType<SoundChannel::SoundType>("SoundType");
-    qRegisterMetaType<SoundChannel::SoundType>("SoundChannel::SoundType");
 
     // Renderer metatypes
     qScriptRegisterQObjectMetaType<RaycastResult*>(engine);
-
-    // Communications metatypes
-//    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::SessionInterface*>(engine);
-//    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::ParticipantInterface*>(engine);
 }
-
-
