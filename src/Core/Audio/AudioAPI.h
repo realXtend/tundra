@@ -66,6 +66,12 @@ public:
     /// Returns initialized status
     bool IsInitialized() const;
 
+    /// Saves sound settings to config.
+    void SaveSoundSettingsToConfig();
+
+    /// Loads and applies sound settings from config.
+    void LoadSoundSettingsFromConfig();
+
 public slots:
     /// Gets playback device names
     QStringList GetPlaybackDevices() const;

@@ -62,7 +62,7 @@ public:
     void ForceExit();
 
     /// Returns true if framework is in the process of exiting (will exit at next possible opportunity)
-    bool IsExiting() const { return exit_signal_; }
+    bool IsExiting() const { return exitSignal; }
 
 #ifdef PROFILING
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
@@ -133,7 +133,7 @@ public slots:
     IModule *GetModuleByName(const QString &name) const;
 
     /// Returns if we're running the application in headless or not.
-    bool IsHeadless() const { return headless_; }
+    bool IsHeadless() const { return headless; }
 
     /// Signals the framework to exit
     void Exit();
@@ -154,12 +154,15 @@ public slots:
 private:
     Q_DISABLE_COPY(Framework)
 
-    bool exit_signal_; ///< If true, exit application.
+    /// Appends all found startup options from the given file to the startupOptions member.
+    void LoadStartupOptionsFromXML(QString configurationFile);
+
+    bool exitSignal; ///< If true, exit application.
 #ifdef PROFILING
     Profiler *profiler; ///< Profiler.
 #endif
     ProfilerQObj *profilerQObj; ///< We keep this QObject always alive, even when profiling is not enabled, so that scripts don't have to check whether profiling is enabled or disabled.
-    bool headless_; ///< Are we running in the headless mode.
+    bool headless; ///< Are we running in the headless mode.
     Application *application; ///< The main QApplication object.
     FrameAPI *frame; ///< The Frame API.
     ConsoleAPI *console; ///< The console API.
@@ -171,9 +174,6 @@ private:
     ConfigAPI *config; ///< The Config API.
     PluginAPI *plugin;
     IRenderer *renderer;
-
-    /// Appends all found startup options from the given file to the startupOptions member.
-    void LoadStartupOptionsFromXML(QString configurationFile);
 
     /// Stores all command line parameters and startup options specified in the Config XML files.
     QStringList startupOptions;
@@ -191,8 +191,8 @@ private:
     std::vector<boost::shared_ptr<IModule> > modules;
 
     static Framework *instance;
-    int argc_; ///< Command line argument count as supplied by the operating system.
-    char **argv_; ///< Command line arguments as supplied by the operating system.
+    int argc; ///< Command line argument count as supplied by the operating system.
+    char **argv; ///< Command line arguments as supplied by the operating system.
 };
 
 template <class T>

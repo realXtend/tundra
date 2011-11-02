@@ -12,6 +12,7 @@
 #include "Framework.h"
 #include "Profiler.h"
 #include "Math/float3.h"
+#include "ConfigAPI.h"
 
 #ifndef Q_WS_MAC
 #include <AL/al.h>
@@ -93,29 +94,19 @@ assetAPI(assetAPI_)
     if (audioDevice.size() > 1)
         LogWarning("Specified multiple --audiodevice parameters. Using \"" + device + "\".");
     Initialize(device);
-        
-    // Set default master gains for sound types
-    /*
-    masterGain = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "masterGain", 1.0f);
-    soundMasterGain[SoundChannel::Triggered] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "triggered_sound_gain", 1.0f);
-    soundMasterGain[SoundChannel::Ambient] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "ambient_sound_gain", 1.0f);
-    soundMasterGain[SoundChannel::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0f);
-    */
+
+    // Load sound settings. If we have "master_gain" in config we very likely have all the other settings as well.
+    if (fw->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND, "master_gain"))
+        LoadSoundSettingsFromConfig();
 
     if (!fw->IsHeadless())
-        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); 
+        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio")));
     else
-        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Audio"))); 
+        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Audio")));
 }
 
 AudioAPI::~AudioAPI()
 {
-/*
-    framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "masterGain", masterGain);
-    framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "triggered_sound_gain", soundMasterGain[SoundChannel::Triggered]);
-    framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "ambient_sound_gain", soundMasterGain[SoundChannel::Ambient]);
-    framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "voice_sound_gain", soundMasterGain[SoundChannel::Voice]);
-*/
 }
 
 void AudioAPI::Reset()
@@ -263,15 +254,50 @@ void AudioAPI::Update(f64 frametime)
 }
 
 bool AudioAPI::IsInitialized() const
-{ 
+{
     return impl && impl->initialized;
+}
+
+void AudioAPI::SaveSoundSettingsToConfig()
+{
+    if (IsInitialized())
+    {
+        ConfigAPI &cfg = *assetAPI->GetFramework()->Config();
+        ConfigData sound(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND);
+        cfg.Set(sound, "master_gain", (double)GetMasterGain());
+        cfg.Set(sound, "triggered_sound_gain", (double)GetSoundMasterGain(SoundChannel::Triggered));
+        cfg.Set(sound, "ambient_sound_gain", (double)GetSoundMasterGain(SoundChannel::Ambient));
+        cfg.Set(sound, "voice_sound_gain", (double)GetSoundMasterGain(SoundChannel::Voice));
+    }
+}
+
+void AudioAPI::LoadSoundSettingsFromConfig()
+{
+    if (IsInitialized())
+    {
+        ConfigAPI &cfg = *assetAPI->GetFramework()->Config();
+        ConfigData sound(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND);
+        bool ok;
+        float val = cfg.Get(sound, "master_gain").toFloat(&ok);
+        if (ok)
+            SetMasterGain(val);
+        val = cfg.Get(sound, "triggered_sound_gain").toFloat(&ok);
+        if (ok)
+            SetSoundMasterGain(SoundChannel::Triggered, val);
+        val = cfg.Get(sound, "ambient_sound_gain").toFloat(&ok);
+        if (ok)
+            SetSoundMasterGain(SoundChannel::Ambient, val);
+        val = cfg.Get(sound, "voice_sound_gain").toFloat(&ok);
+        if (ok)
+            SetSoundMasterGain(SoundChannel::Voice, val);
+    }
 }
 
 void AudioAPI::SetListener(const float3 &position, const Quat &orientation)
 {
     if (!impl || !impl->initialized)
         return;
- 
+
     impl->listenerPosition = position;
     impl->listenerOrientation = orientation;
 }

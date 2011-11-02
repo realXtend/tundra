@@ -21,7 +21,6 @@
 #include "ConsoleAPI.h"
 #include "SceneAPI.h"
 #include "UiAPI.h"
-#include "UiMainWindow.h"
 
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
@@ -93,11 +92,11 @@ struct CommandLineParameterMap
 
 Framework *Framework::instance = 0;
 
-Framework::Framework(int argc, char** argv) :
-    exit_signal_(false),
-    argc_(argc),
-    argv_(argv),
-    headless_(false),
+Framework::Framework(int argc_, char** argv_) :
+    exitSignal(false),
+    argc(argc_),
+    argv(argv_),
+    headless(false),
     application(0),
     frame(0),
     console(0),
@@ -179,7 +178,7 @@ Framework::Framework(int argc, char** argv) :
     else
     {
         if (HasCommandLineParameter("--headless"))
-            headless_ = true;
+            headless = true;
 #ifdef PROFILING
         profiler = new Profiler();
         PROFILE(FW_Startup);
@@ -196,7 +195,7 @@ Framework::Framework(int argc, char** argv) :
         config->PrepareDataFolder(configDir);
 
         // Create QApplication, set target FPS limit, if specified.
-        application = new Application(this, argc_, argv_);
+        application = new Application(this, argc, argv);
         QStringList fpsLimitParam = CommandLineParameters("--fpslimit");
         if (fpsLimitParam.size() > 1)
             LogWarning("Multiple --fpslimit parameters specified! Using " + fpsLimitParam.first() + " as the value.");
@@ -207,14 +206,14 @@ Framework::Framework(int argc, char** argv) :
             if (ok)
                 application->SetTargetFpsLimit(targetFpsLimit);
             else
-                LogWarning("Erroneous FPS limit given with --fpslimit: " + fpsLimitParam.first() + ".");
+                LogWarning("Erroneous FPS limit given with --fpslimit: " + fpsLimitParam.first() + ". Ignoring.");
         }
 
         // Create core APIs
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
         plugin = new PluginAPI(this);
-        asset = new AssetAPI(this, headless_);
+        asset = new AssetAPI(this, headless);
         // Prepare asset cache, if used.
         QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
         if (CommandLineParameters("--assetcachedir").size() > 0)
@@ -274,23 +273,23 @@ Framework::~Framework()
 
 void Framework::ProcessOneFrame()
 {
-    if (exit_signal_ == true)
+    if (exitSignal == true)
         return; // We've accidentally ended up to update a frame, but we're actually quitting.
 
     PROFILE(Framework_ProcessOneFrame);
 
-    static tick_t clock_freq;
-    static tick_t last_clocktime;
+    static tick_t clockFreq;
+    static tick_t lastClockTime;
 
-    if (!last_clocktime)
-        last_clocktime = GetCurrentClockTime();
+    if (!lastClockTime)
+        lastClockTime = GetCurrentClockTime();
 
-    if (!clock_freq)
-        clock_freq = GetCurrentClockFreq();
+    if (!clockFreq)
+        clockFreq = GetCurrentClockFreq();
 
-    tick_t curr_clocktime = GetCurrentClockTime();
-    double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
-    last_clocktime = curr_clocktime;
+    tick_t currClockTime = GetCurrentClockTime();
+    double frametime = ((double)currClockTime - (double)lastClockTime) / (double) clockFreq;
+    lastClockTime = currClockTime;
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
@@ -303,14 +302,16 @@ void Framework::ProcessOneFrame()
         }
         catch(const std::exception &e)
         {
-            std::cout << "ProcessOneFrame caught an exception while updating module " << modules[i]->Name().toStdString()
-                << ": " << (e.what() ? e.what() : "(null)") << std::endl;
-            LogError("ProcessOneFrame caught an exception while updating module " + modules[i]->Name() + ": " + (e.what() ? e.what() : "(null)"));
+            std::stringstream error;
+            error << "ProcessOneFrame caught an exception while updating module " << modules[i]->Name().toStdString() << ": " << (e.what() ? e.what() : "(null)");
+            std::cout << error.str() << std::endl;
+            LogError(error.str());
         }
         catch(...)
         {
-            std::cout << "ProcessOneFrame caught an unknown exception while updating module " << modules[i]->Name().toStdString() << std::endl;
-            LogError("ProcessOneFrame caught an unknown exception while updating module " + modules[i]->Name());
+            std::string error("ProcessOneFrame caught an unknown exception while updating module " + modules[i]->Name().toStdString());
+            std::cout << error << std::endl;
+            LogError(error);
         }
     }
 
@@ -327,7 +328,7 @@ void Framework::ProcessOneFrame()
 void Framework::Go()
 {
     // Check if we were never supposed to run
-    if (exit_signal_)
+    if (exitSignal)
         return;
     
     srand(time(0));
@@ -348,7 +349,7 @@ void Framework::Go()
     application->Go();
 
     // Qt main loop execution has ended, we are exiting.
-    exit_signal_ = true;
+    exitSignal = true;
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
@@ -363,6 +364,7 @@ void Framework::Go()
     frame->Reset();
     input->SaveKeyBindingsToFile();
     input->Reset();
+    audio->SaveSoundSettingsToConfig();
     audio->Reset();
 
     for(size_t i = 0; i < modules.size(); ++i)
@@ -383,21 +385,21 @@ void Framework::Go()
 
 void Framework::Exit()
 {
-    exit_signal_ = true;
+    exitSignal = true;
     if (application)
         application->AboutToExit();
 }
 
 void Framework::ForceExit()
 {
-    exit_signal_ = true;
+    exitSignal = true;
     if (application)
         application->quit();
 }
 
 void Framework::CancelExit()
 {
-    exit_signal_ = false;
+    exitSignal = false;
 
     // Our main loop is stopped when we are exiting,
     // we need to start it back up again if something canceled the exit.
@@ -524,9 +526,10 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
         LogError("Framework::LoadStartupOptionsFromXML: Failed to open file \"" + configurationFile + "\"!");
         return;
     }
-    if (!doc.setContent(&file))
+    QString errorMsg;
+    if (!doc.setContent(&file, false, &errorMsg))
     {
-        LogError("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"" + configurationFile + "\"!");
+        LogError("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"" + configurationFile + "\": " + errorMsg + "!");
         file.close();
         return;
     }
