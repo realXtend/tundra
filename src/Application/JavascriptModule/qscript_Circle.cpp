@@ -75,6 +75,15 @@ static QScriptValue Circle_Centroid_const(QScriptContext *context, QScriptEngine
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Circle_ExtremePoint_float3_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Circle_ExtremePoint_float3_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Circle This = qscriptvalue_cast<Circle>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float3 ret = This.ExtremePoint(direction);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Circle_ContainingPlane_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Circle_ContainingPlane_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -165,6 +174,18 @@ static QScriptValue Circle_IntersectsDisc_Ray_const(QScriptContext *context, QSc
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Circle_IntersectsFaces_manual(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Circle_IntersectsDisc_Ray_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Circle This = qscriptvalue_cast<Circle>(context->thisObject());
+    OBB obb = qscriptvalue_cast<OBB>(context->argument(0));
+    std::vector<float3> ret = This.IntersectsFaces(obb);
+    QScriptValue retObj = engine->newArray(ret.size());
+    for(size_t i = 0; i < ret.size(); ++i)
+        retObj.setProperty(i, qScriptValueFromValue(engine, ret[i]));
+    return retObj;
+}
+
 static QScriptValue Circle_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -227,6 +248,7 @@ QScriptValue register_Circle_prototype(QScriptEngine *engine)
     proto.setProperty("GetPoint", engine->newFunction(Circle_GetPoint_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("CenterPoint", engine->newFunction(Circle_CenterPoint_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Centroid", engine->newFunction(Circle_Centroid_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ExtremePoint", engine->newFunction(Circle_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ContainingPlane", engine->newFunction(Circle_ContainingPlane_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("EdgeContains", engine->newFunction(Circle_EdgeContains_float3_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("DistanceToEdge", engine->newFunction(Circle_DistanceToEdge_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -235,6 +257,7 @@ QScriptValue register_Circle_prototype(QScriptEngine *engine)
     proto.setProperty("ClosestPointToDisc", engine->newFunction(Circle_ClosestPointToDisc_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(Circle_Intersects_Plane_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IntersectsDisc", engine->newFunction(Circle_IntersectsDisc_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("IntersectsFaces", engine->newFunction(Circle_IntersectsFaces_manual, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Circle>()));
     engine->setDefaultPrototype(qMetaTypeId<Circle>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Circle*>(), proto);
