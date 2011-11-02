@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
@@ -18,7 +18,7 @@
 #include "AttributeMetadata.h"
 #include "Profiler.h"
 #include "Math/float2.h"
-#include "Math/Ray.h"
+#include "Geometry/Ray.h"
 
 #include <Ogre.h>
 #include <OgreTagPoint.h>
@@ -238,7 +238,7 @@ float3x4 EC_Mesh::LocalToWorld() const
 
     assume(!float3(node->_getDerivedScale()).IsZero());
     float3x4 tm = float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
-    assume(tm.IsOrthogonal());
+    assume(tm.IsColOrthogonal());
     return tm;
 }
 
@@ -1351,7 +1351,7 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
 
     assume(!float3(node->_getDerivedScale()).IsZero());
     float3x4 localToWorld = float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
-    assume(localToWorld.IsOrthogonal());
+    assume(localToWorld.IsColOrthogonal());
     
     float3x4 worldToLocal = localToWorld.Inverted();
     Ray localRay = ray;

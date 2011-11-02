@@ -6,7 +6,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Math/float3.h"
-#include "Math/Ray.h"
+#include "Geometry/Ray.h"
 
 #include <QImage>
 #include <QSize>

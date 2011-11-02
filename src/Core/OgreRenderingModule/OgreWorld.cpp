@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "OgreWorld.h"
 #include "Renderer.h"
@@ -18,12 +18,12 @@
 #include "Transform.h"
 #include "Math/float2.h"
 #include "Math/float3x4.h"
-#include "Math/AABB.h"
-#include "Math/OBB.h"
-#include "Math/LineSegment.h"
+#include "Geometry/AABB.h"
+#include "Geometry/OBB.h"
+#include "Geometry/LineSegment.h"
 #include "Math/float3.h"
-#include "Math/Circle.h"
-#include "Math/Sphere.h"
+#include "Geometry/Circle.h"
+#include "Geometry/Sphere.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "OgreBulletCollisionsDebugLines.h"
 

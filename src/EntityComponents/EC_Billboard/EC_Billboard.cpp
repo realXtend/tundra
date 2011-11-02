@@ -6,7 +6,7 @@
  *  @note   The entity must have EC_Placeable component available in advance.
  */
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "EC_Billboard.h"
 #include "Renderer.h"

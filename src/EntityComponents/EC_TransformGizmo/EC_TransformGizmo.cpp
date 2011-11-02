@@ -5,7 +5,7 @@
  *  @brief  Enables visual manipulators (gizmos) for Transform attributes.
  */
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "EC_TransformGizmo.h"
 
@@ -26,8 +26,8 @@
 #include "FrameAPI.h"
 #include "Profiler.h"
 
-#include "Math/Ray.h"
-#include "Math/Plane.h"
+#include "Geometry/Ray.h"
+#include "Geometry/Plane.h"
 #include <Ogre.h>
 
 const AssetReference cTranslate("Ogre Media:axis1.mesh");

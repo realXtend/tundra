@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Mesh.h"
@@ -782,7 +782,7 @@ void EC_Placeable::SetScale(const float3 &scale)
 
 void EC_Placeable::SetOrientationAndScale(const float3x3 &tm)
 {
-    assume(tm.IsOrthogonal());
+    assume(tm.IsColOrthogonal());
     assume(!tm.HasNegativeScale());
     Transform newtrans = transform.Get();
     newtrans.SetRotationAndScale(tm);
@@ -801,7 +801,7 @@ void EC_Placeable::SetTransform(const float3x3 &tm, const float3 &pos)
 
 void EC_Placeable::SetTransform(const float3x4 &tm)
 {
-    assume(tm.IsOrthogonal());
+    assume(tm.IsColOrthogonal());
     assume(!tm.HasNegativeScale());
     float3 translate;
     Quat rotate;
@@ -835,7 +835,7 @@ void EC_Placeable::SetWorldTransform(const float3x3 &tm, const float3 &pos)
 
 void EC_Placeable::SetWorldTransform(const float3x4 &tm)
 {
-    assume(tm.IsOrthogonal());
+    assume(tm.IsColOrthogonal());
     assume(!tm.HasNegativeScale());
     if (!parentPlaceable_) // No parent, the local->parent transform equals the local->world transform.
     {

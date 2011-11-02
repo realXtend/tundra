@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "EC_Camera.h"
 #include "EC_Mesh.h"

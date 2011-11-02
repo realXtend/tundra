@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define BULLET_INTEROP
+#define MATH_BULLET_INTEROP
 #include "DebugOperatorNew.h"
 #include "CollisionShapeUtils.h"
 #include "ConvexHull.h"

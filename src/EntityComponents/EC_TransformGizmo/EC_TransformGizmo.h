@@ -11,7 +11,7 @@
 #include "InputFwd.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
-#include "Math/Ray.h"
+#include "Geometry/Ray.h"
 #include "Math/float3.h"
 #include "Math/float3x4.h"
 #include "Math/Quat.h"

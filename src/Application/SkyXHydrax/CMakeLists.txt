@@ -36,11 +36,11 @@ if (ENABLE_SKYX OR ENABLE_HYDRAX)
         use_package (HYDRAX)
     endif()
 
-    use_core_modules(Framework Scene OgreRenderingModule)
+    use_core_modules(Framework Math Scene OgreRenderingModule)
 
     build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-    link_modules(Framework Scene OgreRenderingModule)
+    link_modules(Framework Math Scene OgreRenderingModule)
 
     link_ogre()
 

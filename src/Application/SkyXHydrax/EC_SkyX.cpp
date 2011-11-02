@@ -5,7 +5,7 @@
  *  @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
  */
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "DebugOperatorNew.h"
 

@@ -3,8 +3,8 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#define OGRE_INTEROP
-#define BULLET_INTEROP
+#define MATH_OGRE_INTEROP
+#define MATH_BULLET_INTEROP
 #include "EC_RigidBody.h"
 #include "ConvexHull.h"
 #include "PhysicsModule.h"
@@ -21,6 +21,7 @@
 #include "IAssetTransfer.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
+#include "Geometry/AABB.h"
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
@@ -717,6 +718,13 @@ bool EC_RigidBody::HasAuthority() const
         return false;
     
     return true;
+}
+
+AABB EC_RigidBody::ShapeAABB() const
+{
+    btVector3 aabbMin, aabbMax;
+    body_->getAabb(aabbMin, aabbMax);
+    return AABB(aabbMin, aabbMax);
 }
 
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)

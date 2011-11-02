@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Terrain.h"

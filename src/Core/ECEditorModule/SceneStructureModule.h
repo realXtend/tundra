@@ -12,6 +12,7 @@
 #include "InputFwd.h"
 #include "AssetFwd.h"
 #include "AssetReference.h"
+#include "Math/MathFwd.h"
 
 #include <QPointer>
 #include <QWidget>
@@ -25,7 +26,6 @@ class QDropEvent;
 class SceneStructureWindow;
 class AssetsWindow;
 struct SceneDesc;
-class float3;
 
 class EC_Mesh;
 

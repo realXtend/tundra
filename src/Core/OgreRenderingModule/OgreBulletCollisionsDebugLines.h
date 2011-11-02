@@ -33,7 +33,7 @@ THE SOFTWARE.
 #ifndef _OgreBulletCollisions_DEBUGLines_H_
 #define _OgreBulletCollisions_DEBUGLines_H_
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include <Ogre.h>
 #include "Math/float3.h"

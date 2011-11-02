@@ -8,7 +8,7 @@
 #include <QMetaType>
 #include <QColor>
 
-#ifdef OGRE_INTEROP
+#ifdef MATH_OGRE_INTEROP
 #include <OgreColourValue.h>
 #endif
 
@@ -61,7 +61,7 @@ public:
     /// For QtScript
     QString toString() const { return (QString)*this; }
 
-#ifdef OGRE_INTEROP
+#ifdef MATH_OGRE_INTEROP
     Color(const Ogre::ColourValue &other) { r = other.r; g = other.g; b = other.b; a = other.a; }
     operator Ogre::ColourValue() const { return Ogre::ColourValue(r, g, b, a); }
 #endif

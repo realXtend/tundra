@@ -5,7 +5,7 @@
  *  @brief  A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
  */
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "DebugOperatorNew.h"
 
