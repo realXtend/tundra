@@ -20,6 +20,7 @@
 #include "Math/float3x4.h"
 #include "Geometry/AABB.h"
 #include "Geometry/OBB.h"
+#include "Geometry/Plane.h"
 #include "Geometry/LineSegment.h"
 #include "Math/float3.h"
 #include "Geometry/Circle.h"
@@ -575,6 +576,25 @@ void OgreWorld::DebugDrawLine(const float3& start, const float3& end, float r, f
         if (debugLinesNoDepth_)
             debugLinesNoDepth_->addLine(start, end, float3(r,g,b));
     }
+}
+
+void OgreWorld::DebugDrawPlane(const Plane &plane, float r, float g, float b, const float3 &refPoint, float uSpacing, float vSpacing, 
+                               int uSegments, int vSegments, bool depthTest)
+{
+    float U0 = -uSegments * uSpacing / 2.f;
+    float V0 = -vSegments * vSpacing / 2.f;
+
+    float U1 = uSegments * uSpacing / 2.f;
+    float V1 = vSegments * vSpacing / 2.f;
+
+    for(int y = 0; y < vSegments; ++y)
+        for(int x = 0; x < uSegments; ++x)
+        {
+            float u = U0 + x * uSpacing;
+            float v = V0 + y * vSpacing;
+            DebugDrawLine(plane.Point(U0, v, refPoint), plane.Point(U1, v, refPoint), r, g, b, depthTest);
+            DebugDrawLine(plane.Point(u, V0, refPoint), plane.Point(u, V1, refPoint), r, g, b, depthTest);
+        }
 }
 
 void OgreWorld::DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest)

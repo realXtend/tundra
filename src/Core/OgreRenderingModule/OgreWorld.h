@@ -94,7 +94,9 @@ public slots:
     // Debugging aids:
     void DebugDrawAABB(const AABB &aabb, float r, float g, float b, bool depthTest = true);
     void DebugDrawOBB(const OBB &obb, float r, float g, float b, bool depthTest = true);
-    void DebugDrawLine(const float3& start, const float3& end, float r, float g, float b, bool depthTest = true);
+    void DebugDrawLine(const float3 &start, const float3 &end, float r, float g, float b, bool depthTest = true);
+    void DebugDrawPlane(const Plane &plane, float r, float g, float b, const float3 &refPoint = float3(0,0,0), float uSpacing = 1.f, float vSpacing = 1.f, 
+        int uSegments = 10, int vSegments = 10, bool depthTest = true);
     void DebugDrawLineSegment(const LineSegment &l, float r, float g, float b, bool depthTest = true);
     void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest = true);
     void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest = true);
