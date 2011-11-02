@@ -101,6 +101,15 @@ static QScriptValue Sphere_Centroid_const(QScriptContext *context, QScriptEngine
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Sphere_ExtremePoint_float3_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_ExtremePoint_float3_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Sphere This = qscriptvalue_cast<Sphere>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float3 ret = This.ExtremePoint(direction);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Sphere_IsFinite_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Sphere_IsFinite_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -604,6 +613,7 @@ QScriptValue register_Sphere_prototype(QScriptEngine *engine)
     proto.setProperty("Volume", engine->newFunction(Sphere_Volume_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SurfaceArea", engine->newFunction(Sphere_SurfaceArea_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Centroid", engine->newFunction(Sphere_Centroid_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ExtremePoint", engine->newFunction(Sphere_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsFinite", engine->newFunction(Sphere_IsFinite_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsDegenerate", engine->newFunction(Sphere_IsDegenerate_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Contains", engine->newFunction(Sphere_Contains_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

@@ -219,6 +219,15 @@ static QScriptValue AABB_CornerPoint_int_const(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue AABB_ExtremePoint_float3_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_ExtremePoint_float3_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float3 ret = This.ExtremePoint(direction);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue AABB_PointOnEdge_int_float_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function AABB_PointOnEdge_int_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -986,6 +995,7 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("PointInside", engine->newFunction(AABB_PointInside_float_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Edge", engine->newFunction(AABB_Edge_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("CornerPoint", engine->newFunction(AABB_CornerPoint_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ExtremePoint", engine->newFunction(AABB_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("PointOnEdge", engine->newFunction(AABB_PointOnEdge_int_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("FaceCenterPoint", engine->newFunction(AABB_FaceCenterPoint_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("FacePoint", engine->newFunction(AABB_FacePoint_int_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);

@@ -171,6 +171,15 @@ static QScriptValue Triangle_UnnormalizedNormalCW_const(QScriptContext *context,
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Triangle_ExtremePoint_float3_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_ExtremePoint_float3_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float3 ret = This.ExtremePoint(direction);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Triangle_ToPolygon_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_ToPolygon_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -553,6 +562,7 @@ QScriptValue register_Triangle_prototype(QScriptEngine *engine)
     proto.setProperty("NormalCW", engine->newFunction(Triangle_NormalCW_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("UnnormalizedNormalCCW", engine->newFunction(Triangle_UnnormalizedNormalCCW_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("UnnormalizedNormalCW", engine->newFunction(Triangle_UnnormalizedNormalCW_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ExtremePoint", engine->newFunction(Triangle_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToPolygon", engine->newFunction(Triangle_ToPolygon_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToPolyhedron", engine->newFunction(Triangle_ToPolyhedron_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsFinite", engine->newFunction(Triangle_IsFinite_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);

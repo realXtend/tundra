@@ -74,6 +74,15 @@ static QScriptValue LineSegment_Dir_const(QScriptContext *context, QScriptEngine
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue LineSegment_ExtremePoint_float3_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function LineSegment_ExtremePoint_float3_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LineSegment This = qscriptvalue_cast<LineSegment>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float3 ret = This.ExtremePoint(direction);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue LineSegment_Transform_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function LineSegment_Transform_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -367,6 +376,7 @@ QScriptValue register_LineSegment_prototype(QScriptEngine *engine)
     proto.setProperty("CenterPoint", engine->newFunction(LineSegment_CenterPoint_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Reverse", engine->newFunction(LineSegment_Reverse, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Dir", engine->newFunction(LineSegment_Dir_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ExtremePoint", engine->newFunction(LineSegment_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Transform", engine->newFunction(LineSegment_Transform_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Length", engine->newFunction(LineSegment_Length_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("LengthSq", engine->newFunction(LineSegment_LengthSq_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
