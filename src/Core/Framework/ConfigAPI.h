@@ -84,6 +84,7 @@ public:
     static QString SECTION_CLIENT;
     static QString SECTION_RENDERING;
     static QString SECTION_UI;
+    static QString SECTION_SOUND;
 
 public slots:
     /// Returns if a key is available in the config.
