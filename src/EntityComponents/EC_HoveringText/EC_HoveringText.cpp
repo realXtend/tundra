@@ -5,7 +5,7 @@
  *  @brief  Shows a hovering text attached to an entity.
  */
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "DebugOperatorNew.h"
 
