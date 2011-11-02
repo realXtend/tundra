@@ -48,6 +48,7 @@ bool QSVIsOfType(const QScriptValue &value)
 }
 
 QScriptValue ToScriptValue_const_float3(QScriptEngine *engine, const float3 &value);
+QScriptValue ToScriptValue_const_LineSegment(QScriptEngine *engine, const LineSegment &value);
 
 // A function to help the automatically generated code produce cleaner error reporting.
 inline std::string Capitalize(QString str)
@@ -63,3 +64,4 @@ inline void PrintCallStack(const QStringList &callStack)
         printf("   %s\n", i.toStdString().c_str());
     }
 }
+
