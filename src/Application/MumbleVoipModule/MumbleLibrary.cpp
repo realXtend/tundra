@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "CoreDefines.h"
 
 #include "MumbleLibrary.h"
 #include "MumbleMainLoopThread.h"

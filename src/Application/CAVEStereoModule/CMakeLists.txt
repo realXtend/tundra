@@ -22,11 +22,11 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DCAVESTEREO_MODULE_EXPORTS)
 
-use_core_modules (Framework Ui OgreRenderingModule)
+use_core_modules (Framework Math Ui OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Framework Ui OgreRenderingModule)
+link_modules (Framework Math Ui OgreRenderingModule)
 link_ogre()
 
 SetupCompileFlagsWithPCH()
