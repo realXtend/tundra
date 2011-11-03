@@ -76,16 +76,14 @@ public slots:
     /** @param components List of component pointers. */
     void CreateXmlEditor(const QList<ComponentPtr> &components);
 
-    /// Returns Selected components from the active ECEditorWindow.
-    /** @return If editor isn't initialized or any components aren't selected from the editor, method will return an empty list. */
-    QObjectList GetSelectedComponents() const;
-
-    /// Return selected entity ids as QVariantList from the active ECEditorWindow.
-    QVariantList GetSelectedEntities() const;
-
     /// Repositions the given editor relative to an active SceneStructureWindow or MainWindow.
     /** @param editor ECEditorWindow. */
     void RepositionEditor(ECEditorWindow *editor);
+
+    /// @todo Remove. One can do easily just ActiveEditor()->SelectedComponents();
+    QObjectList GetSelectedComponents() const;
+    /// @todo Remove. One can do easily just ActiveEditor->SelectedEntities();
+    QVariantList GetSelectedEntities() const;
 
 signals:
     /// Signal is emitted when active ECEditorWindow's selection has changed.
