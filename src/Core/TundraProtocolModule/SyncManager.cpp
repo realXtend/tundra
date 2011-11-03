@@ -1620,7 +1620,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     for(uint i = 0; i < msg.parameters.size(); ++i)
         params << BufferToString(msg.parameters[i].parameter).c_str();
 
-    EntityAction::ExecType type = (EntityAction::ExecType)(msg.executionType);
+    EntityAction::ExecTypeField type = (EntityAction::ExecTypeField)(msg.executionType);
 
     bool handled = false;
 

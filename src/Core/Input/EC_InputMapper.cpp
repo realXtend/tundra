@@ -163,10 +163,10 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringList parameters = parsedAction.split(',');
-        entity->Exec((EntityAction::ExecType)execType, act, parameters);
+        entity->Exec((EntityAction::ExecTypeField)execType, act, parameters);
     }
     else
-        entity->Exec((EntityAction::ExecType)execType, action);
+        entity->Exec((EntityAction::ExecTypeField)execType, action);
     if (suppressKeyEvents.Get())
         e->Suppress();
 }
@@ -183,20 +183,20 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     {
         if (e->relativeX != 0)
         {
-            ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
+            ParentEntity()->Exec((EntityAction::ExecTypeField)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
             if (suppressMouseEvents.Get())
                 e->Suppress();
         }
         if (e->relativeY != 0)
         {
-            ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
+            ParentEntity()->Exec((EntityAction::ExecTypeField)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
             if (suppressMouseEvents.Get())
                 e->Suppress();
         }
     }
     if (e->eventType == MouseEvent::MouseScroll && e->relativeZ != 0)
     {
-        ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
+        ParentEntity()->Exec((EntityAction::ExecTypeField)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
         if (suppressMouseEvents.Get())
             e->Suppress();
     }
