@@ -101,6 +101,8 @@ void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
     activeEditor->SetFocus(true);
     connect(activeEditor, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
         this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
+
+    emit ActiveEditorChanged(activeEditor);
 }
 
 void ECEditorModule::ShowEditorWindow()

@@ -93,6 +93,10 @@ signals:
         @param attrName Selected item's attribute name (Empty if attribute isn't selected). */
     void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
+    /// Emitted when the active EC editor changes.
+    /** @param editor The editor that just became active. */
+    void ActiveEditorChanged(ECEditorWindow *editor);
+
 private:
     InputContextPtr inputContext; ///< Input context.
     ExpandMemoryPtr expandMemory; ///< Keeps track which items in EC editor are expanded and collapsed.
