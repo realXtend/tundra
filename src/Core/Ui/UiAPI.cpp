@@ -15,6 +15,7 @@
 #include "NullAssetFactory.h"
 #include "LoggingFunctions.h"
 
+#include <QMenuBar>
 #include <QEvent>
 #include <QLayout>
 #include <QVBoxLayout>
@@ -83,6 +84,20 @@ UiAPI::UiAPI(Framework *owner_) :
     owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
     
     mainWindow = new UiMainWindow(owner);
+
+    /* Unless the option --nomenubar was specified, assume that the startup UI for the Tundra main window will 
+       have a menu bar, and create one *immediately* here as a placeholder.
+       This will enable having properly positioned window geometry for UiGraphicsView and UiMainWindow, so that
+       the main Ogre render target will not be created to full size first, and afterwards resized to a smaller
+       size when a script (e.g. menubar.js) eventually creates the menu bar.
+       Resizing the main window causes a D3D9 device loss, so creating the menu here has the effect of optimizing
+       Tundra startup to avoid a full D3D9 device Reset() (and a resubmit of all GPU resources). */
+    if (!owner_->HasCommandLineParameter("--nomenubar"))
+    {
+        QMenuBar *menu = mainWindow->menuBar();
+        menu->addMenu("&File"); // Need to add an element, or otherwise the menu will not show up.
+    }
+
     mainWindow->setAutoFillBackground(false);
     mainWindow->setWindowIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/TundraLogo32px.ico"));
     connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
