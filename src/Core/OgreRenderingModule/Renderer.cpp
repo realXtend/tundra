@@ -10,7 +10,7 @@
 #include "EC_Camera.h"
 #include "RenderWindow.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
-#include "CompositionHandler.h"
+#include "OgreCompositionHandler.h"
 
 #include "Application.h"
 #include "UiGraphicsView.h"

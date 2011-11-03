@@ -11,7 +11,7 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "Scene.h"
-#include "CompositionHandler.h"
+#include "OgreCompositionHandler.h"
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "FrameAPI.h"

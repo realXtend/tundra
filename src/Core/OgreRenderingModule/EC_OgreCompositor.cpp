@@ -7,7 +7,7 @@
 #include "Renderer.h"
 #include "FrameAPI.h"
 #include "OgreRenderingModule.h"
-#include "CompositionHandler.h"
+#include "OgreCompositionHandler.h"
 
 #include "LoggingFunctions.h"
 

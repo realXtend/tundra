@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "CompositionHandler.h"
+#include "OgreCompositionHandler.h"
 #include "OgreRenderingModule.h"
 #include "OgreMaterialProperties.h"
 
