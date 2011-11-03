@@ -187,6 +187,11 @@ signals:
     /// Forwards ECBrowser's SelectionChanged signal to ECEditorModule, so in script we know when new selection has occurred.
     void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
+    /// Emitted when entity is selected or deselected.
+    /** @param entity Entity in question.
+        @param selected Was the entity selected (true) or deselected (false). */
+    void EntitySelected(const EntityPtr &entity, bool selected);
+
 protected:
     /// QWidget override.
     void hideEvent(QHideEvent *e);

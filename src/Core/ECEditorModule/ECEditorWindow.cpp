@@ -306,6 +306,7 @@ void ECEditorWindow::SetEntitySelected(EntityListWidgetItem *item, bool select)
     entityList->blockSignals(false);
     if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
         HighlightEntity(item->Entity(), select);
+    emit EntitySelected(item->Entity(), select);
 }
 
 EntityListWidgetItem *ECEditorWindow::FindItem(entity_id_t id) const
