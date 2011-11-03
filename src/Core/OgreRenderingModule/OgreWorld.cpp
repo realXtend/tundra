@@ -86,7 +86,7 @@ OgreWorld::~OgreWorld()
     
     // Remove all compositors.
     /// \todo This does not work with a proper multiscene approach
-    OgreRenderer::CompositionHandler* comp = renderer_->GetCompositionHandler();
+    OgreCompositionHandler* comp = renderer_->CompositionHandler();
     if (comp)
         comp->RemoveAllCompositors();
     
@@ -496,7 +496,7 @@ void OgreWorld::SetupShadows()
     {
         for(size_t i=0;i<shadowTextureCount;i++)
         {
-            OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
+            ::GaussianListener* gaussianListener = new GaussianListener();
             Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
             Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
             Ogre::Viewport* vp = shadowRtt->getViewport(0);

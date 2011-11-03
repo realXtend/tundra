@@ -24,7 +24,7 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
 {
     OgreRenderer::OgreRenderingModule *owner = framework->GetModule<OgreRenderer::OgreRenderingModule>();
     assert(owner && "No OgrerenderingModule.");
-    compositionHandler = owner->GetRenderer()->GetCompositionHandler();
+    compositionHandler = owner->GetRenderer()->CompositionHandler();
     assert(compositionHandler && "No CompositionHandler.");
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 

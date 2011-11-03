@@ -131,7 +131,7 @@ namespace OgreRenderer
         shadowQuality(Shadows_High),
         textureQuality(Texture_Normal)
     {
-        compositionHandler = new CompositionHandler();
+        compositionHandler = new OgreCompositionHandler();
         logListener = new OgreLogListener(framework_->HasCommandLineParameter("--hide_benign_ogre_messages"));
 
         timerFrequency = GetCurrentClockFreq();

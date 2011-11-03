@@ -71,7 +71,7 @@ namespace CAVEStereo
         assert(camera_);
         assert(render_window_);
         bool openGL = false;
-        if (renderer_.lock()->GetRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+        if (renderer_.lock()->OgreRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
             openGL = true;
 
         //Projection magic be happening here.
@@ -113,7 +113,7 @@ namespace CAVEStereo
         b = su.dotProduct(ebl)*n/distance_to_plane;
         t = su.dotProduct(etl)*n/distance_to_plane;
 
-        renderer_.lock()->GetRoot()->getRenderSystem()->_makeProjectionMatrix(l,r,b,t,n,f,proj_mat);
+        renderer_.lock()->OgreRoot()->getRenderSystem()->_makeProjectionMatrix(l,r,b,t,n,f,proj_mat);
         change_base=Ogre::Matrix4(sr.x,sr.y,sr.z,0,
                                   su.x,su.y,su.z,0,
                                   sn.x,sn.y,sn.z,0,

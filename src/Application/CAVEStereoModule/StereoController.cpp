@@ -251,7 +251,7 @@ namespace CAVEStereo
         {
             ExternalRenderWindow* window = windows_to_dispose_.at(i);
             window->hide();
-            renderer_->GetRoot()->detachRenderTarget(window->getRenderWindow());
+            renderer_->OgreRoot()->detachRenderTarget(window->getRenderWindow());
             delete window;
         }
 

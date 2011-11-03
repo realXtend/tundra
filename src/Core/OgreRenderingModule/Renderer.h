@@ -55,7 +55,7 @@ namespace OgreRenderer
         bool IsInitialized() const { return initialized_; }
 
         /// Returns Ogre root
-        OgreRootPtr GetRoot() const { return root_; }
+        OgreRootPtr OgreRoot() const { return root_; }
 
         /// Returns Ogre viewport
         Ogre::Viewport *MainViewport() const { return mainViewport; }
@@ -78,7 +78,7 @@ namespace OgreRenderer
         void Initialize();
 
         /// returns the composition handler responsible of the post-processing effects
-        CompositionHandler *GetCompositionHandler() const { return compositionHandler; }
+        OgreCompositionHandler *CompositionHandler() const { return compositionHandler; }
 
         /// Returns RenderWindow used to display the 3D scene in.
         RenderWindow *GetRenderWindow() const { return renderWindow; }
@@ -124,7 +124,9 @@ namespace OgreRenderer
         ShadowQualitySetting ShadowQuality() const { return shadowQuality; }
 
         /// Sets texture quality.
-        /** @note Changes need application restart to take effect */
+        /** @note The texture quality setting is currently unused and has no effect whatsoever.
+            @note Changes need application restart to take effect.
+            @todo The texture quality setting is currently unused and has no effect whatsoever. */
         void SetTextureQuality(TextureQualitySetting newquality);
 
         /// Returns texture quality.
@@ -244,7 +246,7 @@ namespace OgreRenderer
         StringVector added_resource_directories_;
 
         /// handler for post-processing effects
-        CompositionHandler *compositionHandler;
+        OgreCompositionHandler *compositionHandler;
 
         int lastHeight; ///< Last render window height
         int lastWidth; ///< Last render window width
