@@ -53,6 +53,14 @@ public slots:
     /** @param show Visibility of asset references in the tree view. */
     void ShowAssetReferences(bool show);
 
+    /// Decorates (bolds) or undecorates item representing @c entity.
+    /** @param entity Entity in question.
+        @param selected Whether to decorate (true) or undecorate (false) the item. */
+    void SetEntitySelected(const EntityPtr &entity, bool selected);
+
+    /// Undecorates all selected entities.
+    void ClearSelectedEntites();
+
 protected:
     /// QWidget override.
     void changeEvent(QEvent* e);

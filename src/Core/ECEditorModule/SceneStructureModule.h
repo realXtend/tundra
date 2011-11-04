@@ -25,9 +25,9 @@ class QDropEvent;
 
 class SceneStructureWindow;
 class AssetsWindow;
-struct SceneDesc;
 
 class EC_Mesh;
+class ECEditorWindow;
 
 /// Provides UIs for scene and asset maintenance and content import.
 /** Also implements raycast drag-and-drop import of various content file formats to the main window. */
@@ -132,4 +132,7 @@ private slots:
     void HandleSceneDescLoaded(AssetPtr asset);
 
     void HandleSceneDescFailed(IAssetTransfer *transfer, QString reason);
+
+    /// Decorates entities in SceneStructureWindow's to reflect the selection of currently active ECEditorWindow.
+    void SyncSelectionWithEcEditor(ECEditorWindow *);
 };
