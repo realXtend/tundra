@@ -92,6 +92,11 @@ void SceneStructureModule::Initialize()
         toolTip->setTextFormat(Qt::RichText);
         toolTipWidget->layout()->addWidget(toolTip);
     }
+
+    // Stay in sync with EC editors' selection.
+    ECEditorModule *ecEditorModule = framework_->GetModule<ECEditorModule>();
+    connect(ecEditorModule, SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
+        this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
 }
 
 QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene)
@@ -321,12 +326,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     sceneWindow->SetScene(GetFramework()->Scene()->MainCameraScene()->shared_from_this());
     sceneWindow->show();
 
-    // Stay in sync with EC editors selection.
-    ECEditorModule *ecEditorModule = framework_->GetModule<ECEditorModule>();
-    connect(ecEditorModule, SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
-        this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
-
-    // Apply the current selection right away.
+    // Reflect possible current selection of EC editor to Scene Structure window right away.
     SyncSelectionWithEcEditor(ecEditorModule->ActiveEditor());
 
     // Position the scene struct window to be centered on the left side of the main window.

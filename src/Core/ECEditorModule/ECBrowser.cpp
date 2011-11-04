@@ -740,6 +740,7 @@ void ECBrowser::CreateAttribute()
         return;
     }
 
+    /// @todo make this code to its own NewAttributeDialog class.
     // Create the dialog
     QStringList types = framework_->Scene()->AttributeTypes();
 
