@@ -327,7 +327,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     sceneWindow->show();
 
     // Reflect possible current selection of EC editor to Scene Structure window right away.
-    SyncSelectionWithEcEditor(ecEditorModule->ActiveEditor());
+    SyncSelectionWithEcEditor(framework_->GetModule<ECEditorModule>()->ActiveEditor());
 
     // Position the scene struct window to be centered on the left side of the main window.
     if (GetFramework()->Ui()->MainWindow())
