@@ -43,6 +43,10 @@ public:
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
 
+    /// Sets if this the target widget accepts input
+    Q_PROPERTY(bool acceptInput READ getacceptInput WRITE setacceptInput);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, acceptInput);
+
     /// 3D widget position in relation to the placeable component
     Q_PROPERTY(float3 position READ getposition WRITE setposition);
     DEFINE_QPROPERTY_ATTRIBUTE(float3, position);

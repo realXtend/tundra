@@ -120,7 +120,8 @@ void PluginAPI::UnloadPlugins()
 #ifdef WIN32
         FreeLibrary(iter->libraryHandle);
 #else
-        dlclose(iter->libraryHandle);
+    // \bug caused memory errors in destructors in the dlclose call chain
+    //        dlclose(iter->libraryHandle);
 #endif
     plugins.clear();
 }

@@ -78,8 +78,8 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<float3>& dest)
         Ogre::IndexData* index_data = submesh->indexData;
         size_t numTris = index_data->indexCount / 3;
         Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
-        unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
+        u32*  pLong = static_cast<u32*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        u16* pShort = reinterpret_cast<u16*>(pLong);
         bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
         
         if (use32bitindexes)

@@ -33,6 +33,11 @@ namespace CAVEStereo
 
     void CAVEStereoModule::Initialize()
     {
+        // This module does not register any components or anything important for headless runs.
+        // Purely visual/rendering code so return in headless mode.
+        if (framework_->IsHeadless())
+            return;
+
         OgreRenderer::OgreRenderingModule *renderingModule = framework_->GetModule<OgreRenderer::OgreRenderingModule>();
         if (!renderingModule)
         {

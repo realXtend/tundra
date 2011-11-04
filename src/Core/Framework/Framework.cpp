@@ -130,18 +130,36 @@ Framework::Framework(int argc_, char** argv_) :
     foreach(const QString &config, cmdLineParams)
         LoadStartupOptionsFromXML(config);
 
-    PrintStartupOptions();
-
     /// @note Modify the line below if wanting to set custom API version.
     apiVersionInfo = new ApiVersionInfo(Application::Version());
     /// @note Modify Application.cpp if/when making a custom Tundra build.
     applicationVersionInfo = new ApplicationVersionInfo(Application::OrganizationName(), Application::ApplicationName(), Application::Version());
 
+    // Print version information
+    /// @bug If you don't have --headless if WINDOWS_APP is defined on windows you will not see there prints, just a empty cmd prompt.
+    /// @note ConsoleAPI is not yet initialized so this or start params wont go to the gui console.
+    /// It would be rather nice to get version and start params to the gui console also as client may start without a cmd prompt
+    std::cout << "* API version         : " << apiVersionInfo->GetFullIdentifier().toStdString() << std::endl;
+    std::cout << "* Application version : " << applicationVersionInfo->GetFullIdentifier().toStdString() << std::endl;
+    if (HasCommandLineParameter("--version"))
+    {
+#ifdef WINDOWS_APP
+        /// @bug Pause if WINDOWS_APP is defined, otherwise user cannot read these prints as the console will close on Exit()
+        std::cout << std::endl;
+        system("pause");
+#endif
+        Exit();
+    }
+
+    // Print input params
+    /// @bug If you don't have --headless if WINDOWS_APP is defined on windows you will not see there prints, just a empty cmd prompt.
+    PrintStartupOptions();
+
     CommandLineParameterMap cmdLineDescs;
     ///\todo Make it possible for modules to know when "--help" command was issued and list the command line parameters they support.
     ///\todo Remove non-Framework parameters from the list below.
     cmdLineDescs.commands["--help"] = "Produce help message"; // Framework
-    cmdLineDescs.commands["--version"] = "Prints the version of application and exits immediately."; // main.cpp
+    cmdLineDescs.commands["--version"] = "Produce version information"; // Framework
     cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework & OgreRenderingModule
     cmdLineDescs.commands["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically"; //JavascriptModule
     cmdLineDescs.commands["--server"] = "Start Tundra server"; // TundraLogicModule
@@ -163,13 +181,13 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--physicsrate"] = "Specifies the number of physics simulation steps per second. Default: 60"; // PhysicsModule
     cmdLineDescs.commands["--physicsmaxsteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6"; // PhysicsModule
     
+
     if (HasCommandLineParameter("--help"))
     {
         std::cout << "Supported command line arguments: " << std::endl;
         std::cout << cmdLineDescs.ToString();
 #ifdef WINDOWS_APP
-        // Pause if WINDOWS_APP is defined, otherwise user can never read the params
-        // as the console will disappear after the prints.
+        /// @bug Pause if WINDOWS_APP is defined, otherwise user cannot read these prints as the console will close on Exit()
         std::cout << std::endl;
         system("pause");
 #endif

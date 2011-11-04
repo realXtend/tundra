@@ -50,8 +50,6 @@ void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
         return;
     else if (et == MouseEvent::MouseScroll)
         return;
-    else if ((et == MouseEvent::MousePressed || et == MouseEvent::MouseReleased) && mEvent->button != MouseEvent::LeftButton)
-        return;
 
     float closestDistance = 100000.0;
     EC_WidgetBillboard *closestComponent = 0;
@@ -89,5 +87,8 @@ void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
 
     // Redirect mouse event for the closest EC_WidgetBillboard
     if (closestComponent)
+    {
         closestComponent->OnMouseEvent(mEvent);
+        mEvent->handled = true;
+    }
 }

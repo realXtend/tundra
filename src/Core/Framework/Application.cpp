@@ -47,7 +47,7 @@
 /// @note Modify these values when you are making a custom Tundra build. Also the version needs to be changed here on releases.
 const char *Application::organizationName = "realXtend";
 const char *Application::applicationName = "Tundra";
-const char *Application::version = "2.0.0";
+const char *Application::version = "2.1.3";
 
 Application::Application(Framework *owner, int &argc, char **argv) :
     QApplication(argc, argv),
@@ -106,8 +106,6 @@ Application::Application(Framework *owner, int &argc, char **argv) :
 
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enable flash
 
-    InitializeSplash();
-
     ReadTargetFpsLimitFromConfig();
 }
 
@@ -132,7 +130,7 @@ void Application::InitializeSplash()
         splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/realxtend_tundra_splash.png"));
         splashScreen->setFont(QFont("Calibri", 9));
         splashScreen->show();
-        SetSplashMessage("Initializing framework...");
+        splashScreen->activateWindow();
     }
 #endif
 }
@@ -143,13 +141,11 @@ void Application::SetSplashMessage(const QString &message)
     if (framework->IsHeadless())
         return;
 
+    if (!splashScreen)
+        InitializeSplash();
+
     if (splashScreen && splashScreen->isVisible())
     {
-        // As splash can go behind other widgets (so it does not obstruct startup debugging)
-        // Make it show when a new message is set to it. This should keep it on top for the startup time,
-        // but allow you to make it go to the background if you focuse something in front of it.
-        splashScreen->activateWindow();
-
         // Call QApplication::processEvents() to update splash painting as at this point main loop is not running yet
         QString finalMessage = "v" + framework->ApplicationVersion()->GetVersion() + " - " + message.toUpper();
         splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
