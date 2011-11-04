@@ -16,6 +16,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QLocale>
 
 #include "MemoryLeakCheck.h"
 
@@ -38,9 +39,6 @@ void HttpAssetProvider::CreateAccessManager()
     if (!networkAccessManager)
     {
         networkAccessManager = new QNetworkAccessManager();
-#ifndef DISABLE_QNETWORKDISKCACHE
-        networkAccessManager->setCache(framework->Asset()->GetAssetCache());
-#endif
         connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
     }
 }
@@ -52,16 +50,7 @@ void HttpAssetProvider::AboutToExit()
         return;
 
     if (networkAccessManager)
-    {
-        // We must reset our AssetCaches parent before destroying QNAM
-        // otherwise we will crash in AssetAPI without keepinga QPointer<AssetCache>
-        // so we would know when the QObject is destroyed by qt. This would then again
-        // including AssetCache.h to AssetAPI.h that we certainly dont want.
-        QAbstractNetworkCache *cache = networkAccessManager->cache();
-        if (cache)
-            cache->setParent(0);
         SAFE_DELETE(networkAccessManager);
-    }
 }
 
 QString HttpAssetProvider::Name()
@@ -78,6 +67,117 @@ bool HttpAssetProvider::IsValidRef(QString assetRef, QString)
         return true;
     else
         return false;
+}
+
+// Copied from QNetworkHeadersPrivate used in HttpAssetProvider::FromHttpDate. 
+// Can be rewritten at some point if this looks too ugly. Original comments from qt:
+// Fast month string to int conversion. This code
+// assumes that the Month name is correct and that
+// the string is at least three chars long.
+static int ShortMonthNameToNum(const char* month_str)
+{
+    switch (month_str[0]) 
+    {
+    case 'J':
+        switch (month_str[1]) 
+        {
+        case 'a':
+            return 1;
+            break;
+        case 'u':
+            switch (month_str[2] ) 
+            {
+            case 'n':
+                return 6;
+                break;
+            case 'l':
+                return 7;
+                break;
+            }
+        }
+        break;
+    case 'F':
+        return 2;
+        break;
+    case 'M':
+        switch (month_str[2] ) 
+        {
+        case 'r':
+            return 3;
+            break;
+        case 'y':
+            return 5;
+            break;
+        }
+        break;
+    case 'A':
+        switch (month_str[1]) 
+        {
+        case 'p':
+            return 4;
+            break;
+        case 'u':
+            return 8;
+            break;
+        }
+        break;
+    case 'O':
+        return 10;
+        break;
+    case 'S':
+        return 9;
+        break;
+    case 'N':
+        return 11;
+        break;
+    case 'D':
+        return 12;
+        break;
+    }
+
+    return 0;
+}
+
+// This function has been copied with small modifications from Qts QNetworkHeadersPrivate::fromHttpDate().
+// Which is the same code that QNetworkAccessManager would use if we would use a proper qt cache for networking.
+QDateTime HttpAssetProvider::FromHttpDate(const QByteArray &value)
+{
+    // HTTP dates have three possible formats. If something else we return a null QDateTime.
+    // - RFC 1123/822      -   ddd, dd MMM yyyy hh:mm:ss "GMT"
+    // - RFC 850           -   dddd, dd-MMM-yy hh:mm:ss "GMT"
+    // - ANSI C's asctime  -   ddd MMM d hh:mm:ss yyyy
+
+    int pos = value.indexOf(',');
+    QDateTime dt;
+    if (pos == -1) 
+    {
+        // no comma -> asctime(3) format
+        dt = QDateTime::fromString(QString::fromLatin1(value), Qt::TextDate);
+    } 
+    else 
+    {
+        // Use sscanf over QLocal/QDateTimeParser for speed reasons. See the
+        // QtWebKit performance benchmarks to get an idea.
+        if (pos == 3) 
+        {
+            char month_name[4];
+            int day, year, hour, minute, second;
+            if (sscanf(value.constData(), "%*3s, %d %3s %d %d:%d:%d 'GMT'", &day, month_name, &year, &hour, &minute, &second) == 6)
+                dt = QDateTime(QDate(year, ShortMonthNameToNum(month_name), day), QTime(hour, minute, second));
+        } 
+        else 
+        {
+            QLocale c = QLocale::c();
+            // eat the weekday, the comma and the space following it
+            QString sansWeekday = QString::fromLatin1(value.constData() + pos + 2);
+            // must be RFC 850 date
+            dt = c.toDateTime(sansWeekday, QLatin1String("dd-MMM-yy hh:mm:ss 'GMT'"));
+        }
+    }
+
+    if (dt.isValid())
+        dt.setTimeSpec(Qt::UTC);
+    return dt;
 }
         
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
@@ -110,14 +210,22 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     request.setUrl(QUrl(assetRef));
     request.setRawHeader("User-Agent", "realXtend Tundra");
 
-    QNetworkReply *reply = networkAccessManager->get(request);
+    QNetworkReply *reply = 0;
+
+    // HEAD request if we have a cache file for the asset ref.
+    // Meaning we get last modified from server and compare if 
+    // the source file is newer than our cache file.
+    if (!framework->Asset()->GetAssetCache()->GetDiskSourceByRef(assetRef).isEmpty())
+        reply = networkAccessManager->head(request);
+    else
+        reply = networkAccessManager->get(request);
 
     HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
     transfer->source.ref = originalAssetRef;
     transfer->assetType = assetType;
     transfer->provider = shared_from_this();
     transfer->storage = GetStorageForAssetRef(assetRef);
-    transfer->diskSourceType = IAsset::Cached; // The asset's disksource will represent a cached version of the original on the http server
+    transfer->diskSourceType = IAsset::Cached; // The asset's disk source will represent a cached version of the original on the http server
     transfers[reply] = transfer;
     return transfer;
 }
@@ -235,13 +343,12 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
 
     switch(reply->operation())
     {
-    case QNetworkAccessManager::GetOperation:
+    case QNetworkAccessManager::HeadOperation:
     {
-        QByteArray data = reply->readAll();
         TransferMap::iterator iter = transfers.find(reply);
         if (iter == transfers.end())
         {
-            LogError("Received a finish signal of an unknown Http transfer!");
+            LogError("HeadOperation: Received a finish signal of an unknown Http transfer!");
             return;
         }
         HttpAssetTransferPtr transfer = iter->second;
@@ -250,18 +357,103 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
 
         if (reply->error() == QNetworkReply::NoError)
         {
-#ifndef DISABLE_QNETWORKDISKCACHE
-            // If asset request creator has not allowed caching, remove it now
-            AssetCache *cache = framework->Asset()->GetAssetCache();
-            if (!transfer->CachingAllowed())
-                cache->remove(reply->url());
+            QString sourceRef = transfer->source.ref;
+            AssetCache *cache = framework->Asset()->GetAssetCache();   
 
-            // Setting cache allowed as false is very important! The items are already in our cache via the 
-            // QAccessManagers QAbstractNetworkCache (same as our AssetAPI::AssetCache). Network replies will already call them
-            // so the AssetAPI::AssetTransferCompletes doesn't have to.
-            // @note GetDiskSource() will return empty string if above cache remove was performed, this is wanted behaviour.
-            transfer->SetCachingBehavior(false, cache->FindInCache(reply->url().toString()));
-#endif
+            // Compare cache and header time stamps.
+            // If Last-Modified is not found or the date parsing fails, request full body as fall back.
+            bool requestBody = true;
+            QByteArray header = reply->rawHeader("Last-Modified");
+            if (!header.isEmpty())
+            {
+                QDateTime cacheLastModified = cache->LastModified(sourceRef);
+                QDateTime sourceLastModified = FromHttpDate(header); // Converts to UTC time spec
+                cacheLastModified.setTimeSpec(sourceLastModified.timeSpec()); // Set same time spec for comparison to work
+                if (!sourceLastModified.isNull() && !cacheLastModified.isNull())
+                {
+                    if (cacheLastModified.toMSecsSinceEpoch() >= sourceLastModified.toMSecsSinceEpoch())
+                        requestBody = false;
+                }
+            }
+
+            // Create transfer raw data from cache
+            if (!requestBody)
+            {
+                QFile cacheFile(cache->GetDiskSourceByRef(sourceRef));
+                if (cacheFile.open(QIODevice::ReadOnly))
+                {
+                    QByteArray cacheData = cacheFile.readAll();
+                    cacheFile.close();
+                    transfer->rawAssetData.insert(transfer->rawAssetData.end(), cacheData.data(), cacheData.data() + cacheData.size());
+
+                    // Mark as already cached so AssetAPI wont overwrite the cache file.
+                    transfer->SetCachingBehavior(false, cache->GetDiskSourceByRef(sourceRef));
+                    framework->Asset()->AssetTransferCompleted(transfer.get());
+                }
+                // If cache file open fails, request the full body as fall back.
+                else
+                    requestBody = true;
+                
+            }
+            // Request full asset body
+            if (requestBody)
+            {
+                QNetworkRequest request;
+                request.setUrl(QUrl(sourceRef));
+                request.setRawHeader("User-Agent", "realXtend Tundra");
+
+                QNetworkReply *bodyReply = networkAccessManager->get(request);
+                transfers[bodyReply] = transfer;
+            }
+        }
+        else
+        {
+            QString error = "Http HEAD for address \"" + reply->url().toString() + "\" returned an error: \"" + reply->errorString() + "\"";
+            framework->Asset()->AssetTransferFailed(transfer.get(), error);
+        }
+
+        transfers.erase(iter);
+        break;
+    }
+    case QNetworkAccessManager::GetOperation:
+    {
+        QByteArray data = reply->readAll();
+        TransferMap::iterator iter = transfers.find(reply);
+        if (iter == transfers.end())
+        {
+            LogError("GetOperation: Received a finish signal of an unknown Http transfer!");
+            return;
+        }
+        HttpAssetTransferPtr transfer = iter->second;
+        assert(transfer);
+        transfer->rawAssetData.clear();
+
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            QString sourceRef = transfer->source.ref;
+            AssetCache *cache = framework->Asset()->GetAssetCache();
+
+            if (transfer->CachingAllowed())
+            {
+                // Save file to cache so we can update its last modified right here.
+                if (!cache->StoreAsset((u8*)data.data(), data.size(), sourceRef).isEmpty())
+                {
+                    QByteArray header = reply->rawHeader("Last-Modified");
+                    if (!header.isEmpty())
+                    {
+                        QDateTime sourceLastModified = FromHttpDate(header); // Converts to UTC time spec
+                        if (sourceLastModified.isValid())
+                            cache->SetLastModified(sourceRef, sourceLastModified);
+                    }
+                }
+                else
+                    LogError("Failed to store asset to cache: " + sourceRef);
+            }
+            else
+                cache->DeleteAsset(sourceRef);
+
+            // Mark as already cached so AssetAPI wont do it again. If caching was not allowed this sets a empty string as the disk source.
+            transfer->SetCachingBehavior(false, cache->GetDiskSourceByRef(sourceRef));
 
             // Copy raw data to transfer
             transfer->rawAssetData.insert(transfer->rawAssetData.end(), data.data(), data.data() + data.size());
@@ -272,6 +464,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             QString error = "Http GET for address \"" + reply->url().toString() + "\" returned an error: \"" + reply->errorString() + "\"";
             framework->Asset()->AssetTransferFailed(transfer.get(), error);
         }
+
         transfers.erase(iter);
         break;
     }
@@ -281,7 +474,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         UploadTransferMap::iterator iter = uploadTransfers.find(reply);
         if (iter == uploadTransfers.end())
         {
-            LogError("Received a finish signal of an unknown Http upload transfer!");
+            LogError("PostOperation: Received a finish signal of an unknown Http upload transfer!");
             return;
         }
         AssetUploadTransferPtr transfer = iter->second;

@@ -9,9 +9,12 @@
 #include "HttpAssetTransfer.h"
 #include "HttpAssetStorage.h"
 
-#include <QNetworkReply>
+#include <QDateTime>
+#include <QByteArray>
+
 class QNetworkAccessManager;
 class QNetworkRequest;
+class QNetworkReply;
 
 class HttpAssetStorage;
 typedef boost::shared_ptr<HttpAssetStorage> HttpAssetStoragePtr;
@@ -64,6 +67,8 @@ public:
     /// Return the network access manager
     QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }
     
+    static QDateTime FromHttpDate(const QByteArray &value);
+
 private slots:
     void AboutToExit();
     void OnHttpTransferFinished(QNetworkReply *reply);
