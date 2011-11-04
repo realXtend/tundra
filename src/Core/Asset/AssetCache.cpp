@@ -54,17 +54,10 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
 
 QString AssetCache::FindInCache(const QString &assetRef)
 {
-    // Deny http:// and https:// asset references to be gotten from cache.
-    // This will force us to do a HEADER check for last modified date to determine
-    // if we need to request the asset data again.
-    ///\todo Remove this. The Asset Cache needs to be protocol agnostic. -jj.
-    if (assetRef.startsWith("http://") || assetRef.startsWith("https://")) 
-        return "";
-
-    QString absolutePath = assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(assetRef);
-    if (QFile::exists(absolutePath))
-        return absolutePath;
-    return "";
+    /// @note This is deprecated since ~2.1.4. Remove this functions when scripts etc. 
+    /// 3rd party code have migrated to using GetDiskSourceByRef().
+    LogWarning("AssetCache::FileInCache is deprecated and is up for removal, use AssetCache::GetDiskSourceByRef instead!");
+    return GetDiskSourceByRef(assetRef);
 }
 
 QString AssetCache::GetDiskSourceByRef(const QString &assetRef)

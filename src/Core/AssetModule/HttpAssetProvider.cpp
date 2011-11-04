@@ -179,6 +179,14 @@ QDateTime HttpAssetProvider::FromHttpDate(const QByteArray &value)
         dt.setTimeSpec(Qt::UTC);
     return dt;
 }
+
+bool HttpAssetProvider::IsValidDiskSource(const QString assetRef, const QString &diskSource)
+{
+    // For the http provider we always return false. We never want AssetAPI to use a cache file
+    // before doing a RequestAsset first. This is when a last modified header check is performed
+    // to determine if the source asset is never than what we have in cache.
+    return false;
+}
         
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {

@@ -23,13 +23,12 @@ public:
     explicit AssetCache(AssetAPI *owner, QString assetCacheDirectory);
 
 public slots:
-    /// Searches if the cache contains the asset with the given assetRef. Returns an absolute path to the asset on the local file system, if it is found.
-    /// @return An absolute path to the assets disk source, or an empty string if asset is not in the cache.
-    /// @note Currently this will always return an empty string for http/https assets. This will force the AssetAPI to check that it has the latest asset from the source.
+    /// Gets absolute file path to disk source for asset ref.
+    /// @note This is deprecated since ~2.1.4. Remove this functions when scripts etc. 3rd party code have migrated to using GetDiskSourceByRef().
     QString FindInCache(const QString &assetRef);
 
-    /// Gets disk source for asset ref, disregarding the http protocol check in FindInCache()
-    /// This is only used by AssetAPI as an emergency mechanism for querying http asset disk source after loading
+    /// Gets absolute file path to disk source for asset ref.
+    /// @param assetRef Asset reference to return the disk source.
     QString GetDiskSourceByRef(const QString &assetRef);
     
     /// Get the cache directory. Returned path is guaranteed to have a trailing slash /.

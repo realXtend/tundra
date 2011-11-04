@@ -35,7 +35,9 @@ public:
     /// Checks an asset id for validity
     /** @return true if this asset provider can handle the id */
     virtual bool IsValidRef(QString assetRef, QString assetType = "");
-            
+    
+    virtual bool IsValidDiskSource(const QString assetRef, const QString &diskSource);
+
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
 
     /// Adds the given http URL to the list of current asset storages.

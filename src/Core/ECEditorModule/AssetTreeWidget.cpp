@@ -140,7 +140,7 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         // Reload from cache & delete from cache are not possible for e.g. local assets don't have a cached version of the asset,
         // Even if the asset is an HTTP asset, these options are disable if there does not exist a cached version of that asset in the cache.
         foreach(AssetItem *item, sel.assets)
-            if (item->Asset() && framework->Asset()->GetAssetCache()->FindInCache(item->Asset()->Name()).isEmpty())
+            if (item->Asset() && framework->Asset()->GetAssetCache()->GetDiskSourceByRef(item->Asset()->Name()).isEmpty())
             {
                 reloadFromCacheAction->setDisabled(true);
                 deleteCacheAction->setDisabled(true);
