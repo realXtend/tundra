@@ -17,8 +17,8 @@
 #include "UiMainWindow.h"
 #include "ConsoleAPI.h"
 #include "ConfigAPI.h"
-
 #include "EC_Placeable.h"
+#include "QScriptEngineHelpers.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -52,6 +52,10 @@ void ECEditorModule::Initialize()
 
     inputContext = framework_->Input()->RegisterInputContext("ECEditorInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
+
+    /// @todo Ideally we wouldn't do this, but this is needed for now in order to get OnScriptEngineCreated called
+    /// (and ECEditorWindow registered to QtScript) without generating dependendy to the JavascriptModule.
+    framework_->RegisterDynamicObject("ecEditorModule", this);
 }
 
 void ECEditorModule::Uninitialize()
@@ -294,4 +298,9 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
         }
         e->Suppress();
     }
+}
+
+void ECEditorModule::OnScriptEngineCreated(QScriptEngine* engine)
+{
+    qScriptRegisterQObjectMetaType<ECEditorWindow *>(engine);
 }

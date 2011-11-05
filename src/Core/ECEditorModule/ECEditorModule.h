@@ -11,6 +11,8 @@
 #include <QPointer>
 #include <QVariantList>
 
+class QScriptEngine;
+
 class ECEditorWindow;
 class EcXmlEditorWidget;
 class TreeWidgetItemExpandMemory;
@@ -110,4 +112,7 @@ private slots:
     /// Handles KeyPressed() signal from input context.
     /** @param e Key event. */
     void HandleKeyPressed(KeyEvent *e);
+
+    /// Embeds the ECEditorModule types to the given script engine.
+    void OnScriptEngineCreated(QScriptEngine* engine);
 };

@@ -246,3 +246,5 @@ private:
     bool hasFocus; ///< To track if this editor has a focus.
     TransformEditor *transformEditor;
 };
+
+Q_DECLARE_METATYPE(ECEditorWindow *)
