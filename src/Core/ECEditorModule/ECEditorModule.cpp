@@ -17,8 +17,8 @@
 #include "UiMainWindow.h"
 #include "ConsoleAPI.h"
 #include "ConfigAPI.h"
-
 #include "EC_Placeable.h"
+#include "QScriptEngineHelpers.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -52,6 +52,10 @@ void ECEditorModule::Initialize()
 
     inputContext = framework_->Input()->RegisterInputContext("ECEditorInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
+
+    /// @todo Ideally we wouldn't do this, but this is needed for now in order to get OnScriptEngineCreated called
+    /// (and ECEditorWindow registered to QtScript) without generating dependendy to the JavascriptModule.
+    framework_->RegisterDynamicObject("ecEditorModule", this);
 }
 
 void ECEditorModule::Uninitialize()
@@ -101,6 +105,8 @@ void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
     activeEditor->SetFocus(true);
     connect(activeEditor, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
         this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
+
+    emit ActiveEditorChanged(activeEditor);
 }
 
 void ECEditorModule::ShowEditorWindow()
@@ -171,26 +177,6 @@ void ECEditorModule::ShowDocumentation(const QString &symbol)
 void ECEditorModule::CreateXmlEditor(EntityPtr entity)
 {
     CreateXmlEditor(QList<EntityPtr>(QList<EntityPtr>() << entity));
-}
-
-QObjectList ECEditorModule::GetSelectedComponents() const
-{
-    if (activeEditor)
-        return activeEditor->GetSelectedComponents();
-    return QObjectList();
-}
-
-QVariantList ECEditorModule::GetSelectedEntities() const
-{
-    if (activeEditor)
-    {
-        QList<EntityPtr> entities = activeEditor->GetSelectedEntities();
-        QVariantList retEntities;
-        for(uint i = 0; i < (uint)entities.size(); ++i)
-            retEntities.push_back(QVariant(entities[i]->Id()));
-        return retEntities;
-    }
-    return QVariantList();
 }
 
 void ECEditorModule::CreateXmlEditor(const QList<EntityPtr> &entities)
@@ -292,4 +278,9 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
         }
         e->Suppress();
     }
+}
+
+void ECEditorModule::OnScriptEngineCreated(QScriptEngine* engine)
+{
+    qScriptRegisterQObjectMetaType<ECEditorWindow *>(engine);
 }

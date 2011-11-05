@@ -83,6 +83,7 @@ message ("\n=========== Configuring Static Framework ===========\n")
 ## The following are the core modules/libs that are required 
 ## for the project to build. None of these can be omitted.
 
+AddProject(Core Math)
 AddProject(Core Framework)
 AddProject(Core Scene)
 AddProject(Core Tundra)

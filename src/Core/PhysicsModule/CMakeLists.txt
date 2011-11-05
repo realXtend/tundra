@@ -18,7 +18,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 add_definitions (-DPHYSICS_MODULE_EXPORTS)
 
 use_package_bullet()
-use_core_modules (Framework Scene OgreRenderingModule Asset Console EnvironmentModule)
+use_core_modules(Framework Math Scene OgreRenderingModule Asset Console EnvironmentModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 

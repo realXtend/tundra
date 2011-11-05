@@ -115,7 +115,7 @@ void UiMainWindow::resizeEvent(QResizeEvent *e)
     emit WindowResizeEvent(width(), height());
 }
 
-bool UiMainWindow::HasMenu(const QString &name)
+bool UiMainWindow::HasMenu(const QString &name) const
 {
     if (!menuBar())
         return false;
@@ -124,7 +124,7 @@ bool UiMainWindow::HasMenu(const QString &name)
     return menuNames.contains(name);
 }
 
-QMenu *UiMainWindow::GetMenu(const QString &name)
+QMenu *UiMainWindow::GetMenu(const QString &name) const
 {
     if (!menuBar())
         return 0;

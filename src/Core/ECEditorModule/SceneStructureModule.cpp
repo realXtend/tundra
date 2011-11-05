@@ -33,18 +33,15 @@
 #include "UiMainWindow.h"
 #include "LoggingFunctions.h"
 #include "SceneDesc.h"
+#include "ECEditorModule.h"
+#include "ECEditorWindow.h"
 
 #include <QToolTip>
 #include <QCursor>
 
-#include <OgreEntity.h>
-#include <OgreMesh.h>
-
 #ifdef ASSIMP_ENABLED
 #include <OpenAssetImport.h>
 #endif
-
-//#include <OgreCamera.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -95,6 +92,11 @@ void SceneStructureModule::Initialize()
         toolTip->setTextFormat(Qt::RichText);
         toolTipWidget->layout()->addWidget(toolTip);
     }
+
+    // Stay in sync with EC editors' selection.
+    ECEditorModule *ecEditorModule = framework_->GetModule<ECEditorModule>();
+    connect(ecEditorModule, SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
+        this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
 }
 
 QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene)
@@ -323,6 +325,9 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(GetFramework()->Scene()->MainCameraScene()->shared_from_this());
     sceneWindow->show();
+
+    // Reflect possible current selection of EC editor to Scene Structure window right away.
+    SyncSelectionWithEcEditor(framework_->GetModule<ECEditorModule>()->ActiveEditor());
 
     // Position the scene struct window to be centered on the left side of the main window.
     if (GetFramework()->Ui()->MainWindow())
@@ -869,4 +874,17 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
     LogError(QString("Failed to download %1 with reason %2").arg(transfer->source.ref).arg(reason));
     if (urlToDropPos.contains(transfer->SourceUrl()))
         urlToDropPos.remove(transfer->SourceUrl());
+}
+
+void SceneStructureModule::SyncSelectionWithEcEditor(ECEditorWindow *editor)
+{
+    if (sceneWindow && editor)
+    {
+        sceneWindow->ClearSelectedEntites();
+        foreach(const EntityPtr &entity, editor->SelectedEntities())
+            sceneWindow->SetEntitySelected(entity, true);
+
+        connect(editor, SIGNAL(EntitySelected(const EntityPtr &, bool)),
+            sceneWindow, SLOT(SetEntitySelected(const EntityPtr &, bool)), Qt::UniqueConnection);
+    }
 }

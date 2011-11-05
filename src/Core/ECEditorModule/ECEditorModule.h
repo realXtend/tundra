@@ -11,6 +11,8 @@
 #include <QPointer>
 #include <QVariantList>
 
+class QScriptEngine;
+
 class ECEditorWindow;
 class EcXmlEditorWidget;
 class TreeWidgetItemExpandMemory;
@@ -76,13 +78,6 @@ public slots:
     /** @param components List of component pointers. */
     void CreateXmlEditor(const QList<ComponentPtr> &components);
 
-    /// Returns Selected components from the active ECEditorWindow.
-    /** @return If editor isn't initialized or any components aren't selected from the editor, method will return an empty list. */
-    QObjectList GetSelectedComponents() const;
-
-    /// Return selected entity ids as QVariantList from the active ECEditorWindow.
-    QVariantList GetSelectedEntities() const;
-
     /// Repositions the given editor relative to an active SceneStructureWindow or MainWindow.
     /** @param editor ECEditorWindow. */
     void RepositionEditor(ECEditorWindow *editor);
@@ -94,6 +89,10 @@ signals:
         @param attrType Selected item's attribute type name (Empty if attribute isn't selected).
         @param attrName Selected item's attribute name (Empty if attribute isn't selected). */
     void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
+
+    /// Emitted when the active EC editor changes.
+    /** @param editor The editor that just became active. */
+    void ActiveEditorChanged(ECEditorWindow *editor);
 
 private:
     InputContextPtr inputContext; ///< Input context.
@@ -108,4 +107,7 @@ private slots:
     /// Handles KeyPressed() signal from input context.
     /** @param e Key event. */
     void HandleKeyPressed(KeyEvent *e);
+
+    /// Embeds the ECEditorModule types to the given script engine.
+    void OnScriptEngineCreated(QScriptEngine* engine);
 };

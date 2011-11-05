@@ -7,7 +7,6 @@
 #include "Scene.h"
 #include "EC_SelectionBox.h"
 #include "LoggingFunctions.h"
-#include "OgreConversionUtils.h"
 #include "OgreWorld.h"
 #include <Ogre.h>
 

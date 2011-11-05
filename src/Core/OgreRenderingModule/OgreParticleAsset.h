@@ -9,7 +9,7 @@
 /** An Ogre-specific particle system resource. One resource may contain multiple templates. */
 class OGRE_MODULE_API OgreParticleAsset : public IAsset
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     OgreParticleAsset(AssetAPI *owner, const QString &type, const QString &name) : IAsset(owner, type, name) {}

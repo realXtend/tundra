@@ -11,6 +11,6 @@ command loadscene(avatar.txml)
 Next, start one or more clients and connect to the server. Each client should get an avatar that can be controlled
 with WASD + arrows + mouse. F toggles fly mode, space flies up and C flies down. Space jumps when you are not in fly mode.
 In addition there is a example how to make addons to the default functionality of simpleavatar.js. exampleavataraddon.js 
-adds Q to make a wave gesture and R to toggle sitting on the ground. Mouse scroll and +/- zooms in/out.
+adds Q to make a wave gesture and E to toggle sitting on the ground. Mouse scroll and +/- zooms in/out.
 
 Only third person camera is currently implemented. Also note that collisions are disabled when flying for now.

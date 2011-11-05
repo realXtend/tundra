@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   ArgumentType.h
- *  @brief  
+ *  @brief  Pure virtual base class for different argument types and template implementations for supported argument types.
  */
 
 #pragma once
@@ -26,8 +26,7 @@ public:
     virtual ~IArgumentType() {}
 
     /// Creates new editor for the argument type.
-    /** @param parent Parent widget.
-    */
+    /** @param parent Parent widget. */
     virtual QWidget *CreateEditor(QWidget *parent = 0) = 0;
 
     /// Reads value from the dedicated editor widget created by CreateEditor().
@@ -37,8 +36,7 @@ public:
     virtual void UpdateValueToEditor() = 0;
 
     /// Sets new value.
-    /** @param val New value.
-    */
+    /** @param val New value. */
     virtual void SetValue(void *val) = 0;
 
     /// Return arguments value as QGenericArgument.
@@ -54,11 +52,12 @@ public:
     virtual QVariant ToQVariant() const = 0;
 
     /// Sets value from QVariant.
-    /** @param var New value as QVariant.
-    */
+    /** @param var New value as QVariant. */
     virtual void FromQVariant(const QVariant &var) = 0;
 
+    /// Sets value from string.
     virtual void FromString(const QString &str) = 0;
+
 private:
     Q_DISABLE_COPY(IArgumentType);
 };
@@ -69,8 +68,7 @@ class ArgumentType : public IArgumentType
 {
 public:
     /// Constructor.
-    /** @param name Type name.
-    */
+    /** @param name Type name. */
     ArgumentType(const char *name) : typeName(name), editor(0) {}
 
     /// IArgumentType override.
@@ -104,7 +102,8 @@ public:
         value = var.value<T>();
     }
 
-    virtual void FromString(const QString &str)
+    /// IArgumentType override.
+    virtual void FromString(const QString &)
     {
     }
 
@@ -119,8 +118,7 @@ class VoidArgumentType : public IArgumentType
 {
 public:
     /// Default constructor.
-    /** @param name Type name.
-    */
+    /** @param name Type name. */
     VoidArgumentType() : typeName("void") {}
 
     /// IArgumentType override. Returns 0.
@@ -292,7 +290,7 @@ template<> inline void ArgumentType<bool>::UpdateValueToEditor()
 
 template<> inline QString ArgumentType<bool>::ToString() const
 {
-    return QString::number((int)value);
+    return BoolToString(value);
 }
 
 template<> inline void ArgumentType<bool>::FromString(const QString &str)

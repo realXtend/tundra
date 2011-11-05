@@ -23,14 +23,12 @@
 QStringList SceneAPI::attributeTypeNames(QStringList() << "string" << "int" << "real" << "color" << "float2" << "float3" << "float4" << "bool" << "uint" << "quat" <<
         "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform");
 
-SceneAPI::SceneAPI(Framework *framework) :
-    QObject(framework),
-    framework_(framework)
+SceneAPI::SceneAPI(Framework *owner) :
+    QObject(owner),
+    framework(owner)
 {
     sceneInteract = new SceneInteract();
     framework->RegisterDynamicObject("sceneinteract", sceneInteract);
-
-    scenes_.clear();
 }
 
 SceneAPI::~SceneAPI()
@@ -41,14 +39,14 @@ SceneAPI::~SceneAPI()
 void SceneAPI::Reset()
 {
     SAFE_DELETE(sceneInteract);
-    scenes_.clear();
+    scenes.clear();
     componentFactories.clear();
     componentFactoriesByTypeid.clear();
 }
 
 void SceneAPI::Initialise()
 {
-    sceneInteract->Initialize(framework_);
+    sceneInteract->Initialize(framework);
 }
 
 SceneInteract *SceneAPI::GetSceneInteract() const
@@ -58,20 +56,20 @@ SceneInteract *SceneAPI::GetSceneInteract() const
 
 bool SceneAPI::HasScene(const QString &name) const
 {
-    return scenes_.find(name) != scenes_.end();
+    return scenes.find(name) != scenes.end();
 }
 
 ScenePtr SceneAPI::GetScene(const QString &name) const
 {
-    SceneMap::const_iterator scene = scenes_.find(name);
-    if (scene != scenes_.end())
+    SceneMap::const_iterator scene = scenes.find(name);
+    if (scene != scenes.end())
         return scene->second;
     return ScenePtr();
 }
 
 Scene *SceneAPI::MainCameraScene()
 {
-    return framework_->Renderer()->MainCameraScene();
+    return framework->Renderer()->MainCameraScene();
 }
 
 ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool authority)
@@ -79,10 +77,10 @@ ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool autho
     if (HasScene(name))
         return ScenePtr();
 
-    ScenePtr newScene = ScenePtr(new Scene(name, framework_, viewenabled, authority));
+    ScenePtr newScene = ScenePtr(new Scene(name, framework, viewenabled, authority));
     if (newScene.get())
     {
-        scenes_[name] = newScene;
+        scenes[name] = newScene;
 
         // Emit signal of creation
         emit SceneAdded(newScene->Name());
@@ -92,8 +90,8 @@ ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool autho
 
 void SceneAPI::RemoveScene(const QString &name)
 {
-    SceneMap::iterator sceneIter = scenes_.find(name);
-    if (sceneIter != scenes_.end())
+    SceneMap::iterator sceneIter = scenes.find(name);
+    if (sceneIter != scenes.end())
     {
         // Remove entities before the scene subsystems or worlds are erased by various modules
         sceneIter->second->RemoveAllEntities(false);
@@ -101,23 +99,23 @@ void SceneAPI::RemoveScene(const QString &name)
         // Emit signal about removed scene
         emit SceneRemoved(name);
         
-        scenes_.erase(sceneIter);
+        scenes.erase(sceneIter);
     }
 }
 
 const SceneMap &SceneAPI::Scenes() const
 {
-    return scenes_;
+    return scenes;
 }
 
 SceneMap &SceneAPI::Scenes()
 {
-    return scenes_;
+    return scenes;
 }
 
-bool SceneAPI::IsComponentFactoryRegistered(const QString &typeName)
+bool SceneAPI::IsComponentFactoryRegistered(const QString &typeName) const
 {
-    ComponentFactoryMap::iterator existing = componentFactories.find(typeName);
+    ComponentFactoryMap::const_iterator existing = componentFactories.find(typeName);
     return (existing != componentFactories.end() ? true : false);
 }
 
@@ -131,14 +129,14 @@ void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
 
     ComponentFactoryMap::iterator existing = componentFactories.find(factory->TypeName());
     ComponentFactoryWeakMap::iterator existing2 = componentFactoriesByTypeid.find(factory->TypeId());
-	ComponentFactoryPtr existingFactory;
+    ComponentFactoryPtr existingFactory;
     if (existing != componentFactories.end())
-		existingFactory = existing->second;
-	if (!existingFactory && existing2 != componentFactoriesByTypeid.end())
-		existingFactory = existing2->second.lock();
+        existingFactory = existing->second;
+    if (!existingFactory && existing2 != componentFactoriesByTypeid.end())
+        existingFactory = existing2->second.lock();
 
-	if (existingFactory)
-	{
+    if (existingFactory)
+    {
         LogError("Cannot add a new ComponentFactory for component typename \"" + factory->TypeName() + "\" and typeid " + QString::number(factory->TypeId()) + ". Conflicting type factory with typename " + existingFactory->TypeName() + " and typeid " + QString::number(existingFactory->TypeId()) + " already exists!");
         return;
     }
@@ -147,7 +145,7 @@ void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
     componentFactoriesByTypeid[factory->TypeId()] = factory;
 }
 
-ComponentPtr SceneAPI::CreateComponentByName(Scene* scene, const QString &componentTypename, const QString &newComponentName)
+ComponentPtr SceneAPI::CreateComponentByName(Scene* scene, const QString &componentTypename, const QString &newComponentName) const
 {
     ComponentFactoryPtr factory = GetFactory(componentTypename);
     if (!factory)
@@ -158,7 +156,7 @@ ComponentPtr SceneAPI::CreateComponentByName(Scene* scene, const QString &compon
     return factory->Create(scene, newComponentName);
 }
 
-ComponentPtr SceneAPI::CreateComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName)
+ComponentPtr SceneAPI::CreateComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName) const
 {
     ComponentFactoryPtr factory = GetFactory(componentTypeid);
     if (!factory)
@@ -169,7 +167,7 @@ ComponentPtr SceneAPI::CreateComponentById(Scene* scene, u32 componentTypeid, co
     return factory->Create(scene, newComponentName);
 }
 
-QString SceneAPI::GetComponentTypeName(u32 componentTypeid)
+QString SceneAPI::GetComponentTypeName(u32 componentTypeid) const
 {
     ComponentFactoryPtr factory = GetFactory(componentTypeid);
     if (factory)
@@ -178,7 +176,7 @@ QString SceneAPI::GetComponentTypeName(u32 componentTypeid)
         return "";
 }
 
-u32 SceneAPI::GetComponentTypeId(const QString &componentTypename)
+u32 SceneAPI::GetComponentTypeId(const QString &componentTypename) const
 {
     ComponentFactoryPtr factory = GetFactory(componentTypename);
     if (factory)
@@ -258,7 +256,7 @@ IAttribute* SceneAPI::CreateAttribute(u32 attributeTypeid, const QString& newAtt
     else if (attributeTypeid == cAttributeTransform)
         attribute = new Attribute<Transform>(0, newAttributeName.toStdString().c_str());
     else
-        LogError("Cannot create attribute of type \"" + ToString<int>(attributeTypeid) + "\"! This type is not known to SceneAPI::CreateAttribute!");
+        LogError("Cannot create attribute of type \"" + QString::number(attributeTypeid) + "\"! This type is not known to SceneAPI::CreateAttribute!");
     if (attribute)
         attribute->dynamic = true;
     return attribute;
@@ -277,18 +275,18 @@ QStringList SceneAPI::ComponentTypes() const
     return componentTypes;
 }
 
-ComponentFactoryPtr SceneAPI::GetFactory(const QString &typeName)
+ComponentFactoryPtr SceneAPI::GetFactory(const QString &typeName) const
 {
-    ComponentFactoryMap::iterator factory = componentFactories.find(typeName);
+    ComponentFactoryMap::const_iterator factory = componentFactories.find(typeName);
     if (factory == componentFactories.end())
         return ComponentFactoryPtr();
     else
         return factory->second;
 }
 
-ComponentFactoryPtr SceneAPI::GetFactory(u32 typeId)
+ComponentFactoryPtr SceneAPI::GetFactory(u32 typeId) const
 {
-    ComponentFactoryWeakMap::iterator factory = componentFactoriesByTypeid.find(typeId);
+    ComponentFactoryWeakMap::const_iterator factory = componentFactoriesByTypeid.find(typeId);
     if (factory == componentFactoriesByTypeid.end())
         return ComponentFactoryPtr();
     else

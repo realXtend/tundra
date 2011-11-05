@@ -1,13 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Light.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
-#include "OgreConversionUtils.h"
 
 #include "Entity.h"
 #include "Scene.h"

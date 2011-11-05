@@ -32,27 +32,27 @@ static QScriptValue TranslateOp_TranslateOp_float_float_float(QScriptContext *co
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue TranslateOp_ToFloat3x4(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue TranslateOp_Offset_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function TranslateOp_ToFloat3x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function TranslateOp_Offset_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    TranslateOp This = qscriptvalue_cast<TranslateOp>(context->thisObject());
+    float3 ret = This.Offset();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue TranslateOp_ToFloat3x4_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function TranslateOp_ToFloat3x4_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     TranslateOp This = qscriptvalue_cast<TranslateOp>(context->thisObject());
     float3x4 ret = This.ToFloat3x4();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue TranslateOp_ToFloat4x4(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue TranslateOp_ToFloat4x4_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function TranslateOp_ToFloat4x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function TranslateOp_ToFloat4x4_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     TranslateOp This = qscriptvalue_cast<TranslateOp>(context->thisObject());
     float4x4 ret = This.ToFloat4x4();
-    return qScriptValueFromValue(engine, ret);
-}
-
-static QScriptValue TranslateOp_Offset(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function TranslateOp_Offset in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    TranslateOp This = qscriptvalue_cast<TranslateOp>(context->thisObject());
-    float3 ret = This.Offset();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -94,9 +94,9 @@ QScriptValue ToScriptValue_const_TranslateOp(QScriptEngine *engine, const Transl
 QScriptValue register_TranslateOp_prototype(QScriptEngine *engine)
 {
     QScriptValue proto = engine->newObject();
-    proto.setProperty("ToFloat3x4", engine->newFunction(TranslateOp_ToFloat3x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("ToFloat4x4", engine->newFunction(TranslateOp_ToFloat4x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Offset", engine->newFunction(TranslateOp_Offset, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Offset", engine->newFunction(TranslateOp_Offset_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToFloat3x4", engine->newFunction(TranslateOp_ToFloat3x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToFloat4x4", engine->newFunction(TranslateOp_ToFloat4x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<TranslateOp>()));
     engine->setDefaultPrototype(qMetaTypeId<TranslateOp>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<TranslateOp*>(), proto);

@@ -10,7 +10,8 @@
 /// A generic data container for assets of unknown type.
 class BinaryAsset : public IAsset
 {
-    Q_OBJECT;
+    Q_OBJECT
+
 public:
     BinaryAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
         IAsset(owner, type_, name_)

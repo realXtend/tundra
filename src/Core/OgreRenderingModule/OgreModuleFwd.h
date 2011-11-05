@@ -31,33 +31,29 @@ namespace Ogre
     class MaterialPtr;
 }
 
+typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
+
 namespace OgreRenderer
 {
+    class OgreRenderingModule;
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-
-    class OgreRenderingModule;
-    class ResourceHandler;
-    class RenderableListener;
-
-    class CompositionHandler;
-    class GaussianListener;
-
-    typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
-    typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
-    typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 }
 
+class OgreCompositionHandler;
+class GaussianListener;
 class OgreWorld;
 class OgreMaterialAsset;
 
 class EC_AnimationController;
 class EC_Camera;
 class EC_Light;
+class EC_Material;
 class EC_Mesh;
+class EC_OgreCompositor;
 class EC_Placeable;
+class EC_RttTarget;
 
 typedef boost::shared_ptr<OgreWorld> OgreWorldPtr;
 typedef boost::weak_ptr<OgreWorld> OgreWorldWeakPtr;
-

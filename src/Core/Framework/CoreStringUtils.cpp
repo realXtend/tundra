@@ -3,31 +3,34 @@
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
 
-#include <boost/algorithm/string.hpp>
-
 QString QStringfromWCharArray(const wchar_t *string, int size)
 {
     QString qstr;
-    if (sizeof(wchar_t) == sizeof(QChar)) {
+    if (sizeof(wchar_t) == sizeof(QChar))
         return qstr.fromUtf16((const ushort *)string, size);
-    } else {
+    else
         return qstr.fromUcs4((uint *)string, size);
-    }
 }
 
 int QStringtoWCharArray(QString qstr, wchar_t *array)
 {
-    if (sizeof(wchar_t) == sizeof(QChar)) {
+    if (sizeof(wchar_t) == sizeof(QChar))
+    {
         memcpy(array, qstr.utf16(), sizeof(wchar_t)*qstr.length());
         return qstr.length();
-    } else {
+    }
+    else
+    {
         wchar_t *a = array;
         const unsigned short *uc = qstr.utf16();
-        for (int i = 0; i < qstr.length(); ++i) {
+        for (int i = 0; i < qstr.length(); ++i)
+        {
             uint u = uc[i];
-            if (QChar::isHighSurrogate(u) && i + 1 < qstr.length()) {
+            if (QChar::isHighSurrogate(u) && i + 1 < qstr.length())
+            {
                 ushort low = uc[i+1];
-                if (QChar::isLowSurrogate(low)) {
+                if (QChar::isLowSurrogate(low))
+                {
                     u = QChar::surrogateToUcs4(u, low);
                     ++i;
                 }
@@ -57,7 +60,6 @@ QString WStringToQString(const std::wstring &str)
         return "";
     return QStringfromWCharArray(str.data(), str.size());
 }
-
 
 std::wstring ToWString(const std::string &str)
 {
@@ -135,7 +137,7 @@ std::string ReplaceChar(const std::string& str, char replace_this, char replace_
     std::string ret = str;
     ReplaceCharInplace(ret, replace_this, replace_with);
     return ret;
-}      
+}
 
 void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, const std::string &replace_with)
 {
@@ -146,7 +148,6 @@ void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, 
         index = str.find(replace_this, 0);
     }
 }
-
 
 void ReplaceCharInplace(std::string& str, char replace_this, char replace_with)
 {
@@ -179,15 +180,21 @@ uint GetHash(const QString& str)
     return GetHash(str.toStdString());
 }
 
+bool ParseBool(QString value)
+{
+    value = value.trimmed().toLower();
+    if (value.isEmpty())
+        return false;
+    if (value == "1")
+        return true;
+    if (value == "on")
+        return true;
+    if (value == "true")
+        return true;
+    return false;
+}
+
 bool ParseBool(const std::string &value)
 {
-    std::string testedvalue = value;
-    boost::algorithm::to_lower(testedvalue);
-    return (boost::algorithm::starts_with(testedvalue,"true") || boost::algorithm::starts_with(testedvalue,"1")); 
+    return ParseBool(QString::fromStdString(value));
 }
-
-bool ParseBool(const QString &value)
-{
-    return ParseBool(value.toStdString());
-}
-

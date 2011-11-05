@@ -89,7 +89,7 @@ public:
 };
 
 /// Represents selection of SceneTreeWidget items.
-struct Selection
+struct SceneTreeWidgetSelection
 {
     /// Returns true if no entity or component items selected.
     bool IsEmpty() const;

@@ -241,6 +241,7 @@ if (MSVC)
     # In Visual Studio, use unicode character set
     add_definitions(-DUNICODE -D_UNICODE)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_WINSOCKAPI_)
 
     #Define NOMINMAX in order to get rid of the evil WinDefs.h min&max defines.
     add_definitions(-DNOMINMAX)
@@ -350,10 +351,11 @@ if (NOT EXISTS CMakeBuildConfig.txt)
         ${CMAKE_CURRENT_SOURCE_DIR}/CMakeBuildConfig.txt)
 endif ()
 
-# The following two defines are required to compile.
+# The following defines are required to compile.
 # These enable implicit conversions of common math types between different libraries and our internal math library.
-add_definitions(-DQT_INTEROP)
+add_definitions(-DMATH_QT_INTEROP)
 add_definitions(-DMATH_ENABLE_STL_SUPPORT)
+add_definitions(-DMATH_TUNDRA_INTEROP)
 
 # Read the set of optional modules from another file
 # that is kept outside the source control. 

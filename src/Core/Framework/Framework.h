@@ -62,7 +62,7 @@ public:
     void ForceExit();
 
     /// Returns true if framework is in the process of exiting (will exit at next possible opportunity)
-    bool IsExiting() const { return exit_signal_; }
+    bool IsExiting() const { return exitSignal; }
 
 #ifdef PROFILING
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
@@ -70,7 +70,6 @@ public:
 #endif
     /// Returns the main QApplication
     Application *App() const;
-
 
 public slots:
     /// Returns the core API UI object.
@@ -98,15 +97,8 @@ public slots:
     /// Returns core API Config object.
     ConfigAPI *Config() const;
 
+    /// Returns core API Plugin object.
     PluginAPI *Plugins() const;
-
-    void RegisterRenderer(IRenderer *renderer);
-
-    /// Returns the system Renderer object.
-    /** @note Please don't use this function. It exists for dependency inversion purposes only.
-        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
-        as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation. */
-    IRenderer *Renderer() const;
 
     /// Returns Tundra API version info object.
     ///\todo Delete/simplify.
@@ -116,19 +108,23 @@ public slots:
     ///\todo Delete/simplify.
     ApplicationVersionInfo *ApplicationVersion() const;
 
-    /// Returns the global Framework instance.
-    /// @note DO NOT CALL THIS FUNCTION. Every point where this function is called
-    ///       will cause a serious portability issue when we intend to run multiple instances inside a single process (inside a browser memory space).
-    ///       This function is intended to serve only for carefully crafted re-entrant code (currently only logging and profiling).
-    static Framework *GetInstance() { return instance; }
+    /// Registers the system Renderer object.
+    /** @note Please don't use this function. Called only by the OgreRenderingModule which implements the rendering subsystem. */
+    void RegisterRenderer(IRenderer *renderer);
+
+    /// Returns the system Renderer object.
+    /** @note Please don't use this function. It exists for dependency inversion purposes only.
+        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
+        as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation. */
+    IRenderer *Renderer() const;
 
     /// Stores the Framework instance. Call this inside each plugin DLL main function that will have a copy of the static instance pointer.
     static void SetInstance(Framework *fw) { instance = fw; }
 
     /// Returns the global Framework instance.
-    /** @note DO NOT CALL THIS FUNCTION. Every point where this function is called
-              will cause a serious portability issue when we intend to run multiple instances inside a single process (inside a browser memory space).
-              This function is intended to serve only for carefully crafted re-entrant code (currently only logging and profiling). */
+    /** @note DO NOT CALL THIS FUNCTION. Every point where this function is called will cause a serious portability issue when we intend
+        to run multiple instances inside a single process (inside a browser memory space). This function is intended to serve only for 
+        carefully crafted re-entrant code (currently only logging and profiling). */
     static Framework *Instance() { return instance; }
 
     /// Returns raw module pointer.
@@ -137,7 +133,7 @@ public slots:
     IModule *GetModuleByName(const QString &name) const;
 
     /// Returns if we're running the application in headless or not.
-    bool IsHeadless() const { return headless_; }
+    bool IsHeadless() const { return headless; }
 
     /// Signals the framework to exit
     void Exit();
@@ -158,12 +154,15 @@ public slots:
 private:
     Q_DISABLE_COPY(Framework)
 
-    bool exit_signal_; ///< If true, exit application.
+    /// Appends all found startup options from the given file to the startupOptions member.
+    void LoadStartupOptionsFromXML(QString configurationFile);
+
+    bool exitSignal; ///< If true, exit application.
 #ifdef PROFILING
     Profiler *profiler; ///< Profiler.
 #endif
     ProfilerQObj *profilerQObj; ///< We keep this QObject always alive, even when profiling is not enabled, so that scripts don't have to check whether profiling is enabled or disabled.
-    bool headless_; ///< Are we running in the headless mode.
+    bool headless; ///< Are we running in the headless mode.
     Application *application; ///< The main QApplication object.
     FrameAPI *frame; ///< The Frame API.
     ConsoleAPI *console; ///< The console API.
@@ -175,9 +174,6 @@ private:
     ConfigAPI *config; ///< The Config API.
     PluginAPI *plugin;
     IRenderer *renderer;
-
-    /// Appends all found startup options from the given file to the startupOptions member.
-    void LoadStartupOptionsFromXML(QString configurationFile);
 
     /// Stores all command line parameters and startup options specified in the Config XML files.
     QStringList startupOptions;
@@ -195,8 +191,8 @@ private:
     std::vector<boost::shared_ptr<IModule> > modules;
 
     static Framework *instance;
-    int argc_; ///< Command line argument count as supplied by the operating system.
-    char **argv_; ///< Command line arguments as supplied by the operating system.
+    int argc; ///< Command line argument count as supplied by the operating system.
+    char **argv; ///< Command line arguments as supplied by the operating system.
 };
 
 template <class T>

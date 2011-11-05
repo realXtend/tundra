@@ -5,8 +5,9 @@
 #include "CoreTypes.h"
 #include <set>
 
-/// Generates unique integer ID's. Used for entity and component ID's. Supports both a local range and replicated range, which the high bit determines.
-///\todo This class (needlessly) duplicates the reserved ID's set, which also is contained in the scene & entity object maps.
+/// Generates unique integer ID's.
+/** Used for entity and component ID's. Supports both a local range and replicated range, which the high bit determines.
+///\todo This class (needlessly) duplicates the reserved ID's set, which also is contained in the scene & entity object maps. */
 class UniqueIdGenerator
 {
 public:

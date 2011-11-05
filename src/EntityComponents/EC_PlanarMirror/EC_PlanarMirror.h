@@ -11,8 +11,6 @@
 #include "IComponent.h"
 #include "OgreModuleFwd.h"
 
-#include <QVector3D>
-#include <QQuaternion>
 #include <OgreTexture.h>
 
 /// EntityComponent that will create a planar mirror texture (and optionally a plane showing it).
@@ -82,4 +80,3 @@ private:
     Ogre::Entity* mirror_plane_entity_;
     Ogre::MovablePlane* mirror_plane_;
 };
-

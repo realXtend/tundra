@@ -21,7 +21,6 @@
 #include "ConsoleAPI.h"
 #include "SceneAPI.h"
 #include "UiAPI.h"
-#include "UiMainWindow.h"
 
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
@@ -33,11 +32,13 @@
 #include "MemoryLeakCheck.h"
 
 /// Temporary utility structure for storing supported command line parameters and their descriptions.
+/** @cond PRIVATE */
 struct CommandLineParameterMap
 {
-    /// Prints the structure to std::cout.
-    void Print() const
+    /// Returns the command line structure in printable format.
+    std::string ToString() const
     {
+        std::stringstream ss;
         QMap<QString, QString>::const_iterator it = commands.begin();
         while(it != commands.end())
         {
@@ -56,44 +57,46 @@ struct CommandLineParameterMap
             const int maxLineWidth = (int)w.ws_row;
 #endif
             int cmdLength = it.key().length();
-            std::cout << it.key().toStdString();
+            ss << it.key().toStdString();
             if (cmdLength >= treshold)
             {
-                std::cout << std::endl;
+                ss << std::endl;
                 for(charIdx = 0; charIdx < treshold ; ++charIdx)
-                    std::cout << " ";
+                    ss << " ";
             }
             else
                 for(charIdx = cmdLength; charIdx < treshold ; ++charIdx)
-                    std::cout << " ";
+                    ss << " ";
 
             for(int i = 0; i < it.value().length(); ++i)
             {
-                std::cout << it.value()[i].toAscii();
+                ss << it.value()[i].toAscii();
                 ++charIdx;
                 if (charIdx >= maxLineWidth)
                 {
                     charIdx = 0;
                     for(charIdx; charIdx < treshold ; ++charIdx)
-                        std::cout << " ";
+                        ss << " ";
                 }
             }
 
-            std::cout << std::endl;
+            ss << std::endl;
             ++it;
         }
+        return ss.str();
     }
 
     QMap<QString, QString> commands;
 };
+/** @endcond */
 
 Framework *Framework::instance = 0;
 
-Framework::Framework(int argc, char** argv) :
-    exit_signal_(false),
-    argc_(argc),
-    argv_(argv),
-    headless_(false),
+Framework::Framework(int argc_, char** argv_) :
+    exitSignal(false),
+    argc(argc_),
+    argv(argv_),
+    headless(false),
     application(0),
     frame(0),
     console(0),
@@ -127,10 +130,10 @@ Framework::Framework(int argc, char** argv) :
     foreach(const QString &config, cmdLineParams)
         LoadStartupOptionsFromXML(config);
 
-    // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
-    /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
-    apiVersionInfo = new ApiVersionInfo(2, 1, 3, 0);
-    applicationVersionInfo = new ApplicationVersionInfo(2, 1, 3, 0, "realXtend", "Tundra");
+    /// @note Modify the line below if wanting to set custom API version.
+    apiVersionInfo = new ApiVersionInfo(Application::Version());
+    /// @note Modify Application.cpp if/when making a custom Tundra build.
+    applicationVersionInfo = new ApplicationVersionInfo(Application::OrganizationName(), Application::ApplicationName(), Application::Version());
 
     // Print version information
     /// @bug If you don't have --headless if WINDOWS_APP is defined on windows you will not see there prints, just a empty cmd prompt.
@@ -182,7 +185,7 @@ Framework::Framework(int argc, char** argv) :
     if (HasCommandLineParameter("--help"))
     {
         std::cout << "Supported command line arguments: " << std::endl;
-        cmdLineDescs.Print();
+        std::cout << cmdLineDescs.ToString();
 #ifdef WINDOWS_APP
         /// @bug Pause if WINDOWS_APP is defined, otherwise user cannot read these prints as the console will close on Exit()
         std::cout << std::endl;
@@ -193,7 +196,7 @@ Framework::Framework(int argc, char** argv) :
     else
     {
         if (HasCommandLineParameter("--headless"))
-            headless_ = true;
+            headless = true;
 #ifdef PROFILING
         profiler = new Profiler();
         PROFILE(FW_Startup);
@@ -206,26 +209,38 @@ Framework::Framework(int argc, char** argv) :
         if (configDirs.size() >= 1)
             configDir = configDirs.last();
         if (configDirs.size() > 1)
-            LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");        
+            LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");
         config->PrepareDataFolder(configDir);
 
-        // Create QApplication
-        application = new Application(this, argc_, argv_);
+        // Create QApplication, set target FPS limit, if specified.
+        application = new Application(this, argc, argv);
+        QStringList fpsLimitParam = CommandLineParameters("--fpslimit");
+        if (fpsLimitParam.size() > 1)
+            LogWarning("Multiple --fpslimit parameters specified! Using " + fpsLimitParam.first() + " as the value.");
+        if (fpsLimitParam.size() > 0)
+        {
+            bool ok;
+            double targetFpsLimit = fpsLimitParam.first().toDouble(&ok);
+            if (ok)
+                application->SetTargetFpsLimit(targetFpsLimit);
+            else
+                LogWarning("Erroneous FPS limit given with --fpslimit: " + fpsLimitParam.first() + ". Ignoring.");
+        }
 
         // Create core APIs
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
         plugin = new PluginAPI(this);
-        asset = new AssetAPI(this, headless_);
-        
+        asset = new AssetAPI(this, headless);
+        // Prepare asset cache, if used.
         QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
         if (CommandLineParameters("--assetcachedir").size() > 0)
             assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir").last());
         if (CommandLineParameters("--assetcachedir").size() > 1)
             LogWarning("Multiple --assetcachedir parameters specified! Using \"" + CommandLineParameters("--assetcachedir").last() + "\" as the assetcache directory.");
-        
         if (!HasCommandLineParameter("--noassetcache"))
             asset->OpenAssetCache(assetCacheDir);
+
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);
@@ -276,23 +291,23 @@ Framework::~Framework()
 
 void Framework::ProcessOneFrame()
 {
-    if (exit_signal_ == true)
+    if (exitSignal == true)
         return; // We've accidentally ended up to update a frame, but we're actually quitting.
 
     PROFILE(Framework_ProcessOneFrame);
 
-    static tick_t clock_freq;
-    static tick_t last_clocktime;
+    static tick_t clockFreq;
+    static tick_t lastClockTime;
 
-    if (!last_clocktime)
-        last_clocktime = GetCurrentClockTime();
+    if (!lastClockTime)
+        lastClockTime = GetCurrentClockTime();
 
-    if (!clock_freq)
-        clock_freq = GetCurrentClockFreq();
+    if (!clockFreq)
+        clockFreq = GetCurrentClockFreq();
 
-    tick_t curr_clocktime = GetCurrentClockTime();
-    double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
-    last_clocktime = curr_clocktime;
+    tick_t currClockTime = GetCurrentClockTime();
+    double frametime = ((double)currClockTime - (double)lastClockTime) / (double) clockFreq;
+    lastClockTime = currClockTime;
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
@@ -305,14 +320,16 @@ void Framework::ProcessOneFrame()
         }
         catch(const std::exception &e)
         {
-            std::cout << "ProcessOneFrame caught an exception while updating module " << modules[i]->Name().toStdString()
-                << ": " << (e.what() ? e.what() : "(null)") << std::endl;
-            LogError("ProcessOneFrame caught an exception while updating module " + modules[i]->Name() + ": " + (e.what() ? e.what() : "(null)"));
+            std::stringstream error;
+            error << "ProcessOneFrame caught an exception while updating module " << modules[i]->Name().toStdString() << ": " << (e.what() ? e.what() : "(null)");
+            std::cout << error.str() << std::endl;
+            LogError(error.str());
         }
         catch(...)
         {
-            std::cout << "ProcessOneFrame caught an unknown exception while updating module " << modules[i]->Name().toStdString() << std::endl;
-            LogError("ProcessOneFrame caught an unknown exception while updating module " + modules[i]->Name());
+            std::string error("ProcessOneFrame caught an unknown exception while updating module " + modules[i]->Name().toStdString());
+            std::cout << error << std::endl;
+            LogError(error);
         }
     }
 
@@ -329,7 +346,7 @@ void Framework::ProcessOneFrame()
 void Framework::Go()
 {
     // Check if we were never supposed to run
-    if (exit_signal_)
+    if (exitSignal)
         return;
     
     srand(time(0));
@@ -350,7 +367,7 @@ void Framework::Go()
     application->Go();
 
     // Qt main loop execution has ended, we are exiting.
-    exit_signal_ = true;
+    exitSignal = true;
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
@@ -365,6 +382,7 @@ void Framework::Go()
     frame->Reset();
     input->SaveKeyBindingsToFile();
     input->Reset();
+    audio->SaveSoundSettingsToConfig();
     audio->Reset();
 
     for(size_t i = 0; i < modules.size(); ++i)
@@ -385,21 +403,21 @@ void Framework::Go()
 
 void Framework::Exit()
 {
-    exit_signal_ = true;
+    exitSignal = true;
     if (application)
         application->AboutToExit();
 }
 
 void Framework::ForceExit()
 {
-    exit_signal_ = true;
+    exitSignal = true;
     if (application)
         application->quit();
 }
 
 void Framework::CancelExit()
 {
-    exit_signal_ = false;
+    exitSignal = false;
 
     // Our main loop is stopped when we are exiting,
     // we need to start it back up again if something canceled the exit.
@@ -526,9 +544,10 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
         LogError("Framework::LoadStartupOptionsFromXML: Failed to open file \"" + configurationFile + "\"!");
         return;
     }
-    if (!doc.setContent(&file))
+    QString errorMsg;
+    if (!doc.setContent(&file, false, &errorMsg))
     {
-        LogError("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"" + configurationFile + "\"!");
+        LogError("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"" + configurationFile + "\": " + errorMsg + "!");
         file.close();
         return;
     }

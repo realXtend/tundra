@@ -8,8 +8,6 @@
 
 #include "Math/float3.h"
 
-#include "LibMumbleClient.h"
-
 #include <QObject>
 #include <QList>
 #include <QMutex>
@@ -18,7 +16,7 @@
 #include <QTimer>
 #include <QReadWriteLock>
 
-#include <boost/asio/error.hpp>
+namespace boost { namespace system { class error_code; } }
 
 namespace MumbleLib
 {

@@ -2,9 +2,10 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_HoveringText.cpp
- *  @brief  EC_HoveringText shows a hovering text attached to an entity.
- *  @note   The entity must EC_Placeable available in advance.
+ *  @brief  Shows a hovering text attached to an entity.
  */
+
+#define MATH_OGRE_INTEROP
 
 #include "DebugOperatorNew.h"
 
@@ -39,7 +40,7 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     text(this, "Text"),
     font(this, "Font", "Arial"),
     fontColor(this, "Font Color"),
-    fontSize(this, "Font Size", 100),    
+    fontSize(this, "Font Size", 100),
     backgroundColor(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
     position(this, "Position", float3(0.0f, 0.0f, 0.0f)),
     gradStart(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
@@ -55,7 +56,6 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
-    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_HoveringText::~EC_HoveringText()
@@ -112,12 +112,7 @@ void EC_HoveringText::SetPosition(const float3& position)
         return;
 
     if (billboard_)
-        billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
-}
-
-void EC_HoveringText::SetPosition(const QVector3D &position)
-{
-    SetPosition(float3(position.x(), position.y(), position.z()));
+        billboard_->setPosition(position);
 }
 
 void EC_HoveringText::SetFont(const QFont &font)
@@ -136,7 +131,6 @@ void EC_HoveringText::SetBackgroundGradient(const QColor &start_color, const QCo
 {
     bg_grad_.setColorAt(0.0, start_color);
     bg_grad_.setColorAt(1.0, end_color);
-    //using_gradient_ = true;
 }
 
 void EC_HoveringText::Show()
@@ -296,10 +290,10 @@ void EC_HoveringText::Redraw()
                                     textColor_, 
                                     font_, 
                                     brush, 
-                                    borderPen, Qt::AlignCenter | Qt::TextWordWrap, false, corners.x, corners.y);
+                                    borderPen, Qt::AlignCenter | Qt::TextWordWrap, false, false, corners.x, corners.y);
         }
         else
-            texture_->SetContentsDrawText(texWidth.Get(), texHeight.Get(), text.Get(), textColor_, font_, QBrush(), QPen(), Qt::AlignCenter | Qt::TextWordWrap, false, 0.0f, 0.0f);
+            texture_->SetContentsDrawText(texWidth.Get(), texHeight.Get(), text.Get(), textColor_, font_, QBrush(), QPen(), Qt::AlignCenter | Qt::TextWordWrap, false, false, 0.0f, 0.0f);
     }
     catch(Ogre::Exception &e)
     {
@@ -318,37 +312,22 @@ void EC_HoveringText::Redraw()
     }
 }
 
-void EC_HoveringText::UpdateSignals()
+void EC_HoveringText::AttributesChanged()
 {
-    disconnect(this, SLOT(OnAttributeUpdated(IComponent *, IAttribute *)));
-    if(ParentEntity())
-    {
-        Scene *scene = ParentEntity()->ParentScene();
-        if(scene)
-        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(OnAttributeUpdated(IComponent*, IAttribute*))); 
-    }
-}
-
-void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attribute)
-{
-    if(component != this)
-        return;
-
-    if(font.Name() == attribute->Name() || fontSize.Name() == attribute->Name())
+    if (font.ValueChanged() || fontSize.ValueChanged())
     {
         SetFont(QFont(font.Get(), fontSize.Get()));
     }
-    else if(fontColor.Name() == attribute->Name())
+    if (fontColor.ValueChanged())
     {
         Color col = fontColor.Get();
         textColor_.setRgbF(col.r, col.g, col.b, col.a);
     }
-    else if(position.Name() == attribute->Name())
+    if (position.ValueChanged())
     {
         SetPosition(position.Get());
     }
-    else if(gradEnd.Name() == attribute->Name() || gradStart.Name() == attribute->Name() || gradEnd.Name() == attribute->Name())
+    if (gradStart.ValueChanged() || gradEnd.ValueChanged())
     {
         QColor colStart;
         QColor colEnd;
@@ -358,11 +337,21 @@ void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attr
         colEnd.setRgbF(col.r, col.g, col.b);
         SetBackgroundGradient(colStart, colEnd);
     }
-    else if (attribute == &overlayAlpha)
+    if (overlayAlpha.ValueChanged())
         SetOverlayAlpha(overlayAlpha.Get());
-    else if (attribute == &width || attribute == &height)
+    if (width.ValueChanged() || height.ValueChanged())
         SetBillboardSize(width.Get(), height.Get());
 
+    // Changes to the following attributes require a (expensive) repaint of the texture on the CPU side.
+    bool repaint = text.ValueChanged() || font.ValueChanged() || fontSize.ValueChanged() || fontColor.ValueChanged()
+        || backgroundColor.ValueChanged() || borderColor.ValueChanged() || borderThickness.ValueChanged() || usingGrad.ValueChanged()
+        || gradStart.ValueChanged() || gradEnd.ValueChanged() || texWidth.ValueChanged() || texHeight.ValueChanged()
+        || cornerRadius.ValueChanged();
+
+    // Changes to the following attributes do not alter the texture contents, and don't require a repaint:
+    // position, overlayAlpha, width, height.
+
     // Repaint the new text with new appearance.
-    ShowMessage(text.Get());
+    if (repaint)
+        ShowMessage(text.Get());
 }

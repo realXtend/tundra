@@ -491,7 +491,6 @@ AttributeVector Entity::GetAttributes(const QString &name) const
 
 EntityPtr Entity::Clone(bool local, bool temporary) const
 {
-    // Craft XML
     QDomDocument doc("Scene");
     QDomElement sceneElem = doc.createElement("scene");
     QDomElement entityElem = doc.createElement("entity");
@@ -580,12 +579,6 @@ void Entity::Exec(EntityAction::ExecTypeField type, const QString &action, const
 void Entity::Exec(EntityAction::ExecTypeField type, const QString &action, const QStringList &params)
 {
     EntityAction *act = Action(action);
-    // Commented out to allow sending actions with receiver only on the server, for example
-/*
-    if (!HasReceivers(act))
-        return;
-*/
-
     if ((type & EntityAction::Local) != 0)
     {
         if (params.size() == 0)
@@ -610,19 +603,6 @@ void Entity::Exec(EntityAction::ExecTypeField type, const QString &action, const
     foreach(QVariant var, params)
         stringParams << var.toString();
     Exec(type, action, stringParams);
-}
-
-bool Entity::HasReceivers(EntityAction *action)
-{
-    int receivers = action->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
-    if (receivers == 0)
-    {
-        actions_.remove(action->Name());
-        SAFE_DELETE(action);
-        return false;
-    }
-
-    return true;
 }
 
 void Entity::EmitEntityRemoved(AttributeChange::Type change)

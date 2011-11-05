@@ -26,6 +26,7 @@ QStringList DirectorySearch(const QString &path, bool recursive, QDir::Filters f
     return ret;
 }
 
+/// @cond PRIVATE
 class CustomFileDialog : public QFileDialog
 {
 public:
@@ -51,6 +52,7 @@ protected:
         }
     }
 };
+/// @endcond
 
 namespace QtUtils
 {

@@ -1,8 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+// If we don't do this, we get "boost/asio/detail/socket_types.hpp(27) : fatal error C1189: #error :  WinSock.h has already been included"
+#ifdef WIN32
+#include <Winsock2.h>
+#endif
+
 #include "DebugOperatorNew.h"
-#include "CoreDefines.h"
 
 #include "User.h"
 #include "PCMAudioFrame.h"
@@ -109,7 +114,7 @@ namespace MumbleLib
         }
     }
 
-    void User::UpdatePosition(float3 position)
+    void User::UpdatePosition(const float3 &position)
     {
         position_known_ = true;
         position_ = position;

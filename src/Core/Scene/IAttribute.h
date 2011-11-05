@@ -106,11 +106,19 @@ public:
         The value will be set using the given changetype. */
     virtual void Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change) = 0;
 
-    /// Sets attribute null i.e. its value should be fetched from a parent entity
-    //void SetNull(bool enable) { null_ = enable; }
+    /// Returns whether the value of this attribute is dirty and pending an update by the component that owns this attribute.
+    /** This flag is used to optimize the attribute update events from an asymptotically Theta(n^2) operation to a Theta(n) when loading a scene or
+            creating a new component with all new attributes. This also enables the components themselves to avoid having to cache "shadow" values of its attributes 
+            in the component, in order to optimize its loading.
+        @return If true, an external source (scene load event, UI attribute edit event, a script, received sync message from sync manager, etc.)
+            has modified the value of this attribute, but the *implementation* of the component this attribute is part of has not
+            yet reacted to this change.            
+        @note This flag is NOT to be used except by the code that is implementing a new component. Do not read this flag from client code
+            that is trying to detect if an attribute has changed, use the attribute changed signal in the component instead. */
+    bool ValueChanged() const { return valueChanged; }
 
-    /// Returns true if the attribute is null i.e. its value should be fetched from a parent entity
-    //bool IsNull() const { return null_; }
+    /// Acknowledges that the component owning this attribute has updated the component state to reflect the current value of this attribute.
+    void ClearChangedFlag() { valueChanged = false; }
 
 protected:
     friend class SceneAPI;
@@ -121,11 +129,10 @@ protected:
     AttributeMetadata *metadata; ///< Possible attribute metadata.
     bool dynamic; ///< Dynamic attributes must be deleted at component destruction
     u8 index; ///< Attribute index in the parent component's attribute list
-    
-    /// Null flag. If attribute is null, its value should be fetched from a parent entity
-    /** \todo To be thinked about more thoroughly in the future, and then possibly implemented
-     */
-    // bool null_;
+
+    /// If true, the value of this attribute has changed, but the implementing code has not yet reacted to it.
+    /// @see ValueChanged().
+    bool valueChanged;
 };
 
 typedef std::vector<IAttribute*> AttributeVector;
@@ -164,6 +171,7 @@ public:
     void Set(const T &value, AttributeChange::Type change)
     {
         this->value = value;
+        valueChanged = true; // Signal to IComponent owning this attribute that the value of this attribute has changed.
         Changed(change);
     }
     
@@ -221,7 +229,8 @@ public:
     T DefaultValue() const;
 
 private:
-    T value; ///< Attribute's value.
+    /// The value of this Attribute.
+    T value; 
 };
 
 static const u32 cAttributeNone = 0;

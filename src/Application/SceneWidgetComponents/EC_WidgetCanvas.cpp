@@ -390,7 +390,7 @@ void EC_WidgetCanvas::UpdateSubmeshes()
         if (submeshes_.contains(index))
         {
             if (ec_mesh)
-                ec_mesh->SetMaterial(index, material_name_);
+                ec_mesh->SetMaterial(index, QString::fromStdString(material_name_));
             else
                 ec_custom_object->SetMaterial(index, material_name_);
         }
@@ -401,7 +401,7 @@ void EC_WidgetCanvas::UpdateSubmeshes()
             {
                 if (ec_mesh->GetMaterialName(index) == material_name_)
                     if (restore_materials_.contains(index))
-                        ec_mesh->SetMaterial(index, restore_materials_[index]);
+                        ec_mesh->SetMaterial(index, QString::fromStdString(restore_materials_[index]));
             }
             else
             {
@@ -451,7 +451,7 @@ void EC_WidgetCanvas::RestoreOriginalMeshMaterials()
         {
             if (ec_mesh->GetMaterialName(index) == material_name_)
                 if (restore_materials_.contains(index))
-                    ec_mesh->SetMaterial(index, restore_materials_[index]);
+                    ec_mesh->SetMaterial(index, QString::fromStdString(restore_materials_[index]));
         }
         else
         {

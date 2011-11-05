@@ -115,9 +115,9 @@ public:
     /// Which keyboard keys were held down when this event occurred.
     std::vector<Qt::Key> heldKeys;
 
-    /// The coordinates in window client coordinate space denoting where the mouse left [0] /middle [1] /right [2] /XButton1 [3] /XButton2 [4] 
-    /// buttons were pressed down. These are useful in mouse drag situations where it is necessary to know the coordinates where the 
-    /// mouse dragging started.
+    /// The coordinates in window client coordinate space denoting where the mouse buttons were pressed down.
+    /** Buttons: left [0], middle [1], right [2], XButton1 [3]  and XButton2 [4].
+        These are useful in mouse drag situations where it is necessary to know the coordinates where the mouse dragging started. */
     struct PressPositions
     {
         PressPositions();

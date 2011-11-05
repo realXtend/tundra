@@ -305,6 +305,7 @@ void TimeProfilerWindow::ChangeLoggerThreshold()
         logThreshold_ = box->value();
 }
 
+/** @cond PRIVATE */
 struct ResNameAndSize
 {
     std::string name;
@@ -321,6 +322,7 @@ bool LessThen(const QTreeWidgetItem* left, const QTreeWidgetItem* right)
 {
     return left->text(1).toInt() < right->text(1).toInt();
 }
+/** @endcond */
 
 void TimeProfilerWindow::Arrange()
 {

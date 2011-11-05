@@ -1,9 +1,11 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #pragma once
 
 #include <QDomDocument>
 
-/// This structure holds data that is transferred server->client immediately after the client has successfully connected to the server.
-/// The contents can hold arbitrary data that is to be passed to the client to read. (max 64K bytes).
+/// Holds data that is transferred server->client immediately after the client has successfully connected to the server.
+/** The contents can hold arbitrary data that is to be passed to the client to read. (max 64K bytes). */
 struct UserConnectedResponseData
 {
     QDomDocument responseData;

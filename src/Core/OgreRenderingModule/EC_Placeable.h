@@ -130,8 +130,6 @@ public slots:
     void SetScale(float x, float y, float z);
     void SetScale(const float3 &scale);
 
-    void LookAt(const float3 &v);
-
     /// Sets the position, rotation and scale of this placeable (the local-to-parent transform).
     /// @param tm An orthogonal matrix (no shear), which cannot contain mirroring. The float4x4 version is provided
     ///           for conveniency, and the last row must be identity [0 0 0 1].

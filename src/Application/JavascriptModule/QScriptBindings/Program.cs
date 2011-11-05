@@ -11,38 +11,39 @@ namespace QScriptBindings
     {
         static void Main(string[] args)
         {
-            if (args.Length < 4)
+            if (args.Length < 3)
             {
-                Console.WriteLine("First cmdline parameter should be the doxytag file.");
-                Console.WriteLine("Second cmdline parameter should be the absolute path to the root of the generated doxygen documentation.");
-                Console.WriteLine("Third cmdline parameter should be the output directory.");
-                Console.WriteLine("Fourth and all subsequent parameters specify class names to generate bindings for.");
+                Console.WriteLine("First cmdline parameter should be the absolute path to the root where doxygen generated the documentation XML files.");
+                Console.WriteLine("Second cmdline parameter should be the output directory.");
+                Console.WriteLine("Trhid and all subsequent parameters specify class names to generate bindings for.");
                 return;
             }
 
             CodeStructure s = new CodeStructure();
-            s.LoadSymbolsFromDoxytagFile(args[0], args[1]);
+            s.LoadSymbolsFromDirectory(args[0]);
 
-            string outputDirectory = args[2];
+            string outputDirectory = args[1];
 
-            for(int i = 3; i < args.Length; ++i)
+            for(int i = 2; i < args.Length; ++i)
                 GenerateBindings(s, args[i], outputDirectory + "\\qscript_" + args[i] + ".cpp");
         }
 
         static bool IsBadType(string type)
         {
-            return type.EndsWith("float *") || type.EndsWith("float3 *") || type.Contains("std::") || type.Contains("char*") || type.Contains("char *");
+            return type.Contains("bool *") || type.EndsWith("float *") || type.EndsWith("float3 *") || type.Contains("std::") || type.Contains("char*") || type.Contains("char *") || type.Contains("[");
         }
 
         static bool IsScriptable(Symbol s)
         {
+            if (s.argList.Contains("["))
+                return false;
             if (IsBadType(s.type))
                 return false;
             foreach (Parameter p in s.parameters)
-                if (IsBadType(p.type))
+                if (IsBadType(p.type) || IsBadType(p.BasicType()))
                     return false;
 
-            foreach (string str in s.comments)
+            foreach (string str in s.Comments())
                 if (str.Contains("[noscript]"))
                     return false;
             if (s.returnComment != null && s.returnComment.Contains("[noscript]"))
@@ -52,7 +53,7 @@ namespace QScriptBindings
 
         static void GenerateBindings(CodeStructure s, string className, string outFilename)
         {
-            Symbol classSymbol = s.symbols[className];
+            Symbol classSymbol = s.symbolsByName[className];
             if (classSymbol.kind != "class" && classSymbol.kind != "struct")
             {
                 Console.WriteLine("Error: Symbol " + className + " is not a class or a struct!");
@@ -66,7 +67,7 @@ namespace QScriptBindings
             GenerateToExistingScriptValue(classSymbol, tw);
 
             HashSet<string> functionNames = new HashSet<string>();
-            foreach (Symbol child in classSymbol.children.Values)
+            foreach (Symbol child in classSymbol.children)
             {
                 if (!IsScriptable(child))
                     continue;
@@ -108,10 +109,23 @@ namespace QScriptBindings
 
         static string GetScriptFunctionName(Symbol function)
         {
+            if (function.name == function.parent.name)
+            {
+                Symbol classSymbol = function.parent;
+                List<Symbol> functions = new List<Symbol>();
+                foreach (Symbol s in classSymbol.children)
+                    if (s.name == function.name && IsScriptable(s))
+                        functions.Add(s);
+
+                if (functions.Count < 2)
+                    return function.parent.name + "_ctor"; // No need to generate a selector.
+            }
             string str = function.parent.name + "_" + function.name;
             for (int i = 0; i < function.parameters.Count; ++i)
                 str += "_" + function.parameters[i].BasicTypeId();
 
+            if (function.isConst)
+                str += "_const";
             return str;
         }
 
@@ -156,7 +170,7 @@ namespace QScriptBindings
 
             int nameCount = 0;
             List<Symbol> functions = new List<Symbol>();
-            foreach (Symbol s in classSymbol.children.Values)
+            foreach (Symbol s in classSymbol.children)
                 if (s.name == functionName && IsScriptable(s))
                 {
                     ++nameCount;
@@ -169,7 +183,7 @@ namespace QScriptBindings
         static void GenerateClassFunctionSelector(Symbol classSymbol, string functionName, TextWriter tw)
         {
             List<Symbol> functions = new List<Symbol>();
-            foreach (Symbol s in classSymbol.children.Values)
+            foreach (Symbol s in classSymbol.children)
                 if (s.name == functionName && IsScriptable(s))
                     functions.Add(s);
 
@@ -237,7 +251,7 @@ namespace QScriptBindings
         public static bool HasOpaqueQVariantBasedMarshalling(Symbol Class)
         {
             Symbol ctor = Class.FindChildByName(Class.name);
-            foreach (string s in ctor.comments)
+            foreach (string s in ctor.Comments())
             {
                 if (s.Contains("[opaque-qtscript]"))
                     return true;
@@ -253,7 +267,7 @@ namespace QScriptBindings
             if (HasOpaqueQVariantBasedMarshalling(Class)) // If enabled, this type is marshalled opaquely.
                 tw.WriteLine(Indent(1) + "obj.setData(engine->newVariant(QVariant::fromValue(value)));");
 
-            foreach (Symbol v in Class.children.Values)
+            foreach (Symbol v in Class.children)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
                 {
                     string flags = v.IsConst() ? "QScriptValue::Undeletable | QScriptValue::ReadOnly" : "QScriptValue::Undeletable";
@@ -295,7 +309,7 @@ namespace QScriptBindings
             if (HasOpaqueQVariantBasedMarshalling(Class)) // If enabled, this type is marshalled opaquely.
                 tw.WriteLine(Indent(1) + "obj.setData(engine->newVariant(QVariant::fromValue(value)));");
 
-            foreach (Symbol v in Class.children.Values)
+            foreach (Symbol v in Class.children)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
                 {
                     string conversionFunc = Symbol.IsPODType(v.type) ? "qScriptValueFromValue" : ("ToScriptValue_const_" + v.type);
@@ -317,7 +331,7 @@ namespace QScriptBindings
             if (HasOpaqueQVariantBasedMarshalling(Class)) // If enabled, this type is marshalled opaquely.
                 tw.WriteLine(Indent(1) + "value = obj.data().toVariant().value<" + Class.name + ">();");
 
-            foreach (Symbol v in Class.children.Values)
+            foreach (Symbol v in Class.children)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
                     tw.WriteLine(Indent(1) + "value." + v.name + " = qScriptValueToValue<" + v.type + ">(obj.property(\"" + v.name + "\"));");
 
@@ -337,7 +351,7 @@ namespace QScriptBindings
             tw.WriteLine(Indent(2) + Class.name + " *This = TypeFromQScriptValue<" + Class.name + "*>(object);");
             tw.WriteLine(Indent(2) + "if (!This) { printf(\"Error! Cannot convert QScriptValue to type " + Class.name + " in file %s, line %d!\\nTry using " + Class.name + ".get%s() and " + Class.name + ".set%s() to query the member variable '%s'!\\n\", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }");
             tw.WriteLine(Indent(2) + "QString name_ = (QString)name;");
-            foreach (Symbol v in Class.children.Values)
+            foreach (Symbol v in Class.children)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public)
                 {
 //                    tw.Write(Indent(2) + "if ((QString)name == (QString)\"" + v.name + "\")");
@@ -368,7 +382,7 @@ namespace QScriptBindings
             tw.WriteLine(Indent(2) + "if (!This) { printf(\"Error! Cannot convert QScriptValue to type " + Class.name + " in file %s, line %d!\\nTry using " + Class.name + ".get%s() and " + Class.name + ".set%s() to query the member variable '%s'!\\n\", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }");
             tw.WriteLine(Indent(2) + "QString name_ = (QString)name;");
 
-            foreach (Symbol v in Class.children.Values)
+            foreach (Symbol v in Class.children)
                 if (v.kind == "variable" && IsScriptable(v) && !v.IsConst() && v.visibilityLevel == VisibilityLevel.Public)
                 {
 //                    tw.Write(Indent(2) + "if (name_ == (QString)\"" + v.name + "\")");
@@ -395,7 +409,7 @@ namespace QScriptBindings
             tw.WriteLine(Indent(1) + "QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)");
             tw.WriteLine(Indent(1) + "{");
             tw.WriteLine(Indent(2) + "QString name_ = (QString)name;");
-            foreach (Symbol v in Class.children.Values)
+            foreach (Symbol v in Class.children)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public)
                 {
                     if (v.isStatic)
@@ -504,7 +518,7 @@ namespace QScriptBindings
         static int CountMaxArgumentsForClassCtor(Symbol Class)
         {
             int args = 0;
-            foreach (Symbol c in Class.children.Values)
+            foreach (Symbol c in Class.children)
                 if (c.name == Class.name)
                     args = Math.Max(args, c.parameters.Count);
             return args;
@@ -520,7 +534,7 @@ namespace QScriptBindings
             tw.WriteLine(Indent(1) + "QScriptValue proto = engine->newObject();");
 
             // Add each member function to the prototype.
-            foreach (Symbol child in Class.children.Values)
+            foreach (Symbol child in Class.children)
                 if (!registeredFunctions.Contains(child.name + "_____" + child.parameters.Count) && child.kind == "function" && !child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child))
                 {
                     tw.WriteLine(Indent(1) + "proto.setProperty(\"" + child.name + "\", engine->newFunction(" + (NeedsClassFunctionSelector(Class, child.name) ? GetScriptFunctionSelectorName(child) : GetScriptFunctionName(child))
@@ -529,7 +543,7 @@ namespace QScriptBindings
                 }
 /*
             // Add setters and getters for each member variable to the prototype.
-            foreach (Symbol child in Class.children.Values)
+            foreach (Symbol child in Class.children)
                 if (child.kind == "variable" && !child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child) && child.visibilityLevel == VisibilityLevel.Public)
                 {
                     tw.WriteLine(Indent(1) + "proto.setProperty(\"" + GetMemberVariableGetScriptFuncName(child) + "\", engine->newFunction(" + GetMemberVariableGetCppFuncName(child) + ", 1));");
@@ -550,7 +564,7 @@ namespace QScriptBindings
             tw.WriteLine(Indent(1) + "QScriptValue ctor = engine->newFunction(" + Class.name + "_ctor, proto, " + CountMaxArgumentsForClassCtor(Class) + ");");
 
             registeredFunctions.Clear();
-            foreach (Symbol child in Class.children.Values)
+            foreach (Symbol child in Class.children)
                 if (!registeredFunctions.Contains(child.name + "_____" + child.parameters.Count) && child.kind == "function" && child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child))
                 {
                     tw.WriteLine(Indent(1) + "ctor.setProperty(\"" + child.name + "\", engine->newFunction(" + (NeedsClassFunctionSelector(Class, child.name) ? GetScriptFunctionSelectorName(child) : GetScriptFunctionName(child))
@@ -558,7 +572,7 @@ namespace QScriptBindings
                     registeredFunctions.Add(child.name + "_____" + child.parameters.Count);
                 }
 
-            foreach (Symbol child in Class.children.Values)
+            foreach (Symbol child in Class.children)
                 if (child.kind == "variable" && child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child))
                 {
 //                    tw.WriteLine(Indent(1) + "ctor.setProperty(\"" + child.name + "\", TypeToQScriptValue(engine, " + Class.name + "::" + child.name + "));");

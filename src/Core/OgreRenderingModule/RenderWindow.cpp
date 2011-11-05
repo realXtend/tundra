@@ -186,6 +186,11 @@ void RenderWindow::ShowOverlay(bool visible)
 
 void RenderWindow::Resize(int width, int height)
 {
+    assert(renderWindow);
+
+    if (width == (int)renderWindow->getWidth() && height == (int)renderWindow->getHeight())
+        return; // Avoid recreating resources if the size didn't actually change.
+
     renderWindow->resize(width, height);
     renderWindow->windowMovedOrResized();
 

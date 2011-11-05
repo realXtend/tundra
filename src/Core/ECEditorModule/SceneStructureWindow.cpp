@@ -175,6 +175,40 @@ void SceneStructureWindow::ShowAssetReferences(bool show)
         expandAndCollapseButton->setEnabled(true);
 }
 
+void SceneStructureWindow::SetEntitySelected(const EntityPtr &entity, bool selected)
+{
+    if (entity)
+        for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+        {
+            EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
+            if (!eItem)
+                continue;
+            EntityPtr itemEntity = eItem->Entity();
+            if (itemEntity && itemEntity == entity)
+            {
+                QFont font = eItem->font(0);
+                font.setBold(selected);
+                eItem->setFont(0, font);
+                break;
+            }
+        }
+}
+
+void SceneStructureWindow::ClearSelectedEntites()
+{
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
+        if (!eItem)
+            continue;
+        QFont font = eItem->font(0);
+        if (!font.bold())
+            continue;
+        font.setBold(false);
+        eItem->setFont(0, font);
+    }
+}
+
 void SceneStructureWindow::changeEvent(QEvent* e)
 {
     if (e->type() == QEvent::LanguageChange)

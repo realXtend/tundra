@@ -36,8 +36,10 @@ ExampleAvatarAddon.prototype.ClientInitialize = function()
         // Connect keys to the inputmapper actions
         // If simpleavatar.js has not yet run, create the inputmapper here
         var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", 2, false);
+        inputmapper.modifiersEnabled = true; // Don't ignore modifiers, but take them into account (e.g. don't trigger on Shift+E or Ctrl+E, but require a plain E).
+        inputmapper.suppressKeyEvents = true; // Suppress the handled 'Q' and 'E' from going further.
         inputmapper.RegisterMapping("Q", "AddonWave()", 1); // 1 = Keypress
-        inputmapper.RegisterMapping("R", "AddonSit()", 1); // 1 = Keypress
+        inputmapper.RegisterMapping("E", "AddonSit()", 1); // 1 = Keypress
     }
 }
 

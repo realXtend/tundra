@@ -22,18 +22,21 @@ class QListWidget;
 class QTreeWidget;
 class QPoint;
 
+/// @cond PRIVATE
 struct EntityComponentSelection
 {
     EntityPtr entity;
     std::vector<ComponentPtr> components;
 };
+/// @endcond
 
 class Framework;
 class ECBrowser;
 class TransformEditor;
 
-/// List widget item representing entity. Holds a weak pointer to the represented entity.
-/// \ingroup ECEditorModuleClient.
+/// List widget item representing entity.
+/** Holds a weak pointer to the represented entity.
+    @ingroup ECEditorModuleClient. */
 class EntityListWidgetItem: public QListWidgetItem
 {
 public:
@@ -48,7 +51,7 @@ private:
 };
 
 /// Entity-component editor window.
-/** \ingroup ECEditorModuleClient. */
+/** @ingroup ECEditorModuleClient. */
 class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
 {
     Q_OBJECT
@@ -87,10 +90,10 @@ public:
 
     /// Returns components that are currently selected.
     /** @return If any components aren't selected return emtpy list. */
-    QObjectList GetSelectedComponents() const;
+    QObjectList SelectedComponents() const;
 
     /// Returns list of selected entities.
-    QList<EntityPtr> GetSelectedEntities() const;
+    QList<EntityPtr> SelectedEntities() const;
 
     /// Sets item active in the entity list. Also adds/removes EC_Highlight for the entity, if applicable.
     /** @param item Item to be select or deselect
@@ -184,6 +187,11 @@ signals:
     /// Forwards ECBrowser's SelectionChanged signal to ECEditorModule, so in script we know when new selection has occurred.
     void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
+    /// Emitted when entity is selected or deselected.
+    /** @param entity Entity in question.
+        @param selected Was the entity selected (true) or deselected (false). */
+    void EntitySelected(const EntityPtr &entity, bool selected);
+
 protected:
     /// QWidget override.
     void hideEvent(QHideEvent *e);
@@ -238,3 +246,5 @@ private:
     bool hasFocus; ///< To track if this editor has a focus.
     TransformEditor *transformEditor;
 };
+
+Q_DECLARE_METATYPE(ECEditorWindow *)

@@ -13,6 +13,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <QCursor>
 
+/// Holds information about pressed key.
 struct KeyPressInformation
 {
     /// Identifies the press count for the key. 0 denotes the key is not being held down.

@@ -45,42 +45,40 @@ public:
     /** Not all asset types can support this kind of interpretation. For example, avatar assets are of type .xml, which can
         only be distinguished from generic xml files by explicitly specifying the type here.
 
-        @sa AssetAPI::GetResourceTypeFromAssetRef()
-    */
+        @sa AssetAPI::GetResourceTypeFromAssetRef() */
     QString type;
 };
 
 /// Represents list of asset references.
+/** This structure can be used as a parameter type to an EC attribute. */
 struct AssetReferenceList
 {
     /// Default constructor.
     AssetReferenceList() {}
 
-    /// Constructor.
-    /** @param type Preferred asset type for the list.
-    */
+    /// Constructor taking preferred asset type.
+    /** @param type Preferred asset type for the list. */
     AssetReferenceList(const QString &preferredType) { type = preferredType; }
 
     /// Removes the last item in the list.
-    /** The list must not be empty. If the list can be empty, call IsEmpty() before calling this function.
-    */
+    /** The list must not be empty. If the list can be empty, call IsEmpty() before calling this function. */
     void RemoveLast() { refs.removeLast(); }
 
     /// Perform assignment.
     /** @note This will not modify the type if already set. Set the type explicitly if required. */
     AssetReferenceList& operator = (const AssetReferenceList &rhs) { refs = rhs.refs; if (type.isEmpty()) type = rhs.type; return *this; }
-    
+
     /// Removes empty items
     void RemoveEmpty()
     {
         unsigned size = refs.size();
-        for (unsigned i = size - 1; i < size; --i)
+        for(unsigned i = size - 1; i < size; --i)
         {
             if (refs[i].value<AssetReference>().ref.trimmed().isEmpty())
                 refs.erase(refs.begin() + i);
         }
     }
-    
+
     /// Return size of the list.
     int Size() const { return refs.size(); }
 
@@ -92,8 +90,7 @@ struct AssetReferenceList
 
     /// Sets new value in the list.
     /** @param i Index.
-        @ref New asset reference value.
-    */
+        @ref New asset reference value. */
     void Set(int i, AssetReference ref)
     {
         assert(i >= 0 && i < refs.size());
@@ -142,11 +139,9 @@ struct AssetReferenceList
 
     /// Preferred type for asset refs in the list
     /** @sa AssetReference::type;
-        @sa AssetAPI::GetResourceTypeFromAssetRef()
-    */
+        @sa AssetAPI::GetResourceTypeFromAssetRef() */
     QString type;
 };
 
 Q_DECLARE_METATYPE(AssetReference)
 Q_DECLARE_METATYPE(AssetReferenceList)
-

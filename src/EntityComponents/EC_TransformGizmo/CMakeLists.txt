@@ -16,7 +16,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 use_package_bullet()
-use_core_modules (Framework Scene Ui Input Asset OgreRenderingModule)# PhysicsModule)
+use_core_modules(Framework Math Scene Ui Input Asset OgreRenderingModule)# PhysicsModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 

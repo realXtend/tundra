@@ -11,7 +11,7 @@ class IAttribute;
 /// Tracks and notifies about asset change events.
 class AssetRefListener : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     AssetRefListener() : myAssetAPI(0), requestedRef(""), inspectCreated(false) {};
@@ -52,4 +52,3 @@ private:
     AssetReference requestedRef;
     bool inspectCreated;
 };
-

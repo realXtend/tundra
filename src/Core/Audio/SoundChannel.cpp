@@ -1,9 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "DebugOperatorNew.h"
-#include <boost/algorithm/string.hpp>
-#include <QList>
-#include "MemoryLeakCheck.h"
 #include "SoundChannel.h"
 #include "LoggingFunctions.h"
 
@@ -14,6 +11,8 @@
 #include <al.h>
 #include <alc.h>
 #endif
+
+#include "MemoryLeakCheck.h"
 
 static const float MINIMUM_ROLLOFF = 0.1f;
 static const float DEFAULT_ROLLOFF = 2.0f;

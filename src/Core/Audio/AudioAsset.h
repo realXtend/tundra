@@ -11,7 +11,8 @@
 /// Stores raw decoded audio data ready for playback.
 class AUDIO_API AudioAsset : public IAsset
 {
-    Q_OBJECT;
+    Q_OBJECT
+
 public:
     AudioAsset(AssetAPI *owner, const QString &type_, const QString &name_);
 

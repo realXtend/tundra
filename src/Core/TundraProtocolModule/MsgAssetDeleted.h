@@ -3,6 +3,7 @@
 #include "kNet/DataDeserializer.h"
 #include "kNet/DataSerializer.h"
 
+/// Network message informing that asset has been deleted from storage.
 struct MsgAssetDeleted
 {
 	MsgAssetDeleted()

@@ -6,14 +6,12 @@
 
 // Disable warnings C4702 coming from boost
 #ifdef _MSC_VER
-#pragma warning ( push )
-#pragma warning( disable : 4702 )
+#pragma warning(push)
+#pragma warning(disable : 4702)
 #endif
-
 #include <boost/lexical_cast.hpp>
-
 #ifdef _MSC_VER
-#pragma warning( pop )
+#pragma warning(pop)
 #endif
 
 #include "CoreDefines.h"
@@ -21,14 +19,16 @@
 
 #include <QString>
 
+/// @cond PRIVATE
 class QStringLessThanNoCase
 {
 public:
-    bool operator()(const QString &a, const QString b) const
+    bool operator()(const QString &a, const QString &b) const
     {
         return QString::compare(a, b, Qt::CaseInsensitive) < 0;
     }
 };
+/// @endcond
 
 QString QStringfromWCharArray(const wchar_t *string, int size);
 int QStringtoWCharArray(QString qstr, wchar_t *array);
@@ -67,30 +67,26 @@ StringVector SplitString(const std::string& str, char separator);
 /// Replaces all occurrences of a substring with another
 /** @param str String to modify
     @param replace_this What substring to replace
-    @param replace_with Substring to replace with
- */
-std::string ReplaceSubstring(const std::string &str, const std::string &replace_this, const std::string &replace_with);    
+    @param replace_with Substring to replace with */
+std::string ReplaceSubstring(const std::string &str, const std::string &replace_this, const std::string &replace_with);
 
 /// Replaces certain char in string with another char
 /** @param str String to modify
     @param replace_this What char to replace
-    @param replace_with Char to replace with
- */
+    @param replace_with Char to replace with */
 std::string ReplaceChar(const std::string& str, char replace_this, char replace_with);
 
 /// Replaces all occurrences of a substring with another
 /** @param str String to modify
     @param replace_this What substring to replace
-    @param replace_with Substring to replace with
- */
-void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, const std::string &replace_with);    
+    @param replace_with Substring to replace with */
+void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, const std::string &replace_with);
 
 /// Replaces certain char in string with another char
 /** @param str String to modify
     @param replace_this What char to replace
-    @param replace_with Char to replace with
- */
-void ReplaceCharInplace(std::string& str, char replace_this, char replace_with);    
+    @param replace_with Char to replace with */
+void ReplaceCharInplace(std::string& str, char replace_this, char replace_with);
 
 /// Convert vector to string
 std::string BufferToString(const std::vector<s8>& buffer);
@@ -104,14 +100,12 @@ uint GetHash(const std::string& str);
 /// Calculate SDBM hash for a string
 uint GetHash(const QString& str);
 
-/// Parses boolean value from string.
-/** The value can either true, false (both case-insensitive), 1 or 0.
-    @param value String to be inspected.
-*/
+/// Parses boolean value from string, case-insensitive.
+/** Accepted variations are on/off, true/false & 0/1* /
+    @param value String to be inspected. */
+bool ParseBool(QString value);
+/// This is an overloaded function.
 bool ParseBool(const std::string &value);
 
-/// This is an overloaded function.
-/** @param value String to be inspected.
-*/
-bool ParseBool(const QString &value);
-
+/// Converts boolean to "true" or "false".
+inline QString BoolToString(bool value) { return value ? "true" : "false"; }
