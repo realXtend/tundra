@@ -881,7 +881,7 @@ void SceneStructureModule::SyncSelectionWithEcEditor(ECEditorWindow *editor)
     if (sceneWindow && editor)
     {
         sceneWindow->ClearSelectedEntites();
-        foreach(const EntityPtr &entity, editor->GetSelectedEntities())
+        foreach(const EntityPtr &entity, editor->SelectedEntities())
             sceneWindow->SetEntitySelected(entity, true);
 
         connect(editor, SIGNAL(EntitySelected(const EntityPtr &, bool)),

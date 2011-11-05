@@ -90,10 +90,10 @@ public:
 
     /// Returns components that are currently selected.
     /** @return If any components aren't selected return emtpy list. */
-    QObjectList GetSelectedComponents() const;
+    QObjectList SelectedComponents() const;
 
     /// Returns list of selected entities.
-    QList<EntityPtr> GetSelectedEntities() const;
+    QList<EntityPtr> SelectedEntities() const;
 
     /// Sets item active in the entity list. Also adds/removes EC_Highlight for the entity, if applicable.
     /** @param item Item to be select or deselect

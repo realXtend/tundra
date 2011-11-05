@@ -126,7 +126,7 @@ QList<EntityPtr> ECBrowser::GetEntities() const
     return ret;
 }
 
-QObjectList ECBrowser::GetSelectedComponents() const
+QObjectList ECBrowser::SelectedComponents() const
 {
     QTreeWidgetItem *item = treeWidget_->currentItem();
     if(!item)

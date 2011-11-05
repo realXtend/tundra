@@ -179,18 +179,18 @@ void ECEditorModule::CreateXmlEditor(EntityPtr entity)
     CreateXmlEditor(QList<EntityPtr>(QList<EntityPtr>() << entity));
 }
 
-QObjectList ECEditorModule::GetSelectedComponents() const
+QObjectList ECEditorModule::SelectedComponents() const
 {
     if (activeEditor)
-        return activeEditor->GetSelectedComponents();
+        return activeEditor->SelectedComponents();
     return QObjectList();
 }
 
-QVariantList ECEditorModule::GetSelectedEntities() const
+QVariantList ECEditorModule::SelectedEntities() const
 {
     if (activeEditor)
     {
-        QList<EntityPtr> entities = activeEditor->GetSelectedEntities();
+        QList<EntityPtr> entities = activeEditor->SelectedEntities();
         QVariantList retEntities;
         for(uint i = 0; i < (uint)entities.size(); ++i)
             retEntities.push_back(QVariant(entities[i]->Id()));

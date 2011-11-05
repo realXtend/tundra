@@ -57,7 +57,7 @@ public:
     void SetItemExpandMemory(boost::shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
 
     /// Reads selected components from ComponentGroup and return them as QObjectList.
-    QObjectList GetSelectedComponents() const;
+    QObjectList SelectedComponents() const;
 
 public slots:
     /// Reset browser state to where it was after the browser initialization. Override method from the QtTreePropertyBrowser.

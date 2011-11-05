@@ -268,14 +268,14 @@ void ECEditorWindow::ClearEntities()
     RefreshPropertyBrowser();
 }
 
-QObjectList ECEditorWindow::GetSelectedComponents() const
+QObjectList ECEditorWindow::SelectedComponents() const
 {
     if (ecBrowser)
-        return ecBrowser->GetSelectedComponents();
+        return ecBrowser->SelectedComponents();
     return QObjectList();
 }
 
-QList<EntityPtr> ECEditorWindow::GetSelectedEntities() const
+QList<EntityPtr> ECEditorWindow::SelectedEntities() const
 {
     QList<EntityPtr> ret;
 
@@ -323,7 +323,7 @@ EntityListWidgetItem *ECEditorWindow::FindItem(entity_id_t id) const
 
 void ECEditorWindow::ShowVisualEditingAids(bool show)
 {
-    transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && show);
+    transformEditor->SetGizmoVisible(!SelectedEntities().isEmpty() && show);
 
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
@@ -349,7 +349,7 @@ void ECEditorWindow::DeleteComponent(const QString &componentType, const QString
     if(componentType.isEmpty())
         return;
 
-    foreach(const EntityPtr &entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, SelectedEntities())
     {
         ComponentPtr component = entity->GetComponent(componentType, name);
         if (component)
@@ -360,7 +360,7 @@ void ECEditorWindow::DeleteComponent(const QString &componentType, const QString
 void ECEditorWindow::CreateComponent()
 {
     QList<entity_id_t> ids;
-    foreach(const EntityPtr &e, GetSelectedEntities())
+    foreach(const EntityPtr &e, SelectedEntities())
         ids.push_back(e->Id());
 
     if (ids.size())
@@ -477,7 +477,7 @@ void ECEditorWindow::DeleteEntity()
     if (!scene)
         return;
 
-    QList<EntityPtr> entities = GetSelectedEntities();
+    QList<EntityPtr> entities = SelectedEntities();
     for(uint i = 0; i < (uint)entities.size(); ++i)
         scene->RemoveEntity(entities[i]->Id(), AttributeChange::Default);
 }
@@ -490,7 +490,7 @@ void ECEditorWindow::CopyEntity()
     // Create root Scene element always for consistency, even if we only have one entity
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = temp_doc.createElement("scene");
-    foreach(const EntityPtr &entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, SelectedEntities())
         if (entity)
         {
             QDomElement entity_elem = temp_doc.createElement("entity");
@@ -584,7 +584,7 @@ void ECEditorWindow::PasteEntity()
 void ECEditorWindow::OpenEntityActionDialog()
 {
     QList<EntityWeakPtr> entities;
-    foreach(const EntityPtr &entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, SelectedEntities())
         entities.append(entity);
 
     if (entities.size())
@@ -598,7 +598,7 @@ void ECEditorWindow::OpenEntityActionDialog()
 void ECEditorWindow::OpenFunctionDialog()
 {
     QObjectWeakPtrList objs;
-    foreach(const EntityPtr &entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, SelectedEntities())
         objs << boost::dynamic_pointer_cast<QObject>(entity);
 
     if (objs.size())
@@ -612,7 +612,7 @@ void ECEditorWindow::OpenFunctionDialog()
 void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
 {
     QSet<entity_id_t> entities;
-    foreach(const EntityPtr &entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, SelectedEntities())
         if (entity->GetComponent(type, name))
             entities.insert(entity->Id());
     BoldEntityListItems(entities);
@@ -634,7 +634,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     // Unbold all items for starters.
     BoldEntityListItems(QSet<entity_id_t>());
 
-    QList<EntityPtr> entities = GetSelectedEntities();
+    QList<EntityPtr> entities = SelectedEntities();
     // If any of entities was not selected clear the browser window.
     if (!entities.size())
     {
@@ -690,7 +690,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
 
     // Show/set only entities with placeable to transform editor
     QList<EntityPtr> entitiesWithPlaceable;
-    foreach(const EntityPtr &e, GetSelectedEntities())
+    foreach(const EntityPtr &e, SelectedEntities())
         if (e->GetComponent<EC_Placeable>())
             entitiesWithPlaceable.append(e);
 
@@ -773,7 +773,7 @@ void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
 
 void ECEditorWindow::ShowXmlEditorForEntity()
 {
-    QList<EntityPtr> entities = GetSelectedEntities();
+    QList<EntityPtr> entities = SelectedEntities();
     std::vector<EntityComponentSelection> selection;
     for(uint i = 0; i < (uint)entities.size(); i++)
     {
@@ -803,7 +803,7 @@ void ECEditorWindow::ShowXmlEditorForComponent(const QList<ComponentPtr> &compon
 void ECEditorWindow::ShowXmlEditorForComponent(const QString &componentType)
 {
     QList<ComponentPtr> components;
-    foreach(const EntityPtr &e, GetSelectedEntities())
+    foreach(const EntityPtr &e, SelectedEntities())
     {
         ComponentPtr component = e->GetComponent(componentType);
         if (component)
@@ -853,7 +853,7 @@ void ECEditorWindow::SetFocus(bool focus)
     hasFocus = focus;
     if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
     {
-        transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && hasFocus);
+        transformEditor->SetGizmoVisible(!SelectedEntities().isEmpty() && hasFocus);
         for(uint i = 0; i < (uint)entityList->count(); i++)
         {
             EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
@@ -871,7 +871,7 @@ void ECEditorWindow::setVisible(bool visible)
 
     if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
     {
-        bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
+        bool showGizmo = !SelectedEntities().isEmpty() && hasFocus;
     //    LogInfo("ECEditorWindow::setVisible: showGizmo: " + ToString(showGizmo));
         transformEditor->SetGizmoVisible(showGizmo);
 
