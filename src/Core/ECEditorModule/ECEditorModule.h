@@ -82,11 +82,6 @@ public slots:
     /** @param editor ECEditorWindow. */
     void RepositionEditor(ECEditorWindow *editor);
 
-    /// @todo Remove. One can do easily just ActiveEditor()->SelectedComponents();
-    QObjectList SelectedComponents() const;
-    /// @todo Remove. One can do easily just ActiveEditor->SelectedEntities();
-    QVariantList SelectedEntities() const;
-
 signals:
     /// Signal is emitted when active ECEditorWindow's selection has changed.
     /** @param compType Selected item's component type name.
