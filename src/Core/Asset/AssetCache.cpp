@@ -17,7 +17,8 @@
 #ifdef Q_WS_WIN
 #include "Windows.h"
 #else
-/// @todo implement linux/mac support eg. http://pubs.opengroup.org/onlinepubs/009604599/functions/utime.html
+#include <sys/stat.h>
+#include <utime.h>
 #endif
 
 #include "MemoryLeakCheck.h"
@@ -127,8 +128,15 @@ QDateTime AssetCache::LastModified(const QString &assetRef)
     SAFE_DELETE(sysTime);
     SAFE_DELETE(fileTime);
 #else
-    /// @todo implement linux/mac support
-    LogWarning("AssetCache::LastModified() not implemented for linux/mac!");
+    QString nativePath = QDir::toNativeSeparators(absolutePath);
+    struct stat fileStats;
+    if (stat(nativePath.toStdString().c_str(), &fileStats) == 0)
+    {
+        qint64 msecFromEpoch = (qint64)fileStats.st_mtime * 1000;
+        dateTime.setMSecsSinceEpoch(msecFromEpoch);
+    }
+    else
+        LogError("AssetCache: Failed to read cache file last modified time: " + assetRef);
 #endif
 
     return dateTime;
@@ -184,8 +192,12 @@ bool AssetCache::SetLastModified(const QString &assetRef, const QDateTime &dateT
     SAFE_DELETE(sysTime);
     SAFE_DELETE(fileTime);
 #else
-    /// @todo implement linux/mac support
-    LogWarning("AssetCache::SetLastModified() not implemented for linux/mac!");
+    QString nativePath = QDir::toNativeSeparators(absolutePath);
+    utimbuf modTime;
+    modTime.actime = (__time_t)(dateTime.toMSecsSinceEpoch() / 1000);
+    modTime.modtime = (__time_t)(dateTime.toMSecsSinceEpoch() / 1000);
+    if (utime(nativePath.toStdString().c_str(), &modTime) == -1)
+        LogError("AssetCache: Failed to read cache file last modified time: " + assetRef);
 #endif
 
     return success;

@@ -376,7 +376,11 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             {
                 QDateTime cacheLastModified = cache->LastModified(sourceRef);
                 QDateTime sourceLastModified = FromHttpDate(header); // Converts to UTC time spec
-                cacheLastModified.setTimeSpec(sourceLastModified.timeSpec()); // Set same time spec for comparison to work
+#ifdef Q_WS_WIN
+                // Set same time spec for comparison to work on windows. Spesific to FromHttpDate and
+                // and this provider time spec conversion. So this cannot be really resolved in AssetCache::LastModified().
+                cacheLastModified.setTimeSpec(sourceLastModified.timeSpec());
+#endif
                 if (!sourceLastModified.isNull() && !cacheLastModified.isNull())
                 {
                     if (cacheLastModified.toMSecsSinceEpoch() >= sourceLastModified.toMSecsSinceEpoch())
