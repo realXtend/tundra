@@ -61,37 +61,37 @@ public slots:
     float GetSoundMasterGain(SoundChannel::SoundType type);        
     
     /// Plays non-positional sound
-    /** @param name Sound file name or asset id
-        @param local If true, name is interpreted as filename. Otherwise asset id
+    /** @param audioAsset Asset pointer that has to be AudioAsset type.
+        @param type Sound channel type, decides which master volume to use for the channel 
         @param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
-        @return nonzero channel id, if successful (in case of loading from asset, actual sound may start later) */
+        @return Valid SoundChannel pointer, if successful (in case of loading from asset, actual sound may start later). Null SoundChannel pointer on failed play attempt. */
     SoundChannelPtr PlaySound(AssetPtr audioAsset, SoundChannel::SoundType type = SoundChannel::Triggered, SoundChannelPtr existingChannel = SoundChannelPtr());
 
     /// Plays positional sound. Returns sound id to adjust parameters
-    /** @param name Sound file name or asset id
-        @param local If true, name is interpreted as filename. Otherwise asset id
-        @param position Position of sound
+    /** @param position Position of sound
+        @param audioAsset Asset pointer that has to be AudioAsset type.
+        @param type Sound channel type, decides which master volume to use for the channel 
         @param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
-        @return nonzero channel id, if successful (in case of loading from asset, actual sound may start later) */
+        @return Valid SoundChannel pointer, if successful (in case of loading from asset, actual sound may start later). Null SoundChannel pointer on failed play attempt. */
     SoundChannelPtr PlaySound3D(const float3 &position, AssetPtr audioAsset, SoundChannel::SoundType type = SoundChannel::Triggered, SoundChannelPtr existingChannel = SoundChannelPtr());
 
     /// Buffers sound data into a non-positional channel
     /** Note: use the returned channel id for continuing to feed the sound stream.
         Call StopSound() with channel id to free the channel, when done.
         @param buffer Sound buffer structure
-        @param type Sound channel type, decides which mastervolume to use for the channel 
+        @param type Sound channel type, decides which master volume to use for the channel 
         @param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
-        @return nonzero channel id, if successful */
+        @return Valid SoundChannel pointer if successful, otherwise null. */
     SoundChannelPtr PlaySoundBuffer(const SoundBuffer& buffer, SoundChannel::SoundType type = SoundChannel::Triggered, SoundChannelPtr existingChannel = SoundChannelPtr());
     
     /// Buffers sound data into a positional channel
     /** Note: use the returned channel id for continuing to feed the sound stream.
         Call StopSound() with channel id to free the channel, when done.
         @param buffer Sound buffer structure
-        @param type Sound channel type, decides which mastervolume to use for the channel 
+        @param type Sound channel type, decides which master volume to use for the channel 
         @param position Position of sound
         @param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
-        @return nonzero channel id, if successful */
+        @return Valid SoundChannel pointer if successful, otherwise null. */
     SoundChannelPtr PlaySoundBuffer3D(const SoundBuffer& buffer, SoundChannel::SoundType type = SoundChannel::Triggered, float3 position = float3(0.0f, 0.0f, 0.0f), SoundChannelPtr existingChannel = SoundChannelPtr());
 
     /// Gets all non-stopped channels id's

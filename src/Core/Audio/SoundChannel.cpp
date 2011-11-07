@@ -148,7 +148,7 @@ void SoundChannel::Stop()
     state_ = Stopped;
 }
 
-QString SoundChannel::GetSoundName() const
+QString SoundChannel::SoundName() const
 {   
     AudioAssetPtr asset = playing_sounds_.size() > 0 ? playing_sounds_.front() : AudioAssetPtr();
     if (asset)

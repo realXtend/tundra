@@ -219,7 +219,7 @@ std::vector<SoundChannelPtr> AudioAPI::GetActiveSounds() const
     SoundChannelMap::const_iterator i = impl->channels.begin();
     while(i != impl->channels.end())
     {
-        if (i->second->GetState() != SoundChannel::Stopped)
+        if (i->second->State() != SoundChannel::Stopped)
             ret.push_back(i->second);
         ++i;
     }
@@ -250,7 +250,7 @@ void AudioAPI::Update(f64 frametime)
     while(i != impl->channels.end())
     {
         i->second->Update(impl->listenerPosition);
-        if (i->second->GetState() == SoundChannel::Stopped)
+        if (i->second->State() == SoundChannel::Stopped)
         {
             channelsToDelete.push_back(i);
         }
@@ -417,7 +417,7 @@ void AudioAPI::ApplyMasterGain()
     SoundChannelMap::iterator i = impl->channels.begin();
     while(i != impl->channels.end())
     {
-        i->second->SetMasterGain(impl->masterGain * impl->soundMasterGain[i->second->GetSoundType()]);
+        i->second->SetMasterGain(impl->masterGain * impl->soundMasterGain[i->second->Type()]);
         ++i;
     }
 }
