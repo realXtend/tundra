@@ -198,6 +198,8 @@ bool AssetCache::SetLastModified(const QString &assetRef, const QDateTime &dateT
     modTime.modtime = (__time_t)(dateTime.toMSecsSinceEpoch() / 1000);
     if (utime(nativePath.toStdString().c_str(), &modTime) == -1)
         LogError("AssetCache: Failed to read cache file last modified time: " + assetRef);
+    else
+        success = true;
 #endif
 
     return success;
