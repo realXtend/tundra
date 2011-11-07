@@ -363,14 +363,15 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         assert(transfer);
         transfer->rawAssetData.clear();
 
+        bool requestBody = true;
+        QString sourceRef = transfer->source.ref;
+
         if (reply->error() == QNetworkReply::NoError)
         {
-            QString sourceRef = transfer->source.ref;
             AssetCache *cache = framework->Asset()->GetAssetCache();   
 
             // Compare cache and header time stamps.
             // If Last-Modified is not found or the date parsing fails, request full body as fall back.
-            bool requestBody = true;
             QByteArray header = reply->rawHeader("Last-Modified");
             if (!header.isEmpty())
             {
@@ -405,23 +406,20 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 // If cache file open fails, request the full body as fall back.
                 else
                     requestBody = true;
-                
-            }
-            // Request full asset body
-            if (requestBody)
-            {
-                QNetworkRequest request;
-                request.setUrl(QUrl(sourceRef));
-                request.setRawHeader("User-Agent", "realXtend Tundra");
-
-                QNetworkReply *bodyReply = networkAccessManager->get(request);
-                transfers[bodyReply] = transfer;
             }
         }
-        else
+
+        // If HEAD operation failed requestBody == true, this does not mean that GET will fail. Some servers eg. REST APIs
+        // do not implement HEAD but will implement GET. HEAD might have also succeeded but our cache is out of date
+        // in this case requestBody is also true.
+        if (requestBody)
         {
-            QString error = "Http HEAD for address \"" + reply->url().toString() + "\" returned an error: \"" + reply->errorString() + "\"";
-            framework->Asset()->AssetTransferFailed(transfer.get(), error);
+            QNetworkRequest request;
+            request.setUrl(QUrl(sourceRef));
+            request.setRawHeader("User-Agent", "realXtend Tundra");
+
+            QNetworkReply *bodyReply = networkAccessManager->get(request);
+            transfers[bodyReply] = transfer;
         }
 
         transfers.erase(iter);
