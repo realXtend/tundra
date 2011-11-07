@@ -218,12 +218,9 @@ void *AssetCache::OpenFileHandle(const QString &absolutePath)
 
 void AssetCache::DeleteAsset(const QString &assetRef)
 {
-    DeleteAsset(QUrl(assetRef, QUrl::TolerantMode));
-}
-
-void AssetCache::DeleteAsset(const QUrl &assetUrl)
-{
-
+    QString absolutePath = GetAbsoluteFilePath(false, assetRef);
+    if (QFile::exists(absolutePath))
+        QFile::remove(absolutePath);
 }
 
 void AssetCache::ClearAssetCache()

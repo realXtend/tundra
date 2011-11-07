@@ -59,10 +59,6 @@ public slots:
     /// @param QString asset reference.
     void DeleteAsset(const QString &assetRef);
 
-    /// Deletes the asset with the given assetRef from the cache, if it exists.
-    /// @param QUrl asset reference url.
-    void DeleteAsset(const QUrl &assetUrl);
-
     /// Deletes all data and metadata files from the asset cache.
     /// Will not clear sub folders in the cache folders, or remove any folders.
     void ClearAssetCache();
