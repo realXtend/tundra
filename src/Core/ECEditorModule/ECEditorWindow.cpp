@@ -304,7 +304,7 @@ void ECEditorWindow::SetEntitySelected(EntityListWidgetItem *item, bool select)
     entityList->blockSignals(true);
     item->setSelected(select);
     entityList->blockSignals(false);
-    if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
+    if (framework->GetModule<ECEditorModule>()->IsHighlightingEnabled())
         HighlightEntity(item->Entity(), select);
     emit EntitySelected(item->Entity(), select);
 }
@@ -321,16 +321,19 @@ EntityListWidgetItem *ECEditorWindow::FindItem(entity_id_t id) const
     return 0;
 }
 
-void ECEditorWindow::ShowVisualEditingAids(bool show)
+void ECEditorWindow::SetHighlightingEnabled(bool show)
 {
-    transformEditor->SetGizmoVisible(!SelectedEntities().isEmpty() && show);
-
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
         if (item && item->isSelected())
             HighlightEntity(item->Entity(), show);
     }
+}
+
+void ECEditorWindow::SetGizmoVisible(bool show)
+{
+    transformEditor->SetGizmoVisible(show);
 }
 
 void ECEditorWindow::DeleteEntitiesFromList()
@@ -699,7 +702,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
         transformEditor->SetSelection(entities);
         transformEditor->FocusGizmoPivotToAabbCenter();
         // Shows gizmo only if we have focus.
-        bool enabled = framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled();
+        bool enabled = framework->GetModule<ECEditorModule>()->IsGizmoEnabled();
         transformEditor->SetGizmoVisible(hasFocus && enabled);
     }
 }
@@ -851,16 +854,14 @@ void ECEditorWindow::RemoveEntity(Entity* entity)
 void ECEditorWindow::SetFocus(bool focus)
 {
     hasFocus = focus;
-    if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
-    {
-        transformEditor->SetGizmoVisible(!SelectedEntities().isEmpty() && hasFocus);
+    SetGizmoVisible(!SelectedEntities().isEmpty() && hasFocus);
+    if (framework->GetModule<ECEditorModule>()->IsHighlightingEnabled())
         for(uint i = 0; i < (uint)entityList->count(); i++)
         {
             EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
             if (item && item->isSelected())
                 HighlightEntity(item->Entity(), hasFocus);
         }
-    }
 }
 
 void ECEditorWindow::setVisible(bool visible)
@@ -869,19 +870,15 @@ void ECEditorWindow::setVisible(bool visible)
     if (visible)
         emit FocusChanged(this);
 
-    if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
-    {
-        bool showGizmo = !SelectedEntities().isEmpty() && hasFocus;
-    //    LogInfo("ECEditorWindow::setVisible: showGizmo: " + ToString(showGizmo));
-        transformEditor->SetGizmoVisible(showGizmo);
+    transformEditor->SetGizmoVisible(!SelectedEntities().isEmpty() && hasFocus);
 
+    if (framework->GetModule<ECEditorModule>()->IsHighlightingEnabled())
         for(uint i = 0; i < (uint)entityList->count(); i++)
         {
             EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
             if (item && item->isSelected())
                 HighlightEntity(item->Entity(), hasFocus);
         }
-    }
 }
 
 void ECEditorWindow::DeselectAllEntities()

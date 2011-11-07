@@ -9,7 +9,6 @@
 
 #include <QObject>
 #include <QPointer>
-#include <QVariantList>
 
 class QScriptEngine;
 
@@ -26,6 +25,8 @@ typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
 class ECEDITOR_MODULE_API ECEditorModule : public IModule
 {
     Q_OBJECT
+    Q_PROPERTY(bool gizmo READ IsGizmoEnabled WRITE SetGizmoEnabled)
+    Q_PROPERTY(bool highlighting READ IsHighlightingEnabled WRITE SetHighlightingEnabled)
 
 public:
     ECEditorModule();
@@ -33,6 +34,20 @@ public:
 
     void Initialize();
     void Uninitialize();
+
+    /// Sets the visual editing gizmo enabled.
+    /** @note Applicable only if we have EC_TranformGizmo available in the build. */
+    void SetGizmoEnabled(bool enabled);
+
+    /// Is the visual editing gizmo enabled.
+    bool IsGizmoEnabled() const { return gizmoEnabled; }
+
+    /// Set do we want to highlight selected entities.
+    /** @note Applicable only if we have EC_Highlight available in the build. */
+    void SetHighlightingEnabled(bool enabled);
+
+    /// Is highlighting of selected entities enabled.
+    bool IsHighlightingEnabled() const { return highlightingEnabled; }
 
 public slots:
     /// Shows the entity-component editor window.
@@ -44,15 +59,6 @@ public slots:
     /// Returns tree widget state memory object, which keeps track which items in EC editor are expanded.
     /** When constructing new EC editor windows use this if you want to keep all editor windows' state synchronized. */
     ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
-
-    /// Sets do we want to show visual editing aids (gizmo and highlights) when EC editor is open/active.
-    /// This value is applicable for all open/active EC editors which are children of the main window.
-    /** @note The effect of this depends whether or not we have EC_Highlight and EC_TranformGizmo available in the build.
-        @param show Do we want to show or hide visual editings aids. */
-    void ShowVisualEditingAids(bool show);
-
-    /// Returns are we showing transform editing gizmo when EC editor is open/active.
-    bool VisualEditingAidsEnabled() const { return showVisualAids; }
 
     /// Shows Doxygen documentation for symbol in external window.
     /** @param symbolName Name of the symbol (class, function, etc.) */
@@ -100,7 +106,8 @@ private:
     QPointer<EcXmlEditorWidget> xmlEditor; ///< EC XML editor window
     QPointer<ECEditorWindow> activeEditor; ///< Currently active ECEditorWindow.
     QPointer<ECEditorWindow> commonEditor; ///< ECEditorModule has one common editor for all parties to use.
-    bool showVisualAids; ///< Do we want to show visual editing aids (gizmo and highlights) when EC editor is open/active.
+    bool gizmoEnabled;
+    bool highlightingEnabled;
     bool toggleSelectAllEntities;
 
 private slots:

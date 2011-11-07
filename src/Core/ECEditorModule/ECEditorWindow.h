@@ -37,7 +37,7 @@ class TransformEditor;
 /// List widget item representing entity.
 /** Holds a weak pointer to the represented entity.
     @ingroup ECEditorModuleClient. */
-class EntityListWidgetItem: public QListWidgetItem
+class EntityListWidgetItem : public QListWidgetItem
 {
 public:
     EntityListWidgetItem(const QString &name, QListWidget *list, const EntityPtr &e) :
@@ -104,10 +104,14 @@ public:
     /** @param id Entity ID. */
     EntityListWidgetItem *FindItem(entity_id_t id) const;
 
-    /// Sets visibility of visual editing aids for this editor window (if applicable).
+    /// Sets highlighting of selected entities for this editor window (if applicable).
     /** @note The visibility state is not stored within this class. ECEditorModule is authorative for this state.
         @param show Do we want to show or hide the visual editing aids. */
-    void ShowVisualEditingAids(bool show);
+    void SetHighlightingEnabled(bool show);
+
+    /// Sets visibility of editing gizmo for this editor window (if applicable).
+    /** @note The visibility state is not stored within this class. ECEditorModule is authorative for this state. */
+    void SetGizmoVisible(bool show);
 
 public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).

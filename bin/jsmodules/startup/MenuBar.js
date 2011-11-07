@@ -16,6 +16,7 @@ if (!framework.IsHeadless())
     var menu = ui.MainWindow().menuBar();
     menu.clear();
 
+    // File menu
     var fileMenu = menu.addMenu("&File");
     if (framework.GetModuleByName("UpdateModule"))
         fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
@@ -36,6 +37,7 @@ if (!framework.IsHeadless())
     }
     fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
+    // View menu
     var viewMenu = menu.addMenu("&View");
 
     if (framework.GetModuleByName("SceneStructure"))
@@ -44,17 +46,9 @@ if (!framework.IsHeadless())
         viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
     }
 
-    if (framework.GetModuleByName("ECEditor")) {
+    var ecEditor = framework.GetModuleByName("ECEditor");
+    if (ecEditor)
         viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
-
-        var showVisualAction = viewMenu.addAction("Show visual editing aids");
-        var showVisual = framework.Config().Get("tundra", "eceditor", "show visual editing aids");
-        if (showVisual == null)
-            showVisual = true;
-        showVisualAction.checkable = true;
-        showVisualAction.checked = !showVisual; // lolwtf: we have to put negation here to make this work right.
-        showVisualAction.triggered.connect(ShowVisualEditingAids);
-    }
 
     if (framework.GetModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
@@ -62,8 +56,8 @@ if (!framework.IsHeadless())
     if (framework.GetModuleByName("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
-    // Settings
-    if (framework.GetModuleByName("MumbleVoip") || framework.GetModuleByName("CAVEStereo"))
+    // Settings menu
+    if (framework.GetModuleByName("MumbleVoip") || framework.GetModuleByName("CAVEStereo") || ecEditor)
     {
         var settingsMenu = menu.addMenu("&Settings");
         // Set unique object name so that other scripts can query this menu.
@@ -75,8 +69,24 @@ if (!framework.IsHeadless())
             settingsMenu.addAction("Cave").triggered.connect(OpenCaveWindow);
             settingsMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
         }
+
+        if (ecEditor)
+        {
+            // Gizmo
+            var showGizmoAction = settingsMenu.addAction("Show editing gizmo");
+            showGizmoAction.checkable = true;
+            showGizmoAction.checked = ecEditor.gizmo;
+            showGizmoAction.triggered.connect(ShowEditingGizmo);
+
+            // Highlighting of selected entities
+            var showHighlightAction = settingsMenu.addAction("Highlight selected entities");
+            showHighlightAction.checkable = true;
+            showHighlightAction.checked = ecEditor.highlighting;
+            showHighlightAction.triggered.connect(HighlightSelectedEntities);
+        }
     }
 
+    // Help menu
     var helpMenu = menu.addMenu("&Help");
     helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
     helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
@@ -167,8 +177,12 @@ if (!framework.IsHeadless())
         framework.GetModuleByName("ECEditor").ShowEditorWindow();
     }
 
-    function ShowVisualEditingAids(show) {
-        framework.GetModuleByName("ECEditor").ShowVisualEditingAids(show);
+    function ShowEditingGizmo(show) {
+        framework.GetModuleByName("ECEditor").gizmo = show;
+    }
+
+    function HighlightSelectedEntities(show) {
+        framework.GetModuleByName("ECEditor").highlighting = show;
     }
 
     function OpenStereoscopyWindow() {
