@@ -12,6 +12,8 @@ class QTreeWidgetItem;
 
 class Framework;
 
+/// @todo Re-implement from script and re-enable functionality, hidden from documentation for now.
+/// @cond PRIVATE
 class KeyBindingsConfigWindow : public QWidget
 {
     Q_OBJECT
@@ -44,4 +46,4 @@ private:
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 };
-
+/// @endcond

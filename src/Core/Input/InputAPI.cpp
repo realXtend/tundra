@@ -308,6 +308,7 @@ void InputAPI::SceneReleaseMouseButtons()
             mouseEvent.z = 0;
             mouseEvent.relativeX = 0;
             mouseEvent.relativeY = 0;
+            mouseEvent.relativeZ = 0;
 
             mouseEvent.globalX = 0;
             mouseEvent.globalY = 0;
@@ -688,6 +689,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.z = 0;
         mouseEvent.relativeX = mouseEvent.x - lastMouseX;
         mouseEvent.relativeY = mouseEvent.y - lastMouseY;
+        mouseEvent.relativeZ = 0;
         mouseEvent.modifiers = currentModifiers;
 
         lastMouseX = mouseEvent.x;
@@ -740,6 +742,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.z = 0;
         mouseEvent.relativeX = mousePos.x() - lastMouseX;
         mouseEvent.relativeY = mousePos.y() - lastMouseY;
+        mouseEvent.relativeZ = 0;
 
         if (mouseCursorVisible)
         {

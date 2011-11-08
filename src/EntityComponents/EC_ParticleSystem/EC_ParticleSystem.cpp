@@ -6,7 +6,6 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "OgreParticleAsset.h"
-#include "OgreConversionUtils.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
 #include "Scene.h"

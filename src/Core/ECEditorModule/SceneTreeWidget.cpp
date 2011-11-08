@@ -30,7 +30,6 @@
 #include "InvokeItem.h"
 #include "FunctionInvoker.h"
 #include "CoreTypes.h"
-#include "OgreConversionUtils.h"
 #include "AssetAPI.h"
 #include "SceneAPI.h"
 #include "IAsset.h"
@@ -208,7 +207,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
 {
     assert(menu);
 
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
 
     if (sel.HasAssets() && !sel.HasComponents() && !sel.HasEntities())
         AddAvailableAssetActions(menu);
@@ -220,7 +219,7 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
 {
     assert(menu);
 
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
 
     // Let other instances add their possible functionality.
     QList<QObject *> targets;
@@ -343,7 +342,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
 
     menu->addAction(newEntityAction);
 
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
 
     if (hasSelection)
     {
@@ -354,24 +353,50 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         menu->addAction(toReplicatedAction);
         menu->addAction(temporaryAction);
 
-        // (Un)setting temporary property only possible if have only entities selected
+        // Altering temporary, local and replicated properties is only possible if we have only entities selected
         // and if all the entites have currently the same state.
         if (!sel.HasComponents() && sel.HasEntities() && sel.entities.first()->Entity())
         {
-            bool firstState = sel.entities.first()->Entity()->IsTemporary();
+            bool firstStateLocal = sel.entities.first()->Entity()->IsLocal();
+            bool firstStateReplicated = !firstStateLocal; // Entity is always either local or replicated.
+            bool localMismatch = false;
+            bool replicatedMismatch = false;
+            bool firstStateTemporary = sel.entities.first()->Entity()->IsTemporary();
             if (sel.entities.size() > 1)
+            {
                 for(uint i = 1; i < (uint)sel.entities.size(); ++i)
                     if (sel.entities[i]->Entity())
-                        if (firstState != sel.entities[i]->Entity()->IsTemporary())
+                        if (firstStateLocal != sel.entities[i]->Entity()->IsLocal())
+                        {
+                            toLocalAction->setDisabled(true);
+                            localMismatch = true;
+                            break;
+                        }
+                for(uint i = 1; i < (uint)sel.entities.size(); ++i)
+                    if (sel.entities[i]->Entity())
+                        if (firstStateReplicated != sel.entities[i]->Entity()->IsReplicated())
+                        {
+                            toReplicatedAction->setDisabled(true);
+                            replicatedMismatch = true;
+                            break;
+                        }
+                for(uint i = 1; i < (uint)sel.entities.size(); ++i)
+                    if (sel.entities[i]->Entity())
+                        if (firstStateTemporary != sel.entities[i]->Entity()->IsTemporary())
                         {
                             temporaryAction->setDisabled(true);
                             break;
                         }
+            }
 
-            temporaryAction->setChecked(firstState);
+            toLocalAction->setEnabled(localMismatch && replicatedMismatch ? false : !firstStateLocal);
+            toReplicatedAction->setEnabled(localMismatch && replicatedMismatch ? false : !firstStateReplicated);
+            temporaryAction->setChecked(firstStateTemporary);
         }
         else
         {
+            toLocalAction->setDisabled(true);
+            toReplicatedAction->setDisabled(true);
             temporaryAction->setDisabled(true);
         }
     }
@@ -452,9 +477,9 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
 }
 
-Selection SceneTreeWidget::GetSelection() const
+SceneTreeWidgetSelection SceneTreeWidget::SelectedItems() const
 {
-    Selection ret;
+    SceneTreeWidgetSelection ret;
     QListIterator<QTreeWidgetItem *> it(selectedItems());
     while(it.hasNext())
     {
@@ -481,7 +506,7 @@ Selection SceneTreeWidget::GetSelection() const
 
 QString SceneTreeWidget::GetSelectionAsXml() const
 {
-    Selection selection = GetSelection();
+    SceneTreeWidgetSelection selection = SelectedItems();
     if (selection.IsEmpty())
         return QString();
 
@@ -580,7 +605,7 @@ InvokeItem *SceneTreeWidget::FindMruItem()
 
 void SceneTreeWidget::Edit()
 {
-    Selection selection = GetSelection();
+    SceneTreeWidgetSelection selection = SelectedItems();
     if (selection.IsEmpty())
         return;
 
@@ -635,7 +660,7 @@ void SceneTreeWidget::Edit()
 
 void SceneTreeWidget::EditInNew()
 {
-    Selection selection = GetSelection();
+    SceneTreeWidgetSelection selection = SelectedItems();
     if (selection.IsEmpty())
         return;
 
@@ -660,7 +685,7 @@ void SceneTreeWidget::Rename()
     if (!index.isValid())
         return;
 
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.entities.size() == 1)
     {
         EntityItem *eItem = sel.entities[0];
@@ -730,7 +755,7 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
 /*
 void SceneTreeWidget::CloseEditor(QTreeWidgetItem *c, QTreeWidgetItem *p)
 {
-//    foreach(EntityItem *eItem, GetSelection().entities)
+//    foreach(EntityItem *eItem, SelectedItems().entities)
     closePersistentEditor(p);
 }
 */
@@ -767,7 +792,7 @@ void SceneTreeWidget::NewEntity()
 
 void SceneTreeWidget::NewComponent()
 {
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.IsEmpty())
         return;
 
@@ -827,7 +852,7 @@ void SceneTreeWidget::Delete()
     if (scene.expired())
         return;
 
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     // If we have components selected, remove them first.
     if (sel.HasComponents())
         foreach(ComponentItem *cItem, sel.components)
@@ -840,7 +865,7 @@ void SceneTreeWidget::Delete()
 
     // Remove entities.
     if (sel.HasEntities())
-        foreach(entity_id_t id, GetSelection().EntityIds())
+        foreach(entity_id_t id, SelectedItems().EntityIds())
             scene.lock()->RemoveEntity(id, AttributeChange::Replicate);
 }
 
@@ -882,7 +907,7 @@ void SceneTreeWidget::Paste()
         }
 
         // Get currently selected entities and paste components to them.
-        foreach(entity_id_t entityId, GetSelection().EntityIds())
+        foreach(entity_id_t entityId, SelectedItems().EntityIds())
         {
             EntityPtr entity = scenePtr->GetEntity(entityId);
             if (entity)
@@ -922,7 +947,7 @@ void SceneTreeWidget::SaveAs()
     if (fileDialog)
         fileDialog->close();
     fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
-        tr("Save Selection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
+        tr("Save SceneTreeWidgetSelection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
 }
 
 void SceneTreeWidget::SaveSceneAs()
@@ -938,7 +963,7 @@ void SceneTreeWidget::ExportAll()
     if (fileDialog)
         fileDialog->close();
 
-    if (GetSelection().HasEntities())
+    if (SelectedItems().HasEntities())
     {
         // Save only selected entities
         fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
@@ -984,7 +1009,7 @@ void SceneTreeWidget::OpenEntityActionDialog()
     if (!action)
         return;
 
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.IsEmpty())
         return;
 
@@ -1051,7 +1076,7 @@ void SceneTreeWidget::OpenFunctionDialog()
     if (!action)
         return;
 
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.IsEmpty())
         return;
 
@@ -1110,7 +1135,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
                 IComponent *c = dynamic_cast<IComponent *>(obj);
                 if (e)
                     objNameWithId.append('(' + QString::number((uint)e->Id()) + ')');
-                else if (c)
+                else if (c && !c->Name().trimmed().isEmpty())
                     objNameWithId.append('(' + c->Name() + ')');
             }
 
@@ -1126,6 +1151,8 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             if (ret.type() == QVariant::StringList)
                 foreach(QString s, ret.toStringList())
                     retValStr.append("\n" + s);
+            else
+                retValStr = ret.toString();
 
             if (errorMsg.isEmpty())
                 dialog->AppendReturnValueText(objNameWithId + " " + retValStr);
@@ -1201,7 +1228,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
     else
     {
         // Handle all other as binary.
-        Selection sel = GetSelection();
+        SceneTreeWidgetSelection sel = SelectedItems();
         if (!sel.IsEmpty())
         {
             // Assume 4MB max for now
@@ -1285,7 +1312,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         return;
 
     QSet<QString> assets;
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (!sel.HasEntities())
     {
         // Export all assets
@@ -1413,7 +1440,7 @@ void SceneTreeWidget::InvokeActionTriggered()
     if (!action)
         return;
 
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     if (sel.IsEmpty())
         return;
 
@@ -1492,7 +1519,7 @@ void SceneTreeWidget::InvokeActionTriggered()
 
 void SceneTreeWidget::SaveAssetAs()
 {
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     QString assetName;
 
     if (fileDialog)
@@ -1518,7 +1545,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         return;
 
     QStringList files = dialog->selectedFiles();
-    Selection sel = GetSelection();
+    SceneTreeWidgetSelection sel = SelectedItems();
     
     bool isDir = QDir(files[0]).exists();
 
@@ -1606,7 +1633,7 @@ void SceneTreeWidget::ConvertEntityToLocal()
 {
     ScenePtr scn = scene.lock();
     if (scn)
-        foreach(EntityItem *item, GetSelection().entities)
+        foreach(EntityItem *item, SelectedItems().entities)
         {
             EntityPtr orgEntity = item->Entity();
             if (orgEntity && !orgEntity->IsLocal())
@@ -1622,7 +1649,7 @@ void SceneTreeWidget::ConvertEntityToReplicated()
 {
     ScenePtr scn = scene.lock();
     if (scn)
-        foreach(EntityItem *item, GetSelection().entities)
+        foreach(EntityItem *item, SelectedItems().entities)
         {
             EntityPtr orgEntity = item->Entity();
             if (orgEntity && orgEntity->IsLocal())
@@ -1636,7 +1663,7 @@ void SceneTreeWidget::ConvertEntityToReplicated()
 
 void SceneTreeWidget::SetAsTemporary(bool temporary)
 {
-    foreach(EntityItem *item, GetSelection().entities)
+    foreach(EntityItem *item, SelectedItems().entities)
         if (item->Entity())
         {
             item->Entity()->SetTemporary(temporary);

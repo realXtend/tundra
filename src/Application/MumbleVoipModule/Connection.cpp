@@ -2,24 +2,22 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "CoreDefines.h"
-#include "CoreStringUtils.h"
-#include "LoggingFunctions.h"
 
-#include "MumbleVoipModule.h"
 #include "Connection.h"
+#include "MumbleVoipModule.h"
 #include "ServerInfo.h"
 #include "LibMumbleClient.h"
 #include "Channel.h"
 #include "User.h"
 #include "PCMAudioFrame.h"
-
 #include "AudioAPI.h"
 
-#include <QUrl>
+#include "LoggingFunctions.h"
+
 #include <celt/celt_types.h>
 #include <celt/celt.h>
-#include <QMetaType>
+
+#include <boost/asio/error.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -180,7 +178,7 @@ namespace MumbleLib
             {
                 SAFE_DELETE(client_);
             }
-            catch(std::exception &e)
+            catch(std::exception &/*e*/)
             {
                 LogError("[MumbleVoip]: Failed to delete client");
             }
@@ -193,7 +191,7 @@ namespace MumbleLib
         if(state_ == STATE_CLOSED)
             return;
 
-        LogError("Relayed from mumbleclient (" + ToString(error.category().name()) + "\\" + ToString(error.message()) + ")");
+        LogError("Relayed from mumbleclient (" + std::string(error.category().name()) + "\\" + std::string(error.message()) + ")");
         lock_state_.lockForWrite();
         state_ = STATE_ERROR;
         lock_state_.unlock();

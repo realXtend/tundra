@@ -2,12 +2,11 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "LoggingFunctions.h"
 
 #include "MumbleMainLoopThread.h"
 #include "MumbleVoipModule.h"
-
 #include "LibMumbleClient.h"
+#include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
 

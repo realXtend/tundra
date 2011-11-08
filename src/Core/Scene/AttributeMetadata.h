@@ -18,8 +18,7 @@
         static AttributeMetadata metadata("this attribute is used as an example", "-128.3", "256.7")
         range.SetMetadata(&metadata);
     }
-    @endcode
-*/
+    @endcode */
 class AttributeMetadata
 {
 public:
@@ -29,14 +28,13 @@ public:
         Interpolate
     };
 
-    /// ButtonInfo structure will contain all information need to create a QPushButtons to ECEditor.
+    /// Contains all information needed to create QPushButtons to ECEditor.
     struct ButtonInfo
     {
         /// Constructor.
         /** @param object_name QPushButton's object name.
             @param button_text QPushButton's text/icon.
-            @param method_name IComponent's public slot method name.
-         */
+            @param method_name IComponent's public slot method name. */
         ButtonInfo(const QString &object_name, const QString &button_text, const QString &method_name):
             objectName(object_name),
             text(button_text),
@@ -69,8 +67,7 @@ public:
         @param step_ Step value.
         @param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
         @param interpolation_ Interpolation mode for clients.
-        @param designable_ Indicates if Attribute should be shown in designer/editor ui.
-     */
+        @param designable_ Indicates if Attribute should be shown in designer/editor ui. */
     AttributeMetadata(const QString &desc, const QString &min = "", const QString &max = "", const QString &step_ = "", 
         const EnumDescMap_t &enum_desc = EnumDescMap_t(), InterpolationMode interpolation_ = None, bool designable_ = true) :
         description(desc),

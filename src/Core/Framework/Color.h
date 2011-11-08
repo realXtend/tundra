@@ -8,12 +8,12 @@
 #include <QMetaType>
 #include <QColor>
 
-#ifdef OGRE_INTEROP
+#ifdef MATH_OGRE_INTEROP
 #include <OgreColourValue.h>
 #endif
 
-/// A 4-component color value, component values are floating-points [0.0, 1.0]
-///\todo Expose to QtScript by using QtScriptGenerator instead of manual exposing.
+/// A 4-component color value, component values are floating-points [0.0, 1.0].
+/** @todo Expose to QtScript by using QtScriptGenerator instead of manual exposing. */
 class Color
 {
 public:
@@ -61,7 +61,7 @@ public:
     /// For QtScript
     QString toString() const { return (QString)*this; }
 
-#ifdef OGRE_INTEROP
+#ifdef MATH_OGRE_INTEROP
     Color(const Ogre::ColourValue &other) { r = other.r; g = other.g; b = other.b; a = other.a; }
     operator Ogre::ColourValue() const { return Ogre::ColourValue(r, g, b, a); }
 #endif

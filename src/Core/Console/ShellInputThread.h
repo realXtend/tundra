@@ -7,6 +7,8 @@
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
+/// Retrieves input from the native console/shell.
+/** @cond PRIVATE */
 class ShellInputThread
 {
 public:
@@ -26,3 +28,4 @@ private:
     boost::mutex inputQueueLock;
     std::vector<std::string> inputQueue;
 };
+/** @endcond */

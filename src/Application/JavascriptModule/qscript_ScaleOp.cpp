@@ -32,33 +32,33 @@ static QScriptValue ScaleOp_ScaleOp_float_float_float(QScriptContext *context, Q
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue ScaleOp_Offset(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue ScaleOp_Offset_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function ScaleOp_Offset in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function ScaleOp_Offset_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     ScaleOp This = qscriptvalue_cast<ScaleOp>(context->thisObject());
     float3 ret = This.Offset();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue ScaleOp_ToFloat3x3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue ScaleOp_ToFloat3x3_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function ScaleOp_ToFloat3x3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function ScaleOp_ToFloat3x3_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     ScaleOp This = qscriptvalue_cast<ScaleOp>(context->thisObject());
     float3x3 ret = This.ToFloat3x3();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue ScaleOp_ToFloat3x4(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue ScaleOp_ToFloat3x4_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function ScaleOp_ToFloat3x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function ScaleOp_ToFloat3x4_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     ScaleOp This = qscriptvalue_cast<ScaleOp>(context->thisObject());
     float3x4 ret = This.ToFloat3x4();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue ScaleOp_ToFloat4x4(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue ScaleOp_ToFloat4x4_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function ScaleOp_ToFloat4x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function ScaleOp_ToFloat4x4_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     ScaleOp This = qscriptvalue_cast<ScaleOp>(context->thisObject());
     float4x4 ret = This.ToFloat4x4();
     return qScriptValueFromValue(engine, ret);
@@ -102,10 +102,10 @@ QScriptValue ToScriptValue_const_ScaleOp(QScriptEngine *engine, const ScaleOp &v
 QScriptValue register_ScaleOp_prototype(QScriptEngine *engine)
 {
     QScriptValue proto = engine->newObject();
-    proto.setProperty("Offset", engine->newFunction(ScaleOp_Offset, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("ToFloat3x3", engine->newFunction(ScaleOp_ToFloat3x3, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("ToFloat3x4", engine->newFunction(ScaleOp_ToFloat3x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("ToFloat4x4", engine->newFunction(ScaleOp_ToFloat4x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Offset", engine->newFunction(ScaleOp_Offset_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToFloat3x3", engine->newFunction(ScaleOp_ToFloat3x3_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToFloat3x4", engine->newFunction(ScaleOp_ToFloat3x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToFloat4x4", engine->newFunction(ScaleOp_ToFloat4x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<ScaleOp>()));
     engine->setDefaultPrototype(qMetaTypeId<ScaleOp>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<ScaleOp*>(), proto);

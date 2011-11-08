@@ -15,7 +15,7 @@ class QMenu;
     @todo Make a new .dox file for UiAPI. */
 class UI_API UiAPI : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     /// Constructs the UI API.
@@ -26,6 +26,7 @@ public:
     ~UiAPI();
 
     void Reset();
+
 public slots:
     /// Returns the widget that is the main window.
     /** @return Main window pointer, or null pointer if we're running in headless mode. */
@@ -143,4 +144,3 @@ private:
     QList<QGraphicsProxyWidget *> widgets; ///< Internal list of proxy widgets in scene.
     QList<QGraphicsProxyWidget *> fullScreenWidgets; ///< List of full screen widgets.
 };
-

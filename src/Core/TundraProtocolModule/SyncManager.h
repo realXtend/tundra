@@ -26,12 +26,6 @@ namespace TundraLogic
 
 class TundraLogicModule;
 
-struct RemovedComponent
-{
-    QString typename_;
-    QString name_;
-};
-
 /// Performs synchronization of the changes in a scene between the server and the client.
 class SyncManager : public QObject
 {
@@ -123,20 +117,17 @@ private:
     /// Process one sync state for changes in the scene
     /** \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management
         @param destination MessageConnection where to send the messages
-        @param state Syncstate to process
-     */
+        @param state Syncstate to process */
     void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state);
     
     /// Validate the scene manipulation action. If returns false, it is ignored
     /** @param source Where the action came from
         @param messageID Network message id
-        @param entityID What entity it affects
-     */
+        @param entityID What entity it affects */
     bool ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID);
     
     /// Get a syncstate that matches the messageconnection, for reflecting arrived changes back
-    /** For client, this will always be server_syncstate_.
-     */
+    /** For client, this will always be server_syncstate_. */
     SceneSyncState* GetSceneSyncState(kNet::MessageConnection* connection);
 
     ScenePtr GetRegisteredScene() const { return scene_.lock(); }
@@ -171,5 +162,3 @@ private:
 };
 
 }
-
-

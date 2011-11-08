@@ -25,11 +25,12 @@ EC_InputMapper::EC_InputMapper(Scene* scene):
     contextPriority(this, "Input context priority", 90),
     takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),
     takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
-    mappings(this, "Mappings"),
     executionType(this, "Action execution type", 1),
     modifiersEnabled(this, "Key modifiers enable", true),
     enabled(this, "Enable actions", true),
-    keyrepeatTrigger(this, "Trigger on keyrepeats", true)
+    keyrepeatTrigger(this, "Trigger on keyrepeats", true),
+    suppressKeyEvents(this, "Suppress used keyboard events", false),
+    suppressMouseEvents(this, "Suppress used mouse events", false)
 {
     static AttributeMetadata executionAttrData;
     static bool metadataInitialized = false;
@@ -110,9 +111,6 @@ void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChan
     {
         inputContext->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
     }
-    else if(attribute == &mappings)
-    {
-    }
 }
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
@@ -132,9 +130,12 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
     }
 
     ActionInvocationMap::iterator it;
-    if (modifiersEnabled.Get())
+    // If 'modifiers are enabled', then it means we distinguish 'E', 'Shift+E' and 'Ctrl+E' as separate key sequences...
+    // But this separation can only be done for pressed and hold-down keyboard events. If 'E' is released, it needs to be detected as released individual of
+    // whether any modifiers are down.
+    if (modifiersEnabled.Get() && e->eventType != KeyEvent::KeyReleased) 
         it = actionInvokationMappings.find(qMakePair(QKeySequence(e->keyCode | e->modifiers), e->eventType));
-    else
+    else // .. otherwise, we treat 'E', 'Shift+E' and 'Ctrl+E' all just simply as 'E'.
         it = actionInvokationMappings.find(qMakePair(QKeySequence(e->keyCode), e->eventType));
     if (it == actionInvokationMappings.end())
         return;
@@ -162,10 +163,12 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringList parameters = parsedAction.split(',');
-        entity->Exec((EntityAction::ExecType)execType, act, parameters);
+        entity->Exec((EntityAction::ExecTypeField)execType, act, parameters);
     }
     else
-        entity->Exec((EntityAction::ExecType)execType, action);
+        entity->Exec((EntityAction::ExecTypeField)execType, action);
+    if (suppressKeyEvents.Get())
+        e->Suppress();
 }
 
 void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
@@ -179,10 +182,22 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
     {
         if (e->relativeX != 0)
-            ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
+        {
+            ParentEntity()->Exec((EntityAction::ExecTypeField)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
+            if (suppressMouseEvents.Get())
+                e->Suppress();
+        }
         if (e->relativeY != 0)
-            ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
+        {
+            ParentEntity()->Exec((EntityAction::ExecTypeField)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
+            if (suppressMouseEvents.Get())
+                e->Suppress();
+        }
     }
-    if (e->relativeZ != 0 && e->relativeZ != -1) // For some reason this is -1 without scroll
-        ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
+    if (e->eventType == MouseEvent::MouseScroll && e->relativeZ != 0)
+    {
+        ParentEntity()->Exec((EntityAction::ExecTypeField)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
+        if (suppressMouseEvents.Get())
+            e->Suppress();
+    }
 }

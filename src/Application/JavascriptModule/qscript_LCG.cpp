@@ -27,10 +27,10 @@ static QScriptValue LCG_Seed_u32_u32_u32_u32(QScriptContext *context, QScriptEng
     if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function LCG_Seed_u32_u32_u32_u32 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     u32 seed = qscriptvalue_cast<u32>(context->argument(0));
-    u32 mul = qscriptvalue_cast<u32>(context->argument(1));
-    u32 inc = qscriptvalue_cast<u32>(context->argument(2));
-    u32 mod = qscriptvalue_cast<u32>(context->argument(3));
-    This.Seed(seed, mul, inc, mod);
+    u32 multiplier = qscriptvalue_cast<u32>(context->argument(1));
+    u32 increment = qscriptvalue_cast<u32>(context->argument(2));
+    u32 modulus = qscriptvalue_cast<u32>(context->argument(3));
+    This.Seed(seed, multiplier, increment, modulus);
     ToExistingScriptValue_LCG(engine, This, context->thisObject());
     return QScriptValue();
 }
@@ -44,9 +44,9 @@ static QScriptValue LCG_Int(QScriptContext *context, QScriptEngine *engine)
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue LCG_MaxInt(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue LCG_MaxInt_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_MaxInt in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_MaxInt_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     u32 ret = This.MaxInt();
     return qScriptValueFromValue(engine, ret);
@@ -142,7 +142,7 @@ QScriptValue register_LCG_prototype(QScriptEngine *engine)
     QScriptValue proto = engine->newObject();
     proto.setProperty("Seed", engine->newFunction(LCG_Seed_u32_u32_u32_u32, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Int", engine->newFunction(LCG_Int_selector, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("MaxInt", engine->newFunction(LCG_MaxInt, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MaxInt", engine->newFunction(LCG_MaxInt_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IntFast", engine->newFunction(LCG_IntFast, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Int", engine->newFunction(LCG_Int_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Float", engine->newFunction(LCG_Float_selector, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);

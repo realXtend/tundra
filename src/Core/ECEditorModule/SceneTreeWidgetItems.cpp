@@ -195,29 +195,29 @@ void AssetRefItem::SetText(IAttribute *attr)
         setText(0, QString("%1: %2").arg(assetRef->Name()).arg(assetRef->Get().ref));
 }
 
-// Selection
+// SceneTreeWidgetSelection
 
-bool Selection::IsEmpty() const
+bool SceneTreeWidgetSelection::IsEmpty() const
 {
     return entities.isEmpty() && components.isEmpty() && assets.isEmpty();
 }
 
-bool Selection::HasEntities() const
+bool SceneTreeWidgetSelection::HasEntities() const
 {
     return !entities.isEmpty();
 }
 
-bool Selection::HasComponents() const
+bool SceneTreeWidgetSelection::HasComponents() const
 {
     return !components.isEmpty();
 }
 
-bool Selection::HasAssets() const
+bool SceneTreeWidgetSelection::HasAssets() const
 {
     return !assets.isEmpty();
 }
 
-QList<entity_id_t> Selection::EntityIds() const
+QList<entity_id_t> SceneTreeWidgetSelection::EntityIds() const
 {
     QSet<entity_id_t> ids;
     foreach(EntityItem *e, entities)

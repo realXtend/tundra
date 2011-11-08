@@ -17,7 +17,7 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
-use_core_modules(Framework Ui Input)
+use_core_modules(Framework Math Ui Input)
 
 build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -26,7 +26,7 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 link_package(BOOST)
 link_package(QT4)
 
-link_modules(Framework Ui Input)
+link_modules(Framework Math Ui Input)
 
 SetupCompileFlags()
 

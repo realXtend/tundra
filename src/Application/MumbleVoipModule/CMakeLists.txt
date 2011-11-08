@@ -92,13 +92,13 @@ use_package (CELT)
 use_package (PROTOBUF)
 use_package (OPENSSL)
 
-use_core_modules (Framework Scene Audio Console OgreRenderingModule TundraProtocolModule)
+use_core_modules (Framework Math Scene Audio Console OgreRenderingModule TundraProtocolModule)
 use_app_modules (JavascriptModule) # For registering metatypes to js engines
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Framework Scene Audio Console OgreRenderingModule TundraProtocolModule JavascriptModule)
-    
+link_modules (Framework Math Scene Audio Console OgreRenderingModule TundraProtocolModule JavascriptModule)
+
 link_package (MUMBLECLIENT)
 link_package (CELT)
 link_package (PROTOBUF)

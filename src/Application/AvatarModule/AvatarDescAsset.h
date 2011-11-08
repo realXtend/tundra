@@ -11,7 +11,8 @@ class QDomElement;
 /// Avatar appearance description asset
 class AV_MODULE_API AvatarDescAsset : public IAsset
 {
-    Q_OBJECT;
+    Q_OBJECT
+
 public:
     AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_);
 

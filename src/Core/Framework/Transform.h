@@ -202,7 +202,7 @@ public:
 
     bool operator ==(const Transform &rhs) const
     {
-        return pos == rhs.pos && rot == rhs.rot && scale == rhs.scale;
+        return pos.Equals(rhs.pos) && rot.Equals(rhs.rot) && scale.Equals(rhs.scale);
     }
     
     bool operator !=(const Transform &rhs) const

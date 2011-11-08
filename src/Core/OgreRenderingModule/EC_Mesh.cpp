@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
@@ -10,7 +10,6 @@
 #include "Scene.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "OgreConversionUtils.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreMeshAsset.h"
 #include "OgreMaterialAsset.h"
@@ -19,7 +18,7 @@
 #include "AttributeMetadata.h"
 #include "Profiler.h"
 #include "Math/float2.h"
-#include "Math/Ray.h"
+#include "Geometry/Ray.h"
 
 #include <Ogre.h>
 #include <OgreTagPoint.h>
@@ -239,7 +238,7 @@ float3x4 EC_Mesh::LocalToWorld() const
 
     assume(!float3(node->_getDerivedScale()).IsZero());
     float3x4 tm = float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
-    assume(tm.IsOrthogonal());
+    assume(tm.IsColOrthogonal());
     return tm;
 }
 
@@ -594,39 +593,34 @@ void EC_Mesh::RemoveAllAttachments()
     attachment_nodes_.clear();
 }
 
-bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
+bool EC_Mesh::SetMaterial(uint index, const QString& material_name)
 {
     if (!entity_)
     {
         // The mesh is not ready yet, track bending applies 
         // so we can apply it once OnMeshAssetLoaded() is called
-        pendingMaterialApplies[index] = QString::fromStdString(material_name);
+        pendingMaterialApplies[index] = material_name;
         return false;
     }
     
     if (index >= entity_->getNumSubEntities())
     {
-        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
+        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": illegal submesh index " + QString::number(index));
         return false;
     }
     
     try
     {
-        entity_->getSubEntity(index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name));
-        emit MaterialChanged(index, QString(material_name.c_str()));
+        entity_->getSubEntity(index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name.toStdString()));
+        emit MaterialChanged(index, material_name);
     }
     catch(Ogre::Exception& e)
     {
-        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": " + std::string(e.what()));
+        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": " + e.what());
         return false;
     }
     
     return true;
-}
-
-bool EC_Mesh::SetMaterial(uint index, const QString& material_name) 
-{
-    return SetMaterial(index, material_name.toStdString());
 }
 
 bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name)
@@ -918,20 +912,11 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             return;
 
         AssetReferenceList materials = meshMaterial.Get();
-        
-        // Make a copy, don't alter the existing list as there the indexes are important.
-        AssetReferenceList emptysRemoved(materials); 
-        emptysRemoved.RemoveEmpty();
 
-        // Reset materials that are now set as empty string
-        for(uint iCurrent=0; iCurrent<materialAssets.size(); ++iCurrent)
-        {
-            bool removeIndexMat = emptysRemoved.IsEmpty();
-            if (!removeIndexMat)
-                removeIndexMat = (materials.IsEmpty() || (iCurrent < materials.Size() && materials[iCurrent].ref.isEmpty()));
-            if (removeIndexMat && !GetMatName(iCurrent).isEmpty())
-                SetMaterial(iCurrent, QString(""));
-        }
+        // Reset all the materials from the submeshes which now have an empty material asset reference set.
+        for(uint i = 0; i < GetNumMaterials(); ++i)
+            if ((int)i >= materials.Size() || materials[i].ref.trimmed().isEmpty())
+                SetMaterial(i, "");
 
         // Reallocate the number of material asset reflisteners.
         while(materialAssets.size() > (size_t)materials.Size())
@@ -1366,7 +1351,7 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
 
     assume(!float3(node->_getDerivedScale()).IsZero());
     float3x4 localToWorld = float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
-    assume(localToWorld.IsOrthogonal());
+    assume(localToWorld.IsColOrthogonal());
     
     float3x4 worldToLocal = localToWorld.Inverted();
     Ray localRay = ray;

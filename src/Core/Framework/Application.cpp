@@ -44,19 +44,26 @@
 
 #include "MemoryLeakCheck.h"
 
-const QString Application::applicationName = "Tundra";
+/// @note Modify these values when you are making a custom Tundra build. Also the version needs to be changed here on releases.
+const char *Application::organizationName = "realXtend";
+const char *Application::applicationName = "Tundra";
+const char *Application::version = "2.1.3";
 
-Application::Application(Framework *framework_, int &argc, char **argv) :
+Application::Application(Framework *owner, int &argc, char **argv) :
     QApplication(argc, argv),
-    framework(framework_),
+    framework(owner),
     appActivated(true),
     nativeTranslator(new QTranslator),
-    appTranslator(new QTranslator)
+    appTranslator(new QTranslator),
+    targetFpsLimit(60.0)
 #ifdef ENABLE_SPLASH_SCREEN
     ,splashScreen(0)
 #endif
 {
-    QApplication::setApplicationName(ApplicationName());
+    // Reflect our versioning information to Qt internals, if something tries to obtain it straight from there.
+    QApplication::setOrganizationName(organizationName);
+    QApplication::setApplicationName(applicationName);
+    QApplication::setApplicationVersion(version);
 
     // Make sure that the required Tundra data directories exist.
     QDir path = UserDataDirectory();
@@ -78,7 +85,7 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     setQuitOnLastWindowClosed(false);
 
     QDir dir("data/translations/qt_native_translations");
-    QStringList qmFiles = GetQmFiles(dir);
+    QStringList qmFiles = FindQmFiles(dir);
 
     // Search then that is there corresponding native translations for system locals.
     QString loc = QLocale::system().name();
@@ -91,13 +98,15 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
 
     this->installTranslator(nativeTranslator);
 
-    if (!framework_->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language"))
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en");
+    if (!framework->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language"))
+        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en");
 
-    QString default_language = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
+    QString default_language = framework->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
     ChangeLanguage(default_language);
 
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enable flash
+
+    ReadTargetFpsLimitFromConfig();
 }
 
 Application::~Application()
@@ -111,8 +120,6 @@ Application::~Application()
 
 void Application::InitializeSplash()
 {
-// Don't show splash screen in debug mode as it 
-// can obstruct your view if debugging the startup routines.
 #ifdef ENABLE_SPLASH_SCREEN
     if (framework->IsHeadless())
         return;
@@ -147,7 +154,7 @@ void Application::SetSplashMessage(const QString &message)
 #endif
 }
 
-QStringList Application::GetQmFiles(const QDir& dir)
+QStringList Application::FindQmFiles(const QDir& dir)
 {
      QStringList fileNames = dir.entryList(QStringList("*.qm"), QDir::Files, QDir::Name);
      QMutableStringListIterator i(fileNames);
@@ -162,16 +169,12 @@ QStringList Application::GetQmFiles(const QDir& dir)
 void Application::Go()
 {
 #ifdef ENABLE_SPLASH_SCREEN
-    if (splashScreen)
-    {
-        splashScreen->close();
-        SAFE_DELETE(splashScreen);
-    }
+    SAFE_DELETE(splashScreen);
 #endif
 
     installEventFilter(this);
 
-    QObject::connect(&frameUpdateTimer, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
+    connect(&frameUpdateTimer, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
     frameUpdateTimer.setSingleShot(true);
     frameUpdateTimer.start(0);
 
@@ -181,20 +184,38 @@ void Application::Go()
     }
     catch(const std::exception &e)
     {
-        LogError(std::string("Application::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        std::string error("Application::Go caught an exception: " + std::string(e.what() ? e.what() : "(null)"));
+        std::cout << error << std::endl;
+        LogError(error);
         throw;
     }
     catch(...)
     {
-        LogError(std::string("Application::Go caught an unknown exception!"));
+        std::string error("Application::Go caught an unknown exception!");
+        std::cout << error << std::endl;
+        LogError(error);
         throw;
     }
 }
 
-void Application::Message(const std::string &title, const std::string &text)
+void Application::Message(const char *title, const char *text)
 {
 #ifdef WIN32
-    MessageBoxA(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+    MessageBoxA(0, text != 0 ? text : "", title != 0 ? title : "", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
+    std::cerr << "Application::Message not implemented for current platform!" << std::endl;
+    assert(false && "Not implemented!");
+#endif
+}
+void Application::Message(const std::string &title, const std::string &text)
+{
+    Message(title.c_str(), text.c_str());
+}
+
+void Application::Message(const wchar_t *title, const wchar_t *text)
+{
+#ifdef WIN32
+    MessageBoxW(0, text != 0 ? text : L"", title != 0 ? title : L"", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
     std::cerr << "Application::Message not implemented for current platform!" << std::endl;
     assert(false && "Not implemented!");
@@ -203,12 +224,7 @@ void Application::Message(const std::string &title, const std::string &text)
 
 void Application::Message(const std::wstring &title, const std::wstring &text)
 {
-#ifdef WIN32
-    MessageBoxW(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
-#else
-    std::cerr << "Application::Message not implemented for current platform!" << std::endl;
-    assert(false && "Not implemented!");
-#endif
+    Message(title.c_str(), text.c_str());
 }
 
 void Application::SetCurrentWorkingDirectory(QString newCwd)
@@ -224,14 +240,11 @@ QString Application::CurrentWorkingDirectory()
     WCHAR str[MAX_PATH+1] = {};
     GetCurrentDirectoryW(MAX_PATH, str);
     QString qstr = WStringToQString(str);
-    if (!qstr.endsWith('\\'))
-        qstr += '\\';
 #else
     QString qstr =  QDir::currentPath();
-    if (!qstr.endsWith('/'))
-        qstr += '/';
 #endif
-
+    if (!qstr.endsWith(QDir::separator()))
+        qstr += QDir::separator();
     return qstr;
 }
 
@@ -258,6 +271,7 @@ QString Application::InstallationDirectory()
     return qstr.left(trailingSlash+1); // +1 so that we return the trailing slash as well.
 #else
     ///\todo Implement.
+    LogWarning("Application::InstallationDirectory not implemented for this platform.");
     return ".";
 #endif
 }
@@ -332,9 +346,37 @@ QString Application::ParseWildCardFilename(const QString& input)
     return filename;
 }
 
-QString Application::ApplicationName()
+const char *Application::OrganizationName()
+{
+    return organizationName;
+}
+
+const char *Application::ApplicationName()
 {
     return applicationName;
+}
+
+const char *Application::Version()
+{
+    return version;
+}
+
+void Application::ReadTargetFpsLimitFromConfig()
+{
+    ConfigData targetFpsConfigData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
+    if (framework->Config()->HasValue(targetFpsConfigData, "fps target limit"))
+    {
+        bool ok;
+        double targetFps = framework->Config()->Get(targetFpsConfigData, "fps target limit").toDouble(&ok);
+        assert(ok && targetFps >= 0.0);
+        if (ok && targetFps >= 0.0)
+        {
+            LogDebug("Application: read target FPS limit " + QString::number(targetFpsLimit) + " from config.");
+            SetTargetFpsLimit(targetFps);
+        }
+        else
+            LogWarning("Application: Invalid target FPS value " + QString::number(targetFps) + " read from config. Ignoring.");
+    }
 }
 
 bool Application::eventFilter(QObject *obj, QEvent *event)
@@ -378,13 +420,16 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
     }
     catch(const std::exception &e)
     {
-        std::cout << std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)") << std::endl;
-        LogError(std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        std::string error("Application::eventFilter caught an exception: " + std::string(e.what() ? e.what() : "(null)"));
+        std::cout << error << std::endl;
+        LogError(error);
         throw;
-    } catch(...)
+    }
+    catch(...)
     {
-        std::cout << std::string("QApp::eventFilter caught an unknown exception!") << std::endl;
-        LogError(std::string("QApp::eventFilter caught an unknown exception!"));
+        std::string error("Application::eventFilter caught an unknown exception!");
+        std::cout << error << std::endl;
+        LogError(error);
         throw;
     }
 }
@@ -441,15 +486,19 @@ bool Application::notify(QObject *receiver, QEvent *event)
     try
     {
         return QApplication::notify(receiver, event);
-    } catch(const std::exception &e)
+    }
+    catch(const std::exception &e)
     {
-        std::cout << std::string("QApp::notify caught an exception: ") << (e.what() ? e.what() : "(null)") << std::endl;
-        LogError(std::string("QApp::notify caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        std::string error("Application::notify caught an exception: " + std::string(e.what() ? e.what() : "(null)"));
+        std::cout << error << std::endl;
+        LogError(error);
         throw;
-    } catch(...)
+    }
+    catch(...)
     {
-        std::cout << std::string("QApp::notify caught an unknown exception!") << std::endl;
-        LogError(std::string("QApp::notify caught an unknown exception!"));
+        std::string error("Application::notify caught an unknown exception!");
+        std::cout << error << std::endl;
+        LogError(error);
         throw;
     }
 }
@@ -470,24 +519,13 @@ void Application::UpdateFrame()
 
         framework->ProcessOneFrame();
 
-        double targetFpsLimit = 60.0;
-        QStringList fpsLimitParam = framework->CommandLineParameters("--fpslimit");
-        if (fpsLimitParam.size() > 0)
-        {
-            bool ok;
-            double target = fpsLimitParam.first().toDouble(&ok);
-            if (ok)
-                targetFpsLimit = target;
-            if (targetFpsLimit < 1.f)
-                targetFpsLimit = 0.f;
-        }
-
         tick_t timeNow = GetCurrentClockTime();
 
         static tick_t timerFrequency = GetCurrentClockFreq();
 
         double msecsSpentInFrame = (double)(timeNow - frameStartTime) * 1000.0 / timerFrequency;
-        const double msecsPerFrame = 1000.0 / targetFpsLimit;
+
+        const double msecsPerFrame = 1000.0 / (targetFpsLimit <= 1.0 ? 1000.0 : targetFpsLimit);
 
         ///\note Ideally we should sleep 0 msecs when running at a high fps rate,
         /// but need to avoid QTimer::start() with 0 msecs, since that will cause the timer to immediately fire,
@@ -498,21 +536,23 @@ void Application::UpdateFrame()
         if (!frameUpdateTimer.isActive())
         {
             if (appActivated || framework->IsHeadless())
-                frameUpdateTimer.start((int)msecsToSleep); 
-            else 
+                frameUpdateTimer.start((int)msecsToSleep);
+            else
                 frameUpdateTimer.start((int)(msecsToSleep + msecsPerFrame)); // Proceed at half FPS speed when unfocused (but never at half FPS when running a headless server).
         }
     }
     catch(const std::exception &e)
     {
-        std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
-        LogError(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        std::string error("Application::UpdateFrame caught an exception: " + std::string(e.what() ? e.what() : "(null)"));
+        std::cout << error << std::endl;
+        LogError(error);
         throw;
     }
     catch(...)
     {
-        std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
-        LogError(std::string("QApp::UpdateFrame caught an unknown exception!"));
+        std::string error("Application::UpdateFrame caught an unknown exception!");
+        std::cout << error << std::endl;
+        LogError(error);
         throw;
     }
 }
@@ -520,7 +560,6 @@ void Application::UpdateFrame()
 void Application::AboutToExit()
 {
     emit ExitRequested();
-    
     // If no-one canceled the exit as a response to the signal, exit
     if (framework->IsExiting())
         quit();

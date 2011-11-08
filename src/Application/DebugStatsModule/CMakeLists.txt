@@ -20,12 +20,12 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 add_definitions (-DDEBUGSTATS_MODULE_EXPORTS) 
 
 use_package_bullet()
-use_core_modules (Framework Scene OgreRenderingModule AssetModule Input Ui Console EnvironmentModule PhysicsModule)
+use_core_modules(Framework Math Scene OgreRenderingModule AssetModule Input Ui Console EnvironmentModule PhysicsModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
-link_modules (Framework Scene OgreRenderingModule EnvironmentModule AssetModule Input Ui Console PhysicsModule)
+link_modules(Framework Math Scene OgreRenderingModule EnvironmentModule AssetModule Input Ui Console PhysicsModule)
 
 GetOgreAssetEditor()
 GetOpenAssetImport()

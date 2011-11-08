@@ -2,14 +2,7 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-
 class Framework;
-
-namespace TundraLogic
-{
-    class TundraLogicModule;
-}
 
 namespace MumbleLib
 {
@@ -23,7 +16,9 @@ namespace MumbleLib
 
 namespace MumbleClient
 {
+    class MumbleClient;
     class Channel;
+    class User;
 }
 
 namespace MumbleVoip

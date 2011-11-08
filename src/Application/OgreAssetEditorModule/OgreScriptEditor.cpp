@@ -14,7 +14,6 @@
 #include "PropertyTableWidget.h"
 #include "OgreScriptHighlighter.h"
 
-#include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "AssetAPI.h"

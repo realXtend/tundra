@@ -20,7 +20,6 @@ AudioSignalLabel::AudioSignalLabel(QWidget *parent, Qt::WindowFlags flags):
 
 AudioSignalLabel::~AudioSignalLabel()
 {
-
 }
 
 void AudioSignalLabel::SetAudioData(std::vector<u8> &data, uint frequency, uint bits, bool stereo)

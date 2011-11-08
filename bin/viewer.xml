@@ -6,10 +6,11 @@
   <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on OgreRenderingModule -->
+  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule and TundraProtocolModule-->
+  <!-- Note that all modules that depend on the ScriptEngineCreated signal of JavascriptModule must be loaded before JavascriptModule. -->
   <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraProtocolModule --> 
   <plugin path="AssetModule" />                 <!-- AssetModule depends on TundraProtocolModule -->
   <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
-  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule, TundraProtocolModule, OgreRenderingModule and AssetModule -->
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
   <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraProtocolModule -->
@@ -27,7 +28,9 @@
   <jsplugin path="FirstPersonMouseLook.js" />
   <jsplugin path="LoginScreen.js" />
   <jsplugin path="MenuBar.js" />
-  
+  <jsplugin path="RendererSettings.js" />
+  <jsplugin path="SoundSettings.js" />
+
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
 

@@ -26,7 +26,9 @@ class EC_RigidBody;
 class Transform;
 class OgreWorld;
 
-///\todo Remove the QObject inheritance here, and expose as a struct to scripts.
+/// Result of a raycast to the physical representation of a scene.
+/** @sa Physics::PhysicsWorld
+    @todo Remove the QObject inheritance here, and expose as a struct to scripts. */
 class PhysicsRaycastResult : public QObject
 {
     Q_OBJECT

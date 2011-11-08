@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define BULLET_INTEROP
+#define MATH_BULLET_INTEROP
 #include "DebugOperatorNew.h"
 #include "btBulletDynamicsCommon.h"
 #include "PhysicsModule.h"
@@ -12,7 +12,7 @@
 #include "OgreWorld.h"
 #include "EC_RigidBody.h"
 #include "LoggingFunctions.h"
-#include "Math/LineSegment.h"
+#include "Geometry/LineSegment.h"
 
 #include <Ogre.h>
 #include "MemoryLeakCheck.h"

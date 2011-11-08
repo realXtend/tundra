@@ -3,9 +3,7 @@
 #pragma once
 
 #include <QString>
-#include <QObject>
 #include <vector>
-#include <boost/shared_ptr.hpp>
 
 #include "Math/float3.h"
 #include "Math/Quat.h"

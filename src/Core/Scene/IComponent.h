@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   IComponent.h
- *  @brief  Base class for all components. Inherit from this class when creating new components.
+ *  @brief  The common interface for all components, which are the building blocks the scene entities are formed of.
  */
 
 #pragma once
@@ -30,7 +30,7 @@ public:                                                                         
         static const QString name(componentName);                                       \
         return name;                                                                    \
     }                                                                                   \
-    static u32 TypeIdStatic()                                                     \
+    static u32 TypeIdStatic()                                                           \
     {                                                                                   \
         return componentTypeId;                                                         \
     }                                                                                   \
@@ -39,7 +39,7 @@ public slots:                                                                   
     {                                                                                   \
         return TypeNameStatic();                                                        \
     }                                                                                   \
-    virtual u32 TypeId() const                                                    \
+    virtual u32 TypeId() const                                                          \
     {                                                                                   \
         return componentTypeId;                                                         \
     }                                                                                   \
@@ -83,7 +83,7 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
     Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode)
     Q_PROPERTY (uint id READ Id)
     Q_PROPERTY (bool unacked READ IsUnacked)
-    
+    Q_PROPERTY (bool temporary READ IsTemporary WRITE SetTemporary)
     /// \todo Deprecated. Remove when all scripts have been converted to not refer to this
     Q_PROPERTY(bool networkSyncEnabled READ IsReplicated)
 
@@ -91,7 +91,7 @@ public:
     /// Constructor.
     explicit IComponent(Scene* scene);
 
-    /// Destructor, does nothing.
+    /// Deletes potential dynamic attributes.
     virtual ~IComponent();
 
     /// Returns the typename of this component.
@@ -183,38 +183,44 @@ public:
     /// Enables or disables network synchronization of changes that occur in the attributes of this component.
     /** True by default. Can only be changed before the component is added to an entity, because the replication determines the ID range to use. */
     void SetReplicated(bool enable);
-    
+
 public slots:
     /// Returns a pointer to the Framework instance.
     Framework *GetFramework() const { return framework; }
 
     /// Returns true if network synchronization of the attributes of this component is enabled.
     /// A component is always either local or replicated, but not both.
+    /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     bool IsReplicated() const { return replicated; }
 
     /// Returns true if network synchronization of the attributes of this component is NOT enabled.
     /// A component is always either local or replicated, but not both.
+    /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     bool IsLocal() const { return !replicated; }
 
     /// Returns true if this component is pending a replicated ID assignment from the server.
+    /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     bool IsUnacked() const;
-    
+
     /// Deprecated function to set network replication mode. Currently a no-op, as replication mode can not be changed after adding to an entity.
     ///\todo Removed once scripts converted to not call this
     void SetNetworkSyncEnabled(bool enable);
-    
+
     /// Sets the default mode for attribute change operations
+    /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     void SetUpdateMode(AttributeChange::Type defaultmode);
-    
+
     /// Gets the default mode for attribute change operations
+    /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     AttributeChange::Type UpdateMode() const { return updateMode; }
 
     /// Returns component id, which is unique within the parent entity
+    /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     component_id_t Id() const { return id; }
-    
+
     /// Returns the total number of attributes in this component. Does not count holes in the attribute vector
     int NumAttributes() const;
-    
+
     /// Returns the number of static (ie. not dynamically allocated) attributes in this component. These are always in the beginning of the attribute vector.
     int NumStaticAttributes() const;
 
@@ -254,10 +260,12 @@ public slots:
     Scene* ParentScene() const;
 
     /// Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
+    /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     void SetTemporary(bool enable);
 
     /// Returns whether component is temporary. Temporary components won't be saved when the scene is saved.
     /** @note if parent entity is temporary, this returns always true regardless of the component's temporary flag. */
+    /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     bool IsTemporary() const;
 
     /// Returns whether the component is in a view-enabled scene, or not.
@@ -354,6 +362,12 @@ private:
     friend class ::IAttribute;
     friend class Entity;
     
+    /// This function is called by the base class (IComponent) to signal to the derived class that one or more
+    /// of its attributes have changed, and it should update its internal state accordingly.
+    /// The derived class can call IAttribute::ValueChanged() to query which attributes have changed value,
+    /// and after reacting to the change, call IAttribute::ClearChangedFlag().
+    virtual void AttributesChanged() {}
+
     /// Set component id. Called by Entity
     void SetNewId(component_id_t newId);
 };

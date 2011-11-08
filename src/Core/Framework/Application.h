@@ -21,7 +21,10 @@ class Application : public QApplication
     Q_PROPERTY(QString installationDirectory READ InstallationDirectory)
     Q_PROPERTY(QString userDataDirectory READ UserDataDirectory)
     Q_PROPERTY(QString userDocumentsDirectory READ UserDocumentsDirectory)
+    Q_PROPERTY(QString organizationName READ OrganizationName)
     Q_PROPERTY(QString applicationName READ ApplicationName)
+    Q_PROPERTY(QString version READ Version)
+    Q_PROPERTY(double targetFpsLimit READ TargetFpsLimit WRITE SetTargetFpsLimit)
 
 public:
     /// Construcs the application singleton.
@@ -38,11 +41,12 @@ public:
     void Go();
 
     /// Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
+    static void Message(const char *title, const char *text);
     static void Message(const std::string &title, const std::string &text);
-
-    /// Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
+    static void Message(const wchar_t *title, const wchar_t *text);
     static void Message(const std::wstring &title, const std::wstring &text);
 
+    /// Sets the current working directory. Use with caution.
     static void SetCurrentWorkingDirectory(QString newCwd);
 
     /// Returns the cwd of the current environment.
@@ -68,15 +72,35 @@ public:
     static QString UserDocumentsDirectory();
 
     /// Parse a filename for specific wildcard modifiers, and return as parsed
-    ///    $(CWD) is expanded to the current working directory.
-    ///    $(INSTDIR) is expanded to the Tundra installation directory (Application::InstallationDirectory)
-    ///    $(USERDATA) is expanded to Application::UserDataDirectory.
-    ///    $(USERDOCS) is expanded to Application::UserDocumentsDirectory.
-    ///    $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString .
+    /** $(CWD) is expanded to the current working directory.
+        $(INSTDIR) is expanded to the Tundra installation directory (Application::InstallationDirectory)
+        $(USERDATA) is expanded to Application::UserDataDirectory.
+        $(USERDOCS) is expanded to Application::UserDocumentsDirectory.
+        $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString . */
     static QString ParseWildCardFilename(const QString& input);
 
+    /// Return organization of application, e.g. "realXtend".
+    /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
+    static const char *OrganizationName();
+
     /// Returns name of the application, "Tundra" usually.
-    static QString ApplicationName();
+    /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
+    static const char *ApplicationName();
+
+    /// Returns version information of the application as string, e.g. "2.0.0".
+    /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
+    static const char *Version();
+
+    /// Specifies a new FPS limit to use for the main loop.
+    /** Pass in a value of 0 to remove fps limiting altogether. */
+    void SetTargetFpsLimit(double fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.0) targetFpsLimit = 0.0; }
+
+    /// Returns the current FPS limit.
+    /** 0 means the FPS limiting is disabled. */
+    double TargetFpsLimit() const { return targetFpsLimit; }
+
+    /// Reads and applies target FPS limit from config file.
+    void ReadTargetFpsLimitFromConfig();
 
 public slots:
     void UpdateFrame();
@@ -95,18 +119,19 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 private:
-    QStringList GetQmFiles(const QDir &dir);
+    QStringList FindQmFiles(const QDir &dir);
     void InitializeSplash();
 
     Framework *framework;
     bool appActivated;
-
 #ifdef ENABLE_SPLASH_SCREEN
     QSplashScreen *splashScreen;
 #endif
     QTimer frameUpdateTimer;
     QTranslator *nativeTranslator;
     QTranslator *appTranslator;
-    static const QString applicationName;
+    static const char *organizationName;
+    static const char *applicationName;
+    static const char *version;
+    double targetFpsLimit;
 };
-

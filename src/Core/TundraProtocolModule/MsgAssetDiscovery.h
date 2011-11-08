@@ -3,6 +3,7 @@
 #include "kNet/DataDeserializer.h"
 #include "kNet/DataSerializer.h"
 
+/// Network message informing that new asset has been discovered in storage.
 struct MsgAssetDiscovery
 {
 	MsgAssetDiscovery()

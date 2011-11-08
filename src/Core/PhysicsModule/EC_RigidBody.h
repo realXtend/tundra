@@ -8,7 +8,8 @@
 #include "AssetReference.h"
 #include "AssetFwd.h"
 
-#include "Math/float3.h"
+#include "Math/MathFwd.h"
+#include "Geometry/AABB.h"
 #include "PhysicsModuleApi.h"
 
 #include <QVector>
@@ -315,6 +316,12 @@ public slots:
     /// Return whether have authority. On the client, returns false for non-local objects.
     bool HasAuthority() const;
     
+//    QVariant Shape() const;
+
+    /// Returns the minimal axis-aligned bounding box that encloses the collision shape of this rigid body.
+    /// Note that this function may be called even if the shape of this rigid body is not AABB.
+    AABB ShapeAABB() const;
+
 private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();

@@ -32,7 +32,7 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_core_modules (Framework Scene Console)
+use_core_modules(Framework Math Scene Console)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
 
