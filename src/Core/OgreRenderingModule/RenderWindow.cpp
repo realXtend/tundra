@@ -136,6 +136,8 @@ void RenderWindow::CreateRenderTargetOverlay(int width, int height)
     overlayContainer->setMaterialName(rttMaterialName);
     overlayContainer->setMetricsMode(Ogre::GMM_PIXELS);
     overlayContainer->setPosition(0, 0);
+    overlayContainer->setDimensions((Ogre::Real)width, (Ogre::Real)height);
+    overlayContainer->setPosition(0,0);
 
     overlay = Ogre::OverlayManager::getSingleton().create("MainWindow Overlay");
     overlay->add2D(static_cast<Ogre::OverlayContainer *>(overlayContainer));
