@@ -63,13 +63,13 @@ QString AssetCache::FindInCache(const QString &assetRef)
 
 QString AssetCache::GetDiskSourceByRef(const QString &assetRef)
 {
-    QString absolutePath = assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(assetRef);
+    QString absolutePath = GetAbsoluteDataFilePath(assetRef);
     if (QFile::exists(absolutePath))
         return absolutePath;
     return "";
 }
 
-QString AssetCache::GetCacheDirectory() const
+QString AssetCache::CacheDirectory() const
 {
     return GuaranteeTrailingSlash(assetDataDir.absolutePath());
 }
@@ -218,46 +218,27 @@ void *AssetCache::OpenFileHandle(const QString &absolutePath)
 
 void AssetCache::DeleteAsset(const QString &assetRef)
 {
-    QString absolutePath = GetAbsoluteFilePath(false, assetRef);
+    QString absolutePath = GetAbsoluteDataFilePath(assetRef);
     if (QFile::exists(absolutePath))
         QFile::remove(absolutePath);
 }
 
 void AssetCache::ClearAssetCache()
 {
-    ClearDirectory(assetDataDir.absolutePath());
-}
-
-QString AssetCache::GetAbsoluteFilePath(bool isMetaData, const QUrl &url)
-{
-    QString subDir = isMetaData ? "metadata" : "data";
-    QDir assetDir(cacheDirectory + subDir);
-    QString absolutePath = assetDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(url.toString());
-    if (isMetaData)
-        absolutePath.append(".metadata");
-    return absolutePath;
+    if (!assetDataDir.exists())
+        return;
+    QFileInfoList entries = assetDataDir.entryInfoList(QDir::Files|QDir::NoSymLinks|QDir::NoDotAndDotDot);
+    foreach(QFileInfo entry, entries)
+    {
+        if (entry.isFile())
+        {
+            if (!assetDataDir.remove(entry.fileName()))
+                LogWarning("AssetCache::ClearAssetCache could not remove file " + entry.absoluteFilePath());
+        }
+    }
 }
 
 QString AssetCache::GetAbsoluteDataFilePath(const QString &filename)
 {
     return assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(filename);
-}
-
-void AssetCache::ClearDirectory(const QString &absoluteDirPath)
-{
-    QDir targetDir(absoluteDirPath);
-    if (!targetDir.exists())
-    {
-        LogWarning("AssetCache::ClearDirectory called with non existing directory path.");
-        return;
-    }
-    QFileInfoList entries = targetDir.entryInfoList(QDir::Files|QDir::NoSymLinks|QDir::NoDotAndDotDot);
-    foreach(QFileInfo entry, entries)
-    {
-        if (entry.isFile())
-        {
-            if (!targetDir.remove(entry.fileName()))
-                LogWarning("AssetCache::ClearDirectory could not remove file " + entry.absoluteFilePath());
-        }
-    }
 }

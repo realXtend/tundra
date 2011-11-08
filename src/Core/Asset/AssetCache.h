@@ -31,10 +31,6 @@ public slots:
     /// @param assetRef Asset reference to return the disk source.
     QString GetDiskSourceByRef(const QString &assetRef);
     
-    /// Get the cache directory. Returned path is guaranteed to have a trailing slash /.
-    /// @return QString absolute path to the caches data directory
-    QString GetCacheDirectory() const;
-
     /// Saves the given asset to cache.
     /// @return QString the absolute path name to the asset cache entry. If not successful returns an empty string.
     QString StoreAsset(AssetPtr asset);
@@ -63,18 +59,13 @@ public slots:
     /// Will not clear sub folders in the cache folders, or remove any folders.
     void ClearAssetCache();
 
-    /// Returns cache directory
-    const QString& CacheDirectory() const { return cacheDirectory; }
+    /// Get the cache directory. Returned path is guaranteed to have a trailing slash /.
+    /// @return QString absolute path to the caches data directory
+    QString CacheDirectory() const;
     
 private slots:
-    /// Generates the absolute path to an asset cache entry. Helper function for the QNetworkDiskCache overrides.
-    QString GetAbsoluteFilePath(bool isMetaData, const QUrl &url);
-
     /// Generates the absolute path to an data asset cache entry.
     QString GetAbsoluteDataFilePath(const QString &filename);
-
-    /// Removes all files from a directory. Will not delete the folder itself or any subfolders it has.
-    void ClearDirectory(const QString &absoluteDirPath);
 
 private:
 #ifdef Q_WS_WIN

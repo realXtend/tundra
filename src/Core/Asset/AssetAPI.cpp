@@ -960,7 +960,7 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
     // windows non-admin users having no write permission to the run folder
     QDir cacheDir;
     if (assetCache)
-        cacheDir = QDir(assetCache->GetCacheDirectory());
+        cacheDir = QDir(assetCache->CacheDirectory());
     else
         cacheDir = QDir(Application::UserDataDirectory());
     if (cacheDir.exists())
