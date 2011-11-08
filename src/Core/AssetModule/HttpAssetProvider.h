@@ -69,7 +69,12 @@ public:
     /// Return the network access manager
     QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }
     
-    static QDateTime FromHttpDate(const QByteArray &value);
+    /// Constructs QDateTime from a QByteArray header. Can detect and parse following formats:
+    /// ANSI C's asctime(), RFC 822, updated by RFC 1123 and RFC 850, obsoleted by RFC 1036.
+    QDateTime FromHttpDate(const QByteArray &value);
+    
+    /// Constructs a QByteArray from QDateTime. Returns value as Sun, 06 Nov 1994 08:49:37 GMT - RFC 822.
+    QByteArray ToHttpDate(const QDateTime &dateTime);
 
 private slots:
     void AboutToExit();
