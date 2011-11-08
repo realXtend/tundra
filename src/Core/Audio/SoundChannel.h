@@ -16,6 +16,18 @@ class AUDIO_API SoundChannel : public QObject, public boost::enable_shared_from_
     Q_ENUMS(SoundState)
     Q_ENUMS(SoundType)
 
+    Q_PROPERTY(uint channelId READ ChannelId)
+    Q_PROPERTY(SoundState soundState READ State)
+    Q_PROPERTY(SoundType soundType READ Type)
+    Q_PROPERTY(QString soundName READ SoundName)
+
+    Q_PROPERTY(bool looped READ IsLooped WRITE SetLooped)
+    Q_PROPERTY(bool positional READ IsPositional WRITE SetPositional)
+    Q_PROPERTY(float3 position READ Position WRITE SetPosition)
+    Q_PROPERTY(float pitch READ Pitch WRITE SetPitch)
+    Q_PROPERTY(float gain READ Gain WRITE SetGain)
+    Q_PROPERTY(float masterGain READ MasterGain WRITE SetMasterGain)
+
 public:
     /// States of sound channels
     enum SoundState
@@ -34,68 +46,94 @@ public:
     };
 
     SoundChannel(sound_id_t channelId, SoundType type);
-
     ~SoundChannel();
     
+public slots:
     /// Start playing sound. Set to pending state if sound is actually not loaded yet
     void Play(AudioAssetPtr audioAsset);
 
+    /// Stop playing sound.
+    void Stop();
+
     /// Add a sound buffer and play.
-    /** Note: after a sound buffer is added, channel will remain in pending state even if there is no 
+    /** @note After a sound buffer is added, channel will remain in pending state even if there is no 
         more sound data for the moment. This is to ensure that the sound system will not automatically
         dispose of the channel. */ 
     void AddBuffer(AudioAssetPtr buffer);
-//    void AddBuffer(const SoundBuffer &buffer);
+
+    /// Adjusts range parameters of positional sound channel.
+    /** Between radiuses, attenuation will be interpolated and raised to power of rolloff
+        If outer_radius is 0, there will be no attenuation (sound is always played at gain)
+        Also, for non-positional channels the range parameters have no effect.
+        @param inner_radius Within inner radius, sound will be played at gain
+        @param outer_radius Outside outer radius, sound will be silent
+        @param rolloff Rolloff power factor. 1.0 = linear, 2.0 = distance squared */
+    void SetRange(float inner_radius, float outer_radius, float rolloff);
+
+public:
+    /// Per-frame update with new listener position
+    void Update(const float3& listener_pos);
+
+    /// Return current state of channel.
+    SoundState State() const { return state_; }
+
+    /// Gets type of sound played/pending on channel (triggered/ambient etc.)
+    SoundType Type() const { return type_; }
+
+    /// Return name/id of sound that's playing, empty if nothing playing
+    QString SoundName() const;
+
+    /// Gets the channel id.
+    sound_id_t ChannelId() const { return channelId; }
     
     /// Adjusts positional status of channel
     /** @param id Channel id
         @param positional Positional status */
     void SetPositional(bool enable);
+
+    /// Get if channel is positional.
+    bool IsPositional() { return positional_; }
+
     /// Adjusts looping status of channel
     /** @param id Channel id
         @param looped Whether to loop */
     void SetLooped(bool enable);
+
+    /// Get if channel is looped.
+    bool IsLooped() { return looped_; }
+
     /// Set position
     void SetPosition(const float3& pos);
+
+    /// Get position
+    float3 Position() { return position_; }
+
     /// Adjusts pitch of channel
     /** @param id Channel id
         @param pitch Pitch relative to sound's original pitch (1.0 = original) */
     void SetPitch(float pitch);
-    /// Adjusts gain of channel
-    /** @param id Channel id
-        @param gain New gain value, 1.0 = full volume, 0.0 = silence */
-    void SetGain(float gain);
-    /// Set master gain.
-    void SetMasterGain(float master_gain);
-    /// Adjusts range parameters of positional sound channel.
-    /** @param id Channel id
-        @param inner_radius Within inner radius, sound will be played at gain
-        @param outer_radius Outside outer radius, sound will be silent
-        @param rolloff Rolloff power factor. 1.0 = linear, 2.0 = distance squared 
-        Between radiuses, attenuation will be interpolated and raised to power of rolloff
-        If outer_radius is 0, there will be no attenuation (sound is always played at gain)
-        Also, for non-positional channels the range parameters have no effect. */
-    void SetRange(float inner_radius, float outer_radius, float rolloff);
-    /// Stop.
-    void Stop();
-    /// Per-frame update with new listener position
-    void Update(const float3& listener_pos);
-    /// Return current state of channel.
-    SoundState GetState() const { return state_; }
-    /// Return name/id of sound that's playing, empty if nothing playing
-    QString GetSoundName() const;
-    /// Gets type of sound played/pending on channel (triggered/ambient etc.)
-    SoundType GetSoundType() const { return type_; }
-    /// Get gain of channel. If channel wasn't found return -1.
-    /** @param id Channel id
-     *  @return Channel's gain. */
-    float GetGain() const {return gain_;}
+
     /// Get sound channel pitch.
     /** @param id Channel id
         @return Channel's pitch value. */
-    float GetPitch() const {return pitch_;}
+    float Pitch() const { return pitch_; }
 
-    sound_id_t GetChannelId() const { return channelId; }
+    /// Adjusts gain of channel.
+    /** @param id Channel id
+        @param gain New gain value, 1.0 = full volume, 0.0 = silence */
+    void SetGain(float gain);
+
+    /// Get gain of channel. If channel wasn't found return -1.
+    /** @param id Channel id
+        @return Channel's gain. */
+    float Gain() const { return gain_; }
+
+    /// Set master gain.
+    void SetMasterGain(float master_gain);
+
+    /// Get master gain.
+    float MasterGain() { return master_gain_; }
+
 private:
     /// Queue buffers and start playing
     void QueueBuffers();
@@ -149,4 +187,3 @@ private:
 };
 
 typedef boost::shared_ptr<SoundChannel> SoundChannelPtr;
-

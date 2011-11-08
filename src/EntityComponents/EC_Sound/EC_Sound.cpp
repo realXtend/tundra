@@ -73,7 +73,7 @@ void EC_Sound::OnAttributeUpdated(IAttribute *attribute)
                 if (!soundChannel.get())
                     PlaySound();
                 // Channel created, check if stopped
-                else if (soundChannel->GetState() == SoundChannel::Stopped)
+                else if (soundChannel->State() == SoundChannel::Stopped)
                     PlaySound();
             }
         }
@@ -100,7 +100,7 @@ void EC_Sound::AudioAssetLoaded(AssetPtr asset)
             if (!soundChannel.get())
                 PlaySound();
             // Channel created, check if stopped
-            else if (soundChannel->GetState() == SoundChannel::Stopped)
+            else if (soundChannel->State() == SoundChannel::Stopped)
                 PlaySound();
         }
     }
