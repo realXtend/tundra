@@ -3,6 +3,7 @@
 #include "kNet/DataDeserializer.h"
 #include "kNet/DataSerializer.h"
 
+/// Network message for login request.
 struct MsgLogin
 {
 	MsgLogin()

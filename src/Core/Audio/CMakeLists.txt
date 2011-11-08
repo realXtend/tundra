@@ -14,7 +14,7 @@ set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_core_modules(Framework Asset)
+use_core_modules(Framework Math Asset)
 
 add_definitions(-DAUDIO_API_EXPORTS)
 # Define AUDIO_API_DLL if we are building the Audio project as a shared library.
@@ -33,7 +33,7 @@ link_package(QT4)
 link_package(OPENAL)
 link_package(OGG)
 link_package(VORBIS)
-link_modules(Framework Asset)
+link_modules(Framework Math Asset)
 
 SetupCompileFlags()
 

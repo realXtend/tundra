@@ -11,7 +11,6 @@
 #include "CoreDefines.h"
 #include "OgreMaterialProperties.h"
 #include "Renderer.h"
-#include "OgreConversionUtils.h"
 
 #include <OgreMaterial.h>
 #include <OgreTechnique.h>

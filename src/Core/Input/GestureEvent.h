@@ -8,7 +8,7 @@
 #include <QString>
 #include <QGesture>
 
-/// GestureEvent is the event data structure passed as the parameter in all in-scene Gesture events.
+/// Event data structure passed as the parameter in all in-scene Gesture events.
 class GestureEvent : public QObject
 {
     Q_OBJECT

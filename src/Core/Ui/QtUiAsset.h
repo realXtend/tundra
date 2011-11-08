@@ -55,6 +55,10 @@ private:
         int length;
         /// Stores a parsed/sanitized version of the assetRef, to be fed to the AssetAPI for retrieval.
         QString parsedRef;
+        /// If true, this asset ref is present in a CSS style block in the .ui file. Otherwise, it is a value of an XML element. The former
+        /// need to be enclosed in quotes, the latter can't, or otherwise Qt .ui image loading will fail.
+        bool encloseInQuotes;
+
         /// Asset type
         QString type;
     };

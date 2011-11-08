@@ -93,18 +93,13 @@ public:
     Q_PROPERTY(bool takeMouseEventsOverQt READ gettakeMouseEventsOverQt WRITE settakeMouseEventsOverQt);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, takeMouseEventsOverQt);
 
-    /// Key sequence - action name mappings.
-    ///\todo Seems to be unused - delete?
-    Q_PROPERTY(QVariantList mappings READ getmappings WRITE setmappings);
-    DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, mappings);
-
     /// Execution type for actions
     Q_PROPERTY(int executionType READ getexecutionType WRITE setexecutionType)
     DEFINE_QPROPERTY_ATTRIBUTE(int, executionType);
 
     /// Modifier mode for key events. Default true. If false, modifiers are not checked for key events
     Q_PROPERTY(bool modifiersEnabled READ getmodifiersEnabled WRITE setmodifiersEnabled)
-    DEFINE_QPROPERTY_ATTRIBUTE(int, modifiersEnabled);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, modifiersEnabled);
 
     /// Is the input mapper enabled
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
@@ -114,6 +109,20 @@ public:
     ///\todo Rename to keyRepeatTrigger
     Q_PROPERTY(bool keyrepeatTrigger READ getkeyrepeatTrigger WRITE setkeyrepeatTrigger)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, keyrepeatTrigger);
+
+    /// If true, the input mapper suppressed all the keyboard input events it handles.
+    /// This allows prohibiting the signals from being handled further. Be aware that this also suppresses
+    /// keyboard events from being sent to Qt if takeKeyboardEventsOverQt is also enabled.
+    /// Default: false.
+    Q_PROPERTY(bool suppressKeyEvents READ getsuppressKeyEvents WRITE setsuppressKeyEvents)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, suppressKeyEvents);
+
+    /// If true, the input mapper suppressed all the mouse input events it handles.
+    /// This allows prohibiting the signals from being handled further. Be aware that this also suppresses
+    /// mouse events from being sent to Qt if takeMouseEventsOverQt is also enabled.
+    /// Default: false.
+    Q_PROPERTY(bool suppressMouseEvents READ getsuppressMouseEvents WRITE setsuppressMouseEvents)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, suppressMouseEvents);
 
 public slots:
     /// Registers new key sequence - action mapping for this input mapper.

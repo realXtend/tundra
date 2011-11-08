@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "OgreWorld.h"
 #include "Renderer.h"
@@ -11,19 +11,20 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "Scene.h"
-#include "CompositionHandler.h"
+#include "OgreCompositionHandler.h"
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "FrameAPI.h"
 #include "Transform.h"
 #include "Math/float2.h"
 #include "Math/float3x4.h"
-#include "Math/AABB.h"
-#include "Math/OBB.h"
-#include "Math/LineSegment.h"
+#include "Geometry/AABB.h"
+#include "Geometry/OBB.h"
+#include "Geometry/Plane.h"
+#include "Geometry/LineSegment.h"
 #include "Math/float3.h"
-#include "Math/Circle.h"
-#include "Math/Sphere.h"
+#include "Geometry/Circle.h"
+#include "Geometry/Sphere.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "OgreBulletCollisionsDebugLines.h"
 
@@ -85,7 +86,7 @@ OgreWorld::~OgreWorld()
     
     // Remove all compositors.
     /// \todo This does not work with a proper multiscene approach
-    OgreRenderer::CompositionHandler* comp = renderer_->GetCompositionHandler();
+    OgreCompositionHandler* comp = renderer_->CompositionHandler();
     if (comp)
         comp->RemoveAllCompositors();
     
@@ -109,8 +110,8 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
     
     result_.entity = 0;
     
-    int width = renderer_->GetWindowWidth();
-    int height = renderer_->GetWindowHeight();
+    int width = renderer_->WindowWidth();
+    int height = renderer_->WindowHeight();
     if ((!width) || (!height))
         return &result_; // Headless
     Ogre::Camera* camera = VerifyCurrentSceneCamera();
@@ -233,8 +234,8 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
 
     QList<Entity*>l;
 
-    int width = renderer_->GetWindowWidth();
-    int height = renderer_->GetWindowHeight();
+    int width = renderer_->WindowWidth();
+    int height = renderer_->WindowHeight();
     if ((!width) || (!height))
         return l; // Headless
     Ogre::Camera* camera = VerifyCurrentSceneCamera();
@@ -391,8 +392,8 @@ void OgreWorld::SetupShadows()
         sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
         return;
 #else
-    OgreRenderer::ShadowQuality quality = renderer_->GetShadowQuality();
-    bool using_pssm = (quality == OgreRenderer::Shadows_High);
+    OgreRenderer::Renderer::ShadowQualitySetting quality = renderer_->ShadowQuality();
+    bool using_pssm = (quality == OgreRenderer::Renderer::Shadows_High);
     bool soft_shadow = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow").toBool();
     
     //unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  */
@@ -414,7 +415,7 @@ void OgreWorld::SetupShadows()
     // for skinned/nonskinned geometry.
     std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
     
-    if (quality == OgreRenderer::Shadows_Off)
+    if (quality == OgreRenderer::Renderer::Shadows_Off)
     {
         sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
         return;
@@ -495,7 +496,7 @@ void OgreWorld::SetupShadows()
     {
         for(size_t i=0;i<shadowTextureCount;i++)
         {
-            OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
+            ::GaussianListener* gaussianListener = new GaussianListener();
             Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
             Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
             Ogre::Viewport* vp = shadowRtt->getViewport(0);
@@ -575,6 +576,25 @@ void OgreWorld::DebugDrawLine(const float3& start, const float3& end, float r, f
         if (debugLinesNoDepth_)
             debugLinesNoDepth_->addLine(start, end, float3(r,g,b));
     }
+}
+
+void OgreWorld::DebugDrawPlane(const Plane &plane, float r, float g, float b, const float3 &refPoint, float uSpacing, float vSpacing, 
+                               int uSegments, int vSegments, bool depthTest)
+{
+    float U0 = -uSegments * uSpacing / 2.f;
+    float V0 = -vSegments * vSpacing / 2.f;
+
+    float U1 = uSegments * uSpacing / 2.f;
+    float V1 = vSegments * vSpacing / 2.f;
+
+    for(int y = 0; y < vSegments; ++y)
+        for(int x = 0; x < uSegments; ++x)
+        {
+            float u = U0 + x * uSpacing;
+            float v = V0 + y * vSpacing;
+            DebugDrawLine(plane.Point(U0, v, refPoint), plane.Point(U1, v, refPoint), r, g, b, depthTest);
+            DebugDrawLine(plane.Point(u, V0, refPoint), plane.Point(u, V1, refPoint), r, g, b, depthTest);
+        }
 }
 
 void OgreWorld::DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest)

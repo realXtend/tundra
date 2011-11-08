@@ -12,8 +12,6 @@
 #include <QTimer>
 #include <QTime>
 
-#include "LibMumbleClient.h"
-
 namespace MumbleLib
 {
     //! Wrapper over mumbleclient library's User class
@@ -84,7 +82,7 @@ namespace MumbleLib
         //! Updatedes user last known position
         //! Also set position_known_ flag up
         //! @param pos the curren position of this user
-        void UpdatePosition(float3 pos);
+        void UpdatePosition(const float3 &pos);
 
         void CheckSpeakingState();
 

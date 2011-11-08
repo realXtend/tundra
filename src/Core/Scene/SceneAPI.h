@@ -7,14 +7,12 @@
 #include "CoreStringUtils.h"
 
 #include <QObject>
-#include <QString>
 
 class Framework;
 class SceneInteract;
 
 /// Gives access to the scenes in the system.
-/** Manages the scenes for the viewer and server. With this API you can create, remove, get and query scenes.
-    You can also get and set the default scene. You can also receive Qt signals about scene events from this API.
+/** With this API you can create, remove, query scenes and listen to scene additions and removals.
     Owned by Framework. */
 class SceneAPI : public QObject
 {
@@ -29,7 +27,7 @@ public:
     /// Creates new component of the type @c T.
     /** @param newComponentName Name for the component (optional). */
     template<typename T>
-    boost::shared_ptr<T> CreateComponent(Scene* parentScene, const QString &newComponentName = "")
+    boost::shared_ptr<T> CreateComponent(Scene* parentScene, const QString &newComponentName = "") const
     {
         return boost::dynamic_pointer_cast<T>(CreateComponentById(parentScene, T::TypeIdStatic(), newComponentName));
     }
@@ -50,13 +48,12 @@ public slots:
               to avoid dangling references that prevent scenes from being properly destroyed.
 
         @param name Name of the scene to return
-        @return The scene, or empty pointer if the scene with the specified name could not be found 
-    */
+        @return The scene, or empty pointer if the scene with the specified name could not be found. */
     ScenePtr GetScene(const QString &name) const;
 
     /// Returns the Scene the current active main camera is in.
-    /// If there is no active main camera, this function returns the first found scene.
-    /// If no scenes have been created, returns 0.
+    /** If there is no active main camera, this function returns the first found scene.
+        If no scenes have been created, returns 0. */
     Scene *MainCameraScene();
 
     /// Creates new empty scene.
@@ -81,29 +78,29 @@ public slots:
     const SceneMap &Scenes() const;
 
     /// Return if a component factory has been registered for a type name.
-    bool IsComponentFactoryRegistered(const QString &typeName);
+    bool IsComponentFactoryRegistered(const QString &typeName) const;
 
     /// Registers a new factory to create new components of type 'componentTypename' and id 'componentTypeid'.
     void RegisterComponentFactory(ComponentFactoryPtr factory);
 
     /// Creates a new component instance by specifying the typename of the new component to create, and the scene where to create.
-    ComponentPtr CreateComponentByName(Scene* scene, const QString &componentTypename, const QString &newComponentName = "");
+    ComponentPtr CreateComponentByName(Scene* scene, const QString &componentTypename, const QString &newComponentName = "") const;
 
     /// Creates a new component instance by specifying the typeid of the new component to create, and the scene where to create.
-    ComponentPtr CreateComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName = "");
+    ComponentPtr CreateComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName = "") const;
 
     /// Looks up the given type id and returns the type name string for that id.
-    QString GetComponentTypeName(u32 componentTypeid);
+    QString GetComponentTypeName(u32 componentTypeid) const;
 
     /// Looks up the given type name and returns the type id for that component type.
-    u32 GetComponentTypeId(const QString &componentTypename);
-    
+    u32 GetComponentTypeId(const QString &componentTypename) const;
+
     /// Looks up the attribute type name for an attribute type id
     static QString GetAttributeTypeName(u32 attributeTypeid);
-    
+
     /// Looks up the type id for an attribute type name, or zero if not found
     static u32 GetAttributeTypeId(const QString &attributeTypename);
-    
+
     /// Creates a clone of the specified component. The new component will be detached, i.e. it has no parent entity.
     ///\todo Implement this.
 //    ComponentPtr CloneComponent(const ComponentPtr &component, const QString &newComponentName);
@@ -129,34 +126,29 @@ signals:
     /** @param name removed scene name. */
     void SceneRemoved(const QString &name);
 
-    /// Emitted when default world scene changes.
-    /// @param scene new default world scene object.
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-//    void DefaultWorldSceneChanged(Scene *scene);
-
 private:
     /// Constructor. Framework takes ownership of this object.
-    /** @param fw Owner Framework. */
-    explicit SceneAPI(Framework *fw);
+    /** @param owner Owner Framework. */
+    explicit SceneAPI(Framework *owner);
 
     /// Frees all known scene and the scene interact object.
-    /** @note This function is called by our fried class Framework in its UnloadModules() function. */
+    /** Called by Framework during application shutdown. */
     void Reset();
 
     /// Initialize the scene interact object. Needs framework->Input() to be valid.
     ///\todo Remove when SceneInteract is moved away from SceneAPI.
     void Initialise();
 
-    ComponentFactoryPtr GetFactory(const QString &typeName);
-    ComponentFactoryPtr GetFactory(u32 typeId);
+    ComponentFactoryPtr GetFactory(const QString &typeName) const;
+    ComponentFactoryPtr GetFactory(u32 typeId) const;
 
     typedef std::map<QString, ComponentFactoryPtr, QStringLessThanNoCase> ComponentFactoryMap;
     typedef std::map<u32, boost::weak_ptr<IComponentFactory> > ComponentFactoryWeakMap;
 
     ComponentFactoryMap componentFactories;
     ComponentFactoryWeakMap componentFactoriesByTypeid;
-    Framework *framework_; ///< Framework.
-    SceneMap scenes_; ///< All currently created scenes.
+    Framework *framework;
+    SceneMap scenes; ///< All currently created scenes.
     SceneInteract *sceneInteract; ///< Scene interact. \todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
     static QStringList attributeTypeNames;
 };

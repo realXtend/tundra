@@ -5,10 +5,11 @@
   <plugin path="EnvironmentModule" />           <!-- EnvironmentModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on OgreRenderingModule -->
+  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule and TundraProtocolModule-->
+  <!-- Note that all modules that depend on the ScriptEngineCreated signal of JavascriptModule must be loaded before JavascriptModule. -->
   <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraProtocolModule --> 
   <plugin path="AssetModule" />                 <!-- AssetModule depends on TundraProtocolModule -->
   <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
-  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule, TundraProtocolModule, OgreRenderingModule and AssetModule -->
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
   <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
@@ -21,7 +22,9 @@
   <jsplugin path="cameraapplication.js" />
   <jsplugin path="FirstPersonMouseLook.js" />
   <jsplugin path="MenuBar.js" />
-  
+  <jsplugin path="RendererSettings.js" />
+  <jsplugin path="SoundSettings.js" />
+
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
   <!-- pyplugin path="pythonqt_console.py" /-->         <!-- shows qt py console. could enable by default when add to menu etc. for controls, now just shows directly when is enabled here -->

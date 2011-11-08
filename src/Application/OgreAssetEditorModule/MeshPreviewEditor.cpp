@@ -112,7 +112,7 @@ MeshPreviewEditor::~MeshPreviewEditor()
     {
         if (render_texture_)
             render_texture_->removeAllViewports();
-        OgreRenderer::OgreRootPtr root = renderer_->GetRoot();
+        OgreRootPtr root = renderer_->OgreRoot();
         Ogre::TextureManager::getSingleton().remove(mesh_id_.toStdString().c_str());
         root_scene_->removeAllChildren();
         manager_->destroySceneNode(scene_);
@@ -246,7 +246,7 @@ void MeshPreviewEditor::CreateRenderTexture()
         renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 
         // Create scene node and attach camera to it
-        OgreRenderer::OgreRootPtr root = renderer_->GetRoot();
+        OgreRootPtr root = renderer_->OgreRoot();
         manager_ = root->createSceneManager(Ogre::ST_GENERIC, mesh_id_.toStdString().c_str());
 
         camera_ = manager_->createCamera(mesh_id_.toStdString().c_str());

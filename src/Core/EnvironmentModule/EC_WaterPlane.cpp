@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_WaterPlane.h"
@@ -21,7 +21,6 @@
 #include <OgreQuaternion.h>
 #include <OgreColourValue.h>
 #include <OgreMath.h>
-#include <OgreConversionUtils.h>
 
 #include "MemoryLeakCheck.h"
 

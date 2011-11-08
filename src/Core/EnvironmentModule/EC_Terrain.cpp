@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Terrain.h"
@@ -17,7 +17,6 @@
 #include "IAssetTransfer.h"
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialAsset.h"
-#include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 #include "TextureAsset.h"
 #include "AttributeMetadata.h"

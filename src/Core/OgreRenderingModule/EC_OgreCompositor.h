@@ -6,7 +6,7 @@
 #include "CoreDefines.h"
 #include "OgreModuleApi.h"
 
-namespace OgreRenderer { class CompositionHandler; };
+class OgreCompositionHandler;
 
 /// Ogre compositor component
 /**
@@ -87,7 +87,7 @@ private:
     /// Updates compositor shader parameters
     void UpdateCompositorParams(const QString &compositor);
 
-    OgreRenderer::CompositionHandler *compositionHandler; ///< Compositor handler used to actually add and remove post-process effects.
+    OgreCompositionHandler *compositionHandler; ///< Compositor handler used to actually add and remove post-process effects.
     QString previousRef; ///< Stored compositor ref for internal use
     int previousPriority; ///< Stored previous priority for internal use
 };

@@ -1,7 +1,3 @@
-#ifndef HULL_H
-
-#define HULL_H
-
 /*----------------------------------------------------------------------
 		Copyright (c) 2004 Open Dynamics Framework Group
 					www.physicstools.org
@@ -29,8 +25,11 @@
 		THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 
-// Modified for Tundra to use a namespace to not clash with elsewhere defined math types
+#ifndef HULL_H
+#define HULL_H
 
+// Modified for Tundra to use a namespace to not clash with elsewhere defined math types
+/** @cond PRIVATE */
 namespace StanHull
 {
 
@@ -150,6 +149,5 @@ private:
 };
 
 }
-
+/** @endcond */
 #endif
-

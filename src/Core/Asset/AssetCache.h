@@ -1,7 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-// A note about the filename: This file will be renamed to AssetCache_.h at the moment the old AssetCache.h from AssetModule is deleted.
-
 #pragma once
 
 #include <QString>
@@ -29,8 +27,7 @@ class AssetCache : public QNetworkDiskCache
 class AssetCache : public QObject
 #endif
 {
-
-Q_OBJECT
+    Q_OBJECT
 
 public:
     explicit AssetCache(AssetAPI *owner, QString assetCacheDirectory);
@@ -139,4 +136,3 @@ private:
     QHash<QString, QFile*> preparedItems;
 #endif
 };
-

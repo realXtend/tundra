@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Mesh.h"
@@ -26,6 +26,7 @@
 
 using namespace OgreRenderer;
 
+/** @cond PRIVATE */
 class CustomTagPoint : public Ogre::TagPoint
 {
 public:
@@ -162,6 +163,7 @@ void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)
             SetShowBoundingBoxRecursive(childNode, enable);
     }
 }
+/** @endcond */
 
 EC_Placeable::EC_Placeable(Scene* scene) :
     IComponent(scene),
@@ -733,7 +735,7 @@ void EC_Placeable::CheckParentEntityCreated(Entity* entity, AttributeChange::Typ
 
 void EC_Placeable::OnParentMeshChanged()
 {
-    if (!attached_)
+    if (!attached_ || !parentBone.Get().trimmed().isEmpty())
         AttachNode();
 }
 
@@ -778,24 +780,9 @@ void EC_Placeable::SetScale(const float3 &scale)
     transform.Set(newtrans, AttributeChange::Default);
 }
 
-void EC_Placeable::LookAt(const float3 &pos)
-{
-    Scene *scene = ParentScene();
-    if (scene) 
-    {
-        float3 targetLookatDir = (pos - Position()).Normalized();
-        Quat endRot = Quat::LookAt(scene->ForwardVector(), targetLookatDir, scene->UpVector(), scene->UpVector()); //NOTE: now using worldup for localup, which i figure is wrong wh)en parented
-        SetOrientation(endRot);
-    }
-    else
-    {
-        //XXX \todo log warning
-    }
-}
-
 void EC_Placeable::SetOrientationAndScale(const float3x3 &tm)
 {
-    assume(tm.IsOrthogonal());
+    assume(tm.IsColOrthogonal());
     assume(!tm.HasNegativeScale());
     Transform newtrans = transform.Get();
     newtrans.SetRotationAndScale(tm);
@@ -814,7 +801,7 @@ void EC_Placeable::SetTransform(const float3x3 &tm, const float3 &pos)
 
 void EC_Placeable::SetTransform(const float3x4 &tm)
 {
-    assume(tm.IsOrthogonal());
+    assume(tm.IsColOrthogonal());
     assume(!tm.HasNegativeScale());
     float3 translate;
     Quat rotate;
@@ -848,7 +835,7 @@ void EC_Placeable::SetWorldTransform(const float3x3 &tm, const float3 &pos)
 
 void EC_Placeable::SetWorldTransform(const float3x4 &tm)
 {
-    assume(tm.IsOrthogonal());
+    assume(tm.IsColOrthogonal());
     assume(!tm.HasNegativeScale());
     if (!parentPlaceable_) // No parent, the local->parent transform equals the local->world transform.
     {

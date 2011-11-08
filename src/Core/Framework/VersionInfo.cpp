@@ -2,27 +2,38 @@
 
 #include "StableHeaders.h"
 #include "VersionInfo.h"
+#include "LoggingFunctions.h"
 
 // ApiVersionInfo
-
-ApiVersionInfo::ApiVersionInfo(uint major, uint minor, uint majorpatch, uint minorpatch) :
-    QObject()
+ApiVersionInfo::ApiVersionInfo(const char *version)
 {
-    versionNumbers_.push_back(major);
-    versionNumbers_.push_back(minor);
-    versionNumbers_.push_back(majorpatch);
-    versionNumbers_.push_back(minorpatch);
+    QStringList numbers = QString(version).split('.');
+    if (numbers.size() > 4)
+        LogError("ApiVersionInfo: More than 4 numbers given. Ignoring extra numbers.");
+    for(int i = 0; i < numbers.size() && i < 4; ++i)
+    {
+        bool ok;
+        versionNumbers_.push_back(numbers[i].toInt(&ok));
+        assert(ok);
+    }
+    // Guarantee trailing zeros.
+    while(versionNumbers_.size() < 4)
+        versionNumbers_.push_back(0);
 }
 
 ApiVersionInfo::~ApiVersionInfo()
 {
-    versionNumbers_.clear();
 }
 
-QString ApiVersionInfo::GetFullIdentifier()
+std::vector<uint> ApiVersionInfo::GetNumbers() const
+{
+    return versionNumbers_;
+}
+
+QString ApiVersionInfo::GetFullIdentifier() const
 {
     QString versionString;
-    std::vector<uint>::iterator itr;
+    std::vector<uint>::const_iterator itr;
     for (itr = versionNumbers_.begin(); itr < versionNumbers_.end(); ++itr)
     {
         versionString += QString::number(*itr);
@@ -39,110 +50,76 @@ QString ApiVersionInfo::GetFullIdentifier()
     return versionString;
 }
 
-QString ApiVersionInfo::toString()
-{
-    return GetFullIdentifier();
-}
-
-std::vector<uint> ApiVersionInfo::GetNumbers()
-{
-    return versionNumbers_;
-}
-
-uint ApiVersionInfo::GetMajor()
+uint ApiVersionInfo::GetMajor() const
 {
     return versionNumbers_[0];
 }
 
-uint ApiVersionInfo::GetMinor()
+uint ApiVersionInfo::GetMinor() const
 {
     return versionNumbers_[1];
 }
 
-uint ApiVersionInfo::GetMajorPatch()
+uint ApiVersionInfo::GetMajorPatch() const
 {
     return versionNumbers_[2];
 }
 
-uint ApiVersionInfo::GetMinorPatch()
+uint ApiVersionInfo::GetMinorPatch() const
 {
     return versionNumbers_[3];
 }
 
 // ApplicationVersionInfo
 
-ApplicationVersionInfo::ApplicationVersionInfo(uint major, uint minor, uint majorpatch, uint minorpatch, const QString &organization, const QString &name) :
-    QObject(),
-    name_(name),
-    organization_(organization)
+ApplicationVersionInfo::ApplicationVersionInfo(const char *organization, const char *name, const char *version) :
+    organization_(organization),
+    name_(name)
 {
-    versionNumbers_.push_back(major);
-    versionNumbers_.push_back(minor);
-    versionNumbers_.push_back(majorpatch);
-    versionNumbers_.push_back(minorpatch);
+    QStringList numbers = QString(version).split('.');
+    if (numbers.size() > 4)
+        LogError("ApiVersionInfo: More than 4 numbers given. Ignoring extra numbers.");
+    for(int i = 0; i < numbers.size() && i < 4; ++i)
+    {
+        bool ok;
+        versionNumbers_.push_back(numbers[i].toInt(&ok));
+        assert(ok);
+    }
+    // Guarantee trailing zeros.
+    while(versionNumbers_.size() < 4)
+        versionNumbers_.push_back(0);
 }
 
 ApplicationVersionInfo::~ApplicationVersionInfo()
 {
-    versionNumbers_.clear();
 }
 
-QString ApplicationVersionInfo::GetFullIdentifier()
-{
-    QStringList components;
-    components << GetOrganization() << GetName() << GetVersionString();
-    return components.join(" ");
-}
-
-QString ApplicationVersionInfo::toString()
-{
-    return GetFullIdentifier();
-}
-
-QString ApplicationVersionInfo::GetOrganization()
-{
-    return organization_;
-}
-
-QString ApplicationVersionInfo::GetName()
-{
-    return name_;
-}
-
-QString ApplicationVersionInfo::GetVersion()
-{
-    return GetVersionString();
-}
-
-std::vector<uint> ApplicationVersionInfo::GetNumbers()
+std::vector<uint> ApplicationVersionInfo::GetNumbers() const
 {
     return versionNumbers_;
 }
 
-uint ApplicationVersionInfo::GetMajor()
+QString ApplicationVersionInfo::GetFullIdentifier() const
 {
-    return versionNumbers_[0];
+    QStringList components;
+    components << GetOrganization() << GetName() << GetVersion();
+    return components.join(" ");
 }
 
-uint ApplicationVersionInfo::GetMinor()
+QString ApplicationVersionInfo::GetOrganization() const
 {
-    return versionNumbers_[1];
+    return organization_;
 }
 
-uint ApplicationVersionInfo::GetMajorPatch()
+QString ApplicationVersionInfo::GetName() const
 {
-    return versionNumbers_[2];
+    return name_;
 }
 
-uint ApplicationVersionInfo::GetMinorPatch()
-{
-    return versionNumbers_[3];
-}
-
-QString ApplicationVersionInfo::GetVersionString()
+QString ApplicationVersionInfo::GetVersion() const
 {
     QString versionString;
-    std::vector<uint>::iterator itr;
+    std::vector<uint>::const_iterator itr;
     for (itr = versionNumbers_.begin(); itr < versionNumbers_.end(); ++itr)
     {
         versionString += QString::number(*itr);
@@ -157,4 +134,24 @@ QString ApplicationVersionInfo::GetVersionString()
     else if (versionString.endsWith(".0"))
         versionString.chop(2);
     return versionString;
+}
+
+uint ApplicationVersionInfo::GetMajor() const
+{
+    return versionNumbers_[0];
+}
+
+uint ApplicationVersionInfo::GetMinor() const
+{
+    return versionNumbers_[1];
+}
+
+uint ApplicationVersionInfo::GetMajorPatch() const
+{
+    return versionNumbers_[2];
+}
+
+uint ApplicationVersionInfo::GetMinorPatch() const
+{
+    return versionNumbers_[3];
 }

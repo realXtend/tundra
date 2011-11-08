@@ -19,7 +19,7 @@ class QImage;
 /// Stores the main Ogre::RenderWindow that is created by the Renderer.
 class OGRE_MODULE_API RenderWindow : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     RenderWindow();

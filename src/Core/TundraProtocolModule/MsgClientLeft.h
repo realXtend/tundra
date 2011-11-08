@@ -3,6 +3,7 @@
 #include "kNet/DataDeserializer.h"
 #include "kNet/DataSerializer.h"
 
+/// Network message informing that client has left the server.
 struct MsgClientLeft
 {
 	MsgClientLeft()

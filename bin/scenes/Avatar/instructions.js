@@ -14,7 +14,7 @@ if (showUi)
 gets an avatar presence to control. The avatars' visual appearance is\nimplemented via the Avatar and AnimationController \
 components. The logic of adding\navatars is implemented in avatarapplication.js, and the movement is controlled with\nan \
 InputMapper component.\n\nYou can embed AvatarApplication into your scenes by copying all the entities\nand assets from \
-this scene to yours.\n\nWASD \t\t= Move avatar\nF \t\t= Toggle fly mode\nSpace \t\t= Jump/Fly up\nC \t\t= Fly down\nQ \t\t= Wave gesture\nR \t\t= \
+this scene to yours.\n\nWASD \t\t= Move avatar\nF \t\t= Toggle fly mode\nSpace \t\t= Jump/Fly up\nC \t\t= Fly down\nQ \t\t= Wave gesture\nE \t\t= \
 Toggle sit\nMouse Scroll and +/- \t= Zoom in/out";
 
     var proxy = ui.AddWidgetToScene(label);

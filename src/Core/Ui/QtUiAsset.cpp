@@ -75,6 +75,7 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool 
             ref.parsedRef = std::string(r[3].first, r[3].second).c_str();
             ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
             ref.parsedRef = assetAPI->ResolveAssetRef(Name(), ref.parsedRef);
+            ref.encloseInQuotes = true;
             ref.type = AssetAPI::GetResourceTypeFromAssetRef(ref.parsedRef);
 
             // Check if AssetAPI has previous knowledge of this ref (eg via storage auto discovery),
@@ -95,16 +96,23 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool 
         // Try to find lines of form '<pixmap>http://myserver.com/asset.png</pixmap>' or '<pixmap>someotherkindofassetref</pixmap>'
         // There may be double-quotes in the form of '"' or '&quot;', which the regex needs to take into account.
         // The regex ignores all redundant whitespace, i.e. '< pixmap > local://myasset.png </ pixmap >' is also matched.
-        boost::regex e("\\<\\s*pixmap\\s*\\>\\s*((&quot;)|\")?\\s*(.*?)\\s*((&quot;)|\")?\\s*\\<\\s*/pixmap\\s*\\>");
+//        boost::regex e("\\<\\s*(pixmap|normaloff|normalon|disabledoff|disabledon|activeoff|activeon|selectedoff|selectedon)\\s*\\>\\s*((&quot;)|\")?\\s*(.*?)\\s*((&quot;)|\")?\\s*\\<\\s*/(pixmap|normaloff|normalon|disabledoff|disabledon|activeoff|activeon|selectedoff|selectedon)\\s*\\>");
+
+        // Parse all <pixmap>imagefile.png</pixmap>, or <normalon>imagefile.png</normalon>, and other tags (pixmap, normalon, normaloff, disabledon, disabledoff, activeoff, activeon, selectedon, selectedoff).
+        // Note that this mechanism has been detected to not support alpha for the images, so better to use CSS styling for them instead (i.e. QPushButton:hover and QPushButton:pressed).
+        boost::regex e(">([^<>]+?\\.png)<");
         found = boost::regex_search(start, end, r, e);
         if (found)
         {
             AssetRef ref;
-            ref.index = r[3].first - uiAssetFile.begin();
-            ref.length = r[3].second - r[3].first;
-            ref.parsedRef = std::string(r[3].first, r[3].second).c_str();
+            //const int cg = 3; // The capture group of the URL in the above commented out regex.
+            const int cg = 1;
+            ref.index = r[cg].first - uiAssetFile.begin();
+            ref.length = r[cg].second - r[cg].first;
+            ref.parsedRef = std::string(r[cg].first, r[cg].second).c_str();
             ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
             ref.parsedRef = assetAPI->ResolveAssetRef(Name(), ref.parsedRef);
+            ref.encloseInQuotes = false;
             ref.type = AssetAPI::GetResourceTypeFromAssetRef(ref.parsedRef);
 
             // Check if AssetAPI has previous knowledge of this ref (eg via storage auto discovery),
@@ -172,7 +180,11 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
         assetDiskSource = assetDiskSource.trimmed();
         if (!assetDiskSource.isEmpty() && QFile::exists(assetDiskSource))
         {
-            QByteArray refAsByteArray = (QString("\"") + assetDiskSource + QString("\"")).toUtf8();
+            QByteArray refAsByteArray;
+            if (refs[i].encloseInQuotes)
+                refAsByteArray = (QString("\"") + assetDiskSource + QString("\"")).toUtf8();
+            else
+                refAsByteArray = (assetDiskSource).toUtf8();
             refRewrittenData.replace(refs[i].index + indexAdjustment, refs[i].length, refAsByteArray);
             indexAdjustment += refAsByteArray.length() - refs[i].length;
         }

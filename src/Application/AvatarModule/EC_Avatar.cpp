@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 #include "EC_Avatar.h"
 #include "EC_Mesh.h"
@@ -11,7 +11,6 @@
 #include "IAssetTransfer.h"
 #include "AvatarDescAsset.h"
 #include "Entity.h"
-#include "OgreConversionUtils.h"
 #include "Profiler.h"
 #include <Ogre.h>
 #include <QDomDocument>

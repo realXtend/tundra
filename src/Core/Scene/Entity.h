@@ -45,13 +45,14 @@ class QDomElement;
 class Entity : public QObject, public boost::enable_shared_from_this<Entity>
 {
     Q_OBJECT
-    Q_PROPERTY (uint id READ Id)
-    Q_PROPERTY (QString name READ Name WRITE SetName)
-    Q_PROPERTY (QString description READ Description WRITE SetDescription)
-    Q_PROPERTY (bool replicated READ IsReplicated)
-    Q_PROPERTY (bool local READ IsLocal)
-    Q_PROPERTY (bool unacked READ IsUnacked)
-    
+    Q_PROPERTY(uint id READ Id)
+    Q_PROPERTY(QString name READ Name WRITE SetName)
+    Q_PROPERTY(QString description READ Description WRITE SetDescription)
+    Q_PROPERTY(bool replicated READ IsReplicated)
+    Q_PROPERTY(bool local READ IsLocal)
+    Q_PROPERTY(bool unacked READ IsUnacked)
+    Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary)
+
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component vector container.
@@ -124,7 +125,7 @@ public:
     /** @param typeId Unique type ID of the component.
         @param name name of the component */
     ComponentPtr CreateComponentWithId(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
-    
+
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
     ComponentPtr GetComponentById(component_id_t id) const;
@@ -222,11 +223,13 @@ public slots:
     /** @param name Name of the attribute.
         @return IAttribute pointer to the attribute.
         @note Always remember to check for null pointer. */
+    ///\todo Doesn't need to be slot, scripts can't access IAttribute class
     IAttribute *GetAttribute(const QString  &name) const;
 
     /// Returns list of attributes with specific name.
     /** @param name Name of the attribute.
         @return List of attribute interface pointers, or empty list if no attributes are found. */
+    ///\todo Doesn't need to be slot, scripts can't access IAttribute class
     AttributeVector GetAttributes(const QString &name) const;
 
     /// Creates clone of the entity.
@@ -244,23 +247,27 @@ public slots:
     void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name), change); }
     void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name, name), change); }
     void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
-    
+
     /// Returns list of components with type @c type_name or if @c type_name is empty return all components
     /// @param type_name type of the component
     QObjectList GetComponentsRaw(const QString &type_name) const;
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
     /** @param name Name. */
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     void SetName(const QString &name);
 
     /// Returns name of this entity if EC_Name is available, empty string otherwise.
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     QString Name() const;
 
     /// Sets description of the entity to EC_Name component. If the component doesn't exist, it will be created.
     /** @param desc Description. */
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     void SetDescription(const QString &desc);
 
     /// Returns description of this entity if EC_Name is available, empty string otherwise.
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     QString Description() const;
 
     /// Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
@@ -308,23 +315,28 @@ public slots:
 
     /// Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     void SetTemporary(bool enable);
 
     /// Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     bool IsTemporary() const { return temporary_; }
 
     /// Returns if this entity's changes will NOT be sent over the network.
     /// An Entity is always either local or replicated, but not both.
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     bool IsLocal() const { return id_ >= UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns if this entity's changes will be sent over the network.
     /// An Entity is always either local or replicated, but not both.
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     bool IsReplicated() const { return id_ < UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns if this entity is pending a proper ID assignment from the server.
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     bool IsUnacked() const { return id_ >= UniqueIdGenerator::FIRST_UNACKED_ID && id_ < UniqueIdGenerator::FIRST_LOCAL_ID; }
-    
+
     /// Returns the identifier string for the entity.
     /** Syntax of the string: 'Entity ID <id>' or 'Entity "<name>" (ID: <id>)' if entity has a name. */
     QString ToString() const;
@@ -333,6 +345,7 @@ public slots:
     QString toString() const { return ToString(); }
 
     /// Returns the unique id of this entity
+    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     entity_id_t Id() const { return id_; }
 
     /// introspection for the entity, returns all components
@@ -351,7 +364,7 @@ signals:
     /// A component has been added to the entity
     /** @note When this signal is received on new entity creation, the attributes might not be filled yet! */ 
     void ComponentAdded(IComponent* component, AttributeChange::Type change);
-    
+
     /// A component has been removed from the entity
     /** @note When this signal is received on new entity creation, the attributes might not be filled yet! */ 
     void ComponentRemoved(IComponent* component, AttributeChange::Type change);
@@ -361,10 +374,10 @@ signals:
 
     /// The entity has entered a camera's view. Triggered by the rendering subsystem.
     void EnterView(IComponent* camera);
-    
+
     /// The entity has left a camera's view. Triggered by the rendering subsystem.
     void LeaveView(IComponent* camera);
-    
+
 private:
     friend class Scene;
 
@@ -384,10 +397,6 @@ private:
 
     /// Set new scene
     void SetScene(Scene* scene) { scene_ = scene; }
-
-    /// Validates that the action has receivers. If not, deletes the action and removes it from the registered actions.
-    /** @param action Action to be validated. */
-    bool HasReceivers(EntityAction *action);
 
     /// Emit a entity deletion signal. Called from Scene
     void EmitEntityRemoved(AttributeChange::Type change);

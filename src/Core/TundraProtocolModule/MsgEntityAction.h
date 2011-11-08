@@ -3,6 +3,7 @@
 #include "kNet/DataDeserializer.h"
 #include "kNet/DataSerializer.h"
 
+/// Network message for entity-action replication.
 struct MsgEntityAction
 {
 	MsgEntityAction()
@@ -41,14 +42,15 @@ struct MsgEntityAction
 
 		inline size_t Size() const
 		{
-			/// @note dynamicCount = 16 to make the maximum lenght bigger. This is not updated to the TundraMessages.xml
-			/// but the EntityAction block from the xml has been commented out so these changed wont get reseted on next msg xml compile.
-			return 2 + parameter.size()*1;
+            // This function has been manually modified, and not generated using the MessageCompiler tool.
+            // kNet does not support setting VLE fields as dynamicCount length fields.
+            return kNet::VLE8_16_32::GetEncodedBitLength(parameter.size()) / 8 + parameter.size()*1;
 		}
 
 		inline void SerializeTo(kNet::DataSerializer &dst) const
 		{
-			/// @note VLE param support is not yet in the kNet xml compiler. Manual code changes on the next line.
+            // This function has been manually modified, and not generated using the MessageCompiler tool.
+            // kNet does not support setting VLE fields as dynamicCount length fields.
 			dst.AddVLE<kNet::VLE8_16_32>(parameter.size());
 			if (parameter.size() > 0)
 				dst.AddArray<s8>(&parameter[0], parameter.size());
@@ -56,7 +58,8 @@ struct MsgEntityAction
 
 		inline void DeserializeFrom(kNet::DataDeserializer &src)
 		{
-			/// @note VLE param support is not yet in the kNet xml compiler. Manual code changes on the next line.
+            // This function has been manually modified, and not generated using the MessageCompiler tool.
+            // kNet does not support setting VLE fields as dynamicCount length fields.
 			parameter.resize(src.ReadVLE<kNet::VLE8_16_32>());
 			if (parameter.size() > 0)
 				src.ReadArray<s8>(&parameter[0], parameter.size());

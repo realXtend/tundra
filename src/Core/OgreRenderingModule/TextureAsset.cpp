@@ -3,10 +3,12 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "Profiler.h"
 #include "TextureAsset.h"
-#include "OgreConversionUtils.h"
+#include "OgreRenderingModule.h"
+
+#include "Profiler.h"
 #include "AssetCache.h"
+#include "LoggingFunctions.h"
 
 #include <QPixmap>
 #include <QRect>
@@ -14,18 +16,21 @@
 #include <QPainter>
 #include <QFileInfo>
 
-#include "OgreRenderingModule.h"
 #include <Ogre.h>
 
 #if defined(DIRECTX_ENABLED) && defined(WIN32)
+#ifdef SAFE_DELETE
+#undef SAFE_DELETE
+#endif
+#ifdef SAFE_DELETE_ARRAY
+#undef SAFE_DELETE_ARRAY
+#endif
 #include <d3d9.h>
 #include <RenderSystems/Direct3D9/OgreD3D9RenderSystem.h>
 #include <RenderSystems/Direct3D9/OgreD3D9HardwarePixelBuffer.h>
 #endif
 
 #include "MemoryLeakCheck.h"
-
-#include "LoggingFunctions.h"
 
 TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
 :IAsset(owner, type_, name_)
@@ -68,7 +73,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bo
         if (!cacheDiskSource.isEmpty())
         {
             QFileInfo fileInfo(cacheDiskSource);
-            std::string sanitatedAssetRef = fileInfo.fileName().toStdString();             
+            std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
             loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::TextureManager::getSingleton().getResourceType(),
                               sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
             return true;
@@ -246,7 +251,7 @@ QImage TextureAsset::ToQImage(Ogre::Texture* tex, size_t faceIndex, size_t mipma
     }
 
     QImage img(ogreImage.getWidth(), ogreImage.getHeight(), fmt);
-    assert(img.byteCount() == ogreImage.getSize());
+    assert(img.byteCount() == (int)ogreImage.getSize());
     memcpy(img.bits(), ogreImage.getData(), img.byteCount());
 
     return img;
@@ -273,10 +278,10 @@ void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 co
     ///\todo Could optimize a lot here, don't create this temporary vector.
     ///\todo This only works for 32bpp images.
     std::vector<u32> data(newWidth * newHeight, color);
-    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps, dynamic);
+    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps, dynamic, false);
 }
 
-void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps, bool dynamic, bool renderTarget)
+void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps, bool dynamic, bool renderTarget)
 {
     PROFILE(TextureAsset_SetContents);
 
@@ -348,7 +353,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
                     if (lock.Pitch == sourceStride)
                         memcpy(lock.pBits, data, sourceStride * newHeight);
                     else
-                        for(int y = 0; y < newHeight; ++y)
+                        for(size_t y = 0; y < newHeight; ++y)
                             memcpy((u8*)lock.pBits + lock.Pitch * y, data + sourceStride * y, sourceStride);
                     surface->UnlockRect();
                 }
@@ -393,5 +398,5 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
         painter.drawText(rect, flags, text);
     }
 
-    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps, dynamic);
+    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps, dynamic, false);
 }

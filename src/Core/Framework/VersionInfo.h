@@ -1,154 +1,137 @@
-/// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #pragma once
 
-#include "StableHeaders.h"
+#include "CoreTypes.h"
 
 #include <QObject>
 #include <QString>
 
-/*! \brief ApiVersionInfo is for getting Tundra API version information.
-    \details This may be helpful for scripts to check the API version. 
-    You might detect that some part of your script wont run with certain versions and you 
+/// Tundra API version information.
+/** This may be helpful for scripts to check the API version.
+    You might detect that some part of your script wont run with certain versions and you
     can possibly go around the restriction in the api.
 
     JavaScript example:
-    \code
-    print(apiversion.toString());
+    @code
+    print(apiversion.GetFullIdentifier());
     if (apiversion.major < 1)
         print("Note: API in not yet at stable version");
     etc.
-    \endcode
-*/
+    @endcode
+
+    @todo Consider not storing version information as uints - what if we want to have e.g. "2.3beta" etc.? */
 class ApiVersionInfo : public QObject
 {
-
-Q_OBJECT
-Q_PROPERTY(uint major READ GetMajor)
-Q_PROPERTY(uint minor READ GetMinor)
-Q_PROPERTY(uint majorpatch READ GetMajorPatch)
-Q_PROPERTY(uint minorpatch READ GetMinorPatch)
+    Q_OBJECT
+    Q_PROPERTY(uint major READ GetMajor)
+    Q_PROPERTY(uint minor READ GetMinor)
+    Q_PROPERTY(uint majorPatch READ GetMajorPatch)
+    Q_PROPERTY(uint minorPatch READ GetMinorPatch)
 
 public:
-    /// Constructor.
-    explicit ApiVersionInfo(uint major, uint minor, uint majorpatch, uint minorpatch);
-
-    /// Destructor.
+    /// Constucts version information from string.
+    /** @param version Version information e.g. "2.0.0.0" */
+    explicit ApiVersionInfo(const char *version);
     ~ApiVersionInfo();
 
+    /// Get all version numbers as a std vector.
+    std::vector<uint> GetNumbers() const;
+
 public slots:
-    /// \todo Add comparison support.
+    /// @todo Add comparison support.
 
     /// Returns a string of the Tundra API version.
-    /// \note This function will omit .0 and .0.0 from the end of the string.
-    /// \return QString Tundra API version.
-    QString GetFullIdentifier();
-
-    /// Returns a string of the Tundra API version.
-    /// \note This function will omit .0 and .0.0 from the end of the string.
-    /// \return QString Tundra API version.
-    QString toString();
+    /// @note This function will omit .0 and .0.0 from the end of the string.
+    QString GetFullIdentifier() const;
 
     /// Get Tundra API major version.
-    /// \return uint Tundra API major version.
-    uint GetMajor();
+    /// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    uint GetMajor() const;
 
     /// Get Tundra API minor version.
-    /// \return uint Tundra API minor version.
-    uint GetMinor();
+    /// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    uint GetMinor() const;
 
     /// Get Tundra API major patch version.
-    /// \return uint Tundra API major patch version.
-    uint GetMajorPatch();
+    /// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    uint GetMajorPatch() const;
 
     /// Get Tundra API minor patch version.
-    /// \return uint Tundra API minor patch version.
-    uint GetMinorPatch();
-
-    /// Get all version numbers as a std vector.
-    /// \return std::vector<uint> All Tundra API version numbers.
-    std::vector<uint> GetNumbers();
+    /// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    uint GetMinorPatch() const;
 
 private:
     std::vector<uint> versionNumbers_;
 };
 
-/*! \brief ApplicationVersionInfo is for getting Tundra application version information.
-    \details This is helpful all around the app when you need version shown to user in ui. Or detect application version numbers for some reason.
+/// Tundra application version information.
+/** This is helpful all around the app when you need version shown to user in ui. Or detect application version numbers for some reason.
     The toString() function is for example used in our main windows title.
 
-    \note If you want to detect API version instead of application version please see ApiVersionInfo class.
+    @note If you want to detect API version instead of application version please see ApiVersionInfo class.
 
     JavaScript example:
-    \code
-    var appIdLabel = new QLabel(applicationversion.toString());
+    @code
+    var appIdLabel = new QLabel(applicationversion.GetFullIdentifier());
     etc.
-    \endcode
-*/
+    @endcode
+
+    @todo Consider not storing version information as uints - what if we want to have e.g. "2.3beta" etc.? */
 class ApplicationVersionInfo : public QObject
 {
-
-Q_OBJECT
-Q_PROPERTY(uint major READ GetMajor)
-Q_PROPERTY(uint minor READ GetMinor)
-Q_PROPERTY(uint majorpatch READ GetMajorPatch)
-Q_PROPERTY(uint minorpatch READ GetMinorPatch)
-Q_PROPERTY(QString organization READ GetOrganization)
-Q_PROPERTY(QString name READ GetName)
+    Q_OBJECT
+    Q_PROPERTY(uint major READ GetMajor)
+    Q_PROPERTY(uint minor READ GetMinor)
+    Q_PROPERTY(uint majorPatch READ GetMajorPatch)
+    Q_PROPERTY(uint minorPatch READ GetMinorPatch)
+    Q_PROPERTY(QString organization READ GetOrganization)
+    Q_PROPERTY(QString name READ GetName)
 
 public:
-    /// Constructor.
-    explicit ApplicationVersionInfo(uint major, uint minor, uint majorpatch, uint minorpatch, const QString &organization, const QString &name);
-
-    /// Destructor.
+    /// Constucts version information from string.
+    /** @param organization Name of the organization, , e.g. "realXtend"
+        @param name Name of the application, e.g. "Tundra"
+        @param version Version information e.g. "2.0.0.0" */
+    ApplicationVersionInfo(const char *organization, const char *name, const char *version);
     ~ApplicationVersionInfo();
 
-public slots:
-    /// Returns a full identifier of the Tundra application as "<organization> <name> <full_version>" eg. "realXtend Tundra 1.0.6".
-    /// \note This function will omit .0 and .0.0 from the end of the version string.
-    /// \return QString Full Tundra application identifier.
-    QString GetFullIdentifier();
+    /// Get all version numbers as a std vector.
+    std::vector<uint> GetNumbers() const;
 
-    /// Returns a full identifier of the Tundra application as "<organization> <name> <full_version>" eg. "realXtend Tundra 1.0.6".
-    /// \note This function will omit .0 and .0.0 from the end of the version string.
-    /// \return QString Full Tundra application identifier.
-    QString toString();
+public slots:
+    /// Returns a full identifier of the Tundra application as "<organization> <name> <full_version>" eg. "realXtend Tundra 2.0.6".
+    /// @note This function will omit .0 and .0.0 from the end of the version string.
+/// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    QString GetFullIdentifier() const;
 
     /// Get the Tundra applications organization, eg. "realXtend".
-    /// \return QString Tundra applications organization.
-    QString GetOrganization();
+/// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    QString GetOrganization() const;
 
     /// Get Tundra application name, eg. "Tundra".
-    /// \return QString Tundra application name.
-    QString GetName();
+/// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    QString GetName() const;
 
-    /// Get Tundra application version, eg. "1.0.6".
-    /// \note This function will omit .0 and .0.0 from the end of the version string.
-    /// \return QString 
-    QString GetVersion();
+    /// Get Tundra application version, eg. "2.0.6".
+    /// @note This function will omit .0 and .0.0 from the end of the version string.
+    QString GetVersion() const;
 
     /// Get Tundra application major version.
-    /// \return uint Tundra application major version.
-    uint GetMajor();
+    /// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    uint GetMajor() const;
 
     /// Get Tundra application minor version.
-    /// \return uint Tundra application minor version.
-    uint GetMinor();
+    /// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    uint GetMinor() const;
 
     /// Get Tundra application major patch version.
-    /// \return uint Tundra application major patch version.
-    uint GetMajorPatch();
+    /// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    uint GetMajorPatch() const;
 
     /// Get Tundra application minor patch version.
-    /// \return uint Tundra application minor patch version.
-    uint GetMinorPatch();
-
-    /// Get all version numbers as a std vector.
-    /// \return std::vector<uint> All Tundra application version numbers.
-    std::vector<uint> GetNumbers();
-
-private slots:
-    QString GetVersionString();
+    /// @todo Doesn't need to be slot, exposed as Q_PROPERTY
+    uint GetMinorPatch() const;
 
 private:
     std::vector<uint> versionNumbers_;

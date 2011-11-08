@@ -10,6 +10,7 @@
 #include "IComponent.h"
 #include "AssetFwd.h"
 #include "AssetReference.h"
+#include "AssetRefListener.h"
 #include "Math/float3.h"
 
 struct EC_HydraxImpl;
@@ -86,6 +87,9 @@ public:
 
 private:
     EC_HydraxImpl *impl;
+    AssetRefListener configRefListener;
+
+    void RequestConfigAsset();
 
 private slots:
     void Create();
@@ -97,5 +101,4 @@ private slots:
     void Update(float frameTime);
 
     void ConfigLoadSucceeded(AssetPtr asset);
-    void LoadDefaultConfig();
 };

@@ -22,13 +22,13 @@ namespace Ogre
     class Billboard;
 }
 
-/// EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
+/// Shows a billboard (3D sprite) that is attached to an entity.
 /**
 <table class="header">
 <tr>
 <td>
 <h2>Billboard</h2>
-Billboard shows a billboard (3D sprite) that is attached to an entity.
+Shows a billboard (3D sprite) that is attached to an entity.
 
 
 Registered by TundraLogicModule.

@@ -24,6 +24,7 @@ typedef QMap<QWidget *, QtProperty *> WidgetToPropertyMap;
 typedef QMap<QtProperty*, AttributeMetadata::ButtonInfoList> PropertyToButtonsMap;
 typedef QMap<QtProperty*, QList<ComponentWeakPtr> > PropertyToComponentList;
 
+/// @cond PRIVATE
 class LineEditWithButtons : public QWidget
 {
     Q_OBJECT
@@ -41,8 +42,10 @@ private:
     QLayout *layout_;
     QLineEdit *lineEditor_;
 };
+/// @endcond
 
 /// \todo add support to RegExp.
+/// @cond PRIVATE
 class LineEditPropertyFactory: public QtAbstractEditorFactory<QtStringPropertyManager>
 {
     Q_OBJECT
@@ -84,4 +87,4 @@ private:
     AttributeMetadata::ButtonInfoList buttons_; ///< @todo replace this with QMap<QtProperty*, ButtonInfoList> so that create buttons can vary based on QtProperty.
     FunctionInvoker *invoker_;
 };
-
+/// @endcond

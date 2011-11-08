@@ -9,9 +9,6 @@
 
 #include "IComponent.h"
 
-#include <QVector3D>
-#include <QQuaternion>
-
 /// EntityComponent that reports distance of other entities that also have an EC_ProximityTrigger component
 /**
 <table class="header">

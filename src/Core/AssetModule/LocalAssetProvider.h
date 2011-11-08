@@ -16,7 +16,7 @@ typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
 /// Provides access to files on the local file system using the 'local://' URL specifier.
 class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<LocalAssetProvider>
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     explicit LocalAssetProvider(Framework* framework);

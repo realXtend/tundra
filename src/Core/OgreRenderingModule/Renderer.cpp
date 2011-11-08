@@ -3,18 +3,17 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "Application.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
-#include "OgreConversionUtils.h"
 #include "OgreWorld.h"
 #include "EC_Placeable.h"
 #include "EC_Camera.h"
 #include "RenderWindow.h"
-#include "UiGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
-#include "CompositionHandler.h"
-#include "OgreDefaultHardwareBufferManager.h"
+#include "OgreCompositionHandler.h"
+
+#include "Application.h"
+#include "UiGraphicsView.h"
 #include "Scene.h"
 #include "CoreException.h"
 #include "Entity.h"
@@ -28,6 +27,7 @@
 #include "QScriptEngineHelpers.h"
 
 #include <Ogre.h>
+#include <OgreDefaultHardwarebufferManager.h>
 
 Q_DECLARE_METATYPE(EC_Placeable*);
 Q_DECLARE_METATYPE(EC_Camera*);
@@ -85,6 +85,8 @@ namespace OgreRenderer
                     return; // Loading an old mesh version. Ogre can still load them up fine, and the end user should not be conserned of the version number.
                 if (str.contains("more than 4 bone assignments.")) // "Warning: WARNING: the mesh 'EC_Mesh_clone_169' includes vertices with more than 4 bone assignments. The lowest weighted assignments beyond this limit have been removed, so your animation may look slightly different. To eliminate this, reduce the number of bone assignments per vertex on your mesh to 4."
                     return; // The end user cannot control this.
+                if (str.contains("Cannot locate an appropriate 2D texture coordinate set")) // "Cannot locate an appropriate 2D texture coordinate set for all the vertex data in this mesh to create tangents from."
+                    return; // This is benign, meshes without normals do not need to get tangents either.
             }
 
             if (lml == Ogre::LML_CRITICAL)
@@ -112,7 +114,7 @@ namespace OgreRenderer
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
         framework_(framework),
-        buffermanager_(0),
+//        bufferManager(0), ///< @todo Unused - delete for good?
         defaultScene_(0),
         dummyDefaultCamera(0),
         mainViewport(0),
@@ -122,14 +124,14 @@ namespace OgreRenderer
         plugins_filename_(plugins),
         window_title_(window_title),
         renderWindow(0),
-        last_width_(0),
-        last_height_(0),
-        resized_dirty_(0),
-        view_distance_(500.0f),
-        shadowquality_(Shadows_High),
-        texturequality_(Texture_Normal)
+        lastWidth(0),
+        lastHeight(0),
+        resizedDirty(0),
+        viewDistance(500.0f),
+        shadowQuality(Shadows_High),
+        textureQuality(Texture_Normal)
     {
-        compositionHandler = new CompositionHandler();
+        compositionHandler = new OgreCompositionHandler();
         logListener = new OgreLogListener(framework_->HasCommandLineParameter("--hide_benign_ogre_messages"));
 
         timerFrequency = GetCurrentClockFreq();
@@ -164,7 +166,7 @@ namespace OgreRenderer
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
         // View distance, as double to keep human readable and configurable
         if (!framework_->Config()->HasValue(configData, "view distance"))
-            framework_->Config()->Set(configData, "view distance", (double)view_distance_);
+            framework_->Config()->Set(configData, "view distance", (double)viewDistance);
         // Shadow quality
         if (!framework_->Config()->HasValue(configData, "shadow quality"))
             framework_->Config()->Set(configData, "shadow quality", 2);
@@ -216,11 +218,11 @@ namespace OgreRenderer
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
         //Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_LOW);
-        
+
 // On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
 // On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
 ///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)
-#ifdef UNIX 
+#ifdef UNIX
         if (framework_->IsHeadless())
         {
             // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
@@ -231,7 +233,7 @@ namespace OgreRenderer
 #include "EnableMemoryLeakCheck.h"
 
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
-        view_distance_ = framework_->Config()->Get(configData, "view distance").toFloat();
+        viewDistance = framework_->Config()->Get(configData, "view distance").toFloat();
 
         // Load plugins
         QStringList loadedPlugins = LoadPlugins(plugins_filename_);
@@ -248,11 +250,11 @@ namespace OgreRenderer
 
         // Allow PSSM mode shadows only on DirectX
         // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
-        shadowquality_ = (ShadowQuality)framework_->Config()->Get(configData, "shadow quality").toInt();
-        if ((shadowquality_ == Shadows_High) && (rendersystem_name != "Direct3D9 Rendering Subsystem"))
-            shadowquality_ = Shadows_Low;
+        shadowQuality = (Renderer::ShadowQualitySetting)framework_->Config()->Get(configData, "shadow quality").toInt();
+        if ((shadowQuality == Shadows_High) && (rendersystem_name != "Direct3D9 Rendering Subsystem"))
+            shadowQuality = Shadows_Low;
 
-        texturequality_ = (TextureQuality)framework_->Config()->Get(configData, "texture quality").toInt();
+        textureQuality = (Renderer::TextureQualitySetting)framework_->Config()->Get(configData, "texture quality").toInt();
 
         // Ask Ogre if rendering system is available
         rendersystem = root_->getRenderSystemByName(rendersystem_name);
@@ -329,6 +331,18 @@ namespace OgreRenderer
         initialized_ = true;
     }
 
+    void Renderer::SetFullScreen(bool value)
+    {
+        // In headless mode, we can safely ignore Fullscreen mode requests.
+        if (framework_->IsHeadless())
+            return;
+
+        if (value)
+            framework_->Ui()->MainWindow()->showFullScreen();
+        else
+            framework_->Ui()->MainWindow()->showNormal();
+    }
+
     bool Renderer::IsFullScreen() const
     {
         if (!framework_->IsHeadless())
@@ -337,28 +351,16 @@ namespace OgreRenderer
             return false;
     }
 
-    void Renderer::SetFullScreen(bool value)
-    {
-        // In headless mode, we can safely ignore Fullscreen mode requests.
-        if (framework_->IsHeadless())
-            return;
-
-        if(value)
-            framework_->Ui()->MainWindow()->showFullScreen();
-        else
-            framework_->Ui()->MainWindow()->showNormal();
-    }
-
-    void Renderer::SetShadowQuality(ShadowQuality newquality)
+    void Renderer::SetShadowQuality(ShadowQualitySetting quality)
     {
         // We cannot effect the new setting immediately, so save only to config
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow quality", (int)newquality);
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow quality", (int)quality);
     }
 
-    void Renderer::SetTextureQuality(TextureQuality newquality)
+    void Renderer::SetTextureQuality(TextureQualitySetting quality)
     {
         // We cannot effect the new setting immediately, so save only to config
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)newquality);
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)quality);
     }
 
     QStringList Renderer::LoadPlugins(const std::string& plugin_filename)
@@ -426,7 +428,7 @@ namespace OgreRenderer
 
         // Add supershader program definitions directory according to the shadow quality level
         std::string shadowPath = Application::InstallationDirectory().toStdString(); ///<\todo Unicode support
-        switch(shadowquality_)
+        switch(shadowQuality)
         {
         case Shadows_Off:
             shadowPath.append("media/materials/scripts/shadows_off");
@@ -440,18 +442,17 @@ namespace OgreRenderer
         }
 
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(shadowPath, "FileSystem", "General");
-
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
-    
-    int Renderer::GetWindowWidth() const
+
+    int Renderer::WindowWidth() const
     {
         if (renderWindow)
             return renderWindow->OgreRenderWindow()->getWidth();
         return 0;
     }
 
-    int Renderer::GetWindowHeight() const
+    int Renderer::WindowHeight() const
     {
         if (renderWindow)
             return renderWindow->OgreRenderWindow()->getHeight();
@@ -460,16 +461,17 @@ namespace OgreRenderer
 
     void Renderer::SetViewDistance(float distance)
     {
-        view_distance_ = distance;
+        /// @todo view distance not currently used for anything
+        viewDistance = distance;
         // As double to keep human readable and configurable
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)view_distance_);
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)viewDistance);
     }
 
     void Renderer::DoFullUIRedraw()
     {
         if (framework_->IsHeadless())
             return;
-            
+
         PROFILE(Renderer_DoFullUIRedraw);
 
         UiGraphicsView *view = framework_->Ui()->GraphicsView();
@@ -553,13 +555,13 @@ namespace OgreRenderer
         }
         
         // If rendering into different size window, dirty the UI view for now & next frame
-        if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
+        if (lastWidth != WindowWidth() || lastHeight != WindowHeight())
         {
-            last_width_ = GetWindowWidth();
-            last_height_ = GetWindowHeight();
-            resized_dirty_ = 2;
+            lastWidth = WindowWidth();
+            lastHeight = WindowHeight();
+            resizedDirty = 2;
 #if 0
-            backBuffer = QImage(last_width_, last_height_, QImage::Format_ARGB32);
+            backBuffer = QImage(lastWidth, lastHeight, QImage::Format_ARGB32);
             backBuffer.fill(Qt::transparent);
 #endif
         }
@@ -568,13 +570,13 @@ namespace OgreRenderer
         assert(view);
 
 #ifdef DIRECTX_ENABLED
-        if (view->IsViewDirty() || resized_dirty_)
+        if (view->IsViewDirty() || resizedDirty)
         {
             PROFILE(Renderer_Render_QtBlit);
 
             QRectF dirtyRectangle = view->DirtyRectangle();
-            if (resized_dirty_ > 0)
-                dirtyRectangle = QRectF(0, 0, GetWindowWidth(), GetWindowHeight());
+            if (resizedDirty > 0)
+                dirtyRectangle = QRectF(0, 0, WindowWidth(), WindowHeight());
 
             QSize viewsize(view->viewport()->size());
             QRect viewrect(QPoint(0, 0), viewsize);
@@ -686,14 +688,14 @@ namespace OgreRenderer
             }
         }
 #else // Not using the subrectangle blit - just do a full UI blit.
-        if (view->IsViewDirty() || resized_dirty_)
+        if (view->IsViewDirty() || resizedDirty)
         {
             DoFullUIRedraw();
         }
 #endif
 
-        if (resized_dirty_ > 0)
-            resized_dirty_--;
+        if (resizedDirty > 0)
+            resizedDirty--;
         
 #ifdef PROFILING
         // Performance debugging: Toggle the UI overlay visibility based on a debug key.
@@ -731,27 +733,6 @@ namespace OgreRenderer
         }
 
         view->MarkViewUndirty();
-    }
-
-    void Renderer::ValidateMainCamera()
-    {
-        if (!mainViewport)
-        {
-            LogError("Renderer::ValidateMainCamera(): Main viewport is null, cannot proceed.");
-            return;
-        }
-
-        // If we cant find the main camera, the entity has been destroyed.
-        // Reset back to our default empty camera.
-        if (!MainCamera() && mainViewport->getCamera() != dummyDefaultCamera)
-        {
-            mainViewport->setCamera(dummyDefaultCamera);
-            if (compositionHandler)
-                compositionHandler->CameraChanged(mainViewport, dummyDefaultCamera);
-
-            activeMainCamera.reset();
-            emit MainCameraChanged(0);
-        }
     }
 
     Entity *Renderer::MainCamera()
@@ -842,13 +823,8 @@ namespace OgreRenderer
     
     Ogre::Camera *Renderer::MainOgreCamera() const
     {
-        Entity *entity = activeMainCamera.lock().get();
-        if (!entity)
-            return 0;
-        EC_Camera *camera = entity->GetComponent<EC_Camera>().get();
-        if (!camera)
-            return 0;
-        return camera->GetCamera();
+        Ogre::Viewport *mainViewport = MainViewport();
+        return mainViewport ? mainViewport->getCamera() : 0;
     }
 
     Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const

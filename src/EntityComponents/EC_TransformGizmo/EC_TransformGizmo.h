@@ -11,7 +11,7 @@
 #include "InputFwd.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
-#include "Math/Ray.h"
+#include "Geometry/Ray.h"
 #include "Math/float3.h"
 #include "Math/float3x4.h"
 #include "Math/Quat.h"
@@ -80,7 +80,7 @@ public slots:
     void SetPosition(const float3 &pos);
 
     /// Sets orientation of the gizmo.
-    /** @param pos New orientation. */
+    /** @param rot New orientation. */
     void SetOrientation(const Quat &rot);
     
     /// Returns current type of the gizmo.
@@ -92,14 +92,14 @@ public slots:
 
     /// Sets visiblity of the gizmo.
     /** @param visible Visibility of the gizmo. */
-    void SetVisible(bool visibile);
+    void SetVisible(bool visible);
 
     /// Returns visibility of the gizmo.
     bool IsVisible() const;
 
     /// Return state of gizmo
     GizmoState State() const { return state; }
-    
+
 signals:
     /// Emitted when gizmo is active in Translate mode.
     /** @param offset New offset. */

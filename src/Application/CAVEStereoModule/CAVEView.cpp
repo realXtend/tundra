@@ -43,13 +43,13 @@ namespace CAVEStereo
     void CAVEView::Initialize(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
         assert(!renderer_.expired());
-        Initialize(name, renderer_.lock()->GetWindowWidth(), renderer_.lock()->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos); 
+        Initialize(name, renderer_.lock()->WindowWidth(), renderer_.lock()->WindowHeight(),top_left, bottom_left, bottom_right, eye_pos); 
     }
 
     void CAVEView::InitializePanorama(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int n)
     {
         assert(!renderer_.expired());
-        InitializePanorama(name, renderer_.lock()->GetWindowWidth(), renderer_.lock()->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos, n); 
+        InitializePanorama(name, renderer_.lock()->WindowWidth(), renderer_.lock()->WindowHeight(),top_left, bottom_left, bottom_right, eye_pos, n); 
     }
 
     void CAVEView::GetProjectionParameters( Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
@@ -71,7 +71,7 @@ namespace CAVEStereo
         assert(camera_);
         assert(render_window_);
         bool openGL = false;
-        if (renderer_.lock()->GetRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+        if (renderer_.lock()->OgreRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
             openGL = true;
 
         //Projection magic be happening here.
@@ -113,7 +113,7 @@ namespace CAVEStereo
         b = su.dotProduct(ebl)*n/distance_to_plane;
         t = su.dotProduct(etl)*n/distance_to_plane;
 
-        renderer_.lock()->GetRoot()->getRenderSystem()->_makeProjectionMatrix(l,r,b,t,n,f,proj_mat);
+        renderer_.lock()->OgreRoot()->getRenderSystem()->_makeProjectionMatrix(l,r,b,t,n,f,proj_mat);
         change_base=Ogre::Matrix4(sr.x,sr.y,sr.z,0,
                                   su.x,su.y,su.z,0,
                                   sn.x,sn.y,sn.z,0,

@@ -5,9 +5,11 @@
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 
+/// Contains data of a script file loaded to the system.
 class ScriptAsset : public IAsset
 {
-    Q_OBJECT;
+    Q_OBJECT
+
 public:
     ScriptAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
         IAsset(owner, type_, name_)
@@ -43,4 +45,3 @@ private slots:
 };
 
 typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
-

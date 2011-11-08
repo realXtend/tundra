@@ -15,12 +15,12 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 add_definitions (-DSCENEWIDGET_MODULE_EXPORTS)
 
-use_core_modules (Framework Ui Input Scene Asset OgreRenderingModule TundraProtocolModule)
+use_core_modules (Framework Math Ui Input Scene Asset OgreRenderingModule TundraProtocolModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
-link_modules (Framework Ui Input Scene Asset OgreRenderingModule TundraProtocolModule)
+link_modules (Framework Math Ui Input Scene Asset OgreRenderingModule TundraProtocolModule)
 link_entity_components (EC_Billboard)
 
 SetupCompileFlags()

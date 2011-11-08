@@ -2,7 +2,7 @@
 
 #pragma once
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 
 #include "CoreTypes.h"
 #include "LoggingFunctions.h"

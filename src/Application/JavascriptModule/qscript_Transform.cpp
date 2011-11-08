@@ -104,17 +104,17 @@ static QScriptValue Transform_SetScale_float3(QScriptContext *context, QScriptEn
     return QScriptValue();
 }
 
-static QScriptValue Transform_ToFloat3x4(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Transform_ToFloat3x4_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_ToFloat3x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_ToFloat3x4_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3x4 ret = This.ToFloat3x4();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Transform_ToFloat4x4(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Transform_ToFloat4x4_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_ToFloat4x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_ToFloat4x4_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float4x4 ret = This.ToFloat4x4();
     return qScriptValueFromValue(engine, ret);
@@ -170,32 +170,32 @@ static QScriptValue Transform_SetOrientation_Quat(QScriptContext *context, QScri
     return QScriptValue();
 }
 
-static QScriptValue Transform_Orientation3x3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Transform_Orientation3x3_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Orientation3x3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Orientation3x3_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3x3 ret = This.Orientation3x3();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Transform_Orientation(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Transform_Orientation_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Orientation in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Orientation_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     Quat ret = This.Orientation();
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Transform_Mul_Transform(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Transform_Mul_Transform_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Mul_Transform in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Mul_Transform_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     Transform rhs = qscriptvalue_cast<Transform>(context->argument(0));
     Transform ret = This.Mul(rhs);
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Transform_toString(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Transform_toString_const(QScriptContext *context, QScriptEngine *engine)
 {
     Transform This;
     if (context->argumentCount() > 0) This = qscriptvalue_cast<Transform>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
@@ -278,16 +278,16 @@ QScriptValue register_Transform_prototype(QScriptEngine *engine)
     proto.setProperty("SetRotation", engine->newFunction(Transform_SetRotation_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetScale", engine->newFunction(Transform_SetScale_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetScale", engine->newFunction(Transform_SetScale_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("ToFloat3x4", engine->newFunction(Transform_ToFloat3x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("ToFloat4x4", engine->newFunction(Transform_ToFloat4x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToFloat3x4", engine->newFunction(Transform_ToFloat3x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToFloat4x4", engine->newFunction(Transform_ToFloat4x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("FromFloat3x4", engine->newFunction(Transform_FromFloat3x4_float3x4, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("FromFloat4x4", engine->newFunction(Transform_FromFloat4x4_float4x4, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetRotationAndScale", engine->newFunction(Transform_SetRotationAndScale_float3x3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetOrientation", engine->newFunction(Transform_SetOrientation_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Orientation3x3", engine->newFunction(Transform_Orientation3x3, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Orientation", engine->newFunction(Transform_Orientation, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Mul", engine->newFunction(Transform_Mul_Transform, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("toString", engine->newFunction(Transform_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Orientation3x3", engine->newFunction(Transform_Orientation3x3_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Orientation", engine->newFunction(Transform_Orientation_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Mul", engine->newFunction(Transform_Mul_Transform_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Transform_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Transform>()));
     engine->setDefaultPrototype(qMetaTypeId<Transform>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Transform*>(), proto);

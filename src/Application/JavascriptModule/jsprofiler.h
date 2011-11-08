@@ -33,6 +33,7 @@
 
 #include <QtScript>
 
+/** @cond PRIVATE */
 namespace jsprofiler {
 
 class Action {
@@ -102,6 +103,7 @@ private:
 };
 
 }
+/** @endcond */
 
 #endif // _WINDOWS
 

@@ -3,6 +3,7 @@
 #include "kNet/DataDeserializer.h"
 #include "kNet/DataSerializer.h"
 
+/// Network message informing that client has joined the server.
 struct MsgClientJoined
 {
 	MsgClientJoined()

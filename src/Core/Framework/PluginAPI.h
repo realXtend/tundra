@@ -18,7 +18,7 @@ class Framework;
 /// Implements plugin loading functionality.
 class PluginAPI : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     explicit PluginAPI(Framework *owner);
