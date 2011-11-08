@@ -75,13 +75,13 @@ if (!framework.IsHeadless())
             // Gizmo
             var showGizmoAction = settingsMenu.addAction("Show editing gizmo");
             showGizmoAction.checkable = true;
-            showGizmoAction.checked = ecEditor.gizmo;
+            showGizmoAction.checked = ecEditor.gizmoEnabled;
             showGizmoAction.triggered.connect(ShowEditingGizmo);
 
             // Highlighting of selected entities
             var showHighlightAction = settingsMenu.addAction("Highlight selected entities");
             showHighlightAction.checkable = true;
-            showHighlightAction.checked = ecEditor.highlighting;
+            showHighlightAction.checked = ecEditor.highlightingEnabled;
             showHighlightAction.triggered.connect(HighlightSelectedEntities);
         }
     }
@@ -178,11 +178,11 @@ if (!framework.IsHeadless())
     }
 
     function ShowEditingGizmo(show) {
-        framework.GetModuleByName("ECEditor").gizmo = show;
+        framework.GetModuleByName("ECEditor").gizmoEnabled = show;
     }
 
     function HighlightSelectedEntities(show) {
-        framework.GetModuleByName("ECEditor").highlighting = show;
+        framework.GetModuleByName("ECEditor").highlightingEnabled = show;
     }
 
     function OpenStereoscopyWindow() {

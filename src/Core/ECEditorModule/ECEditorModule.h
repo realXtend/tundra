@@ -25,8 +25,8 @@ typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
 class ECEDITOR_MODULE_API ECEditorModule : public IModule
 {
     Q_OBJECT
-    Q_PROPERTY(bool gizmo READ IsGizmoEnabled WRITE SetGizmoEnabled)
-    Q_PROPERTY(bool highlighting READ IsHighlightingEnabled WRITE SetHighlightingEnabled)
+    Q_PROPERTY(bool gizmoEnabled READ IsGizmoEnabled WRITE SetGizmoEnabled)
+    Q_PROPERTY(bool highlightingEnabled READ IsHighlightingEnabled WRITE SetHighlightingEnabled)
 
 public:
     ECEditorModule();
