@@ -637,6 +637,15 @@ static QScriptValue Plane_GenerateCircle_float3_float_const(QScriptContext *cont
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Plane_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Plane This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Plane>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Plane>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Plane_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -840,6 +849,7 @@ QScriptValue register_Plane_prototype(QScriptEngine *engine)
     proto.setProperty("Clip", engine->newFunction(Plane_Clip_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("PassesThroughOrigin", engine->newFunction(Plane_PassesThroughOrigin_float_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("GenerateCircle", engine->newFunction(Plane_GenerateCircle_float3_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Plane_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Plane>()));
     engine->setDefaultPrototype(qMetaTypeId<Plane>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Plane*>(), proto);

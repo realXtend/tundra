@@ -509,6 +509,15 @@ static QScriptValue Frustum_Intersects_Polyhedron_const(QScriptContext *context,
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Frustum_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Frustum This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Frustum>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Frustum>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Frustum_ViewportToScreenSpace_float_float_int_int(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Frustum_ViewportToScreenSpace_float_float_int_int in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -725,6 +734,7 @@ QScriptValue register_Frustum_prototype(QScriptEngine *engine)
     proto.setProperty("ClosestPoint", engine->newFunction(Frustum_ClosestPoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance", engine->newFunction(Frustum_Distance_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(Frustum_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Frustum_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Frustum>()));
     engine->setDefaultPrototype(qMetaTypeId<Frustum>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Frustum*>(), proto);

@@ -439,6 +439,15 @@ static QScriptValue Sphere_RandomPointOnSurface_LCG(QScriptContext *context, QSc
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Sphere_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Sphere This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Sphere>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Sphere>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Sphere_RandomPointInside_LCG_float3_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Sphere_RandomPointInside_LCG_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -623,6 +632,7 @@ QScriptValue register_Sphere_prototype(QScriptEngine *engine)
     proto.setProperty("Enclose", engine->newFunction(Sphere_Enclose_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("RandomPointInside", engine->newFunction(Sphere_RandomPointInside_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("RandomPointOnSurface", engine->newFunction(Sphere_RandomPointOnSurface_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Sphere_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Sphere>()));
     engine->setDefaultPrototype(qMetaTypeId<Sphere>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Sphere*>(), proto);

@@ -525,6 +525,15 @@ static QScriptValue Capsule_Intersects_Polyhedron_const(QScriptContext *context,
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Capsule_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Capsule This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Capsule>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Capsule>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Capsule_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -671,6 +680,7 @@ QScriptValue register_Capsule_prototype(QScriptEngine *engine)
     proto.setProperty("Distance", engine->newFunction(Capsule_Distance_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Contains", engine->newFunction(Capsule_Contains_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(Capsule_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Capsule_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Capsule>()));
     engine->setDefaultPrototype(qMetaTypeId<Capsule>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Capsule*>(), proto);

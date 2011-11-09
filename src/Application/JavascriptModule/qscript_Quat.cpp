@@ -479,6 +479,31 @@ static QScriptValue Quat_ToFloat4x4_const(QScriptContext *context, QScriptEngine
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Quat_Quat_QQuaternion(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_Quat_QQuaternion in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QQuaternion other = qscriptvalue_cast<QQuaternion>(context->argument(0));
+    Quat ret(other);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Quat_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Quat This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Quat>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Quat>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Quat_ToQQuaternion_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Quat_ToQQuaternion_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Quat This = qscriptvalue_cast<Quat>(context->thisObject());
+    QQuaternion ret = This.ToQQuaternion();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Quat_Mul_Quat_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_Mul_Quat_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -727,6 +752,22 @@ static QScriptValue Quat_RandomRotation_LCG(QScriptContext *context, QScriptEngi
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Quat_FromQQuaternion_QQuaternion(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_FromQQuaternion_QQuaternion in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QQuaternion q = qscriptvalue_cast<QQuaternion>(context->argument(0));
+    Quat ret = Quat::FromQQuaternion(q);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Quat_FromString_QString(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_FromString_QString in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QString str = qscriptvalue_cast<QString>(context->argument(0));
+    Quat ret = Quat::FromString(str);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Quat_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -743,6 +784,8 @@ static QScriptValue Quat_ctor(QScriptContext *context, QScriptEngine *engine)
         return Quat_Quat_float_float_float_float(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return Quat_Quat_float3_float(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<QQuaternion>(context->argument(0)))
+        return Quat_Quat_QQuaternion(context, engine);
     printf("Quat_ctor failed to choose the right function to call! Did you use 'var x = Quat();' instead of 'var x = new Quat();'?\n"); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
@@ -883,6 +926,8 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     proto.setProperty("ToFloat3x3", engine->newFunction(Quat_ToFloat3x3_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToFloat3x4", engine->newFunction(Quat_ToFloat3x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToFloat4x4", engine->newFunction(Quat_ToFloat4x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Quat_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToQQuaternion", engine->newFunction(Quat_ToQQuaternion_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Mul", engine->newFunction(Quat_Mul_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Quat>()));
     engine->setDefaultPrototype(qMetaTypeId<Quat>(), proto);
@@ -912,6 +957,8 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     ctor.setProperty("FromEulerZXY", engine->newFunction(Quat_FromEulerZXY_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromEulerZYX", engine->newFunction(Quat_FromEulerZYX_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RandomRotation", engine->newFunction(Quat_RandomRotation_LCG, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromQQuaternion", engine->newFunction(Quat_FromQQuaternion_QQuaternion, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromString", engine->newFunction(Quat_FromString_QString, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("identity", qScriptValueFromValue(engine, Quat::identity), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("nan", qScriptValueFromValue(engine, Quat::nan), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     engine->globalObject().setProperty("Quat", ctor, QScriptValue::Undeletable | QScriptValue::ReadOnly);
