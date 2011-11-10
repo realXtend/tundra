@@ -101,7 +101,11 @@ void EC_Billboard::CreateBillboard()
         return;
 
     if (!billboardSet_)
+    {
         billboardSet_ = scene->createBillboardSet(world->GetUniqueObjectName("EC_Billboard"), 1);
+        billboardSet_->Ogre::MovableObject::setUserAny(Ogre::Any(ParentEntity()));
+        billboardSet_->Ogre::Renderable::setUserAny(Ogre::Any(ParentEntity()));
+    }
     
     // Remove old billboard if it existed
     if (billboard_)
@@ -111,8 +115,7 @@ void EC_Billboard::CreateBillboard()
     }
     
     billboard_ = billboardSet_->createBillboard(position.Get());
-    billboard_->setDimensions(width.Get(), height.Get());
-    billboard_->setRotation(Ogre::Radian(Ogre::Degree(rotation.Get())));
+    UpdateBillboardProperties();
 }
 
 void EC_Billboard::UpdateBillboardProperties()
@@ -121,7 +124,11 @@ void EC_Billboard::UpdateBillboardProperties()
     {
         billboard_->setPosition(position.Get());
         billboard_->setDimensions(width.Get(), height.Get());
+        // Bug in OGRE: It does not use the actual billboard bounding box size in the computation, but instead guesses it from the "default size", so
+        // also set the default size to the size of our billboard (fortunately we only have one billboard in the set)
+        billboardSet_->setDefaultDimensions(width.Get()*0.5f, height.Get()*0.5f); // Another bug in OGRE: It computes the billboard AABB padding to 2*width and 2*height, not width & height.
         billboard_->setRotation(Ogre::Radian(Ogre::Degree(rotation.Get())));
+        billboardSet_->_updateBounds(); // Documentation of Ogre::BillboardSet says the update is never called automatically, so now do it manually.
     }
 }
 

@@ -112,7 +112,10 @@ void EC_HoveringText::SetPosition(const float3& position)
         return;
 
     if (billboard_)
+    {
         billboard_->setPosition(position);
+        billboardSet_->_updateBounds(); // Documentation of Ogre::BillboardSet says the update is never called automatically, so now do it manually.
+    }
 }
 
 void EC_HoveringText::SetFont(const QFont &font)
@@ -165,7 +168,13 @@ void EC_HoveringText::SetOverlayAlpha(float alpha)
 void EC_HoveringText::SetBillboardSize(float width, float height)
 {
     if (billboard_)
+    {
         billboard_->setDimensions(width, height);
+        // Bug in OGRE: It does not use the actual billboard bounding box size in the computation, but instead guesses it from the "default size", so
+        // also set the default size to the size of our billboard (fortunately we only have one billboard in the set)
+        billboardSet_->setDefaultDimensions(width*0.5f, height*0.5f); // Another bug in OGRE: It computes the billboard AABB padding to 2*width and 2*height, not width & height.
+        billboardSet_->_updateBounds(); // Documentation of Ogre::BillboardSet says the update is never called automatically, so now do it manually.
+    }
 }
 
 bool EC_HoveringText::IsVisible() const
@@ -212,6 +221,8 @@ void EC_HoveringText::ShowMessage(const QString &text)
     {
         billboardSet_ = scene->createBillboardSet(world->GetUniqueObjectName("EC_HoveringText"), 1);
         assert(billboardSet_);
+        billboardSet_->Ogre::MovableObject::setUserAny(Ogre::Any(ParentEntity()));
+        billboardSet_->Ogre::Renderable::setUserAny(Ogre::Any(ParentEntity()));
 
         materialName_ = world->GetUniqueObjectName("EC_HoveringText_material");
         OgreRenderer::CloneMaterial("HoveringText", materialName_);
