@@ -27,7 +27,7 @@
 #include "QScriptEngineHelpers.h"
 
 #include <Ogre.h>
-#include <OgreDefaultHardwarebufferManager.h>
+#include <OgreDefaultHardwareBufferManager.h>
 
 Q_DECLARE_METATYPE(EC_Placeable*);
 Q_DECLARE_METATYPE(EC_Camera*);

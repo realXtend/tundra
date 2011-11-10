@@ -296,8 +296,7 @@ QString Application::UserDataDirectory()
     if (ppath == 0)
         throw Exception("Failed to get HOME environment variable.");
 
-    std::string path(ppath);
-    return QString((path + "/." + ApplicationName().toStdString()).c_str());
+    return QString(ppath) + "/." + ApplicationName();
 #endif
 }
 

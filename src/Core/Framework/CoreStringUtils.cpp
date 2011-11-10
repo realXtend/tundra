@@ -26,10 +26,10 @@ int QStringtoWCharArray(QString qstr, wchar_t *array)
         for (int i = 0; i < qstr.length(); ++i)
         {
             uint u = uc[i];
-            if (QChar::isHighSurrogate(u) && i + 1 < qstr.length())
+            if (QChar(u).isHighSurrogate() && i + 1 < qstr.length())
             {
                 ushort low = uc[i+1];
-                if (QChar::isLowSurrogate(low))
+                if (QChar(low).isLowSurrogate())
                 {
                     u = QChar::surrogateToUcs4(u, low);
                     ++i;

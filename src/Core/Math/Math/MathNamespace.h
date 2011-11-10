@@ -3,7 +3,7 @@
 /// Adjust this #define to choose the name of the namespace math is given to.
 #define MATH_NAMESPACE_NAME math
 
-#define MATH_ENABLE_NAMESPACE
+//#define MATH_ENABLE_NAMESPACE
 
 #ifdef MATH_ENABLE_NAMESPACE
 
