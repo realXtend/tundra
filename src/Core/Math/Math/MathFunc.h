@@ -31,7 +31,11 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#ifndef Polygon
+#define Polygon Polygon_WinGdi_UNUSED
+#endif
 #include <Windows.h> // For DebugBreak();
+#undef Polygon
 #endif
 
 #include "assume.h"

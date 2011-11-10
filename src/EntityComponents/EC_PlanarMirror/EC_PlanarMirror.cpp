@@ -6,6 +6,7 @@
  *  @note   The entity should have EC_Placeable available in advance.
  */
 
+#include "Math/MathFwd.h"
 #include "EC_PlanarMirror.h"
 
 #include "OgreRenderingModule.h"
