@@ -653,7 +653,9 @@ EXCLUDE                = ../.git \
                          ../src/Core/OgreRenderingModule/EC_SelectionBox.h \
                          ../src/Core/OgreRenderingModule/EC_SelectionBox.cpp \
                          ../src/Core/OgreRenderingModule/EC_OgreCustomObject.h \
-                         ../src/Core/OgreRenderingModule/EC_OgreCustomObject.cpp
+                         ../src/Core/OgreRenderingModule/EC_OgreCustomObject.cpp \
+                         ../src/Application/KinectModule \
+                         ../src/Application/OpenAssetImport
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -685,6 +687,8 @@ EXCLUDE_SYMBOLS        =    StanHull \
                             kNet \
                             TiXml*\
                             json \
+                            boost \
+                            Ogre
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 
