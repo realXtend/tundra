@@ -40,7 +40,7 @@ if (SHOULD_RUN)
     QT4_WRAP_UI(UI_SRCS ${UI_FILES})
     QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-    use_core_modules (Framework Asset Ui OgreRenderingModule)
+    use_core_modules (Framework Math Asset Ui OgreRenderingModule)
     use_app_modules (SceneWidgetComponents)
     use_package (VLC)
 
