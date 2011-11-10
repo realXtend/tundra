@@ -76,7 +76,7 @@ const float inf =		  FLOAT_INF;
 /// The floating point representation for -\inf.
 const float negInf =	   -FLOAT_INF;
 /// Represents a floating-point not-a-number. \note Never compare a float against nan, use isfinite() instead!
-const float nan =		  FLOAT_NAN;
+const float floatNan =		  FLOAT_NAN;
 /// Stores the largest positive non-infinite value for a float.
 const float floatMax =	 FLOAT_MAX;
 /// Stores the largest negative non-infinite value for a float.
