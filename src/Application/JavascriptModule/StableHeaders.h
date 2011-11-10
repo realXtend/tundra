@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Math/MathFwd.h"
 #include "CoreDefines.h"
 
 // If PCH is disabled, leave the contents of this whole file empty to avoid any compilation unit getting any unnecessary headers.

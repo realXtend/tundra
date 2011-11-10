@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Math/MathFwd.h"
 #include "CoreDefines.h"
 #include "LoggingFunctions.h"
 
