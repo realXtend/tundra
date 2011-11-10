@@ -52,20 +52,11 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
 
 PhysicsWorld::~PhysicsWorld()
 {
-    delete world_;
-    world_ = 0;
-    
-    delete solver_;
-    solver_ = 0;
-    
-    delete broadphase_;
-    broadphase_ = 0;
-    
-    delete collisionDispatcher_;
-    collisionDispatcher_ = 0;
-    
-    delete collisionConfiguration_;
-    collisionConfiguration_ = 0;
+    SAFE_DELETE(world_);
+    SAFE_DELETE(solver_);
+    SAFE_DELETE(broadphase_);
+    SAFE_DELETE(collisionDispatcher_);
+    SAFE_DELETE(collisionConfiguration_);
 }
 
 void PhysicsWorld::SetPhysicsUpdatePeriod(float updatePeriod)
@@ -87,7 +78,7 @@ void PhysicsWorld::SetGravity(const float3& gravity)
     world_->setGravity(gravity);
 }
 
-float3 PhysicsWorld::GetGravity() const
+float3 PhysicsWorld::Gravity() const
 {
     return world_->getGravity();
 }
@@ -116,9 +107,9 @@ void PhysicsWorld::Simulate(f64 frametime)
     if (!drawDebugManuallySet_)
     {
         if ((!drawDebugGeometry_) && (!debugRigidBodies_.empty()))
-            SetDrawDebugGeometry(true);
+            SetDebugGeometryEnabled(true);
         if ((drawDebugGeometry_) && (debugRigidBodies_.empty()))
-            SetDrawDebugGeometry(false);
+            SetDebugGeometryEnabled(false);
     }
     
     if (drawDebugGeometry_)
@@ -241,7 +232,7 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
     return &result;
 }
 
-void PhysicsWorld::SetDrawDebugGeometry(bool enable)
+void PhysicsWorld::SetDebugGeometryEnabled(bool enable)
 {
     if (scene_.expired() || !scene_.lock()->ViewEnabled() || drawDebugGeometry_ == enable)
         return;

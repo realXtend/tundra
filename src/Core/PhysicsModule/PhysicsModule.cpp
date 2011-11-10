@@ -101,7 +101,7 @@ void PhysicsModule::ToggleDebugGeometry()
 {
     for (PhysicsWorldMap::iterator i = physicsWorlds_.begin(); i != physicsWorlds_.end(); ++i)
     {
-        i->second->SetDrawDebugGeometry(!i->second->GetDrawDebugGeometry());
+        i->second->SetDebugGeometryEnabled(!i->second->IsDebugGeometryEnabled());
         i->second->drawDebugManuallySet_ = true; // Disable automatic debugdraw state change
     }
 }
@@ -207,7 +207,7 @@ void PhysicsModule::OnSceneRemoved(const QString& name)
 void PhysicsModule::SetRunPhysics(bool enable)
 {
     for (PhysicsWorldMap::iterator i = physicsWorlds_.begin(); i != physicsWorlds_.end(); ++i)
-        i->second->SetRunPhysics(enable);
+        i->second->SetRunning(enable);
 }
 
 void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
