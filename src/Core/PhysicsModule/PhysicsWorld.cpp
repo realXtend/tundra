@@ -83,7 +83,7 @@ float3 PhysicsWorld::Gravity() const
     return world_->getGravity();
 }
 
-btDiscreteDynamicsWorld* PhysicsWorld::GetWorld() const
+btDiscreteDynamicsWorld* PhysicsWorld::BulletWorld() const
 {
     return world_;
 }

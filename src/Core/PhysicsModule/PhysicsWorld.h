@@ -140,7 +140,7 @@ public:
     bool IsRunning() const { return runPhysics_; }
 
     /// Return the Bullet world object
-    btDiscreteDynamicsWorld* GetWorld() const;
+    btDiscreteDynamicsWorld* BulletWorld() const;
 
 public slots:
     /// Return whether the physics world is for a client scene. Client scenes only simulate local entities' motion on their own.
