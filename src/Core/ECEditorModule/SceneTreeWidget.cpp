@@ -1365,8 +1365,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
     assert(scene.lock());
     QSet<QString> assets;
 
-    ///\todo use eItem->Entity()
-    EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
+    EntityPtr entity = eItem->Entity();
     if (entity)
     {
         int entityChildCount = eItem->childCount();
@@ -1375,9 +1374,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
             if (!cItem)
                 continue;
-
-            ///\todo use cItem->Component()
-            ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
+            ComponentPtr comp = cItem->Component();
             if (!comp)
                 continue;
 
