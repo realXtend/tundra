@@ -198,7 +198,7 @@ EC_Placeable::EC_Placeable(Scene* scene) :
     OgreWorldPtr world = world_.lock();
     if (world)
     {
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         sceneNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Placeable_SceneNode"));
 // Would like to do this for improved debugging in the Profiler window, but because we don't have the parent entity yet, we don't know the id or the name of this entity.
 //        sceneNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName(("EC_Placeable_SceneNode_" + QString::number(ParentEntity()->Id()) + "_" + ParentEntity()->Name()).toStdString()));
@@ -225,7 +225,7 @@ EC_Placeable::~EC_Placeable()
     emit AboutToBeDestroyed();
     
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     
     if (sceneNode_)
     {
@@ -258,7 +258,7 @@ void EC_Placeable::AttachNode()
         if (attached_)
             DetachNode();
         
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         Ogre::SceneNode* root_node = sceneMgr->getRootSceneNode();
         
         // Three possible cases
@@ -400,7 +400,7 @@ void EC_Placeable::DetachNode()
     
     try
     {
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         Ogre::SceneNode* root_node = sceneMgr->getRootSceneNode();
         
         // Three possible cases

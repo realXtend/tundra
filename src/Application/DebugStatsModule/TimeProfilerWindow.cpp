@@ -1515,7 +1515,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     
     std::ostringstream text;
 
-    uint visible_entities = renderer->GetActiveOgreWorld()->GetVisibleEntities().size();
+    uint visible_entities = renderer->GetActiveOgreWorld()->VisibleEntities().size();
     uint batches = 0;
     uint triangles = 0;
     float avgfps = 0.0f;

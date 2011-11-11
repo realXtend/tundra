@@ -621,11 +621,9 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();
                     if (placeable)
                     {
-                        //Ogre::Ray ray = cam->GetComponent<EC_Camera>()->GetCamera()->getCameraToViewportRay(e->pos().x(), e->pos().y());
                         Quat q = placeable->WorldOrientation();
                         float3 v = q * scene->ForwardVector();
-                        //Ogre::Vector3 oV = ray.getPoint(20);
-                        worldPos = /*float3(oV.x, oV.y, oV.z);*/ placeable->Position() + v * 20;
+                        worldPos = placeable->Position() + v * 20;
                         break;
                     }
                 }

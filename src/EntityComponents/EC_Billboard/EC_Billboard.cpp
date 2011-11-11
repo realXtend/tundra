@@ -96,7 +96,7 @@ void EC_Billboard::CreateBillboard()
     OgreWorldPtr world = world_.lock();
     if (!world)
         return;
-    Ogre::SceneManager* scene = world->GetSceneManager();
+    Ogre::SceneManager* scene = world->OgreSceneManager();
     if (!scene)
         return;
 
@@ -151,7 +151,7 @@ void EC_Billboard::DestroyBillboard()
     }
     if (billboardSet_)
     {
-        world->GetSceneManager()->destroyBillboardSet(billboardSet_);
+        world->OgreSceneManager()->destroyBillboardSet(billboardSet_);
         billboardSet_ = 0;
     }
 }

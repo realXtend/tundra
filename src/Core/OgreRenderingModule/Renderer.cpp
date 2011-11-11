@@ -543,7 +543,7 @@ namespace OgreRenderer
                 OgreWorld* world = i->second.get();
                 if (world)
                 {
-                    Ogre::SceneManager* mgr = world->GetSceneManager();
+                    Ogre::SceneManager* mgr = world->OgreSceneManager();
                     if (mgr)
                     {
                         PROFILE(Ogre_SceneManager_updateSceneGraph);

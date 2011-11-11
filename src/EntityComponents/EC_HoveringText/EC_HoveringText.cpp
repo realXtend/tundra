@@ -75,7 +75,7 @@ void EC_HoveringText::Destroy()
 
     if (!world_.expired())
     {
-        Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world_.lock()->OgreSceneManager();
         
         try{
         Ogre::MaterialManager::getSingleton().remove(materialName_);
@@ -196,7 +196,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
         return;
     
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager *scene = world->GetSceneManager();
+    Ogre::SceneManager *scene = world->OgreSceneManager();
     assert(scene);
     if (!scene)
         return;

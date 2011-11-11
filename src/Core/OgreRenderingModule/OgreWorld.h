@@ -73,7 +73,7 @@ public slots:
     bool IsEntityVisible(Entity* entity) const;
     
     /// Get visible entities in the currently active camera
-    QList<Entity*> GetVisibleEntities() const;
+    QList<Entity*> VisibleEntities() const;
     
     /// Return whether the currently active camera is in this scene
     bool IsActive() const;
@@ -87,11 +87,13 @@ public slots:
     void StopViewTracking(Entity* entity);
     
     /// Return the Renderer instance
-    OgreRenderer::Renderer* GetRenderer() const { return renderer_; }
+    OgreRenderer::Renderer* Renderer() const { return renderer_; }
+
     /// Return the Ogre scene manager
-    Ogre::SceneManager* GetSceneManager() { return sceneManager_; }
+    Ogre::SceneManager* OgreSceneManager() { return sceneManager_; }
+
     /// Return the parent scene
-    ScenePtr GetScene() { return scene_.lock(); }
+    ScenePtr Scene() const { return scene_.lock(); }
 
     // Renders an axis-aligned bounding box.
     void DebugDrawAABB(const AABB &aabb, float r, float g, float b, bool depthTest = true);

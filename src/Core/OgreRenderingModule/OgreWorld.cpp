@@ -359,7 +359,7 @@ bool OgreWorld::IsEntityVisible(Entity* entity) const
     return cameraComponent->IsEntityVisible(entity);
 }
 
-QList<Entity*> OgreWorld::GetVisibleEntities() const
+QList<Entity*> OgreWorld::VisibleEntities() const
 {
     QList<Entity*> l;
     EC_Camera* cameraComponent = VerifyCurrentSceneCameraComponent();
@@ -527,7 +527,7 @@ void OgreWorld::SetupShadows()
     //DEBUG
     /*if(renderer_.expired())
         return;
-    Ogre::SceneManager *mngr = renderer_.lock()->GetSceneManager();
+    Ogre::SceneManager *mngr = renderer_.lock()->OgreSceneManager();
     Ogre::TexturePtr shadowTex;
     Ogre::String str("shadowDebug");
     Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(str);

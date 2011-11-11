@@ -93,7 +93,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
                 return;
             }
 
-            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
             
             Ogre::ParticleSystem* system = sceneMgr->createParticleSystem(world->GetUniqueObjectName("EC_Particlesystem"), sanitatedSystemName.toStdString());
             if (system)
@@ -138,7 +138,7 @@ void EC_ParticleSystem::DeleteParticleSystem(const QString& systemName)
         return;
     }
     
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     if (!sceneMgr)
         return;
 

@@ -83,7 +83,7 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
         object->convertToMesh(mesh_name);
         object->clear();
     
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
 
         entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_OgreCustomObject_entity"), mesh_name);
         if (entity_)
@@ -198,7 +198,7 @@ void EC_OgreCustomObject::DestroyEntity()
         return;
     OgreWorldPtr world = world_.lock();
     
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     
     if (entity_)
     {

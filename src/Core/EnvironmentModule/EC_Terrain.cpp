@@ -258,7 +258,7 @@ void EC_Terrain::DestroyPatch(int x, int y)
 
     if (world_.expired()) // Oops! Already destroyed
         return;
-    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
     
     EC_Terrain::Patch &patch = GetPatch(x, y);
 
@@ -298,7 +298,7 @@ void EC_Terrain::Destroy()
 
     if (world_.expired()) // Oops! Already destroyed
         return;
-    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
 
     if (rootNode)
     {
@@ -1193,7 +1193,7 @@ void EC_Terrain::AttachTerrainRootNode()
 
     if (world_.expired()) 
         return;
-    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
 
     // Detach the terrain root node from any previous EC_Placeable scenenode.
     if (rootNode->getParentSceneNode())
@@ -1227,7 +1227,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     if (world_.expired())
         return;
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world->OgreSceneManager();
 
     Ogre::SceneNode *node = patch.node;
     bool firstTimeFill = (node == 0);
@@ -1387,7 +1387,7 @@ void EC_Terrain::CreateRootNode()
     if (world_.expired())
         return;
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world->OgreSceneManager();
 
     rootNode = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Terrain_RootNode"));
 
@@ -1402,7 +1402,7 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
     if (world_.expired())
         return;
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world->OgreSceneManager();
     
     if (!sceneMgr || !sceneMgr->getRootSceneNode())
         return;
