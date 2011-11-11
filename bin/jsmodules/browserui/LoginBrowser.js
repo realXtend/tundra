@@ -1601,7 +1601,7 @@ var ClassicLogin = Class.extend
 		this.udpButton = findChild(this.widget, "radioButton_ProtocolUDP");
 
 		var logoLabel = findChild(this.widget, "label_ClientLogo");
-		logoLabel.pixmap = new QPixmap(appInstallDir + "data/ui/images/realxtend_logo.png");
+		logoLabel.pixmap = new QPixmap(appInstallDir + "data/ui/images/adminotech_logo.png");
 
 		// Connections
 		this.loginButton.clicked.connect(this, this.loginPressed);
