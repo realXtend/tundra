@@ -39,8 +39,6 @@
 #include <QMouseEvent>
 #include <QResizeEvent>
 
-#include <QDebug>
-
 EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
     IComponent(scene),
     uiRef(this, "UI ref", AssetReference("", "QtUiFile")),
@@ -531,6 +529,12 @@ void EC_WidgetBillboard::RaycastBillboard(int mouseX, int mouseY, bool &hit, flo
         hit = true;
         uv = float2(screenX, 1-screenY);
         distance = Ogre::Vector3(worldPos - camPos).squaredLength();
+
+        // Don't register a hit for transparent widget parts.
+        QImage buffer(widget_->size(), QImage::Format_ARGB32_Premultiplied);
+        widget_->render(&buffer, QPoint(), QRegion(), QWidget::DrawChildren);
+        if ((buffer.pixel((int)widget_->width() * uv.x, (int)widget_->height() * uv.y) & 0xFF000000) == 0x00000000)
+            hit = false;
     }
 }
 
