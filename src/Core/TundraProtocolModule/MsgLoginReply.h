@@ -38,15 +38,20 @@ struct MsgLoginReply
 
 	u8 success;
 	u8 userID;
+
 	std::vector<s8> loginReplyData;
+        std::vector<s8> uuid;
 
 	inline size_t Size() const
 	{
-		return 1 + 1 + 2 + loginReplyData.size()*1;
+                return 1 + 1 + 2 + 2 + loginReplyData.size()*1 + uuid.size()*1;
 	}
 
 	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
+                dst.Add<u16>(uuid.size());
+                if (uuid.size() > 0)
+                        dst.AddArray<s8>(&uuid[0], uuid.size());
 		dst.Add<u8>(success);
 		dst.Add<u8>(userID);
 		dst.Add<u16>(loginReplyData.size());
@@ -56,6 +61,9 @@ struct MsgLoginReply
 
 	inline void DeserializeFrom(kNet::DataDeserializer &src)
 	{
+                uuid.resize(src.Read<u16>());
+                if (uuid.size() > 0)
+                        src.ReadArray<s8>(&uuid[0], uuid.size());
 		success = src.Read<u8>();
 		userID = src.Read<u8>();
 		loginReplyData.resize(src.Read<u16>());

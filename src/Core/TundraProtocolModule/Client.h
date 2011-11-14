@@ -160,6 +160,7 @@ private:
     u8 client_id_; ///< User ID, once known
     TundraLogicModule* owner_; ///< Owning module
     Framework* framework_; ///< Framework pointer
+    QString sceneName;
 };
 
 }

@@ -203,6 +203,7 @@ void Client::DoLogout(bool fail)
     }
     else // An user deliberately disconnected from the world, and not due to a connection error.
     {
+        framework_->Scene()->RemoveScene(sceneName);
         // Clear all the login properties we used for this session, so that the next login session will start from an
         // empty set of login properties (just-in-case).
         properties.clear();
@@ -343,13 +344,13 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     {
         loginstate_ = LoggedIn;
         client_id_ = msg.userID;
-        ::LogInfo("Logged in successfully");
+        sceneName = QString::fromStdString(BufferToString(msg.uuid));
         
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
             // Create a non-authoritative scene for the client
-            ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true, false);
+            ScenePtr scene = framework_->Scene()->CreateScene(sceneName, true, false);
 
 //            framework_->Scene()->SetDefaultScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
@@ -366,7 +367,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             // Note: when we move to unordered communication, we must guarantee that the server does not send
             // any scene data before the login reply
 
-            ScenePtr scene = framework_->Scene()->GetScene("TundraClient");
+            ScenePtr scene = framework_->Scene()->GetScene(sceneName);
             if (scene)
                 scene->RemoveAllEntities(true, AttributeChange::LocalOnly);
         }

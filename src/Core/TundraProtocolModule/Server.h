@@ -129,6 +129,9 @@ private:
     Framework* framework_;
     int current_port_;
     QString current_protocol_;
+
+    /// UUID for server scene.
+    QString sceneID_;
 };
 
 }
