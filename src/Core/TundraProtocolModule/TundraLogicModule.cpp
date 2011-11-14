@@ -319,8 +319,18 @@ void TundraLogicModule::LoadStartupScene()
     if (hasFile && files.isEmpty())
         LogError("TundraLogicModule: --file specified without a value.");
 
-    foreach(const QString &startupScene, files)
+    foreach(const QString &file, files)
     {
+        QString startupScene;
+        // If the file parameter uses the full storage specifier format, parse the "src" keyvalue
+        if (file.indexOf(';') != -1 || file.indexOf('=') != -1)
+        {
+            QMap<QString, QString> keyValues = AssetAPI::ParseAssetStorageString(file);
+            startupScene = keyValues["src"];
+        }
+        else
+            startupScene = file;
+        
         // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
         // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
         // scene we now load will be able to refer to local:// assets in its subfolders.
