@@ -21,7 +21,7 @@ class UI_API UiGraphicsView : public QGraphicsView
     Q_OBJECT
 
 public:
-    explicit UiGraphicsView(QWidget *parent);
+    explicit UiGraphicsView(Framework* fw, QWidget *parent);
 
     ~UiGraphicsView();
 
@@ -71,6 +71,7 @@ signals:
     void DropEvent(QDropEvent *e, QGraphicsItem *widgetUnderMouse);
 
 private:
+    Framework* framework;
     QImage *backBuffer;
     QRectF dirtyRectangle;
 

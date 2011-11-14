@@ -91,8 +91,12 @@ UiAPI::UiAPI(Framework *owner_) :
        the main Ogre render target will not be created to full size first, and afterwards resized to a smaller
        size when a script (e.g. menubar.js) eventually creates the menu bar.
        Resizing the main window causes a D3D9 device loss, so creating the menu here has the effect of optimizing
-       Tundra startup to avoid a full D3D9 device Reset() (and a resubmit of all GPU resources). */
-    if (!owner_->HasCommandLineParameter("--nomenubar"))
+       Tundra startup to avoid a full D3D9 device Reset() (and a resubmit of all GPU resources).
+       
+       On the other hand if central widget is not used, it is imperative we do not make the menu show up yet. Otherwise
+       the graphics view will be displayed on top of the menu.
+    */
+    if (!owner_->HasCommandLineParameter("--nomenubar") && !owner_->HasCommandLineParameter("--nocentralwidget"))
     {
         QMenuBar *menu = mainWindow->menuBar();
         menu->addMenu("&File"); // Need to add an element, or otherwise the menu will not show up.
@@ -103,7 +107,7 @@ UiAPI::UiAPI(Framework *owner_) :
     connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
 
     // Prepare graphics view and scene
-    graphicsView = new UiGraphicsView(mainWindow);
+    graphicsView = new UiGraphicsView(owner_, mainWindow);
 
     // If debugging the compositing system, restore back default Qt window state.
     if (owner_->HasCommandLineParameter("--nouicompositing"))
@@ -118,11 +122,14 @@ UiAPI::UiAPI(Framework *owner_) :
     // Leave this check here if the window type changes to for example QWidget so we dont crash then.
     if (!mainWindow->layout())
         mainWindow->setLayout(new QVBoxLayout());
+    
     mainWindow->layout()->setMargin(0);
     mainWindow->layout()->setContentsMargins(0,0,0,0);
-    // Old way: force insert into the main layout. Will make view/scene be behind menu bar etc.
-    //mainWindow->layout()->addWidget(graphicsView);
-    mainWindow->setCentralWidget(graphicsView);
+    
+    if (owner_->HasCommandLineParameter("--nocentralwidget"))
+        mainWindow->layout()->addWidget(graphicsView);
+    else
+        mainWindow->setCentralWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
