@@ -131,7 +131,7 @@ Classes:
 <h3>Input</h3>
 Provides access to Qt input devices in a contextual order.
 
-InputAPI is available as 'input' in Javascript and 'naali.input' in Python.
+InputAPI is available as 'input' in Javascript and 'tundra.input' in Python.
 
 Follow these topics to learn more:
 - Reading input through an InputContext.
@@ -150,7 +150,7 @@ Classes:
 <h3>UI</h3>
 Exposes the Tundra main window and allows clients to create and show their own Qt-based windows.
 
-UiAPI is available as 'ui' in Javascript and 'naali.ui' in Python.
+UiAPI is available as 'ui' in Javascript and 'tundra.ui' in Python.
 </td>
 
 Classes:
@@ -166,7 +166,7 @@ Classes:
 <h3>Scene</h3>
 Gives access to the Tundra 3D scene structure: entities, components and attributes.
 
-SceneAPI is available as 'scene' in Javascript and 'naali.scene' in Python.
+SceneAPI is available as 'scene' in Javascript and 'tundra.scene' in Python.
 
 Topics:
 <ul>
@@ -216,7 +216,7 @@ Classes:
 Allows modules to register new commands that are invokeable from a command line console.
 Also provides logging mechanism for dynamic languages.
 
-ConsoleAPI is available as 'console' in Javascript and 'naali.console' in Python with the support for:
+ConsoleAPI is available as 'console' in Javascript and 'tundra.console' in Python with the support for:
 - Registering new console commands.
 - Programmatically invoking console commands.
 
@@ -310,6 +310,8 @@ See the following topics for more information:
 <ul><li>Exposes the components EC_Placeable, EC_Mesh, EC_Light, EC_ParticleSystem, EC_AnimationController, EC_Camera, EC_Material, EC_OgreCompositor, EC_RttTarget.</ul> 
 <li>EnvironmentModule
 <ul><li>Exposes the components EC_Sky, EC_Terrain, EC_WaterPlane, EC_Fog.</ul> 
+<li>SkyXHydrax
+<ul><li>Exposes the components EC_SkyX and EC_Hydrax.</ul> 
 </ul>
 
 </td>
