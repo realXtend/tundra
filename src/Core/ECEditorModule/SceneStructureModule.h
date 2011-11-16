@@ -45,11 +45,13 @@ public slots:
     /** @param filenames List of content files.
         @param worldPos Destination in-world position.
         @param clearScene Do we want to clear the scene before adding new content.
-        @return List of created entities. */
+        @return List of created entities.
+        @todo clearScene not used currently for anything. */
     void InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene);
 
     /// This is an overloaded function
-    /** @param filenames Content filename. */
+    /** @param filenames Content filename.
+        @todo clearScene not used currently for anything. */
     void InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene);
 
     /// Centralizes group of entities around same center point. The entities must have EC_Placeable component present.
