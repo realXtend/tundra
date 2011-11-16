@@ -56,7 +56,7 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(int, ppm);
 
 public slots:
-    /// Update redering.
+    /// Update rendering.
     void Render();
 
 private slots:

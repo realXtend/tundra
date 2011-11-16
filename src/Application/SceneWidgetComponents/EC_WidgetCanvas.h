@@ -14,6 +14,8 @@
 #include <QWidget>
 #include <QString>
 
+#include <OgreTexture.h>
+
 namespace Ogre
 {
     class TextureManager;
@@ -90,6 +92,7 @@ public slots:
     void UpdateSubmeshes();
 
 private slots:
+    bool Blit(const QImage &source, Ogre::TexturePtr destination);
     void WidgetDestroyed(QObject *obj);
     void MeshMaterialsUpdated(uint index, const QString &material_name);
 
