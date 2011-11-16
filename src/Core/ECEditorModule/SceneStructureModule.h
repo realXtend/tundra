@@ -41,16 +41,16 @@ public:
     void Initialize();
 
 public slots:
-    /// Instantiates new content from file to the scene.
-    /** @param filename File name.
+    /// Instantiates new content from file to the scene by using the AddContentWindow.
+    /** @param filenames List of content files.
         @param worldPos Destination in-world position.
         @param clearScene Do we want to clear the scene before adding new content.
         @return List of created entities. */
-    QList<Entity *> InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene);
+    QList<Entity *> InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene);
 
     /// This is an overloaded function
-    /** @param filenames List of scene files. */
-    QList<Entity *> InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene);
+    /** @param filenames Content filename. */
+    QList<Entity *> InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene);
 
     /// Centralizes group of entities around same center point. The entities must have EC_Placeable component present.
     /** @param pos Center point for entities.

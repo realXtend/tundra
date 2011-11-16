@@ -506,7 +506,7 @@ void AssetTreeWidget::SaveAssetDialogClosed(int result)
 void AssetTreeWidget::Upload(const QStringList &files)
 {
     AddContentWindow *addContent = new AddContentWindow(framework, framework->Scene()->MainCameraScene()->shared_from_this());
-    addContent->AddFiles(files);
+    addContent->AddAssets(files);
     addContent->show();
 }
 

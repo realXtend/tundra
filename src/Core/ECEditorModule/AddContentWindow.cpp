@@ -138,12 +138,12 @@ public:
 /// @endcond PRIVATE
 
 /// A special case identifier for using the default storage.
-const QString cDefaultStorage("DefaultStorage");
+const char *cDefaultStorage = "DefaultStorage";
 /// A special case identifier for not altering asset refs when uploading assets.
-const QString cDoNotAlterAssetReferences("DoNotAlterAssetReferences");
+const char *cDoNotAlterAssetReferences = "DoNotAlterAssetReferences";
 // Used for saving the recently used storage to config.
-const QString cRecentStorageSetting("recent strorage");
-const QString cAddContentDialogSetting("AddContentDialog");
+const char *cRecentStorageSetting = "recent strorage";
+const char *cAddContentDialogSetting = "AddContentDialog";
 
 AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
@@ -151,7 +151,6 @@ AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget 
     scene(dest),
     parentEntities_(0),
     parentAssets_(0),
-    contentAdded_(false),
     position(float3::zero),
     progressStep_(0),
     failedUploads_(0),
@@ -344,19 +343,26 @@ void AddContentWindow::showEvent(QShowEvent *e)
 
 void AddContentWindow::AddDescription(const SceneDesc &desc)
 {
-    sceneDesc = desc;
+    sceneDescs.clear();
+    sceneDescs.append(desc);
     AddEntities(desc.entities);
-    AddAssets(desc.assets);
+    AddAssets(desc, desc.assets);
     resize(1,1);
 }
 
-/*
-void AddContentWindow::AddDescriptions(const QList<SceneDesc> &descs)
+void AddContentWindow::AddDescription(const QList<SceneDesc> &descs)
 {
+    sceneDescs.clear();
+    sceneDescs = descs;
+    foreach(const SceneDesc & desc, sceneDescs)
+    {
+        AddEntities(desc.entities);
+        AddAssets(desc, desc.assets);
+    }
+    resize(1,1);
 }
-*/
 
-void AddContentWindow::AddFiles(const QStringList &fileNames)
+void AddContentWindow::AddAssets(const QStringList &fileNames)
 {
     assetTreeWidget->setSortingEnabled(false);
 
@@ -372,9 +378,10 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
         desc.assets[qMakePair(ad.source, ad.subname)]= ad;
     }
 
-    sceneDesc = desc;
+    sceneDescs.clear();
+    sceneDescs.append(desc);
 
-    AddAssets(desc.assets);
+    AddAssets(desc, desc.assets);
 }
 
 void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
@@ -423,7 +430,7 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
         entityTreeWidget->setMinimumHeight(halfDeskHeight - 300);
 }
 
-void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
+void AddContentWindow::AddAssets(const SceneDesc &sceneDesc, const SceneDesc::AssetMap &assetDescs)
 {
     assetTreeWidget->setSortingEnabled(false);
 
@@ -479,10 +486,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
     fullHeight += (assetTreeWidget->sizeHintForRow(0)+5) * assetTreeWidget->model()->rowCount();
 
     int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
-    if (fullHeight<(halfDeskHeight-50))
-        assetTreeWidget->setMinimumHeight(fullHeight);
-    else
-        assetTreeWidget->setMinimumHeight(halfDeskHeight - 100);
+    assetTreeWidget->setMinimumHeight(fullHeight < halfDeskHeight-50 ? fullHeight : halfDeskHeight-100);
 
     // Set the windows minumum width from assets tree view
     int minWidth = 10;
@@ -604,7 +608,7 @@ void AddContentWindow::AddContent()
                 uploadStatus_->show();
                 uploadProgress_->show();
             }
-            if (!newDesc_.entities.empty())
+            if (!filteredDesc.entities.empty())
             {
                 entitiesStatus_->show();
                 entitiesProgress_->show();
@@ -643,16 +647,24 @@ bool AddContentWindow::CreateNewDesctiption()
     }
 
     // Filter which entities will be created and which assets will be uploaded.
-    newDesc_ = sceneDesc;
+
+    filteredDesc = SceneDesc();
+    filteredDesc.viewEnabled = sceneDescs.last().viewEnabled;
+    foreach(const SceneDesc &desc, sceneDescs)
+    {
+        filteredDesc.entities.append(desc.entities);
+        filteredDesc.assets.unite(desc.assets);
+    }
+
     QTreeWidgetItemIterator eit(entityTreeWidget);
     while(*eit)
     {
         EntityWidgetItem *eitem = dynamic_cast<EntityWidgetItem *>(*eit);
         if (eitem && eitem->checkState(cColumnEntityCreate) == Qt::Unchecked)
         {
-            QList<EntityDesc>::const_iterator ei = qFind(newDesc_.entities, eitem->desc);
-            if (ei != newDesc_.entities.end())
-                newDesc_.entities.removeOne(*ei);
+            QList<EntityDesc>::const_iterator ei = qFind(filteredDesc.entities, eitem->desc);
+            if (ei != filteredDesc.entities.end())
+                filteredDesc.entities.removeOne(*ei);
         }
 
         ++eit;
@@ -663,7 +675,7 @@ bool AddContentWindow::CreateNewDesctiption()
     if (rewrite)
     {
         bool useDefault = storageName == cDefaultStorage;
-        RewriteAssetReferences(newDesc_, dest, useDefault);
+        RewriteAssetReferences(filteredDesc, dest, useDefault);
     }
 
     RefMap refs;
@@ -676,7 +688,7 @@ bool AddContentWindow::CreateNewDesctiption()
         {
             if (aitem->checkState(cColumnAssetUpload) == Qt::Unchecked || aitem->isDisabled())
             {
-                bool removed = newDesc_.assets.remove(qMakePair(aitem->desc.source, aitem->desc.subname));
+                bool removed = filteredDesc.assets.remove(qMakePair(aitem->desc.source, aitem->desc.subname));
                 if (!removed)
                     LogDebug("Couldn't find and remove " + aitem->desc.source + "from asset map.");
             }
@@ -696,7 +708,7 @@ bool AddContentWindow::CreateNewDesctiption()
     }
 
     // Rewrite asset refs
-    QMutableMapIterator<SceneDesc::AssetMapKey, AssetDesc> rewriteIt(newDesc_.assets);
+    QMutableMapIterator<SceneDesc::AssetMapKey, AssetDesc> rewriteIt(filteredDesc.assets);
     while(rewriteIt.hasNext())
     {
         rewriteIt.next();
@@ -713,8 +725,7 @@ bool AddContentWindow::UploadAssets()
     AssetStoragePtr dest;
     QString storageName = CurrentStorageName();
     bool doNotAlter = storageName == cDoNotAlterAssetReferences;
-    // No upload if we don't touch asset refs
-    if (!doNotAlter)
+    if (!doNotAlter) // No upload if we don't touch asset refs
     {
         dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorageByName(storageName);
         if (!dest)
@@ -725,21 +736,16 @@ bool AddContentWindow::UploadAssets()
         }
     }
 
-    ScenePtr destScene = scene.lock();
-    if (!destScene)
-        return false;
-
     // Upload
-    if (!newDesc_.assets.empty())
+    if (!filteredDesc.assets.empty())
     {
-        std::string ending = newDesc_.assets.size() == 1 ? "." : "s.";
-        LogDebug("Starting uploading of " + ToString(newDesc_.assets.size()) + " asset" + ending);
+        LogDebug(QString("Starting uploading of %1 asset%2.").arg(filteredDesc.assets.size()).arg(filteredDesc.assets.size() == 1 ? "." : "s."));
 
         totalUploads_ = 0;
         progressStep_ = 0;
         failedUploads_ = 0;
         successfullUploads_ = 0;
-        foreach(const AssetDesc &ad, newDesc_.assets)
+        foreach(const AssetDesc &ad, filteredDesc.assets)
         {
             try
             {
@@ -756,8 +762,11 @@ bool AddContentWindow::UploadAssets()
                         dest, ad.destinationName.toStdString().c_str());
                 }
 
-                if (transfer && connect(transfer.get(), SIGNAL(Completed(IAssetUploadTransfer *)), SLOT(HandleUploadCompleted(IAssetUploadTransfer *)), Qt::UniqueConnection) &&
-                    connect(transfer.get(), SIGNAL(Failed(IAssetUploadTransfer *)), SLOT(HandleUploadFailed(IAssetUploadTransfer *)), Qt::UniqueConnection))
+                if (transfer &&
+                    connect(transfer.get(), SIGNAL(Completed(IAssetUploadTransfer *)),
+                        SLOT(HandleUploadCompleted(IAssetUploadTransfer *)), Qt::UniqueConnection) &&
+                    connect(transfer.get(), SIGNAL(Failed(IAssetUploadTransfer *)),
+                        SLOT(HandleUploadFailed(IAssetUploadTransfer *)), Qt::UniqueConnection))
                 {
                     totalUploads_++;
                 }
@@ -779,11 +788,11 @@ bool AddContentWindow::UploadAssets()
 
 void AddContentWindow::AddEntities()
 {
+/*
     AssetStoragePtr dest;
     QString storageName = CurrentStorageName();
     bool doNotAlter = storageName == cDoNotAlterAssetReferences;
-    // No upload if we don't touch asset refs
-    if (!doNotAlter)
+    if (!doNotAlter) // No upload if we don't touch asset refs
     {
         dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorageByName(storageName);
         if (!dest)
@@ -793,57 +802,29 @@ void AddContentWindow::AddEntities()
             return;
         }
     }
-
+*/
     ScenePtr destScene = scene.lock();
     if (!destScene)
     {
-        LogError("Could not add entities to scene, no scene ptr!");
+        LogError("AddContentWindow::AddEntities: No destination scene. Could not add entities!");
         return;
     }
 
-    if (!newDesc_.entities.empty())
+    if (!filteredDesc.entities.empty())
     {
-        // Create entities.
-        QList<Entity *> entities;
-        if (newDesc_.filename.endsWith(cTundraXmlFileExtension, Qt::CaseInsensitive) ||
-            newDesc_.filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
-        {
-            entities = destScene->CreateContentFromSceneDesc(newDesc_, false, AttributeChange::Default);
-        }
-        else if (newDesc_.filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
-        {
-            if (!dest)
-            {
-                LogError("AddContentWindow: Ogre .scene cannot be upload without destination asset storage.");
-                return;
-            }
-
-            QString path = QFileInfo(newDesc_.filename).dir().path();
-
-            TundraLogic::SceneImporter importer(destScene);
-            entities = importer.Import(newDesc_.filename, path, Transform(), dest->BaseURL(),
-                AttributeChange::Default, false/*clearScene*/, false);
-        }
-        else if (newDesc_.entities.isEmpty() && !newDesc_.assets.isEmpty())
-        {
-            LogError("AddContentWindow: Performing plain asset upload.");
-        }
-        else
-        {
-            LogError("AddContentWindow: Cannot figure out SceneDesc's contetnts.");
-        }
-
+        QList<Entity *> entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
         if (!entities.empty())
         {
             entitiesStatus_->setText(QString(tr("Added %1 entities to scene successfully")).arg(entities.count()));
-            entitiesStatus_->setText(QString(tr("%1/%2 entities created successfully")).arg(QString::number(entities.count()), QString::number(newDesc_.entities.count())));
+            entitiesStatus_->setText(QString(tr("%1/%2 entities created successfully")).arg(entities.count()).arg(filteredDesc.entities.count()));
             if (position != float3::zero)
                 SceneStructureModule::CentralizeEntitiesTo(position, entities);
         }
         else
         {
-            entitiesStatus_->setText(tr("No entities were created, even if the intent was to create ") + QString::number(newDesc_.entities.count()));
-            QMessageBox::warning(this, tr("Entity Creation"), tr("No entities were created, even if input had entities!"));
+            QString errorMsg = tr("No entities were created, even if the intent was to create %1 .").arg(filteredDesc.entities.count());
+            entitiesStatus_->setText(errorMsg);
+            QMessageBox::warning(this, tr("Entity Creation"), errorMsg);
             return;
         }
 
@@ -852,7 +833,6 @@ void AddContentWindow::AddEntities()
     else
         entitiesStatus_->setText(tr("No entities were selected for add"));
 
-    contentAdded_ = true; // this will be emitted on Close() for those who are interested
     cancelButton->setText(tr("Close"));
     addContentButton->setEnabled(true);
     storageComboBox->setEnabled(true);
@@ -860,44 +840,34 @@ void AddContentWindow::AddEntities()
 
 void AddContentWindow::CenterToMainWindow()
 {
-    // Center the window to main window
     if (framework->Ui()->MainWindow())
     {
         QRect mainRect = framework->Ui()->MainWindow()->rect();
         QPoint mainPos = framework->Ui()->MainWindow()->pos();
         QPoint mainCenter = mainPos + mainRect.center();
-        if ((mainCenter.y() - height()/2)>=0)
-            move(mainCenter.x() - width()/2, mainCenter.y() - height()/2);
-        else
-            move(mainCenter.x() - width()/2, 0);
+        move(mainCenter.x()-width()/2, (mainCenter.y()-height()/2) >= 0 ? mainCenter.y()-height()/2 : 0);
     }
 }
 
 void AddContentWindow::SetEntitiesVisible(bool visible)
 {
-    if (parentEntities_)
-    {
-        parentEntities_->setVisible(visible);
-        resize(width(), 200);
-        CenterToMainWindow();
-    }
+    parentEntities_->setVisible(visible);
+    resize(width(), 200);
+    CenterToMainWindow();
 }
 
 void AddContentWindow::SetAssetsVisible(bool visible)
 {
-    if (parentAssets_)
-    {
-        parentAssets_->setVisible(visible);
-        resize(width(), 200);
-        CenterToMainWindow();
-    }
+    parentAssets_->setVisible(visible);
+    resize(width(), 200);
+    CenterToMainWindow();
 }
 
 void AddContentWindow::Close()
 {
     AssetStoragePtr storage = framework->Asset()->GetAssetStorageByName(CurrentStorageName());
     QString currentStorageBaseUrl = storage ? storage->BaseURL() : "";
-    emit Completed(contentAdded_, currentStorageBaseUrl);
+    emit Completed(entitiesProgress_->value() > 0, currentStorageBaseUrl);
     close();
 }
 
