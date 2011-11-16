@@ -12,8 +12,8 @@ function init() {
     //but is apparently executed too early -- e.g. the camera is not there yet.
     //so have to wrap in a func and make a trick to run with a delay
 
-    var $ = scene.GetEntityByName; //testing jQuery style a bit :)
-    $("FreeLookCamera").placeable.transform = $("startview").placeable.transform;
+    //var $ = scene.GetEntityByName; //testing jQuery style a bit :)
+    //$("FreeLookCamera").placeable.transform = $("startview").placeable.transform;
 
     /* create all RttTargets, i.e. the component for each cam that we want image from
        note: a simpler approach might be to use a single cam that moves,
@@ -46,7 +46,7 @@ function createRttTarget(camname) {
 
     cam.GetOrCreateComponent("EC_RttTarget");
     rtt = cam.rtttarget;
-    rtt.targettexture = camname + "_tex";
+    rtt.textureName = camname + "_tex";
     rtt.size_x = 800;
     rtt.size_y = 600;
     rtt.PrepareRtt();
@@ -62,7 +62,7 @@ function setImageSource(cam) {
     rtt = cam.rtttarget;
     rtt.SetAutoUpdated(true);
 
-    var matname = rtt.targettexture + "_mat"; //XXX add mat name getter to EC_RttTarget
+    var matname = rtt.textureName + "_mat"; //XXX add mat name getter to EC_RttTarget
     me.mesh.SetMaterial(0, matname);
 
     print(me + " set to display rtt image via mat " + matname); // + " from " + cam);
@@ -78,8 +78,9 @@ function bindButton(camname, butname) {
       });
 }
 
+
 function update(frametime) {
-    var vis = renderer.IsEntityVisible(me.id);
+    var vis = true; //renderer.IsEntityVisible(me.id);
     if(rtt != null) {
         rtt.SetAutoUpdated(vis);
     }
