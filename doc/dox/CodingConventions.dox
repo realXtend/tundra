@@ -42,7 +42,7 @@ MemoryLeakCheck.h (optional)
 \endverbatim
 
 \subsection nameconvfuncparam Function Parameters
-In functions that pass output variables as parameters to the function, prefer the order <b>Inputs first, outputs last</b>.
+In functions that pass output variables as parameters to the function, prefer the order <b>inputs first, outputs last</b>.
 Matk the output variable using the appropriate <b>[out]</b> tag. If you only intend to read from a pointer or reference passed to a function, mark it const.
 
 \subsection scope Scoping and Namespaces
@@ -73,6 +73,18 @@ int someLocalVar;
 QString IComponent::typeName;
 Q_PROPERTY(QString name ...)
 \endverbatim
+
+Preprocessor macros are written in upper case with underscores:
+\verbatim
+#define SAFE_DELETE(p) { delete p; p=0; }
+\endverbatim
+
+Prepend variable names of (global) static constants with "c"-prefix:
+\verbatim
+const int cSomeConstantValue = 1;
+\endverbatim
+
+<b>Use constants instead of preprocessor macros for magic numbers/values.</b>
 
 \subsection signals_and_slots Signals and Slots
 When naming signals, use the signature to describe what has happened or is about to happen.
@@ -154,6 +166,21 @@ private slots:
 \endverbatim
 
 \section doc Documentation Guidelines
+
+Use the JavaDoc-style doxygen notation. Do not add extra *s on each new line of detailed documenation block. Do not place the comment block ending on a new empty line.
+Example:
+\verbatim
+/// Brief description here.
+/** Detailed description begins here.
+    And some more information here. */
+class Foo
+{
+public:
+    /// Does nothing.
+    /** @param someParam Some parameter that is used for nothing. */
+    void Bar(void *someParam);
+};
+\endverbatim
 
 All <b>public</b> classes and methods must be fully documented in English using Doxygen-compatible comments.
 Place comments mainly in the header files and not in .cpp -files. Use the <b>\@param</b> and <b>\@return</b> directives to 
