@@ -748,7 +748,6 @@ void ECBrowser::CreateAttribute()
     newAttrDialog.setModal(true);
     newAttrDialog.setWindowFlags(Qt::Tool);
     newAttrDialog.setWindowTitle(tr("Create New Attribute"));
-    newAttrDialog.setStyleSheet("font-size: 9pt;");
 
     QPushButton *buttonCreate = new QPushButton(tr("Create"));
     QPushButton *buttonCancel = new QPushButton(tr("Cancel"));

@@ -15,7 +15,6 @@ AddEntityDialog::AddEntityDialog(QWidget *parent, Qt::WindowFlags flags) :
     QDialog(parent, flags)
 {
     setModal(true);
-    setStyleSheet("font-size: 9pt;");
     setWindowTitle(tr("Create New Entity"));
 
     if (graphicsProxyWidget())
