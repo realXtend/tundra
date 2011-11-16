@@ -118,7 +118,23 @@ KristalliProtocolModule::~KristalliProtocolModule()
 
 void KristalliProtocolModule::Load()
 {
-    kNet::SetLogChannels(kNet::LogInfo | kNet::LogError | kNet::LogUser); // Enable all log channels.
+    // Enable log channels according to Tundras --loglevel input param.
+    // For 'info' that is the most usable mode remove some of the spam from kNet.
+    // If the log level is not given default to more information (even if default is 'info').
+    // @todo Remove kNet::LogInfo from the default mode when the info is no longer needed for tundra console.
+    if (GetFramework()->HasCommandLineParameter("--loglevel"))
+    {
+        QString logLevel = GetFramework()->CommandLineParameters("--loglevel").first().toLower();
+        if (logLevel == "info")
+            kNet::SetLogChannels(kNet::LogError | kNet::LogUser);
+        else if (logLevel == "debug")
+            kNet::SetLogChannels(kNet::LogInfo | kNet::LogError | kNet::LogUser | kNet::LogVerbose); 
+        else // info
+            kNet::SetLogChannels(kNet::LogInfo | kNet::LogError | kNet::LogUser); 
+    }
+    // Enable all log channels.
+    else
+        kNet::SetLogChannels(kNet::LogInfo | kNet::LogError | kNet::LogUser); 
 }
 
 void KristalliProtocolModule::Unload()
@@ -281,10 +297,12 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
         throw Exception(("Failed to start server on port " + ToString((int)port) + ". Please make sure that the port is free and not used by another application. The program will now abort.").c_str());
     }
     
+    std::cout << std::endl;
     ::LogInfo("Server started");
     ::LogInfo(QString("* Port     : ") + QString::number(port));
     ::LogInfo(QString("* Protocol : ") + (transport == kNet::SocketOverUDP ? "UDP" : "TCP"));
     ::LogInfo(QString("* Headless : ") + (framework_->IsHeadless() == true ? "True" : "False"));
+    std::cout << std::endl;
     return true;
 }
 
@@ -319,7 +337,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     if (source->GetSocket() && source->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
         source->GetSocket()->SetNaglesAlgorithmEnabled(false);
 
-    ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
+    ::LogDebug("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     emit ClientConnectedEvent(connection.get());
 }
@@ -328,16 +346,17 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
 {
     // Delete from connection list if it was a known user
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    {
         if ((*iter)->connection == source)
         {
             emit ClientDisconnectedEvent(iter->get());
             
-            ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
+            ::LogDebug("User disconnected, connection ID " + ToString((int)(*iter)->userID));
             connections.erase(iter);
             return;
         }
-
-        ::LogInfo("Unknown user disconnected");
+    }
+    ::LogWarning("User without a known UserConnection* disconnected!");
 }
 
 void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t id, const char *data, size_t numBytes)
