@@ -10,7 +10,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="196.82,81.1205,-89.9587,-8.38785,65.2963,73.7104,10,10,10" name="Transform"/>
+   <attribute value="196.82,81.1205,-89.9587,-8.38782,65.2963,73.7104,10,10,10" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
@@ -142,7 +142,7 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="152.921,81.3148,100.812,66.4024,-1.85023,-79.9857,10,10,10" name="Transform"/>
+   <attribute value="211.606,86.7949,-106.824,-14.7,-221.7,0,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
@@ -150,7 +150,7 @@
    <attribute value="" name="Parent bone name"/>
   </component>
   <component type="EC_RttTarget" sync="1">
-   <attribute value="RttTex" name="Texture name"/>
+   <attribute value="box_red_cam_tex" name="Texture name"/>
    <attribute value="800" name="Texture width"/>
    <attribute value="600" name="Texture height"/>
   </component>
@@ -168,7 +168,7 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="46.4687,138.25,99.4592,50.5024,-1.85023,54.7143,10,10,10" name="Transform"/>
+   <attribute value="41.9382,59.7524,-167.686,-10.2,-256.8,0,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
@@ -194,7 +194,7 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="6.06757,76.3246,87.0293,61.6024,-1.85023,-236.886,10,10,10" name="Transform"/>
+   <attribute value="-60.8184,58.7695,-50.4697,-5.4,-107.7,0,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
@@ -238,7 +238,7 @@
  </entity>
  <entity id="9" sync="1">
   <component type="EC_Placeable" sync="1">
-   <attribute value="0,78,-200,90,0,0,133,100,100" name="Transform"/>
+   <attribute value="0,78,-200,90,0,180,133,100,100" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
@@ -293,7 +293,7 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Terrain" sync="1">
-   <attribute value="-127,0,-255,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="-127,0,-192,0,0,0,1,1,1" name="Transform"/>
    <attribute value="24" name="Grid Width"/>
    <attribute value="24" name="Grid Height"/>
    <attribute value="0.0500000007" name="Tex. U scale"/>
@@ -358,6 +358,54 @@
    <attribute value="1" name="Selection layer"/>
    <attribute value="" name="Parent entity ref"/>
    <attribute value="" name="Parent bone name"/>
+  </component>
+ </entity>
+ <entity id="-2147483646" sync="0">
+  <component type="EC_Script" sync="1">
+   <attribute value="local://freelookcamera.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_Camera" sync="1">
+   <attribute value="0.000000 1.000000 0.000000" name="Up vector"/>
+   <attribute value="0.100000001" name="Near plane"/>
+   <attribute value="2000" name="Far plane"/>
+   <attribute value="45" name="Vertical FOV"/>
+   <attribute value="" name="Aspect ratio"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-190.456,198.029,44.5078,-21.6,-408.9,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="FreeLookCamera" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_InputMapper" sync="1">
+   <attribute value="EC_InputMapper" name="Input context name"/>
+   <attribute value="101" name="Input context priority"/>
+   <attribute value="false" name="Take keyboard events over Qt"/>
+   <attribute value="true" name="Take mouse events over Qt"/>
+   <attribute value="1" name="Action execution type"/>
+   <attribute value="false" name="Key modifiers enable"/>
+   <attribute value="true" name="Enable actions"/>
+   <attribute value="true" name="Trigger on keyrepeats"/>
+   <attribute value="false" name="Suppress used keyboard events"/>
+   <attribute value="false" name="Suppress used mouse events"/>
+  </component>
+  <component type="EC_RttTarget" sync="1">
+   <attribute value="FreeLookCamera_tex" name="Texture name"/>
+   <attribute value="400" name="Texture width"/>
+   <attribute value="300" name="Texture height"/>
+  </component>
+  <component type="EC_SoundListener" sync="0">
+   <attribute value="true" name="active"/>
   </component>
  </entity>
 </scene>
