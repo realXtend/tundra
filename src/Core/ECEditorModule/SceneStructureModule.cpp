@@ -102,20 +102,13 @@ void SceneStructureModule::Initialize()
         this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
 }
 
-QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene)
+void SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)
 {
-    return InstantiateContent(QStringList(filename), worldPos, clearScene);
-}
-
-QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)
-{
-    QList<Entity *> ret;
-
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("SceneStructureModule::InstantiateContent: Could not retrieve main camera scene.");
-        return ret;
+        return;
     }
 
     QList<SceneDesc> sceneDescs;
@@ -188,16 +181,12 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
                 std::vector<AssImp::MeshData> meshNames;
                 assimporter.GetMeshData(filename, meshNames);
 
-                TundraLogic::SceneImporter sceneimporter(scene);
+                TundraLogic::SceneImporter sceneImporter(scene->shared_from_this());
                 for(size_t i=0 ; i<meshNames.size() ; ++i)
-                {
-                    EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
-                        std::string(), "local://", AttributeChange::Default, false, meshNames[i].name_.toStdString());
-                    if (entity)
-                        ret.append(entity.get());
-                }
+                    sceneImporter.ImportMesh(meshNames[i].file_, dirname, meshNames[i].transform_,
+                        "", "local://", AttributeChange::Default, false, meshNames[i].name_);
 
-                return ret;
+                return;
             }
 #endif
         }
@@ -211,11 +200,11 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
             addContent->SetContentPosition(worldPos);
         addContent->show();
     }
+}
 
-    /** \todo this is always empty list of entities, remove (?!) as we actually don't know the entity count yet.
-     *  it is known only after the add content window selections and processing has been done 
-     */
-    return ret;
+void SceneStructureModule::InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene)
+{
+    return InstantiateContent(QStringList(filename), worldPos, clearScene);
 }
 
 void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<Entity *> &entities)
@@ -642,7 +631,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
             files.append(fileRef);
         }
 
-        importedEntities.append(InstantiateContent(files, worldPos, false));
+        InstantiateContent(files, worldPos, false);
 
         // Calculate import pivot and offset for new content
         //if (importedEntities.size())
