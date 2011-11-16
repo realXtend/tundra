@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   AddContentWindow.h
- *  @brief  Window for adding new content and assets.
+ *  @brief  Window for adding new content and uploading assets.
  */
 
 #pragma once
@@ -21,7 +21,7 @@ class QTreeWidgetItem;
 class QProgressBar;
 class QLabel;
 
-/// Window for adding new content and assets.
+/// Window for adding new content and uploading assets.
 /** The window is modal and is deleted when it's closed. */
 class AddContentWindow : public QWidget
 {
@@ -97,16 +97,16 @@ private:
     float3 position; ///< Centralization position for instantiated context (if used).
 
     // Uploading
-    QLabel *uploadStatus_;
-    QProgressBar *uploadProgress_;
+    QLabel *uploadStatusLabel;
+    QProgressBar *uploadProgressBar;
     int progressStep_;
     int failedUploads_;
-    int successfullUploads_;
+    int successfulUploads;
     int totalUploads_;
 
     // Entities add
-    QLabel *entitiesStatus_;
-    QProgressBar *entitiesProgress_;
+    QLabel *entityStatusLabel;
+    QProgressBar *entityProgressBar;
 
     // Parent widget
     QWidget *parentEntities_;
@@ -168,7 +168,7 @@ private slots:
     /** @param transfer Failed transfer. */
     void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
 
-    void UpdateUploadStatus(bool succesfull, const QString &assetRef);
+    void UpdateUploadStatus(bool successful, const QString &assetRef);
 
     void CheckUploadTotals();
 };

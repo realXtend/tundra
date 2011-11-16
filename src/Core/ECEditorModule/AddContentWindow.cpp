@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   AddContentWindow.cpp
- *  @brief  Window for adding new content and assets.
+ *  @brief  Window for adding new content and uploading assets.
  */
 
 #include "StableHeaders.h"
@@ -154,7 +154,7 @@ AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget 
     position(float3::zero),
     progressStep_(0),
     failedUploads_(0),
-    successfullUploads_(0),
+    successfulUploads(0),
     totalUploads_(0)
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
@@ -209,15 +209,15 @@ AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget 
     QSpacerItem *middleSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     QVBoxLayout *entitiesProgressLayout = new QVBoxLayout();
-    entitiesStatus_ = new QLabel();
-    entitiesProgress_ = new QProgressBar();
-    entitiesProgress_->setFixedHeight(20);
+    entityStatusLabel = new QLabel();
+    entityProgressBar = new QProgressBar();
+    entityProgressBar->setFixedHeight(20);
 
     entitiesLayout->addWidget(entityLabel);
     entitiesLayout->addLayout(entitiesProgressLayout);
     entitiesLayout->addWidget(entityTreeWidget);
-    entitiesProgressLayout->addWidget(entitiesStatus_);
-    entitiesProgressLayout->addWidget(entitiesProgress_);
+    entitiesProgressLayout->addWidget(entityStatusLabel);
+    entitiesProgressLayout->addWidget(entityProgressBar);
     entityButtonsLayout->addWidget(selectAllEntitiesButton);
     entityButtonsLayout->addWidget(deselectAllEntitiesButton);
     entityButtonsLayout->addSpacerItem(entityButtonSpacer);
@@ -251,14 +251,14 @@ AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget 
     storageComboBox = new QComboBox;
 
     QVBoxLayout *uploadLayout = new QVBoxLayout();
-    uploadStatus_ = new QLabel();
-    uploadProgress_ = new QProgressBar();
-    uploadProgress_->setFixedHeight(20);
+    uploadStatusLabel = new QLabel();
+    uploadProgressBar = new QProgressBar();
+    uploadProgressBar->setFixedHeight(20);
 
     GenerateStorageComboBoxContents();
 
-    uploadLayout->addWidget(uploadStatus_);
-    uploadLayout->addWidget(uploadProgress_);
+    uploadLayout->addWidget(uploadStatusLabel);
+    uploadLayout->addWidget(uploadProgressBar);
 
     assetsLayout->addWidget(assetLabel);
     assetsLayout->addLayout(uploadLayout);
@@ -272,10 +272,10 @@ AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget 
     assetsLayout->insertLayout(-1, assetButtonsLayout);
     layout->addWidget(parentAssets_);
 
-    uploadStatus_->hide();
-    uploadProgress_->hide();
-    entitiesStatus_->hide();
-    entitiesProgress_->hide();
+    uploadStatusLabel->hide();
+    uploadProgressBar->hide();
+    entityStatusLabel->hide();
+    entityProgressBar->hide();
 
     // General controls
     addContentButton = new QPushButton(tr("Add content"));
@@ -593,10 +593,10 @@ void AddContentWindow::DeselectAllAssets()
 
 void AddContentWindow::AddContent()
 {
-    uploadStatus_->setText("");
-    uploadProgress_->setValue(0);
-    entitiesStatus_->setText(tr("Waiting for asset uploads to finish..."));
-    entitiesProgress_->setValue(0);
+    uploadStatusLabel->setText("");
+    uploadProgressBar->setValue(0);
+    entityStatusLabel->setText(tr("Waiting for asset uploads to finish..."));
+    entityProgressBar->setValue(0);
     bool uploadFailed = false;
     if (CreateNewDesctiption())
     {
@@ -605,19 +605,19 @@ void AddContentWindow::AddContent()
         {
             if (totalUploads_ > 0)
             {
-                uploadStatus_->show();
-                uploadProgress_->show();
+                uploadStatusLabel->show();
+                uploadProgressBar->show();
             }
             if (!filteredDesc.entities.empty())
             {
-                entitiesStatus_->show();
-                entitiesProgress_->show();
+                entityStatusLabel->show();
+                entityProgressBar->show();
             }
 
             addContentButton->setEnabled(false);
             storageComboBox->setEnabled(false);
 
-            // Upload succesful, save most recently used storage to config.
+            // Upload successful, save most recently used storage to config.
             ConfigData configData(ConfigAPI::FILE_FRAMEWORK, cAddContentDialogSetting, cRecentStorageSetting, CurrentStorageName());
             framework->Config()->Set(configData);
         }
@@ -644,6 +644,15 @@ bool AddContentWindow::CreateNewDesctiption()
             GenerateStorageComboBoxContents(); // Regenerate storage combo box items to make sure that we're up-to-date.
             return false;
         }
+    }
+
+    if (dest && !dest->Writable())
+    {
+        QString errorMsg = tr("Read-only storage %1 cannot be used for asset upload.").arg(dest->Name());
+        uploadStatusLabel->setText(errorMsg);
+        uploadStatusLabel->show();
+        LogError("AddContentWindow::CreateNewDesctiption: " + errorMsg);
+        return false;
     }
 
     // Filter which entities will be created and which assets will be uploaded.
@@ -736,6 +745,15 @@ bool AddContentWindow::UploadAssets()
         }
     }
 
+    if (dest && !dest->Writable())
+    {
+        QString errorMsg = tr("Read-only storage %1 cannot be used for asset upload.").arg(dest->Name());
+        uploadStatusLabel->setText(errorMsg);
+        uploadStatusLabel->show();
+        LogError("AddContentWindow::UploadAssets: " + errorMsg);
+        return false;
+    }
+
     // Upload
     if (!filteredDesc.assets.empty())
     {
@@ -744,7 +762,7 @@ bool AddContentWindow::UploadAssets()
         totalUploads_ = 0;
         progressStep_ = 0;
         failedUploads_ = 0;
-        successfullUploads_ = 0;
+        successfulUploads = 0;
         foreach(const AssetDesc &ad, filteredDesc.assets)
         {
             try
@@ -788,21 +806,6 @@ bool AddContentWindow::UploadAssets()
 
 void AddContentWindow::AddEntities()
 {
-/*
-    AssetStoragePtr dest;
-    QString storageName = CurrentStorageName();
-    bool doNotAlter = storageName == cDoNotAlterAssetReferences;
-    if (!doNotAlter) // No upload if we don't touch asset refs
-    {
-        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorageByName(storageName);
-        if (!dest)
-        {
-            LogError("AddContentWindow::AddEntities: Could not retrieve asset storage " + storageName + ".");
-            GenerateStorageComboBoxContents(); // Regenerate storage combo box items to make sure that we're up-to-date.
-            return;
-        }
-    }
-*/
     ScenePtr destScene = scene.lock();
     if (!destScene)
     {
@@ -815,23 +818,23 @@ void AddContentWindow::AddEntities()
         QList<Entity *> entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
         if (!entities.empty())
         {
-            entitiesStatus_->setText(QString(tr("Added %1 entities to scene successfully")).arg(entities.count()));
-            entitiesStatus_->setText(QString(tr("%1/%2 entities created successfully")).arg(entities.count()).arg(filteredDesc.entities.count()));
+            entityStatusLabel->setText(QString(tr("Added %1 entities to scene successfully")).arg(entities.count()));
+            entityStatusLabel->setText(QString(tr("%1/%2 entities created successfully")).arg(entities.count()).arg(filteredDesc.entities.count()));
             if (position != float3::zero)
                 SceneStructureModule::CentralizeEntitiesTo(position, entities);
         }
         else
         {
             QString errorMsg = tr("No entities were created, even if the intent was to create %1 .").arg(filteredDesc.entities.count());
-            entitiesStatus_->setText(errorMsg);
+            entityStatusLabel->setText(errorMsg);
             QMessageBox::warning(this, tr("Entity Creation"), errorMsg);
             return;
         }
 
-        entitiesProgress_->setValue(100);
+        entityProgressBar->setValue(100);
     }
     else
-        entitiesStatus_->setText(tr("No entities were selected for add"));
+        entityStatusLabel->setText(tr("No entities were selected for add"));
 
     cancelButton->setText(tr("Close"));
     addContentButton->setEnabled(true);
@@ -867,7 +870,7 @@ void AddContentWindow::Close()
 {
     AssetStoragePtr storage = framework->Asset()->GetAssetStorageByName(CurrentStorageName());
     QString currentStorageBaseUrl = storage ? storage->BaseURL() : "";
-    emit Completed(entitiesProgress_->value() > 0, currentStorageBaseUrl);
+    emit Completed(entityProgressBar->value() > 0, currentStorageBaseUrl);
     close();
 }
 
@@ -888,8 +891,16 @@ void AddContentWindow::GenerateStorageComboBoxContents()
     std::vector<AssetStoragePtr> storages = framework->Asset()->GetAssetStorages();
     for(size_t i = 0; i < storages.size(); ++i)
     {
-        storageComboBox->addItem(storages[i]->ToString(), storages[i]->Name());
-        if (def && storages[i] == def)
+        bool readOnly = !storages[i]->Writable();
+        storageComboBox->addItem(storages[i]->ToString() + (readOnly ? " (read-only)" : ""), storages[i]->Name());
+        if (readOnly) // Mark read-only storages as gray.
+        {
+            ///\todo Make the font gray and ideally disable the possibility to select the item altogether.
+            QFont font = QApplication::font();
+            font.setItalic(true);
+            storageComboBox->setItemData(i+2, font, Qt::FontRole); // i+2 as we already have the DefaultStorage and DoNotAlterAssetReferences
+        }
+        if (def && storages[i] == def) // Bold default storage.
         {
             QFont font = QApplication::font();
             font.setBold(true);
@@ -916,6 +927,18 @@ void AddContentWindow::RewriteDestinationNames()
         }
     }
 
+    if (dest && !dest->Writable())
+    {
+        QString errorMsg = tr("Read-only storage %1 cannot be used for asset upload.").arg(dest->Name());
+        uploadStatusLabel->setText(errorMsg);
+        uploadStatusLabel->show();
+        LogError("AddContentWindow::RewriteDestinationNames: " + errorMsg);
+        return;
+    }
+
+    uploadStatusLabel->setText("");
+    uploadStatusLabel->hide();
+
     assetTreeWidget->setSortingEnabled(false);
 
     QTreeWidgetItemIterator it(assetTreeWidget);
@@ -929,10 +952,8 @@ void AddContentWindow::RewriteDestinationNames()
             else if (dest)
                 aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(cColumnAssetDestName).trimmed());
             aitem->setText(cColumnAssetDestName, aitem->desc.destinationName);
-            
             aitem->setDisabled(doNotAlter ? true : false);
-            // Deselect possible disabled items
-            if (aitem->isDisabled() && aitem->isSelected())
+            if (aitem->isDisabled() && aitem->isSelected()) // Deselect possible disabled items
                 aitem->setSelected(false);
         }
         ++it;
@@ -943,9 +964,9 @@ void AddContentWindow::RewriteDestinationNames()
 
 void AddContentWindow::HandleUploadCompleted(IAssetUploadTransfer *transfer)
 {
-    successfullUploads_++;
-    uploadStatus_->setText("Uploaded " + transfer->AssetRef());
-    uploadProgress_->setValue(uploadProgress_->value() + progressStep_);
+    successfulUploads++;
+    uploadStatusLabel->setText("Uploaded " + transfer->AssetRef());
+    uploadProgressBar->setValue(uploadProgressBar->value() + progressStep_);
     UpdateUploadStatus(true, transfer->AssetRef());
     CheckUploadTotals();
 }
@@ -953,16 +974,16 @@ void AddContentWindow::HandleUploadCompleted(IAssetUploadTransfer *transfer)
 void AddContentWindow::HandleUploadFailed(IAssetUploadTransfer *transfer)
 {
     failedUploads_++;
-    uploadStatus_->setText("Upload failed for " + transfer->AssetRef());
-    uploadProgress_->setValue(uploadProgress_->value() + progressStep_);
+    uploadStatusLabel->setText("Upload failed for " + transfer->AssetRef());
+    uploadProgressBar->setValue(uploadProgressBar->value() + progressStep_);
     UpdateUploadStatus(false, transfer->AssetRef());
     CheckUploadTotals();
 }
 
-void AddContentWindow::UpdateUploadStatus(bool succesfull, const QString &assetRef)
+void AddContentWindow::UpdateUploadStatus(bool successful, const QString &assetRef)
 {
     QColor statusColor;
-    if (succesfull)
+    if (successful)
         statusColor = QColor(0, 255, 0, 75);
     else
         statusColor = QColor(255, 0, 0, 75);
@@ -989,11 +1010,9 @@ void AddContentWindow::UpdateUploadStatus(bool succesfull, const QString &assetR
 
 void AddContentWindow::CheckUploadTotals()
 {
-    int totalNow = successfullUploads_ + failedUploads_;
-    if (totalNow == totalUploads_)
+    if (successfulUploads + failedUploads_ == totalUploads_)
     {
-        uploadStatus_->setText(QString(tr("%1/%2 uploads completed successfully")).arg(QString::number(successfullUploads_), QString::number(totalUploads_)));
+        uploadStatusLabel->setText(QString(tr("%1/%2 uploads completed successfully")).arg(successfulUploads).arg(totalUploads_));
         AddEntities();
     }
 }
-
