@@ -21,22 +21,22 @@ me.Action("MouseHoverOut").Triggered.connect(MouseOut);
 //Checking if EC_Hoveringtext component has added after EC_Script to Entity
 function CheckComponent(entity, component, type) {
     if (component.typeName == "EC_HoveringText")
-	GetHoveringTextComponent();
+        GetHoveringTextComponent();
 }
 
 function GetHoveringTextComponent() {
     if (comp == null) {
-  	comp = me.hoveringtext;
-  	if (comp != null) {
-    	    var mode = comp.GetUpdateMode();
-    	    mode.value = 2;
-    	    comp.SetUpdateMode(mode);
-    		
-    	    bc = comp.backgroundColorAttr;
-    	    fc = comp.fontColorAttr;
-    	    origBA = bc.a; 
-    	    origFA = fc.a;
-	}
+        comp = me.hoveringtext;
+        if (comp != null) {
+            var mode = comp.GetUpdateMode();
+            mode.value = 2;
+            comp.SetUpdateMode(mode);
+                
+            bc = comp.backgroundColor;
+            fc = comp.fontColor;
+            origBA = bc.a; 
+            origFA = fc.a;
+        }
     }
 }
 
@@ -48,26 +48,26 @@ function Update(frametime) {
     fc = comp.fontColor;
 
     if(bMouseIn) {
-	bc.a += frametime * speed;
-	fc.a += frametime * speed;
-    }		
+        bc.a += frametime * speed;
+        fc.a += frametime * speed;
+    }           
     else {
-	bc.a -= frametime * speed;
-	fc.a -= frametime * speed;
+        bc.a -= frametime * speed;
+        fc.a -= frametime * speed;
     }
-	
+        
     if (bc.a >=1.0)
-	bc.a = 1.0;
-	
+        bc.a = 1.0;
+        
     if(bc.a <=0.0)
-	bc.a = 0.0;
-		
+        bc.a = 0.0;
+                
     if (fc.a >=1.0)
-	fc.a = 1.0;
-	
+        fc.a = 1.0;
+        
     if(fc.a <=0.0)
-	fc.a = 0.0;
-	
+        fc.a = 0.0;
+        
     comp.backgroundColor = bc;
     comp.fontColor = fc;
 }
@@ -82,13 +82,13 @@ function MouseOut() {
     print("Tooltip: Mouse OUT");
 }
 
-function OnScriptDestroyed() {	
+function OnScriptDestroyed() {  
   if (comp == null)
       return;
     
     //Return original values
     bc.a = origBA;
     fc.a = origFA;
-    comp.backgroundColorAttr = bc; 
-    comp.fontColorAttr = fc;
+    comp.backgroundColor = bc; 
+    comp.fontColor = fc;
 }
