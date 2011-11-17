@@ -208,7 +208,7 @@ void AssetsWindow::Initialize()
     // Append asset type if we're viewing only assets of specific type.
     if (!assetType.isEmpty())
         setWindowTitle(windowTitle() + ": " + assetType);
-    resize(325, 400);
+    resize(300, 400);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);

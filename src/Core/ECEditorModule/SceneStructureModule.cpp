@@ -320,29 +320,6 @@ void SceneStructureModule::ToggleSceneStructureWindow()
 
     // Reflect possible current selection of EC editor to Scene Structure window right away.
     SyncSelectionWithEcEditor(framework_->GetModule<ECEditorModule>()->ActiveEditor());
-
-    // Position the scene struct window to be centered on the left side of the main window.
-    if (GetFramework()->Ui()->MainWindow())
-    {
-        QRect mainWinGeom = GetFramework()->Ui()->MainWindow()->geometry();
-        QPoint movePos(mainWinGeom.topLeft().x() + 25, (mainWinGeom.topLeft().y() + (mainWinGeom.height() / 2)) - (sceneWindow->height() / 2));
-        sceneWindow->move(movePos);
-
-        // Move so the asset window is not blocking us
-        if (!assetsWindow.isNull() && assetsWindow->frameGeometry().contains(sceneWindow->geometry().center()))
-        {
-            QSize desktopSize(GetFramework()->Ui()->MainWindow()->DesktopWidth(), GetFramework()->Ui()->MainWindow()->DesktopHeight());
-            if (assetsWindow->frameGeometry().topRight().x() + sceneWindow->frameGeometry().width() < desktopSize.width())
-                sceneWindow->move(assetsWindow->frameGeometry().topRight());
-            else if (assetsWindow->frameGeometry().topLeft().x() - sceneWindow->frameGeometry().width() > 0)
-            {
-                movePos = assetsWindow->frameGeometry().topLeft() - QPoint(sceneWindow->frameGeometry().width(), 0);
-                sceneWindow->move(movePos);
-            }
-            else
-                sceneWindow->move(movePos + QPoint(75, 75));
-        }
-    }
 }
 
 void SceneStructureModule::ToggleAssetsWindow()
@@ -359,29 +336,6 @@ void SceneStructureModule::ToggleAssetsWindow()
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
-
-    // Position the asset window to be centered on the left side of the main window.
-    if (GetFramework()->Ui()->MainWindow())
-    {
-        QRect mainWinGeom = GetFramework()->Ui()->MainWindow()->geometry();
-        QPoint movePos(mainWinGeom.topLeft().x() + 25, (mainWinGeom.topLeft().y() + (mainWinGeom.height() / 2)) - (assetsWindow->height() / 2));
-        assetsWindow->move(movePos);
-
-        // Move so the scene struct window is not blocking us
-        if (!sceneWindow.isNull() && sceneWindow->frameGeometry().contains(assetsWindow->geometry().center()))
-        {
-            QSize desktopSize(GetFramework()->Ui()->MainWindow()->DesktopWidth(), GetFramework()->Ui()->MainWindow()->DesktopHeight());
-            if (sceneWindow->frameGeometry().topRight().x() + assetsWindow->frameGeometry().width() < desktopSize.width())
-                assetsWindow->move(sceneWindow->frameGeometry().topRight());
-            else if (sceneWindow->frameGeometry().topLeft().x() - assetsWindow->frameGeometry().width() > 0)
-            {
-                movePos = sceneWindow->frameGeometry().topLeft() - QPoint(assetsWindow->frameGeometry().width(), 0);
-                assetsWindow->move(movePos);
-            }
-            else
-                assetsWindow->move(movePos + QPoint(75, 75));
-        }
-    }
 }
 
 void SceneStructureModule::HandleKeyPressed(KeyEvent *e)

@@ -94,7 +94,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     layout->setContentsMargins(0,0,0,0);
     setLayout(layout);
     setWindowTitle(contents->windowTitle());
-    resize(325, 400);
+    resize(contents->size());
 
     toggleEntitiesButton = findChild<QPushButton *>("but_show_entities");
     entityList = findChild<QListWidget*>("list_entities");
