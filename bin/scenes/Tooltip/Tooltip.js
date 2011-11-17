@@ -28,9 +28,9 @@ function GetHoveringTextComponent() {
     if (comp == null) {
         comp = me.hoveringtext;
         if (comp != null) {
-            var mode = comp.GetUpdateMode();
+            var mode = comp.updateMode;
             mode.value = 2;
-            comp.SetUpdateMode(mode);
+            comp.updateMode = mode;
                 
             bc = comp.backgroundColor;
             fc = comp.fontColor;
