@@ -84,10 +84,6 @@ public slots:
     /** @param components List of component pointers. */
     void CreateXmlEditor(const QList<ComponentPtr> &components);
 
-    /// Repositions the given editor relative to an active SceneStructureWindow or MainWindow.
-    /** @param editor ECEditorWindow. */
-    void RepositionEditor(ECEditorWindow *editor);
-
 signals:
     /// Signal is emitted when active ECEditorWindow's selection has changed.
     /** @param compType Selected item's component type name.

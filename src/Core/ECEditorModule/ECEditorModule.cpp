@@ -147,35 +147,6 @@ void ECEditorModule::ShowEditorWindow()
     activeEditor->setAttribute(Qt::WA_DeleteOnClose);
     activeEditor->show();
     activeEditor->activateWindow();
-
-    RepositionEditor(activeEditor);
-}
-
-void ECEditorModule::RepositionEditor(ECEditorWindow *editor)
-{
-    if (!editor)
-        return;
-    if (!GetFramework()->Ui()->MainWindow())
-        return;
-    
-    QRect editorGeom = editor->frameGeometry();
-    QSize desktopSize(GetFramework()->Ui()->MainWindow()->DesktopWidth(), GetFramework()->Ui()->MainWindow()->DesktopHeight());
-
-    QWidget *sceneWidget = GetFramework()->Ui()->MainWindow()->findChild<QWidget*>("SceneStructureWidget");
-    if (sceneWidget)
-    {
-        QRect sceneWidgetGeom = sceneWidget->frameGeometry();
-        if (sceneWidgetGeom.topRight().x() + editorGeom.width() < desktopSize.width())
-            editor->move(sceneWidgetGeom.topRight());
-        else if (sceneWidgetGeom.topLeft().x() - editorGeom.width() > 0)
-            editor->move(sceneWidgetGeom.topLeft() - QPoint(editorGeom.width(), 0));
-    }
-    else
-    {
-        QRect mainWinGeom = GetFramework()->Ui()->MainWindow()->geometry();
-        QPoint movePos(mainWinGeom.topLeft().x() + 25, (mainWinGeom.topLeft().y() + (mainWinGeom.height() / 2)) - (editor->height() / 2));
-        editor->move(movePos);
-    }
 }
 
 void ECEditorModule::ShowDocumentation(const QString &symbol)
