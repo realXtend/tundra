@@ -360,6 +360,19 @@
    <attribute value="" name="Parent bone name"/>
   </component>
  </entity>
+ <entity id="15" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="sky" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_SkyX" sync="1">
+   <attribute value="false" name="Volumetric clouds"/>
+   <attribute value="0" name="Time multiplier"/>
+   <attribute value="14.000000 7.500000 20.500000" name="Time"/>
+   <attribute value="1.000000 1.000000" name="Weather (volumetric clouds only)"/>
+   <attribute value="0" name="Wind direction"/>
+  </component>
+ </entity>
  <entity id="-2147483646" sync="0">
   <component type="EC_Script" sync="1">
    <attribute value="local://freelookcamera.js" name="Script ref"/>
@@ -376,7 +389,7 @@
    <attribute value="" name="Aspect ratio"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="-190.456,198.029,44.5078,-21.6,-408.9,0,1,1,1" name="Transform"/>
+   <attribute value="-219.302,117.753,57.4871,-6.89996,-409.8,0,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
