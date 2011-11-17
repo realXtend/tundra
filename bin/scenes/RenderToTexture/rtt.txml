@@ -1,8 +1,0 @@
-<!DOCTYPE Scene>
-<scene>
- <entity id="-2147483646">
-  <component type="EC_RttTarget" sync="1"/>
-   <attribute value="RttTex1" name="Texture name"/>
- </entity>
-</scene>
-<!-- loadscene(scenes/RenderToTexture/rtt.xml, 0) -->
