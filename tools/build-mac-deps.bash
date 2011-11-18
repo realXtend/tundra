@@ -55,6 +55,7 @@ echo "==========================================================================
 NO_ARGS="0"
 REQUIRED_ARGS=1
 REQUIRED_ARGS_COUNT=0
+ERRORS_OCCURED="0"
 
 # Default values
 RELWITHDEBINFO="0"
@@ -70,65 +71,79 @@ if [ $# -eq "$NO_ARGS" ]; then
 fi
 
 echo "= Chosen options: $@"
-
+echo " "
 while [ "$1" != "" ]; do
     case $1 in
-        --help )                    fnDisplayHelpAndExit
-                                    ;;
+        -h | --help )                       fnDisplayHelpAndExit
+                                            ;;
 
-        --release-with-debug-info ) RELWITHDEBINFO="1"
-                                    ;;
+        -rwdi | --release-with-debug-info ) RELWITHDEBINFO="1"
+                                            ;;
 
-        --deps-path )               shift
-                                    if [ ! -d $1 ]; then
-                                        echo "ERROR: Bad directory for --deps-path: $1"
-                                        fnDisplayHelpAndExit
-                                    fi
-                                    REQUIRED_ARGS_COUNT=$((REQUIRED_ARGS_COUNT+1))
-                                    DEPS=$1
-                                    ;;
+        -d | --deps-path )                  shift
+                                            if [ ! -d $1 ]; then
+                                                echo "ERROR: Bad directory for --deps-path: $1"
+                                                ERRORS_OCCURED="1"
+                                                shift
+                                                continue
+                                            fi
+                                            REQUIRED_ARGS_COUNT=$((REQUIRED_ARGS_COUNT+1))
+                                            DEPS=$1
+                                            ;;
 
-        --client-path )             shift
-                                    if [ ! -d $1 ]; then
-                                        echo "ERROR: Bad directory for --client-path: $1"
-                                        fnDisplayHelpAndExit
-                                    fi
-                                    CLIENT=$1
-                                    ;;
+        -c | --client-path )                shift
+                                            if [ ! -d $1 ]; then
+                                                echo "ERROR: Bad directory for --client-path: $1"
+                                                ERRORS_OCCURED="1"
+                                                shift
+                                                continue
+                                            fi
+                                            CLIENT=$1
+                                            ;;
 
-        --qt-path )                 shift
-                                    if [ ! -d $1 ]; then
-                                        echo "ERROR: Bad directory for --qt-path: $1"
-                                        fnDisplayHelpAndExit
-                                    fi
-                                    export QTDIR=$1
-                                    ;;
+        -q | --qt-path )                    shift
+                                            if [ ! -d $1 ]; then
+                                                echo "ERROR: Bad directory for --qt-path: $1"
+                                                ERRORS_OCCURED="1"
+                                                shift
+                                                continue
+                                            fi
+                                            export QTDIR=$1
+                                            ;;
 
-        --no-run-cmake )            RUN_CMAKE="0"
-                                    ;;
+        -nc | --no-run-cmake )              RUN_CMAKE="0"
+                                            ;;
 
-        --no-run-make )             RUN_MAKE="0"
-                                    ;;
+        -nm | --no-run-make )               RUN_MAKE="0"
+                                            ;;
 
-        --number-of-processes )     shift
-                                    check=`echo $1 | awk '$0 ~/[^0-9]/ { print "NaN" }'`
-                                    if [ "$check" == "NaN" ]; then
-                                        echo "ERROR: Invalid value for --number-of-processes \"$1\""
-                                        fnDisplayHelpAndExit
-                                    fi
+        -np | --number-of-processes )       shift
+                                            check=`echo $1 | awk '$0 ~/[^0-9]/ { print "NaN" }'`
+                                            if [ "$check" == "NaN" ]; then
+                                                echo "ERROR: Invalid value for --number-of-processes \"$1\""
+                                                ERRORS_OCCURED="1"
+                                                shift
+                                                continue
+                                            fi
 
-                                    if [ $1 -gt $NPROCS ]; then
-                                        echo "WARNING: The number of processes that you specified is larger than the number of cores reported by the operating system. This may cause slow performance during the compile process"
-                                    fi
+                                            if [ $1 -gt $NPROCS ]; then
+                                                echo "WARNING: The number of processes that you specified ($1) is larger than the number of cores reported by the operating system ($NPROCS). This may cause slow performance during the compile process"
+                                            fi
 
-                                    NPROCS=$1
-                                    ;;
+                                            NPROCS=$1
+                                            ;;
 
-        * )                         echo "ERROR: Invalid option $1"
-                                    fnDisplayHelpAndExit
+        * )                                 echo "ERROR: Invalid option $1"
+                                            ERRORS_OCCURED="1"
+                                            shift
+                                            continue
     esac
     shift
 done
+
+if [ "$ERRORS_OCCURED" == "1" ]; then
+    fnDisplayHelpAndExit
+fi
 
 if [ $REQUIRED_ARGS_COUNT -ne $REQUIRED_ARGS ]; then
     echo "ERROR: One on more required options were omitted. Please try again."
@@ -137,6 +152,10 @@ fi
 
 if [ ! -d $CLIENT ]; then
     CLIENT=$DEPS/../tundra2
+fi
+
+if [ ! -d $QTDIR ]; then
+    export QTDIR=/usr/local/Trolltech/Qt-4.7.1
 fi
 
 prefix=$DEPS
@@ -153,7 +172,7 @@ if [ "$RELWITHDEBINFO" == "1" ]; then
     export CMAKE_CXX_FLAGS="-gdwarf-2 -O0"
 fi
 
-export PATH=$prefix/bin:$PATH
+export PATH=$prefix/bin:$QTDIR/bin:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
 export LDFLAGS="-L$prefix/lib -Wl,-rpath -Wl,$prefix/lib"
 export LIBRARY_PATH=$prefix/lib
@@ -195,7 +214,7 @@ else
 
     cd $unzipped
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix
-    make VERBOSE=1 -j$nprocs
+    make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi
@@ -215,7 +234,7 @@ else
 
     cd $pkgbase
     ./configure --prefix=$prefix
-    make VERBOSE=1 -j$nprocs
+    make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi
@@ -235,7 +254,7 @@ else
 
     cd $pkgbase
     ./configure --prefix=$prefix --with-ogg=$prefix --build=x86_64
-    make VERBOSE=1 -j$nprocs
+    make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi
@@ -256,7 +275,7 @@ else
 
     cd $pkgbase
     ./configure --prefix=$prefix --with-ogg=$prefix --with-vorbis=$prefix
-    make VERBOSE=1 -j$nprocs
+    make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi
@@ -272,7 +291,7 @@ else
     echo "CONFIG -= debug" >> qtpropertybrowser.pro
     ./configure -library
     qmake
-    make VERBOSE=1 -j$nprocs
+    make VERBOSE=1 -j$NPROCS
     cp ./lib/* $prefix/lib
     cp ./src/*.h $prefix/include
     cp ./src/Qt* $prefix/include
@@ -294,7 +313,7 @@ else
 
     cd $pkgbase
     ./configure --prefix=$prefix
-    make VERBOSE=1 -j$nprocs
+    make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi
@@ -314,7 +333,7 @@ else
 
     cd $pkgbase
     ./configure --prefix=$prefix
-    make VERBOSE=1 -j$nprocs
+    make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi
@@ -327,7 +346,7 @@ else
     test -d $what || git clone https://github.com/msantala/libmumbleclient.git $what
     cd $what
     cmake .
-    make VERBOSE=1 -j$nprocs
+    make VERBOSE=1 -j$NPROCS
     cp libmumbleclient.dylib $prefix/lib
     cp Mumble.pb.h $prefix/include
     mkdir $prefix/include/$what
