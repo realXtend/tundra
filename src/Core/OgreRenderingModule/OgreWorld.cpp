@@ -46,7 +46,7 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     if (!framework_->IsHeadless())
     {
         rayQuery_ = sceneManager_->createRayQuery(Ogre::Ray());
-        rayQuery_->setQueryTypeMask(Ogre::SceneManager::FX_TYPE_MASK);
+        rayQuery_->setQueryTypeMask(Ogre::SceneManager::ENTITY_TYPE_MASK | Ogre::SceneManager::FX_TYPE_MASK);
         rayQuery_->setSortByDistance(true);
 
         // If fog is FOG_NONE, force it to some default ineffective settings, because otherwise SuperShader shows just white
