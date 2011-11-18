@@ -838,7 +838,12 @@ namespace MumbleLib
 
     void Connection::SetPlaybackBufferMaxLengthMs(int length)
     {
+        if (playback_buffer_length_ms_ == length) // nothing do do
+            return;
         playback_buffer_length_ms_ = length;
+        if (users_.isEmpty()) // nothing do do
+            return;
+
         lock_users_.lockForRead();
         foreach(User* user, users_)
         {

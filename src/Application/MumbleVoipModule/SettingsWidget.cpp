@@ -51,6 +51,10 @@ namespace MumbleVoip
         connect(this->positionalAudioCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ApplyChanges()));
         connect(settings_, SIGNAL(MicrophoneLevelChanged(double)), this, SLOT(UpdateMicrophoneLevel()));
         connect(provider_, SIGNAL(destroyed()), this, SLOT(OnSessionProviderDestroyed()));
+
+        // Disable voice mode as its not used, having it on just confuses the user.
+        this->defaultVoiceMode->setCurrentIndex(static_cast<int>(Settings::ContinuousTransmission));
+        this->defaultVoiceMode->setEnabled(false);
     }
 
     void SettingsWidget::LoadInitialState()
@@ -94,6 +98,9 @@ namespace MumbleVoip
 
     void SettingsWidget::UpdateUI()
     {
+        if (!this->isVisible())
+            return;
+
         playbackBufferSizeLabel->setText(QString("%1 ms").arg(playbackBufferSlider->value(), 4));
         encodeQualityLabel->setText(QString("%1 %").arg(encodeQualitySlider->value(), 3));
         microphoneLevelLabel->setText(QString("%1 %").arg(microphoneLevelSlider->value(), 3));
