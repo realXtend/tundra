@@ -284,6 +284,15 @@ static QScriptValue LineSegment_ToLine_const(QScriptContext *context, QScriptEng
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue LineSegment_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    LineSegment This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<LineSegment>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<LineSegment>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue LineSegment_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -389,6 +398,7 @@ QScriptValue register_LineSegment_prototype(QScriptEngine *engine)
     proto.setProperty("IntersectsDisc", engine->newFunction(LineSegment_IntersectsDisc_Circle_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToRay", engine->newFunction(LineSegment_ToRay_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLine", engine->newFunction(LineSegment_ToLine_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(LineSegment_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<LineSegment>()));
     engine->setDefaultPrototype(qMetaTypeId<LineSegment>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<LineSegment*>(), proto);

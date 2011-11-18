@@ -18,7 +18,7 @@ typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 <td>
 <h2>Script</h2>
 Provides mechanism for adding scripts to entities.
-Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
+Registered by JavascriptModule and/or PythonScript::PythonScriptModule.
 
 When EC_Script has scriptRef(s) set, it will load and run the script assets in an own script engine. Optionally,
 it can define the name of the script application.
@@ -65,6 +65,7 @@ Does not emit any actions.
 class EC_Script: public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_Script", 5)
 
 public:
     /// Runmode enumeration
@@ -103,43 +104,36 @@ public:
     /// Sets new script instance.
     /** Unloads and deletes possible already existing script instance.
         @param instance Script instance.
-        @note Takes ownership of the script instace.
-    */
+        @note Takes ownership of the script instace. */
     void SetScriptInstance(IScriptInstance *instance);
 
     /// Returns the current script instance.
-    IScriptInstance *GetScriptInstance() const { return scriptInstance_; }
+    IScriptInstance *ScriptInstance() const { return scriptInstance_; }
 
     /// Set the application script component this script component has a script object created from
     void SetScriptApplication(EC_Script* app);
     
     /// Return the script application component, if it (still) exists
-    EC_Script* GetScriptApplication() const;
+    EC_Script* ScriptApplication() const;
 
     /// Set the IsServer and IsClient flags. Called by the parent scripting system, which has this knowledge
     void SetIsClientIsServer(bool isClient, bool isServer);
 
-    /// Component macro for functions.
-    COMPONENT_NAME("EC_Script", 5)
-
 public slots:
-
     /// Runs the script instance.
-    /** @param name Name of the script component, optional. The script will be run only if the component name matches.
-    */
+    /** @param name Name of the script component, optional. The script will be run only if the component name matches.*/
     void Run(const QString& name = QString());
 
     /// Stops and unloads the script.
-    /** @param name Name(s) of the script(s), optional. The script is unloaded only if the script name matches.
-    */
+    /** @param name Name(s) of the script(s), optional. The script is unloaded only if the script name matches. */
     void Unload(const QString& name = QString());
 
     /// Return the key for accessing the script engine's scriptObjects property map
-    QString GetScriptObjectKey() const { return QString::number((u64)this); }
-    
+    QString ScriptObjectKey() const { return QString::number((u64)this); }
+
     /// Check whether the script should run
     bool ShouldRun() const;
-    
+
 signals:
     /// Emitted when changed script assets are ready to run
     void ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts);
@@ -153,8 +147,7 @@ signals:
 private slots:
     /// Handles logic regarding attribute changes of this EC.
     /** @param attribute Attribute that changed.
-        @param change Change type.
-    */
+        @param change Change type. */
     void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     /// Called when a script asset has been loaded.
@@ -178,4 +171,3 @@ private:
     /// IsServer flag, for checking run mode
     bool isServer_;
 };
-

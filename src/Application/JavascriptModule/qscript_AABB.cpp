@@ -768,6 +768,15 @@ static QScriptValue AABB_Enclose_Polyhedron(QScriptContext *context, QScriptEngi
     return QScriptValue();
 }
 
+static QScriptValue AABB_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    AABB This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<AABB>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<AABB>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue AABB_Intersection_AABB_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersection_AABB_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1022,6 +1031,7 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("Intersects", engine->newFunction(AABB_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ProjectToAxis", engine->newFunction(AABB_ProjectToAxis_float3_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Enclose", engine->newFunction(AABB_Enclose_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(AABB_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersection", engine->newFunction(AABB_Intersection_AABB_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IntersectRayAABB", engine->newFunction(AABB_IntersectRayAABB_float3_float3_float_float_const, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<AABB>()));

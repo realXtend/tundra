@@ -617,6 +617,15 @@ static QScriptValue OBB_Enclose_float3(QScriptContext *context, QScriptEngine *e
     return QScriptValue();
 }
 
+static QScriptValue OBB_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    OBB This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<OBB>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<OBB>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue OBB_NumVerticesInTriangulation_int_int_int(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function OBB_NumVerticesInTriangulation_int_int_int in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -804,6 +813,7 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Enclose", engine->newFunction(OBB_Enclose_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(OBB_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<OBB>()));
     engine->setDefaultPrototype(qMetaTypeId<OBB>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<OBB*>(), proto);

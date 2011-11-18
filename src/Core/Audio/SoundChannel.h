@@ -62,17 +62,17 @@ public slots:
     void AddBuffer(AudioAssetPtr buffer);
 
     /// Adjusts range parameters of positional sound channel.
-    /** Between radiuses, attenuation will be interpolated and raised to power of rolloff
-        If outer_radius is 0, there will be no attenuation (sound is always played at gain)
+    /** Between radiuses, attenuation will be interpolated and raised to power of roll-off
+        If outer radius is 0, there will be no attenuation (sound is always played at gain)
         Also, for non-positional channels the range parameters have no effect.
-        @param inner_radius Within inner radius, sound will be played at gain
-        @param outer_radius Outside outer radius, sound will be silent
-        @param rolloff Rolloff power factor. 1.0 = linear, 2.0 = distance squared */
-    void SetRange(float inner_radius, float outer_radius, float rolloff);
+        @param innerRadius Within inner radius, sound will be played at gain
+        @param outerRadius Outside outer radius, sound will be silent
+        @param rollOff Roll-off power factor. 1.0 = linear, 2.0 = distance squared */
+    void SetRange(float innerRadius, float outerRadius, float rollOff);
 
 public:
     /// Per-frame update with new listener position
-    void Update(const float3& listener_pos);
+    void Update(const float3& listenerPos);
 
     /// Return current state of channel.
     SoundState State() const { return state_; }
@@ -85,54 +85,48 @@ public:
 
     /// Gets the channel id.
     sound_id_t ChannelId() const { return channelId; }
-    
+
     /// Adjusts positional status of channel
-    /** @param id Channel id
-        @param positional Positional status */
+    /** @param positional Positional status */
     void SetPositional(bool enable);
 
     /// Get if channel is positional.
-    bool IsPositional() { return positional_; }
+    bool IsPositional() const { return positional_; }
 
     /// Adjusts looping status of channel
-    /** @param id Channel id
-        @param looped Whether to loop */
+    /** @param looped Whether to loop */
     void SetLooped(bool enable);
 
     /// Get if channel is looped.
-    bool IsLooped() { return looped_; }
+    bool IsLooped() const { return looped_; }
 
     /// Set position
     void SetPosition(const float3& pos);
 
     /// Get position
-    float3 Position() { return position_; }
+    float3 Position() const { return position_; }
 
     /// Adjusts pitch of channel
-    /** @param id Channel id
-        @param pitch Pitch relative to sound's original pitch (1.0 = original) */
+    /** @param pitch Pitch relative to sound's original pitch (1.0 = original) */
     void SetPitch(float pitch);
 
     /// Get sound channel pitch.
-    /** @param id Channel id
-        @return Channel's pitch value. */
     float Pitch() const { return pitch_; }
 
     /// Adjusts gain of channel.
-    /** @param id Channel id
-        @param gain New gain value, 1.0 = full volume, 0.0 = silence */
+    /** @param gain New gain value, 1.0 = full volume, 0.0 = silence */
     void SetGain(float gain);
 
-    /// Get gain of channel. If channel wasn't found return -1.
-    /** @param id Channel id
-        @return Channel's gain. */
+    /// Get gain of channel.
     float Gain() const { return gain_; }
 
-    /// Set master gain.
-    void SetMasterGain(float master_gain);
+    /// Sets master gain.
+    /** Final sound volume = gain * master gain * possible distance attenuation.
+        @param gain New master gain value [0.0, 1.0]. */
+    void SetMasterGain(float masterGain);
 
     /// Get master gain.
-    float MasterGain() { return master_gain_; }
+    float MasterGain() const { return master_gain_; }
 
 private:
     /// Queue buffers and start playing
@@ -168,7 +162,7 @@ private:
     float inner_radius_;
     /// Outer radius
     float outer_radius_;
-    /// Rolloff power factor
+    /// Roll-off power factor
     float rolloff_;
     /// Last calculated attenuation factor
     float attenuation_;

@@ -47,7 +47,7 @@ void EC_Script::SetScriptApplication(EC_Script* app)
         scriptApplication_.reset();
 }
 
-EC_Script* EC_Script::GetScriptApplication() const
+EC_Script* EC_Script::ScriptApplication() const
 {
     return dynamic_cast<EC_Script*>(scriptApplication_.lock().get());
 }

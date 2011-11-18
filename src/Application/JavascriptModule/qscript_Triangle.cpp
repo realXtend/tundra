@@ -390,6 +390,15 @@ static QScriptValue Triangle_RandomPointOnEdge_LCG_const(QScriptContext *context
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Triangle_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Triangle This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Triangle>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Triangle>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Triangle_BarycentricInsideTriangle_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_BarycentricInsideTriangle_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -576,6 +585,7 @@ QScriptValue register_Triangle_prototype(QScriptEngine *engine)
     proto.setProperty("RandomPointInside", engine->newFunction(Triangle_RandomPointInside_LCG_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("RandomVertex", engine->newFunction(Triangle_RandomVertex_LCG_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("RandomPointOnEdge", engine->newFunction(Triangle_RandomPointOnEdge_LCG_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Triangle_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Triangle>()));
     engine->setDefaultPrototype(qMetaTypeId<Triangle>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Triangle*>(), proto);

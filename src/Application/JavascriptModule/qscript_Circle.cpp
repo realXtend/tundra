@@ -174,6 +174,15 @@ static QScriptValue Circle_IntersectsDisc_Ray_const(QScriptContext *context, QSc
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Circle_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Circle This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Circle>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Circle>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Circle_IntersectsFaces_manual(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Circle_IntersectsDisc_Ray_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -257,6 +266,7 @@ QScriptValue register_Circle_prototype(QScriptEngine *engine)
     proto.setProperty("ClosestPointToDisc", engine->newFunction(Circle_ClosestPointToDisc_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(Circle_Intersects_Plane_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IntersectsDisc", engine->newFunction(Circle_IntersectsDisc_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Circle_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IntersectsFaces", engine->newFunction(Circle_IntersectsFaces_manual, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Circle>()));
     engine->setDefaultPrototype(qMetaTypeId<Circle>(), proto);

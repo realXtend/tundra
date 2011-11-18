@@ -752,6 +752,31 @@ static QScriptValue float4_Equals_float_float_float_float_float_const(QScriptCon
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float4_float4_QVector4D(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_float4_QVector4D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QVector4D other = qscriptvalue_cast<QVector4D>(context->argument(0));
+    float4 ret(other);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float4_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    float4 This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<float4>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<float4>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float4_ToQVector4D_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_ToQVector4D_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4 This = qscriptvalue_cast<float4>(context->thisObject());
+    QVector4D ret = This.ToQVector4D();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4_FromScalar_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_FromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -788,6 +813,22 @@ static QScriptValue float4_RandomDir_LCG_float(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float4_FromQVector4D_QVector4D(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_FromQVector4D_QVector4D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QVector4D v = qscriptvalue_cast<QVector4D>(context->argument(0));
+    float4 ret = float4::FromQVector4D(v);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float4_FromString_QString(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_FromString_QString in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QString str = qscriptvalue_cast<QString>(context->argument(0));
+    float4 ret = float4::FromString(str);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -800,6 +841,8 @@ static QScriptValue float4_ctor(QScriptContext *context, QScriptEngine *engine)
         return float4_float4_float3_float(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float2>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
         return float4_float4_float2_float_float(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<QVector4D>(context->argument(0)))
+        return float4_float4_QVector4D(context, engine);
     printf("float4_ctor failed to choose the right function to call! Did you use 'var x = float4();' instead of 'var x = new float4();'?\n"); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
@@ -1036,6 +1079,8 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     proto.setProperty("ProjectToNorm3", engine->newFunction(float4_ProjectToNorm3_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Equals", engine->newFunction(float4_Equals_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Equals", engine->newFunction(float4_Equals_selector, 5), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(float4_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToQVector4D", engine->newFunction(float4_ToQVector4D_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<float4>()));
     engine->setDefaultPrototype(qMetaTypeId<float4>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<float4*>(), proto);
@@ -1046,6 +1091,8 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     ctor.setProperty("FromScalar", engine->newFunction(float4_FromScalar_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Lerp", engine->newFunction(float4_Lerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RandomDir", engine->newFunction(float4_RandomDir_LCG_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromQVector4D", engine->newFunction(float4_FromQVector4D_QVector4D, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromString", engine->newFunction(float4_FromString_QString, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("zero", qScriptValueFromValue(engine, float4::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("one", qScriptValueFromValue(engine, float4::one), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("unitX", qScriptValueFromValue(engine, float4::unitX), QScriptValue::Undeletable | QScriptValue::ReadOnly);
