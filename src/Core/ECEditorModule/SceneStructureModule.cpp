@@ -36,6 +36,7 @@
 #include "ECEditorModule.h"
 #include "ECEditorWindow.h"
 #include "OgreWorld.h"
+#include "ConfigAPI.h"
 
 #include <QToolTip>
 #include <QCursor>
@@ -45,6 +46,10 @@
 #endif
 
 #include "MemoryLeakCheck.h"
+
+// Shortcuts for config keys.
+static const char *cSceneWindowPos = "scene window pos";
+static const char *cAssetWindowPos = "asset window pos";
 
 SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
@@ -70,7 +75,6 @@ void SceneStructureModule::Initialize()
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", 
         this, SLOT(ToggleAssetsWindow()));
 
-    // Don't allocate the widget memory for nothing if we are headless.
     if (!framework_->IsHeadless())
     {
         inputContext = framework_->Input()->RegisterInputContext("SceneStructureInput", 102);
@@ -81,6 +85,10 @@ void SceneStructureModule::Initialize()
         connect(gv, SIGNAL(DragLeaveEvent(QDragLeaveEvent*)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent*)));
         connect(gv, SIGNAL(DragMoveEvent(QDragMoveEvent*, QGraphicsItem*)), SLOT(HandleDragMoveEvent(QDragMoveEvent*, QGraphicsItem*)));
         connect(gv, SIGNAL(DropEvent(QDropEvent*, QGraphicsItem*)), SLOT(HandleDropEvent(QDropEvent*, QGraphicsItem*)));
+
+        // Stay in sync with EC editors' selection.
+        connect(framework_->GetModule<ECEditorModule>(), SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
+            this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
 
         toolTipWidget = new QWidget(0, Qt::ToolTip);
         toolTipWidget->setLayout(new QHBoxLayout());
@@ -95,11 +103,12 @@ void SceneStructureModule::Initialize()
         toolTip->setTextFormat(Qt::RichText);
         toolTipWidget->layout()->addWidget(toolTip);
     }
+}
 
-    // Stay in sync with EC editors' selection.
-    ECEditorModule *ecEditorModule = framework_->GetModule<ECEditorModule>();
-    connect(ecEditorModule, SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
-        this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
+void SceneStructureModule::Uninitialize()
+{
+    SaveWindowPosition(sceneWindow.data(), cSceneWindowPos);
+    SaveWindowPosition(assetsWindow.data(), cAssetWindowPos);
 }
 
 void SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)
@@ -308,7 +317,10 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     {
         sceneWindow->setVisible(!sceneWindow->isVisible());
         if (!sceneWindow->isVisible())
+        {
+            SaveWindowPosition(sceneWindow.data(), cSceneWindowPos);
             sceneWindow->close();
+        }
         return;
     }
 
@@ -316,6 +328,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     sceneWindow->setAttribute(Qt::WA_DeleteOnClose);
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(GetFramework()->Scene()->MainCameraScene()->shared_from_this());
+    LoadWindowPosition(sceneWindow.data(), cSceneWindowPos);
     sceneWindow->show();
 
     // Reflect possible current selection of EC editor to Scene Structure window right away.
@@ -328,14 +341,37 @@ void SceneStructureModule::ToggleAssetsWindow()
     {
         assetsWindow->setVisible(!assetsWindow->isVisible());
         if (!assetsWindow->isVisible())
+        {
+            SaveWindowPosition(assetsWindow.data(), cAssetWindowPos);
             assetsWindow->close();
+        }
         return;
     }
 
     assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
+    LoadWindowPosition(assetsWindow.data(), cAssetWindowPos);
     assetsWindow->show();
+}
+
+void SceneStructureModule::SaveWindowPosition(QWidget *widget, const QString &settingName)
+{
+    if (widget)
+    {
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName, widget->pos());
+        framework_->Config()->Set(configData);
+    }
+}
+
+void SceneStructureModule::LoadWindowPosition(QWidget *widget, const QString &settingName)
+{
+    if (framework_->Ui()->MainWindow() && widget)
+    {
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName);
+        QPoint pos = framework_->Config()->Get(configData).toPoint();
+        framework_->Ui()->MainWindow()->EnsurePositionWithinDesktop(widget, pos);
+    }
 }
 
 void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
@@ -344,7 +380,6 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
         return;
 
     InputAPI &input = *framework_->Input();
-
     const QKeySequence showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
     const QKeySequence showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));
     if (e->Sequence()== showSceneStruct)

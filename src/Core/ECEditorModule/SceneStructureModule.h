@@ -39,6 +39,7 @@ public:
     SceneStructureModule();
     ~SceneStructureModule();
     void Initialize();
+    void Uninitialize();
 
 public slots:
     /// Starts instantiation of new content from files to the scene by using the AddContentWindow.
@@ -67,7 +68,7 @@ public slots:
     /** @param fileRef File name or url. */
     static bool IsMaterialFile(const QString &fileRef);
 
-    /// Returns true if the @c fileRef is a http:// or https:// scema url. 
+    /// Returns true if the @c fileRef is a http:// or https:// scema url.
     /** @param fileRef File name or url. */
     static bool IsUrl(const QString &fileRef);
 
@@ -82,6 +83,9 @@ public slots:
     void ToggleAssetsWindow();
 
 private:
+    void SaveWindowPosition(QWidget *widget, const QString &settingName);
+    void LoadWindowPosition(QWidget *widget, const QString &settingName);
+
     struct SceneMaterialDropData
     {
         SceneMaterialDropData() : mesh(0) {}
