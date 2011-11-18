@@ -15,7 +15,7 @@ Tundra Python modules are application level scripts, similar to the application 
 
 These modules reside in bin/pymodules/ and the ones enabled in any *.ini file in that directory are loaded at startup (or upon pymodule reload). By convention, default.ini configures what is enabled by default in releases, and you can use whatever.ini to add your own. To register your module to the system, it must have a subclass of circuits.BaseComponent. Then add the name of that class to a .ini file. For an example of a minimal pymodule, see bin/pymodules/usr/sleeper.py . Another small example is bin/pymodules/apitest/pythonqt_gui.py which features using Tundra UI API and Qt widgets.
 
-The 'naali' namespace (Python module) is used to expose Tundra internals (the Core API) to Python, and 'PythonQt' exposes all of Qt. So you can say 'import naali' or 'import PythonQt' to get to use those.
+The 'tundra' namespace (Python module) is used to expose Tundra internals (the Core API) to Python, and 'PythonQt' exposes all of Qt. So you can say 'import tundra' or 'import PythonQt' to get to use those.
 An interactive Python shell is included, which is handy for learning and testing API commands as it has an autocompletion GUI. The shell is currently not integrated to menus, but is opened with the 'alt-.' keycombo. For reloading all pymodules live, without needing to logout or restart Tundra, press F11. To support reloading in your own module, you must implement a on_exit handler that removes references to your objects elsewhere in Tundra (typically GUI widgets you have added) -- otherwise the code does not get refreshed.
 
 Several bundled features of Tundra releases are implemented with this system, including the 3d editing of objects, Opensimulator estate management and the Ogre scene import & publishing functionality for the Taiga server. Also the Tundra web browser GUI with the basic navigation buttons, and the old means to have web pages in the scene as MediaURLs and the LSL LoadURL command are implemented in corresponding Tundra pymodules. Additionally, disabled by default, there is a web (http) server for serving live camera images, and a WebSocket server to allow connecting to Tundra from browser based clients.
@@ -67,6 +67,8 @@ Imports a QtScript extension from a shared library.
 By default, QtScripts are not able to operate on built-in Qt types, like QWidget, or QVector3D, because these types have not been introduced to the script engine. Tundra uses the <a href="http://code.google.com/p/qtscriptgenerator/">QtScriptGenerator</a> library to generate <a href="http://doc.qt.nokia.com/4.7/qtscriptextensions.html">extension libraries</a> for the built-in Qt types.
 
 Tundra does not load all the possible extension libraries to each script by default, since this was profiled to cause a major performance impact on script-heavy scenes. Instead, the script issues a set of <b>engine.ImportExtension(extensionName)</b> commands on the extensions it wants to use. The possible extensions are "qt.core", "qt.gui", "qt.network", "qt.uitools", "qt.xml", "qt.xmlpatterns", "qt.phonon", "qt.webkit".
+
+<b>Important:</b> "qt.core" must be included before including any other extensions that depend on the core extension, "qt.gui" for example, and so forth for the rest of the extensions respectively.
 
 The extensions themselves are stored in the folder /bin/qtplugins/script. The folder /bin/qtplugins is added to Qt plugin search path on startup (only necessary on Windows).
 
