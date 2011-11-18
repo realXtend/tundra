@@ -570,6 +570,11 @@ namespace OgreRenderer
         assert(view);
 
 #ifdef DIRECTX_ENABLED
+        if (!view->BackBuffer())
+        {
+            LogError("UI compositing failed! Null backbuffer!");
+            return;
+        }
         if (view->IsViewDirty() || resizedDirty)
         {
             PROFILE(Renderer_Render_QtBlit);

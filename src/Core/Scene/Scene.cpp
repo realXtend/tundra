@@ -14,6 +14,7 @@
 #include "ChangeRequest.h"
 
 #include "Framework.h"
+#include "Application.h"
 #include "AssetAPI.h"
 #include "FrameAPI.h"
 #include "Profiler.h"
@@ -583,6 +584,15 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         return QList<Entity*>();
     }
 
+    // Create all storages fro the scene file.
+    QDomElement storage_elem = scene_elem.firstChildElement("storage");
+    while(!storage_elem.isNull())
+    {
+        framework_->Asset()->DeserializeAssetStorageFromString(Application::ParseWildCardFilename(storage_elem.attribute("specifier")), false);
+        storage_elem = storage_elem.nextSiblingElement("storage");
+    }
+
+    // Spawn all entities in the scene storage.
     QDomElement ent_elem = scene_elem.firstChildElement("entity");
     while(!ent_elem.isNull())
     {
