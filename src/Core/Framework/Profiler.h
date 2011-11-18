@@ -283,16 +283,20 @@ namespace
 }
 
 /// Provides profiling access for scripts.
-/** @cond PRIVATE */
 class ProfilerQObj : public QObject
 {
     Q_OBJECT
 
 public slots:
+    /// Begins profiling block.
+    /** @param name Name of the block.
+        @see EndBlock() */
     void BeginBlock(const QString &name);
+
+    /// Ends profiling block.
+    /** @see BeginBlock() */
     void EndBlock();
 };
-/** @endcond */
 
 /// Profiler can be used to measure execution time of a block of code.
 /** Do not use this class directly for profiling, use instead PROFILE
