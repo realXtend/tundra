@@ -3,6 +3,7 @@
 #include "DebugOperatorNew.h"
 #include "SoundChannel.h"
 #include "LoggingFunctions.h"
+#include "Math/MathFunc.h"
 
 #ifndef Q_WS_MAC
 #include <AL/al.h>
@@ -14,10 +15,10 @@
 
 #include "MemoryLeakCheck.h"
 
-static const float MINIMUM_ROLLOFF = 0.1f;
-static const float DEFAULT_ROLLOFF = 2.0f;
-static const float DEFAULT_INNER_RADIUS = 1.0f;
-static const float DEFAULT_OUTER_RADIUS = 50.0f;
+static const float cMinimumRollOff = 0.1f;
+static const float cDefaultRollOff = 2.0f;
+static const float cDefaultInnerRadius = 1.0f;
+static const float cDefaultOuterRadius = 50.0f;
 
 SoundChannel::SoundChannel(sound_id_t channelId_, SoundType type) :
     type_(type),
@@ -26,9 +27,9 @@ SoundChannel::SoundChannel(sound_id_t channelId_, SoundType type) :
     gain_(1.0f),
     master_gain_(1.0f),
     position_(0.0, 0.0, 0.0), 
-    inner_radius_(DEFAULT_INNER_RADIUS),
-    outer_radius_(DEFAULT_OUTER_RADIUS),
-    rolloff_(DEFAULT_ROLLOFF),
+    inner_radius_(cDefaultInnerRadius),
+    outer_radius_(cDefaultOuterRadius),
+    rolloff_(cDefaultRollOff),
     attenuation_(1.0f),
     positional_(false),
     looped_(false),
@@ -44,7 +45,7 @@ SoundChannel::~SoundChannel()
 }
 
 void SoundChannel::Update(const float3& listener_pos)
-{   
+{
     CalculateAttenuation(listener_pos);
     SetAttenuatedGain();
     QueueBuffers();
@@ -193,36 +194,19 @@ void SoundChannel::SetPitch(float pitch)
 
 void SoundChannel::SetGain(float gain)
 {
-    if (gain < 0.0f) 
-        gain = 0.0f;
-    if (gain > 1.0f)
-        gain = 1.0f;
-        
-    gain_ = gain;
+    gain_ = Clamp(gain, 0.f, 1.f);
 }
 
-void SoundChannel::SetMasterGain(float master_gain)
+void SoundChannel::SetMasterGain(float masterGain)
 {
-    if (master_gain < 0.0f) 
-        master_gain = 0.0f;
-    if (master_gain > 1.0f)
-        master_gain = 1.0f;
-        
-    master_gain_ = master_gain;
-}    
+    master_gain_ = Clamp(masterGain, 0.f, 1.f);
+}
 
 void SoundChannel::SetRange(float inner_radius, float outer_radius, float rolloff)
 {
-    if (rolloff < MINIMUM_ROLLOFF) 
-        rolloff = MINIMUM_ROLLOFF;
-    if (inner_radius < 0.0f)
-        inner_radius = 0.0f;
-    if (outer_radius < 0.0f)
-        outer_radius = 0.0f;
-
-    inner_radius_ = inner_radius;
-    outer_radius_ = outer_radius;
-    rolloff_ = rolloff;
+    inner_radius_ = Clamp(inner_radius, 0.f, FLOAT_MAX);
+    outer_radius_ = Clamp(outer_radius, 0.f, FLOAT_MAX);
+    rolloff_ = Clamp(rolloff, cMinimumRollOff, FLOAT_MAX);
 }
 
 void SoundChannel::SetPositionAndMode()

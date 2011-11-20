@@ -449,7 +449,7 @@ bool IntersectLinePlane(const float3 &ptOnPlane, const float3 &planeNormal, cons
 	if (EqualAbs(denom, 0.f))
 		return false; // Either we have no intersection, or the whole line is on the plane. @todo distinguish these cases.
 	if (t)
-		*t = Dot(ptOnPlane - lineStart, planeNormal);
+		*t = Dot(ptOnPlane - lineStart, planeNormal) / denom;
 	return true;
 }
 

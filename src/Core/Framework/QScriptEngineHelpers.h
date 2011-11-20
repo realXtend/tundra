@@ -14,7 +14,16 @@ QScriptValue qScriptValueFromQObject(QScriptEngine *engine, Tp const &qobject)
 template <typename Tp>
 void qScriptValueToQObject(const QScriptValue &value, Tp &qobject)
 {
-    qobject = qobject_cast<Tp>(value.toQObject());
+    qobject = dynamic_cast<Tp>(value.toQObject());
+    if (!qobject)
+    {
+        // qobject_cast has been observed to fail for some metatypes, such as Entity*, so prefer dynamic_cast.
+        // However, to see that there are no regressions from that, check that if dynamic_cast fails, so does qobject_cast
+        Tp ptr = qobject_cast<Tp>(value.toQObject());
+        assert(!ptr);
+        if (ptr)
+            ::LogError("qScriptValueToQObject: dynamic_cast was null, but qobject_cast was not!");
+    }
 }
 
 template <typename Tp>

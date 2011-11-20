@@ -845,6 +845,15 @@ static QScriptValue float3x3_MulDir_float3_const(QScriptContext *context, QScrip
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float3x3_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    float3x3 This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<float3x3>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<float3x3>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float3x3_RotateX_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_RotateX_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1386,6 +1395,7 @@ QScriptValue register_float3x3_prototype(QScriptEngine *engine)
     proto.setProperty("Mul", engine->newFunction(float3x3_Mul_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MulPos", engine->newFunction(float3x3_MulPos_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MulDir", engine->newFunction(float3x3_MulDir_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(float3x3_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<float3x3>()));
     engine->setDefaultPrototype(qMetaTypeId<float3x3>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<float3x3*>(), proto);
