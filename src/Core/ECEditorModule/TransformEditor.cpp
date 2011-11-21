@@ -23,9 +23,12 @@
 #include "EC_TransformGizmo.h"
 #endif
 #include "Profiler.h"
+#include "ConfigAPI.h"
 
 #include "Application.h"
 #include <QUiLoader>
+
+static const char *cTransformEditorWindowPos = "transform editor window pos";
 
 TransformEditor::TransformEditor(const ScenePtr &scene) :
     editorSettings(0),
@@ -171,7 +174,6 @@ void TransformEditor::FocusGizmoPivotToAabbCenter()
         if (tg)
         {
             tg->SetPosition(pivotPos);
-            
             if (useLocalAxisRotation)
                 tg->SetOrientation(pivotRot);
             else
@@ -250,9 +252,7 @@ void TransformEditor::RotateTargets(const Quat &delta)
             Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
             EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
             if (parentPlaceable)
-            {
                 t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
-            }
             else
                 t.FromFloat3x4(rotation * t.ToFloat3x4());
             
@@ -347,7 +347,11 @@ void TransformEditor::CreateGizmo()
     QComboBox* axisCombo = editorSettings->findChild<QComboBox*>("axisComboBox");
     if (axisCombo)
         connect(axisCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoAxisSelected(int)));
-    
+
+    // Load position from config
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "eceditor", cTransformEditorWindowPos);
+    QPoint pos = s->GetFramework()->Config()->Get(configData).toPoint();
+    s->GetFramework()->Ui()->MainWindow()->EnsurePositionWithinDesktop(editorSettings, pos);
     editorSettings->setWindowFlags(Qt::Tool);
     editorSettings->show();
 #endif
@@ -358,7 +362,12 @@ void TransformEditor::DeleteGizmo()
     ScenePtr s = scene.lock();
     if (s && gizmo)
         s->RemoveEntity(gizmo->Id());
-    
+
+    if (editorSettings) // Save position to config.
+    {
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "eceditor", cTransformEditorWindowPos);
+        scene.lock()->GetFramework()->Config()->Set(configData, cTransformEditorWindowPos, editorSettings->pos());
+    }
     SAFE_DELETE(editorSettings);
 }
 
@@ -377,9 +386,9 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     }
 
     InputAPI *inputApi = scn->GetFramework()->Input();
-    const QKeySequence &translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
-    const QKeySequence &rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
-    const QKeySequence &scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
+    const QKeySequence translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
+    const QKeySequence rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
+    const QKeySequence scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
     QComboBox* modeCombo = editorSettings ? editorSettings->findChild<QComboBox*>("modeComboBox") : 0;
     if (modeCombo)
     {
