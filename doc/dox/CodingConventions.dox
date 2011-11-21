@@ -19,8 +19,7 @@ Small tightly related classes, which are always included together may be declare
 Internal helper structures or function objects may be declared in a <b>.cpp</b> file.
 <b>Implementations</b> should be placed in a source file called the same name as the class and placed in the folder of the subproject in question.
 Very small bodies of template and inline code may be placed inside the class header, but any larger pieces of code
-should be placed in an .inl file that matches the classes name, for example for a class NetMessage.h, the file NetMessage.inl defines
-the template and inline code that is associated to that class.
+should be placed in an .inl file that matches the classes name, for example for a class Entity introduced in Entity.h, the file Entity.inl defines the template and inline code that is associated to that class.
 
 \subsection nameconvh Header Files
 Each .cpp file should have corresponding header file, excluding certain .cpp files such as main.cpp and unit tests.
@@ -30,7 +29,7 @@ Use <b>forward declarations</b> to minimize use of \#include declarations in hea
 
 In all files, try to order your \#include statements in the following order:
 \verbatim
-StableHeaders.h (optional)
+StableHeaders.h (ONLY IN CPP FILE, if applicable)
 DebugOperatorNew.h (optional)
 file's .h (in cpp file)
 same project's .h
