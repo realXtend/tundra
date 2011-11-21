@@ -278,6 +278,15 @@ static QScriptValue Ray_ToLineSegment_float_const(QScriptContext *context, QScri
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Ray_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Ray This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Ray>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Ray>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Ray_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -387,6 +396,7 @@ QScriptValue register_Ray_prototype(QScriptEngine *engine)
     proto.setProperty("IntersectsDisc", engine->newFunction(Ray_IntersectsDisc_Circle_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLine", engine->newFunction(Ray_ToLine_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLineSegment", engine->newFunction(Ray_ToLineSegment_float_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Ray_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Ray>()));
     engine->setDefaultPrototype(qMetaTypeId<Ray>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Ray*>(), proto);

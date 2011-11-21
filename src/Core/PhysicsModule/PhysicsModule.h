@@ -14,10 +14,8 @@ namespace Ogre
     class Mesh;
 }
 
-class btVector3;
 class btTriangleMesh;
 class QScriptEngine;
-class EC_RigidBody;
 
 #ifdef PROFILING
 class QTreeWidgetItem;
@@ -33,7 +31,9 @@ class PhysicsWorld;
 class PHYSICS_MODULE_API PhysicsModule : public IModule
 {
     Q_OBJECT
-    
+    Q_PROPERTY(float defaultPhysicsUpdatePeriod READ DefaultPhysicsUpdatePeriod WRITE SetDefaultPhysicsUpdatePeriod)
+    Q_PROPERTY(int defaultMaxSubSteps READ DefaultMaxSubSteps WRITE SetDefaultMaxSubSteps)
+
 public:
     PhysicsModule();
     virtual ~PhysicsModule();
@@ -51,6 +51,18 @@ public:
     /** If already has been generated, returns the previously created one */
     boost::shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
 
+    /// Set default physics update rate for new physics worlds
+    void SetDefaultPhysicsUpdatePeriod(float updatePeriod);
+
+    /// Return default physics update rate for new physics worlds
+    float DefaultPhysicsUpdatePeriod() const { return defaultPhysicsUpdatePeriod_; }
+
+    /// Set default physics max substeps for new physics worlds
+    void SetDefaultMaxSubSteps(int steps);
+
+    /// Return default physics max substeps for new physics worlds
+    int DefaultMaxSubSteps() const { return defaultMaxSubSteps_; }
+
 public slots:
     /// Toggles physics debug geometry
     void ToggleDebugGeometry();
@@ -60,18 +72,6 @@ public slots:
 
     /// Starts physics for all physics worlds
     void StartPhysics();
-    
-    /// Set default physics update rate for new physics worlds
-    void SetDefaultPhysicsUpdatePeriod(float updatePeriod);
-    
-    /// Set default physics max substeps for new physics worlds
-    void SetDefaultMaxSubSteps(int steps);
-    
-    /// Return default physics update rate for new physics worlds
-    float GetDefaultPhysicsUpdatePeriod() const { return defaultPhysicsUpdatePeriod_; }
-    
-    /// Return default physics max substeps for new physics worlds
-    int GetDefaultMaxSubSteps() const { return defaultMaxSubSteps_; }
 
     /// Autoassigns static rigid bodies with collision meshes to visible meshes
     void AutoCollisionMesh();

@@ -1160,6 +1160,31 @@ static QScriptValue float4x4_Decompose_float3_float4x4_float3_const(QScriptConte
     return QScriptValue();
 }
 
+static QScriptValue float4x4_float4x4_QMatrix4x4(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_float4x4_QMatrix4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QMatrix4x4 m = qscriptvalue_cast<QMatrix4x4>(context->argument(0));
+    float4x4 ret(m);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float4x4_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    float4x4 This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<float4x4>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<float4x4>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float4x4_ToQMatrix4x4_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4x4_ToQMatrix4x4_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
+    QMatrix4x4 ret = This.ToQMatrix4x4();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4x4_Mul_float3x3_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_Mul_float3x3_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1711,6 +1736,14 @@ static QScriptValue float4x4_LookAt_float3_float3_float3_float3_float3(QScriptCo
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float4x4_FromQMatrix4x4_QMatrix4x4(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_FromQMatrix4x4_QMatrix4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QMatrix4x4 m = qscriptvalue_cast<QMatrix4x4>(context->argument(0));
+    float4x4 ret = float4x4::FromQMatrix4x4(m);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4x4_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -1729,6 +1762,8 @@ static QScriptValue float4x4_ctor(QScriptContext *context, QScriptEngine *engine
         return float4x4_float4x4_Quat(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<Quat>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)))
         return float4x4_float4x4_Quat_float3(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<QMatrix4x4>(context->argument(0)))
+        return float4x4_float4x4_QMatrix4x4(context, engine);
     printf("float4x4_ctor failed to choose the right function to call! Did you use 'var x = float4x4();' instead of 'var x = new float4x4();'?\n"); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
@@ -2119,6 +2154,8 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("ToEulerZYX", engine->newFunction(float4x4_ToEulerZYX_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ExtractScale", engine->newFunction(float4x4_ExtractScale_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Decompose", engine->newFunction(float4x4_Decompose_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(float4x4_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToQMatrix4x4", engine->newFunction(float4x4_ToQMatrix4x4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Mul", engine->newFunction(float4x4_Mul_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MulPos", engine->newFunction(float4x4_MulPos_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MulDir", engine->newFunction(float4x4_MulDir_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -2176,6 +2213,7 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     ctor.setProperty("OrthographicProjectionXY", engine->newFunction(float4x4_OrthographicProjectionXY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("LookAt", engine->newFunction(float4x4_LookAt_selector, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("LookAt", engine->newFunction(float4x4_LookAt_selector, 5), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromQMatrix4x4", engine->newFunction(float4x4_FromQMatrix4x4_QMatrix4x4, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("zero", qScriptValueFromValue(engine, float4x4::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("identity", qScriptValueFromValue(engine, float4x4::identity), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("nan", qScriptValueFromValue(engine, float4x4::nan), QScriptValue::Undeletable | QScriptValue::ReadOnly);

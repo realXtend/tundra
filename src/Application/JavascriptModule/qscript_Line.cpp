@@ -234,6 +234,15 @@ static QScriptValue Line_ToLineSegment_float_const(QScriptContext *context, QScr
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Line_toString_const(QScriptContext *context, QScriptEngine *engine)
+{
+    Line This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<Line>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<Line>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Line_AreCollinear_float3_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Line_AreCollinear_float3_float3_float3_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -344,6 +353,7 @@ QScriptValue register_Line_prototype(QScriptEngine *engine)
     proto.setProperty("IntersectsDisc", engine->newFunction(Line_IntersectsDisc_Circle_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToRay", engine->newFunction(Line_ToRay_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLineSegment", engine->newFunction(Line_ToLineSegment_float_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(Line_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Line>()));
     engine->setDefaultPrototype(qMetaTypeId<Line>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Line*>(), proto);
