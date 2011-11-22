@@ -715,6 +715,7 @@ void EC_Camera::SetFarClipDistance(float distance)
     if (world_.expired())
         return;
 
+    ///@todo Uncomment when SkyX 0.2.1 is used, http://www.ogre3d.org/forums/viewtopic.php?f=11&t=67137&sid=df2bdcd4352cea57057b7861f563f692&start=100#p445143
     // Commented out as it can cause SkyX missing bug, depending on the view distance.
     /*
     // Enforce that farclip doesn't go past renderer's view distance
