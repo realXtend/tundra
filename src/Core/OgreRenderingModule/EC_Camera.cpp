@@ -517,7 +517,8 @@ void EC_Camera::QueryVisibleEntities()
         Entity *entity = 0;
         try
         {
-            entity = Ogre::any_cast<Entity*>(any);
+            IComponent *component = Ogre::any_cast<IComponent*>(any);
+            entity = component ? component->ParentEntity() : 0;
         }
         catch(Ogre::InvalidParametersException &/*e*/)
         {
