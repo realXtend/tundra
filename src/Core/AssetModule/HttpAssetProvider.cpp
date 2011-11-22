@@ -122,7 +122,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     return transfer;
 }
 
-AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName)
 {
     if (!networkAccessManager)
         CreateAccessManager();

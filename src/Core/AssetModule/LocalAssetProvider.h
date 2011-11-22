@@ -58,7 +58,7 @@ public:
 
     virtual AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const;
 
-    virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
+    virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName);
 
     virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage, bool fromNetwork);
 

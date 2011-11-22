@@ -407,9 +407,8 @@ QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bo
         return ret;
     }
 
-    // Set codec to ISO 8859-1 a.k.a. Latin 1
     QTextStream stream(&file);
-    stream.setCodec("ISO 8859-1");
+    stream.setCodec("UTF-8");
     QDomDocument scene_doc("Scene");
     QString errorMsg;
     if (!scene_doc.setContent(stream.readAll(), &errorMsg))
@@ -904,9 +903,8 @@ SceneDesc Scene::CreateSceneDescFromXml(const QString &filename) const
 
 SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const
 {
-    // Set codec to ISO 8859-1 a.k.a. Latin 1
     QTextStream stream(&data);
-    stream.setCodec("ISO 8859-1");
+    stream.setCodec("UTF-8");
     QDomDocument scene_doc("Scene");
     if (!scene_doc.setContent(stream.readAll()))
     {

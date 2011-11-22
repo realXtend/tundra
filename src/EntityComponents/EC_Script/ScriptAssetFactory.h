@@ -13,5 +13,5 @@ class ScriptAssetFactory : public IAssetTypeFactory
 public:
     virtual QString Type() const { return "Script"; }
 
-    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) { return AssetPtr(new ScriptAsset(owner, Type(), name)); }
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const QString &name) { return AssetPtr(new ScriptAsset(owner, Type(), name)); }
 };

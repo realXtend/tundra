@@ -1131,7 +1131,7 @@ void EC_Terrain::RemapHeightValues(float minHeight, float maxHeight)
     AffineTransform((maxHeight - minHeight) / (maxHeightCur - minHeightCur), minHeight - minHeightCur);
 }
 
-void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
+void EC_Terrain::SetTerrainMaterialTexture(int index, const QString &textureName)
 {
     if (index < 0 || index > 4)
         return;
@@ -1139,6 +1139,7 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
 //    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
 //    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(textureName).get());
 
+    /// @bug This performs a lossy Unicode->ASCII conversion for the material name!
     Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get())
     {
@@ -1149,7 +1150,8 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
 //    assert(terrainMaterial);
  //   if(terrainMaterial)
 //    {
-        OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
+    /// @bug This performs a lossy Unicode->ASCII conversion for the texture name!
+        OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName.toStdString().c_str(), index);
 //    }
 //    else
 //        LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");

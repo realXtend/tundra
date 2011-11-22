@@ -31,7 +31,10 @@ public:
 /// @endcond
 
 QString QStringfromWCharArray(const wchar_t *string, int size);
+
+/// Warning: Does not null-terminate the output. Prefer to use QStringToWString instead!
 int QStringtoWCharArray(QString qstr, wchar_t *array);
+
 std::wstring QStringToWString(const QString &qstr);
 QString WStringToQString(const std::wstring &str);
 
