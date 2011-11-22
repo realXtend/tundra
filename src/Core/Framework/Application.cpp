@@ -64,6 +64,10 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     QApplication::setApplicationName(applicationName);
     QApplication::setApplicationVersion(version);
 
+#ifdef Q_WS_MAC
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
+#endif
+
     // Make sure that the required Tundra data directories exist.
     QDir path = UserDataDirectory();
     if (!path.exists())
