@@ -138,6 +138,9 @@ private:
     GizmoState state; ///< Current state of the gizmo.
     QList<GizmoAxis> activeAxes; ///< Currently active axes.
 
+    /// Computes the scale we want to apply to the transform gizmo to make it constant-sized in the view.
+    float DesiredGizmoScale();
+
 private slots:
     /// Initializes the gizmo when parent entity is set.
     void Initialize();
