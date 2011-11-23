@@ -28,7 +28,6 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setModal(true);
-    setStyleSheet("font-size: 9pt;");
     setWindowTitle(tr("Add New Component"));
     if (graphicsProxyWidget())
         graphicsProxyWidget()->setWindowTitle(windowTitle());

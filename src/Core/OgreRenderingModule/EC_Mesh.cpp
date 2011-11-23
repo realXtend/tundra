@@ -282,11 +282,11 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         
         entity_->setRenderingDistance(drawDistance.Get());
         entity_->setCastShadows(castShadows.Get());
-        entity_->setUserAny(Ogre::Any(ParentEntity()));
+        entity_->setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
         // Set UserAny also on subentities
         for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
             entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
-                
+
         if (entity_->hasSkeleton())
         {
             Ogre::SkeletonInstance* skel = entity_->getSkeleton();
@@ -368,7 +368,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         
         entity_->setRenderingDistance(drawDistance.Get());
         entity_->setCastShadows(castShadows.Get());
-        entity_->setUserAny(Ogre::Any(ParentEntity()));
+        entity_->setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
         // Set UserAny also on subentities
         for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
             entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());

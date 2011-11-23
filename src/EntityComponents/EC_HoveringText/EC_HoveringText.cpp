@@ -61,10 +61,7 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
 EC_HoveringText::~EC_HoveringText()
 {
     if (texture_.get() != 0)
-    {
-        AssetAPI* asset = framework->Asset();
-        asset->ForgetAsset(texture_,false);
-    }
+        framework->Asset()->ForgetAsset(texture_,false);
     Destroy();
 }
 
@@ -201,7 +198,6 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (!scene)
         return;
 
-    //Scene::Entity *entity = ParentEntity();
     Entity* entity = ParentEntity();
     assert(entity);
     if (!entity)
@@ -221,8 +217,8 @@ void EC_HoveringText::ShowMessage(const QString &text)
     {
         billboardSet_ = scene->createBillboardSet(world->GetUniqueObjectName("EC_HoveringText"), 1);
         assert(billboardSet_);
-        billboardSet_->Ogre::MovableObject::setUserAny(Ogre::Any(ParentEntity()));
-        billboardSet_->Ogre::Renderable::setUserAny(Ogre::Any(ParentEntity()));
+        billboardSet_->Ogre::MovableObject::setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
+        billboardSet_->Ogre::Renderable::setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
 
         materialName_ = world->GetUniqueObjectName("EC_HoveringText_material");
         OgreRenderer::CloneMaterial("HoveringText", materialName_);
@@ -256,26 +252,22 @@ void EC_HoveringText::Redraw()
     try
     {
         if (texture_.get() == 0)
-        {       
-            AssetAPI* asset = framework->Asset();
-
-            textureName_ = asset->GenerateUniqueAssetName("tex", "EC_HoveringText_").toStdString();
+        {
+            textureName_ = framework->Asset()->GenerateUniqueAssetName("tex", "EC_HoveringText_").toStdString();
             QString name(textureName_.c_str());
-            texture_  = boost::dynamic_pointer_cast<TextureAsset>(asset->CreateNewAsset("Texture", name));  
-            
+            texture_  = boost::dynamic_pointer_cast<TextureAsset>(framework->Asset()->CreateNewAsset("Texture", name));
             assert(texture_);
-            
             if (texture_ == 0)
             {
                 LogError("Failed to create texture " + textureName_);
                 return;
             }
-        }       
+        }
        
         QBrush brush(backgroundColor.Get());
        
         if (usingGrad.Get())
-        {   
+        {
             QRect rect(0,0,texWidth.Get(), texHeight.Get());
             bg_grad_.setStart(QPointF(0,rect.top()));
             bg_grad_.setFinalStop(QPointF(0,rect.bottom()));
@@ -304,7 +296,8 @@ void EC_HoveringText::Redraw()
                                     borderPen, Qt::AlignCenter | Qt::TextWordWrap, false, false, corners.x, corners.y);
         }
         else
-            texture_->SetContentsDrawText(texWidth.Get(), texHeight.Get(), text.Get(), textColor_, font_, QBrush(), QPen(), Qt::AlignCenter | Qt::TextWordWrap, false, false, 0.0f, 0.0f);
+            texture_->SetContentsDrawText(texWidth.Get(), texHeight.Get(), text.Get(), textColor_, font_, QBrush(),
+                QPen(), Qt::AlignCenter | Qt::TextWordWrap, false, false, 0.0f, 0.0f);
     }
     catch(Ogre::Exception &e)
     {

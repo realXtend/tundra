@@ -46,7 +46,7 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     if (!framework_->IsHeadless())
     {
         rayQuery_ = sceneManager_->createRayQuery(Ogre::Ray());
-        rayQuery_->setQueryTypeMask(Ogre::SceneManager::ENTITY_TYPE_MASK | Ogre::SceneManager::FX_TYPE_MASK);
+        rayQuery_->setQueryTypeMask(Ogre::SceneManager::FX_TYPE_MASK | Ogre::SceneManager::ENTITY_TYPE_MASK);
         rayQuery_->setSortByDistance(true);
 
         // If fog is FOG_NONE, force it to some default ineffective settings, because otherwise SuperShader shows just white
@@ -139,6 +139,7 @@ RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
 RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
 {
     result_.entity = 0;
+    result_.component = 0;
     
     const Ogre::Ray& ogreRay = rayQuery_->getRay();
     Ray ray(ogreRay.getOrigin(), ogreRay.getDirection());
@@ -162,9 +163,11 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
             continue;
 
         Entity *entity = 0;
+        IComponent *component = 0;
         try
         {
-            entity = Ogre::any_cast<Entity*>(any);
+            component = Ogre::any_cast<IComponent*>(any);
+            entity = component ? component->ParentEntity() : 0;
         }
         catch(Ogre::InvalidParametersException &/*e*/)
         {
@@ -197,8 +200,8 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 if (closestDistance < 0.0f || meshClosestDistance < closestDistance)
                 {
                     closestDistance = meshClosestDistance;
-                    
                     result_.entity = entity;
+                    result_.component = component;
                     result_.pos = hitPoint;
                     result_.normal = normal;
                     result_.submesh = subMeshIndex;
@@ -262,6 +265,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                     {
                         closestDistance = d;
                         result_.entity = entity;
+                        result_.component = component;
                         result_.pos = intersectionPoint;
                         result_.normal = billboardFrontDir;
                         result_.submesh = i; // Store in the 'submesh' index the index of the individual billboard we hit.
@@ -269,7 +273,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                         result_.u = (hit.x + 1.f) * 0.5f;
                         result_.v = (hit.y + 1.f) * 0.5f;
                     }
-                }                
+                }
             }
             else
             {
@@ -277,8 +281,8 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 if (closestDistance < 0.0f || entry.distance < closestDistance)
                 {
                     closestDistance = entry.distance;
-                    
                     result_.entity = entity;
+                    result_.component = component;
                     result_.pos = ogreRay.getPoint(closestDistance);
                     result_.normal = -ogreRay.getDirection();
                     result_.submesh = 0;
@@ -335,7 +339,8 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
         Entity *entity = 0;
         try
         {
-            entity = Ogre::any_cast<Entity*>(any);
+            IComponent *component = Ogre::any_cast<IComponent*>(any);
+            entity = component ? component->ParentEntity() : 0;
         }
         catch(Ogre::InvalidParametersException &/*e*/)
         {

@@ -637,8 +637,6 @@ void SceneTreeWidget::Edit()
             editor = new ECEditorWindow(framework);
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
-
-            framework->GetModule<ECEditorModule>()->RepositionEditor(editor);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
         connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
@@ -668,14 +666,14 @@ void SceneTreeWidget::EditInNew()
     ECEditorWindow *editor = new ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
     connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
-    //editor->move(mapToGlobal(pos()) + QPoint(50, 50));  
+    //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
+    editor->hide();
+    editor->AddEntities(selection.EntityIds(), true);
 
     editor->setParent(framework->Ui()->MainWindow());
     editor->setWindowFlags(Qt::Tool);
     editor->show();
     editor->activateWindow();
-    editor->AddEntities(selection.EntityIds(), true);
-
     ecEditors.push_back(editor);
 }
 

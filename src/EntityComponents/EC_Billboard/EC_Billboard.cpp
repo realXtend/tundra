@@ -103,8 +103,8 @@ void EC_Billboard::CreateBillboard()
     if (!billboardSet_)
     {
         billboardSet_ = scene->createBillboardSet(world->GetUniqueObjectName("EC_Billboard"), 1);
-        billboardSet_->Ogre::MovableObject::setUserAny(Ogre::Any(ParentEntity()));
-        billboardSet_->Ogre::Renderable::setUserAny(Ogre::Any(ParentEntity()));
+        billboardSet_->Ogre::MovableObject::setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
+        billboardSet_->Ogre::Renderable::setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
     }
     
     // Remove old billboard if it existed

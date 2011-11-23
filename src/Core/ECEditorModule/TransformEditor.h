@@ -94,9 +94,6 @@ public:
     /// Sets visibility of the gizmo (if used).
     void SetGizmoVisible(bool show);
 
-    /// Sets parent widget.
-    void SetCommandingWidget(QWidget *widget);
-
     /// Returns position of the editing gizmo.
     float3 GizmoPos() const;
 
@@ -131,7 +128,6 @@ private:
     QList<AttributeWeakPtr> targets; ///< Current target transform attributes.
     InputContextPtr input; ///< Input context for controlling gizmo mode.
     QWidget* editorSettings; ///< Editor settings window
-    QWidget* commandingWidget;
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
 
 private slots:

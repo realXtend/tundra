@@ -91,7 +91,7 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
             AttachEntity();
             entity_->setRenderingDistance(draw_distance_);
             entity_->setCastShadows(cast_shadows_);
-            entity_->setUserAny(Ogre::Any(ParentEntity()));
+            entity_->setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
             // Set UserAny also on subentities
             for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
                 entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());

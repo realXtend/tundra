@@ -6,6 +6,7 @@
 #include "Framework.h"
 #include "VersionInfo.h"
 #include "ConfigAPI.h"
+#include "LoggingFunctions.h"
 
 #include <QCloseEvent>
 #include <QDesktopWidget>
@@ -30,7 +31,9 @@ int UiMainWindow::DesktopWidth()
     QDesktopWidget *desktop = QApplication::desktop();
     if (!desktop)
     {
-        cerr << "Error: QApplication::desktop() returned null!";
+        std::string error("UiMainWindow::DesktopWidth: QApplication::desktop() returned null!");
+        LogError(error);
+        cerr << error << endl;
         return 1024; // Just guess some value for desktop width.
     }
     int width = 0;
@@ -45,7 +48,9 @@ int UiMainWindow::DesktopHeight()
     QDesktopWidget *desktop = QApplication::desktop();
     if (!desktop)
     {
-        cerr << "Error: QApplication::desktop() returned null!";
+        std::string error("UiMainWindow::DesktopHeight: QApplication::desktop() returned null!");
+        LogError(error);
+        cerr << error << endl;
         return 768; // Just guess some value for desktop height.
     }
     return desktop->screenGeometry().height();
@@ -113,6 +118,21 @@ void UiMainWindow::closeEvent(QCloseEvent *e)
 void UiMainWindow::resizeEvent(QResizeEvent *e)
 {
     emit WindowResizeEvent(width(), height());
+}
+
+void UiMainWindow::EnsurePositionWithinDesktop(QWidget *widget, QPoint pos) const
+{
+    if (!widget)
+    {
+        LogError("UiMainWindow::EnsurePositionWithinDesktop: null widget passed!");
+        return;
+    }
+    int xMax = DesktopWidth(), yMax = DesktopHeight();
+    if (pos.x() + widget->height() > xMax)
+        pos.setX(xMax - widget->width());
+    if (pos.y() + widget->width() > yMax)
+        pos.setY(yMax - widget->height());
+    widget->move(pos);
 }
 
 bool UiMainWindow::HasMenu(const QString &name) const
