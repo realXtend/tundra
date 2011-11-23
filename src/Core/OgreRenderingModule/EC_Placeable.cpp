@@ -921,10 +921,30 @@ float3 EC_Placeable::Scale() const
 
 float3x4 EC_Placeable::LocalToWorld() const
 {
-    if (sceneNode_)
+    // If we are parented to an Ogre bone, we can't (yet) compute the local-to-world matrix ourselves,
+    // so query Ogre for the world matrix.
+    if (!parentBone.Get().isEmpty() && sceneNode_)
         return float4x4(sceneNode_->_getFullTransform()).Float3x4Part();
-    else
-        return float3x4::identity;
+
+    // Otherwise, compute the world matrix using our Tundra scene structures (not the Ogre scene structures, which can be out-of-date!)
+    EC_Placeable *parentPlaceable = ParentPlaceableComponent();
+    float3x4 localToWorld = parentPlaceable ? (parentPlaceable->LocalToWorld() * LocalToParent()) : LocalToParent();
+
+#ifdef _DEBUG
+    // But confirm to detect oddities when/if these two don't match.
+    if (sceneNode_)
+    {
+        float3x4 ogresViewOfLocalToWorld = float4x4(sceneNode_->_getFullTransform()).Float3x4Part();
+        float3 t, s, t2, s2;
+        Quat r, r2;
+        localToWorld.Decompose(t, r, s);
+        ogresViewOfLocalToWorld.Decompose(t2, r2, s2);
+        if (!t.Equals(t2) || !s.Equals(s2) || !r.Equals(r2))
+            LogDebug("Warning: Ogre SceneNode transform does not agree with Tundra Scenenode transform in EC_Placeable::LocalToWorld!");
+    }
+#endif
+
+    return localToWorld;
 }
 
 float3x4 EC_Placeable::WorldToLocal() const
