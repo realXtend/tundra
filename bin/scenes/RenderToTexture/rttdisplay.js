@@ -8,12 +8,10 @@ var camerainfo = [ //source camera, and the button object used to switch to that
 ];
 
 function init() {
+    //UPDATE / TODO NOTE: check whether this is still the case in Tundra2:
     //this could be just a straight setup script with no funcs,
     //but is apparently executed too early -- e.g. the camera is not there yet.
     //so have to wrap in a func and make a trick to run with a delay
-
-    var $ = scene.GetEntityByName; //testing jQuery style a bit :)
-    $("FreeLookCamera").placeable.transform = $("startview").placeable.transform;
 
     /* create all RttTargets, i.e. the component for each cam that we want image from
        note: a simpler approach might be to use a single cam that moves,
@@ -31,7 +29,7 @@ function init() {
         bindButton(camname, butname);
     }
 
-    setImageSource(scene.GetEntityByName(camname));
+    setImageSource(scene.GetEntityByName(camname));    
 }
 
 function createRttTarget(camname) {
@@ -46,7 +44,7 @@ function createRttTarget(camname) {
 
     cam.GetOrCreateComponent("EC_RttTarget");
     rtt = cam.rtttarget;
-    rtt.targettexture = camname + "_tex";
+    rtt.textureName = camname + "_tex";
     rtt.size_x = 800;
     rtt.size_y = 600;
     rtt.PrepareRtt();
@@ -62,7 +60,7 @@ function setImageSource(cam) {
     rtt = cam.rtttarget;
     rtt.SetAutoUpdated(true);
 
-    var matname = rtt.targettexture + "_mat"; //XXX add mat name getter to EC_RttTarget
+    var matname = rtt.textureName + "_mat"; //XXX add mat name getter to EC_RttTarget
     me.mesh.SetMaterial(0, matname);
 
     print(me + " set to display rtt image via mat " + matname); // + " from " + cam);
@@ -78,12 +76,25 @@ function bindButton(camname, butname) {
       });
 }
 
-function update(frametime) {
-    var vis = renderer.IsEntityVisible(me.id);
+function displayEnterFreecam(ent) {
     if(rtt != null) {
-        rtt.SetAutoUpdated(vis);
+        rtt.SetAutoUpdated(true);
+        print("RenderToTexture update enabled");
     }
 }
 
+function displayLeaveFreecam(ent) {
+    if(rtt != null) {
+        rtt.SetAutoUpdated(false);
+        print("RenderToTexture update disabled");
+    }
+}
+
+//to track display entity visibility to disable rtt tex update
+var freecam_ent = scene.GetEntityByName("FreeLookCamera");
+var cam = freecam_ent.camera;
+cam.StartViewTracking(me);
+cam.EntityEnterView.connect(displayEnterFreecam);
+cam.EntityLeaveView.connect(displayLeaveFreecam);
+
 frame.DelayedExecute(0.1).Triggered.connect(this, init); //XXX dirty hack
-frame.Updated.connect(update);

@@ -1,8 +1,10 @@
 #pragma once
 
+#ifdef WIN32
 #define Polygon Polygon_WINGDI_UNUSED
 #include <Windows.h>
 #undef Polygon
+#endif
 
 #include <QScriptValue>
 #include <QScriptContext>
