@@ -518,7 +518,14 @@ namespace OgreRenderer
     void Renderer::Render(float frameTime)
     {
         using namespace std;
-            
+
+        // Force a show of the window that has been passed to Ogre. It must be visible at all times to have the Ogre 3D render output show.
+        // On windows systems with Pen & Touch input available, Qt doesn't want to actually display the QGgraphicsView even with a call
+        // to QGraphicsView::show().
+#ifdef WIN32
+        ShowWindow(((HWND)framework_->Ui()->GraphicsView()->winId()), SW_SHOW);
+#endif
+
         if (!initialized_)
         {
             LogError("Renderer::Render called when Renderer is not initialized!");
