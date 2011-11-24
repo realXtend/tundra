@@ -6,7 +6,6 @@
 #include <QPainter>
 #include <QUrl>
 #include <QVarLengthArray>
-#include <QDebug>
 
 VlcVideoWidget::VlcVideoWidget(const QList<QByteArray> &args) :
     QFrame(0),
@@ -224,12 +223,18 @@ void VlcVideoWidget::Stop()
 {
     if (vlcPlayer_)
     {
-        onScreenPixmapMutex_.unlock();
-        renderPixmapMutex_.unlock();
-        statusAccess.unlock();
+        libvlc_state_t state = GetMediaState();
+        if (state == libvlc_Playing || state == libvlc_Paused || state == libvlc_Ended)
+        {
+            if (onScreenPixmapMutex_.tryLock(50))
+                onScreenPixmapMutex_.unlock();
+            if (renderPixmapMutex_.tryLock(50))
+                renderPixmapMutex_.unlock();
+            if (statusAccess.tryLock(50))
+                statusAccess.unlock();
 
-        libvlc_media_player_stop(vlcPlayer_);
-
+            libvlc_media_player_stop(vlcPlayer_);
+        }
         update();
         ForceUpdateImage();
     }
