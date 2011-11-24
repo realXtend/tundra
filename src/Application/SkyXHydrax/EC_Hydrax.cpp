@@ -190,8 +190,14 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
         return;
 
     if (attr == &visible)
-        impl->hydrax->setVisible(visible.Get());
-    else if (attr == &position)
+    {
+        bool isVisible = getvisible();
+        float3 pos = getposition();
+        impl->hydrax->setVisible(isVisible);
+        if (isVisible && impl->hydrax->getPosition() != pos)
+            impl->hydrax->setPosition(pos); 
+    }
+    else if (attr == &position && visible.Get())
         impl->hydrax->setPosition(position.Get());
 /*
     else if (attr == &noiseModule || attr == &normalMode || &noiseType)
@@ -310,7 +316,10 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
         impl->hydrax->remove();
         impl->hydrax->loadCfgString(configData.toStdString());
         impl->hydrax->create();
-        impl->hydrax->setPosition(position.Get());  // The position attribute is always authoritative from the component attribute.
+
+        // The position attribute is always authoritative from the component attribute.
+        if (visible.Get())
+            impl->hydrax->setPosition(position.Get());  
     }
     catch (Ogre::Exception &e)
     {
