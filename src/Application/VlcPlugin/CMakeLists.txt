@@ -31,10 +31,14 @@ if (SHOULD_RUN)
     UiFolder ()
 
     file (GLOB CPP_FILES *.cpp)
-    file (GLOB H_FILES *.h)
-    file (GLOB UI_FILES ui/*.ui)
-    file (GLOB RESOURCE_FILES ui/*.qrc)
-    set  (MOC_H_FILES VlcPlugin.h VlcMediaPlayer.h VlcVideoWidget.h PlayerStatus.h EC_MediaPlayer.h)
+    if (WIN32 AND VC90)
+        file(GLOB H_FILES *.h)
+    else() # Omit stdint.h in other platforms.
+        file(GLOB H_FILES VlcPlugin.h VlcMediaPlayer.h VlcVideoWidget.h PlayerStatus.h EC_MediaPlayer.h)
+    endif()
+    file(GLOB UI_FILES ui/*.ui)
+    file(GLOB RESOURCE_FILES ui/*.qrc)
+    set(MOC_H_FILES VlcPlugin.h VlcMediaPlayer.h VlcVideoWidget.h PlayerStatus.h EC_MediaPlayer.h)
 
     QT4_WRAP_CPP(MOC_FILES ${MOC_H_FILES})
     QT4_WRAP_UI(UI_SRCS ${UI_FILES})
