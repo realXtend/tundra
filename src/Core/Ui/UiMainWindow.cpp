@@ -128,10 +128,19 @@ void UiMainWindow::EnsurePositionWithinDesktop(QWidget *widget, QPoint pos) cons
         return;
     }
     int xMax = DesktopWidth(), yMax = DesktopHeight();
-    if (pos.x() + widget->height() > xMax)
-        pos.setX(xMax - widget->width());
-    if (pos.y() + widget->width() > yMax)
-        pos.setY(yMax - widget->height());
+
+    // Allow setting windows partially outside the screen.
+    // Apply an arbitrary guardband of (50x100) along the screen borders.
+    const int w = max(widget->width()/2, 50);
+    const int h = max(widget->height()/2, 100);
+    if (pos.x() + w > xMax)
+        pos.setX(xMax - w);
+    if (pos.y() + h > yMax)
+        pos.setY(yMax - h);
+    if (pos.x() < 0)
+        pos.setX(0);
+    if (pos.y() < 0)
+        pos.setY(0);
     widget->move(pos);
 }
 
