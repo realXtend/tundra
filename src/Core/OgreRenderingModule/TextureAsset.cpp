@@ -332,6 +332,7 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
 
     if (data)
     {
+/*
 #if defined(DIRECTX_ENABLED) && defined(WIN32)
         Ogre::HardwarePixelBufferSharedPtr pb = ogreTexture->getBuffer();
         Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
@@ -360,10 +361,11 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
             }
         }
 #else        
+        */
         ///\todo Review Ogre internals of whether the const_cast here is safe!
         Ogre::PixelBox pixelBox(Ogre::Box(0,0, newWidth, newHeight), ogreFormat, const_cast<u8*>(data));
         ogreTexture->getBuffer()->blitFromMemory(pixelBox);
-#endif
+//#endif
     }
 
     if (needRecreate)
@@ -377,7 +379,7 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
 
     // Create transparent pixmap
     QImage image(newWidth, newHeight, QImage::Format_ARGB32);
-    image.fill(Qt::transparent);
+    image.fill(textColor.value() & 0x00FFFFFF);
 
     {
         // Init painter with pixmap as the paint device

@@ -52,7 +52,8 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     height(this, "Height", 1.0),
     texWidth(this, "Texture Width", 256),
     texHeight(this, "Texture Height", 256),
-    cornerRadius(this, "Corner radius", float2(20.0, 20.0))
+    cornerRadius(this, "Corner Radius", float2(20.0, 20.0)),
+    enableMipmapping(this, "Enable Mipmapping", true)
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
@@ -248,7 +249,11 @@ void EC_HoveringText::Redraw()
         return;
 
     bool textEmpty = text.Get().isEmpty();
-    
+
+    billboardSet_->setVisible(!textEmpty);
+    if (textEmpty)
+        return;
+
     try
     {
         if (texture_.get() == 0)
@@ -284,20 +289,13 @@ void EC_HoveringText::Redraw()
         
         float2 corners =  cornerRadius.Get();
 
-        if (!textEmpty)
-        {
-            // Disable mipmapping, as Ogre seems to bug with it
-            texture_->SetContentsDrawText(texWidth.Get(), 
-                                    texHeight.Get(), 
-                                    text.Get(), 
-                                    textColor_, 
-                                    font_, 
-                                    brush, 
-                                    borderPen, Qt::AlignCenter | Qt::TextWordWrap, false, false, corners.x, corners.y);
-        }
-        else
-            texture_->SetContentsDrawText(texWidth.Get(), texHeight.Get(), text.Get(), textColor_, font_, QBrush(),
-                QPen(), Qt::AlignCenter | Qt::TextWordWrap, false, false, 0.0f, 0.0f);
+        texture_->SetContentsDrawText(texWidth.Get(), 
+                                texHeight.Get(), 
+                                text.Get(), 
+                                textColor_, 
+                                font_, 
+                                brush, 
+                                borderPen, Qt::AlignCenter | Qt::TextWordWrap, enableMipmapping.Get(), false, corners.x, corners.y);
     }
     catch(Ogre::Exception &e)
     {
@@ -350,7 +348,7 @@ void EC_HoveringText::AttributesChanged()
     bool repaint = text.ValueChanged() || font.ValueChanged() || fontSize.ValueChanged() || fontColor.ValueChanged()
         || backgroundColor.ValueChanged() || borderColor.ValueChanged() || borderThickness.ValueChanged() || usingGrad.ValueChanged()
         || gradStart.ValueChanged() || gradEnd.ValueChanged() || texWidth.ValueChanged() || texHeight.ValueChanged()
-        || cornerRadius.ValueChanged();
+        || cornerRadius.ValueChanged() || enableMipmapping.ValueChanged();
 
     // Changes to the following attributes do not alter the texture contents, and don't require a repaint:
     // position, overlayAlpha, width, height.

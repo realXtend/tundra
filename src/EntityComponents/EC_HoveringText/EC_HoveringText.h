@@ -148,6 +148,9 @@ public:
     Q_PROPERTY(float2 cornerRadius READ getcornerRadius WRITE setcornerRadius);
     DEFINE_QPROPERTY_ATTRIBUTE(float2, cornerRadius);
 
+    Q_PROPERTY(bool enableMipmapping READ getenableMipmapping WRITE setenableMipmapping);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, enableMipmapping);
+
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
 
