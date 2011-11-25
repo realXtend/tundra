@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AssetInterestSettings</class>
+ <widget class="QWidget" name="AssetInterestSettings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>530</width>
+    <height>342</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>530</width>
+    <height>342</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Asset Interest Settings</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+	font-size: 9pt;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
+     <property name="horizontalSpacing">
+      <number>20</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Settings</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="enabledLabel">
+       <property name="text">
+        <string>Enabled</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="enabledCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="drawDebugLabel">
+       <property name="text">
+        <string>Draw debug</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="drawDebugCheckBox"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="processTexturesLabel">
+       <property name="toolTip">
+        <string>Tells if we should unload/load textures (of materials)</string>
+       </property>
+       <property name="text">
+        <string>Process textures</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QCheckBox" name="processTexturesCheckBox">
+       <property name="toolTip">
+        <string>Tells if we should unload/load textures (of materials)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="processMeshesLabel">
+       <property name="toolTip">
+        <string>Tells if we should unload/load meshes. Default value is false.</string>
+       </property>
+       <property name="text">
+        <string>Process meshes</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QCheckBox" name="processMeshesCheckBox">
+       <property name="toolTip">
+        <string>Tells if we should unload/load meshes. Default value is false.</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="loadIntervalLabel">
+       <property name="toolTip">
+        <string>Time in milliseconds we should wait between asset loads. Minimum is 1. Default value is 100.</string>
+       </property>
+       <property name="text">
+        <string>Wait msecs after load</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QSpinBox" name="loadIntervalSpinBox">
+       <property name="toolTip">
+        <string>Time in milliseconds we should wait between asset loads. Minimum is 1. Default value is 100.</string>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>10000</number>
+       </property>
+       <property name="singleStep">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="radiusLabel">
+       <property name="toolTip">
+        <string>Interest radius from the active EC_Camera. Default value is 100.0.</string>
+       </property>
+       <property name="text">
+        <string>Radius</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QDoubleSpinBox" name="radiusDoubleSpinBox">
+       <property name="toolTip">
+        <string>Interest radius from the active EC_Camera. Default value is 100.0.</string>
+       </property>
+       <property name="decimals">
+        <number>4</number>
+       </property>
+       <property name="maximum">
+        <double>9999999.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>10.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Stats</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Meshes</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QLabel" name="meshManagerStatus">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="unloadingLabelTitle">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Mesh unload</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <widget class="QLabel" name="unloadMesh">
+       <property name="styleSheet">
+        <string notr="true">color: gray;</string>
+       </property>
+       <property name="text">
+        <string>none</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0">
+      <widget class="QLabel" name="loadingLabelTitle">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Mesh load</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QLabel" name="loadMesh">
+       <property name="styleSheet">
+        <string notr="true">color: gray;</string>
+       </property>
+       <property name="text">
+        <string>none</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="0">
+      <widget class="QLabel" name="loadingLabelTitle_3">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Textures</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1">
+      <widget class="QLabel" name="textureManagerStatus">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="0">
+      <widget class="QLabel" name="loadingLabelTitle_2">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Texture load</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="1">
+      <widget class="QLabel" name="loadMaterial">
+       <property name="styleSheet">
+        <string notr="true">color: gray;</string>
+       </property>
+       <property name="text">
+        <string>none</string>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="0">
+      <widget class="QLabel" name="unloadingLabelTitle_2">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Texture unload</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="13" column="1">
+      <widget class="QLabel" name="unloadMaterial">
+       <property name="styleSheet">
+        <string notr="true">color: gray;</string>
+       </property>
+       <property name="text">
+        <string>none</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="buttonClose">
+     <property name="text">
+      <string>Close</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
