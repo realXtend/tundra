@@ -20,16 +20,15 @@ var effects = [
     "Gaussian Blur", "Motion Blur", "Radial Blur", "WetLens"
 ];
 
-
 // TRICK how to get information about sender..
 /*
 function ParameterHandler(effect,index) {
-this.effectName = effect;
+    this.effectName = effect;
 }
 
 ParameterHandler.prototype.textChanged = function() {
-print("UpdateEffect, in parameterHandler..");
-UpdateEffect(this.effectName);
+    print("UpdateEffect, in parameterHandler..");
+    UpdateEffect(this.effectName);
 }
 */
 
@@ -217,7 +216,6 @@ function ShowEffect(name) {
     // Create component for each effect.
     var component = me.CreateComponent("EC_OgreCompositor", name);
     component.compositorName = name;
-    print("Jouuuuu");
 }
 
 function OnScriptDestroyed() {
