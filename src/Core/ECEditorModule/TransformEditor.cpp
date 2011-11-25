@@ -13,6 +13,7 @@
 #include "Entity.h"
 #include "EC_Camera.h"
 #include "EC_Light.h"
+#include "EC_Sound.h"
 #include "EC_Placeable.h"
 #include "FrameAPI.h"
 #include "InputAPI.h"
@@ -489,7 +490,7 @@ void TransformEditor::DrawDebug(OgreWorld* world, Entity* entity)
             // Draw without depth test to ensure the axes do not get lost within a mesh for example
             world->DebugDrawAxes(float3x4::FromTRS(placeable->WorldPosition(), placeable->WorldOrientation(), placeable->WorldScale()), false);
         }
-        if (type == EC_Light::TypeIdStatic())
+        else if (type == EC_Light::TypeIdStatic())
         {
             EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
             if (placeable)
@@ -499,11 +500,18 @@ void TransformEditor::DrawDebug(OgreWorld* world, Entity* entity)
                 world->DebugDrawLight(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), light->type.Get(), light->range.Get(), light->outerAngle.Get(), color.r, color.g, color.b);
             }
         }
-        if (type == EC_Camera::TypeIdStatic())
+        else if (type == EC_Camera::TypeIdStatic())
         {
             EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
             if (placeable)
                 world->DebugDrawCamera(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), 1.0f, 1.0f, 1.0f, 1.0f);
+        }
+        else if (type == EC_Sound::TypeIdStatic())
+        {
+            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
+            EC_Sound *soundSource = entity->GetComponent<EC_Sound>().get();
+            if (placeable && soundSource)
+                world->DebugDrawSoundSource(placeable->WorldPosition(), soundSource->soundInnerRadius.Get(), soundSource->soundOuterRadius.Get(), 1.0f, 1.0f, 1.0f, 1.0f);
         }
     }
 }

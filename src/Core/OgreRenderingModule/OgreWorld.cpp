@@ -710,7 +710,7 @@ void OgreWorld::DebugDrawSphere(const float3& center, float radius, int vertices
         return;
     
     std::vector<float3> positions(vertices);
-    
+
     Sphere sphere(center, radius);
     int actualVertices = sphere.Triangulate(&positions[0], 0, 0, vertices);
     for (int i = 0; i < actualVertices; i += 3)
@@ -773,6 +773,16 @@ void OgreWorld::DebugDrawCamera(const float3x4 &t, float size, float r, float g,
     AABB aabb2(translate + float3::FromScalar(-size/4.f), translate + float3::FromScalar(size/4.f));
     OBB obb2 = aabb2.Transform(t);
     DebugDrawOBB(obb2, r, g, b, depthTest);
+}
+
+void OgreWorld::DebugDrawSoundSource(const float3 &soundPos, float soundInnerRadius, float soundOuterRadius, float r, float g, float b, bool depthTest)
+{
+    // Draw three concentric diamonds as a visual cue
+    for(int i = 2; i < 5; ++i)
+        DebugDrawSphere(soundPos, i/3.f, 24, i==2?1:0, i==3?1:0, i==4?1:0, depthTest);
+
+    DebugDrawSphere(soundPos, soundInnerRadius, 24*3*3*3, 1, 0, 0, depthTest);
+    DebugDrawSphere(soundPos, soundOuterRadius, 24*3*3*3, 0, 1, 0, depthTest);
 }
 
 void OgreWorld::FlushDebugGeometry()

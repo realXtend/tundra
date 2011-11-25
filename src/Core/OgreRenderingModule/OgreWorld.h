@@ -123,6 +123,8 @@ public slots:
     void DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b, bool depthTest = true);
     /// Renders a simple box-like debug camera.
     void DebugDrawCamera(const float3x4 &t, float size, float r, float g, float b, bool depthTest = true);
+    /// Renders a visualization for a spatial EC_Sound object.
+    void DebugDrawSoundSource(const float3 &soundPos, float soundInnerRadius, float soundOuterRadius, float r, float g, float b, bool depthTest = true);
     /// Renders a sphere as geosphere.
     void DebugDrawSphere(const float3& center, float radius, int vertices, float r, float g, float b, bool depthTest = true);
 
