@@ -62,13 +62,11 @@ public slots:
     /** Does raycast into the world using a ray in world space coordinates. */
     RaycastResult* Raycast(const Ray& ray, unsigned layerMask);
 
-    /// Do a frustum query to the world from viewport coordinates.
-    /// \todo This function will be removed and replaced with a function Scene::Intersect.
-    /** Returns the found entities as a QVariantList so that
-        Python and Javascript can get the result directly from here.
-        @param viewrect The query rectangle in 2d window coords. */
-    QList<Entity*> FrustumQuery(QRect &viewrect);
-    
+    /// Does a frustum query to the world from viewport coordinates.
+    /** @param viewRect The query rectangle in 2d window coords.
+        @return List of entities within the frustrum. */
+    QList<Entity*> FrustumQuery(QRect &viewRect) const;
+
     /// Return whether a single entity is visible in the currently active camera
     bool IsEntityVisible(Entity* entity) const;
     

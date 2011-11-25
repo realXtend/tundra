@@ -297,7 +297,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
     return &result_;
 }
 
-QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
+QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect) const
 {
     PROFILE(OgreWorld_FrustumQuery);
 
@@ -358,20 +358,17 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
 bool OgreWorld::IsEntityVisible(Entity* entity) const
 {
     EC_Camera* cameraComponent = VerifyCurrentSceneCameraComponent();
-    if (!cameraComponent)
-        return false;
-    
-    return cameraComponent->IsEntityVisible(entity);
+    if (cameraComponent)
+        return cameraComponent->IsEntityVisible(entity);
+    return false;
 }
 
 QList<Entity*> OgreWorld::VisibleEntities() const
 {
-    QList<Entity*> l;
     EC_Camera* cameraComponent = VerifyCurrentSceneCameraComponent();
-    if (!cameraComponent)
-        return QList<Entity*>();
-    
-    return cameraComponent->VisibleEntities();
+    if (cameraComponent)
+        return cameraComponent->VisibleEntities();
+    return QList<Entity*>();
 }
 
 void OgreWorld::StartViewTracking(Entity* entity)
