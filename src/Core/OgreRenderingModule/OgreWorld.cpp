@@ -374,7 +374,10 @@ QList<Entity*> OgreWorld::VisibleEntities() const
 void OgreWorld::StartViewTracking(Entity* entity)
 {
     if (!entity)
+    {
+        LogError("OgreWorld::StartViewTracking: null entity passed!");
         return;
+    }
 
     EntityPtr entityPtr = entity->shared_from_this();
     for (unsigned i = 0; i < visibilityTrackedEntities_.size(); ++i)
@@ -389,8 +392,11 @@ void OgreWorld::StartViewTracking(Entity* entity)
 void OgreWorld::StopViewTracking(Entity* entity)
 {
     if (!entity)
+    {
+        LogError("OgreWorld::StopViewTracking: null entity passed!");
         return;
-    
+    }
+
     EntityPtr entityPtr = entity->shared_from_this();
     for (unsigned i = 0; i < visibilityTrackedEntities_.size(); ++i)
     {
