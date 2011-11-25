@@ -251,7 +251,7 @@ setup_clean_install_step()
 
 # This setting affects only windows. Possibility to opt out of linking agains DirecX spesific libs.
 # Enabled more efficient texture blitting to Ogre using DirectX. This makes RenderSystem_Direct3D9 mandatory.
-set (ENABLE_DIRECTX 1)
+set (ENABLE_DIRECTX 0)
 
 # Set global hardcoded install prefix. User cannot change this at the moment, until we figure how we want to use this!
 # Call the cleanup step that cleans the install prefix before every installations. This is important as module setups might change between builds.
