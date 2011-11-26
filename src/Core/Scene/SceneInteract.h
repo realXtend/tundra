@@ -37,7 +37,7 @@ public:
     SceneInteract();
     ~SceneInteract() {}
 
-    /// Initialize this object. Must be done for this object to work. Called by SceneAPI
+    /// Called internally by the Framework. Do not call.
     /** @param Framework Framework pointer. */
     void Initialize(Framework *framework);
 

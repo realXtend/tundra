@@ -66,7 +66,7 @@ public:
 
     var username = config.Get(file, "login data", "username");
     if (username != null)
-        print("Hello there", username);
+        print("Hello there " + username);
     etc.
     @endcode
 
