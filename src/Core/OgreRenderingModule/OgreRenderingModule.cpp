@@ -177,7 +177,7 @@ void OgreRenderingModule::OnSceneAdded(const QString& name)
     
     // Add an OgreWorld to the scene
     OgreWorldPtr newWorld(new OgreWorld(renderer.get(), scene));
-    renderer->ogreWorlds_[scene.get()] = newWorld;
+    renderer->ogreWorlds[scene.get()] = newWorld;
     scene->setProperty(OgreWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
 
@@ -195,7 +195,7 @@ void OgreRenderingModule::OnSceneRemoved(const QString& name)
     if (worldPtr)
     {
         scene->setProperty(OgreWorld::PropertyName(), QVariant());
-        renderer->ogreWorlds_.erase(scene.get());
+        renderer->ogreWorlds.erase(scene.get());
     }
 }
 
