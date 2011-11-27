@@ -12,7 +12,7 @@ engine.ImportExtension("qt.gui");
 var label = new QLabel();
 label.indent = 10;
 
-label.text = "the Ogre post-process effects available in Tundra by default.\n\n"
+label.text = "This scene demonstrates the Ogre post-process effects available in Tundra by default.\n\n"
              + "See the associated PostProcessEffects.js for details.";
 label.resize(660,100);
 label.setStyleSheet("QLabel {background-color: transparent; font-size: 16px; }");
