@@ -35,7 +35,7 @@
    <attribute value="-0.0187581368 -0.0430374593 -0.00806938484" name="Angular velocity"/>
   </component>
   <component type="EC_Sound" sync="1" name="Collision">
-   <attribute value="local://collision.ogg" name="Sound ref"/>
+   <attribute value="local://Collision.ogg" name="Sound ref"/>
    <attribute value="0" name="Sound radius inner"/>
    <attribute value="20" name="Sound radius outer"/>
    <attribute value="1" name="Sound gain"/>
