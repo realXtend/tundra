@@ -78,27 +78,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
         return false;
     }
     
-    // Generate tangents to mesh
-    try
-    {
-        unsigned short src, dest;
-        ///\bug Crashes if called for a mesh that has null or zero vertices in the vertex buffer, or null or zero indices in the index buffer.
-        if (!ogreMesh->suggestTangentVectorBuildParams(Ogre::VES_TANGENT, src, dest))
-            ogreMesh->buildTangentVectors(Ogre::VES_TANGENT, src, dest);
-    }
-    catch(...) {}
-    
-    // Generate extremity points to submeshes, 1 should be enough
-    try
-    {
-        for(unsigned short i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
-        {
-            Ogre::SubMesh *smesh = ogreMesh->getSubMesh(i);
-            if (smesh)
-                smesh->generateExtremes(1);
-        }
-    }
-    catch(...) {}
+    GenerateMeshdata();
         
     try
     {
@@ -122,6 +102,31 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
     return true;
 }
 
+void OgreMeshAsset::GenerateMeshdata()
+{
+    // Generate tangents to mesh
+    try
+    {
+        unsigned short src, dest;
+        ///\bug Crashes if called for a mesh that has null or zero vertices in the vertex buffer, or null or zero indices in the index buffer.
+        if (!ogreMesh->suggestTangentVectorBuildParams(Ogre::VES_TANGENT, src, dest))
+            ogreMesh->buildTangentVectors(Ogre::VES_TANGENT, src, dest);
+    }
+    catch(...) {}
+    
+    // Generate extremity points to submeshes, 1 should be enough
+    try
+    {
+        for(unsigned short i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
+        {
+            Ogre::SubMesh *smesh = ogreMesh->getSubMesh(i);
+            if (smesh)
+                smesh->generateExtremes(1);
+        }
+    }
+    catch(...) {}
+}
+
 void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
 {
     if (ticket != loadTicket_)
@@ -132,8 +137,6 @@ void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, con
     {
         /*! \todo Verify if we need to do
             - ogreMesh->setAutoBuildEdgeLists(false);
-            - ogreMesh->buildTangentVectors(...);
-            - smesh->generateExtremes(n);
             for non-manual created meshes via thread loading.
         */
 
@@ -143,6 +146,7 @@ void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, con
         {        
             try
             {
+                GenerateMeshdata();
                 SetDefaultMaterial();
                 assetAPI->AssetLoadCompleted(assetRef);
                 return;
