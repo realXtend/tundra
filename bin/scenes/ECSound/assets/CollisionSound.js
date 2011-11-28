@@ -2,7 +2,7 @@
 //This script will need RigidBody and Sound component
 
 print("Loading Collision Sound Script for entity");
-audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
+//audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
 
 //Test that needed components exist
 var collisionSound = me.GetComponent("EC_Sound", "Collision");
@@ -27,23 +27,23 @@ function checkComponent(component, type) {
     if (component.typeName == "EC_Sound") {
         if(component.name == "Collision")
             collisionSound = component;
-        }
-        else if(component.typeName == "RigidBody")
-            rigidBody = true;
+    }
+    else if(component.typeName == "RigidBody")
+        rigidBody = true;
                 
-        if(collisionSound && rigidBody) {
-            print("found needed Components");
-            me.ComponentAdded.disconnect(checkComponent);
-            init();
-        }               
+    if(collisionSound && rigidBody) {
+        print("found needed Components");
+        me.ComponentAdded.disconnect(checkComponent);
+        init();
+    }               
 }
 
 function collision (otherEntity, pos, normal, distance, impulse, newCollision) {
-    print("Collision: " + impulse);
+    //print("Collision: " + impulse);
     if (impulse > 3.5) {
         // To play sound using the Audio API directly, do the following.
         //      audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
-        audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
+        //audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
 
         // To play a sound clip stored to EC_Sound, do the following.
         me.sound.soundRef = "local://Collision.ogg";
@@ -52,7 +52,13 @@ function collision (otherEntity, pos, normal, distance, impulse, newCollision) {
 }
 
 function entityClicked() {
+    print("click");
+    var sndref = "local://Click.ogg";
+    //sndref = "local://Collision.ogg"
+    //audio.PlaySound(asset.GetAsset(sndref));
+
     // To play a sound clip stored to EC_Sound, do the following.
-    me.sound.soundRef = "local://Click.ogg";
+    me.sound.soundRef = sndref;
+    print(me.sound.soundRef.ref);
     me.Exec(1, "PlaySound");
 }

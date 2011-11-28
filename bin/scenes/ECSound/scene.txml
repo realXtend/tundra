@@ -1,0 +1,518 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-15.1062,30,0.497458,-179.968,-11.6616,-0.00473336,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="2" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000748 0.000416 0.000691" name="Linear velocity"/>
+   <attribute value="-0.018758 -0.043037 -0.008069" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="local://Collision.ogg" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="500" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Play on load"/>
+   <attribute value="false" name="Loop sound"/>
+   <attribute value="true" name="Spatial"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="2" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-30,40,-10,-179.968,-11.6616,-0.00473336,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="2" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000748 0.000416 0.000691" name="Linear velocity"/>
+   <attribute value="-0.018758 -0.043037 -0.008069" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="local://collision.ogg" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="500" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Play on load"/>
+   <attribute value="false" name="Loop sound"/>
+   <attribute value="true" name="Spatial"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="3" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-21.11,54,32.5,-179.968,-11.6616,-0.00473336,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="2" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000748 0.000416 0.000691" name="Linear velocity"/>
+   <attribute value="-0.018758 -0.043037 -0.008069" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="local://collision.ogg" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="500" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Play on load"/>
+   <attribute value="false" name="Loop sound"/>
+   <attribute value="true" name="Spatial"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="4" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="20,60,-20,-179.968,-11.6616,-0.00473336,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="2" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000748 0.000416 0.000691" name="Linear velocity"/>
+   <attribute value="-0.018758 -0.043037 -0.008069" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="local://collision.ogg" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="500" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Play on load"/>
+   <attribute value="false" name="Loop sound"/>
+   <attribute value="true" name="Spatial"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="5" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-40,60,-30,-179.968,-11.6616,-0.00473336,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="2" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000748 0.000416 0.000691" name="Linear velocity"/>
+   <attribute value="-0.018758 -0.043037 -0.008069" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="local://collision.ogg" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="500" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Play on load"/>
+   <attribute value="false" name="Loop sound"/>
+   <attribute value="true" name="Spatial"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="6" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="40,70,30,-179.968,-11.6616,-0.00473336,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="2" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000748 0.000416 0.000691" name="Linear velocity"/>
+   <attribute value="-0.018758 -0.043037 -0.008069" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="local://collision.ogg" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="500" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Play on load"/>
+   <attribute value="false" name="Loop sound"/>
+   <attribute value="true" name="Spatial"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="7" sync="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-28,27,-72.5,-179.968,-11.6616,-0.00473336,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="2" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000748 0.000416 0.000691" name="Linear velocity"/>
+   <attribute value="-0.018758 -0.043037 -0.008069" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="local://collision.ogg" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="500" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Play on load"/>
+   <attribute value="false" name="Loop sound"/>
+   <attribute value="true" name="Spatial"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="8" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="ScriptControl" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://ScriptControl.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="9" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="terrain" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Terrain" sync="1">
+   <attribute value="-204,-86,-169,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="24" name="Grid Width"/>
+   <attribute value="24" name="Grid Height"/>
+   <attribute value="0.129999995" name="Tex. U scale"/>
+   <attribute value="0.129999995" name="Tex. V scale"/>
+   <attribute value="local://RexTerrainPCF.material" name="Material"/>
+   <attribute value="local://terrain.ntf" name="Heightmap"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="5" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+ </entity>
+ <entity id="10" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="Instructions" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://instructions.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="11" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="FreeLookCamera" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Camera" sync="1">
+   <attribute value="0.000000 1.000000 0.000000" name="Up vector"/>
+   <attribute value="0.100000001" name="Near plane"/>
+   <attribute value="2000" name="Far plane"/>
+   <attribute value="45" name="Vertical FOV"/>
+   <attribute value="" name="Aspect ratio"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="130,80,140,-30.3,40.4,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_InputMapper" sync="1">
+   <attribute value="EC_InputMapper" name="Input context name"/>
+   <attribute value="101" name="Input context priority"/>
+   <attribute value="false" name="Take keyboard events over Qt"/>
+   <attribute value="true" name="Take mouse events over Qt"/>
+   <attribute value="1" name="Action execution type"/>
+   <attribute value="false" name="Key modifiers enable"/>
+   <attribute value="true" name="Enable actions"/>
+   <attribute value="true" name="Trigger on keyrepeats"/>
+   <attribute value="false" name="Suppress used keyboard events"/>
+   <attribute value="false" name="Suppress used mouse events"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://freelookcamera.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_SoundListener" sync="0">
+   <attribute value="true" name="active"/>
+  </component>
+ </entity>
+ <entity id="12" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="sky" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Sky" sync="1">
+   <attribute value="RexSkyBox" name="Material"/>
+   <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
+   <attribute value="50" name="Distance"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
+   <attribute value="true" name="Draw first"/>
+  </component>
+ </entity>
+</scene>

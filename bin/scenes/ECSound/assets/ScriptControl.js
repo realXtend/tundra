@@ -1,3 +1,6 @@
+//allows editing
+//physics.SetRunPhysics(false);
+
 //print("<-- ECSound test ScriptControl.js --:");
 
 //Look for Entities with name Collision box and set RigidBody's mass to 2.0
@@ -17,20 +20,3 @@ for( i in entityList)
 	
 
 }
-
-
-//Get and Set Cameraposition
-
-var cameraId = scene.GetEntityIdsWithComponent("EC_Camera");
-var camera = scene.GetEntityRaw(cameraId);
-var transform = camera.placeable.transform;
-
-transform.pos.x = 130.0;
-transform.pos.y = 140.0;
-transform.pos.z = 80.0;
-
-transform.rot.x = 72.0;
-transform.rot.y = 0.0;
-transform.rot.z = -220.0;
-
-camera.placeable.transform = transform;
