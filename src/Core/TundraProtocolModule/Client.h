@@ -74,12 +74,16 @@ public:
     void DoLogout(bool fail = false);
 
 public slots:
-    /// Connects and logs in. The QUrl's query parameters will be evaluated for the login data.
-    /** Minimum information needed to try a connection in the url are host and username.
-        URL syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]
-        URL examples: tundra://server.com/?username=John tundra://server.com:5432/?username=John&password=pWd123&protocol=udp 
+    /// Connects and logs in. The QUrl's query parameters will be evaluated for the login data. 
+    /// All query parameters that are not recognized will be added to the clients login properties as custom data.
+    /** Minimum information needed to try a connection in the url are host and username. For query parameters only username, protocol and password 
+        get special treatment, other params are inserted to the login properties as is.
+        URL syntax: {tundra|http|https}://host[:port]/?username=x[&password=y][&protocol={udp|tcp}][&XXX=YYY]
+        URL examples: tundra://server.com/?username=John%20Doe tundra://server.com:5432/?username=John%20Doe&password=pWd123&protocol=udp&myCustomValue=YYY&myOtherValue=ZZZ
         @param loginUrl The login URL.
-        @note The destination port is obtained from the URL's port, not from a query parameter. If no port present, using Tundra's default port 2345. */
+        @note The input QUrl is expected to be in full percent encoding if it contains non ascii characters (so dont use QUrl::TolerantMode for parsing). 
+        Username will be automatically decoded, other params are inserted to the login properties as is.
+        @note The destination port is obtained from the URL's port, not from a query parameter. If no port is present, using Tundra's default port 2345. */
     void Login(const QUrl& loginUrl);
 
     /// Connect and login. Username and password will be encoded to XML key-value data

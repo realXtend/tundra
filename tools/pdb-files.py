@@ -2,40 +2,53 @@ import os
 import os.path
 import sys
 import zipfile
+import shutil
 
-'''
-Seeks for *.pdb files from current directory and all child directories.
-All found pdb files are copied to 'pdb-files.zip' file with their relative file paths.
-'''
+"""Finds all .pdb files and copies them to ./Tundra-pdb """
+
+targetdir = "Tundra-pdb"
+copydir = os.path.join(os.getcwd(), targetdir)
+rootdir = os.getcwd()[0:-6] # strip the /tools from the end
 
 fileList = []
-rootdir = os.getcwd()[0:-6] # strip the /tools from the end
-zip_file_name = "Tundra-pdb.zip"
+ignoredebugdirs = True
+count = 0
+totalsize = 0
 
-if os.path.isfile(zip_file_name):
-    print ("file '%s' already exits. Please remove the file before run this script." % (zip_file_name))
+if os.path.isdir(copydir):
+    print ("Out directory '%s' already exits. Please rename it so you don't lose any previous data or delete the folder by hand." % (copydir))
     sys.exit()
-print ("\nAll pdb files are stored to: %s" %(zip_file_name))
+    
+print ("\nAll pdb files are stored to: %s" %(copydir))
 print ("Please wait, this might take several minutes...")
 
-count = 0
-total_size = 0
 for root, subFolders, files in os.walk(rootdir):
     for file in files:
-        name, ext = os.path.splitext( file )
+        name, ext = os.path.splitext(file)
         if ext != '.pdb':
-            continue	
+            continue
+        fileabs = os.path.join(root,file)
+        if ignoredebugdirs:
+            parentdirname = os.path.dirname(fileabs)
+            parentdirname = parentdirname[parentdirname.rfind("\\")+1:]
+            if parentdirname == 'Debug':
+                continue
         if file:
             count = count +1
-            total_size = total_size + os.path.getsize(os.path.join(root,file))
-            fileList.append(os.path.join(root,file))
+            totalsize = totalsize + os.path.getsize(fileabs)
+            fileList.append(fileabs)
 
-zout = zipfile.ZipFile(zip_file_name, "w")  
-print "\nPacking..."          
+print ("Copying files...")
+
 for fname in fileList:
     achivefilename = fname[len(rootdir)+1:]
-    print "  * " + achivefilename
-    zout.write(fname, achivefilename)
-zout.close()
+    outpath = os.path.join(copydir, achivefilename)
+    outdir = outpath[:outpath.rfind("\\")]
+    print "  * " + targetdir + "\\" + achivefilename
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    shutil.copy(fname, outpath)
 
-print ("Totally %i pdb files was found with total size %.1f megabytes." % (count, total_size/1024/1024))
+print ("\nTotally %i pdb files was found with total size %.1f megabytes." % (count, totalsize/1024/1024))
+print ("Press enter to exit...");
+fakein = raw_input()

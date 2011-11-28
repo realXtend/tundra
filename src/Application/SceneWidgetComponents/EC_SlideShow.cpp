@@ -45,7 +45,7 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
     interactive(this, "Interactive", false),
     illuminating(this, "Illuminating", true),
     isServer_(false),
-    appliedListener_(0)
+    currentTextureRef_("")
 {
     static AttributeMetadata zeroIndexMetadata;
     static AttributeMetadata slideIndexMetadata;
@@ -221,6 +221,7 @@ void EC_SlideShow::ShowSlide(int index)
             return;
         }
         
+        const QString applyingTextureRef = listener->Asset()->Name();
         const QString ogreTextureName = textureAsset->ogreAssetName;
         Ogre::TextureUnitState *textureUnit = GetRenderTextureUnit();
         if (textureUnit)
@@ -229,13 +230,21 @@ void EC_SlideShow::ShowSlide(int index)
 
             // Unload previously set texture from asset system and Ogre to save memory.
             // We don't remove the disk source so its fast to load back.
-            if (appliedListener_ && appliedListener_->Asset().get())
+            if (currentTextureRef_ != applyingTextureRef && !currentTextureRef_.isEmpty())
             {
-                framework->Asset()->ForgetAsset(appliedListener_->Asset()->Name(), false);
-                appliedListener_->setProperty("isRequested", false);
-                appliedListener_->setProperty("transferFailed", false);
+                framework->Asset()->ForgetAsset(currentTextureRef_, false);
+
+                // If this ref is still handled by a listener, update the state
+                foreach(AssetRefListener *iterListener, assetListeners_)
+                {
+                    if (iterListener && iterListener->Asset().get() && iterListener->Asset()->Name() == currentTextureRef_)
+                    {
+                        iterListener->setProperty("isRequested", false);
+                        iterListener->setProperty("transferFailed", false);
+                    }
+                }
             }
-            appliedListener_ = listener;
+            currentTextureRef_ = applyingTextureRef;
         }
         break;
     }

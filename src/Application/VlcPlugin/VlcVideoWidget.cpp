@@ -6,7 +6,6 @@
 #include <QPainter>
 #include <QUrl>
 #include <QVarLengthArray>
-#include <QDebug>
 
 VlcVideoWidget::VlcVideoWidget(const QList<QByteArray> &args) :
     QFrame(0),
@@ -224,12 +223,18 @@ void VlcVideoWidget::Stop()
 {
     if (vlcPlayer_)
     {
-        onScreenPixmapMutex_.unlock();
-        renderPixmapMutex_.unlock();
-        statusAccess.unlock();
+        libvlc_state_t state = GetMediaState();
+        if (state == libvlc_Playing || state == libvlc_Paused || state == libvlc_Ended)
+        {
+            if (onScreenPixmapMutex_.tryLock(50))
+                onScreenPixmapMutex_.unlock();
+            if (renderPixmapMutex_.tryLock(50))
+                renderPixmapMutex_.unlock();
+            if (statusAccess.tryLock(50))
+                statusAccess.unlock();
 
-        libvlc_media_player_stop(vlcPlayer_);
-
+            libvlc_media_player_stop(vlcPlayer_);
+        }
         update();
         ForceUpdateImage();
     }
@@ -253,15 +258,20 @@ bool VlcVideoWidget::Seek(s64 time)
 
 void VlcVideoWidget::ForceUpdateImage()
 {
-    statusAccess.lock();
-    onScreenPixmapMutex_.lock();
-
     QImage image;
     QPixmap addition;
     QPoint additionPos(10, 10);
 
     // No media or stopped
-    if (status.source.isEmpty() || status.stopped)
+    statusAccess.tryLock();
+    bool paused = status.paused;
+    bool buffering = status.buffering;
+    bool stopped = status.stopped;
+    QString source = status.source;
+    statusAccess.unlock();
+
+    onScreenPixmapMutex_.lock();
+    if (source.isEmpty() || stopped)
         image = idleLogo_;
     // Has media and is being played/paused/buffered
     else
@@ -273,11 +283,13 @@ void VlcVideoWidget::ForceUpdateImage()
         else
             image = audioLogo_;
         // Addition
-        if (status.paused)
+        if (paused)
             addition = pausePixmap_;
-        if (status.buffering)
+        if (buffering)
             addition = bufferingPixmap_;
-    }    
+    }
+    onScreenPixmapMutex_.unlock();
+
     // Add additional image if there is one
     if (!addition.isNull())
     {
@@ -287,9 +299,6 @@ void VlcVideoWidget::ForceUpdateImage()
     }
     // Emit image
     emit FrameUpdate(image);
-
-    onScreenPixmapMutex_.unlock();
-    statusAccess.unlock();
 
     update();
 }
@@ -411,10 +420,16 @@ void VlcVideoWidget::InternalUnlock(void* picture, void*const *pixelPlane)
 
 void VlcVideoWidget::InternalRender(void* picture) 
 {
-    statusAccess.lock();
-    bool paused = status.paused;
-    QSize sourceSize = status.sourceSize;
-    statusAccess.unlock();
+    bool paused = false;
+    QSize sourceSize = QSize();
+    if (statusAccess.tryLock(5))
+    {
+        paused = status.paused;
+        sourceSize = status.sourceSize;
+        statusAccess.unlock();
+    }
+    else
+        return;
 
     // Lock on screen pixmap and update it.
     // It is ok to miss some frames, so use tryLock() instead.
@@ -548,6 +563,20 @@ void VlcVideoWidget::CallBackDisplay(void* widget, void* picture)
 
 void VlcVideoWidget::VlcEventHandler(const libvlc_event_t *event, void *widget)
 {
+    // Return on certain events
+    switch (event->type)
+    {
+        case libvlc_MediaPlayerTitleChanged:
+        case libvlc_MediaMetaChanged:
+        case libvlc_MediaSubItemAdded:
+        case libvlc_MediaDurationChanged:
+        case libvlc_MediaParsedChanged:
+        case libvlc_MediaFreed:
+            return;
+        default:
+            break;
+    }
+
     VlcVideoWidget* w = reinterpret_cast<VlcVideoWidget*>(widget);
     w->statusAccess.lock();
 
@@ -650,19 +679,7 @@ void VlcVideoWidget::VlcEventHandler(const libvlc_event_t *event, void *widget)
             w->status.change = PlayerStatus::MediaTime;
             break;
         }
-        case libvlc_MediaPlayerTitleChanged:
-            break;
         // Media events
-        case libvlc_MediaMetaChanged:
-            break;
-        case libvlc_MediaSubItemAdded:
-            break;
-        case libvlc_MediaDurationChanged:
-            break;
-        case libvlc_MediaParsedChanged:
-            break;
-        case libvlc_MediaFreed:
-            break;
         case libvlc_MediaStateChanged:
         {
             if (event->u.media_state_changed.new_state == libvlc_Buffering)
