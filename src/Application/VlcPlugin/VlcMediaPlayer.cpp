@@ -10,8 +10,6 @@
 #include <QLatin1Literal>
 #include <QTime>
 
-#include <QDebug>
-
 VlcMediaPlayer::VlcMediaPlayer() :
     QWidget(0),
     videoWidget_(0),

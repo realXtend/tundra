@@ -42,11 +42,42 @@ namespace MumbleVoip
         VoiceMode GetDefaultVoiceMode() { return default_voice_mode_; }
         bool GetPositionalAudioEnabled() { return positional_audio_enabled_; }
 
-        void SetEncodeQuality(double encode_quality) { encode_quality_ = encode_quality; emit EncodeQualityChanged(encode_quality_); } 
-        void SetPlaybackBufferSizeMs(int playback_buffer_size_ms) { playback_buffer_size_ms_ = playback_buffer_size_ms; emit PlaybackBufferSizeMsChanged(playback_buffer_size_ms_); } 
-        void SetMicrophoneLevel(double microphone_level) { microphone_level_ = microphone_level; emit MicrophoneLevelChanged(microphone_level_); } 
-        void SetDefaultVoiceMode(VoiceMode default_voice_mode) { default_voice_mode_ = default_voice_mode; } 
-        void SetPositionalAudioEnabled(bool positional_audio_enabled) { positional_audio_enabled_ = positional_audio_enabled; emit PositionalAudioEnabledChanged(positional_audio_enabled_); } 
+        void SetEncodeQuality(double encode_quality) 
+        { 
+            if (encode_quality_ == encode_quality)
+                return;
+            encode_quality_ = encode_quality; 
+            emit EncodeQualityChanged(encode_quality_); 
+        } 
+
+        void SetPlaybackBufferSizeMs(int playback_buffer_size_ms) 
+        {
+            if (playback_buffer_size_ms_ == playback_buffer_size_ms)
+                return;
+            playback_buffer_size_ms_ = playback_buffer_size_ms; 
+            emit PlaybackBufferSizeMsChanged(playback_buffer_size_ms_); 
+        }
+
+        void SetMicrophoneLevel(double microphone_level) 
+        { 
+            if (microphone_level_ == microphone_level)
+                return;
+            microphone_level_ = microphone_level; 
+            emit MicrophoneLevelChanged(microphone_level_); 
+        }
+
+        void SetDefaultVoiceMode(VoiceMode default_voice_mode) 
+        { 
+            default_voice_mode_ = default_voice_mode; 
+        } 
+
+        void SetPositionalAudioEnabled(bool positional_audio_enabled) 
+        { 
+            if (positional_audio_enabled_ == positional_audio_enabled)
+                return;
+            positional_audio_enabled_ = positional_audio_enabled; 
+            emit PositionalAudioEnabledChanged(positional_audio_enabled_); 
+        } 
 
     signals:
         void EncodeQualityChanged(double);

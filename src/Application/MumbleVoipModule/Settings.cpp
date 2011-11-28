@@ -32,7 +32,6 @@ namespace MumbleVoip
         playback_buffer_size_ms_ = framework_->Config()->Get(configData, "playback buffer size", 200).toInt();
         default_voice_mode_ = (VoiceMode)framework_->Config()->Get(configData, "default voice mode", (int)Mute).toInt();
         positional_audio_enabled_ = framework_->Config()->Get(configData, "positional audio enabled", false).toBool();
-
     }
 
     void Settings::Save()
