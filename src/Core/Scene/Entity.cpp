@@ -27,7 +27,7 @@ Entity::Entity(Framework* framework, Scene* scene) :
 {
 }
 
-Entity::Entity(Framework* framework, uint id, Scene* scene) :
+Entity::Entity(Framework* framework, entity_id_t id, Scene* scene) :
     framework_(framework),
     id_(id),
     scene_(scene),
