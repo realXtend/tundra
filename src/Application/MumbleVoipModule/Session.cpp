@@ -66,31 +66,40 @@ namespace MumbleVoip
             reason_ = connection_->GetReason();
             return;
         }
-        server_address_ = server_info.server;
 
-        connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)), Qt::UniqueConnection);
-        connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()), Qt::UniqueConnection);
-        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()), Qt::UniqueConnection);
+        if (connection_->GetState() != MumbleLib::Connection::STATE_ERROR)
+        {
+            server_address_ = server_info.server;
 
-        connection_->Join(server_info.channel_name);
-        connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
-        connection_->SendPosition(settings_->GetPositionalAudioEnabled());
-        connection_->SendAudio(audio_sending_enabled_);
-        connection_->ReceiveAudio(audio_receiving_enabled_);
-        
-        // Set the current settings as the mumble config/settings widget might not be used.
-        // Was used in OS Naali.
-        if (sending_audio_)
-            EnableAudioReceiving();
+            connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)), Qt::UniqueConnection);
+            connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()), Qt::UniqueConnection);
+            connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()), Qt::UniqueConnection);
+
+            connection_->Join(server_info.channel_name);
+            connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
+            connection_->SendPosition(settings_->GetPositionalAudioEnabled());
+            connection_->SendAudio(audio_sending_enabled_);
+            connection_->ReceiveAudio(audio_receiving_enabled_);
+
+            // Set the current settings as the mumble config/settings widget might not be used.
+            // Was used in OS Naali.
+            if (sending_audio_)
+                EnableAudioReceiving();
+            else
+                DisableAudioReceiving();
+            if (audio_sending_enabled_)
+                EnableAudioSending();
+            else
+                DisableAudioSending();
+
+            MumbleLib::MumbleLibrary::Start();
+            state_ = STATE_OPEN;
+        }
         else
-            DisableAudioReceiving();
-        if (audio_sending_enabled_)
-            EnableAudioSending();
-        else
-            DisableAudioSending();
+        {
+            state_ = STATE_ERROR;
+        }
 
-        MumbleLib::MumbleLibrary::Start();
-        state_ = STATE_OPEN;
         emit StateChanged(state_);
     }
 
@@ -539,12 +548,19 @@ namespace MumbleVoip
     {
         switch(connection_->GetState())
         {
-        case STATE_ERROR:
-            if (state_ == STATE_OPEN) // Reconnect
+            case STATE_ERROR:
             {
-                Reconnect();
+                if (state_ == STATE_OPEN) // Reconnect
+                {
+                    Reconnect();
+                }
+                if (state_ == STATE_INITIALIZING)
+                {
+                    state_ = STATE_ERROR;
+                    reason_ = connection_->GetReason();
+                }
+                break;
             }
-            break;
         }
     }
 
@@ -555,7 +571,7 @@ namespace MumbleVoip
         ServerInfo server_info = channels_[current_mumble_channel_];
         OpenConnection(server_info);
 
-        if(state_ == STATE_ERROR)
+        if (state_ == STATE_ERROR)
         {
             LogInfo("MumbleVoidp: Reconnection failed, trying again in " + ToString(reconnect_timeout_) + " seconds..");
             QTimer::singleShot(reconnect_timeout_, this, SLOT(Reconnect()));
@@ -658,10 +674,18 @@ namespace MumbleVoip
             OpenConnection(server_info);
         }
 
-        current_mumble_channel_ = channel_name;
-        LogInfo(QString("MumbleVoidp: Active voice channel changed to: %1").arg(current_mumble_channel_).toStdString());
-        PopulateParticipantList();
-        emit ActiceChannelChanged(channel_name);
+        if (GetState() != STATE_OPEN || (connection_ && connection_->GetState() == MumbleLib::Connection::State::STATE_ERROR))
+        {
+            LogError("MumbleVoip: " + (connection_ != 0 ? connection_->GetReason() : "Unknown error while connecting to server"));
+            Close();
+        }
+        else
+        {
+            current_mumble_channel_ = channel_name;
+            LogInfo(QString("MumbleVoidp: Active voice channel changed to: %1").arg(current_mumble_channel_).toStdString());
+            PopulateParticipantList();
+            emit ActiceChannelChanged(channel_name);
+        }
     }
 
     QStringList Session::GetChannels()

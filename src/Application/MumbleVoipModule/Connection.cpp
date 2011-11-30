@@ -127,23 +127,27 @@ namespace MumbleLib
             reason_ = QString(e.what());
             return;
         }
-        user_name_ = info.user_name;
-        user_comment_ = info.avatar_id;
-        current_server_ = info.server;
 
-        lock_state_.lockForWrite();
-        state_ = STATE_AUTHENTICATING;
-        lock_state_.unlock();
+        if (state_ != STATE_ERROR)
+        {
+            user_name_ = info.user_name;
+            user_comment_ = info.avatar_id;
+            current_server_ = info.server;
+
+            lock_state_.lockForWrite();
+            state_ = STATE_AUTHENTICATING;
+            lock_state_.unlock();    
+
+            connect(&user_update_timer_, SIGNAL(timeout()), SLOT(UpdateUserStates()));
+            user_update_timer_.start(USER_STATE_CHECK_TIME_MS);
+        }
+
         emit StateChanged(state_);
-
-        connect(&user_update_timer_, SIGNAL(timeout()), SLOT(UpdateUserStates()));
-        user_update_timer_.start(USER_STATE_CHECK_TIME_MS);
     }
 
     Connection::~Connection()
     {
         Close();
-        this->disconnect();
 
         QMutexLocker locker1(&mutex_raw_udp_tunnel_);
 
@@ -171,12 +175,20 @@ namespace MumbleLib
         lock_users_.unlock();
 
         lock_state_.lockForRead();
-        if (client_ && state_ != STATE_ERROR)
+        if (client_)
         {
             QMutexLocker client_locker(&mutex_client_);
             try
             {
-                SAFE_DELETE(client_);
+                /// @todo Fix libmumbleclients horrible code, see below for more (in cpp file)
+                /// @bug MEMORY LEAK + BAD 3RD PARTY LIB CODE:
+                /// If we are in a STATE_ERROR its likely that the error happened
+                /// in client_->Connect(...). We cannot delete the client_ as it
+                /// has bad init/uninit code, it does not init null its udp_socket_, tcp_socket_ and friends
+                /// in ctor but in dtor blindly calls delete on the null ptrs! If the error state happens in
+                /// client_->Connect(...) those ptrs will be null and you will crash if you have proper dealloc of mem here!
+                if (state_ != STATE_ERROR)
+                    SAFE_DELETE(client_);
             }
             catch(std::exception &/*e*/)
             {
@@ -188,11 +200,12 @@ namespace MumbleLib
 
     void Connection::HandleError(const boost::system::error_code &error)
     {
-        if(state_ == STATE_CLOSED)
+        if (state_ == STATE_CLOSED)
             return;
 
         LogError("Relayed from mumbleclient (" + std::string(error.category().name()) + "\\" + std::string(error.message()) + ")");
         lock_state_.lockForWrite();
+        reason_ = QString::fromStdString(error.message());
         state_ = STATE_ERROR;
         lock_state_.unlock();
         emit StateChanged(state_);
@@ -213,6 +226,10 @@ namespace MumbleLib
 
     void Connection::Close()
     {
+        /// @bug CRASH BUG when in STATE_ERROR client_->Disconnect(); will crash the whole application
+        /// even if the ptr is valid. See more details in ~Connection().
+        if (state_ == STATE_ERROR)
+            return;
         if (state_ == STATE_CLOSED)
             return;
 
