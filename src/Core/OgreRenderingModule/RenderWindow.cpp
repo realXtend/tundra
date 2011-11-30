@@ -220,4 +220,16 @@ void RenderWindow::Resize(int width, int height)
         texture->setHeight(height);
         texture->createInternalResources();
     }
+
+    emit Resized(width, height);
+}
+
+int RenderWindow::Width() const
+{
+    return renderWindow->getWidth();
+}
+
+int RenderWindow::Height() const
+{
+    return renderWindow->getHeight();
 }

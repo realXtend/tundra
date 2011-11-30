@@ -25,12 +25,14 @@
 #include "LoggingFunctions.h"
 #include "ConfigAPI.h"
 #include "QScriptEngineHelpers.h"
+#include "UiPlane.h"
 
 #include <Ogre.h>
 #include <OgreDefaultHardwareBufferManager.h>
 
 Q_DECLARE_METATYPE(EC_Placeable*);
 Q_DECLARE_METATYPE(EC_Camera*);
+Q_DECLARE_METATYPE(UiPlane*);
 
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;
@@ -142,6 +144,10 @@ namespace OgreRenderer
     {
         if (framework_->Ui() && framework_->Ui()->MainWindow())
             framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();
+
+        // Delete all UiPlanes that still exist.
+        while(uiPlanes.size() > 0)
+            DeleteUiPlane(uiPlanes.front());
 
         // Delete all worlds that still exist
         ogreWorlds_.clear();
@@ -821,6 +827,42 @@ namespace OgreRenderer
         emit MainCameraChanged(mainCameraEntity);
     }
 
+    UiPlane *Renderer::CreateUiPlane(const QString &name)
+    {
+        UiPlane *p = new UiPlane(framework_, renderWindow);
+        p->setObjectName(name);
+        p->UpdateOgreOverlay();
+        uiPlanes.push_back(p);
+        return p;
+    }
+
+    void Renderer::DeleteUiPlane(UiPlane *plane)
+    {
+        if (!plane)
+            return;
+
+        for(size_t i = 0; i < uiPlanes.size(); ++i)
+            if (uiPlanes[i] == plane)
+            {
+                uiPlanes.erase(uiPlanes.begin() + i);
+                delete plane;
+                return;
+            }
+        LogError("Trying to delete nonexisting UiPlane!");
+    }
+
+    void Renderer::DeleteUiPlane(const QString &name)
+    {
+        for(size_t i = 0; i < uiPlanes.size(); ++i)
+            if (uiPlanes[i]->objectName() == name)
+            {
+                delete uiPlanes[i];
+                uiPlanes.erase(uiPlanes.begin() + i);
+                return;
+            }
+        LogError("Trying to delete nonexisting UiPlane with name " + name + "!");
+    }
+
     OgreWorldPtr Renderer::GetActiveOgreWorld() const
     {
         Entity *entity = activeMainCamera.lock().get();
@@ -899,6 +941,7 @@ namespace OgreRenderer
     {
         qScriptRegisterQObjectMetaType<EC_Placeable*>(engine);
         qScriptRegisterQObjectMetaType<EC_Camera*>(engine);
+        qScriptRegisterQObjectMetaType<UiPlane*>(engine);
     }
 
 }

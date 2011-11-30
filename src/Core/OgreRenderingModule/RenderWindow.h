@@ -36,14 +36,22 @@ public:
 
     std::string OverlayTextureName() const;
 
+signals:
+    /// This signal is triggered when the Ogre3D render target has been resized.
+    void Resized(int newWidth, int newHeight);
+
+public slots:
+    void Resize(int newWidth, int newHeight);
+
     /// Fully repaints the Ogre 2D Overlay from the given source image.
     void UpdateOverlayImage(const QImage &src);
 
     /// Shows or hides whether the 2D Ogre Overlay is visible or not.
     void ShowOverlay(bool visible);
 
-public slots:
-    void Resize(int newWidth, int newHeight);
+    int Width() const;
+
+    int Height() const;
 
 private:
     void CreateRenderTargetOverlay(int width, int height);

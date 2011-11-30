@@ -15,6 +15,7 @@
 
 #include <boost/enable_shared_from_this.hpp>
 
+class UiPlane;
 class QRect;
 class QScriptEngine;
 class RenderWindow;
@@ -166,6 +167,14 @@ namespace OgreRenderer
             Whenever the main camera is changed, the signal MainCameraChanged is triggered. */
         void SetMainCamera(Entity *mainCameraEntity);
 
+        /// Creates a new hidden UiPlane with the given name.
+        /** Remember to specify the Z order of the new plane, add some content to it, and call Show() when you want to display the UiPlane.
+            The memory of the returned object is owned by Renderer. Call Renderer::DeleteUiPlane() to remove the UiPlane when you no longer need it. */
+        UiPlane *CreateUiPlane(const QString &name);
+
+        void DeleteUiPlane(UiPlane *plane);
+        void DeleteUiPlane(const QString &name);
+
     signals:
         /// Emitted every time the main window active camera changes.
         /** The pointer specified in this signal may be null, if the main camera was set to null.
@@ -205,6 +214,9 @@ namespace OgreRenderer
         /// All created OgreWorlds (scene managers)
         std::map<Scene*, OgreWorldPtr> ogreWorlds_;
         
+        /// Stores all the created Ogre overlays.
+        std::vector<UiPlane*> uiPlanes;
+
         /// Stores the camera that is active in the main window.
         boost::weak_ptr<Entity> activeMainCamera;
 
