@@ -6,9 +6,6 @@
 #include "Framework.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
-#include "CoreDefines.h"
-#include "Application.h"
-#include "LoggingFunctions.h"
 
 VlcPlugin::VlcPlugin() :
     IModule("VlcPlugin")
@@ -16,7 +13,7 @@ VlcPlugin::VlcPlugin() :
 }
 
 void VlcPlugin::Load()
-{  
+{
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_MediaPlayer>));
 }
 

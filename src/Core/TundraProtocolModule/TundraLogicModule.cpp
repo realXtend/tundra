@@ -268,10 +268,13 @@ void TundraLogicModule::Update(f64 frametime)
         QStringList cmdLineParams = framework_->CommandLineParameters("--login");
         if (cmdLineParams.size() > 0)
         {
-            LogInfo(cmdLineParams.first());
-            QUrl loginUrl(cmdLineParams.first(), QUrl::TolerantMode);
+            // Do not use QUrl::TolerantMode as it will do things to percent encoding
+            // we don't want a t this point, see http://doc.trolltech.com/4.7/qurl.html#ParsingMode-enum
+            QUrl loginUrl(cmdLineParams.first(), QUrl::StrictMode);
             if (loginUrl.isValid())
                 client_->Login(loginUrl);
+            else
+                LogError("Login URL is not valid after strict parsing: " + cmdLineParams.first());
         }
 
         checkLoginStart = false;

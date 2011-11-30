@@ -16,8 +16,7 @@
 
 class VlcMediaPlayer : public QWidget
 {
-
-Q_OBJECT
+    Q_OBJECT
 
 public:
     /// Constructor

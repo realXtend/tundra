@@ -1,0 +1,102 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="1">
+  <component type="EC_Sky" sync="1">
+   <attribute value="RexSkyBox" name="Material"/>
+   <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
+   <attribute value="50" name="Distance"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
+   <attribute value="true" name="Draw first"/>
+  </component>
+  <component type="EC_WaterPlane" sync="1">
+   <attribute value="5000" name="x-size"/>
+   <attribute value="5000" name="y-size"/>
+   <attribute value="20" name="Depth"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Position"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Rotation"/>
+   <attribute value="0.000199999995" name="U factor"/>
+   <attribute value="0.000199999995" name="V factor"/>
+   <attribute value="10" name="Segments in x"/>
+   <attribute value="10" name="Segments in y"/>
+   <attribute value="Ocean" name="Material"/>
+   <attribute value="" name="Material ref"/>
+   <attribute value="0.200000003 0.400000006 0.349999994 1" name="Fog color"/>
+   <attribute value="100" name="Fog start dist."/>
+   <attribute value="2000" name="Fog end dist."/>
+   <attribute value="3" name="Fog mode"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Environment" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+ </entity>
+ <entity id="2" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="Animation" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="3" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="Menu" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="Menu.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="-2147483646" sync="0">
+  <component type="EC_Script" sync="1">
+   <attribute value="local://freelookcamera.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_Camera" sync="1">
+   <attribute value="0.000000 1.000000 0.000000" name="Up vector"/>
+   <attribute value="0.100000001" name="Near plane"/>
+   <attribute value="2000" name="Far plane"/>
+   <attribute value="45" name="Vertical FOV"/>
+   <attribute value="" name="Aspect ratio"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-9.64181,35.9791,10.3498,-15,-56.1,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="FreeLookCamera" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_InputMapper" sync="1">
+   <attribute value="EC_InputMapper" name="Input context name"/>
+   <attribute value="101" name="Input context priority"/>
+   <attribute value="false" name="Take keyboard events over Qt"/>
+   <attribute value="true" name="Take mouse events over Qt"/>
+   <attribute value="1" name="Action execution type"/>
+   <attribute value="false" name="Key modifiers enable"/>
+   <attribute value="true" name="Enable actions"/>
+   <attribute value="true" name="Trigger on keyrepeats"/>
+   <attribute value="false" name="Suppress used keyboard events"/>
+   <attribute value="false" name="Suppress used mouse events"/>
+  </component>
+  <component type="EC_SoundListener" sync="0">
+   <attribute value="true" name="active"/>
+  </component>
+ </entity>
+</scene>

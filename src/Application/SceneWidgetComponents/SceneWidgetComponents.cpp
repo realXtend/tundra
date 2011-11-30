@@ -81,8 +81,8 @@ void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
                 closestComponent = widgetBillboard;
             }
         }
-        else if (et == MouseEvent::MouseReleased)
-            widgetBillboard->CheckWidgetMouseRelease();
+        else
+            widgetBillboard->CheckMouseState();
     }
 
     // Redirect mouse event for the closest EC_WidgetBillboard

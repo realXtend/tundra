@@ -1,60 +1,64 @@
 //Script is attached into Entity
 //This script will need RigidBody and Sound component
 
-print("Loading Collision Sound Script for enity");
+print("Loading Collision Sound Script for entity");
+//audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
 
-//Test that needed components excist
-var CollisionSound = me.GetComponent("EC_Sound", "Collision");
-var RigidBody = me.GetComponent("EC_RigidBody");
+//Test that needed components exist
+var collisionSound = me.GetComponent("EC_Sound", "Collision");
+var rigidBody = me.GetComponent("EC_Sound", "Collision");
+if(collisionSound && rigidBody) {
+    print("Found needed Components at start, initing.");
+    init();
+}
+else {
+    print("Missing needed Components at start - waiting for: RigidBody, and Sound(Collision)");
+    me.ComponentAdded.connect(checkComponent);
+}
 
-if(CollisionSound && RigidBody)
-{	
-	print("Found needed Components");
-
-	me.rigidbody.PhysicsCollision.connect(Collision);
-	me.Action("MousePress").Triggered.connect(EntityClicked);
-}	
-else
-{
-	print("Missing needed Components, Check that you have RigidBody, and Sound(Collision)");
-	me.ComponentAdded.connect(CheckComponent);
+//called when all the necessary components are here. core could perhaps support having ECs as code deps.
+function init() {
+    me.rigidbody.PhysicsCollision.connect(collision);
+    me.Action("MousePress").Triggered.connect(entityClicked);
 }
 
 //Checking if needed components are added after Script component to Entity
- function CheckComponent(component, type)
-{	
-	if (component.typeName == "EC_Sound")
-	{
-		if(component.name == "Collision")
-			CollisionSound = component;
-	}
-	else if(component.typeName == "RigidBody")
-		RigidBody = true;
-		
-	if(CollisionSound && RigidBody)
-	{	
-		print("found needed Components");
-		me.rigidbody.PhysicsCollision.connect(Collision);
-		me.Action("MousePress").Triggered.connect(EntityClicked);
-		me.ComponentAdded.disconnect(CheckComponent);
-	}		
+function checkComponent(component, type) {      
+    if (component.typeName == "EC_Sound") {
+        if(component.name == "Collision")
+            collisionSound = component;
+    }
+    else if(component.typeName == "RigidBody")
+        rigidBody = true;
+                
+    if(collisionSound && rigidBody) {
+        print("found needed Components");
+        me.ComponentAdded.disconnect(checkComponent);
+        init();
+    }               
 }
-function Collision (otherEntity, pos, normal, distance, impulse, newCollision)
-{
-    if (impulse > 3.5)
-    {
+
+function collision (otherEntity, pos, normal, distance, impulse, newCollision) {
+    //print("Collision: " + impulse);
+    if (impulse > 3.5) {
         // To play sound using the Audio API directly, do the following.
-//	    audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
+        //      audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
+        //audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
 
-	    // To play a sound clip stored to EC_Sound, do the following.
-        me.sound.SoundId = "local://Collision.ogg";
-	    me.Exec(1, "PlaySound");
-	}
+        // To play a sound clip stored to EC_Sound, do the following.
+        me.sound.soundRef = "local://Collision.ogg";
+        me.Exec(1, "PlaySound");
+    }
 }
 
-function EntityClicked()
-{
-	// To play a sound clip stored to EC_Sound, do the following.
-    me.sound.SoundId = "local://Click.ogg";
-	me.Exec(1, "PlaySound");
+function entityClicked() {
+    print("click");
+    var sndref = "local://Click.ogg";
+    //sndref = "local://Collision.ogg"
+    //audio.PlaySound(asset.GetAsset(sndref));
+
+    // To play a sound clip stored to EC_Sound, do the following.
+    me.sound.soundRef = sndref;
+    print(me.sound.soundRef.ref);
+    me.Exec(1, "PlaySound");
 }

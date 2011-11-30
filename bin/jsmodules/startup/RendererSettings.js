@@ -105,27 +105,13 @@ if (!framework.IsHeadless())
         targetFps["valueChanged(double)"].connect(SetTargetFpsLimit);
     }
 
-    // Assures that widget is position within desktop.
-    // param widget Widget to be positioned.
-    // param pos Desired position.
-    function AssurePositionWithinDesktop(widget, pos)
-    {
-        var xMax = ui.MainWindow().desktopWidth;
-        var yMax = ui.MainWindow().desktopHeight;
-        if (pos.x() + widget.height > xMax)
-            pos.setX(xMax - widget.width);
-        if (pos.y() + widget.width > yMax)
-            pos.setY(yMax - widget.height);
-        widget.pos = pos;
-    }
-
     // Loads window position from config.
     function LoadWindowPositionFromSettings()
     {
         if (settingsWidget && config.HasValue(configFile, configUiSection, configWinPos))
         {
             var pos = config.Get(configFile, configUiSection, configWinPos);
-            AssurePositionWithinDesktop(settingsWidget, pos);
+            ui.MainWindow().EnsurePositionWithinDesktop(settingsWidget, pos);
         }
     }
 
