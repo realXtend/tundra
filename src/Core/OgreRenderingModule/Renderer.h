@@ -173,7 +173,6 @@ namespace OgreRenderer
         UiPlane *CreateUiPlane(const QString &name);
 
         void DeleteUiPlane(UiPlane *plane);
-        void DeleteUiPlane(const QString &name);
 
     signals:
         /// Emitted every time the main window active camera changes.

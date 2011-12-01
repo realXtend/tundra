@@ -851,18 +851,6 @@ namespace OgreRenderer
         LogError("Trying to delete nonexisting UiPlane!");
     }
 
-    void Renderer::DeleteUiPlane(const QString &name)
-    {
-        for(size_t i = 0; i < uiPlanes.size(); ++i)
-            if (uiPlanes[i]->objectName() == name)
-            {
-                delete uiPlanes[i];
-                uiPlanes.erase(uiPlanes.begin() + i);
-                return;
-            }
-        LogError("Trying to delete nonexisting UiPlane with name " + name + "!");
-    }
-
     OgreWorldPtr Renderer::GetActiveOgreWorld() const
     {
         Entity *entity = activeMainCamera.lock().get();
