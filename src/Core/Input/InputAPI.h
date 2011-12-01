@@ -73,11 +73,14 @@ public slots:
         Remember to hold on to a shared_ptr of the input context as long as you are using the context. */
     InputContextPtr RegisterInputContext(const QString &name, int priority);
 
-    /// For scripting languages.
-    /** Use UnregisterInputContextRaw() to free the input context. */
+    /// Creates an untracked InputContext for use from scripting languages that cannot hold a strong reference to an input context.
+    /** Use UnregisterInputContextRaw() to free the input context.
+        @todo Rename to more descriptive RegisterUntrackedInputContext */
     InputContext *RegisterInputContextRaw(const QString &name, int priority);
 
-    /// For scripting languages.
+    /// Deletes an untracked input context used from scripting languages.
+    /** @see RegisterInputContextRaw.
+        @todo Rename to more descriptive UnregisterUntrackedInputContext */
     void UnregisterInputContextRaw(const QString &name);
 
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
@@ -293,4 +296,3 @@ private:
     QWidget *mainWindow;
     Framework *framework;
 };
-
