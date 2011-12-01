@@ -65,6 +65,8 @@ Q_DECLARE_METATYPE(ScriptAsset*);
 Q_DECLARE_METATYPE(AssetCache*);
 Q_DECLARE_METATYPE(AssetMap);
 Q_DECLARE_METATYPE(AssetStorageVector);
+Q_DECLARE_METATYPE(IAssetStorage::ChangeType);
+Q_DECLARE_METATYPE(IAssetStorage::TrustState);
 
 /// Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
@@ -345,7 +347,10 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     qRegisterMetaType<AssetStorageVector>("AssetStorageVector");
     qScriptRegisterMetaType<AssetStorageVector>(engine, qScriptValueFromAssetStoragePtrVector, qScriptValueToAssetStoragePtrVector);
-    
+
+    qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::ChangeType>, fromScriptValueEnum<IAssetStorage::ChangeType>);
+    qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::TrustState>, fromScriptValueEnum<IAssetStorage::TrustState>);
+
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
     qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);

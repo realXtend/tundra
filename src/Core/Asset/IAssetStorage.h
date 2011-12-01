@@ -14,6 +14,7 @@ class IAssetStorage : public QObject, public boost::enable_shared_from_this<IAss
 {
     Q_OBJECT
     Q_ENUMS(ChangeType)
+    Q_ENUMS(TrustState)
 
 public:
     IAssetStorage()
@@ -47,7 +48,7 @@ public:
         StorageAskTrust
     };
 
-public:
+
     void SetReplicated(bool isReplicated_) { isReplicated = isReplicated_; }
 
     static QString TrustStateToString(TrustState s)
