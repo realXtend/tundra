@@ -24,15 +24,23 @@ namespace MumbleLib
         // @note channel_ pointer is not safe to use because it might have been uninitialized
         // by mumble client library at this point
         LogDebug(QString("Mumble channel object deleted for: %1").arg(channel_name_));
+
+        channel_ = 0;
     }
 
     QString Channel::Name() const
     {
+        if (!channel_)
+            return "";
+
         return QString(channel_->name.c_str());
     }
     
     QString Channel::FullName() const
     {
+        if (!channel_)
+            return "";
+
         QString full_name = Name();
         boost::shared_ptr<::MumbleClient::Channel> c = channel_->parent.lock();
         while (c)
@@ -46,11 +54,17 @@ namespace MumbleLib
 
     int Channel::Id() const
     {
+        if (!channel_)
+            return -1;
+
         return channel_->id;
     }
 
     QString Channel::Description() const
     {
+        if (!channel_)
+            return "";
+
         return QString(channel_->description.c_str());
     }
 

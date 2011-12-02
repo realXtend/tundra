@@ -31,6 +31,15 @@ namespace MumbleVoip
 
         //! For UI
         QString channel_name;
+
+        int GetPortInteger()
+        {
+            bool ok = false;
+            int iPort = port.toInt(&ok);
+            if (!ok)
+                iPort = -1;
+            return iPort;
+        }
     };
 
 } // end of namespace: MumbleVoip

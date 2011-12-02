@@ -162,6 +162,8 @@ namespace MumbleLib
 
         QString GetCurrentServer() { return current_server_; }
 
+        int GetCurrentPort() { return current_port_; }
+
         virtual int GetAverageBandwithIn() const;
         virtual int GetAverageBandwithOut() const;
 
@@ -196,6 +198,7 @@ namespace MumbleLib
         QList<Channel*> channels_; // @todo Use shared ptr
         QMap<int, User*> users_; // maps: session id <-> User object
         QString current_server_;
+        int current_port_;
 
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;

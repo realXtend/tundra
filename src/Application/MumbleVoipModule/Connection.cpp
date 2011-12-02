@@ -133,6 +133,7 @@ namespace MumbleLib
             user_name_ = info.user_name;
             user_comment_ = info.avatar_id;
             current_server_ = info.server;
+            current_port_ = info.GetPortInteger();
 
             lock_state_.lockForWrite();
             state_ = STATE_AUTHENTICATING;

@@ -73,6 +73,7 @@ namespace MumbleVoip
         void ApplyMicrophoneLevel(PCMAudioFrame* frame);
         //virtual void AddChannel(EC_VoiceChannel* channel);
         //virtual void RemoveChannel(EC_VoiceChannel* channel);
+        void ClearUserLists();
         void ClearParticipantList();
         void PopulateParticipantList();
 

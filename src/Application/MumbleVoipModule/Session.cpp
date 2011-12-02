@@ -132,6 +132,21 @@ namespace MumbleVoip
         other_channel_users_.clear();
     }
 
+    void Session::ClearUserLists()
+    {
+        foreach(Participant* p, participants_)
+        {
+            IParticipant *iPart = dynamic_cast<IParticipant*>(p);
+            if (iPart)
+                emit ParticipantLeft(iPart);
+            else
+                LogInfo("MumbleVoidp:Session::Close(): IParticipant *iPart = dynamic_cast<IParticipant*>(p) FAILED!");
+            SAFE_DELETE(p);
+        }
+        participants_.clear();
+        other_channel_users_.clear();
+    }
+
     ISession::State Session::GetState() const
     {
         return state_;
@@ -643,7 +658,7 @@ namespace MumbleVoip
 
         foreach(MumbleLib::User* user, other_channel_users_)
         {
-            if(user->GetChannel()->FullName() == current_mumble_channel_)
+            if(user && user->GetChannel()->FullName() == current_mumble_channel_)
             {
                 CreateNewParticipant(user);
             }
@@ -662,15 +677,24 @@ namespace MumbleVoip
         }
 
         ServerInfo server_info = channels_[channel_name];
-
-        if(connection_ && QString::compare(server_info.server, connection_->GetCurrentServer(), Qt::CaseInsensitive) == 0 && GetState() != STATE_CLOSED && GetState() != STATE_ERROR)
+        
+        // Note that murmur servers even in the same ip can have multiple servers running in different ports.
+        // Inside a particular port may be 0-N channels.
+        if (connection_ && GetState() != STATE_CLOSED && GetState() != STATE_ERROR &&
+            QString::compare(server_info.server, connection_->GetCurrentServer(), Qt::CaseInsensitive) == 0 && 
+            connection_->GetCurrentPort() == server_info.GetPortInteger())
         {
+            // Clean all users if we are not going to cal Close()
+            ClearUserLists();
+            // Server host and port are same, just join the new channel
             connection_->Join(channel_name);
         }
         else
         {
+            // Close connection we are changing server
             if (GetState() != STATE_CLOSED)
                 Close();
+            // Join new server
             OpenConnection(server_info);
         }
 
