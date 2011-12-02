@@ -124,6 +124,22 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     
     std::set<std::pair<btCollisionObject*, btCollisionObject*> > currentCollisions;
     
+    // Collect all collision signals to a list before emitting any of them, in case a collision
+    // handler changes physics state before the loop below is over (which would lead into catastrophic
+    // consequences)
+    struct CollisionSignal
+    {
+        EC_RigidBody *bodyA;
+        EC_RigidBody *bodyB;
+        float3 position;
+        float3 normal;
+        float distance;
+        float impulse;
+        bool newCollision;
+    };
+    std::vector<CollisionSignal> collisions;
+    collisions.reserve(numManifolds * 3); // Guess some initial memory size for the collision list.
+
     if (numManifolds > 0)
     {
         PROFILE(PhysicsWorld_SendCollisions);
@@ -170,17 +186,15 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             {
                 btManifoldPoint& point = contactManifold->getContactPoint(j);
                 
-                float3 position = point.m_positionWorldOnB;
-                float3 normal = point.m_normalWorldOnB;
-                float distance = point.m_distance1;
-                float impulse = point.m_appliedImpulse;
-                
-                {
-                    PROFILE(PhysicsWorld_emit_PhysicsCollision);
-                    emit PhysicsCollision(entityA, entityB, position, normal, distance, impulse, newCollision);
-                }
-                bodyA->EmitPhysicsCollision(entityB, position, normal, distance, impulse, newCollision);
-                bodyB->EmitPhysicsCollision(entityA, position, normal, distance, impulse, newCollision);
+                CollisionSignal s;
+                s.bodyA = bodyA;
+                s.bodyB = bodyB;
+                s.position = point.m_positionWorldOnB;
+                s.normal = point.m_normalWorldOnB;
+                s.distance = point.m_distance1;
+                s.impulse = point.m_appliedImpulse;
+                s.newCollision = newCollision;
+                collisions.push_back(s);
                 
                 // Report newCollision = true only for the first contact, in case there are several contacts, and application does some logic depending on it
                 // (for example play a sound -> avoid multiple sounds being played)
@@ -190,7 +204,18 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             currentCollisions.insert(objectPair);
         }
     }
-    
+
+    // Now fire all collision signals.
+    {
+        PROFILE(PhysicsWorld_emit_PhysicsCollisions);
+        for(size_t i = 0; i < collisions.size(); ++i)
+        {
+            emit PhysicsCollision(collisions[i].bodyA->ParentEntity(), collisions[i].bodyB->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+            collisions[i].bodyA->EmitPhysicsCollision(collisions[i].bodyB->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+            collisions[i].bodyB->EmitPhysicsCollision(collisions[i].bodyA->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+        }
+    }
+
     previousCollisions_ = currentCollisions;
     
     {
