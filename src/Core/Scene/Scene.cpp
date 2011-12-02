@@ -124,6 +124,8 @@ EntityPtr Scene::GetEntity(entity_id_t id) const
 
 EntityPtr Scene::GetEntityByName(const QString &name) const
 {
+    if (name.isEmpty())
+        return EntityPtr();
     EntityMap::const_iterator it = entities_.begin();
     while(it != entities_.end())
     {
@@ -137,13 +139,12 @@ EntityPtr Scene::GetEntityByName(const QString &name) const
 
 bool Scene::IsUniqueName(const QString& name) const
 {
-    int count = 0;
+    if (name.isEmpty())
+        return false;
     EntityMap::const_iterator it = entities_.begin();
     while(it != entities_.end())
     {
         if (it->second->Name() == name)
-            ++count;
-        if (count > 1)
             return false;
         ++it;
     }
