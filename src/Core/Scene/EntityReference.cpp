@@ -57,8 +57,8 @@ bool EntityReference::IsEmpty() const
 }
 
 EntityPtr EntityReference::Lookup(Scene* scene) const
-{
-    if (!scene)
+{    
+    if (!scene || ref.isEmpty())
         return EntityPtr();
     // If ref looks like an ID, lookup by ID first
     bool ok = false;
