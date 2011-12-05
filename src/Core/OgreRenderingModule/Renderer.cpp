@@ -529,7 +529,8 @@ namespace OgreRenderer
         // On windows systems with Pen & Touch input available, Qt doesn't want to actually display the QGgraphicsView even with a call
         // to QGraphicsView::show().
 #ifdef WIN32
-        ShowWindow(((HWND)framework_->Ui()->GraphicsView()->winId()), SW_SHOW);
+        if (framework_->Ui() && framework_->Ui()->GraphicsView())
+            ShowWindow(((HWND)framework_->Ui()->GraphicsView()->winId()), SW_SHOW);
 #endif
 
         if (!initialized_)
