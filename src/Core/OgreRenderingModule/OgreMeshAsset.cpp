@@ -44,6 +44,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
         {
             QFileInfo fileInfo(cacheDiskSource);
             std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
+            //! \todo - Should we set this somewhere for async path?: ogreMesh->setAutoBuildEdgeLists(false);
             loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::MeshManager::getSingleton().getResourceType(),
                               sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
             return true;
@@ -78,32 +79,26 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
         return false;
     }
     
-    GenerateMeshdata();
-        
-    try
-    {
-        // Assign default materials that won't complain
-        SetDefaultMaterial();
-        // Set asset references the mesh has
-        //ResetReferences();
+    if (GenerateMeshdata())
+    {        
+        // We did a synchronous load, must call AssetLoadCompleted here.
+        assetAPI->AssetLoadCompleted(Name());
+        return true;
     }
-    catch(Ogre::Exception &e)
+
+    else 
     {
-        ::LogError("Failed to create mesh " + this->Name() + ": " + QString(e.what()));
-        Unload();
         return false;
     }
-
-    //internal_name_ = AssetAPI::SanitateAssetRef(id_);
-    //LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
-
-    // We did a synchronous load, must call AssetLoadCompleted here.
-    assetAPI->AssetLoadCompleted(Name());
-    return true;
 }
 
-void OgreMeshAsset::GenerateMeshdata()
+bool OgreMeshAsset::GenerateMeshdata()
 {
+    /* NOTE: only the last error handler here returns false - first are ignored.
+       This is to keep the behaviour identical to the original version which had these checks inside 
+       DeserializeFromData - see https://github.com/realXtend/naali/blob/1806ea04057d447263dbd7cf66d5731c36f4d4a3/src/Core/OgreRenderingModule/OgreMeshAsset.cpp#L89
+    */
+    
     // Generate tangents to mesh
     try
     {
@@ -112,7 +107,10 @@ void OgreMeshAsset::GenerateMeshdata()
         if (!ogreMesh->suggestTangentVectorBuildParams(Ogre::VES_TANGENT, src, dest))
             ogreMesh->buildTangentVectors(Ogre::VES_TANGENT, src, dest);
     }
-    catch(...) {}
+    catch(Ogre::Exception &e) 
+    {
+        LogError("Failed to build tangents for mesh " + this->Name() + ": " + QString(e.what()));
+    }
     
     // Generate extremity points to submeshes, 1 should be enough
     try
@@ -124,7 +122,29 @@ void OgreMeshAsset::GenerateMeshdata()
                 smesh->generateExtremes(1);
         }
     }
-    catch(...) {}
+    catch(Ogre::Exception &e) 
+    {
+        LogError("Failed to generate extremity points to submeshes for mesh " + this->Name() + ": " + QString(e.what()));
+    }
+
+    try
+    {
+        // Assign default materials that won't complain
+        SetDefaultMaterial();
+        // Set asset references the mesh has
+        //ResetReferences();
+    }
+    catch(Ogre::Exception &e)
+    {
+        LogError("OgreMeshAsset load: Failed to set default materials to " + this->Name() + ": " + QString(e.what()));
+        Unload();
+        return false;
+    }
+
+    //internal_name_ = AssetAPI::SanitateAssetRef(id_);
+    //LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
+
+    return true;
 }
 
 void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
@@ -135,25 +155,18 @@ void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, con
     const QString assetRef = Name();
     if (!result.error)
     {
-        /*! \todo Verify if we need to do
-            - ogreMesh->setAutoBuildEdgeLists(false);
-            for non-manual created meshes via thread loading.
-        */
-
         ogreMesh = Ogre::MeshManager::getSingleton().getByName(AssetAPI::SanitateAssetRef(assetRef).toStdString(), 
                                                                OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
         if (!ogreMesh.isNull())
         {        
-            try
+            if (GenerateMeshdata())
             {
-                GenerateMeshdata();
-                SetDefaultMaterial();
                 assetAPI->AssetLoadCompleted(assetRef);
                 return;
             }
-            catch (Ogre::Exception &e)
+            else
             {
-                LogError("OgreMeshAsset asynch load: Failed to set default materials to " + assetRef.toStdString() + ": " + std::string(e.what()));
+                LogError("OgreMeshAsset asynch load: Failed in GenerateMeshdata - see log above for details.");
             }
         }
         else
