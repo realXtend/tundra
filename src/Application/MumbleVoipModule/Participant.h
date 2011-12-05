@@ -16,6 +16,8 @@ namespace MumbleVoip
         Participant(QString name, MumbleLib::User* user);
         virtual ~Participant();
 
+        bool signaled;
+
     public slots:
         virtual QString Name() const;
         virtual void SetName(QString name);
