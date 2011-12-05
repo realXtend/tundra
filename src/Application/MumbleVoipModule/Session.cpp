@@ -35,7 +35,7 @@ namespace MumbleVoip
         sending_audio_(false),
         receiving_audio_(false),
         audio_sending_enabled_(false),
-        audio_receiving_enabled_(true),
+        audio_receiving_enabled_(false),
         speaker_voice_activity_(0),
         connection_(0),
         settings_(settings),
@@ -56,33 +56,46 @@ namespace MumbleVoip
     {
         state_ = STATE_INITIALIZING;
         emit StateChanged(state_);
-        /// @todo Check that closed connection can be reopened
-        SAFE_DELETE(connection_);
 
-        connection_ = new MumbleLib::Connection(server_info, 200);
-        if (connection_->GetState() == MumbleLib::Connection::STATE_ERROR)
+        currentServerInfo_ = server_info;
+
+        SAFE_DELETE(connection_);
+        connection_ = new MumbleLib::Connection();
+
+        connect(connection_, SIGNAL(Connected(MumbleLib::Connection::State)), this, SLOT(OnConnected(MumbleLib::Connection::State)), Qt::BlockingQueuedConnection);
+        connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)), Qt::UniqueConnection);
+        connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()), Qt::UniqueConnection);
+        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()), Qt::UniqueConnection);
+
+        connection_->Join(server_info.channel_name); // Will set a pending channel join
+        connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
+        connection_->SendPosition(settings_->GetPositionalAudioEnabled());
+        connection_->SendAudio(audio_sending_enabled_);
+        connection_->ReceiveAudio(audio_receiving_enabled_);
+        connection_->Connect(currentServerInfo_);
+
+        // Start networking thread, this will start the boost asio io service that
+        // does the initial host resolve + upd/tcp connections
+        MumbleLib::MumbleLibrary::Start();
+    }
+
+    void Session::OnConnected(MumbleLib::Connection::State state)
+    {
+        if (state == MumbleLib::Connection::STATE_ERROR)
         {
             state_ = STATE_ERROR;
             reason_ = connection_->GetReason();
-            return;
         }
-
-        if (connection_->GetState() != MumbleLib::Connection::STATE_ERROR)
+        else
         {
-            server_address_ = server_info.server;
+            server_address_ = currentServerInfo_.server;
 
-            connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)), Qt::UniqueConnection);
-            connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()), Qt::UniqueConnection);
-            connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()), Qt::UniqueConnection);
-
-            connection_->Join(server_info.channel_name);
+            connection_->StartUserPolling();
             connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
             connection_->SendPosition(settings_->GetPositionalAudioEnabled());
             connection_->SendAudio(audio_sending_enabled_);
             connection_->ReceiveAudio(audio_receiving_enabled_);
 
-            // Set the current settings as the mumble config/settings widget might not be used.
-            // Was used in OS Naali.
             if (sending_audio_)
                 EnableAudioReceiving();
             else
@@ -92,12 +105,27 @@ namespace MumbleVoip
             else
                 DisableAudioSending();
 
-            MumbleLib::MumbleLibrary::Start();
+            // Join channel and notify with signal
+            current_mumble_channel_ = currentServerInfo_.channel_name;
+            LogInfo(QString("MumbleVoip: Joined channel '%1' after connected to the server").arg(current_mumble_channel_).toStdString());
+            PopulateParticipantList();
+            emit ActiceChannelChanged(current_mumble_channel_);
+
+            // Signal users
+            foreach(Participant *p, participants_)
+            {
+                if (!p->signaled)
+                {
+                    p->signaled = true;
+                    IParticipant *iParticipant = dynamic_cast<IParticipant*>(p);
+                    if (iParticipant)        
+                        emit ParticipantJoined(p);
+                    else
+                        LogInfo("MumbleVoip:Session::CreateNewParticipant(): IParticipant *iPart = dynamic_cast<IParticipant*>(p) FAILED!");
+                }
+            }
+
             state_ = STATE_OPEN;
-        }
-        else
-        {
-            state_ = STATE_ERROR;
         }
 
         emit StateChanged(state_);
@@ -105,12 +133,14 @@ namespace MumbleVoip
 
     void Session::Close()
     {
+        currentServerInfo_ = ServerInfo();
+
         if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
         {
             State old_state = state_;
             state_ = STATE_CLOSED;
 
-            if(connection_)
+            if (connection_)
                 SAFE_DELETE(connection_);
 
             current_mumble_channel_ = "";
@@ -125,7 +155,7 @@ namespace MumbleVoip
             if (iPart)
                 emit ParticipantLeft(iPart);
             else
-                LogInfo("MumbleVoidp:Session::Close(): IParticipant *iPart = dynamic_cast<IParticipant*>(p) FAILED!");
+                LogInfo("MumbleVoip:Session::Close(): IParticipant *iPart = dynamic_cast<IParticipant*>(p) FAILED!");
             SAFE_DELETE(p);
         }
         participants_.clear();
@@ -140,7 +170,7 @@ namespace MumbleVoip
             if (iPart)
                 emit ParticipantLeft(iPart);
             else
-                LogInfo("MumbleVoidp:Session::Close(): IParticipant *iPart = dynamic_cast<IParticipant*>(p) FAILED!");
+                LogInfo("MumbleVoip:Session::Close(): IParticipant *iPart = dynamic_cast<IParticipant*>(p) FAILED!");
             SAFE_DELETE(p);
         }
         participants_.clear();
@@ -179,18 +209,18 @@ namespace MumbleVoip
 
         if (connection_)
             connection_->SendAudio(true);
-        bool audio_sending_was_enabled = audio_sending_enabled_;
-        audio_sending_enabled_ = true;
-        if (!audio_sending_was_enabled)
-        {
-            int frequency = SAMPLE_RATE;
-            bool sixteenbit = true;
-            bool stereo = false;
-            int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
-            framework_->Audio()->StartRecording(QString::fromStdString(recording_device_), frequency, sixteenbit, stereo, buffer_size);
 
-            emit StartSendingAudio();
-        }
+        if (audio_sending_enabled_)
+            return;
+        audio_sending_enabled_ = true;
+
+        int frequency = SAMPLE_RATE;
+        bool sixteenbit = true;
+        bool stereo = false;
+        int buffer_size = SAMPLE_WIDTH / 8 * frequency * AUDIO_RECORDING_BUFFER_MS / 1000;
+        
+        framework_->Audio()->StartRecording(QString::fromStdString(recording_device_), frequency, sixteenbit, stereo, buffer_size);
+        emit StartSendingAudio();
     }
 
     void Session::DisableAudioSending()
@@ -200,14 +230,13 @@ namespace MumbleVoip
 
         if (connection_)
             connection_->SendAudio(false);
-        bool audio_sending_was_enabled = audio_sending_enabled_;
-        audio_sending_enabled_ = false;
-        if (audio_sending_was_enabled)
-        {
-            framework_->Audio()->StopRecording();
 
-            emit StopSendingAudio();
-        }
+        if (!audio_sending_enabled_)
+            return;
+        audio_sending_enabled_ = false;
+
+        framework_->Audio()->StopRecording();
+        emit StopSendingAudio();
     }
 
     bool Session::IsAudioSendingEnabled() const
@@ -305,8 +334,8 @@ namespace MumbleVoip
                 return;
         }
         
-        disconnect(user, SIGNAL(ChangedChannel(MumbleLib::User*)),this, SLOT(CheckChannel(MumbleLib::User*)));    
-        connect(user, SIGNAL(ChangedChannel(MumbleLib::User*)), SLOT(CheckChannel(MumbleLib::User*)));
+        disconnect(user, SIGNAL(ChangedChannel(MumbleLib::User*)), this, SLOT(CheckChannel(MumbleLib::User*)));    
+        connect(user, SIGNAL(ChangedChannel(MumbleLib::User*)), this, SLOT(CheckChannel(MumbleLib::User*)));
 
         if (user->GetChannel()->FullName() != current_mumble_channel_)
         {
@@ -321,11 +350,18 @@ namespace MumbleVoip
         connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()));
         connect(p, SIGNAL(Left()), SLOT(UpdateParticipantList()));
 
-        IParticipant *iParticipant = dynamic_cast<IParticipant*>(p);
-        if (iParticipant)
-            emit ParticipantJoined(p);
-        else
-            LogInfo("MumbleVoidp:Session::CreateNewParticipant(): IParticipant *iPart = dynamic_cast<IParticipant*>(p) FAILED!");
+        // If not open yet put to a pending list and emit later
+        if (state_ == STATE_OPEN)
+        {
+            IParticipant *iParticipant = dynamic_cast<IParticipant*>(p);
+            if (iParticipant)
+            {
+                p->signaled = true;
+                emit ParticipantJoined(p);
+            }
+            else
+                LogInfo("MumbleVoip:Session::CreateNewParticipant(): IParticipant *iPart = dynamic_cast<IParticipant*>(p) FAILED!");
+        }
     }
 
     void Session::CheckChannel(MumbleLib::User* user)
@@ -370,9 +406,9 @@ namespace MumbleVoip
             }
 
             /// @todo Update spaces away? Really needed?
-            QString avatar_name = p->UserPtr()->Name();
-            avatar_name.replace('_', ' ');        
-            p->SetName(avatar_name);
+            //QString avatar_name = p->UserPtr()->Name();
+            //avatar_name.replace('_', ' ');        
+            //p->SetName(avatar_name);
         }
     }
 
@@ -440,7 +476,7 @@ namespace MumbleVoip
 
         while (framework_->Audio()->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
         {
-            int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
+            int bytes_to_read = SAMPLES_IN_FRAME * SAMPLE_WIDTH / 8;
             PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
             int bytes = framework_->Audio()->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
             UNREFERENCED_PARAM(bytes);
@@ -581,14 +617,14 @@ namespace MumbleVoip
 
     void Session::Reconnect()
     {
-        LogInfo("MumbleVoidp: Connection to server lost. Reconnecting..");
+        LogInfo("MumbleVoip: Connection to server lost. Reconnecting..");
         Close();
         ServerInfo server_info = channels_[current_mumble_channel_];
         OpenConnection(server_info);
 
         if (state_ == STATE_ERROR)
         {
-            LogInfo("MumbleVoidp: Reconnection failed, trying again in " + ToString(reconnect_timeout_) + " seconds..");
+            LogInfo("MumbleVoip: Reconnection failed, trying again in " + ToString(reconnect_timeout_) + " seconds..");
             QTimer::singleShot(reconnect_timeout_, this, SLOT(Reconnect()));
         }
         else
@@ -672,7 +708,7 @@ namespace MumbleVoip
 
         if (!channels_.contains(channel_name))
         {
-            LogInfo("MumbleVoidp: Channel \"" + channel_name.toStdString() + "\" not found!");
+            LogInfo("MumbleVoip: Channel \"" + channel_name.toStdString() + "\" not found!");
             return;
         }
 
@@ -686,29 +722,43 @@ namespace MumbleVoip
         {
             // Clean all users if we are not going to cal Close()
             ClearUserLists();
+
             // Server host and port are same, just join the new channel
             connection_->Join(channel_name);
+
+            if (state_ == STATE_OPEN)
+            {
+                current_mumble_channel_ = channel_name;
+                PopulateParticipantList();
+
+                LogInfo("MumbleVoip: Active voice channel changed to: " + current_mumble_channel_);                
+                emit ActiceChannelChanged(channel_name);
+
+                connection_->StartUserPolling();
+            }
+            else
+            {
+                if (connection_->GetState() == MumbleLib::Connection::STATE_CONNECTING)
+                    LogInfo("MumbleVoip: Previous attempt still connecting, please wait...");
+                else if (connection_->GetState() == MumbleLib::Connection::STATE_AUTHENTICATING)
+                    LogInfo("MumbleVoip: Authenticating connection, please wait...");
+                else if (connection_->GetState() == MumbleLib::Connection::STATE_ERROR)
+                {
+                    if (connection_->GetReason().isEmpty())
+                        LogError("MumbleVoip: Connection is in unknown error state");
+                    else
+                        LogError("MumbleVoip: Connection is in error state for reason: " + connection_->GetReason());
+                }
+            }
         }
         else
         {
             // Close connection we are changing server
             if (GetState() != STATE_CLOSED)
                 Close();
-            // Join new server
-            OpenConnection(server_info);
-        }
 
-        if (GetState() != STATE_OPEN || (connection_ && connection_->GetState() == MumbleLib::Connection::State::STATE_ERROR))
-        {
-            LogError("MumbleVoip: " + (connection_ != 0 ? connection_->GetReason() : "Unknown error while connecting to server"));
-            Close();
-        }
-        else
-        {
-            current_mumble_channel_ = channel_name;
-            LogInfo(QString("MumbleVoidp: Active voice channel changed to: %1").arg(current_mumble_channel_).toStdString());
-            PopulateParticipantList();
-            emit ActiceChannelChanged(channel_name);
+            // Join new server with channel info
+            OpenConnection(server_info);
         }
     }
 

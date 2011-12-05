@@ -16,6 +16,8 @@
 #include <QTimer>
 #include <QReadWriteLock>
 
+#include <mumbleclient/settings.h>
+
 namespace boost { namespace system { class error_code; } }
 
 namespace MumbleLib
@@ -53,10 +55,12 @@ namespace MumbleLib
         };
 
         //! Default constructor
-        Connection(MumbleVoip::ServerInfo &info, int playback_buffer_length_ms);
+        Connection();
 
         //! Default deconstructor
         virtual ~Connection();
+
+        virtual void Connect(MumbleVoip::ServerInfo &info);
 
         //! Closes connection to Mumble server
         virtual void Close();
@@ -158,6 +162,11 @@ namespace MumbleLib
         //! Handle errors
         void HandleError(const boost::system::error_code& error);
         
+        //! Handle connection success/failure
+        void OnConnected(bool connected, const ::MumbleClient::Settings connectionSettings, const std::string errorMsg);
+        
+        void StartUserPolling();
+
         double GetEncodingQuality() {return encoding_quality_;}
 
         QString GetCurrentServer() { return current_server_; }
@@ -226,6 +235,7 @@ namespace MumbleLib
         QReadWriteLock lock_users_;
         
     signals:
+        void Connected(MumbleLib::Connection::State state);
         void StateChanged(MumbleLib::Connection::State state); // \todo register meta data or use int type..
         void TextMessageReceived(QString &text); 
         void AudioDataAvailable(short* data, int size);

@@ -23,7 +23,10 @@
 
 namespace MumbleLib
 {
-    // \todo Move these static callback functions to separate file...
+    void OnConnectedCallback(bool connected, const ::MumbleClient::Settings connectionSettings, const std::string errorMsg, Connection* connection)
+    {
+        connection->OnConnected(connected, connectionSettings, errorMsg);
+    }
 
     void TextMessageCallback(const std::string& message, Connection* connection)
     {
@@ -33,19 +36,6 @@ namespace MumbleLib
     void RawUdpTunnelCallback(int32_t length, void* buffer, Connection* connection)
     {
         connection->HandleIncomingRawUdpTunnelPacket(length, buffer);
-    }
-
-    void RelayTunnelCallback(int32_t length, void* buffer_, Connection* connection)
-    {
-     //   PacketDataStream data_stream = PacketDataStream((char*)buffer_, length);
-     //   bool valid = data_stream.isValid();
-     //   int size = data_stream.size();
-     //   char* buffer = (char*)buffer_;
-     //   short type = buffer[0] << 8 + buffer[1];
-     //   int len = buffer[3] << 16 + buffer[4] << 8 + buffer[5];
-	    //std::string s(static_cast<char *>(buffer), length);
-	    //s.erase(1, pds_int_len(&static_cast<char *>(buffer)[1]));
-    //    connection->OnRelayTunnel(s);
     }
 
     void AuthCallback(Connection* connection)
@@ -75,36 +65,60 @@ namespace MumbleLib
 
     void ErrorCallback(const boost::system::error_code& error, Connection* connection)
     {
+        if (!error)
+            return;
+
         connection->HandleError(error);
     }
 
-    Connection::Connection(MumbleVoip::ServerInfo &info, int playback_buffer_length_ms) :
+    void RelayTunnelCallback(int32_t length, void* buffer_, Connection* connection)
+    {
+        /*      
+        PacketDataStream data_stream = PacketDataStream((char*)buffer_, length);
+        bool valid = data_stream.isValid();
+        int size = data_stream.size();
+        char* buffer = (char*)buffer_;
+        short type = buffer[0] << 8 + buffer[1];
+        int len = buffer[3] << 16 + buffer[4] << 8 + buffer[5];
+	    std::string s(static_cast<char *>(buffer), length);
+	    s.erase(1, pds_int_len(&static_cast<char *>(buffer)[1]));
+        connection->OnRelayTunnel(s); 
+        */
+    }
+
+    // ----------------------------------------------------------------------------------
+
+    Connection::Connection() :
             client_(0),
             authenticated_(false),
             celt_mode_(0),
             celt_encoder_(0),
             celt_decoder_(0),
             sending_audio_(false),
-            receiving_audio_(true),
+            receiving_audio_(false),
             frame_sequence_(0),
             encoding_quality_(0),
             state_(STATE_CONNECTING),
             send_position_(false),
-            playback_buffer_length_ms_(playback_buffer_length_ms),
+            playback_buffer_length_ms_(200),
             statistics_(500)
     {
         qRegisterMetaType<State>("MumbleLib::Connection::State");
 
         // BlockingQueuedConnection for cross thread signaling
-        QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::BlockingQueuedConnection);
+        connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::BlockingQueuedConnection);
+        connect(&user_update_timer_, SIGNAL(timeout()), SLOT(UpdateUserStates()));
 
         InitializeCELT();
 
         ::MumbleClient::MumbleClientLib* mumble_lib = ::MumbleClient::MumbleClientLib::instance();
         QMutexLocker client_locker(&mutex_client_);
+
         client_ = mumble_lib->NewClient();
 
-        // \todo Handle connection error
+        // For both connection success and failure
+        client_->SetConnectedCallback(boost::bind(&OnConnectedCallback, _1, _2, _3, this));
+
         client_->SetRawUdpTunnelCallback(boost::bind(&RawUdpTunnelCallback, _1, _2, this));
         client_->SetChannelAddCallback(boost::bind(&ChannelAddCallback, _1, this));
         client_->SetChannelRemoveCallback(boost::bind(&ChannelRemoveCallback, _1, this));
@@ -113,37 +127,6 @@ namespace MumbleLib
         client_->SetUserJoinedCallback(boost::bind(&UserJoinedCallback, _1, this));
         client_->SetUserLeftCallback(boost::bind(&UserLeftCallback, _1, this));
         client_->SetErrorCallback(boost::bind(&ErrorCallback, _1, this));
-
-        try
-        {
-            client_->Connect(::MumbleClient::Settings(info.server.toStdString(), info.port.toStdString(), 
-                             info.user_name.toStdString(), info.password.toStdString()));
-        }
-        catch(std::exception &e)
-        {
-            lock_state_.lockForWrite();
-            state_ = STATE_ERROR;
-            lock_state_.unlock();
-            reason_ = QString(e.what());
-            return;
-        }
-
-        if (state_ != STATE_ERROR)
-        {
-            user_name_ = info.user_name;
-            user_comment_ = info.avatar_id;
-            current_server_ = info.server;
-            current_port_ = info.GetPortInteger();
-
-            lock_state_.lockForWrite();
-            state_ = STATE_AUTHENTICATING;
-            lock_state_.unlock();    
-
-            connect(&user_update_timer_, SIGNAL(timeout()), SLOT(UpdateUserStates()));
-            user_update_timer_.start(USER_STATE_CHECK_TIME_MS);
-        }
-
-        emit StateChanged(state_);
     }
 
     Connection::~Connection()
@@ -181,15 +164,7 @@ namespace MumbleLib
             QMutexLocker client_locker(&mutex_client_);
             try
             {
-                /// @todo Fix libmumbleclients horrible code, see below for more (in cpp file)
-                /// @bug MEMORY LEAK + BAD 3RD PARTY LIB CODE:
-                /// If we are in a STATE_ERROR its likely that the error happened
-                /// in client_->Connect(...). We cannot delete the client_ as it
-                /// has bad init/uninit code, it does not init null its udp_socket_, tcp_socket_ and friends
-                /// in ctor but in dtor blindly calls delete on the null ptrs! If the error state happens in
-                /// client_->Connect(...) those ptrs will be null and you will crash if you have proper dealloc of mem here!
-                if (state_ != STATE_ERROR)
-                    SAFE_DELETE(client_);
+                SAFE_DELETE(client_);
             }
             catch(std::exception &/*e*/)
             {
@@ -199,12 +174,71 @@ namespace MumbleLib
         lock_state_.unlock();
     }
 
+    void Connection::Connect(MumbleVoip::ServerInfo &info)
+    {
+        user_name_ = info.user_name;
+        user_comment_ = info.avatar_id;
+        current_server_ = info.server;
+        current_port_ = info.GetPortInteger();
+
+        ::MumbleClient::Settings attemptSettings(info.server.toStdString(), info.port.toStdString(), 
+            info.user_name.toStdString(), info.password.toStdString());
+
+        try
+        {
+            client_->Connect(attemptSettings);
+        }
+        catch(std::exception &e)
+        {
+            OnConnected(false, attemptSettings, e.what());
+            return;
+        }
+    }
+
+    void Connection::OnConnected(bool connected, const ::MumbleClient::Settings connectionSettings, const std::string errorMsg)
+    {
+        if (connected)
+        {
+            // Don't emit connected, it will be emitted after auth
+            lock_state_.lockForWrite();
+            state_ = STATE_AUTHENTICATING;
+            lock_state_.unlock();    
+        }
+        else
+        {
+            // Emit connected with error state
+            user_name_ = "";
+            user_comment_ = "";
+            current_server_ = "";
+            current_port_ = -1;
+
+            lock_state_.lockForWrite();
+            state_ = STATE_ERROR;
+            reason_ = QString::fromStdString(errorMsg);
+            lock_state_.unlock();
+
+            emit Connected(state_);
+        }
+
+        emit StateChanged(state_);
+    }
+
+    void Connection::StartUserPolling()
+    {
+        UpdateUserStates();
+        user_update_timer_.start(USER_STATE_CHECK_TIME_MS);
+    }
+
     void Connection::HandleError(const boost::system::error_code &error)
     {
         if (state_ == STATE_CLOSED)
+        {
+            LogError("DEBUG -- HandleError(): " + error.message());
             return;
+        }
 
-        LogError("Relayed from mumbleclient (" + std::string(error.category().name()) + "\\" + std::string(error.message()) + ")");
+        LogError("[MumbleVoip]: " + error.message());
+
         lock_state_.lockForWrite();
         reason_ = QString::fromStdString(error.message());
         state_ = STATE_ERROR;
@@ -214,9 +248,7 @@ namespace MumbleLib
 
     Connection::State Connection::GetState() const
     {
-        //lock_state_.lockForRead(); // cannot be call because const 
         Connection::State state = state_;
-        //lock_state_.unlock();
         return state;
     }
 
@@ -227,10 +259,6 @@ namespace MumbleLib
 
     void Connection::Close()
     {
-        /// @bug CRASH BUG when in STATE_ERROR client_->Disconnect(); will crash the whole application
-        /// even if the ptr is valid. See more details in ~Connection().
-        if (state_ == STATE_ERROR)
-            return;
         if (state_ == STATE_CLOSED)
             return;
 
@@ -242,13 +270,6 @@ namespace MumbleLib
             emit StateChanged(state_);
             return;
         }
-        else
-        {
-            lock_state_.lockForWrite();
-            state_ = STATE_CLOSED;
-            lock_state_.unlock();
-            emit StateChanged(state_);
-        }
 
         user_update_timer_.stop();
         QMutexLocker raw_udp_tunnel_locker(&mutex_raw_udp_tunnel_);
@@ -256,7 +277,8 @@ namespace MumbleLib
 
         try
         {
-            client_->Disconnect();
+            if (client_)
+                client_->Disconnect();
         }
         catch(std::exception &e)
         {
@@ -266,6 +288,7 @@ namespace MumbleLib
             lock_state_.unlock();
             reason_ = QString(e.what());
         }
+
         lock_state_.lockForWrite();
         state_ = STATE_CLOSED;
         lock_state_.unlock();
@@ -528,7 +551,9 @@ namespace MumbleLib
         lock_state_.lockForWrite();
         state_ = STATE_OPEN;
         lock_state_.unlock();
+        
         emit StateChanged(state_);
+        emit Connected(state_);
     }
 
     void Connection::HandleIncomingTextMessage(QString text)
@@ -597,10 +622,12 @@ namespace MumbleLib
         ::MumbleClient::PacketDataStream data_stream = ::MumbleClient::PacketDataStream((char*)buffer, length);
         bool valid = data_stream.isValid();
         UNREFERENCED_PARAM(valid);
+
         uint8_t first_byte = static_cast<unsigned char>(data_stream.next());
         ::MumbleClient::UdpMessageType::MessageType type = static_cast<::MumbleClient::UdpMessageType::MessageType>( ( first_byte >> 5) & 0x07 );
         uint8_t flags = first_byte & 0x1f;
         UNREFERENCED_PARAM(flags);
+
         switch (type)
         {
             case ::MumbleClient::UdpMessageType::UDPVoiceCELTAlpha:
@@ -637,17 +664,15 @@ namespace MumbleLib
 				HandleIncomingCELTFrame(session, (unsigned char*)frame_data, frame_size);
 	    }
         while (!last_frame && data_stream.isValid());
+
         if (!data_stream.isValid())
-        {
             LogWarning("Syntax error in RawUdpTunnel packet.");
-        }
 
         int bytes_left = data_stream.left();
         if (bytes_left)
         {
             // Coordinate conversion: Mumble -> Naali 
             float3 position;
-
             data_stream >> position.y;
             data_stream >> position.z;
             data_stream >> position.x;

@@ -7,6 +7,9 @@
 #include "AudioAPI.h"
 #include <QMap>
 
+#include "Connection.h"
+#include "ServerInfo.h"
+
 namespace MumbleVoip
 {
     /**
@@ -64,6 +67,8 @@ namespace MumbleVoip
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
         static const double DEFAULT_AUDIO_QUALITY_; // 0 .. 1.0
 
+        ServerInfo currentServerInfo_;
+
         virtual void OpenConnection(ServerInfo info);
         QString OwnAvatarId();
         QString GetAvatarFullName(QString uuid) const;
@@ -101,6 +106,7 @@ namespace MumbleVoip
         int reconnect_timeout_; // how long to wait before trying to reconnect (msecs)
 
     private slots:
+        void OnConnected(MumbleLib::Connection::State state);
         void CreateNewParticipant(MumbleLib::User*);
         void UpdateParticipantList();
         void OnUserStartSpeaking(); // rename to: UpdateReceivingAudioStatus
