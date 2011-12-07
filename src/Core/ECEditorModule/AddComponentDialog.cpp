@@ -86,7 +86,7 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
 
     if (entities_.size() > 1)
     {
-        QLabel *labelCompCount = new QLabel(tr("Adding component to ") + QString::number(entities_.size()) + tr(" selected entities"), this);
+        QLabel *labelCompCount = new QLabel(tr("Adding component to %1 selected entities").arg(entities_.size()), this);
         labelCompCount->setStyleSheet("QLabel { background-color: rgba(230,230,230,255); padding: 4px; border: 1px solid grey; }");
         labelCompCount->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         labelCompCount->setAlignment(Qt::AlignCenter);
@@ -130,7 +130,7 @@ void AddComponentDialog::SetComponentName(const QString &name)
     name_line_edit_->setText(name);
 }
 
-QString AddComponentDialog::GetTypeName() const
+QString AddComponentDialog::TypeName() const
 {
     if (!type_combo_box_->currentText().startsWith("EC_"))
         return "EC_" + type_combo_box_->currentText();
@@ -138,22 +138,22 @@ QString AddComponentDialog::GetTypeName() const
         return type_combo_box_->currentText();
 }
 
-QString AddComponentDialog::GetName() const
+QString AddComponentDialog::Name() const
 {
     return name_line_edit_->text();
 }
 
-bool AddComponentDialog::GetSynchronization() const
+bool AddComponentDialog::IsReplicated() const
 {
     return !sync_check_box_->isChecked();
 }
 
-bool AddComponentDialog::GetTemporary() const
+bool AddComponentDialog::IsTemporary() const
 {
     return temp_check_box_->isChecked();
 }
 
-QList<entity_id_t> AddComponentDialog::GetEntityIds() const
+QList<entity_id_t> AddComponentDialog::EntityIds() const
 {
     return entities_;
 }
@@ -198,8 +198,8 @@ void AddComponentDialog::CheckComponentName()
 
 void AddComponentDialog::CheckTempAndSync()
 {
-    sync_check_box_->setText(sync_check_box_->isChecked() ? "Creating as Local" : "Creating as Replicated");
-    temp_check_box_->setText(temp_check_box_->isChecked() ? "Creating as Temporary" : " ");
+    sync_check_box_->setText(sync_check_box_->isChecked() ? tr("Creating as Local") : tr("Creating as Replicated"));
+    temp_check_box_->setText(temp_check_box_->isChecked() ? tr("Creating as Temporary") : " ");
 
     sync_check_box_->setStyleSheet(sync_check_box_->isChecked() ? "color: blue;" : "color: black;");
     temp_check_box_->setStyleSheet(temp_check_box_->isChecked() ? "color: red;" : "color: black;");

@@ -998,7 +998,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         return;
     }
 
-    foreach(entity_id_t id, dialog->GetEntityIds())
+    foreach(entity_id_t id, dialog->EntityIds())
     {
         EntityPtr entity = scene->GetEntity(id);
         if (!entity)
@@ -1008,19 +1008,19 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         }
 
         // Check if component has been already added to a entity.
-        ComponentPtr comp = entity->GetComponent(dialog->GetTypeName(), dialog->GetName());
+        ComponentPtr comp = entity->GetComponent(dialog->TypeName(), dialog->Name());
         if (comp)
         {
             LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
             continue;
         }
 
-        comp = framework->Scene()->CreateComponentByName(scene, dialog->GetTypeName(), dialog->GetName());
+        comp = framework->Scene()->CreateComponentByName(scene, dialog->TypeName(), dialog->Name());
         assert(comp);
         if (comp)
         {
-            comp->SetReplicated(dialog->GetSynchronization());
-            comp->SetTemporary(dialog->GetTemporary());
+            comp->SetReplicated(dialog->IsReplicated());
+            comp->SetTemporary(dialog->IsTemporary());
             entity->AddComponent(comp, AttributeChange::Default);
         }
     }
