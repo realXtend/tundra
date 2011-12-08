@@ -343,7 +343,7 @@ what=mumbleclient
 if test -f $tags/$what-done; then
     echo $what is done
 else
-    test -d $what || git clone https://github.com/msantala/libmumbleclient.git $what
+    test -d $what || git clone https://github.com/Adminotech/libmumble.git $what
     cd $what
     cmake .
     make VERBOSE=1 -j$NPROCS
