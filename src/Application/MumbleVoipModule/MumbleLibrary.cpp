@@ -39,11 +39,8 @@ namespace MumbleLib
 
     void MumbleLibrary::StartMumbleThread()
     {
-
         if (!mumble_main_loop_)
-        {
             mumble_main_loop_ = new MumbleMainLoopThread();
-        }
 
         if (mumble_main_loop_->isRunning())
             return;
