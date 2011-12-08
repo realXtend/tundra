@@ -15,7 +15,7 @@ namespace kNet
 }
 
 class Entity;
-struct SceneSyncState;
+class SceneSyncState;
 
 /// Represents a client conncetion on the server side.
 class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
@@ -49,7 +49,7 @@ public slots:
     /// Execute an action on an entity, sent only to the specific user
     void Exec(QObject* entity, const QString &action, const QStringList &params);
     
-    /// Get connectionid
+    /// Get connection id
     int GetConnectionID() const;
     
     /// Get raw login data

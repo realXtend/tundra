@@ -101,6 +101,22 @@ void SyncManager::SetUpdatePeriod(float period)
     updatePeriod_ = period;
 }
 
+SceneSyncState* SyncManager::SceneState(int connectionId)
+{
+    if (!owner_->IsServer())
+        return 0;
+    return SceneState(owner_->GetServer()->GetUserConnection(connectionId));
+}
+
+SceneSyncState* SyncManager::SceneState(UserConnection *connection)
+{
+    if (!owner_->IsServer())
+        return 0;
+    if (!connection)
+        return 0;
+    return connection->syncState.get();
+}
+
 void SyncManager::RegisterToScene(ScenePtr scene)
 {
     // Disconnect from previous scene if not expired
@@ -204,7 +220,12 @@ void SyncManager::NewUserConnected(UserConnection* user)
     connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
-    user->syncState = boost::shared_ptr<SceneSyncState>(new SceneSyncState());
+    user->syncState = boost::shared_ptr<SceneSyncState>(new SceneSyncState(user->GetConnectionID(), owner_->IsServer()));
+    user->syncState->SetParentScene(scene_);
+
+    if (owner_->IsServer())
+        emit SceneStateCreated(user, user->syncState.get());
+
     for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
