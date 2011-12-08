@@ -91,7 +91,9 @@ public:
     SceneDesc CreateSceneDescFromMesh(const QString &source) const;
 
     /// Inspects OGRE .scene file and returns a scene description structure of the contents of the file.
-    /** @param filename Filename. */
+    /** @param filename Filename.
+        @note Currently produces malformed/incomplete SceneDesc structure. Do not use.
+        @todo Re-implement! */
     SceneDesc CreateSceneDescFromScene(const QString &filename);
 
     /// Process a material file, searching for used materials and recording used textures
@@ -140,41 +142,21 @@ private:
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
 
     /// Process node and its child nodes for creation of scene description.
-    /** @param desc 
-        @param node_elem Node element
-        @param pos Current position
-        @param rot Current rotation
-        @param scale Current scale
-        @param prefix 
-        @param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
-    */
-//    void ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, float3 pos, Quaternion rot, float3 scale,
-//        const QString &prefix, bool flipyz);
+    /// @todo Implement and use in 
+//    void ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElem, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipYz);
 
     /// Creates asset descriptions from the provided lists of OGRE resource filenames.
-    /** @param path 
-        @param meshFiles 
-        @param skeletons 
-        @param materialFiles 
-        @param usedMaterials 
-        @param desc */
     void CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,
         const QStringList &materialFiles, const QSet<QString> &usedMaterials, SceneDesc &desc) const;
 
-    ///
-    /** @param filename
-        @param ref
-    */
-//    void RewriteAssetRef(const QString &sceneFileName, QString &ref) const;
-
     QMap<QString, QStringList> mesh_default_materials_; ///< Materials read from meshes, in case of no subentity elements
-    std::set<std::string> material_names_; /// Materials encountered in scene
-    std::set<std::string> node_names_; ///< Nodes already created into the scene. Used for name-based "update import" logic
+    QSet<QString> material_names_; /// Materials encountered in scene
+    QSet<QString> node_names_; ///< Nodes already created into the scene. Used for name-based "update import" logic
     ScenePtr scene_; ///< Destination scene.
 
     /// Meshes encountered in scene
     /** For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored. */
-    std::map<std::string, std::string> mesh_names_;
+    QMap<QString, QString> mesh_names_;
 };
 
 }
