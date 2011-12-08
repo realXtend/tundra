@@ -185,6 +185,9 @@ void EC_Billboard::DetachBillboard()
     }
 }
 
+// Matches OgrePrerequisites.h:62 (OGRE_VERSION #define)
+#define OGRE_VER(major, minor, patch) (((major) << 16) | ((minor) << 8) | (patch))
+
 void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
 {
     if ((attribute == &position) || (attribute == &width) || (attribute == &height) || (attribute == &rotation))
@@ -208,14 +211,10 @@ void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
         try
         {
             // If we previously had a material set and its not removed, update the visuals from ogre.
+#if OGRE_VERSION >= OGRE_VER(1,7,3)
             if (materialRef.Get().ref.isEmpty() && billboardSet_)
-                if (billboardSet_->getMaterialName() != "") {
-#if OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 7 && OGRE_VERSION_PATCH < 3
-                    billboardSet_->setMaterialName(Ogre::MaterialPtr()->getName());
-#else
-                    billboardSet_->setMaterial(Ogre::MaterialPtr());
+                billboardSet_->setMaterial(Ogre::MaterialPtr());
 #endif
-                }
         }
         catch (Ogre::Exception &e)
         {
