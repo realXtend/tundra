@@ -319,10 +319,7 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
         ogreTexture->setWidth(newWidth);
         ogreTexture->setHeight(newHeight);
         ogreTexture->setFormat(ogreFormat);
-#ifdef Q_WS_MAC
-        // If this is not called right after freeInternalResources, buffer is always null in Mac OS X
         ogreTexture->createInternalResources();
-#endif
     }
     if (ogreTexture->getBuffer().isNull())
     {
@@ -365,9 +362,6 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
         ogreTexture->getBuffer()->blitFromMemory(pixelBox);
 #endif
     }
-
-    if (needRecreate)
-        ogreTexture->createInternalResources();
 }
 
 void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps, bool dynamic,
