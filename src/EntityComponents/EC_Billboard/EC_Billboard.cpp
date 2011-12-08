@@ -207,7 +207,7 @@ void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
 
         try
         {
-            // If we previously had a material set and its not removed, updated the visuals from ogre.
+            // If we previously had a material set and its not removed, update the visuals from ogre.
             if (materialRef.Get().ref.isEmpty() && billboardSet_)
                 if (billboardSet_->getMaterialName() != "") {
 #if OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 7 && OGRE_VERSION_PATCH < 3
