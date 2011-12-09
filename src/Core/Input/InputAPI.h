@@ -16,6 +16,7 @@
 
 class QGraphicsItem;
 class QGraphicsView;
+class QTouchEvent;
 
 class Framework;
 
@@ -186,6 +187,11 @@ public slots:
 
     /// Explicitly defocus any widgets and return key focus to the 3D world
     void ClearFocus();
+
+signals:
+    void TouchBegin(QTouchEvent *touchEvent);
+    void TouchUpdate(QTouchEvent *touchEvent);
+    void TouchEnd(QTouchEvent *touchEvent);
 
 private:
     Q_DISABLE_COPY(InputAPI)

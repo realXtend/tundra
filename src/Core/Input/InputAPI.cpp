@@ -20,6 +20,7 @@
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QGestureEvent>
+#include <QTouchEvent>
 #include <QApplication>
 #include <QSettings>
 
@@ -76,6 +77,7 @@ framework(framework_)
     mainView->installEventFilter(this);
     // For mouse presses and releases, as well as mouse moves when a button is being held down.
     mainView->viewport()->installEventFilter(this);
+    mainView->viewport()->setAttribute(Qt::WA_AcceptTouchEvents, true);
     
     // Find the top-level widget that the QGraphicsView is contained in. We need 
     // to track mouse move events from that window.
@@ -859,7 +861,18 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         e->accept();
         return true;
     }
-
+    case QEvent::TouchBegin:
+        emit TouchBegin(static_cast<QTouchEvent *>(event));
+        event->accept();
+        return true;
+    case QEvent::TouchUpdate:
+        emit TouchUpdate(static_cast<QTouchEvent *>(event));
+        event->accept();
+        return true;
+    case QEvent::TouchEnd:
+        emit TouchEnd(static_cast<QTouchEvent *>(event));
+        event->accept();
+        return true;
     } // ~switch
 
     return QObject::eventFilter(obj, event);
