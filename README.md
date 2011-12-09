@@ -12,8 +12,8 @@ Tundra uses the traditional client-server architecture for networking. After ins
 
 This executable can be configured to run a set of C++ and JavaScript plugins. You can create your own configuration file, or use the ones provided. Some examples:
 
-    `Tundra --config viewer.xml` - Starts Tundra with "viewer" set of plugins and makes it possible to connect to Tundra servers
-    `Tundra --config plugins.xml --headless --server --port 6565 --protocol udp` - Starts Tundra with the default plugin set in server mode serving UDP connections at port 6565
+`Tundra --config viewer.xml` - Starts Tundra with "viewer" set of plugins and makes it possible to connect to Tundra servers
+`Tundra --config plugins.xml --headless --server --port 6565 --protocol udp` - Starts Tundra with the default plugin set in server mode serving UDP connections at port 6565
 
 The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the --server and --headless command line parameters. The Tundra viewer mode is the client that is used to connect to a server.
 
