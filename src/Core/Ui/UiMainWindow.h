@@ -43,7 +43,7 @@ public slots:
     /// Ensures that widget gets position withing the desktop (not necessarily within the main window itself).
     /** @param widget Widge to be positioned.
         @param preferredPosition The preferred position for the widget. */
-    void EnsurePositionWithinDesktop(QWidget *widget, QPoint preferredPosition) const;
+    static void EnsurePositionWithinDesktop(QWidget *widget, QPoint preferredPosition);
 
     /// Returns if a menu with name is in the main windows menu bar.
     /** @param Name of the menu to search for.

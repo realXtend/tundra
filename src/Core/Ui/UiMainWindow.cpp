@@ -120,7 +120,7 @@ void UiMainWindow::resizeEvent(QResizeEvent *e)
     emit WindowResizeEvent(width(), height());
 }
 
-void UiMainWindow::EnsurePositionWithinDesktop(QWidget *widget, QPoint pos) const
+void UiMainWindow::EnsurePositionWithinDesktop(QWidget *widget, QPoint pos)
 {
     if (!widget)
     {

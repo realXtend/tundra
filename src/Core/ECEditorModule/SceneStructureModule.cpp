@@ -371,7 +371,7 @@ void SceneStructureModule::LoadWindowPosition(QWidget *widget, const QString &se
     {
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName);
         QPoint pos = framework_->Config()->Get(configData).toPoint();
-        framework_->Ui()->MainWindow()->EnsurePositionWithinDesktop(widget, pos);
+        UiMainWindow::EnsurePositionWithinDesktop(widget, pos);
     }
 }
 

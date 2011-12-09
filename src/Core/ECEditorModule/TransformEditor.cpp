@@ -352,7 +352,7 @@ void TransformEditor::CreateGizmo()
     // Load position from config
     ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "eceditor", cTransformEditorWindowPos);
     QPoint pos = s->GetFramework()->Config()->Get(configData).toPoint();
-    s->GetFramework()->Ui()->MainWindow()->EnsurePositionWithinDesktop(editorSettings, pos);
+    UiMainWindow::EnsurePositionWithinDesktop(editorSettings, pos);
     editorSettings->setWindowFlags(Qt::Tool);
     editorSettings->show();
 #endif

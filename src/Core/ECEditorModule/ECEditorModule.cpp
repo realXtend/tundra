@@ -159,7 +159,7 @@ void ECEditorModule::ShowEditorWindow()
     activeEditor->setAttribute(Qt::WA_DeleteOnClose);
     // Load position from config
     QPoint pos = config.Get(configData).toPoint();
-    framework_->Ui()->MainWindow()->EnsurePositionWithinDesktop(activeEditor, pos);
+    UiMainWindow::EnsurePositionWithinDesktop(activeEditor, pos);
     activeEditor->show();
     activeEditor->activateWindow();
 }
