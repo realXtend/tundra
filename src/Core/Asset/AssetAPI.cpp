@@ -513,7 +513,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     AssetUploadTransferPtr transfer;
     try
     {
-        transfer = UploadAssetFromFile(filename.toStdString().c_str(), storage, newAssetName.toStdString().c_str());
+        transfer = UploadAssetFromFile(filename, storage, newAssetName);
     }
     catch(Exception &e)
     {
@@ -569,7 +569,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
     AssetUploadTransferPtr transfer;
     try
     {
-        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName.toStdString().c_str());
+        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName);
     }
     catch(Exception &e)
     {

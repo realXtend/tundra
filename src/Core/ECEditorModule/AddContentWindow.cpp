@@ -771,13 +771,11 @@ bool AddContentWindow::UploadAssets()
 
                 if (ad.dataInMemory)
                 {
-                    transfer = framework->Asset()->UploadAssetFromFileInMemory((const u8*)QString(ad.data).toStdString().c_str(),
-                        ad.data.size(), dest, ad.destinationName.toStdString().c_str());
+                    transfer = framework->Asset()->UploadAssetFromFileInMemory((const u8*)ad.data.data(), ad.data.size(), dest, ad.destinationName);
                 }
                 else
                 {
-                    transfer = framework->Asset()->UploadAssetFromFile(ad.source.toStdString().c_str(),
-                        dest, ad.destinationName.toStdString().c_str());
+                    transfer = framework->Asset()->UploadAssetFromFile(ad.source, dest, ad.destinationName);
                 }
 
                 if (transfer &&
