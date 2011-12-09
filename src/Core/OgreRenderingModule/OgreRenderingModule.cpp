@@ -176,8 +176,8 @@ void OgreRenderingModule::OnSceneAdded(const QString& name)
     }
     
     // Add an OgreWorld to the scene
-    OgreWorldPtr newWorld(new OgreWorld(renderer.get(), scene));
-    renderer->ogreWorlds_[scene.get()] = newWorld;
+    OgreWorldPtr newWorld = boost::make_shared<OgreWorld>(renderer.get(), scene);
+    renderer->ogreWorlds[scene.get()] = newWorld;
     scene->setProperty(OgreWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
 
@@ -195,7 +195,7 @@ void OgreRenderingModule::OnSceneRemoved(const QString& name)
     if (worldPtr)
     {
         scene->setProperty(OgreWorld::PropertyName(), QVariant());
-        renderer->ogreWorlds_.erase(scene.get());
+        renderer->ogreWorlds.erase(scene.get());
     }
 }
 
@@ -206,9 +206,7 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
         LogError("Usage: SetMaterialAttribute(asset,attribute,value)");
         return;
     }
-    
-    AssetAPI* asset = framework_->Asset();
-    AssetPtr assetPtr = asset->GetAsset(asset->ResolveAssetRef("", params[0]));
+    AssetPtr assetPtr = framework_->Asset()->GetAsset(framework_->Asset()->ResolveAssetRef("", params[0]));
     if (!assetPtr || !assetPtr->IsLoaded())
     {
         LogError("No asset found or not loaded");

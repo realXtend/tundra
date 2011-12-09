@@ -816,7 +816,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         return;
     }
 
-    QList<entity_id_t> entities = dialog->GetEntityIds();
+    QList<entity_id_t> entities = dialog->EntityIds();
     for(int i = 0; i < entities.size(); i++)
     {
         EntityPtr entity = scene.lock()->GetEntity(entities[i]);
@@ -827,19 +827,19 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         }
 
         // Check if component has been already added to a entity.
-        ComponentPtr comp = entity->GetComponent(dialog->GetTypeName(), dialog->GetName());
+        ComponentPtr comp = entity->GetComponent(dialog->TypeName(), dialog->Name());
         if (comp)
         {
             LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
             continue;
         }
 
-        comp = framework->Scene()->CreateComponentByName(scene.lock().get(), dialog->GetTypeName(), dialog->GetName());
+        comp = framework->Scene()->CreateComponentByName(scene.lock().get(), dialog->TypeName(), dialog->Name());
         assert(comp);
         if (comp)
         {
-            comp->SetReplicated(dialog->GetSynchronization());
-            comp->SetTemporary(dialog->GetTemporary());
+            comp->SetReplicated(dialog->IsReplicated());
+            comp->SetTemporary(dialog->IsTemporary());
             entity->AddComponent(comp, AttributeChange::Default);
         }
     }

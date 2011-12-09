@@ -44,11 +44,6 @@ void SceneAPI::Reset()
     componentFactoriesByTypeid.clear();
 }
 
-void SceneAPI::Initialise()
-{
-    sceneInteract->Initialize(framework);
-}
-
 SceneInteract *SceneAPI::GetSceneInteract() const
 {
     return sceneInteract;

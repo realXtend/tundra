@@ -135,10 +135,6 @@ private:
     /** Called by Framework during application shutdown. */
     void Reset();
 
-    /// Initialize the scene interact object. Needs framework->Input() to be valid.
-    ///\todo Remove when SceneInteract is moved away from SceneAPI.
-    void Initialise();
-
     ComponentFactoryPtr GetFactory(const QString &typeName) const;
     ComponentFactoryPtr GetFactory(u32 typeId) const;
 

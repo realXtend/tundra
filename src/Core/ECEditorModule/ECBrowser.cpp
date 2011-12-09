@@ -812,7 +812,7 @@ void ECBrowser::CreateAttribute()
 
         if (name.isEmpty())
         {
-            errorLabel->setText("Attribute name cannot be empty.");
+            errorLabel->setText(tr("Attribute name cannot be empty."));
             errorLabel->show();
             continue;
         }
@@ -823,12 +823,12 @@ void ECBrowser::CreateAttribute()
             if (dynComp->CreateAttribute(typeName, name))
                 dynComp->ComponentChanged(AttributeChange::Default);
             else
-                QMessageBox::information(framework_->Ui()->MainWindow(), "Failed to create attribute",
-                    "Failed to create " + typeName + " attribute \"" + name + "\", please try again.");
+                QMessageBox::information(framework_->Ui()->MainWindow(), tr("Failed to create attribute"),
+                    tr("Failed to create %1 attribute \"%2\", please try again.").arg(typeName).arg(name));
         }
         else
         {
-            errorLabel->setText("Attribute \"" + name + "\" already exists in this component. Pick a unique name.");
+            errorLabel->setText(tr("Attribute \"%1\" already exists in this component. Pick a unique name.").arg(name));
             errorLabel->show();
         }
     }

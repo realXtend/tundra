@@ -656,8 +656,8 @@ bool AddContentWindow::CreateNewDesctiption()
     }
 
     // Filter which entities will be created and which assets will be uploaded.
-
     filteredDesc = SceneDesc();
+    filteredDesc.filename = sceneDescs.last().filename; ///< @todo For now, we need to now the filename if it's a Ogre .scene.
     filteredDesc.viewEnabled = sceneDescs.last().viewEnabled;
     foreach(const SceneDesc &desc, sceneDescs)
     {
@@ -815,7 +815,18 @@ void AddContentWindow::AddEntities()
 
     if (!filteredDesc.entities.empty())
     {
-        QList<Entity *> entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
+        QList<Entity *> entities;
+        /// @todo When SceneImporter is fixed, use Scene::CreateContentFromSceneDesc for all file types.
+        if (filteredDesc.filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
+        {
+            QString path = QFileInfo(filteredDesc.filename).dir().path();
+            TundraLogic::SceneImporter importer(destScene);
+            entities = importer.Import(filteredDesc.filename, path, Transform(), path, AttributeChange::Default, false/*clearScene*/, false);
+        }
+        else
+        {
+            entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
+        }
         if (!entities.empty())
         {
             entityStatusLabel->setText(QString(tr("Added %1 entities to scene successfully")).arg(entities.count()));
