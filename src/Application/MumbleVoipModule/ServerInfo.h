@@ -3,8 +3,6 @@
 #ifndef incl_MumbleVoipModule_ServerInfo_h
 #define incl_MumbleVoipModule_ServerInfo_h
 
-//class EC_VoiceChannel;
-
 namespace MumbleVoip
 {
     /**
@@ -14,25 +12,37 @@ namespace MumbleVoip
     class ServerInfo
     {
     public:
-        //ServerInfo();
-        //ServerInfo(EC_VoiceChannel* channel);
+        ServerInfo() :
+            server(""), port(""), channel_id(""), password(""), user_name(""),
+            avatar_id(""), context_id(""), channel_name(""), version("")
+        {
+        }
 
-        //! For connecting to server
         QString server;
         QString port;
         QString channel_id;
-        QString user_name; // Value from server/EC is not user since we use avatar's name 
+        QString user_name;  
         QString password;
         QString version;
 
-        //! For positional audio
-        QString avatar_id; // entity uuid presenting the avatar
+        QString avatar_id;
         QString context_id;
 
-        //! For UI
         QString channel_name;
+
+        int GetPortInteger()
+        {
+            if (port.isEmpty())
+                return -1;
+
+            bool ok = false;
+            int iPort = port.toInt(&ok);
+            if (!ok)
+                iPort = -1;
+            return iPort;
+        }
     };
 
-} // end of namespace: MumbleVoip
+}
 
-#endif // incl_MumbleVoipModule_ConnectionManager_h
+#endif
