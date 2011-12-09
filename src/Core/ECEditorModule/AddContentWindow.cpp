@@ -829,7 +829,6 @@ void AddContentWindow::AddEntities()
         }
         if (!entities.empty())
         {
-            entityStatusLabel->setText(QString(tr("Added %1 entities to scene successfully")).arg(entities.count()));
             entityStatusLabel->setText(QString(tr("%1/%2 entities created successfully")).arg(entities.count()).arg(filteredDesc.entities.count()));
             if (position != float3::zero)
                 SceneStructureModule::CentralizeEntitiesTo(position, entities);
