@@ -77,7 +77,7 @@ void UiPlane::SetAlpha(float alpha_)
     alpha = Clamp(alpha_, 0.0f, 1.0f);
     
     pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-    tu->setAlphaOperation(Ogre::LBX_BLEND_MANUAL, Ogre::LBS_TEXTURE, Ogre::LBS_MANUAL, 1.0, 0.0, alpha);    
+    tu->setAlphaOperation(Ogre::LBX_BLEND_MANUAL, Ogre::LBS_TEXTURE, Ogre::LBS_MANUAL, 1.0, 0.0, alpha);
 }
 
 float UiPlane::Alpha() const
@@ -145,6 +145,7 @@ void UiPlane::UpdateOgreOverlay()
         matAsset->SetLighting(0, 0, false);
         matAsset->SetDepthCheck(0, 0, false);
         matAsset->CreateTextureUnit(0, 0);
+        matAsset->SetAttribute("tex_address_mode", "clamp");
         matAsset->ogreMaterial->setFog(true, Ogre::FOG_NONE);
         SetAlpha(1.0f); // Default alpha for new UiPlanes.
     }
