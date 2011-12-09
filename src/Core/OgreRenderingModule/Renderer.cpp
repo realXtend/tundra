@@ -529,8 +529,8 @@ namespace OgreRenderer
         // On windows systems with Pen & Touch input available, Qt doesn't want to actually display the QGgraphicsView even with a call
         // to QGraphicsView::show().
 #ifdef WIN32
-        if (framework_->Ui() && framework_->Ui()->GraphicsView())
-            ShowWindow(((HWND)framework_->Ui()->GraphicsView()->winId()), SW_SHOW);
+        if (framework->Ui() && framework->Ui()->GraphicsView())
+            ShowWindow(((HWND)framework->Ui()->GraphicsView()->winId()), SW_SHOW);
 #endif
 
         if (!initialized)
@@ -830,7 +830,7 @@ namespace OgreRenderer
 
     UiPlane *Renderer::CreateUiPlane(const QString &name)
     {
-        UiPlane *p = new UiPlane(framework_, renderWindow);
+        UiPlane *p = new UiPlane(framework, renderWindow);
         p->setObjectName(name);
         p->UpdateOgreOverlay();
         uiPlanes.push_back(p);
