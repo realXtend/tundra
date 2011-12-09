@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   DisableMemoryLeakCheck.h
  *  @brief  Clears the #define new macro that is used for debug memory leak checking.

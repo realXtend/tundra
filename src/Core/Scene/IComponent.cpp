@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   IComponent.cpp
  *  @brief  The common interface for all components, which are the building blocks the scene entities are formed of.

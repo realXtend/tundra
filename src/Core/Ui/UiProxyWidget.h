@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   UiProxyWidget.h
  *  @brief  Represents a UI widget created by embedding QWidget to the same

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -400,7 +400,6 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
 
     SAFE_DELETE(menu_);
     menu_ = new QMenu(this);
-    menu_->setAttribute(Qt::WA_DeleteOnClose);
     if(treeWidgetItem)
     {
         QAction *copyComponent = new QAction(tr("Copy"), menu_);

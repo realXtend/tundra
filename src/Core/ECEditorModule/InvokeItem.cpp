@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   InvokeItem.cpp
  *  @brief  Struct used to storage information about invoked Entity Action or Function call.

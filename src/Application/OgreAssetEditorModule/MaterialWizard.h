@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   MaterialWizard.h
  *  @brief  Utitility tool for choosing right material script from the material script template library.

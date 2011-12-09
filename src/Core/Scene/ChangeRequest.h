@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   ChangeRequest.h
  *  @brief  A result object to get return values from Qt signal handlers in the permission system (AboutToModifyEntity etc)

@@ -1,6 +1,6 @@
 /// @file QuatUtils.h
 /// @brief Additional utility functions not found in Irrlicht package for working with quaternions.
-/// For conditions of distribution and use, see copyright notice in license.txt
+/// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 

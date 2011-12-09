@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #ifndef incl_MumbleVoipModule_VoiceIndicator_h
 #define incl_MumbleVoipModule_VoiceIndicator_h

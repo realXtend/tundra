@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   SceneInteract.h
  *  @brief  Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals.

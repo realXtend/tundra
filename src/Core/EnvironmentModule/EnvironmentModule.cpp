@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *  @file   EnvironmentModule.cpp
  *  @brief  Environment plugin is be responsible of visual environment features like terrain, sky & water.
  */

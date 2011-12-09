@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_SoundListener.h
  *  @brief  Entity-component which provides sound listener position for in-world 3D audio.
