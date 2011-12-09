@@ -22,11 +22,16 @@ data.updateT                = 0.0;
 data.debugPrints            = true;     // Print debug information about the ongoing logic and decisions.    
 data.dumpLogic              = true;     // Toggle dump logic on/off. Only turn dump logic off if your scene has avatar application running!
 data.avatarBase             = "Avatar"; // This assumes the naming schema of data.avatarBase + clientID.toString() for avatar entities.
-data.updateRate             = 0.5;      // In seconds, set <0 to disable.
+data.updateRate             = 0.25;     // In seconds, set <0 to disable.
 
 data.rules.acceptScript     = true;     // Default: All entities with EC_Script are accepted.
 data.rules.acceptRigid      = false;    // Default: All entities with EC_RigidBody are rejected, if does not have script component.
 data.rules.acceptMesh       = false;    // Default: All entities with EC_Mesh are rejected, if they does not have rigid or script components.
+
+// Set to true to demonstrate how to only send EC_Placeables to the client, then one by one send the rest of the components.
+// In a real world case this is not very useful but demos what you can do with this mechanism quite nicely.
+// If this is true all the above rules will be ignored.
+data.rules.onlyPlaceables = false;
 
 function OnFrameUpdate(frametime)
 {
@@ -62,9 +67,23 @@ function OnFrameUpdate(frametime)
         // the sync state until all have been released.
         if (data.dumpLogic == true)
         {
-            var nextID = sceneState.NextPendingEntityID();
-            LogDebug(msgStart + "Adding next entity with id " + nextID);
-            sceneState.MarkPendingEntityDirty(nextID);
+            var nextEntId = sceneState.NextPendingEntityID();
+            if (sceneState.HasPendingComponents(nextEntId))
+            {
+                // Always send out EC_Placeable first so EC_Mesh logic etc. wont get mixed up.
+                // Other that should be prioritized is EC_DynamicComponent as it many times has data for scripts etc.
+                var nextEnt = scene.GetEntity(nextEntId);
+                var nextComp = sceneState.NextPendingComponentID(nextEntId);
+                if (nextEnt.placeable != null && sceneState.HasPendingComponent(nextEntId, nextEnt.placeable.id))
+                    nextComp = nextEnt.placeable.id
+                LogDebug(msgStart + "Adding next component from ent " + nextEntId + " with comp id " + nextComp);
+                sceneState.MarkPendingComponentDirty(nextEntId, nextComp);
+            }
+            else
+            {
+                LogDebug(msgStart + "Adding next entity with id " + nextEntId);
+                sceneState.MarkPendingEntityDirty(nextEntId);
+            }
         }
         // A bit 'smarter' avatar position based sync state fill logic. 
         // Gets closest entity and add to the sync state. Warning: Might get heavy!
@@ -76,8 +95,20 @@ function OnFrameUpdate(frametime)
                 var closestEntData = GetClosestEntity(connAvEnt.placeable.WorldPosition(), sceneState.PendingEntityIDs());
                 if (closestEntData != null && closestEntData.id != -1)
                 {
-                    LogDebug(msgStart + "Adding closest entity with id " + closestEntData.id + " and distance " + closestEntData.dist)
-                    sceneState.MarkPendingEntityDirty(closestEntData.id);
+                    if (sceneState.HasPendingComponents(closestEntData.id))
+                    {
+                        var nextClosestComp = sceneState.NextPendingComponentID(closestEntData.id);
+                        var nextClosestEnt = scene.GetEntity(closestEntData.id);
+                        if (nextClosestEnt.placeable != null && sceneState.HasPendingComponent(closestEntData.id, nextClosestEnt.placeable.id))
+                            nextClosestComp = nextClosestEnt.placeable.id
+                        LogDebug(msgStart + "Adding next closest component from ent " + closestEntData.id + " with comp id " + nextClosestComp + " and distance " + closestEntData.dist);
+                        sceneState.MarkPendingComponentDirty(closestEntData.id, nextClosestComp);
+                    }
+                    else
+                    {
+                        LogDebug(msgStart + "Adding closest entity with id " + closestEntData.id + " and distance " + closestEntData.dist)
+                        sceneState.MarkPendingEntityDirty(closestEntData.id);
+                    }
                 }
                 else 
                     data.dumpLogic = true; // Oh my, panic!
@@ -136,30 +167,53 @@ function OnAboutToDirtyEntity(changeRequest)
     var clientID = changeRequest.connectionID;
     var clientConnectionPtr = server.GetUserConnection(clientID);
     if (clientConnectionPtr == null)
-        LogWarn("Oh no connection ptr not valid for change request!");
+    {
+        LogError("Connection ptr not valid for change request!");
+        return;
+    }
         
     var ent = changeRequest.entity;
     if (ent != null)
     {
-        // Apply our rules and evaluate if we should let this entity to the state.
-        if (data.rules.acceptScript && ent.script != null)
+        if (!data.rules.onlyPlaceables)
         {
-            LogDebug("- Accepting entity " + ent.id + " with EC_Script for client " + clientID);
-            return;
-        }
-        else if (data.rules.acceptRigid && ent.rigidbody != null)
-        {
-            LogDebug("- Accepting entity " + ent.id + " with EC_Rigidbody for client " + clientID);
-            return;
-        }
-        else if (data.rules.acceptMesh && ent.mesh != null)
-        {
-            LogDebug("- Accepting entity " + ent.id + " with EC_Mesh for client " + clientID);
-            return;
-        }
+            // Apply our rules and evaluate if we should let this entity to the state.
+            if (data.rules.acceptScript && ent.script != null)
+            {
+                LogDebug("- Accepting entity " + ent.id + " with EC_Script for client " + clientID);
+                return;
+            }
+            else if (data.rules.acceptRigid && ent.rigidbody != null)
+            {
+                LogDebug("- Accepting entity " + ent.id + " with EC_Rigidbody for client " + clientID);
+                return;
+            }
+            else if (data.rules.acceptMesh && ent.mesh != null)
+            {
+                LogDebug("- Accepting entity " + ent.id + " with EC_Mesh for client " + clientID);
+                return;
+            }
 
-        LogDebug("-- Denying sync state addition fore entity id " + ent.id + " for client " + clientID);
-        changeRequest.accepted = false;
+            LogDebug("-- Denying sync state addition fore entity id " + ent.id + " for client " + clientID);
+            changeRequest.Reject();
+        }
+        else
+        {
+            if (ent.script != null)
+            {
+                LogDebug("- Accepting entity " + ent.id + " with EC_Script for client " + clientID);
+                return;
+            }
+            
+            // Reject all other components than EC_Placeables
+            LogDebug("-- Denying all but EC_Placeables for entity " + ent.id + " for client " + clientID);
+            var components = ent.components;
+            for (var i=0; i<components.length; ++i)
+            {
+                if (components[i].typeName != "EC_Placeable")
+                    changeRequest.RejectComponent(components[i].id);
+            }
+        }
     }
     else
         LogWarn("Entity with id " + changeRequest.entityId + " in change request is null!");
@@ -167,7 +221,48 @@ function OnAboutToDirtyEntity(changeRequest)
 
 function AboutToDirtyComponent(changeRequest)
 {
-    OnAboutToDirtyEntity(changeRequest); // Apply same logic as entity evaluation
+    // If you would like to do eg. clients avatar position evaluation for this entity
+    // you can get the states user connection ptr like this:
+    var clientID = changeRequest.connectionID;    
+    var sceneState = syncmanager.SceneState(clientID);
+    if (sceneState == null)
+    {
+        LogError("SceneSyncState for client " + clientID + " is null!");
+        return;
+    }
+    
+    var compTypeName = changeRequest.component.typeName;
+    var shouldDirtyFullEntity = false;
+    
+    if (!data.rules.onlyPlaceables)
+    {
+        // Apply our rules and evaluate if we should let this entity/component to the state.
+        if (data.rules.acceptScript && compTypeName == "EC_Script")
+            shouldDirtyFullEntity = true;
+        else if (data.rules.acceptRigid && compTypeName == "EC_RigidBody")
+            shouldDirtyFullEntity = true;
+        else if (data.rules.acceptMesh && compTypeName == "EC_Mesh")
+            shouldDirtyFullEntity = true;
+    }
+    else
+    {
+        if (changeRequest.entityId == 128)
+        {
+            print("Avatar: " + compTypeName + " is pending: " + sceneState.HasPendingEntity(changeRequest.entityId));
+        }
+        
+        // Must send full ents that have script!
+        if (changeRequest.entity.script != null)
+            shouldDirtyFullEntity = true;
+        else if (compTypeName != "EC_Placeable")
+            changeRequest.Reject();
+    }
+    
+    if (shouldDirtyFullEntity)
+    {
+        LogDebug("Accepting entity " + changeRequest.entityId + " because a new component was added that requires sync");
+        sceneState.MarkPendingEntityDirty(changeRequest.entityId); 
+    }
 }
 
 // Logging
