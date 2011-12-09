@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
- *
- *  @file   OgreMaterialUtils.h
- *  @brief  Contains some often needed utlitity functions when dealing with OGRE material scripts.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   OgreMaterialUtils.h
+    @brief  Contains some often needed utlitity functions when dealing with OGRE material scripts. */
 
 #pragma once
 
@@ -13,6 +12,22 @@
 
 namespace OgreRenderer
 {
+    /// Stores information about material script.
+    struct MaterialInfo
+    {
+        QString source; ///< Source file of the material script.
+        QString name; ///< Name of the material.
+        QString data; ///< Data (the actual material script).
+
+        /// Less than operator. Compares source and name.
+        bool operator <(const MaterialInfo &rhs) const
+        {
+            if (source < rhs.source) return true; else if (source > rhs.source) return false;
+            if (name < rhs.name) return true; else if (name > rhs.name) return false;
+            return false;
+        }
+    };
+
     /// If string @c str contains space, wraps the string with double quotes.
     std::string OGRE_MODULE_API AddDoubleQuotesIfNecessary(const std::string &str);
 
@@ -45,4 +60,31 @@ namespace OgreRenderer
 
     /// Counts indentation levels of brace blocks in a file.
     bool OGRE_MODULE_API ProcessBraces(const std::string& line, int& braceLevel);
+
+    /// Process a material file, searching for used materials and recording used textures
+    /** @param matfilename Material file name, including full path
+        @param used_materials Set of materials that are needed. Any materials in the file that are not listed will be skipped
+        @return Set of used textures */
+    QSet<QString> OGRE_MODULE_API ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials);
+
+    /// Process material script and searches for texture references.
+    /** @param material Material script.
+        @return Set of used texture references/names. */
+    QSet<QString> OGRE_MODULE_API ProcessMaterialForTextures(const QString &material);
+
+    /// Loads single material script from material file and returns it as a string.
+    /** @param filename Filename.
+        @param materialName Material name.
+        @return Material script as a string, or an empty string if material was not found. */
+    QString OGRE_MODULE_API LoadSingleMaterialFromFile(const QString &filename, const QString &materialName);
+
+    /// Loads all (uniquely named) material scripts found within a material script file.
+    /** @param filename Filename.
+        @param materialNames Names of materials to be loaded.
+        @return List of material names - material script pairs as strings. */
+    std::set<MaterialInfo> OGRE_MODULE_API LoadAllMaterialsFromFile(const QString &filename);
+
+    /// Searches directory recursively and returns list of found material files.
+    /** @param dir Directory to be searched. */
+    QStringList OGRE_MODULE_API FindMaterialFiles(const QString &dir);
 }

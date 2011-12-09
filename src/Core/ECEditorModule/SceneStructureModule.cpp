@@ -37,6 +37,7 @@
 #include "ECEditorWindow.h"
 #include "OgreWorld.h"
 #include "ConfigAPI.h"
+#include "OgreMaterialUtils.h"
 
 #include <QToolTip>
 #include <QCursor>
@@ -724,8 +725,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         materialFile.close();
 
                         // Add texture assets to scene description
-                        TundraLogic::SceneImporter importer(scene->shared_from_this());
-                        QSet<QString> textures = importer.ProcessMaterialForTextures(ad.data);
+                        QSet<QString> textures = OgreRenderer::ProcessMaterialForTextures(ad.data);
                         if (!textures.empty())
                         {
                             QString dropFolder = materialRef;

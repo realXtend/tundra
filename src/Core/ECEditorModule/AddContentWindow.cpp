@@ -806,6 +806,20 @@ bool AddContentWindow::UploadAssets()
 
 void AddContentWindow::AddEntities()
 {
+    AssetStoragePtr dest;
+    QString storageName = CurrentStorageName();
+    bool doNotAlter = storageName == cDoNotAlterAssetReferences;
+    if (!doNotAlter) // No upload if we don't touch asset refs
+    {
+        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorageByName(storageName);
+        if (!dest)
+        {
+            LogError("AddContentWindow::AddEntities: Could not retrieve asset storage " + storageName + ".");
+            GenerateStorageComboBoxContents(); // Regenerate storage combo box items to make sure that we're up-to-date.
+            return;
+        }
+    }
+
     ScenePtr destScene = scene.lock();
     if (!destScene)
     {
@@ -819,17 +833,23 @@ void AddContentWindow::AddEntities()
         /// @todo When SceneImporter is fixed, use Scene::CreateContentFromSceneDesc for all file types.
         if (filteredDesc.filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
         {
+            if (!dest)
+            {
+                LogError("AddContentWindow::AddEntities: Ogre .scene cannot be upload without destination asset storage.");
+                return;
+            }
+
             QString path = QFileInfo(filteredDesc.filename).dir().path();
             TundraLogic::SceneImporter importer(destScene);
-            entities = importer.Import(filteredDesc.filename, path, Transform(), path, AttributeChange::Default, false/*clearScene*/, false);
+            entities = importer.Import(filteredDesc.filename, path, Transform(), dest->BaseURL(), AttributeChange::Default, false/*clearScene*/, false);
         }
         else
         {
             entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
         }
+
         if (!entities.empty())
         {
-            entityStatusLabel->setText(QString(tr("Added %1 entities to scene successfully")).arg(entities.count()));
             entityStatusLabel->setText(QString(tr("%1/%2 entities created successfully")).arg(entities.count()).arg(filteredDesc.entities.count()));
             if (position != float3::zero)
                 SceneStructureModule::CentralizeEntitiesTo(position, entities);
