@@ -296,7 +296,7 @@ namespace OgreRenderer
                 int window_left = 0;
                 int window_top = 0;
                 renderWindow = new RenderWindow();
-                bool fullscreen = false;
+                bool fullscreen = framework->HasCommandLineParameter("--fullscreen");
 
                 // On some systems, the Ogre rendering output is overdrawn by the Windows desktop compositing manager, but the actual cause of this
                 // is uncertain.
