@@ -128,46 +128,22 @@ void SceneSyncState::MarkPendingEntitiesDirty()
     if (!isServer_)
         return;
 
+    QList<entity_id_t> entIds;
     PendingIter iter = pendingComponents.begin();
     PendingIter end = pendingComponents.end();
     while (iter != end)
     {
-        entity_id_t id = iter->first;
-        EntitySyncState& entityState = entities[id]; // Creates new if did not exist
-        if (!entityState.id)
-            entityState.id = id;
-        if (!entityState.isInQueue)
-        {
-            dirtyQueue.push_back(&entityState);
-            entityState.isInQueue = true;
-        }
+        entIds << iter->first;
         ++iter;
     }
 
-    pendingComponents.clear();
+    foreach(entity_id_t entId, entIds)
+        MarkPendingComponentsDirty(entId);
 }
 
 void SceneSyncState::MarkPendingEntityDirty(entity_id_t id)
 {
-    if (!isServer_)
-        return;
-
-    // If this entity is not in a pending state,
-    // we should not proceed as otherwise this 
-    // might be called with a local entity id.
-    if (!HasPendingEntity(id))
-        return;
-
-    EntitySyncState& entityState = entities[id]; // Creates new if did not exist
-    if (!entityState.id)
-        entityState.id = id;
-    if (!entityState.isInQueue)
-    {
-        dirtyQueue.push_back(&entityState);
-        entityState.isInQueue = true;
-    }
-
-    RemovePendingEntity(id);
+    MarkPendingComponentsDirty(id);
 }
 
 void SceneSyncState::MarkPendingComponentsDirty(entity_id_t id)
