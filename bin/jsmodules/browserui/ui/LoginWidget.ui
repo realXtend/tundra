@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>785</width>
-    <height>503</height>
+    <width>1071</width>
+    <height>794</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Tundra</string>
   </property>
   <property name="styleSheet">
-   <string>QWidget {
+   <string notr="true">QWidget {
 	font: Adab MT;
 	font-size: 8pt;
 }
@@ -24,7 +24,12 @@ QWidget#groupBox_2 {
 }
 
 QLabel#labelInfo {
-	color: grey;
+	color: rgb(163, 163, 163);
+	font: 9pt &quot;Calibri&quot;;
+}
+
+QLabel, QRadioButton {
+	color:rgb(60, 60, 60);
 }
 
 QPushButton {	
@@ -33,14 +38,47 @@ QPushButton {
 	border-radius: 3px;
 	padding: 3px;
 	min-width: 80px;
+	color: rgb(60, 60, 60);
 }
+
 QPushButton::hover {
 	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(218, 218, 218, 150), stop:1 rgba(236, 236, 236, 150));
 	border: 1px solid rgb(90, 90, 90);
 }
+
 QPushButton::pressed {
 	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:1 rgba(218, 218, 218, 150), stop:0 rgba(236, 236, 236, 150));
 	border: 1px solid rgb(90, 90, 90);
+}
+
+QLineEdit {
+	color: rgb(60, 60, 60);
+}
+
+QWidget#LoadingFrame {
+	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(218, 218, 218, 150), stop:1 rgba(236, 236, 236, 150));
+}
+
+QLabel#loadingLabel {
+	font-size: 20pt;
+	color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgba(91, 91, 91, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));
+}
+
+QLabel#labelAdmino {
+	color: rgb(163, 163, 163);
+	font: 9pt &quot;Calibri&quot;;
+}
+
+QProgressBar {
+	background-color: rgb(197, 197, 197);
+	border: 1px solid rgb(186, 186, 186);
+	border-radius: 3px;
+}
+
+QProgressBar:chunk {
+	background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:1, y2:0, stop:0 rgba(91, 91, 91, 100), stop:0.352273 rgba(55, 55, 55, 100), stop:0.642045 rgba(41, 41, 41, 100), stop:1 rgba(55, 55, 55, 100));
+	border-left: 1px solid rgb(186, 186, 186);
+	border-right: 1px solid rgb(186, 186, 186);
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -51,12 +89,186 @@ QPushButton::pressed {
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="MainFrame">
+    <widget class="QFrame" name="LoadingFrame">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="leftMargin">
+       <number>9</number>
+      </property>
+      <property name="rightMargin">
+       <number>9</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="innerLayout">
+        <property name="leftMargin">
+         <number>150</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>150</number>
+        </property>
+        <property name="bottomMargin">
+         <number>50</number>
+        </property>
+        <item>
+         <spacer name="spacerTop">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>150</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="loadingLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Loading world...</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="loadingImageLabel">
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>100</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="loadingProgress">
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>0</number>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="textVisible">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacerBottom">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>150</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>1</width>
+            <height>28</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_Cancel">
+          <property name="text">
+           <string>Cancel</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_ExitLoading">
+          <property name="text">
+           <string>Exit</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="MainFrame">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="margin">
@@ -374,57 +586,56 @@ QPushButton::pressed {
            <property name="margin">
             <number>0</number>
            </property>
-           <item>
-            <layout class="QHBoxLayout" name="hlayout_buttons">
-             <property name="spacing">
-              <number>10</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="labelInfo">
-               <property name="text">
-                <string>Username may not contain spaces. 
-If no port is specified, 2345 is used by default.
-Depending on the server, the password field may be left empty.</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>1</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QLabel" name="statusLabel">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButton_Connect">
-               <property name="text">
-                <string>Connect</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButton_Exit">
-               <property name="text">
-                <string>Exit</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
           </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="hlayout_buttons">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="labelInfo">
+          <property name="text">
+           <string>If no port is specified, 2345 is used by default.
+Depending on the server, the password field may be left empty.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>1</width>
+            <height>1</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="statusLabel">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_Connect">
+          <property name="text">
+           <string>Connect</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_Exit">
+          <property name="text">
+           <string>Exit</string>
+          </property>
          </widget>
         </item>
        </layout>

@@ -297,11 +297,11 @@ var BrowserManager = Class.extend
     
     refreshSqueezer: function()
     {
-        if (this.connected && this.tabs.currentIndex == 0)
+        if (this.connected && this.tabs.currentIndex == 0 && this.classiclogin.loadingScreenVisible() == false)
         {
             this.browser.maximumHeight = magicHeightValue; // Here be dragons
             this.squeezeEnabled = true;
-            this.classiclogin.widget.visible = false;
+            this.classiclogin.hide();
         }
         else
         {
@@ -328,47 +328,53 @@ var BrowserManager = Class.extend
     },
 
     onConnected: function()
-    {
-        p_.connected = true;
-        p_.tabs.currentIndex = 0;
-        p_.refreshSqueezer();
-        p_.onTabIndexChanged(p_.tabs.currentIndex);
+    {          
+        this.connected = true;
+        this.tabs.currentIndex = 0;
+        
+        this.classiclogin.onConnected();
+        this.refreshSqueezer();
+        
+        this.onTabIndexChanged(this.tabs.currentIndex);
     },
     
     onDisconnected: function()
-    {
-        p_.connected = false;
-        p_.refreshSqueezer();
-        p_.onTabIndexChanged(p_.tabs.currentIndex);
-        if (p_.tabs.currentIndex != 0)
+    {    
+        this.connected = false;
+        
+        this.classiclogin.onDisconnected();
+        this.refreshSqueezer();
+        this.onTabIndexChanged(this.tabs.currentIndex);
+        
+        if (this.tabs.currentIndex != 0)
         {
-            p_.tabs.setTabToolTip(0, "Login");
-            p_.tabs.setTabText(0, "Login")
+            this.tabs.setTabToolTip(0, "Login");
+            this.tabs.setTabText(0, "Login")
         }
         
         // Clear toolbars
-        for (var toolbarKey in p_.toolBarGroups)
+        for (var toolbarKey in this.toolBarGroups)
         {
-            var aToolBar = p_.toolBarGroups[toolbarKey];
+            var aToolBar = this.toolBarGroups[toolbarKey];
             if (aToolBar != null)
             {
                 aToolBar.clear();
                 aToolBar.deleteLater();
             }
         }
-        for (var containerKey in p_.toolBarContainers)
+        for (var containerKey in this.toolBarContainers)
         {
-            var container = p_.toolBarContainers[containerKey];
+            var container = this.toolBarContainers[containerKey];
             if (container != null)
                 container.deleteLater();
         }
         
-        p_.toolBarGroups = {};
-        p_.toolBarContainers = {};
-        p_.toolBar.clear();
-        p_.refreshSplitter();
+        this.toolBarGroups = {};
+        this.toolBarContainers = {};
+        this.toolBar.clear();
+        this.refreshSplitter();
 
-        p_.windowResized(ui.GraphicsScene().sceneRect);
+        this.windowResized(ui.GraphicsScene().sceneRect);
     },
     
     onBookmarksPressed: function()
@@ -704,7 +710,7 @@ var BrowserManager = Class.extend
             p_.actionRefreshStop.tooltip = "Refresh";
             
             // We could directly call client.Login(new QUrl(param));
-            // but we want to some validatons so we can give and error for the user right here
+            // but we want to some validations so we can give and error for the user right here
             // as the login function will just return.
             var loginInfo = ParseTundraLoginInfo(param);
             if (loginInfo["username"] != null && loginInfo["address"] != null)
@@ -714,20 +720,24 @@ var BrowserManager = Class.extend
                     // Disconnect if connected
                     if (p_.connected)
                         client.Logout();
+                    
                     // Focus 3D tab and close invoking tab
                     if (index != 0)
                     {
                         p_.tabs.currentIndex = 0;
                         p_.tabs.removeTab(index);
                     }
-                    p_.classiclogin.visible = false;
+                    
+                    // Show progress ui
+                    p_.classiclogin.onConnecting(loginInfo["username"]);
+                    
                     // Perform login
                     var qLoginUrl = new QUrl.fromUserInput(param);
                     client.Login(qLoginUrl);
                 }
             }
         }
-    },
+    }
 });
 
 var BrowserTab = Class.extend
@@ -1123,7 +1133,7 @@ var BrowserSettings = Class.extend
         config.Set(this.configFile, this.behaviourSection, "enable_proxy", this.proxyEnabled);
 
         this.browserManager.actionHome.toolTip = "Go to home page " + this.homepage;
-    },
+    }
     
 });
 
@@ -1512,7 +1522,7 @@ var BrowserStorage = Class.extend
             this.cache = new QNetworkDiskCache(null);
             this.cache.setCacheDirectory(this.cacheDataDir);
             this.accessManager = new QNetworkAccessManager(null);
-            this.cookieJar = browserplugin.CreateCookieJar(this.cookieDataFile);
+            this.cookieJar = browserplugin.MainCookieJar();
             this.have_cache = true;
         } catch (err) {
             print("Cache init failed: " + err);
@@ -1594,6 +1604,14 @@ var ClassicLogin = Class.extend
 		child.setParent(this.widget);
 		this.widget.layout().addWidget(child, 0, 0);
 
+        this.loadingFrame = findChild(this.widget, "LoadingFrame");
+        this.loadingLabel = findChild(this.loadingFrame, "loadingLabel");
+        this.loadingImageLabel = findChild(this.loadingFrame, "loadingImageLabel");
+        this.loadingProgress = findChild(this.loadingFrame, "loadingProgress");
+        this.cancelFromLoading = findChild(this.loadingFrame, "pushButton_Cancel");
+        this.exitFromLoading = findChild(this.loadingFrame, "pushButton_ExitLoading");
+        
+        this.loginFrame = findChild(this.widget, "MainFrame");
 		this.loginButton = findChild(this.widget, "pushButton_Connect");
 		this.exitButton = findChild(this.widget, "pushButton_Exit");
 		this.serverAddressLineEdit = findChild(this.widget, "lineEdit_WorldAddress");
@@ -1606,17 +1624,33 @@ var ClassicLogin = Class.extend
 		logoLabel.pixmap = new QPixmap(appInstallDir + "data/ui/images/realxtend_logo.png");
 
 		// Connections
+		this.cancelFromLoading.clicked.connect(this, this.cancelLoginPressed);
+        this.exitFromLoading.clicked.connect(this, this.exit);
 		this.loginButton.clicked.connect(this, this.loginPressed);
 		this.serverAddressLineEdit.returnPressed.connect(this, this.loginPressed);
 		this.usernameLineEdit.returnPressed.connect(this, this.loginPressed);
 		this.passwordLineEdit.returnPressed.connect(this, this.loginPressed);
 		this.exitButton.clicked.connect(this, this.exit);
-		client.Connected.connect(this, this.onConnected);
-		client.Disconnected.connect(this, this.onDisconnected);
-
+		
+		browserplugin.ShowProgressScreenRequest.connect(this, this.showLoadingScreen);
+		browserplugin.HideProgressScreenRequest.connect(this, this.hideLoadingScreen);
+		browserplugin.UpdateProgressScreenRequest.connect(this, this.updateLoadingScreen);
+        browserplugin.UpdateProgressImageRequest.connect(this, this.updateLoadinScreenImage);
+        
+        client.AboutToConnect.connect(this, this.onAboutToConnect);
+        
+        this.loadingHideTimer = new QTimer();
+        this.loadingHideTimer.singleShot = true;
+        this.loadingHideTimer.timeout.connect(this, this.hideLoadingScreen);
+        
 		this.readConfigToUi();
+		
+		if (!framework.HasCommandLineParameter("--login"))
+		    this.loadingFrame.visible = false;
+		else
+		    this.showLoadingScreen("Initializing login...");
 	},
-	
+		
 	focus: function()
 	{
 	    this.serverAddressLineEdit.setFocus(Qt.ActiveWindowFocusReason);
@@ -1666,6 +1700,11 @@ var ClassicLogin = Class.extend
 			return "udp";
 		return "";
 	},
+	
+	cancelLoginPressed: function()
+	{
+	    client.Logout();
+	},
 
 	loginPressed: function()
 	{
@@ -1687,19 +1726,144 @@ var ClassicLogin = Class.extend
 		if (hostAndPort.length > 1)
 			port = parseInt(hostAndPort[1]);
 
+        p_.classiclogin.onConnecting(username);
 		client.Login(hostAndPort[0], port, username, password, protocol);
+	},
+	
+	onAboutToConnect: function()
+	{
+	    var username = client.GetLoginProperty("username");
+	    if (username == null || username == "")
+	        this.showLoadingScreen("Connecting to the server...");
+	    else
+	        this.onConnecting(username);
+	},
+	
+	onConnecting: function(username)
+	{
+	    this.showLoadingScreen("Connecting as " + username + "...");
 	},
 
 	onConnected: function()
 	{
-		this.widget.visible = false;
 		this.writeConfigFromUi();
+		
+		// Automatically show loading screen, but
+		// so that it wont hang the indefinitely if a scene
+		// script does not call browseruiplugin.HideProgressScreen()
+		// when scene has been loaded, start a timer. If showLoadingScreen
+		// or updateLoginScreen is called the timer is stopped as that
+		// indicates that a script is indeed calling it and will take care of the 
+		// hiding logic. Yah, this is a bit complicated but only way to show
+		// loading screen without having awkward loading phase if the ui is shown from the world.
+		// Then you'll see black screen or some random place where the initial camera is in the scene.
+		this.showLoadingScreen("Loading world...");
+		this.loadingHideTimer.start(10 * 1000); // 10 seconds
 	},
 
 	onDisconnected: function()
     {
-		this.widget.visible = true;
+		this.showLoginScreen();
+		this.show();
 	},
+	
+	loadingScreenVisible: function()
+	{
+	    return this.loadingFrame.visible;
+	},
+	
+	showLoadingScreen: function(message)
+	{
+	    this.hideLoginScreen();    
+	    this.loadingFrame.visible = true;
+	    
+	    if (message == null || message == "")
+	        message = "Loading world...";
+	    if (this.loadingLabel.text != message)
+	        this.loadingLabel.text = message;
+	        
+	    if (this.loadingHideTimer.active)
+	        this.loadingHideTimer.stop();
+	      
+	    if (p_ != null)  
+	        p_.refreshSqueezer();
+	},
+	
+	updateLoadingScreen: function(message, progress)
+	{
+	    if (!this.loadingFrame.visible)
+	        this.loadingFrame.visible = true;
+	        
+	    if (message == null || message == "")
+	        message = "Loading world...";
+	    if (this.loadingLabel.text != message)
+	        this.loadingLabel.text = message;
+	    
+	    if (progress < 0)
+	    {
+	        // Built in constant animation in Qt
+	        this.loadingProgress.minimum = 0;
+	        this.loadingProgress.maximum = 0;
+	        this.loadingProgress.value = 0;
+	    }
+	    else
+	    {
+	        // Actual given progress value between 0-100.
+	        // We don't want to auto hide when progress hits 100,
+	        // as there might be some additional logic after this
+	        // whoever is calling this function.
+	        if (progress > 100)
+	            progress = 100;
+	            
+	        this.loadingProgress.minimum = 0;
+	        this.loadingProgress.maximum = 100;
+	        this.loadingProgress.value = progress;
+	    }
+	    
+	    if (this.loadingHideTimer.active)
+	        this.loadingHideTimer.stop();
+	},
+	
+	updateLoadinScreenImage: function(qimage)
+	{
+	    this.loadingImageLabel.pixmap = QPixmap.fromImage(qimage);
+	},
+	
+	hideLoadingScreen: function()
+	{
+	    if (this.loadingFrame.visible)
+	        this.loadingFrame.visible = false;
+	    this.loadingImageLabel.pixmap = new QPixmap();
+	    
+	    if (this.loadingHideTimer.active)
+	        this.loadingHideTimer.stop();
+	        
+	    if (p_ != null)  
+	        p_.refreshSqueezer();
+	},
+	
+    showLoginScreen: function()
+    {
+        this.hideLoadingScreen();
+        this.loginFrame.visible = true;
+    },
+    
+    hideLoginScreen: function()
+    {
+        this.loginFrame.visible = false;
+    },
+    
+    hide: function()
+    {
+        if (this.widget.visible)
+            this.widget.visible = false;
+    },
+    
+    show: function()
+    {
+        if (!this.widget.visible)
+            this.widget.visible = true;
+    },
 
 	exit: function() 
 	{
