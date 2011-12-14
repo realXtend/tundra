@@ -14,8 +14,10 @@
 #include <QPoint>
 #include <QTimer>
 #include <QMenu>
+#include <QSslError>
 
 class QWebView;
+class QNetworkReply;
 
 class EC_Mesh;
 class EC_WidgetCanvas;
@@ -188,14 +190,23 @@ private slots:
     /// Prepares the QWebView and connects its signals to our slots.
     void PrepareWebview();
 
+    /// Handle browser SSL errors.
+    void OnSslErrors(QNetworkReply *reply, const QList<QSslError>& errors);
+
     /// Handler for QWebView::linkClicked(const QUrl&)
     void LoadRequested(const QUrl &url);
+
+    /// Loads url to browser.
+    void LoadUrl(QString url);
 
     /// Handler for QWebView::loadStarted().
     void LoadStarted();
 
     /// Handler for QWebView::loadFinished(bool).
     void LoadFinished(bool success);
+
+    /// Stops browser.
+    void StopBrowser();
 
     /// If user select invalid submesh, this function is invoked with a delay and the value is reseted to 0.
     void ResetSubmeshIndex();

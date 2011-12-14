@@ -34,6 +34,13 @@
 #include <QWheelEvent>
 #include <QApplication>
 #include <QUuid>
+#include <QNetworkReply>
+
+#ifdef SCENEWIDGET_BROWSER_SHARED_DATA
+#include "BrowserUiPlugin.h"
+#include "CookieJar.h"
+#include <QNetworkDiskCache>
+#endif
 
 #include "LoggingFunctions.h"
 
@@ -476,14 +483,7 @@ void EC_WebView::PrepareComponent()
         return;
     }
 
-    QUrl url = QUrl::fromUserInput(urlString);
-    if (url.isValid())
-    {
-        /// \note loading the url will invoke Render() once QWebView signals the page has been loaded.
-        webview_->load(url);
-    }
-    else
-        LogWarning("User given url invalid: " + urlString.toStdString());
+    LoadUrl(urlString);
 }
 
 void EC_WebView::PrepareWebview()
@@ -507,6 +507,38 @@ void EC_WebView::PrepareWebview()
     connect(webview_, SIGNAL(linkClicked(const QUrl&)), this, SLOT(LoadRequested(const QUrl&)), Qt::UniqueConnection);
     connect(webview_, SIGNAL(loadStarted()), this, SLOT(LoadStarted()), Qt::UniqueConnection);
     connect(webview_, SIGNAL(loadFinished(bool)), this, SLOT(LoadFinished(bool)), Qt::UniqueConnection);
+    connect(webview_, SIGNAL(loadFinished(bool)), this, SLOT(LoadFinished(bool)), Qt::UniqueConnection);
+
+    QNetworkAccessManager *networkAccess = webview_->page()->networkAccessManager();
+    if (networkAccess)
+    {
+        
+        connect(networkAccess, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)), 
+            this, SLOT(OnSslErrors(QNetworkReply*, const QList<QSslError>&)), Qt::UniqueConnection);
+
+#ifdef SCENEWIDGET_BROWSER_SHARED_DATA
+        BrowserUiPlugin *browserPlugin = framework->GetModule<BrowserUiPlugin>();
+        if (browserPlugin)
+        {
+            // Shared disk cache and cookies for all browsers
+            networkAccess->setCache(browserPlugin->MainDiskCache());
+            networkAccess->setCookieJar(browserPlugin->MainCookieJar());
+        }
+#endif
+    }
+}
+
+void EC_WebView::OnSslErrors(QNetworkReply *reply, const QList<QSslError>& errors)
+{
+    LogWarning("EC_WebView: Could not load page, ssl errors occurred in url '" + getwebviewUrl() + "'");
+    if (errors.isEmpty())
+        LogWarning("- Unknown SSL error");
+    else
+    {
+        foreach(QSslError err, errors)
+            LogWarning("- " + err.errorString());
+    }
+    StopBrowser();
 }
 
 void EC_WebView::LoadRequested(const QUrl &url)
@@ -516,9 +548,33 @@ void EC_WebView::LoadRequested(const QUrl &url)
     // else has control, do nothing.
     int currentControllerId = getcontrollerId();
     if (currentControllerId == myControllerId_)
-        setwebviewUrl(url.toString());
+        setwebviewUrl(url.toEncoded());
     else if (currentControllerId == NoneControlID)
-        webview_->load(url);
+        LoadUrl(url.toString());
+}
+
+void EC_WebView::LoadUrl(QString urlString)
+{
+    if (!componentPrepared_ || !webview_)
+        return;
+
+    // Add http in front or strict mode parsing will fail.
+    if (!urlString.startsWith("http://") && !urlString.startsWith("https://"))
+        urlString = "http://" + urlString;
+    
+    // Don't automatically do percent encoding etc with strict mode.
+    QUrl url = QUrl::fromPercentEncoding(urlString.toAscii());
+    if (url.isValid())
+    {
+        if (webviewLoading_)
+            webview_->stop();
+        if (webview_->url() != url)
+            webview_->load(url);
+        else
+            RenderDelayed();
+    }
+    else
+        LogError("EC_WebView: Invalid url '" + url.toString() + "'. Did you remember to input the percent encoded form of the url?");
 }
 
 void EC_WebView::LoadStarted()
@@ -558,6 +614,16 @@ void EC_WebView::LoadFinished(bool success)
     }
 
     RenderTimerStartOrSingleShot();
+}
+
+void EC_WebView::StopBrowser()
+{
+    if (!webview_)
+        return;
+
+    webview_->stop();
+    webviewLoading_ = false;
+    webviewHasContent_ = false;
 }
 
 void EC_WebView::ResetSubmeshIndex()
@@ -695,18 +761,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
             return;
         }
 
-        // Render if url is same, load page if not. 
-        // If someone has control always reload to set the correct title bars.
-        QUrl url = QUrl::fromUserInput(urlString);
-        if (url.isValid())
-        {
-            if (webview_->url() == url && getcontrollerId() == NoneControlID)
-                RenderDelayed();
-            else
-                webview_->load(url);
-        }
-        else
-            LogWarning("User given url invalid: " + urlString.toStdString());
+        LoadUrl(urlString);
     }
     else if (attribute == &webviewSize)
     {
@@ -743,9 +798,8 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
     }
     else if (attribute == &controllerId)
     {
-        int currentControllerId = getcontrollerId();
-
         // If we have control, leave ui so that we can modify the attributes
+        int currentControllerId = getcontrollerId();
         if (currentControllerId == myControllerId_)
         {
             EnableScrollbars(true);
@@ -757,14 +811,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         if (currentControllerId == NoneControlID)
         {
             EnableScrollbars(true);
-            QString urlString = getwebviewUrl().simplified();
-            if (urlString.isEmpty())
-                return;
-            QUrl url = QUrl::fromUserInput(urlString);
-            if (url.isValid())
-                webview_->load(url);
-            else
-                LogWarning("User given url invalid: " + urlString.toStdString());
+            LoadUrl(getwebviewUrl().simplified());
         }
         else
             EnableScrollbars(false);
@@ -885,8 +932,7 @@ void EC_WebView::InteractControlRequest()
         setcontrollerId(myControllerId_);
 
         // Send your local webview up to date url to others
-        QString myCurrentUrl = webview_->url().toString();
-        setwebviewUrl(myCurrentUrl);
+        setwebviewUrl(webview_->url().toEncoded());
         
         // Resolve our user name, use connection id if not available
         QString myControllerName;
