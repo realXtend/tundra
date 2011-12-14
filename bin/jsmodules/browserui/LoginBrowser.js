@@ -1518,16 +1518,19 @@ var BrowserStorage = Class.extend
             return;
                
         // Initialise cache objects
-        try {
-            this.cache = new QNetworkDiskCache(null);
-            this.cache.setCacheDirectory(this.cacheDataDir);
+        try 
+        {
             this.accessManager = new QNetworkAccessManager(null);
+            this.cache = browserplugin.MainDiskCache();
             this.cookieJar = browserplugin.MainCookieJar();
             this.have_cache = true;
-        } catch (err) {
+        } 
+        catch (err) 
+        {
             print("Cache init failed: " + err);
             this.have_cache = false;
         }
+        
         // Initialize cache items to our access manager.
         if (this.have_cache && this.settings.cacheEnabled)
         {
