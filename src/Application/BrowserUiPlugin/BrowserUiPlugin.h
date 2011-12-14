@@ -27,6 +27,9 @@ public:
     ~BrowserUiPlugin();
 
     /// IModule override.
+    virtual void Load();
+
+    /// IModule override.
     virtual void Initialize();
 
 public slots:

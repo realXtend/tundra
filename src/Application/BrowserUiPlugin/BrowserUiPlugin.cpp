@@ -24,6 +24,21 @@ BrowserUiPlugin::BrowserUiPlugin() :
     mainCookieJar_(0),
     mainDiskCache_(0)
 {
+}
+
+BrowserUiPlugin::~BrowserUiPlugin()
+{
+    // Don't delete mainCookieJar_ or mainDiskCache_, 
+    // QObject parenting will perform the cleanup.
+}
+
+void BrowserUiPlugin::Load()
+{
+    // For headless instances we don't init or
+    // expose our mainly UI related functionality.
+    if (framework_->IsHeadless())
+        return;
+
     // Determine the data dir
     QString subdir = "browsercache";
     QDir appData(Application::UserDataDirectory());
@@ -31,7 +46,7 @@ BrowserUiPlugin::BrowserUiPlugin() :
         appData.mkdir(subdir);
     appData.cd(subdir);
     dataDir_ = appData.absolutePath();
-    
+
     // Create main cookie file.
     reservedCookiePath_ = appData.absoluteFilePath(reserverCookieFile_);
     mainCookieJar_ = new CookieJar(this, reservedCookiePath_);
@@ -39,10 +54,8 @@ BrowserUiPlugin::BrowserUiPlugin() :
     // Create main disk cache.
     mainDiskCache_ = new QNetworkDiskCache(this);
     mainDiskCache_->setCacheDirectory(dataDir_);
-}
 
-BrowserUiPlugin::~BrowserUiPlugin()
-{
+    framework_->RegisterDynamicObject("browserplugin", this);
 }
 
 void BrowserUiPlugin::Initialize()
@@ -147,7 +160,6 @@ extern "C"
     {
         Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
         IModule *module = new BrowserUiPlugin();
-        fw->RegisterDynamicObject("browserplugin", module);
         fw->RegisterModule(module);
     }
 }

@@ -13,7 +13,8 @@
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
   <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
-  <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraProtocolModule -->
+  <plugin path="BrowserUiPlugin" />             <!-- Depends on JavascriptModule -->    
+  <plugin path="SceneWidgetComponents" />       <!-- Depends on OgreRenderingModule and TundraProtocolModule (and optionally on BrowserUiPlugin) -->
   <plugin path="CAVEStereoModule" />            <!-- CAVEStereoModule depends on OgreRenderingModule. This plugin does nothing in headless mode. -->
 
   <!-- TODO: Currently the above <plugin> items are loaded in the order they are specified, but below, the jsplugin items are loaded in an undefined order. Use the order specified here as the load order. -->
