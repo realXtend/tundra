@@ -10,37 +10,48 @@
 
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
+
 #include <QScriptEngine>
+#include <QNetworkDiskCache>
 
 #include "QScriptEngineHelpers.h"
 
 Q_DECLARE_METATYPE(CookieJar*);
 
-BrowserUiPlugin::BrowserUiPlugin(Framework *framework) :
-    framework_(framework),
+BrowserUiPlugin::BrowserUiPlugin() :
+    IModule("BrowserUiPlugin"),
     reserverCookieFile_("cookies.data"),
-    mainCookieJar_(0)
+    mainCookieJar_(0),
+    mainDiskCache_(0)
 {
-    // Determine the reserver cookie file to appdata.
+    // Determine the data dir
     QString subdir = "browsercache";
     QDir appData(Application::UserDataDirectory());
     if (!appData.exists(subdir))
         appData.mkdir(subdir);
     appData.cd(subdir);
-    reservedCookiePath_ = appData.absoluteFilePath(reserverCookieFile_);
+    dataDir_ = appData.absolutePath();
     
-    // Create main cookie.
-    mainCookieJar_ = CreateCookieJar(reservedCookiePath_);
+    // Create main cookie file.
+    reservedCookiePath_ = appData.absoluteFilePath(reserverCookieFile_);
+    mainCookieJar_ = new CookieJar(this, reservedCookiePath_);
 
+    // Create main disk cache.
+    mainDiskCache_ = new QNetworkDiskCache(this);
+    mainDiskCache_->setCacheDirectory(dataDir_);
+}
+
+BrowserUiPlugin::~BrowserUiPlugin()
+{
+}
+
+void BrowserUiPlugin::Initialize()
+{
     JavascriptModule *jsModule = framework_->GetModule<JavascriptModule>();
     if (jsModule)
         connect(jsModule, SIGNAL(ScriptEngineCreated(QScriptEngine*)), SLOT(OnScriptEngineCreated(QScriptEngine*)));
     else
         LogWarning("BrowserUiPlugin: Could not get JavascriptModule to connect to the engine created signal!");
-}
-
-BrowserUiPlugin::~BrowserUiPlugin()
-{
 }
 
 void BrowserUiPlugin::OnScriptEngineCreated(QScriptEngine *engine)
@@ -66,6 +77,11 @@ void BrowserUiPlugin::OpenUrl(const QUrl &url, bool activateNewTab)
 CookieJar *BrowserUiPlugin::MainCookieJar()
 {
     return mainCookieJar_;
+}
+
+QNetworkDiskCache *BrowserUiPlugin::MainDiskCache()
+{
+    return mainDiskCache_;
 }
 
 CookieJar *BrowserUiPlugin::CreateCookieJar(const QString &cookieDiskFile)
@@ -130,7 +146,8 @@ extern "C"
     DLLEXPORT void TundraPluginMain(Framework *fw)
     {
         Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-        BrowserUiPlugin *plugin = new BrowserUiPlugin(fw);
-        fw->RegisterDynamicObject("browserplugin", plugin);
+        IModule *module = new BrowserUiPlugin();
+        fw->RegisterDynamicObject("browserplugin", module);
+        fw->RegisterModule(module);
     }
 }

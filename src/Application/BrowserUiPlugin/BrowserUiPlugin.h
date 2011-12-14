@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "FrameworkFwd.h"
+#include "BrowserUiPluginApi.h"
+#include "IModule.h"
 
 #include <QObject>
 #include <QString>
@@ -10,18 +12,22 @@
 
 class CookieJar;
 class QScriptEngine;
+class QNetworkDiskCache;
 
-class BrowserUiPlugin : public QObject
+class BROWSERUI_MODULE_API BrowserUiPlugin : public IModule
 {
 
 Q_OBJECT
 
 public:
     /// Constructor.
-    BrowserUiPlugin(Framework *framework);
+    BrowserUiPlugin();
 
-    /// Deconstructor
+    /// Deconstructor.
     ~BrowserUiPlugin();
+
+    /// IModule override.
+    virtual void Initialize();
 
 public slots:
     /// Adds a action to the browser ui.
@@ -41,8 +47,14 @@ public slots:
 
     /// Returns the main cookie jar that can be shared across Tundra functionality.
     /// Can be used with any QNetworkAccessManager with setCookieJar() function.
+    /// @note Do not delete the returned object.
     /// @return CookieJar* Main cookie jar.
     CookieJar *MainCookieJar();
+
+    /// Returns the main disk cache that can be shared across Tundra functionality.
+    /// @note Do not delete the returned object.
+    /// @return QNetworkDiskCache* Main disk cache.
+    QNetworkDiskCache *MainDiskCache();
 
     /// Creates a new cookie jar that implements disk writing and reading. Can be used with any QNetworkAccessManager with setCookieJar() function.
     /// @note AssetCache will be the CookieJars parent and it will destroyed by it, don't take ownership of the returned CookieJar.
@@ -96,12 +108,13 @@ signals:
     void UpdateProgressImageRequest(QImage image);
 
 private:
-    /// Framework ptr.
-    Framework *framework_;
-
     /// Main cookie jar that can be shared across Tundra functionality.
     CookieJar *mainCookieJar_;
 
+    /// Main disk cache that can be shared across Tundra functionality.
+    QNetworkDiskCache *mainDiskCache_;
+
+    QString dataDir_;
     QString reserverCookieFile_;
     QString reservedCookiePath_;
 };
