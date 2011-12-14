@@ -373,7 +373,7 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
 
     // Create transparent pixmap
     QImage image(newWidth, newHeight, QImage::Format_ARGB32);
-    image.fill(textColor.value() & 0x00FFFFFF);
+    image.fill(textColor.rgb() & 0x00FFFFFF);
 
     {
         // Init painter with pixmap as the paint device
