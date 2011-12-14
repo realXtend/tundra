@@ -24,6 +24,7 @@ class Application : public QApplication
     Q_PROPERTY(QString organizationName READ OrganizationName)
     Q_PROPERTY(QString applicationName READ ApplicationName)
     Q_PROPERTY(QString version READ Version)
+    Q_PROPERTY(QString platform READ Platform)
     Q_PROPERTY(double targetFpsLimit READ TargetFpsLimit WRITE SetTargetFpsLimit)
 
 public:
@@ -90,6 +91,10 @@ public:
     /// Returns version information of the application as string, e.g. "2.0.0".
     /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
     static const char *Version();
+
+    /// Returns the operating system/platform. Possible return values 'win' for windows, 'mac' for Mac OSX or 'x11' for linux, empty string for unresolved.
+    /// This is intended for scripting languages, as sometimes you need to do OS specific UI changes with Qt etc.
+    static QString& Platform();
 
     /// Specifies a new FPS limit to use for the main loop.
     /** Pass in a value of 0 to remove fps limiting altogether. */
