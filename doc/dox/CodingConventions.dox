@@ -73,6 +73,16 @@ QString IComponent::typeName;
 Q_PROPERTY(QString name ...)
 \endverbatim
 
+Enums are written in upper case without special prefixes:
+\verbatim
+enum GizmoType
+{
+    Translate,
+    Rotate,
+    Scale
+};
+\endverbatim
+
 Preprocessor macros are written in upper case with underscores:
 \verbatim
 #define SAFE_DELETE(p) { delete p; p=0; }
