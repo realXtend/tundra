@@ -9,6 +9,7 @@
 #include <QAction>
 #include <QUrl>
 #include <QImage>
+#include <QPointer>
 
 class CookieJar;
 class QScriptEngine;
@@ -55,12 +56,15 @@ public slots:
     CookieJar *MainCookieJar();
 
     /// Returns the main disk cache that can be shared across Tundra functionality.
-    /// @note Do not delete the returned object.
+    /// @note Do not delete the returned object. Be careful when using with QNetworkAccessManager as it takes ownership
+    /// when setCache is called. When you delete your access manager you need to do the following accessManager->cache()->setParent(0).
     /// @return QNetworkDiskCache* Main disk cache.
     QNetworkDiskCache *MainDiskCache();
 
     /// Creates a new cookie jar that implements disk writing and reading. Can be used with any QNetworkAccessManager with setCookieJar() function.
     /// @note AssetCache will be the CookieJars parent and it will destroyed by it, don't take ownership of the returned CookieJar.
+    /// Be careful when using with QNetworkAccessManager as it takes ownership when setCookieJar is called. 
+    /// When you delete your access manager you need to do the following accessManager->cookieJar()->setParent(0).
     /// @param QString File path to the file the jar will read/write cookies to/from.
     /// @return CookieJar* Created cookie jar.
     CookieJar *CreateCookieJar(const QString &cookieDiskFile);
@@ -112,10 +116,10 @@ signals:
 
 private:
     /// Main cookie jar that can be shared across Tundra functionality.
-    CookieJar *mainCookieJar_;
+    QPointer<CookieJar> mainCookieJar_;
 
     /// Main disk cache that can be shared across Tundra functionality.
-    QNetworkDiskCache *mainDiskCache_;
+    QPointer<QNetworkDiskCache> mainDiskCache_;
 
     QString dataDir_;
     QString reserverCookieFile_;

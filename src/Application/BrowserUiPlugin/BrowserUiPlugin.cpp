@@ -28,8 +28,10 @@ BrowserUiPlugin::BrowserUiPlugin() :
 
 BrowserUiPlugin::~BrowserUiPlugin()
 {
-    // Don't delete mainCookieJar_ or mainDiskCache_, 
-    // QObject parenting will perform the cleanup.
+    if (mainCookieJar_)
+        SAFE_DELETE(mainCookieJar_);
+    if (mainDiskCache_)
+        SAFE_DELETE(mainDiskCache_);
 }
 
 void BrowserUiPlugin::Load()
@@ -49,10 +51,10 @@ void BrowserUiPlugin::Load()
 
     // Create main cookie file.
     reservedCookiePath_ = appData.absoluteFilePath(reserverCookieFile_);
-    mainCookieJar_ = new CookieJar(this, reservedCookiePath_);
+    mainCookieJar_ = new CookieJar(0, reservedCookiePath_);
 
     // Create main disk cache.
-    mainDiskCache_ = new QNetworkDiskCache(this);
+    mainDiskCache_ = new QNetworkDiskCache(0);
     mainDiskCache_->setCacheDirectory(dataDir_);
 
     framework_->RegisterDynamicObject("browserplugin", this);
@@ -89,17 +91,17 @@ void BrowserUiPlugin::OpenUrl(const QUrl &url, bool activateNewTab)
 
 CookieJar *BrowserUiPlugin::MainCookieJar()
 {
-    return mainCookieJar_;
+    return mainCookieJar_.data();
 }
 
 QNetworkDiskCache *BrowserUiPlugin::MainDiskCache()
 {
-    return mainDiskCache_;
+    return mainDiskCache_.data();
 }
 
 CookieJar *BrowserUiPlugin::CreateCookieJar(const QString &cookieDiskFile)
 {
-    // If has the same filename as preserved path, look into it more
+    // If has the same filename as reserved path, look into it more
     if (cookieDiskFile.endsWith(reserverCookieFile_, Qt::CaseInsensitive))
     {
         QFileInfo inInfo(cookieDiskFile);
