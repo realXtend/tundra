@@ -121,7 +121,9 @@ public:
     Q_PROPERTY(int controllerId READ getcontrollerId WRITE setcontrollerId);
     DEFINE_QPROPERTY_ATTRIBUTE(int, controllerId);
     
-    /// Constuctor.
+    friend class SceneWidgetComponents;
+
+    /// Constructor.
     explicit EC_WebView(Scene *scene);
 
     /// Destructor.
@@ -159,6 +161,9 @@ public slots:
 
     /// Handles requests to release control of sharing
     void InteractControlReleaseRequest();
+
+protected:
+    void Render(QImage &image);
 
 private slots:
     /// Server side handler for user disconnects.
