@@ -31,8 +31,10 @@
 #endif
 
 SceneWidgetComponents::SceneWidgetComponents() :
-    IModule("SceneWidgetComponents")
+    IModule("SceneWidgetComponents"),
+    networkManager_(0)
 {
+    Reset();
 }
 
 SceneWidgetComponents::~SceneWidgetComponents()
@@ -41,14 +43,29 @@ SceneWidgetComponents::~SceneWidgetComponents()
 
 void SceneWidgetComponents::Initialize()
 {
-    if (!framework_->IsHeadless())
-        connect(framework_->Input()->TopLevelInputContext(), SIGNAL(MouseEventReceived(MouseEvent*)), SLOT(OnMouseEvent(MouseEvent*)));
+    if (framework_->IsHeadless())
+        return;
+
+    connect(framework_->Input()->TopLevelInputContext(), SIGNAL(MouseEventReceived(MouseEvent*)), SLOT(OnMouseEvent(MouseEvent*)));
+
+    QObject *client = qvariant_cast<QObject*>(framework_->property("client"));
+    if (client)
+        connect(client, SIGNAL(Disconnected()), this, SLOT(Reset()));
 }
 
 void SceneWidgetComponents::Uninitialize()
 {
-    webRenderRequests_.clear();
-    ResetWebWidget();
+    Reset();
+
+    if (networkManager_)
+    {
+        // Reset parent of cache and cookie jar.
+        if (networkManager_->cache())
+            networkManager_->cache()->setParent(0);
+        if (networkManager_->cookieJar())
+            networkManager_->cookieJar()->setParent(0);
+        SAFE_DELETE(networkManager_)
+    }
 }
 
 void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
@@ -126,10 +143,7 @@ void SceneWidgetComponents::WebRenderingRequest(EC_WebView *client, QUrl url, QS
 
     // Check if we are already processing identical request.
     if (request.IsIdentical(processingRequest_))
-    {
-        LogWarning("WebRenderingRequest: Current request already identical, returning!");
         return;
-    }
 
     // Check if we have pending request with identical data.
     // Only keep one request per client in the pending list, remove older ones.
@@ -137,29 +151,26 @@ void SceneWidgetComponents::WebRenderingRequest(EC_WebView *client, QUrl url, QS
     foreach(WebRenderRequest existingRequest, webRenderRequests_)
     {
         if (request.IsIdentical(existingRequest))
-        {
-            LogWarning("WebRenderingRequest: Pending request already identical, returning!");
             return;
-        }
-        if (request.client == existingRequest.client)
+        if (request.client.data() == existingRequest.client.data())
             removeList << existingRequest;
     }
     foreach(WebRenderRequest removeRequest, removeList)
     {
-        LogInfo("WebRenderingRequest: Removing same client request with id " + QString::number(removeRequest.id));
+        LogWarning("WebRenderingRequest: Removing same client request with id " + QString::number(removeRequest.id));
         webRenderRequests_.removeAll(removeRequest);
     }
 
     // Assign ID for the request
     request.id = idGenerator_.AllocateReplicated();
     webRenderRequests_ << request;
-
+/*
     qDebug() << "New render request" << endl 
-        << "client :" << request.client << endl
-        << "id     :" << request.id << endl
-        << "url    :" << request.url.toString() << endl
-        << "size   :" << request.resolution;
-
+        << "   client :" << request.client << endl
+        << "   id     :" << request.id << endl
+        << "   url    :" << request.url.toString() << endl
+        << "   size   :" << request.resolution;
+*/
     ProcessNextRenderingRequest();
 }
 
@@ -168,6 +179,7 @@ void SceneWidgetComponents::ProcessNextRenderingRequest()
     // Nothing is pending
     if (webRenderRequests_.isEmpty() && processingRequest_.id == 0)
     {
+        idGenerator_.Reset();
         ResetWebWidget();
         return;
     }
@@ -188,6 +200,8 @@ void SceneWidgetComponents::ProcessNextRenderingRequest()
     if (!webview_)
         CreateWebWidget();
 
+    //qDebug() << "Processing request" << processingRequest_.id << "In queue count:" << webRenderRequests_.count();
+
     webview_->setFixedSize(processingRequest_.resolution);
     webview_->load(processingRequest_.url);
 }
@@ -199,38 +213,49 @@ void SceneWidgetComponents::CreateWebWidget()
     if (webview_)
         return;
 
+    // This is only created once and only deleted on exit.
+    // However we want to delay it here until we have a need for it.
+    if (!networkManager_)
+    {
+        networkManager_ = new QNetworkAccessManager();
+        connect(networkManager_, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)), 
+                this, SLOT(OnWebViewSslErrors(QNetworkReply*, const QList<QSslError>&)), Qt::UniqueConnection);
+
+#ifdef SCENEWIDGET_BROWSER_SHARED_DATA
+        // Shared disk cache and cookies for all browsers
+        BrowserUiPlugin *browserPlugin = framework_->GetModule<BrowserUiPlugin>();
+        if (browserPlugin)
+        {
+            networkManager_->setCache(browserPlugin->MainDiskCache());
+            if (networkManager_->cache()) networkManager_->cache()->setParent(0);
+            networkManager_->setCookieJar(browserPlugin->MainCookieJar());
+            if (networkManager_->cookieJar()) networkManager_->cookieJar()->setParent(0);
+        }
+#endif
+    }
+
     webview_ = new QWebView();
+    webview_->page()->setNetworkAccessManager(networkManager_);
     webview_->setAttribute(Qt::WA_DontShowOnScreen, true);
     webview_->setUpdatesEnabled(false);
     webview_->hide();
 
     connect(webview_, SIGNAL(loadFinished(bool)), this, SLOT(OnWebViewReady(bool)), Qt::UniqueConnection);
+}
 
-    QNetworkAccessManager *networkAccess = webview_->page()->networkAccessManager();
-    if (networkAccess)
-    {
-        connect(networkAccess, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)), 
-            this, SLOT(OnWebViewSslErrors(QNetworkReply*, const QList<QSslError>&)), Qt::UniqueConnection);
-
-#ifdef SCENEWIDGET_BROWSER_SHARED_DATA
-        BrowserUiPlugin *browserPlugin = framework_->GetModule<BrowserUiPlugin>();
-        if (browserPlugin)
-        {
-            // Shared disk cache and cookies for all browsers
-            if (networkAccess->cache() != browserPlugin->MainDiskCache())
-                networkAccess->setCache(browserPlugin->MainDiskCache());
-            if (networkAccess->cookieJar() != browserPlugin->MainCookieJar())
-                networkAccess->setCookieJar(browserPlugin->MainCookieJar());
-        }
-#endif
-    }
+void SceneWidgetComponents::Reset()
+{
+    buffer_ = QImage();
+    webRenderRequests_.clear();
+    idGenerator_.Reset();
+    processingRequest_.Reset();
+    ResetWebWidget();
 }
 
 void SceneWidgetComponents::ResetWebWidget()
 {
     if (webview_)
     {
-        LogInfo("SceneWidgetComponents: Resetting render widget");
         webview_->disconnect();
         webview_->stop();
         SAFE_DELETE(webview_)
@@ -262,33 +287,32 @@ void SceneWidgetComponents::OnWebViewReady(bool succesfull)
         LogError("WebRenderingRequest: Failed to load target page: " + processingRequest_.url.toString());
         skipRendering = true;
     }
-    if (skipRendering)
+
+    if (!skipRendering)
     {
-        processingRequest_.Reset();
-        ProcessNextRenderingRequest();
-        return;
+        if (buffer_.size() != webview_->size())
+            buffer_ = QImage(webview_->size(), QImage::Format_ARGB32_Premultiplied);
+        
+        /// @todo handle with error rendering
+        if (buffer_.width() <= 0 || buffer_.height() <= 0)
+        {
+            LogError("WebRenderingRequest: Widget height invalid after page load.");
+            processingRequest_.Reset();
+            ProcessNextRenderingRequest();
+            return;
+        }
+
+        //qDebug() << "Completed rendering:" << processingRequest_.url.toString();
+
+        QPainter painter(&buffer_);
+        webview_->render(&painter);
+        painter.end();
+
+        processingRequest_.client->Render(buffer_);
     }
 
-    if (buffer_.size() != webview_->size())
-        buffer_ = QImage(webview_->size(), QImage::Format_ARGB32_Premultiplied);
-    
-    /// @todo handle with error rendering
-    if (buffer_.width() <= 0 || buffer_.height() <= 0)
-    {
-        LogError("WebRenderingRequest: Widget height invalid after page load.");
-        processingRequest_.Reset();
-        ProcessNextRenderingRequest();
-        return;
-    }
-
-    qDebug() << "Completed rendering:" << processingRequest_.url.toString();
-
-    QPainter painter(&buffer_);
-    webview_->render(&painter);
-    painter.end();
-
-    processingRequest_.client->Render(buffer_);
     processingRequest_.Reset();
+    ProcessNextRenderingRequest();
 }
 
 void SceneWidgetComponents::OnWebViewSslErrors(QNetworkReply *reply, const QList<QSslError>& errors)

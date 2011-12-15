@@ -19,6 +19,7 @@
 #include <QSslError>
 #include <QImage>
 
+class QNetworkAccessManager;
 class QNetworkReply;
 
 struct WebRenderRequest
@@ -59,13 +60,18 @@ private slots:
     void OnMouseEvent(MouseEvent *mEvent);
 
     void ProcessNextRenderingRequest();
+
     void CreateWebWidget();
     void ResetWebWidget();
+    void Reset();
+
     void OnWebViewReady(bool succesfull);
-    void OnWebViewSslErrors(QNetworkReply *reply, const QList<QSslError>& errors);
+    void OnWebViewSslErrors(QNetworkReply *reply, const QList<QSslError>& errors);    
 
 private:
+    QNetworkAccessManager *networkManager_;
     QPointer<QWebView> webview_;
+
     QList<WebRenderRequest> webRenderRequests_;
     WebRenderRequest processingRequest_;
     UniqueIdGenerator idGenerator_;

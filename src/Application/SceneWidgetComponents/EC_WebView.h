@@ -129,9 +129,6 @@ public:
     /// Destructor.
     ~EC_WebView();
 
-    /// Returns if Component is serializable, always returns true.
-    virtual bool IsSerializable() const;
-
     /// Event filter for this QObject
     virtual bool eventFilter(QObject *obj, QEvent *e);
 
@@ -186,14 +183,14 @@ private slots:
     /// Handler for window resize signal.
     void RenderWindowResized();
 
-    /// Free QWebView memory and reset internal pointer.
-    void ResetWidget();
-
     /// Prepares everything related to the parent widget and other needed components.
     void PrepareComponent();
 
     /// Prepares the QWebView and connects its signals to our slots.
     void PrepareWebview();
+
+    /// Free QWebView memory and reset internal pointer.
+    void ResetWebView(bool ignoreVisibility = false);
 
     /// Handle browser SSL errors.
     void OnSslErrors(QNetworkReply *reply, const QList<QSslError>& errors);
