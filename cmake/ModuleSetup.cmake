@@ -92,6 +92,17 @@ macro (build_library TARGET_NAME LIB_TYPE)
 
     add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
 
+    if (MSVC AND ENABLE_BUILD_OPTIMIZATIONS)
+        set_target_properties (${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
+        if (${LIB_TYPE} STREQUAL "SHARED")
+            set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
+            set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
+        else ()
+            set_target_properties (${TARGET_NAME} PROPERTIES STATIC_LIBRARY_FLAGS_RELEASE "/LTCG")
+            set_target_properties (${TARGET_NAME} PROPERTIES STATIC_LIBRARY_FLAGS_RELWITHDEBINFO "/LTCG")
+        endif ()
+    endif ()
+    
     # build static libraries to /lib if
     # - Is part of the SDK (/src/Core/)
     # - Is a static EC declared by SDK on the build (/src/EntityComponents/)
@@ -130,6 +141,9 @@ macro (build_executable TARGET_NAME)
 
     if (MSVC)
         target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
+        if (ENABLE_BUILD_OPTIMIZATIONS)
+            set_target_properties (${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
+        endif ()
     endif (MSVC)
 
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
