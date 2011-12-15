@@ -1858,14 +1858,15 @@ var ClassicLogin = Class.extend
     
     hide: function()
     {
-        if (this.widget.visible)
-            this.widget.visible = false;
+        this.widget.visible = false;
+        this.loadingFrame.visible = false;
     },
     
     show: function()
     {
-        if (!this.widget.visible)
-            this.widget.visible = true;
+        this.widget.visible = true;
+        this.loginFrame.visible = true;
+        this.loadingFrame.visible = false;
     },
 
 	exit: function() 
