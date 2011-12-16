@@ -35,41 +35,55 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
     Q_PROPERTY(float timeMultiplier READ gettimeMultiplier WRITE settimeMultiplier);
 
-    /// Time of the day: x = time in [0, 24]h range, y = sunrise hour in [0, 24]h range, z = sunset hour in [0, 24] range.
-    DEFINE_QPROPERTY_ATTRIBUTE(float3, time);
-    Q_PROPERTY(float3 time READ gettime WRITE settime);
+    /// Time of day in [0,24]h range, 
+    DEFINE_QPROPERTY_ATTRIBUTE(float, time);
+    Q_PROPERTY(float time READ gettime WRITE settime);
 
-    /// Weather (Volumetric clouds only): x = humidity i.e. percentage of clouds coverage [0,1], y = average cloud size [0,1].
-    DEFINE_QPROPERTY_ATTRIBUTE(float2, weather);
-    Q_PROPERTY(float2 weather READ getweather WRITE setweather);
+    /// Sunrise time in [0,24]h range
+    DEFINE_QPROPERTY_ATTRIBUTE(float, sunriseTime);
+    Q_PROPERTY(float sunsetTime READ getsunriseTime WRITE setsunriseTime);
+
+    /// Sunset time in [0,24]h range.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, sunsetTime);
+    Q_PROPERTY(float sunsetTime READ getsunsetTime WRITE setsunsetTime);
+
+    /// Cloud coverage with range [0,100]. (Volumetric clouds only)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, cloudCoverage);
+    Q_PROPERTY(float cloudCoverage READ getcloudCoverage WRITE setcloudCoverage);
+
+    /// Average cloud size with range [0,100]. (Volumetric clouds only)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, cloudAverageSize);
+    Q_PROPERTY(float cloudAverageSize READ getcloudAverageSize WRITE setcloudAverageSize);
+
+    /// Moon phase with range [0,100] where 0 means fully covered moon, 50 clear moon and 100 fully covered moon.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, moonPhase);
+    Q_PROPERTY(float moonPhase READ getmoonPhase WRITE setmoonPhase);
 
     /// Wind direction, in degrees.
     DEFINE_QPROPERTY_ATTRIBUTE(float, windDirection);
     Q_PROPERTY(float windDirection READ getwindDirection WRITE setwindDirection);
 
     /// Wind speed, volumetric clouds only.
-//    DEFINE_QPROPERTY_ATTRIBUTE(float, windSpeed);
-//    Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
+    //DEFINE_QPROPERTY_ATTRIBUTE(float, windSpeed);
+    //Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
 
     /// The height at the clouds will reside.
     /** For regular clouds this is always relative fixed offset from the active camera along the world up-axis.
         For volumetric clouds x denotes absolute cloud field y-coord start height and y is cloud field volume height (both in world coordinates). */
-//    DEFINE_QPROPERTY_ATTRIBUTE(float, cloudHeight);
-//    Q_PROPERTY(float cloudHeight READ getcloudHeight WRITE setcloudHeight);
+    //DEFINE_QPROPERTY_ATTRIBUTE(float, cloudHeight);
+    //Q_PROPERTY(float cloudHeight READ getcloudHeight WRITE setcloudHeight);
 
 public slots:
     /// Returns position of the sun.
     float3 SunPosition() const;
 
-private:
-    EC_SkyXImpl *impl;
-
 private slots:
     void Create();
     void CreateSunlight();
 
-    /// Called when the main view active camera has changed.
-    void OnActiveCameraChanged(Entity *newActiveCamera);
-    void UpdateAttribute(IAttribute *attr);
+    void UpdateAttribute(IAttribute *attr, AttributeChange::Type change);
     void Update(float frameTime);
+
+private:
+    EC_SkyXImpl *impl;
 };
