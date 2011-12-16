@@ -46,6 +46,8 @@ void SceneWidgetComponents::Initialize()
     if (framework_->IsHeadless())
         return;
 
+    processingDelay_.setSingleShot(true);
+    connect(&processingDelay_, SIGNAL(timeout()), this, SLOT(ProcessNextRenderingRequestImpl()));
     connect(framework_->Input()->TopLevelInputContext(), SIGNAL(MouseEventReceived(MouseEvent*)), SLOT(OnMouseEvent(MouseEvent*)));
 
     QObject *client = qvariant_cast<QObject*>(framework_->property("client"));
@@ -66,6 +68,24 @@ void SceneWidgetComponents::Uninitialize()
             networkManager_->cookieJar()->setParent(0);
         SAFE_DELETE(networkManager_)
     }
+}
+
+QImage SceneWidgetComponents::DrawMessageTexture(QString message, bool error)
+{
+    QImage img(QSize(500,500), QImage::Format_ARGB32);
+
+    QPainter p(&img);
+    p.fillRect(img.rect(), QColor(240,240,240));
+
+    QFont f = p.font();
+    f.setPointSize(20);
+    p.setFont(f);
+    if (error)
+        p.setPen(Qt::red);
+
+    p.drawText(img.rect(), Qt::AlignCenter|Qt::TextWordWrap, message);
+    p.end();
+    return img;
 }
 
 void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
@@ -142,7 +162,7 @@ void SceneWidgetComponents::WebRenderingRequest(EC_WebView *client, QUrl url, QS
     WebRenderRequest request(client, url, resolution);
 
     // Check if we are already processing identical request.
-    if (request.IsIdentical(processingRequest_))
+    if (request.IsIdentical(currentRequest_))
         return;
 
     // Check if we have pending request with identical data.
@@ -164,35 +184,35 @@ void SceneWidgetComponents::WebRenderingRequest(EC_WebView *client, QUrl url, QS
     // Assign ID for the request
     request.id = idGenerator_.AllocateReplicated();
     webRenderRequests_ << request;
-/*
-    qDebug() << "New render request" << endl 
-        << "   client :" << request.client << endl
-        << "   id     :" << request.id << endl
-        << "   url    :" << request.url.toString() << endl
-        << "   size   :" << request.resolution;
-*/
+
     ProcessNextRenderingRequest();
 }
 
 void SceneWidgetComponents::ProcessNextRenderingRequest()
 {
+    if (!processingDelay_.isActive())
+        processingDelay_.start(100);
+}
+
+void SceneWidgetComponents::ProcessNextRenderingRequestImpl()
+{
     // Nothing is pending
-    if (webRenderRequests_.isEmpty() && processingRequest_.id == 0)
+    if (webRenderRequests_.isEmpty() && currentRequest_.id == 0)
     {
         idGenerator_.Reset();
         ResetWebWidget();
         return;
     }
     // Already processing a request
-    if (processingRequest_.id != 0)
+    if (currentRequest_.id != 0)
         return;
 
-    processingRequest_ = webRenderRequests_.takeFirst();
+    currentRequest_ = webRenderRequests_.takeFirst();
     
     // Check if client component has been destroyed
-    if (!processingRequest_.client)
+    if (!currentRequest_.client)
     {
-        processingRequest_.Reset();
+        currentRequest_.Reset();
         ProcessNextRenderingRequest();
         return;
     }
@@ -200,10 +220,8 @@ void SceneWidgetComponents::ProcessNextRenderingRequest()
     if (!webview_)
         CreateWebWidget();
 
-    //qDebug() << "Processing request" << processingRequest_.id << "In queue count:" << webRenderRequests_.count();
-
-    webview_->setFixedSize(processingRequest_.resolution);
-    webview_->load(processingRequest_.url);
+    webview_->setFixedSize(currentRequest_.resolution);
+    webview_->load(currentRequest_.url);
 }
 
 void SceneWidgetComponents::CreateWebWidget()
@@ -248,7 +266,7 @@ void SceneWidgetComponents::Reset()
     buffer_ = QImage();
     webRenderRequests_.clear();
     idGenerator_.Reset();
-    processingRequest_.Reset();
+    currentRequest_.Reset();
     ResetWebWidget();
 }
 
@@ -260,16 +278,14 @@ void SceneWidgetComponents::ResetWebWidget()
         webview_->stop();
         SAFE_DELETE(webview_)
     }
-    if (!webview_.isNull())
-        LogError("SceneWidgetComponents: Failed to reset web widget!");
 }
 
 void SceneWidgetComponents::OnWebViewReady(bool succesfull)
 {
     bool skipRendering = false;
-    if (processingRequest_.id == 0)
+    if (currentRequest_.id == 0)
         skipRendering = true;
-    if (!processingRequest_.client)
+    if (!currentRequest_.client)
     {
         LogWarning("WebRenderingRequest: Client EC_WebView is null after page load.");
         skipRendering = true;
@@ -283,8 +299,7 @@ void SceneWidgetComponents::OnWebViewReady(bool succesfull)
     // Only report load errors if the intent was to render
     if (!skipRendering && !succesfull) 
     {
-        /// @todo handle with error rendering
-        LogError("WebRenderingRequest: Failed to load target page: " + processingRequest_.url.toString());
+        currentRequest_.client->Render(DrawMessageTexture("Failed to load page\n\n" + currentRequest_.url.toString(), true));
         skipRendering = true;
     }
 
@@ -293,35 +308,32 @@ void SceneWidgetComponents::OnWebViewReady(bool succesfull)
         if (buffer_.size() != webview_->size())
             buffer_ = QImage(webview_->size(), QImage::Format_ARGB32_Premultiplied);
         
-        /// @todo handle with error rendering
-        if (buffer_.width() <= 0 || buffer_.height() <= 0)
+        if (buffer_.width() > 0 && buffer_.height() > 0)
         {
-            LogError("WebRenderingRequest: Widget height invalid after page load.");
-            processingRequest_.Reset();
-            ProcessNextRenderingRequest();
-            return;
+            QPainter painter(&buffer_);
+            webview_->render(&painter);
+            painter.end();
+
+            currentRequest_.client->Render(buffer_);
         }
-
-        //qDebug() << "Completed rendering:" << processingRequest_.url.toString();
-
-        QPainter painter(&buffer_);
-        webview_->render(&painter);
-        painter.end();
-
-        processingRequest_.client->Render(buffer_);
+        else
+            currentRequest_.client->Render(DrawMessageTexture("Widget height invalid after page load\n\n" + currentRequest_.url.toString(), true));
     }
 
-    processingRequest_.Reset();
+    currentRequest_.Reset();
     ProcessNextRenderingRequest();
 }
 
 void SceneWidgetComponents::OnWebViewSslErrors(QNetworkReply *reply, const QList<QSslError>& errors)
 {
-    LogError("WebRenderingRequest: SSL errors detected while loading page");
-
-    /// @todo handle with error rendering
-    processingRequest_.Reset();
-    ProcessNextRenderingRequest();
+    LogWarning("WebRenderingRequest: Could not load page, ssl errors occurred in url '" + reply->url().toString() + "'");
+    if (errors.isEmpty())
+        LogWarning("- Unknown SSL error");
+    else
+    {
+        foreach(QSslError err, errors)
+            LogWarning("- " + err.errorString());
+    }
 }
 
 // WebRenderRequest

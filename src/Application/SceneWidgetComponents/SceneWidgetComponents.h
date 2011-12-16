@@ -17,6 +17,7 @@
 #include <QPointer>
 #include <QWebView>
 #include <QSslError>
+#include <QTimer>
 #include <QImage>
 
 class QNetworkAccessManager;
@@ -55,11 +56,14 @@ public:
 
 public slots:
     void WebRenderingRequest(EC_WebView *client, QUrl url, QSize resolution);
+    
+    QImage DrawMessageTexture(QString message, bool error = false);
 
 private slots:
     void OnMouseEvent(MouseEvent *mEvent);
 
     void ProcessNextRenderingRequest();
+    void ProcessNextRenderingRequestImpl();
 
     void CreateWebWidget();
     void ResetWebWidget();
@@ -73,7 +77,8 @@ private:
     QPointer<QWebView> webview_;
 
     QList<WebRenderRequest> webRenderRequests_;
-    WebRenderRequest processingRequest_;
+    WebRenderRequest currentRequest_;
     UniqueIdGenerator idGenerator_;
     QImage buffer_;
+    QTimer processingDelay_;
 };

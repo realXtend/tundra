@@ -29,9 +29,15 @@ BrowserUiPlugin::BrowserUiPlugin() :
 BrowserUiPlugin::~BrowserUiPlugin()
 {
     if (mainCookieJar_)
+    {
+        mainCookieJar_->setParent(0);
         SAFE_DELETE(mainCookieJar_);
+    }
     if (mainDiskCache_)
+    {
+        mainDiskCache_->setParent(0);
         SAFE_DELETE(mainDiskCache_);
+    }
 }
 
 void BrowserUiPlugin::Load()
@@ -91,11 +97,17 @@ void BrowserUiPlugin::OpenUrl(const QUrl &url, bool activateNewTab)
 
 CookieJar *BrowserUiPlugin::MainCookieJar()
 {
+    // Help out to properly use the cookies with reseting parent
+    if (mainCookieJar_)
+        mainCookieJar_->setParent(0);
     return mainCookieJar_.data();
 }
 
 QNetworkDiskCache *BrowserUiPlugin::MainDiskCache()
 {
+    // Help out to properly use the cache with reseting parent
+    if (mainDiskCache_)
+        mainDiskCache_->setParent(0);
     return mainDiskCache_.data();
 }
 

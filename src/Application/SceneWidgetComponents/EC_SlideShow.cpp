@@ -2,6 +2,7 @@
 
 #include "DebugOperatorNew.h"
 #include "EC_SlideShow.h"
+#include "SceneWidgetComponents.h"
 
 #include "Framework.h"
 #include "SceneAPI.h"
@@ -128,13 +129,15 @@ void EC_SlideShow::ShowSlide(int index)
         return;
     canvas->SetSubmesh(getrenderSubmeshIndex());
 
+    SceneWidgetComponents *sceneComponentsPlugin = GetFramework()->GetModule<SceneWidgetComponents>();
+    
     // Don't do anything if the ref is not a proper texture, people can put anything into 'slides' list.
     // Lets still do some log warnings so users know to move to the next slide.
     QString slideRef = slideRefs.at(index).toString().trimmed();
     if (slideRef.isEmpty())
     {
-        QImage img = DrawMessageTexture(QString("No texture set for slide %1").arg(index), false);
-        canvas->Update(img);
+        if (sceneComponentsPlugin)
+            canvas->Update(sceneComponentsPlugin->DrawMessageTexture(QString("No texture set for slide %1").arg(index), false));
         return;
     }
 
@@ -158,15 +161,15 @@ void EC_SlideShow::ShowSlide(int index)
         // Empty ref
         if (isEmpty)
         {
-            QImage img = DrawMessageTexture(QString("No texture set for slide %1").arg(index), false);
-            canvas->Update(img);
+            if (sceneComponentsPlugin)
+                canvas->Update(sceneComponentsPlugin->DrawMessageTexture(QString("No texture set for slide %1").arg(index), false));
             return;
         }
         // Non texture ref
         if (!isTexture)
         {
-            QImage img = DrawMessageTexture(QString("Slide %1 reference is not a texture").arg(index), true);
-            canvas->Update(img);
+            if (sceneComponentsPlugin)
+                canvas->Update(sceneComponentsPlugin->DrawMessageTexture(QString("Slide %1 reference is not a texture").arg(index), true));
             return;
         }
         // Not requested yet
@@ -180,15 +183,15 @@ void EC_SlideShow::ShowSlide(int index)
         // Asset is null, but transfer has not failed. Wait.
         if (!listener->Asset().get() && !tranferFailed)
         {
-            QImage img = DrawMessageTexture(QString("Downloading texture for slide %1...").arg(index), false);
-            canvas->Update(img);
+            if (sceneComponentsPlugin)
+                canvas->Update(sceneComponentsPlugin->DrawMessageTexture(QString("Downloading texture for slide %1...").arg(index), false));
             return;
         }
         // Asset is null and transfer had failed. Draw informative texture to target.
         if (!listener->Asset().get() && tranferFailed)
         {
-            QImage img = DrawMessageTexture(QString("Texture download failed for slide %1").arg(index), true);
-            canvas->Update(img);
+            if (sceneComponentsPlugin)
+                canvas->Update(sceneComponentsPlugin->DrawMessageTexture(QString("Texture download failed for slide %1").arg(index), true));
             return;
         }
         // The above ones should always cover this situation.
@@ -196,8 +199,8 @@ void EC_SlideShow::ShowSlide(int index)
             return;
         if (!listener->Asset()->IsLoaded())
         {
-            QImage img = DrawMessageTexture(QString("Loading texture for slide %1...").arg(index), false);
-            canvas->Update(img);
+            if (sceneComponentsPlugin)
+                canvas->Update(sceneComponentsPlugin->DrawMessageTexture(QString("Loading texture for slide %1...").arg(index), false));
             return;
         }
 
@@ -299,8 +302,12 @@ QMenu *EC_SlideShow::GetContextMenu()
 
 void EC_SlideShow::WindowResized()
 {
+#if defined(DIRECTX_ENABLED) && defined(WIN32)
+    // Rendering goes black on the texture when 
+    // windows is resized only on directx
     if (!resizeRenderTimer_.isActive())
         resizeRenderTimer_.start(500);
+#endif
 }
 
 void EC_SlideShow::ResizeTimeout()
@@ -371,24 +378,6 @@ void EC_SlideShow::PrepareComponent()
         sceneCanvas->RestoreOriginalMeshMaterials();
     else
         ShowSlide(getcurrentSlideIndex());
-}
-
-QImage EC_SlideShow::DrawMessageTexture(QString message, bool error)
-{
-    QImage img(QSize(500,500), QImage::Format_ARGB32);
-    
-    QPainter p(&img);
-    p.fillRect(img.rect(), QColor(240,240,240));
-
-    QFont f = p.font();
-    f.setPointSize(20);
-    p.setFont(f);
-    if (error)
-        p.setPen(Qt::red);
-
-    p.drawText(img.rect(), Qt::AlignCenter|Qt::TextWordWrap, message);
-    p.end();
-    return img;
 }
 
 Ogre::TextureUnitState *EC_SlideShow::GetRenderTextureUnit()
