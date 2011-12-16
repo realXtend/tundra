@@ -564,7 +564,7 @@ void Application::AboutToExit()
         quit();
 }
 
-QString& Application::Platform()
+QString Application::Platform()
 {
 #ifdef Q_WS_WIN
     return QString("win");
@@ -572,6 +572,7 @@ QString& Application::Platform()
     return QString("mac");
 #elif Q_WS_X11
     return QString("x11");
-#endif
+#else
     return QString();
+#endif
 }

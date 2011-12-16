@@ -94,7 +94,7 @@ public:
 
     /// Returns the operating system/platform. Possible return values 'win' for windows, 'mac' for Mac OSX or 'x11' for linux, empty string for unresolved.
     /// This is intended for scripting languages, as sometimes you need to do OS specific UI changes with Qt etc.
-    static QString& Platform();
+    static QString Platform();
 
     /// Specifies a new FPS limit to use for the main loop.
     /** Pass in a value of 0 to remove fps limiting altogether. */
