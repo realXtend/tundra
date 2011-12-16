@@ -413,8 +413,12 @@ void EC_WebView::RenderWindowResized()
     if (!resizeRenderTimer_)
         return;
 
+#if defined(DIRECTX_ENABLED) && defined(WIN32)
+    // Rendering goes black on the texture when 
+    // windows is resized only on directx
     if (!resizeRenderTimer_->isActive())
         resizeRenderTimer_->start(500);
+#endif
 }
 
 void EC_WebView::PrepareComponent()
