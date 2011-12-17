@@ -11,6 +11,7 @@
 #include "Math/float3.h"
 #include "Math/float2.h"
 
+namespace Ogre { class Camera; }
 struct EC_SkyXImpl;
 
 /// A Sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
@@ -27,9 +28,13 @@ public:
     explicit EC_SkyX(Scene* scene);
     ~EC_SkyX();
 
-    /// Do we want to use volumetric clouds.
+    /// Enable volumetric clouds.
     DEFINE_QPROPERTY_ATTRIBUTE(bool, volumetricClouds);
     Q_PROPERTY(bool volumetricClouds READ getvolumetricClouds WRITE setvolumetricClouds);
+
+    /// Enable normal clouds.
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, normalClouds);
+    Q_PROPERTY(bool normalClouds READ getnormalClouds WRITE setnormalClouds);
 
     /// The time multiplier can be a also a negative number, 0 will disable auto-updating.
     DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
@@ -55,23 +60,25 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, cloudAverageSize);
     Q_PROPERTY(float cloudAverageSize READ getcloudAverageSize WRITE setcloudAverageSize);
 
+    /// The height at the clouds will reside.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, cloudHeight);
+    Q_PROPERTY(float cloudHeight READ getcloudHeight WRITE setcloudHeight);
+
     /// Moon phase with range [0,100] where 0 means fully covered moon, 50 clear moon and 100 fully covered moon.
     DEFINE_QPROPERTY_ATTRIBUTE(float, moonPhase);
     Q_PROPERTY(float moonPhase READ getmoonPhase WRITE setmoonPhase);
 
+    /// Sun inner radius.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, sunInnerRadius);
+    Q_PROPERTY(float sunInnerRadius READ getsunInnerRadius WRITE setsunInnerRadius);
+
+    /// Sun outer radius.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, sunOuterRadius);
+    Q_PROPERTY(float sunOuterRadius READ getsunOuterRadius WRITE setsunOuterRadius);
+
     /// Wind direction, in degrees.
     DEFINE_QPROPERTY_ATTRIBUTE(float, windDirection);
     Q_PROPERTY(float windDirection READ getwindDirection WRITE setwindDirection);
-
-    /// Wind speed, volumetric clouds only.
-    //DEFINE_QPROPERTY_ATTRIBUTE(float, windSpeed);
-    //Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
-
-    /// The height at the clouds will reside.
-    /** For regular clouds this is always relative fixed offset from the active camera along the world up-axis.
-        For volumetric clouds x denotes absolute cloud field y-coord start height and y is cloud field volume height (both in world coordinates). */
-    //DEFINE_QPROPERTY_ATTRIBUTE(float, cloudHeight);
-    //Q_PROPERTY(float cloudHeight READ getcloudHeight WRITE setcloudHeight);
 
 public slots:
     /// Returns position of the sun.
@@ -86,4 +93,13 @@ private slots:
 
 private:
     EC_SkyXImpl *impl;
+
+    // VCloudManager register/unregister functions.
+    // If input camera is null, Tundras active camera is used.
+    void RegisterCamera(Ogre::Camera *camera = 0);
+    void UnregisterCamera(Ogre::Camera *camera = 0);
+    void HandleVCloudsCamera(Ogre::Camera *camera, bool registerCamera);
+
+    void ApplyAtmosphereOptions();
+    void ApplyHeight(float height);
 };
