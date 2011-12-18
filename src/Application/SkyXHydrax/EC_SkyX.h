@@ -85,6 +85,7 @@ public slots:
     float3 SunPosition() const;
 
 private slots:
+    void Remove();
     void Create();
     void CreateSunlight();
 
@@ -93,6 +94,9 @@ private slots:
 
 private:
     EC_SkyXImpl *impl;
+
+    void RegisterListeners();
+    void UnregisterListeners();
 
     // VCloudManager register/unregister functions.
     // If input camera is null, Tundras active camera is used.

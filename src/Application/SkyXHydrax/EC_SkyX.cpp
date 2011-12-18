@@ -15,6 +15,7 @@
 #include "Framework.h"
 #include "FrameAPI.h"
 #include "OgreWorld.h"
+#include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "Entity.h"
@@ -143,17 +144,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
 
 EC_SkyX::~EC_SkyX()
 {
-    if (impl && impl->skyX)
-    {
-        Ogre::Root::getSingleton().removeFrameListener(impl->skyX);
-        if (ParentScene())
-        {
-            OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
-            if (w && w->GetRenderer() && w->GetRenderer()->GetCurrentRenderWindow()) 
-                w->GetRenderer()->GetCurrentRenderWindow()->removeListener(impl->skyX);
-        }
-    }
-    SAFE_DELETE(impl);
+    Remove();
 }
 
 float3 EC_SkyX::SunPosition() const
@@ -161,6 +152,12 @@ float3 EC_SkyX::SunPosition() const
     if (impl)
         return impl->currentSunPosition;
     return float3();
+}
+
+void EC_SkyX::Remove()
+{
+    UnregisterListeners();
+    SAFE_DELETE(impl);
 }
 
 void EC_SkyX::Create()
@@ -218,22 +215,13 @@ void EC_SkyX::Create()
     // Init internals
     try
     {
-        if (impl && impl->skyX)
-        {
-            Ogre::Root::getSingleton().removeFrameListener(impl->skyX);
-            w->GetRenderer()->GetCurrentRenderWindow()->removeListener(impl->skyX);
-        }
-        SAFE_DELETE(impl);
+        Remove();
 
         impl = new EC_SkyXImpl();
         impl->skyX = new SkyX::SkyX(w->GetSceneManager(), impl->controller);
         impl->skyX->create();
 
-        // Register SkyX listeners. This is the proper way to do rendering.
-        // If we do our own calls to impl->skyX->update() and impl->skyX->notifyCameraRender()
-        // with FrameAPI::Updated() there will be rendering artifact when camera is being moved!
-        Ogre::Root::getSingleton().addFrameListener(impl->skyX);
-        w->GetRenderer()->GetCurrentRenderWindow()->addListener(impl->skyX);
+        RegisterListeners();
 
         ApplyAtmosphereOptions();
 
@@ -457,6 +445,48 @@ void EC_SkyX::Update(float frameTime)
 
     // Do not replicate constant time attribute updates as SkyX internals are authoritative for it.
     time.Set(impl->controller->getTime().x, AttributeChange::LocalOnly);
+}
+
+// Private
+
+void EC_SkyX::RegisterListeners()
+{
+    if (GetFramework()->IsHeadless())
+        return;
+    if (!impl || !impl->skyX)
+        return;
+
+    // Register SkyX listeners. This is the proper way to do rendering.
+    // If we do our own calls to impl->skyX->update() and impl->skyX->notifyCameraRender()
+    // with FrameAPI::Updated() there will be rendering artifact when camera is being moved!
+    Ogre::Root::getSingleton().addFrameListener(impl->skyX);
+
+    OgreRenderer::OgreRenderingModule *ogreRenderingModule = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>();
+    OgreRenderer::Renderer *renderer = ogreRenderingModule != 0 ? ogreRenderingModule->GetRenderer().get() : 0;
+    Ogre::RenderWindow *window = renderer != 0 ? renderer->GetCurrentRenderWindow() : 0;
+    if (window)
+        window->addListener(impl->skyX);
+    else
+        LogError("EC_SkyX: Failed to register listener to render window.");
+}
+
+void EC_SkyX::UnregisterListeners()
+{
+    if (GetFramework()->IsHeadless())
+        return;
+    if (!impl || !impl->skyX)
+        return;
+
+    Ogre::Root::getSingleton().removeFrameListener(impl->skyX);
+
+    // Cant use OgreWorld from parent scene as it would fail in the dtor.
+    OgreRenderer::OgreRenderingModule *ogreRenderingModule = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>();
+    OgreRenderer::Renderer *renderer = ogreRenderingModule != 0 ? ogreRenderingModule->GetRenderer().get() : 0;
+    Ogre::RenderWindow *window = renderer != 0 ? renderer->GetCurrentRenderWindow() : 0;
+    if (window)
+        window->removeListener(impl->skyX);
+    else
+        LogError("EC_SkyX: Failed to unregister listener from render window.");
 }
 
 void EC_SkyX::RegisterCamera(Ogre::Camera *camera)
