@@ -80,6 +80,10 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, windDirection);
     Q_PROPERTY(float windDirection READ getwindDirection WRITE setwindDirection);
 
+    /// Wind speed. Might need different value with normal versus volumetric clouds to actually get same speed.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, windSpeed);
+    Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
+
 public slots:
     /// Returns position of the sun.
     float3 SunPosition() const;
@@ -105,5 +109,4 @@ private:
     void HandleVCloudsCamera(Ogre::Camera *camera, bool registerCamera);
 
     void ApplyAtmosphereOptions();
-    void ApplyHeight(float height);
 };
