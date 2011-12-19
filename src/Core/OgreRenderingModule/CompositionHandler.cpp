@@ -39,14 +39,15 @@ void OgreCompositionHandler::RemoveCompositorFromViewport(const std::string &com
 
 void OgreCompositionHandler::RemoveAllCompositors()
 {
-    Ogre::CompositorManager::getSingletonPtr()->removeCompositorChain(viewport_);
+    if (viewport_ && Ogre::CompositorManager::getSingletonPtr()->hasCompositorChain(viewport_))
+        Ogre::CompositorManager::getSingletonPtr()->removeCompositorChain(viewport_);
     priorities_.clear();
 }
 
 void OgreCompositionHandler::CameraChanged(Ogre::Viewport* vp, Ogre::Camera* newCamera)
 {
     Ogre::CompositorManager *mgr = Ogre::CompositorManager::getSingletonPtr();
-    if (vp && newCamera && mgr ->hasCompositorChain(vp))
+    if (vp && newCamera && mgr->hasCompositorChain(vp))
     {
         //c_manager_->getCompositorChain(vp)->_notifyViewport(vp);
         /// \todo This is very shitty logic, but Ogre does not seem to give another way to notify a compositor of main viewport camera change.
