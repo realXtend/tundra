@@ -310,6 +310,28 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
             impl->skyX->getVCloudsManager()->setAutoupdate(false); // Don't update wind speed with time multiplier.
             RegisterCamera(camera);
 
+            // Modify render queue group from the SkyX default 50 to 10 (RENDER_QUEUE_1). Actual sky in SkyX main entity is 5 (RENDER_QUEUE_SKIES_EARLY).
+            // This will fix the issues where volumetric clouds would render before transparent materials in our normal scene rendering.
+            if (impl->skyX->getVCloudsManager()->getVClouds()->getGeometryManager()->isCreated())
+            {
+                Ogre::SceneNode *vcloudNode = impl->skyX->getVCloudsManager()->getVClouds()->getGeometryManager()->getSceneNode();
+                if (vcloudNode)
+                {
+                    Ogre::SceneNode::ChildNodeIterator::iterator iter = vcloudNode->getChildIterator().begin();
+                    Ogre::SceneNode::ChildNodeIterator::iterator end = vcloudNode->getChildIterator().end();
+                    while(iter != end)
+                    {
+                        Ogre::SceneNode *childNode = dynamic_cast<Ogre::SceneNode*>(iter->second);
+                        if (childNode)
+                        {
+                            for(int i=0; i<childNode->numAttachedObjects(); i++)
+                                childNode->getAttachedObject(i)->setRenderQueueGroup(Ogre::RENDER_QUEUE_1);
+                        }
+                        ++iter;
+                    }
+                }
+            }
+
             // Update relevant attributes silently now that vclouds have been created
             UpdateAttribute(&cloudCoverage, AttributeChange::Disconnected);
             UpdateAttribute(&windDirection, AttributeChange::Disconnected);
