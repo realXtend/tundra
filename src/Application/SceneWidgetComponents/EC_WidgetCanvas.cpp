@@ -251,7 +251,7 @@ void EC_WidgetCanvas::WidgetDestroyed(QObject *obj)
     SAFE_DELETE(refresh_timer_);
 }
 
-void EC_WidgetCanvas::Update(QImage &buffer)
+void EC_WidgetCanvas::Update(QImage buffer)
 {
     if (framework->IsHeadless())
         return;
@@ -260,7 +260,7 @@ void EC_WidgetCanvas::Update(QImage &buffer)
 
     if (buffer.format() != QImage::Format_ARGB32 && buffer.format() != QImage::Format_ARGB32_Premultiplied)
     {
-        LogWarning("EC_WidgetCanvas::Update(QImage &buffer): Input format needs to be Format_ARGB32 or Format_ARGB32_Premultiplied, preforming auto conversion!");
+        LogWarning("EC_WidgetCanvas::Update(QImage buffer): Input format needs to be Format_ARGB32 or Format_ARGB32_Premultiplied, preforming auto conversion!");
         buffer = buffer.convertToFormat(QImage::Format_ARGB32);
         if (buffer.isNull())
         {

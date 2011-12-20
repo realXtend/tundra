@@ -232,7 +232,7 @@ void EC_WebView::ServerCheckControllerValidity(int connectionID)
 
 // Protected
 
-void EC_WebView::Render(QImage &image)
+void EC_WebView::Render(QImage image)
 {
     // Don't do anything if rendering is not enabled
     if (!ViewEnabled() || GetFramework()->IsHeadless())

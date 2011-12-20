@@ -160,7 +160,7 @@ public slots:
     void InteractControlReleaseRequest();
 
 protected:
-    void Render(QImage &image);
+    void Render(QImage image);
 
 private slots:
     /// Server side handler for user disconnects.
