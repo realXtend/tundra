@@ -2,7 +2,10 @@
 
 #pragma once
 
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
+#if defined(_WINSOCKAPI_)
+#undef _WINSOCKAPI_ 
+#endif
 #include <Winsock2.h>
 #include <Windows.h>
 #endif

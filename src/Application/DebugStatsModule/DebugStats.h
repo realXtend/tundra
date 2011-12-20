@@ -14,7 +14,10 @@
 #include <QObject>
 #include <QPointer>
 
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
+#if defined(_WINSOCKAPI_)
+#undef _WINSOCKAPI_ 
+#endif
 #include <WinSock2.h>
 #include <Windows.h>
 #endif

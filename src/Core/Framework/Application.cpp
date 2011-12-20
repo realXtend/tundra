@@ -35,6 +35,9 @@
 #endif
 
 #if defined(_WINDOWS)
+#if defined(_WINSOCKAPI_)
+#undef _WINSOCKAPI_ 
+#endif
 #include <WinSock2.h>
 #include <windows.h>
 #include <shlobj.h>

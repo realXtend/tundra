@@ -9,7 +9,10 @@
 
 #include <QDir>
 
-#ifdef _WIN32
+#if defined(_WINDOWS)
+#if defined(_WINSOCKAPI_)
+#undef _WINSOCKAPI_ 
+#endif
 #include <WinSock2.h>
 #include <Windows.h>
 #endif
