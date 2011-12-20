@@ -107,3 +107,21 @@ link_package (OPENSSL)
 SetupCompileFlagsWithPCH()
 
 final_target ()
+
+# Add incremental linker flag so we dont get warning linking to libmumbleclient.
+# Handle both cases cleanly where final_target() already added some linker flags or they are empty.
+# Note that visual studio would turn /INCREMENTAL:NO anyway during linking, this is just to avoid the warning.
+if (WIN32)
+    get_target_property(_LINK_FLAGS_RELEASE ${TARGET_NAME} LINK_FLAGS_RELEASE)
+    if (_LINK_FLAGS_RELEASE)
+        set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE "${_LINK_FLAGS_RELEASE} /INCREMENTAL:NO /LTCG")
+    else ()
+        set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE "/INCREMENTAL:NO /LTCG")
+    endif ()
+    get_target_property(_LINK_FLAGS_RELWITHDEBINFO ${TARGET_NAME} LINK_FLAGS_RELWITHDEBINFO)
+    if (_LINK_FLAGS_RELWITHDEBINFO)
+        set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "${_LINK_FLAGS_RELWITHDEBINFO} /INCREMENTAL:NO /LTCG")
+    else ()
+        set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/INCREMENTAL:NO /LTCG")
+    endif ()
+endif ()
