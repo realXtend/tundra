@@ -1,10 +1,9 @@
 /*
 --------------------------------------------------------------------------------
 This source file is part of SkyX.
-Visit ---
+Visit http://www.paradise-studios.net/products/skyx/
 
-Copyright (C) 2009 Xavier Verguín González <xavierverguin@hotmail.com>
-                                           <xavyiy@gmail.com>
+Copyright (C) 2009-2011 Xavier Verguín González <xavyiy@gmail.com>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free Software
@@ -20,23 +19,31 @@ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-GLSL shaders added by Jose Luis Cercos Pita.
---------------------------------------------------------------------------------
 */
 
-// --------------------- SkyX ground material ------------------------
-// IN
-varying vec3 RayleighColor;
-// UNIFORM
-uniform float uExposure;
+// --------------------- SkyX moon material ------------------------
+// ------------------------ GLSL Vertex ----------------------------
 
-void main()
-{	
-	gl_FragColor = vec4(RayleighColor,1.0);
-	
-#ifdef LDR
-	gl_FragColor.xyz = 1.0 - exp(-uExposure * gl_FragColor.xyz);
-#endif // LDR
+// IN
+attribute vec4 vertex; // iPosition
+attribute vec2 uv0;    // iUV
+// OUT
+varying vec4 vUVYLength;
+// UNIFORM
+uniform mat4 uWorld;
+uniform vec3 uSkydomeCenter;
+
+void main(void)
+{
+	// Clip space position
+    gl_Position = gl_ModelViewProjectionMatrix * vertex;
+	// World position
+    vec3 ObjectSpacePosition = (uWorld * vertex).xyz - uSkydomeCenter;
+
+    // UV
+    vUVYLength.xy = uv0;
+    // Y
+    vUVYLength.z  = ObjectSpacePosition.y;
+    // Length
+    vUVYLength.w  = length(ObjectSpacePosition);
 }

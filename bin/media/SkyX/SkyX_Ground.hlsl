@@ -1,10 +1,9 @@
 /*
 --------------------------------------------------------------------------------
 This source file is part of SkyX.
-Visit ---
+Visit http://www.paradise-studios.net/products/skyx/
 
-Copyright (C) 2009 Xavier Verguín González <xavierverguin@hotmail.com>
-                                           <xavyiy@gmail.com>
+Copyright (C) 2009-2011 Xavier Verguín González <xavyiy@gmail.com>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free Software
@@ -36,6 +35,7 @@ void main_vp(
 	// OUT
 	out float4 oPosition		: POSITION,
 	out float3 oRayleighColor   : TEXCOORD0,
+	out float3 oDirection       : TEXCOORD1,
 	// UNIFORM
 	uniform float4x4 uWorldViewProj,
     uniform float4x4 uWorld,
@@ -105,20 +105,28 @@ void main_vp(
 
     // Outputs
     oRayleighColor = color * (uInvWaveLength * uKrESun); // TODO <--- parameter
+	oDirection     = uCameraPos - v3Pos;
 }
 
 void main_fp(
     // IN
 	float3 iRayleighColor   : TEXCOORD0,
+	float3 iDirection       : TEXCOORD1,
 	// OUT 
-	out float4 oColor		: COLOR
+	out float4 oColor		: COLOR,
 	// UNIFORM
+	uniform float3 uLightDir
 #ifdef LDR
 	,uniform float  uExposure
 #endif // LDR
 	)
 {	
-	oColor = float4(iRayleighColor,1);
+	float cos = dot(uLightDir, iDirection) / length(iDirection);
+	float cos2 = cos*cos;
+	
+	float rayleighPhase = 0.75 * (1.0 + 0.5*cos2);
+					 
+	oColor = float4(rayleighPhase*iRayleighColor,1);
 	
 #ifdef LDR
 	oColor.xyz = 1 - exp(-uExposure * oColor);
