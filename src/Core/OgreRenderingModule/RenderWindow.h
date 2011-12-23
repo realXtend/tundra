@@ -7,6 +7,8 @@
 #include <QObject>
 #include <string>
 
+class Framework;
+
 namespace Ogre
 {
     class RenderWindow;
@@ -24,7 +26,7 @@ class OGRE_MODULE_API RenderWindow : public QObject
 public:
     RenderWindow();
 
-    void CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen);
+    void CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen, Framework *fw);
 
     /// Returns the Ogre main RenderWindow used to display the 3D scene in.
     Ogre::RenderWindow *OgreRenderWindow() const;
