@@ -1,5 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "Math/MathNamespace.h"
 #include "DebugOperatorNew.h"
 #include "EC_SlideShow.h"
 
