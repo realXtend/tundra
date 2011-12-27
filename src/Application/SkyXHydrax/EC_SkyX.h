@@ -46,7 +46,7 @@ public:
 
     /// Sunrise time in [0,24]h range
     DEFINE_QPROPERTY_ATTRIBUTE(float, sunriseTime);
-    Q_PROPERTY(float sunsetTime READ getsunriseTime WRITE setsunriseTime);
+    Q_PROPERTY(float sunriseTime READ getsunriseTime WRITE setsunriseTime);
 
     /// Sunset time in [0,24]h range.
     DEFINE_QPROPERTY_ATTRIBUTE(float, sunsetTime);
