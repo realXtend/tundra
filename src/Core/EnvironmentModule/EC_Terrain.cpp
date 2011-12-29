@@ -646,7 +646,7 @@ bool EC_Terrain::LoadFromFile(QString filename)
     filename = filename.trimmed();
 
     std::vector<u8> file;
-    LoadFileToVector(filename.toStdString().c_str(), file);
+    LoadFileToVector(filename, file);
 
     if (file.size() > 0)
     {
@@ -718,14 +718,15 @@ void EC_Terrain::NormalizeImage(QString filename) const
     try
     {
         std::vector<u8> imageFile;
-        LoadFileToVector(filename.toStdString().c_str(), imageFile);
+        LoadFileToVector(filename, imageFile);
 #include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
 #include "EnableMemoryLeakCheck.h"
         image.load(stream);
-    } catch(...)
+    }
+    catch(...)
     {
-        LogError("Execption catched when trying load image file" + filename + ".");
+        LogError("EC_Terrain::NormalizeImage: Exception catched when trying load image file" + filename + ".");
         return;
     }
 
@@ -749,11 +750,11 @@ void EC_Terrain::NormalizeImage(QString filename) const
     {
         Ogre::Image dstImage;
         dstImage.loadDynamicImage(&imageData[0], image.getWidth(), image.getHeight(), Ogre::PF_A8R8G8B8);
-        dstImage.save(filename.toStdString().c_str());
-    } catch(...)
+        dstImage.save(filename.toStdString());
+    }
+    catch(...)
     {
-        ///\todo Log out warning.
-        return;
+        LogWarning("Exception catched when trying save image file" + filename + ".");
     }
 }
 
@@ -763,12 +764,13 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
     try
     {
         std::vector<u8> imageFile;
-        LoadFileToVector(filename.toStdString().c_str(), imageFile);
+        LoadFileToVector(filename, imageFile);
 #include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
 #include "EnableMemoryLeakCheck.h"
         image.load(stream);
-    } catch(...)
+    }
+    catch(...)
     {
         LogError("Execption catched when trying load terrain from image file" + filename + ".");
         return false;
@@ -823,9 +825,10 @@ bool EC_Terrain::SaveToImageFile(QString filename, float minHeight, float maxHei
         Ogre::Image image;
         image.loadDynamicImage(&imageData[0], xVertices, yVertices, Ogre::PF_R8G8B8);
         image.save(filename.toStdString().c_str());
-    } catch(...)
+    }
+    catch(...)
     {
-        ///\todo Log out warning.
+        LogWarning("EC_Terrain::SaveToImageFile: Exception catched when trying save image file" + filename + ".");
         return false;
     }
     return true;

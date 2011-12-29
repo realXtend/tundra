@@ -763,7 +763,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         transfer = AssetTransferPtr(new IAssetTransfer());
         transfer->diskSourceType = IAsset::Cached;
         
-        bool success = LoadFileToVector(assetFileInCache.toStdString().c_str(), transfer->rawAssetData);
+        bool success = LoadFileToVector(assetFileInCache, transfer->rawAssetData);
         if (!success)
         {
             LogError("AssetAPI::RequestAsset: Failed to load asset \"" + assetFileInCache + "\" from cache!");

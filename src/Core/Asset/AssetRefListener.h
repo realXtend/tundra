@@ -27,7 +27,7 @@ public:
     void HandleAssetRefChange(AssetAPI *assetApi, QString assetRef, const QString& assetType = "");
     
     /// Returns the asset currently stored in this asset reference.
-    AssetPtr Asset();
+    AssetPtr Asset() const;
 
 signals:
     /// Emitted when the raw byte download of this asset finishes.
