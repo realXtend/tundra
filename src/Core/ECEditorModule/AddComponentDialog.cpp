@@ -46,10 +46,10 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
     errorLabel->hide();
 
     name_line_edit_ = new QLineEdit(this);
-    name_line_edit_->setFocus(Qt::ActiveWindowFocusReason);
     name_line_edit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     type_combo_box_ = new QComboBox(this);
+    type_combo_box_->setFocus(Qt::ActiveWindowFocusReason);
     type_combo_box_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     
     sync_check_box_ = new QCheckBox(this);
@@ -69,10 +69,10 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
     // Layouts
     QGridLayout *grid = new QGridLayout();
     grid->setVerticalSpacing(8);
-    grid->addWidget(component_name_label, 0, 0);
-    grid->addWidget(name_line_edit_, 0, 1, Qt::AlignLeft, 1);
-    grid->addWidget(component_type_label, 1, 0);
-    grid->addWidget(type_combo_box_, 1, 1, Qt::AlignLeft, 1);
+    grid->addWidget(component_type_label, 0, 0);
+    grid->addWidget(type_combo_box_, 0, 1, Qt::AlignLeft, 1);
+    grid->addWidget(component_name_label, 1, 0);
+    grid->addWidget(name_line_edit_, 1, 1, Qt::AlignLeft, 1);
     grid->addWidget(component_sync_label, 2, 0);
     grid->addWidget(sync_check_box_, 2, 1);
     grid->addWidget(component_temp_label, 3, 0);
