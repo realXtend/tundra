@@ -303,11 +303,19 @@ namespace OgreRenderer
                 // As a workaround, it is possible to have Ogre output directly on the main window HWND of the ui chain. On other systems, this gives
                 // graphical issues, so it cannot be used as a permanent mechanism. Therefore this workaround is enabled only as a command-line switch.
                 if (framework->HasCommandLineParameter("--ogrecapturetopwindow"))
-                    renderWindow->CreateRenderWindow(framework->Ui()->MainWindow(), windowTitle.c_str(), width, height, window_left, window_top, false, framework);
+                    renderWindow->CreateRenderWindow(framework->Ui()->MainWindow(), windowTitle.c_str(), width, height, window_left, window_top, fullscreen, framework);
                 else if (framework->HasCommandLineParameter("--nouicompositing"))
-                    renderWindow->CreateRenderWindow(0, windowTitle.c_str(), width, height, window_left, window_top, false, framework);
+                    renderWindow->CreateRenderWindow(0, windowTitle.c_str(), width, height, window_left, window_top, fullscreen, framework);
                 else // Normally, we want to render Ogre onto the UiGraphicsview viewport window.
+                {
+                    // Even if the user has requested fullscreen mode, init Ogre in windowed mode, since the main graphics view is not a top-level window, and Ogre cannot
+                    // initialize into fullscreen with a non-top-level window handle. As D3D9 is initialized in windowed mode, this has the effect that vsync cannot be enabled.
+                    // To set up vsync, specify the
+                    if (framework->CommandLineParameters("--vsync").length() > 0 && ParseBool(framework->CommandLineParameters("--vsync").first()))
+                        LogWarning("--vsync was specified, but Ogre is initialized in windowed mode to a non-top-level window. VSync will probably *not* be active. To enable vsync in full screen mode, "
+                            "specify the flags --vsync, --fullscreen and --ogrecapturetopwindow together.");
                     renderWindow->CreateRenderWindow(framework->Ui()->GraphicsView()->viewport(), windowTitle.c_str(), width, height, window_left, window_top, false, framework);
+                }
 
                 connect(framework->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
                 renderWindow->Resize(framework->Ui()->GraphicsView()->width(), framework->Ui()->GraphicsView()->height());

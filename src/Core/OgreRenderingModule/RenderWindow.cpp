@@ -38,12 +38,12 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
     Ogre::NameValuePairList params;
 
     // See http://www.ogre3d.org/tikiwiki/RenderWindowParameters
-    if (fw->CommandLineParameters("vsync").length() > 0) // "Synchronize buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate"
-        params["vsync"] = ParseBool(fw->CommandLineParameters("vsync").first());
-    if (fw->CommandLineParameters("vsyncFrequency").length() > 0) // "Display frequency rate; only applies if fullScreen is set."
-        params["displayFrequency"] = fw->CommandLineParameters("vsyncFrequency").first().toInt();
-    if (fw->CommandLineParameters("antialias").length() > 0) // "Full screen antialiasing factor"
-        params["FSAA"] = fw->CommandLineParameters("antialias").first().toInt();
+    if (fw->CommandLineParameters("--vsync").length() > 0) // "Synchronize buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate"
+        params["vsync"] = ParseBool(fw->CommandLineParameters("--vsync").first());
+    if (fw->CommandLineParameters("--vsyncFrequency").length() > 0) // "Display frequency rate; only applies if fullScreen is set."
+        params["displayFrequency"] = fw->CommandLineParameters("--vsyncFrequency").first().toInt();
+    if (fw->CommandLineParameters("--antialias").length() > 0) // "Full screen antialiasing factor"
+        params["FSAA"] = fw->CommandLineParameters("--antialias").first().toInt();
 #ifdef WIN32
     if (targetWindow)
         params["externalWindowHandle"] = Ogre::StringConverter::toString((unsigned int)targetWindow->winId());
