@@ -89,6 +89,7 @@ framework(framework_)
     mainWindow->setMouseTracking(true);
     // For Mouse wheel events, key releases, and mouse moves (no button down).
     mainWindow->installEventFilter(this);
+    mainWindow->setAttribute(Qt::WA_AcceptTouchEvents, true);
 
     LoadKeyBindingsFromFile();
 
