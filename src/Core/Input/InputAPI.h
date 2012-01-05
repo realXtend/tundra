@@ -11,8 +11,7 @@
 #include <QKeySequence>
 #include <QTime>
 #include <QPoint>
-
-#include <map>
+#include <QMap>
 
 class QGraphicsItem;
 class QGraphicsView;
@@ -53,7 +52,6 @@ public:
     /// Initializes the API and hooks it into the main application window.
     explicit InputAPI(Framework *owner);
 
-    /// The dtor saves the settings to QSettings.
     ~InputAPI();
 
     void Reset();
@@ -65,7 +63,7 @@ public:
     /// Prints the list of input contexts, for debugging purposes.
     void DumpInputContexts();
 
-    typedef std::map<std::string, QKeySequence> KeyActionsMap;
+    typedef QMap<QString, QKeySequence> KeyBindingMap;
 
 public slots:
     /// Creates a new input context with the given name.
@@ -177,19 +175,23 @@ public slots:
     /// Finds the InputContext that has the highest mouse priority, and applies the mouse cursor in it as the currently shown mouse cursor.
     void ApplyMouseCursorOverride();
 
-    void LoadKeyBindingsFromFile();
-
-    void SaveKeyBindingsToFile();
-
-    const KeyActionsMap &KeyBindings() const { return keyboardMappings; }
-
-    void SetKeyBindings(const KeyActionsMap &actionMap) { keyboardMappings = actionMap; }
-
     /// Return the item at coordinates. If the mouse cursor is hidden, always returns null
     QGraphicsItem* ItemAtCoords(int x, int y) const;
 
     /// Explicitly defocus any widgets and return key focus to the 3D world
     void ClearFocus();
+
+    /// Return the current key bindings.
+    KeyBindingMap KeyBindings() const { return keyboardMappings; }
+
+    /// Sets new set of key bindings.
+    void SetKeyBindings(const KeyBindingMap &actionMap) { keyboardMappings = actionMap; }
+
+    /// Loads key bindings from config.
+    void LoadKeyBindingsFromFile();
+
+    /// Saves current key bindings to config.
+    void SaveKeyBindingsToFile();
 
 signals:
     void TouchBegin(QTouchEvent *touchEvent);
@@ -262,7 +264,7 @@ private:
     InputContext topLevelInputContext;
 
     /// Stores all the keyboard mappings we have gathered.
-    KeyActionsMap keyboardMappings;
+    KeyBindingMap keyboardMappings;
 
     /// Stores the currently held down keyboard buttons.
     std::map<Qt::Key, KeyPressInformation> heldKeys;
