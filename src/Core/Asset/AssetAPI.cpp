@@ -753,40 +753,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         return AssetTransferPtr();
     }
 
-    // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the 
-    // data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache ? assetCache->GetDiskSourceByRef(assetRef) : "";
-    AssetTransferPtr transfer;
-
-    // If the disk path is not empty ask the provider if we have its permission to use the cache file.
-    // This gives providers the ability to step in and do their logic to force the RequestAsset() call.
-    bool useCacheFile = !assetFileInCache.isEmpty() ? provider->IsValidDiskSource(assetRef, assetFileInCache) : false;
-
-    if (useCacheFile)
-    {
-        // The asset can be found from cache. Generate a providerless transfer and return it to the client.
-        transfer = AssetTransferPtr(new IAssetTransfer());
-        transfer->diskSourceType = IAsset::Cached;
-        
-        bool success = LoadFileToVector(assetFileInCache, transfer->rawAssetData);
-        if (!success)
-        {
-            LogError("AssetAPI::RequestAsset: Failed to load asset \"" + assetFileInCache + "\" from cache!");
-            return AssetTransferPtr();
-        }
-        transfer->source.ref = assetRef;
-        transfer->assetType = assetType;
-        transfer->storage = AssetStorageWeakPtr(); // Note: Unfortunately when we load an asset from cache, we don't get the information about which storage it's supposed to come from.
-        transfer->provider = provider;
-        transfer->SetCachingBehavior(false, assetFileInCache);
-        LogDebug("AssetAPI::RequestAsset: Loaded asset \"" + assetRef + "\" from disk cache instead of having to use asset provider."); 
-        readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
-    }
-    else 
-    {
-        // Can't find the asset in cache or the provider didn't see it as valid anymore. Do a real request from the asset provider.
-        transfer = provider->RequestAsset(assetRef, assetType);
-    }
+    // Perform the actual request.
+    transfer = provider->RequestAsset(assetRef, assetType);
 
     if (!transfer)
     {
