@@ -42,27 +42,6 @@ QVariantList SceneSyncState::PendingEntityIDs() const
     return list;
 }
 
-QVariantList SceneSyncState::PendingComponentIDs(entity_id_t id) const
-{
-    QVariantList list;
-    PendingConstIter iter = pendingComponents.find(id);
-    if (iter == pendingComponents.end())
-        return list;
-    if (iter->second.empty())
-        return list;
-
-    ComponentIdList::const_iterator compIter = iter->second.begin();
-    ComponentIdList::const_iterator end = iter->second.end();
-    while (compIter != end)
-    {
-        component_id_t id = (*compIter);
-        if (!list.contains(id))
-            list.append(id);
-        ++compIter;
-    }
-    return list;
-}
-
 entity_id_t SceneSyncState::NextPendingEntityID() const
 {
     if (pendingComponents.empty())
@@ -73,28 +52,12 @@ entity_id_t SceneSyncState::NextPendingEntityID() const
     return front->first;
 }
 
-component_id_t SceneSyncState::NextPendingComponentID(entity_id_t id) const
-{
-    PendingConstIter iter = pendingComponents.find(id);
-    if (iter == pendingComponents.end())
-        return 0;
-    if (iter->second.empty())
-        return 0;
-    component_id_t compId = iter->second.front();
-    return compId;
-}
-
 bool SceneSyncState::HasPendingEntities() const
 {
     return !pendingComponents.empty();
 }
 
 bool SceneSyncState::HasPendingEntity(entity_id_t id) const
-{
-    return HasPendingComponents(id);
-}
-
-bool SceneSyncState::HasPendingComponents(entity_id_t id) const
 {
     PendingConstIter iter = pendingComponents.find(id);
     if (iter == pendingComponents.end())
@@ -105,22 +68,19 @@ bool SceneSyncState::HasPendingComponents(entity_id_t id) const
     return !iter->second.empty();
 }
 
-bool SceneSyncState::HasPendingComponent(entity_id_t id, component_id_t compId) const
+void SceneSyncState::MarkEntityPending(entity_id_t id)
 {
-    PendingConstIter iter = pendingComponents.find(id);
-    if (iter == pendingComponents.end())
-        return false;
-    ComponentIdList compList = iter->second;
-    // We should never have a empty list in the map for any entity!
-    if (compList.empty())
-    {
-        LogWarning("SceneSyncState::HasPendingComponent(): Pending map has entity with empty list of pending components!");
-        return false;
-    }
-    for (ComponentIdList::const_iterator compIter = compList.begin(); compIter != compList.end(); ++compIter)
-        if ((*compIter) == compId)
-            return true;
-    return false;
+    if (!isServer_)
+        return;
+
+    // If user does not have the entity in the first place, do nothing.
+    // Its going to be asked to be added to the state via the permission signals later.
+    std::map<entity_id_t, EntitySyncState>::iterator i = entities.find(id);
+    if (i == entities.end())
+        return;
+
+    MarkEntityRemoved(id);      // Remove from current sync state (removes entity from client)
+    FillPendingComponents(id);  // Mark all components from the entity as pending
 }
 
 void SceneSyncState::MarkPendingEntitiesDirty()
@@ -138,15 +98,10 @@ void SceneSyncState::MarkPendingEntitiesDirty()
     }
 
     foreach(entity_id_t entId, entIds)
-        MarkPendingComponentsDirty(entId);
+        MarkPendingEntityDirty(entId);
 }
 
 void SceneSyncState::MarkPendingEntityDirty(entity_id_t id)
-{
-    MarkPendingComponentsDirty(id);
-}
-
-void SceneSyncState::MarkPendingComponentsDirty(entity_id_t id)
 {
     if (!isServer_)
         return;
@@ -154,7 +109,7 @@ void SceneSyncState::MarkPendingComponentsDirty(entity_id_t id)
     // If this entity has no components in pending state,
     // we should not proceed as otherwise this 
     // might be called with a local entity id.
-    if (!HasPendingComponents(id))
+    if (!HasPendingEntity(id))
         return;
 
     // Above ensures iter to be valid and list not being empty.
@@ -166,21 +121,6 @@ void SceneSyncState::MarkPendingComponentsDirty(entity_id_t id)
         entityState.MarkComponentDirty((*compIter));
 
     RemovePendingEntity(id);
-}
-
-void SceneSyncState::MarkPendingComponentDirty(entity_id_t id, component_id_t compId)
-{
-    if (!isServer_)
-        return;
-
-    // If this entity has no components in pending state,
-    // we should not proceed as otherwise this 
-    // might be called with a local entity and/or component id.
-    if (!HasPendingComponent(id, compId))
-        return;
-    
-    MarkComponentDirtySilent(id, compId);
-    RemovePendingComponent(id, compId);
 }
 
 // Public
@@ -284,7 +224,7 @@ void SceneSyncState::MarkEntityRemoved(entity_id_t id)
 
 void SceneSyncState::MarkComponentDirty(entity_id_t id, component_id_t compId)
 {
-    if (isServer_ && !ShouldMarkAsDirty(id, compId))
+    if (isServer_ && !ShouldMarkAsDirty(id))
         return;
 
     MarkEntityDirty(id);
@@ -362,54 +302,7 @@ bool SceneSyncState::ShouldMarkAsDirty(entity_id_t id)
         // Rejected, mark all components as pending.
         if (changeRequest_.Rejected())
             FillPendingComponents(id);
-        // Entity sync accepted but following comps were rejected.
-        else if (changeRequest_.HasRejectedComponents())
-            FillPendingComponents(id, changeRequest_.RejectedComponents());
-
         return changeRequest_.Accepted();
-    }
-    return true;
-}
-
-bool SceneSyncState::ShouldMarkAsDirty(entity_id_t id, component_id_t compId)
-{
-    if (!isServer_)
-        return true;
-
-    // If already in pending state, do not request again
-    if (HasPendingComponent(id, compId))
-        return false;
-
-    PROFILE(SceneSyncState_ShouldMarkAsDirty_Component);
-
-    // Only request once per component
-    std::map<entity_id_t, EntitySyncState>::iterator iterEnt = entities.find(id);
-    if (iterEnt == entities.end())
-    {
-        MarkEntityDirtySilent(id);
-        iterEnt = entities.find(id);
-    }
-    if (iterEnt == entities.end())
-    {
-        LogError("SceneSyncState::ShouldMarkAsDirty(id,compId): Failed to mark entity as dirty before component check!");
-        return true;
-    }
-    std::map<component_id_t, ComponentSyncState>::iterator iterComp = iterEnt->second.components.find(compId);
-    if (iterComp == iterEnt->second.components.end())
-    {
-        // Scene or entity null, do not process yet.
-        if (!FillRequest(id, compId))
-            return false;
-
-        // Make a request to add this component into the sync state
-        emit AboutToDirtyComponent(&changeRequest_);
-        bool shouldDirty = (changeRequest_.Rejected() || changeRequest_.IsComponentRejected(compId)) ? false : true;
-        if (!shouldDirty)
-        {
-            ComponentIdList& pendingComps = pendingComponents[id];
-            pendingComps.push_back(compId);
-        }
-        return shouldDirty;
     }
     return true;
 }
@@ -458,44 +351,6 @@ bool SceneSyncState::FillRequest(entity_id_t id)
     return true;
 }
 
-bool SceneSyncState::FillRequest(entity_id_t id, component_id_t compId)
-{
-    changeRequest_.Reset(id, compId);
-
-    if (scene_.expired())
-        return false;
-    ScenePtr scenePtr = scene_.lock();
-    if (!scenePtr.get())
-    {
-        LogError("SceneSyncState::FillRequest(id,compId): Scene is null!");
-        return false;
-    }
-
-    EntityPtr entityPtr = scenePtr->GetEntity(id);
-    if (!entityPtr.get())
-        return false;
-
-    // We trust the SyncManager mechanisms to stop local entities from ever getting here.
-    // Print anyways if something starts to leak at least we notice it here.
-    if (!entityPtr->IsReplicated())
-        LogError("SceneSyncState::FillRequest(id,compId): Entity " + QString::number(id) + " should not be replicated!");
-    changeRequest_.SetEntity(entityPtr.get());
-
-    ComponentPtr compPtr = entityPtr->GetComponentById(compId);
-    if (!compPtr.get())
-    {
-        LogError("SceneSyncState::FillRequest(id,compId): Entitys " + QString::number(id) + " component " + QString::number(compId) + " is null!");
-        return false;
-    }
-    // We trust the SyncManager mechanisms to stop local components from ever getting here.
-    // Print anyways if something starts to leak so at least we notice it here.
-    if (!compPtr->IsReplicated())
-        LogError("SceneSyncState::FillRequest(id,compId): Entitys " + QString::number(id) + " component " + QString::number(compId) + " should not be replicated!");
-    changeRequest_.SetComponent(compPtr.get());
-
-    return true;
-}
-
 void SceneSyncState::FillPendingComponents(entity_id_t id)
 {
     if (!isServer_)
@@ -532,25 +387,6 @@ void SceneSyncState::FillPendingComponents(entity_id_t id)
     }
 }
 
-void SceneSyncState::FillPendingComponents(entity_id_t id, QList<component_id_t> compIdList)
-{
-    if (!isServer_)
-        return;
-
-    if (compIdList.isEmpty())
-        return;
-    QList<component_id_t> compsToAdd;
-    foreach(component_id_t compId, compIdList)
-        if (!HasPendingComponent(id, compId))
-            compsToAdd << compId;
-
-    if (compsToAdd.isEmpty())
-        return;
-    ComponentIdList& pendingComps = pendingComponents[id]; // Creates new if did not exist
-    foreach(component_id_t compId, compsToAdd)
-            pendingComps.push_back(compId);
-}
-
 EntitySyncState& SceneSyncState::MarkEntityDirtySilent(entity_id_t id)
 {
     EntitySyncState& entityState = entities[id]; // Creates new if did not exist
@@ -562,12 +398,4 @@ EntitySyncState& SceneSyncState::MarkEntityDirtySilent(entity_id_t id)
         entityState.isInQueue = true;
     }
     return entityState;
-}
-
-void SceneSyncState::MarkComponentDirtySilent(entity_id_t id, component_id_t compId)
-{
-    EntitySyncState& entityState = MarkEntityDirtySilent(id); // Creates new if did not exist
-    if (!entityState.id)
-        entityState.id = id;
-    entityState.MarkComponentDirty(compId);
 }

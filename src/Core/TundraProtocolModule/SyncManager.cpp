@@ -615,8 +615,6 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             {
                 if (!i->second->IsReplicated())
                     continue;
-                if (isServer && state->HasPendingComponent(entity->Id(), i->second->Id()))
-                    continue;
                 ++numReplicatedComponents;
             }
             ds.AddVLE<kNet::VLE8_16_32>(numReplicatedComponents);
@@ -626,11 +624,6 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             {
                 ComponentPtr comp = i->second;
                 if (!comp->IsReplicated())
-                    continue;
-                // Skip this component if it has been marked for pending state.
-                // We wont sync this component to the client before its 
-                // authorized via the SceneSyncState functions.
-                if (isServer && state->HasPendingComponent(entity->Id(), comp->Id()))
                     continue;
                 WriteComponentFullUpdate(ds, comp);
                 // Mark the component undirty in the receiver's syncstate
