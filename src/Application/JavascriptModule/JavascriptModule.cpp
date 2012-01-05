@@ -639,7 +639,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     {
         // Set entity and scene that own the EC_Script component.
         instance->RegisterService(comp->ParentEntity(), "me");
-        instance->RegisterService(comp->ParentEntity()->ParentScene(), "scene");
+        instance->RegisterService(comp->ParentScene(), "scene");
     }
 
     emit ScriptEngineCreated(instance->Engine());
