@@ -92,6 +92,7 @@ private slots:
     void Remove();
     void Create();
     void CreateSunlight();
+    void OnActiveCameraChanged(Entity *camEntity);
 
     void UpdateAttribute(IAttribute *attr, AttributeChange::Type change);
     void Update(float frameTime);
