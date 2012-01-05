@@ -171,9 +171,6 @@ class StateChangeRequest : public QObject
     Q_PROPERTY(entity_id_t entityId READ EntityId)
     Q_PROPERTY(Entity* entity READ GetEntity)
 
-    Q_PROPERTY(component_id_t componentId READ ComponentId)
-    Q_PROPERTY(IComponent* component READ GetComponent)
-
 public:
     StateChangeRequest(int connectionID) :
         connectionID_(connectionID)
@@ -181,14 +178,11 @@ public:
         Reset(); 
     }
 
-    void Reset(entity_id_t entityId = 0, component_id_t componentId = 0)
+    void Reset(entity_id_t entityId = 0)
     {
         accepted_ = true;
         entityId_ = entityId;
-        componentId_ = componentId;
         entity_ = 0;
-        component_ = 0;
-        rejectedComponents_.clear();
     }
 
 public slots:
@@ -208,41 +202,6 @@ public slots:
     void Reject()
     {
         accepted_ = false;
-        RejectComponent();
-    }
-
-    /// Reject the component change request. This overload is only
-    /// useful if 'componentId' has been set aka this is a change request
-    /// for a specific component in the entity.
-    void RejectComponent()
-    {
-        if (componentId_ != 0)
-            RejectComponent(componentId_);
-    }
-
-    /// Reject a component by id from the entity. This overload is useful
-    /// when you want to accept change request for the entity but not all of its components.
-    void RejectComponent(component_id_t compId)
-    {
-        if (!IsComponentRejected(compId))
-            rejectedComponents_ << compId;
-    }
-
-    /// Returns if component with compId has been rejected in this change request.
-    bool IsComponentRejected(component_id_t compId) 
-    { 
-        return rejectedComponents_.contains(compId); 
-    }
-
-    bool HasRejectedComponents()
-    {
-        return !rejectedComponents_.isEmpty();
-    }
-
-    /// Returns all the rejected components ids for this change request.
-    QList<component_id_t> RejectedComponents() 
-    { 
-        return rejectedComponents_; 
     }
 
 public:
@@ -255,21 +214,12 @@ public:
     Entity* GetEntity()                     { return entity_; }
     void SetEntity(Entity* entity)          { entity_ = entity; }
 
-    component_id_t ComponentId()            { return componentId_; }
-    IComponent* GetComponent()              { return component_; }
-    void SetComponent(IComponent* comp)     { component_ = comp; }
-
 private:
     bool accepted_;
     int connectionID_;
 
     entity_id_t entityId_;
     Entity* entity_;
-
-    component_id_t componentId_;
-    IComponent* component_;
-
-    QList<component_id_t> rejectedComponents_;
 };
 
 typedef std::list<component_id_t> ComponentIdList;
@@ -298,50 +248,27 @@ signals:
     /// @param request StateChangeRequest object.
     void AboutToDirtyEntity(StateChangeRequest *request);
 
-    /// This signal is emitted when a component is being added to the client sync state.
-    /// All needed data for evaluation logic is in the StateChangeRequest parameter object.
-    /// If 'request.Accepted()' is true (default) the component will be added to the sync state,
-    /// otherwise it will be added to the pending components list for the parent entity. 
-    /// @note See also HasPendingComponents, HasPendingComponent, MarkPendingComponentsDirty and MarkPendingComponentDirty.
-    /// @param request StateChangeRequest object.
-    void AboutToDirtyComponent(StateChangeRequest *request);
-
 public slots:
+    /// Removes the entity from the sync state and puts it to the pending list.
+    void MarkEntityPending(entity_id_t id);
+
     /// Adds all currently pending entities to the clients sync state.
     void MarkPendingEntitiesDirty();
 
     /// Adds entity with id to the clients sync state.
     void MarkPendingEntityDirty(entity_id_t id);
 
-    /// Adds all components (and the parent entity) to the client sync state.
-    void MarkPendingComponentsDirty(entity_id_t id);
-
-    /// Adds component of compId from entity id to client sync state.
-    void MarkPendingComponentDirty(entity_id_t id, component_id_t compId);
-
     /// Returns all pending entity IDs.
     QVariantList PendingEntityIDs() const;
 
-    /// Returns all pending component IDs for entity id.
-    QVariantList PendingComponentIDs(entity_id_t id) const;
-
     /// Returns 0 if no pending entities.
     entity_id_t NextPendingEntityID() const;
-
-    /// Returns 0 if no pending component for this entity.
-    component_id_t NextPendingComponentID(entity_id_t id) const;
 
     /// Returns if we have any pending entitys.
     bool HasPendingEntities() const;
 
     /// Returns if we have pending entity with id.
     bool HasPendingEntity(entity_id_t id) const;
-
-    /// Returns if we have pending components for entity id.
-    bool HasPendingComponents(entity_id_t id) const;
-
-    /// Returns if we have pending component of compId for entity id.
-    bool HasPendingComponent(entity_id_t id, component_id_t compId) const;
 
 public:
     void SetParentScene(SceneWeakPtr scene);
@@ -365,33 +292,21 @@ public:
     // Silently does the same as MarkEntityDirty without emitting signals.
     EntitySyncState& MarkEntityDirtySilent(entity_id_t id);
 
-    // Silently does the same as MarkComponentDirty without emitting signals.
-    void MarkComponentDirtySilent(entity_id_t id, component_id_t compId);
-
     // Removes entity from pending lists.
     void RemovePendingEntity(entity_id_t id);
 
+private:
     // Removes component from pending lists, removes entity from full pending list if there.
     void RemovePendingComponent(entity_id_t id, component_id_t compId);
 
-private:
     // Returns if entity with id should be added to the sync state.
     bool ShouldMarkAsDirty(entity_id_t id);
 
-    // Returns if component with compId in entity with id should be added to the sync state.
-    bool ShouldMarkAsDirty(entity_id_t id, component_id_t compId);
-
     // Fills changeRequest_ with entity data, returns if request is valid. 
     bool FillRequest(entity_id_t id);
-
-    // Fills changeRequest_ with entity and component data, returns if request is valid. 
-    bool FillRequest(entity_id_t id, component_id_t compId);
     
     // Fills entitys pending components with all of its component ids.
     void FillPendingComponents(entity_id_t id);
-
-    // Fills entitys pending components with the given component ids.
-    void FillPendingComponents(entity_id_t id, QList<component_id_t> compIdList);
 
     std::map<entity_id_t, ComponentIdList > pendingComponents;
 
