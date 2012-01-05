@@ -9,9 +9,12 @@
 #include "HttpAssetTransfer.h"
 #include "HttpAssetStorage.h"
 
-#include <QNetworkReply>
+#include <QDateTime>
+#include <QByteArray>
+
 class QNetworkAccessManager;
 class QNetworkRequest;
+class QNetworkReply;
 
 class HttpAssetStorage;
 typedef boost::shared_ptr<HttpAssetStorage> HttpAssetStoragePtr;
@@ -32,7 +35,9 @@ public:
     /// Checks an asset id for validity
     /** @return true if this asset provider can handle the id */
     virtual bool IsValidRef(QString assetRef, QString assetType = "");
-            
+    
+    virtual bool IsValidDiskSource(const QString assetRef, const QString &diskSource);
+
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
 
     /// Adds the given http URL to the list of current asset storages.
@@ -64,6 +69,13 @@ public:
     /// Return the network access manager
     QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }
     
+    /// Constructs QDateTime from a QByteArray header. Can detect and parse following formats:
+    /// ANSI C's asctime(), RFC 822, updated by RFC 1123 and RFC 850, obsoleted by RFC 1036.
+    QDateTime FromHttpDate(const QByteArray &value);
+    
+    /// Constructs a QByteArray from QDateTime. Returns value as Sun, 06 Nov 1994 08:49:37 GMT - RFC 822.
+    QByteArray ToHttpDate(const QDateTime &dateTime);
+
 private slots:
     void AboutToExit();
     void OnHttpTransferFinished(QNetworkReply *reply);
