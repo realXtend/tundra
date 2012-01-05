@@ -11,6 +11,7 @@
 #include "AssetFwd.h"
 #include "OgreModuleFwd.h"
 #include "Math/MathFwd.h"
+#include "AttributeChangeType.h"
 
 #include <OgreTextureManager.h>
 #include <OgreMaterialManager.h>
@@ -61,6 +62,12 @@ Q_PROPERTY(bool processTextures READ IsProcessingTextures WRITE SetProcessTextur
 /// @todo Make meshes actually hide from rendering when they are unloaded.
 Q_PROPERTY(bool processMeshes READ IsProcessingMeshes WRITE SetProcessMeshes)
 
+/// Inspect deleted entities for assets that can be unloaded. If a asset reference is 
+/// found that has a refcount of 0 in the rest of the scene, it will be unloaded. Default value is false.
+/// @note Does not depend on 'enabled' being true to work, but you need to set 'processTextures' 
+/// and/or 'processMeshes' for this to do anything.
+Q_PROPERTY(bool inspectRemovedEntities READ InspectRemovedEntities WRITE SetInspectRemovedEntities)
+
 /// Time in milliseconds we should wait between asset loads. Minimum is 1. Default value is 100.
 Q_PROPERTY(int waitAfterLoad READ WaitAfterLoad WRITE SetWaitAfterLoad)
 
@@ -80,13 +87,15 @@ public:
 
     bool enabled;
     bool processTextures;
-    bool processMeshes;  
+    bool processMeshes;
+    bool inspectRemovedEntities;
     bool drawDebug;
 
 public slots:
     bool Enabled()                              { return enabled; }
     bool IsProcessingTextures()                 { return processTextures; }
     bool IsProcessingMeshes()                   { return processMeshes; }
+    bool InspectRemovedEntities()               { return inspectRemovedEntities; }
     bool DragDebug()                            { return drawDebug; }
     double InterestRadius()                     { return interestRadius; }
     int WaitAfterLoad()                         { return waitAfterLoad; }
@@ -94,6 +103,7 @@ public slots:
     void SetEnabled(bool enabled_);
     void SetProcessTextures(bool process);
     void SetProcessMeshes(bool process);
+    void SetInspectRemovedEntities(bool inspect);
     void SetDrawDebug(bool draw);
     void SetInterestRadius(double radius);
     void SetWaitAfterLoad(int intervalMsec);
@@ -109,6 +119,10 @@ private slots:
 
     void UiSetEnabled(bool enabled);
 
+    void OnSceneAdded(const QString &name);
+    void OnEntityRemoved(Entity *entity, AttributeChange::Type change);
+    void OnComponentRemoved(Entity *entity, IComponent *component, AttributeChange::Type change);
+
 private:
     void LoadEverythingBack();
 
@@ -118,7 +132,7 @@ private:
     Ogre::ResourceBackgroundQueue &ResMan()     { return Ogre::ResourceBackgroundQueue::getSingleton(); }
 
     /// Returns if this reference should be processed by us.
-    bool ShouldProcess(const QString &assetRef);
+    bool ShouldProcess(const QString &assetRef, bool acceptLocal = false);
 
     /// Return if we are connected to a server.
     bool Connected();

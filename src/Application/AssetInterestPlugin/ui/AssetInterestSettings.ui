@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>530</width>
+    <width>557</width>
     <height>342</height>
    </rect>
   </property>
@@ -120,7 +120,7 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="loadIntervalLabel">
        <property name="toolTip">
         <string>Time in milliseconds we should wait between asset loads. Minimum is 1. Default value is 100.</string>
@@ -133,7 +133,7 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="6" column="1">
       <widget class="QSpinBox" name="loadIntervalSpinBox">
        <property name="toolTip">
         <string>Time in milliseconds we should wait between asset loads. Minimum is 1. Default value is 100.</string>
@@ -149,7 +149,7 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="radiusLabel">
        <property name="toolTip">
         <string>Interest radius from the active EC_Camera. Default value is 100.0.</string>
@@ -162,7 +162,7 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QDoubleSpinBox" name="radiusDoubleSpinBox">
        <property name="toolTip">
         <string>Interest radius from the active EC_Camera. Default value is 100.0.</string>
@@ -178,7 +178,7 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
@@ -192,7 +192,7 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Meshes</string>
@@ -202,14 +202,14 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
+     <item row="9" column="1">
       <widget class="QLabel" name="meshManagerStatus">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
+     <item row="10" column="0">
       <widget class="QLabel" name="unloadingLabelTitle">
        <property name="font">
         <font>
@@ -224,7 +224,7 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
+     <item row="10" column="1">
       <widget class="QLabel" name="unloadMesh">
        <property name="styleSheet">
         <string notr="true">color: gray;</string>
@@ -234,7 +234,7 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
+     <item row="11" column="0">
       <widget class="QLabel" name="loadingLabelTitle">
        <property name="font">
         <font>
@@ -249,7 +249,7 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="11" column="1">
       <widget class="QLabel" name="loadMesh">
        <property name="styleSheet">
         <string notr="true">color: gray;</string>
@@ -259,7 +259,7 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="0">
+     <item row="12" column="0">
       <widget class="QLabel" name="loadingLabelTitle_3">
        <property name="font">
         <font>
@@ -274,7 +274,7 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="12" column="1">
       <widget class="QLabel" name="textureManagerStatus">
        <property name="font">
         <font>
@@ -286,7 +286,7 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="0">
+     <item row="13" column="0">
       <widget class="QLabel" name="loadingLabelTitle_2">
        <property name="font">
         <font>
@@ -301,7 +301,7 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="13" column="1">
       <widget class="QLabel" name="loadMaterial">
        <property name="styleSheet">
         <string notr="true">color: gray;</string>
@@ -311,7 +311,7 @@
        </property>
       </widget>
      </item>
-     <item row="13" column="0">
+     <item row="14" column="0">
       <widget class="QLabel" name="unloadingLabelTitle_2">
        <property name="font">
         <font>
@@ -326,13 +326,39 @@
        </property>
       </widget>
      </item>
-     <item row="13" column="1">
+     <item row="14" column="1">
       <widget class="QLabel" name="unloadMaterial">
        <property name="styleSheet">
         <string notr="true">color: gray;</string>
        </property>
        <property name="text">
         <string>none</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="inspectRemovedEntitiesLabel">
+       <property name="toolTip">
+        <string>Inspec t asset references from removed entities. If refcount for the asset is 0 in the rest of the scene it will be unloaded.</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>Inspect Removed Entities</string>
+       </property>
+       <property name="indent">
+        <number>15</number>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QCheckBox" name="inspectRemovedEntitiesCheckBox">
+       <property name="toolTip">
+        <string>Inspec t asset references from removed entities. If refcount for the asset is 0 in the rest of the scene it will be unloaded.</string>
+       </property>
+       <property name="statusTip">
+        <string/>
        </property>
       </widget>
      </item>

@@ -60,6 +60,7 @@ AssetInterestPlugin::AssetInterestPlugin() :
     enabled(false),
     processTextures(true),
     processMeshes(false),
+    inspectRemovedEntities(false),
     drawDebug(false),
     waitAfterLoad(100)
 {
@@ -69,7 +70,6 @@ AssetInterestPlugin::AssetInterestPlugin() :
 
 AssetInterestPlugin::~AssetInterestPlugin()
 {
-
 }
 
 void AssetInterestPlugin::Initialize()
@@ -109,12 +109,15 @@ void AssetInterestPlugin::Initialize()
             connect(ui_.enabledCheckBox, SIGNAL(clicked(bool)), SLOT(SetEnabled(bool)));
             connect(ui_.processTexturesCheckBox, SIGNAL(clicked(bool)), SLOT(SetProcessTextures(bool)));
             connect(ui_.processMeshesCheckBox, SIGNAL(clicked(bool)), SLOT(SetProcessMeshes(bool)));
+            connect(ui_.inspectRemovedEntitiesCheckBox, SIGNAL(clicked(bool)), SLOT(SetInspectRemovedEntities(bool)));
             connect(ui_.drawDebugCheckBox, SIGNAL(clicked(bool)), SLOT(SetDrawDebug(bool)));
             connect(ui_.loadIntervalSpinBox, SIGNAL(valueChanged(int)), this, SLOT(SetWaitAfterLoad(int)));
             connect(ui_.radiusDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(SetInterestRadius(double)));
             connect(ui_.buttonClose, SIGNAL(clicked()), widget_, SLOT(hide()));
         }
     }
+
+    connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), SLOT(OnSceneAdded(const QString&))); 
 }
 
 void AssetInterestPlugin::Unload()
@@ -158,14 +161,18 @@ void AssetInterestPlugin::Update(f64 frametime)
     // Initial checks
     if (framework_->IsHeadless())
         return;
-    if (!enabled)
-        return;
-    if (interestRadius <= 0)
-        return;
     if (!Connected())
         return;
 
-    if (drawDebug)
+    // If we are in disabled mode only return if there is no pending load/unloads
+    if (!enabled || interestRadius <= 0)
+    {
+        if (matsPendingLoad_.isEmpty() && matsPendingUnload_.isEmpty() && 
+            meshPendingLoad_.isEmpty() && meshPendingUnload_.isEmpty())
+            return;
+    }
+    // To draw debug we need to be enabled and have a interest radius
+    else if (drawDebug)
     {
         Entity *d_cameraEnt = MainCamera();
         if (d_cameraEnt && d_cameraEnt->ParentScene())
@@ -318,10 +325,15 @@ void AssetInterestPlugin::Update(f64 frametime)
                         if (texAsset && texAsset->IsLoaded())
                         {
                             texAsset->Unload();
+                            if (texAsset->DiskSourceType() == IAsset::Programmatic)
+                                framework_->Asset()->ForgetAsset(depRef, false);
                             texUnloaded++;
                         }
                     }
                 }
+                if (matAsset->DiskSourceType() == IAsset::Programmatic)
+                    framework_->Asset()->ForgetAsset(matUnloadRef, false);
+
                 if (widget_ && widget_->isVisible())
                     ui_.unloadMaterial->setText(QString::number(texUnloaded) + " textures + " + matUnloadRef);
             }
@@ -344,6 +356,9 @@ void AssetInterestPlugin::Update(f64 frametime)
             if (meshAsset)
             {
                 meshAsset->Unload();
+                if (meshAsset->DiskSourceType() == IAsset::Programmatic)
+                    framework_->Asset()->ForgetAsset(meshUnloadRef, false);
+
                 if (widget_ && widget_->isVisible())
                     ui_.unloadMesh->setText(meshUnloadRef);
             }
@@ -472,12 +487,87 @@ void AssetInterestPlugin::UiSetEnabled(bool enabled)
     ui_.radiusDoubleSpinBox->setEnabled(enabled);
 }
 
-bool AssetInterestPlugin::ShouldProcess(const QString &assetRef)
+void AssetInterestPlugin::OnSceneAdded(const QString &name)
+{
+    ScenePtr scene = framework_->Scene()->GetScene(name);
+    if (scene.get())
+    {
+        connect(scene.get(), SIGNAL(ComponentRemoved(Entity*, IComponent*, AttributeChange::Type)), 
+            this, SLOT(OnComponentRemoved(Entity*, IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+        connect(scene.get(), SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), 
+            this, SLOT(OnEntityRemoved(Entity*, AttributeChange::Type)), Qt::UniqueConnection);
+    }
+}
+
+void AssetInterestPlugin::OnEntityRemoved(Entity *entity, AttributeChange::Type change)
+{
+    if (inspectRemovedEntities && entity)
+    {
+        OnComponentRemoved(entity, entity->GetComponent<EC_Mesh>().get(), change);
+        OnComponentRemoved(entity, entity->GetComponent<EC_Material>().get(), change);
+    }
+}
+
+void AssetInterestPlugin::OnComponentRemoved(Entity *entity, IComponent *component, AttributeChange::Type change)
+{
+    if (!inspectRemovedEntities || !entity || !component)
+        return;
+
+    if (component->TypeName() == EC_Mesh::TypeNameStatic())
+    {
+        EC_Mesh *entM = dynamic_cast<EC_Mesh*>(component);
+        if (entM && processTextures)
+        {
+            AssetReferenceList mats = entM->getmeshMaterial();
+            for (int iMat=0; iMat<mats.Size(); iMat++)
+            {
+                QString ref = mats[iMat].ref;
+                if (!ShouldProcess(ref, true))
+                    continue;
+
+                OgreMaterialAsset *matAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(ref).get());
+                if (matAsset && matAsset->IsLoaded())
+                    if (!matsPendingUnload_.contains(ref))
+                        matsPendingUnload_ << ref;
+            }
+        }
+        if (entM && processMeshes)
+        {
+            if (ShouldProcess(entM->getmeshRef().ref, true) && !meshPendingUnload_.contains(entM->getmeshRef().ref))
+                meshPendingUnload_ << entM->getmeshRef().ref;
+        }
+    }
+    else if (component->TypeName() == EC_Material::TypeNameStatic())
+    {
+        EC_Material *material = dynamic_cast<EC_Material*>(component);
+        if (material && processTextures)
+        {
+            if (!material->getinputMat().isEmpty() && ShouldProcess(material->getinputMat(), true))
+            {
+                OgreMaterialAsset *inputMatAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(material->getinputMat()).get());
+                if (inputMatAsset && inputMatAsset->IsLoaded())
+                    if (!matsPendingUnload_.contains(material->getinputMat()))
+                        matsPendingUnload_ << material->getinputMat();
+            }
+            if (!material->getoutputMat().isEmpty() && ShouldProcess(material->getoutputMat(), true))
+            {
+                OgreMaterialAsset *outPutMatAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(material->getoutputMat()).get());
+                if (outPutMatAsset && outPutMatAsset->IsLoaded())
+                    if (!matsPendingUnload_.contains(material->getoutputMat()))
+                        matsPendingUnload_ << material->getoutputMat();
+            }
+        }
+    }
+}
+
+bool AssetInterestPlugin::ShouldProcess(const QString &assetRef, bool acceptLocal)
 {
     // At the moment we only want to handle external web refs.
     const QString trimmedRef = assetRef.trimmed();
     if (trimmedRef.isEmpty())
         return false;
+    if (acceptLocal && trimmedRef.startsWith("local://"))
+        return true;
     // Would be nice to use this but it is WAY too heavy to do frequently.
     //return (AssetAPI::ParseAssetRef(assetRef.trimmed()) == AssetAPI::AssetRefExternalUrl);
     if (trimmedRef.startsWith("http://") || trimmedRef.startsWith("https://"))
@@ -526,6 +616,13 @@ void AssetInterestPlugin::SetProcessMeshes(bool process)
     processMeshes = process;
     if (ui_.processMeshesCheckBox && ui_.processMeshesCheckBox->isChecked() != processMeshes)
         ui_.processMeshesCheckBox->setChecked(processMeshes);
+}
+
+void AssetInterestPlugin::SetInspectRemovedEntities(bool inspect)
+{
+    inspectRemovedEntities = inspect;
+    if (ui_.inspectRemovedEntitiesCheckBox && ui_.inspectRemovedEntitiesCheckBox->isChecked() != inspectRemovedEntities)
+        ui_.inspectRemovedEntitiesCheckBox->setChecked(inspectRemovedEntities);
 }
 
 void AssetInterestPlugin::SetDrawDebug(bool draw)
@@ -596,9 +693,6 @@ void AssetInterestPlugin::LoadEverythingBack()
         EC_Mesh *entM = dynamic_cast<EC_Mesh*>(ent->GetComponent(EC_Mesh::TypeNameStatic()).get());
         if (!entP || !entM)
             continue;
-
-        // Distance from the camera.
-        float distance = cameraPos.Distance(entP->WorldPosition());
 
         // Materials and textures
         AssetReferenceList mats = entM->getmeshMaterial();
