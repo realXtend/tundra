@@ -327,7 +327,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             if (replyCode == 304)
             {
                 // Read cache file to transfer asset data
-                QFile cacheFile(cache->GetDiskSourceByRef(sourceRef));
+                QFile cacheFile(cache->FindInCache(sourceRef));
                 if (cacheFile.open(QIODevice::ReadOnly))
                 {
                     QByteArray cacheData = cacheFile.readAll();
@@ -368,7 +368,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 else
                 {
                     // Remove possible cache file if caching is disabled for the transfer.
-                    if (!cache->GetDiskSourceByRef(sourceRef).isEmpty())
+                    if (!cache->FindInCache(sourceRef).isEmpty())
                         cache->DeleteAsset(sourceRef);
                 }
             }

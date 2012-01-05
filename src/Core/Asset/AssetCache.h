@@ -20,12 +20,15 @@ public:
     explicit AssetCache(AssetAPI *owner, QString assetCacheDirectory);
 
 public slots:
-    /// Gets absolute file path to disk source for asset ref.
-    /// @note This is deprecated since ~2.1.4. Remove this functions when scripts etc. 3rd party code have migrated to using GetDiskSourceByRef().
+    /// Returns the absolute path on the local file system that contains a cached copy of the given asset ref.
+    /// If the given asset file does not exist in the cache, an empty string is returned.
+    /// @param assetRef The asset reference URL, which must be of type AssetRefExternalUrl.
     QString FindInCache(const QString &assetRef);
 
-    /// Gets absolute file path to disk source for asset ref.
-    /// @param assetRef Asset reference to return the disk source.
+    /// Returns the absolute path on the local file system for the cached version of the given asset ref.
+    /// This function is otherwise identical to FindInCache, except this version does not check whether the asset exists 
+    /// in the cache, but simply returns the absolute path where the asset would be stored in the cache.
+    /// @param assetRef The asset reference URL, which must be of type AssetRefExternalUrl.
     QString GetDiskSourceByRef(const QString &assetRef);
     
     /// Saves the given asset to cache.
@@ -60,10 +63,6 @@ public slots:
     /// @return QString absolute path to the caches data directory
     QString CacheDirectory() const;
     
-private slots:
-    /// Generates the absolute path to an data asset cache entry.
-    QString GetAbsoluteDataFilePath(const QString &filename);
-
 private:
 #ifdef Q_WS_WIN
     /// Windows specific helper to open a file handle to absolutePath

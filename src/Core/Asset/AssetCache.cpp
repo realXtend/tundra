@@ -55,18 +55,18 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
 
 QString AssetCache::FindInCache(const QString &assetRef)
 {
-    /// @note This is deprecated since ~2.1.4. Remove this functions when scripts etc. 
-    /// 3rd party code have migrated to using GetDiskSourceByRef().
-    LogWarning("AssetCache::FileInCache is deprecated and is up for removal, use AssetCache::GetDiskSourceByRef instead!");
-    return GetDiskSourceByRef(assetRef);
+    QString absolutePath = GetDiskSourceByRef(assetRef);
+    if (QFile::exists(absolutePath))
+        return absolutePath;
+    else // The file is not in cache, return an empty string to denote that.
+        return "";
 }
 
 QString AssetCache::GetDiskSourceByRef(const QString &assetRef)
 {
-    QString absolutePath = GetAbsoluteDataFilePath(assetRef);
-    if (QFile::exists(absolutePath))
-        return absolutePath;
-    return "";
+    // Return the path where the given asset ref would be stored, if it was saved in the cache
+    // (regardless of whether it now exists in the cache).
+    return assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(assetRef);
 }
 
 QString AssetCache::CacheDirectory() const
@@ -93,7 +93,7 @@ QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, const QString &a
 QDateTime AssetCache::LastModified(const QString &assetRef)
 {
     QDateTime dateTime;
-    QString absolutePath = GetDiskSourceByRef(assetRef);
+    QString absolutePath = FindInCache(assetRef);
     if (absolutePath.isEmpty())
         return dateTime;
 
@@ -152,7 +152,7 @@ bool AssetCache::SetLastModified(const QString &assetRef, const QDateTime &dateT
         return success;
     }
 
-    QString absolutePath = GetDiskSourceByRef(assetRef);
+    QString absolutePath = FindInCache(assetRef);
     if (absolutePath.isEmpty())
         return success;
 
@@ -236,9 +236,4 @@ void AssetCache::ClearAssetCache()
                 LogWarning("AssetCache::ClearAssetCache could not remove file " + entry.absoluteFilePath());
         }
     }
-}
-
-QString AssetCache::GetAbsoluteDataFilePath(const QString &filename)
-{
-    return assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(filename);
 }

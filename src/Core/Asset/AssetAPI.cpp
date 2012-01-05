@@ -1161,9 +1161,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0 && assetCache)
         assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
 
-    // If disksource is still empty, forcibly look up from cache
+    // If disksource is still empty, forcibly look up if the asset exists in the cache now.
     if (assetDiskSource.isEmpty() && assetCache)
-        assetDiskSource = assetCache->GetDiskSourceByRef(transfer->source.ref);
+        assetDiskSource = assetCache->FindInCache(transfer->source.ref);
     
     // Save for the asset the storage and provider it came from.
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());
