@@ -754,7 +754,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     }
 
     // Perform the actual request.
-    transfer = provider->RequestAsset(assetRef, assetType);
+    AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
 
     if (!transfer)
     {
