@@ -1,10 +1,9 @@
 /*
 --------------------------------------------------------------------------------
 This source file is part of SkyX.
-Visit ---
+Visit http://www.paradise-studios.net/products/skyx/
 
-Copyright (C) 2009 Xavier Verguín González <xavierverguin@hotmail.com>
-                                           <xavyiy@gmail.com>
+Copyright (C) 2009-2011 Xavier Verguín González <xavyiy@gmail.com>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free Software
@@ -50,7 +49,6 @@ void main_fp(
 	uniform float     uExposure,
 #endif // LDR
 	// Sun information
-	uniform float3    uSunPosition,
 	uniform float3    uSunColor,
 	// Main cloud layer parameters
 	uniform float     uHeight,
@@ -61,12 +59,11 @@ void main_fp(
 	uniform float     uCloudLayerHeightVolume, // 0.25
 	uniform float     uCloudLayerVolumetricDisplacement, // 0.01
 	uniform float3    uAmbientLuminosity, // 0.55 0.55 0.55
-	uniform float     uNormalMultiplier, // 2
 	uniform float     uDetailAttenuation, // 0.45
 	uniform float     uDistanceAttenuation, // 0.05
-	uniform sampler2D uCloud : register(s0),
-	uniform sampler2D uNormal : register(s1),
-	uniform sampler2D uDensity : register(s2))
+	uniform sampler2D uClouds : register(s0),
+	uniform sampler2D uCloudsNormal : register(s1),
+	uniform sampler2D uCloudsTile : register(s2))
 {
     // Get the cloud pixel lenght on the projected plane
     float vh = uHeight / iPosition.y;
@@ -75,8 +72,8 @@ void main_fp(
     
     // Get texture coords
     float2 TexCoord = CloudPosition.xz*uScale;
-    float Density   = tex2D(uDensity, TexCoord+uTime*uWindDirection*0.25f).r;
-    float3 Normal    = -(2*tex2D(uNormal, TexCoord+uTime*uWindDirection*0.25f)-1);
+    float Density   = tex2D(uClouds, TexCoord+uTime*uWindDirection*0.25f).r;
+    float3 Normal    = -(2*tex2D(uCloudsNormal, TexCoord+uTime*uWindDirection*0.25f)-1);
     Normal.zy = Normal.yz;
  
     ///------------ Volumetric effect:
@@ -85,29 +82,24 @@ void main_fp(
     float3 iNewPosition = normalize(iPosition + CloudLayerVolumetricDisplacement*float3(Normal.x,0,Normal.z));
     vh = (uHeight+uHeight*(1-Density)*CloudLayerHeightVolume) / iNewPosition.y;
     CloudPosition = iNewPosition * vh;
-    TexCoord = CloudPosition.xz*uScale;
-    Density    = tex2D(uDensity, TexCoord+uTime*uWindDirection*0.25f).r;
+    TexCoord = CloudPosition.xz*uScale;                               // Little offset
+    Density    = tex2D(uClouds, TexCoord+uTime*uWindDirection*0.25f + float2(0.2,0.6)).r;
     ///------------
     
-    float3 SunToPixel = CloudPosition - uSunPosition;
-    
-    float  CloudDetail     = tex2D(uCloud, TexCoord-uTime*uWindDirection*0.25).r;
-    Normal    = -(2*tex2D(uNormal, TexCoord+uTime*uWindDirection*0.25f)-1);
-    Normal.zy = Normal.yz;
-    Normal.xz*=uNormalMultiplier;
+    float  CloudTile     = tex2D(uCloudsTile, TexCoord-uTime*uWindDirection*0.25).r;
 
-    float3 PixelColor = float3(0,0,0);
+    float3 PixelColor = uAmbientLuminosity + uSunColor*Density;
     
     // AMBIENT addition
-    PixelColor += uAmbientLuminosity;
+    // PixelColor += uAmbientLuminosity;
     
     // SUN addition 
-    PixelColor  += uSunColor*saturate(dot(-normalize(Normal), normalize(uSunPosition)));
+    // PixelColor  += uSunColor*saturate(dot(-normalize(Normal), normalize(uSunPosition)));
     
     // FINAL colour
     float Alpha = Density * saturate(10*saturate(-uDistanceAttenuation+iPosition.y));
     
-    oColor = float4(PixelColor*(1-Density*0.35), Alpha*saturate(1-CloudDetail*uDetailAttenuation));
+    oColor = float4(PixelColor*(1-Density*0.35), Alpha*saturate(1-CloudTile*uDetailAttenuation));
     
 #ifdef LDR
     oColor.xyz = float3(1 - exp(-uExposure * oColor.xyz));

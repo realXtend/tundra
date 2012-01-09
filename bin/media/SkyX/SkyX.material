@@ -1,10 +1,9 @@
 /*
 --------------------------------------------------------------------------------
 This source file is part of SkyX.
-Visit ---
+Visit http://www.paradise-studios.net/products/skyx/
 
-Copyright (C) 2009 Xavier Verguín González <xavierverguin@hotmail.com>
-                                           <xavyiy@gmail.com>
+Copyright (C) 2009-2011 Xavier Verguín González <xavyiy@gmail.com>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free Software
@@ -20,15 +19,11 @@ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-GLSL shaders added by Jose Luis Cercos Pita.
---------------------------------------------------------------------------------
 */
 
 // ------------------------- SkyX clouds -----------------------------
 
-vertex_program SkyX_Clouds_VP_hlsl hlsl
+vertex_program SkyX_Clouds_VP_HLSL hlsl
 {
     source SkyX_Clouds.hlsl
     entry_point main_vp
@@ -40,86 +35,78 @@ vertex_program SkyX_Clouds_VP_hlsl hlsl
     }
 }
 
-fragment_program SkyX_Clouds_LDR_FP_hlsl hlsl
+vertex_program SkyX_Clouds_VP_GLSL glsl
 {
-    source SkyX_Clouds.hlsl
-    entry_point main_fp
-    target ps_2_0
-    preprocessor_defines LDR=1
+    source SkyX_Clouds.vertex
 
     default_params
     {
     }
 }
-
-fragment_program SkyX_Clouds_HDR_FP_hlsl hlsl
-{
-    source SkyX_Clouds.hlsl
-    entry_point main_fp
-    target ps_2_0
-
-    default_params
-    {
-    }
-}
-
-vertex_program SkyX_Clouds_VP_glsl glsl
-{
-    source SkyX_Clouds.vert
-
-    default_params
-    {
-       param_named_auto uWorldViewProj worldviewproj_matrix
-    }
-}
-
-fragment_program SkyX_Clouds_LDR_FP_glsl glsl
-{
-    source SkyX_Clouds.frag
-    preprocessor_defines LDR=1
-
-    default_params
-    {
-		param_named uCloud int 0
-		param_named uNormal int 1
-		param_named uDensity int 2
-    }
-}
-
-fragment_program SkyX_Clouds_HDR_FP_glsl glsl
-{
-    source SkyX_Clouds.frag
-
-    default_params
-    {
-		param_named uCloud int 0
-		param_named uNormal int 1
-		param_named uDensity int 2
-    }
-}
-
+	
 vertex_program SkyX_Clouds_VP unified
 {
-	delegate SkyX_Clouds_VP_hlsl
-	delegate SkyX_Clouds_VP_glsl
+    delegate SkyX_Clouds_VP_GLSL
+    delegate SkyX_Clouds_VP_HLSL
 }
 
+fragment_program SkyX_Clouds_LDR_FP_HLSL hlsl
+{
+    source SkyX_Clouds.hlsl
+    entry_point main_fp
+    target ps_2_0
+    preprocessor_defines LDR
+
+    default_params
+    {
+    }
+}
+
+fragment_program SkyX_Clouds_LDR_FP_GLSL glsl
+{
+    source SkyX_Clouds.fragment
+	preprocessor_defines LDR
+
+    default_params
+    {
+    }
+}
+	
 fragment_program SkyX_Clouds_LDR_FP unified
 {
-	delegate SkyX_Clouds_LDR_FP_hlsl
-	delegate SkyX_Clouds_LDR_FP_glsl
+    delegate SkyX_Clouds_LDR_FP_GLSL
+    delegate SkyX_Clouds_LDR_FP_HLSL
 }
 
+fragment_program SkyX_Clouds_HDR_FP_HLSL hlsl
+{
+    source SkyX_Clouds.hlsl
+    entry_point main_fp
+    target ps_2_0
+
+    default_params
+    {
+    }
+}
+
+fragment_program SkyX_Clouds_HDR_FP_GLSL glsl
+{
+    source SkyX_Clouds.fragment
+
+    default_params
+    {
+    }
+}
+	
 fragment_program SkyX_Clouds_HDR_FP unified
 {
-	delegate SkyX_Clouds_HDR_FP_hlsl
-	delegate SkyX_Clouds_HDR_FP_glsl
+    delegate SkyX_Clouds_HDR_FP_GLSL
+    delegate SkyX_Clouds_HDR_FP_HLSL
 }
-
 
 // ------------------------- SkyX volumetric clouds ------------------
 
-vertex_program SkyX_VolClouds_VP_hlsl hlsl
+vertex_program SkyX_VolClouds_VP_HLSL hlsl
 {
     source SkyX_VolClouds.hlsl
     entry_point main_vp
@@ -127,10 +114,26 @@ vertex_program SkyX_VolClouds_VP_hlsl hlsl
 
     default_params
     {
+		param_named_auto uWorldViewProj worldviewproj_matrix
     }
 }
 
-fragment_program SkyX_VolClouds_FP_hlsl hlsl
+vertex_program SkyX_VolClouds_VP_GLSL glsl
+{
+    source SkyX_VolClouds.vertex
+
+    default_params
+    {
+    }
+}
+	
+vertex_program SkyX_VolClouds_VP unified
+{
+    delegate SkyX_VolClouds_VP_HLSL
+    delegate SkyX_VolClouds_VP_GLSL
+}
+
+fragment_program SkyX_VolClouds_FP_HLSL hlsl
 {
     source SkyX_VolClouds.hlsl
     entry_point main_fp
@@ -141,34 +144,22 @@ fragment_program SkyX_VolClouds_FP_hlsl hlsl
     }
 }
 
-vertex_program SkyX_VolClouds_VP_glsl glsl
+fragment_program SkyX_VolClouds_FP_GLSL glsl
 {
-    source SkyX_VolClouds.vert
+    source SkyX_VolClouds.fragment
 
     default_params
     {
+		param_named uDensity0 int 0
+		param_named uDensity1 int 1
+		param_named uNoise int 2
     }
 }
-
-fragment_program SkyX_VolClouds_FP_glsl glsl
-{
-    source SkyX_VolClouds.frag
-
-    default_params
-    {
-    }
-}
-
-vertex_program SkyX_VolClouds_VP unified
-{
-	delegate SkyX_VolClouds_VP_hlsl
-	delegate SkyX_VolClouds_VP_glsl
-}
-
+	
 fragment_program SkyX_VolClouds_FP unified
 {
-	delegate SkyX_VolClouds_FP_hlsl
-	delegate SkyX_VolClouds_FP_glsl
+    delegate SkyX_VolClouds_FP_HLSL
+    delegate SkyX_VolClouds_FP_GLSL
 }
 
 material SkyX_VolClouds
@@ -180,9 +171,8 @@ material SkyX_VolClouds
 		pass
 		{
 			lighting off
-            fog_override true none
 
-			depth_write on
+			depth_write off
 			depth_check on
 			
 			cull_hardware none 
@@ -193,7 +183,6 @@ material SkyX_VolClouds
 
 			vertex_program_ref SkyX_VolClouds_VP 
 			{
-			    param_named_auto uWorldViewProj worldviewproj_matrix
 			    param_named_auto uCameraPosition camera_position_object_space
 			    param_named uRadius float 30000
 			}
@@ -205,7 +194,7 @@ material SkyX_VolClouds
 				param_named uSunColor float3 1 1 1
 				param_named uAmbientColor float3 0.63 0.63 0.7
 				param_named uLightResponse float4 0.25 0.2 1 0.1
-				param_named uAmbientFactors float4 0.4 1 1 1
+				param_named uAmbientFactors float4 0.45 0.3 0.6 1
 			}
 			
 			texture_unit Density0
@@ -224,7 +213,7 @@ material SkyX_VolClouds
 			{
 				tex_address_mode wrap
 				tex_coord_set 2
-				texture Noise.dds
+				texture Noise.jpg
 			}
 		}
 	}
@@ -232,7 +221,7 @@ material SkyX_VolClouds
 
 // --------------------- SkyX skydome material ------------------------
 
-vertex_program SkyX_Skydome_VP_hlsl hlsl
+vertex_program SkyX_Skydome_VP_HLSL hlsl
 {
     source SkyX_Skydome.hlsl
     entry_point main_vp
@@ -240,134 +229,134 @@ vertex_program SkyX_Skydome_VP_hlsl hlsl
 
     default_params
     {
+		param_named_auto uWorldViewProj worldviewproj_matrix
     }
 }
 
-fragment_program SkyX_Skydome_STARFIELD_LDR_FP_hlsl hlsl
+vertex_program SkyX_Skydome_VP_GLSL glsl
 {
-    source SkyX_Skydome.hlsl
-    entry_point main_fp
-    target ps_2_0
-    preprocessor_defines LDR=1;STARFIELD=1
+    source SkyX_Skydome.vertex
 
     default_params
     {
     }
 }
-
-fragment_program SkyX_Skydome_STARFIELD_HDR_FP_hlsl hlsl
-{
-    source SkyX_Skydome.hlsl
-    entry_point main_fp
-    target ps_2_0
-    preprocessor_defines STARFIELD=1
-
-    default_params
-    {
-    }
-}
-
-fragment_program SkyX_Skydome_LDR_FP_hlsl hlsl
-{
-    source SkyX_Skydome.hlsl
-    entry_point main_fp
-    target ps_2_0
-    preprocessor_defines LDR=1
-
-    default_params
-    {
-    }
-}
-
-fragment_program SkyX_Skydome_HDR_FP_hlsl hlsl
-{
-    source SkyX_Skydome.hlsl
-    entry_point main_fp
-    target ps_2_0
-
-    default_params
-    {
-    }
-}
-
-vertex_program SkyX_Skydome_VP_glsl glsl
-{
-    source SkyX_Skydome.vert
-
-    default_params
-    {
-    }
-}
-
-fragment_program SkyX_Skydome_STARFIELD_LDR_FP_glsl glsl
-{
-    source SkyX_Skydome.frag
-    preprocessor_defines LDR=1;STARFIELD=1
-
-    default_params
-    {
-    }
-}
-
-fragment_program SkyX_Skydome_STARFIELD_HDR_FP_glsl glsl
-{
-    source SkyX_Skydome.frag
-    preprocessor_defines STARFIELD=1
-
-    default_params
-    {
-    }
-}
-
-fragment_program SkyX_Skydome_LDR_FP_glsl glsl
-{
-    source SkyX_Skydome.frag
-    preprocessor_defines LDR=1
-
-    default_params
-    {
-    }
-}
-
-fragment_program SkyX_Skydome_HDR_FP_glsl glsl
-{
-    source SkyX_Skydome.frag
-
-    default_params
-    {
-    }
-}
-
+	
 vertex_program SkyX_Skydome_VP unified
 {
-	delegate SkyX_Skydome_VP_hlsl
-	delegate SkyX_Skydome_VP_glsl
+    delegate SkyX_Skydome_VP_HLSL
+    delegate SkyX_Skydome_VP_GLSL
 }
 
+fragment_program SkyX_Skydome_STARFIELD_LDR_FP_HLSL hlsl
+{
+    source SkyX_Skydome.hlsl
+    entry_point main_fp
+    target ps_2_0
+    preprocessor_defines LDR,STARFIELD
+
+    default_params
+    {
+    }
+}
+
+fragment_program SkyX_Skydome_STARFIELD_LDR_FP_GLSL glsl
+{
+    source SkyX_Skydome.fragment
+	preprocessor_defines LDR,STARFIELD
+
+    default_params
+    {
+    }
+}
+	
 fragment_program SkyX_Skydome_STARFIELD_LDR_FP unified
 {
-	delegate SkyX_Skydome_STARFIELD_LDR_FP_hlsl
-	delegate SkyX_Skydome_STARFIELD_LDR_FP_glsl
+    delegate SkyX_Skydome_STARFIELD_LDR_FP_HLSL
+    delegate SkyX_Skydome_STARFIELD_LDR_FP_GLSL
 }
 
+fragment_program SkyX_Skydome_STARFIELD_HDR_FP_HLSL hlsl
+{
+    source SkyX_Skydome.hlsl
+    entry_point main_fp
+    target ps_2_0
+    preprocessor_defines STARFIELD
+
+    default_params
+    {
+    }
+}
+
+fragment_program SkyX_Skydome_STARFIELD_HDR_FP_GLSL glsl
+{
+    source SkyX_Skydome.fragment
+	preprocessor_defines STARFIELD
+
+    default_params
+    {
+    }
+}
+	
 fragment_program SkyX_Skydome_STARFIELD_HDR_FP unified
 {
-	delegate SkyX_Skydome_STARFIELD_HDR_FP_hlsl
-	delegate SkyX_Skydome_STARFIELD_HDR_FP_glsl
+    delegate SkyX_Skydome_STARFIELD_HDR_FP_HLSL
+    delegate SkyX_Skydome_STARFIELD_HDR_FP_GLSL
 }
 
+fragment_program SkyX_Skydome_LDR_FP_HLSL hlsl
+{
+    source SkyX_Skydome.hlsl
+    entry_point main_fp
+    target ps_2_0
+    preprocessor_defines LDR
+
+    default_params
+    {
+    }
+}
+
+fragment_program SkyX_Skydome_LDR_FP_GLSL glsl
+{
+    source SkyX_Skydome.fragment
+	preprocessor_defines LDR
+
+    default_params
+    {
+    }
+}
+	
 fragment_program SkyX_Skydome_LDR_FP unified
 {
-	delegate SkyX_Skydome_LDR_FP_hlsl
-	delegate SkyX_Skydome_LDR_FP_glsl
+    delegate SkyX_Skydome_LDR_FP_HLSL
+    delegate SkyX_Skydome_LDR_FP_GLSL
 }
 
+fragment_program SkyX_Skydome_HDR_FP_HLSL hlsl
+{
+    source SkyX_Skydome.hlsl
+    entry_point main_fp
+    target ps_2_0
+
+    default_params
+    {
+    }
+}
+
+fragment_program SkyX_Skydome_HDR_FP_GLSL glsl
+{
+    source SkyX_Skydome.fragment
+
+    default_params
+    {
+    }
+}
+	
 fragment_program SkyX_Skydome_HDR_FP unified
 {
-	delegate SkyX_Skydome_HDR_FP_hlsl
-	delegate SkyX_Skydome_HDR_FP_glsl
+    delegate SkyX_Skydome_HDR_FP_HLSL
+    delegate SkyX_Skydome_HDR_FP_GLSL
 }
-
 
 material SkyX_Skydome_STARFIELD_LDR
 {
@@ -378,7 +367,6 @@ material SkyX_Skydome_STARFIELD_LDR
 		pass
 		{
 			lighting off 
-            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -387,8 +375,6 @@ material SkyX_Skydome_STARFIELD_LDR
 
 			vertex_program_ref SkyX_Skydome_VP 
 			{
-			    param_named_auto uWorldViewProj worldviewproj_matrix
-			    
 			    // Must be the same as in the fragment program, normalized
 			    param_named uLightDir float3 0 0 1
 			    // Camera position
@@ -428,7 +414,7 @@ material SkyX_Skydome_STARFIELD_LDR
 			
 			texture_unit Starfield
 			{
-			    texture SkyX_Starfield.dds
+			    texture SkyX_Starfield.png
 			    tex_address_mode wrap
 			    filtering linear linear none
 			    tex_coord_set 0
@@ -446,7 +432,6 @@ material SkyX_Skydome_STARFIELD_HDR
 		pass
 		{
 			lighting off 
-            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -454,9 +439,7 @@ material SkyX_Skydome_STARFIELD_HDR
 		    scene_blend alpha_blend 
 
 			vertex_program_ref SkyX_Skydome_VP 
-			{
-			    param_named_auto uWorldViewProj worldviewproj_matrix
-			    
+			{   
 			    // Must be the same as in the fragment program, normalized
 			    param_named uLightDir float3 0 0 1
 			    // Camera position
@@ -495,7 +478,7 @@ material SkyX_Skydome_STARFIELD_HDR
 			
 			texture_unit Starfield
 			{
-			    texture SkyX_Starfield.dds
+			    texture SkyX_Starfield.png
 			    tex_address_mode wrap
 			    filtering linear linear none
 			    tex_coord_set 0
@@ -513,7 +496,6 @@ material SkyX_Skydome_LDR
 		pass
 		{
 			lighting off 
-            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -521,9 +503,7 @@ material SkyX_Skydome_LDR
 		    scene_blend alpha_blend 
 
 			vertex_program_ref SkyX_Skydome_VP 
-			{
-			    param_named_auto uWorldViewProj worldviewproj_matrix
-			    
+			{			    
 			    // Must be the same as in the fragment program, normalized
 			    param_named uLightDir float3 0 0 1
 			    // Camera position
@@ -572,7 +552,6 @@ material SkyX_Skydome_HDR
 		pass
 		{
 			lighting off 
-            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -580,9 +559,7 @@ material SkyX_Skydome_HDR
 		    scene_blend alpha_blend  
 
 			vertex_program_ref SkyX_Skydome_VP 
-			{
-			    param_named_auto uWorldViewProj worldviewproj_matrix
-			    
+			{   
 			    // Must be the same as in the fragment program, normalized
 			    param_named uLightDir float3 0 0 1
 			    // Camera position
@@ -623,7 +600,7 @@ material SkyX_Skydome_HDR
 
 // --------------------- SkyX moon material ------------------------
 
-vertex_program SkyX_Moon_VP_hlsl hlsl
+vertex_program SkyX_Moon_VP_HLSL hlsl
 {
     source SkyX_Moon.hlsl
     entry_point main_vp
@@ -631,10 +608,26 @@ vertex_program SkyX_Moon_VP_hlsl hlsl
 
     default_params
     {
+		param_named_auto uWorldViewProj worldviewproj_matrix
     }
 }
 
-fragment_program SkyX_Moon_FP_hlsl hlsl
+vertex_program SkyX_Moon_VP_GLSL glsl
+{
+    source SkyX_Moon.vertex
+
+    default_params
+    {
+    }
+}
+	
+vertex_program SkyX_Moon_VP unified
+{
+    delegate SkyX_Moon_VP_GLSL
+    delegate SkyX_Moon_VP_HLSL
+}
+
+fragment_program SkyX_Moon_FP_HLSL hlsl
 {
     source SkyX_Moon.hlsl
     entry_point main_fp
@@ -645,34 +638,21 @@ fragment_program SkyX_Moon_FP_hlsl hlsl
     }
 }
 
-vertex_program SkyX_Moon_VP_glsl glsl
+fragment_program SkyX_Moon_FP_GLSL glsl
 {
-    source SkyX_Moon.vert
+    source SkyX_Moon.fragment
 
     default_params
     {
+		param_named uMoon int 0
+		param_named uMoonHalo int 1
     }
 }
-
-fragment_program SkyX_Moon_FP_glsl glsl
-{
-    source SkyX_Moon.frag
-
-    default_params
-    {
-    }
-}
-
-vertex_program SkyX_Moon_VP unified
-{
-	delegate SkyX_Moon_VP_hlsl
-	delegate SkyX_Moon_VP_glsl
-}
-
+	
 fragment_program SkyX_Moon_FP unified
 {
-	delegate SkyX_Moon_FP_hlsl
-	delegate SkyX_Moon_FP_glsl
+    delegate SkyX_Moon_FP_GLSL
+    delegate SkyX_Moon_FP_HLSL
 }
 
 material SkyX_Moon
@@ -684,7 +664,6 @@ material SkyX_Moon
 		pass
 		{
 			lighting off
-            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -693,21 +672,30 @@ material SkyX_Moon
 
 			vertex_program_ref SkyX_Moon_VP 
 			{
-			    param_named_auto uWorldViewProj worldviewproj_matrix
 			    param_named_auto uWorld world_matrix
 			    param_named uSkydomeCenter float3 0 0 0
 			}
 
 			fragment_program_ref SkyX_Moon_FP 
 			{ 
+				param_named uMoonPhase float3 0.25 0.6 1
+				param_named uMoonHalo1 float3 0.25 0.5 1
+				param_named uMoonHalo2 float3 0 0 0
+				param_named uMoonHaloFlip float 0
 			}
 			
 			texture_unit Moon
 			{
-			    texture SkyX_Moon.dds
+			    texture SkyX_Moon.png
+				tex_coord_set 0
 			    tex_address_mode clamp
-			 //   filtering linear linear none
-			    tex_coord_set 0
+			}
+			
+			texture_unit MoonHalo
+			{
+			    texture SkyX_MoonHalo.png
+				tex_coord_set 1
+			    tex_address_mode clamp
 			}
 		}
 	}
@@ -715,7 +703,7 @@ material SkyX_Moon
 
 // --------------------- SkyX ground material ------------------------
 
-vertex_program SkyX_Ground_VP_hlsl hlsl
+vertex_program SkyX_Ground_VP_HLSL hlsl
 {
     source SkyX_Ground.hlsl
     entry_point main_vp
@@ -755,37 +743,12 @@ vertex_program SkyX_Ground_VP_hlsl hlsl
     }
 }
 
-fragment_program SkyX_Ground_LDR_FP_hlsl hlsl
+vertex_program SkyX_Ground_VP_GLSL glsl
 {
-    source SkyX_Ground.hlsl
-    entry_point main_fp
-    target ps_2_0
-    preprocessor_defines LDR=1
+    source SkyX_Ground.vertex
 
     default_params
     {
-		param_named uExposure float  1.75
-    }
-}
-
-fragment_program SkyX_Ground_HDR_FP_hlsl hlsl
-{
-    source SkyX_Ground.hlsl
-    entry_point main_fp
-    target ps_2_0
-
-    default_params
-    {
-    }
-}
-
-vertex_program SkyX_Ground_VP_glsl glsl
-{
-    source SkyX_Ground.vert
-
-    default_params
-    {
-		param_named_auto uWorldViewProj worldviewproj_matrix
 		param_named_auto uWorld world_matrix
 		param_named_auto uCameraPos_ camera_position
 			    
@@ -816,42 +779,70 @@ vertex_program SkyX_Ground_VP_glsl glsl
 		param_named uSamples float 6
     }
 }
-
-fragment_program SkyX_Ground_LDR_FP_glsl glsl
+	
+vertex_program SkyX_Ground_VP unified
 {
-    source SkyX_Ground.frag
-    preprocessor_defines LDR=1
+    delegate SkyX_Ground_VP_GLSL
+    delegate SkyX_Ground_VP_HLSL
+}
+
+fragment_program SkyX_Ground_LDR_FP_HLSL hlsl
+{
+    source SkyX_Ground.hlsl
+    entry_point main_fp
+    target ps_2_0
+    preprocessor_defines LDR
 
     default_params
     {
 		param_named uExposure float  1.75
+		
+		param_named uLightDir float3 0 0 1
     }
 }
 
-fragment_program SkyX_Ground_HDR_FP_glsl glsl
+fragment_program SkyX_Ground_LDR_FP_GLSL glsl
 {
-    source SkyX_Ground.frag
+    source SkyX_Ground.fragment
 
     default_params
     {
+		param_named uExposure float  1.75
+		
+		param_named uLightDir float3 0 0 1
+    }
+}
+	
+fragment_program SkyX_Ground_LDR_FP unified
+{
+    delegate SkyX_Ground_LDR_FP_GLSL
+    delegate SkyX_Ground_LDR_FP_HLSL
+}
+
+fragment_program SkyX_Ground_HDR_FP_HLSL hlsl
+{
+    source SkyX_Ground.hlsl
+    entry_point main_fp
+    target ps_2_0
+
+    default_params
+    {
+		param_named uLightDir float3 0 0 1
     }
 }
 
-
-vertex_program SkyX_Ground_VP unified
+fragment_program SkyX_Ground_HDR_FP_GLSL glsl
 {
-	delegate SkyX_Ground_VP_hlsl
-	delegate SkyX_Ground_VP_glsl
-}
+    source SkyX_Ground.fragment
 
-fragment_program SkyX_Ground_LDR_FP unified
-{
-	delegate SkyX_Ground_LDR_FP_hlsl
-	delegate SkyX_Ground_LDR_FP_glsl
+    default_params
+    {
+		param_named uLightDir float3 0 0 1
+    }
 }
-
+	
 fragment_program SkyX_Ground_HDR_FP unified
 {
-	delegate SkyX_Ground_HDR_FP_hlsl
-	delegate SkyX_Ground_HDR_FP_glsl
+    delegate SkyX_Ground_HDR_FP_GLSL
+    delegate SkyX_Ground_HDR_FP_HLSL
 }
