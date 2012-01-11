@@ -114,6 +114,10 @@ private:
     /// Handle create components reply message.
     void HandleCreateComponentsReply(kNet::MessageConnection* source, const char* data, size_t numBytes);
     
+    void HandleRigidBodyChanges(kNet::MessageConnection* source, const char* data, size_t numBytes);
+
+    void ReplicateRigidBodyChanges(kNet::MessageConnection* destination, SceneSyncState* state);
+
     /// Process one sync state for changes in the scene
     /** \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management
         @param destination MessageConnection where to send the messages

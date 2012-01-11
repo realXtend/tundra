@@ -19,6 +19,9 @@
 #include "LoggingFunctions.h"
 #include "Profiler.h"
 
+#include "EC_Placeable.h"
+#include "EC_RigidBody.h"
+
 #include "SceneAPI.h"
 
 #include <kNet.h>
@@ -174,6 +177,9 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
         case cCreateComponentsReplyMessage:
             HandleCreateComponentsReply(source, data, numBytes);
             break;
+        case cRigidBodyUpdateMessage:
+            HandleRigidBodyChanges(source, data, numBytes);
+            break;
         case cEntityActionMessage:
             {
                 MsgEntityAction msg(data, numBytes);
@@ -224,31 +230,38 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     bool isServer = owner_->IsServer();
     
     // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
-    if (!isServer)
+    if (!isServer) // Since the server never interpolates attributes, we don't need to do this check on the server at all.
     {
         ScenePtr scene = scene_.lock();
-        if ((scene) && (!scene->IsInterpolating()) && (!currentSender))
+        if (scene && !scene->IsInterpolating() && !currentSender)
         {
-            if ((attr->Metadata()) && (attr->Metadata()->interpolation == AttributeMetadata::Interpolate))
+            if (attr->Metadata() && attr->Metadata()->interpolation == AttributeMetadata::Interpolate)
                 // Note: it does not matter if the attribute was not actually interpolating
                 scene->EndAttributeInterpolation(attr);
         }
     }
     
-    if ((change != AttributeChange::Replicate) || (comp->IsLocal()))
+    // Is this change even supposed to go to the network?
+    if (change != AttributeChange::Replicate || comp->IsLocal())
         return;
+
     Entity* entity = comp->ParentEntity();
-    if ((!entity) || (entity->IsLocal()))
-        return;
+    if (!entity || entity->IsLocal())
+        return; // This is a local entity, don't take it to network.
     
     if (isServer)
     {
+        // For each client connected to this server, mark this attribute dirty, so it will be updated to the
+        // clients on the next network sync iteration.
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-            if ((*i)->syncState) (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
+            if ((*i)->syncState)
+                (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
     }
     else
     {
+        // As a client, mark the attribute dirty so we will push the new value to server on the next
+        // network sync iteration.
         server_syncstate_.MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
     }
 }
@@ -497,9 +510,19 @@ void SyncManager::Update(f64 frametime)
     if (owner_->IsServer())
     {
         // If we are server, process all authenticated users
+
+        // Then send out changes to other attributes via the generic sync mechanism.
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-            if ((*i)->syncState) ProcessSyncState((*i)->connection, (*i)->syncState.get());
+            if ((*i)->syncState)
+            {
+                // First send out all changes to rigid bodies.
+                // After processing this function, the bits related to rigid body states have been cleared,
+                // so the generic sync will not double-replicate the rigid body positions and velocities.
+                ReplicateRigidBodyChanges((*i)->connection, (*i)->syncState.get());
+
+                ProcessSyncState((*i)->connection, (*i)->syncState.get());
+            }
     }
     else
     {
@@ -507,6 +530,340 @@ void SyncManager::Update(f64 frametime)
         kNet::MessageConnection* connection = owner_->GetKristalliModule()->GetMessageConnection();
         if (connection)
             ProcessSyncState(connection, &server_syncstate_);
+    }
+}
+
+void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination, SceneSyncState* state)
+{
+    ScenePtr scene = scene_.lock();
+    if (!scene)
+        return;
+
+    kNet::NetworkMessage *msg = destination->StartNewMessage(cRigidBodyUpdateMessage, 4096);
+    msg->contentID = 0;
+    msg->inOrder = true;
+    msg->reliable = false;
+    kNet::DataSerializer ds(msg->data, 4096);
+
+    for(std::list<EntitySyncState*>::iterator iter = state->dirtyQueue.begin(); iter != state->dirtyQueue.end(); ++iter)
+    {
+        EntitySyncState &ess = **iter;
+
+        if (ess.isNew || ess.removed)
+            continue; // Newly created and removed entities are handled through the traditional sync mechanism.
+
+        EntityPtr e = scene->GetEntity(ess.id);
+        boost::shared_ptr<EC_Placeable> placeable = e->GetComponent<EC_Placeable>();
+        if (!placeable.get())
+            continue;
+
+        std::map<component_id_t, ComponentSyncState>::iterator placeableComp = ess.components.find(placeable->Id());
+
+        bool transformDirty = false;
+        if (placeableComp != ess.components.end())
+        {
+            ComponentSyncState &pss = placeableComp->second;
+            if (!pss.isNew && !pss.removed) // Newly created and deleted components are handled through the traditional sync mechanism.
+            {
+                transformDirty = (pss.dirtyAttributes[0] & 1) != 0; // The Transform of an EC_Placeable is the first attibute in the component.
+                pss.dirtyAttributes[0] &= ~1;
+            }
+        }
+        bool velocityDirty = false;
+        bool angularVelocityDirty = false;
+        
+        boost::shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
+        if (rigidBody)
+        {
+            std::map<component_id_t, ComponentSyncState>::iterator rigidBodyComp = ess.components.find(rigidBody->Id());
+            if (rigidBodyComp != ess.components.end())
+            {
+                ComponentSyncState &rss = rigidBodyComp->second;
+                if (!rss.isNew && !rss.removed) // Newly created and deleted components are handled through the traditional sync mechanism.
+                {
+                    velocityDirty = (rss.dirtyAttributes[1] & (1 << 5)) != 0;
+                    angularVelocityDirty = (rss.dirtyAttributes[1] & (1 << 6)) != 0;
+
+                    rss.dirtyAttributes[1] &= ~(1 << 5);
+                    rss.dirtyAttributes[1] &= ~(1 << 6);
+
+                    velocityDirty = velocityDirty && (rigidBody->linearVelocity.Get().DistanceSq(ess.linearVelocity) >= 1e-3f);
+                    angularVelocityDirty = angularVelocityDirty && (rigidBody->angularVelocity.Get().DistanceSq(ess.angularVelocity) >= 1e-3f);
+                }
+            }
+        }
+
+        if (!transformDirty && !velocityDirty && !angularVelocityDirty)
+            continue;
+
+        ds.AddVLE<kNet::VLE8_16_32>(ess.id);
+
+        const Transform &t = placeable->transform.Get();
+
+        bool posChanged = transformDirty && (t.pos.DistanceSq(ess.transform.pos) > 1e-3f);
+        bool rotChanged = transformDirty && (t.rot.DistanceSq(ess.transform.rot) > 1e-3f);
+        bool scaleChanged = transformDirty && (t.scale.DistanceSq(ess.transform.scale) > 1e-3f);
+
+        // Detect whether to send compact or full states for each variable.
+        // 0 - don't send, 1 - send compact, 2 - send full.
+        int posSendType = posChanged ? (t.pos.Abs().MaxElement() >= 1023.f ? 2 : 1) : 0;
+        int rotSendType;
+        int scaleSendType;
+        int velSendType;
+        int angVelSendType;
+
+        float3x3 rot;
+        if (rotChanged)
+        {
+            rot = t.Orientation3x3();
+            float3 fwd = rot.Col(2);
+            float3 up = rot.Col(1);
+            float3 planeNormal = float3::unitY.Cross(rot.Col(2));
+            float d = planeNormal.Dot(rot.Col(1));
+
+            if (up.Dot(float3::unitY) >= 0.99f)
+                rotSendType = 1; // Looking upright, 1 DOF.
+            else if (Abs(d) <= 0.01f)
+                rotSendType = 2; // No roll, i.e. 2 DOF.
+            else
+                rotSendType = 3; // Full 3 DOF
+        }
+        else
+            rotSendType = 0;
+
+        if (scaleChanged)
+        {
+            float3 s = t.scale.Abs();
+            scaleSendType = (s.MaxElement() - s.MinElement() <= 1e-3f) ? 1 : 2; // Uniform scale only?
+        }
+        else
+            scaleSendType = 0;
+
+        const float3 &linearVel = rigidBody->linearVelocity.Get();
+        const float3 &angVel = rigidBody->angularVelocity.Get();
+
+        velSendType = velocityDirty ? (linearVel.Abs().MaxElement() >= 8.f ? 2 : 1) : 0;
+        angVelSendType = angularVelocityDirty ? (angVel.Abs().MaxElement() >= 2.f ? 2 : 1) : 0;
+
+        ds.AddArithmeticEncoded(9, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 3);
+        if (posSendType == 1)
+        {
+            ds.AddSignedFixedPoint(11, 8, t.pos.x);
+            ds.AddSignedFixedPoint(11, 8, t.pos.y);
+            ds.AddSignedFixedPoint(11, 8, t.pos.z);
+        }
+        else if (posSendType == 2)
+        {
+            ds.Add<float>(t.pos.x);
+            ds.Add<float>(t.pos.y);
+            ds.Add<float>(t.pos.z);
+        }
+
+        if (rotSendType == 1)
+        {
+            float v = atan2(rot.Col(2).z, rot.Col(2).x);
+            ds.AddQuantizedFloat(-3.141592654f, 3.141592654f, 8, v);
+        }
+        else if (rotSendType == 2)
+        {
+            float3 forward = rot.Col(2);
+            forward.Normalize();
+            ds.AddQuantizedFloat(-1.f, 1.f, 8, forward.x);
+            ds.AddQuantizedFloat(-1.f, 1.f, 8, forward.y);
+            ds.Add<kNet::bit>(forward.z >= 0.f);
+        }
+        else if (rotSendType == 3)
+        {
+            Quat o = t.Orientation();
+            if (o.w < 0.f)
+            {
+                o.x = -o.x;
+                o.y = -o.y;
+                o.z = -o.z;
+            }
+            o.Normalize();
+            ds.AddQuantizedFloat(-1.f, 1.f, 8, o.x);
+            ds.AddQuantizedFloat(-1.f, 1.f, 8, o.y);
+            ds.AddQuantizedFloat(-1.f, 1.f, 8, o.z);
+        }
+
+        if (scaleSendType == 1)
+        {
+            ds.Add<float>(t.scale.x);
+        }
+        else if (scaleSendType == 2)
+        {
+            ds.Add<float>(t.scale.x);
+            ds.Add<float>(t.scale.y);
+            ds.Add<float>(t.scale.z);
+        }
+
+        if (velSendType == 1)
+        {
+            ds.AddSignedFixedPoint(4, 8, linearVel.x);
+            ds.AddSignedFixedPoint(4, 8, linearVel.y);
+            ds.AddSignedFixedPoint(4, 8, linearVel.z);
+            ess.linearVelocity = linearVel;
+        }
+        else if (velSendType == 2)
+        {
+            ds.Add<float>(linearVel.x);
+            ds.Add<float>(linearVel.y);
+            ds.Add<float>(linearVel.z);
+            ess.linearVelocity = linearVel;
+        }
+
+        if (angVelSendType == 1)
+        {
+            ds.AddSignedFixedPoint(2, 8, angVel.x);
+            ds.AddSignedFixedPoint(2, 8, angVel.y);
+            ds.AddSignedFixedPoint(2, 8, angVel.z);
+            ess.angularVelocity = angVel;
+        }
+        else if (angVelSendType == 2)
+        {
+            ds.Add<float>(angVel.x);
+            ds.Add<float>(angVel.y);
+            ds.Add<float>(angVel.z);
+            ess.angularVelocity = angVel;
+        }
+        ess.transform = t;
+
+//        std::cout << "pos: " << posSendType << ", rot: " << rotSendType << ", scale: " << scaleSendType << ", vel: " << velSendType << ", angvel: " << angVelSendType << std::endl;
+    }
+    if (ds.BytesFilled() > 0)
+        destination->EndAndQueueMessage(msg, ds.BytesFilled());
+    else
+        destination->FreeMessage(msg);
+}
+
+void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    ScenePtr scene = scene_.lock();
+    if (!scene)
+        return;
+
+    kNet::DataDeserializer dd(data, numBytes);
+    while(dd.BitsLeft() >= 9)// + 3 * 4 * 8 + 8)
+    {
+        u32 entityID = dd.ReadVLE<kNet::VLE8_16_32>();
+        EntityPtr e = scene->GetEntity(entityID);
+        boost::shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : boost::shared_ptr<EC_Placeable>();
+        boost::shared_ptr<EC_RigidBody> rigidBody = e ? e->GetComponent<EC_RigidBody>() : boost::shared_ptr<EC_RigidBody>();
+        Transform t = e ? placeable->transform.Get() : Transform();
+
+        int posSendType;
+        int rotSendType;
+        int scaleSendType;
+        int velSendType;
+        int angVelSendType;
+        dd.ReadArithmeticEncoded(9, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 3);
+
+        if (posSendType == 1)
+        {
+            t.pos.x = dd.ReadSignedFixedPoint(11, 8);
+            t.pos.y = dd.ReadSignedFixedPoint(11, 8);
+            t.pos.z = dd.ReadSignedFixedPoint(11, 8);
+        }
+        else if (posSendType == 2)
+        {
+            t.pos.x = dd.Read<float>();
+            t.pos.y = dd.Read<float>();
+            t.pos.z = dd.Read<float>();
+        }
+
+        if (rotSendType == 1) // 1 DOF
+        {
+            /*
+            float yaw = dd.ReadQuantizedFloat(0.f, 2.f * 3.14159f, 8);
+            t.rot.x = t.rot.z = 0.f;
+            t.rot.y = RadToDeg(yaw);
+            std::cout << "recv: " << t.rot.y << ", yaw: " << yaw << std::endl;
+            */
+            float angle = dd.ReadQuantizedFloat(-3.141592654f, 3.141592654f, 8);
+            float3 forward;
+            forward.x = Cos(angle);
+            forward.y = 0.f;
+            forward.z = Sin(angle);
+            float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
+            t.SetOrientation(orientation);
+        }
+        else if (rotSendType == 2)
+        {
+            float3 forward;
+            forward.x = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
+            forward.y = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
+            forward.z = 1.f - forward.x*forward.x - forward.y*forward.y;
+            float sign = dd.Read<kNet::bit>() ? 1.f : -1.f;
+            forward.z = (forward.z <= 0.f) ? 0.f : (forward.z >= 1.f ? sign : sign * Sqrt(forward.z));
+            forward.Normalize();
+            float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
+            t.SetOrientation(orientation);
+        }
+        else if (rotSendType == 3)
+        {
+            Quat o;
+            o.x = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
+            o.y = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
+            o.z = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
+            o.w = 1.f - o.x*o.x - o.y*o.y - o.z*o.z;
+            o.w = (o.w <= 0.f) ? 0.f : (o.w >= 1.f ? 1.f : Sqrt(o.w));
+            o.Normalize();
+            t.SetOrientation(o);
+//            t.rot.x = dd.Read<float>();
+//            t.rot.y = dd.Read<float>();
+//            t.rot.z = dd.Read<float>();
+        }
+
+        if (scaleSendType == 1)
+            t.scale = float3::FromScalar(dd.Read<float>());
+        else if (scaleSendType == 2)
+        {
+            t.scale.x = dd.Read<float>();
+            t.scale.y = dd.Read<float>();
+            t.scale.z = dd.Read<float>();
+        }
+
+        if (velSendType == 1)
+        {
+            float3 vel;
+            vel.x = dd.ReadSignedFixedPoint(4, 8);
+            vel.y = dd.ReadSignedFixedPoint(4, 8);
+            vel.z = dd.ReadSignedFixedPoint(4, 8);
+            rigidBody->linearVelocity.Set(vel, AttributeChange::Disconnected);
+        }
+        else if (velSendType == 2)
+        {
+            float3 vel;
+            vel.x = dd.Read<float>();
+            vel.y = dd.Read<float>();
+            vel.z = dd.Read<float>();
+            rigidBody->linearVelocity.Set(vel, AttributeChange::Disconnected);
+        }
+
+        if (angVelSendType == 1)
+        {
+            float3 angVel;
+            angVel.x = dd.ReadSignedFixedPoint(2, 8);
+            angVel.y = dd.ReadSignedFixedPoint(2, 8);
+            angVel.z = dd.ReadSignedFixedPoint(2, 8);
+            rigidBody->angularVelocity.Set(angVel, AttributeChange::Disconnected);
+        }
+        else if (angVelSendType == 2)
+        {
+            float3 angVel;
+            angVel.x = dd.Read<float>();
+            angVel.y = dd.Read<float>();
+            angVel.z = dd.Read<float>();
+            rigidBody->angularVelocity.Set(angVel, AttributeChange::Disconnected);
+        }
+
+        if (posSendType != 0 || rotSendType != 0 || scaleSendType != 0)
+            placeable->transform.Set(t, AttributeChange::LocalOnly);
+        if (velSendType != 0)
+            rigidBody->linearVelocity.Changed(AttributeChange::LocalOnly);
+        if (angVelSendType != 0)
+            rigidBody->angularVelocity.Changed(AttributeChange::LocalOnly);
     }
 }
 

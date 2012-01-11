@@ -5,6 +5,8 @@
 #include "CoreTypes.h"
 
 #include "kNet/PolledTimer.h"
+#include "Transform.h"
+#include "Math/float3.h"
 
 #include <list>
 #include <map>
@@ -154,6 +156,12 @@ struct EntitySyncState
     
     kNet::PolledTimer updateTimer; ///< Last update received timer
     float avgUpdateInterval; ///< Average network update interval in seconds
+
+    // Special cases for rigid body streaming:
+    // Remember the last sent rigid body parameters, so that we can perform effective pruning of redundant data.
+    Transform transform;
+    float3 linearVelocity;
+    float3 angularVelocity;
 };
 
 /// Scene's per-user network sync state

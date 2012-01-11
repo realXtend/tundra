@@ -343,7 +343,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
 void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_id_t id, const char *data, size_t numBytes)
 {
     assert(source);
-    assert(data);
+    assert(data || numBytes == 0);
 
     try
     {

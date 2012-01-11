@@ -22,7 +22,7 @@ add_definitions (-D_WINSOCKAPI_)
 
 # Includes
 use_package_bullet()
-use_core_modules (Framework Math Asset Scene Console OgreRenderingModule)
+use_core_modules (Framework Math Asset Scene Console OgreRenderingModule PhysicsModule)
 
 # This is only needed because this module bootstraps EC_Sound. If EC_Sound is removed to someplace else, this can be removed.
 use_core_modules (Audio)
