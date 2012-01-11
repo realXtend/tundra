@@ -1,9 +1,9 @@
 /** For conditions of distribution and use, see copyright notice in LICENSE
 
-    Test.js - Demo scene for profiling object movement replication. */
+    EntityMoveTest.js - Demo scene for profiling object movement replication. */
 
 // Number of boxes = numRows x numColumns
-var numRows = 100;
+var numRows = 10;
 var numColums = 10;
 var boxes = []; // All the created boxes are stored here.
 var startPositions = [];
