@@ -642,7 +642,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         const float3 &linearVel = rigidBody->linearVelocity.Get();
         const float3 &angVel = rigidBody->angularVelocity.Get();
 
-        velSendType = velocityDirty ? (linearVel.Abs().MaxElement() >= 8.f ? 2 : 1) : 0;
+        velSendType = velocityDirty ? (linearVel.LengthSq() >= 64.f ? 2 : 1) : 0;
         angVelSendType = angularVelocityDirty ? (angVel.Abs().MaxElement() >= 2.f ? 2 : 1) : 0;
 
         ds.AddArithmeticEncoded(9, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 3);
@@ -659,20 +659,22 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
             ds.Add<float>(t.pos.z);
         }
 
-        if (rotSendType == 1)
+        if (rotSendType == 1) // Orientation with 1 DOF, only yaw.
         {
-            float v = atan2(rot.Col(2).z, rot.Col(2).x);
-            ds.AddQuantizedFloat(-3.141592654f, 3.141592654f, 8, v);
+            // The transform is looking straight forward, i.e. the +y vector of the transform local space points straight towards +y in world space.
+            // Therefore the forward vector has y == 0, so send (x,z) as a 2D vector.
+            ds.AddNormalizedVector2D(rot.Col(2).x, rot.Col(2).z, 8);
         }
-        else if (rotSendType == 2)
+        else if (rotSendType == 2) // Orientation with 2 DOF, yaw and pitch.
         {
             float3 forward = rot.Col(2);
             forward.Normalize();
-            ds.AddQuantizedFloat(-1.f, 1.f, 8, forward.x);
-            ds.AddQuantizedFloat(-1.f, 1.f, 8, forward.y);
-            ds.Add<kNet::bit>(forward.z >= 0.f);
+            ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8);
+//            ds.AddQuantizedFloat(-1.f, 1.f, 8, forward.x);
+//            ds.AddQuantizedFloat(-1.f, 1.f, 8, forward.y);
+//            ds.Add<kNet::bit>(forward.z >= 0.f);
         }
-        else if (rotSendType == 3)
+        else if (rotSendType == 3) // Orientation with 3 DOF, full yaw, pitch and roll.
         {
             Quat o = t.Orientation();
             if (o.w < 0.f)
@@ -700,9 +702,10 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
 
         if (velSendType == 1)
         {
-            ds.AddSignedFixedPoint(4, 8, linearVel.x);
-            ds.AddSignedFixedPoint(4, 8, linearVel.y);
-            ds.AddSignedFixedPoint(4, 8, linearVel.z);
+            ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 9, 8, 3, 8);
+//            ds.AddSignedFixedPoint(4, 8, linearVel.x);
+ //           ds.AddSignedFixedPoint(4, 8, linearVel.y);
+  //          ds.AddSignedFixedPoint(4, 8, linearVel.z);
             ess.linearVelocity = linearVel;
         }
         else if (velSendType == 2)
@@ -774,29 +777,24 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
 
         if (rotSendType == 1) // 1 DOF
         {
-            /*
-            float yaw = dd.ReadQuantizedFloat(0.f, 2.f * 3.14159f, 8);
-            t.rot.x = t.rot.z = 0.f;
-            t.rot.y = RadToDeg(yaw);
-            std::cout << "recv: " << t.rot.y << ", yaw: " << yaw << std::endl;
-            */
-            float angle = dd.ReadQuantizedFloat(-3.141592654f, 3.141592654f, 8);
             float3 forward;
-            forward.x = Cos(angle);
+            dd.ReadNormalizedVector2D(8, forward.x, forward.z);
             forward.y = 0.f;
-            forward.z = Sin(angle);
             float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
             t.SetOrientation(orientation);
         }
         else if (rotSendType == 2)
         {
             float3 forward;
+            dd.ReadNormalizedVector3D(9, 8, forward.x, forward.y, forward.z);
+            /*
             forward.x = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
             forward.y = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
             forward.z = 1.f - forward.x*forward.x - forward.y*forward.y;
             float sign = dd.Read<kNet::bit>() ? 1.f : -1.f;
             forward.z = (forward.z <= 0.f) ? 0.f : (forward.z >= 1.f ? sign : sign * Sqrt(forward.z));
             forward.Normalize();
+            */
             float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
             t.SetOrientation(orientation);
         }
@@ -827,9 +825,10 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
         if (velSendType == 1)
         {
             float3 vel;
-            vel.x = dd.ReadSignedFixedPoint(4, 8);
-            vel.y = dd.ReadSignedFixedPoint(4, 8);
-            vel.z = dd.ReadSignedFixedPoint(4, 8);
+            dd.ReadVector3D(9, 8, 3, 8, vel.x, vel.y, vel.z);
+//            vel.x = dd.ReadSignedFixedPoint(4, 8);
+ //           vel.y = dd.ReadSignedFixedPoint(4, 8);
+ //           vel.z = dd.ReadSignedFixedPoint(4, 8);
             rigidBody->linearVelocity.Set(vel, AttributeChange::Disconnected);
         }
         else if (velSendType == 2)
