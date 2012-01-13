@@ -23,7 +23,6 @@
 #include "TextureAsset.h"
 
 #include "Application.h"
-#include "VersionInfo.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "AssetAPI.h"
@@ -98,9 +97,9 @@ void OgreRenderingModule::Initialize()
 
     pluginsFilename = Application::InstallationDirectory().toStdString() + pluginsFilename; ///\todo Unicode support!
 
-    std::string windowTitle = framework_->ApplicationVersion()->GetFullIdentifier().toStdString();
+    std::string windowTitle = Application::FullIdentifier().toStdString();
 
-    renderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogreConfigFilename, pluginsFilename, windowTitle));
+    renderer = boost::make_shared<OgreRenderer::Renderer>(framework_, ogreConfigFilename, pluginsFilename, windowTitle);
     assert(renderer);
     assert(!renderer->IsInitialized());
 
