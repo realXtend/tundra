@@ -158,10 +158,26 @@ struct EntitySyncState
     float avgUpdateInterval; ///< Average network update interval in seconds
 
     // Special cases for rigid body streaming:
-    // Remember the last sent rigid body parameters, so that we can perform effective pruning of redundant data.
+    // On the server side, remember the last sent rigid body parameters, so that we can perform effective pruning of redundant data.
     Transform transform;
     float3 linearVelocity;
     float3 angularVelocity;
+};
+
+struct RigidBodyInterpolationState
+{
+    // On the client side, remember the state for performing Hermite interpolation (C1, i.e. pos and vel are continuous).
+    struct RigidBodyState
+    {
+        float3 pos;
+        float3 vel;
+        Quat rot;
+        float3 scale;
+    };
+
+    RigidBodyState interpStart;
+    RigidBodyState interpEnd;
+    float interpTime;
 };
 
 /// Scene's per-user network sync state
@@ -170,6 +186,8 @@ struct SceneSyncState
     std::list<EntitySyncState*> dirtyQueue; ///< Dirty entities
     std::map<entity_id_t, EntitySyncState> entities; ///< Entity syncstates
     
+    std::map<entity_id_t, RigidBodyInterpolationState> entityInterpolations;
+
     void Clear()
     {
         dirtyQueue.clear();

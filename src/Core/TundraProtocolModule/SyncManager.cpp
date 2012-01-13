@@ -492,16 +492,76 @@ void SyncManager::OnUserActionTriggered(UserConnection* user, Entity *entity, co
     user->connection->Send(msg);
 }
 
+float3 HermiteInterpolate(const float3 &pos0, const float3 &vel0, const float3 &pos1, const float3 &vel1, float t)
+{
+    float tt = t*t;
+    float ttt = tt*t;
+    float h1 = 2*ttt - 3*tt + 1;
+    float h2 = 1 - h1;
+    float h3 = ttt - 2*tt + t;
+    float h4 = ttt - tt;
+
+    return h1 * pos0 + h2 * pos1 + h3 * vel0 + h4 * vel1;
+}
+
+void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
+{
+    ScenePtr scene = scene_.lock();
+    if (!scene)
+        return;
+
+    for(std::map<entity_id_t, RigidBodyInterpolationState>::iterator iter = state->entityInterpolations.begin(); 
+        iter != state->entityInterpolations.end();)
+    {
+        EntityPtr e = scene->GetEntity(iter->first);
+        boost::shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : boost::shared_ptr<EC_Placeable>();
+        if (!placeable.get())
+        {
+            iter = state->entityInterpolations.erase(iter);
+            continue;
+        }
+
+        boost::shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
+
+        RigidBodyInterpolationState &r = iter->second;
+        r.interpTime = std::min(1.0f, r.interpTime + (float)frametime / (updatePeriod_ * 2.0f));
+        float3 pos = float3::Lerp(r.interpStart.pos, r.interpEnd.pos, r.interpTime);////HermiteInterpolate(r.interpStart.pos, r.interpStart.vel, r.interpEnd.pos, r.interpEnd.vel, r.interpTime);
+        Quat rot = Quat::Slerp(r.interpStart.rot, r.interpEnd.rot, r.interpTime);
+        float3 scale = float3::Lerp(r.interpStart.scale, r.interpEnd.scale, r.interpTime);
+        
+//        std::cout << "p0: " << r.interpStart.pos.ToString() << ", v0: " << r.interpStart.vel.ToString() + ", p1: " << r.interpEnd.pos.ToString() << ", v1: " 
+//            << r.interpEnd.vel.ToString() << ", t: " << r.interpTime << ", res: " << pos.ToString() << std::endl;
+        Transform t;
+        t.SetPos(pos);
+        t.SetOrientation(rot);
+        t.SetScale(scale);
+        placeable->transform.Set(t, AttributeChange::LocalOnly);
+
+        if (rigidBody)
+            rigidBody->linearVelocity.Set(float3::Lerp(r.interpStart.vel, r.interpEnd.vel, r.interpTime), AttributeChange::LocalOnly);
+
+        if (r.interpTime >= 1.0f)
+            iter = state->entityInterpolations.erase(iter); // Finished interpolation.
+        else
+            ++iter;
+    }
+}
+
 void SyncManager::Update(f64 frametime)
 {
     PROFILE(SyncManager_Update);
-    
+
+    // For the client, smoothly update all rigid bodies by interpolating.
+    if (!owner_->IsServer())
+        InterpolateRigidBodies(frametime, &server_syncstate_);
+
+    // Check if it is yet time to perform a network update tick.
     updateAcc_ += (float)frametime;
     if (updateAcc_ < updatePeriod_)
         return;
-    // If multiple updates passed, update still just once
-    while(updateAcc_ >= updatePeriod_)
-        updateAcc_ -= updatePeriod_;
+
+    // If multiple updates passed, update still just once.
+    updateAcc_ = fmod(updateAcc_, updatePeriod_);
     
     ScenePtr scene = scene_.lock();
     if (!scene)
@@ -587,8 +647,8 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
                     rss.dirtyAttributes[1] &= ~(1 << 5);
                     rss.dirtyAttributes[1] &= ~(1 << 6);
 
-                    velocityDirty = velocityDirty && (rigidBody->linearVelocity.Get().DistanceSq(ess.linearVelocity) >= 1e-3f);
-                    angularVelocityDirty = angularVelocityDirty && (rigidBody->angularVelocity.Get().DistanceSq(ess.angularVelocity) >= 1e-3f);
+                    velocityDirty = velocityDirty && (rigidBody->linearVelocity.Get().DistanceSq(ess.linearVelocity) >= 1e-2f);
+                    angularVelocityDirty = angularVelocityDirty && (rigidBody->angularVelocity.Get().DistanceSq(ess.angularVelocity) >= 1e-2f);
                 }
             }
         }
@@ -600,9 +660,9 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
 
         const Transform &t = placeable->transform.Get();
 
-        bool posChanged = transformDirty && (t.pos.DistanceSq(ess.transform.pos) > 1e-3f);
-        bool rotChanged = transformDirty && (t.rot.DistanceSq(ess.transform.rot) > 1e-3f);
-        bool scaleChanged = transformDirty && (t.scale.DistanceSq(ess.transform.scale) > 1e-3f);
+        bool posChanged = transformDirty && (t.pos.DistanceSq(ess.transform.pos) > 1e-2f);
+        bool rotChanged = transformDirty && (t.rot.DistanceSq(ess.transform.rot) > 1e-2f);
+        bool scaleChanged = transformDirty && (t.scale.DistanceSq(ess.transform.scale) > 1e-2f);
 
         // Detect whether to send compact or full states for each variable.
         // 0 - don't send, 1 - send compact, 2 - send full.
@@ -621,10 +681,10 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
             float3 planeNormal = float3::unitY.Cross(rot.Col(2));
             float d = planeNormal.Dot(rot.Col(1));
 
-            if (up.Dot(float3::unitY) >= 0.99f)
+            if (up.Dot(float3::unitY) >= 0.999f)
                 rotSendType = 1; // Looking upright, 1 DOF.
-            else if (Abs(d) <= 0.01f)
-                rotSendType = 2; // No roll, i.e. 2 DOF.
+            else if (Abs(d) <= 0.001f && Abs(fwd.Dot(float3::unitY)) < 0.95f && up.Dot(float3::unitY) > 0.f)
+                rotSendType = 2; // No roll, i.e. 2 DOF. Use this only if not looking too close towards the +Y axis, due to precision issues, and only when object +Y is towards world up.
             else
                 rotSendType = 3; // Full 3 DOF
         }
@@ -670,23 +730,21 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
             float3 forward = rot.Col(2);
             forward.Normalize();
             ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8);
-//            ds.AddQuantizedFloat(-1.f, 1.f, 8, forward.x);
-//            ds.AddQuantizedFloat(-1.f, 1.f, 8, forward.y);
-//            ds.Add<kNet::bit>(forward.z >= 0.f);
         }
         else if (rotSendType == 3) // Orientation with 3 DOF, full yaw, pitch and roll.
         {
             Quat o = t.Orientation();
-            if (o.w < 0.f)
+
+            float3 axis;
+            float angle;
+            o.ToAxisAngle(axis, angle);
+            if (angle >= 3.141592654f) // Remove the quaternion double cover representation by constraining angle to [0, pi].
             {
-                o.x = -o.x;
-                o.y = -o.y;
-                o.z = -o.z;
+                axis = -axis;
+                angle = 2.f * 3.141592654f - angle;
             }
-            o.Normalize();
-            ds.AddQuantizedFloat(-1.f, 1.f, 8, o.x);
-            ds.AddQuantizedFloat(-1.f, 1.f, 8, o.y);
-            ds.AddQuantizedFloat(-1.f, 1.f, 8, o.z);
+            ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
+            ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
         }
 
         if (scaleSendType == 1)
@@ -703,9 +761,6 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         if (velSendType == 1)
         {
             ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 9, 8, 3, 8);
-//            ds.AddSignedFixedPoint(4, 8, linearVel.x);
- //           ds.AddSignedFixedPoint(4, 8, linearVel.y);
-  //          ds.AddSignedFixedPoint(4, 8, linearVel.z);
             ess.linearVelocity = linearVel;
         }
         else if (velSendType == 2)
@@ -762,6 +817,8 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
         int angVelSendType;
         dd.ReadArithmeticEncoded(9, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 3);
 
+        float3 newLinearVel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
+
         if (posSendType == 1)
         {
             t.pos.x = dd.ReadSignedFixedPoint(11, 8);
@@ -787,30 +844,17 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
         {
             float3 forward;
             dd.ReadNormalizedVector3D(9, 8, forward.x, forward.y, forward.z);
-            /*
-            forward.x = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
-            forward.y = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
-            forward.z = 1.f - forward.x*forward.x - forward.y*forward.y;
-            float sign = dd.Read<kNet::bit>() ? 1.f : -1.f;
-            forward.z = (forward.z <= 0.f) ? 0.f : (forward.z >= 1.f ? sign : sign * Sqrt(forward.z));
-            forward.Normalize();
-            */
+
             float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
             t.SetOrientation(orientation);
+
         }
         else if (rotSendType == 3)
         {
-            Quat o;
-            o.x = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
-            o.y = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
-            o.z = dd.ReadQuantizedFloat(-1.f, 1.f, 8);
-            o.w = 1.f - o.x*o.x - o.y*o.y - o.z*o.z;
-            o.w = (o.w <= 0.f) ? 0.f : (o.w >= 1.f ? 1.f : Sqrt(o.w));
-            o.Normalize();
-            t.SetOrientation(o);
-//            t.rot.x = dd.Read<float>();
-//            t.rot.y = dd.Read<float>();
-//            t.rot.z = dd.Read<float>();
+            float3 axis;
+            dd.ReadNormalizedVector3D(11, 10, axis.x, axis.y, axis.z);
+            float angle = dd.ReadQuantizedFloat(0, 3.141592654f, 10);
+            t.SetOrientation(Quat(axis, angle));
         }
 
         if (scaleSendType == 1)
@@ -824,20 +868,13 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
 
         if (velSendType == 1)
         {
-            float3 vel;
-            dd.ReadVector3D(9, 8, 3, 8, vel.x, vel.y, vel.z);
-//            vel.x = dd.ReadSignedFixedPoint(4, 8);
- //           vel.y = dd.ReadSignedFixedPoint(4, 8);
- //           vel.z = dd.ReadSignedFixedPoint(4, 8);
-            rigidBody->linearVelocity.Set(vel, AttributeChange::Disconnected);
+            dd.ReadVector3D(9, 8, 3, 8, newLinearVel.x, newLinearVel.y, newLinearVel.z);
         }
         else if (velSendType == 2)
         {
-            float3 vel;
-            vel.x = dd.Read<float>();
-            vel.y = dd.Read<float>();
-            vel.z = dd.Read<float>();
-            rigidBody->linearVelocity.Set(vel, AttributeChange::Disconnected);
+            newLinearVel.x = dd.Read<float>();
+            newLinearVel.y = dd.Read<float>();
+            newLinearVel.z = dd.Read<float>();
         }
 
         if (angVelSendType == 1)
@@ -857,12 +894,34 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
             rigidBody->angularVelocity.Set(angVel, AttributeChange::Disconnected);
         }
 
-        if (posSendType != 0 || rotSendType != 0 || scaleSendType != 0)
-            placeable->transform.Set(t, AttributeChange::LocalOnly);
-        if (velSendType != 0)
-            rigidBody->linearVelocity.Changed(AttributeChange::LocalOnly);
-        if (angVelSendType != 0)
-            rigidBody->angularVelocity.Changed(AttributeChange::LocalOnly);
+        if (e)
+        {
+            if (posSendType != 0 || rotSendType != 0 || scaleSendType != 0)
+            {
+                // Create or update the interpolation state.
+                Transform orig = placeable->transform.Get();
+                RigidBodyInterpolationState interp;
+                interp.interpStart.pos = orig.pos;
+                interp.interpEnd.pos = t.pos;
+                interp.interpStart.rot = orig.Orientation();
+                interp.interpEnd.rot = t.Orientation();
+                interp.interpStart.scale = orig.scale;
+                interp.interpEnd.scale = t.scale;
+                interp.interpStart.vel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
+                interp.interpEnd.vel = newLinearVel;
+                interp.interpTime = 0.f;
+                server_syncstate_.entityInterpolations[entityID] = interp;
+            }
+            /*
+            if (rigidBody)
+            {
+                if (velSendType != 0)
+                    rigidBody->linearVelocity.Changed(AttributeChange::LocalOnly);
+                if (angVelSendType != 0)
+                    rigidBody->angularVelocity.Changed(AttributeChange::LocalOnly);
+            }
+            */
+        }
     }
 }
 
