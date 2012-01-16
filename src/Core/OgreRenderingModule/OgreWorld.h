@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -62,18 +62,16 @@ public slots:
     /** Does raycast into the world using a ray in world space coordinates. */
     RaycastResult* Raycast(const Ray& ray, unsigned layerMask);
 
-    /// Do a frustum query to the world from viewport coordinates.
-    /// \todo This function will be removed and replaced with a function Scene::Intersect.
-    /** Returns the found entities as a QVariantList so that
-        Python and Javascript can get the result directly from here.
-        @param viewrect The query rectangle in 2d window coords. */
-    QList<Entity*> FrustumQuery(QRect &viewrect);
-    
+    /// Does a frustum query to the world from viewport coordinates.
+    /** @param viewRect The query rectangle in 2d window coords.
+        @return List of entities within the frustrum. */
+    QList<Entity*> FrustumQuery(QRect &viewRect) const;
+
     /// Return whether a single entity is visible in the currently active camera
     bool IsEntityVisible(Entity* entity) const;
     
     /// Get visible entities in the currently active camera
-    QList<Entity*> GetVisibleEntities() const;
+    QList<Entity*> VisibleEntities() const;
     
     /// Return whether the currently active camera is in this scene
     bool IsActive() const;
@@ -87,11 +85,13 @@ public slots:
     void StopViewTracking(Entity* entity);
     
     /// Return the Renderer instance
-    OgreRenderer::Renderer* GetRenderer() const { return renderer_; }
+    OgreRenderer::Renderer* Renderer() const { return renderer_; }
+
     /// Return the Ogre scene manager
-    Ogre::SceneManager* GetSceneManager() { return sceneManager_; }
+    Ogre::SceneManager* OgreSceneManager() { return sceneManager_; }
+
     /// Return the parent scene
-    ScenePtr GetScene() { return scene_.lock(); }
+    ScenePtr Scene() const { return scene_.lock(); }
 
     // Renders an axis-aligned bounding box.
     void DebugDrawAABB(const AABB &aabb, float r, float g, float b, bool depthTest = true);
@@ -121,6 +121,8 @@ public slots:
     void DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b, bool depthTest = true);
     /// Renders a simple box-like debug camera.
     void DebugDrawCamera(const float3x4 &t, float size, float r, float g, float b, bool depthTest = true);
+    /// Renders a visualization for a spatial EC_Sound object.
+    void DebugDrawSoundSource(const float3 &soundPos, float soundInnerRadius, float soundOuterRadius, float r, float g, float b, bool depthTest = true);
     /// Renders a sphere as geosphere.
     void DebugDrawSphere(const float3& center, float radius, int vertices, float r, float g, float b, bool depthTest = true);
 

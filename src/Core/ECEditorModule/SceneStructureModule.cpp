@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   SceneStructureModule.cpp
  *  @brief  Provides UIs for scene and asset maintenance and content import.
@@ -35,6 +35,9 @@
 #include "SceneDesc.h"
 #include "ECEditorModule.h"
 #include "ECEditorWindow.h"
+#include "OgreWorld.h"
+#include "ConfigAPI.h"
+#include "OgreMaterialUtils.h"
 
 #include <QToolTip>
 #include <QCursor>
@@ -44,6 +47,10 @@
 #endif
 
 #include "MemoryLeakCheck.h"
+
+// Shortcuts for config keys.
+static const char *cSceneWindowPos = "scene window pos";
+static const char *cAssetWindowPos = "asset window pos";
 
 SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
@@ -63,21 +70,26 @@ SceneStructureModule::~SceneStructureModule()
 
 void SceneStructureModule::Initialize()
 {
+    // No headless checks for these as they are useful in headless mode too.
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", 
         this, SLOT(ToggleSceneStructureWindow()));
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", 
         this, SLOT(ToggleAssetsWindow()));
 
-    // Don't allocate the widget memory for nothing if we are headless.
     if (!framework_->IsHeadless())
     {
         inputContext = framework_->Input()->RegisterInputContext("SceneStructureInput", 102);
         connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
-        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragEnterEvent(QDragEnterEvent*, QGraphicsItem*)), SLOT(HandleDragEnterEvent(QDragEnterEvent*, QGraphicsItem*)));
-        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragLeaveEvent(QDragLeaveEvent*)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent*)));
-        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragMoveEvent(QDragMoveEvent*, QGraphicsItem*)), SLOT(HandleDragMoveEvent(QDragMoveEvent*, QGraphicsItem*)));
-        connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent*, QGraphicsItem*)), SLOT(HandleDropEvent(QDropEvent*, QGraphicsItem*)));
+        UiGraphicsView *gv = framework_->Ui()->GraphicsView();
+        connect(gv, SIGNAL(DragEnterEvent(QDragEnterEvent*, QGraphicsItem*)), SLOT(HandleDragEnterEvent(QDragEnterEvent*, QGraphicsItem*)));
+        connect(gv, SIGNAL(DragLeaveEvent(QDragLeaveEvent*)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent*)));
+        connect(gv, SIGNAL(DragMoveEvent(QDragMoveEvent*, QGraphicsItem*)), SLOT(HandleDragMoveEvent(QDragMoveEvent*, QGraphicsItem*)));
+        connect(gv, SIGNAL(DropEvent(QDropEvent*, QGraphicsItem*)), SLOT(HandleDropEvent(QDropEvent*, QGraphicsItem*)));
+
+        // Stay in sync with EC editors' selection.
+        connect(framework_->GetModule<ECEditorModule>(), SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
+            this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
 
         toolTipWidget = new QWidget(0, Qt::ToolTip);
         toolTipWidget->setLayout(new QHBoxLayout());
@@ -92,27 +104,21 @@ void SceneStructureModule::Initialize()
         toolTip->setTextFormat(Qt::RichText);
         toolTipWidget->layout()->addWidget(toolTip);
     }
-
-    // Stay in sync with EC editors' selection.
-    ECEditorModule *ecEditorModule = framework_->GetModule<ECEditorModule>();
-    connect(ecEditorModule, SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
-        this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
 }
 
-QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene)
+void SceneStructureModule::Uninitialize()
 {
-    return InstantiateContent(QStringList(filename), worldPos, clearScene);
+    SaveWindowPosition(sceneWindow.data(), cSceneWindowPos);
+    SaveWindowPosition(assetsWindow.data(), cAssetWindowPos);
 }
 
-QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)
+void SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)
 {
-    QList<Entity *> ret;
-
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogError("Could not retrieve default world scene.");
-        return ret;
+        LogError("SceneStructureModule::InstantiateContent: Could not retrieve main camera scene.");
+        return;
     }
 
     QList<SceneDesc> sceneDescs;
@@ -121,7 +127,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
     {
         if (!IsSupportedFileType(filename))
         {
-            LogError("Unsupported file extension: " + filename);
+            LogError("SceneStructureModule::InstantiateContent: Unsupported file extension: " + filename + ".");
             continue;
         }
 
@@ -134,7 +140,8 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
         else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
         {
             TundraLogic::SceneImporter importer(scene->shared_from_this());
-///\todo Perhaps download the mesh before instantiating so we could inspect the mesh binary for materials and skeleton? The path is already there for tundra scene file web drops
+            ///\todo Perhaps download the mesh before instantiating so we could inspect the mesh binary for materials and skeleton?
+            /// The path is already there for tundra scene file web drops
             //if (IsUrl(filename)) ...
             sceneDescs.append(importer.CreateSceneDescFromMesh(filename));
         }
@@ -184,16 +191,12 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
                 std::vector<AssImp::MeshData> meshNames;
                 assimporter.GetMeshData(filename, meshNames);
 
-                TundraLogic::SceneImporter sceneimporter(scene);
+                TundraLogic::SceneImporter sceneImporter(scene->shared_from_this());
                 for(size_t i=0 ; i<meshNames.size() ; ++i)
-                {
-                    EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
-                        std::string(), "local://", AttributeChange::Default, false, meshNames[i].name_.toStdString());
-                    if (entity)
-                        ret.append(entity.get());
-                }
+                    sceneImporter.ImportMesh(meshNames[i].file_, dirname, meshNames[i].transform_,
+                        "", "local://", AttributeChange::Default, false, meshNames[i].name_);
 
-                return ret;
+                return;
             }
 #endif
         }
@@ -202,16 +205,16 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
     if (!sceneDescs.isEmpty())
     {
         AddContentWindow *addContent = new AddContentWindow(framework_, scene->shared_from_this());
-        addContent->AddDescription(sceneDescs[0]);
+        addContent->AddDescription(sceneDescs);
         if (worldPos != float3::zero)
-            addContent->AddPosition(worldPos);
+            addContent->SetContentPosition(worldPos);
         addContent->show();
     }
+}
 
-    /** \todo this is always empty list of entities, remove (?!) as we actually don't know the entity count yet.
-     *  it is known only after the add content window selections and processing has been done 
-     */
-    return ret;
+void SceneStructureModule::InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene)
+{
+    return InstantiateContent(QStringList(filename), worldPos, clearScene);
 }
 
 void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<Entity *> &entities)
@@ -223,9 +226,8 @@ void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<E
     foreach(Entity *e, entities)
     {
         EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
-        // Ignore entities that doesn't have placable component or
-        // they are a child of another placable.
-        if (p && p->getparentRef().IsEmpty())
+        // Ignore entities that doesn't have placable component or they are a child of another placable.
+        if (p && p->parentRef.Get().IsEmpty())
             filteredEntities.push_back(e);
     }
 
@@ -316,7 +318,10 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     {
         sceneWindow->setVisible(!sceneWindow->isVisible());
         if (!sceneWindow->isVisible())
+        {
+            SaveWindowPosition(sceneWindow.data(), cSceneWindowPos);
             sceneWindow->close();
+        }
         return;
     }
 
@@ -324,33 +329,11 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     sceneWindow->setAttribute(Qt::WA_DeleteOnClose);
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(GetFramework()->Scene()->MainCameraScene()->shared_from_this());
+    LoadWindowPosition(sceneWindow.data(), cSceneWindowPos);
     sceneWindow->show();
 
     // Reflect possible current selection of EC editor to Scene Structure window right away.
     SyncSelectionWithEcEditor(framework_->GetModule<ECEditorModule>()->ActiveEditor());
-
-    // Position the scene struct window to be centered on the left side of the main window.
-    if (GetFramework()->Ui()->MainWindow())
-    {
-        QRect mainWinGeom = GetFramework()->Ui()->MainWindow()->geometry();
-        QPoint movePos(mainWinGeom.topLeft().x() + 25, (mainWinGeom.topLeft().y() + (mainWinGeom.height() / 2)) - (sceneWindow->height() / 2));
-        sceneWindow->move(movePos);
-
-        // Move so the asset window is not blocking us
-        if (!assetsWindow.isNull() && assetsWindow->frameGeometry().contains(sceneWindow->geometry().center()))
-        {
-            QSize desktopSize(GetFramework()->Ui()->MainWindow()->DesktopWidth(), GetFramework()->Ui()->MainWindow()->DesktopHeight());
-            if (assetsWindow->frameGeometry().topRight().x() + sceneWindow->frameGeometry().width() < desktopSize.width())
-                sceneWindow->move(assetsWindow->frameGeometry().topRight());
-            else if (assetsWindow->frameGeometry().topLeft().x() - sceneWindow->frameGeometry().width() > 0)
-            {
-                movePos = assetsWindow->frameGeometry().topLeft() - QPoint(sceneWindow->frameGeometry().width(), 0);
-                sceneWindow->move(movePos);
-            }
-            else
-                sceneWindow->move(movePos + QPoint(75, 75));
-        }
-    }
 }
 
 void SceneStructureModule::ToggleAssetsWindow()
@@ -359,36 +342,36 @@ void SceneStructureModule::ToggleAssetsWindow()
     {
         assetsWindow->setVisible(!assetsWindow->isVisible());
         if (!assetsWindow->isVisible())
+        {
+            SaveWindowPosition(assetsWindow.data(), cAssetWindowPos);
             assetsWindow->close();
+        }
         return;
     }
 
     assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
+    LoadWindowPosition(assetsWindow.data(), cAssetWindowPos);
     assetsWindow->show();
+}
 
-    // Position the asset window to be centered on the left side of the main window.
-    if (GetFramework()->Ui()->MainWindow())
+void SceneStructureModule::SaveWindowPosition(QWidget *widget, const QString &settingName)
+{
+    if (widget)
     {
-        QRect mainWinGeom = GetFramework()->Ui()->MainWindow()->geometry();
-        QPoint movePos(mainWinGeom.topLeft().x() + 25, (mainWinGeom.topLeft().y() + (mainWinGeom.height() / 2)) - (assetsWindow->height() / 2));
-        assetsWindow->move(movePos);
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName, widget->pos());
+        framework_->Config()->Set(configData);
+    }
+}
 
-        // Move so the scene struct window is not blocking us
-        if (!sceneWindow.isNull() && sceneWindow->frameGeometry().contains(assetsWindow->geometry().center()))
-        {
-            QSize desktopSize(GetFramework()->Ui()->MainWindow()->DesktopWidth(), GetFramework()->Ui()->MainWindow()->DesktopHeight());
-            if (sceneWindow->frameGeometry().topRight().x() + assetsWindow->frameGeometry().width() < desktopSize.width())
-                assetsWindow->move(sceneWindow->frameGeometry().topRight());
-            else if (sceneWindow->frameGeometry().topLeft().x() - assetsWindow->frameGeometry().width() > 0)
-            {
-                movePos = sceneWindow->frameGeometry().topLeft() - QPoint(assetsWindow->frameGeometry().width(), 0);
-                assetsWindow->move(movePos);
-            }
-            else
-                assetsWindow->move(movePos + QPoint(75, 75));
-        }
+void SceneStructureModule::LoadWindowPosition(QWidget *widget, const QString &settingName)
+{
+    if (framework_->Ui()->MainWindow() && widget)
+    {
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName);
+        QPoint pos = framework_->Config()->Get(configData).toPoint();
+        UiMainWindow::EnsurePositionWithinDesktop(widget, pos);
     }
 }
 
@@ -398,9 +381,8 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
         return;
 
     InputAPI &input = *framework_->Input();
-
-    const QKeySequence &showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
-    const QKeySequence &showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));
+    const QKeySequence showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
+    const QKeySequence showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));
     if (e->Sequence()== showSceneStruct)
     {
         ToggleSceneStructureWindow();
@@ -426,7 +408,7 @@ void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e, QGraphicsIte
     QString dropResourceNames;
     currentToolTipSource.clear();
     if (e->mimeData()->hasUrls())
-    {   
+    {
         foreach(QUrl url, e->mimeData()->urls())
         {
             if (IsSupportedFileType(url.path()))
@@ -583,7 +565,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
 
     // Drop happened on a grapchis view widget, ignore
     if (widget)
-        return;   
+        return;
 
     if (e->mimeData()->hasUrls())
     {
@@ -602,7 +584,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
         // Handle other supported file types
         QList<Entity *> importedEntities;
 
-        OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+        OgreRenderer::Renderer *renderer = framework_->Scene()->MainCameraScene()->GetWorld<OgreWorld>()->Renderer();
         if (!renderer)
             return;
 
@@ -621,11 +603,9 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();
                     if (placeable)
                     {
-                        //Ogre::Ray ray = cam->GetComponent<EC_Camera>()->GetCamera()->getCameraToViewportRay(e->pos().x(), e->pos().y());
                         Quat q = placeable->WorldOrientation();
                         float3 v = q * scene->ForwardVector();
-                        //Ogre::Vector3 oV = ray.getPoint(20);
-                        worldPos = /*float3(oV.x, oV.y, oV.z);*/ placeable->Position() + v * 20;
+                        worldPos = placeable->Position() + v * 20;
                         break;
                     }
                 }
@@ -633,12 +613,15 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
         else
             worldPos = res->pos;
 
-        foreach (const QUrl &url, e->mimeData()->urls())
+        QStringList files;
+        foreach(const QUrl &url, e->mimeData()->urls())
         {
             QString fileRef = url.toString();
             CleanReference(fileRef);
-            importedEntities.append(InstantiateContent(fileRef, worldPos/*float3()*/, false));
+            files.append(fileRef);
         }
+
+        InstantiateContent(files, worldPos, false);
 
         // Calculate import pivot and offset for new content
         //if (importedEntities.size())
@@ -649,7 +632,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
 }
 
 void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString &materialRef)
-{   
+{
     // Raycast to see if there is a submesh under the material drop
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (renderer)
@@ -714,7 +697,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         Scene *scene = GetFramework()->Scene()->MainCameraScene();
                         if (!scene)
                         {
-                            LogError("Could not retrieve default world scene.");
+                            LogError("SceneStructureModule::HandleMaterialDropEvent: Could not retrieve main camera scene.");
                             return;
                         }
 
@@ -722,7 +705,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         QFile materialFile(materialRef);
                         if (!materialFile.open(QIODevice::ReadOnly))
                         {
-                            LogError("Could not open dropped material file.");
+                            LogError("SceneStructureModule::HandleMaterialDropEvent: Could not open dropped material file.");
                             return;
                         }
 
@@ -742,8 +725,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         materialFile.close();
 
                         // Add texture assets to scene description
-                        TundraLogic::SceneImporter importer(scene->shared_from_this());
-                        QSet<QString> textures = importer.ProcessMaterialForTextures(ad.data);
+                        QSet<QString> textures = OgreRenderer::ProcessMaterialForTextures(ad.data);
                         if (!textures.empty())
                         {
                             QString dropFolder = materialRef;
@@ -799,9 +781,8 @@ void SceneStructureModule::FinishMaterialDrop(bool apply, const QString &materia
                     }
                     else
                         rewrittenMats.Append(mats[i]);
-
                 }
-                mesh->setmeshMaterial(rewrittenMats);
+                mesh->meshMaterial.Set(rewrittenMats, AttributeChange::Default);
             }
         }
     }
@@ -817,7 +798,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogError("Could not retrieve default world scene.");
+        LogError("SceneStructureModule::HandleSceneDescLoaded: Could not retrieve main camera scene.");
         return;
     }
 
@@ -834,14 +815,14 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     asset->SerializeTo(data);
     if (data.empty())
     {
-        LogError("Failed to serialize txml.");
+        LogError("SceneStructureModule::HandleSceneDescLoaded:Failed to serialize txml.");
         return;
     }
 
     QByteArray data_qt((const char *)&data[0], data.size());
     if (data_qt.isEmpty())
     {
-        LogError("Failed to convert txml data to QByteArray.");
+        LogError("SceneStructureModule::HandleSceneDescLoaded:Failed to convert txml data to QByteArray.");
         return;
     }
 
@@ -856,22 +837,22 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
         sceneDesc = scene->CreateSceneDescFromBinary(data_qt, sceneDesc);
     else
     {
-        LogError("Somehow other that " + cTundraXmlFileExtension + " or " + cTundraBinFileExtension + 
-            " file got drag and dropped to the scene? Cannot proceed with add content dialog.");
+        LogError("SceneStructureModule::HandleSceneDescLoaded:Somehow other than " + cTundraXmlFileExtension + 
+            " or " + cTundraBinFileExtension + " file got drag and dropped to the scene? Cannot proceed with add content dialog.");
         return;
     }
 
     // Show add content window
     AddContentWindow *addContent = new AddContentWindow(framework_, scene->shared_from_this());
     addContent->AddDescription(sceneDesc);
-    addContent->AddPosition(adjustPos);
+    addContent->SetContentPosition(adjustPos);
     addContent->show();
 }
 
 void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QString reason)
 {
     QApplication::restoreOverrideCursor();
-    LogError(QString("Failed to download %1 with reason %2").arg(transfer->source.ref).arg(reason));
+    LogError(QString("SceneStructureModule::HandleSceneDescFailed: Failed to download %1 with reason %2").arg(transfer->source.ref).arg(reason));
     if (urlToDropPos.contains(transfer->SourceUrl()))
         urlToDropPos.remove(transfer->SourceUrl());
 }

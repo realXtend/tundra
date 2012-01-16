@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
 
@@ -70,14 +70,14 @@ void KeyBindingsConfigWindow::ApplyKeyConfig()
     ExtractBindingsList();
 
     QStringList conflictingSequences;
-    for(std::map<std::string, QKeySequence>::const_iterator it = editedActions.begin(); it != editedActions.end(); ++it)
+    for(InputAPI::KeyBindingMap::const_iterator it = editedActions.begin(); it != editedActions.end(); ++it)
     {
-        std::map<std::string, QKeySequence>::const_iterator jt = it;
+        InputAPI::KeyBindingMap::const_iterator jt = it;
         ++jt;
         for(;jt != editedActions.end(); ++jt)
-            if(it != jt && it->second == jt->second && it->second == jt->second && !conflictingSequences.contains(it->second.toString()))
+            if(it != jt && it.value() == jt.value() && it.value() == jt.value() && !conflictingSequences.contains(it.value()))
             {
-                conflictingSequences.append(it->second.toString());
+                conflictingSequences.append(it.value());
                 break;
             }
     }
@@ -109,9 +109,7 @@ void KeyBindingsConfigWindow::ExtractBindingsList()
     for(int i = 0; i < configList->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *item = configList->topLevelItem(i);
-        std::string actionName = item->text(0).toStdString();
-        QKeySequence shortcut = QKeySequence::fromString(item->text(1), QKeySequence::NativeText);
-        editedActions[actionName] = shortcut;
+        editedActions[item->text(0)] = QKeySequence::fromString(item->text(1), QKeySequence::NativeText);
     }
 }
 
@@ -133,11 +131,11 @@ void KeyBindingsConfigWindow::PopulateBindingsList()
 
     Clear();
 
-    const InputAPI::KeyActionsMap &keyActions = framework->Input()->KeyBindings();
-    for(InputAPI::KeyActionsMap::const_iterator iter = keyActions.begin(); iter != keyActions.end(); ++iter)
+    const InputAPI::KeyBindingMap &keyActions = framework->Input()->KeyBindings();
+    for(InputAPI::KeyBindingMap::const_iterator iter = keyActions.begin(); iter != keyActions.end(); ++iter)
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(iter->first.c_str())));
-        item->setText(1, iter->second.toString(QKeySequence::NativeText));
+        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(iter.key()));
+        item->setText(1, iter.value().toString(QKeySequence::NativeText));
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
         configList->addTopLevelItem(item);
     }

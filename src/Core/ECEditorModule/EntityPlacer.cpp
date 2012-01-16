@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -52,7 +52,7 @@ EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *
                 return;
             OgreWorldPtr world = world_.lock();
             
-            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
             meshEntity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EntityPlacer"), customMeshName);
             meshEntity_->getSubEntity(0)->setMaterialName("Clone");
             meshEntity_->setCastShadows(false);
@@ -74,7 +74,7 @@ EntityPlacer::~EntityPlacer()
             return;
         if(meshEntity_)
         {
-            world_.lock()->GetSceneManager()->destroyEntity(meshEntity_);
+            world_.lock()->OgreSceneManager()->destroyEntity(meshEntity_);
             meshEntity_ = 0;
         }
     }

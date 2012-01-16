@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -33,10 +33,17 @@ overlayContainer(0)
 {
 }
 
-void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen)
+void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen, Framework *fw)
 {
     Ogre::NameValuePairList params;
 
+    // See http://www.ogre3d.org/tikiwiki/RenderWindowParameters
+    if (fw->CommandLineParameters("--vsync").length() > 0) // "Synchronize buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate"
+        params["vsync"] = ParseBool(fw->CommandLineParameters("--vsync").first());
+    if (fw->CommandLineParameters("--vsyncFrequency").length() > 0) // "Display frequency rate; only applies if fullScreen is set."
+        params["displayFrequency"] = fw->CommandLineParameters("--vsyncFrequency").first().toInt();
+    if (fw->CommandLineParameters("--antialias").length() > 0) // "Full screen antialiasing factor"
+        params["FSAA"] = fw->CommandLineParameters("--antialias").first().toInt();
 #ifdef WIN32
     if (targetWindow)
         params["externalWindowHandle"] = Ogre::StringConverter::toString((unsigned int)targetWindow->winId());
@@ -220,4 +227,16 @@ void RenderWindow::Resize(int width, int height)
         texture->setHeight(height);
         texture->createInternalResources();
     }
+
+    emit Resized(width, height);
+}
+
+int RenderWindow::Width() const
+{
+    return renderWindow->getWidth();
+}
+
+int RenderWindow::Height() const
+{
+    return renderWindow->getHeight();
 }

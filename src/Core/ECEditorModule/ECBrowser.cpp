@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -400,7 +400,6 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
 
     SAFE_DELETE(menu_);
     menu_ = new QMenu(this);
-    menu_->setAttribute(Qt::WA_DeleteOnClose);
     if(treeWidgetItem)
     {
         QAction *copyComponent = new QAction(tr("Copy"), menu_);
@@ -748,7 +747,6 @@ void ECBrowser::CreateAttribute()
     newAttrDialog.setModal(true);
     newAttrDialog.setWindowFlags(Qt::Tool);
     newAttrDialog.setWindowTitle(tr("Create New Attribute"));
-    newAttrDialog.setStyleSheet("font-size: 9pt;");
 
     QPushButton *buttonCreate = new QPushButton(tr("Create"));
     QPushButton *buttonCancel = new QPushButton(tr("Cancel"));
@@ -813,7 +811,7 @@ void ECBrowser::CreateAttribute()
 
         if (name.isEmpty())
         {
-            errorLabel->setText("Attribute name cannot be empty.");
+            errorLabel->setText(tr("Attribute name cannot be empty."));
             errorLabel->show();
             continue;
         }
@@ -824,12 +822,12 @@ void ECBrowser::CreateAttribute()
             if (dynComp->CreateAttribute(typeName, name))
                 dynComp->ComponentChanged(AttributeChange::Default);
             else
-                QMessageBox::information(framework_->Ui()->MainWindow(), "Failed to create attribute",
-                    "Failed to create " + typeName + " attribute \"" + name + "\", please try again.");
+                QMessageBox::information(framework_->Ui()->MainWindow(), tr("Failed to create attribute"),
+                    tr("Failed to create %1 attribute \"%2\", please try again.").arg(typeName).arg(name));
         }
         else
         {
-            errorLabel->setText("Attribute \"" + name + "\" already exists in this component. Pick a unique name.");
+            errorLabel->setText(tr("Attribute \"%1\" already exists in this component. Pick a unique name.").arg(name));
             errorLabel->show();
         }
     }

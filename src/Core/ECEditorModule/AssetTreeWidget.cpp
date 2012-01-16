@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   AssetTreeWidget.cpp
  *  @brief  Tree widget showing all available assets.
@@ -506,7 +506,7 @@ void AssetTreeWidget::SaveAssetDialogClosed(int result)
 void AssetTreeWidget::Upload(const QStringList &files)
 {
     AddContentWindow *addContent = new AddContentWindow(framework, framework->Scene()->MainCameraScene()->shared_from_this());
-    addContent->AddFiles(files);
+    addContent->AddAssets(files);
     addContent->show();
 }
 

@@ -1,5 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
+#include "Math/MathNamespace.h"
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_WidgetCanvas.h"
@@ -365,7 +366,7 @@ void EC_WidgetCanvas::Update()
 
 bool EC_WidgetCanvas::Blit(const QImage &source, Ogre::TexturePtr destination)
 {
-#ifdef DIRECTX_ENABLED && defined(WIN32)
+#if defined(DIRECTX_ENABLED) && defined(WIN32)
     Ogre::HardwarePixelBufferSharedPtr pb = destination->getBuffer();
     Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
     if (!pixelBuffer)

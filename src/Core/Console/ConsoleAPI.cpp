@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   ConsoleAPI.cpp
  *  @brief  Console core API.
@@ -214,7 +214,7 @@ void ConsoleAPI::Print(const QString &message)
 
 void ConsoleAPI::ListCommands()
 {
-    Print("Available console commands:");
+    Print("Available console commands (case-insensitive):");
     for(CommandMap::iterator iter = commands.begin(); iter != commands.end(); ++iter)
         Print(iter->first + " - " + iter->second->Description());
 }

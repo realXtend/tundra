@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -23,7 +23,6 @@
 #include "TextureAsset.h"
 
 #include "Application.h"
-#include "VersionInfo.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "AssetAPI.h"
@@ -98,9 +97,9 @@ void OgreRenderingModule::Initialize()
 
     pluginsFilename = Application::InstallationDirectory().toStdString() + pluginsFilename; ///\todo Unicode support!
 
-    std::string windowTitle = framework_->ApplicationVersion()->GetFullIdentifier().toStdString();
+    std::string windowTitle = Application::FullIdentifier().toStdString();
 
-    renderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogreConfigFilename, pluginsFilename, windowTitle));
+    renderer = boost::make_shared<OgreRenderer::Renderer>(framework_, ogreConfigFilename, pluginsFilename, windowTitle);
     assert(renderer);
     assert(!renderer->IsInitialized());
 
@@ -176,8 +175,8 @@ void OgreRenderingModule::OnSceneAdded(const QString& name)
     }
     
     // Add an OgreWorld to the scene
-    OgreWorldPtr newWorld(new OgreWorld(renderer.get(), scene));
-    renderer->ogreWorlds_[scene.get()] = newWorld;
+    OgreWorldPtr newWorld = boost::make_shared<OgreWorld>(renderer.get(), scene);
+    renderer->ogreWorlds[scene.get()] = newWorld;
     scene->setProperty(OgreWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
 
@@ -195,7 +194,7 @@ void OgreRenderingModule::OnSceneRemoved(const QString& name)
     if (worldPtr)
     {
         scene->setProperty(OgreWorld::PropertyName(), QVariant());
-        renderer->ogreWorlds_.erase(scene.get());
+        renderer->ogreWorlds.erase(scene.get());
     }
 }
 
@@ -206,9 +205,7 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
         LogError("Usage: SetMaterialAttribute(asset,attribute,value)");
         return;
     }
-    
-    AssetAPI* asset = framework_->Asset();
-    AssetPtr assetPtr = asset->GetAsset(asset->ResolveAssetRef("", params[0]));
+    AssetPtr assetPtr = framework_->Asset()->GetAsset(framework_->Asset()->ResolveAssetRef("", params[0]));
     if (!assetPtr || !assetPtr->IsLoaded())
     {
         LogError("No asset found or not loaded");

@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EnableMemoryLeakCheck.h
  *  @brief  (Re)enables a preprocessor macro that routes operator new to its debug counterpart. Win32 only.

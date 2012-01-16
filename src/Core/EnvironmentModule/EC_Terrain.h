@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -375,7 +375,7 @@ private:
     /// Updates the terrain material with the new texture on the given texture unit index.
     /// @param index The texture unit index to set the new texture to.
     /// @param textureName The Ogre texture resource name to set.
-    void SetTerrainMaterialTexture(int index, const char *textureName);
+    void SetTerrainMaterialTexture(int index, const QString &textureName);
 
     void GenerateTerrainGeometryForOnePatch(int patchX, int patchY);
 

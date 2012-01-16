@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -27,7 +27,7 @@ Entity::Entity(Framework* framework, Scene* scene) :
 {
 }
 
-Entity::Entity(Framework* framework, uint id, Scene* scene) :
+Entity::Entity(Framework* framework, entity_id_t id, Scene* scene) :
     framework_(framework),
     id_(id),
     scene_(scene),

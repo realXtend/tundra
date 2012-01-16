@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
@@ -56,7 +56,7 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     OgreWorldPtr world = world_.lock();
     if (world)
     {
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         adjustment_node_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Mesh_adjustment_node"));
 
         connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
@@ -81,7 +81,7 @@ EC_Mesh::~EC_Mesh()
 
     if (adjustment_node_)
     {
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         sceneMgr->destroySceneNode(adjustment_node_);
         adjustment_node_ = 0;
     }
@@ -265,7 +265,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         }
     }
     
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     
     Ogre::Mesh* mesh = PrepareMesh(mesh_name, clone);
     if (!mesh)
@@ -282,11 +282,11 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         
         entity_->setRenderingDistance(drawDistance.Get());
         entity_->setCastShadows(castShadows.Get());
-        entity_->setUserAny(Ogre::Any(ParentEntity()));
+        entity_->setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
         // Set UserAny also on subentities
         for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
             entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
-                
+
         if (entity_->hasSkeleton())
         {
             Ogre::SkeletonInstance* skel = entity_->getSkeleton();
@@ -340,7 +340,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     
     RemoveMesh();
 
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     
     Ogre::Mesh* mesh = PrepareMesh(mesh_name, clone);
     if (!mesh)
@@ -368,7 +368,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         
         entity_->setRenderingDistance(drawDistance.Get());
         entity_->setCastShadows(castShadows.Get());
-        entity_->setUserAny(Ogre::Any(ParentEntity()));
+        entity_->setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
         // Set UserAny also on subentities
         for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
             entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
@@ -405,7 +405,7 @@ void EC_Mesh::RemoveMesh()
         RemoveAllAttachments();
         DetachEntity();
         
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         sceneMgr->destroyEntity(entity_);
         
         entity_ = 0;
@@ -450,7 +450,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         return false;
     }
     
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     
     size_t oldsize = attachment_entities_.size();
     size_t newsize = index + 1;
@@ -554,7 +554,7 @@ void EC_Mesh::RemoveAttachmentMesh(uint index)
     if (index >= attachment_entities_.size())
         return;
     
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     
     if (attachment_entities_[index] && attachment_nodes_[index])
     {

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
@@ -60,7 +60,7 @@ EC_Light::EC_Light(Scene* scene) :
         if (!world_.expired() && scene->ViewEnabled())
         {
             OgreWorldPtr world = world_.lock();
-            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
             light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
             
             connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
@@ -81,7 +81,7 @@ EC_Light::~EC_Light()
     if (light_)
     {
         DetachLight();
-        Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world_.lock()->OgreSceneManager();
         sceneMgr->destroyLight(light_);
         light_ = 0;
     }

@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   ScriptMetaTypeDefines.h
  *  @brief  Registration of the Core API objects to Javascript.

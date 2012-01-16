@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
@@ -111,7 +111,7 @@ void EC_Sky::CreateSky()
 
     try
     {
-        world_.lock()->GetSceneManager()->setSkyBox(true, currentMaterial.toStdString().c_str(), distance.Get(),
+        world_.lock()->OgreSceneManager()->setSkyBox(true, currentMaterial.toStdString().c_str(), distance.Get(),
             drawFirst.Get(), orientation.Get());
     }
     catch(Ogre::Exception& e)
@@ -240,5 +240,5 @@ void EC_Sky::DisableSky()
         return;
 
     if (!world_.expired())
-        world_.lock()->GetSceneManager()->setSkyBox(false, "");
+        world_.lock()->OgreSceneManager()->setSkyBox(false, "");
 }

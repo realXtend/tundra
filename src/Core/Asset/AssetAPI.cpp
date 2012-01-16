@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
 
@@ -513,7 +513,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     AssetUploadTransferPtr transfer;
     try
     {
-        transfer = UploadAssetFromFile(filename.toStdString().c_str(), storage, newAssetName.toStdString().c_str());
+        transfer = UploadAssetFromFile(filename, storage, newAssetName);
     }
     catch(Exception &e)
     {
@@ -526,12 +526,12 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     return transfer;
 }
 
-AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, AssetStoragePtr destination, const QString &assetName)
 {
-    if (!filename || strlen(filename) == 0)
+    if (filename.isEmpty())
         throw Exception("AssetAPI::UploadAssetFromFile failed! No source filename given!");
 
-    if (!assetName || strlen(assetName) == 0)
+    if (assetName.isEmpty())
         throw Exception("AssetAPI::UploadAssetFromFile failed! No destination asset name given!");
 
     if (!destination)
@@ -569,7 +569,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
     AssetUploadTransferPtr transfer;
     try
     {
-        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName.toStdString().c_str());
+        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName);
     }
     catch(Exception &e)
     {
@@ -582,12 +582,12 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
     return transfer;
 }
 
-AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName)
 {
     if (!data || numBytes == 0)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! Null source data passed!");
 
-    if (!assetName || strlen(assetName) == 0)
+    if (assetName.isEmpty())
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! No destination asset name given!");
 
     if (!destination)
@@ -763,7 +763,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         transfer = AssetTransferPtr(new IAssetTransfer());
         transfer->diskSourceType = IAsset::Cached;
         
-        bool success = LoadFileToVector(assetFileInCache.toStdString().c_str(), transfer->rawAssetData);
+        bool success = LoadFileToVector(assetFileInCache, transfer->rawAssetData);
         if (!success)
         {
             LogError("AssetAPI::RequestAsset: Failed to load asset \"" + assetFileInCache + "\" from cache!");
@@ -1679,12 +1679,13 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
     }
 }
 
-bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
+bool LoadFileToVector(const QString &filename, std::vector<u8> &dst)
 {
-    FILE *handle = fopen(filename, "rb");
+    std::wstring wideFilename = QStringToWString(filename);
+    FILE *handle = _wfopen(wideFilename.c_str(), L"rb");
     if (!handle)
     {
-        LogError("AssetAPI::LoadFileToVector: Failed to open file '" + std::string(filename) + "' for reading.");
+        LogError("AssetAPI::LoadFileToVector: Failed to open file '" + filename + "' for reading.");
         return false;
     }
 
@@ -1837,15 +1838,15 @@ std::string AssetAPI::DesanitateAssetRef(const std::string& input)
     return DesanitateAssetRef(QString::fromStdString(input)).toStdString();
 }
 
-bool CopyAssetFile(const char *sourceFile, const char *destFile)
+bool CopyAssetFile(const QString &sourceFile, const QString &destFile)
 {
-    assert(sourceFile);
-    assert(destFile);
+    assert(!sourceFile.trimmed().isEmpty());
+    assert(!destFile.trimmed().isEmpty());
 
     QFile asset_in(sourceFile);
     if (!asset_in.open(QFile::ReadOnly))
     {
-        LogError("Could not open input asset file \"" + std::string(sourceFile) + "\"");
+        LogError("Could not open input asset file \"" + sourceFile + "\"");
         return false;
     }
 
@@ -1855,7 +1856,7 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile)
     QFile asset_out(destFile);
     if (!asset_out.open(QFile::WriteOnly))
     {
-        LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
+        LogError("Could not open output asset file \"" + destFile + "\"");
         return false;
     }
 
@@ -1865,15 +1866,15 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile)
     return true;
 }
 
-bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile)
+bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const QString &destFile)
 {
     assert(data);
-    assert(destFile);
+    assert(!destFile.trimmed().isEmpty());
 
     QFile asset_out(destFile);
     if (!asset_out.open(QFile::WriteOnly))
     {
-        LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
+        LogError("Could not open output asset file \"" + destFile + "\"");
         return false;
     }
 

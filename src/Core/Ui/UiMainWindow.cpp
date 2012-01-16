@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
 
@@ -6,6 +6,8 @@
 #include "Framework.h"
 #include "VersionInfo.h"
 #include "ConfigAPI.h"
+#include "LoggingFunctions.h"
+#include "Application.h"
 
 #include <QCloseEvent>
 #include <QDesktopWidget>
@@ -30,7 +32,9 @@ int UiMainWindow::DesktopWidth()
     QDesktopWidget *desktop = QApplication::desktop();
     if (!desktop)
     {
-        cerr << "Error: QApplication::desktop() returned null!";
+        std::string error("UiMainWindow::DesktopWidth: QApplication::desktop() returned null!");
+        LogError(error);
+        cerr << error << endl;
         return 1024; // Just guess some value for desktop width.
     }
     int width = 0;
@@ -45,7 +49,9 @@ int UiMainWindow::DesktopHeight()
     QDesktopWidget *desktop = QApplication::desktop();
     if (!desktop)
     {
-        cerr << "Error: QApplication::desktop() returned null!";
+        std::string error("UiMainWindow::DesktopHeight: QApplication::desktop() returned null!");
+        LogError(error);
+        cerr << error << endl;
         return 768; // Just guess some value for desktop height.
     }
     return desktop->screenGeometry().height();
@@ -65,7 +71,7 @@ void UiMainWindow::LoadWindowSettingsFromFile()
     width += 15;
     width &= 0xfffffff0;
     
-    setWindowTitle(owner->ApplicationVersion()->GetFullIdentifier());
+    setWindowTitle(Application::FullIdentifier());
     
     width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));
@@ -113,6 +119,30 @@ void UiMainWindow::closeEvent(QCloseEvent *e)
 void UiMainWindow::resizeEvent(QResizeEvent *e)
 {
     emit WindowResizeEvent(width(), height());
+}
+
+void UiMainWindow::EnsurePositionWithinDesktop(QWidget *widget, QPoint pos)
+{
+    if (!widget)
+    {
+        LogError("UiMainWindow::EnsurePositionWithinDesktop: null widget passed!");
+        return;
+    }
+    int xMax = DesktopWidth(), yMax = DesktopHeight();
+
+    // Allow setting windows partially outside the screen.
+    // Apply an arbitrary guardband of (50x100) along the screen borders.
+    const int w = max(widget->width()/2, 50);
+    const int h = max(widget->height()/2, 100);
+    if (pos.x() + w > xMax)
+        pos.setX(xMax - w);
+    if (pos.y() + h > yMax)
+        pos.setY(yMax - h);
+    if (pos.x() < 0)
+        pos.setX(0);
+    if (pos.y() < 0)
+        pos.setY(0);
+    widget->move(pos);
 }
 
 bool UiMainWindow::HasMenu(const QString &name) const

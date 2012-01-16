@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -74,7 +74,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     QStringList material_files;
     if (inspect)
-        material_files = FindMaterialFiles(in_asset_dir);
+        material_files = OgreRenderer::FindMaterialFiles(in_asset_dir);
 
     // mesh copied, add mesh name inside the file
     if (!meshName.isEmpty() /*&& createMesh*/)
@@ -159,22 +159,22 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
     QList<Entity *> ret;
     if (!scene_)
     {
-        LogError("Null scene for import");
+        LogError("SceneImporter::Import: Null scene for import");
         return ret;
     }
 
     try
     {
         if (clearscene)
-            LogInfo("Importing scene from " + filename + " and clearing the old");
+            LogInfo("SceneImporter::Import: Importing scene from " + filename + " and clearing the old");
         else
-            LogInfo("Importing scene from " + filename);
+            LogInfo("SceneImporter::Import: Importing scene from " + filename);
 
         QFile file(filename);
         if (!file.open(QFile::ReadOnly))
         {
             file.close();
-            LogError("Failed to open file");
+            LogError("SceneImporter::Import: Failed to open file " + filename);
             return QList<Entity *>();
         }
         
@@ -182,7 +182,7 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
         if (!dotscene.setContent(&file))
         {
             file.close();
-            LogError("Failed to parse XML content");
+            LogError("SceneImporter::Import:Failed to parse XML content");
             return ret;
         }
         
@@ -191,13 +191,13 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
         QDomElement scene_elem = dotscene.firstChildElement("scene");
         if (scene_elem.isNull())
         {
-            LogError("No scene element");
+            LogError("SceneImporter::Import:No 'scene' element");
             return ret;
         }
         QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
         if (nodes_elem.isNull())
         {
-            LogError("No nodes element");
+            LogError("SceneImporter::Import No 'nodes' element");
             return ret;
         }
         
@@ -215,11 +215,11 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
         QDomElement node_elem = nodes_elem.firstChildElement("node");
         
         // First pass: get used assets
-        LogInfo("Processing scene for assets");
+        LogDebug("SceneImporter::Import: Processing scene for assets");
         ProcessNodeForAssets(node_elem, in_asset_dir);
         
         // Write out the needed assets
-        LogInfo("Saving needed assets");
+        LogDebug("SceneImporter::Import: Saving needed assets");
         // By default, assume the material file is scenename.material if scene is scenename.scene.
         // However, if an external reference exists, use that.
         QString matfilename = filename;
@@ -246,18 +246,18 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
 //        ProcessAssets(matfilename, in_asset_dir, out_asset_dir, localassets);
         
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
-        LogInfo("Creating entities");
+        LogDebug("SceneImporter::Import: Creating entities");
 
         Quat rot = worldtransform.Orientation();
         ProcessNodeForCreation(ret, node_elem, worldtransform.pos, rot, worldtransform.scale, change, prefix, flipyz, replace);
     }
     catch(Exception& e)
     {
-        LogError(std::string("Exception while scene importing: ") + e.what());
+        LogError(QString("SceneImporter::Import: Exception while scene importing " + filename + ": ") + e.what());
         return QList<Entity *>();
     }
     
-    LogInfo("Finished");
+    LogDebug("Finished");
 
     return ret;
 }
@@ -269,7 +269,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
     QFile mesh_in(meshname);
     if (!mesh_in.open(QFile::ReadOnly))
     {
-        LogError("Could not open input mesh file " + meshname);
+        LogError("SceneImporter::ParseMeshForMaterialsAndSkeleton: Could not open input mesh file " + meshname);
         return false;
     }
     else
@@ -279,7 +279,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
         OgreRenderer::RendererPtr renderer = scene_->GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
         if (!renderer)
         {
-            LogError("Renderer does not exist");
+            LogError("SceneImporter::ParseMeshForMaterialsAndSkeleton: Renderer does not exist");
             return false;
         }
         
@@ -289,7 +289,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
             Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             if (tempmesh.isNull())
             {
-                LogError("Failed to create temp mesh");
+                LogError("SceneImporter::ParseMeshForMaterialsAndSkeleton: failed to create temp mesh");
                 return false;
             }
             
@@ -319,7 +319,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
         }
         catch(...)
         {
-            LogError("Exception while inspecting mesh " + meshname);
+            LogError("SceneImporter::ParseMeshForMaterialsAndSkeleton: Exception while inspecting mesh " + meshname);
             return false;
         }
     }
@@ -333,7 +333,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
 
     if (!source.endsWith(".mesh", Qt::CaseInsensitive))
     {
-        LogError("Unsupported file type for scene description creation: " + source);
+        LogError("SceneImporter::CreateSceneDescFromMesh: Unsupported file type for scene description creation: " + source);
         return sceneDesc;
     }
 
@@ -391,7 +391,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
         // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
         QStringList meshFiles(QStringList() << source);
         QSet<QString> usedMaterials = materialNames.toSet();
-        QStringList materialFiles = FindMaterialFiles(path);
+        QStringList materialFiles = OgreRenderer::FindMaterialFiles(path);
 
         CreateAssetDescs(path, meshFiles, skeletons, materialFiles, usedMaterials, sceneDesc);
 
@@ -408,11 +408,9 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
     foreach(QString matName, materialNames)
         materials.Append(AssetReference(path + "/" + matName + ".material"));
 
-    // Mesh  
-    
     /// \todo This creates dummy components, specifying a null scene during creation
-    
-    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>(0);
+    EC_Mesh *mesh = sceneAPI->CreateComponent<EC_Mesh>(0).get();
+    assert(mesh);
     if (mesh)
     {
         if (isUrl)
@@ -434,7 +432,8 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
         }
     }
 
-    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
+    EC_Placeable *placeable = sceneAPI->CreateComponent<EC_Placeable>(0).get();
+    assert(placeable);
     if (placeable)
         foreach(IAttribute *a, placeable->Attributes())
         {
@@ -442,8 +441,8 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
             placeableDesc.attributes.append(attrDesc);
         }
 
-    // Name
-    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>(0);
+    EC_Name *name = sceneAPI->CreateComponent<EC_Name>(0).get();
+    assert(name);
     if (name)
     {
         name->name.Set(meshEntityName, AttributeChange::Disconnected);
@@ -466,7 +465,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
 
     if (!filename.endsWith(".scene", Qt::CaseInsensitive))
     {
-        LogError("Unsupported file type for scene description creation: " + filename);
+        LogError("SceneImporter::CreateSceneDescFromScene: Unsupported file type for scene description creation: " + filename);
         return sceneDesc;
     }
 
@@ -476,15 +475,16 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     if (!file.open(QFile::ReadOnly))
     {
         file.close();
-        LogError("Failed to open file " + filename);
+        LogError("SceneImporter::CreateSceneDescFromScene: Failed to open file " + filename);
         return sceneDesc;
     }
 
     QDomDocument dotscene;
-    if (!dotscene.setContent(&file))
+    QString errorMsg;
+    if (!dotscene.setContent(&file, false, &errorMsg))
     {
         file.close();
-        LogError("Failed to parse XML content");
+        LogError("SceneImporter::CreateSceneDescFromScene: Failed to parse XML content: " + errorMsg);
         return sceneDesc;
     }
     
@@ -493,18 +493,20 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     QDomElement scene_elem = dotscene.firstChildElement("scene");
     if (scene_elem.isNull())
     {
-        LogError("No scene element");
+        LogError("SceneImporter::CreateSceneDescFromScene: No 'scene' element.");
         return sceneDesc;
     }
 
     QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
     if (nodes_elem.isNull())
     {
-        LogError("No nodes element");
+        LogError("SceneImporter::CreateSceneDescFromScene: No 'nodes' element.");
         return sceneDesc;
     }
 
     QString path = QFileInfo(filename).dir().path();
+
+    /// @todo Do we want to read environment settings from the .scene?
 
     // By default, assume the material file is scenename.material if scene is scenename.scene.
     // However, if an external reference exists, use that.
@@ -535,13 +537,13 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     QStringList meshFiles;
     QStringList skeletons;
     QSet<QString> usedMaterials;
-    QStringList materialFiles(QStringList() << materialFileName);
+    QStringList materialFiles(materialFileName);
 
-//    Transform f;
-//    Quaternion rot(DEGTORAD * f.rot.x, DEGTORAD * f.rot.y, DEGTORAD * f.rot.z);
+    Transform f;
+    Quat rot = f.Orientation();
 
     QDomElement node_elem = nodes_elem.firstChildElement("node");
-//    ProcessNodeForDesc(sceneDesc, node_elem, f.position, rot, f.scale, path + "/"/*prefix*/, true/*flipyz*/);
+//    ProcessNodeForDesc(sceneDesc, node_elem, f.pos, rot, f.scale, path + "/"/*prefix*/, true/*flipyz*/);
     while(!node_elem.isNull())
     {
         // Process entity node, if any
@@ -557,7 +559,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
             ComponentDesc compDesc;
             compDesc.typeName = EC_Mesh::TypeNameStatic();
 
-            meshFiles << path + "/" + mesh_name; // TODO: This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
+            meshFiles << path + "/" + mesh_name; ///< @todo This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
             //AssetAPI::ResolveLocalAssetPath();
 
             /// Create dummy placeable desc.
@@ -602,13 +604,13 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
                 QStringList material_names;
 //                QSet<QString> material_names_set;
                 QString skeleton_name;
-                // TODO: This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
+                /// @todo This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
                 //AssetAPI::ResolveLocalAssetPath();
                 ParseMeshForMaterialsAndSkeleton(path + "/" + mesh_name, material_names, skeleton_name);
                 for(uint i = 0; i < (uint)material_names.size(); ++i)
                 {
                     usedMaterials.insert(material_names[i]);
-                    material_names_.insert(material_names[i].toStdString());
+                    material_names_.insert(material_names[i]);
                 }
 
                 mesh_default_materials_[mesh_name] = material_names;
@@ -627,279 +629,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
 
     CreateAssetDescs(path, meshFiles, skeletons, materialFiles, usedMaterials, sceneDesc);
 
-//    foreach(AssetDesc ad, sceneDesc.assets)
-//        RewriteAssetRef(sceneDesc.filename, ad.source);
-
     return sceneDesc;
-}
-
-QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials) const
-{
-    QSet<QString> used_textures;
-    
-    bool known_material = false;
-    
-    // Read the material file
-    QFile matfile(matfilename);
-    if (!matfile.open(QFile::ReadOnly))
-    {
-        LogError("Could not open material file " + matfilename);
-        return used_textures;
-    }
-    else
-    {
-        QByteArray bytes = matfile.readAll();
-        matfile.close();
-
-        if (bytes.size())
-        {
-            int num_materials = 0;
-            int brace_level = 0;
-            bool skip_until_next = false;
-            int skip_brace_level = 0;
-#include "DisableMemoryLeakCheck.h"
-            Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
-#include "EnableMemoryLeakCheck.h"
-            
-            while(!data->eof())
-            {
-                std::string line = data->getLine();
-                
-                // Skip empty lines & comments
-                if ((line.length()) && (line.substr(0, 2) != "//"))
-                {
-                    // Process opening/closing braces
-                    if (!OgreRenderer::ProcessBraces(line, brace_level))
-                    {
-                        // If not a brace and on level 0, it should be a new material
-                        if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
-                        {
-                            std::string matname = line.substr(9);
-                            ReplaceCharInplace(matname, '/', '_');
-                            line = "material " + matname;
-                            if (used_materials.find(matname.c_str()) == used_materials.end())
-                            {
-                                known_material = false;
-                            }
-                            else
-                            {
-                                known_material = true;
-                                ++num_materials;
-                            }
-                        }
-                        else
-                        {
-                            // Check for textures
-                            if (known_material)
-                                if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
-                                    used_textures.insert(line.substr(8).c_str());
-                        }
-                    }
-                    else
-                    {
-                        if (brace_level <= skip_brace_level)
-                            skip_until_next = false;
-                    }
-                }
-            }
-        }
-    }
-    
-    return used_textures;
-}
-
-QSet<QString> SceneImporter::ProcessMaterialForTextures(const QString &material) const
-{
-    QSet<QString> textures;
-    QStringList lines = material.split("\n");
-    for(int i = 0; i < lines.size(); ++i)
-    {
-        int idx = lines[i].indexOf("texture ");
-        if (idx != -1)
-            textures.insert(lines[i].mid(idx + 8).trimmed());
-    }
-
-    return textures;
-}
-
-QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const
-{
-    QString material;
-
-    bool right_material = false;
-
-    // Read the material file
-    QFile matfile(filename);
-    if (!matfile.open(QFile::ReadOnly))
-    {
-        LogError("Could not open material file " + filename);
-        return material;
-    }
-    else
-    {
-        QByteArray bytes = matfile.readAll();
-        matfile.close();
-        if (bytes.size() == 0)
-        {
-            LogError("Empty material file: " + filename);
-            return material;
-        }
-
-        int brace_level = 0;
-        bool skip_until_next = false;
-        int skip_brace_level = 0;
-
-#include "DisableMemoryLeakCheck.h"
-        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
-#include "EnableMemoryLeakCheck.h"
-        while(!data->eof())
-        {
-            std::string line = data->getLine();
-
-            // Skip empty lines & comments
-            if ((line.length()) && (line.substr(0, 2) != "//"))
-            {
-                // Process opening/closing braces
-                if (!OgreRenderer::ProcessBraces(line, brace_level))
-                {
-                    // If not a brace and on level 0, it should be a new material
-                    if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
-                    {
-                        std::string matname = line.substr(9);
-                        ReplaceCharInplace(matname, '/', '_');
-                        line = "material " + matname;
-                        if (matname.c_str() == materialName)
-                            right_material = true;
-                        else
-                            right_material = false;
-                    }
-
-                    // Write line to the modified copy
-                    if (!skip_until_next && right_material)
-                    {
-                        // Add indentation.
-                        for(int i =0; i < brace_level; ++i)
-                            material.append("    ");
-
-                        material.append(line.c_str());
-                        material.append("\n");
-                    }
-                }
-                else
-                {
-                    // Write line to the modified copy
-                    if (!skip_until_next && right_material)
-                    {
-                        // Add indentation.
-                        int i = 0;
-                        if (line.find("{") != std::string::npos)
-                            ++i;
-                        for(; i < brace_level; ++i)
-                            material.append("    ");
-
-                        material.append(line.c_str());
-                        material.append("\n");
-                    }
-
-                    if (brace_level <= skip_brace_level)
-                    {
-                        skip_until_next = false;
-                        ///\todo return material; here?
-                    }
-                }
-            }
-        }
-    }
-
-    return material;
-}
-
-MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename) const
-{
-    MaterialInfoList materials;
-
-    // Read the material file
-    QFile matfile(filename);
-    if (!matfile.open(QFile::ReadOnly))
-    {
-        LogError("Could not open material file " + filename);
-        return materials;
-    }
-    else
-    {
-        QByteArray bytes = matfile.readAll();
-        matfile.close();
-        if (bytes.size() == 0)
-        {
-            LogError("Empty material file: " + filename);
-            return materials;
-        }
-
-        int brace_level = 0;
-        int skip_brace_level = 0;
-
-        MaterialInfo material;
-        material.source = filename;
-
-#include "DisableMemoryLeakCheck.h"
-        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
-#include "EnableMemoryLeakCheck.h"
-        while(!data->eof())
-        {
-            std::string line = data->getLine();
-
-            // Skip empty lines & comments
-            if ((line.length()) && (line.substr(0, 2) != "//"))
-            {
-                // Process opening/closing braces
-                if (!OgreRenderer::ProcessBraces(line, brace_level))
-                {
-                    // If not a brace and on level 0, it should be a new material
-                    if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
-                    {
-                        QString matname = line.substr(9).c_str();
-                        matname.replace('/', '_');
-                        material.name = matname.trimmed();
-                        material.data.clear();
-                    }
-
-                    // Add indentation.
-                    for(int i =0; i < brace_level; ++i)
-                        material.data.append("    ");
-
-                    material.data.append(line.c_str());
-                    material.data.append("\n");
-                }
-                else
-                {
-                    // Add indentation.
-                    int i = 0;
-                    if (line.find("{") != std::string::npos)
-                        ++i;
-                    for(; i < brace_level; ++i)
-                        material.data.append("    ");
-
-                    material.data.append(line.c_str());
-                    material.data.append("\n");
-
-                    if (brace_level <= skip_brace_level)
-                        materials.insert(material);
-                }
-            }
-        }
-    }
-
-    return materials;
-}
-
-QStringList SceneImporter::FindMaterialFiles(const QString &dir) const
-{
-    QStringList files;
-    foreach(const QString &file, DirectorySearch(dir, true, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
-        if (file.endsWith(".material", Qt::CaseInsensitive))
-            files.append(file);
-
-    return files;
 }
 
 void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& in_asset_dir)
@@ -910,7 +640,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& i
         QDomElement entity_elem = node_elem.firstChildElement("entity");
         if (!entity_elem.isNull())
         {
-            std::string mesh_name = entity_elem.attribute("meshFile").toStdString();
+            QString mesh_name = entity_elem.attribute("meshFile");
             // Store the original name. Later we fix duplicates.
             mesh_names_[mesh_name] = mesh_name;
             QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
@@ -919,7 +649,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& i
                 QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
                 while(!subentity_elem.isNull())
                 {
-                    std::string material_name = subentity_elem.attribute("materialName").toStdString();
+                    QString material_name = subentity_elem.attribute("materialName");
                     material_names_.insert(material_name);
                     subentity_elem = subentity_elem.nextSiblingElement("subentity");
                 }
@@ -929,10 +659,10 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& i
                 // If no subentity element, have to interrogate the mesh.
                 QStringList material_names;
                 QString skeleton_name;
-                ParseMeshForMaterialsAndSkeleton(in_asset_dir + "/" + mesh_name.c_str(), material_names, skeleton_name);
+                ParseMeshForMaterialsAndSkeleton(in_asset_dir + "/" + mesh_name, material_names, skeleton_name);
                 for(uint i = 0; i < (uint)material_names.size(); ++i)
-                    material_names_.insert(material_names[i].toStdString());
-                mesh_default_materials_[mesh_name.c_str()] = material_names;
+                    material_names_.insert(material_names[i]);
+                mesh_default_materials_[mesh_name] = material_names;
             }
         }
 
@@ -995,29 +725,29 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
         if (!entity_elem.isNull())
         {
             // Enforce uniqueness for node names, which may not be guaranteed by artists
-            std::string base_node_name = node_elem.attribute("name").toStdString();
-            if (base_node_name.empty())
+            QString base_node_name = node_elem.attribute("name");
+            if (base_node_name.isEmpty())
                 base_node_name = "object";
-            std::string node_name = base_node_name;
+            QString node_name = base_node_name;
             int append_num = 1;
             while(node_names_.find(node_name) != node_names_.end())
             {
-                node_name = base_node_name + "_" + ToString<int>(append_num);
+                node_name = base_node_name + "_" + QString::number(append_num);
                 ++append_num;
             }
             node_names_.insert(node_name);
             
             // Get mesh name from map
-            std::string orig_mesh_name = entity_elem.attribute("meshFile").toStdString();
-            QString mesh_name = QString::fromStdString(mesh_names_[orig_mesh_name]);
+            QString orig_mesh_name = entity_elem.attribute("meshFile");
+            QString mesh_name = mesh_names_[orig_mesh_name];
             
-            bool cast_shadows = ::ParseBool(entity_elem.attribute("castShadows").toStdString());
+            bool cast_shadows = ::ParseBool(entity_elem.attribute("castShadows"));
 
             mesh_name = prefix + mesh_name;
 
             EntityPtr entity;
             bool new_entity = false;
-            QString node_name_qstr = QString::fromStdString(node_name);
+            QString node_name_qstr = node_name;
 
             // Try to find existing entity by name
             if (replace)
@@ -1042,8 +772,8 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                 meshPtr = checked_static_cast<EC_Mesh*>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
                 namePtr = checked_static_cast<EC_Name*>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
                 placeablePtr = checked_static_cast<EC_Placeable*>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change).get());
-                
-                if ((meshPtr) && (namePtr) && (placeablePtr))
+                assert(meshPtr && namePtr && placeablePtr);
+                if (meshPtr && namePtr && placeablePtr)
                 {
                     namePtr->name.Set(node_name_qstr, change);
                     
@@ -1070,7 +800,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                     else
                     {
                         // If no subentity element, use the inspected material names we stored earlier
-                        const QStringList& default_materials = mesh_default_materials_[orig_mesh_name.c_str()];
+                        const QStringList& default_materials = mesh_default_materials_[orig_mesh_name];
                         materials.resize(default_materials.size());
                         for(uint i = 0; i < (uint)default_materials.size(); ++i)
                             materials[i] =  prefix + default_materials[i] + ".material";
@@ -1094,8 +824,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                         entity_transform.SetOrientation(newrot);
                         entity_transform.SetScale(newscale);
                     }
-                    
-                    
+
                     placeablePtr->transform.Set(entity_transform, change);
                     meshPtr->meshRef.Set(AssetReference(mesh_name), change);
 
@@ -1130,8 +859,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
 }
 
 /*
-void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, float3 pos, Quaternion rot, float3 scale,
-    const QString &prefix, bool flipyz)
+void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipyz)
 {
     AttributeChange::Type change = AttributeChange::Disconnected;
     while(!node_elem.isNull())
@@ -1166,7 +894,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
         scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
 
         float3 newpos(posx, posy, posz);
-        Quaternion newrot(rotx, roty, rotz, rotw);
+        Quat newrot(rotx, roty, rotz, rotw);
         float3 newscale(fabsf(scalex), fabsf(scaley), fabsf(scalez));
 
         // Transform by the parent transform
@@ -1185,27 +913,27 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
             ComponentDesc nameDesc = { EC_Name::TypeNameStatic() };
 
             // Enforce uniqueness for node names, which may not be guaranteed by artists
-            std::string base_node_name = node_elem.attribute("name").toStdString();
-            if (base_node_name.empty())
+            QString base_node_name = node_elem.attribute("name");
+            if (base_node_name.isEmpty())
                 base_node_name = "object";
-            std::string node_name = base_node_name;
+            QString node_name = base_node_name;
             int append_num = 1;
-            while(node_names_.find(node_name) != node_names_.end())
+            while(node_names_.contains(node_name))
             {
-                node_name = base_node_name + "_" + ToString<int>(append_num);
+                node_name = base_node_name + "_" + QString::number(append_num);
                 ++append_num;
             }
             node_names_.insert(node_name);
             
             // Get mesh name from map
-            std::string orig_mesh_name = entity_elem.attribute("meshFile").toStdString();
-            QString mesh_name = QString::fromStdString(mesh_names_[orig_mesh_name]);
+            QString orig_mesh_name = entity_elem.attribute("meshFile");
+            QString mesh_name = mesh_names_[orig_mesh_name];
             
-            bool cast_shadows = ::ParseBool(entity_elem.attribute("castShadows").toStdString());
+            bool cast_shadows = ::ParseBool(entity_elem.attribute("castShadows"));
 
             mesh_name = prefix + mesh_name;
 
-            QString node_name_qstr = QString::fromStdString(node_name);
+            QString node_name_qstr = node_name;
 
             ed.name = node_name_qstr;
             // Try to find existing entity by name
@@ -1221,16 +949,12 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
             //    LogInfo("Updating existing entity " + node_name);
             //}
 
-            ComponentManagerPtr mgr = scene_->GetFramework()->GetComponentManager();
-
-            ComponentPtr meshComp = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
-            ComponentPtr nameComp = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
-            ComponentPtr placeableComp = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
-
-            EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(meshComp.get());
-            EC_Name* namePtr = checked_static_cast<EC_Name*>(nameComp.get());
-            EC_Placeable* placeablePtr = checked_static_cast<EC_Placeable*>(placeableComp.get());
-            if ((meshPtr) && (namePtr) && (placeablePtr))
+            SceneAPI &sceneAPI = *scene_->GetFramework()->Scene();
+            EC_Mesh* meshPtr = sceneAPI.CreateComponent<EC_Mesh>(0).get();
+            EC_Name* namePtr = sceneAPI.CreateComponent<EC_Name>(0).get();
+            EC_Placeable* placeablePtr = sceneAPI.CreateComponent<EC_Placeable>(0).get();
+            assert(meshPtr && namePtr && placeablePtr);
+            if (meshPtr && namePtr && placeablePtr)
             {
                 namePtr->name.Set(node_name_qstr, change);
                 
@@ -1254,12 +978,11 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
                         subentity_elem = subentity_elem.nextSiblingElement("subentity");
                     }
                 }
-                else
+                else // If no subentity element, use the inspected material names we stored earlier
                 {
-                    // If no subentity element, use the inspected material names we stored earlier
-                    const QStringList& default_materials = mesh_default_materials_[orig_mesh_name.c_str()];
+                    const QStringList& default_materials = mesh_default_materials_[orig_mesh_name];
                     materials.resize(default_materials.size());
-                    for(uint i = 0; i < default_materials.size(); ++i)
+                    for(int i = 0; i < default_materials.size(); ++i)
                         materials[i] =  prefix + default_materials[i] + ".material";
                 }
                 
@@ -1268,18 +991,18 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
                 if (flipyz)
                 {
                     float3 rot_euler;
-                    Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
-                    adjustedrot.toEuler(rot_euler);
+                    Quat adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
+//                    adjustedrot.toEuler(rot_euler);
                     entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
-                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                    entity_transform.SetRotation(RadToDeg(rot_euler.x), RadToDeg(rot_euler.y), RadToDeg(rot_euler.z));
                     entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
                 }
                 else
                 {
                     float3 rot_euler;
-                    newrot.toEuler(rot_euler);
+//                    newrot.toEuler(rot_euler);
                     entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
-                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                    entity_transform.SetRotation(RadToDeg(rot_euler.x), RadToDeg(rot_euler.y), RadToDeg(rot_euler.z));
                     entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
                 }
                 
@@ -1293,24 +1016,20 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
                 meshPtr->meshMaterial.Set(materialRefs, change);
                 meshPtr->castShadows.Set(cast_shadows, change);
 
-                placeablePtr->ComponentChanged(change);
-                meshPtr->ComponentChanged(change);
-                namePtr->ComponentChanged(change);
-
                 // Create attribute descriptions for each component
                 foreach(IAttribute *a, namePtr->Attributes())
                 {
-                    AttributeDesc attrDesc = { a->TypeName(), a->GetNameString().c_str(), a->ToString().c_str() };
+                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str() };
                     nameDesc.attributes.append(attrDesc);
                 }
                 foreach(IAttribute *a, meshPtr->Attributes())
                 {
-                    AttributeDesc attrDesc = { a->TypeName(), a->GetNameString().c_str(), a->ToString().c_str() };
+                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str() };
                     meshDesc.attributes.append(attrDesc);
                 }
                 foreach(IAttribute *a, placeablePtr->Attributes())
                 {
-                    AttributeDesc attrDesc = { a->TypeName(), a->GetNameString().c_str(), a->ToString().c_str() };
+                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str() };
                     placeableDesc.attributes.append(attrDesc);
                 }
 
@@ -1318,7 +1037,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
                 desc.entities << ed;
             }
             else
-                LogError("Could not create mesh, placeable, name components");
+                LogError("SceneImporter::ProcessNodeForDesc: Could not create mesh, placeable, name components");
         }
 
         // Process child nodes
@@ -1356,10 +1075,10 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     }
 
     // Get all materials scripts from all material script files.
-    MaterialInfoList allMaterials;
+    std::set<OgreRenderer::MaterialInfo> allMaterials;
     foreach(QString filename, materialFiles)
     {
-        MaterialInfoList mats = LoadAllMaterialsFromFile(filename);
+        std::set<OgreRenderer::MaterialInfo> mats = OgreRenderer::LoadAllMaterialsFromFile(filename);
         allMaterials.insert(mats.begin(), mats.end());
     }
 
@@ -1372,7 +1091,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         ad.dataInMemory = true;
         ad.destinationName = matName + ".material";
 
-        foreach(MaterialInfo mat, allMaterials)
+        foreach(OgreRenderer::MaterialInfo mat, allMaterials)
             if (mat.name == matName)
             {
                 ad.source = mat.source;
@@ -1384,9 +1103,9 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
 
     // Process materials for textures.
     QSet<QString> all_textures;
-    foreach(MaterialInfo matInfo, allMaterials)
+    foreach(OgreRenderer::MaterialInfo matInfo, allMaterials)
         if (usedMaterials.find(matInfo.name) != usedMaterials.end())
-            all_textures.unite(ProcessMaterialForTextures(matInfo.data));
+            all_textures.unite(OgreRenderer::ProcessMaterialForTextures(matInfo.data));
 
     // Add texture asset descs.
     foreach(QString tex, all_textures)
@@ -1402,16 +1121,4 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     }
 }
 
-/*
-void SceneImporter::RewriteAssetRef(const QString &sceneFileName, QString &ref) const
-{
-    QString basePath = QFileInfo(sceneFileName).dir().path();
-    QString outFilePath;
-    AssetAPI::FileQueryResult res = scene_->GetFramework()->Asset()->ResolveLocalAssetPath(ref, basePath, outFilePath);
-    if (res == AssetAPI::FileQueryLocalFileFound)
-        ref = outFilePath;
 }
-*/
-
-}
-

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -231,10 +231,10 @@ public slots:
     /// Prints the scene node hierarchy this scene node is part of.
     void DumpNodeHierarhy();
 
-    /// If this placeable is parented to another entity's placeable (parentRef.Get()IsEmpty() == false, and points to a valid entity), returns the parent placeable entity.
+    /// If this placeable is parented to another entity's placeable (parentRef.Get().IsEmpty() == false, and points to a valid entity), returns the parent placeable entity.
     Entity *ParentPlaceableEntity() const;
 
-    /// If this placeable is parented to another entity's placeable (parentRef.Get()IsEmpty() == false, and points to a valid entity), returns parent placeable component.
+    /// If this placeable is parented to another entity's placeable (parentRef.Get().IsEmpty() == false, and points to a valid entity), returns parent placeable component.
     EC_Placeable *ParentPlaceableComponent() const;
 
     /// Checks whether or not this component is parented and is grandparent of another @c entity.

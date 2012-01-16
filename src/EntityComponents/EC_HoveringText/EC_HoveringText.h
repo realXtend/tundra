@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_HoveringText.h
  *  @brief  Shows a hovering text attached to an entity.
@@ -12,6 +12,8 @@
 #include "Math/float2.h"
 #include "OgreModuleFwd.h"
 #include "AssetFwd.h"
+#include "AssetReference.h"
+#include "AssetRefListener.h"
 #include "Color.h"
 
 #include <QVector3D>
@@ -148,6 +150,12 @@ public:
     Q_PROPERTY(float2 cornerRadius READ getcornerRadius WRITE setcornerRadius);
     DEFINE_QPROPERTY_ATTRIBUTE(float2, cornerRadius);
 
+    Q_PROPERTY(bool enableMipmapping READ getenableMipmapping WRITE setenableMipmapping);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, enableMipmapping);
+
+    Q_PROPERTY(AssetReference material READ getmaterial WRITE setmaterial);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, material);
+
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
 
@@ -199,8 +207,21 @@ private slots:
     /// Redraws the hovering text with the current text, font and color.
     void Redraw();
 
+    /// Called when material asset has been downloaded.
+    void OnMaterialAssetLoaded(AssetPtr material);
+    
+    /// Called when material asset failed to load
+    void OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason);
+
 private:
     void AttributesChanged();
+
+    /// To show unique text in each hovering text object, the EC_HoveringText clones the material it has as a reference.
+    /// Calling this function deletes the clone.
+    void DeleteMaterial();
+
+    /// Recreates the internal cloned material from the currently specified material asset reference (that is assumed to be loaded already).
+    void RecreateMaterial();
 
     /// Ogre world pointer.
     OgreWorldWeakPtr world_;
@@ -211,7 +232,8 @@ private:
     /// Ogre billboard.
     Ogre::Billboard *billboard_;
 
-    /// Name of the material used for the billboard set.
+    /// Specifies the name of the private clone of the material this EC_HoveringText component has created for itself, or "" if 
+    /// this component does not have a clone created.
     std::string materialName_;
 
     /// Name of the texture used for the billboard set.
@@ -228,5 +250,7 @@ private:
 
     // Texture which contains hovering text
     boost::shared_ptr<TextureAsset> texture_;
+
+    AssetRefListener materialAsset;
 };
 

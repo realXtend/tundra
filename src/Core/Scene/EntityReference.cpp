@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -57,8 +57,8 @@ bool EntityReference::IsEmpty() const
 }
 
 EntityPtr EntityReference::Lookup(Scene* scene) const
-{
-    if (!scene)
+{    
+    if (!scene || ref.isEmpty())
         return EntityPtr();
     // If ref looks like an ID, lookup by ID first
     bool ok = false;

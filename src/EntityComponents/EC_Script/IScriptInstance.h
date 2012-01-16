@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   IScriptInterface.h
  *  @brief  Interface for different script instances, e.g. Javascript of Python.

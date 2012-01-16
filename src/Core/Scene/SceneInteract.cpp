@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   SceneInteract.cpp
- *  @brief  Transforms generic mouse and keyboard input events to 
- *          input-related Entity Action for scene entities.
+ *  @brief  Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals.
  */
 
 #include "StableHeaders.h"
@@ -84,6 +83,7 @@ RaycastResult* SceneInteract::Raycast()
 
 void SceneInteract::HandleKeyEvent(KeyEvent *e)
 {
+    /// @todo Evaluate if this is needed at all.
 }
 
 void SceneInteract::HandleMouseEvent(MouseEvent *e)
@@ -100,36 +100,43 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
 
     if (lastHitEntity.lock())
     {
-        /// @todo handle all mouse events properly
         switch(e->eventType)
         {
         case MouseEvent::MouseMove:
             emit EntityMouseMove(hitEntity, (Qt::MouseButton)e->button, raycastResult);
             break;
         case MouseEvent::MouseScroll:
+            // Execute local entity action with signature:
+            // Action name: "MouseScroll"
+            // String parameters: (int)"The difference in the mouse wheel position", (float,float,float)"x,y,z", (int)"submesh index"
+            /// @todo Uncomment when the hack execution of "MouseScroll" in EC_InputMapper is removed.
+            /*
+            hitEntity->Exec(EntityAction::Local, "MouseScroll",
+                QString::number(e->relativeZ),
+                QString("%1,%2,%3").arg(raycastResult->pos.x).arg(raycastResult->pos.y).arg(raycastResult->pos.z),
+                QString::number((int)raycastResult->submesh));
+            */
+            emit EntityMouseScroll(hitEntity, e->relativeZ, raycastResult);
             break;
         case MouseEvent::MousePressed:
         case MouseEvent::MouseDoubleClicked: // For now, double-clicks are just treated as normal clicks.
-            // Execute local "MousePress" entity action with signature:
-            // Action name: "MousePress"  
+            // Execute local entity action with signature:
+            // Action name: "MousePress"
             // String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"
-            hitEntity->Exec(EntityAction::Local, "MousePress", 
+            hitEntity->Exec(EntityAction::Local, "MousePress",
                             QString::number((uint)e->button),
-                            QString("%1,%2,%3").arg(QString::number(raycastResult->pos.x), QString::number(raycastResult->pos.y), QString::number(raycastResult->pos.z)),
+                            QString("%1,%2,%3").arg(raycastResult->pos.x).arg(raycastResult->pos.y).arg(raycastResult->pos.z),
                             QString::number((int)raycastResult->submesh));
-
-            // Signal signature: EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)
             emit EntityClicked(hitEntity, (Qt::MouseButton)e->button, raycastResult);
             break;
         case MouseEvent::MouseReleased:
-            // Execute local "MouseRelease" entity action with signature:
-            // Action name: "MouseRelease"  
+            // Execute local entity action with signature:
+            // Action name: "MouseRelease"
             // String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"
-            hitEntity->Exec(EntityAction::Local, "MouseRelease", 
+            hitEntity->Exec(EntityAction::Local, "MouseRelease",
                             QString::number((uint)e->button),
-                            QString("%1,%2,%3").arg(QString::number(raycastResult->pos.x), QString::number(raycastResult->pos.y), QString::number(raycastResult->pos.z)),
+                            QString("%1,%2,%3").arg(raycastResult->pos.x).arg(raycastResult->pos.y).arg(raycastResult->pos.z),
                             QString::number((int)raycastResult->submesh));
-
             emit EntityClickReleased(hitEntity, (Qt::MouseButton)e->button, raycastResult);
             break;
         default:
@@ -137,4 +144,3 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
         }
     }
 }
-

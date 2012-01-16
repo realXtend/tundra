@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -9,6 +9,7 @@
 
 class Scene;
 class Entity;
+class IComponent;
 class EC_Camera;
 
 /// Result of a raycast to the rendered representation of a scene.
@@ -18,25 +19,29 @@ class EC_Camera;
 class RaycastResult : public QObject
 {
     Q_OBJECT
-
-public:
     Q_PROPERTY(Entity* entity READ getentity);
-    Entity* getentity() const { return entity; }
+    Q_PROPERTY(IComponent *component READ getcomponent);
     Q_PROPERTY(float3 pos READ getpos);
-    float3 getpos() const { return pos; }
     Q_PROPERTY(float3 normal READ getnormal);
-    float3 getnormal() const { return normal; }
     Q_PROPERTY(unsigned submesh READ getsubmesh);
-    unsigned getsubmesh() const { return submesh; }
     Q_PROPERTY(unsigned index READ getindex);
-    unsigned getindex() const { return index; }
     Q_PROPERTY(float u READ getu);
-    float getu() const { return u; }
     Q_PROPERTY(float v READ getv);
+
+    Entity* getentity() const { return entity; }
+    IComponent *getcomponent() const { return component; }
+    float3 getpos() const { return pos; }
+    float3 getnormal() const { return normal; }
+    unsigned getsubmesh() const { return submesh; }
+    unsigned getindex() const { return index; }
+    float getu() const { return u; }
     float getv() const { return v; }
 
+public:
     /// Entity that was hit, null if none
     Entity* entity;
+    /// Component which was hit.
+    IComponent *component;
     /// World coordinates of hit position
     float3 pos;
     /// World face normal of hit
@@ -53,8 +58,9 @@ public:
 
 /// Describes the system renderer.
 /** @note This class is not an abstract reimplementable interface, but exists only internally for DLL dependency inversion
-        purposes between Framework and OgreRenderingModule. This interface is only internal to Framework. Do not extend this 
-        interface. Avoid using it in client code, and prefer directly getting the Renderer object from OgreRenderingModule. */
+        purposes between Framework and OgreRenderer::OgreRenderingModule. This interface is only internal to Framework.
+        Do not extend this interface. Avoid using it in client code, and prefer directly getting the OgreRenderer::Renderer
+        object from OgreWorld or OgreRenderer::OgreRenderingModule.*/
 class IRenderer
 {
 public:
@@ -77,9 +83,10 @@ public:
     virtual Scene *MainCameraScene() = 0;
 
     /// Returns an unique string name for a new object. This function is intended to be used to generate unique names for Ogre resources.
+    /// @todo Rename to GenerateUniqueObjectName
     virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
 
-    /// \deprecated Do not use this function. Instead use OgreWorld::Raycast or Physics::PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
-    /// \todo This will be removed as soon as SceneInteract is out of core.
+    /// @deprecated Do not use this function. Instead use OgreWorld::Raycast or Physics::PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
+    /// @todo This will be removed as soon as SceneInteract is out of core.
     virtual RaycastResult *Raycast(int x, int y) = 0;
 };

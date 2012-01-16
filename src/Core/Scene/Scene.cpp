@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -14,6 +14,7 @@
 #include "ChangeRequest.h"
 
 #include "Framework.h"
+#include "Application.h"
 #include "AssetAPI.h"
 #include "FrameAPI.h"
 #include "Profiler.h"
@@ -123,6 +124,8 @@ EntityPtr Scene::GetEntity(entity_id_t id) const
 
 EntityPtr Scene::GetEntityByName(const QString &name) const
 {
+    if (name.isEmpty())
+        return EntityPtr();
     EntityMap::const_iterator it = entities_.begin();
     while(it != entities_.end())
     {
@@ -136,13 +139,12 @@ EntityPtr Scene::GetEntityByName(const QString &name) const
 
 bool Scene::IsUniqueName(const QString& name) const
 {
-    int count = 0;
+    if (name.isEmpty())
+        return false;
     EntityMap::const_iterator it = entities_.begin();
     while(it != entities_.end())
     {
         if (it->second->Name() == name)
-            ++count;
-        if (count > 1)
             return false;
         ++it;
     }
@@ -406,9 +408,8 @@ QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bo
         return ret;
     }
 
-    // Set codec to ISO 8859-1 a.k.a. Latin 1
     QTextStream stream(&file);
-    stream.setCodec("ISO 8859-1");
+    stream.setCodec("UTF-8");
     QDomDocument scene_doc("Scene");
     QString errorMsg;
     if (!scene_doc.setContent(stream.readAll(), &errorMsg))
@@ -583,6 +584,15 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         return QList<Entity*>();
     }
 
+    // Create all storages fro the scene file.
+    QDomElement storage_elem = scene_elem.firstChildElement("storage");
+    while(!storage_elem.isNull())
+    {
+        framework_->Asset()->DeserializeAssetStorageFromString(Application::ParseWildCardFilename(storage_elem.attribute("specifier")), false);
+        storage_elem = storage_elem.nextSiblingElement("storage");
+    }
+
+    // Spawn all entities in the scene storage.
     QDomElement ent_elem = scene_elem.firstChildElement("entity");
     while(!ent_elem.isNull())
     {
@@ -894,9 +904,8 @@ SceneDesc Scene::CreateSceneDescFromXml(const QString &filename) const
 
 SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const
 {
-    // Set codec to ISO 8859-1 a.k.a. Latin 1
     QTextStream stream(&data);
-    stream.setCodec("ISO 8859-1");
+    stream.setCodec("UTF-8");
     QDomDocument scene_doc("Scene");
     if (!scene_doc.setContent(stream.readAll()))
     {

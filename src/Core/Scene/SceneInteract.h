@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   SceneInteract.h
- *  @brief  Transforms generic mouse and keyboard input events to 
- *          input-related Entity Action for scene entities.
+ *  @brief  Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals.
  */
 
 #pragma once
@@ -14,75 +13,57 @@
 
 #include <QObject>
 
-/// Transforms generic mouse and keyboard input events to input-related entity action for scene entities and Qt signals. 
-/**
-<table class="header"><tr><td>
-<h2>SceneInteract</h2>
+/// Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals.
+/** Performs a raycast to the mouse position each frame and executes entity actions depending current input.
 
-Transforms generic mouse and keyboard input events to input-related entity action for scene entities and Qt signals. 
-Performs a raycast to the mouse position each frame and executes entity actions depending on the result.
-
-Owned by SceneAPI.
-
-<b>Local entity actions executed to the hit entity:</b>
-<ul>
-<li>"MouseHoverIn" - Executed when mouse hover enters the entity.
-<div>No parameters.</div>
-<li>"MouseHover" - Executed when mouse hovers on the entity.
-<div>No parameters</div>
-<li>"MouseHoverOut" - Executed when mouse hover leaves the entity.
-<div></div>
-<li>"MousePress" - Executed when mouse is clicked on the entity.
-<div>String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"</div>
-<li>
-<div></div>
-<li>
-<div></div>
-</ul>
-
-<b>Qt signals emitted by SceneInteract object:</b>
-<ul>
-<li>EntityClicked(Entity*, Qt::MouseButton, RaycastResult*) - Emitted when mouse is clicked on the entity.
-<div>Parameters: hit entity, clicked mouse button, raycast result or the hit.</div>
-</ul>
-
-</td></tr></table>
-*/
+    <b>Local</b> entity actions executed to the hit entity:
+    <ul>
+    <li>"MouseHoverIn" - Executed when mouse hover enters an entity.
+    <div>No parameters.</div>
+    <li>CURRENTLY NOT EXECUTED "MouseHover" - Executed when mouse hovers on an entity.
+    <div>No parameters</div>
+    <li>"MouseHoverOut" - Executed when mouse hover leaves an entity.
+    <div></div>
+    <li>"MousePress" - Executed when mouse button is clicked on an entity.
+    <div>String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"</div>
+    <li>"MouseRelease" - Executed when mouse button is released on an entity.
+    <div>String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"</div>
+    </ul> */
 class SceneInteract : public QObject
 {
     Q_OBJECT
 
 public:
-    /// Constructor. This object does not have a parent. It is stored in a QWeakPointer in SceneAPI and released in its dtor.
     SceneInteract();
-
-    /// Destructor.
     ~SceneInteract() {}
 
-    /// Initialize this object. Must be done for this object to work. Called by SceneAPI
+    /// Called internally by the Framework. Do not call.
     /** @param Framework Framework pointer. */
     void Initialize(Framework *framework);
 
 signals:
     /// Emitted when scene was clicked and raycast hit an entity.
     /** @param entity Hit entity.
+        @param Possible mouse button held down during the move.
+        @param result Raycast result data object. */
+    void EntityMouseMove(Entity *entity, Qt::MouseButton button, RaycastResult *result);
+
+    /// Emitted when mouse was scrolled and raycast hit an entity.
+    /** @param entity Hit entity.
+        @param delta The difference in the mouse wheel position.
+        @param result Raycast result data object. */
+    void EntityMouseScroll(Entity *entity, int delta, RaycastResult *result);
+
+    /// Emitted when scene was clicked and raycast hit an entity.
+    /** @param entity Hit entity.
         @param Clicked mouse button
-        @param result Raycast result data object.
-    */
+        @param result Raycast result data object. */
     void EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *result);
 
     /// Emitted when scene was clicked and raycast hit an entity.
     /** @param entity Hit entity.
-        @param Possible mouse button held down during the move.
-        @param result Raycast result data object.
-    */
-    void EntityMouseMove(Entity *entity, Qt::MouseButton button, RaycastResult *result);
-
-    /// Emitted when scene was clicked and raycast hit an entity.
-    /** @param entity Hit entity.
         @param Released mouse button.
-        @param result Raycast result data object.
-    */
+        @param result Raycast result data object. */
     void EntityClickReleased(Entity *entity, Qt::MouseButton button, RaycastResult *result);
 
 private:
@@ -109,4 +90,3 @@ private slots:
     /** @param e Mouse event. */
     void HandleMouseEvent(MouseEvent *e);
 };
-
