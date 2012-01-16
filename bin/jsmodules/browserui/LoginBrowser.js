@@ -185,9 +185,12 @@ var BrowserManager = Class.extend
         this.hideshowact.checkable = true;
         this.hideshowact.checked = false;
         this.hideshowact.triggered.connect(this, this.toggleVisible);
+        
         mainwin.AddMenuAction("Browser", "Manage Bookmarks", new QIcon(uiBase + "bookmarks.png")).triggered.connect(this.bookmarks, this.bookmarks.manageBookmarks);
         mainwin.AddMenuAction("Browser", "Settings", new QIcon(uiBase + "settings.png")).triggered.connect(this.settings, this.settings.onSettingsPressed);
         
+        browserplugin.SetBrowserVisibilityRequest.connect(this, this.onBrowserVisibilityChange);
+
         this.windowResized(ui.GraphicsScene().sceneRect);
     },
     
@@ -225,6 +228,15 @@ var BrowserManager = Class.extend
     setVisible: function(visible)
     {
         this.browser.visible = visible;
+    },
+
+    onBrowserVisibilityChange: function(visible)
+    {
+        p_.browser.visible = visible;
+        if (p_.browser.visible)
+            this.hideshowact.text = "Hide Browser Interface";
+        else
+            this.hideshowact.text = "Show Browser Interface";
     },
 
     toggleVisible: function() 

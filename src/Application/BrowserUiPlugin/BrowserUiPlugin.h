@@ -49,6 +49,10 @@ public slots:
     /// @param activateNewTab If the new tab where the url is opened should be activated or not. Optional, defaults to true.
     void OpenUrl(const QUrl &url, bool activateNewTab = true);
 
+    /// Sets the main browser ui visibility
+    /// @param visible Boolean to set visibility.
+    void SetBrowserVisibility(bool visible);
+
     /// Returns the main cookie jar that can be shared across Tundra functionality.
     /// Can be used with any QNetworkAccessManager with setCookieJar() function.
     /// @note Do not delete the returned object.
@@ -113,6 +117,10 @@ signals:
     /// Request handled by 3rd party ui logic.
     /// @note Maximum image size is 300x100 px.
     void UpdateProgressImageRequest(QImage image);
+
+    /// Requests handled by 3rd party ui logic.
+    /// Hides/shows the browser ui.
+    void SetBrowserVisibilityRequest(bool visible);
 
 private:
     /// Main cookie jar that can be shared across Tundra functionality.

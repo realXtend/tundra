@@ -95,6 +95,11 @@ void BrowserUiPlugin::OpenUrl(const QUrl &url, bool activateNewTab)
     emit OpenUrlRequest(url, activateNewTab);
 }
 
+void BrowserUiPlugin::SetBrowserVisibility(bool visible)
+{
+    emit SetBrowserVisibilityRequest(visible);
+}
+
 CookieJar *BrowserUiPlugin::MainCookieJar()
 {
     // Help out to properly use the cookies with reseting parent
