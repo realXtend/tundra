@@ -3,7 +3,6 @@
 #include "AssetInterestPlugin.h"
 
 #include "Framework.h"
-#include "ConfigAPI.h"
 #include "Profiler.h"
 #include "CoreDefines.h"
 #include "Application.h"
@@ -77,9 +76,7 @@ void AssetInterestPlugin::Initialize()
     if (framework_->IsHeadless())
         return;
 
-    framework_->RegisterDynamicObject("assetInterest", this);
-
-    ReadConfig();
+    framework_->RegisterDynamicObject("assetinterest", this);
 
     QMenuBar *menuBar = framework_->Ui()->MainWindow()->menuBar();
     if (menuBar)
@@ -122,8 +119,6 @@ void AssetInterestPlugin::Initialize()
 
 void AssetInterestPlugin::Unload()
 {
-    WriteConfig();
-
     if (widget_)
         delete widget_;
 }
@@ -428,45 +423,6 @@ void AssetInterestPlugin::Update(f64 frametime)
         ui_.loadMesh->setText("none");
 
     ELIFORP(AssetInterestPlugin_Update_Reload);
-}
-
-void AssetInterestPlugin::ReadConfig()
-{
-    ConfigData config(ConfigAPI::FILE_FRAMEWORK, "asset interest");
-    if (framework_->Config()->HasValue(config, "enabled"))
-        enabled = framework_->Config()->Get(config, "enabled").toBool();
-    if (framework_->Config()->HasValue(config, "process textures"))
-        processTextures = framework_->Config()->Get(config, "process textures").toBool();
-    if (framework_->Config()->HasValue(config, "process meshes"))
-        processMeshes = framework_->Config()->Get(config, "process meshes").toBool();
-    if (framework_->Config()->HasValue(config, "draw debug"))
-        drawDebug = framework_->Config()->Get(config, "draw debug").toBool();
-    bool ok = false;
-    if (framework_->Config()->HasValue(config, "interest radius"))
-    {
-        interestRadius = framework_->Config()->Get(config, "interest radius").toFloat(&ok);
-        if (!ok)
-            interestRadius = 100.0f;
-    }
-    if (framework_->Config()->HasValue(config, "load interval"))
-    {
-        waitAfterLoad = framework_->Config()->Get(config, "load interval").toInt(&ok);
-        if (!ok)
-            waitAfterLoad = 100;
-        if (waitAfterLoad < 1)
-            waitAfterLoad = 1;
-    }
-}
-
-void AssetInterestPlugin::WriteConfig()
-{
-    ConfigData config(ConfigAPI::FILE_FRAMEWORK, "asset interest");
-    framework_->Config()->Set(config, "enabled", enabled);
-    framework_->Config()->Set(config, "process textures", processTextures);
-    framework_->Config()->Set(config, "process meshes", processMeshes);
-    framework_->Config()->Set(config, "draw debug", drawDebug);
-    framework_->Config()->Get(config, "interest radius", interestRadius);
-    framework_->Config()->Get(config, "load interval", waitAfterLoad);
 }
 
 void AssetInterestPlugin::UiToggleSettings()

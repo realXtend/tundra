@@ -114,9 +114,6 @@ private slots:
     void TransferDone()                         { if (!loadWaitTimer_.isActive()) loadWaitTimer_.start(waitAfterLoad); }
     void TransferTimeout()                      { shouldLoad_ = true; }
 
-    void ReadConfig();
-    void WriteConfig();
-
     void UiSetEnabled(bool enabled);
 
     void OnSceneAdded(const QString &name);
