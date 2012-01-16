@@ -13,9 +13,16 @@ if (showUi)
 
     var label = new QLabel();
     label.indent = 10;
-    label.text = "This application stress-tests the object movement replication by constantly moving multiple entities.\n" +
-        "Edit EntityMoveTest.js to alter the number of boxes.\n" + 
-        "Remember to start server with \"--server\" command line parameter";
+    label.text = "This application stress-tests the object transform replication by constantly moving multiple entities.\n" +
+        "Edit EntityMoveTest.js to alter the number of boxes.\n" +
+        "Remember to start server with \"--server\" command line parameter\n\n" +
+        "Keyboard shortcuts:\n" +
+        "Ctrl + 1 : Toggle movement\n" +
+        "Ctrl + 2 : Toggle rotation\n" +
+        "Ctrl + 3 : Toggle scaling\n" +
+        "Ctrl + R : Reset to original state\n" +
+        "Ctrl + + : Increase speed\n" +
+        "Ctrl + - : Decrease speed\n";
     label.resize(750,350);
     label.setStyleSheet("QLabel {background-color: transparent; font-size: 16px; }");
 
