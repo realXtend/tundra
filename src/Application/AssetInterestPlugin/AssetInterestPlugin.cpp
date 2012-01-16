@@ -195,104 +195,108 @@ void AssetInterestPlugin::Update(f64 frametime)
         return;
     processTick_ = 0.0;
 
-    // Get needed data
-    Entity *cameraEnt = MainCamera();
-    if (!cameraEnt || !cameraEnt->ParentScene())
-        return;
-    EC_Camera *camera = dynamic_cast<EC_Camera*>(cameraEnt->GetComponent(EC_Camera::TypeNameStatic()).get());
-    EC_Placeable *placeable = dynamic_cast<EC_Placeable*>(cameraEnt->GetComponent(EC_Placeable::TypeNameStatic()).get());
-    if (!camera || !placeable)
-        return;
-    float3 cameraPos = placeable->WorldPosition();
-
-    // These maps will have all asset refs inside our radius.
+    // These lists will have all asset refs inside our radius.
     // With this we can skip unloading refs that are both 
     // in and outside of our interest radius!
     QSet<QString> matsInRadius;
     QSet<QString> meshesInRadius;
 
-    PROFILE(AssetInterestPlugin_Update_Iter_Scene);
-
-    // Iterate scene
-    Scene *scene = cameraEnt->ParentScene();
-    Scene::EntityMap::const_iterator iter = scene->begin();
-    Scene::EntityMap::const_iterator end = scene->end();
-    while (iter != end)
+    // Iterate scene if radius based search is enabled
+    if (enabled && interestRadius > 0.1f)
     {
-        Entity *ent = iter->second.get();
-        ++iter;
-        if (!ent)
-            continue;
+        // Get needed data
+        Entity *cameraEnt = MainCamera();
+        if (!cameraEnt || !cameraEnt->ParentScene())
+            return;
+        EC_Camera *camera = dynamic_cast<EC_Camera*>(cameraEnt->GetComponent(EC_Camera::TypeNameStatic()).get());
+        EC_Placeable *placeable = dynamic_cast<EC_Placeable*>(cameraEnt->GetComponent(EC_Placeable::TypeNameStatic()).get());
+        if (!camera || !placeable)
+            return;
+        float3 cameraPos = placeable->WorldPosition();
 
-        // We assume there is a single placeable and mesh for now
-        EC_Placeable *entP = dynamic_cast<EC_Placeable*>(ent->GetComponent(EC_Placeable::TypeNameStatic()).get());
-        EC_Mesh *entM = dynamic_cast<EC_Mesh*>(ent->GetComponent(EC_Mesh::TypeNameStatic()).get());
-        if (!entP || !entM)
-            continue;
+        PROFILE(AssetInterestPlugin_Update_Iter_Scene);
 
-        // Check if internal Ogre::Entity* has been created.
-        if (entM->HasMesh())
+        Scene *scene = cameraEnt->ParentScene();
+        Scene::EntityMap::const_iterator iter = scene->begin();
+        Scene::EntityMap::const_iterator end = scene->end();
+        while (iter != end)
         {
-            // Distance from the camera.
-            float distance = cameraPos.Distance(entP->WorldPosition());
+            Entity *ent = iter->second.get();
+            ++iter;
+            if (!ent)
+                continue;
 
-            // Materials and textures
-            if (processTextures)
-            {   
-                AssetReferenceList mats = entM->getmeshMaterial();
-                for (int iMat=0; iMat<mats.Size(); iMat++)
-                {
-                    QString ref = mats[iMat].ref;
-                    if (!ShouldProcess(ref))
-                        continue;
+            // We assume there is a single placeable and mesh for now
+            EC_Placeable *entP = dynamic_cast<EC_Placeable*>(ent->GetComponent(EC_Placeable::TypeNameStatic()).get());
+            EC_Mesh *entM = dynamic_cast<EC_Mesh*>(ent->GetComponent(EC_Mesh::TypeNameStatic()).get());
+            if (!entP || !entM)
+                continue;
 
-                    OgreMaterialAsset *matAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(ref).get());
-                    if (!matAsset)
-                        continue;
-                    
-                    if (distance > interestRadius)
-                    {
-                        if (matAsset->IsLoaded() && !matsPendingUnload_.contains(ref))
-                            matsPendingUnload_ << ref;
-                    }
-                    else
-                    {
-                        if (!matAsset->IsLoaded() && !matsPendingLoad_.contains(ref))
-                            matsPendingLoad_ << ref;
-                        if (!matsInRadius.contains(ref))
-                            matsInRadius << ref;
-                    }
-                }
-            }
-
-            // Meshes
-            if (processMeshes)
+            // Check if internal Ogre::Entity* has been created.
+            if (entM->HasMesh())
             {
-                QString ref = entM->getmeshRef().ref;
-                if (ShouldProcess(ref))
-                {
-                    OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(GetFramework()->Asset()->GetAsset(ref).get());
-                    if (meshAsset)
+                // Distance from the camera.
+                float distance = cameraPos.Distance(entP->WorldPosition());
+
+                // Materials and textures
+                if (processTextures)
+                {   
+                    AssetReferenceList mats = entM->getmeshMaterial();
+                    for (int iMat=0; iMat<mats.Size(); iMat++)
                     {
+                        QString ref = mats[iMat].ref;
+                        if (!ShouldProcess(ref))
+                            continue;
+
+                        OgreMaterialAsset *matAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(ref).get());
+                        if (!matAsset)
+                            continue;
+
                         if (distance > interestRadius)
                         {
-                            if (meshAsset->IsLoaded() && !meshPendingUnload_.contains(ref))
-                                meshPendingUnload_ << ref;
+                            if (matAsset->IsLoaded() && !matsPendingUnload_.contains(ref))
+                                matsPendingUnload_ << ref;
                         }
                         else
                         {
-                            if (!meshAsset->IsLoaded() && !meshPendingLoad_.contains(ref))
-                                meshPendingLoad_ << ref;
-                            if (!meshesInRadius.contains(ref))
-                                meshesInRadius << ref;
+                            if (!matAsset->IsLoaded() && !matsPendingLoad_.contains(ref))
+                                matsPendingLoad_ << ref;
+                            if (!matsInRadius.contains(ref))
+                                matsInRadius << ref;
+                        }
+                    }
+                }
+
+                // Meshes
+                if (processMeshes)
+                {
+                    QString ref = entM->getmeshRef().ref;
+                    if (ShouldProcess(ref))
+                    {
+                        OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(GetFramework()->Asset()->GetAsset(ref).get());
+                        if (meshAsset)
+                        {
+                            if (distance > interestRadius)
+                            {
+                                if (meshAsset->IsLoaded() && !meshPendingUnload_.contains(ref))
+                                    meshPendingUnload_ << ref;
+                            }
+                            else
+                            {
+                                if (!meshAsset->IsLoaded() && !meshPendingLoad_.contains(ref))
+                                    meshPendingLoad_ << ref;
+                                if (!meshesInRadius.contains(ref))
+                                    meshesInRadius << ref;
+                            }
                         }
                     }
                 }
             }
         }
+
+        ELIFORP(AssetInterestPlugin_Update_Iter_Scene);
     }
 
-    ELIFORP(AssetInterestPlugin_Update_Iter_Scene);
     PROFILE(AssetInterestPlugin_Update_Unload);
 
     // Process next material unload. If our interest radius has 
