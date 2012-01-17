@@ -141,7 +141,7 @@ Framework::Framework(int argc_, char** argv_) :
     /// @note ConsoleAPI is not yet initialized so this or start params wont go to the gui console.
     /// It would be rather nice to get version and start params to the gui console also as client may start without a cmd prompt
     std::cout << "* API version         : " << apiVersionInfo->GetFullIdentifier().toStdString() << std::endl;
-    std::cout << "* Application version : " << applicationVersionInfo->GetFullIdentifier().toStdString() << std::endl;
+    std::cout << "* Application version : " << Application::FullIdentifier().toStdString() << std::endl;
     if (HasCommandLineParameter("--version"))
     {
 #ifdef WINDOWS_APP

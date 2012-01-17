@@ -7,6 +7,7 @@
 #include "VersionInfo.h"
 #include "ConfigAPI.h"
 #include "LoggingFunctions.h"
+#include "Application.h"
 
 #include <QCloseEvent>
 #include <QDesktopWidget>
@@ -70,7 +71,7 @@ void UiMainWindow::LoadWindowSettingsFromFile()
     width += 15;
     width &= 0xfffffff0;
     
-    setWindowTitle(owner->ApplicationVersion()->GetFullIdentifier());
+    setWindowTitle(Application::FullIdentifier());
     
     width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));
