@@ -163,6 +163,9 @@ void EC_SkyX::Remove()
 
 void EC_SkyX::Create()
 {
+    if (framework->IsHeadless())
+        return;
+
     if (!ParentScene())
     {
         LogError("EC_SkyX: Aborting creation, parent scene is null!");
@@ -231,6 +234,7 @@ void EC_SkyX::Create()
 
         connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)), Qt::UniqueConnection);
         connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+        connect(w->GetRenderer(), SIGNAL(MainCameraChanged(Entity*)), SLOT(OnActiveCameraChanged(Entity*)), Qt::UniqueConnection);
 
         CreateSunlight();
     }
@@ -257,6 +261,23 @@ void EC_SkyX::CreateSunlight()
         impl->sunlight->setSpecularColour(0.f,0.f,0.f);
         impl->sunlight->setDirection(impl->controller->getSunDirection());
         impl->sunlight->setCastShadows(true);
+    }
+}
+
+void EC_SkyX::OnActiveCameraChanged(Entity *camEntity)
+{
+    if (!impl || !impl->skyX)
+        return;
+ 
+    if (impl->skyX->getCamera())
+        UnregisterCamera(impl->skyX->getCamera());
+
+    if (camEntity)
+    {
+        EC_Camera *cameraComp = camEntity->GetComponent<EC_Camera>().get();
+        Ogre::Camera *camera = cameraComp != 0 ? cameraComp->GetCamera() : 0;
+        if (camera)
+            RegisterCamera(camera);
     }
 }
 
@@ -506,16 +527,7 @@ void EC_SkyX::Update(float frameTime)
         return;
 
     PROFILE(EC_SkyX_Update);
-
-    // This seems like utter nonsense as impl->skyX->notifyCameraRender(camera); will work
-    // nicely without doing this manually but you'll get ugly log prints to console.
-    if (impl->skyX->getCamera() != camera)
-    {
-        if (impl->skyX->getCamera() != 0) 
-            UnregisterCamera(impl->skyX->getCamera());
-        RegisterCamera(camera);
-    }
-        
+       
     // Update our sunlight
     impl->currentSunPosition = camera->getDerivedPosition() + impl->controller->getSunDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
     if (impl->sunlight)
