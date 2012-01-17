@@ -14,12 +14,16 @@
 #include <QFileInfo>
 #include <QScopedPointer>
 
+#ifdef Q_WS_WIN
+#include "Windows.h"
+#else
+#include <sys/stat.h>
+#include <utime.h>
+#endif
+
 #include "MemoryLeakCheck.h"
 
 AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) : 
-#ifndef DISABLE_QNETWORKDISKCACHE
-    QNetworkDiskCache(0),
-#endif
     assetAPI(owner),
     cacheDirectory(GuaranteeTrailingSlash(QDir::fromNativeSeparators(assetCacheDirectory)))
 {
@@ -40,15 +44,6 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     if (!assetDir.exists("data"))
         assetDir.mkdir("data");
     assetDataDir = QDir(cacheDirectory + "data");
-    if (!assetDir.exists("metadata"))
-        assetDir.mkdir("metadata");
-
-#ifndef DISABLE_QNETWORKDISKCACHE
-    assetMetaDataDir = QDir(cacheDirectory + "metadata");
-
-    // Set for QNetworkDiskCache
-    setCacheDirectory(cacheDirectory);
-#endif
 
     // Check --clear-asset-cache start param
     if (owner->GetFramework()->HasCommandLineParameter("--clear-asset-cache"))
@@ -58,163 +53,23 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     }
 }
 
-#ifndef DISABLE_QNETWORKDISKCACHE
-QIODevice* AssetCache::data(const QUrl &url)
-{
-    QScopedPointer<QFile> dataFile;
-    QString absoluteDataFile = GetAbsoluteFilePath(false, url);
-    if (QFile::exists(absoluteDataFile))
-    {
-        dataFile.reset(new QFile(absoluteDataFile));
-        if (!dataFile->open(QIODevice::ReadWrite))
-        {
-            dataFile.reset();
-            return 0;
-        }
-    }
-    // It is the callers responsibility to delete this ptr as said by the Qt docs.
-    // This will most likely happen when QNetworkReply->deleteLater() is called, meaning next qt mainloop cycle from that call.
-    return dataFile.take();
-}
-
-void AssetCache::insert(QIODevice* device)
-{
-    // We own this ptr from prepare()
-    QHashIterator<QString, QFile*> it(preparedItems);
-    while(it.hasNext())
-    {
-        it.next();
-        if (it.value() == device)
-        {
-            preparedItems.remove(it.key());
-            break;
-        }
-    }
-    // Delete later, meaning next qt mainloop cycle, because the asset will 
-    // use this ptr to deserialize the content to and IAsset after this call return.
-    device->close();
-    device->deleteLater();
-}
-
-QIODevice* AssetCache::prepare(const QNetworkCacheMetaData &metaData)
-{
-    if (!WriteMetadata(GetAbsoluteFilePath(true, metaData.url()), metaData))
-        return 0;
-    QScopedPointer<QFile> dataFile(new QFile(GetAbsoluteFilePath(false, metaData.url())));
-    if (!dataFile->open(QIODevice::ReadWrite))
-    {
-        LogError("AssetCache: Failed not open data file QIODevice::ReadWrite mode for " + metaData.url().toString().toStdString());
-        dataFile.reset();
-        remove(metaData.url());
-        return 0;
-    }
-    if (dataFile->bytesAvailable() > 0)
-    {
-        if (!dataFile->resize(0))
-        {
-            LogError("AssetCache: Failed not reset existing data from cache entry. Skipping cache store for " + metaData.url().toString().toStdString());
-            dataFile->close();
-            dataFile.reset();
-            remove(metaData.url());
-            return 0;
-        }
-    }
-    // Take ownership of the ptr
-    QFile *dataPtr = dataFile.take();
-    preparedItems[metaData.url().toString()] = dataPtr;
-    return dataPtr;
-}
-
-bool AssetCache::remove(const QUrl &url)
-{
-    // remove() is also used for canceling insertion after prepare()
-    // we need to delete the QFile* ptr also in these cases
-    // note: this is not a common operation
-    QHashIterator<QString, QFile*> it(preparedItems);
-    while(it.hasNext())
-    {
-        it.next();
-        if (it.key() == url.toString())
-        {
-            delete it.value();
-            preparedItems.remove(it.key());
-            break;
-        }
-    }
-
-    // Remove the actual files related to this url
-    bool success = true;
-    QString absoluteMetaDataFile = GetAbsoluteFilePath(true,url);
-    if (QFile::exists(absoluteMetaDataFile))
-        success = QFile::remove(absoluteMetaDataFile);
-    if (!success)
-        return false;
-    QString absoluteDataFile = GetAbsoluteFilePath(false, url);
-    if (QFile::exists(absoluteDataFile))
-        success = QFile::remove(absoluteDataFile);
-    return success;
-}
-
-QNetworkCacheMetaData AssetCache::metaData(const QUrl &url)
-{
-    QNetworkCacheMetaData resultMetaData;
-    QString absoluteMetaDataFile = GetAbsoluteFilePath(true, url);
-    if (QFile::exists(absoluteMetaDataFile))
-    {
-        QFile metaDataFile(absoluteMetaDataFile);
-        if (metaDataFile.open(QIODevice::ReadOnly))
-        {
-            QDataStream metaDataStream(&metaDataFile);
-            metaDataStream >> resultMetaData;
-            metaDataFile.close();
-        }
-    }
-    return resultMetaData;
-}
-
-void AssetCache::updateMetaData(const QNetworkCacheMetaData &metaData)
-{
-    const QNetworkCacheMetaData oldMetaData = this->metaData(metaData.url());
-    if (oldMetaData.isValid())
-        if (oldMetaData != metaData)
-            WriteMetadata(GetAbsoluteFilePath(true, metaData.url()), metaData);
-}
-
-void AssetCache::clear()
-{
-    ClearAssetCache();
-}
-
-qint64 AssetCache::expire()
-{
-    // Skip keeping cache at some static size, unlimited for now.
-    return maximumCacheSize() / 2;
-}
-#endif
-
 QString AssetCache::FindInCache(const QString &assetRef)
 {
-    // Deny http:// and https:// asset references to be gotten from cache
-    // as the QAccessManager will request it from the overrides above later!
-    // You can get the path if you ask directly as a url.
-    if (assetRef.startsWith("http://") || assetRef.startsWith("https://")) ///\todo Remove this. The Asset Cache needs to be protocol agnostic. -jj.
-        return "";
-
-    QString absolutePath = assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(assetRef);
+    QString absolutePath = GetDiskSourceByRef(assetRef);
     if (QFile::exists(absolutePath))
         return absolutePath;
-    return "";
+    else // The file is not in cache, return an empty string to denote that.
+        return "";
 }
 
 QString AssetCache::GetDiskSourceByRef(const QString &assetRef)
 {
-    QString absolutePath = assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(assetRef);
-    if (QFile::exists(absolutePath))
-        return absolutePath;
-    return "";
+    // Return the path where the given asset ref would be stored, if it was saved in the cache
+    // (regardless of whether it now exists in the cache).
+    return assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(assetRef);
 }
 
-QString AssetCache::GetCacheDirectory() const
+QString AssetCache::CacheDirectory() const
 {
     return GuaranteeTrailingSlash(assetDataDir.absolutePath());
 }
@@ -228,90 +83,157 @@ QString AssetCache::StoreAsset(AssetPtr asset)
 
 QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, const QString &assetName)
 {
-    QString absolutePath = GetAbsoluteDataFilePath(assetName);
-#ifdef DISABLE_QNETWORKDISKCACHE // Don't store duplicate assets, but only if not using QNetworkDiskCache.
-    if (QFile::exists(absolutePath))
-        return absolutePath;
-#endif
+    QString absolutePath = GetDiskSourceByRef(assetName);
     bool success = SaveAssetFromMemoryToFile(data, numBytes, absolutePath.toStdString().c_str());
     if (success)
         return absolutePath;
     return "";
 }
 
-void AssetCache::DeleteAsset(const QString &assetRef)
+QDateTime AssetCache::LastModified(const QString &assetRef)
 {
-    DeleteAsset(QUrl(assetRef, QUrl::TolerantMode));
+    QString absolutePath = FindInCache(assetRef);
+    if (absolutePath.isEmpty())
+        return QDateTime();
+
+#ifdef Q_WS_WIN
+    HANDLE fileHandle = (HANDLE)OpenFileHandle(absolutePath);
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        LogError("AssetCache: Failed to open cache file to read last modified time: " + assetRef);
+        return QDateTime();
+    }
+
+    // Get last write time.
+    FILETIME fileTime;
+    BOOL success = GetFileTime(fileHandle, 0, 0, &fileTime); // http://msdn.microsoft.com/en-us/library/windows/desktop/ms724320(v=VS.85).aspx
+    CloseHandle(fileHandle);
+    if (!success)
+    {
+        LogError("AssetCache: Failed to read cache file last modified time: " + assetRef);
+        return QDateTime();
+    }
+
+    // Convert to UTC.
+    SYSTEMTIME sysTime;
+    if (!FileTimeToSystemTime(&fileTime, &sysTime)) // http://msdn.microsoft.com/en-us/library/windows/desktop/ms724280(v=VS.85).aspx
+    {
+        LogError("Win32 FileTimeToSystemTime failed for asset ref " + assetRef);
+        return QDateTime();
+    }
+
+    // Ignore msec
+    QDateTime dateTime;
+    dateTime.setDate(QDate((int)sysTime.wYear, (int)sysTime.wMonth, (int)sysTime.wDay));
+    dateTime.setTime(QTime((int)sysTime.wHour, (int)sysTime.wMinute, (int)sysTime.wSecond, 0)); 
+    return dateTime;
+#else
+    QDateTime dateTime;
+    QString nativePath = QDir::toNativeSeparators(absolutePath);
+    struct stat fileStats;
+    if (stat(nativePath.toStdString().c_str(), &fileStats) == 0)
+    {
+        qint64 msecFromEpoch = (qint64)fileStats.st_mtime * 1000;
+        dateTime.setMSecsSinceEpoch(msecFromEpoch);
+    }
+    else
+        LogError("AssetCache: Failed to read cache file last modified time: " + assetRef);
+    return dateTime;
+#endif
 }
 
-void AssetCache::DeleteAsset(const QUrl &assetUrl)
+bool AssetCache::SetLastModified(const QString &assetRef, const QDateTime &dateTime)
 {
-#ifndef DISABLE_QNETWORKDISKCACHE
-    if (!remove(assetUrl))
-        LogWarning("AssetCache: AssetCache::DeleteAsset Failed to delete asset " + assetUrl.toString().toStdString());
+    if (!dateTime.isValid())
+    {
+        LogError("SetLastModified() DateTime is invalid: " + assetRef);
+        return false;
+    }
+
+    QString absolutePath = FindInCache(assetRef);
+    if (absolutePath.isEmpty())
+        return false;
+
+    QDate date = dateTime.date();
+    QTime time = dateTime.time();
+
+#ifdef Q_WS_WIN
+    HANDLE fileHandle = (HANDLE)OpenFileHandle(absolutePath);
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        LogError("AssetCache: Failed to open cache file to update last modified time: " + assetRef);
+        return false;
+    }
+
+    // Notes: For SYSTEMTIME Sunday is 0 and ignore msec.
+    SYSTEMTIME sysTime;
+    sysTime.wDay = (WORD)date.day();
+    sysTime.wDayOfWeek = (WORD)date.dayOfWeek();
+    if (sysTime.wDayOfWeek == 7)
+        sysTime.wDayOfWeek = 0;
+    sysTime.wMonth = (WORD)date.month();
+    sysTime.wYear = (WORD)date.year();
+    sysTime.wHour = (WORD)time.hour();
+    sysTime.wMinute = (WORD)time.minute();
+    sysTime.wSecond = (WORD)time.second();
+    sysTime.wMilliseconds = 0; 
+
+    // Set last write time
+    FILETIME fileTime;
+    BOOL success = SystemTimeToFileTime(&sysTime, &fileTime);
+    if (success)
+        success = SetFileTime(fileHandle, 0, 0, &fileTime);
+    CloseHandle(fileHandle);
+    if (!success)
+    {
+        LogError("AssetCache: Failed to update cache file last modified time: " + assetRef);
+        return false;
+    }
+    return true;
+#else
+    QString nativePath = QDir::toNativeSeparators(absolutePath);
+    utimbuf modTime;
+    modTime.actime = (__time_t)(dateTime.toMSecsSinceEpoch() / 1000);
+    modTime.modtime = (__time_t)(dateTime.toMSecsSinceEpoch() / 1000);
+    if (utime(nativePath.toStdString().c_str(), &modTime) == -1)
+    {
+        LogError("AssetCache: Failed to read cache file last modified time: " + assetRef);
+        return false;
+    }
+    else
+        return true;
 #endif
+}
+
+#ifdef Q_WS_WIN
+void *AssetCache::OpenFileHandle(const QString &absolutePath)
+{
+    QString nativePath = QDir::toNativeSeparators(absolutePath);
+    QByteArray fileBA = nativePath.toLocal8Bit();
+    WCHAR szFilePath[MAX_PATH];
+    MultiByteToWideChar(CP_ACP, 0, fileBA.data(), -1, szFilePath, NUMELEMS(szFilePath));
+    return CreateFile(szFilePath, GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+}
+#endif
+
+void AssetCache::DeleteAsset(const QString &assetRef)
+{
+    QString absolutePath = GetDiskSourceByRef(assetRef);
+    if (QFile::exists(absolutePath))
+        QFile::remove(absolutePath);
 }
 
 void AssetCache::ClearAssetCache()
 {
-    ClearDirectory(assetDataDir.absolutePath());
-#ifndef DISABLE_QNETWORKDISKCACHE
-    ClearDirectory(assetMetaDataDir.absolutePath());
-#endif
-}
-
-#ifndef DISABLE_QNETWORKDISKCACHE
-bool AssetCache::WriteMetadata(const QString &filePath, const QNetworkCacheMetaData &metaData)
-{
-    QFile metaDataFile(filePath);
-    if (!metaDataFile.open(QIODevice::WriteOnly))
-    {
-        LogError("AssetCache::WriteMetadata Could not open metadata file: " + filePath);
-        return false;
-    }
-    if (!metaDataFile.resize(0))
-    {
-        LogError("AssetCache::WriteMetadata Could not reset metadata file: " + filePath);
-        return false;
-    }
-
-    QDataStream metaDataStream(&metaDataFile);
-    metaDataStream << metaData;
-    metaDataFile.close();
-    return true;
-}
-#endif
-
-QString AssetCache::GetAbsoluteFilePath(bool isMetaData, const QUrl &url)
-{
-    QString subDir = isMetaData ? "metadata" : "data";
-    QDir assetDir(cacheDirectory + subDir);
-    QString absolutePath = assetDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(url.toString());
-    if (isMetaData)
-        absolutePath.append(".metadata");
-    return absolutePath;
-}
-
-QString AssetCache::GetAbsoluteDataFilePath(const QString &filename)
-{
-    return assetDataDir.absolutePath() + "/" + AssetAPI::SanitateAssetRef(filename);
-}
-
-void AssetCache::ClearDirectory(const QString &absoluteDirPath)
-{
-    QDir targetDir(absoluteDirPath);
-    if (!targetDir.exists())
-    {
-        LogWarning("AssetCache::ClearDirectory called with non existing directory path.");
+    if (!assetDataDir.exists())
         return;
-    }
-    QFileInfoList entries = targetDir.entryInfoList(QDir::Files|QDir::NoSymLinks|QDir::NoDotAndDotDot);
+    QFileInfoList entries = assetDataDir.entryInfoList(QDir::Files|QDir::NoSymLinks|QDir::NoDotAndDotDot);
     foreach(QFileInfo entry, entries)
     {
         if (entry.isFile())
         {
-            if (!targetDir.remove(entry.fileName()))
-                LogWarning("AssetCache::ClearDirectory could not remove file " + entry.absoluteFilePath());
+            if (!assetDataDir.remove(entry.fileName()))
+                LogWarning("AssetCache::ClearAssetCache could not remove file " + entry.absoluteFilePath());
         }
     }
 }

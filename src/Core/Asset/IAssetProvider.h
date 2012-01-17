@@ -30,9 +30,9 @@ public:
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType) = 0;
 
     /// Performs time-based update of asset provider, to for example handle timeouts.
-    /** The system will call this periodically for all registered asset providers, so
-        it does not need to be called manually.
-        @param frametime Seconds since last frame */
+    /// The system will call this periodically for all registered asset providers, so
+    /// it does not need to be called manually.
+    /// @param frametime Seconds since last frame
     virtual void Update(f64 frametime) {}
 
     /// Issues an asset deletion request to the asset storage and provider this asset resides in.
