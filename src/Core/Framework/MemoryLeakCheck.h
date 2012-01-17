@@ -1,5 +1,5 @@
 /** @file MemoryLeakCheck.h
-    For conditions of distribution and use, see copyright notice in license.txt
+    For conditions of distribution and use, see copyright notice in LICENSE
 
     @brief Debug functionality for tracking memory leaks on the Win32 platform.
 

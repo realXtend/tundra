@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   AssetsWindow.cpp
  *  @brief  The main UI for managing asset storages and assets.
@@ -208,7 +208,7 @@ void AssetsWindow::Initialize()
     // Append asset type if we're viewing only assets of specific type.
     if (!assetType.isEmpty())
         setWindowTitle(windowTitle() + ": " + assetType);
-    resize(325, 400);
+    resize(300, 400);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);

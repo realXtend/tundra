@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_PlanarMirror.h
  *  @brief  EC_PlanarMirror enables one to create planar mirrors.

@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   SceneStructureWindow.cpp
  *  @brief  Window with tree view of contents of scene.
@@ -40,7 +40,6 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     layout->setContentsMargins(5, 5, 5, 5);
     setLayout(layout);
     setWindowTitle(tr("Scene Structure"));
-    setObjectName("SceneStructureWidget");
     resize(325, 400);
 
     // Create child widgets

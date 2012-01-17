@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -134,10 +134,6 @@ private:
     /// Frees all known scene and the scene interact object.
     /** Called by Framework during application shutdown. */
     void Reset();
-
-    /// Initialize the scene interact object. Needs framework->Input() to be valid.
-    ///\todo Remove when SceneInteract is moved away from SceneAPI.
-    void Initialise();
 
     ComponentFactoryPtr GetFactory(const QString &typeName) const;
     ComponentFactoryPtr GetFactory(u32 typeId) const;

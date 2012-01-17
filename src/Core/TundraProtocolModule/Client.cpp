@@ -1,30 +1,27 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "Client.h"
 #include "TundraLogicModule.h"
-
 #include "KristalliProtocolModule.h"
-#include "CoreStringUtils.h"
 #include "SyncManager.h"
 #include "TundraMessages.h"
-
-#include "VersionInfo.h"
-#include "SceneAPI.h"
-#include "Scene.h"
-
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
 
 #include "LoggingFunctions.h"
-
-#include "MemoryLeakCheck.h"
+#include "CoreStringUtils.h"
+#include "SceneAPI.h"
+#include "Scene.h"
+#include "Application.h"
 
 #include <QDomElement>
+
+#include "MemoryLeakCheck.h"
 
 using namespace kNet;
 
@@ -144,9 +141,9 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     SetLoginProperty("protocol", p);
     SetLoginProperty("address", address);
     SetLoginProperty("port", QString::number(port));
-    SetLoginProperty("client-version", framework_->ApplicationVersion()->GetVersion());
-    SetLoginProperty("client-name", framework_->ApplicationVersion()->GetName());
-    SetLoginProperty("client-organization", framework_->ApplicationVersion()->GetOrganization());
+    SetLoginProperty("client-version", Application::Version());
+    SetLoginProperty("client-name", Application::ApplicationName());
+    SetLoginProperty("client-organization", Application::OrganizationName());
 
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 

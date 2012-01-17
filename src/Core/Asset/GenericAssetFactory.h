@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -22,7 +22,7 @@ public:
 
     virtual QString Type() const { return assetType; }
 
-    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) { return AssetPtr(new AssetType(owner, Type(), name)); }
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const QString &name) { return AssetPtr(new AssetType(owner, Type(), name)); }
 
 private:
     QString assetType;

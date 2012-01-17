@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -377,7 +377,7 @@ void EC_RigidBody::CreateBody()
     body_ = new btRigidBody(m, this, shape_, localInertia);
     body_->setUserPointer(this);
     body_->setCollisionFlags(collisionFlags);
-    world_->GetWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
+    world_->BulletWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
     body_->activate();
 }
 
@@ -396,8 +396,8 @@ void EC_RigidBody::ReaddBody()
     body_->setMassProps(m, localInertia);
     body_->setCollisionFlags(collisionFlags);
     
-    world_->GetWorld()->removeRigidBody(body_);
-    world_->GetWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
+    world_->BulletWorld()->removeRigidBody(body_);
+    world_->BulletWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
     body_->clearForces();
     body_->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
     body_->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
@@ -408,7 +408,7 @@ void EC_RigidBody::RemoveBody()
 {
     if ((body_) && (world_))
     {
-        world_->GetWorld()->removeRigidBody(body_);
+        world_->BulletWorld()->removeRigidBody(body_);
         delete body_;
         body_ = 0;
     }

@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_PlanarMirror.cpp
  *  @brief  EC_PlanarMirror enables one to create planar mirrors.
@@ -51,7 +51,7 @@ EC_PlanarMirror::~EC_PlanarMirror()
 {
     if(!renderer_)
         return;
-    Ogre::SceneManager *mngr = renderer_->GetActiveOgreWorld()->GetSceneManager();
+    Ogre::SceneManager *mngr = renderer_->GetActiveOgreWorld()->OgreSceneManager();
     tex_unit_state_->setProjectiveTexturing(false);
     mngr->destroyEntity(mirror_plane_entity_);
     SAFE_DELETE(mirror_plane_);
@@ -183,7 +183,7 @@ void EC_PlanarMirror::CreatePlane()
     mirror_plane_->normal = Ogre::Vector3::UNIT_Y;
     Ogre::MeshManager::getSingleton().createPlane("mirror_plane_mesh_" + Ogre::StringConverter::toString(mirror_cam_num_),
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, *mirror_plane_, 80, 80, 1, 1, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
-    mirror_plane_entity_ = renderer_->GetActiveOgreWorld()->GetSceneManager()->createEntity("mirror_plane_entity" + Ogre::StringConverter::toString(mirror_cam_num_),
+    mirror_plane_entity_ = renderer_->GetActiveOgreWorld()->OgreSceneManager()->createEntity("mirror_plane_entity" + Ogre::StringConverter::toString(mirror_cam_num_),
         "mirror_plane_mesh_" + Ogre::StringConverter::toString(mirror_cam_num_));
 
     ///for now

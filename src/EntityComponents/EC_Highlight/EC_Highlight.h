@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_Highlight.h
  *  @brief  EC_Highlight enables visual highlighting effect for of scene entity.

@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   FuntionInvoker.cpp
  *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality with more user-friendly API.

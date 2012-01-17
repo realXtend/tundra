@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 // Author: Nathan Letwory <nathan@letworyinteractive.com>
 
 #include "StableHeaders.h"
@@ -21,7 +21,7 @@ EC_SelectionBox::EC_SelectionBox(Scene* scene) :
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     selectionBox_ = sceneMgr->createManualObject(world->GetUniqueObjectName("EC_SelectionBox"));
     selectionBox_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY);
     selectionBox_->setUseIdentityProjection(true);
@@ -37,7 +37,7 @@ EC_SelectionBox::~EC_SelectionBox()
         OgreWorldPtr world = world_.lock();
         if (world)
         {
-            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
             sceneMgr->destroyManualObject(selectionBox_);
             selectionBox_ = 0;
         }
@@ -49,7 +49,7 @@ void EC_SelectionBox::SetBoundingBox(QRect &view)
     if (world_.expired())
         return;
     OgreWorldPtr world = world_.lock();
-    Renderer* renderer = world->GetRenderer();
+    Renderer* renderer = world->Renderer();
     Ogre::RenderWindow *renderWindow = renderer->GetCurrentRenderWindow();
     float w= (float)renderWindow->getWidth();
     float h= (float)renderWindow->getHeight();

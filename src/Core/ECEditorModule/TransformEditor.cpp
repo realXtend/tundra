@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   TransformEditor.cpp
  *  @brief  Controls Transform attributes for groups of entities.
@@ -13,6 +13,7 @@
 #include "Entity.h"
 #include "EC_Camera.h"
 #include "EC_Light.h"
+#include "EC_Sound.h"
 #include "EC_Placeable.h"
 #include "FrameAPI.h"
 #include "InputAPI.h"
@@ -23,13 +24,15 @@
 #include "EC_TransformGizmo.h"
 #endif
 #include "Profiler.h"
+#include "ConfigAPI.h"
 
 #include "Application.h"
 #include <QUiLoader>
 
+static const char *cTransformEditorWindowPos = "transform editor window pos";
+
 TransformEditor::TransformEditor(const ScenePtr &scene) :
     editorSettings(0),
-    commandingWidget(0),
     localAxes(false)
 {
     if (scene)
@@ -172,7 +175,6 @@ void TransformEditor::FocusGizmoPivotToAabbCenter()
         if (tg)
         {
             tg->SetPosition(pivotPos);
-            
             if (useLocalAxisRotation)
                 tg->SetOrientation(pivotRot);
             else
@@ -251,9 +253,7 @@ void TransformEditor::RotateTargets(const Quat &delta)
             Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
             EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
             if (parentPlaceable)
-            {
                 t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
-            }
             else
                 t.FromFloat3x4(rotation * t.ToFloat3x4());
             
@@ -348,30 +348,13 @@ void TransformEditor::CreateGizmo()
     QComboBox* axisCombo = editorSettings->findChild<QComboBox*>("axisComboBox");
     if (axisCombo)
         connect(axisCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoAxisSelected(int)));
-    
+
+    // Load position from config
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "eceditor", cTransformEditorWindowPos);
+    QPoint pos = s->GetFramework()->Config()->Get(configData).toPoint();
+    UiMainWindow::EnsurePositionWithinDesktop(editorSettings, pos);
     editorSettings->setWindowFlags(Qt::Tool);
     editorSettings->show();
-
-    // Move widget to not be on top of commanding widget if one is set
-    if (commandingWidget)
-    {
-        QSize desktopSize(s->GetFramework()->Ui()->MainWindow()->DesktopWidth(), s->GetFramework()->Ui()->MainWindow()->DesktopHeight());
-        QRect parentGeom = commandingWidget->frameGeometry();
-        QRect myGeom = editorSettings->frameGeometry();
-
-        // Check if we should position the widget on top or below the commanding widget
-        editorSettings->resize(commandingWidget->width(), editorSettings->height());
-        if (parentGeom.bottomLeft().y() + myGeom.height() < desktopSize.height())
-            editorSettings->move(parentGeom.bottomLeft());
-        else if (parentGeom.topLeft().y() - myGeom.height() > 0)
-            editorSettings->move(parentGeom.topLeft().x(), parentGeom.topLeft().y() - myGeom.height());
-        // Check if we have room on the right side of the commanding widget.
-        else if (parentGeom.topRight().x() + myGeom.width() < desktopSize.width())
-            editorSettings->move(parentGeom.topRight());
-        // Last resort, move us to be on top but at the bottom.
-        else
-            editorSettings->move(parentGeom.bottomLeft().x(), parentGeom.bottomLeft().y() - myGeom.height());
-    }
 #endif
 }
 
@@ -380,7 +363,12 @@ void TransformEditor::DeleteGizmo()
     ScenePtr s = scene.lock();
     if (s && gizmo)
         s->RemoveEntity(gizmo->Id());
-    
+
+    if (editorSettings) // Save position to config.
+    {
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "eceditor", cTransformEditorWindowPos);
+        scene.lock()->GetFramework()->Config()->Set(configData, cTransformEditorWindowPos, editorSettings->pos());
+    }
     SAFE_DELETE(editorSettings);
 }
 
@@ -399,9 +387,9 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     }
 
     InputAPI *inputApi = scn->GetFramework()->Input();
-    const QKeySequence &translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
-    const QKeySequence &rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
-    const QKeySequence &scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
+    const QKeySequence translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
+    const QKeySequence rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
+    const QKeySequence scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
     QComboBox* modeCombo = editorSettings ? editorSettings->findChild<QComboBox*>("modeComboBox") : 0;
     if (modeCombo)
     {
@@ -502,7 +490,7 @@ void TransformEditor::DrawDebug(OgreWorld* world, Entity* entity)
             // Draw without depth test to ensure the axes do not get lost within a mesh for example
             world->DebugDrawAxes(float3x4::FromTRS(placeable->WorldPosition(), placeable->WorldOrientation(), placeable->WorldScale()), false);
         }
-        if (type == EC_Light::TypeIdStatic())
+        else if (type == EC_Light::TypeIdStatic())
         {
             EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
             if (placeable)
@@ -512,16 +500,18 @@ void TransformEditor::DrawDebug(OgreWorld* world, Entity* entity)
                 world->DebugDrawLight(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), light->type.Get(), light->range.Get(), light->outerAngle.Get(), color.r, color.g, color.b);
             }
         }
-        if (type == EC_Camera::TypeIdStatic())
+        else if (type == EC_Camera::TypeIdStatic())
         {
             EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
             if (placeable)
                 world->DebugDrawCamera(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), 1.0f, 1.0f, 1.0f, 1.0f);
         }
+        else if (type == EC_Sound::TypeIdStatic())
+        {
+            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
+            EC_Sound *soundSource = entity->GetComponent<EC_Sound>().get();
+            if (placeable && soundSource)
+                world->DebugDrawSoundSource(placeable->WorldPosition(), soundSource->soundInnerRadius.Get(), soundSource->soundOuterRadius.Get(), 1.0f, 1.0f, 1.0f, 1.0f);
+        }
     }
-}
-
-void TransformEditor::SetCommandingWidget(QWidget *widget)
-{
-    commandingWidget = widget;
 }

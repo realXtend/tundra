@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -68,7 +68,7 @@ EC_Camera::~EC_Camera()
 
     if (query_)
     {
-        Ogre::SceneManager *sceneMgr = world ? world->GetSceneManager() : 0;
+        Ogre::SceneManager *sceneMgr = world ? world->OgreSceneManager() : 0;
         if (sceneMgr)
             sceneMgr->destroyQuery(query_);
         else
@@ -177,7 +177,7 @@ void EC_Camera::SetActive()
         return;
     }
 
-    world_.lock()->GetRenderer()->SetMainCamera(ParentEntity());
+    world_.lock()->Renderer()->SetMainCamera(ParentEntity());
 }
 
 float EC_Camera::NearClip() const
@@ -234,7 +234,7 @@ float EC_Camera::AspectRatio() const
     }
 
     OgreWorldPtr world = world_.lock();
-    Ogre::Viewport *viewport = world->GetRenderer()->MainViewport();
+    Ogre::Viewport *viewport = world->Renderer()->MainViewport();
     if (viewport)
         return (float)viewport->getActualWidth() / viewport->getActualHeight();
     LogWarning("EC_Camera::AspectRatio(): No viewport or aspectRatio attribute set! Don't have an aspect ratio for the camera!");
@@ -250,7 +250,7 @@ bool EC_Camera::IsActive() const
     if (!ParentEntity())
         return false;
 
-    return world_.lock()->GetRenderer()->MainCamera() == ParentEntity();
+    return world_.lock()->Renderer()->MainCamera() == ParentEntity();
 }
 
 void EC_Camera::DetachCamera()
@@ -284,12 +284,12 @@ void EC_Camera::DestroyOgreCamera()
 
     OgreWorldPtr world = world_.lock();
 
-    Renderer *renderer = world ? world->GetRenderer() : 0;
+    Renderer *renderer = world ? world->Renderer() : 0;
     // If this camera was the current camera, set the current camera to 0.
     if (renderer && renderer->MainOgreCamera() == camera_)
         renderer->SetMainCamera(0);
 
-    Ogre::SceneManager *sceneMgr = world ? world->GetSceneManager() : 0;
+    Ogre::SceneManager *sceneMgr = world ? world->OgreSceneManager() : 0;
     if (!sceneMgr)
     {
         LogError("EC_Camera: Cannot delete Ogre camera! Ogre SceneManager was null already!");
@@ -329,7 +329,7 @@ void EC_Camera::UpdateSignals()
     if (!camera_)
     {
         OgreWorldPtr world = world_.lock();
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         
         camera_ = sceneMgr->createCamera(world->GetUniqueObjectName("EC_Camera"));
         
@@ -517,7 +517,8 @@ void EC_Camera::QueryVisibleEntities()
         Entity *entity = 0;
         try
         {
-            entity = Ogre::any_cast<Entity*>(any);
+            IComponent *component = Ogre::any_cast<IComponent*>(any);
+            entity = component ? component->ParentEntity() : 0;
         }
         catch(Ogre::InvalidParametersException &/*e*/)
         {
@@ -594,7 +595,7 @@ QImage EC_Camera::ToQImage(bool renderUi)
         return QImage();
     }
     OgreWorldPtr world = world_.lock();
-    if (!world.get() || !world.get()->GetRenderer())
+    if (!world.get() || !world.get()->Renderer())
     {
         LogError("EC_Camera::ToQImage() OgreWorld/Renderer null, cannot proceed!");
         return QImage();
@@ -605,7 +606,7 @@ QImage EC_Camera::ToQImage(bool renderUi)
         return QImage();
     }
 
-    QSize size(world.get()->GetRenderer()->WindowWidth(), world.get()->GetRenderer()->WindowHeight());
+    QSize size(world.get()->Renderer()->WindowWidth(), world.get()->Renderer()->WindowHeight());
     if (!UpdateRenderTexture(size, renderUi))
         return QImage();
 
@@ -624,7 +625,7 @@ Ogre::Image EC_Camera::ToOgreImage(bool renderUi)
         return Ogre::Image();
     }
     OgreWorldPtr world = world_.lock();
-    if (!world.get() || !world.get()->GetRenderer())
+    if (!world.get() || !world.get()->Renderer())
     {
         LogError("EC_Camera::ToOgreImage() OgreWorld/Renderer null, cannot proceed!");
         return Ogre::Image();
@@ -635,7 +636,7 @@ Ogre::Image EC_Camera::ToOgreImage(bool renderUi)
         return Ogre::Image();
     }
 
-    QSize size(world.get()->GetRenderer()->WindowWidth(), world.get()->GetRenderer()->WindowHeight());
+    QSize size(world.get()->Renderer()->WindowWidth(), world.get()->Renderer()->WindowHeight());
     if (!UpdateRenderTexture(size, renderUi))
         return Ogre::Image();
 
@@ -653,7 +654,7 @@ bool EC_Camera::UpdateRenderTexture(QSize textureSize, bool renderUi)
     if (!ViewEnabled() || !framework->Ui()->MainWindow())
         return false;
     OgreWorldPtr world = world_.lock();
-    if (!world.get() || !world->GetRenderer())
+    if (!world.get() || !world->Renderer())
         return false;
     if (!GetCamera())
         return false;
@@ -662,7 +663,7 @@ bool EC_Camera::UpdateRenderTexture(QSize textureSize, bool renderUi)
     {
         // First run init the texture name.
         if (renderTextureName_.empty())
-            renderTextureName_ =  world->GetRenderer()->GetUniqueObjectName("EC_Camera_RenderTexture_");
+            renderTextureName_ =  world->Renderer()->GetUniqueObjectName("EC_Camera_RenderTexture_");
 
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderTextureName_);
         if (texture.isNull())
@@ -714,11 +715,12 @@ void EC_Camera::SetFarClipDistance(float distance)
     if (world_.expired())
         return;
 
+    ///@todo Uncomment when SkyX 0.2.1 is used, http://www.ogre3d.org/forums/viewtopic.php?f=11&t=67137&sid=df2bdcd4352cea57057b7861f563f692&start=100#p445143
     // Commented out as it can cause SkyX missing bug, depending on the view distance.
     /*
     // Enforce that farclip doesn't go past renderer's view distance
     OgreWorldPtr world = world_.lock();
-    Renderer* renderer = world->GetRenderer();
+    Renderer* renderer = world->Renderer();
     if (farclip > renderer->ViewDistance())
         farclip = renderer->ViewDistance();
     */

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -114,7 +114,7 @@ public slots:
 
     /// Returns the system Renderer object.
     /** @note Please don't use this function. It exists for dependency inversion purposes only.
-        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
+        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->Renderer(); to directly obtain the renderer,
         as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation. */
     IRenderer *Renderer() const;
 

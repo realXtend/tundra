@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -35,7 +35,7 @@ namespace CAVEStereo
         if (!renderer_.expired() && camera_)
         {
             Ogre::Root::getSingleton().detachRenderTarget(render_window_->getRenderWindow()->getName());
-            renderer_.lock()->GetActiveOgreWorld()->GetSceneManager()->destroyCamera(camera_);
+            renderer_.lock()->GetActiveOgreWorld()->OgreSceneManager()->destroyCamera(camera_);
         }
         SAFE_DELETE(render_window_);
     }
@@ -132,7 +132,7 @@ namespace CAVEStereo
         render_window_ = new ExternalRenderWindow();
         render_window_->CreateRenderWindow(std_name, window_width, window_height,0,0,false);
         render_window_->setGeometry(20,20,window_width,window_height);
-        camera_ = renderer_.lock()->GetActiveOgreWorld()->GetSceneManager()->createCamera(std_name + "_camera");
+        camera_ = renderer_.lock()->GetActiveOgreWorld()->OgreSceneManager()->createCamera(std_name + "_camera");
         render_window_->getRenderWindow()->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
         camera_->getViewport()->setShadowsEnabled(true);
@@ -185,7 +185,7 @@ namespace CAVEStereo
                 break;
         }
 
-        camera_ = renderer_.lock()->GetActiveOgreWorld()->GetSceneManager()->createCamera(std_name + "_camera");
+        camera_ = renderer_.lock()->GetActiveOgreWorld()->OgreSceneManager()->createCamera(std_name + "_camera");
         render_window_->getRenderWindow()->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
         camera_->getViewport()->setShadowsEnabled(true);

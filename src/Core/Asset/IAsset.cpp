@@ -137,7 +137,7 @@ bool IAsset::LoadFromFile(QString filename)
 {
     filename = filename.trimmed(); ///\todo Sanitate.
     std::vector<u8> fileData;
-    bool success = LoadFileToVector(filename.toStdString().c_str(), fileData);
+    bool success = LoadFileToVector(filename, fileData);
     if (!success)
     {
         LogDebug("LoadFromFile failed for file \"" + filename + "\", could not read file!");

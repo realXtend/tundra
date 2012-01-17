@@ -14,25 +14,7 @@
    <string>Entity-Component Editor</string>
   </property>
   <property name="styleSheet">
-   <string>QPushButton#but_show_entities {
-	border: 1px solid grey;
-	border-top: 0px;
-	min-height: 20px;
-	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0.0113636 rgba(210, 210, 210, 255), stop:0.556818 rgba(243, 243, 243, 255), stop:1 rgba(227, 227, 227, 255));
-}
-
-QPushButton#but_show_entities::hover {
-	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0.0113636 rgba(205, 205, 205, 255), stop:0.556818 rgba(243, 243, 243, 255), stop:1 rgba(218, 218, 218, 255));
-}
-
-QPushButton#but_show_entities::pressed {
-	color: grey;
-}
-
-QListWidget#list_entities {
-	border: 1px solid grey;
-	border-left: 0px;
-}</string>
+   <string>QListWidget#list_entities { border: 1px solid grey; border-left: 0px; } </string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">

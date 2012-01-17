@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -1515,7 +1515,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     
     std::ostringstream text;
 
-    uint visible_entities = renderer->GetActiveOgreWorld()->GetVisibleEntities().size();
+    uint visible_entities = renderer->GetActiveOgreWorld()->VisibleEntities().size();
     uint batches = 0;
     uint triangles = 0;
     float avgfps = 0.0f;

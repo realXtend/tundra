@@ -1,8 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   AddContentWindow.h
- *  @brief  Window for adding new content and assets.
+ *  @brief  Window for adding new content and uploading assets.
  */
 
 #pragma once
@@ -21,7 +21,7 @@ class QTreeWidgetItem;
 class QProgressBar;
 class QLabel;
 
-/// Window for adding new content and assets.
+/// Window for adding new content and uploading assets.
 /** The window is modal and is deleted when it's closed. */
 class AddContentWindow : public QWidget
 {
@@ -41,34 +41,38 @@ public:
     /** @param desc Scene description. */
     void AddDescription(const SceneDesc &desc);
 
-    /// Adds multiple scene descriptions to be shown in the window.
-    /** @param desc Scene description. */
-//    void AddDescriptions(const QList<SceneDesc> &descs);
+    /// This is an overloded function.
+    /** Adds multiple scene descriptions to be shown in the window. 
+        @param descs Scene descriptions. */
+    void AddDescription(const QList<SceneDesc> &descs);
 
-    /// Adds files to be shown in the window.
+    /// Adds assets to be shown in the window.
     /** @param fileNames List of files. */
-    void AddFiles(const QStringList &fileNames);
+    void AddAssets(const QStringList &fileNames);
 
-    /// Add offset position which will be applied to the created entities.
+    /// Sets a position which will be applied to the created entities.
     /** @param pos Position. */
-    void AddPosition(const float3 &pos) { position = pos; }
+    void SetContentPosition(const float3 &pos) { position = pos; }
 
 signals:
     void Completed(bool contentAdded, const QString &uploadBaseUrl);
 
 protected:
+    /// QWidget override.
     void showEvent(QShowEvent *e);
 
 private:
     Q_DISABLE_COPY(AddContentWindow)
 
     /// Creates entity items to the entity tree widget.
-    /** @param entityDescs List of entity descriptions. */
+    /** @param sceneDescs Source scene desc.
+        @param entityDescs List of entity descriptions. */
     void AddEntities(const QList<EntityDesc> &entityDescs);
 
     /// Creates asset items to the asset tree widget.
-    /** @param assetDescs List of assets descriptions. */
-    void AddAssets(const SceneDesc::AssetMap &assetDescs);
+    /** @param sceneDescs Source scene desc.
+        @param assetDescs List of assets descriptions. */
+    void AddAssets(const SceneDesc &sceneDesc, const SceneDesc::AssetMap &assetDescs);
 
     /// Rewrites values of AssetReference or AssetReferenceList attributes.
     /** @param sceneDesc Scene description.
@@ -86,33 +90,30 @@ private:
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Destination scene.
-    SceneDesc sceneDesc; ///< Current scene description shown on the window.
+    QList<SceneDesc> sceneDescs; ///< Current scene description(s) shown on the window.
     QPushButton *addContentButton; ///< Add content button.
     QPushButton *cancelButton; ///< Cancel/close button.
     QComboBox *storageComboBox; ///< Asset storage combo box.
     float3 position; ///< Centralization position for instantiated context (if used).
 
     // Uploading
-    QLabel *uploadStatus_;
-    QProgressBar *uploadProgress_;
+    QLabel *uploadStatusLabel;
+    QProgressBar *uploadProgressBar;
     int progressStep_;
     int failedUploads_;
-    int successfullUploads_;
+    int successfulUploads;
     int totalUploads_;
 
     // Entities add
-    QLabel *entitiesStatus_;
-    QProgressBar *entitiesProgress_;
+    QLabel *entityStatusLabel;
+    QProgressBar *entityProgressBar;
 
     // Parent widget
     QWidget *parentEntities_;
     QWidget *parentAssets_;
 
     // Selected entities and assets
-    SceneDesc newDesc_;
-
-    // Bool for completion
-    bool contentAdded_;
+    SceneDesc filteredDesc;
 
 private slots:
     /// Checks all entity check boxes.
@@ -167,7 +168,7 @@ private slots:
     /** @param transfer Failed transfer. */
     void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
 
-    void UpdateUploadStatus(bool succesfull, const QString &assetRef);
+    void UpdateUploadStatus(bool successful, const QString &assetRef);
 
     void CheckUploadTotals();
 };

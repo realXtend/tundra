@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_InputMapper.h
  *  @brief  Translates given set of key and mouse sequences to Entity Actions on the entity the component is part of.

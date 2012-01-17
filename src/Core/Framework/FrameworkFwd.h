@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   FrameworkFwd.h
  *  @brief  Forward declarations and type defines for commonly used Framework classes.

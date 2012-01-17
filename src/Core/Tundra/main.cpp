@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
 
@@ -103,7 +103,7 @@ int run(int argc, char **argv)
     for(int i = 0; i < argc; ++i)
         if (strcmp(argv[i], "--version") == 0)
         {
-            LogInfo(QString(Application::OrganizationName()) + " " + QString(Application::ApplicationName()) + " " + QString(Application::Version()));
+            LogInfo(Application::FullIdentifier());
             return return_value;
         }
 

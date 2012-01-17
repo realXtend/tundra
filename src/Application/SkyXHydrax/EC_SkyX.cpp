@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_SkyX.cpp
  *  @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
@@ -77,7 +77,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
         return;
     }
 
-    connect(w->GetRenderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
+    connect(w->Renderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 
@@ -108,11 +108,11 @@ void EC_SkyX::Create()
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
         assert(w);
 
-        if (!w->GetRenderer() || !w->GetRenderer()->MainCamera())
+        if (!w->Renderer() || !w->Renderer()->MainCamera())
             return; // Can't create SkyX just yet, no main camera set.
 
-        Ogre::SceneManager *sm = w->GetSceneManager();
-        Entity *mainCamera = w->GetRenderer()->MainCamera();
+        Ogre::SceneManager *sm = w->OgreSceneManager();
+        Entity *mainCamera = w->Renderer()->MainCamera();
         if (!mainCamera)
         {
             LogError("Cannot create SkyX: No main camera set!");
@@ -149,11 +149,11 @@ void EC_SkyX::CreateSunlight()
     {
         // Ambient and sun diffuse color copied from EC_EnvironmentLight
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
-        Ogre::SceneManager *sm = w->GetSceneManager();
+        Ogre::SceneManager *sm = w->OgreSceneManager();
         impl->originalAmbientColor = sm->getAmbientLight();
         sm->setAmbientLight(Color(0.364f, 0.364f, 0.364f, 1.f));
 
-        impl->sunlight = sm->createLight(w->GetRenderer()->GetUniqueObjectName("SkyXSunlight"));
+        impl->sunlight = sm->createLight(w->Renderer()->GetUniqueObjectName("SkyXSunlight"));
         impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
         impl->sunlight->setDiffuseColour(Color(0.639f,0.639f,0.639f));
         impl->sunlight->setSpecularColour(0.f,0.f,0.f);

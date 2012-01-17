@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -23,11 +23,12 @@ class btDiscreteDynamicsWorld;
 class btDispatcher;
 class btCollisionObject;
 class EC_RigidBody;
-class Transform;
+
 class OgreWorld;
 
 /// Result of a raycast to the physical representation of a scene.
-/** @sa Physics::PhysicsWorld
+/** Other fields are valid only if entity is non-null
+    @sa Physics::PhysicsWorld
     @todo Remove the QObject inheritance here, and expose as a struct to scripts. */
 class PhysicsRaycastResult : public QObject
 {
@@ -37,16 +38,16 @@ class PhysicsRaycastResult : public QObject
     Q_PROPERTY(float3 normal READ getnormal);
     Q_PROPERTY(float distance READ getdistance);
 
-public:
     Entity* getentity() const { return entity; }
     float3 getpos() const { return pos; }
     float3 getnormal() const { return normal; }
     float getdistance() const { return distance; }
-    
-    Entity* entity;
-    float3 pos;
-    float3 normal;
-    float distance;
+
+public:
+    Entity* entity; ///< Entity that was hit, null if none
+    float3 pos; ///< World coordinates of hit position
+    float3 normal; ///< World face normal of hit.
+    float distance; ///< Distance from ray origin to the hit point.
 };
 
 namespace Physics
@@ -58,11 +59,19 @@ class PhysicsModule;
 class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw, public boost::enable_shared_from_this<PhysicsWorld>
 {
     Q_OBJECT
-    
+    Q_PROPERTY(float updatePeriod READ PhysicsUpdatePeriod WRITE SetPhysicsUpdatePeriod)
+    Q_PROPERTY(int maxSubSteps READ MaxSubSteps WRITE SetMaxSubSteps)
+    Q_PROPERTY(float3 gravity READ Gravity WRITE SetGravity)
+    Q_PROPERTY(bool drawDebugGeometry READ IsDebugGeometryEnabled WRITE SetDebugGeometryEnabled)
+    Q_PROPERTY(bool running READ IsRunning WRITE SetRunning)
+
     friend class PhysicsModule;
     friend class ::EC_RigidBody;
-    
+
 public:
+    /// Constructor.
+    /** @param scene Scene of which this PhysicsWorld is physical representation of.
+        @param isClient Whether this physics world is for a client scene i.e. only simulates local entities' motion on their own.*/
     PhysicsWorld(ScenePtr scene, bool isClient);
     virtual ~PhysicsWorld();
     
@@ -70,7 +79,7 @@ public:
     void Simulate(f64 frametime);
     
     /// Process collision from an internal sub-step (Bullet post-tick callback)
-    void ProcessPostTick(float substeptime);
+    void ProcessPostTick(float subStepTime);
     
     /// Dynamic scene property name
     static const char* PropertyName() { return "physics"; }
@@ -82,7 +91,7 @@ public:
     virtual void reportErrorWarning(const char* warningString);
     
     /// IDebugDraw override
-    virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color) {}
+    virtual void drawContactPoint(const btVector3& pointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color) {}
     
     /// IDebugDraw override
     virtual void draw3dText(const btVector3& location,const char* textString) {}
@@ -97,25 +106,46 @@ public:
     /// \important Use this function only for debugging, the availability of this set data structure is not guaranteed in the future.
     const std::set<std::pair<btCollisionObject*, btCollisionObject*> > &PreviousFrameCollisions() const { return previousCollisions_; }
 
-public slots:
     /// Set physics update period (= length of each simulation step.) By default 1/60th of a second.
     /** @param updatePeriod Update period */
     void SetPhysicsUpdatePeriod(float updatePeriod);
-    
+
+    /// Return internal physics timestep
+    float PhysicsUpdatePeriod() const { return physicsUpdatePeriod_; }
+
     /// Set maximum physics substeps to perform on a single frame. Once this maximum is reached, time will appear to slow down if framerate is too low.
     /** @param steps Maximum physics substeps */
     void SetMaxSubSteps(int steps);
-    
-    /// Return internal physics timestep
-    float GetPhysicsUpdatePeriod() const { return physicsUpdatePeriod_; }
-    
+
     /// Return amount of maximum physics substeps on a single frame.
-    int GetMaxSubSteps() const { return maxSubSteps_; }
-    
+    int MaxSubSteps() const { return maxSubSteps_; }
+
     /// Set gravity that affects all moving objects of the physics world
     /** @param gravity Gravity vector */
     void SetGravity(const float3& gravity);
+
+    /// Return gravity
+    float3 Gravity() const;
+
+    /// Enable/disable debug geometry
+    void SetDebugGeometryEnabled(bool enable);
     
+    /// Get debug geometry enabled status
+    bool IsDebugGeometryEnabled() const { return drawDebugGeometry_; }
+    
+    /// Enable/disable physics simulation
+    void SetRunning(bool enable) { runPhysics_ = enable; }
+    
+    /// Return whether simulation is on
+    bool IsRunning() const { return runPhysics_; }
+
+    /// Return the Bullet world object
+    btDiscreteDynamicsWorld* BulletWorld() const;
+
+public slots:
+    /// Return whether the physics world is for a client scene. Client scenes only simulate local entities' motion on their own.
+    bool IsClient() const { return isClient_; }
+
     /// Raycast to the world. Returns only a single (the closest) result.
     /** @param origin World origin position
         @param direction Direction to raycast to. Will be normalized automatically
@@ -124,28 +154,7 @@ public slots:
         @param collisionmask Collision mask. Default has all bits set.
         @return result PhysicsRaycastResult structure */
     PhysicsRaycastResult* Raycast(const float3& origin, const float3& direction, float maxdistance, int collisiongroup = -1, int collisionmask = -1);
-    
-    /// Return gravity
-    float3 GetGravity() const;
-    
-    /// Return the Bullet world object
-    btDiscreteDynamicsWorld* GetWorld() const;
-    
-    /// Return whether the physics world is for a client scene. Client scenes only simulate local entities' motion on their own.
-    bool IsClient() const { return isClient_; }
-    
-    /// Enable/disable debug geometry
-    void SetDrawDebugGeometry(bool enable);
-    
-    /// Get debug geometry enabled status
-    bool GetDrawDebugGeometry() const { return drawDebugGeometry_; }
-    
-    /// Enable/disable physics simulation
-    void SetRunPhysics(bool enable) { runPhysics_ = enable; }
-    
-    /// Return whether simulation is on
-    bool GetRunPhysics() const { return runPhysics_; }
-    
+
 signals:
     /// A physics collision has happened between two entities. 
     /** Note: both rigidbodies participating in the collision will also emit a signal separately. 

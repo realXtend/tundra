@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -42,11 +42,6 @@ void SceneAPI::Reset()
     scenes.clear();
     componentFactories.clear();
     componentFactoriesByTypeid.clear();
-}
-
-void SceneAPI::Initialise()
-{
-    sceneInteract->Initialize(framework);
 }
 
 SceneInteract *SceneAPI::GetSceneInteract() const

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -58,7 +58,9 @@ public slots:
                 It creates movable proxy widget which has title bar and frames.
                 If you want add widget without title bar and frames, use Qt::Widget.
                 For further information, see http://doc.qt.nokia.com/4.7/qt.html#WindowType-enum
-        @return Proxy widget of the added widget. */
+        @return Proxy widget of the added widget.
+
+        @bug flags is always the default value when calling this function from sctips! */
     UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
     /// Adds user-created proxy widget to the scene.
@@ -103,8 +105,8 @@ public slots:
     void BringProxyWidgetToFront(QGraphicsProxyWidget *widget) const;
 
     /// Loads widget from .ui file and adds it to the graphics scene.
-    /** @todo This function will be removed shortly
-        @note This is a convenience function for scripting languages.
+    /** @note This is a convenience function for scripting languages.
+        @note Favor usage of QtUiAsset::Instantiate in scripts.
         @param filePath .ui file location.
         @param parent Parent widget.
         @param addToScene Do we want to add new widget to the graphics scene.

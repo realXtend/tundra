@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -17,6 +17,6 @@ public:
 
     /// Creates a new asset of the given type that is initialized to the "empty" asset of this type.
     /// @param name The name to give for this asset.
-    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) = 0;
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const QString &name) = 0;
 };
 

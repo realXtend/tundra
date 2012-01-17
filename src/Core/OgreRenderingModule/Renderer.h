@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -9,12 +9,10 @@
 #include "HighPerfClock.h"
 
 #include <QObject>
-#include <QVariant>
-#include <QStringList>
-#include <OgrePrerequisites.h>
 
 #include <boost/enable_shared_from_this.hpp>
 
+class UiPlane;
 class QRect;
 class QScriptEngine;
 class RenderWindow;
@@ -49,13 +47,13 @@ namespace OgreRenderer
         virtual ~Renderer();
 
         /// Returns framework
-        Framework* GetFramework() const { return framework_; }
+        Framework* GetFramework() const { return framework; }
 
         /// Returns initialized state
-        bool IsInitialized() const { return initialized_; }
+        bool IsInitialized() const { return initialized; }
 
         /// Returns Ogre root
-        OgreRootPtr OgreRoot() const { return root_; }
+        OgreRootPtr OgreRoot() const { return ogreRoot; }
 
         /// Returns Ogre viewport
         Ogre::Viewport *MainViewport() const { return mainViewport; }
@@ -166,6 +164,13 @@ namespace OgreRenderer
             Whenever the main camera is changed, the signal MainCameraChanged is triggered. */
         void SetMainCamera(Entity *mainCameraEntity);
 
+        /// Creates a new hidden UiPlane with the given name.
+        /** Remember to specify the Z order of the new plane, add some content to it, and call Show() when you want to display the UiPlane.
+            The memory of the returned object is owned by Renderer. Call Renderer::DeleteUiPlane() to remove the UiPlane when you no longer need it. */
+        UiPlane *CreateUiPlane(const QString &name);
+
+        void DeleteUiPlane(UiPlane *plane);
+
     signals:
         /// Emitted every time the main window active camera changes.
         /** The pointer specified in this signal may be null, if the main camera was set to null.
@@ -194,17 +199,20 @@ namespace OgreRenderer
         void PrepareConfig();
 
         /// Successfully initialized flag
-        bool initialized_;
+        bool initialized;
 
         /// Ogre root object
-        OgreRootPtr root_;
+        OgreRootPtr ogreRoot;
 
         /// Default hardware buffer manager for headless mode
 //        Ogre::DefaultHardwareBufferManager* bufferManager; ///< @todo Unused - delete for good?
 
         /// All created OgreWorlds (scene managers)
-        std::map<Scene*, OgreWorldPtr> ogreWorlds_;
+        std::map<Scene*, OgreWorldPtr> ogreWorlds;
         
+        /// Stores all the created Ogre overlays.
+        std::vector<UiPlane*> uiPlanes;
+
         /// Stores the camera that is active in the main window.
         boost::weak_ptr<Entity> activeMainCamera;
 
@@ -220,30 +228,30 @@ namespace OgreRenderer
         float viewDistance;
 
         /// Dummy scenemanager when we have no scene
-        Ogre::SceneManager* defaultScene_;
+        Ogre::SceneManager* defaultScene;
 
         RenderWindow *renderWindow;
 
         /// Framework we belong to
-        Framework* framework_;
+        Framework* framework;
 
         /// Counter for unique name creation
-        uint object_id_;
+        uint uniqueObjectId;
 
         /// Counter for unique resource group creation
-        uint group_id_;
+        uint uniqueGroupId;
 
         /// filename for the Ogre3D configuration file
-        std::string config_filename_;
+        std::string configFilename;
 
         /// filename for the Ogre3D plugins file
-        std::string plugins_filename_;
+        std::string pluginsFilename;
 
         /// window title to be used when creating renderwindow
-        std::string window_title_;
+        std::string windowTitle;
 
         /// added resource directories
-        StringVector added_resource_directories_;
+        StringVector resourceDirectories;
 
         /// handler for post-processing effects
         OgreCompositionHandler *compositionHandler;

@@ -1,9 +1,7 @@
-#include "DebugOperatorNew.h"
-#include <QList>
-#include <boost/thread.hpp>
-#include <boost/algorithm/string.hpp>
+// For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "MemoryLeakCheck.h"
+#include "DebugOperatorNew.h"
+
 #include "AssetRefListener.h"
 #include "IAttribute.h"
 #include "AssetReference.h"
@@ -14,7 +12,9 @@
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"
 
-AssetPtr AssetRefListener::Asset()
+#include "MemoryLeakCheck.h"
+
+AssetPtr AssetRefListener::Asset() const
 {
     return asset.lock();
 }
@@ -23,8 +23,11 @@ void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef, const QString&
 {
     Attribute<AssetReference> *attr = dynamic_cast<Attribute<AssetReference> *>(assetRef);
     if (!attr)
-        return; ///\todo Log out warning.
-
+    {
+        LogWarning("AssetRefListener::HandleAssetRefChange: Attribute's type not AssetReference (was " +
+            (assetRef == 0 ? "null" : assetRef->TypeName()) + " instead).");
+        return;
+    }
     HandleAssetRefChange(attr->Owner()->GetFramework()->Asset(), attr->Get().ref, assetType);
 }
 
@@ -44,7 +47,7 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
     // Connect to AssetAPI signal once. Must keep as Qt::QueuedConnection for a delayed signal.
     if (!myAssetAPI)
         myAssetAPI = assetApi;
-    disconnect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)));    
+    disconnect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)));
 
     assetRef = assetRef.trimmed();
     requestedRef = AssetReference(assetRef, assetType);
@@ -52,8 +55,11 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
 
     AssetTransferPtr transfer = assetApi->RequestAsset(assetRef, assetType);
     if (!transfer)
-        return; ///\todo Log out warning.
-    
+    {
+        LogWarning("AssetRefListener::HandleAssetRefChange: Asset request for " + assetRef + " failed.");
+        return;
+    }
+
     connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnTransferSucceeded(AssetPtr)), Qt::UniqueConnection);
     connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(OnTransferFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
     currentTransfer = transfer;

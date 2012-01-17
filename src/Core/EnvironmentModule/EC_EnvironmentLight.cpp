@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
@@ -78,7 +78,7 @@ void EC_EnvironmentLight::RemoveSunlight()
     OgreWorldPtr world = ogreWorld.lock();
     if (sunlight != 0)
     {
-        Ogre::SceneManager *sceneManager = world->GetSceneManager();
+        Ogre::SceneManager *sceneManager = world->OgreSceneManager();
         sceneManager->destroyLight(sunlight);
         sunlight = 0;
     }
@@ -91,7 +91,7 @@ void EC_EnvironmentLight::CreateSunlight()
 
     OgreWorldPtr world = ogreWorld.lock();
 
-    Ogre::SceneManager* sceneManager = world->GetSceneManager();
+    Ogre::SceneManager* sceneManager = world->OgreSceneManager();
     sunlight = sceneManager->createLight(world->GetUniqueObjectName("EC_EnvironmentLight_Sunlight"));
 
     sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
@@ -110,7 +110,7 @@ void EC_EnvironmentLight::UpdateAmbientLight()
 {
     if (ogreWorld.lock() != 0) 
     {
-        Ogre::SceneManager *sceneMgr = ogreWorld.lock()->GetSceneManager();
+        Ogre::SceneManager *sceneMgr = ogreWorld.lock()->OgreSceneManager();
         assert(sceneMgr);
         sceneMgr->setAmbientLight(ambientColor.Get());
     }

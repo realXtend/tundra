@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -40,6 +40,11 @@ public:
     static int DesktopHeight();
 
 public slots:
+    /// Ensures that widget gets position withing the desktop (not necessarily within the main window itself).
+    /** @param widget Widge to be positioned.
+        @param preferredPosition The preferred position for the widget. */
+    static void EnsurePositionWithinDesktop(QWidget *widget, QPoint preferredPosition);
+
     /// Returns if a menu with name is in the main windows menu bar.
     /** @param Name of the menu to search for.
         @return bool If menu with name exists.

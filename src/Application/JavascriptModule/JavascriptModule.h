@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   JavascriptModule.h
  *  @brief  Enables Javascript execution and scripting by using QtScript.

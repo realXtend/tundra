@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_Billboard.cpp
  *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
@@ -96,15 +96,15 @@ void EC_Billboard::CreateBillboard()
     OgreWorldPtr world = world_.lock();
     if (!world)
         return;
-    Ogre::SceneManager* scene = world->GetSceneManager();
+    Ogre::SceneManager* scene = world->OgreSceneManager();
     if (!scene)
         return;
 
     if (!billboardSet_)
     {
         billboardSet_ = scene->createBillboardSet(world->GetUniqueObjectName("EC_Billboard"), 1);
-        billboardSet_->Ogre::MovableObject::setUserAny(Ogre::Any(ParentEntity()));
-        billboardSet_->Ogre::Renderable::setUserAny(Ogre::Any(ParentEntity()));
+        billboardSet_->Ogre::MovableObject::setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
+        billboardSet_->Ogre::Renderable::setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
     }
     
     // Remove old billboard if it existed
@@ -151,7 +151,7 @@ void EC_Billboard::DestroyBillboard()
     }
     if (billboardSet_)
     {
-        world->GetSceneManager()->destroyBillboardSet(billboardSet_);
+        world->OgreSceneManager()->destroyBillboardSet(billboardSet_);
         billboardSet_ = 0;
     }
 }
@@ -185,6 +185,9 @@ void EC_Billboard::DetachBillboard()
     }
 }
 
+// Matches OgrePrerequisites.h:62 (OGRE_VERSION #define)
+#define OGRE_VER(major, minor, patch) (((major) << 16) | ((minor) << 8) | (patch))
+
 void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
 {
     if ((attribute == &position) || (attribute == &width) || (attribute == &height) || (attribute == &rotation))
@@ -207,15 +210,11 @@ void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
 
         try
         {
-            // If we previously had a material set and its not removed, updated the visuals from ogre.
+            // If we previously had a material set and its not removed, update the visuals from ogre.
+#if OGRE_VERSION >= OGRE_VER(1,7,3)
             if (materialRef.Get().ref.isEmpty() && billboardSet_)
-                if (billboardSet_->getMaterialName() != "") {
-#if OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 7 && OGRE_VERSION_PATCH < 3
-                    billboardSet_->setMaterialName(Ogre::MaterialPtr()->getName());
-#else
-                    billboardSet_->setMaterial(Ogre::MaterialPtr());
+                billboardSet_->setMaterial(Ogre::MaterialPtr());
 #endif
-                }
         }
         catch (Ogre::Exception &e)
         {

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -83,10 +83,6 @@ public slots:
     /// This is an overloaded function.
     /** @param components List of component pointers. */
     void CreateXmlEditor(const QList<ComponentPtr> &components);
-
-    /// Repositions the given editor relative to an active SceneStructureWindow or MainWindow.
-    /** @param editor ECEditorWindow. */
-    void RepositionEditor(ECEditorWindow *editor);
 
 signals:
     /// Signal is emitted when active ECEditorWindow's selection has changed.

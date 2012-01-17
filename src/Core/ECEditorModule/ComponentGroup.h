@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   ComponentGroup.h
  *  @brief  Data structure that holds all information that ECBrowser needs to know about the component.

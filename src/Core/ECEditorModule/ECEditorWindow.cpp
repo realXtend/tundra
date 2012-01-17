@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   ECEditorWindow.cpp
  *  @brief  Entity-component editor window.
@@ -94,7 +94,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     layout->setContentsMargins(0,0,0,0);
     setLayout(layout);
     setWindowTitle(contents->windowTitle());
-    resize(325, 400);
+    resize(contents->size());
 
     toggleEntitiesButton = findChild<QPushButton *>("but_show_entities");
     entityList = findChild<QListWidget*>("list_entities");
@@ -154,10 +154,6 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), ecEditorModule, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
     connect(this, SIGNAL(EditEntityXml(const QList<EntityPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<EntityPtr> &)));
     connect(this, SIGNAL(EditComponentXml(const QList<ComponentPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<ComponentPtr> &)));
-
-    // Set ourselves as the commanding widget for transform editor.
-    // In case it is showing ui it should reposition itself relative to this QWidget.
-    transformEditor->SetCommandingWidget(this);
 }
 
 ECEditorWindow::~ECEditorWindow()
@@ -1002,7 +998,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         return;
     }
 
-    foreach(entity_id_t id, dialog->GetEntityIds())
+    foreach(entity_id_t id, dialog->EntityIds())
     {
         EntityPtr entity = scene->GetEntity(id);
         if (!entity)
@@ -1012,19 +1008,19 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         }
 
         // Check if component has been already added to a entity.
-        ComponentPtr comp = entity->GetComponent(dialog->GetTypeName(), dialog->GetName());
+        ComponentPtr comp = entity->GetComponent(dialog->TypeName(), dialog->Name());
         if (comp)
         {
             LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
             continue;
         }
 
-        comp = framework->Scene()->CreateComponentByName(scene, dialog->GetTypeName(), dialog->GetName());
+        comp = framework->Scene()->CreateComponentByName(scene, dialog->TypeName(), dialog->Name());
         assert(comp);
         if (comp)
         {
-            comp->SetReplicated(dialog->GetSynchronization());
-            comp->SetTemporary(dialog->GetTemporary());
+            comp->SetReplicated(dialog->IsReplicated());
+            comp->SetTemporary(dialog->IsTemporary());
             entity->AddComponent(comp, AttributeChange::Default);
         }
     }

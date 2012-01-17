@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   ScriptMetaTypeDefines.cpp
  *  @brief  Registration of the Core API objects to Javascript.
@@ -38,6 +38,7 @@
 #include "AssetAPI.h"
 #include "Math/MathFunc.h"
 #include "QScriptEngineHelpers.h"
+#include "InputAPI.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -45,14 +46,15 @@
 
 #include "MemoryLeakCheck.h"
 
-/// Input API defines
+// Input API defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
 Q_DECLARE_METATYPE(GestureEvent*)
 Q_DECLARE_METATYPE(InputContext*)
 Q_DECLARE_METATYPE(InputContextPtr);
+Q_DECLARE_METATYPE(InputAPI::KeyBindingMap);
 
-/// Asset API defines
+// Asset API defines
 Q_DECLARE_METATYPE(AssetPtr);
 Q_DECLARE_METATYPE(AssetTransferPtr);
 Q_DECLARE_METATYPE(IAssetTransfer*);
@@ -65,14 +67,16 @@ Q_DECLARE_METATYPE(ScriptAsset*);
 Q_DECLARE_METATYPE(AssetCache*);
 Q_DECLARE_METATYPE(AssetMap);
 Q_DECLARE_METATYPE(AssetStorageVector);
+Q_DECLARE_METATYPE(IAssetStorage::ChangeType);
+Q_DECLARE_METATYPE(IAssetStorage::TrustState);
 
-/// Ui defines
+// Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_DECLARE_METATYPE(UiMainWindow*);
 Q_DECLARE_METATYPE(UiGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
-/// Scene API defines.
+// Scene API defines.
 Q_DECLARE_METATYPE(SceneAPI*);
 Q_DECLARE_METATYPE(Scene*);
 Q_DECLARE_METATYPE(Entity*);
@@ -84,27 +88,23 @@ Q_DECLARE_METATYPE(ChangeRequest*);
 Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(AttributeChange::Type);
 
-/// Frame, Console and Debug API object defines.
+// Framework object defines.
 Q_DECLARE_METATYPE(Framework*);
 Q_DECLARE_METATYPE(IModule*);
 Q_DECLARE_METATYPE(FrameAPI*);
 Q_DECLARE_METATYPE(ConsoleAPI*);
 Q_DECLARE_METATYPE(ConsoleCommand*);
 Q_DECLARE_METATYPE(DelayedSignal*);
+Q_DECLARE_METATYPE(ConfigAPI*);
+Q_DECLARE_METATYPE(ConfigData*);
+Q_DECLARE_METATYPE(RaycastResult*);
 
-/// Audio API defines.
+// Audio API defines.
 Q_DECLARE_METATYPE(AudioAPI*);
 Q_DECLARE_METATYPE(SoundChannel*);
 Q_DECLARE_METATYPE(SoundChannel::SoundType)
 Q_DECLARE_METATYPE(SoundChannel::SoundState)
 Q_DECLARE_METATYPE(SoundChannelPtr);
-
-/// Config API defines.
-Q_DECLARE_METATYPE(ConfigAPI*);
-Q_DECLARE_METATYPE(ConfigData*);
-
-/// Renderer defines.
-Q_DECLARE_METATYPE(RaycastResult*);
 
 QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
 {
@@ -122,6 +122,25 @@ QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &ass
 /// Deliberately a null function. Currently we don't need setting asset maps from the script side.
 void qScriptValueToAssetMap(const QScriptValue &value, AssetMap &assetMap)
 {
+}
+
+QScriptValue qScriptValueFromKeyBindingMap(QScriptEngine *engine, const InputAPI::KeyBindingMap &map)
+{
+    QScriptValue v = engine->newArray(map.size());
+    for(InputAPI::KeyBindingMap::const_iterator iter = map.begin(); iter != map.end(); ++iter)
+        v.setProperty(iter.key(), iter.value().toString());
+    return v;
+}
+
+void qScriptValueToKeyBindingMap(const QScriptValue &value, InputAPI::KeyBindingMap &map)
+{
+    map.clear();
+    QScriptValueIterator it(value);
+    while(it.hasNext())
+    {
+        it.next();
+        map[it.name()] = QKeySequence(it.value().toString(), QKeySequence::NativeText);
+    }
 }
 
 QScriptValue qScriptValueFromAssetStoragePtrVector(QScriptEngine *engine, const AssetStorageVector& vec)
@@ -193,19 +212,6 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
     engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));
     engine->globalObject().setProperty("addApplicationFont", engine->newFunction(addApplicationFont));
-/*
-    engine->importExtension("qt.core");
-    engine->importExtension("qt.gui");
-    engine->importExtension("qt.network");
-    engine->importExtension("qt.uitools");
-    engine->importExtension("qt.xml");
-    engine->importExtension("qt.xmlpatterns");
-*/
-//  Our deps contain these plugins as well, but we don't use them (for now at least).
-//    engine->importExtension("qt.opengl");
-//    engine->importExtension("qt.phonon");
-//    engine->importExtension("qt.webkit"); //cvetan hacked this to build with msvc, patch is somewhere
-
 }
 
 // Math classes.
@@ -284,6 +290,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
     qRegisterMetaType<GestureEvent::EventType>("GestureEvent::EventType");
+    qRegisterMetaType<InputAPI::KeyBindingMap>("KeyBindingMap");
+    qScriptRegisterMetaType<InputAPI::KeyBindingMap>(engine, qScriptValueFromKeyBindingMap, qScriptValueToKeyBindingMap);
 
     // Scene metatypes.
     qScriptRegisterQObjectMetaType<SceneAPI*>(engine);
@@ -345,7 +353,10 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     qRegisterMetaType<AssetStorageVector>("AssetStorageVector");
     qScriptRegisterMetaType<AssetStorageVector>(engine, qScriptValueFromAssetStoragePtrVector, qScriptValueToAssetStoragePtrVector);
-    
+
+    qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::ChangeType>, fromScriptValueEnum<IAssetStorage::ChangeType>);
+    qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::TrustState>, fromScriptValueEnum<IAssetStorage::TrustState>);
+
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
     qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);

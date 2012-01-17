@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
 
@@ -15,13 +15,13 @@
 #include <utility>
 
 #include "CoreException.h"
-
+#include "Framework.h"
 #include "MemoryLeakCheck.h"
 
 using namespace std;
 
-UiGraphicsView::UiGraphicsView(QWidget *parent)
-:QGraphicsView(parent), backBuffer(0)
+UiGraphicsView::UiGraphicsView(Framework* fw, QWidget *parent)
+:QGraphicsView(parent), framework(fw), backBuffer(0)
 {
     setAutoFillBackground(false);
     setAttribute(Qt::WA_NoSystemBackground, true);
@@ -91,24 +91,23 @@ void UiGraphicsView::Resize(int newWidth, int newHeight)
     /// Also this size does not take into account possible menubar in the mainwindow and
     /// so this input size is not correct. We will do calculations in resizeEvent(), see there for more info.
 
-/*  Old way that works properly only when this UiGraphicsView was inserted (forcibly) to the main layout of our mainwindow.
- 
-    newWidth = max(1, newWidth);
-    newHeight = max(1, newHeight);
+    if (framework->HasCommandLineParameter("--nocentralwidget"))
+    {
+        newWidth = max(1, newWidth);
+        newHeight = max(1, newHeight);
 
-    setGeometry(0, 0, newWidth, newHeight);
-    viewport()->setGeometry(0, 0, newWidth, newHeight);
-    scene()->setSceneRect(viewport()->rect());          
-    dirtyRectangle = QRectF(0, 0, newWidth, newHeight);
+        setGeometry(0, 0, newWidth, newHeight);
+        viewport()->setGeometry(0, 0, newWidth, newHeight);
+        scene()->setSceneRect(viewport()->rect());
+        dirtyRectangle = QRectF(0, 0, newWidth, newHeight);
 
-    delete backBuffer;
-    backBuffer = new QImage(newWidth, newHeight, QImage::Format_ARGB32);
+        delete backBuffer;
+        backBuffer = new QImage(newWidth, newHeight, QImage::Format_ARGB32);
 
-    emit WindowResized(newWidth, newHeight);
+        emit WindowResized(newWidth, newHeight);
 
-    qDebug() << "Internal resize: " << size() << " viewport" << viewport()->size() << " scene size: " << sceneRect().size();
-*/
-
+        // qDebug() << "Internal resize: " << size() << " viewport" << viewport()->size() << " scene size: " << sceneRect().size();
+    }
 }
 
 void UiGraphicsView::resizeEvent(QResizeEvent *e)

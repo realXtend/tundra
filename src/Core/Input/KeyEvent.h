@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -13,6 +13,7 @@ class KeyEvent : public QObject
 {
     Q_OBJECT
     Q_ENUMS(EventType)
+    Q_PROPERTY(EventType eventType READ GetEventType)
     Q_PROPERTY(QKeySequence sequence READ Sequence)
     Q_PROPERTY(QString text READ Text)
     Q_PROPERTY(unsigned long modifiers READ Modifiers)
@@ -86,6 +87,7 @@ public:
     Qt::Key KeyCode() const { return keyCode; }
 
 public slots:
+    /// @todo Make non-slot; exposed as Q_PROPERTY
     EventType GetEventType() const { return eventType; }
 
     /// Marks this event as having been handled already, which will suppress this event from

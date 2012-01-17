@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "NewEntityDialog.h"
@@ -15,7 +15,6 @@ AddEntityDialog::AddEntityDialog(QWidget *parent, Qt::WindowFlags flags) :
     QDialog(parent, flags)
 {
     setModal(true);
-    setStyleSheet("font-size: 9pt;");
     setWindowTitle(tr("Create New Entity"));
 
     if (graphicsProxyWidget())
