@@ -103,7 +103,7 @@ int run(int argc, char **argv)
     for(int i = 0; i < argc; ++i)
         if (strcmp(argv[i], "--version") == 0)
         {
-            LogInfo(QString(Application::OrganizationName()) + " " + QString(Application::ApplicationName()) + " " + QString(Application::Version()));
+            LogInfo(Application::FullIdentifier());
             return return_value;
         }
 
