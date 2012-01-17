@@ -753,34 +753,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         return AssetTransferPtr();
     }
 
-    // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache ? assetCache->FindInCache(assetRef) : "";
-    AssetTransferPtr transfer;
-
-    if (!assetFileInCache.isEmpty())
-    {
-        // The asset can be found from cache. Generate a providerless transfer and return it to the client.
-        transfer = AssetTransferPtr(new IAssetTransfer());
-        transfer->diskSourceType = IAsset::Cached;
-        
-        bool success = LoadFileToVector(assetFileInCache, transfer->rawAssetData);
-        if (!success)
-        {
-            LogError("AssetAPI::RequestAsset: Failed to load asset \"" + assetFileInCache + "\" from cache!");
-            return AssetTransferPtr();
-        }
-        transfer->source.ref = assetRef;
-        transfer->assetType = assetType;
-        transfer->storage = AssetStorageWeakPtr(); // Note: Unfortunately when we load an asset from cache, we don't get the information about which storage it's supposed to come from.
-        transfer->provider = provider;
-        transfer->SetCachingBehavior(false, assetFileInCache);
-        LogDebug("AssetAPI::RequestAsset: Loaded asset \"" + assetRef + "\" from disk cache instead of having to use asset provider."); 
-        readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
-    }
-    else // Can't find the asset in cache. Do a real request from the asset provider.
-    {
-        transfer = provider->RequestAsset(assetRef, assetType);
-    }
+    // Perform the actual request.
+    AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
 
     if (!transfer)
     {
@@ -954,7 +928,7 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
     // windows non-admin users having no write permission to the run folder
     QDir cacheDir;
     if (assetCache)
-        cacheDir = QDir(assetCache->GetCacheDirectory());
+        cacheDir = QDir(assetCache->CacheDirectory());
     else
         cacheDir = QDir(Application::UserDataDirectory());
     if (cacheDir.exists())
@@ -1151,9 +1125,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
-//    LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
+    //LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
 
-    if (dynamic_cast<VirtualAssetTransfer*>(transfer_) && transfer->asset && transfer->asset->IsLoaded()) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    if (dynamic_cast<VirtualAssetTransfer*>(transfer_) && transfer->asset && transfer->asset->IsLoaded()) 
     {
         transfer->EmitAssetDownloaded();
         transfer->EmitTransferSucceeded();
@@ -1186,9 +1161,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0 && assetCache)
         assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
 
-    // If disksource is still empty, forcibly look up from cache
+    // If disksource is still empty, forcibly look up if the asset exists in the cache now.
     if (assetDiskSource.isEmpty() && assetCache)
-        assetDiskSource = assetCache->GetDiskSourceByRef(transfer->source.ref);
+        assetDiskSource = assetCache->FindInCache(transfer->source.ref);
     
     // Save for the asset the storage and provider it came from.
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());

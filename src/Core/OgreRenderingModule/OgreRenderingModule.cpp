@@ -125,7 +125,7 @@ void OgreRenderingModule::Initialize()
     // Add asset cache directory as its own resource group to ogre to support threaded loading.
     if (GetFramework()->Asset()->GetAssetCache())
     {
-        std::string cacheResourceDir = GetFramework()->Asset()->GetAssetCache()->GetCacheDirectory().toStdString();
+        std::string cacheResourceDir = GetFramework()->Asset()->GetAssetCache()->CacheDirectory().toStdString();
         if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(cacheResourceDir, CACHE_RESOURCE_GROUP))
             Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
     }
