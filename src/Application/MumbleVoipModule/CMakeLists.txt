@@ -103,7 +103,9 @@ link_package (MUMBLECLIENT)
 link_package (CELT)
 link_package (PROTOBUF)
 link_package (OPENSSL)
-
+if (APPLE)
+    link_ogre()
+endif ()
 SetupCompileFlagsWithPCH()
 
 final_target ()
