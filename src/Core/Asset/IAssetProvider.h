@@ -27,12 +27,21 @@ public:
                or if the provider in question does not need the type information, this can be left blank. */
     virtual bool IsValidRef(QString assetRef, QString assetType) = 0;
 
+    /// Queries if the acquired disk source is still valid for the provider.
+    /// This is a change for the provider to step in and force a RequestAsset call for the assetRef.
+    /// @note Implementing this in a provider is optional. Default implementation always return true.
+    /// @param assetRef Asset reference.
+    /// @param diskSource Absolute file path for the cache file for assetRef.
+    /// @return True if the disk source is still valid, false if the provider wants 
+    /// the assetRef to be requested via its RequestAsset function.
+    virtual bool IsValidDiskSource(const QString assetRef, const QString &diskSource) { return true; }
+
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType) = 0;
 
     /// Performs time-based update of asset provider, to for example handle timeouts.
-    /** The system will call this periodically for all registered asset providers, so
-        it does not need to be called manually.
-        @param frametime Seconds since last frame */
+    /// The system will call this periodically for all registered asset providers, so
+    /// it does not need to be called manually.
+    /// @param frametime Seconds since last frame
     virtual void Update(f64 frametime) {}
 
     /// Issues an asset deletion request to the asset storage and provider this asset resides in.

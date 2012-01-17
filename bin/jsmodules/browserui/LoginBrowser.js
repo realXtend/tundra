@@ -1543,9 +1543,7 @@ var BrowserStorage = Class.extend
         // \todo This is a hack because framework.platform is not exposed to js.
         // So we can't resolve the data dir correctly from there, change this code once its exposed.
         var folderToFind = "browsercache";
-        var browserDataDir = new QDir(asset.GetAssetCache().GetCacheDirectory()); // <data_dir>/assetcache/data
-        browserDataDir.cdUp(); // data
-        browserDataDir.cdUp(); // assetcache
+        var browserDataDir = new QDir(application.userDataDirectory);
         if (!browserDataDir.exists(folderToFind))
             browserDataDir.mkdir(folderToFind);
         if (!browserDataDir.cd(folderToFind))

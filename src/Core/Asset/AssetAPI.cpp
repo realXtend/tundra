@@ -753,11 +753,16 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         return AssetTransferPtr();
     }
 
-    // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache ? assetCache->FindInCache(assetRef) : "";
+    // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the 
+    // data in from the asset cache and don't go to any asset provider.
+    QString assetFileInCache = assetCache ? assetCache->GetDiskSourceByRef(assetRef) : "";
     AssetTransferPtr transfer;
 
-    if (!assetFileInCache.isEmpty())
+    // If the disk path is not empty ask the provider if we have its permission to use the cache file.
+    // This gives providers the ability to step in and do their logic to force the RequestAsset() call.
+    bool useCacheFile = !assetFileInCache.isEmpty() ? provider->IsValidDiskSource(assetRef, assetFileInCache) : false;
+
+    if (useCacheFile)
     {
         // The asset can be found from cache. Generate a providerless transfer and return it to the client.
         transfer = AssetTransferPtr(new IAssetTransfer());
@@ -777,8 +782,9 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         LogDebug("AssetAPI::RequestAsset: Loaded asset \"" + assetRef + "\" from disk cache instead of having to use asset provider."); 
         readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
     }
-    else // Can't find the asset in cache. Do a real request from the asset provider.
+    else 
     {
+        // Can't find the asset in cache or the provider didn't see it as valid anymore. Do a real request from the asset provider.
         transfer = provider->RequestAsset(assetRef, assetType);
     }
 
@@ -954,7 +960,7 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
     // windows non-admin users having no write permission to the run folder
     QDir cacheDir;
     if (assetCache)
-        cacheDir = QDir(assetCache->GetCacheDirectory());
+        cacheDir = QDir(assetCache->CacheDirectory());
     else
         cacheDir = QDir(Application::UserDataDirectory());
     if (cacheDir.exists())
@@ -1151,9 +1157,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
-//    LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
+    //LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
 
-    if (dynamic_cast<VirtualAssetTransfer*>(transfer_) && transfer->asset && transfer->asset->IsLoaded()) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    if (dynamic_cast<VirtualAssetTransfer*>(transfer_) && transfer->asset && transfer->asset->IsLoaded()) 
     {
         transfer->EmitAssetDownloaded();
         transfer->EmitTransferSucceeded();

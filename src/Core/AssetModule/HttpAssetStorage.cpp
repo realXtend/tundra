@@ -5,6 +5,7 @@
 #include "HttpAssetStorage.h"
 #include "LoggingFunctions.h"
 
+#include <QNetworkReply>
 #include <QBuffer>
 #include <QDomDocument>
 
