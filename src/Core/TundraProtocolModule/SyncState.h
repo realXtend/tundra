@@ -162,6 +162,7 @@ struct EntitySyncState
     Transform transform;
     float3 linearVelocity;
     float3 angularVelocity;
+    kNet::tick_t lastNetworkSendTime;
 };
 
 struct RigidBodyInterpolationState
@@ -173,6 +174,7 @@ struct RigidBodyInterpolationState
         float3 vel;
         Quat rot;
         float3 scale;
+        float3 angVel; // Angular velocity in Euler ZYX.
     };
 
     RigidBodyState interpStart;

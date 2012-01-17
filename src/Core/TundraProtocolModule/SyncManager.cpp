@@ -38,7 +38,6 @@ namespace TundraLogic
 
 void SyncManager::QueueMessage(kNet::MessageConnection* connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds)
 {
-    //std::cout << "Queuing message " << id << " size " << ds.BytesFilled() << std::endl;
     kNet::NetworkMessage* msg = connection->StartNewMessage(id, ds.BytesFilled());
     memcpy(msg->data, ds.GetData(), ds.BytesFilled());
     msg->reliable = reliable;
@@ -49,7 +48,6 @@ void SyncManager::QueueMessage(kNet::MessageConnection* connection, kNet::messag
 
 void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp)
 {
-    //std::cout << "Writing component fullupdate id " << comp->Id() << " typeid " << comp->TypeId() << std::endl;
     // Component identification
     ds.AddVLE<kNet::VLE8_16_32>(comp->Id() & UniqueIdGenerator::LAST_REPLICATED_ID);
     ds.AddVLE<kNet::VLE8_16_32>(comp->TypeId());
@@ -84,7 +82,7 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
 SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
-    updatePeriod_(1.0f / 30.0f),
+    updatePeriod_(1.0f / 20.0f),
     updateAcc_(0.0)
 {
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
@@ -423,17 +421,11 @@ void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
 
 void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type)
 {
-    //Scene* scene = scene_.lock().get();
-    //assert(scene);
-
     // If we are the server and the local script on this machine has requested a script to be executed on the server, it
     // means we just execute the action locally here, without sending to network.
     bool isServer = owner_->IsServer();
     if (isServer && (type & EntityAction::Server) != 0)
-    {
-        //LogInfo("EntityAction " + action. + " type Server on server.");
         entity->Exec(EntityAction::Local, action, params);
-    }
 
     // Craft EntityAction message.
     MsgEntityAction msg;
@@ -449,7 +441,6 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
     if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0) && owner_->GetClient()->GetConnection())
     {
         // send without Local flag
-        //LogInfo("Tundra client sending EntityAction " + action + " type " + ToString(type));
         msg.executionType = (u8)(type & ~EntityAction::Local);
         owner_->GetClient()->GetConnection()->Send(msg);
     }
@@ -460,10 +451,7 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
         foreach(UserConnectionPtr c, owner_->GetKristalliModule()->GetUserConnections())
         {
             if (c->properties["authenticated"] == "true" && c->connection)
-            {
-                //LogInfo("peer " + action);
                 c->connection->Send(msg);
-            }
         }
     }
 }
@@ -492,6 +480,7 @@ void SyncManager::OnUserActionTriggered(UserConnection* user, Entity *entity, co
     user->connection->Send(msg);
 }
 
+/// Interpolates from (pos0, vel0) to (pos1, vel1) with a C1 curve (continuous in position and velocity)
 float3 HermiteInterpolate(const float3 &pos0, const float3 &vel0, const float3 &pos1, const float3 &vel1, float t)
 {
     float tt = t*t;
@@ -500,6 +489,19 @@ float3 HermiteInterpolate(const float3 &pos0, const float3 &vel0, const float3 &
     float h2 = 1 - h1;
     float h3 = ttt - 2*tt + t;
     float h4 = ttt - tt;
+
+    return h1 * pos0 + h2 * pos1 + h3 * vel0 + h4 * vel1;
+}
+
+/// Returns the tangent vector (derivative) of the Hermite curve. Note that the differential is w.r.t. timesteps along the curve from t=[0,1] 
+/// and not in "wallclock" time.
+float3 HermiteDerivative(const float3 &pos0, const float3 &vel0, const float3 &pos1, const float3 &vel1, float t)
+{
+    float tt = t*t;
+    float h1 = 6*(tt - t);
+    float h2 = -h1;
+    float h3 = 3*tt - 4*t + 1;
+    float h4 = 3*tt - 2*t;
 
     return h1 * pos0 + h2 * pos1 + h3 * vel0 + h4 * vel1;
 }
@@ -524,26 +526,68 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
         boost::shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
 
         RigidBodyInterpolationState &r = iter->second;
-        r.interpTime = std::min(1.0f, r.interpTime + (float)frametime / (updatePeriod_ * 2.0f));
-        float3 pos = float3::Lerp(r.interpStart.pos, r.interpEnd.pos, r.interpTime);////HermiteInterpolate(r.interpStart.pos, r.interpStart.vel, r.interpEnd.pos, r.interpEnd.vel, r.interpTime);
-        Quat rot = Quat::Slerp(r.interpStart.rot, r.interpEnd.rot, r.interpTime);
-        float3 scale = float3::Lerp(r.interpStart.scale, r.interpEnd.scale, r.interpTime);
+        const float interpPeriod = updatePeriod_; // Time in seconds how long interpolating the Hermite spline from [0,1] should take.
+
+        // Test: Uncomment to only interpolate.
+//        r.interpTime = std::min(1.0f, r.interpTime + (float)frametime / interpPeriod);
+        r.interpTime += (float)frametime / interpPeriod;
+
+        float3 pos;
+        if (r.interpTime < 1.0f) // Interpolating between two messages from server.
+            pos = HermiteInterpolate(r.interpStart.pos, r.interpStart.vel * interpPeriod, r.interpEnd.pos, r.interpEnd.vel * interpPeriod, r.interpTime);
+        else // Linear extrapolation if server has not sent an update.
+            pos = r.interpEnd.pos + r.interpEnd.vel * (r.interpTime-1.f) * interpPeriod;
+        ///\todo Orientation is only interpolated, and capped to end result. Also extrapolate orientation.
+        Quat rot = Quat::Slerp(r.interpStart.rot, r.interpEnd.rot, Clamp01(r.interpTime));
+        float3 scale = float3::Lerp(r.interpStart.scale, r.interpEnd.scale, Clamp01(r.interpTime));
         
-//        std::cout << "p0: " << r.interpStart.pos.ToString() << ", v0: " << r.interpStart.vel.ToString() + ", p1: " << r.interpEnd.pos.ToString() << ", v1: " 
-//            << r.interpEnd.vel.ToString() << ", t: " << r.interpTime << ", res: " << pos.ToString() << std::endl;
         Transform t;
         t.SetPos(pos);
         t.SetOrientation(rot);
         t.SetScale(scale);
         placeable->transform.Set(t, AttributeChange::LocalOnly);
 
-        if (rigidBody)
-            rigidBody->linearVelocity.Set(float3::Lerp(r.interpStart.vel, r.interpEnd.vel, r.interpTime), AttributeChange::LocalOnly);
-
-        if (r.interpTime >= 1.0f)
+        // Local simulation steps:
+        // One fixed update interval: interpolate
+        // Four subsequent update intervals: linear extrapolation
+        // All subsequente update intervals: local physics extrapolation.
+        const float maxLinExtrapTime = 5.f; // For one second of extrapolation set to 1.f / interpPeriod;
+        if (r.interpTime >= maxLinExtrapTime) // Hand-off to client-side physics?
+        {
+            if (rigidBody)
+            {
+                bool objectIsInRest = (r.interpEnd.vel.LengthSq() < 1e-4f && r.interpEnd.angVel.LengthSq() < 1e-4f);
+                // Now the local client-side physics will take over the simulation of this rigid body, but only if the object
+                // is moving. This is because the client shouldn't wake up the object (locally) if it's stationary, but wait for the
+                // server-side signal for that event.
+                rigidBody->SetClientExtrapolating(objectIsInRest == false);
+                // Give starting parameters for the simulation.
+                rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
+                rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
+            }
             iter = state->entityInterpolations.erase(iter); // Finished interpolation.
-        else
+        }
+        else // Interpolation or linear extrapolation.
+        {
+            if (rigidBody)
+            {
+                // Ensure that the local side physics is not driving the position of this entity.
+                rigidBody->SetClientExtrapolating(false);
+
+                // Setting these is rather redundant, since Bullet doesn't simulate the entity using these variables. However, other
+                // (locally simulated) objects can collide to this entity, in which case it's good to have the proper velocities for bullet,
+                // so that the collision response simulates the appropriate forces/velocities in play.
+                float3 curVel = float3::Lerp(r.interpStart.vel, r.interpEnd.vel, Clamp01(r.interpTime));
+                // Test: To set continous velocity based on the Hermite curve, use the following:
+ //               float3 curVel = HermiteDerivative(r.interpStart.pos, r.interpStart.vel*interpPeriod, r.interpEnd.pos, r.interpEnd.vel*interpPeriod, r.interpTime);
+
+                rigidBody->linearVelocity.Set(curVel, AttributeChange::LocalOnly);
+
+                ///\todo Setup angular velocity.
+                rigidBody->angularVelocity.Set(float3::zero, AttributeChange::LocalOnly);
+            }
             ++iter;
+        }
     }
 }
 
@@ -648,7 +692,14 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
                     rss.dirtyAttributes[1] &= ~(1 << 6);
 
                     velocityDirty = velocityDirty && (rigidBody->linearVelocity.Get().DistanceSq(ess.linearVelocity) >= 1e-2f);
-                    angularVelocityDirty = angularVelocityDirty && (rigidBody->angularVelocity.Get().DistanceSq(ess.angularVelocity) >= 1e-2f);
+                    angularVelocityDirty = angularVelocityDirty && (rigidBody->angularVelocity.Get().DistanceSq(ess.angularVelocity) >= 1e-1f);
+/*
+                    // TEST: If the object enters rest, force an update.
+                    if (rigidBody->linearVelocity.Get().IsZero(1e-4f) && !ess.linearVelocity.IsZero(1e-4f))
+                        velocityDirty = true;
+                    if (rigidBody->angularVelocity.Get().IsZero(1e-4f) && !ess.angularVelocity.IsZero(1e-4f))
+                        angularVelocityDirty = true;
+                        */
                 }
             }
         }
@@ -656,13 +707,17 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         if (!transformDirty && !velocityDirty && !angularVelocityDirty)
             continue;
 
-        ds.AddVLE<kNet::VLE8_16_32>(ess.id);
-
         const Transform &t = placeable->transform.Get();
 
-        bool posChanged = transformDirty && (t.pos.DistanceSq(ess.transform.pos) > 1e-2f);
-        bool rotChanged = transformDirty && (t.rot.DistanceSq(ess.transform.rot) > 1e-2f);
-        bool scaleChanged = transformDirty && (t.scale.DistanceSq(ess.transform.scale) > 1e-2f);
+        float timeSinceLastSend = kNet::Clock::SecondsSinceF(ess.lastNetworkSendTime);
+        const float3 predictedClientSidePosition = ess.transform.pos + timeSinceLastSend * ess.linearVelocity;
+        float error = t.pos.DistanceSq(predictedClientSidePosition);
+
+        // TEST: To have the server estimate how far the client has simulated, use this.
+//        bool posChanged = transformDirty && (timeSinceLastSend > 0.2f || t.pos.DistanceSq(/*ess.transform.pos*/ predictedClientSidePosition) > 5e-5f);
+        bool posChanged = transformDirty && t.pos.DistanceSq(ess.transform.pos) > 1e-3f;
+        bool rotChanged = transformDirty && (t.rot.DistanceSq(ess.transform.rot) > 1e-1f);
+        bool scaleChanged = transformDirty && (t.scale.DistanceSq(ess.transform.scale) > 1e-3f);
 
         // Detect whether to send compact or full states for each variable.
         // 0 - don't send, 1 - send compact, 2 - send full.
@@ -700,12 +755,18 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
             scaleSendType = 0;
 
         const float3 &linearVel = rigidBody->linearVelocity.Get();
-        const float3 &angVel = rigidBody->angularVelocity.Get();
+        const float3 angVel = DegToRad(rigidBody->angularVelocity.Get());
 
         velSendType = velocityDirty ? (linearVel.LengthSq() >= 64.f ? 2 : 1) : 0;
-        angVelSendType = angularVelocityDirty ? (angVel.Abs().MaxElement() >= 2.f ? 2 : 1) : 0;
+        angVelSendType = angularVelocityDirty ? 1 : 0;
 
-        ds.AddArithmeticEncoded(9, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 3);
+        if (posSendType == 0 && rotSendType == 0 && scaleSendType == 0 && velSendType == 0 && angVelSendType == 0)
+            continue;
+
+        int bitIdx = ds.BitsFilled();
+        ds.AddVLE<kNet::VLE8_16_32>(ess.id);
+
+        ds.AddArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2);
         if (posSendType == 1)
         {
             ds.AddSignedFixedPoint(11, 8, t.pos.x);
@@ -743,8 +804,9 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
                 axis = -axis;
                 angle = 2.f * 3.141592654f - angle;
             }
-            ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
-            ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
+            u32 quantizedAngle = ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
+            if (quantizedAngle != 0)
+                ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
         }
 
         if (scaleSendType == 1)
@@ -760,34 +822,44 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
 
         if (velSendType == 1)
         {
-            ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 9, 8, 3, 8);
+            ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 11, 10, 3, 8);
             ess.linearVelocity = linearVel;
         }
         else if (velSendType == 2)
         {
-            ds.Add<float>(linearVel.x);
-            ds.Add<float>(linearVel.y);
-            ds.Add<float>(linearVel.z);
+            ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 11, 10, 10, 8);
             ess.linearVelocity = linearVel;
         }
 
         if (angVelSendType == 1)
         {
-            ds.AddSignedFixedPoint(2, 8, angVel.x);
-            ds.AddSignedFixedPoint(2, 8, angVel.y);
-            ds.AddSignedFixedPoint(2, 8, angVel.z);
+            Quat o = Quat::FromEulerZYX(angVel.z, angVel.y, angVel.x);
+
+            float3 axis;
+            float angle;
+            o.ToAxisAngle(axis, angle);
+            if (angle >= 3.141592654f) // Remove the quaternion double cover representation by constraining angle to [0, pi].
+            {
+                axis = -axis;
+                angle = 2.f * 3.141592654f - angle;
+            }
+            u32 quantizedAngle = ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
+            if (quantizedAngle != 0)
+                ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
+
             ess.angularVelocity = angVel;
         }
-        else if (angVelSendType == 2)
-        {
-            ds.Add<float>(angVel.x);
-            ds.Add<float>(angVel.y);
-            ds.Add<float>(angVel.z);
-            ess.angularVelocity = angVel;
-        }
-        ess.transform = t;
+        if (posSendType != 0)
+            ess.transform.pos = t.pos;
+        if (rotSendType != 0)
+            ess.transform.rot = t.rot;
+        if (scaleSendType != 0)
+            ess.transform.scale = t.scale;
 
 //        std::cout << "pos: " << posSendType << ", rot: " << rotSendType << ", scale: " << scaleSendType << ", vel: " << velSendType << ", angvel: " << angVelSendType << std::endl;
+
+        int bitsEnd = ds.BitsFilled();
+        ess.lastNetworkSendTime = kNet::Clock::Tick();
     }
     if (ds.BytesFilled() > 0)
         destination->EndAndQueueMessage(msg, ds.BytesFilled());
@@ -802,7 +874,7 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
         return;
 
     kNet::DataDeserializer dd(data, numBytes);
-    while(dd.BitsLeft() >= 9)// + 3 * 4 * 8 + 8)
+    while(dd.BitsLeft() >= 9)
     {
         u32 entityID = dd.ReadVLE<kNet::VLE8_16_32>();
         EntityPtr e = scene->GetEntity(entityID);
@@ -815,7 +887,7 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
         int scaleSendType;
         int velSendType;
         int angVelSendType;
-        dd.ReadArithmeticEncoded(9, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 3);
+        dd.ReadArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2);
 
         float3 newLinearVel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
 
@@ -851,10 +923,17 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
         }
         else if (rotSendType == 3)
         {
-            float3 axis;
-            dd.ReadNormalizedVector3D(11, 10, axis.x, axis.y, axis.z);
-            float angle = dd.ReadQuantizedFloat(0, 3.141592654f, 10);
-            t.SetOrientation(Quat(axis, angle));
+            // Read the quantized float manually, without a call to ReadQuantizedFloat, to be able to compare the quantized bit pattern.
+	        u32 quantizedAngle = dd.ReadBits(10);
+            if (quantizedAngle != 0)
+            {
+                float angle = quantizedAngle * 3.141592654f / (float)((1 << 10) - 1);
+                float3 axis;
+                dd.ReadNormalizedVector3D(11, 10, axis.x, axis.y, axis.z);
+                t.SetOrientation(Quat(axis, angle));
+            }
+            else
+                t.SetOrientation(Quat::identity);
         }
 
         if (scaleSendType == 1)
@@ -867,60 +946,80 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
         }
 
         if (velSendType == 1)
-        {
-            dd.ReadVector3D(9, 8, 3, 8, newLinearVel.x, newLinearVel.y, newLinearVel.z);
-        }
+            dd.ReadVector3D(11, 10, 3, 8, newLinearVel.x, newLinearVel.y, newLinearVel.z);
         else if (velSendType == 2)
-        {
-            newLinearVel.x = dd.Read<float>();
-            newLinearVel.y = dd.Read<float>();
-            newLinearVel.z = dd.Read<float>();
-        }
+            dd.ReadVector3D(11, 10, 10, 8, newLinearVel.x, newLinearVel.y, newLinearVel.z);
+
+        float3 newAngVel = rigidBody ? rigidBody->angularVelocity.Get() : float3::zero;
 
         if (angVelSendType == 1)
         {
-            float3 angVel;
-            angVel.x = dd.ReadSignedFixedPoint(2, 8);
-            angVel.y = dd.ReadSignedFixedPoint(2, 8);
-            angVel.z = dd.ReadSignedFixedPoint(2, 8);
-            rigidBody->angularVelocity.Set(angVel, AttributeChange::Disconnected);
-        }
-        else if (angVelSendType == 2)
-        {
-            float3 angVel;
-            angVel.x = dd.Read<float>();
-            angVel.y = dd.Read<float>();
-            angVel.z = dd.Read<float>();
-            rigidBody->angularVelocity.Set(angVel, AttributeChange::Disconnected);
+            // Read the quantized float manually, without a call to ReadQuantizedFloat, to be able to compare the quantized bit pattern.
+	        u32 quantizedAngle = dd.ReadBits(10);
+            if (quantizedAngle != 0)
+            {
+                float angle = quantizedAngle * 3.141592654f / (float)((1 << 10) - 1);
+                float3 axis;
+                dd.ReadNormalizedVector3D(11, 10, axis.x, axis.y, axis.z);
+                Quat q(axis, angle);
+                newAngVel = q.ToEulerZYX();
+                Swap(newAngVel.z, newAngVel.x);
+                newAngVel = RadToDeg(newAngVel);
+            }
         }
 
         if (e)
         {
-            if (posSendType != 0 || rotSendType != 0 || scaleSendType != 0)
+            if (posSendType != 0 || rotSendType != 0 || scaleSendType != 0 || velSendType != 0 || angVelSendType != 0)
             {
                 // Create or update the interpolation state.
                 Transform orig = placeable->transform.Get();
-                RigidBodyInterpolationState interp;
-                interp.interpStart.pos = orig.pos;
-                interp.interpEnd.pos = t.pos;
-                interp.interpStart.rot = orig.Orientation();
-                interp.interpEnd.rot = t.Orientation();
-                interp.interpStart.scale = orig.scale;
-                interp.interpEnd.scale = t.scale;
-                interp.interpStart.vel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
-                interp.interpEnd.vel = newLinearVel;
-                interp.interpTime = 0.f;
-                server_syncstate_.entityInterpolations[entityID] = interp;
+
+                std::map<entity_id_t, RigidBodyInterpolationState>::iterator iter = server_syncstate_.entityInterpolations.find(entityID);
+                if (iter != server_syncstate_.entityInterpolations.end())
+                {
+                    RigidBodyInterpolationState &interp = iter->second;
+                    const float interpPeriod = updatePeriod_; // Time in seconds how long interpolating the Hermite spline from [0,1] should take.
+                    float3 curVel;
+                    if (interp.interpTime < 1.0f)
+                        curVel = HermiteDerivative(interp.interpStart.pos, interp.interpStart.vel*interpPeriod, interp.interpEnd.pos, interp.interpEnd.vel*interpPeriod, interp.interpTime);
+                    else
+                        curVel = interp.interpEnd.vel;
+                    float3 curAngVel = float3::zero; ///\todo
+                    interp.interpStart.pos = orig.pos;
+                    if (posSendType != 0)
+                        interp.interpEnd.pos = t.pos;
+                    interp.interpStart.rot = orig.Orientation();
+                    if (rotSendType != 0)
+                        interp.interpEnd.rot = t.Orientation();
+                    interp.interpStart.scale = orig.scale;
+                    if (scaleSendType != 0)
+                        interp.interpEnd.scale = t.scale;
+                    interp.interpStart.vel = curVel;
+                    if (velSendType != 0)
+                        interp.interpEnd.vel = newLinearVel;
+                    interp.interpStart.angVel = curAngVel;
+                    if (angVelSendType != 0)
+                        interp.interpEnd.angVel = newAngVel;
+                    interp.interpTime = 0.f;
+                }
+                else
+                {
+                    RigidBodyInterpolationState interp;
+                    interp.interpStart.pos = orig.pos;
+                    interp.interpEnd.pos = t.pos;
+                    interp.interpStart.rot = orig.Orientation();
+                    interp.interpEnd.rot = t.Orientation();
+                    interp.interpStart.scale = orig.scale;
+                    interp.interpEnd.scale = t.scale;
+                    interp.interpStart.vel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
+                    interp.interpEnd.vel = newLinearVel;
+                    interp.interpStart.angVel = rigidBody ? rigidBody->angularVelocity.Get() : float3::zero;
+                    interp.interpEnd.angVel = newAngVel;
+                    interp.interpTime = 0.f;
+                    server_syncstate_.entityInterpolations[entityID] = interp;
+                }                
             }
-            /*
-            if (rigidBody)
-            {
-                if (velSendType != 0)
-                    rigidBody->linearVelocity.Changed(AttributeChange::LocalOnly);
-                if (angVelSendType != 0)
-                    rigidBody->angularVelocity.Changed(AttributeChange::LocalOnly);
-            }
-            */
         }
     }
 }
@@ -930,16 +1029,6 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     PROFILE(SyncManager_ProcessSyncState);
     
     unsigned sceneId = 0; ///\todo Replace with proper scene ID once multiscene support is in place.
-    
-    /*
-    static int counter = 0;
-    ++counter;
-    if (counter >= 30)
-    {
-        std::cout << "Data in " << destination->BytesInPerSec() / 1024.0f << " kB/s Data out " << destination->BytesOutPerSec() / 1024.0f << " kB/s" << std::endl;
-        counter = 0;
-    }
-    */
     
     ScenePtr scene = scene_.lock();
     int numMessagesSent = 0;
