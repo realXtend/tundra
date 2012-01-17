@@ -4,10 +4,7 @@
 #include <QString>
 #include <QObject>
 
-#if defined(_WINDOWS)
-#if defined(_WINSOCKAPI_)
-#undef _WINSOCKAPI_ 
-#endif
+#ifdef WIN32
 #include <Winsock2.h>
 #include <Windows.h>
 typedef HMODULE PluginHandle;
