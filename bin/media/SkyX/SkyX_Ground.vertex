@@ -1,10 +1,9 @@
 /*
 --------------------------------------------------------------------------------
 This source file is part of SkyX.
-Visit ---
+Visit http://www.paradise-studios.net/products/skyx/
 
-Copyright (C) 2009 Xavier Verguín González <xavierverguin@hotmail.com>
-                                           <xavyiy@gmail.com>
+Copyright (C) 2009-2011 Xavier Verguín González <xavyiy@gmail.com>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free Software
@@ -20,26 +19,25 @@ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-GLSL shaders added by Jose Luis Cercos Pita.
---------------------------------------------------------------------------------
 */
 
 // --------------------- SkyX ground material ------------------------
+// ------------------------- GLSL Vertex -----------------------------
 
+// IN
+attribute vec4 vertex; // iPosition
 // OUT
-varying vec3 RayleighColor;
+varying vec3 vRayleighColor;
+varying vec3 vDirection;
 // UNIFORM
-uniform mat4 uWorldViewProj;
-uniform mat4 uWorld;
 // Global information
+uniform mat4 uWorld;
 uniform vec3 uLightDir;
 // Position information
 uniform vec3 uCameraPos;
 uniform vec3 uCameraPos_;
 uniform vec3 uInvWaveLength;
-uniform float  uInnerRadius;
+uniform float uInnerRadius;
 // Scattering parameters
 uniform float  uKrESun; // Kr * ESun
 uniform float  uKr4PI;  // Kr * 4 * PI
@@ -59,13 +57,13 @@ float scale(float cos, float uScaleDepth)
 	return uScaleDepth * exp(-0.00287 + x*(0.459 + x*(3.83 + x*(-6.80 + x*5.25))));
 }
 
-void main()
+void main(void)
 {
-    // Clip space position
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+	// Clip space position
+	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 	
 	// Calculate vertex world position
-	vec3 vertexWorldPos = (uWorld * gl_Vertex).xyz;
+	vec3 vertexWorldPos = (uWorld * vertex).xyz;
 	
 	// Get the ray from the camera to the vertex, and its length (which is the far point of the ray passing through the atmosphere)
 	vec3 v3Pos;
@@ -93,8 +91,8 @@ void main()
 	vec3 v3SamplePoint = v3Start + v3SampleRay * 0.5;
 	
 	// Loop the ray
-	vec3 color = vec3(0.0,0.0,0.0);
-	for (int i=0; i<uNumberOfSamples; i++)
+	vec3 color = vec3(0,0,0);
+	for (int i = 0; i < uNumberOfSamples; i++)
 	{
     	float fHeight = length(v3SamplePoint);
 		float fDepth = exp(uScaleOverScaleDepth * (uInnerRadius-fHeight));
@@ -106,6 +104,6 @@ void main()
 	}
 
     // Outputs
-    RayleighColor = color * (uInvWaveLength * uKrESun); // TODO <--- parameter
+    vRayleighColor = color * (uInvWaveLength * uKrESun); // TODO <--- parameter
+	vDirection     = uCameraPos - v3Pos;
 }
-
