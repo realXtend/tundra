@@ -506,7 +506,7 @@ void InputAPI::SaveKeyBindingsToFile()
     ConfigData inputConfig(ConfigAPI::FILE_FRAMEWORK, "input");
     int i = 0;
     for(KeyBindingMap::const_iterator iter = keyboardMappings.begin(); iter != keyboardMappings.end(); ++iter)
-        cfg.Set(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value());
+        cfg.Set(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value().toString());
 }
 
 Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)
