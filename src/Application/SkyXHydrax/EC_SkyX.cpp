@@ -181,33 +181,8 @@ void EC_SkyX::Create()
     disconnect(w->Renderer(), SIGNAL(MainCameraChanged(Entity*)), this, SLOT(Create()));
 
     // SkyX is a singleton component, refuse to add multiple in a scene!
-    bool sceneHasSkyX = false;
-    Scene::const_iterator entIter = ParentScene()->begin();
-    Scene::const_iterator entEnd = ParentScene()->end();
-    while (entIter != entEnd)
-    {
-        EntityPtr ent = entIter->second;
-        if (ent.get())
-        {
-            Entity::ComponentMap::const_iterator compIter = ent->Components().begin();
-            Entity::ComponentMap::const_iterator compEnd = ent->Components().end();
-            while(compIter != compEnd)
-            {
-                ComponentPtr comp = compIter->second;
-                if (comp.get() && comp.get() != this && comp->TypeName() == this->TypeName())
-                {
-                    sceneHasSkyX = true;
-                    break;
-                }
-                ++compIter;
-            }
-
-        }
-        ++entIter;
-        if (sceneHasSkyX)
-            break;
-    }
-    if (sceneHasSkyX)
+    EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(TypeName());
+    if (!entities.empty() && (*entities.begin())->GetComponent<EC_SkyX>().get() != this)
     {
         LogError("EC_SkyX: Scene already has SkyX component, refusing to create a new one.");
         return;
@@ -352,13 +327,13 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
 
             // Change the color a bit from the default
             SkyX::ColorGradient ambientGradient;
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(1,1,1)*0.95, 1.0f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.7,0.7,0.65), 0.625f)); 
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.6,0.55,0.4), 0.5625f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.6,0.45,0.3)*0.2, 0.5f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.5,0.25,0.25)*0.4, 0.45f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.2,0.2,0.3)*0.2, 0.35f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.2,0.2,0.5)*0.2, 0));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(1.0f,1.0f,1.0f)*0.95f, 1.0f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.7f,0.7f,0.65f), 0.625f)); 
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.6f,0.55f,0.4f), 0.5625f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.6f,0.45f,0.3f)*0.2f, 0.5f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.5f,0.25f,0.25f)*0.4f, 0.45f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.2f,0.2f,0.3f)*0.2f, 0.35f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.2f,0.2f,0.5f)*0.2f, 0.0f));
             impl->cloudLayerTop->setAmbientGradient(ambientGradient);
 
             // Update relevant attributes silently now that normal clouds have been created
@@ -463,7 +438,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
             optionsTop.WindDirection = ogreWindDirection;
 
             impl->cloudLayerBottom->setOptions(optionsBottom);
-            impl->cloudLayerTop->setOptions(optionsBottom);            
+            impl->cloudLayerTop->setOptions(optionsBottom);
         }
     }
     else if (attr == &windSpeed)
