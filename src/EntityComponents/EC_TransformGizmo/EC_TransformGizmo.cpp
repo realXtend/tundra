@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_TransformGizmo.cpp
  *  @brief  Enables visual manipulators (gizmos) for Transform attributes.
@@ -165,9 +165,9 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     if (ogreWorld.expired())
         return;
     OgreWorldPtr world = ogreWorld.lock();
-    if (!world->GetRenderer()->MainCamera())
+    if (!world->Renderer()->MainCamera())
         return;
-    EC_Camera *cam = world->GetRenderer()->MainCamera()->GetComponent<EC_Camera>().get();
+    EC_Camera *cam = world->Renderer()->MainCamera()->GetComponent<EC_Camera>().get();
     if (!cam)
         return;
 
@@ -209,10 +209,16 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     if (result->entity && result->entity->GetComponent<EC_TransformGizmo>().get() == this)
         hit = true;
 
-    const float cClickDistanceThreshold = 0.125f;
-    const float cClickOffsetThreshold = 2.5f;
 
     float offsetX, offsetY, offsetZ;
+
+    // We always keep the transform gizmo constant-sized in the view.
+    float3 gizmoPos = mesh->LocalToWorld().TranslatePart();
+    float3 cameraPos = placeable->LocalToWorld().TranslatePart();
+    const float gizmoScale = DesiredGizmoScale();
+    const float cClickOffsetThreshold = gizmoScale; // Specifies how far along the gizmo X,Y and Z axes we can click.
+    const float cClickDistanceThreshold = 0.125f * gizmoScale;
+
     xRay.ClosestPoint(mouseRay, &offsetX);
     if ((distanceX < cClickDistanceThreshold && offsetX > 0 && offsetX < cClickOffsetThreshold) ||
         (hit && result->submesh == GizmoAxis::X))
@@ -410,19 +416,26 @@ void EC_TransformGizmo::OnFrameUpdate(float /*dt*/)
     if (!mesh || ogreWorld.expired())
         return;
     PROFILE(EC_TransformGizmo_OnFrameUpdate);
+    mesh->SetAdjustScale(float3::FromScalar(DesiredGizmoScale()));
+}
+
+float EC_TransformGizmo::DesiredGizmoScale()
+{
+    if (!mesh || ogreWorld.expired())
+        return 1.f;
     OgreWorldPtr world = ogreWorld.lock();
-    Entity *cam = world->GetRenderer()->MainCamera();
+    Entity *cam = world->Renderer()->MainCamera();
     if (!cam)
-        return;
+        return 1.f;
     boost::shared_ptr<EC_Placeable> placeable = cam->GetComponent<EC_Placeable>();
     if (!placeable)
-        return;
+        return 1.f;
 
     // We always keep the transform gizmo constant-sized in the view.
     float3 gizmoPos = mesh->LocalToWorld().TranslatePart();
     float3 cameraPos = placeable->LocalToWorld().TranslatePart();
     float distance = gizmoPos.Distance(cameraPos);
-    mesh->SetAdjustScale(float3::FromScalar(std::max(0.1f, 0.1f*distance)));
+    return std::max(0.1f, 0.1f*distance);
 }
 
 /*

@@ -1,20 +1,19 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
 #include "ECEditorModuleApi.h"
 #include "CoreTypes.h"
-#include "AttributeChangeType.h"
 
 #include <QDialog>
 
 class QLineEdit;
 class QCheckBox;
 
+/// Dialog for adding new Entity into a Scene.
 class ECEDITOR_MODULE_API AddEntityDialog : public QDialog
 {
-
-Q_OBJECT
+    Q_OBJECT
 
 public:
     AddEntityDialog(QWidget *parent = 0, Qt::WindowFlags flags = 0);

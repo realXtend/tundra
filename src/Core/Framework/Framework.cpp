@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -14,12 +14,13 @@
 #include "LoggingFunctions.h"
 #include "IModule.h"
 #include "FrameAPI.h"
+#include "ConsoleAPI.h"
 
 #include "InputAPI.h"
 #include "AssetAPI.h"
 #include "AudioAPI.h"
-#include "ConsoleAPI.h"
 #include "SceneAPI.h"
+#include "SceneInteract.h"
 #include "UiAPI.h"
 
 #ifndef _WINDOWS
@@ -140,7 +141,7 @@ Framework::Framework(int argc_, char** argv_) :
     /// @note ConsoleAPI is not yet initialized so this or start params wont go to the gui console.
     /// It would be rather nice to get version and start params to the gui console also as client may start without a cmd prompt
     std::cout << "* API version         : " << apiVersionInfo->GetFullIdentifier().toStdString() << std::endl;
-    std::cout << "* Application version : " << applicationVersionInfo->GetFullIdentifier().toStdString() << std::endl;
+    std::cout << "* Application version : " << Application::FullIdentifier().toStdString() << std::endl;
     if (HasCommandLineParameter("--version"))
     {
 #ifdef WINDOWS_APP
@@ -160,27 +161,26 @@ Framework::Framework(int argc_, char** argv_) :
     ///\todo Remove non-Framework parameters from the list below.
     cmdLineDescs.commands["--help"] = "Produce help message"; // Framework
     cmdLineDescs.commands["--version"] = "Produce version information"; // Framework
-    cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework & OgreRenderingModule
+    cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework
     cmdLineDescs.commands["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically"; //JavascriptModule
     cmdLineDescs.commands["--server"] = "Start Tundra server"; // TundraLogicModule
     cmdLineDescs.commands["--port"] = "Start server in the specified port"; // TundraLogicModule
     cmdLineDescs.commands["--protocol"] = "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified."; // KristalliProtocolModule
-    cmdLineDescs.commands["--fpslimit"] = "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable"; // OgreRenderingModule
+    cmdLineDescs.commands["--fpslimit"] = "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable"; // Framework
     cmdLineDescs.commands["--run"] = "Run script on startup"; // JavaScriptModule
     cmdLineDescs.commands["--file"] = "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
     cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup"; // AssetModule
-    cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml"; // Framework
-    cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional.";
-    cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username";
+    cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml"; // Framework & PluginAPI
+    cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional."; // TundraLogicModule & AssetModule
+    cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username"; // TundraLogicModule & AssetModule
     cmdLineDescs.commands["--netrate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
-    cmdLineDescs.commands["--noassetcache"] = "Disable asset cache.";
-    cmdLineDescs.commands["--assetcachedir"] = "Specify asset cache directory to use.";
-    cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache.";
-    cmdLineDescs.commands["--loglevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'";
-    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt";
+    cmdLineDescs.commands["--noassetcache"] = "Disable asset cache."; // Framework
+    cmdLineDescs.commands["--assetcachedir"] = "Specify asset cache directory to use."; // Framework
+    cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
+    cmdLineDescs.commands["--loglevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'"; // ConsoleAPI
+    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt"; // ConsoleAPI
     cmdLineDescs.commands["--physicsrate"] = "Specifies the number of physics simulation steps per second. Default: 60"; // PhysicsModule
     cmdLineDescs.commands["--physicsmaxsteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6"; // PhysicsModule
-    
 
     if (HasCommandLineParameter("--help"))
     {
@@ -247,8 +247,8 @@ Framework::Framework(int argc_, char** argv_) :
         console = new ConsoleAPI(this);
         console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
 
-        // Initialize SceneAPI.
-        scene->Initialise();
+        /// @todo Remove when SceneInteract is moved out of the core.
+        scene->GetSceneInteract()->Initialize(this);
 
         RegisterDynamicObject("ui", ui);
         RegisterDynamicObject("frame", frame);
@@ -494,7 +494,7 @@ ApiVersionInfo *Framework::ApiVersion() const
 
 ApplicationVersionInfo *Framework::ApplicationVersion() const
 {
-    return applicationVersionInfo;   
+    return applicationVersionInfo;
 }
 
 void Framework::RegisterRenderer(IRenderer *renderer_)

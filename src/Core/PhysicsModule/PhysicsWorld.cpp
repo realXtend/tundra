@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #define MATH_BULLET_INTEROP
@@ -52,20 +52,11 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
 
 PhysicsWorld::~PhysicsWorld()
 {
-    delete world_;
-    world_ = 0;
-    
-    delete solver_;
-    solver_ = 0;
-    
-    delete broadphase_;
-    broadphase_ = 0;
-    
-    delete collisionDispatcher_;
-    collisionDispatcher_ = 0;
-    
-    delete collisionConfiguration_;
-    collisionConfiguration_ = 0;
+    SAFE_DELETE(world_);
+    SAFE_DELETE(solver_);
+    SAFE_DELETE(broadphase_);
+    SAFE_DELETE(collisionDispatcher_);
+    SAFE_DELETE(collisionConfiguration_);
 }
 
 void PhysicsWorld::SetPhysicsUpdatePeriod(float updatePeriod)
@@ -87,12 +78,12 @@ void PhysicsWorld::SetGravity(const float3& gravity)
     world_->setGravity(gravity);
 }
 
-float3 PhysicsWorld::GetGravity() const
+float3 PhysicsWorld::Gravity() const
 {
     return world_->getGravity();
 }
 
-btDiscreteDynamicsWorld* PhysicsWorld::GetWorld() const
+btDiscreteDynamicsWorld* PhysicsWorld::BulletWorld() const
 {
     return world_;
 }
@@ -116,9 +107,9 @@ void PhysicsWorld::Simulate(f64 frametime)
     if (!drawDebugManuallySet_)
     {
         if ((!drawDebugGeometry_) && (!debugRigidBodies_.empty()))
-            SetDrawDebugGeometry(true);
+            SetDebugGeometryEnabled(true);
         if ((drawDebugGeometry_) && (debugRigidBodies_.empty()))
-            SetDrawDebugGeometry(false);
+            SetDebugGeometryEnabled(false);
     }
     
     if (drawDebugGeometry_)
@@ -133,6 +124,22 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     
     std::set<std::pair<btCollisionObject*, btCollisionObject*> > currentCollisions;
     
+    // Collect all collision signals to a list before emitting any of them, in case a collision
+    // handler changes physics state before the loop below is over (which would lead into catastrophic
+    // consequences)
+    struct CollisionSignal
+    {
+        EC_RigidBody *bodyA;
+        EC_RigidBody *bodyB;
+        float3 position;
+        float3 normal;
+        float distance;
+        float impulse;
+        bool newCollision;
+    };
+    std::vector<CollisionSignal> collisions;
+    collisions.reserve(numManifolds * 3); // Guess some initial memory size for the collision list.
+
     if (numManifolds > 0)
     {
         PROFILE(PhysicsWorld_SendCollisions);
@@ -179,17 +186,15 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             {
                 btManifoldPoint& point = contactManifold->getContactPoint(j);
                 
-                float3 position = point.m_positionWorldOnB;
-                float3 normal = point.m_normalWorldOnB;
-                float distance = point.m_distance1;
-                float impulse = point.m_appliedImpulse;
-                
-                {
-                    PROFILE(PhysicsWorld_emit_PhysicsCollision);
-                    emit PhysicsCollision(entityA, entityB, position, normal, distance, impulse, newCollision);
-                }
-                bodyA->EmitPhysicsCollision(entityB, position, normal, distance, impulse, newCollision);
-                bodyB->EmitPhysicsCollision(entityA, position, normal, distance, impulse, newCollision);
+                CollisionSignal s;
+                s.bodyA = bodyA;
+                s.bodyB = bodyB;
+                s.position = point.m_positionWorldOnB;
+                s.normal = point.m_normalWorldOnB;
+                s.distance = point.m_distance1;
+                s.impulse = point.m_appliedImpulse;
+                s.newCollision = newCollision;
+                collisions.push_back(s);
                 
                 // Report newCollision = true only for the first contact, in case there are several contacts, and application does some logic depending on it
                 // (for example play a sound -> avoid multiple sounds being played)
@@ -199,7 +204,18 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             currentCollisions.insert(objectPair);
         }
     }
-    
+
+    // Now fire all collision signals.
+    {
+        PROFILE(PhysicsWorld_emit_PhysicsCollisions);
+        for(size_t i = 0; i < collisions.size(); ++i)
+        {
+            emit PhysicsCollision(collisions[i].bodyA->ParentEntity(), collisions[i].bodyB->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+            collisions[i].bodyA->EmitPhysicsCollision(collisions[i].bodyB->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+            collisions[i].bodyB->EmitPhysicsCollision(collisions[i].bodyA->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+        }
+    }
+
     previousCollisions_ = currentCollisions;
     
     {
@@ -241,7 +257,7 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
     return &result;
 }
 
-void PhysicsWorld::SetDrawDebugGeometry(bool enable)
+void PhysicsWorld::SetDebugGeometryEnabled(bool enable)
 {
     if (scene_.expired() || !scene_.lock()->ViewEnabled() || drawDebugGeometry_ == enable)
         return;

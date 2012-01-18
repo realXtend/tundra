@@ -1,11 +1,10 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "Application.h"
 #include "Framework.h"
-#include "VersionInfo.h"
 #include "ConfigAPI.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
@@ -147,7 +146,7 @@ void Application::SetSplashMessage(const QString &message)
     if (splashScreen && splashScreen->isVisible())
     {
         // Call QApplication::processEvents() to update splash painting as at this point main loop is not running yet
-        QString finalMessage = "v" + framework->ApplicationVersion()->GetVersion() + " - " + message.toUpper();
+        QString finalMessage = "v" + QString(Application::Version()) + " - " + message.toUpper();
         splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
         processEvents();
     }
@@ -327,7 +326,7 @@ QString Application::ParseWildCardFilename(const QString& input)
     filename = filename.replace("$(USERDATA)", UserDataDirectory(), Qt::CaseInsensitive);
     filename = filename.replace("$(USERDOCS)", UserDocumentsDirectory(), Qt::CaseInsensitive);
     QRegExp rx("\\$\\(DATE:(.*)\\)");
-    // Qt Regexes don't support non-greedy matching. The above regex should be "\\$\\(DATE:(.*?)\\)". Instad Qt supports
+    // Qt Regexes don't support non-greedy matching. The above regex should be "\\$\\(DATE:(.*?)\\)". Instead Qt supports
     // only setting the matching to be non-greedy globally.
     rx.setMinimal(true); // This is to avoid e.g. $(DATE:yyyyMMdd)_aaa).txt to be incorrectly captured as "yyyyMMdd)_aaa".
     for(;;) // Loop and find all instances of $(DATE:someformat).
@@ -360,6 +359,11 @@ const char *Application::Version()
     return version;
 }
 
+QString Application::FullIdentifier()
+{
+    return QString("%1 %2 %3").arg(organizationName).arg(applicationName).arg(version).trimmed();
+}
+
 void Application::ReadTargetFpsLimitFromConfig()
 {
     ConfigData targetFpsConfigData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
@@ -367,7 +371,6 @@ void Application::ReadTargetFpsLimitFromConfig()
     {
         bool ok;
         double targetFps = framework->Config()->Get(targetFpsConfigData, "fps target limit").toDouble(&ok);
-        assert(ok && targetFps >= 0.0);
         if (ok && targetFps >= 0.0)
         {
             LogDebug("Application: read target FPS limit " + QString::number(targetFpsLimit) + " from config.");

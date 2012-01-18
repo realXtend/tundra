@@ -313,7 +313,7 @@ EXTRACT_ALL            = YES
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
 # will be included in the documentation.
 
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file 
 # will be included in the documentation.
@@ -646,6 +646,14 @@ EXCLUDE                = ../.git \
                          ../deps \
                          ../lib \
                          ../tools \
+                         ../src/EntityComponents/EC_Ruler \
+                         ../src/EntityComponents/EC_Gizmo \
+                         ../src/Core/OgreRenderingModule/EC_SelectionBox.h \
+                         ../src/Core/OgreRenderingModule/EC_SelectionBox.cpp \
+                         ../src/Core/OgreRenderingModule/EC_OgreCustomObject.h \
+                         ../src/Core/OgreRenderingModule/EC_OgreCustomObject.cpp \
+                         ../src/Application/KinectModule \
+                         ../src/Application/OpenAssetImport
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -677,7 +685,10 @@ EXCLUDE_SYMBOLS        =    DEFINE_QPROPERTY_ATTRIBUTE* \
                             StanHull \
                             kNet \
                             TiXml*\
-                            json
+                            json \
+                            boost \
+                            Ogre
+
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 

@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   JavascriptModule.cpp
  *  @brief  Enables Javascript execution and scripting by using QtScript.
@@ -639,7 +639,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     {
         // Set entity and scene that own the EC_Script component.
         instance->RegisterService(comp->ParentEntity(), "me");
-        instance->RegisterService(comp->ParentEntity()->ParentScene(), "scene");
+        instance->RegisterService(comp->ParentScene(), "scene");
     }
 
     emit ScriptEngineCreated(instance->Engine());

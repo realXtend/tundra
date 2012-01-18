@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -83,7 +83,7 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
         object->convertToMesh(mesh_name);
         object->clear();
     
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
 
         entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_OgreCustomObject_entity"), mesh_name);
         if (entity_)
@@ -91,7 +91,7 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
             AttachEntity();
             entity_->setRenderingDistance(draw_distance_);
             entity_->setCastShadows(cast_shadows_);
-            entity_->setUserAny(Ogre::Any(ParentEntity()));
+            entity_->setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
             // Set UserAny also on subentities
             for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
                 entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
@@ -198,7 +198,7 @@ void EC_OgreCustomObject::DestroyEntity()
         return;
     OgreWorldPtr world = world_.lock();
     
-    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     
     if (entity_)
     {

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -11,11 +11,11 @@
 #include <QKeySequence>
 #include <QTime>
 #include <QPoint>
-
-#include <map>
+#include <QMap>
 
 class QGraphicsItem;
 class QGraphicsView;
+class QTouchEvent;
 
 class Framework;
 
@@ -52,7 +52,6 @@ public:
     /// Initializes the API and hooks it into the main application window.
     explicit InputAPI(Framework *owner);
 
-    /// The dtor saves the settings to QSettings.
     ~InputAPI();
 
     void Reset();
@@ -64,7 +63,7 @@ public:
     /// Prints the list of input contexts, for debugging purposes.
     void DumpInputContexts();
 
-    typedef std::map<std::string, QKeySequence> KeyActionsMap;
+    typedef QMap<QString, QKeySequence> KeyBindingMap;
 
 public slots:
     /// Creates a new input context with the given name.
@@ -73,11 +72,14 @@ public slots:
         Remember to hold on to a shared_ptr of the input context as long as you are using the context. */
     InputContextPtr RegisterInputContext(const QString &name, int priority);
 
-    /// For scripting languages.
-    /** Use UnregisterInputContextRaw() to free the input context. */
+    /// Creates an untracked InputContext for use from scripting languages that cannot hold a strong reference to an input context.
+    /** Use UnregisterInputContextRaw() to free the input context.
+        @todo Rename to more descriptive RegisterUntrackedInputContext */
     InputContext *RegisterInputContextRaw(const QString &name, int priority);
 
-    /// For scripting languages.
+    /// Deletes an untracked input context used from scripting languages.
+    /** @see RegisterInputContextRaw.
+        @todo Rename to more descriptive UnregisterUntrackedInputContext */
     void UnregisterInputContextRaw(const QString &name);
 
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
@@ -173,19 +175,28 @@ public slots:
     /// Finds the InputContext that has the highest mouse priority, and applies the mouse cursor in it as the currently shown mouse cursor.
     void ApplyMouseCursorOverride();
 
-    void LoadKeyBindingsFromFile();
-
-    void SaveKeyBindingsToFile();
-
-    const KeyActionsMap &KeyBindings() const { return keyboardMappings; }
-
-    void SetKeyBindings(const KeyActionsMap &actionMap) { keyboardMappings = actionMap; }
-
     /// Return the item at coordinates. If the mouse cursor is hidden, always returns null
     QGraphicsItem* ItemAtCoords(int x, int y) const;
 
     /// Explicitly defocus any widgets and return key focus to the 3D world
     void ClearFocus();
+
+    /// Return the current key bindings.
+    KeyBindingMap KeyBindings() const { return keyboardMappings; }
+
+    /// Sets new set of key bindings.
+    void SetKeyBindings(const KeyBindingMap &actionMap) { keyboardMappings = actionMap; }
+
+    /// Loads key bindings from config.
+    void LoadKeyBindingsFromFile();
+
+    /// Saves current key bindings to config.
+    void SaveKeyBindingsToFile();
+
+signals:
+    void TouchBegin(QTouchEvent *touchEvent);
+    void TouchUpdate(QTouchEvent *touchEvent);
+    void TouchEnd(QTouchEvent *touchEvent);
 
 private:
     Q_DISABLE_COPY(InputAPI)
@@ -253,7 +264,7 @@ private:
     InputContext topLevelInputContext;
 
     /// Stores all the keyboard mappings we have gathered.
-    KeyActionsMap keyboardMappings;
+    KeyBindingMap keyboardMappings;
 
     /// Stores the currently held down keyboard buttons.
     std::map<Qt::Key, KeyPressInformation> heldKeys;
@@ -293,4 +304,3 @@ private:
     QWidget *mainWindow;
     Framework *framework;
 };
-

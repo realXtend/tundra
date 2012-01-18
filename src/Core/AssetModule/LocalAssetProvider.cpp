@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -240,7 +240,7 @@ std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
     return stores;
 }
 
-AssetUploadTransferPtr LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName)
 {
     assert(data);
     if (!data)
@@ -308,7 +308,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         }
         QString absoluteFilename = file.absoluteFilePath();
 
-        bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);
+        bool success = LoadFileToVector(absoluteFilename, transfer->rawAssetData);
         if (!success)
         {
             QString reason = "Failed to read asset data for asset \"" + ref + "\" from file \"" + absoluteFilename + "\"";
@@ -322,7 +322,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         transfer->SetCachingBehavior(false, absoluteFilename);
 
         transfer->storage = storage;
-//        AssetModule::LogDebug("Downloaded asset \"" + ref + "\" from file " + absoluteFilename.toStdString());
+//        AssetModule::LogDebug("Downloaded asset \"" + ref + "\" from file " + absoluteFilename);
 
         // Signal the Asset API that this asset is now successfully downloaded.
         framework->Asset()->AssetTransferCompleted(transfer.get());
@@ -440,9 +440,9 @@ void LocalAssetProvider::CompletePendingFileUploads()
 
         bool success;
         if (fromFile.length() == 0)
-            success = SaveAssetFromMemoryToFile(&transfer->assetData[0], transfer->assetData.size(), toFile.toStdString().c_str());
+            success = SaveAssetFromMemoryToFile(&transfer->assetData[0], transfer->assetData.size(), toFile);
         else
-            success = CopyAssetFile(fromFile.toStdString().c_str(), toFile.toStdString().c_str());
+            success = CopyAssetFile(fromFile, toFile);
 
         if (!success)
         {

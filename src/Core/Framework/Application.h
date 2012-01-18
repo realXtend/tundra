@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -25,10 +25,11 @@ class Application : public QApplication
     Q_PROPERTY(QString applicationName READ ApplicationName)
     Q_PROPERTY(QString version READ Version)
     Q_PROPERTY(QString platform READ Platform)
+    Q_PROPERTY(QString fullIdentifier READ FullIdentifier)
     Q_PROPERTY(double targetFpsLimit READ TargetFpsLimit WRITE SetTargetFpsLimit)
 
 public:
-    /// Construcs the application singleton.
+    /// Constructs the application singleton.
     /** Qt requires its own data copy of the argc/argv parameters, so this object
         caches them. Pass in received command-line parameters here.
         @param owner Pass in the root framework pointer here. */
@@ -80,7 +81,7 @@ public:
         $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString . */
     static QString ParseWildCardFilename(const QString& input);
 
-    /// Return organization of application, e.g. "realXtend".
+    /// Return organization of the application, e.g. "realXtend".
     /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
     static const char *OrganizationName();
 
@@ -95,6 +96,10 @@ public:
     /// Returns the operating system/platform. Possible return values 'win' for windows, 'mac' for Mac OSX or 'x11' for linux, empty string for unresolved.
     /// This is intended for scripting languages, as sometimes you need to do OS specific UI changes with Qt etc.
     static QString Platform();
+    
+    /// Returns "OrganizationName ApplicationName Version".
+    /** @note Unlike OrganizationName, ApplicationName and Version, this function performs memory allocation. */
+    static QString FullIdentifier();
 
     /// Specifies a new FPS limit to use for the main loop.
     /** Pass in a value of 0 to remove fps limiting altogether. */

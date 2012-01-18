@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 
@@ -258,7 +258,7 @@ void EC_Terrain::DestroyPatch(int x, int y)
 
     if (world_.expired()) // Oops! Already destroyed
         return;
-    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
     
     EC_Terrain::Patch &patch = GetPatch(x, y);
 
@@ -298,7 +298,7 @@ void EC_Terrain::Destroy()
 
     if (world_.expired()) // Oops! Already destroyed
         return;
-    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
 
     if (rootNode)
     {
@@ -646,7 +646,7 @@ bool EC_Terrain::LoadFromFile(QString filename)
     filename = filename.trimmed();
 
     std::vector<u8> file;
-    LoadFileToVector(filename.toStdString().c_str(), file);
+    LoadFileToVector(filename, file);
 
     if (file.size() > 0)
     {
@@ -718,14 +718,15 @@ void EC_Terrain::NormalizeImage(QString filename) const
     try
     {
         std::vector<u8> imageFile;
-        LoadFileToVector(filename.toStdString().c_str(), imageFile);
+        LoadFileToVector(filename, imageFile);
 #include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
 #include "EnableMemoryLeakCheck.h"
         image.load(stream);
-    } catch(...)
+    }
+    catch(...)
     {
-        LogError("Execption catched when trying load image file" + filename + ".");
+        LogError("EC_Terrain::NormalizeImage: Exception catched when trying load image file" + filename + ".");
         return;
     }
 
@@ -749,11 +750,11 @@ void EC_Terrain::NormalizeImage(QString filename) const
     {
         Ogre::Image dstImage;
         dstImage.loadDynamicImage(&imageData[0], image.getWidth(), image.getHeight(), Ogre::PF_A8R8G8B8);
-        dstImage.save(filename.toStdString().c_str());
-    } catch(...)
+        dstImage.save(filename.toStdString());
+    }
+    catch(...)
     {
-        ///\todo Log out warning.
-        return;
+        LogWarning("Exception catched when trying save image file" + filename + ".");
     }
 }
 
@@ -763,12 +764,13 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
     try
     {
         std::vector<u8> imageFile;
-        LoadFileToVector(filename.toStdString().c_str(), imageFile);
+        LoadFileToVector(filename, imageFile);
 #include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
 #include "EnableMemoryLeakCheck.h"
         image.load(stream);
-    } catch(...)
+    }
+    catch(...)
     {
         LogError("Execption catched when trying load terrain from image file" + filename + ".");
         return false;
@@ -823,9 +825,10 @@ bool EC_Terrain::SaveToImageFile(QString filename, float minHeight, float maxHei
         Ogre::Image image;
         image.loadDynamicImage(&imageData[0], xVertices, yVertices, Ogre::PF_R8G8B8);
         image.save(filename.toStdString().c_str());
-    } catch(...)
+    }
+    catch(...)
     {
-        ///\todo Log out warning.
+        LogWarning("EC_Terrain::SaveToImageFile: Exception catched when trying save image file" + filename + ".");
         return false;
     }
     return true;
@@ -1131,7 +1134,7 @@ void EC_Terrain::RemapHeightValues(float minHeight, float maxHeight)
     AffineTransform((maxHeight - minHeight) / (maxHeightCur - minHeightCur), minHeight - minHeightCur);
 }
 
-void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
+void EC_Terrain::SetTerrainMaterialTexture(int index, const QString &textureName)
 {
     if (index < 0 || index > 4)
         return;
@@ -1139,6 +1142,7 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
 //    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
 //    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(textureName).get());
 
+    /// @bug This performs a lossy Unicode->ASCII conversion for the material name!
     Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get())
     {
@@ -1149,7 +1153,8 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
 //    assert(terrainMaterial);
  //   if(terrainMaterial)
 //    {
-        OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
+    /// @bug This performs a lossy Unicode->ASCII conversion for the texture name!
+        OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName.toStdString().c_str(), index);
 //    }
 //    else
 //        LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
@@ -1193,7 +1198,7 @@ void EC_Terrain::AttachTerrainRootNode()
 
     if (world_.expired()) 
         return;
-    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
 
     // Detach the terrain root node from any previous EC_Placeable scenenode.
     if (rootNode->getParentSceneNode())
@@ -1227,7 +1232,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     if (world_.expired())
         return;
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world->OgreSceneManager();
 
     Ogre::SceneNode *node = patch.node;
     bool firstTimeFill = (node == 0);
@@ -1358,7 +1363,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     sceneMgr->destroyManualObject(manual);
 
     patch.entity = sceneMgr->createEntity(world->GetUniqueObjectName("EC_Terrain_patchentity"), patch.meshGeometryName);
-    patch.entity->setUserAny(Ogre::Any(parentEntity));
+    patch.entity->setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
     patch.entity->setCastShadows(false);
     // Set UserAny also on subentities
     for(uint i = 0; i < patch.entity->getNumSubEntities(); ++i)
@@ -1387,7 +1392,7 @@ void EC_Terrain::CreateRootNode()
     if (world_.expired())
         return;
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world->OgreSceneManager();
 
     rootNode = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Terrain_RootNode"));
 
@@ -1402,7 +1407,7 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
     if (world_.expired())
         return;
     OgreWorldPtr world = world_.lock();
-    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+    Ogre::SceneManager *sceneMgr = world->OgreSceneManager();
     
     if (!sceneMgr || !sceneMgr->getRootSceneNode())
         return;

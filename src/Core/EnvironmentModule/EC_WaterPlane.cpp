@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
@@ -65,7 +65,7 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     OgreWorldPtr world = world_.lock();
     if (world)
     {
-        Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager *sceneMgr = world->OgreSceneManager();
         node_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_WaterPlane_Root"));
     }
 
@@ -103,7 +103,7 @@ EC_WaterPlane::~EC_WaterPlane()
 
     if (node_ != 0)
     {
-        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         sceneMgr->destroySceneNode(node_);
         node_ = 0;
     }
@@ -168,7 +168,7 @@ void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Typ
         DetachEntity();
 
         // Attach entity directly to Ogre root.
-        Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world_.lock()->OgreSceneManager();
         if (sceneMgr == 0)
             return;
 
@@ -257,7 +257,7 @@ bool EC_WaterPlane::IsCameraInsideWaterCube()
     if (entity_ == 0)
         return false;
 
-    Ogre::Camera *camera = world_.lock()->GetRenderer()->MainOgreCamera();
+    Ogre::Camera *camera = world_.lock()->Renderer()->MainOgreCamera();
     if (!camera)
         return false;
     Ogre::Vector3 posCamera = camera->getDerivedPosition();
@@ -284,7 +284,7 @@ void EC_WaterPlane::CreateWaterPlane()
     // Create water plane
     if (world)
     {
-        Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+        Ogre::SceneManager *sceneMgr = world->OgreSceneManager();
         assert(sceneMgr);
 
         if (node_ != 0)
@@ -315,7 +315,7 @@ void EC_WaterPlane::RemoveWaterPlane()
 
     DetachEntity();
 
-    Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world_.lock()->OgreSceneManager();
     sceneMgr->destroyEntity(entity_);
     entity_ = 0;
     
@@ -476,7 +476,7 @@ void EC_WaterPlane::AttachEntity()
     else
     {
         // There is no placeable attacht entity to OgreSceneRoot 
-        Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world_.lock()->OgreSceneManager();
         node_->attachObject(entity_);
         sceneMgr->getRootSceneNode()->addChild(node_);
         node_->setVisible(true);
@@ -504,7 +504,7 @@ void EC_WaterPlane::DetachEntity()
         // Sanity check..
         if (entity_->isAttached() )
         {
-            Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+            Ogre::SceneManager* sceneMgr = world_.lock()->OgreSceneManager();
             node_->detachObject(entity_);
             sceneMgr->getRootSceneNode()->removeChild(node_);
             attachedToRoot_ = false;

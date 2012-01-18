@@ -8,24 +8,28 @@ This page describes the different conventions for producing code and documentati
 
 \subsection nameconvp Code Organization, Naming and Formatting
 
+All code files must contain the the following licensing information:
+\verbatim
+// For conditions of distribution and use, see copyright notice in LICENSE
+\endverbatim
+
 All publicly visible classes should be declared in their own header file using the <b>.h</b> extension, 
 placed in the folder of the sub-project in question, and named after the class. 
 Small tightly related classes, which are always included together may be declared in the same header file. 
 Internal helper structures or function objects may be declared in a <b>.cpp</b> file.
 <b>Implementations</b> should be placed in a source file called the same name as the class and placed in the folder of the subproject in question.
 Very small bodies of template and inline code may be placed inside the class header, but any larger pieces of code
-should be placed in an .inl file that matches the classes name, for example for a class NetMessage.h, the file NetMessage.inl defines
-the template and inline code that is associated to that class.
+should be placed in an .inl file that matches the classes name, for example for a class Entity introduced in Entity.h, the file Entity.inl defines the template and inline code that is associated to that class.
 
 \subsection nameconvh Header Files
 Each .cpp file should have corresponding header file, excluding certain .cpp files such as main.cpp and unit tests.
-All header files must have #pragma once inclusion guards.
+<b>All header files must have #pragma once inclusion guards.</b>
 
 Use <b>forward declarations</b> to minimize use of \#include declarations in header files.
 
 In all files, try to order your \#include statements in the following order:
 \verbatim
-StableHeaders.h (optional)
+StableHeaders.h (ONLY IN CPP FILE, if applicable)
 DebugOperatorNew.h (optional)
 file's .h (in cpp file)
 same project's .h
@@ -37,38 +41,59 @@ MemoryLeakCheck.h (optional)
 \endverbatim
 
 \subsection nameconvfuncparam Function Parameters
-In functions that pass output variables as parameters to the function, prefer the order <b>Inputs first, outputs last</b>.
-When passing non-const pointers or references to a function, document the parameters in doxygen format using the appropriate <b>[in]</b>,
-<b>[out]</b>, <b>[in,out]</b> tags. If you only intend to read from a pointer or reference passed to a function, mark it const.
+In functions that pass output variables as parameters to the function, prefer the order <b>inputs first, outputs last</b>.
+Matk the output variable using the appropriate <b>[out]</b> tag. If you only intend to read from a pointer or reference passed to a function, mark it const.
 
 \subsection scope Scoping and Namespaces
-<b>Avoid unnecessary use of namespaces.</b> One namespace within one module is usually more than enough.
+<b>Avoid unnecessary use of namespaces.</b> One namespace within one plugin/module is usually more than enough. The core Tundra functionality is not withing namespace.
 
 Do not place the <b>using namespace</b> directives in .h- or .inl -files. Please use the <b>using namespace</b> directive at a local scope 
 whenever it improves readability.
 
 Use unnamed namespaces over the C-like <b>static</b> keyword.
 
-<b>Do not use "Get"-prefix for getters.</b>
+<b>Do not use "Get"-prefix for getters.</b> Use "Is"-prefix for getters that could be mistaken as normal functions: f.ex. property bool empty -> getter IsEmpty.
 
 \subsection Identifier Naming
+Use <b>American English</b> when naming classes, structs, functions etc.
 The following identifiers are written in <b>title case</b>:
 \verbatim
-class AvatarNode;
-struct TcpConnectionParameters;
-typedef boost::shared_ptr<AvatarNode> AvatarNodePtr;
-void AvatarNode::WalkForward();
+class Entity;
+struct AssetReference;
+typedef boost::shared_ptr<Entity> EntityPtr;
+QString Entity::Name() const;
 \endverbatim
 
-Interfaces should be prefixed with 'I'. ex: IMyNewClass.
+Interface classes should be prefixed with 'I'. ex: IAssetProvider.
 
 Local variables and public/protected member variables are written in camel case:
 \verbatim
-int localVar;
-AvatarPtr userAgent = manager->UserAgent();
-int AvatarNode::numOfFriends;
+int someLocalVar;
+QString IComponent::typeName;
 Q_PROPERTY(QString name ...)
 \endverbatim
+
+Enums are written in upper case without special prefixes:
+\verbatim
+enum GizmoType
+{
+    Translate,
+    Rotate,
+    Scale
+};
+\endverbatim
+
+Preprocessor macros are written in upper case with underscores:
+\verbatim
+#define SAFE_DELETE(p) { delete p; p=0; }
+\endverbatim
+
+Prepend variable names of (global) static constants with "c"-prefix:
+\verbatim
+const int cSomeConstantValue = 1;
+\endverbatim
+
+<b>Use constants instead of preprocessor macros for magic numbers/values.</b>
 
 \subsection signals_and_slots Signals and Slots
 When naming signals, use the signature to describe what has happened or is about to happen.
@@ -119,67 +144,96 @@ differences are.
 Use <b>assert</b>s to check for conditions that should never occur and that clearly indicate a programming error. Do not use
 assert in code that involves validating input data from an user, a file or from network.
 
-Both <b>exceptions</b> and <b>return values</b> may be used for error propagation. Use the one that makes more sense and try to be
-consistent within the same context. Do not use exceptions to manage normal control flow. When writing a catch block that does no 
+Favor <b>not</b> using <b>exceptions</b> for error propagation. Do not use exceptions to manage normal control flow. When writing a catch block that does no 
 processing on the actual exception value, or when writing a catch(...)-block, document clearly why nothing is done to handle the 
-exception, or describe the not-yet-implemented exception handling using a <b>\\todo</b> block. Avoid writing overly general 
+exception, or describe the not-yet-implemented exception handling using a <b>\@todo</b> block. Avoid writing overly general 
 catch blocks that are not in reality aware of all the exceptions they might receive.
 
 Be <b>const-correct</b> (http://www.parashift.com/c++-faq-lite/const-correctness.html) where possible. There are very few places where adding a const is wrong.
 
 For clarity, use <b>typedef</b>s to define template-based types that you use more than once. ex: typedef std::list<MyType*> MyTypeList;
 
-\section doc Documentation Guidelines
-
-All <b>public</b> classes and methods must be fully documented in English using Doxygen-compatible comments.
-Place comments mainly in the header files and not in .cpp -files. Use the <b>\\param</b> and <b>\\return</b> directives to 
-define inputs and outputs clearly and <b>\\note</b> to indicate points of interest. Small comment sections are suitable
-to be documented using the C++-style tags, but for larger sections, use C-style tags. For example:
-
+Introduce members of you classes and structs as follows:
 \verbatim
-    /// A stream reader utility for reading a byte array bit-by-bit.
-    /// @todo Move into OpenSimProtocol module, has nothing RexLogic -specific, -jj.
-    class BitStream
-    {
-    public:
-        /// Constructs a BitStream reader to the given memory area.
-        /** @param data A pointer to the data to read. \note The memory will not be copied, but the 
-            data will be read from the original buffer, so keep the data alive at least as long as 
-            you're using BitStream to read from it.
-            @param numBytes The number of bytes in the stream. */
-        BitStream(const void *data, size_t num_bytes);
-
-        /// Reads the given amount of bits from the stream and advances the position inside the stream.
-        /** The bits are read from the byte array most-significant-bit first, i.e. big endian for bits, but
-            if you read u16 or u32 variables, the bytes are reconstructed as LSB -first. This convention 
-            comes directly from the way existing data is stored in the SLUDP protocol.
-            @param count The number of bits to read, 0 <= count <= 32.
-            @return The desired amount of bits packed in an u32, populating bits from the 
-            least-significant-bits-end of the u32. The bits are filled in most-significant-bit first. */
-        u32 ReadBits(int count);
-
-        /// Reads a single bit from the stream and advances the current stream position.
-        /** @return The next bit in the stream, or 0 if there are no bits left in the stream. */
-        bool ReadBit();
-    };
-}
+class Foo : public QObject
+{
+    Q_OBJECT // if the class inherits QObject
+    // and other possible Qt macros
+public:
+    // ...
+public slots:
+    // ...
+signals:
+    // ...
+protected:
+    // ...
+private:
+    // ...
+private slots:
+    // ...
+};
 \endverbatim
 
-See RexLogic::BitStream for the actual class in realXtend documentation pages.
+\section doc Documentation Guidelines
+
+Use the JavaDoc-style doxygen notation. Do not add extra *s on each new line of detailed documenation block. Do not place the comment block ending on a new empty line.
+Example:
+\verbatim
+/// Brief description here.
+/** Detailed description begins here.
+    And some more information here. */
+class Foo
+{
+public:
+    /// Does nothing.
+    /** @param someParam Some parameter that is used for nothing. */
+    void Bar(void *someParam);
+};
+\endverbatim
+
+All <b>public</b> classes and methods must be fully documented in English using Doxygen-compatible comments.
+Place comments mainly in the header files and not in .cpp -files. Use the <b>\@param</b> and <b>\@return</b> directives to 
+define inputs and outputs clearly and <b>\@note</b> to indicate points of interest.
+
+Don't be afraid to use <b>\@todo</b>s and <b>\@bug</b>s to indicate a incomplete or possible erroneous functionality you know to exist,
+but cannot for some reason fix now (time *is* a constraint). These comments are worth gold when the software evolves.
+
+Documentation example:
+
+\verbatim
+/// Tree widget item representing a component.
+class ComponentItem : public QTreeWidgetItem
+{
+public:
+    /// Constructor.
+    /** @param comp Component which the item represents.
+        @param parent Parent entity item. */
+    ComponentItem(const ComponentPtr &comp, EntityItem *parent);
+
+    /// Decorates the item (text + color) accordingly to the component information.
+    /** @param comp Component which the item represents. */
+    void SetText(IComponent *comp);
+
+    /// Returns pointer to the entity this item represents.
+    ComponentPtr Component() const;
+
+    /// Returns the parent entity item.
+    EntityItem *Parent() const;
+
+    QString typeName; ///< Type name.
+    QString name; ///< Name, if applicable.
+
+private:
+    ComponentWeakPtr ptr; ///< Weak pointer to the component this item represents.
+    EntityItem *parentItem; ///< Parent entity item.
+};
+
+\endverbatim
+
+See ComponentItem for the actual class in realXtend documentation pages.
 
 Full list of Doxygen commands: http://www.stack.nl/~dimitri/doxygen/commands.html
 
 Useful Doxygen examples: http://www.stack.nl/~dimitri/doxygen/docblocks.html
-
-<b>!! Important !!</b>
-
-We're developing under the scrum model (or at least trying), and <b>refactoring</b> happens often. It is not necessarily a
-sign that something failed previously. There is no need to pretend that any piece of code is final and you should use 
-<b>\\todo</b>s <b>extensively</b> to show what the current status and possible future directions are.
-
-Similarly, use <b>\\bug</b> to indicate a programming error you know to exist, but cannot for some reason fix now (time *is* a constraint). Don't feel guilty about marking <b>\\bug</b> items into code you have produced, these comments are worth gold 
-when the software evolves.
-
-<b>!! Important !!</b>
 
 */

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
 
@@ -513,7 +513,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     AssetUploadTransferPtr transfer;
     try
     {
-        transfer = UploadAssetFromFile(filename.toStdString().c_str(), storage, newAssetName.toStdString().c_str());
+        transfer = UploadAssetFromFile(filename, storage, newAssetName);
     }
     catch(Exception &e)
     {
@@ -526,12 +526,12 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     return transfer;
 }
 
-AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, AssetStoragePtr destination, const QString &assetName)
 {
-    if (!filename || strlen(filename) == 0)
+    if (filename.isEmpty())
         throw Exception("AssetAPI::UploadAssetFromFile failed! No source filename given!");
 
-    if (!assetName || strlen(assetName) == 0)
+    if (assetName.isEmpty())
         throw Exception("AssetAPI::UploadAssetFromFile failed! No destination asset name given!");
 
     if (!destination)
@@ -569,7 +569,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
     AssetUploadTransferPtr transfer;
     try
     {
-        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName.toStdString().c_str());
+        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName);
     }
     catch(Exception &e)
     {
@@ -582,12 +582,12 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
     return transfer;
 }
 
-AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName)
 {
     if (!data || numBytes == 0)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! Null source data passed!");
 
-    if (!assetName || strlen(assetName) == 0)
+    if (assetName.isEmpty())
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! No destination asset name given!");
 
     if (!destination)
@@ -753,34 +753,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         return AssetTransferPtr();
     }
 
-    // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache ? assetCache->FindInCache(assetRef) : "";
-    AssetTransferPtr transfer;
-
-    if (!assetFileInCache.isEmpty())
-    {
-        // The asset can be found from cache. Generate a providerless transfer and return it to the client.
-        transfer = AssetTransferPtr(new IAssetTransfer());
-        transfer->diskSourceType = IAsset::Cached;
-        
-        bool success = LoadFileToVector(assetFileInCache.toStdString().c_str(), transfer->rawAssetData);
-        if (!success)
-        {
-            LogError("AssetAPI::RequestAsset: Failed to load asset \"" + assetFileInCache + "\" from cache!");
-            return AssetTransferPtr();
-        }
-        transfer->source.ref = assetRef;
-        transfer->assetType = assetType;
-        transfer->storage = AssetStorageWeakPtr(); // Note: Unfortunately when we load an asset from cache, we don't get the information about which storage it's supposed to come from.
-        transfer->provider = provider;
-        transfer->SetCachingBehavior(false, assetFileInCache);
-        LogDebug("AssetAPI::RequestAsset: Loaded asset \"" + assetRef + "\" from disk cache instead of having to use asset provider."); 
-        readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
-    }
-    else // Can't find the asset in cache. Do a real request from the asset provider.
-    {
-        transfer = provider->RequestAsset(assetRef, assetType);
-    }
+    // Perform the actual request.
+    AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
 
     if (!transfer)
     {
@@ -954,7 +928,7 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
     // windows non-admin users having no write permission to the run folder
     QDir cacheDir;
     if (assetCache)
-        cacheDir = QDir(assetCache->GetCacheDirectory());
+        cacheDir = QDir(assetCache->CacheDirectory());
     else
         cacheDir = QDir(Application::UserDataDirectory());
     if (cacheDir.exists())
@@ -1151,9 +1125,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
-//    LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
+    //LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
 
-    if (dynamic_cast<VirtualAssetTransfer*>(transfer_) && transfer->asset && transfer->asset->IsLoaded()) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    if (dynamic_cast<VirtualAssetTransfer*>(transfer_) && transfer->asset && transfer->asset->IsLoaded()) 
     {
         transfer->EmitAssetDownloaded();
         transfer->EmitTransferSucceeded();
@@ -1186,9 +1161,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0 && assetCache)
         assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
 
-    // If disksource is still empty, forcibly look up from cache
+    // If disksource is still empty, forcibly look up if the asset exists in the cache now.
     if (assetDiskSource.isEmpty() && assetCache)
-        assetDiskSource = assetCache->GetDiskSourceByRef(transfer->source.ref);
+        assetDiskSource = assetCache->FindInCache(transfer->source.ref);
     
     // Save for the asset the storage and provider it came from.
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());
@@ -1679,29 +1654,30 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
     }
 }
 
-bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
+bool LoadFileToVector(const QString &filename, std::vector<u8> &dst)
 {
-    FILE *handle = fopen(filename, "rb");
-    if (!handle)
+    QFile file(filename);
+    file.open(QIODevice::ReadOnly);
+    if (!file.isOpen())
     {
-        LogError("AssetAPI::LoadFileToVector: Failed to open file '" + std::string(filename) + "' for reading.");
+        LogError("AssetAPI::LoadFileToVector: Failed to open file '" + filename + "' for reading.");
+        return false;
+    }
+    qint64 fileSize = file.size();
+    if (fileSize <= 0)
+    {
+        LogError("AssetAPI::LoadFileToVector: Failed to read file '" + filename + "' of " + fileSize + " bytes in size.");
+        return false;
+    }
+    dst.resize(fileSize);
+    qint64 numRead = file.read((char*)&dst[0], fileSize);
+    if (numRead < fileSize)
+    {
+        LogError("AssetAPI::LoadFileToVector: Failed to read " + QString::number(numRead) + " bytes from file '" + filename + "'.");
         return false;
     }
 
-    fseek(handle, 0, SEEK_END);
-    long numBytes = ftell(handle);
-    if (numBytes == 0)
-    {
-        fclose(handle);
-        return false;
-    }
-
-    fseek(handle, 0, SEEK_SET);
-    dst.resize(numBytes);
-    size_t numRead = fread(&dst[0], sizeof(u8), numBytes, handle);
-    fclose(handle);
-
-    return (long)numRead == numBytes;
+    return true;
 }
 
 namespace
@@ -1837,15 +1813,15 @@ std::string AssetAPI::DesanitateAssetRef(const std::string& input)
     return DesanitateAssetRef(QString::fromStdString(input)).toStdString();
 }
 
-bool CopyAssetFile(const char *sourceFile, const char *destFile)
+bool CopyAssetFile(const QString &sourceFile, const QString &destFile)
 {
-    assert(sourceFile);
-    assert(destFile);
+    assert(!sourceFile.trimmed().isEmpty());
+    assert(!destFile.trimmed().isEmpty());
 
     QFile asset_in(sourceFile);
     if (!asset_in.open(QFile::ReadOnly))
     {
-        LogError("Could not open input asset file \"" + std::string(sourceFile) + "\"");
+        LogError("Could not open input asset file \"" + sourceFile + "\"");
         return false;
     }
 
@@ -1855,7 +1831,7 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile)
     QFile asset_out(destFile);
     if (!asset_out.open(QFile::WriteOnly))
     {
-        LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
+        LogError("Could not open output asset file \"" + destFile + "\"");
         return false;
     }
 
@@ -1865,15 +1841,15 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile)
     return true;
 }
 
-bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile)
+bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const QString &destFile)
 {
     assert(data);
-    assert(destFile);
+    assert(!destFile.trimmed().isEmpty());
 
     QFile asset_out(destFile);
     if (!asset_out.open(QFile::WriteOnly))
     {
-        LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
+        LogError("Could not open output asset file \"" + destFile + "\"");
         return false;
     }
 

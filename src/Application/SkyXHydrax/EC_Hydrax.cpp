@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_Hydrax.cpp
  *  @brief  A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
@@ -95,7 +95,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
         return;
     }
 
-    connect(w->GetRenderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
+    connect(w->Renderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 
     connect(&configRefListener, SIGNAL(Loaded(AssetPtr)), this, SLOT(ConfigLoadSucceeded(AssetPtr)));
@@ -125,7 +125,7 @@ void EC_Hydrax::Create()
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
         assert(w);
 
-        Entity *mainCamera = w->GetRenderer()->MainCamera();
+        Entity *mainCamera = w->Renderer()->MainCamera();
         if (!mainCamera)
         {
             // Can't create Hydrax just yet, no main camera set (Hydrax needs a valid camera to initialize).
@@ -137,7 +137,7 @@ void EC_Hydrax::Create()
 
         Ogre::Camera *cam = mainCamera->GetComponent<EC_Camera>()->GetCamera();
         impl = new EC_HydraxImpl();
-        impl->hydrax = new Hydrax::Hydrax(w->GetSceneManager(), cam, w->GetRenderer()->MainViewport());
+        impl->hydrax = new Hydrax::Hydrax(w->OgreSceneManager(), cam, w->Renderer()->MainViewport());
 
         // Using projected grid module by default
         Hydrax::Module::ProjectedGrid *module = new Hydrax::Module::ProjectedGrid(impl->hydrax, new Hydrax::Noise::Perlin(),

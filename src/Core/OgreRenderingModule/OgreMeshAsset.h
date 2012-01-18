@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -51,6 +51,11 @@ public:
     //QString ogreAssetName;
 
     //std::vector<QString> originalMaterials;
+
+private:
+    /// Process mesh data after loading to create tangents and such.
+    bool GenerateMeshdata();
+
 };
 
 typedef boost::shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;

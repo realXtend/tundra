@@ -1,10 +1,9 @@
 /*
 --------------------------------------------------------------------------------
 This source file is part of SkyX.
-Visit ---
+Visit http://www.paradise-studios.net/products/skyx/
 
-Copyright (C) 2009 Xavier Verguín González <xavierverguin@hotmail.com>
-                                           <xavyiy@gmail.com>
+Copyright (C) 2009-2011 Xavier Verguín González <xavyiy@gmail.com>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free Software
@@ -20,33 +19,22 @@ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-GLSL shaders added by Jose Luis Cercos Pita.
---------------------------------------------------------------------------------
 */
 
-// --------------------- SkyX moon material ------------------------
+// ------------------------- SkyX clouds -----------------------------
+// ------------------------- GLSL Vertex -----------------------------
+
+// IN
+attribute vec4 vertex; // iPosition
+attribute vec3 uv0;    // iNPosition
 // OUT
-varying vec4 UVYLength;
+varying vec3 vPosition;
 // UNIFORM
-uniform mat4 uWorldViewProj;
-uniform mat4 uWorld;
-uniform vec3 uSkydomeCenter;
 
-void main()
+void main(void)
 {
-    // Clip space position
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+	// Clip space position
+    gl_Position = gl_ModelViewProjectionMatrix * vertex;
 
-	// World position
-	vec3 ObjectSpacePosition = (uWorld * gl_Vertex).xyz - uSkydomeCenter;
-
-    // UV
-    UVYLength.xy = gl_MultiTexCoord0.xy;
-    // Y
-    UVYLength.z  = ObjectSpacePosition.y;
-    // Length
-    UVYLength.w  = length(ObjectSpacePosition);
+    vPosition = uv0;
 }
-

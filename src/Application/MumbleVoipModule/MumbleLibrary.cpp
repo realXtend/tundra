@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -39,11 +39,8 @@ namespace MumbleLib
 
     void MumbleLibrary::StartMumbleThread()
     {
-
         if (!mumble_main_loop_)
-        {
             mumble_main_loop_ = new MumbleMainLoopThread();
-        }
 
         if (mumble_main_loop_->isRunning())
             return;

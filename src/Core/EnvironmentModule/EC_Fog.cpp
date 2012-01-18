@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -53,8 +53,8 @@ EC_Fog::~EC_Fog()
     if (!w)
         return;
 
-    w->GetSceneManager()->setFog(Ogre::FOG_NONE);
-    w->GetRenderer()->MainViewport()->setBackgroundColour(Color()); // Color default ctor == black
+    w->OgreSceneManager()->setFog(Ogre::FOG_NONE);
+    w->Renderer()->MainViewport()->setBackgroundColour(Color()); // Color default ctor == black
 }
 
 void EC_Fog::Update()
@@ -69,9 +69,9 @@ void EC_Fog::Update()
 
     world = w;
     // Note: in Tundra1-series, if we were within EC_WaterPlane, the waterPlaneColor*fogColor was used as the scene fog color.
-    w->GetSceneManager()->setFog((Ogre::FogMode)mode.Get(), color.Get(), expDensity.Get(), startDistance.Get(), endDistance.Get());
+    w->OgreSceneManager()->setFog((Ogre::FogMode)mode.Get(), color.Get(), expDensity.Get(), startDistance.Get(), endDistance.Get());
     if ((FogMode)mode.Get() == None)
-        w->GetRenderer()->MainViewport()->setBackgroundColour(Color()); // Color default ctor == black
+        w->Renderer()->MainViewport()->setBackgroundColour(Color()); // Color default ctor == black
     else
-        w->GetRenderer()->MainViewport()->setBackgroundColour(color.Get());
+        w->Renderer()->MainViewport()->setBackgroundColour(color.Get());
 }

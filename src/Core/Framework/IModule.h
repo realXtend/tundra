@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   IModule.h
  *  @brief  Interface for module objects. When creating new modules, inherit from this class.

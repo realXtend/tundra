@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
 #include "InputAPI.h"
@@ -11,15 +11,16 @@
 #include "CoreDefines.h"
 #include "ConfigAPI.h"
 #include "Profiler.h"
-#include <boost/thread.hpp>
+
 #include <boost/make_shared.hpp>
-#include <boost/algorithm/string.hpp>
+
 #include <QList>
 #include <QVector>
 #include <QGraphicsItem>
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QGestureEvent>
+#include <QTouchEvent>
 #include <QApplication>
 #include <QSettings>
 
@@ -76,6 +77,7 @@ framework(framework_)
     mainView->installEventFilter(this);
     // For mouse presses and releases, as well as mouse moves when a button is being held down.
     mainView->viewport()->installEventFilter(this);
+    mainView->viewport()->setAttribute(Qt::WA_AcceptTouchEvents, true);
     
     // Find the top-level widget that the QGraphicsView is contained in. We need 
     // to track mouse move events from that window.
@@ -87,6 +89,7 @@ framework(framework_)
     mainWindow->setMouseTracking(true);
     // For Mouse wheel events, key releases, and mouse moves (no button down).
     mainWindow->installEventFilter(this);
+    mainWindow->setAttribute(Qt::WA_AcceptTouchEvents, true);
 
     LoadKeyBindingsFromFile();
 
@@ -464,61 +467,46 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
 
 void InputAPI::SetKeyBinding(const QString &actionName, QKeySequence key)
 {
-    keyboardMappings[actionName.toStdString()] = QKeySequence(key);
+    keyboardMappings[actionName] = QKeySequence(key);
 }
 
 QKeySequence InputAPI::KeyBinding(const QString &actionName) const
 {
-    std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
-    return iter != keyboardMappings.end() ? iter->second : QKeySequence();
+    KeyBindingMap::const_iterator iter = keyboardMappings.find(actionName);
+    return iter != keyboardMappings.end() ? iter.value() : QKeySequence();
 }
 
 QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaultKey)
 {
-    std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
+    KeyBindingMap::const_iterator iter = keyboardMappings.find(actionName);
     if (iter == keyboardMappings.end())
     {
         SetKeyBinding(actionName, defaultKey);
         return defaultKey;
     }
-    return iter->second;
+    return iter.value();
 }
 
 void InputAPI::LoadKeyBindingsFromFile()
 {
-    /// \todo Should be removed from tundra?! Or at least make this use ConfigAPI.
-    /*
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, framework->Config()->GetApplicationName(), "configuration/KeyBindings");
-
-    int size = settings.beginReadArray("numActions");
-    for(int i = 0; i < size; ++i)
+    ConfigAPI &cfg = *framework->Config();
+    ConfigData inputConfig(ConfigAPI::FILE_FRAMEWORK, "input");
+    for(int i = 0; ; ++i)
     {
-        settings.setArrayIndex(i);
-        QString actionName = settings.value("actionName").toString();
-        QKeySequence keySequence = QKeySequence::fromString(settings.value("keySequence").toString(), QKeySequence::PortableText);
-        SetKeyBinding(actionName, keySequence);
+        QStringList bindings = cfg.Get(inputConfig, QString("keybinding%1").arg(i)).toString().split('|');
+        if (bindings.size() != 2)
+            break;
+        SetKeyBinding(bindings[0], bindings[1]);
     }
-    settings.endArray();
-    */
 }
 
 void InputAPI::SaveKeyBindingsToFile()
 {
-    /// \todo Should be removed from tundra?! Or at least make this use ConfigAPI.
-    /*
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, framework->Config()->GetApplicationName(), "configuration/KeyBindings");
-
-    settings.beginWriteArray("numActions");
-    int index = 0;
-    for(std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.begin();
-        iter != keyboardMappings.end(); ++iter)
-    {
-        settings.setArrayIndex(index++);
-        settings.setValue("actionName", QString(iter->first.c_str()));
-        settings.setValue("keySequence", iter->second.toString(QKeySequence::PortableText));
-    }
-    settings.endArray();
-    */
+    ConfigAPI &cfg = *framework->Config();
+    ConfigData inputConfig(ConfigAPI::FILE_FRAMEWORK, "input");
+    int i = 0;
+    for(KeyBindingMap::const_iterator iter = keyboardMappings.begin(); iter != keyboardMappings.end(); ++iter)
+        cfg.Set(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value().toString());
 }
 
 Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)
@@ -859,7 +847,18 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         e->accept();
         return true;
     }
-
+    case QEvent::TouchBegin:
+        emit TouchBegin(static_cast<QTouchEvent *>(event));
+        event->accept();
+        return true;
+    case QEvent::TouchUpdate:
+        emit TouchUpdate(static_cast<QTouchEvent *>(event));
+        event->accept();
+        return true;
+    case QEvent::TouchEnd:
+        emit TouchEnd(static_cast<QTouchEvent *>(event));
+        event->accept();
+        return true;
     } // ~switch
 
     return QObject::eventFilter(obj, event);

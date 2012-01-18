@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   EC_TransformGizmo.h
  *  @brief  Enables visual manipulators (gizmos) for Transform attributes.
@@ -137,6 +137,9 @@ private:
     float3 curPoint; ///< Current nearest projected point on the gizmo's coordinate axes.
     GizmoState state; ///< Current state of the gizmo.
     QList<GizmoAxis> activeAxes; ///< Currently active axes.
+
+    /// Computes the scale we want to apply to the transform gizmo to make it constant-sized in the view.
+    float DesiredGizmoScale();
 
 private slots:
     /// Initializes the gizmo when parent entity is set.

@@ -11,18 +11,18 @@ Tundra offers several mechanisms for adding scripts to your application. You can
 
 PythonScriptModule manages so-called Tundra Python modules, which are basically similar in purpose to the native C++ modules. They are however not visible to the C++ code like actual Tundra modules are, but can only be called from C++ modules by doing tricks with either the Python module system or Qt signals. This is the first Tundra scripting system, used to develop the C++ internals of the core and other modules so that they expose the APIs which are common to all scripting mechanisms now.
 
-Tundra Python modules are application level scripts, similar to the application level Javascripts explained below as in not being associated with any specific scenes or entities. They have some unique features: 1) Capability to receive internal Tundra events (not exposed to JS at all) and 2) A plugin system which supports live reloading of code. Also Tundra currently ships with a copy of the Python standard library, and of the small Circuits event library which is used to implement the forwarding Tundra C++ events and the reloadable module support. Internal Tundra events are currently necessary to for example handle logout & login to scenes when teleporting, when using Opensimulator servers. E.g. editing code needs to clear selection state upon logout. For the future the plan is to provide all this via Qt mechanism from the Core API.
+Tundra Python modules are application level scripts, similar to the application level Javascripts explained below as in not being associated with any specific scenes or entities. They have some unique features: 1) Capability to receive internal Tundra events (not exposed to JS at all) and 2) A plugin system which supports live reloading of code. Also Tundra currently ships with a copy of the Python standard library.
 
 These modules reside in bin/pymodules/ and the ones enabled in any *.ini file in that directory are loaded at startup (or upon pymodule reload). By convention, default.ini configures what is enabled by default in releases, and you can use whatever.ini to add your own. To register your module to the system, it must have a subclass of circuits.BaseComponent. Then add the name of that class to a .ini file. For an example of a minimal pymodule, see bin/pymodules/usr/sleeper.py . Another small example is bin/pymodules/apitest/pythonqt_gui.py which features using Tundra UI API and Qt widgets.
 
-The 'naali' namespace (Python module) is used to expose Tundra internals (the Core API) to Python, and 'PythonQt' exposes all of Qt. So you can say 'import naali' or 'import PythonQt' to get to use those.
+The 'tundra' namespace (Python module) is used to expose Tundra internals (the Core API) to Python, and 'PythonQt' exposes all of Qt. So you can say 'import tundra' or 'import PythonQt' to get to use those.
 An interactive Python shell is included, which is handy for learning and testing API commands as it has an autocompletion GUI. The shell is currently not integrated to menus, but is opened with the 'alt-.' keycombo. For reloading all pymodules live, without needing to logout or restart Tundra, press F11. To support reloading in your own module, you must implement a on_exit handler that removes references to your objects elsewhere in Tundra (typically GUI widgets you have added) -- otherwise the code does not get refreshed.
 
-Several bundled features of Tundra releases are implemented with this system, including the 3d editing of objects, Opensimulator estate management and the Ogre scene import & publishing functionality for the Taiga server. Also the Tundra web browser GUI with the basic navigation buttons, and the old means to have web pages in the scene as MediaURLs and the LSL LoadURL command are implemented in corresponding Tundra pymodules. Additionally, disabled by default, there is a web (http) server for serving live camera images, and a WebSocket server to allow connecting to Tundra from browser based clients.
+Several bundled features of Tundra releases are implemented with this system, including for example the 3D editing of objects, playbacking videos on in-world objects, and Tundra web browser GUI with the basic navigation buttons. Additionally, disabled by default, there is a web (http) server for serving live camera images, and a WebSocket server to allow connecting to Tundra from browser based clients.
 
 \section TundraApplicationQtScripts Writing Application Scripts using QtScript
 
-JavaScriptModule manages the execution of <b>application-level scripts</b>, which are scripts that are not attached to any scene, server or an entity. These scripts are executed once during startup from the folder /bin/jsmodules/startup at the module PostInitialize time, and their contexts stay alive until application shutdown. Each application script file is executed in a separate context.  
+JavascriptModule manages the execution of <b>application-level scripts</b>, which are scripts that are not attached to any scene, server or an entity. These scripts are executed once during startup from the folder /bin/jsmodules/startup at the module PostInitialize time, and their contexts stay alive until application shutdown. Each application script file is executed in a separate context.  
 
 \section ECScriptScripts Embedding Scripts to a Scene Using EC_Script
 
@@ -68,6 +68,8 @@ By default, QtScripts are not able to operate on built-in Qt types, like QWidget
 
 Tundra does not load all the possible extension libraries to each script by default, since this was profiled to cause a major performance impact on script-heavy scenes. Instead, the script issues a set of <b>engine.ImportExtension(extensionName)</b> commands on the extensions it wants to use. The possible extensions are "qt.core", "qt.gui", "qt.network", "qt.uitools", "qt.xml", "qt.xmlpatterns", "qt.phonon", "qt.webkit".
 
+<b>Important:</b> "qt.core" must be included before including any other extensions that depend on the core extension, "qt.gui" for example, and so forth for the rest of the extensions respectively.
+
 The extensions themselves are stored in the folder /bin/qtplugins/script. The folder /bin/qtplugins is added to Qt plugin search path on startup (only necessary on Windows).
 
 Extensions cannot be loaded over the network, but are fixed to the installation.
@@ -106,21 +108,26 @@ Asset dependencies can be also explicitly speficied. This specification is store
 \section CoreAPIObjects The Core API Objects
 
 The whole \ref CoreAPIList "Tundra Core API" is exposed to QtScript through the following variable names:
- - The UI API: \ref TundraUi "ui".
- - The Frame API: \ref Frame "frame".
- - The Input API: \ref Input "input".
- - The Console API: \ref ScriptConsole "console".
+ - The Framework: \ref Framework "framework".
+ - The Application: \ref Application "application".
+ - The UI API: \ref UiAPI "ui".
+ - The Frame API: \ref FrameAPI "frame".
+ - The Input API: \ref InputAPI "input".
+ - The Console API: \ref ConsoleAPI "console".
  - The Asset API: \ref AssetAPI "asset".
  - The Audio API: \ref AudioAPI "audio".
- - The Renderer service of OgreRenderingModule: \ref Renderer "renderer".
- - The Physics subsystem: \ref PhysicsModule "physics".
+ - The Config API: \ref ConfigAPI "config". 
+ - The Profiling access for scripts: \ref ProfilerQObj "profiler".
+ - The Renderer service of OgreRenderingModule: \ref OgreRenderer::Renderer "renderer".
+ - The Ogre representation of a scene: \ref OgreWorld "scene.ogre".
+ - The Physics representation of a scene: \ref Physics::PhysicsWorld "scene.physics".
  - The SceneInteract object: \ref SceneInteract "sceneinteract".
- - The Client API: \ref Client "client".
- - The Server API \ref Server "server".   
+ - The Client API: \ref TundraLogic::Client "client".
+ - The Server API \ref TundraLogic::Server "server".
 
 \section SceneShortcutObjects Scene Shortcut Names in QtScript
 
-For conveniency, when embedding scripts into scene entities using EC_Script, JavaScriptInstance populates the following two special objects. 
+For conveniency, when embedding scripts into scene entities using EC_Script, JavascriptInstance populates the following two special objects. 
 
 <table style="width: 50%; margin: 20px; background-color: #F0F0FF; border: 1px solid black; border-spacing: 0px; ">
 <tr style="border-style: none;"><td style="border-style: none;">
@@ -133,7 +140,7 @@ For conveniency, when embedding scripts into scene entities using EC_Script, Jav
 <tr style="border-style: none;"><td style="border-style: none;">
 <span style="font-weight: bold; font-size: 1.15em;">scene: A pointer to the current Scene.</span>
 
-<b>scene</b> is a special name that refers to the SceneManager instance that the current script component is part of. Use this name to access the whole scene.
+<b>scene</b> is a special name that refers to the Scene instance that the current script component is part of. Use this name to access the whole scene.
 </td></tr></table>  
 
 \section ScriptSamples Script Samples 
@@ -157,7 +164,7 @@ This section contains a list of scripting samples that can be used as a starting
 <h2>Input</h2>
 - Reading keyboard events.
 - Reading mouse input.
-- Using ECInputMapper.
+- Using EC_InputMapper.
 
 <h2>UI</h2>
 - Loading and showing UI assets.
@@ -171,7 +178,7 @@ This section contains a list of scripting samples that can be used as a starting
 - Importing and exporting scene content. 
 - Working with Entity Actions.
 - Component replication modes.
-       
+
 <h2>Asset</h2>
 - Requesting assets.
 - Creating new assets.
@@ -190,5 +197,4 @@ This section contains a list of scripting samples that can be used as a starting
 </tr>
 </table>
 
-  
- */
+*/

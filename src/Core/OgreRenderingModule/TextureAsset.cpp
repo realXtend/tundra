@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -69,7 +69,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bo
         // We can only do threaded loading from disk, and not any disk location but only from asset cache.
         // local:// refs will return empty string here and those will fall back to the non-threaded loading.
         // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
-        QString cacheDiskSource = assetAPI->GetAssetCache()->GetDiskSourceByRef(Name());
+        QString cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
         if (!cacheDiskSource.isEmpty())
         {
             QFileInfo fileInfo(cacheDiskSource);
@@ -329,6 +329,7 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
 
     if (data)
     {
+/*
 #if defined(DIRECTX_ENABLED) && defined(WIN32)
         Ogre::HardwarePixelBufferSharedPtr pb = ogreTexture->getBuffer();
         Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
@@ -357,10 +358,11 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
             }
         }
 #else        
+        */
         ///\todo Review Ogre internals of whether the const_cast here is safe!
         Ogre::PixelBox pixelBox(Ogre::Box(0,0, newWidth, newHeight), ogreFormat, const_cast<u8*>(data));
         ogreTexture->getBuffer()->blitFromMemory(pixelBox);
-#endif
+//#endif
     }
 }
 
@@ -371,7 +373,7 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
 
     // Create transparent pixmap
     QImage image(newWidth, newHeight, QImage::Format_ARGB32);
-    image.fill(Qt::transparent);
+    image.fill(textColor.rgb() & 0x00FFFFFF);
 
     {
         // Init painter with pixmap as the paint device

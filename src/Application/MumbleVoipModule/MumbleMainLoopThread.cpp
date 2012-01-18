@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -25,15 +25,17 @@ namespace MumbleLib
             mumble_lib->SetLogLevel(::MumbleClient::logging::LOG_FATAL);
             mumble_lib->Run();
         }
-        catch(std::exception &e)
+        catch (std::exception &e)
         {
-            LogError(QString("Mumble library mainloop stopped by exception: %1").arg(e.what()));
+            reason_ = e.what();
+            LogError("Mumble library mainloop stopped with exception: " + std::string(e.what()));
         }
-        catch(...)
+        catch (...)
         {
-            reason_ = "Mumble library mainloop stopped by unknown exception.";
+            reason_ = "Mumble library mainloop stopped with unknown exception.";
             LogError(reason_);
         }
+
         LogDebug("Mumble library main loop stopped");
     }
 

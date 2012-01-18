@@ -1,4 +1,5 @@
 // !ref: Menu.ui
+// !ref: image.png
 
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
@@ -40,6 +41,8 @@ function Anim4Pressed()
 function OnScriptDestroyed()
 {
   menu.deleteLater();
+  
+//  renderer.DeleteUiPlane("MyPlane");
 }
 
 frame.Updated.connect(OnFrameUpdate);
@@ -49,3 +52,13 @@ function OnFrameUpdate()
    var proxy = menu.graphicsProxyWidget();
 //   proxy.setZValue(1000);
 }
+
+var uiplane = renderer.CreateUiPlane("MyPlane");
+uiplane.SetTexture(asset.GetAsset("image.png"));
+uiplane.Show();
+uiplane.SetAlpha(1);
+uiplane.SetZOrder(250);
+uiplane.SetX(0, true, 0);
+uiplane.SetY(0, true, 0);
+uiplane.SetWidth(288, true);
+uiplane.SetHeight(288, true);

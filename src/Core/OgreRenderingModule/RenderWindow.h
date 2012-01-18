@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -6,6 +6,8 @@
 
 #include <QObject>
 #include <string>
+
+class Framework;
 
 namespace Ogre
 {
@@ -24,7 +26,7 @@ class OGRE_MODULE_API RenderWindow : public QObject
 public:
     RenderWindow();
 
-    void CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen);
+    void CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen, Framework *fw);
 
     /// Returns the Ogre main RenderWindow used to display the 3D scene in.
     Ogre::RenderWindow *OgreRenderWindow() const;
@@ -36,14 +38,22 @@ public:
 
     std::string OverlayTextureName() const;
 
+signals:
+    /// This signal is triggered when the Ogre3D render target has been resized.
+    void Resized(int newWidth, int newHeight);
+
+public slots:
+    void Resize(int newWidth, int newHeight);
+
     /// Fully repaints the Ogre 2D Overlay from the given source image.
     void UpdateOverlayImage(const QImage &src);
 
     /// Shows or hides whether the 2D Ogre Overlay is visible or not.
     void ShowOverlay(bool visible);
 
-public slots:
-    void Resize(int newWidth, int newHeight);
+    int Width() const;
+
+    int Height() const;
 
 private:
     void CreateRenderTargetOverlay(int width, int height);

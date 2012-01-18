@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
 
@@ -143,15 +143,12 @@ void EC_Sound::PlaySound()
         return;
     }
 
-    bool soundListenerExists = true;
     EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
 
-    // If we are going to play back positional audio, check that there is a sound listener enabled that can listen to it.
-    // Otherwise, if no SoundListener exists, play back the audio as nonpositional.
-    if (placeable && spatial.Get())
-        soundListenerExists = (GetActiveSoundListener() != EntityPtr());
+    if (spatial.Get() && !placeable)
+        LogWarning("Warning: Cannot play back EC_Sound as spatial, since the same Entity does not contain a EC_Placeable component to specify a position for the sound source! Add a EC_Placeable to the same Entity with the EC_Sound to fix this. Playing the sound as non-spatial..");
 
-    if (placeable && spatial.Get() && soundListenerExists)
+    if (placeable && spatial.Get())
     {
         soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->WorldPosition(), audioAsset, SoundChannel::Triggered);
         if (soundChannel)
@@ -199,6 +196,7 @@ EntityPtr EC_Sound::GetActiveSoundListener()
     int numActiveListeners = 0; // For debugging, count how many listeners are active.
 #endif
     
+    EntityPtr activeSoundListener;
     EntityList listeners = parentEntity->ParentScene()->GetEntitiesWithComponent("EC_SoundListener");
     foreach(EntityPtr listener, listeners)
     {
@@ -210,6 +208,8 @@ EntityPtr EC_Sound::GetActiveSoundListener()
             return ec->ParentEntity()->shared_from_this();
 #else
             ++numActiveListeners;
+            activeSoundListener = ec->ParentEntity()->shared_from_this();
+            assert(activeSoundListener.get());
 #endif
         }
     }
@@ -218,7 +218,7 @@ EntityPtr EC_Sound::GetActiveSoundListener()
     if (numActiveListeners != 1)
         LogWarning("Warning: When playing back positional 3D audio, " + QString::number(numActiveListeners) + " active sound listeners were found!");
 #endif
-    return EntityPtr();
+    return activeSoundListener;
 }
 
 void EC_Sound::UpdateSignals()

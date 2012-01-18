@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   FunctionDialog.cpp
  *  @brief  Dialog for invoking Qt slots (i.e. functions) of entities and components.

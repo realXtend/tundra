@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   SceneStructureModule.h
  *  @brief  Provides UIs for scene and asset maintenance and content import.
@@ -39,18 +39,21 @@ public:
     SceneStructureModule();
     ~SceneStructureModule();
     void Initialize();
+    void Uninitialize();
 
 public slots:
-    /// Instantiates new content from file to the scene.
-    /** @param filename File name.
+    /// Starts instantiation of new content from files to the scene by using the AddContentWindow.
+    /** @param filenames List of content files.
         @param worldPos Destination in-world position.
         @param clearScene Do we want to clear the scene before adding new content.
-        @return List of created entities. */
-    QList<Entity *> InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene);
+        @return List of created entities.
+        @todo clearScene not used currently for anything. */
+    void InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene);
 
     /// This is an overloaded function
-    /** @param filenames List of scene files. */
-    QList<Entity *> InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene);
+    /** @param filenames Content filename.
+        @todo clearScene not used currently for anything. */
+    void InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene);
 
     /// Centralizes group of entities around same center point. The entities must have EC_Placeable component present.
     /** @param pos Center point for entities.
@@ -65,7 +68,7 @@ public slots:
     /** @param fileRef File name or url. */
     static bool IsMaterialFile(const QString &fileRef);
 
-    /// Returns true if the @c fileRef is a http:// or https:// scema url. 
+    /// Returns true if the @c fileRef is a http:// or https:// scema url.
     /** @param fileRef File name or url. */
     static bool IsUrl(const QString &fileRef);
 
@@ -80,6 +83,9 @@ public slots:
     void ToggleAssetsWindow();
 
 private:
+    void SaveWindowPosition(QWidget *widget, const QString &settingName);
+    void LoadWindowPosition(QWidget *widget, const QString &settingName);
+
     struct SceneMaterialDropData
     {
         SceneMaterialDropData() : mesh(0) {}

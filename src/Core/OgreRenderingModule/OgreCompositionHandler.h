@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -11,7 +11,7 @@
 #include <QString>
 
 /// @note This class and its implementation is taken from the Ogre samples
-/// @cond PRIVATE
+/** @cond PRIVATE */
 class HDRListener: public Ogre::CompositorInstance::Listener
 {
 public:
@@ -52,7 +52,7 @@ protected:
     float mBloomTexOffsetsHorz[15][4];
     float mBloomTexOffsetsVert[15][4];
 };
-/// @endcond PRIVATE
+/** @endcond PRIVATE */
 
 /// Handles the post-processing effects
 class OGRE_MODULE_API OgreCompositionHandler

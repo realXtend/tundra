@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
@@ -656,8 +656,8 @@ bool OgreMaterialAsset::CreateOgreMaterial()
     
     try
     {
-        std::string sanitatedName = AssetAPI::SanitateAssetRef(Name()).toStdString();
-        ogreMaterial = Ogre::MaterialManager::getSingleton().create(sanitatedName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        ogreAssetName = AssetAPI::SanitateAssetRef(Name());
+        ogreMaterial = Ogre::MaterialManager::getSingleton().create(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     }
     catch (Ogre::Exception& e)
     {

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "Participant.h"
@@ -13,7 +13,8 @@ namespace MumbleVoip
         position_(0.0, 0.0, 0.0),
         user_(user),
         name_(name),
-        voice_activity_(0)
+        voice_activity_(0),
+        signaled(false)
     {
         connect(user_, SIGNAL(StartReceivingAudio()), SLOT(OnStartSpeaking()) );
         connect(user_, SIGNAL(StopReceivingAudio()), SLOT(OnStopSpeaking()) );

@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -17,7 +17,7 @@ class QPushButton;
 class Framework;
 
 /// Dialog for adding new component to entity.
-class ECEDITOR_MODULE_API AddComponentDialog: public QDialog
+class ECEDITOR_MODULE_API AddComponentDialog : public QDialog
 {
     Q_OBJECT
 
@@ -33,27 +33,27 @@ public:
 
     /// Sets available component types.
     /** In order to improve readibility and usability, the "EC_" prefix is stripped from the type name.
-        GetTypeName() however returns the full type name. */
-    void SetComponentList(const QStringList &component_types);
+        TypeName() however returns the full type name. */
+    void SetComponentList(const QStringList &componentTypes);
 
     /// Sets default name.
     void SetComponentName(const QString &name);
 
-public slots:
+public:
     /// Returns component typename, guaranteed to begin with the "EC_" prefix.
-    QString GetTypeName() const;
+    QString TypeName() const;
 
     /// Returns component name
-    QString GetName() const;
+    QString Name() const;
 
     /// Returns if synchronization check box is checked or not.
-    bool GetSynchronization() const;
+    bool IsReplicated() const;
 
     /// Returns if temporary check box is checked or not.
-    bool GetTemporary() const;
+    bool IsTemporary() const;
 
     /// Returns entity IDs of the entities to which the component is added to.
-    QList<entity_id_t> GetEntityIds() const;
+    QList<entity_id_t> EntityIds() const;
 
 private slots:
     /// Make sure that component name don't duplicate with existing entity's components, and if it do disable ok button.

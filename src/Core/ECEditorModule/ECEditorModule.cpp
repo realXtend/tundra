@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -25,8 +25,10 @@
 #include <QWebView>
 #include <QList>
 
-const char *cGizmoEnabled= "show editing gizmo";
-const char *cHighlightingEnabled = "highlight selected entities";
+// Shortcuts for config keys.
+static const char *cGizmoEnabled= "show editing gizmo";
+static const char *cHighlightingEnabled = "highlight selected entities";
+static const char *cECEditorWindowPos = "eceditor window pos";
 
 ECEditorModule::ECEditorModule() :
     IModule("ECEditor"),
@@ -68,10 +70,12 @@ void ECEditorModule::Initialize()
 
 void ECEditorModule::Uninitialize()
 {
+    ConfigAPI &cfg = *framework_->Config();
     ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name());
-    framework_->Config()->Set(configData, cGizmoEnabled, gizmoEnabled);
-    framework_->Config()->Set(configData, cHighlightingEnabled, highlightingEnabled);
-
+    cfg.Set(configData, cGizmoEnabled, gizmoEnabled);
+    cfg.Set(configData, cHighlightingEnabled, highlightingEnabled);
+    if (commonEditor)
+        cfg.Set(configData, cECEditorWindowPos, commonEditor->pos());
     SAFE_DELETE(commonEditor);
     SAFE_DELETE_LATER(xmlEditor);
 }
@@ -135,9 +139,17 @@ void ECEditorModule::ShowEditorWindow()
     if (framework_->IsHeadless())
         return;
 
-    if (activeEditor)
+    ConfigAPI &config = *framework_->Config();
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), cECEditorWindowPos);
+
+    if (commonEditor)
     {
-        activeEditor->setVisible(!activeEditor->isVisible());
+        commonEditor->setVisible(!commonEditor->isVisible());
+        if (!commonEditor->isVisible())
+        {
+            config.Set(configData, cECEditorWindowPos, commonEditor->pos());
+            commonEditor->close();
+        }
         return;
     }
 
@@ -145,37 +157,11 @@ void ECEditorModule::ShowEditorWindow()
     commonEditor = activeEditor;
     activeEditor->setWindowFlags(Qt::Tool);
     activeEditor->setAttribute(Qt::WA_DeleteOnClose);
+    // Load position from config
+    QPoint pos = config.Get(configData).toPoint();
+    UiMainWindow::EnsurePositionWithinDesktop(activeEditor, pos);
     activeEditor->show();
     activeEditor->activateWindow();
-
-    RepositionEditor(activeEditor);
-}
-
-void ECEditorModule::RepositionEditor(ECEditorWindow *editor)
-{
-    if (!editor)
-        return;
-    if (!GetFramework()->Ui()->MainWindow())
-        return;
-    
-    QRect editorGeom = editor->frameGeometry();
-    QSize desktopSize(GetFramework()->Ui()->MainWindow()->DesktopWidth(), GetFramework()->Ui()->MainWindow()->DesktopHeight());
-
-    QWidget *sceneWidget = GetFramework()->Ui()->MainWindow()->findChild<QWidget*>("SceneStructureWidget");
-    if (sceneWidget)
-    {
-        QRect sceneWidgetGeom = sceneWidget->frameGeometry();
-        if (sceneWidgetGeom.topRight().x() + editorGeom.width() < desktopSize.width())
-            editor->move(sceneWidgetGeom.topRight());
-        else if (sceneWidgetGeom.topLeft().x() - editorGeom.width() > 0)
-            editor->move(sceneWidgetGeom.topLeft() - QPoint(editorGeom.width(), 0));
-    }
-    else
-    {
-        QRect mainWinGeom = GetFramework()->Ui()->MainWindow()->geometry();
-        QPoint movePos(mainWinGeom.topLeft().x() + 25, (mainWinGeom.topLeft().y() + (mainWinGeom.height() / 2)) - (editor->height() / 2));
-        editor->move(movePos);
-    }
 }
 
 void ECEditorModule::ShowDocumentation(const QString &symbol)

@@ -7,7 +7,8 @@
   <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on OgreRenderingModule -->
   <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule and TundraProtocolModule-->
-  <!-- Note that all modules that depend on the ScriptEngineCreated signal of JavascriptModule must be loaded before JavascriptModule. -->
+  <!--  Note: All modules that implicitly depend on JavascriptModule, by performing QtScript object meta type registration in their registered
+        dynamic objects (Framework::RegisterDynamicObject) in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
   <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraProtocolModule --> 
   <plugin path="AssetModule" />                 <!-- AssetModule depends on TundraProtocolModule -->
   <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->

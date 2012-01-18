@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -15,6 +15,8 @@ namespace MumbleVoip
     public:
         Participant(QString name, MumbleLib::User* user);
         virtual ~Participant();
+
+        bool signaled;
 
     public slots:
         virtual QString Name() const;

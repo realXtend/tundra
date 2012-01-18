@@ -1,5 +1,5 @@
 /**
- *  For conditions of distribution and use, see copyright notice in license.txt
+ *  For conditions of distribution and use, see copyright notice in LICENSE
  *
  *  @file   SceneTreeWidget.cpp
  *  @brief  Tree widget showing the scene structure.
@@ -637,8 +637,6 @@ void SceneTreeWidget::Edit()
             editor = new ECEditorWindow(framework);
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
-
-            framework->GetModule<ECEditorModule>()->RepositionEditor(editor);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
         connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
@@ -668,14 +666,14 @@ void SceneTreeWidget::EditInNew()
     ECEditorWindow *editor = new ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
     connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
-    //editor->move(mapToGlobal(pos()) + QPoint(50, 50));  
+    //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
+    editor->hide();
+    editor->AddEntities(selection.EntityIds(), true);
 
     editor->setParent(framework->Ui()->MainWindow());
     editor->setWindowFlags(Qt::Tool);
     editor->show();
     editor->activateWindow();
-    editor->AddEntities(selection.EntityIds(), true);
-
     ecEditors.push_back(editor);
 }
 
@@ -818,7 +816,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         return;
     }
 
-    QList<entity_id_t> entities = dialog->GetEntityIds();
+    QList<entity_id_t> entities = dialog->EntityIds();
     for(int i = 0; i < entities.size(); i++)
     {
         EntityPtr entity = scene.lock()->GetEntity(entities[i]);
@@ -829,19 +827,19 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         }
 
         // Check if component has been already added to a entity.
-        ComponentPtr comp = entity->GetComponent(dialog->GetTypeName(), dialog->GetName());
+        ComponentPtr comp = entity->GetComponent(dialog->TypeName(), dialog->Name());
         if (comp)
         {
             LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
             continue;
         }
 
-        comp = framework->Scene()->CreateComponentByName(scene.lock().get(), dialog->GetTypeName(), dialog->GetName());
+        comp = framework->Scene()->CreateComponentByName(scene.lock().get(), dialog->TypeName(), dialog->Name());
         assert(comp);
         if (comp)
         {
-            comp->SetReplicated(dialog->GetSynchronization());
-            comp->SetTemporary(dialog->GetTemporary());
+            comp->SetReplicated(dialog->IsReplicated());
+            comp->SetTemporary(dialog->IsTemporary());
             entity->AddComponent(comp, AttributeChange::Default);
         }
     }
@@ -1365,8 +1363,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
     assert(scene.lock());
     QSet<QString> assets;
 
-    ///\todo use eItem->Entity()
-    EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
+    EntityPtr entity = eItem->Entity();
     if (entity)
     {
         int entityChildCount = eItem->childCount();
@@ -1375,9 +1372,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
             if (!cItem)
                 continue;
-
-            ///\todo use cItem->Component()
-            ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
+            ComponentPtr comp = cItem->Component();
             if (!comp)
                 continue;
 

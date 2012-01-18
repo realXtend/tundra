@@ -1,7 +1,9 @@
-/**
+/*
 --------------------------------------------------------------------------------
-This source file is a modified part of SkyX (Copyright (C) 2009 Xavier Verguín
-González <xavierverguin@hotmail.com>, <xavyiy@gmail.com>).
+This source file is part of SkyX.
+Visit http://www.paradise-studios.net/products/skyx/
+
+Copyright (C) 2009-2011 Xavier Verguín González <xavyiy@gmail.com>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free Software
@@ -16,37 +18,42 @@ You should have received a copy of the GNU Lesser General Public License along w
 this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
-
-Author: Jose Luis Cercos Pita
 --------------------------------------------------------------------------------
-**/
+*/
 
+// ------------------------- SkyX volumetric clouds -----------------------------
+// ------------------------------ GLSL Vertex -----------------------------------
+
+// IN
+attribute vec4 vertex; // iPosition
+attribute vec3 uv0;    // i3DCoord
+attribute vec2 uv1;    // iNoiseUV
+attribute float uv2;   // iOpacity
 // OUT
-varying float  Opacity;
-varying vec3   EyePixel;
-varying float  Distance;
+varying vec4 vPosition;
+varying vec3 v3DCoord;
+varying vec2 vNoiseUV;
+varying float vOpacity;
+varying vec3 vEyePixel;
+varying float vDistance;
 // UNIFORM
-// UNIFORM
-uniform mat4   uWorldViewProj;	// Don't needed, only for hlsl compatibility.
-uniform vec3   uCameraPosition;
-uniform float  uRadius;
+uniform vec3 uCameraPosition;
+uniform float uRadius;
 
-void main()
+void main(void)
 {
     // Clip space position
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 
 	// 3D coords
-	gl_TexCoord[0]  = gl_MultiTexCoord0;
-	gl_TexCoord[1]  = gl_MultiTexCoord1;
+	v3DCoord = uv0;
     // Noise coords
-    gl_TexCoord[2]  = gl_MultiTexCoord2;
+    vNoiseUV = uv1;
     // Opacity
-    Opacity = gl_Color.w;
+    vOpacity = uv2;
     // Eye to pixel vector
-    EyePixel = normalize(gl_Vertex.xyz - uCameraPosition);
+    vEyePixel = normalize(vertex.xyz - uCameraPosition);
     
     // Distance in [0,1] range
-    Distance = length(vec2(gl_Vertex.x, gl_Vertex.z)) / uRadius;
+    vDistance = length(vec2(vertex.x, vertex.z)) / uRadius;
 }
-

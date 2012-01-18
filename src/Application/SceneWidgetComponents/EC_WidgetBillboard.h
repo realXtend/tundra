@@ -1,4 +1,4 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -24,12 +24,14 @@
 class QGraphicsView;
 class EC_Billboard;
 
+/// Attaches a billboard with UI widget to an entity.
+/** Depends on EC_Billboard*/
 class SCENEWIDGET_MODULE_API EC_WidgetBillboard : public IComponent
 {
-Q_OBJECT
-COMPONENT_NAME("EC_WidgetBillboard", 42)
+    Q_OBJECT
+    COMPONENT_NAME("EC_WidgetBillboard", 42)
 
-friend class SceneWidgetComponents;
+    friend class SceneWidgetComponents;
 
 public:
     explicit EC_WidgetBillboard(Scene* scene);
