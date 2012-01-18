@@ -376,10 +376,12 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     {
         *outFullRef += fullPathRef;
         if (!subAssetName.isEmpty())
+        {
             if (subAssetName.contains(' '))
                 *outFullRef += ", \"" + subAssetName + "\"";
             else
                 *outFullRef += ", " + subAssetName;
+        }
     }
 
     if (outFullRefNoSubAssetName)
