@@ -133,14 +133,14 @@ mkdir -p $viewer/bin/qtscript-plugins/script
 cp -lf $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
 
 
-what=knet
+what=kNet
 if false && test -f $tags/$what-done; then 
    echo $what is done
 else
     cd $build
-    rm -rf knet
-    hg clone http://bitbucket.org/clb/knet
-    cd knet
+    rm -rf kNet
+    git clone https://github.com/juj/kNet
+    cd kNet
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
     mv x CMakeLists.txt
     cmake . -DCMAKE_BUILD_TYPE=Debug
