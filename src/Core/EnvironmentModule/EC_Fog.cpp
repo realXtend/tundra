@@ -37,12 +37,18 @@ EC_Fog::EC_Fog(Scene* scene) :
         metadataInitialized = true;
     }
 
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(Update()), Qt::UniqueConnection);
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(Update()));
+    // Only when rendering is enabled
+    if (!framework->IsHeadless())
+    {
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(Update()), Qt::UniqueConnection);
+        connect(this, SIGNAL(ParentEntitySet()), SLOT(Update()));
+    }
 }
 
 EC_Fog::~EC_Fog()
 {
+    if (framework->IsHeadless())
+        return;
     OgreWorldPtr w = world.lock();
     if (!w)
         return;
@@ -53,6 +59,8 @@ EC_Fog::~EC_Fog()
 
 void EC_Fog::Update()
 {
+    if (framework->IsHeadless())
+        return;
     if (!ParentScene())
         return;
     OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();

@@ -2,11 +2,6 @@
 
 #include "StableHeaders.h"
 
-// If we don't do this, we get "boost/asio/detail/socket_types.hpp(27) : fatal error C1189: #error :  WinSock.h has already been included"
-#ifdef WIN32
-#include <Winsock2.h>
-#endif
-
 #include "DebugOperatorNew.h"
 
 #include "User.h"
