@@ -15,7 +15,7 @@
 #include <QScopedPointer>
 
 #ifdef Q_WS_WIN
-#include "Windows.h"
+#include "Win.h"
 #else
 #include <sys/stat.h>
 #include <utime.h>

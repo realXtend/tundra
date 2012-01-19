@@ -9,10 +9,8 @@
 
 #include <QDir>
 
-#ifdef _WIN32
-#include <WinSock2.h>
-#include <Windows.h>
-#endif
+#include "Win.h"
+
 #ifdef WINDOWS_APP
 #include <io.h>
 #include <iostream>

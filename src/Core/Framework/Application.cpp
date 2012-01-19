@@ -34,11 +34,8 @@
 #endif
 
 #if defined(_WINDOWS)
-#include <WinSock2.h>
-#include <windows.h>
+#include "Win.h"
 #include <shlobj.h>
-#undef min
-#undef max
 #endif
 
 #include "MemoryLeakCheck.h"
