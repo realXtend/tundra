@@ -2,6 +2,12 @@ uniform sampler2D inRTT;
 uniform sampler2D inBloom;
 uniform sampler2D inLum;
 
+// Not used by glsl but still has to be defined
+// as uniform otherwise its a compile error.
+uniform float LuminanceMin;
+uniform float LuminanceMax;
+uniform float BloomWeight;
+
 varying vec2 uv;
 
 // declare external function

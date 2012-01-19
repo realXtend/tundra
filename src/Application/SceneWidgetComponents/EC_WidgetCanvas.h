@@ -73,7 +73,7 @@ public:
 public slots:
     void Start();
     void Stop();
-    void Update(QImage &buffer);
+    void Update(QImage buffer);
     void Update();
     void Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second);
     void RestoreOriginalMeshMaterials();
