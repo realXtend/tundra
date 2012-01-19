@@ -395,6 +395,23 @@ void OpenUsingD3DX(const char *filename, RawImage &outputData, LPDIRECT3DDEVICE9
     texture->Release();
 }
 
+/// @return The number of mip levels used by a texture of size (w,h).
+int CountMaxMipSize(int w, int h)
+{
+    if (w <= 1 && h <= 1)
+        return 1;
+    int mipLevels = 1;
+    while(w > 1 && h > 1)
+    {
+        w /= 2;
+        h /= 2;
+        if (w == 0) w = 1;
+        if (h == 0) h = 1;
+        ++mipLevels;
+    }
+    return mipLevels;
+}
+
 /// Opens the given filename, runs it through a few processing steps, and saves it as .dds file with the same base name.
 /// \todo alphaChoose offers one method for mass-filtering from a set of input files which files to process, but perhaps
 /// something more flexible was better, like a command line flag '--onlyifformat==D3DFMT_A8R8G8B8'?
@@ -462,14 +479,18 @@ void ConvertFileToDDS(std::string filename, LPDIRECT3DDEVICE9 device, bool alpha
         return;
     }
 
+//    const int maxMipLevels = CountMaxMipSize(imageData.width, imageData.height);
+    /// @bug Don't create full mip chain, but instead set the last mip level to 4x4. For some reason, the 2x2 and 1x1 levels get corrupted in DXT conversion.
+    /// To work on fixing this, uncomment the above, or use D3DX_DEFAULT below.
+    const int maxMipLevels = CountMaxMipSize(imageData.width, imageData.height) - 2;
     LPDIRECT3DTEXTURE9 texture;
-    WIN32TRY(D3DXCreateTexture(device, imageData.width, imageData.height, D3DX_DEFAULT, D3DUSAGE_DYNAMIC, imageData.format, D3DPOOL_SYSTEMMEM, &texture),
+    WIN32TRY(D3DXCreateTexture(device, imageData.width, imageData.height, /*D3DX_DEFAULT*/maxMipLevels, D3DUSAGE_DYNAMIC, imageData.format, D3DPOOL_SYSTEMMEM, &texture),
         "Failed to create texture object for output!");
 
     // PROCESSING STEP #3: Generate all mipmap levels. For some reason, D3D doesn't do this automatically when loading (if the source lacked the mip levels).
     // (might be missing a flag).
     int level = 0;
-    while(imageData.width > 1 && imageData.height > 1)
+    while(level < maxMipLevels)
     {
         D3DLOCKED_RECT rect;
         ZeroMemory(&rect, sizeof(rect));
