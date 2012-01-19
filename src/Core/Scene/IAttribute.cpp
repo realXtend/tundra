@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   IAttribute.cpp
- *  @brief  Abstract base class and template class for entity-component attributes.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   IAttribute.cpp
+    @brief  Abstract base class and template class for entity-component attributes. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -21,9 +20,6 @@
 #include "Math/float2.h"
 #include "Math/float3.h"
 #include "Math/float3.h"
-#include "CoreMath.h" // only needed for lerp
-
-#include <boost/algorithm/string.hpp>
 
 #include <QVariant>
 #include <QStringList>
@@ -36,6 +32,19 @@
 #include "MemoryLeakCheck.h"
 
 using namespace kNet;
+
+namespace
+{
+    int Lerp(int a, int b, float t)
+    {
+        return a + t * (b-a);
+    }
+
+    int Lerp(uint a, uint b, float t)
+    {
+        return a + t * (b-a);
+    }
+}
 
 // Implementation code for some common attributes
 
@@ -108,10 +117,7 @@ template<> std::string Attribute<QString>::ToString() const
 
 template<> std::string Attribute<bool>::ToString() const
 {
-    if (Get())
-        return "true";
-    else
-        return "false";
+    return Get() ? "true" : "false";
 }
 
 template<> std::string Attribute<int>::ToString() const
@@ -151,8 +157,7 @@ template<> std::string Attribute<float4>::ToString() const
 
 template<> std::string Attribute<Color>::ToString() const
 {
-    Color value = Get();
-    
+    const Color &value = Get();
     return ::ToString<float>(value.r) + " " +
         ::ToString<float>(value.g) + " " +
         ::ToString<float>(value.b) + " " +
@@ -167,7 +172,7 @@ template<> std::string Attribute<AssetReference>::ToString() const
 template<> std::string Attribute<AssetReferenceList>::ToString() const
 {
     std::string stringValue = "";
-    AssetReferenceList values = Get();
+    const AssetReferenceList &values = Get();
     for(int i = 0; i < values.Size(); ++i)
     {
         stringValue += values[i].ref.toStdString();
@@ -185,14 +190,12 @@ template<> std::string Attribute<EntityReference>::ToString() const
 
 template<> std::string Attribute<QVariant>::ToString() const
 {
-    QVariant value = Get();
-    
-    return value.toString().toStdString();
+    return Get().toString().toStdString();
 }
 
 template<> std::string Attribute<QVariantList>::ToString() const
 {
-    QVariantList values = Get();
+    const QVariantList &values = Get();
 
     std::string stringValue = "";
     for(int i = 0; i < values.size(); i++)
@@ -207,7 +210,7 @@ template<> std::string Attribute<QVariantList>::ToString() const
 template<> std::string Attribute<Transform>::ToString() const
 {
     QString value("");
-    Transform transform = Get();
+    const Transform &transform = Get();
     float3 editValues[3];
     editValues[0] = transform.pos;
     editValues[1] = transform.rot;
@@ -228,8 +231,7 @@ template<> std::string Attribute<Transform>::ToString() const
 
 template<> std::string Attribute<QPoint>::ToString() const
 {
-    QPoint value = Get();
-
+    const QPoint &value = Get();
     return ::ToString<int>(value.x()) + " " +
         ::ToString<int>(value.y());
 }
@@ -331,11 +333,7 @@ template<> void Attribute<QString>::FromString(const std::string& str, Attribute
 
 template<> void Attribute<bool>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    std::string str_lower = str;
-    boost::algorithm::to_lower(str_lower);
-    bool value = (boost::algorithm::starts_with(str_lower, "true") || boost::algorithm::starts_with(str_lower, "1"));
-    
-    Set(value, change);
+    Set(ParseBool(str), change);
 }
 
 template<> void Attribute<int>::FromString(const std::string& str, AttributeChange::Type change)
@@ -463,22 +461,22 @@ template<> void Attribute<QVariantList >::FromString(const std::string& str, Att
 
 template<> void Attribute<Transform>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    QStringList elements = QString::fromStdString(str).split(',');
+    StringVector elements = SplitString(str, ',');
     if (elements.size() != 9)
     {
         ::LogError("Attribute<Transform>::FromString failed: Can't deserialize string \"" + str + "\"!");
         return;
     }
 
-    float posX = ParseString<float>(elements[0].toStdString(), 0.0f);
-    float posY = ParseString<float>(elements[1].toStdString(), 0.0f);
-    float posZ = ParseString<float>(elements[2].toStdString(), 0.0f);
-    float eulerX = ParseString<float>(elements[3].toStdString(), 0.0f);
-    float eulerY = ParseString<float>(elements[4].toStdString(), 0.0f);
-    float eulerZ = ParseString<float>(elements[5].toStdString(), 0.0f);
-    float scaleX = ParseString<float>(elements[6].toStdString(), 0.0f);
-    float scaleY = ParseString<float>(elements[7].toStdString(), 0.0f);
-    float scaleZ = ParseString<float>(elements[8].toStdString(), 0.0f);
+    float posX = ParseString<float>(elements[0], 0.0f);
+    float posY = ParseString<float>(elements[1], 0.0f);
+    float posZ = ParseString<float>(elements[2], 0.0f);
+    float eulerX = ParseString<float>(elements[3], 0.0f);
+    float eulerY = ParseString<float>(elements[4], 0.0f);
+    float eulerZ = ParseString<float>(elements[5], 0.0f);
+    float scaleX = ParseString<float>(elements[6], 0.0f);
+    float scaleY = ParseString<float>(elements[7], 0.0f);
+    float scaleZ = ParseString<float>(elements[8], 0.0f);
 
     Transform result;
     result.SetPos(posX, posY, posZ);
@@ -1074,7 +1072,7 @@ template<> void Attribute<int>::Interpolate(IAttribute* start, IAttribute* end, 
     Attribute<int>* endInt = dynamic_cast<Attribute<int>*>(end);
     if ((startInt) && (endInt))
     {
-        Set(lerp(startInt->Get(), endInt->Get(), t), change);
+        Set(Lerp(startInt->Get(), endInt->Get(), t), change);
     }
 }
 
@@ -1084,7 +1082,7 @@ template<> void Attribute<uint>::Interpolate(IAttribute* start, IAttribute* end,
     Attribute<uint>* endUint = dynamic_cast<Attribute<uint>*>(end);
     if ((startUint) && (endUint))
     {
-        Set(lerp(startUint->Get(), endUint->Get(), t), change);
+        Set(Lerp(startUint->Get(), endUint->Get(), t), change);
     }
 }
 
@@ -1094,7 +1092,7 @@ template<> void Attribute<float>::Interpolate(IAttribute* start, IAttribute* end
     Attribute<float>* endFloat = dynamic_cast<Attribute<float>*>(end);
     if ((startFloat) && (endFloat))
     {
-        Set(lerp(startFloat->Get(), endFloat->Get(), t), change);
+        Set(Lerp(startFloat->Get(), endFloat->Get(), t), change);
     }
 }
 
@@ -1145,10 +1143,10 @@ template<> void Attribute<Color>::Interpolate(IAttribute* start, IAttribute* end
         const Color& startValue = startColor->Get();
         const Color& endValue = endColor->Get();
         Color newColor;
-        newColor.r = lerp(startValue.r, endValue.r, t);
-        newColor.g = lerp(startValue.g, endValue.g, t);
-        newColor.b = lerp(startValue.b, endValue.b, t);
-        newColor.a = lerp(startValue.a, endValue.a, t);
+        newColor.r = Lerp(startValue.r, endValue.r, t);
+        newColor.g = Lerp(startValue.g, endValue.g, t);
+        newColor.b = Lerp(startValue.b, endValue.b, t);
+        newColor.a = Lerp(startValue.a, endValue.a, t);
         Set(newColor, change);
     }
 }
@@ -1164,13 +1162,13 @@ template<> void Attribute<Transform>::Interpolate(IAttribute* start, IAttribute*
         Transform newTrans;
         
         // Position
-        newTrans.pos = lerp(startValue.pos, endValue.pos, t);
+        newTrans.pos = Lerp(startValue.pos, endValue.pos, t);
         
         // Rotation
         newTrans.SetOrientation(Slerp(startValue.Orientation(), endValue.Orientation(), t));
         
         // Scale
-        newTrans.scale = lerp(startValue.scale, endValue.scale, t);
+        newTrans.scale = Lerp(startValue.scale, endValue.scale, t);
         
         Set(newTrans, change);
     }

@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   IComponent.h
- *  @brief  The common interface for all components, which are the building blocks the scene entities are formed of.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   IComponent.h
+    @brief  The common interface for all components, which are the building blocks the scene entities are formed of. */
 
 #pragma once
 
@@ -14,6 +13,7 @@
 #include <boost/enable_shared_from_this.hpp>
 
 #include <QObject>
+#include <QVariant>
 
 class QDomDocument;
 class QDomElement;

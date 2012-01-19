@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   IAttribute.h
- *  @brief  Abstract base class and template class implementations for entity-component attributes.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   IAttribute.h
+    @brief  Abstract base class and template class implementations for entity-component attributes. */
 
 #pragma once
 
@@ -11,10 +10,7 @@
 #include "CoreStringUtils.h"
 #include "AttributeChangeType.h"
 
-#include <map>
 #include <boost/enable_shared_from_this.hpp>
-
-#include <QVariant>
 
 namespace kNet
 {
@@ -24,7 +20,9 @@ namespace kNet
 
 class AttributeMetadata;
 class IComponent;
+
 class QScriptValue;
+class QVariant;
 
 /// Abstract base class for entity-component attributes.
 /** Concrete attribute classes will be subclassed out of this. */
