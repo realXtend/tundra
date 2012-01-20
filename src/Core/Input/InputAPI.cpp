@@ -506,7 +506,7 @@ void InputAPI::SaveKeyBindingsToFile()
     ConfigData inputConfig(ConfigAPI::FILE_FRAMEWORK, "input");
     int i = 0;
     for(KeyBindingMap::const_iterator iter = keyboardMappings.begin(); iter != keyboardMappings.end(); ++iter)
-        cfg.Set(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value());
+        cfg.Set(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value().toString());
 }
 
 Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)
@@ -788,7 +788,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
 #ifdef Q_WS_MAC
-        QGraphicsItem *itemUnderMouse = ItemAtCoords(e->x(), e->y())
+        QGraphicsItem *itemUnderMouse = ItemAtCoords(e->x(), e->y());
         if (itemUnderMouse)
         {
             mainView->removeEventFilter(this);

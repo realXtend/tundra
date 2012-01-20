@@ -47,9 +47,7 @@ DebugStatsModule::~DebugStatsModule()
 
 void DebugStatsModule::Initialize()
 {
-#ifdef _WINDOWS
-    QueryPerformanceCounter(&lastCallTime);
-#endif
+    lastCallTime = GetCurrentClockTime();
 
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.",
         this, SLOT(ShowProfilingWindow()));
@@ -106,10 +104,8 @@ void DebugStatsModule::DumpInputContexts()
 
 void DebugStatsModule::Update(f64 frametime)
 {
-#ifdef _WINDOWS
-    LARGE_INTEGER now;
-    QueryPerformanceCounter(&now);
-    double timeSpent = ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
+    tick_t now = GetCurrentClockTime();
+    double timeSpent = ProfilerBlock::ElapsedTimeSeconds(lastCallTime, now);
     lastCallTime = now;
 
     frameTimes.push_back(make_pair(*(u64*)&now, timeSpent));
@@ -123,7 +119,6 @@ void DebugStatsModule::Update(f64 frametime)
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
         profilerWindow_->DoThresholdLogging();
     }
-#endif
 }
 
 void DebugStatsModule::Exec(const QStringList &params)

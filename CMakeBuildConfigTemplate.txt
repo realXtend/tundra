@@ -17,7 +17,7 @@
 
 set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
 set (BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
-set (WINDOWS_APP 0)                 # Only for Windows: 0 = the console (output log) window is created and shown, 1 = this window is not shown.
+set (ENABLE_BUILD_OPTIMIZATIONS 0)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
 set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
 set (ENABLE_SKYX 1)                 # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 set (ENABLE_OGRE_ASSET_EDITOR 1)    # Enables Ogre asset editor module.
@@ -29,9 +29,6 @@ set (ENABLE_SPLASH_SCREEN 1)        # Enables application splash screen.
 
 message ("\n")
 
-if (WINDOWS_APP)
-    add_definitions (-DWINDOWS_APP)
-endif()
 if (ENABLE_SPLASH_SCREEN)
     add_definitions (-DENABLE_SPLASH_SCREEN)
 endif()
@@ -50,6 +47,14 @@ endif()
 if (MSVC AND ENABLE_MEMORY_LEAK_CHECKS)
     add_definitions(-DMEMORY_LEAK_CHECK)
 endif()
+if (MSVC AND ENABLE_BUILD_OPTIMIZATIONS)
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy /GF /Ox /Ob2 /Ot /fp:fast /MP")
+    set (CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELEASE})
+    set (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
+    set (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
+    set (CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
+    set (CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
+endif ()
 
 ###### ENTITY COMPONENTS ######
 
@@ -86,7 +91,16 @@ message ("\n=========== Configuring Static Framework ===========\n")
 AddProject(Core Math)
 AddProject(Core Framework)
 AddProject(Core Scene)
+
+# The Tundra project builds the main exe as a WINDOWS subsystem (or as a unix executable).
 AddProject(Core Tundra)
+
+# For Windows, also add a version of the project which builds using CONSOLE subsystem.
+# This is otherwise equivalent to the Tundra executable, but this one always shows the console window.
+if (MSVC)
+AddProject(Core TundraConsole)
+endif()
+
 AddProject(Core Asset)
 AddProject(Core Audio)
 AddProject(Core Console)

@@ -254,12 +254,6 @@ namespace OgreRenderer
         rendersystem_name = framework->Config()->Get(configData, "rendering plugin").toString().toStdString();
 #endif
 
-        // Allow PSSM mode shadows only on DirectX
-        // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
-        shadowQuality = (Renderer::ShadowQualitySetting)framework->Config()->Get(configData, "shadow quality").toInt();
-        if ((shadowQuality == Shadows_High) && (rendersystem_name != "Direct3D9 Rendering Subsystem"))
-            shadowQuality = Shadows_Low;
-
         textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
 
         // Ask Ogre if rendering system is available
@@ -275,6 +269,12 @@ namespace OgreRenderer
 
         // Report rendering plugin to log so user can check what actually got loaded
         LogInfo("Renderer: Using " + rendersystem->getName());
+
+        // Allow PSSM mode shadows only on DirectX
+        // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
+        shadowQuality = (Renderer::ShadowQualitySetting)framework->Config()->Get(configData, "shadow quality").toInt();
+        if ((shadowQuality == Shadows_High) && (rendersystem->getName() != "Direct3D9 Rendering Subsystem"))
+            shadowQuality = Shadows_Low;
 
         // This is needed for QWebView to not lock up!!!
         Ogre::ConfigOptionMap& map = rendersystem->getConfigOptions();

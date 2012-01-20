@@ -16,9 +16,7 @@
 /** @file Clock.h
 	@brief The Clock class. Supplies timing facilities. */
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
+#include "Win.h"
 
 /// A tick is the basic unit of the high-resolution timer.
 typedef unsigned long long tick_t;

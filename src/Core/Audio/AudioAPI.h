@@ -11,11 +11,6 @@
 
 class Framework;
 
-// Remove <Windows.h> PlaySound defines.
-#ifdef PlaySound
-#undef PlaySound
-#endif
-
 /// Enables audio playback functionality.
 class AUDIO_API AudioAPI : public QObject
 {

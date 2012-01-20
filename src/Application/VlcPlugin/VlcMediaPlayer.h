@@ -14,6 +14,16 @@
 #include <QSlider>
 #include <QUrl>
 
+#ifdef Q_WS_MAC
+class VlcPluginsException : public std::exception
+{
+    virtual const char* what() const throw()
+    {
+        return "Fatal error, could not find vlc plugins path!";
+    }
+};
+#endif
+
 class VlcMediaPlayer : public QWidget
 {
     Q_OBJECT

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "BrowserUiPluginApi.h"
+
 #include <QNetworkCookieJar>
 #include <QString>
 
@@ -10,7 +12,7 @@
 
     \note You can ask BrowserUiPlugin::CreateCookiJar to make you a new CookieJar.
 */
-class CookieJar : public QNetworkCookieJar
+class BROWSERUI_MODULE_API CookieJar : public QNetworkCookieJar
 {
 
 Q_OBJECT

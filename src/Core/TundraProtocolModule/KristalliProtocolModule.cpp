@@ -352,6 +352,13 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
     {
         ::LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +
             ToString(id) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
+
+        // Kill the connection. For debugging purposes, don't disconnect the client if the server is running a debug build.
+#ifndef _DEBUG
+        source->Disconnect(0);
+        source->Close(0);
+        // kNet will call back to KristalliProtocolModule::ClientDisconnected() to clean up the high-level Tundra UserConnection object.
+#endif
     }
 }
 

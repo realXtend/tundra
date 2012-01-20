@@ -20,17 +20,17 @@ endmacro ()
 
 macro (PrintUsedBuildConfig)
     message ("\n=========== Used Build Configuration =============\n")
-    message (STATUS "BUILD_SDK_ONLY            = " ${BUILD_SDK_ONLY})
-    message (STATUS "BUILDING_INSTALLER        = " ${BUILDING_INSTALLER})
-    message (STATUS "WINDOWS_APP               = " ${WINDOWS_APP})
-    message (STATUS "ENABLE_HYDRAX             = " ${ENABLE_HYDRAX})
-    message (STATUS "ENABLE_SKYX               = " ${ENABLE_SKYX})
-    message (STATUS "ENABLE_OGRE_ASSET_EDITOR  = " ${ENABLE_OGRE_ASSET_EDITOR})
-    message (STATUS "ENABLE_OPEN_ASSET_IMPORT  = " ${ENABLE_OPEN_ASSET_IMPORT})
-    message (STATUS "ENABLE_PROFILING          = " ${ENABLE_PROFILING})
-    message (STATUS "ENABLE_JS_PROFILING       = " ${ENABLE_JS_PROFILING})
-    message (STATUS "ENABLE_MEMORY_LEAK_CHECKS = " ${ENABLE_MEMORY_LEAK_CHECKS})
-    message (STATUS "ENABLE_SPLASH_SCREEN      = " ${ENABLE_SPLASH_SCREEN})
+    message (STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
+    message (STATUS "BUILDING_INSTALLER         = " ${BUILDING_INSTALLER})
+    message (STATUS "ENABLE_BUILD_OPTIMIZATIONS = " ${ENABLE_BUILD_OPTIMIZATIONS})
+    message (STATUS "ENABLE_HYDRAX              = " ${ENABLE_HYDRAX})
+    message (STATUS "ENABLE_SKYX                = " ${ENABLE_SKYX})
+    message (STATUS "ENABLE_OGRE_ASSET_EDITOR   = " ${ENABLE_OGRE_ASSET_EDITOR})
+    message (STATUS "ENABLE_OPEN_ASSET_IMPORT   = " ${ENABLE_OPEN_ASSET_IMPORT})
+    message (STATUS "ENABLE_PROFILING           = " ${ENABLE_PROFILING})
+    message (STATUS "ENABLE_JS_PROFILING        = " ${ENABLE_JS_PROFILING})
+    message (STATUS "ENABLE_MEMORY_LEAK_CHECKS  = " ${ENABLE_MEMORY_LEAK_CHECKS})
+    message (STATUS "ENABLE_SPLASH_SCREEN       = " ${ENABLE_SPLASH_SCREEN})
     message ("")
     message (STATUS "Install prefix = " ${CMAKE_INSTALL_PREFIX})
     message ("")
@@ -221,9 +221,6 @@ else ()
     add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
 endif()
 
-# Set Kristalli path
-set(KRISTALLI_CORE_PATH ${PROJECT_BINARY_DIR}/Kristalli)
-
 # Set CMake custom module path & include them
 # The following CMake modules are required for the project to build.
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} cmake)
@@ -241,10 +238,6 @@ if (MSVC)
     # In Visual Studio, use unicode character set
     add_definitions(-DUNICODE -D_UNICODE)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-    add_definitions(-D_WINSOCKAPI_)
-
-    #Define NOMINMAX in order to get rid of the evil WinDefs.h min&max defines.
-    add_definitions(-DNOMINMAX)
 endif()
 
 # On all platforms, we enable PCH files by default.
@@ -261,7 +254,7 @@ setup_clean_install_step()
 # Enabled more efficient texture blitting to Ogre using DirectX. This makes RenderSystem_Direct3D9 mandatory.
 set (ENABLE_DIRECTX 1)
 
-# Set global hardcoded install prefix. User cannot change this at the moment, untill we figure how we want to use this!
+# Set global hardcoded install prefix. User cannot change this at the moment, until we figure how we want to use this!
 # Call the cleanup step that cleans the install prefix before every installations. This is important as module setups might change between builds.
 set (CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/build)
 set (TUNDRA_BIN ${PROJECT_BINARY_DIR}/bin)

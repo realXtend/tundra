@@ -2355,12 +2355,14 @@ void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeW
         // Is there already this kind of element? 
         QTreeWidgetItem *item = FindItemByName(widget, resource->getName().c_str());
         if (item == 0)
+        {
             if (drawType == "texture")
                 item = new OgreTextureAssetTreeWidgetItem(widget);
             else if (drawType == "mesh")
                 item = new OgreMeshAssetTreeWidgetItem(widget);
             else
                 item = new OgreAssetTreeWidgetItem(widget);
+        }
 
         FillItem(item, resource, drawType);
     }

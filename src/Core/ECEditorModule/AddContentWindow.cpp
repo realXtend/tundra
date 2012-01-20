@@ -551,10 +551,12 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
 
                         SceneDesc::AssetMapKey key = qMakePair(value, subname);
                         if (sceneDesc.assets.contains(key))
+                        {
                             if (useDefaultStorage)
                                 newValues << AssetAPI::ExtractFilenameFromAssetRef(sceneDesc.assets[key].destinationName);
                             else
                                 newValues << dest->GetFullAssetURL(sceneDesc.assets[key].destinationName);
+                        }
                     }
 
                     if (!newValues.isEmpty())

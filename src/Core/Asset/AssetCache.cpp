@@ -15,7 +15,7 @@
 #include <QScopedPointer>
 
 #ifdef Q_WS_WIN
-#include "Windows.h"
+#include "Win.h"
 #else
 #include <sys/stat.h>
 #include <utime.h>
@@ -193,8 +193,8 @@ bool AssetCache::SetLastModified(const QString &assetRef, const QDateTime &dateT
 #else
     QString nativePath = QDir::toNativeSeparators(absolutePath);
     utimbuf modTime;
-    modTime.actime = (__time_t)(dateTime.toMSecsSinceEpoch() / 1000);
-    modTime.modtime = (__time_t)(dateTime.toMSecsSinceEpoch() / 1000);
+    modTime.actime = (time_t)(dateTime.toMSecsSinceEpoch() / 1000);
+    modTime.modtime = (time_t)(dateTime.toMSecsSinceEpoch() / 1000);
     if (utime(nativePath.toStdString().c_str(), &modTime) == -1)
     {
         LogError("AssetCache: Failed to read cache file last modified time: " + assetRef);

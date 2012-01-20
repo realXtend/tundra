@@ -477,7 +477,11 @@ Quat Quat::RandomRotation(LCG &lcg)
 		float w = lcg.Float(-1, 1);
 		float lenSq = x*x + y*y + z*z + w*w;
 		if (lenSq >= 1e-6f && lenSq <= 1.f)
+#ifndef __APPLE__
 			return Quat(x, y, z, w) / sqrt(lenSq);
+#else
+			return Quat(x, y, z, w).operator/(sqrt(lenSq));
+#endif
 	}
 	assume(false && "Quat::RandomRotation failed!");
 	return Quat::identity;

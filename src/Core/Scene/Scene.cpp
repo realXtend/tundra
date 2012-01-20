@@ -43,7 +43,7 @@ Scene::Scene(const QString &name, Framework *framework, bool viewEnabled, bool a
     authority_(authority)
 {
     // In headless mode only view disabled-scenes can be created
-    viewEnabled_ = framework->IsHeadless() ? false : viewEnabled_ = viewEnabled;
+    viewEnabled_ = framework->IsHeadless() ? false : viewEnabled;
 
     // Connect to frame update to handle signalling entities created on this frame
     connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));

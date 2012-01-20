@@ -143,7 +143,6 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
-    // std::cout << "Handling message " << id << " size " << numBytes << std::endl;
     try
     {
         switch (id)
@@ -189,6 +188,7 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
     catch (kNet::NetException& e)
     {
         LogError("Exception while handling scene sync network message " + QString::number(id) + ": " + QString(e.what()));
+        throw; // Propagate the message so that Tundra server will kill the connection (if we are the server).
     }
     currentSender = 0;
 }
@@ -1403,69 +1403,78 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
         LogWarning("Could not create entity " + QString::number(entityID) + ", disregarding CreateEntity message");
         return;
     }
-    
-    // Read the temporary flag
-    bool temporary = ds.Read<u8>() != 0;
-    entity->SetTemporary(temporary);
-    
+
     std::vector<std::pair<component_id_t, component_id_t> > componentIdRewrites;
-    // Read the components
-    unsigned numComponents = ds.ReadVLE<kNet::VLE8_16_32>();
-    for(uint i = 0; i < numComponents; ++i)
+
+    try
     {
-        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
-        component_id_t senderCompID = compID;
-        // If we are server, rewrite the ID
-        if (isServer) compID = 0;
+        // Read the temporary flag
+        bool temporary = ds.Read<u8>() != 0;
+        entity->SetTemporary(temporary);
         
-        u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
-        QString name = QString::fromStdString(ds.ReadString());
-        unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
-        ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
-        kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
-        
-        // If client gets a component that already exists, destroy it forcibly
-        if (!isServer && entity->GetComponentById(compID))
+        // Read the components
+        unsigned numComponents = ds.ReadVLE<kNet::VLE8_16_32>();
+        for(uint i = 0; i < numComponents; ++i)
         {
-            LogWarning("Received component creation from server for component ID " + QString::number(compID) + " that already exists in " + entity->ToString() + ". Removing the old component.");
-            entity->RemoveComponentById(compID, AttributeChange::LocalOnly);
-        }
-        
-        ComponentPtr comp = entity->CreateComponentWithId(compID, typeID, name, change);
-        if (!comp)
-        {
-            LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateEntity message, skipping component");
-            continue;
-        }
-        // On server, get the assigned ID now
-        if (isServer)
-        {
-            compID = comp->Id();
-            componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
-        }
-        // Create the component to the sender's syncstate, then mark it processed (undirty)
-        state->MarkComponentProcessed(entityID, compID);
-        
-        // Fill static attributes
-        unsigned numStaticAttrs = comp->NumStaticAttributes();
-        const AttributeVector& attrs = comp->Attributes();
-        for (uint i = 0; i < numStaticAttrs; ++i)
-            attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
-        
-        // Create any dynamic attributes
-        while (attrDs.BitsLeft() > 2 * 8)
-        {
-            u8 index = attrDs.Read<u8>();
-            u8 typeId = attrDs.Read<u8>();
-            QString name = QString::fromStdString(attrDs.ReadString());
-            IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
-            if (!newAttr)
+            component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+            component_id_t senderCompID = compID;
+            // If we are server, rewrite the ID
+            if (isServer) compID = 0;
+            
+            u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
+            QString name = QString::fromStdString(ds.ReadString());
+            unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
+            ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
+            kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
+            
+            // If client gets a component that already exists, destroy it forcibly
+            if (!isServer && entity->GetComponentById(compID))
             {
-                LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
-                break;
+                LogWarning("Received component creation from server for component ID " + QString::number(compID) + " that already exists in " + entity->ToString() + ". Removing the old component.");
+                entity->RemoveComponentById(compID, AttributeChange::LocalOnly);
             }
-            newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+            
+            ComponentPtr comp = entity->CreateComponentWithId(compID, typeID, name, change);
+            if (!comp)
+            {
+                LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateEntity message, skipping component");
+                continue;
+            }
+            // On server, get the assigned ID now
+            if (isServer)
+            {
+                compID = comp->Id();
+                componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
+            }
+            // Create the component to the sender's syncstate, then mark it processed (undirty)
+            state->MarkComponentProcessed(entityID, compID);
+            
+            // Fill static attributes
+            unsigned numStaticAttrs = comp->NumStaticAttributes();
+            const AttributeVector& attrs = comp->Attributes();
+            for (uint i = 0; i < numStaticAttrs; ++i)
+                attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+            
+            // Create any dynamic attributes
+            while (attrDs.BitsLeft() > 2 * 8)
+            {
+                u8 index = attrDs.Read<u8>();
+                u8 typeId = attrDs.Read<u8>();
+                QString name = QString::fromStdString(attrDs.ReadString());
+                IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+                if (!newAttr)
+                {
+                    LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                    break;
+                }
+                newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+            }
         }
+    } catch(kNet::NetException &e)
+    {
+        LogError("Failed to deserialize the creation of a new entity from the peer. Deleting the partially crafted entity!");
+        scene->RemoveEntity(entity->Id(), AttributeChange::Disconnected);
+        throw; // Propagate the exception up, to handle a peer which is sending us bad protocol bits.
     }
     
     // Emit the component changes last, to signal only a coherent state of the whole entity
@@ -1510,85 +1519,98 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
-    kNet::DataDeserializer ds(data, numBytes);
-    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
-    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
-    
-    if (!ValidateAction(source, cCreateComponentsMessage, entityID))
-        return;
-
-    EntityPtr entity = scene->GetEntity(entityID);
-    if (!entity)
-    {
-        LogWarning("Entity " + QString::number(entityID) + " not found for CreateComponents message");
-        return;
-    }
-
-    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if (!scene->AllowModifyEntity(user, entity.get()))
-        return;
-    
-    // Read the components
     std::vector<std::pair<component_id_t, component_id_t> > componentIdRewrites;
     std::vector<ComponentPtr> addedComponents;
-    while (ds.BitsLeft() > 2 * 8)
+
+    EntityPtr entity;
+    u32 sceneID;
+    entity_id_t entityID;
+    try
     {
-        component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
-        component_id_t senderCompID = compID;
-        // If we are server, rewrite the ID
-        if (isServer) compID = 0;
+        kNet::DataDeserializer ds(data, numBytes);
+        sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
+        entityID = ds.ReadVLE<kNet::VLE8_16_32>();
         
-        u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
-        QString name = QString::fromStdString(ds.ReadString());
-        unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
-        ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
-        kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
-        
-        // If client gets a component that already exists, destroy it forcibly
-        if (!isServer && entity->GetComponentById(compID))
+        if (!ValidateAction(source, cCreateComponentsMessage, entityID))
+            return;
+
+        entity = scene->GetEntity(entityID);
+        if (!entity)
         {
-            LogWarning("Received component creation from server for component ID " + QString::number(compID) + " that already exists in " + entity->ToString() + ". Removing the old component.");
-            entity->RemoveComponentById(compID, AttributeChange::LocalOnly);
+            LogWarning("Entity " + QString::number(entityID) + " not found for CreateComponents message");
+            return;
         }
+
+        UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+        if (!scene->AllowModifyEntity(user, entity.get()))
+            return;
         
-        ComponentPtr comp = entity->CreateComponentWithId(compID, typeID, name, change);
-        if (!comp)
+        // Read the components
+        while (ds.BitsLeft() > 2 * 8)
         {
-            LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateComponents message, skipping component");
-            continue;
-        }
-        // On server, get the assigned ID now
-        if (isServer)
-        {
-            compID = comp->Id();
-            componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
-        }
-        
-        // Create the component to the sender's syncstate, then mark it processed (undirty)
-        state->MarkComponentProcessed(entityID, compID);
-        
-        addedComponents.push_back(comp);
-        
-        // Fill static attributes
-        unsigned numStaticAttrs = comp->NumStaticAttributes();
-        const AttributeVector& attrs = comp->Attributes();
-        for (uint i = 0; i < numStaticAttrs; ++i)
-            attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
-        
-        // Create any dynamic attributes
-        while (attrDs.BitsLeft() > 2 * 8)
-        {
-            u8 index = attrDs.Read<u8>();
-            u8 typeId = attrDs.Read<u8>();
-            QString name = QString::fromStdString(attrDs.ReadString());
-            IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
-            if (!newAttr)
+            component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
+            component_id_t senderCompID = compID;
+            // If we are server, rewrite the ID
+            if (isServer) compID = 0;
+            
+            u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
+            QString name = QString::fromStdString(ds.ReadString());
+            unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
+            ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
+            kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
+            
+            // If client gets a component that already exists, destroy it forcibly
+            if (!isServer && entity->GetComponentById(compID))
             {
-                LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
-                break;
+                LogWarning("Received component creation from server for component ID " + QString::number(compID) + " that already exists in " + entity->ToString() + ". Removing the old component.");
+                entity->RemoveComponentById(compID, AttributeChange::LocalOnly);
             }
-            newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+            
+            ComponentPtr comp = entity->CreateComponentWithId(compID, typeID, name, change);
+            if (!comp)
+            {
+                LogWarning("Failed to create component type " + QString::number(compID) + " to " + entity->ToString() + " while handling CreateComponents message, skipping component");
+                continue;
+            }
+            // On server, get the assigned ID now
+            if (isServer)
+            {
+                compID = comp->Id();
+                componentIdRewrites.push_back(std::make_pair(senderCompID, compID));
+            }
+            
+            // Create the component to the sender's syncstate, then mark it processed (undirty)
+            state->MarkComponentProcessed(entityID, compID);
+            
+            addedComponents.push_back(comp);
+            
+            // Fill static attributes
+            unsigned numStaticAttrs = comp->NumStaticAttributes();
+            const AttributeVector& attrs = comp->Attributes();
+            for (uint i = 0; i < numStaticAttrs; ++i)
+                attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+            
+            // Create any dynamic attributes
+            while (attrDs.BitsLeft() > 2 * 8)
+            {
+                u8 index = attrDs.Read<u8>();
+                u8 typeId = attrDs.Read<u8>();
+                QString name = QString::fromStdString(attrDs.ReadString());
+                IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+                if (!newAttr)
+                {
+                    LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                    break;
+                }
+                newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+            }
         }
+    } catch(kNet::NetException &e)
+    {
+        LogError("Failed to deserialize the creation of new component(s) from the peer. Deleting the partially crafted components!");
+        for(size_t i = 0; i < addedComponents.size(); ++i)
+            entity->RemoveComponent(addedComponents[i], AttributeChange::Disconnected);
+        throw; // Propagate the exception up, to handle a peer which is sending us bad protocol bits.
     }
     
     // Send CreateComponentsReply (server only)
@@ -1763,7 +1785,15 @@ void SyncManager::HandleCreateAttributes(kNet::MessageConnection* source, const 
         }
         
         addedAttrs.push_back(attr);
-        attr->FromBinary(ds, AttributeChange::Disconnected);
+        try
+        {
+            attr->FromBinary(ds, AttributeChange::Disconnected);
+        } catch (kNet::NetException &e)
+        {
+            LogError("Failed to deserialize the creation of a new attribute from the peer!");
+            comp->RemoveAttribute(attrIndex, AttributeChange::Disconnected);
+            throw;
+        }
         
         // Remove the corresponding add command from the sender's syncstate, so that the attribute add is not echoed back
         state->entities[entityID].components[compID].newAndRemovedAttributes.erase(attrIndex);

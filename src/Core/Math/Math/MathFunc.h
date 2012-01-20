@@ -27,16 +27,7 @@
 #include "Math/MathConstants.h"
 #include "Math/float3.h"
 
-#ifdef WIN32
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef Polygon
-#define Polygon Polygon_WinGdi_UNUSED
-#endif
-#include <Windows.h> // For DebugBreak();
-#undef Polygon
-#endif
+#include "Win.h" // For DebugBreak();
 
 #include "assume.h"
 
