@@ -20,6 +20,7 @@
 #include "Math/float2.h"
 #include "Math/float3.h"
 #include "Math/float3.h"
+#include "Math/MathFunc.h"
 
 #include <QVariant>
 #include <QStringList>
@@ -32,19 +33,6 @@
 #include "MemoryLeakCheck.h"
 
 using namespace kNet;
-
-namespace
-{
-    int Lerp(int a, int b, float t)
-    {
-        return a + t * (b-a);
-    }
-
-    int Lerp(uint a, uint b, float t)
-    {
-        return a + t * (b-a);
-    }
-}
 
 // Implementation code for some common attributes
 
@@ -1070,30 +1058,24 @@ template<> void Attribute<int>::Interpolate(IAttribute* start, IAttribute* end, 
 {
     Attribute<int>* startInt = dynamic_cast<Attribute<int>*>(start);
     Attribute<int>* endInt = dynamic_cast<Attribute<int>*>(end);
-    if ((startInt) && (endInt))
-    {
-        Set(Lerp(startInt->Get(), endInt->Get(), t), change);
-    }
+    if (startInt && endInt)
+        Set(RoundInt(Lerp((float)startInt->Get(), (float)endInt->Get(), t)), change);
 }
 
 template<> void Attribute<uint>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
     Attribute<uint>* startUint = dynamic_cast<Attribute<uint>*>(start);
     Attribute<uint>* endUint = dynamic_cast<Attribute<uint>*>(end);
-    if ((startUint) && (endUint))
-    {
-        Set(Lerp(startUint->Get(), endUint->Get(), t), change);
-    }
+    if (startUint && endUint)
+        Set((uint)RoundInt(Lerp((float)startUint->Get(), (float)endUint->Get(), t)), change);
 }
 
 template<> void Attribute<float>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
     Attribute<float>* startFloat = dynamic_cast<Attribute<float>*>(start);
     Attribute<float>* endFloat = dynamic_cast<Attribute<float>*>(end);
-    if ((startFloat) && (endFloat))
-    {
+    if (startFloat && endFloat)
         Set(Lerp(startFloat->Get(), endFloat->Get(), t), change);
-    }
 }
 
 template<> void Attribute<Quat>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
@@ -1109,9 +1091,7 @@ template<> void Attribute<float2>::Interpolate(IAttribute* start, IAttribute* en
     Attribute<float2>* startVec = dynamic_cast<Attribute<float2>*>(start);
     Attribute<float2>* endVec = dynamic_cast<Attribute<float2>*>(end);
     if (startVec && endVec)
-    {
         Set(Lerp(startVec->Get(), endVec->Get(), t), change);
-    }
 }
 
 template<> void Attribute<float3>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
@@ -1119,9 +1099,7 @@ template<> void Attribute<float3>::Interpolate(IAttribute* start, IAttribute* en
     Attribute<float3>* startVec = dynamic_cast<Attribute<float3>*>(start);
     Attribute<float3>* endVec = dynamic_cast<Attribute<float3>*>(end);
     if (startVec && endVec)
-    {
         Set(Lerp(startVec->Get(), endVec->Get(), t), change);
-    }
 }
 
 template<> void Attribute<float4>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
@@ -1129,9 +1107,7 @@ template<> void Attribute<float4>::Interpolate(IAttribute* start, IAttribute* en
     Attribute<float4>* startVec = dynamic_cast<Attribute<float4>*>(start);
     Attribute<float4>* endVec = dynamic_cast<Attribute<float4>*>(end);
     if (startVec && endVec)
-    {
         Set(Lerp(startVec->Get(), endVec->Get(), t), change);
-    }
 }
 
 template<> void Attribute<Color>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
