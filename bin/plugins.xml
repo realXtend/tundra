@@ -14,8 +14,7 @@
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
   <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
-  <plugin path="EC_Video" />
-  <plugin path="EC_QmlApp" />
+  <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraProtocolModule -->
     
   <!-- TODO: Currently the above <plugin> items are loaded in the order they are specified, but below, the jsplugin items are loaded in an undefined order. Use the order specified here as the load order. -->
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
@@ -33,9 +32,9 @@
   <option name="--accept_unknown_http_sources" />
   <option name="--accept_unknown_local_sources" />
   <option name="--fpslimit" value="0" />
+  <option name="--console" />
   <option name="--hide_benign_ogre_messages" />
   <!--  AssetAPI's file system watcher currently disabled because LocalAssetProvider implements
         the same functionality for LocalAssetStorages and HTTPAssetProviders do not yet support live-update. -->
   <option name="--nofilewatcher" />
-
 </Tundra>

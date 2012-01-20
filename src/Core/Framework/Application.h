@@ -24,6 +24,7 @@ class Application : public QApplication
     Q_PROPERTY(QString organizationName READ OrganizationName)
     Q_PROPERTY(QString applicationName READ ApplicationName)
     Q_PROPERTY(QString version READ Version)
+    Q_PROPERTY(QString platform READ Platform)
     Q_PROPERTY(QString fullIdentifier READ FullIdentifier)
     Q_PROPERTY(double targetFpsLimit READ TargetFpsLimit WRITE SetTargetFpsLimit)
 
@@ -46,6 +47,12 @@ public:
     static void Message(const std::string &title, const std::string &text);
     static void Message(const wchar_t *title, const wchar_t *text);
     static void Message(const std::wstring &title, const std::wstring &text);
+
+    /// Opens up a text console window for Tundra.
+    /// @param attachToParent If true, the console is taken from the parent process. Use this to show Tundra console on
+    ///        the same console than the command line.
+    /// @return True on success.
+    static bool ShowConsoleWindow(bool attachToParent);
 
     /// Sets the current working directory. Use with caution.
     static void SetCurrentWorkingDirectory(QString newCwd);
@@ -92,6 +99,10 @@ public:
     /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
     static const char *Version();
 
+    /// Returns the operating system/platform. Possible return values 'win' for windows, 'mac' for Mac OSX or 'x11' for linux, empty string for unresolved.
+    /// This is intended for scripting languages, as sometimes you need to do OS specific UI changes with Qt etc.
+    static QString Platform();
+    
     /// Returns "OrganizationName ApplicationName Version".
     /** @note Unlike OrganizationName, ApplicationName and Version, this function performs memory allocation. */
     static QString FullIdentifier();

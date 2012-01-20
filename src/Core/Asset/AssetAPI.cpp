@@ -376,10 +376,12 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     {
         *outFullRef += fullPathRef;
         if (!subAssetName.isEmpty())
+        {
             if (subAssetName.contains(' '))
                 *outFullRef += ", \"" + subAssetName + "\"";
             else
                 *outFullRef += ", " + subAssetName;
+        }
     }
 
     if (outFullRefNoSubAssetName)
@@ -1656,28 +1658,28 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
 
 bool LoadFileToVector(const QString &filename, std::vector<u8> &dst)
 {
-    std::wstring wideFilename = QStringToWString(filename);
-    FILE *handle = _wfopen(wideFilename.c_str(), L"rb");
-    if (!handle)
+    QFile file(filename);
+    file.open(QIODevice::ReadOnly);
+    if (!file.isOpen())
     {
         LogError("AssetAPI::LoadFileToVector: Failed to open file '" + filename + "' for reading.");
         return false;
     }
-
-    fseek(handle, 0, SEEK_END);
-    long numBytes = ftell(handle);
-    if (numBytes == 0)
+    qint64 fileSize = file.size();
+    if (fileSize <= 0)
     {
-        fclose(handle);
+        LogError("AssetAPI::LoadFileToVector: Failed to read file '" + filename + "' of " + fileSize + " bytes in size.");
+        return false;
+    }
+    dst.resize(fileSize);
+    qint64 numRead = file.read((char*)&dst[0], fileSize);
+    if (numRead < fileSize)
+    {
+        LogError("AssetAPI::LoadFileToVector: Failed to read " + QString::number(numRead) + " bytes from file '" + filename + "'.");
         return false;
     }
 
-    fseek(handle, 0, SEEK_SET);
-    dst.resize(numBytes);
-    size_t numRead = fread(&dst[0], sizeof(u8), numBytes, handle);
-    fclose(handle);
-
-    return (long)numRead == numBytes;
+    return true;
 }
 
 namespace

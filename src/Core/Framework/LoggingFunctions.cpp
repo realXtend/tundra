@@ -4,9 +4,7 @@
 #include "Framework.h"
 #include "ConsoleAPI.h"
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
+#include "Win.h"
 
 void PrintLogMessage(u32 logChannel, const char *str)
 {

@@ -104,3 +104,8 @@ bin/data/translations/*.ts
 *.svn-base
 *entries
 *all-wcprops
+
+# Mac Xcode project files and dynamic libraries
+*.dylib
+*.DS_Store
+*.xcodeproj

@@ -14,8 +14,10 @@
 #include <QPoint>
 #include <QTimer>
 #include <QMenu>
+#include <QSslError>
 
 class QWebView;
+class QNetworkReply;
 
 class EC_Mesh;
 class EC_WidgetCanvas;
@@ -119,14 +121,13 @@ public:
     Q_PROPERTY(int controllerId READ getcontrollerId WRITE setcontrollerId);
     DEFINE_QPROPERTY_ATTRIBUTE(int, controllerId);
     
-    /// Constuctor.
+    friend class SceneWidgetComponents;
+
+    /// Constructor.
     explicit EC_WebView(Scene *scene);
 
     /// Destructor.
     ~EC_WebView();
-
-    /// Returns if Component is serializable, always returns true.
-    virtual bool IsSerializable() const;
 
     /// Event filter for this QObject
     virtual bool eventFilter(QObject *obj, QEvent *e);
@@ -158,6 +159,9 @@ public slots:
     /// Handles requests to release control of sharing
     void InteractControlReleaseRequest();
 
+protected:
+    void Render(QImage image);
+
 private slots:
     /// Server side handler for user disconnects.
     void ServerHandleDisconnect(int connectionID, UserConnection *connection);
@@ -179,23 +183,32 @@ private slots:
     /// Handler for window resize signal.
     void RenderWindowResized();
 
-    /// Free QWebView memory and reset internal pointer.
-    void ResetWidget();
-
     /// Prepares everything related to the parent widget and other needed components.
     void PrepareComponent();
 
     /// Prepares the QWebView and connects its signals to our slots.
     void PrepareWebview();
 
+    /// Free QWebView memory and reset internal pointer.
+    void ResetWebView(bool ignoreVisibility = false);
+
+    /// Handle browser SSL errors.
+    void OnSslErrors(QNetworkReply *reply, const QList<QSslError>& errors);
+
     /// Handler for QWebView::linkClicked(const QUrl&)
     void LoadRequested(const QUrl &url);
+
+    /// Loads url to browser.
+    void LoadUrl(QString url);
 
     /// Handler for QWebView::loadStarted().
     void LoadStarted();
 
     /// Handler for QWebView::loadFinished(bool).
     void LoadFinished(bool success);
+
+    /// Stops browser.
+    void StopBrowser();
 
     /// If user select invalid submesh, this function is invoked with a delay and the value is reseted to 0.
     void ResetSubmeshIndex();

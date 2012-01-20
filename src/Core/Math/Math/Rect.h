@@ -17,10 +17,7 @@
 	@brief 2D integral axis-aligned rectangle, equivalent to RECT in Windows API. */
 #pragma once
 
-#ifdef WIN32
-#define NOMINMAX
-#include <windows.h>
-#endif
+#include "Win.h"
 
 MATH_BEGIN_NAMESPACE
 

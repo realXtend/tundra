@@ -54,7 +54,9 @@ if (SHOULD_RUN)
 
     link_modules (Framework Asset Ui OgreRenderingModule SceneWidgetComponents)
     link_package (VLC)
-
+    if (APPLE)
+        link_ogre()
+    endif()
     final_target ()
 
     # Install vlcplugins to install prefix for windows

@@ -37,10 +37,7 @@ public:
 
     /// Issues an asset deletion request to the asset storage and provider this asset resides in.
     /** If the asset provider supports this feature, it will delete the asset from the source. */
-    virtual void DeleteAssetFromStorage(QString assetRef)
-    {
-        printf("IAssetStorage::DeleteAssetFromStorage: not implemented!\n");
-    }
+    virtual void DeleteAssetFromStorage(QString assetRef) = 0;
 
     /// Removes the storage with the given name from this provider, or returns false if it doesn't exist.
     virtual bool RemoveAssetStorage(QString storageName) { return false; }

@@ -22,10 +22,7 @@
 #include "Time/Clock.h"
 #include "Log.h"
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
+#include "Win.h"
 
 Clock impl;
 

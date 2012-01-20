@@ -3,8 +3,7 @@
 #pragma once
 
 #ifdef _WINDOWS
-#include <Winsock2.h>
-#include <Windows.h>
+#include "Win.h"
 #endif
 
 #include "Framework.h"

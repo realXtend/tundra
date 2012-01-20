@@ -42,10 +42,7 @@ MATH_END_NAMESPACE
 #elif !defined(MATH_SILENT_ASSUME) 
 
 #ifdef _MSC_VER
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <Windows.h>
+#include "Win.h"
 #define assume(x) do { if (!(x)) { printf("Assumption \"%s\" failed! in file %s, line %d!\n", #x, __FILE__, __LINE__); if (MathBreakOnAssume()) DebugBreak(); } } while(0)
 #elif defined(ANDROID)
 #include <android/log.h>

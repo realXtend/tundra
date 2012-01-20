@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
+#include "Win.h"
 #include "AudioAPI.h"
 #include "CoreTypes.h"
 #include "AssetAPI.h"
@@ -301,11 +302,6 @@ void AudioAPI::SetListener(const float3 &position, const Quat &orientation)
     impl->listenerPosition = position;
     impl->listenerOrientation = orientation;
 }
-
-// Remove <Windows.h> PlaySound defines.
-#ifdef PlaySound
-#undef PlaySound
-#endif
 
 SoundChannelPtr AudioAPI::PlaySound(AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {

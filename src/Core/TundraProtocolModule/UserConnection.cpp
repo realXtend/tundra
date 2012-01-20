@@ -53,3 +53,15 @@ void UserConnection::DenyConnection(const QString &reason)
     properties["authenticated"] = "false";
     properties["reason"] = reason;
 }
+
+void UserConnection::Disconnect()
+{
+    if (connection)
+        connection->Disconnect(0);
+}
+
+void UserConnection::Close()
+{
+    if (connection)
+        connection->Close(0);
+}
