@@ -19,16 +19,24 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_SkyX" sync="1">
-   <attribute value="false" name="Volumetric clouds"/>
-   <attribute value="1" name="Time multiplier"/>
-   <attribute value="3.696215 7.500000 20.500000" name="Time"/>
-   <attribute value="1.000000 1.000000" name="Weather (volumetric clouds only)"/>
+   <attribute value="1" name="Cloud type"/>
+   <attribute value="0.25" name="Time multiplier"/>
+   <attribute value="16.109499" name="Time [0-24]"/>
+   <attribute value="7.5" name="Time sunrise [0-24]"/>
+   <attribute value="20.5" name="Time sunset [0-24]"/>
+   <attribute value="50" name="Cloud coverage [0-100]"/>
+   <attribute value="50" name="Cloud average size [0-100]"/>
+   <attribute value="100" name="Cloud height"/>
+   <attribute value="67.1229095" name="Moon phase [0-100]"/>
+   <attribute value="9.75" name="Sun inner radius"/>
+   <attribute value="10.25" name="Sun outer radius"/>
    <attribute value="0" name="Wind direction"/>
+   <attribute value="5" name="Wind speed"/>
   </component>
   <component type="EC_Hydrax" sync="1">
    <attribute value="HydraxDefault.hdx" name="Config ref"/>
    <attribute value="true" name="Visible"/>
-   <attribute value="0.000000 18.000000 0.000000" name="Position"/>
+   <attribute value="0.000000 7.000000 0.000000" name="Position"/>
   </component>
  </entity>
  <entity id="3" sync="1">
