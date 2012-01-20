@@ -142,7 +142,6 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
-    // std::cout << "Handling message " << id << " size " << numBytes << std::endl;
     try
     {
         switch (id)
@@ -185,6 +184,7 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
     catch (kNet::NetException& e)
     {
         LogError("Exception while handling scene sync network message " + QString::number(id) + ": " + QString(e.what()));
+        throw; // Propagate the message so that Tundra server will kill the connection (if we are the server).
     }
     currentSender = 0;
 }
