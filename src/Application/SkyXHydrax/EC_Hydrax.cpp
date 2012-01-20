@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_Hydrax.cpp
- *  @brief  A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_Hydrax.cpp
+    @brief  A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax */
 
 #define MATH_OGRE_INTEROP
 
@@ -261,8 +260,28 @@ void EC_Hydrax::Update(float frameTime)
             if (!entities.empty())
                 impl->skyX = (*entities.begin())->GetComponent<EC_SkyX>();
         }
-        if (!impl->skyX.expired() && impl->hydrax->isCreated())
-            impl->hydrax->setSunPosition(impl->skyX.lock()->SunPosition());
+
+        // Set Hydrax's sun position to use either sun or moon, depending which is visible.
+        boost::shared_ptr<EC_SkyX> skyX = impl->skyX.lock();
+        if (skyX && impl->hydrax->isCreated())
+        {
+            // Decrease sun strength for moonlight. Otherwise the light projection on the water surface looks unnaturally.
+            /// @todo Decrease underwater sun strength too.
+            const float defaultSunlightStrenth = 1.75f;
+            const float defaultMoonlightStrenth = 0.75f;
+            if (skyX->IsSunVisible())
+            {
+                if (impl->hydrax->getSunStrength() != defaultSunlightStrenth)
+                    impl->hydrax->setSunStrength(defaultSunlightStrenth);
+                impl->hydrax->setSunPosition(skyX->SunPosition());
+            }
+            else if (skyX->IsMoonVisible())
+            {
+                if (impl->hydrax->getSunStrength() != defaultMoonlightStrenth)
+                    impl->hydrax->setSunStrength(defaultMoonlightStrenth);
+                impl->hydrax->setSunPosition(skyX->MoonPosition());
+            }
+        }
 #endif
         if (impl->hydrax->isCreated())
             impl->hydrax->update(frameTime);
@@ -319,7 +338,7 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
 
         // The position attribute is always authoritative from the component attribute.
         if (visible.Get())
-            impl->hydrax->setPosition(position.Get());  
+            impl->hydrax->setPosition(position.Get());
     }
     catch (Ogre::Exception &e)
     {

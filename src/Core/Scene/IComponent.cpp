@@ -1,21 +1,19 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   IComponent.cpp
- *  @brief  The common interface for all components, which are the building blocks the scene entities are formed of.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   IComponent.cpp
+    @brief  The common interface for all components, which are the building blocks the scene entities are formed of. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "IComponent.h"
-
-#include "CoreStringUtils.h"
-#include "Framework.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "SceneAPI.h"
 
+#include "CoreStringUtils.h"
+#include "Framework.h"
 #include "LoggingFunctions.h"
 
 #include <QDomDocument>

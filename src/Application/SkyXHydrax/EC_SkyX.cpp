@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_SkyX.cpp
- *  @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_SkyX.cpp
+    @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX */
 
 #define MATH_OGRE_INTEROP
 
@@ -26,15 +25,19 @@
 #include "AttributeMetadata.h"
 
 #include <SkyX.h>
-#include <QDebug>
 
 #include "MemoryLeakCheck.h"
 
 /// @cond PRIVATE
-
 struct EC_SkyXImpl
 {
-    EC_SkyXImpl() : skyX(0), controller(0), sunlight(0), cloudLayerBottom(0), cloudLayerTop(0)
+    EC_SkyXImpl() :
+        skyX(0),
+        controller(0),
+        sunlight(0),
+        moonlight(0),
+        cloudLayerBottom(0),
+        cloudLayerTop(0)
     {
         controller = new SkyX::BasicController(true);
     }
@@ -61,6 +64,8 @@ struct EC_SkyXImpl
             {
                 if (sunlight)
                     sm->destroyLight(sunlight);
+                if (moonlight)
+                    sm->destroyLight(moonlight);
                 sm->setAmbientLight(originalAmbientColor);
             }
 
@@ -68,6 +73,7 @@ struct EC_SkyXImpl
         }
 
         sunlight = 0;
+        moonlight = 0;
         controller = 0;
         cloudLayerBottom = 0;
         cloudLayerTop = 0;
@@ -82,17 +88,17 @@ struct EC_SkyXImpl
     SkyX::CloudLayer *cloudLayerTop;
 
     Ogre::Light *sunlight;
+    Ogre::Light *moonlight;
     Color originalAmbientColor;
 
-    float3 currentSunPosition;
+    float3 sunPosition;
+    float3 moonPosition;
 };
-
 /// @endcond
 
 EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
-    volumetricClouds(this, "Clouds [volumetric]", false),
-    normalClouds(this, "Clouds [normal]", true),
+    cloudType(this, "Cloud type", Normal),
     timeMultiplier(this, "Time multiplier", 0.0f),
     time(this, "Time [0-24]", 14.f), 
     sunriseTime(this, "Time sunrise [0-24]", 7.5f),
@@ -107,33 +113,38 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     sunOuterRadius(this, "Sun outer radius", 10.25f),
     impl(0)
 {
-    static AttributeMetadata cloudHeightMetaData;
-    static AttributeMetadata timeMetaData;
+    static AttributeMetadata cloudTypeMetadata;
+    static AttributeMetadata cloudHeightMetadata;
+    static AttributeMetadata timeMetadata;
     static AttributeMetadata zeroToHundredMetadata;
     static AttributeMetadata mediumStepMetadata;
     static AttributeMetadata smallStepMetadata;
     static bool metadataInitialized = false;
     if (!metadataInitialized)
     {
-        timeMetaData.minimum = "0.0";
-        timeMetaData.maximum = "24.0";
-        timeMetaData.step = "0.5";
+        cloudTypeMetadata.enums[None] = "None";
+        cloudTypeMetadata.enums[Normal] = "Normal";
+        cloudTypeMetadata.enums[Volumetric] = "Volumetric";
+        timeMetadata.minimum = "0.0";
+        timeMetadata.maximum = "24.0";
+        timeMetadata.step = "0.5";
         zeroToHundredMetadata.minimum = "0.0";
         zeroToHundredMetadata.maximum = "100.0";
         zeroToHundredMetadata.step = "10.0";
-        cloudHeightMetaData.minimum = "0.0";
-        cloudHeightMetaData.maximum = "10000.0";
-        cloudHeightMetaData.step = "10.0";
+        cloudHeightMetadata.minimum = "0.0";
+        cloudHeightMetadata.maximum = "10000.0";
+        cloudHeightMetadata.step = "10.0";
         mediumStepMetadata.step = "0.1";
         smallStepMetadata.step = "0.01";
         metadataInitialized = true;
     }
-    time.SetMetadata(&timeMetaData);
-    sunriseTime.SetMetadata(&timeMetaData);
-    sunsetTime.SetMetadata(&timeMetaData);
+    cloudType.SetMetadata(&cloudTypeMetadata);
+    time.SetMetadata(&timeMetadata);
+    sunriseTime.SetMetadata(&timeMetadata);
+    sunsetTime.SetMetadata(&timeMetadata);
     cloudCoverage.SetMetadata(&zeroToHundredMetadata);
     cloudAverageSize.SetMetadata(&zeroToHundredMetadata);
-    cloudHeight.SetMetadata(&cloudHeightMetaData);
+    cloudHeight.SetMetadata(&cloudHeightMetadata);
     moonPhase.SetMetadata(&zeroToHundredMetadata);
     timeMultiplier.SetMetadata(&smallStepMetadata);
     sunInnerRadius.SetMetadata(&mediumStepMetadata);
@@ -148,11 +159,24 @@ EC_SkyX::~EC_SkyX()
     Remove();
 }
 
+bool EC_SkyX::IsSunVisible() const
+{
+    return impl && impl->sunlight ? impl->sunlight->isVisible(): false;
+}
+
 float3 EC_SkyX::SunPosition() const
 {
-    if (impl)
-        return impl->currentSunPosition;
-    return float3();
+    return impl ? impl->sunPosition : float3();
+}
+
+bool EC_SkyX::IsMoonVisible() const
+{
+    return impl && impl->moonlight ? impl->moonlight->isVisible(): false;
+}
+
+float3 EC_SkyX::MoonPosition() const
+{
+    return impl ? impl->moonPosition : float3();
 }
 
 void EC_SkyX::Remove()
@@ -184,33 +208,8 @@ void EC_SkyX::Create()
     disconnect(w->Renderer(), SIGNAL(MainCameraChanged(Entity*)), this, SLOT(Create()));
 
     // SkyX is a singleton component, refuse to add multiple in a scene!
-    bool sceneHasSkyX = false;
-    Scene::const_iterator entIter = ParentScene()->begin();
-    Scene::const_iterator entEnd = ParentScene()->end();
-    while (entIter != entEnd)
-    {
-        EntityPtr ent = entIter->second;
-        if (ent.get())
-        {
-            Entity::ComponentMap::const_iterator compIter = ent->Components().begin();
-            Entity::ComponentMap::const_iterator compEnd = ent->Components().end();
-            while(compIter != compEnd)
-            {
-                ComponentPtr comp = compIter->second;
-                if (comp.get() && comp.get() != this && comp->TypeName() == this->TypeName())
-                {
-                    sceneHasSkyX = true;
-                    break;
-                }
-                ++compIter;
-            }
-
-        }
-        ++entIter;
-        if (sceneHasSkyX)
-            break;
-    }
-    if (sceneHasSkyX)
+    EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(TypeName());
+    if (!entities.empty() && (*entities.begin())->GetComponent<EC_SkyX>().get() != this)
     {
         LogError("EC_SkyX: Scene already has SkyX component, refusing to create a new one.");
         return;
@@ -228,7 +227,7 @@ void EC_SkyX::Create()
         RegisterListeners();
 
         ApplyAtmosphereOptions();
-        UpdateAttribute(&volumetricClouds, AttributeChange::Disconnected); // Check both volumetric and normal clouds
+        UpdateAttribute(&cloudType, AttributeChange::Disconnected);
         UpdateAttribute(&timeMultiplier, AttributeChange::Disconnected);
         UpdateAttribute(&time, AttributeChange::Disconnected);
 
@@ -236,7 +235,7 @@ void EC_SkyX::Create()
         connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
         connect(w->Renderer(), SIGNAL(MainCameraChanged(Entity*)), SLOT(OnActiveCameraChanged(Entity*)), Qt::UniqueConnection);
 
-        CreateSunlight();
+        CreateLights();
     }
     catch(Ogre::Exception &e)
     {
@@ -245,7 +244,7 @@ void EC_SkyX::Create()
     }
 }
 
-void EC_SkyX::CreateSunlight()
+void EC_SkyX::CreateLights()
 {
     if (impl)
     {
@@ -261,6 +260,14 @@ void EC_SkyX::CreateSunlight()
         impl->sunlight->setSpecularColour(0.f,0.f,0.f);
         impl->sunlight->setDirection(impl->controller->getSunDirection());
         impl->sunlight->setCastShadows(true);
+
+        impl->moonlight = sm->createLight(w->Renderer()->GetUniqueObjectName("SkyXMoonlight"));
+        impl->moonlight->setType(Ogre::Light::LT_DIRECTIONAL);
+        impl->moonlight->setDiffuseColour(Color(0.639f,0.639f,0.639f, 0.25f)); ///< @todo Nicer color for moonlight
+        impl->moonlight->setSpecularColour(0.f,0.f,0.f);
+        impl->moonlight->setDirection(impl->controller->getMoonDirection());
+        impl->moonlight->setCastShadows(true);
+        impl->moonlight->setVisible(false); // Hide moonlight by default
     }
 }
 
@@ -285,39 +292,18 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
 {
     if (!impl)
         return;
-
-    if (attr == &volumetricClouds || attr == &normalClouds)
+    if (attr == &cloudType)
     {
-        // If both active, disable the other option so toggle works nicely in ui.
-        if (volumetricClouds.Get() && normalClouds.Get())
+        switch((CloudType)cloudType.Get())
         {
-            if (attr == &volumetricClouds)
-                normalClouds.Set(false, AttributeChange::Default);
-            else if (attr == &normalClouds)
-                volumetricClouds.Set(false, AttributeChange::Default);
-            return;
-        }
-
-        // Unload normal clouds
-        if (impl->skyX->getCloudsManager())
+        case None:
+            UnloadNormalClouds();
+            UnloadVolumetricClouds();
+            break;
+        case Volumetric:
         {
-            impl->skyX->getCloudsManager()->unregisterAll();
-            impl->skyX->getCloudsManager()->removeAll();
-
-            impl->cloudLayerBottom = 0;
-            impl->cloudLayerTop = 0;
-        }
-
-        // Unload volumetric clouds
-        if (impl->skyX->getVCloudsManager())
-        {
-            UnregisterCamera();
-            impl->skyX->getVCloudsManager()->remove();
-        }
-    
-        // Load volumetric if enabled
-        if (volumetricClouds.Get())
-        {
+            UnloadNormalClouds();
+            UnloadVolumetricClouds();
             EC_Camera *cameraComp = GetFramework()->Renderer()->MainCameraComponent();
             Ogre::Camera *camera = cameraComp != 0 ? cameraComp->GetCamera() : 0;
             if (!camera)
@@ -357,11 +343,12 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
             UpdateAttribute(&cloudCoverage, AttributeChange::Disconnected);
             UpdateAttribute(&windDirection, AttributeChange::Disconnected);
             UpdateAttribute(&windSpeed, AttributeChange::Disconnected);
+            break;
         }
-
-        // Load normal clouds
-        if (normalClouds.Get())
+        case Normal:
         {
+            UnloadNormalClouds();
+            UnloadVolumetricClouds();
             // Bottom layer
             SkyX::CloudLayer::Options options;
             impl->cloudLayerBottom = impl->skyX->getCloudsManager()->add(options);
@@ -373,19 +360,24 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
 
             // Change the color a bit from the default
             SkyX::ColorGradient ambientGradient;
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(1,1,1)*0.95, 1.0f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.7,0.7,0.65), 0.625f)); 
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.6,0.55,0.4), 0.5625f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.6,0.45,0.3)*0.2, 0.5f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.5,0.25,0.25)*0.4, 0.45f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.2,0.2,0.3)*0.2, 0.35f));
-            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.2,0.2,0.5)*0.2, 0));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(1.0f,1.0f,1.0f)*0.95f, 1.0f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.7f,0.7f,0.65f), 0.625f)); 
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.6f,0.55f,0.4f), 0.5625f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.6f,0.45f,0.3f)*0.2f, 0.5f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.5f,0.25f,0.25f)*0.4f, 0.45f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.2f,0.2f,0.3f)*0.2f, 0.35f));
+            ambientGradient.addCFrame(SkyX::ColorGradient::ColorFrame(Ogre::Vector3(0.2f,0.2f,0.5f)*0.2f, 0.0f));
             impl->cloudLayerTop->setAmbientGradient(ambientGradient);
 
             // Update relevant attributes silently now that normal clouds have been created
             UpdateAttribute(&cloudHeight, AttributeChange::Disconnected);
             UpdateAttribute(&windDirection, AttributeChange::Disconnected);
             UpdateAttribute(&windSpeed, AttributeChange::Disconnected);
+            break;
+        }
+        default:
+            LogError(QString("EC_SkyX::UpdateAttribute: Invalid cloudType %1.").arg(cloudType.Get()));
+            break;
         }
     }
     else if (attr == &timeMultiplier)
@@ -397,7 +389,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
 
         // Sometimes volumetric clouds bug out and speed up when a new time 
         // multiplier is defined. Set autoupdate again so it wont happen.
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             impl->skyX->getVCloudsManager()->setAutoupdate(false);
             impl->skyX->getVCloudsManager()->getVClouds()->setWindSpeed(windSpeed.Get());
@@ -419,7 +411,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     }
     else if (attr == &cloudCoverage || attr == &cloudAverageSize)
     {
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             float skyxCoverage = cloudCoverage.Get() / 100.f; // [0,1]
             float skyxSize = cloudAverageSize.Get() / 100.f; // [0,1]
@@ -430,12 +422,12 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     {
         float height = cloudHeight.Get();
 
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             // Does not affect volumetric at the moment. This would
             // require to re-create the VClouds with a different radius value.
         }
-        if (normalClouds.Get())
+        else if ((CloudType)cloudType.Get() == Normal)
         {
             if (impl->cloudLayerBottom)
             {
@@ -465,11 +457,11 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     }
     else if (attr == &windDirection)
     {
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             impl->skyX->getVCloudsManager()->getVClouds()->setWindDirection(Ogre::Radian(DegToRad(windDirection.Get())));
         }
-        if (normalClouds.Get())
+        else if ((CloudType)cloudType.Get() == Normal)
         {
             if (!impl->cloudLayerBottom || !impl->cloudLayerTop)
                 return;
@@ -484,17 +476,17 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
             optionsTop.WindDirection = ogreWindDirection;
 
             impl->cloudLayerBottom->setOptions(optionsBottom);
-            impl->cloudLayerTop->setOptions(optionsBottom);            
+            impl->cloudLayerTop->setOptions(optionsBottom);
         }
     }
     else if (attr == &windSpeed)
     {
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             impl->skyX->getVCloudsManager()->setAutoupdate(false);
             impl->skyX->getVCloudsManager()->getVClouds()->setWindSpeed(windSpeed.Get());
         }
-        if (normalClouds.Get())
+        else if ((CloudType)cloudType.Get() == Normal)
         {
             if (!impl->cloudLayerBottom || !impl->cloudLayerTop)
                 return;
@@ -507,7 +499,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
             optionsTop.TimeMultiplier = speedMultiplier + 0.5f;
 
             impl->cloudLayerBottom->setOptions(optionsBottom);
-            impl->cloudLayerTop->setOptions(optionsBottom);   
+            impl->cloudLayerTop->setOptions(optionsBottom);
         }
     }
     else if (attr == &sunInnerRadius || attr == &sunOuterRadius)
@@ -527,18 +519,25 @@ void EC_SkyX::Update(float frameTime)
         return;
 
     PROFILE(EC_SkyX_Update);
-       
-    // Update our sunlight
-    impl->currentSunPosition = camera->getDerivedPosition() + impl->controller->getSunDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
-    if (impl->sunlight)
+    // Update our sunlight and moonlight
+    impl->sunPosition = camera->getDerivedPosition() + impl->controller->getSunDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
+    impl->moonPosition = camera->getDerivedPosition() + impl->controller->getMoonDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
+    if (impl->sunlight && impl->moonlight)
     {
-        // Sun light looks ugly when coming beneath the water (night time), disable it.
         /// @todo Animate dim the light down and up
-        if (impl->currentSunPosition.y < 0 && impl->sunlight->isVisible())
+        if (impl->sunPosition.y < 0 && impl->sunlight->isVisible() && !impl->moonlight->isVisible())
+        {
             impl->sunlight->setVisible(false);
-        else if (impl->currentSunPosition.y > 0 && !impl->sunlight->isVisible())
+            impl->moonlight->setVisible(true);
+        }
+        else if (impl->sunPosition.y > 0 && !impl->sunlight->isVisible() && impl->moonlight->isVisible())
+        {
             impl->sunlight->setVisible(true);
+            impl->moonlight->setVisible(false);
+        }
+
         impl->sunlight->setDirection(-impl->controller->getSunDirection()); // -(Earth-to-Sun direction)
+        impl->moonlight->setDirection(-impl->controller->getMoonDirection()); // -(Earth-to-Moon direction)
     }
 
     // Do not replicate constant time attribute updates as SkyX internals are authoritative for it.
@@ -626,4 +625,25 @@ void EC_SkyX::ApplyAtmosphereOptions()
     if (options.OuterRadius != sunOuterRadius.Get())
         options.OuterRadius = sunOuterRadius.Get();
     impl->skyX->getAtmosphereManager()->setOptions(options);
+}
+
+void EC_SkyX::UnloadNormalClouds()
+{
+    if (impl->skyX->getCloudsManager())
+    {
+        impl->skyX->getCloudsManager()->unregisterAll();
+        impl->skyX->getCloudsManager()->removeAll();
+
+        impl->cloudLayerBottom = 0;
+        impl->cloudLayerTop = 0;
+    }
+}
+
+void EC_SkyX::UnloadVolumetricClouds()
+{
+    if (impl->skyX->getVCloudsManager())
+    {
+        UnregisterCamera();
+        impl->skyX->getVCloudsManager()->remove();
+    }
 }
