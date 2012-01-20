@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_Hydrax.h
- *  @brief  A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_Hydrax.h
+    @brief  A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax */
 
 #pragma once
 

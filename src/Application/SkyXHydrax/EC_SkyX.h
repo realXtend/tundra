@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_SkyX.h
- *  @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_SkyX.h
+    @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX */
 
 #pragma once
 
@@ -85,20 +84,28 @@ public:
     Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
 
 public slots:
+    /// Returns whether or not the sun is visible (above horizon).
+    bool IsSunVisible() const;
+
     /// Returns position of the sun.
     float3 SunPosition() const;
 
-private slots:
-    void Remove();
-    void Create();
-    void CreateSunlight();
+    /// Returns whether or not the moon is visible (above horizon).
+    bool IsMoonVisible() const;
 
+    /// Returns position of the moon.
+    float3 MoonPosition() const;
+
+private slots:
+    void Create();
     void UpdateAttribute(IAttribute *attr, AttributeChange::Type change);
     void Update(float frameTime);
 
 private:
     EC_SkyXImpl *impl;
 
+    void Remove();
+    void CreateLights();
     void RegisterListeners();
     void UnregisterListeners();
 

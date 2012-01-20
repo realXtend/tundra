@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_SkyX.cpp
- *  @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_SkyX.cpp
+    @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX */
 
 #define MATH_OGRE_INTEROP
 
@@ -26,15 +25,19 @@
 #include "AttributeMetadata.h"
 
 #include <SkyX.h>
-#include <QDebug>
 
 #include "MemoryLeakCheck.h"
 
 /// @cond PRIVATE
-
 struct EC_SkyXImpl
 {
-    EC_SkyXImpl() : skyX(0), controller(0), sunlight(0), cloudLayerBottom(0), cloudLayerTop(0)
+    EC_SkyXImpl() :
+        skyX(0),
+        controller(0),
+        sunlight(0),
+        moonlight(0),
+        cloudLayerBottom(0),
+        cloudLayerTop(0)
     {
         controller = new SkyX::BasicController(true);
     }
@@ -61,6 +64,8 @@ struct EC_SkyXImpl
             {
                 if (sunlight)
                     sm->destroyLight(sunlight);
+                if (moonlight)
+                    sm->destroyLight(moonlight);
                 sm->setAmbientLight(originalAmbientColor);
             }
 
@@ -68,6 +73,7 @@ struct EC_SkyXImpl
         }
 
         sunlight = 0;
+        moonlight = 0;
         controller = 0;
         cloudLayerBottom = 0;
         cloudLayerTop = 0;
@@ -82,11 +88,12 @@ struct EC_SkyXImpl
     SkyX::CloudLayer *cloudLayerTop;
 
     Ogre::Light *sunlight;
+    Ogre::Light *moonlight;
     Color originalAmbientColor;
 
-    float3 currentSunPosition;
+    float3 sunPosition;
+    float3 moonPosition;
 };
-
 /// @endcond
 
 EC_SkyX::EC_SkyX(Scene* scene) :
@@ -148,11 +155,24 @@ EC_SkyX::~EC_SkyX()
     Remove();
 }
 
+bool EC_SkyX::IsSunVisible() const
+{
+    return impl && impl->sunlight ? impl->sunlight->isVisible(): false;
+}
+
 float3 EC_SkyX::SunPosition() const
 {
-    if (impl)
-        return impl->currentSunPosition;
-    return float3();
+    return impl ? impl->sunPosition : float3();
+}
+
+bool EC_SkyX::IsMoonVisible() const
+{
+    return impl && impl->moonlight ? impl->moonlight->isVisible(): false;
+}
+
+float3 EC_SkyX::MoonPosition() const
+{
+    return impl ? impl->moonPosition : float3();
 }
 
 void EC_SkyX::Remove()
@@ -207,7 +227,7 @@ void EC_SkyX::Create()
         connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)), Qt::UniqueConnection);
         connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 
-        CreateSunlight();
+        CreateLights();
     }
     catch(Ogre::Exception &e)
     {
@@ -216,7 +236,7 @@ void EC_SkyX::Create()
     }
 }
 
-void EC_SkyX::CreateSunlight()
+void EC_SkyX::CreateLights()
 {
     if (impl)
     {
@@ -232,6 +252,14 @@ void EC_SkyX::CreateSunlight()
         impl->sunlight->setSpecularColour(0.f,0.f,0.f);
         impl->sunlight->setDirection(impl->controller->getSunDirection());
         impl->sunlight->setCastShadows(true);
+
+        impl->moonlight = sm->createLight(w->Renderer()->GetUniqueObjectName("SkyXMoonlight"));
+        impl->moonlight->setType(Ogre::Light::LT_DIRECTIONAL);
+        impl->moonlight->setDiffuseColour(Color(0.639f,0.639f,0.639f, 0.25f)); ///< @todo Nicer color for moonlight
+        impl->moonlight->setSpecularColour(0.f,0.f,0.f);
+        impl->moonlight->setDirection(impl->controller->getMoonDirection());
+        impl->moonlight->setCastShadows(true);
+        impl->moonlight->setVisible(false); // Hide moonlight by default
     }
 }
 
@@ -461,7 +489,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
             optionsTop.TimeMultiplier = speedMultiplier + 0.5f;
 
             impl->cloudLayerBottom->setOptions(optionsBottom);
-            impl->cloudLayerTop->setOptions(optionsBottom);   
+            impl->cloudLayerTop->setOptions(optionsBottom);
         }
     }
     else if (attr == &sunInnerRadius || attr == &sunOuterRadius)
@@ -490,18 +518,26 @@ void EC_SkyX::Update(float frameTime)
             UnregisterCamera(impl->skyX->getCamera());
         RegisterCamera(camera);
     }
-        
-    // Update our sunlight
-    impl->currentSunPosition = camera->getDerivedPosition() + impl->controller->getSunDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
-    if (impl->sunlight)
+
+    // Update our sunlight and moonlight
+    impl->sunPosition = camera->getDerivedPosition() + impl->controller->getSunDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
+    impl->moonPosition = camera->getDerivedPosition() + impl->controller->getMoonDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
+    if (impl->sunlight && impl->moonlight)
     {
-        // Sun light looks ugly when coming beneath the water (night time), disable it.
         /// @todo Animate dim the light down and up
-        if (impl->currentSunPosition.y < 0 && impl->sunlight->isVisible())
+        if (impl->sunPosition.y < 0 && impl->sunlight->isVisible() && !impl->moonlight->isVisible())
+        {
             impl->sunlight->setVisible(false);
-        else if (impl->currentSunPosition.y > 0 && !impl->sunlight->isVisible())
+            impl->moonlight->setVisible(true);
+        }
+        else if (impl->sunPosition.y > 0 && !impl->sunlight->isVisible() && impl->moonlight->isVisible())
+        {
             impl->sunlight->setVisible(true);
+            impl->moonlight->setVisible(false);
+        }
+
         impl->sunlight->setDirection(-impl->controller->getSunDirection()); // -(Earth-to-Sun direction)
+        impl->moonlight->setDirection(-impl->controller->getMoonDirection()); // -(Earth-to-Moon direction)
     }
 
     // Do not replicate constant time attribute updates as SkyX internals are authoritative for it.
