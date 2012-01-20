@@ -14,6 +14,10 @@ SetupCompileFlags()
 
 link_modules(Framework Ui JavascriptModule)
 
+if (APPLE)
+link_ogre()
+endif ()
+
 final_target ()
 
 # Install browserui under jsmodules.
