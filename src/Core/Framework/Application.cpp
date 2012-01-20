@@ -41,7 +41,24 @@
 #include <conio.h>
 #endif
 
+#if defined(_MSC_VER) && defined(_DMEMDUMP)
+// For generating minidump
+#include <dbghelp.h>
+#include <shellapi.h>
+#include <shlobj.h>
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#include <strsafe.h>
+#pragma warning(pop)
+#endif
+
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
+// for reporting memory leaks upon debug exit
+#include <crtdbg.h>
+#endif
+
 #include "MemoryLeakCheck.h"
+
 
 /// @note Modify these values when you are making a custom Tundra build. Also the version needs to be changed here on releases.
 const char *Application::organizationName = "realXtend";
@@ -226,12 +243,16 @@ void Application::Message(const std::wstring &title, const std::wstring &text)
     Message(title.c_str(), text.c_str());
 }
 
-bool Application::ShowConsoleWindow()
+bool Application::ShowConsoleWindow(bool attachToParent)
 {
 #ifdef WIN32
+    BOOL success = 0;
+    if (attachToParent)
+        success = AttachConsole(ATTACH_PARENT_PROCESS);
     // Code below adapted from http://dslweb.nwnexus.com/~ast/dload/guicon.htm
-    BOOL ret = AllocConsole();
-    if (!ret)
+    if (!success)
+        success = AllocConsole();
+    if (!success)
         return false;
 
     // Prepare stdin, stdout and stderr.
@@ -613,3 +634,142 @@ QString Application::Platform()
     return QString();
 #endif
 }
+
+#if defined(_MSC_VER) && defined(_DMEMDUMP)
+int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
+#endif
+
+int run(int argc, char **argv)
+{
+    // set up a debug flag for memory leaks. Output the results to file when the app exits.
+    // Note that this file is written to the same directory where the executable resides,
+    // so you can only use this in a development version where you have write access to
+    // that directory.
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
+    int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF;
+    _CrtSetDbgFlag(tmpDbgFlag);
+
+    HANDLE hLogFile = CreateFileW(L"fullmemoryleaklog.txt", GENERIC_WRITE, 
+      FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+#endif
+
+#if defined(_MSC_VER) && defined(_DMEMDUMP)
+    __try
+    {
+#endif
+        int return_value = EXIT_SUCCESS;
+
+        // Initialization prints
+        LogInfo("Starting up Tundra.");
+        LogInfo("* Working directory: " + QDir::currentPath());
+
+    // Create application object
+#if !defined(_DEBUG) || !defined (_MSC_VER)
+        try
+#endif
+        {
+            Framework* fw = new Framework(argc, argv);
+            fw->Go();
+            delete fw;
+        }
+#if !defined(_DEBUG) || !defined (_MSC_VER)
+        catch(std::exception& e)
+        {
+            Application::Message("An exception has occurred!", e.what());
+#if defined(_DEBUG)
+            throw;
+#else
+            return_value = EXIT_FAILURE;
+#endif
+        }
+#endif
+ #if defined(_MSC_VER) && defined(_DMEMDUMP)
+    }
+    __except(generate_dump(GetExceptionInformation()))
+    {
+    }
+#endif
+
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
+    if (hLogFile != INVALID_HANDLE_VALUE)
+    {
+       _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_WARN, hLogFile);
+       _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_ERROR, hLogFile);
+       _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+       _CrtSetReportFile(_CRT_ASSERT, hLogFile);
+    }
+#endif
+
+    // Note: We cannot close the file handle manually here. Have to let the OS close it
+    // after it has printed out the list of leaks to the file.
+    //CloseHandle(hLogFile);
+
+    return return_value;
+}
+
+#if defined(_MSC_VER) && defined(_DMEMDUMP)
+int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
+{
+    // Add a hardcoded check to guarantee we only write a dump file of the first crash exception that is received.
+    // Sometimes a crash is so bad that writing the dump below causes another exception to occur, in which case
+    // this function would be recursively called, spawning tons of error dialogs to the user.
+    static bool dumpGenerated = false;
+    if (dumpGenerated)
+    {
+        printf("WARNING: Not generating another dump, one has been generated already!\n");
+        return 0;
+    }
+    dumpGenerated = true;
+
+    BOOL bMiniDumpSuccessful;
+    WCHAR szPath[MAX_PATH];
+    WCHAR szFileName[MAX_PATH];
+
+    WCHAR szOrgName[MAX_PATH];
+    WCHAR szAppName[MAX_PATH];
+    WCHAR szVer[MAX_PATH];
+    // Note: all the following Application functions access static const char * variables so it's safe to call them.
+    MultiByteToWideChar(CP_ACP, 0, Application::OrganizationName(), -1, szOrgName, NUMELEMS(szOrgName));
+    MultiByteToWideChar(CP_ACP, 0, Application::ApplicationName(), -1, szAppName, NUMELEMS(szAppName));
+    MultiByteToWideChar(CP_ACP, 0, Application::Version(), -1, szVer, NUMELEMS(szVer));
+    WCHAR szVersion[MAX_PATH]; // Will contain "<AppName>_v<Version>".
+    StringCchPrintf(szVersion, MAX_PATH, L"%s_v%s", szAppName, szVer);
+
+    DWORD dwBufferSize = MAX_PATH;
+    HANDLE hDumpFile;
+    SYSTEMTIME stLocalTime;
+    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
+
+    GetLocalTime( &stLocalTime );
+    GetTempPathW( dwBufferSize, szPath );
+
+    StringCchPrintf(szFileName, MAX_PATH, L"%s%s", szPath, szOrgName/*szAppName*/);
+    CreateDirectoryW(szFileName, 0);
+    StringCchPrintf(szFileName, MAX_PATH, L"%s%s\\%s-%04d%02d%02d-%02d%02d%02d-%ld-%ld.dmp",
+               szPath, szOrgName/*szAppName*/, szVersion,
+               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay,
+               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
+               GetCurrentProcessId(), GetCurrentThreadId());
+
+    hDumpFile = CreateFileW(szFileName, GENERIC_READ|GENERIC_WRITE,
+                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+
+    ExpParam.ThreadId = GetCurrentThreadId();
+    ExpParam.ExceptionPointers = pExceptionPointers;
+    ExpParam.ClientPointers = TRUE;
+
+    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+                    hDumpFile, MiniDumpWithDataSegs, &ExpParam, 0, 0);
+
+    WCHAR szMessage[MAX_PATH];
+    StringCchPrintf(szMessage, MAX_PATH, L"Program %s encountered an unexpected error.\n\nCrashdump was saved to location:\n%s", szAppName, szFileName);
+    if (bMiniDumpSuccessful)
+        Application::Message(L"Minidump generated!", szMessage);
+    else
+        Application::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif

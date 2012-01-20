@@ -49,8 +49,10 @@ public:
     static void Message(const std::wstring &title, const std::wstring &text);
 
     /// Opens up a text console window for Tundra.
+    /// @param attachToParent If true, the console is taken from the parent process. Use this to show Tundra console on
+    ///        the same console than the command line.
     /// @return True on success.
-    static bool ShowConsoleWindow();
+    static bool ShowConsoleWindow(bool attachToParent);
 
     /// Sets the current working directory. Use with caution.
     static void SetCurrentWorkingDirectory(QString newCwd);

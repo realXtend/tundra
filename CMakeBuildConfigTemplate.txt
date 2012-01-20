@@ -91,7 +91,16 @@ message ("\n=========== Configuring Static Framework ===========\n")
 AddProject(Core Math)
 AddProject(Core Framework)
 AddProject(Core Scene)
+
+# The Tundra project builds the main exe as a WINDOWS subsystem (or as a unix executable).
 AddProject(Core Tundra)
+
+# For Windows, also add a version of the project which builds using CONSOLE subsystem.
+# This is otherwise equivalent to the Tundra executable, but this one always shows the console window.
+if (MSVC)
+AddProject(Core TundraConsole)
+endif()
+
 AddProject(Core Asset)
 AddProject(Core Audio)
 AddProject(Core Console)

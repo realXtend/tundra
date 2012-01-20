@@ -132,8 +132,8 @@ Framework::Framework(int argc_, char** argv_) :
         LoadStartupOptionsFromXML(config);
 
     // Make sure we spawn a console window in each case we might need one.
-    if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help") || HasCommandLineParameter("--console") || HasCommandLineParameter("--headless"))
-        Application::ShowConsoleWindow();
+    if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help") || HasCommandLineParameter("--sharedconsole") || HasCommandLineParameter("--console") || HasCommandLineParameter("--headless"))
+        Application::ShowConsoleWindow(HasCommandLineParameter("--sharedconsole"));
 
     ///\todo Delete the CommandLineParameterMap mechanism altogether.
     /// Instead, provide the command line parameter help from a help file, where all the various command line parameters can be assembled.

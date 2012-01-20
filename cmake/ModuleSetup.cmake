@@ -134,7 +134,7 @@ macro (build_executable TARGET_NAME)
     message (STATUS "building executable: " ${TARGET_NAME})
     
     if (MSVC)
-        add_executable (${TARGET_NAME} WIN32 ${ARGN})
+        add_executable (${TARGET_NAME} ${ARGN})
         target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
         if (ENABLE_BUILD_OPTIMIZATIONS)
             set_target_properties (${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})

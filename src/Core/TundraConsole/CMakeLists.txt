@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (Tundra OUTPUT ./)
+init_target (TundraConsole OUTPUT ./)
 
 # Define source files
 file (GLOB CPP_FILES main.cpp)
@@ -34,11 +34,7 @@ endif (MSVC)
 
 use_core_modules(Framework Math Scene Console)
 
-if (MSVC)
-   build_executable(${TARGET_NAME} WIN32 ${SOURCE_FILES} ${RESOURCE_FILES})
-else()
-   build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
-endif()
+build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
 
 link_modules (Framework Scene Console)
 
