@@ -198,7 +198,14 @@ const QList<QByteArray> VlcMediaPlayer::GenerateVlcParameters()
         while (!pluginDir.exists("bin"))
         {
             if (!pluginDir.cdUp())
+#ifndef Q_WS_MAC
                 throw std::exception("Fatal error, could not find vlc plugins path!");
+#else
+            {
+                VlcPluginsException vlcexc;
+                throw vlcexc;
+            }
+#endif
         }
         pluginDir.cd("bin");
         pluginDir.cd(folderToFind);
@@ -206,7 +213,14 @@ const QList<QByteArray> VlcMediaPlayer::GenerateVlcParameters()
 
     // Validate
     if (!pluginDir.absolutePath().endsWith(folderToFind))
+#ifndef Q_WS_MAC
         throw std::exception("Fatal error, could not find vlc plugins path!");
+#else
+    {
+        VlcPluginsException vlcexc;
+        throw vlcexc;
+    }
+#endif
 
     // Set plugin path
     QString pluginPath = QLatin1Literal("--plugin-path=") % QDir::toNativeSeparators(pluginDir.absolutePath());

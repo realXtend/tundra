@@ -27,7 +27,7 @@
 #ifdef Q_WS_MAC
 #include <QMouseEvent>
 #include <QWheelEvent>
-
+#include <QDropEvent>
 #include "UiMainWindow.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
@@ -80,6 +80,10 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     QApplication::setOrganizationName(organizationName);
     QApplication::setApplicationName(applicationName);
     QApplication::setApplicationVersion(version);
+
+#ifdef Q_WS_MAC
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
+#endif
 
     // Make sure that the required Tundra data directories exist.
     QDir path = UserDataDirectory();
@@ -459,6 +463,25 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
                 if (mouse->buttons() == Qt::LeftButton)
                     framework->Ui()->GraphicsView()->mouseMoveEvent(mouse);
                 break;
+            }
+        }
+    }
+    QDropEvent *drop = dynamic_cast<QDropEvent*>(event);
+    if (drop)
+    {
+        if (dynamic_cast<UiMainWindow*>(obj))
+        {
+            switch (event->type())
+            {
+                case QEvent::DragEnter:
+                    framework->Ui()->GraphicsView()->dragEnterEvent(dynamic_cast<QDragEnterEvent*>(event));
+                    break;
+                case QEvent::DragMove:
+                    framework->Ui()->GraphicsView()->dragMoveEvent(dynamic_cast<QDragMoveEvent*>(event));
+                    break;
+                case QEvent::Drop:
+                    framework->Ui()->GraphicsView()->dropEvent(drop);
+                    break;
             }
         }
     }

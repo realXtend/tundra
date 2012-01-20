@@ -788,7 +788,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
 #ifdef Q_WS_MAC
-        QGraphicsItem *itemUnderMouse = ItemAtCoords(e->x(), e->y())
+        QGraphicsItem *itemUnderMouse = ItemAtCoords(e->x(), e->y());
         if (itemUnderMouse)
         {
             mainView->removeEventFilter(this);
