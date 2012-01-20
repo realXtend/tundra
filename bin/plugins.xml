@@ -32,9 +32,9 @@
   <option name="--accept_unknown_http_sources" />
   <option name="--accept_unknown_local_sources" />
   <option name="--fpslimit" value="0" />
+  <option name="--console" />
   <option name="--hide_benign_ogre_messages" />
   <!--  AssetAPI's file system watcher currently disabled because LocalAssetProvider implements
         the same functionality for LocalAssetStorages and HTTPAssetProviders do not yet support live-update. -->
   <option name="--nofilewatcher" />
-
 </Tundra>

@@ -48,6 +48,10 @@ public:
     static void Message(const wchar_t *title, const wchar_t *text);
     static void Message(const std::wstring &title, const std::wstring &text);
 
+    /// Opens up a text console window for Tundra.
+    /// @return True on success.
+    static bool ShowConsoleWindow();
+
     /// Sets the current working directory. Use with caution.
     static void SetCurrentWorkingDirectory(QString newCwd);
 

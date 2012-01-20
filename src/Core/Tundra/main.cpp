@@ -11,13 +11,6 @@
 
 #include "Win.h"
 
-#ifdef WINDOWS_APP
-#include <io.h>
-#include <iostream>
-#include <fcntl.h>
-#include <conio.h>
-#endif
-
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
 #include <crtdbg.h>
@@ -94,17 +87,6 @@ int run(int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
-    // Check for --version.
-    // The reason this is done at this point is that as nothing is not printed to stdout yet,
-    // it's easy for possible external applications/processes to parse the version information.
-    // Also, the construction of Framework adds a little computational overhead which delays the printing a bit.
-    for(int i = 0; i < argc; ++i)
-        if (strcmp(argv[i], "--version") == 0)
-        {
-            LogInfo(Application::FullIdentifier());
-            return return_value;
-        }
-
     // Initialization prints
     LogInfo("Starting up Tundra.");
     LogInfo("* Working directory: " + QDir::currentPath());
@@ -133,40 +115,10 @@ int run(int argc, char **argv)
     return return_value;
 }
 
-#if defined(_MSC_VER) && defined(WINDOWS_APP)
+#if defined(_MSC_VER)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     std::string cmdLine(lpCmdLine);
-    // If trying to run Windows GUI application in headless mode, we must set up the console in order to be able to proceed.
-    if (cmdLine.find("--headless") != std::string::npos)
-    {
-        // Code below adapted from http://dslweb.nwnexus.com/~ast/dload/guicon.htm
-        BOOL ret = AllocConsole();
-        if (!ret)
-            return EXIT_FAILURE;
-
-        // Prepare stdin, stdout and stderr.
-        long hStd =(long)GetStdHandle(STD_INPUT_HANDLE);
-        int hCrt = _open_osfhandle(hStd, _O_TEXT);
-        FILE *hf = _fdopen(hCrt, "r+");
-        setvbuf(hf,0,_IONBF,0);
-        *stdin = *hf;
-
-        hStd =(long)GetStdHandle(STD_OUTPUT_HANDLE);
-        hCrt = _open_osfhandle(hStd, _O_TEXT);
-        hf = _fdopen(hCrt, "w+");
-        setvbuf(hf, 0, _IONBF, 0);
-        *stdout = *hf;
-
-        hStd =(long)GetStdHandle(STD_ERROR_HANDLE);
-        hCrt = _open_osfhandle(hStd, _O_TEXT);
-        hf = _fdopen(hCrt, "w+");
-        setvbuf(hf, 0, _IONBF, 0);
-        *stderr = *hf;
-
-        // Make C++ IO streams cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well.
-        std::ios::sync_with_stdio();
-    }
 
     // Parse the Windows command line.
     std::vector<std::string> arguments;

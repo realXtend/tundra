@@ -133,18 +133,15 @@ macro (build_executable TARGET_NAME)
     set (TARGET_LIB_TYPE "EXECUTABLE")
     message (STATUS "building executable: " ${TARGET_NAME})
     
-    if (MSVC AND WINDOWS_APP)
-        add_executable (${TARGET_NAME} WIN32 ${ARGN})
-    else ()
-        add_executable (${TARGET_NAME} ${ARGN})
-    endif ()
-
     if (MSVC)
+        add_executable (${TARGET_NAME} WIN32 ${ARGN})
         target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
         if (ENABLE_BUILD_OPTIMIZATIONS)
             set_target_properties (${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
         endif ()
-    endif (MSVC)
+    else ()
+        add_executable (${TARGET_NAME} ${ARGN})
+    endif ()
 
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 

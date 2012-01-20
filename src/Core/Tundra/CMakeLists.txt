@@ -34,7 +34,7 @@ endif (MSVC)
 
 use_core_modules(Framework Math Scene Console)
 
-build_executable (${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
+build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
 
 link_modules (Framework Scene Console)
 

@@ -36,6 +36,9 @@
 #if defined(_WINDOWS)
 #include "Win.h"
 #include <shlobj.h>
+#include <io.h>
+#include <fcntl.h>
+#include <conio.h>
 #endif
 
 #include "MemoryLeakCheck.h"
@@ -221,6 +224,40 @@ void Application::Message(const wchar_t *title, const wchar_t *text)
 void Application::Message(const std::wstring &title, const std::wstring &text)
 {
     Message(title.c_str(), text.c_str());
+}
+
+bool Application::ShowConsoleWindow()
+{
+#ifdef WIN32
+    // Code below adapted from http://dslweb.nwnexus.com/~ast/dload/guicon.htm
+    BOOL ret = AllocConsole();
+    if (!ret)
+        return false;
+
+    // Prepare stdin, stdout and stderr.
+    long hStd =(long)GetStdHandle(STD_INPUT_HANDLE);
+    int hCrt = _open_osfhandle(hStd, _O_TEXT);
+    FILE *hf = _fdopen(hCrt, "r+");
+    setvbuf(hf,0,_IONBF,0);
+    *stdin = *hf;
+
+    hStd =(long)GetStdHandle(STD_OUTPUT_HANDLE);
+    hCrt = _open_osfhandle(hStd, _O_TEXT);
+    hf = _fdopen(hCrt, "w+");
+    setvbuf(hf, 0, _IONBF, 0);
+    *stdout = *hf;
+
+    hStd =(long)GetStdHandle(STD_ERROR_HANDLE);
+    hCrt = _open_osfhandle(hStd, _O_TEXT);
+    hf = _fdopen(hCrt, "w+");
+    setvbuf(hf, 0, _IONBF, 0);
+    *stderr = *hf;
+
+    // Make C++ IO streams cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well.
+    std::ios::sync_with_stdio();
+#endif
+
+    return true;
 }
 
 void Application::SetCurrentWorkingDirectory(QString newCwd)
