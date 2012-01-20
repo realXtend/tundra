@@ -101,6 +101,22 @@ void SyncManager::SetUpdatePeriod(float period)
     updatePeriod_ = period;
 }
 
+SceneSyncState* SyncManager::SceneState(int connectionId)
+{
+    if (!owner_->IsServer())
+        return 0;
+    return SceneState(owner_->GetServer()->GetUserConnection(connectionId));
+}
+
+SceneSyncState* SyncManager::SceneState(UserConnection *connection)
+{
+    if (!owner_->IsServer())
+        return 0;
+    if (!connection)
+        return 0;
+    return connection->syncState.get();
+}
+
 void SyncManager::RegisterToScene(ScenePtr scene)
 {
     // Disconnect from previous scene if not expired
@@ -204,7 +220,12 @@ void SyncManager::NewUserConnected(UserConnection* user)
     connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
-    user->syncState = boost::shared_ptr<SceneSyncState>(new SceneSyncState());
+    user->syncState = boost::shared_ptr<SceneSyncState>(new SceneSyncState(user->GetConnectionID(), owner_->IsServer()));
+    user->syncState->SetParentScene(scene_);
+
+    if (owner_->IsServer())
+        emit SceneStateCreated(user, user->syncState.get());
+
     for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
@@ -591,10 +612,14 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             // Count the amount of replicated components
             uint numReplicatedComponents = 0;
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-                if (i->second->IsReplicated()) ++numReplicatedComponents;
+            {
+                if (!i->second->IsReplicated())
+                    continue;
+                ++numReplicatedComponents;
+            }
             ds.AddVLE<kNet::VLE8_16_32>(numReplicatedComponents);
             
-            // Serialize each replicated component
+            // Serialize each replicated component if not marked for pending state
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             {
                 ComponentPtr comp = i->second;
@@ -899,6 +924,18 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
         LogWarning("Could not create entity " + QString::number(entityID) + ", disregarding CreateEntity message");
         return;
     }
+
+    /** As the client created the entity and already has it in its local state,
+        we must add it to the servers sync state for the client without emitting any StateChangeRequest signals.
+        @note The below state->MarkComponentProcessed() already accomplishes part of this, but still do explicitly here!
+        @note The below entity->CreateComponentWithId() will trigger the signaling logic but it will stop in 
+        SceneSyncState::FillRequest() as the Entity is not yet in the scene! */
+    if (isServer)
+    {
+        state->RemovePendingEntity(senderEntityID);
+        state->RemovePendingEntity(entityID);
+        state->MarkEntityProcessed(entityID);
+    }
     
     // Read the temporary flag
     bool temporary = ds.Read<u8>() != 0;
@@ -963,7 +1000,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
             newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
         }
     }
-    
+
     // Emit the component changes last, to signal only a coherent state of the whole entity
     scene->EmitEntityCreated(entity.get(), change);
     const Entity::ComponentMap &components = entity->Components();
