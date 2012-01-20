@@ -27,13 +27,17 @@ public:
     explicit EC_SkyX(Scene* scene);
     ~EC_SkyX();
 
-    /// Enable volumetric clouds.
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, volumetricClouds);
-    Q_PROPERTY(bool volumetricClouds READ getvolumetricClouds WRITE setvolumetricClouds);
+    /// Different cloud types supported by SkyX
+    enum CloudType
+    {
+        None, ///< Disabled.
+        Normal, ///< Cloud layer at fixed height above camera.
+        Volumetric, ///< Volumetric clouds.
+    };
 
-    /// Enable normal clouds.
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, normalClouds);
-    Q_PROPERTY(bool normalClouds READ getnormalClouds WRITE setnormalClouds);
+    /// Used cloud type, see CloudType.
+    DEFINE_QPROPERTY_ATTRIBUTE(int, cloudType);
+    Q_PROPERTY(int cloudType READ getcloudType WRITE setcloudType);
 
     /// The time multiplier can be a also a negative number, 0 will disable auto-updating.
     DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
@@ -114,6 +118,7 @@ private:
     void RegisterCamera(Ogre::Camera *camera = 0);
     void UnregisterCamera(Ogre::Camera *camera = 0);
     void HandleVCloudsCamera(Ogre::Camera *camera, bool registerCamera);
-
     void ApplyAtmosphereOptions();
+    void UnloadNormalClouds();
+    void UnloadVolumetricClouds();
 };

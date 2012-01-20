@@ -98,8 +98,7 @@ struct EC_SkyXImpl
 
 EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
-    volumetricClouds(this, "Clouds [volumetric]", false),
-    normalClouds(this, "Clouds [normal]", true),
+    cloudType(this, "Cloud type", Normal),
     timeMultiplier(this, "Time multiplier", 0.0f),
     time(this, "Time [0-24]", 14.f), 
     sunriseTime(this, "Time sunrise [0-24]", 7.5f),
@@ -114,33 +113,38 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     sunOuterRadius(this, "Sun outer radius", 10.25f),
     impl(0)
 {
-    static AttributeMetadata cloudHeightMetaData;
-    static AttributeMetadata timeMetaData;
+    static AttributeMetadata cloudTypeMetadata;
+    static AttributeMetadata cloudHeightMetadata;
+    static AttributeMetadata timeMetadata;
     static AttributeMetadata zeroToHundredMetadata;
     static AttributeMetadata mediumStepMetadata;
     static AttributeMetadata smallStepMetadata;
     static bool metadataInitialized = false;
     if (!metadataInitialized)
     {
-        timeMetaData.minimum = "0.0";
-        timeMetaData.maximum = "24.0";
-        timeMetaData.step = "0.5";
+        cloudTypeMetadata.enums[None] = "None";
+        cloudTypeMetadata.enums[Normal] = "Normal";
+        cloudTypeMetadata.enums[Volumetric] = "Volumetric";
+        timeMetadata.minimum = "0.0";
+        timeMetadata.maximum = "24.0";
+        timeMetadata.step = "0.5";
         zeroToHundredMetadata.minimum = "0.0";
         zeroToHundredMetadata.maximum = "100.0";
         zeroToHundredMetadata.step = "10.0";
-        cloudHeightMetaData.minimum = "0.0";
-        cloudHeightMetaData.maximum = "10000.0";
-        cloudHeightMetaData.step = "10.0";
+        cloudHeightMetadata.minimum = "0.0";
+        cloudHeightMetadata.maximum = "10000.0";
+        cloudHeightMetadata.step = "10.0";
         mediumStepMetadata.step = "0.1";
         smallStepMetadata.step = "0.01";
         metadataInitialized = true;
     }
-    time.SetMetadata(&timeMetaData);
-    sunriseTime.SetMetadata(&timeMetaData);
-    sunsetTime.SetMetadata(&timeMetaData);
+    cloudType.SetMetadata(&cloudTypeMetadata);
+    time.SetMetadata(&timeMetadata);
+    sunriseTime.SetMetadata(&timeMetadata);
+    sunsetTime.SetMetadata(&timeMetadata);
     cloudCoverage.SetMetadata(&zeroToHundredMetadata);
     cloudAverageSize.SetMetadata(&zeroToHundredMetadata);
-    cloudHeight.SetMetadata(&cloudHeightMetaData);
+    cloudHeight.SetMetadata(&cloudHeightMetadata);
     moonPhase.SetMetadata(&zeroToHundredMetadata);
     timeMultiplier.SetMetadata(&smallStepMetadata);
     sunInnerRadius.SetMetadata(&mediumStepMetadata);
@@ -220,7 +224,7 @@ void EC_SkyX::Create()
         RegisterListeners();
 
         ApplyAtmosphereOptions();
-        UpdateAttribute(&volumetricClouds, AttributeChange::Disconnected); // Check both volumetric and normal clouds
+        UpdateAttribute(&cloudType, AttributeChange::Disconnected);
         UpdateAttribute(&timeMultiplier, AttributeChange::Disconnected);
         UpdateAttribute(&time, AttributeChange::Disconnected);
 
@@ -267,39 +271,18 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
 {
     if (!impl)
         return;
-
-    if (attr == &volumetricClouds || attr == &normalClouds)
+    if (attr == &cloudType)
     {
-        // If both active, disable the other option so toggle works nicely in ui.
-        if (volumetricClouds.Get() && normalClouds.Get())
+        switch((CloudType)cloudType.Get())
         {
-            if (attr == &volumetricClouds)
-                normalClouds.Set(false, AttributeChange::Default);
-            else if (attr == &normalClouds)
-                volumetricClouds.Set(false, AttributeChange::Default);
-            return;
-        }
-
-        // Unload normal clouds
-        if (impl->skyX->getCloudsManager())
+        case None:
+            UnloadNormalClouds();
+            UnloadVolumetricClouds();
+            break;
+        case Volumetric:
         {
-            impl->skyX->getCloudsManager()->unregisterAll();
-            impl->skyX->getCloudsManager()->removeAll();
-
-            impl->cloudLayerBottom = 0;
-            impl->cloudLayerTop = 0;
-        }
-
-        // Unload volumetric clouds
-        if (impl->skyX->getVCloudsManager())
-        {
-            UnregisterCamera();
-            impl->skyX->getVCloudsManager()->remove();
-        }
-    
-        // Load volumetric if enabled
-        if (volumetricClouds.Get())
-        {
+            UnloadNormalClouds();
+            UnloadVolumetricClouds();
             EC_Camera *cameraComp = GetFramework()->Renderer()->MainCameraComponent();
             Ogre::Camera *camera = cameraComp != 0 ? cameraComp->GetCamera() : 0;
             if (!camera)
@@ -339,11 +322,12 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
             UpdateAttribute(&cloudCoverage, AttributeChange::Disconnected);
             UpdateAttribute(&windDirection, AttributeChange::Disconnected);
             UpdateAttribute(&windSpeed, AttributeChange::Disconnected);
+            break;
         }
-
-        // Load normal clouds
-        if (normalClouds.Get())
+        case Normal:
         {
+            UnloadNormalClouds();
+            UnloadVolumetricClouds();
             // Bottom layer
             SkyX::CloudLayer::Options options;
             impl->cloudLayerBottom = impl->skyX->getCloudsManager()->add(options);
@@ -368,6 +352,11 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
             UpdateAttribute(&cloudHeight, AttributeChange::Disconnected);
             UpdateAttribute(&windDirection, AttributeChange::Disconnected);
             UpdateAttribute(&windSpeed, AttributeChange::Disconnected);
+            break;
+        }
+        default:
+            LogError(QString("EC_SkyX::UpdateAttribute: Invalid cloudType %1.").arg(cloudType.Get()));
+            break;
         }
     }
     else if (attr == &timeMultiplier)
@@ -379,7 +368,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
 
         // Sometimes volumetric clouds bug out and speed up when a new time 
         // multiplier is defined. Set autoupdate again so it wont happen.
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             impl->skyX->getVCloudsManager()->setAutoupdate(false);
             impl->skyX->getVCloudsManager()->getVClouds()->setWindSpeed(windSpeed.Get());
@@ -401,7 +390,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     }
     else if (attr == &cloudCoverage || attr == &cloudAverageSize)
     {
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             float skyxCoverage = cloudCoverage.Get() / 100.f; // [0,1]
             float skyxSize = cloudAverageSize.Get() / 100.f; // [0,1]
@@ -412,12 +401,12 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     {
         float height = cloudHeight.Get();
 
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             // Does not affect volumetric at the moment. This would
             // require to re-create the VClouds with a different radius value.
         }
-        if (normalClouds.Get())
+        else if ((CloudType)cloudType.Get() == Normal)
         {
             if (impl->cloudLayerBottom)
             {
@@ -447,11 +436,11 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     }
     else if (attr == &windDirection)
     {
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             impl->skyX->getVCloudsManager()->getVClouds()->setWindDirection(Ogre::Radian(DegToRad(windDirection.Get())));
         }
-        if (normalClouds.Get())
+        else if ((CloudType)cloudType.Get() == Normal)
         {
             if (!impl->cloudLayerBottom || !impl->cloudLayerTop)
                 return;
@@ -471,12 +460,12 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     }
     else if (attr == &windSpeed)
     {
-        if (volumetricClouds.Get())
+        if ((CloudType)cloudType.Get() == Volumetric)
         {
             impl->skyX->getVCloudsManager()->setAutoupdate(false);
             impl->skyX->getVCloudsManager()->getVClouds()->setWindSpeed(windSpeed.Get());
         }
-        if (normalClouds.Get())
+        else if ((CloudType)cloudType.Get() == Normal)
         {
             if (!impl->cloudLayerBottom || !impl->cloudLayerTop)
                 return;
@@ -625,4 +614,25 @@ void EC_SkyX::ApplyAtmosphereOptions()
     if (options.OuterRadius != sunOuterRadius.Get())
         options.OuterRadius = sunOuterRadius.Get();
     impl->skyX->getAtmosphereManager()->setOptions(options);
+}
+
+void EC_SkyX::UnloadNormalClouds()
+{
+    if (impl->skyX->getCloudsManager())
+    {
+        impl->skyX->getCloudsManager()->unregisterAll();
+        impl->skyX->getCloudsManager()->removeAll();
+
+        impl->cloudLayerBottom = 0;
+        impl->cloudLayerTop = 0;
+    }
+}
+
+void EC_SkyX::UnloadVolumetricClouds()
+{
+    if (impl->skyX->getVCloudsManager())
+    {
+        UnregisterCamera();
+        impl->skyX->getVCloudsManager()->remove();
+    }
 }
