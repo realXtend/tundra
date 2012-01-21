@@ -23,7 +23,6 @@
 
 #include "EC_WidgetCanvas.h"
 #include "EC_Mesh.h"
-#include "CoreMath.h"
 
 #include <QWebView>
 #include <QWebFrame>

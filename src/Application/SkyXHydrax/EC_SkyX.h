@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_SkyX.h
- *  @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_SkyX.h
+    @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX */
 
 #pragma once
 
@@ -28,13 +27,17 @@ public:
     explicit EC_SkyX(Scene* scene);
     ~EC_SkyX();
 
-    /// Enable volumetric clouds.
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, volumetricClouds);
-    Q_PROPERTY(bool volumetricClouds READ getvolumetricClouds WRITE setvolumetricClouds);
+    /// Different cloud types supported by SkyX
+    enum CloudType
+    {
+        None, ///< Disabled.
+        Normal, ///< Cloud layer at fixed height above camera.
+        Volumetric, ///< Volumetric clouds.
+    };
 
-    /// Enable normal clouds.
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, normalClouds);
-    Q_PROPERTY(bool normalClouds READ getnormalClouds WRITE setnormalClouds);
+    /// Used cloud type, see CloudType.
+    DEFINE_QPROPERTY_ATTRIBUTE(int, cloudType);
+    Q_PROPERTY(int cloudType READ getcloudType WRITE setcloudType);
 
     /// The time multiplier can be a also a negative number, 0 will disable auto-updating.
     DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
@@ -85,21 +88,29 @@ public:
     Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
 
 public slots:
+    /// Returns whether or not the sun is visible (above horizon).
+    bool IsSunVisible() const;
+
     /// Returns position of the sun.
     float3 SunPosition() const;
 
-private slots:
-    void Remove();
-    void Create();
-    void CreateSunlight();
-    void OnActiveCameraChanged(Entity *camEntity);
+    /// Returns whether or not the moon is visible (above horizon).
+    bool IsMoonVisible() const;
 
+    /// Returns position of the moon.
+    float3 MoonPosition() const;
+
+private slots:
+    void Create();
+    void OnActiveCameraChanged(Entity *camEntity);
     void UpdateAttribute(IAttribute *attr, AttributeChange::Type change);
     void Update(float frameTime);
 
 private:
     EC_SkyXImpl *impl;
 
+    void Remove();
+    void CreateLights();
     void RegisterListeners();
     void UnregisterListeners();
 
@@ -108,6 +119,7 @@ private:
     void RegisterCamera(Ogre::Camera *camera = 0);
     void UnregisterCamera(Ogre::Camera *camera = 0);
     void HandleVCloudsCamera(Ogre::Camera *camera, bool registerCamera);
-
     void ApplyAtmosphereOptions();
+    void UnloadNormalClouds();
+    void UnloadVolumetricClouds();
 };

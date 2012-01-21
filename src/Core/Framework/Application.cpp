@@ -20,9 +20,7 @@
 #include <QLocale>
 #include <QIcon>
 #include <QWebSettings>
-#ifdef ENABLE_SPLASH_SCREEN
 #include <QSplashScreen>
-#endif
 
 #ifdef Q_WS_MAC
 #include <QMouseEvent>
@@ -72,9 +70,7 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     nativeTranslator(new QTranslator),
     appTranslator(new QTranslator),
     targetFpsLimit(60.0)
-#ifdef ENABLE_SPLASH_SCREEN
     ,splashScreen(0)
-#endif
 {
     // Reflect our versioning information to Qt internals, if something tries to obtain it straight from there.
     QApplication::setOrganizationName(organizationName);
@@ -131,16 +127,13 @@ Application::Application(Framework *owner, int &argc, char **argv) :
 
 Application::~Application()
 {
-#ifdef ENABLE_SPLASH_SCREEN
     SAFE_DELETE(splashScreen);
-#endif
     SAFE_DELETE(nativeTranslator);
     SAFE_DELETE(appTranslator);
 }
 
 void Application::InitializeSplash()
 {
-#ifdef ENABLE_SPLASH_SCREEN
     if (framework->IsHeadless())
         return;
 
@@ -152,13 +145,15 @@ void Application::InitializeSplash()
         splashScreen->show();
         splashScreen->activateWindow();
     }
-#endif
 }
 
 void Application::SetSplashMessage(const QString &message)
 {
-#ifdef ENABLE_SPLASH_SCREEN
     if (framework->IsHeadless())
+        return;
+
+    // Splash screen is enabled with --splash command.
+    if (!framework->HasCommandLineParameter("--splash"))
         return;
 
     if (!splashScreen)
@@ -171,7 +166,6 @@ void Application::SetSplashMessage(const QString &message)
         splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
         processEvents();
     }
-#endif
 }
 
 QStringList Application::FindQmFiles(const QDir& dir)
@@ -188,9 +182,7 @@ QStringList Application::FindQmFiles(const QDir& dir)
 
 void Application::Go()
 {
-#ifdef ENABLE_SPLASH_SCREEN
     SAFE_DELETE(splashScreen);
-#endif
 
     installEventFilter(this);
 
