@@ -46,6 +46,7 @@ namespace KristalliProtocol
         
         /// Invoked by the Network library for each received network message.
         void HandleMessage(kNet::MessageConnection *source, kNet::message_id_t id, const char *data, size_t numBytes);
+        void HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t id, const char *data, size_t numBytes);
 
         /// Invoked by the Network library for each new connection
         void NewConnectionEstablished(kNet::MessageConnection* source);

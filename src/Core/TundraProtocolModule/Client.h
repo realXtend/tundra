@@ -18,12 +18,6 @@ struct MsgLoginReply;
 struct MsgClientJoined;
 struct MsgClientLeft;
 
-namespace kNet
-{
-    class MessageConnection;
-    typedef unsigned long message_id_t;
-}
-
 namespace KristalliProtocol
 {
     class KristalliProtocolModule;
