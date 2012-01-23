@@ -18,6 +18,7 @@
 #include <celt/celt.h>
 
 #include <boost/asio/error.hpp>
+#include <boost/bind.hpp>
 
 #include "MemoryLeakCheck.h"
 
