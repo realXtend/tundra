@@ -1,19 +1,19 @@
 <!DOCTYPE Scene>
 <scene>
- <entity id="1">
-  <component type="EC_Script" sync="1">
-   <attribute value="local://replicator.js" name="Script ref"/>
+ <entity id="3" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="ChatApplication" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1" name="ChatApplication">
+   <attribute value="local://ChatApplication.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="0" name="Run mode"/>
    <attribute value="" name="Script application name"/>
    <attribute value="" name="Script class name"/>
   </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Replicator" name="name"/>
-   <attribute value="" name="description"/>
-  </component>
  </entity>
- <entity id="2">
+ <entity id="4" sync="1">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,0,0,0.14,0.2,0.14" name="Transform"/>
    <attribute value="file://WoodPallet.mesh" name="Mesh ref"/>
@@ -54,7 +54,7 @@
    <attribute value="-1" name="Collision Mask"/>
   </component>
  </entity>
- <entity id="3">
+ <entity id="5" sync="1">
   <component type="EC_Name" sync="1">
    <attribute value="Instructions" name="name"/>
    <attribute value="" name="description"/>
@@ -67,26 +67,23 @@
    <attribute value="" name="Script class name"/>
   </component>
  </entity>
- <entity id="4">
+ <entity id="6" sync="1">
   <component type="EC_Name" sync="1">
    <attribute value="Environment" name="name"/>
    <attribute value="" name="description"/>
   </component>
   <component type="EC_EnvironmentLight" sync="1">
-   <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sun color"/>
-   <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient color"/>
-   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sun diffuse color"/>
-   <attribute value="-1.000000 -1.000000 -1.000000" name="Sun direction vector"/>
-   <attribute value="false" name="Use fixed time"/>
-   <attribute value="0.670000017" name="Current time"/>
-   <attribute value="true" name="Sun cast shadows"/>
-   <attribute value="true" name="Use Caelum"/>
+   <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sunlight color"/>
+   <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient light color"/>
+   <attribute value="-1.000000 -1.000000 -1.000000" name="Sunlight direction vector"/>
+   <attribute value="true" name="Sunlight cast shadows"/>
+   <attribute value="1" name="Brightness"/>
   </component>
   <component type="EC_Sky" sync="1">
    <attribute value="RexSkyBox" name="Material"/>
    <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
    <attribute value="50" name="Distance"/>
-   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
+   <attribute value="1.000000 0.000000 0.000000 0.000000" name="Orientation"/>
    <attribute value="true" name="Draw first"/>
   </component>
  </entity>
