@@ -76,7 +76,7 @@ del qtplugins\imageformats\*d4.dll
 del qtplugins\phonon_backend\*d4.dll
 
 :: Random stuff
-rd /s /q dox
+::rd /s /q dox
 del pluginsd.cfg
 del plugins-*.cfg
 del resources-*.cfg
@@ -88,7 +88,7 @@ rd /s /q media\models\blend
 rd /s /q qtplugins\phonon_backend
 del qtplugins\script\qtscript_opengl.dll
 del qtplugins\script\qtscript_phonon.dll
-del qtplugins\script\qtscript_webkit.dll
+::del qtplugins\script\qtscript_webkit.dll
 del qtplugins\script\qtscriptdbus4.dll
 del qtplugins\script\qtscriptdbusd4.dll
 del qtplugins\script\qtscript_sql.dll
@@ -99,7 +99,7 @@ del libexpat.dll
 del libiconv2.dll
 del libjpeg.dll
 del libtheorad.dll
-del QtDBus4.dll
+::del QtDBus4.dll
 del QtOpenGL4.dll
 del QtSql4.dll
 del QtSvg4.dll
@@ -125,54 +125,54 @@ del Plugin_PCZSceneManager.dll
 del Plugin_OctreeZone.dll
 del RenderSystem_Direct3D10.dll
 del RenderSystem_Direct3D11.dll
-del RenderSystem_GL.dll
-del RenderSystem_NULL.dll
+::del RenderSystem_GL.dll
+::del RenderSystem_NULL.dll
 
 :: Comment to enable QtDeclarative support in the build
-del QtDeclarative4.dll
+::del QtDeclarative4.dll
 
 :: Comment to enable QTScriptTools support in the build
-del QtScriptTools4.dll
+::del QtScriptTools4.dll
 
 :: Comment to enable VLC in the build
-rmdir /S /Q vlcplugins
-del libvlc.dll
-del libvlccore.dll
+::rmdir /S /Q vlcplugins
+::del libvlc.dll
+::del libvlccore.dll
 
 :: Comment to enable QtWebkit in the build. NOTE: QtWebkit depends on Phonon4 to work!
 :: del phonon4.dll
 
 :: Comment to enable developer content in the build (EC editor, asset editors, etc.)
-rd /s /q jsmodules\apitest
-del /q media\materials\templates\*.*
-del QtSolutions_PropertyBrowser-2.5.dll
-del viewerautomove.xml
-del jsmodules\startup\RandomAvatarMovement.js
-del data\ui\audio_preview.ui
-del data\ui\eceditor.ui
-del data\ui\EditorSettings.ui
-del data\ui\MaterialEditorPassTab.ui
-del data\ui\MaterialEditorTuTab.ui
-del data\ui\materialwizard.ui
-del data\ui\mesh_preview.ui
-del data\ui\ogrescripteditor.ui
-del data\ui\profiler.ui
-del data\ui\texture_preview.ui
+::rd /s /q jsmodules\apitest
+::del /q media\materials\templates\*.*
+::del QtSolutions_PropertyBrowser-2.5.dll
+::del viewerautomove.xml
+::del jsmodules\startup\RandomAvatarMovement.js
+::del data\ui\audio_preview.ui
+::del data\ui\eceditor.ui
+::del data\ui\EditorSettings.ui
+::del data\ui\MaterialEditorPassTab.ui
+::del data\ui\MaterialEditorTuTab.ui
+::del data\ui\materialwizard.ui
+::del data\ui\mesh_preview.ui
+::del data\ui\ogrescripteditor.ui
+::del data\ui\profiler.ui
+::del data\ui\texture_preview.ui
 
 :: Comment to enable the addition of sample scenes to the build
-rd /s /q scenes
+::rd /s /q scenes
 
 :: Comment to enable Python in the build
-del python*.dll
-rd /s /q pyplugins
+::del python*.dll
+::rd /s /q pyplugins
 
 :: Comment to enable web browser UI in the build
-rd /s /q jsmodules\browserui
-rd /s /q data\ui\images\browser
-rd /s /q data\ui\images\comm
-del viewer-browser.xml
-del data\ui\images\icon\browser.ico
-del data\ui\images\icon\update.ico
-del data\ui\LoginWebWidget.ui
+::rd /s /q jsmodules\browserui
+::rd /s /q data\ui\images\browser
+::rd /s /q data\ui\images\comm
+::del viewer-browser.xml
+::del data\ui\images\icon\browser.ico
+::del data\ui\images\icon\update.ico
+::del data\ui\LoginWebWidget.ui
 
 pause
