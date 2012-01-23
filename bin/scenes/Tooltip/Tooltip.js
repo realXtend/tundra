@@ -1,10 +1,6 @@
 print("Loading Tooltip script.");
 
 var speed = 1.0; 
-var origBA;
-var origFA;
-var bc;
-var fc;
 var comp = me.hoveringtext;
 var bMouseIn = false;
 
@@ -31,11 +27,6 @@ function GetHoveringTextComponent() {
             var mode = comp.updateMode;
             mode.value = 2;
             comp.updateMode = mode;
-                
-            bc = comp.backgroundColor;
-            fc = comp.fontColor;
-            origBA = bc.a; 
-            origFA = fc.a;
         }
     }
 }
@@ -44,32 +35,7 @@ function Update(frametime) {
     if (comp == null)
       return;
     
-    bc = comp.backgroundColor;
-    fc = comp.fontColor;
-
-    if(bMouseIn) {
-        bc.a += frametime * speed;
-        fc.a += frametime * speed;
-    }           
-    else {
-        bc.a -= frametime * speed;
-        fc.a -= frametime * speed;
-    }
-        
-    if (bc.a >=1.0)
-        bc.a = 1.0;
-        
-    if(bc.a <=0.0)
-        bc.a = 0.0;
-                
-    if (fc.a >=1.0)
-        fc.a = 1.0;
-        
-    if(fc.a <=0.0)
-        fc.a = 0.0;
-        
-    comp.backgroundColor = bc;
-    comp.fontColor = fc;
+    comp.overlayAlpha = Math.max(0.0, Math.min(1.0, comp.overlayAlpha + frametime * speed * (bMouseIn ? 1 : -1)));
 }
 
 function MouseIn() {
@@ -80,15 +46,4 @@ function MouseIn() {
 function MouseOut() {
     bMouseIn = false;
     print("Tooltip: Mouse OUT");
-}
-
-function OnScriptDestroyed() {  
-  if (comp == null)
-      return;
-    
-    //Return original values
-    bc.a = origBA;
-    fc.a = origFA;
-    comp.backgroundColor = bc; 
-    comp.fontColor = fc;
 }
