@@ -132,7 +132,7 @@ AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewe
 # Remove the win32 check once the mumble and vlc deps are fetched in the deps build scripts. For mumble this is same as msantalas libmumbleclient and vlc apt-get libvlc-dev.
 if (WIN32)
     AddProject(Application MumbleVoipModule)    # VOIP communication using the Mumble library. Depends on OgreRenderingModule and TundraProtocolModule.
-    #AddProject(Application VlcPlugin)           # Adds media playback capabilities with libVLC and entity components.
+    AddProject(Application VlcPlugin)           # Adds media playback capabilities with libVLC and entity components.
 endif ()
 
 #AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.
