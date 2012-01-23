@@ -39,4 +39,5 @@
   <!--  AssetAPI's file system watcher currently disabled because LocalAssetProvider implements
         the same functionality for LocalAssetStorages and HTTPAssetProviders do not yet support live-update. -->
   <option name="--nofilewatcher" />
+  <option name="--splash" />
 </Tundra>
