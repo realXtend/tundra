@@ -1,0 +1,6 @@
+Tundra does not require a server-client model to function. You can work on Tundra scene files offline locally on your computer, for later publishing.
+
+To open a Tundra scene file for offline editing, find the .txml file on your local filesystem, right-click on it, and choose "Edit in Tundra". Tundra will then start up in offline document editing/browsing mode. Remember to save the scene before quitting!
+
+To start building from a new empty scene, simply create a new text file in some folder, and rename it to a file with an extension .txml. Then follow the above steps. When you open a new scene, it will always show up with a blank screen, which is normal. Open up the Scene Structure window to start populating content to your scene.
+

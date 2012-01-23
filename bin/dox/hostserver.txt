@@ -1,0 +1,9 @@
+To host a Tundra scene on your local computer, locate the scene .txml file on your local filesystem you want to host, right-click on it, and choose "Host in Tundra Server".
+
+Alternatively, you can start a server from command line, or create a batch file to start serving a scene. The syntax is as follows
+
+tundra.exe --headless --server --protocol <udp|tcp> --port <serverPortNumber> --file <scenefiletohost.txml>
+
+You will need to have tundra.exe in your system PATH, or alternatively you can specify the full path.
+
+For more information on the command-line options in Tundra, see http://www.realxtend.org/doxygen/_running_tundra.html.
