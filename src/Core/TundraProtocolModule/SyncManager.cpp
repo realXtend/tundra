@@ -1622,7 +1622,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
-        LogWarning("SyncManager: Ignoring received MsgEntityAction as no scene exists!");
+        LogWarning("SyncManager: Ignoring received MsgEntityAction \"" + QString(msg.name.size() == 0 ? "(null)" : std::string((const char *)&msg.name[0], msg.name.size()).c_str()) + "\" (" + QString::number(msg.parameters.size()) + " parameters) for entity ID " + QString::number(msg.entityId) + " as no scene exists!");
         return;
     }
     
