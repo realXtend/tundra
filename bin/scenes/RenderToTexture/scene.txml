@@ -10,7 +10,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="196.82,81.1205,-89.9587,-8.38782,65.2963,73.7104,10,10,10" name="Transform"/>
+   <attribute value="196.82,81.1205,-89.9587,-8.38781,65.2963,73.7104,10,10,10" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
@@ -366,11 +366,24 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_SkyX" sync="1">
-   <attribute value="false" name="Volumetric clouds"/>
+   <attribute value="1" name="Cloud type"/>
    <attribute value="0" name="Time multiplier"/>
-   <attribute value="14.000000 7.500000 20.500000" name="Time"/>
-   <attribute value="1.000000 1.000000" name="Weather (volumetric clouds only)"/>
+   <attribute value="14" name="Time [0-24]"/>
+   <attribute value="7.5" name="Time sunrise [0-24]"/>
+   <attribute value="20.5" name="Time sunset [0-24]"/>
+   <attribute value="50" name="Cloud coverage [0-100]"/>
+   <attribute value="50" name="Cloud average size [0-100]"/>
+   <attribute value="100" name="Cloud height"/>
+   <attribute value="58.3333321" name="Moon phase [0-100]"/>
+   <attribute value="9.75" name="Sun inner radius"/>
+   <attribute value="10.25" name="Sun outer radius"/>
    <attribute value="0" name="Wind direction"/>
+   <attribute value="5" name="Wind speed"/>
+  </component>
+  <component type="EC_Hydrax" sync="1">
+   <attribute value="HydraxDefault.hdx" name="Config ref"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Position"/>
   </component>
  </entity>
  <entity id="-2147483646" sync="0">
@@ -389,7 +402,7 @@
    <attribute value="" name="Aspect ratio"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="-219.302,117.753,57.4871,-6.89996,-409.8,0,1,1,1" name="Transform"/>
+   <attribute value="-226.496,120.081,71.4036,-9.59996,-411,0,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
