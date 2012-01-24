@@ -112,9 +112,9 @@ del ssleay32.dll
 rd /s /q qtplugins\phonon_backend
 
 :: Delete unused Ogre DLLs and media content
-del /q media\fonts\*.*
-del /q media\models\avatar.*
-del /q media\models\Jack.*
+::del /q media\fonts\*.*
+::del /q media\models\avatar.*
+::del /q media\models\Jack.*
 del OgrePaging.dll
 del OgreProperty.dll
 del OgreRTShaderSystem.dll
