@@ -1,0 +1,14 @@
+To browse a server-client demo, you must first start a server to host the scene, and then connect to it with a viewer to browse it.
+
+To start the server, click on one of the start menu shortcuts "Host XXX Locally". This will start up a headless server with a console window.
+
+Then, either choose the "Server-Client Demos -> Connect to Localhost" menu item to automatically connect to the server on your local computer, or start up the Tundra viewer, and type in
+
+ Server address: "localhost" or "localhost:2345" or "127.0.0.1" or "127.0.0.1:2345"
+ Username: A custom username to use as the name of your client connection
+ Password: leave empty.
+ Protocol: UDP.
+
+Then click on Connect.
+
+The Tundra demo files are read-only. This means that you cannot add new content to them, or replace them (this is due to Windows UAC protecting the data files in the Program Files folder, which is generally a good idea). Therefore, to start building a scene that is based on one of the demo scenes, browse to where you installed Tundra to (e.g. C:\Program Files (x86)\Tundra 2.2.0\scenes\) and make a copy of the sample scene folder to wherever you want to store your project to.
