@@ -95,21 +95,22 @@ del qtplugins\script\qtscriptdbusd4.dll
 del qtplugins\script\qtscript_sql.dll
 del qtplugins\script\qtscript_svg.dll
 del qtplugins\script\qtscript_xmlpatterns.dll
-del libeay32.dll
+::del libeay32.dll :: MumbleVoipModule depends on this.
+::del ssleay32.dll :: MumbleVoipModule depends on this.
 del libexpat.dll
 del libiconv2.dll
 del libjpeg.dll
 del libtheorad.dll
 ::del QtDBus4.dll
-del QtOpenGL4.dll
-del QtSql4.dll
-del QtSvg4.dll
+::del QtOpenGL4.dll :: PythonScriptModule depends on this via PythonQt_QtAll.dll
+::del QtSql4.dll :: PythonScriptModule depends on this via PythonQt_QtAll.dll
+::del QtSvg4.dll :: PythonScriptModule depends on this via PythonQt_QtAll.dll
+
 del Qt3Support4.dll
 del QtCLucene4.dll
 del QtDesigner4.dll
 del QtDesignerComponents4.dll
 del QtHelp4.dll
-del ssleay32.dll
 rd /s /q qtplugins\phonon_backend
 
 :: Delete unused Ogre DLLs and media content
