@@ -75,6 +75,7 @@ if (NOT BUILD_SDK_ONLY)
     AddEntityComponent(EC_Script)                   # Optional but used by both PythonScriptModule and JavascriptModule.
     AddEntityComponent(EC_PlanarMirror)
     AddEntityComponent(EC_ProximityTrigger)
+    AddEntityComponent(EC_LaserPointer)
 endif()
 
 ###### REQUIRED STATIC FRAMEWORK ######
