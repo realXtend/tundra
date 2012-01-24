@@ -14,7 +14,7 @@ class AssetRefListener : public QObject
     Q_OBJECT
 
 public:
-    AssetRefListener() : myAssetAPI(0), requestedRef(""), inspectCreated(false) {};
+    AssetRefListener() : myAssetAPI(0), requestedRef(""), /** \todo This needs to be removed. */ inspectCreated(false) {};
 
     /// Issues a new asset request to the given AssetReference.
     /// @param assetRef A pointer to an attribute of type AssetReference.
@@ -50,5 +50,7 @@ private:
     AssetWeakPtr asset;
     AssetTransferWeakPtr currentTransfer;
     AssetReference requestedRef;
+
+    ///\todo This needs to be removed.
     bool inspectCreated;
 };
