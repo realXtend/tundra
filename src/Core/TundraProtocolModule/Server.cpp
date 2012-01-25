@@ -49,7 +49,7 @@ void Server::Update(f64 frametime)
 {
 }
 
-bool Server::Start(unsigned short port, const QString &protocol)
+bool Server::Start(unsigned short port, QString protocol)
 {
     if (owner_->IsServer())
     {
@@ -57,36 +57,27 @@ bool Server::Start(unsigned short port, const QString &protocol)
         return true; // Already started, don't need to do anything.
     }
 
-    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SERVER, "protocol", "tcp");
-
-    // Write values if config does not have them. First start or config was removed.
-    if (!framework_->Config()->HasValue(configData))
-        framework_->Config()->Set(configData);
-
-    // Set default protocol
-    kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
-
     // Protocol is usually defined as a --protocol command line parameter or in config file,
     // but if it's given as a param to this function use it instead.
-    QString userSetProtocol;
-    if (!protocol.trimmed().isEmpty())
-    {
-        userSetProtocol = protocol;
-    }
-    else
+    if (protocol.isEmpty() && framework_->HasCommandLineParameter("--protocol"))
     {
         QStringList cmdLineParams = framework_->CommandLineParameters("--protocol");
         if (cmdLineParams.size() > 0)
-            userSetProtocol = cmdLineParams.first().trimmed().toLower();
+            protocol = cmdLineParams[0];
         else
-            userSetProtocol = framework_->Config()->Get(configData).toString().toLower();
+            ::LogError("--protocol specified without a parameter! Using UDP protocol as default.");
     }
+    if (protocol.isEmpty())
+        protocol = "udp";
 
-    if (userSetProtocol != "udp" && userSetProtocol != "tcp")
-        ::LogWarning("Server::Start: Server config has an invalid server protocol '" + userSetProtocol + "'. Use tcp or udp. Resetting to default protocol.");
+    kNet::SocketTransportLayer transportLayer = kNet::SocketOverUDP; // By default operate over UDP.
+
+    if (protocol.compare("tcp", Qt::CaseInsensitive) == 0)
+        transportLayer = kNet::SocketOverTCP;
+    else if (protocol.compare("udp", Qt::CaseInsensitive) == 0)
+        transportLayer = kNet::SocketOverUDP;
     else
-        transportLayer = userSetProtocol == "udp" ? kNet::SocketOverUDP : kNet::SocketOverTCP;
-
+        ::LogError("Invalid server protocol '" + protocol + "' specified! Using UDP protocol as default.");
 
     // Start server
     if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
@@ -97,7 +88,7 @@ bool Server::Start(unsigned short port, const QString &protocol)
 
     // Store current port and protocol
     current_port_ = (int)port;
-    current_protocol_ = transportLayer == kNet::SocketOverUDP ? "udp" : "tcp";
+    current_protocol_ = (transportLayer == kNet::SocketOverUDP) ? "udp" : "tcp";
 
     // Create the default server scene
     /// \todo Should be not hard coded like this. Give some unique id (uuid perhaps) that could be returned to the client to make the corresponding named scene in client?

@@ -55,7 +55,7 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     texHeight(this, "Texture Height", 256),
     cornerRadius(this, "Corner Radius", float2(20.0, 20.0)),
     enableMipmapping(this, "Enable Mipmapping", true),
-    material(this, "Material", AssetReference("HoveringText.material", ""))
+    material(this, "Material", AssetReference("local://HoveringText.material", ""))
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();

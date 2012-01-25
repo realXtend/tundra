@@ -2,7 +2,7 @@
 
 # Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
 !ifndef VERSION
-!define VERSION "2.0"
+!define VERSION "2.2.0"
 !endif
 
 Name "Tundra ${VERSION}"
@@ -48,7 +48,7 @@ Section ""
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "hostwindowedserver" "Host in Windowed Tundra Server (UDP 2345)" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp"
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "openviewer" "Open Tundra Viewer in this Project Folder" "$INSTDIR\tundra.exe --config viewer.xml --storage $\"%1$\""
 
-  ExecWait '"$INSTDIR\oalinst.exe"'
+  ExecWait '"$INSTDIR\oalinst.exe" /S'
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
   ExecWait '"$INSTDIR\dxwebsetup.exe"'
 
@@ -62,34 +62,37 @@ SectionEnd
 Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Serve an Empty Scene.lnk" "$INSTDIR\tundra.exe" "--server 2345 --protocol udp"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Start Offline in an Empty Scene.lnk" "$INSTDIR\tundra.exe" ""
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Viewer.lnk" "$INSTDIR\tundra.exe" "--config viewer.xml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\How to host a scene.lnk" "$INSTDIR\dox\hostserver.txt" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\How to work offline.lnk" "$INSTDIR\dox\workoffline.txt" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\How to connect to an existing server.lnk" "$INSTDIR\dox\howtoconnect.txt" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} UI-less Viewer.lnk" "$INSTDIR\tundra.exe" "--config viewer.xml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Browser.lnk" "$INSTDIR\tundra.exe" "--config viewer-browser.xml"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
 
-  CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Demos"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Avatar.lnk" "$INSTDIR\scenes\Avatar\avatar.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\ChatApplication.lnk" "$INSTDIR\scenes\ChatApplication\ChatApplication.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Compositor.lnk" "$INSTDIR\scenes\Compositor\compositor.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Compositor.lnk" "$INSTDIR\scenes\Compositor\compositor.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\DayNight.lnk" "$INSTDIR\scenes\DayNight\Scene.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\ScriptApp\ScriptApp.lnk" "$INSTDIR\scenes\ScriptApp\scriptapp.txml"
+  CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\How to run offline demos.lnk" "$INSTDIR\dox\offlinedemos.txt" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Animated UI.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\AnimatedUI\scene.txml$\""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Compositor.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Compositor\scene.txml$\""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Day-Night.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\DayNight\scene.txml$\""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Sound Component.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\ECSound\scene.txml$\""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Physics.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Physics\scene.txml$\""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Render to Texture.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\RenderToTexture\scene.txml$\""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Tooltip.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Tooltip\scene.txml$\""
+
+  CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\How to run server-client demos.lnk" "$INSTDIR\dox\serverclientdemos.txt" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host Avatar Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Avatar\scene.txml$\" --server --headless"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host ChatApplication Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\ChatApplication\scene.txml$\" --server --headless"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host EntityMoveTest Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\EntityMoveTest\scene.txml$\" --server --headless"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host ReplicationTest Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\ReplicationTest\scene.txml$\" --server --headless"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Connect to Localhost.lnk" "$INSTDIR\tundra.exe" "--connect localhost;2345;udp;avatar"
 SectionEnd
 
 Section "Uninstall"
   RMDir /r $INSTDIR
 
-  #removing the APPDATA\roaming\realxtend doesn't seem to work properly on Vista. (maybe incorrect user information is given through add/remove programs)
-
-  # LETS EVEN PROMPT USER IF HE WANT TO REMOVE ALL PERSONAL REX DATA (ether, old viewer data, assets, textures) BEFORE WE GO AHEAD AND DELETE THEM
-
-  #SetShellVarContext all
-  #RMDir /r "$APPDATA\Roaming\realXtend"
-  #RMDir /r "$SMPROGRAMS\Tundra ${VERSION}"
-
-  #SetShellVarContext current
-  #RMDir /r "$APPDATA\Roaming\realXtend"
-  #RMDir /r "$SMPROGRAMS\Tundra ${VERSION}"
+  SetShellVarContext all
+  RMDir /r "$SMPROGRAMS\Tundra ${VERSION}"
 
   # Unassociate file extension handlers
   !insertmacro APP_UNASSOCIATE "txml" "Tundra.Scenexmlfile"

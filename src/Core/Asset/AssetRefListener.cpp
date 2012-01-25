@@ -51,12 +51,13 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
 
     assetRef = assetRef.trimmed();
     requestedRef = AssetReference(assetRef, assetType);
+    ///\todo This needs to be removed.
     inspectCreated = false;
 
     AssetTransferPtr transfer = assetApi->RequestAsset(assetRef, assetType);
     if (!transfer)
     {
-        LogWarning("AssetRefListener::HandleAssetRefChange: Asset request for " + assetRef + " failed.");
+        LogWarning("AssetRefListener::HandleAssetRefChange: Asset request for asset \"" + assetRef + "\" failed.");
         return;
     }
 
@@ -89,6 +90,7 @@ void AssetRefListener::OnAssetLoaded(AssetPtr assetData)
 {
     if (assetData == asset.lock())
     {
+        ///\todo This needs to be removed.
         inspectCreated = false;
         emit Loaded(assetData);
     }
@@ -99,13 +101,14 @@ void AssetRefListener::OnTransferFailed(IAssetTransfer* transfer, QString reason
     if (myAssetAPI)
         connect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)), Qt::QueuedConnection);
 
+    ///\todo This needs to be removed.
     inspectCreated = true;
     emit TransferFailed(transfer, reason);
 }
 
 void AssetRefListener::OnAssetCreated(AssetPtr asset)
 {
-    if (!asset.get() || !myAssetAPI || !inspectCreated)
+    if (!asset.get() || !myAssetAPI || /** \todo This needs to be removed. */ !inspectCreated)
         return;
 
     // If out latest failed ref is the same as the created asset.

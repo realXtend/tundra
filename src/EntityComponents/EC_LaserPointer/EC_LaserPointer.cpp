@@ -5,7 +5,7 @@
  *  @brief  Adds laser pointer to entity.
  */
 
-#define OGRE_INTEROP
+#define MATH_OGRE_INTEROP
 //#include "DebugOperatorNew.h"
 
 #include "EC_LaserPointer.h"
@@ -92,8 +92,8 @@ void EC_LaserPointer::CreateLaser()
 
     try
     {
-        Ogre::SceneManager *scene = world_.lock()->GetSceneManager();
-        id_ = world_.lock()->GetRenderer()->GetUniqueObjectName("laser");
+        Ogre::SceneManager *scene = world_.lock()->OgreSceneManager();
+        id_ = world_.lock()->Renderer()->GetUniqueObjectName("laser");
         laserObject_ = scene->createManualObject(id_);
         Ogre::SceneNode* laserObjectNode = scene->getRootSceneNode()->createChildSceneNode(id_ + "_node");
         laserMaterial_ = Ogre::MaterialManager::getSingleton().create(id_ + "Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
@@ -123,7 +123,7 @@ void EC_LaserPointer::DestroyLaser()
 
     try
     {
-        Ogre::SceneManager* scene = world_.lock()->GetSceneManager();
+        Ogre::SceneManager* scene = world_.lock()->OgreSceneManager();
         Ogre::SceneNode* node = dynamic_cast<Ogre::SceneNode*>(scene->getRootSceneNode()->getChild(id_ + "_node"));
         if (node)
             node->detachObject(id_);
@@ -165,7 +165,7 @@ void EC_LaserPointer::Update(MouseEvent *e)
             }
 
             laserObject_->setVisible(true);
-            RaycastResult *result = world_.lock()->GetRenderer()->Raycast(e->x, e->y);
+            RaycastResult *result = world_.lock()->Renderer()->Raycast(e->x, e->y);
             if (result && result->entity && result->entity != ParentEntity())
             {
                 EC_Placeable *placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
@@ -251,7 +251,7 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
         }
 
         QPoint scenePos = framework->Ui()->GraphicsView()->mapFromGlobal(QCursor::pos());
-        RaycastResult *result = world_.lock()->GetRenderer()->Raycast(scenePos.x(), scenePos.y());
+        RaycastResult *result = world_.lock()->Renderer()->Raycast(scenePos.x(), scenePos.y());
         if (result && result->entity && result->entity != ParentEntity())
         {
             endPos.Set(result->pos, AttributeChange::Default);

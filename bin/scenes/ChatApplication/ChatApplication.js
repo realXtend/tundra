@@ -135,7 +135,8 @@ ClientControl.prototype.SendMessage = function() {
     var msg = lineEdit.text;
     me.Exec(2, "ClientSendMessage", client.GetLoginProperty("username"), msg);
     lineEdit.text = "";
-    this.hoveringText.text = msg;
+    if (this.hoveringText != null)
+        this.hoveringText.text = msg;
     frame.DelayedExecute(this.showTextTime).Triggered.connect(this, this.HideText);
 }
 

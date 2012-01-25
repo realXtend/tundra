@@ -1,0 +1,14 @@
+To connect to a Tundra scene hosted on a server, you will need to provide login information for the server. This can be done by using one of the two provided UI frontends, or from the command line.
+
+The UI-less Viewer is a GUI which does not provide any extra UIs (apart from what is provided by the scene you log in to). It shows up a minimal login UI to query connection options.
+
+The Browser Viewer is a GUI which decorates Tundra to behave similar to a web browser.
+
+To start either version, find the shortcuts in the start menu.
+
+To connect to a Tundra server from the command line without showing up a GUI, use the syntax
+
+tundra --connect <serverAddress>;<serverPort>;<tcp|udp>;<username>[;<password>]
+
+This will require tundra.exe to reside in your system PATH. Alternatively, you can specify the full path to Tundra executable.
+For more information on Tundra command line parameters, see http://www.realxtend.org/doxygen/_running_tundra.html.

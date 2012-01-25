@@ -3,39 +3,44 @@
   <!-- plugins.xml is hardcoded to be the default configuration file to load if another file is not specified on the command line with the "config filename.xml" parameter. -->
   <plugin path="OgreRenderingModule" />
   <plugin path="EnvironmentModule" />           <!-- EnvironmentModule depends on OgreRenderingModule -->
-  <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on OgreRenderingModule -->
-  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule and TundraProtocolModule-->
+  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule and TundraProtocolModule -->
   <!--  Note: All modules that implicitly depend on JavascriptModule, by performing QtScript object meta type registration in their registered
         dynamic objects (Framework::RegisterDynamicObject) in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
   <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraProtocolModule --> 
   <plugin path="AssetModule" />                 <!-- AssetModule depends on TundraProtocolModule -->
   <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
-  <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
-  <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraProtocolModule -->
+  <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
+  <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule, OgreAssetEditorModule and AssetModule -->
+  <plugin path="BrowserUiPlugin" />             <!-- Depends on JavascriptModule -->    
+  <plugin path="SceneWidgetComponents" />       <!-- Depends on OgreRenderingModule and TundraProtocolModule (and optionally on BrowserUiPlugin) -->
   <plugin path="PythonScriptModule" />          <!-- Depends on OgreRenderingModule, TundraProtocolModule -->
-  
-  <!-- The following are commented out as they are not a part of the default build -->
-  <!-- <plugin path="MumbleVoipModule" /> -->           <!-- Depends on OgreRenderingModule and TundraLogicModule -->
-  <!-- <plugin path="CAVEStereoModule" /> -->           <!-- Depends on OgreRenderingModule and TundraLogicModule -->
-  <!-- <plugin path="KinectModule" /> -->               <!-- Depends on OgreRenderingModule -->
+  <plugin path="MumbleVoipModule" />            <!-- Depends on OgreRenderingModule, JavascriptModule and TundraLogicModule -->
+  <plugin path="VlcPlugin" />                   <!-- Depends on SceneWidgetComponents -->
+  <plugin path="CAVEStereoModule" />            <!-- Depends on OgreRenderingModule -->
   
   <!-- TODO: Currently the above <plugin> items are loaded in the order they are specified, but below, the jsplugin items are loaded in an undefined order. Use the order specified here as the load order. -->
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
   <jsplugin path="cameraapplication.js" />
   <jsplugin path="FirstPersonMouseLook.js" />
-  <jsplugin path="LoginScreen.js" />
   <jsplugin path="MenuBar.js" />
   <jsplugin path="RendererSettings.js" />
   <jsplugin path="SoundSettings.js" />
+  <jsplugin path="LoginScreen.js" />
 
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
 
+  <option name="--trustserverstorages" />
+  <option name="--accept_unknown_http_sources" />
+  <option name="--accept_unknown_local_sources" />
+  <option name="--fpslimit" value="60" />
+  <option name="--hide_benign_ogre_messages" />
   <!--  AssetAPI's file system watcher currently disabled because LocalAssetProvider implements
         the same functionality for LocalAssetStorages and HTTPAssetProviders do not yet support live-update. -->
   <option name="--nofilewatcher" />
+  <option name="--splash" />
 </Tundra>

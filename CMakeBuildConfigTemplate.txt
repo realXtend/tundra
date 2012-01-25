@@ -22,9 +22,9 @@ set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.og
 set (ENABLE_SKYX 1)                 # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 set (ENABLE_OGRE_ASSET_EDITOR 1)    # Enables Ogre asset editor module.
 set (ENABLE_OPEN_ASSET_IMPORT 0)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
-set (ENABLE_PROFILING 0)            # Enable the following flag to add compile with support for a built-in execution time profiler.
+set (ENABLE_PROFILING 1)            # Enable the following flag to add compile with support for a built-in execution time profiler.
 set (ENABLE_JS_PROFILING 0)         # Enable js profiling?
-set (ENABLE_MEMORY_LEAK_CHECKS 1)   # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
+set (ENABLE_MEMORY_LEAK_CHECKS 0)   # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
 
 message ("\n")
 
@@ -75,6 +75,7 @@ if (NOT BUILD_SDK_ONLY)
     AddEntityComponent(EC_Script)                   # Optional but used by both PythonScriptModule and JavascriptModule.
     AddEntityComponent(EC_PlanarMirror)
     AddEntityComponent(EC_ProximityTrigger)
+    AddEntityComponent(EC_LaserPointer)
 endif()
 
 ###### REQUIRED STATIC FRAMEWORK ######
@@ -132,7 +133,7 @@ AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewe
 # Remove the win32 check once the mumble and vlc deps are fetched in the deps build scripts. For mumble this is same as msantalas libmumbleclient and vlc apt-get libvlc-dev.
 if (WIN32)
     AddProject(Application MumbleVoipModule)    # VOIP communication using the Mumble library. Depends on OgreRenderingModule and TundraProtocolModule.
-    #AddProject(Application VlcPlugin)           # Adds media playback capabilities with libVLC and entity components.
+    AddProject(Application VlcPlugin)           # Adds media playback capabilities with libVLC and entity components.
 endif ()
 
 #AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.

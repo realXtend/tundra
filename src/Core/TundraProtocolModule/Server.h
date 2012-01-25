@@ -47,8 +47,9 @@ public:
     void Update(f64 frametime);
     
     /// Create server scene & start server
-    /** @return True if successful, false otherwise. No scene will be created if starting the server fails. */
-    bool Start(unsigned short port, const QString &protocol = "");
+    /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
+        @return True if successful, false otherwise. No scene will be created if starting the server fails. */
+    bool Start(unsigned short port, QString protocol = "");
     
     /// Stop server & delete server scene
     void Stop();
