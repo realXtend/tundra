@@ -96,7 +96,7 @@ void AssetModule::Initialize()
     connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(ClientConnectedToServer(UserConnectedResponseData *)));
     connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
 
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
 
@@ -315,7 +315,7 @@ void AssetModule::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAsset
     
     // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
             if (userConn->connection != source)
@@ -335,7 +335,7 @@ void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDe
     
     // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
             if (userConn->connection != source)
@@ -352,7 +352,7 @@ void AssetModule::OnAssetUploaded(const QString& assetRef)
         return;
     
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
 
     MsgAssetDiscovery msg;
     msg.assetRef = StringToBuffer(assetRef.toStdString()); /// @bug Convert to UTF-8 instead!
@@ -380,7 +380,7 @@ void AssetModule::OnAssetDeleted(const QString& assetRef)
         return;
     
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
 
     MsgAssetDeleted msg;
     msg.assetRef = StringToBuffer(assetRef.toStdString()); /// @bug Convert to UTF-8 instead!

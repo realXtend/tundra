@@ -17,10 +17,7 @@ class MessageConnection;
 
 typedef unsigned long message_id_t;
 
-namespace KristalliProtocol
-{
-    class KristalliProtocolModule;
-}
+class KristalliProtocolModule;
 
 class UserConnection;
 typedef boost::shared_ptr<UserConnection> UserConnectionPtr;

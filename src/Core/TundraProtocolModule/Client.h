@@ -18,10 +18,7 @@ struct MsgLoginReply;
 struct MsgClientJoined;
 struct MsgClientLeft;
 
-namespace KristalliProtocol
-{
-    class KristalliProtocolModule;
-}
+class KristalliProtocolModule;
 
 class UserConnection;
 typedef boost::shared_ptr<UserConnection> UserConnectionPtr;

@@ -12,10 +12,7 @@ namespace kNet
     typedef unsigned long message_id_t;
 }
 
-namespace KristalliProtocol
-{
-    class KristalliProtocolModule;
-}
+class KristalliProtocolModule;
 
 namespace TundraLogic
 {
@@ -42,7 +39,7 @@ public:
     bool IsServer() const;
 
     /// Returns pointer to KristalliProtocolModule for convenience
-    KristalliProtocol::KristalliProtocolModule *GetKristalliModule() const { return kristalliModule_; }
+    KristalliProtocolModule *GetKristalliModule() const { return kristalliModule_; }
 
     /// Returns syncmanager
     const boost::shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
@@ -96,7 +93,7 @@ private:
     boost::shared_ptr<SyncManager> syncManager_; ///< Sync manager
     boost::shared_ptr<Client> client_; ///< Client
     boost::shared_ptr<Server> server_; ///< Server
-    KristalliProtocol::KristalliProtocolModule *kristalliModule_; ///< KristalliProtocolModule pointer
+    KristalliProtocolModule *kristalliModule_; ///< KristalliProtocolModule pointer
     bool autoStartServer_; ///< Whether to autostart the server
     short autoStartServerPort_; ///< Autostart server port
 };

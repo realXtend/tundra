@@ -189,7 +189,7 @@ void TundraLogicModule::Initialize()
         this, SLOT(ImportMesh(QString, float, float, float, float, float, float, float, float, float, bool)));
 
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
-    kristalliModule_ = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    kristalliModule_ = framework_->GetModule<KristalliProtocolModule>();
     if (!kristalliModule_)
         throw Exception("Fatal: could not get KristalliProtocolModule");
 
@@ -518,7 +518,7 @@ extern "C"
 DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    fw->RegisterModule(new KristalliProtocol::KristalliProtocolModule());
+    fw->RegisterModule(new KristalliProtocolModule());
     fw->RegisterModule(new TundraLogic::TundraLogicModule());
 }
 }
