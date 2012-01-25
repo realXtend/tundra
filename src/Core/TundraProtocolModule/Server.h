@@ -5,23 +5,10 @@
 #include "CoreDefines.h"
 #include "CoreTypes.h"
 #include "TundraLogicModuleApi.h"
-#include "UserConnectedResponseData.h"
-
-#include <kNet.h>
+#include "TundraProtocolModuleFwd.h"
 
 #include <QObject>
 #include <QVariant>
-
-struct MsgLogin;
-class MessageConnection;
-
-typedef unsigned long message_id_t;
-
-class KristalliProtocolModule;
-
-class UserConnection;
-typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
-typedef std::list<UserConnectionPtr> UserConnectionList;
 
 class QScriptEngine;
 
@@ -29,8 +16,6 @@ class Framework;
 
 namespace TundraLogic
 {
-class TundraLogicModule;
-
 /// Implements Tundra server functionality.
 class TUNDRALOGIC_MODULE_API Server : public QObject
 {

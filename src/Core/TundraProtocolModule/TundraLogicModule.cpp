@@ -8,6 +8,8 @@
 #include "Server.h"
 #include "SceneImporter.h"
 #include "SyncManager.h"
+#include "KristalliProtocolModule.h"
+
 #include "Profiler.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
@@ -17,18 +19,21 @@
 #include "IComponentFactory.h"
 #include "Scene.h"
 #include "Application.h"
-#include "KristalliProtocolModule.h"
 #include "CoreStringUtils.h"
 #include "AssetAPI.h"
 #include "ConsoleAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "CoreException.h"
-#include "MemoryLeakCheck.h"
 
 #include "EC_Name.h"
 #include "EC_DynamicComponent.h"
 #include "EC_InputMapper.h"
+#include "EC_Camera.h"
+#include "EC_Placeable.h"
+#include "EC_AnimationController.h"
+#include "EC_Mesh.h"
+#include "EC_OgreCustomObject.h"
 
 #ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
@@ -75,11 +80,7 @@
 #include "EC_LaserPointer.h"
 #endif
 
-#include "EC_Camera.h"
-#include "EC_Placeable.h"
-#include "EC_AnimationController.h"
-#include "EC_Mesh.h"
-#include "EC_OgreCustomObject.h"
+#include "MemoryLeakCheck.h"
 
 namespace TundraLogic
 {

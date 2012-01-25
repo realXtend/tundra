@@ -6,9 +6,9 @@
 #include "KristalliProtocolModuleApi.h"
 #include "UserConnection.h"
 
-#include "kNet.h"
-
-#include <QObject>
+#include <kNet/IMessageHandler.h>
+#include <kNet/INetworkServerListener.h>
+#include <kNet/Network.h>
 
 #ifdef KNET_USE_QT
 #include <QPointer>

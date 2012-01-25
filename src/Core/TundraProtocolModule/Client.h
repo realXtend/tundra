@@ -5,32 +5,18 @@
 #include "CoreDefines.h"
 #include "CoreTypes.h"
 #include "TundraLogicModuleApi.h"
-#include "UserConnectedResponseData.h"
+#include "TundraProtocolModuleFwd.h"
 
-#include <kNet.h>
-
+#include <kNet/Socket.h>
 #include <map>
 #include <QObject>
-#include <QUrl>
-
-struct MsgLogin;
-struct MsgLoginReply;
-struct MsgClientJoined;
-struct MsgClientLeft;
-
-class KristalliProtocolModule;
-
-class UserConnection;
-typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
-typedef std::list<UserConnectionPtr> UserConnectionList;
 
 class Framework;
 
+class QUrl;
+
 namespace TundraLogic
 {
-
-class TundraLogicModule;
-
 /// Provides Tundra client->server connection functions.
 class TUNDRALOGIC_MODULE_API Client : public QObject
 {
@@ -102,7 +88,7 @@ public slots:
 
     /// Returns the login property value of the given name.
     /// @return value of the key, or an empty string if the key was not found.
-    QString GetLoginProperty(QString key);
+    QString GetLoginProperty(QString key) const;
 
     /// Returns all the currently set login properties as an XML text.
     QString LoginPropertiesAsXml() const;

@@ -4,23 +4,11 @@
 
 #include "IModule.h"
 #include "TundraLogicModuleApi.h"
+#include "TundraProtocolModuleFwd.h"
 #include "AssetFwd.h"
-
-namespace kNet
-{
-    class MessageConnection;
-    typedef unsigned long message_id_t;
-}
-
-class KristalliProtocolModule;
 
 namespace TundraLogic
 {
-
-class Client;
-class Server;
-class SyncManager;
-
 /// Implements the Tundra protocol server and client functionality.
 class TUNDRALOGIC_MODULE_API TundraLogicModule : public IModule
 {

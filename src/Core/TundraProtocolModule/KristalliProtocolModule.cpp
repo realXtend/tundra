@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
-
 #include "DebugOperatorNew.h"
 
 #include "KristalliProtocolModule.h"
+
 #include "Profiler.h"
 #include "CoreStringUtils.h"
 #include "UiAPI.h"

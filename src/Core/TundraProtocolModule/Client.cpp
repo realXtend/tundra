@@ -12,6 +12,7 @@
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
+#include "UserConnectedResponseData.h"
 
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
@@ -19,7 +20,7 @@
 #include "Scene.h"
 #include "Application.h"
 
-#include <QDomElement>
+#include <kNet.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -218,11 +219,12 @@ void Client::SetLoginProperty(QString key, QString value)
     properties[key] = value;
 }
 
-QString Client::GetLoginProperty(QString key)
+QString Client::GetLoginProperty(QString key) const
 {
     key = key.trimmed();
-    if (properties.count(key) > 0)
-        return properties[key];
+    std::map<QString, QString>::const_iterator i = properties.find(key);
+    if (i != properties.end())
+        return i->second;
     else
         return "";
 }

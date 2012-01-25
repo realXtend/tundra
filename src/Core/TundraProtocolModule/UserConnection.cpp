@@ -1,10 +1,12 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "UserConnection.h"
 #include "Entity.h"
 
-#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 
 int UserConnection::GetConnectionID() const
 {

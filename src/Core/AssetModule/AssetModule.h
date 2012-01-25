@@ -4,21 +4,9 @@
 
 #include "IModule.h"
 
-#include <QObject>
-
 #include "IAssetProvider.h"
 #include "AssetModuleApi.h"
-
-struct MsgAssetDiscovery;
-struct MsgAssetDeleted;
-struct UserConnectedResponseData;
-class UserConnection;
-
-namespace kNet
-{
-    class MessageConnection;
-    typedef unsigned long message_id_t;
-}
+#include "TundraProtocolModuleFwd.h"
 
 /// Implements asset providers and storages for local disk assets and HTTP assets.
 class ASSET_MODULE_API AssetModule : public IModule

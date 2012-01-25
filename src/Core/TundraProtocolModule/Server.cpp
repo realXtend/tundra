@@ -12,6 +12,7 @@
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
+#include "UserConnectedResponseData.h"
 
 #include "CoreStringUtils.h"
 #include "SceneAPI.h"
@@ -19,10 +20,10 @@
 #include "LoggingFunctions.h"
 #include "QScriptEngineHelpers.h"
 
-#include "MemoryLeakCheck.h"
-
 #include <QtScript>
 #include <QDomDocument>
+
+#include "MemoryLeakCheck.h"
 
 Q_DECLARE_METATYPE(UserConnection*);
 Q_DECLARE_METATYPE(UserConnectedResponseData*);

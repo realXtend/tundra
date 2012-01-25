@@ -1,24 +1,25 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
-#include "CoreStringUtils.h"
 #include "DebugOperatorNew.h"
+
 #include "KristalliProtocolModule.h"
 #include "SyncManager.h"
-#include "Scene.h"
-#include "Entity.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
 #include "Server.h"
 #include "TundraMessages.h"
 #include "MsgEntityAction.h"
+
+#include "Scene.h"
+#include "Entity.h"
+#include "CoreStringUtils.h"
 #include "EC_DynamicComponent.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 #include "Profiler.h"
-
 #include "SceneAPI.h"
 
 #include <kNet.h>

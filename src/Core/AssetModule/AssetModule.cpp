@@ -24,10 +24,11 @@
 #include "MsgAssetDeleted.h"
 #include "MsgAssetDiscovery.h"
 
-#include "kNetBuildConfig.h"
-#include "kNet/MessageConnection.h"
+#include <kNetBuildConfig.h>
+#include <kNet/MessageConnection.h>
 
 #include <QDir>
+
 #include "MemoryLeakCheck.h"
 
 AssetModule::AssetModule()
