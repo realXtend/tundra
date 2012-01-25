@@ -5,12 +5,8 @@
 #include "IModule.h"
 #include "TundraLogicModuleApi.h"
 #include "AssetFwd.h"
-
-namespace kNet
-{
-    class MessageConnection;
-    typedef unsigned long message_id_t;
-}
+#include "kNetFwd.h"
+#include "kNet/Types.h"
 
 namespace KristalliProtocol
 {
@@ -88,7 +84,7 @@ private slots:
 
 private:
     /// Handles a Kristalli protocol message
-    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
     /// Loads the startup scene
     void LoadStartupScene();

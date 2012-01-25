@@ -45,7 +45,6 @@ namespace KristalliProtocol
         void StopServer();
         
         /// Invoked by the Network library for each received network message.
-        void HandleMessage(kNet::MessageConnection *source, kNet::message_id_t id, const char *data, size_t numBytes);
         void HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t id, const char *data, size_t numBytes);
 
         /// Invoked by the Network library for each new connection
@@ -87,7 +86,7 @@ public slots:
 
     signals:
         /// Triggered whenever a new message is received rom the network.
-        void NetworkMessageReceived(kNet::MessageConnection *source, kNet::message_id_t id, const char *data, size_t numBytes);
+        void NetworkMessageReceived(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char *data, size_t numBytes);
 
         /// Triggered on the server side when a new user connects.
         void ClientConnectedEvent(UserConnection *connection);

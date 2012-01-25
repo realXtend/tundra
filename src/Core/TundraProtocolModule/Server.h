@@ -80,7 +80,7 @@ signals:
         client and the applications on the client computer can read them as needed. */
     void UserConnected(int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
     
-    void MessageReceived(UserConnection *connection, kNet::message_id_t id, const char* data, size_t numBytes);
+    void MessageReceived(UserConnection *connection, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
     /// A user has disconnected
     void UserDisconnected(int connectionID, UserConnection* connection);
@@ -121,7 +121,7 @@ public slots:
     
 private slots:
     /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
     /// Handle a user disconnecting
     void HandleUserDisconnected(UserConnection* user);

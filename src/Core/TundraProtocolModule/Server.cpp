@@ -99,8 +99,8 @@ bool Server::Start(unsigned short port, QString protocol)
     emit ServerStarted();
 
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
-        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
 
     connect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)), Qt::UniqueConnection);
 
@@ -119,8 +119,8 @@ void Server::Stop()
         emit ServerStopped();
 
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-        disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
-            this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
+        disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
+            this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
 
         disconnect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)));
     }
@@ -211,7 +211,7 @@ kNet::NetworkServer *Server::GetServer() const
     return owner_->GetKristalliModule()->GetServer();
 }
 
-void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
+void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
     if (!source)
         return;
@@ -222,28 +222,28 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::messa
     UserConnection *user = GetUserConnection(source);
     if (!user)
     {
-        ::LogWarning("Server: dropping message " + ToString(id) + " from unknown connection \"" + source->ToString() + "\"");
+        ::LogWarning("Server: dropping message " + ToString(messageId) + " from unknown connection \"" + source->ToString() + "\"");
         return;
     }
 
     // If we are server, only allow the login message from an unauthenticated user
-    if (id != cLoginMessage && user->properties["authenticated"] != "true")
+    if (messageId != cLoginMessage && user->properties["authenticated"] != "true")
     {
         UserConnection* user = GetUserConnection(source);
         if ((!user) || (user->properties["authenticated"] != "true"))
         {
-            ::LogWarning("Server: dropping message " + ToString(id) + " from unauthenticated user");
+            ::LogWarning("Server: dropping message " + ToString(messageId) + " from unauthenticated user");
             /// \todo something more severe, like disconnecting the user
             return;
         }
     }
-    else if (id == cLoginMessage)
+    else if (messageId == cLoginMessage)
     {
         MsgLogin msg(data, numBytes);
         HandleLogin(source, msg);
     }
 
-    emit MessageReceived(user, id, data, numBytes);
+    emit MessageReceived(user, packetId, messageId, data, numBytes);
 }
 
 void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)

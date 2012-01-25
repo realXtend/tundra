@@ -8,17 +8,13 @@
 
 #include "IAssetProvider.h"
 #include "AssetModuleApi.h"
+#include "kNetFwd.h"
+#include "kNet/Types.h"
 
 struct MsgAssetDiscovery;
 struct MsgAssetDeleted;
 struct UserConnectedResponseData;
 class UserConnection;
-
-namespace kNet
-{
-    class MessageConnection;
-    typedef unsigned long message_id_t;
-}
 
 /// Implements asset providers and storages for local disk assets and HTTP assets.
 class ASSET_MODULE_API AssetModule : public IModule
@@ -63,7 +59,7 @@ public slots:
 
 private slots:
     /// Handles a Kristalli protocol message. Used for AssetDiscovery & AssetDeleted messages
-    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
     
     /// Handle incoming asset discovery message.
     void HandleAssetDiscovery(kNet::MessageConnection* source, MsgAssetDiscovery& msg);

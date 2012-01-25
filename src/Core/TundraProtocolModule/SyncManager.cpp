@@ -86,8 +86,8 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     updateAcc_(0.0)
 {
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
-        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
 }
 
 SyncManager::~SyncManager()
@@ -141,11 +141,11 @@ void SyncManager::RegisterToScene(ScenePtr scene)
         SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)));
 }
 
-void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
+void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
     try
     {
-        switch (id)
+        switch(messageId)
         {
         case cCreateEntityMessage:
             HandleCreateEntity(source, data, numBytes);
@@ -175,7 +175,7 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             HandleCreateComponentsReply(source, data, numBytes);
             break;
         case cRigidBodyUpdateMessage:
-            HandleRigidBodyChanges(source, data, numBytes);
+            HandleRigidBodyChanges(source, packetId, data, numBytes);
             break;
         case cEntityActionMessage:
             {
@@ -187,7 +187,7 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
     }
     catch (kNet::NetException& e)
     {
-        LogError("Exception while handling scene sync network message " + QString::number(id) + ": " + QString(e.what()));
+        LogError("Exception while handling scene sync network message " + QString::number(messageId) + ": " + QString(e.what()));
         throw; // Propagate the message so that Tundra server will kill the connection (if we are the server).
     }
     currentSender = 0;
@@ -867,7 +867,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         destination->FreeMessage(msg);
 }
 
-void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const char* data, size_t numBytes)
+void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes)
 {
     ScenePtr scene = scene_.lock();
     if (!scene)
@@ -979,6 +979,11 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
                 if (iter != server_syncstate_.entityInterpolations.end())
                 {
                     RigidBodyInterpolationState &interp = iter->second;
+
+                    if (kNet::PacketIDIsNewerThan(interp.lastReceivedPacketCounter, packetId))
+                        continue; // This is an out-of-order received packet. Ignore it. (latest-data-guarantee)
+                    interp.lastReceivedPacketCounter = packetId;
+
                     const float interpPeriod = updatePeriod_; // Time in seconds how long interpolating the Hermite spline from [0,1] should take.
                     float3 curVel;
                     if (interp.interpTime < 1.0f)
@@ -1017,6 +1022,7 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, const 
                     interp.interpStart.angVel = rigidBody ? rigidBody->angularVelocity.Get() : float3::zero;
                     interp.interpEnd.angVel = newAngVel;
                     interp.interpTime = 0.f;
+                    interp.lastReceivedPacketCounter = packetId;
                     server_syncstate_.entityInterpolations[entityID] = interp;
                 }                
             }

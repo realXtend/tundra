@@ -340,23 +340,18 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
         ::LogInfo("Unknown user disconnected");
 }
 
-void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t id, const char *data, size_t numBytes)
-{
-    HandleMessage(source, id, data, numBytes);
-}
-
-void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_id_t id, const char *data, size_t numBytes)
+void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char *data, size_t numBytes)
 {
     assert(source);
     assert(data || numBytes == 0);
 
     try
     {
-        emit NetworkMessageReceived(source, id, data, numBytes);
+        emit NetworkMessageReceived(source, packetId, messageId, data, numBytes);
     } catch(std::exception &e)
     {
         ::LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +
-            ToString(id) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
+            ToString(messageId) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
 
         // Kill the connection. For debugging purposes, don't disconnect the client if the server is running a debug build.
 #ifndef _DEBUG

@@ -5,6 +5,7 @@
 #include "CoreTypes.h"
 
 #include "kNet/PolledTimer.h"
+#include "kNet/Types.h"
 #include "Transform.h"
 #include "Math/float3.h"
 
@@ -180,6 +181,10 @@ struct RigidBodyInterpolationState
     RigidBodyState interpStart;
     RigidBodyState interpEnd;
     float interpTime;
+
+    /// Remembers the packet id of the most recently received network sync packet. Used to enforce
+    /// proper ordering (generate latest-data-guarantee messaging) for the received movement packets.
+    kNet::packet_id_t lastReceivedPacketCounter;
 };
 
 /// Scene's per-user network sync state

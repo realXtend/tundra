@@ -5,18 +5,14 @@
 #include "IComponent.h"
 #include "Entity.h"
 #include "SyncState.h"
+#include "kNetFwd.h"
+#include "kNet/Types.h"
 
 #include <QObject>
 #include <map>
 #include <set>
 
 struct MsgEntityAction;
-
-namespace kNet
-{
-    class MessageConnection;
-    typedef unsigned long message_id_t;
-}
 
 class UserConnection;
 class Framework;
@@ -84,7 +80,7 @@ private slots:
 
 private slots:
     /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
 private:
     /// Queue a message to the receiver from a given DataSerializer.
@@ -114,7 +110,7 @@ private:
     /// Handle create components reply message.
     void HandleCreateComponentsReply(kNet::MessageConnection* source, const char* data, size_t numBytes);
     
-    void HandleRigidBodyChanges(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes);
 
     void ReplicateRigidBodyChanges(kNet::MessageConnection* destination, SceneSyncState* state);
 
