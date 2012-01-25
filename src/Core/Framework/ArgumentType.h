@@ -108,7 +108,7 @@ public:
     }
 
 private:
-    std::string typeName; ///< Type name
+    const std::string typeName; ///< Type name
     T value; ///< Value.
     QWidget *editor; ///< Editor widget dedicated for this argument type.
 };
@@ -152,7 +152,7 @@ public:
     void FromString(const QString &) {}
 
 private:
-    QString typeName; ///< Type name
+    const QString typeName; ///< Type name
 };
 
 // QString
@@ -321,12 +321,12 @@ template<> inline void ArgumentType<unsigned int>::UpdateValueToEditor()
 
 template<> inline QString ArgumentType<unsigned int>::ToString() const
 {
-    return QString::number((unsigned int)value);
+    return QString::number(value);
 }
 
 template<> inline void ArgumentType<unsigned int>::FromString(const QString &str)
 {
-    value = str.toInt();
+    value = str.toUInt();
 }
 
 // Integer
