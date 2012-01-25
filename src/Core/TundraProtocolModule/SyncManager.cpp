@@ -1647,8 +1647,8 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     EntityPtr entity = scene->GetEntity(entityId);
     if (!entity)
     {
-        LogWarning("Entity " + ToString<int>(entityId) + " not found for EntityAction message.");
-        return; ///\todo Are we ok to return here? Perhaps we should replicate this action to peers if they might have an entity with that id in the scene?
+        LogWarning("Entity with ID " + QString::number(entityId) + " not found for EntityAction message \"" + QString(msg.name.size() == 0 ? "(null)" : std::string((const char *)&msg.name[0], msg.name.size()).c_str()) + "\" (" + QString::number(msg.parameters.size()) + " parameters).");
+        return;
     }
 
     // If we are server, get the user who sent the action, so it can be queried
