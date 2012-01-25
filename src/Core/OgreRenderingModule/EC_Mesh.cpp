@@ -743,26 +743,6 @@ const std::string& EC_Mesh::GetSkeletonName() const
     }
 }
 
-QVector3D EC_Mesh::GetWorldSize() const
-{
-    QVector3D size(0,0,0);
-    if (!entity_ || !adjustment_node_ || !placeable_)
-        return size;
-
-    // Get mesh bounds and scale it to the scene node
-    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
-    Ogre::AxisAlignedBox bbox = entity_->getMesh()->getBounds();
-    ///\bug Rewrite this code to properly take the world transform into account. -jj.
-    bbox.scale(adjustment_node_->getScale());
-
-    // Get size and take placeable scale into consideration to get real in-world size
-    const Ogre::Vector3& bbsize = bbox.getSize();
-    const float3 &placeable_scale = placeable->WorldScale();
-    // Swap y and z to make it align with other vectors
-    size = QVector3D(bbsize.x*placeable_scale.x, bbsize.y*placeable_scale.y, bbsize.z*placeable_scale.z);
-    return size;
-}
-
 void EC_Mesh::DetachEntity()
 {
     if ((!attached_) || (!entity_) || (!placeable_))
