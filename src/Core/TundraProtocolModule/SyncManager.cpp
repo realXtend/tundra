@@ -693,13 +693,19 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
 
                     velocityDirty = velocityDirty && (rigidBody->linearVelocity.Get().DistanceSq(ess.linearVelocity) >= 1e-2f);
                     angularVelocityDirty = angularVelocityDirty && (rigidBody->angularVelocity.Get().DistanceSq(ess.angularVelocity) >= 1e-1f);
-/*
-                    // TEST: If the object enters rest, force an update.
+
+                    // If the object enters rest, force an update, and force the update to be sent as reliable, so that the client
+                    // is guaranteed to receive the message, and will put the object to rest, instead of extrapolating it away indefinitely.
                     if (rigidBody->linearVelocity.Get().IsZero(1e-4f) && !ess.linearVelocity.IsZero(1e-4f))
+                    {
                         velocityDirty = true;
+                        msg->reliable = true;
+                    }
                     if (rigidBody->angularVelocity.Get().IsZero(1e-4f) && !ess.angularVelocity.IsZero(1e-4f))
+                    {
                         angularVelocityDirty = true;
-                        */
+                        msg->reliable = true;
+                    }
                 }
             }
         }
