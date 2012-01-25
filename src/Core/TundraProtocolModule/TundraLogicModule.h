@@ -3,14 +3,14 @@
 #pragma once
 
 #include "IModule.h"
-#include "TundraLogicModuleApi.h"
+#include "TundraProtocolModuleApi.h"
 #include "TundraProtocolModuleFwd.h"
 #include "AssetFwd.h"
 
 namespace TundraLogic
 {
 /// Implements the Tundra protocol server and client functionality.
-class TUNDRALOGIC_MODULE_API TundraLogicModule : public IModule
+class TUNDRAPROTOCOL_MODULE_API TundraLogicModule : public IModule
 {
     Q_OBJECT
 

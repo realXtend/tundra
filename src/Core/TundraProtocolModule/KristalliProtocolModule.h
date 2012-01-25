@@ -3,7 +3,7 @@
 #pragma once
 
 #include "IModule.h"
-#include "KristalliProtocolModuleApi.h"
+#include "TundraProtocolModuleApi.h"
 #include "UserConnection.h"
 
 #include <kNet/IMessageHandler.h>
@@ -16,7 +16,7 @@ namespace kNet { class NetworkDialog; }
 #endif
 
 /// Implements kNet protocol -based server and client functionality.
-class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public IModule, public kNet::IMessageHandler, public kNet::INetworkServerListener
+class TUNDRAPROTOCOL_MODULE_API KristalliProtocolModule : public IModule, public kNet::IMessageHandler, public kNet::INetworkServerListener
 {
     Q_OBJECT
 

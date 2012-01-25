@@ -4,7 +4,7 @@
 
 #include "CoreDefines.h"
 #include "CoreTypes.h"
-#include "TundraLogicModuleApi.h"
+#include "TundraProtocolModuleApi.h"
 #include "TundraProtocolModuleFwd.h"
 
 #include <QObject>
@@ -17,7 +17,7 @@ class Framework;
 namespace TundraLogic
 {
 /// Implements Tundra server functionality.
-class TUNDRALOGIC_MODULE_API Server : public QObject
+class TUNDRAPROTOCOL_MODULE_API Server : public QObject
 {
     Q_OBJECT
 

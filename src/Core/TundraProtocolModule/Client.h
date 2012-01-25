@@ -4,7 +4,7 @@
 
 #include "CoreDefines.h"
 #include "CoreTypes.h"
-#include "TundraLogicModuleApi.h"
+#include "TundraProtocolModuleApi.h"
 #include "TundraProtocolModuleFwd.h"
 
 #include <kNet/Socket.h>
@@ -18,7 +18,7 @@ class QUrl;
 namespace TundraLogic
 {
 /// Provides Tundra client->server connection functions.
-class TUNDRALOGIC_MODULE_API Client : public QObject
+class TUNDRAPROTOCOL_MODULE_API Client : public QObject
 {
     Q_OBJECT
 

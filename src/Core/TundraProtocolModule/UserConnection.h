@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreTypes.h"
-#include "KristalliProtocolModuleApi.h"
+#include "TundraProtocolModuleApi.h"
 #include "TundraProtocolModuleFwd.h"
 
 #include <kNet/SharedPtr.h>
@@ -17,7 +17,7 @@
 class Entity;
 
 /// Represents a client conncetion on the server side.
-class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
+class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
 {
     Q_OBJECT
     
