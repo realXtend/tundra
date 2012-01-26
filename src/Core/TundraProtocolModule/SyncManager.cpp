@@ -760,8 +760,8 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         else
             scaleSendType = 0;
 
-        const float3 &linearVel = rigidBody->linearVelocity.Get();
-        const float3 angVel = DegToRad(rigidBody->angularVelocity.Get());
+        const float3 &linearVel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
+        const float3 angVel = rigidBody ? DegToRad(rigidBody->angularVelocity.Get()) : float3::zero;
 
         velSendType = velocityDirty ? (linearVel.LengthSq() >= 64.f ? 2 : 1) : 0;
         angVelSendType = angularVelocityDirty ? 1 : 0;
