@@ -6,6 +6,7 @@
 #include "TundraProtocolModuleApi.h"
 #include "TundraProtocolModuleFwd.h"
 #include "AssetFwd.h"
+#include "Math/float3.h"
 
 namespace TundraLogic
 {
@@ -39,20 +40,6 @@ public:
     const boost::shared_ptr<Server>& GetServer() const { return server_; }
 
 public slots:
-    /// Starts the server.
-    /** @param port Port.
-        @param protocol Protocol, udp or tcp. */
-    void StartServer(int port, const QString &protocol);
-
-    /// Stops the server.
-    void StopServer();
-
-    /// Connects to server.
-    void Connect(QString address, int port, QString protocol, QString username, QString password);
-
-    /// Disconnects from server.
-    void Disconnect();
-
     /// Saves scene to an XML file
     /// @param asBinary If true, saves as .tbin. Otherwise saves as .txml.
     void SaveScene(QString filename, bool asBinary = false, bool saveTemporaryEntities = false, bool saveLocalEntities = true);
@@ -64,8 +51,8 @@ public slots:
     void ImportScene(QString filename, bool clearScene = true, bool replace = true);
 
     /// Imports one mesh as a new entity.
-    void ImportMesh(QString filename, float tx = 0.f, float ty = 0.f, float tz = 0.f, float rx = 0.f, float ry = 0.f,
-        float rz = 0.f, float sx = 1.f, float sy = 1.f, float sz = 1.f, bool inspectForMaterialsAndSkeleton = true);
+    void ImportMesh(QString filename, const float3 &pos = float3(0.f,0.f,0.f), const float3 &rot = float3(0.f,0.f,0.f),
+        const float3 &scale = float3(1.f,1.f,1.f), bool inspectForMaterialsAndSkeleton = true);
 
 private slots:
     void StartupSceneLoaded(AssetPtr asset);

@@ -116,7 +116,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     
     if (!scene)
     {
-        LogError("Null scene, cannot replicate");
+        LogError("SyncManager::RegisterToScene: Null scene, cannot replicate");
         return;
     }
     

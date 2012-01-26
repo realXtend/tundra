@@ -157,19 +157,19 @@ void TundraLogicModule::Initialize()
 
     framework_->Console()->RegisterCommand("startserver",
         "Starts a server. Usage: startserver(port,protocol)",
-        this, SLOT(StartServer(int,const QString &)));
+        server_.get(), SLOT(Start(unsigned short,QString)));
 
     framework_->Console()->RegisterCommand("stopserver",
         "Stops the server",
-        this, SLOT(StopServer()));
+        server_.get(), SLOT(Stop()));
 
     framework_->Console()->RegisterCommand("connect",
-        "Connects to a server. Usage: connect(address,port,protocol,username,password)",
-        this, SLOT(Connect(QString,int,QString,QString,QString)));
+        "Connects to a server. Usage: connect(address,port,username,password,protocol)",
+        client_.get(), SLOT(Login(const QString &, unsigned short, const QString &, const QString&, const QString &)));
 
     framework_->Console()->RegisterCommand("disconnect",
         "Disconnects from a server.",
-        this, SLOT(Disconnect()));
+        client_.get(), SLOT(Logout()));
 
     framework_->Console()->RegisterCommand("savescene",
         "Saves scene into XML or binary. Usage: savescene(filename,asBinary=false,saveTemporaryEntities=false,saveLocalEntities=true)",
@@ -185,9 +185,9 @@ void TundraLogicModule::Initialize()
         this, SLOT(ImportScene(QString, bool, bool)));
 
     framework_->Console()->RegisterCommand("importmesh",
-        "Imports a single mesh as a new entity. Position can be specified optionally."
-        "Usage: importmesh(filename,x=0,y=0,z=0,xrot=0,yrot=0,zrot=0,xscale=1,yscale=1,zscale=1,inspectForMaterialsAndSkeleton=true)",
-        this, SLOT(ImportMesh(QString, float, float, float, float, float, float, float, float, float, bool)));
+        "Imports a single mesh as a new entity. Position, rotation, and scale can be specified optionally."
+        "Usage: importmesh(filename, pos = 0 0 0, rot = 0 0 0, scale = 1 1 1, inspectForMaterialsAndSkeleton=true)",
+        this, SLOT(ImportMesh(QString, const float3 &, const float3 &, const float3 &, bool)));
 
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModule<KristalliProtocolModule>();
@@ -288,7 +288,8 @@ void TundraLogicModule::Update(f64 frametime)
         {
             QStringList params = framework_->CommandLineParameters("--connect").first().split(';');
             if (params.size() >= 4)
-                Connect(params[0], params[1].toInt(), params[2], params[3], params.size() >= 5 ? params[4] : "");
+                client_->Login(/*addr*/params[0], /*port*/params[1].toInt(), /*username*/params[3],
+                    /*optional passwd*/ params.size() >= 5 ? params[4] : "", /*protocol*/params[2]);
             else
                 LogError("Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
         }
@@ -387,26 +388,6 @@ void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QSt
     LogError("Failed to load startup scene from " + transfer->SourceUrl() + " reason: " + reason);
 }
 
-void TundraLogicModule::StartServer(int port, const QString &protocol)
-{
-    server_->Start(port, protocol);
-}
-
-void TundraLogicModule::StopServer()
-{
-    server_->Stop();
-}
-
-void TundraLogicModule::Connect(QString address, int port, QString protocol, QString username, QString password)
-{
-    client_->Login(address, port, username, password, protocol);
-}
-
-void TundraLogicModule::Disconnect()
-{
-    client_->Logout();
-}
-
 void TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemporaryEntities, bool saveLocalEntities)
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
@@ -483,7 +464,7 @@ void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
     LogInfo("TundraLogicModule::ImportScene: Imported " + QString::number(entities.size()) + " entities.");
 }
 
-void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float tz, float rx, float ry, float rz, float sx, float sy, float sz, bool inspect)
+void TundraLogicModule::ImportMesh(QString filename, const float3 &pos, const float3 &rot, const float3 &scale, bool inspect)
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
@@ -501,8 +482,9 @@ void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float t
     QString path = QFileInfo(filename).dir().path();
 
     SceneImporter importer(scene->shared_from_this());
-    EntityPtr entity = importer.ImportMesh(filename, path, Transform(float3(tx,ty,tz), float3(rx,ry,rz),
-        float3(sx,sy,sz)), "", "local://", AttributeChange::Default, inspect);
+    EntityPtr entity = importer.ImportMesh(filename, path, Transform(pos, rot, scale), "", "local://", AttributeChange::Default, inspect);
+    if (!entity)
+        LogError("TundraLogicModule::ImportMesh: import failed for " + filename + ".");
 }
 
 bool TundraLogicModule::IsServer() const
