@@ -10,7 +10,6 @@
 #include "LoggingFunctions.h"
 #include "CoreDefines.h"
 #include "ConfigAPI.h"
-#include "ConsoleAPI.h"
 #include "Profiler.h"
 
 #include <boost/make_shared.hpp>
