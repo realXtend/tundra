@@ -182,6 +182,10 @@ struct RigidBodyInterpolationState
     RigidBodyState interpEnd;
     float interpTime;
 
+    // If true, we are using linear inter/extrapolation to move the entity.
+    // If false, we have handed off this entity for physics to extrapolate.
+    bool interpolatorActive;
+
     /// Remembers the packet id of the most recently received network sync packet. Used to enforce
     /// proper ordering (generate latest-data-guarantee messaging) for the received movement packets.
     kNet::packet_id_t lastReceivedPacketCounter;

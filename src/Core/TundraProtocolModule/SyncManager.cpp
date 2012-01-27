@@ -526,6 +526,12 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
         boost::shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
 
         RigidBodyInterpolationState &r = iter->second;
+        if (!r.interpolatorActive)
+        {
+            ++iter;
+            continue;
+        }
+
         const float interpPeriod = updatePeriod_; // Time in seconds how long interpolating the Hermite spline from [0,1] should take.
 
         // Test: Uncomment to only interpolate.
@@ -551,7 +557,7 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
         // One fixed update interval: interpolate
         // Four subsequent update intervals: linear extrapolation
         // All subsequente update intervals: local physics extrapolation.
-        const float maxLinExtrapTime = 5.f; // For one second of extrapolation set to 1.f / interpPeriod;
+        const float maxLinExtrapTime = 15.f; // For one second of extrapolation set to 1.f / interpPeriod;
         if (r.interpTime >= maxLinExtrapTime) // Hand-off to client-side physics?
         {
             if (rigidBody)
@@ -564,8 +570,12 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
                 // Give starting parameters for the simulation.
                 rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
                 rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
+                r.interpolatorActive = false;
             }
-            iter = state->entityInterpolations.erase(iter); // Finished interpolation.
+            ++iter;
+            // Could remove the interpolation structure here, as inter/extrapolation it is no longer active. However, it is currently
+            // used to store most recently received entity position  & velocity data.
+            //iter = state->entityInterpolations.erase(iter); // Finished interpolation.
         }
         else // Interpolation or linear extrapolation.
         {
@@ -888,14 +898,19 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
         boost::shared_ptr<EC_RigidBody> rigidBody = e ? e->GetComponent<EC_RigidBody>() : boost::shared_ptr<EC_RigidBody>();
         Transform t = e ? placeable->transform.Get() : Transform();
 
+        float3 newLinearVel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
+
+        // If the server omitted linear velocity, interpolate towards the last received linear velocity.
+        std::map<entity_id_t, RigidBodyInterpolationState>::iterator iter = e ? server_syncstate_.entityInterpolations.find(entityID) : server_syncstate_.entityInterpolations.end();
+        if (iter != server_syncstate_.entityInterpolations.end())
+            newLinearVel = iter->second.interpEnd.vel;
+
         int posSendType;
         int rotSendType;
         int scaleSendType;
         int velSendType;
         int angVelSendType;
         dd.ReadArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2);
-
-        float3 newLinearVel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
 
         if (posSendType == 1)
         {
@@ -961,7 +976,7 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
         if (angVelSendType == 1)
         {
             // Read the quantized float manually, without a call to ReadQuantizedFloat, to be able to compare the quantized bit pattern.
-	        u32 quantizedAngle = dd.ReadBits(10);
+            u32 quantizedAngle = dd.ReadBits(10);
             if (quantizedAngle != 0)
             {
                 float angle = quantizedAngle * 3.141592654f / (float)((1 << 10) - 1);
@@ -1013,6 +1028,7 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
                     if (angVelSendType != 0)
                         interp.interpEnd.angVel = newAngVel;
                     interp.interpTime = 0.f;
+                    interp.interpolatorActive = true;
                 }
                 else
                 {
@@ -1029,8 +1045,9 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
                     interp.interpEnd.angVel = newAngVel;
                     interp.interpTime = 0.f;
                     interp.lastReceivedPacketCounter = packetId;
+                    interp.interpolatorActive = true;
                     server_syncstate_.entityInterpolations[entityID] = interp;
-                }                
+                }
             }
         }
     }
