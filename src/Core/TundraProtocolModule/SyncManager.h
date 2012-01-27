@@ -2,30 +2,18 @@
 
 #pragma once
 
-#include "IComponent.h"
-#include "Entity.h"
+#include "TundraProtocolModuleFwd.h"
 #include "SyncState.h"
+#include "SceneFwd.h"
+#include "AttributeChangeType.h"
+#include "EntityAction.h"
 
 #include <QObject>
-#include <map>
-#include <set>
 
-struct MsgEntityAction;
-
-namespace kNet
-{
-    class MessageConnection;
-    typedef unsigned long message_id_t;
-}
-
-class UserConnection;
 class Framework;
 
 namespace TundraLogic
 {
-
-class TundraLogicModule;
-
 /// Performs synchronization of the changes in a scene between the server and the client.
 class SyncManager : public QObject
 {

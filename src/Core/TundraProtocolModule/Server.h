@@ -4,27 +4,11 @@
 
 #include "CoreDefines.h"
 #include "CoreTypes.h"
-#include "TundraLogicModuleApi.h"
-#include "UserConnectedResponseData.h"
-
-#include <kNet.h>
+#include "TundraProtocolModuleApi.h"
+#include "TundraProtocolModuleFwd.h"
 
 #include <QObject>
 #include <QVariant>
-
-struct MsgLogin;
-class MessageConnection;
-
-typedef unsigned long message_id_t;
-
-namespace KristalliProtocol
-{
-    class KristalliProtocolModule;
-}
-
-class UserConnection;
-typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
-typedef std::list<UserConnectionPtr> UserConnectionList;
 
 class QScriptEngine;
 
@@ -32,10 +16,8 @@ class Framework;
 
 namespace TundraLogic
 {
-class TundraLogicModule;
-
 /// Implements Tundra server functionality.
-class TUNDRALOGIC_MODULE_API Server : public QObject
+class TUNDRAPROTOCOL_MODULE_API Server : public QObject
 {
     Q_OBJECT
 
@@ -45,53 +27,32 @@ public:
 
     /// Perform any per-frame processing
     void Update(f64 frametime);
-    
-    /// Create server scene & start server
-    /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
-        @return True if successful, false otherwise. No scene will be created if starting the server fails. */
-    bool Start(unsigned short port, QString protocol = "");
-    
-    /// Stop server & delete server scene
-    void Stop();
-    
+
     /// Get matching userconnection from a messageconnection, or null if unknown
     UserConnection* GetUserConnection(kNet::MessageConnection* source) const;
-    
+
     /// Get all connected users
     UserConnectionList& GetUserConnections() const;
-    
+
     /// Get all authenticated users
     UserConnectionList GetAuthenticatedUsers() const;
-        
+
     /// Set current action sender. Called by SyncManager
     void SetActionSender(UserConnection* user);
-    
+
     /// Returns the backend server object. Use this object to Broadcast messages
     /// to all currently connected clients.
     kNet::NetworkServer *GetServer() const;
 
-signals:
-    /// A user is connecting. This is your chance to deny access.
-    /** Call user->Disconnect() to deny access and kick the user out */ 
-    void UserAboutToConnect(int connectionID, UserConnection* connection);
-     
-    /// A user has connected (and authenticated)
-    /** @param responseData The handler of this signal can add his own application-specific data to this structure. This data is sent to the
-        client and the applications on the client computer can read them as needed. */
-    void UserConnected(int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
-    
-    void MessageReceived(UserConnection *connection, kNet::message_id_t id, const char* data, size_t numBytes);
-
-    /// A user has disconnected
-    void UserDisconnected(int connectionID, UserConnection* connection);
-    
-    /// The server has been started
-    void ServerStarted();
-    
-    /// The server has been stopped
-    void ServerStopped();
-    
 public slots:
+    /// Create server scene & start server
+    /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
+        @return True if successful, false otherwise. No scene will be created if starting the server fails. */
+    bool Start(unsigned short port, QString protocol = "");
+
+    /// Stop server & delete server scene
+    void Stop();
+
     /// Get whether server is running
     bool IsRunning() const;
 
@@ -118,7 +79,28 @@ public slots:
     
     /// Initialize server datatypes for a script engine
     void OnScriptEngineCreated(QScriptEngine* engine);
+
+signals:
+    /// A user is connecting. This is your chance to deny access.
+    /** Call user->Disconnect() to deny access and kick the user out */ 
+    void UserAboutToConnect(int connectionID, UserConnection* connection);
+     
+    /// A user has connected (and authenticated)
+    /** @param responseData The handler of this signal can add his own application-specific data to this structure. This data is sent to the
+        client and the applications on the client computer can read them as needed. */
+    void UserConnected(int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
     
+    void MessageReceived(UserConnection *connection, kNet::message_id_t id, const char* data, size_t numBytes);
+
+    /// A user has disconnected
+    void UserDisconnected(int connectionID, UserConnection* connection);
+    
+    /// The server has been started
+    void ServerStarted();
+    
+    /// The server has been stopped
+    void ServerStopped();
+
 private slots:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
