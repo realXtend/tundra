@@ -155,25 +155,20 @@ void TundraLogicModule::Initialize()
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
 
-    framework_->Console()->RegisterCommand("startserver",
-        "Starts a server. Usage: startserver(port,protocol)",
+    framework_->Console()->RegisterCommand("startserver", "Starts a server. Usage: startserver(port,protocol)",
         server_.get(), SLOT(Start(unsigned short,QString)));
 
-    framework_->Console()->RegisterCommand("stopserver",
-        "Stops the server",
-        server_.get(), SLOT(Stop()));
+    framework_->Console()->RegisterCommand("stopserver", "Stops the server", server_.get(), SLOT(Stop()));
 
     framework_->Console()->RegisterCommand("connect",
         "Connects to a server. Usage: connect(address,port,username,password,protocol)",
         client_.get(), SLOT(Login(const QString &, unsigned short, const QString &, const QString&, const QString &)));
 
-    framework_->Console()->RegisterCommand("disconnect",
-        "Disconnects from a server.",
-        client_.get(), SLOT(Logout()));
+    framework_->Console()->RegisterCommand("disconnect", "Disconnects from a server.", client_.get(), SLOT(Logout()));
 
     framework_->Console()->RegisterCommand("savescene",
         "Saves scene into XML or binary. Usage: savescene(filename,asBinary=false,saveTemporaryEntities=false,saveLocalEntities=true)",
-        this, SLOT(SaveScene(QString, bool, bool, bool)));
+        this, SLOT(SaveScene(QString, bool, bool, bool)), SLOT(SaveScene(QString)));
 
     framework_->Console()->RegisterCommand("loadscene",
         "Loads scene from XML or binary. Usage: loadscene(filename,clearScene=true,useEntityIDsFromFile=true)",
@@ -182,12 +177,12 @@ void TundraLogicModule::Initialize()
     framework_->Console()->RegisterCommand("importscene",
         "Loads scene from a dotscene file. Optionally clears the existing scene."
         "Replace-mode can be optionally disabled. Usage: importscene(filename,clearScene=false,replace=true)",
-        this, SLOT(ImportScene(QString, bool, bool)));
+        this, SLOT(ImportScene(QString, bool, bool)), SLOT(ImportScene(QString)));
 
     framework_->Console()->RegisterCommand("importmesh",
         "Imports a single mesh as a new entity. Position, rotation, and scale can be specified optionally."
         "Usage: importmesh(filename, pos = 0 0 0, rot = 0 0 0, scale = 1 1 1, inspectForMaterialsAndSkeleton=true)",
-        this, SLOT(ImportMesh(QString, const float3 &, const float3 &, const float3 &, bool)));
+        this, SLOT(ImportMesh(QString, const float3 &, const float3 &, const float3 &, bool)), SLOT(ImportMesh(QString)));
 
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModule<KristalliProtocolModule>();
@@ -208,14 +203,14 @@ void TundraLogicModule::Initialize()
         if (portParam.size() > 0)
         {
             bool ok;
-            int port = portParam.first().toInt(&ok);
+            unsigned short port = portParam.first().toUShort(&ok);
             if (ok)
             {
                 autoStartServerPort_ = port;
             }
             else
             {
-                LogError("--port parameter is not a valid integer.");
+                LogError("--port parameter is not a valid unsigned short.");
                 GetFramework()->Exit();
             }
         }

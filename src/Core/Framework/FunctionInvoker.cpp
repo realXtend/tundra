@@ -129,6 +129,19 @@ QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, c
     return args;
 }
 
+int FunctionInvoker::NumArgsForFunction(const QObject *obj, const QString &signature)
+{
+    QByteArray normalizedSignature = QMetaObject::normalizedSignature(signature.toStdString().c_str());
+    const QMetaObject *mo = obj->metaObject();
+    for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+    {
+        const QMetaMethod &mm = mo->method(i);
+        if (normalizedSignature == QByteArray(mm.signature()))
+            return mm.parameterTypes().size();
+    }
+    return -1;
+}
+
 IArgumentType *FunctionInvoker::CreateArgumentType(const QString &type)
 {
     IArgumentType *arg = 0;

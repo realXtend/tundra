@@ -70,7 +70,7 @@ private:
     boost::shared_ptr<Server> server_; ///< Server
     KristalliProtocolModule *kristalliModule_; ///< KristalliProtocolModule pointer
     bool autoStartServer_; ///< Whether to autostart the server
-    short autoStartServerPort_; ///< Autostart server port
+    unsigned short autoStartServerPort_; ///< Autostart server port
 };
 
 }
