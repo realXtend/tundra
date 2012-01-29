@@ -47,9 +47,6 @@
     - [trivial] Implement per user mute (send state to server so it wont send us the voice traffic for nothing)
     - [trivial] Implement text messages to and from the server. Expose to 3rd party code.
     - [trivial] Implement auto reconnect on disconnects. Optional and should be exposed to 3rd party code.
-    - [trivial] Implement own "avatar" positions tracking. Setting float3 constantly from a script will be too slow.
-      Use active EC_SoundListener automatically as there can only be one, this will suit most use cases.
-      Still leave a option to set position from 3rd party code directly if someone wants to do some custom stuff.
     - [trivial] Add signals to MumbleChannel and MumbleUser classes that are exposed to 3rd party code. 
       eg. MumbleChannel: UserJoined(id/name), UserLeft(id/name), MumbleUser: mute/selfmute and deaf/selfdeaf state changes etc.
     - [trivial] Remove debug prints and debug console command slots that were used for initial development.
@@ -141,7 +138,25 @@ public slots:
     MumbleNetwork::NetworkMode NetworkMode();
 
     /// Set if output audio is sent to the server.
+    /// False sends voice from microphone to the server, true mutes sending audio.
     void SetOutputAudioMuted(bool outputAudioMuted);
+
+    /// Set if server should loop back your audio back to us. Not local playback, will take bandwidth.
+    /// True sends your voice back to from the server and other connected clients cannot hear you,
+    /// false sends audio normally and other clients will hear you.
+    /// Useful for voice modes where you want to verify your microphone levels and or
+    /// that networking to server works as expected.
+    /// @note Default after connected is false.
+    void SetOutputAudioLoopBack(bool loopBack);
+
+    /// Set if our voice is positional. True sends active EC_SoundListener Entitys EC_Placeable position
+    /// to the server, this information gets relayed to other clients for positional audio playback.
+    /// False does not send position to the server hence making audio non positional.
+    /// @note When setting true make sure correct EC_SoundListener is active to have expected audio
+    /// playback experience in other clients. If no active EC_SoundListener is be found from the scene, 
+    /// sending positional audio is disabled automatically.
+    /// @note Set value is remembered between multiple connections but forgotten on module unload.
+    void SetOutputAudioPositional(bool positional);
 
     /// Set if input audio is received from server. Calling this function with true
     /// will make us not send or receive audio. This is how the mumble protocol operates,
@@ -210,6 +225,8 @@ private slots:
 
     // Registers the QObject and other types from this plugin to created script engines.
     void OnScriptEngineCreated(QScriptEngine *engine);
+
+    void UpdatePositionalInfo(MumbleNetwork::VoicePacketInfo &packetInfo);
 
     // Console command debugging
     void DebugConnect()     { Connect("127.0.0.1", 64738, "Debug" + QUuid::createUuid().toString(), "debug", "Root", false, false); }

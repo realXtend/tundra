@@ -47,11 +47,8 @@ public slots:
     // Send UDP message with data and length. Encrypts the input data before sending.
     void SendUDP(const char *data, int length);
 
-    // Sends UDP voice packets after processing audio frames.
-    void SendVoicePacket(QList<QByteArray> &encodedFrames);
-
     // Sends UDP voice packets after processing audio frames and position.
-    void SendVoicePacket(QList<QByteArray> &encodedFrames, const float3 &pos);
+    void SendVoicePacket(MumbleNetwork::VoicePacketInfo &packetInfo);
 
     // Send TCP and UDP ping.
     void SendPing();

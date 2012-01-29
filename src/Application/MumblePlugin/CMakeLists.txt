@@ -104,6 +104,7 @@ use_app_modules (JavascriptModule)
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${PROTOBUF_CPP_FILES} ${PROTOBUF_H_FILES})
 
 link_modules (Framework Math Scene Audio Console OgreRenderingModule TundraProtocolModule JavascriptModule)
+link_entity_components (EC_Sound)
 
 link_package (CELT)
 link_package (PROTOBUF)

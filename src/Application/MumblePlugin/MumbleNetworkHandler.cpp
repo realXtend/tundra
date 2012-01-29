@@ -313,7 +313,7 @@ void MumbleNetworkHandler::OnUDPSocketRead()
         // Process data
         Mumble::PacketDataStream stream(buffer + 1, buflen - 5);
         UDPMessageType messageType = static_cast<UDPMessageType>((buffer[0] >> 5) & 0x7);
-        unsigned int messageFlags = buffer[0] & 0x1f;
+        //unsigned int messageFlags = buffer[0] & 0x1f;
 
         switch (messageType) 
         {
@@ -438,46 +438,26 @@ void MumbleNetworkHandler::SendUDP(const char *data, int length)
     udp->writeDatagram(reinterpret_cast<const char *>(crypto), length + 4, udpInfo.host, udpInfo.port);
 }
 
-void MumbleNetworkHandler::SendVoicePacket(QList<QByteArray> &encodedFrames)
+void MumbleNetworkHandler::SendVoicePacket(VoicePacketInfo &packetInfo)
 {
     int messageFlags = 0;
-    // messageFlags = 0x1f; // Server loopback (sends own data back via loopback? test)
+    if (packetInfo.isLoopBack)
+        messageFlags = 0x1f;
     messageFlags |= (UDPMessageType::UDPVoiceCELTAlpha << 5);
 
     char data[1024];
     data[0] = static_cast<unsigned char>(messageFlags);
 
     Mumble::PacketDataStream stream(data + 1, 1023);
-    PrepareVoicePacket(encodedFrames, stream);
+    PrepareVoicePacket(packetInfo.encodedFrames, stream);
 
-    NetworkMode localNetworkMode = MumbleTCPMode;
+    if (packetInfo.isPositional)
     {
-        QMutexLocker modeLock(&mutexNetworkMode);
-        localNetworkMode = networkMode;
+        // Tundra to Mumble coordinate conversion
+        stream << packetInfo.pos.y;
+        stream << packetInfo.pos.z;
+        stream << -packetInfo.pos.x;
     }
-    if (localNetworkMode == MumbleUDPMode)
-        SendUDP(data, stream.size() + 1);
-    else
-        SendTCP(UDPTunnel, data, stream.size() + 1);
-
-}
-
-void MumbleNetworkHandler::SendVoicePacket(QList<QByteArray> &encodedFrames, const float3 &pos)
-{
-    int messageFlags = 0;
-    // messageFlags = 0x1f; // Server loopback (sends own data back via loopback? test)
-    messageFlags |= (UDPMessageType::UDPVoiceCELTAlpha << 5);
-
-    char data[1024];
-    data[0] = static_cast<unsigned char>(messageFlags);
-
-    Mumble::PacketDataStream stream(data + 1, 1023);
-    PrepareVoicePacket(encodedFrames, stream);
-
-    // Tundra to Mumble coordinate conversion
-    stream << pos.y;
-    stream << pos.z;
-    stream << -pos.x;
 
     NetworkMode localNetworkMode = MumbleTCPMode;
     {

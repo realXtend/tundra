@@ -4,8 +4,10 @@
 
 #include "MumbleFwd.h"
 #include "CoreTypes.h"
+#include "Math/float3.h"
 #include "google/protobuf/message.h"
 
+#include <QString>
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
@@ -161,6 +163,23 @@ namespace MumbleNetwork
     {
         return QString::fromUtf8(str.data(), static_cast<int>(str.length()));
     }
+
+    struct VoicePacketInfo
+    {
+        VoicePacketInfo(QList<QByteArray> encodedFrames_) 
+        {
+            isLoopBack = false;
+            isPositional = false;
+            encodedFrames = encodedFrames_;
+            pos = float3::zero;
+        }
+
+        bool isLoopBack;
+        bool isPositional;
+        float3 pos;
+
+        QList<QByteArray> encodedFrames;
+    };
 
     struct TCPInfo
     {

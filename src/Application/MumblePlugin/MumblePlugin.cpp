@@ -15,6 +15,12 @@
 #include "ConsoleAPI.h"
 #include "LoggingFunctions.h"
 
+#include "IRenderer.h"
+#include "Scene.h"
+#include "Entity.h"
+#include "EC_Placeable.h"
+#include "EC_SoundListener.h"
+
 #include "JavascriptModule.h"
 #include "MumbleScriptTypeDefines.h"
 
@@ -81,24 +87,22 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
         // Output audio
         if (!state.outputAudioMuted)
         {
-            QList<QByteArray> encodedFrames = audio_->ProcessOutputAudio();
-            if (!encodedFrames.isEmpty())
+            VoicePacketInfo packetInfo(audio_->ProcessOutputAudio());
+            if (!packetInfo.encodedFrames.isEmpty())
             {
-                MumbleUser *me = User(state.sessionId);
-                if (me)
+                if (network_)
                 {
-                    if (network_)
+                    packetInfo.isLoopBack = state.outputAudioLoopBack;
+                    if (state.outputPositional)
                     {
-                        if (me->isPositional)
-                            network_->SendVoicePacket(encodedFrames, me->pos);
-                        else
-                            network_->SendVoicePacket(encodedFrames);
+                        // Sets packetInfo.isPositional false if no active EC_SoundListener is found.
+                        // If found updates packetInfo and our MumbleUser position.
+                        UpdatePositionalInfo(packetInfo); 
                     }
-                    else
-                        LogError(LC + "Network ptr is null while sending out voice data!");
+                    network_->SendVoicePacket(packetInfo);
                 }
                 else
-                    LogError(LC + "Could not find own user ptr while sending out voice data!");
+                    LogError(LC + "Network ptr is null while sending out voice data!");
             }
         }
         else
@@ -337,6 +341,16 @@ void MumblePlugin::SetOutputAudioMuted(bool outputAudioMuted)
     }
 
     state.outputAudioMuted = outputAudioMuted;
+}
+
+void MumblePlugin::SetOutputAudioLoopBack(bool loopBack)
+{
+    state.outputAudioLoopBack = loopBack;
+}
+
+void MumblePlugin::SetOutputAudioPositional(bool positional)
+{
+    state.outputPositional = positional;
 }
 
 void MumblePlugin::SetInputAudioMuted(bool inputAudioMuted)
@@ -655,6 +669,53 @@ void MumblePlugin::OnServerSynced(uint sessionId)
 void MumblePlugin::OnScriptEngineCreated(QScriptEngine *engine)
 {
     RegisterMumblePluginMetaTypes(engine);
+}
+
+void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
+{
+    packetInfo.isPositional = false;
+
+    if (!state.serverSynced)
+        return;
+
+    MumbleUser *me = User(state.sessionId);
+    if (!me)
+    {
+        LogError(LC + "Cannot update own MumbleUser positional information, ptr is null!");
+        return;
+    }
+    me->isPositional = false;
+
+    if (!framework_ || !framework_->Renderer())
+        return;
+    Scene *scene = framework_->Renderer()->MainCameraScene();
+    if (!scene)
+        return;
+
+    Entity *activeListener = 0;
+    EntityList listenerEnts = scene->GetEntitiesWithComponent(EC_SoundListener::TypeNameStatic());
+    foreach(EntityPtr listenerEnt, listenerEnts)
+    {
+        EC_SoundListener *listener = listenerEnt->GetComponent<EC_SoundListener>().get();
+        if (listener && listener->ParentEntity() && listener->active.Get())
+        {
+            activeListener = listener->ParentEntity();
+            break;
+        }
+    }
+
+    if (activeListener)
+    {
+        EC_Placeable *placeable = activeListener->GetComponent<EC_Placeable>().get();
+        if (placeable)
+        {
+            float3 worldPos = placeable->WorldPosition();
+            me->pos = worldPos;
+            me->isPositional = true;
+            packetInfo.pos = worldPos;
+            packetInfo.isPositional = true;
+        }
+    }        
 }
 
 void MumblePlugin::DebugFrames( QString frames )

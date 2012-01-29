@@ -21,9 +21,20 @@ struct MumblePluginState
     ushort port;
 
     bool outputAudioMuted;
+    bool outputAudioLoopBack;
+    bool outputPositional;
     bool inputAudioMuted;
 
     QString fullChannelName;
+
+    MumblePluginState()
+    {
+        Reset();
+
+        // Certain values are only reset on module startup
+        // and kept to set values between multiple connections.
+        outputPositional = false;
+    }
 
     void Reset()
     {
@@ -36,6 +47,7 @@ struct MumblePluginState
         port = 0;
         outputAudioMuted = true;
         inputAudioMuted = true;
+        outputAudioLoopBack = false;
         fullChannelName = "";
     }
 
