@@ -6,11 +6,13 @@
 #include "MumbleFwd.h"
 #include "MumbleDefines.h"
 #include "MumbleNetwork.h"
+#include "AudioWizard.h"
 
 #include <QObject>
 #include <QSslSocket>
 #include <QTimer>
 #include <QScriptEngine>
+#include <QPointer>
 #include <QUuid> // todo remove when DebugConnect is removed
 
 /** I watched Naali and Tundra Mumble functionality being developed for a long time.
@@ -21,15 +23,16 @@
     by anyone but the realXtend Tundra devs and it had substantial amount of bugs that crashed our application
     constantly. 
     
-    For the MumblePlugin rewrite from scratch I've decided to link directly to Google Protobufs, Celt 
+    For the MumblePlugin rewrite from scratch I've decided to link directly to Google Protobufs, Celt, Speex 
     and OpenSSL to remove unwanted layers of complexity. The boost asio networking (from libmumbeclient)
     has been replaced with Qt networking. I also decided to not go and invent the wheel 
     again but read the Mumble client code to learn and in some cases reused their code as is. All source
     files from the Mumble repository https://github.com/mumble-voip/mumble have been modified in some way,
-    for example adding namespace to avoid collisions in Tundra and remove header file that are not present.
-    All Mumble source code is located in the mumble subfolder of this project and license notices have been 
-    preserved as per requested by the license. Anyone deploying Tundra with this module will also need to 
-    distribute the license with the binary.
+    for example adding namespace to avoid collisions in Tundra and remove header file includes that are not present
+    or remove whole classes or sections of code. All Mumble source code is located in the mumble subfolder 
+    of this project and license notices have been preserved as per requested by the license. 
+    Anyone deploying Tundra with this module will also need to distribute the license with the binary, you can find the
+    license from mumble/MumbleLicence.txt.
     
     Credit where credit is due: Thanks to pcgod for the original thin mumble client written with boost networking
     https://github.com/pcgod/libmumbleclient and the folks at mumble project https://github.com/mumble-voip/mumble.
@@ -38,23 +41,28 @@
     Main features:
     - SSL TCP for tunneled input and output voice traffic and general protocol messages.
     - Encrypted UDP for input and output voice traffic.
-    - Network mode auto detection and on the fly change from TCP UDP and from UDP to TCP. This switch is done
-      if UDP latencies get too high or ping stops responding. On the fly auto switch to TCP network mode mosty times not even audible to end user.
+    - Network mode auto detection and on the fly change from TCP to UDP and from UDP to TCP. This switch is done
+      if UDP latencies get too high or ping stops responding. On the fly auto switch to TCP network mode should not be audible to the user.
     - Celt codec that is tested to work against >=1.2.3 Murmur and native Mumble clients.
       Essentially meaning native Mumble clients can also join the channels and everyone should hear each other.
+    - Voice activity detection, mic noise suppression and mic volume amplification. Provides ready made audio wizard for easy configuration.
+      VAD is self written (techniques studied from native mumble client), other audio processing uses speexdsp library.
 
     @todo list of not implemented features:
     - [trivial] Implement per user mute (send state to server so it wont send us the voice traffic for nothing)
     - [trivial] Implement text messages to and from the server. Expose to 3rd party code.
     - [trivial] Implement auto reconnect on disconnects. Optional and should be exposed to 3rd party code.
+    - [trivial] Implement reading position from input audio and actually provide position to AudioAPI/SoundChannel.
     - [trivial] Add signals to MumbleChannel and MumbleUser classes that are exposed to 3rd party code. 
       eg. MumbleChannel: UserJoined(id/name), UserLeft(id/name), MumbleUser: mute/selfmute and deaf/selfdeaf state changes etc.
+    - [trivial] Add per user voice activity detection, essentially signal when state changes Speaking(userid, bool)
+    - [trivial] Add global positional audio setting into audio wizard. This should be for the user to decide, 
+      affects both sending own position and other client voice playback with position. Should however default to true as we are a 3D world client.
     - [trivial] Remove debug prints and debug console command slots that were used for initial development.
-    - [medium] Implement audio quality and frames per packet exposing to 3rd party code.
+    - [trivial] Make sure audio wizard will pop to front if already visible but RunAudioWizard() is called again. As the widget automatically
+      enabled server loopback mode, its very bad if it gets lost under other windows without user realizing it.
     - [medium] Make new javascript example scene and script that uses the new MumblePlugin API to implement a nice client.
-      Verify MumbleScriptTypeDefines.h exposes everything correctly to javascript with this example script!
-    - [potentially hard] Research and implement the ones that are sensible: microphone audio voice level detection, 
-      echo cancellation and noise deduction. For this study the speex processing parts of the native Mumble client. 
+      Verify MumbleScriptTypeDefines.h exposes everything correctly to javascript with this example script! Fine tune signals for easy scripting.
 */
 class MumblePlugin : public IModule
 {
@@ -73,9 +81,6 @@ public:
 
     /// IModule override.
     void Uninitialize();
-
-    /// IModule override.
-    void Update(f64 frametime);
 
 protected:
     // QObject override.
@@ -128,6 +133,13 @@ public slots:
     /// @return Null ptr if could not be found, otherwise valid user ptr.
     MumbleUser* User(uint userId);
 
+    /// Get own MumbleUser ptr.
+    /// @note This will return null until client session id has been resolved,
+    /// meaning even after Connected is fired this can and will return null for a short while
+    /// until all channels and users have been synced to us.
+    /// @see Signal MeCreated().
+    MumbleUser* Me();
+
     /// Current connection state.
     /// @see Signals Connected, Disconnected, StateChange.
     MumbleNetwork::ConnectionState State();
@@ -164,6 +176,11 @@ public slots:
     /// @note If you are not receiving audio, you cannot send audio!
     /// @see SetOutputAudioMuted.
     void SetInputAudioMuted(bool inputAudioMuted);
+
+    /// Shows a audio wizard widget that lets user tweak voice settings for bitrate quality, 
+    /// noise suppression, mic amplification, transmit mode and voice activity detection.
+    /// @note Automatically stores settings to local user profile.
+    void RunAudioWizard();
 
 signals:
     /// Murmur server connection has been established, authenticated and both TCP and UDP streams are ready.
@@ -208,6 +225,14 @@ signals:
     /// User information updated.
     void UserUpdated(MumbleUser *user);
 
+    /// Own MumbleUser was created. Fired when all channels and users have
+    /// been synced to us and we have a valid client session id.
+    void MeCreated(MumbleUser *me);
+
+    /// Own MumbleUser joined a channel. Provided for easier 
+    /// hooking up to the channel signals.
+    void MeJoinedChannel(MumbleChannel *channel);
+
 private slots:
     void OnConnected(QString address, int port, QString username);
     void OnDisconnected(QString reason);
@@ -220,6 +245,8 @@ private slots:
     void OnUserUpdate(uint id, uint channelId, QString name, QString comment, QString hash, bool selfMuted, bool selfDeaf, bool isMe);
     void OnUserLeft(uint id, uint actorId, bool banned, bool kicked, QString reason);
 
+    void OnAudioSettingChanged(MumbleAudio::AudioSettings settings, bool saveConfig);
+
     // When server send synced message we have all server channels and users.
     void OnServerSynced(uint sessionId);
 
@@ -228,13 +255,15 @@ private slots:
 
     void UpdatePositionalInfo(MumbleNetwork::VoicePacketInfo &packetInfo);
 
+    MumbleAudio::AudioSettings LoadSettings();
+    void SaveSettings(MumbleAudio::AudioSettings settings);
+
     // Console command debugging
     void DebugConnect()     { Connect("127.0.0.1", 64738, "Debug" + QUuid::createUuid().toString(), "debug", "Root", false, false); }
     void DebugMute()        { SetOutputAudioMuted(true); }
     void DebugUnMute()      { SetOutputAudioMuted(false); }
     void DebugDeaf()        { SetInputAudioMuted(true); }
     void DebugUnDeaf()      { SetInputAudioMuted(false); }
-    void DebugFrames(QString frames);
 
 private:
     MumbleNetworkHandler *network_;
@@ -244,6 +273,8 @@ private:
     QList<MumbleUser*> pendingUsers_;
     
     MumblePluginState state;
+
+    QPointer<MumbleAudio::AudioWizard> audioWizard;
 
     int qobjTimerId_;
 

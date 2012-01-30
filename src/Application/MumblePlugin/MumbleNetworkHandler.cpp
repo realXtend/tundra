@@ -53,7 +53,7 @@ void MumbleNetworkHandler::run()
     pingTimer_->start(5000);
     connect(pingTimer_, SIGNAL(timeout()), SLOT(SendPing()));
 
-    int qobjTimerId = startTimer(1);
+    int qobjTimerId = startTimer(10);
 
     exec(); // Blocks untill quit()
 
@@ -621,7 +621,7 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
                     QMutexLocker modeLock(&mutexNetworkMode);
                     networkMode = MumbleNetwork::MumbleUDPMode;
                 }
-                emit NetworkModeChange(networkMode, "UDP packets can be sent to and received from the server. Switching back to UDP mode.");
+                emit NetworkModeChange(networkMode, "UDP packets can be sent to and received from the server. Switching to UDP mode.");
             }
             break;
         }

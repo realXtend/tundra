@@ -10,9 +10,11 @@
 #include "Mumble.pb.h"
 
 #include "Framework.h"
+#include "Profiler.h"
 #include "Application.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
+#include "ConfigAPI.h"
 #include "LoggingFunctions.h"
 
 #include "IRenderer.h"
@@ -52,7 +54,9 @@ void MumblePlugin::Initialize()
     else
         LogWarning(LC + "JavascriptModule not present, MumblePlugin usage from scripts will be limited!");
 
-    qobjTimerId_ = startTimer(1);
+    framework_->RegisterDynamicObject("mumble", this);
+
+    qobjTimerId_ = startTimer(15);
 
     /// @todo Remove everything below, was used for early development
     framework_->Console()->RegisterCommand("mumbleconnect", "", this, SLOT(DebugConnect()));
@@ -62,7 +66,7 @@ void MumblePlugin::Initialize()
     framework_->Console()->RegisterCommand("mumbleunmute", "", this, SLOT(DebugUnMute()));
     framework_->Console()->RegisterCommand("mumbledeaf", "", this, SLOT(DebugDeaf()));
     framework_->Console()->RegisterCommand("mumbleundeaf", "", this, SLOT(DebugUnDeaf()));
-    framework_->Console()->RegisterCommand("mumbleframes", "", this, SLOT(DebugFrames(QString)));
+    framework_->Console()->RegisterCommand("mumblewizard", "", this, SLOT(RunAudioWizard()));
     DebugConnect(); 
 }
 
@@ -72,14 +76,12 @@ void MumblePlugin::Uninitialize()
     Disconnect("Client exiting.");
 }
 
-void MumblePlugin::Update(f64 frametime)
-{
-}
-
 void MumblePlugin::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() != qobjTimerId_)
         return;
+
+    PROFILE(MumblePlugin_Update)
 
     // Audio processing
     if (audio_ && state.serverSynced && state.connectionState == MumbleConnected)
@@ -87,12 +89,17 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
         // Output audio
         if (!state.outputAudioMuted)
         {
+            PROFILE(MumblePlugin_Update_ProcessOutputAudio)
             VoicePacketInfo packetInfo(audio_->ProcessOutputAudio());
+            ELIFORP(MumblePlugin_Update_ProcessOutputAudio)
             if (!packetInfo.encodedFrames.isEmpty())
             {
+                PROFILE(MumblePlugin_Update_ProcessOutputNetwork)
                 if (network_)
                 {
                     packetInfo.isLoopBack = state.outputAudioLoopBack;
+                    if (!packetInfo.isLoopBack && audioWizard)
+                        packetInfo.isLoopBack = true;
                     if (state.outputPositional)
                     {
                         // Sets packetInfo.isPositional false if no active EC_SoundListener is found.
@@ -103,11 +110,16 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
                 }
                 else
                     LogError(LC + "Network ptr is null while sending out voice data!");
+                ELIFORP(MumblePlugin_Update_ProcessOutputNetwork)
             }
+
+            if (audioWizard)
+                audioWizard->SetLevels(audio_->levelPeakMic, audio_->isSpeech);
         }
         else
             audio_->ClearOutputAudio();
 
+        PROFILE(MumblePlugin_Update_ProcessInputAudio)
         // Input audio
         if (!state.inputAudioMuted)
         {
@@ -116,12 +128,15 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
         }
         else
             audio_->ClearInputAudio();
+        ELIFORP(MumblePlugin_Update_ProcessInputAudio)
     }
     else if (audio_)
     {
         audio_->ClearInputAudio();
         audio_->ClearOutputAudio();
     }
+
+    ELIFORP(MumblePlugin_Update)
 }
 
 void MumblePlugin::Connect(QString address, int port, QString username, QString password, QString fullChannelName, bool outputAudioMuted, bool inputAudioMuted)
@@ -137,7 +152,7 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
 
     LogInfo(LC + "Connecting to " + state.FullHost() + " as \"" + state.username + "\"");
 
-    audio_ = new MumbleAudio::AudioProcessor(framework_);
+    audio_ = new MumbleAudio::AudioProcessor(framework_, LoadSettings());
     audio_->moveToThread(audio_);
 
     network_ = new MumbleNetworkHandler(state.address, state.port, state.username, password);
@@ -175,6 +190,9 @@ void MumblePlugin::Disconnect(QString reason)
     foreach(MumbleChannel *c, channels_)
         SAFE_DELETE(c); // Note that this frees all channel users as well.
     channels_.clear();
+
+    if (audioWizard)
+        delete audioWizard;
 
     if (audio_ && audio_->isRunning())
     {
@@ -299,6 +317,13 @@ MumbleUser* MumblePlugin::User(uint userId)
     return user;
 }
 
+MumbleUser* MumblePlugin::Me()
+{
+    if (!state.serverSynced)
+        return 0;
+    return User(state.sessionId);
+}
+
 MumbleNetwork::ConnectionState MumblePlugin::State()
 {
     return state.connectionState;
@@ -382,6 +407,29 @@ void MumblePlugin::SetInputAudioMuted(bool inputAudioMuted)
     }
 
     state.inputAudioMuted = inputAudioMuted;
+}
+
+void MumblePlugin::RunAudioWizard()
+{
+    if (audioWizard && audioWizard->isVisible())
+        return;
+
+    if (audioWizard)
+        delete audioWizard;
+
+    if (!state.serverSynced)
+    {
+        LogError(LC + "Audio wizard can only be shown while connected to a server!");
+        return;
+    }
+    if (!audio_)
+    {
+        LogError(LC + "Audio wizard can't be shown, audio thread null!");
+        return;
+    }
+
+    audioWizard = new AudioWizard(audio_->GetSettings());
+    connect(audioWizard, SIGNAL(SettingsChanged(MumbleAudio::AudioSettings, bool)), SLOT(OnAudioSettingChanged(MumbleAudio::AudioSettings, bool)));
 }
 
 void MumblePlugin::OnConnected(QString address, int port, QString username)
@@ -559,7 +607,10 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
         return;
 
     if (user->isMe)
+    {
         state.fullChannelName = channel->fullName;
+        emit MeJoinedChannel(channel);
+    }
 
     if (isNew)
     {
@@ -629,6 +680,9 @@ void MumblePlugin::OnServerSynced(uint sessionId)
         LogError(LC + "Could not find own user ptr after connected!");
         return;
     }
+        
+    emit MeCreated(me);
+
     MumbleChannel *myChannel = Channel(me->channelId);
     if (!myChannel)
     {
@@ -718,9 +772,62 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
     }        
 }
 
-void MumblePlugin::DebugFrames( QString frames )
+void MumblePlugin::OnAudioSettingChanged(MumbleAudio::AudioSettings settings, bool saveConfig)
 {
-    if (audio_) audio_->SetFramesPerPacket(frames.toInt());
+    if (audio_)
+    {
+        if (saveConfig)
+            SaveSettings(settings);
+        audio_->ApplySettings(settings);
+    }
+    else
+        LogError(LC + "Audio wizard can't be shown, audio thread null!");
+}
+
+MumbleAudio::AudioSettings MumblePlugin::LoadSettings()
+{
+    ConfigAPI *config = framework_->Config();
+    if (!config)
+    {
+        LogError(LC + "ConfigAPI null in LoadSettings(), returning default config!");
+        return MumbleAudio::AudioSettings();
+    }
+
+    MumbleAudio::AudioSettings settings;
+    
+    ConfigData data("mumbleplugin", "output");
+    if (config->HasValue(data, "quality"))
+        settings.quality = (AudioQuality)config->Get(data, "quality").toInt();
+    if (config->HasValue(data, "transmitmode"))
+        settings.transmitMode = (TransmitMode)config->Get(data, "transmitmode").toInt();
+    if (config->HasValue(data, "supression"))
+        settings.suppression = config->Get(data, "supression").toInt();
+    if (config->HasValue(data, "amplification"))
+        settings.amplification = config->Get(data, "amplification").toInt();
+    if (config->HasValue(data, "VADmin"))
+        settings.VADmin = config->Get(data, "VADmin").toFloat();
+    if (config->HasValue(data, "VADmax"))
+        settings.VADmax = config->Get(data, "VADmax").toFloat();
+
+    return settings;
+}
+
+void MumblePlugin::SaveSettings(MumbleAudio::AudioSettings settings)
+{
+    ConfigAPI *config = framework_->Config();
+    if (!config)
+    {
+        LogError(LC + "ConfigAPI null in SaveSettings()!");
+        return;
+    }
+
+    ConfigData data("mumbleplugin", "output");
+    config->Set(data, "quality", (int)settings.quality);
+    config->Set(data, "transmitmode", (int)settings.transmitMode);
+    config->Set(data, "supression", settings.suppression);
+    config->Set(data, "amplification", settings.amplification);
+    config->Set(data, "VADmin", settings.VADmin);
+    config->Set(data, "VADmax", settings.VADmax);
 }
 
 extern "C"

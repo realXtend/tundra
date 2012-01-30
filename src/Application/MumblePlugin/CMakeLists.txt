@@ -1,4 +1,22 @@
 
+macro (configure_speex)
+    set (SPEEX_ROOT C:/Work/admino-tundra/deps/custom/speex) # this is a hack for initial development
+    set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SPEEX_ROOT}/include)
+    set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SPEEX_ROOT}/lib)
+    set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${SPEEX_ROOT}/bin)
+    
+    message (STATUS "## EARLY DEVELOPMENT HACK ## Speex lookup from: " ${SPEEX_ROOT})
+    
+    sagase_configure_package(SPEEX
+        NAMES speex
+        COMPONENTS libspeex         # speex lib
+                   libspeexdsp      # speex audio processing lib
+                   speex            # speex.h to find include dir
+        PREFIXES ${SPEEX_ROOT} ${SPEEX_ROOT}/include/speex)  # this is a hack for initial development
+        
+    sagase_configure_report (SPEEX)
+endmacro (configure_speex)
+
 macro (configure_protobuf)
     # Give cmake some hints where to look for libs/includes/executables in Find*.cmake helpers.
     # You can add paths here if the below are not maching to your setup.
@@ -59,6 +77,7 @@ macro (configure_celt)
     sagase_configure_report (CELT)
 endmacro (configure_celt)
 
+configure_speex ()
 configure_celt ()
 configure_protobuf ()
 configure_openssl ()
@@ -70,7 +89,9 @@ init_target (MumblePlugin OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp *.cc)
-file (GLOB H_FILES *.h )
+file (GLOB H_FILES *.h)
+file (GLOB UI_FILES *.ui)
+file (GLOB QRC_FILES resource/*.qrc)
 
 # Do manual source grouping as we need to detect a .cc file
 file(GLOB H_FILES_MUMBLE mumble/*.h)
@@ -81,11 +102,15 @@ set(H_FILES ${H_FILES} ${H_FILES_MUMBLE})
 set(CPP_FILES ${CPP_FILES} ${CPP_FILES_MUMBLE_})
 
 MocFolder ()
+UiFolder ()
 
-QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
+QT4_WRAP_CPP (MOC_SRCS ${H_FILES})
+QT4_WRAP_UI (UI_SRCS ${UI_FILES})
+QT4_ADD_RESOURCES(QRC_SRCS ${QRC_FILES})
 
-set (SOURCE_FILES ${SOURCE_FILES} ${CPP_FILES} ${H_FILES})
+set (SOURCE_FILES ${SOURCE_FILES} ${CPP_FILES} ${H_FILES} ${MOC_SRCS} ${UI_SRCS} ${QRC_SRCS})
 
+use_package (SPEEX)
 use_package (CELT)
 use_package (PROTOBUF)
 use_package (OPENSSL)
@@ -101,11 +126,12 @@ endif ()
 use_core_modules (Framework Math Scene Audio Console OgreRenderingModule TundraProtocolModule)
 use_app_modules (JavascriptModule)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${PROTOBUF_CPP_FILES} ${PROTOBUF_H_FILES})
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${PROTOBUF_CPP_FILES} ${PROTOBUF_H_FILES})
 
 link_modules (Framework Math Scene Audio Console OgreRenderingModule TundraProtocolModule JavascriptModule)
 link_entity_components (EC_Sound)
 
+link_package (SPEEX)
 link_package (CELT)
 link_package (PROTOBUF)
 link_package (OPENSSL)

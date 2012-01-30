@@ -9,6 +9,8 @@
 #include "SoundBuffer.h"
 #include "SoundChannel.h"
 
+#include "speex/speex_preprocess.h"
+
 #include <QThread>
 #include <QMutex>
 
@@ -21,8 +23,14 @@ namespace MumbleAudio
         Q_OBJECT
 
     public:
-        AudioProcessor(Framework *framework_);
+        AudioProcessor(Framework *framework_, MumbleAudio::AudioSettings settings);
         ~AudioProcessor();
+
+        float levelPeakMic;
+        float levelMic;
+
+        bool isSpeech;
+        bool wasPreviousSpeech;
 
     protected:
         // QThread override.
@@ -30,17 +38,19 @@ namespace MumbleAudio
 
     public slots:
         QList<QByteArray> ProcessOutputAudio();
+        
+        void SetOutputAudioMuted(bool outputAudioMuted_);
+        void SetOutputPreprocessed(bool preprocess);
 
         void PlayInputAudio(QList<uint> mutedUserIds);
+        void SetInputAudioMuted(bool inputAudioMuted_);
         
+        void ApplySettings(AudioSettings settings);
+        AudioSettings GetSettings();
+
         void ClearInputAudio();
         void ClearInputAudio(uint userId);
         void ClearOutputAudio();
-
-        void SetOutputAudioMuted(bool outputAudioMuted_);
-        void SetInputAudioMuted(bool inputAudioMuted_);
-        void SetOutputQuality(MumbleAudio::AudioQuality quality);
-        void SetFramesPerPacket(int frames);
 
         int CodecBitStreamVersion();
 
@@ -48,32 +58,40 @@ namespace MumbleAudio
         void OnAudioReceived(uint userId, QList<QByteArray> frames);
         
     private:
-        void PrintCeltError(int celtError, bool decoding);
+        void ResetSpeexProcessor();
         void ClearPendingChannels();
+
+        void PrintCeltError(int celtError, bool decoding);
 
         Framework *framework;
         CeltCodec *codec;
+
+        SpeexPreprocessState *speexPreProcessor;
+        AudioSettings audioSettings;
         
         AudioChannelMap userChannels;
         AudioFrameMap inputFrames;
 
-        QList<QByteArray> outFramesPending;
-        QList<uint> pendingChannelRemoves;
+        QList<QByteArray> pendingEncodedFrames;
+        QList<QByteArray> pendingVADPreBuffer;
+        QList<uint> pendingSoundChannelRemoves;
 
         bool outputAudioMuted;
+        bool outputPreProcessed;
         bool inputAudioMuted;
+        bool preProcessorReset;
 
         QMutex mutexCodec;
         QMutex mutexInput;
         QMutex mutexAudioMute;
-        QMutex mutexAudioQuality;
+        QMutex mutexAudioSettings;
         QMutex mutexAudioChannels;
-
-        QString LC;
 
         int qualityBitrate;
         int qualityFramesPerPacket;
 
-        AudioQuality outputQuality;
+        int holdFrames;
+
+        QString LC;
     };
 }
