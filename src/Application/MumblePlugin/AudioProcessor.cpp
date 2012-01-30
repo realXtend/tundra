@@ -100,7 +100,6 @@ namespace MumbleAudio
     void AudioProcessor::SetOutputAudioMuted(bool outputAudioMuted_)
     {
         // This function is called in the main thread
-
         if (!framework)
             return;
 
@@ -123,17 +122,9 @@ namespace MumbleAudio
         ClearOutputAudio();
     }
 
-    void AudioProcessor::SetOutputPreprocessed(bool preprocess)
-    {
-        outputPreProcessed = preprocess;
-        preProcessorReset = outputPreProcessed == true;
-        ResetSpeexProcessor();
-    }
-
     void AudioProcessor::SetInputAudioMuted(bool inputAudioMuted_)
     {
         // This function is called in the main thread
-
         if (!framework)
             return;
 
@@ -148,7 +139,6 @@ namespace MumbleAudio
     void AudioProcessor::ApplySettings(AudioSettings settings)
     {
         // This function is called in the main thread
-
         {
             QMutexLocker lock(&mutexAudioSettings);
 
@@ -181,6 +171,12 @@ namespace MumbleAudio
 
         preProcessorReset = true;
         ResetSpeexProcessor();
+    }
+
+    MumbleAudio::AudioSettings AudioProcessor::GetSettings()
+    {
+        QMutexLocker lock(&mutexAudioSettings);
+        return audioSettings;
     }
 
     QList<QByteArray> AudioProcessor::ProcessOutputAudio()
@@ -365,7 +361,6 @@ namespace MumbleAudio
     void AudioProcessor::PlayInputAudio(QList<uint> mutedUserIds)
     {
         // This function is called in the main thread
-
         if (!framework)
             return;
 
@@ -467,8 +462,7 @@ namespace MumbleAudio
     
     void AudioProcessor::ClearInputAudio()
     {
-        // This function is called in the main thread
-
+        // This function should be called in the main thread
         QMutexLocker lock(&mutexInput);
         inputFrames.clear();
         userChannels.clear();
@@ -476,8 +470,7 @@ namespace MumbleAudio
 
     void AudioProcessor::ClearInputAudio(uint userId)
     {
-        // This function is called in the main thread
-
+        // This function should be called in the main thread
         QMutexLocker lock(&mutexInput);
         
         AudioFrameMap::iterator frameIter = inputFrames.find(userId);
@@ -501,15 +494,12 @@ namespace MumbleAudio
 
     void AudioProcessor::ClearOutputAudio()
     {
-        // This function is called in the main thread
-
+        // This function should be called in the main thread
         pendingEncodedFrames.clear();
     }
 
     int AudioProcessor::CodecBitStreamVersion()
     {
-        // This function is called in the main thread
-
         QMutexLocker lock(&mutexCodec);
         if (!codec)
             return -1;
@@ -557,7 +547,6 @@ namespace MumbleAudio
     void AudioProcessor::OnAudioReceived(uint userId, QList<QByteArray> frames)
     {
         // This function is called in the audio thread
-
         if (frames.isEmpty())
             return;
         
@@ -605,11 +594,5 @@ namespace MumbleAudio
                 return;
             }            
         }
-    }
-
-    MumbleAudio::AudioSettings AudioProcessor::GetSettings()
-    {
-        QMutexLocker lock(&mutexAudioSettings);
-        return audioSettings;
     }
 }

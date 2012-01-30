@@ -38,9 +38,7 @@ namespace MumbleAudio
 
     public slots:
         QList<QByteArray> ProcessOutputAudio();
-        
         void SetOutputAudioMuted(bool outputAudioMuted_);
-        void SetOutputPreprocessed(bool preprocess);
 
         void PlayInputAudio(QList<uint> mutedUserIds);
         void SetInputAudioMuted(bool inputAudioMuted_);

@@ -88,24 +88,24 @@ protected:
 
 public slots:
     /// Connect to a Murmur server with provided information.
-    /// @param address Server host.
-    /// @param port Server port.
-    /// @param username Client user name.
-    /// @param password Client password.
-    /// @param fullChannelName This channel name will be connected after login is completed.
-    /// This must be full name of the channel eg. Root or Root/Tundra or Root/VoIP/Room1 etc.
-    /// Default is "Root" which is the always present main channel on a Murmur server with id 0.
-    /// @param outputAudioMuted Should we mute sending audio after login is completed. Default is false (sending audio).
-    /// @param inputAudioMuted Should we mute receiving audio after login is completed. Default is false (receiving audio).
-    /// @see JoinChannel, SetOutputAudioMuted and SetInputAudioMuted.
+    /** @param address Server host.
+        @param port Server port.
+        @param username Client user name.
+        @param password Client password.
+        @param fullChannelName This channel name will be connected after login is completed.
+        This must be full name of the channel eg. Root or Root/Tundra or Root/VoIP/Room1 etc.
+        Default is "Root" which is the always present main channel on a Murmur server with id 0.
+        @param outputAudioMuted Should we mute sending audio after login is completed. Default is false (sending audio).
+        @param inputAudioMuted Should we mute receiving audio after login is completed. Default is false (receiving audio).
+        @see JoinChannel, SetOutputAudioMuted and SetInputAudioMuted. */
     void Connect(QString address, int port, QString username, QString password, QString fullChannelName = "Root", bool outputAudioMuted = false, bool inputAudioMuted = false);
 
     /// Disconnect from Murmur server with optional reason.
     void Disconnect(QString reason = "");
 
     /// Join channel with full name eg. Root or Root/Tundra or Root/VoIP/Room1 etc.
-    /// @note Case sensitive.
-    /// @see MumbleChannel::fullName.
+    /** @note Case sensitive.
+        @see MumbleChannel::fullName. */
     bool JoinChannel(QString fullName);
 
     /// Join channel with id.
@@ -113,39 +113,38 @@ public slots:
     bool JoinChannel(uint id);
 
     /// Get channel by id.
-    /// @see MumbleChannel::id.
-    /// @return Null ptr if could not be found, otherwise valid channel ptr.
+    /** @see MumbleChannel::id.
+        @return Null ptr if could not be found, otherwise valid channel ptr. */
     MumbleChannel* Channel(uint id);
     
     /// Get channel by full name eg. Root or Root/Tundra or Root/VoIP/Room1 etc.
-    /// @note Case sensitive.
-    /// @see MumbleChannel::fullName.
-    /// @return Null ptr if could not be found, otherwise valid channel ptr.
+    /** @note Case sensitive.
+        @see MumbleChannel::fullName.
+        @return Null ptr if could not be found, otherwise valid channel ptr. */
     MumbleChannel* Channel(QString fullName);
     
     /// Get channel where user with userId is currently.
-    /// @see MumbleUser::id
-    /// @return Null ptr if could not be found, otherwise valid channel ptr.
+    /** @see MumbleUser::id
+        @return Null ptr if could not be found, otherwise valid channel ptr. */
     MumbleChannel* ChannelForUser(uint userId);
 
     /// Get user by id.
-    /// @note Getting users by name is not supported as names are not unique.
-    /// @return Null ptr if could not be found, otherwise valid user ptr.
+    /** @note Getting users by name is not supported as names are not unique.
+        @return Null ptr if could not be found, otherwise valid user ptr. */
     MumbleUser* User(uint userId);
 
     /// Get own MumbleUser ptr.
-    /// @note This will return null until client session id has been resolved,
-    /// meaning even after Connected is fired this can and will return null for a short while
-    /// until all channels and users have been synced to us.
-    /// @see Signal MeCreated().
+    /** @note This will return null until client session id has been resolved,
+        meaning even after Connected is fired this can and will return null for a short while
+        until all channels and users have been synced to us.
+        @see Signal MeCreated(). */
     MumbleUser* Me();
 
     /// Current connection state.
     /// @see Signals Connected, Disconnected, StateChange.
     MumbleNetwork::ConnectionState State();
 
-    /// Current network mode, TCP or UDP. Not needed by the client code
-    /// but may be useful information to the end user.
+    /// Current network mode, TCP or UDP. Not needed by the client code but may be useful information to the end user.
     /// @see Signal NetworkModeChange.
     MumbleNetwork::NetworkMode NetworkMode();
 
@@ -153,56 +152,59 @@ public slots:
     /// False sends voice from microphone to the server, true mutes sending audio.
     void SetOutputAudioMuted(bool outputAudioMuted);
 
-    /// Set if server should loop back your audio back to us. Not local playback, will take bandwidth.
-    /// True sends your voice back to from the server and other connected clients cannot hear you,
-    /// false sends audio normally and other clients will hear you.
-    /// Useful for voice modes where you want to verify your microphone levels and or
-    /// that networking to server works as expected.
-    /// @note Default after connected is false.
+    /// Set if server should loop back your audio back to us. Not local playback, will take some bandwidth.
+    /** True sends your voice back to from the server and other connected clients cannot hear you,
+        false sends audio normally and other clients will hear you.
+        Useful for voice modes where you want to verify your microphone levels and or
+        that networking to server works as expected.
+        @note Default after connected is false. */
     void SetOutputAudioLoopBack(bool loopBack);
 
-    /// Set if our voice is positional. True sends active EC_SoundListener Entitys EC_Placeable position
-    /// to the server, this information gets relayed to other clients for positional audio playback.
-    /// False does not send position to the server hence making audio non positional.
-    /// @note When setting true make sure correct EC_SoundListener is active to have expected audio
-    /// playback experience in other clients. If no active EC_SoundListener is be found from the scene, 
-    /// sending positional audio is disabled automatically.
-    /// @note Set value is remembered between multiple connections but forgotten on module unload.
+    /// Set if our voice is positional. 
+    /** True sends active EC_SoundListener Entitys EC_Placeable position
+        to the server, this information gets relayed to other clients for positional audio playback.
+        False does not send position to the server hence making audio non positional.
+        @note When setting true make sure correct EC_SoundListener is active to have expected audio
+        playback experience in other clients. If no active EC_SoundListener is be found from the scene, 
+        sending positional audio is disabled automatically.
+        @note Set value is remembered between multiple connections but forgotten on module unload. */
     void SetOutputAudioPositional(bool positional);
 
-    /// Set if input audio is received from server. Calling this function with true
-    /// will make us not send or receive audio. This is how the mumble protocol operates,
-    /// it saves bandwidth and processing on the server and client(s).
-    /// @note If you are not receiving audio, you cannot send audio!
-    /// @see SetOutputAudioMuted.
+    /// Set if input audio is received from server. 
+    /** Calling this function with true
+        will make us not send or receive audio. This is how the mumble protocol operates,
+        it saves bandwidth and processing on the server and client(s).
+        @note If you are not receiving audio, you cannot send audio!
+        @see SetOutputAudioMuted. */
     void SetInputAudioMuted(bool inputAudioMuted);
 
-    /// Shows a audio wizard widget that lets user tweak voice settings for bitrate quality, 
-    /// noise suppression, mic amplification, transmit mode and voice activity detection.
-    /// @note Automatically stores settings to local user profile.
+    /// Shows a audio wizard widget.
+    /** Shows a audio wizard widget that lets user tweak voice settings for bitrate quality, 
+        noise suppression, mic amplification, transmit mode and voice activity detection.
+        @note Automatically stores settings to local user profile. */
     void RunAudioWizard();
 
 signals:
-    /// Murmur server connection has been established, authenticated and both TCP and UDP streams are ready.
-    /// After this signal you can expect the channel and user specific signals to be triggered.
+    /** Murmur server connection has been established, authenticated and both TCP and UDP streams are ready.
+        After this signal you can expect the channel and user specific signals to be triggered. */
     void Connected(QString address, int port, QString username);
     
-    /// Disconnected from Murmur server with reason string that can be shows in user interfaces.
-    /// @note The reason string can be empty.
+    /** Disconnected from Murmur server with reason string that can be shows in user interfaces.
+        @note The reason string can be empty. */
     void Disconnected(QString reason = "");
 
-    /// State of the connection changed from oldState to newState.
-    /// @note This signal will trigged 'duplicates' with Connected ans Disconnected.
+    /** State of the connection changed from oldState to newState.
+        @note This signal will trigged 'duplicates' with Connected ans Disconnected. */
     void StateChange(MumbleNetwork::ConnectionState newState, MumbleNetwork::ConnectionState oldState);
 
-    /// Network mode changed to mode with reason. Murmur is always connected first in TCP mode.
-    /// After the initial ping is replied UDP mode can be enabled if certain demands are met for latency etc.
-    /// Connection can revert back to TCP if UDP is detected to fail. This all is transparent to the end user
-    /// or client code but it might be nice to know on what mode we are currently for eg. user interface.
+    /** Network mode changed to mode with reason. Murmur is always connected first in TCP mode.
+        After the initial ping is replied UDP mode can be enabled if certain demands are met for latency etc.
+        Connection can revert back to TCP if UDP is detected to fail. This all is transparent to the end user
+        or client code but it might be nice to know on what mode we are currently for eg. user interface. */
     void NetworkModeChange(MumbleNetwork::NetworkMode mode, QString reason);
 
-    /// Connection attempt rejected was rejected.
-    /// @note Disconnected state change signals will fire after this.
+    /** Connection attempt rejected was rejected.
+        @note Disconnected state change signals will fire after this. */
     void ConnectionRejected(MumbleNetwork::RejectReason reasonType, QString reasonMessage);
 
     /// When channel list changes, meaning either a channel(s) was added or removed.
@@ -214,23 +216,23 @@ signals:
     /// Existing channel with id was removed.
     void ChannelRemoved(uint id);
 
-    /// Existing channels data was updated. Note that this is NOT emitted on user changes inside the.
-    /// @see MumbleChannel::UsersChanged(QList<MumbleUser*> users)
+    /** Existing channels data was updated. Note that this is NOT emitted on user changes inside the.
+        @see MumbleChannel::UsersChanged(QList<MumbleUser*> users) */
     void ChannelUpdated(MumbleChannel *channel);
 
-    /// New user connected.
-    /// @see MumbleChannel::UsersChanged(QList<MumbleUser*> users)
+    /** New user connected.
+        @see MumbleChannel::UsersChanged(QList<MumbleUser*> users) */
     void UserCreated(MumbleUser *user);
 
     /// User information updated.
     void UserUpdated(MumbleUser *user);
 
-    /// Own MumbleUser was created. Fired when all channels and users have
-    /// been synced to us and we have a valid client session id.
+    /** Own MumbleUser was created. Fired when all channels and users have
+        been synced to us and we have a valid client session id. */
     void MeCreated(MumbleUser *me);
 
-    /// Own MumbleUser joined a channel. Provided for easier 
-    /// hooking up to the channel signals.
+    /** Own MumbleUser joined a channel. Provided for easier 
+        hooking up to the channel signals. */
     void MeJoinedChannel(MumbleChannel *channel);
 
 private slots:
