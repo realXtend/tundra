@@ -427,6 +427,12 @@ AssetStoragePtr LocalAssetProvider::GetStorageByName(const QString &name) const
 
 AssetStoragePtr LocalAssetProvider::GetStorageForAssetRef(const QString &assetRef) const
 {
+    PROFILE(LocalAssetProvider_GetStorageForAssetRef);
+
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed());
+    if (refType != AssetAPI::AssetRefLocalPath && refType != AssetAPI::AssetRefLocalUrl)
+        return AssetStoragePtr();
+
     LocalAssetStoragePtr storage;
     GetPathForAsset(assetRef, &storage);
     return boost::static_pointer_cast<IAssetStorage>(storage);
