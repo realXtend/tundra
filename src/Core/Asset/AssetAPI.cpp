@@ -90,6 +90,7 @@ AssetStoragePtr AssetAPI::GetAssetStorageByName(const QString &name) const
 
 AssetStoragePtr AssetAPI::GetStorageForAssetRef(const QString &ref) const
 {
+    PROFILE(AssetAPI_GetStorageForAssetRef);
     foreach(AssetProviderPtr provider, GetAssetProviders())
     {
         AssetStoragePtr storage = provider->GetStorageForAssetRef(ref);
@@ -658,6 +659,7 @@ AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef) const
 
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, bool forceTransfer)
 {
+    PROFILE(AssetAPI_RequestAsset);
     // Turn named storage (and default storage) specifiers to absolute specifiers.
     assetRef = ResolveAssetRef("", assetRef);
     if (assetRef.isEmpty())
@@ -780,6 +782,8 @@ AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref, bool forceTra
 
 AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType) const
 {
+    PROFILE(AssetAPI_GetProviderForAssetRef);
+
     assetType = assetType.trimmed();
     assetRef = assetRef.trimmed();
 
@@ -955,6 +959,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
 
 AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr storage)
 {
+    PROFILE(AssetAPI_CreateNewAsset);
     type = type.trimmed();
     name = name.trimmed();
     if (name.length() == 0)
@@ -973,6 +978,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     if (dynamic_cast<NullAssetFactory*>(factory.get()))
         return AssetPtr();
     AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
+
     if (!asset)
     {
         LogError("AssetAPI:CreateNewAsset: IAssetTypeFactory::CreateEmptyAsset(type \"" + type + "\", name: \"" + name + "\") failed to create asset!");
@@ -981,6 +987,8 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     assert(asset->IsEmpty());
 
     // Fill the provider & storage for the new asset already here if possible
+    ///\todo Revisit the logic below, and the callers of CreateNewAsset. Is it possible to remove the following
+    /// calls, and have the caller directly set the storage?
     if (!storage)
     {
         asset->SetAssetProvider(GetProviderForAssetRef(type, name));
@@ -991,17 +999,22 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
         asset->SetAssetProvider(storage->provider.lock());
         asset->SetAssetStorage(storage);
     }
-    
+
     // Remember this asset in the global AssetAPI storage.
     assets[name] = asset;
+
     ///\bug DiskSource and DiskSourceType are not set yet.
-    emit AssetCreated(asset);
+    {
+        PROFILE(AssetAPI_CreateNewAsset_emit_AssetCreated);
+        emit AssetCreated(asset);
+    }
     
     return asset;
 }
 
 AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName) const
 {
+    PROFILE(AssetAPI_GetAssetTypeFactory);
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
         if (assetTypeFactories[i]->Type().toLower() == typeName.toLower())
             return assetTypeFactories[i];
@@ -1120,6 +1133,8 @@ AssetTransferMap::const_iterator AssetAPI::FindTransferIterator(IAssetTransfer *
 
 void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 {
+    PROFILE(AssetAPI_AssetTransferCompleted);
+
     // At this point, the transfer can originate from several different things:
     // 1) It could be a real AssetTransfer from a real AssetProvider.
     // 2) It could be an AssetTransfer to an Asset that was already downloaded before, in which case transfer_->asset is already filled and loaded at this point.
@@ -1234,6 +1249,8 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 
 void AssetAPI::AssetLoadCompleted(const QString assetRef)
 {
+    PROFILE(AssetAPI_AssetLoadCompleted);
+
     AssetPtr asset;
     AssetTransferMap::const_iterator iter = FindTransferIterator(assetRef);
     AssetMap::iterator iter2 = assets.find(assetRef);
@@ -1353,6 +1370,8 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
 
 void AssetAPI::NotifyAssetDependenciesChanged(AssetPtr asset)
 {
+    PROFILE(AssetAPI_NotifyAssetDependenciesChanged);
+
     /// Delete all old stored asset dependencies for this asset.
     RemoveAssetDependencies(asset->Name());
 
@@ -1402,6 +1421,8 @@ void AssetAPI::RemoveAssetDependencies(QString asset)
 
 std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
 {
+    PROFILE(AssetAPI_FindDependents);
+
     std::vector<AssetPtr> dependents;
     for(size_t i = 0; i < assetDependencies.size(); ++i)
     {
@@ -1543,6 +1564,8 @@ QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
 
 void AssetAPI::OnAssetLoaded(AssetPtr asset)
 {
+    PROFILE(AssetAPI_OnAssetLoaded);
+
     std::vector<AssetPtr> dependents = FindDependents(asset->Name());
     for(size_t i = 0; i < dependents.size(); ++i)
     {
@@ -1600,6 +1623,8 @@ void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
 
 void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change)
 {
+    PROFILE(AssetAPI_OnAssetChanged);
+
     IAssetStorage *storage = dynamic_cast<IAssetStorage *>(sender());
     assert(storage);
     if (!storage)

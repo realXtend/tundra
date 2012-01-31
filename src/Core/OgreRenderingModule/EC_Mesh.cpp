@@ -1315,7 +1315,7 @@ Ogre::Vector2 FindUVs(const Ogre::Vector3& hitPoint, const Ogre::Vector3& t1, co
 
 bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance, unsigned* subMeshIndex, unsigned* triangleIndex, float3* hitPosition, float3* normal, float2* uv)
 {
-    PROFILE(EC_Mesh_Raycast)
+    PROFILE(EC_Mesh_Raycast);
     
     if (!meshEntity)
     {
@@ -1360,7 +1360,13 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
         
         Ogre::HardwareVertexBufferSharedPtr vbufPos =
             vertexData->vertexBufferBinding->getBuffer(posElem->getSource());
-        unsigned char* pos = static_cast<unsigned char*>(vbufPos->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+
+        unsigned char* pos;
+        {
+            PROFILE(EC_Mesh_Raycast_PosBuf_Lock);
+            pos = static_cast<unsigned char*>(vbufPos->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        }
+
         unsigned posOffset = posElem->getOffset();
         unsigned posSize = vbufPos->getVertexSize();
         
@@ -1375,7 +1381,10 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
             vbufTex = vertexData->vertexBufferBinding->getBuffer(texElem->getSource());
             // Check if the texcoord buffer is different than the position buffer, in that case lock it separately
             if (vbufTex != vbufPos)
+            {
+                PROFILE(EC_Mesh_Raycast_TexBuf_Lock);
                 texCoord = static_cast<unsigned char*>(vbufTex->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+            }
             else
                 texCoord = pos;
             texOffset = texElem->getOffset();
@@ -1385,7 +1394,11 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
         Ogre::IndexData* indexData = submesh->indexData;
         Ogre::HardwareIndexBufferSharedPtr ibuf = indexData->indexBuffer;
 
-        u32*  pLong = static_cast<u32*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        u32*  pLong;
+        {
+            PROFILE(EC_Mesh_Raycast_IndexBuf_Lock);
+            pLong = static_cast<u32*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        }
         u16* pShort = reinterpret_cast<u16*>(pLong);
         bool use32BitIndices = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
         

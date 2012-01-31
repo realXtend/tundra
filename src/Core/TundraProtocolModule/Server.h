@@ -7,6 +7,8 @@
 #include "TundraProtocolModuleApi.h"
 #include "TundraProtocolModuleFwd.h"
 
+#include "kNet/Types.h"
+
 #include <QObject>
 #include <QVariant>
 
