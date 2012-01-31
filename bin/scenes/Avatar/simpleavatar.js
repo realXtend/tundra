@@ -172,8 +172,8 @@ SimpleAvatar.prototype.ServerUpdate = function(frametime) {
     this.CommonUpdateAnimation(frametime);
 
     //old style rotation handling for webnaali
-     if (this.serverrotate != 0) {
-        var rotateVec = new float3();
+    if (this.serverrotate != 0) {
+        var rotateVec = new float3(0, 0, 0);
         var rotate_speed = 150.0;
         rotateVec.y = -rotate_speed * this.serverrotate * frametime;
         this.me.rigidbody.Rotate(rotateVec);
