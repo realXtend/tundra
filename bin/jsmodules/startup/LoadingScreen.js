@@ -1,6 +1,5 @@
 if (!framework.IsHeadless())
 {
-    print("aefawef");
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
