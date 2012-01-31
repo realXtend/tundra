@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Win.h"
 #include "LocalAssetProvider.h"
 #include "LocalAssetStorage.h"
 #include "AssetModule.h"
@@ -15,6 +16,7 @@
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
 #include "QtUtils.h"
+#include "Profiler.h"
 
 #include <QDir>
 #include <QByteArray>
@@ -137,6 +139,8 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetS
 
 void LocalAssetProvider::Update(f64 /*frametime*/)
 {
+    PROFILE(LocalAssetProvider_Update);
+
     ///@note It is *very* important that below we first complete all uploads, and then the downloads.
     /// This is because it is a rather common code flow to upload an asset for an entity, and immediately after that
     /// generate a entity in the scene that refers to that asset, which means we do both an upload and a download of the
@@ -269,8 +273,16 @@ AssetUploadTransferPtr LocalAssetProvider::UploadAssetFromFileInMemory(const u8 
 
 void LocalAssetProvider::CompletePendingFileDownloads()
 {
+    // If we have any uploads running, first wait for each of them to complete, until we download any more.
+    // This is because we might want to download the same asset that we uploaded, so they must be done in
+    // the proper order.
+    if (pendingUploads.size() > 0)
+        return;
+
     while(pendingDownloads.size() > 0)
     {
+        PROFILE(LocalAssetProvider_ProcessPendingDownload);
+
         AssetTransferPtr transfer = pendingDownloads.back();
         pendingDownloads.pop_back();
 
@@ -322,7 +334,6 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         transfer->SetCachingBehavior(false, absoluteFilename);
 
         transfer->storage = storage;
-//        AssetModule::LogDebug("Downloaded asset \"" + ref + "\" from file " + absoluteFilename);
 
         // Signal the Asset API that this asset is now successfully downloaded.
         framework->Asset()->AssetTransferCompleted(transfer.get());
@@ -418,6 +429,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
 {
     while(pendingUploads.size() > 0)
     {
+        PROFILE(LocalAssetProvider_ProcessPendingUpload);
         AssetUploadTransferPtr transfer = pendingUploads.back();
         pendingUploads.pop_back();
 
@@ -458,6 +470,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
 
 void LocalAssetProvider::CheckForPendingFileSystemChanges()
 {
+    PROFILE(LocalAssetProvider_CheckForPendingFileSystemChanges);
     QStringList files = changedFiles.toList();
     while(!files.isEmpty())
     {
