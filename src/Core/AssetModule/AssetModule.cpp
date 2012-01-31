@@ -405,8 +405,8 @@ void AssetModule::ConsoleDumpAssetTransfers()
 {
     AssetAPI* asset = framework_->Asset();
     LogInfo("Current transfers:");
-    const AssetAPI::AssetTransferMap& currentTransfers = asset->GetCurrentTransfers();
-    for(AssetAPI::AssetTransferMap::const_iterator i = currentTransfers.begin(); i != currentTransfers.end(); ++i)
+    const AssetTransferMap& currentTransfers = asset->GetCurrentTransfers();
+    for(AssetTransferMap::const_iterator i = currentTransfers.begin(); i != currentTransfers.end(); ++i)
     {
         AssetPtr assetPtr = asset->GetAsset(i->first);
         unsigned numPendingDependencies = assetPtr ? asset->NumPendingDependencies(assetPtr) : 0;
