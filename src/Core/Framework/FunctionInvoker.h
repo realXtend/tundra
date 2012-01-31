@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   FunctionInvoker.h
- *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality with more user-friendly API.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   FunctionInvoker.h
+    @brief  Utility class which wraps QMetaObject::invokeMethod() functionality with more user-friendly API. */
 
 #pragma once
 
@@ -28,10 +27,16 @@ public:
     /// This is an overloaded function.
     void Invoke(QObject *obj, const QString &function, const QStringList &params, QVariant *ret = 0, QString *errorMsg = 0);
 
-    /// Creates argument type list for function of object.@c obj.with the signature @c signature.
+    /// Creates argument type list for function of object @c obj with the signature @c signature.
     /** @param obj Object.
         @param signature of the function, e.g. "SetName(QString)". */
     QList<IArgumentType *> CreateArgumentList(const QObject *obj, const QString &signature);
+
+    /// Returns number of arguments for function of object @c obj with the signature @c signature.
+    /** @param obj Object.
+        @param signature of the function, e.g. "SetName(QString)".
+        @return -1 if fuction with signature was not found, otherwise the number of required arguments. */
+    static int NumArgsForFunction(const QObject *obj, const QString &signature);
 
 private:
     /// Returns Argument type object for spesific parameter type name.

@@ -1084,17 +1084,17 @@ std::map<QString, QString> ParseAssetRefArgs(const QString &url, QString *body)
     return keyValues;
 }
 
-AssetAPI::AssetTransferMap::iterator AssetAPI::FindTransferIterator(QString assetRef)
+AssetTransferMap::iterator AssetAPI::FindTransferIterator(QString assetRef)
 {
     return currentTransfers.find(assetRef);
 }
 
-AssetAPI::AssetTransferMap::const_iterator AssetAPI::FindTransferIterator(QString assetRef) const
+AssetTransferMap::const_iterator AssetAPI::FindTransferIterator(QString assetRef) const
 {
     return currentTransfers.find(assetRef);
 }
 
-AssetAPI::AssetTransferMap::iterator AssetAPI::FindTransferIterator(IAssetTransfer *transfer)
+AssetTransferMap::iterator AssetAPI::FindTransferIterator(IAssetTransfer *transfer)
 {
     if (!transfer)
         return currentTransfers.end();
@@ -1106,7 +1106,7 @@ AssetAPI::AssetTransferMap::iterator AssetAPI::FindTransferIterator(IAssetTransf
     return currentTransfers.end();
 }
 
-AssetAPI::AssetTransferMap::const_iterator AssetAPI::FindTransferIterator(IAssetTransfer *transfer) const
+AssetTransferMap::const_iterator AssetAPI::FindTransferIterator(IAssetTransfer *transfer) const
 {
     if (!transfer)
         return currentTransfers.end();
