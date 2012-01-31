@@ -23,7 +23,7 @@ public:
     ~OgreMeshAsset();
 
     /// Load mesh from memory
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous);
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous);
 
     /// Load mesh into memory
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;

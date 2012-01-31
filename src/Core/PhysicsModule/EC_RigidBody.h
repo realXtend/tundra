@@ -216,6 +216,7 @@ public:
     /// btMotionState override. Called when Bullet wants to tell us the body's current transform
     virtual void setWorldTransform(const btTransform &worldTrans);
 
+    void SetClientExtrapolating(bool isClientExtrapolating);
 signals:
     /// A physics collision has happened between this rigid body and another entity
     /** If there are several contact points, the signal will be sent multiple times for each contact.
@@ -395,6 +396,11 @@ private:
     /// Internal disconnection of attribute changes. True during the time we're setting attributes ourselves due to Bullet update, to prevent endless loop
     bool disconnected_;
     
+    /// On the client side, this field is used to track whether the rigid body is being interpolated from network input events (false), or extrapolated
+    /// using local physics computations (true).
+    /// On the server side, this flag is not used.
+    bool clientExtrapolating;
+
     /// Bullet body
     btRigidBody* body_;
     

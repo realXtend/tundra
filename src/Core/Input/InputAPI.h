@@ -60,10 +60,10 @@ public:
     /// Called internally by the Framework to update the polling Input API. Not for client use.
     void Update(float frametime);
 
-    /// Prints the list of input contexts, for debugging purposes.
-    void DumpInputContexts();
-
     typedef QMap<QString, QKeySequence> KeyBindingMap;
+
+    /// Changes the priority of the given input context to the new priority.
+    void SetPriority(InputContextPtr inputContext, int newPriority);
 
 public slots:
     /// Creates a new input context with the given name.
@@ -192,6 +192,9 @@ public slots:
 
     /// Saves current key bindings to config.
     void SaveKeyBindingsToFile();
+
+    /// Prints the list of input contexts, for debugging purposes.
+    void DumpInputContexts();
 
 signals:
     void TouchBegin(QTouchEvent *touchEvent);

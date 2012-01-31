@@ -66,6 +66,7 @@ Q_DECLARE_METATYPE(ScriptAssetPtr);
 Q_DECLARE_METATYPE(ScriptAsset*);
 Q_DECLARE_METATYPE(AssetCache*);
 Q_DECLARE_METATYPE(AssetMap);
+Q_DECLARE_METATYPE(AssetTransferMap);
 Q_DECLARE_METATYPE(AssetStorageVector);
 Q_DECLARE_METATYPE(IAssetStorage::ChangeType);
 Q_DECLARE_METATYPE(IAssetStorage::TrustState);
@@ -121,6 +122,24 @@ QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &ass
 
 /// Deliberately a null function. Currently we don't need setting asset maps from the script side.
 void qScriptValueToAssetMap(const QScriptValue &value, AssetMap &assetMap)
+{
+}
+
+QScriptValue qScriptValueFromAssetTransferMap(QScriptEngine *engine, const AssetTransferMap &assetMap)
+{
+    QScriptValue v = engine->newArray(assetMap.size());
+    int idx = 0;
+    for(AssetTransferMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
+    {
+        QScriptValue elem = qScriptValueFromBoostSharedPtr(engine, iter->second);
+        v.setProperty(idx++, elem);
+    }
+
+    return v;
+}
+
+/// Deliberately a null function. Currently we don't need setting asset maps from the script side.
+void qScriptValueToAssetTransferMap(const QScriptValue &value, AssetTransferMap &assetMap)
 {
 }
 
@@ -350,6 +369,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     qRegisterMetaType<AssetMap>("AssetMap");
     qScriptRegisterMetaType<AssetMap>(engine, qScriptValueFromAssetMap, qScriptValueToAssetMap);
+
+    qRegisterMetaType<AssetTransferMap>("AssetTransferMap");
+    qScriptRegisterMetaType<AssetTransferMap>(engine, qScriptValueFromAssetTransferMap, qScriptValueToAssetTransferMap);
 
     qRegisterMetaType<AssetStorageVector>("AssetStorageVector");
     qScriptRegisterMetaType<AssetStorageVector>(engine, qScriptValueFromAssetStoragePtrVector, qScriptValueToAssetStoragePtrVector);

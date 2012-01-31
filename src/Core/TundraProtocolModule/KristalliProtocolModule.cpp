@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
-
 #include "DebugOperatorNew.h"
 
 #include "KristalliProtocolModule.h"
+
 #include "Profiler.h"
 #include "CoreStringUtils.h"
 #include "UiAPI.h"
@@ -14,22 +14,12 @@
 #include "CoreException.h"
 
 #include <kNet.h>
-#include <kNet/qt/NetworkDialog.h>
 #include <kNet/UDPMessageConnection.h>
 
 #include <algorithm>
 #include <utility>
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
 
 using namespace kNet;
-
-namespace KristalliProtocol
-{
 
 namespace
 {
@@ -212,7 +202,6 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
     // If connection was made, enable a larger number of reconnection attempts in case it gets lost
     if (serverConnection && serverConnection->GetConnectionState() == ConnectionOK)
         reconnectAttempts = cReconnectAttempts;
-    
 }
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
@@ -340,23 +329,18 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
         ::LogInfo("Unknown user disconnected");
 }
 
-void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t id, const char *data, size_t numBytes)
-{
-    HandleMessage(source, id, data, numBytes);
-}
-
-void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_id_t id, const char *data, size_t numBytes)
+void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char *data, size_t numBytes)
 {
     assert(source);
-    assert(data);
+    assert(data || numBytes == 0);
 
     try
     {
-        emit NetworkMessageReceived(source, id, data, numBytes);
+        emit NetworkMessageReceived(source, packetId, messageId, data, numBytes);
     } catch(std::exception &e)
     {
         ::LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +
-            ToString(id) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
+            ToString(messageId) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
 
         // Kill the connection. For debugging purposes, don't disconnect the client if the server is running a debug build.
 #ifndef _DEBUG
@@ -393,5 +377,3 @@ UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 
     return 0;
 }
-
-} // ~KristalliProtocolModule namespace

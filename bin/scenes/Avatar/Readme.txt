@@ -14,3 +14,6 @@ In addition there is a example how to make addons to the default functionality o
 adds Q to make a wave gesture and E to toggle sitting on the ground. Mouse scroll and +/- zooms in/out.
 
 Only third person camera is currently implemented. Also note that collisions are disabled when flying for now.
+
+The scene AvatarSlideTest.txml is a testbed for observing how avatars behave when sliding along surfaces, and it contains
+surfaces with different slopes.

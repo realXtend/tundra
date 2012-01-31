@@ -28,7 +28,7 @@ void OgreParticleAsset::DoUnload()
     RemoveTemplates();
 }
 
-bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
+bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     RemoveTemplates();
     references.clear();

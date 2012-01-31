@@ -18,6 +18,7 @@ const unsigned long cRemoveComponentsMessage = 115;
 const unsigned long cRemoveEntityMessage = 116;
 const unsigned long cCreateEntityReplyMessage = 117; // Server->client only
 const unsigned long cCreateComponentsReplyMessage = 118; // Server->client only
+const unsigned long cRigidBodyUpdateMessage = 119;
 
 // Entity action
 const unsigned long cEntityActionMessage = 120;

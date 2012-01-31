@@ -27,7 +27,7 @@ public:
     virtual ~OgreSkeletonAsset();
 
     /// IAsset override.
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous);
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous);
 
     /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
     virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);

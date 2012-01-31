@@ -24,10 +24,11 @@
 #include "MsgAssetDeleted.h"
 #include "MsgAssetDiscovery.h"
 
-#include "kNetBuildConfig.h"
-#include "kNet/MessageConnection.h"
+#include <kNetBuildConfig.h>
+#include <kNet/MessageConnection.h>
 
 #include <QDir>
+
 #include "MemoryLeakCheck.h"
 
 AssetModule::AssetModule()
@@ -96,9 +97,9 @@ void AssetModule::Initialize()
     connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(ClientConnectedToServer(UserConnectedResponseData *)));
     connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
 
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
-        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
 
     // Connect to asset uploads & deletions from storage to be able to broadcast asset discovery & deletion messages
     connect(framework_->Asset(), SIGNAL(AssetUploaded(const QString &)), this, SLOT(OnAssetUploaded(const QString &)));
@@ -285,7 +286,7 @@ void AssetModule::ClientDisconnectedFromServer()
     storagesReceivedFromServer.clear();
 }
 
-void AssetModule::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
+void AssetModule::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes)
 {
     switch (id)
     {
@@ -315,7 +316,7 @@ void AssetModule::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAsset
     
     // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
             if (userConn->connection != source)
@@ -335,7 +336,7 @@ void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDe
     
     // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
             if (userConn->connection != source)
@@ -352,7 +353,7 @@ void AssetModule::OnAssetUploaded(const QString& assetRef)
         return;
     
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
 
     MsgAssetDiscovery msg;
     msg.assetRef = StringToBuffer(assetRef.toStdString()); /// @bug Convert to UTF-8 instead!
@@ -380,7 +381,7 @@ void AssetModule::OnAssetDeleted(const QString& assetRef)
         return;
     
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
 
     MsgAssetDeleted msg;
     msg.assetRef = StringToBuffer(assetRef.toStdString()); /// @bug Convert to UTF-8 instead!
@@ -404,8 +405,8 @@ void AssetModule::ConsoleDumpAssetTransfers()
 {
     AssetAPI* asset = framework_->Asset();
     LogInfo("Current transfers:");
-    const AssetAPI::AssetTransferMap& currentTransfers = asset->GetCurrentTransfers();
-    for(AssetAPI::AssetTransferMap::const_iterator i = currentTransfers.begin(); i != currentTransfers.end(); ++i)
+    const AssetTransferMap& currentTransfers = asset->GetCurrentTransfers();
+    for(AssetTransferMap::const_iterator i = currentTransfers.begin(); i != currentTransfers.end(); ++i)
     {
         AssetPtr assetPtr = asset->GetAsset(i->first);
         unsigned numPendingDependencies = assetPtr ? asset->NumPendingDependencies(assetPtr) : 0;
