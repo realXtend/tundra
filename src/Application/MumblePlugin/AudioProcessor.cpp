@@ -407,6 +407,11 @@ namespace MumbleAudio
             if (mutedUserIds.contains(userId))
             {
                 userFrames.clear();
+                {
+                    QMutexLocker lockChannels(&mutexAudioChannels);
+                    if (!pendingSoundChannelRemoves.contains(userId))
+                        pendingSoundChannelRemoves.append(userId);
+                }
                 continue;
             }
 

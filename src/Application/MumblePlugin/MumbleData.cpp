@@ -1,11 +1,13 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#include "MumblePlugin.h"
 #include "MumbleData.h"
 #include "CoreDefines.h"
 
 // MumbleChannel
 
-MumbleChannel::MumbleChannel()
+MumbleChannel::MumbleChannel(MumblePlugin *owner) :
+    owner_(owner)
 {
 }
 
@@ -41,7 +43,18 @@ QList<uint> MumbleChannel::MutedUserIds()
     return mutedIds;
 }
 
-void MumbleChannel::RemoveUser(uint id)
+bool MumbleChannel::AddUser(MumbleUser *user)
+{
+    if (!users.contains(user))
+    {
+        users.push_back(user);
+        return true;
+    }
+    else
+        return false;
+}
+
+bool MumbleChannel::RemoveUser(uint id)
 {
     int index = -1;
     for(int i=0; i<users.count(); i++)
@@ -54,9 +67,11 @@ void MumbleChannel::RemoveUser(uint id)
     }
     if (index != -1)
     {
-        SAFE_DELETE(users[index]);
         users.removeAt(index);
+        return true;
     }
+    else 
+        return false;
 }
 
 QString MumbleChannel::toString() const
@@ -66,7 +81,8 @@ QString MumbleChannel::toString() const
 
 // MumbleUser
 
-MumbleUser::MumbleUser() :
+MumbleUser::MumbleUser(MumblePlugin *owner) :
+    owner_(owner),
     pos(float3::zero),
     isPositional(false),
     isMuted(false)
@@ -80,4 +96,28 @@ MumbleUser::~MumbleUser()
 QString MumbleUser::toString() const
 {
     return QString("MumbleUser(id = %1 name = \"%2\" muted = %3 deaf = %4 self = %5)").arg(id).arg(name).arg(isSelfMuted).arg(isSelfDeaf).arg(isMe);
+}
+
+void MumbleUser::SetMuted(bool muted)
+{
+    if (owner_)
+        owner_->SetMuted(id, muted);
+}
+
+void MumbleUser::Mute()
+{
+    SetMuted(true);
+}
+
+void MumbleUser::UnMute()
+{
+    SetMuted(false);
+}
+
+MumbleChannel *MumbleUser::Channel()
+{
+    if (owner_)
+        return owner_->Channel(channelId);
+    else
+        return 0;
 }

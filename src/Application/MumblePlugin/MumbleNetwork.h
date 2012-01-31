@@ -7,7 +7,7 @@
 #include "Math/float3.h"
 #include "google/protobuf/message.h"
 
-#include <QString>
+#include <QObject>
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
@@ -79,6 +79,45 @@ namespace MumbleNetwork
         RejectReasonUsernameInUse = 5,
         RejectReasonServerFull = 6,
         RejectReasonNoCertificate = 7
+    };
+
+    enum PermissionDeniedType 
+    {
+        PermissionDeniedText = 0,
+        PermissionDeniedPermission = 1,
+        PermissionDeniedSuperUser = 2,
+        PermissionDeniedChannelName = 3,
+        PermissionDeniedTextTooLong = 4,
+        PermissionDeniedH9K = 5,
+        PermissionDeniedTemporaryChannel = 6,
+        PermissionDeniedMissingCertificate = 7,
+        PermissionDeniedUserName = 8,
+        PermissionDeniedChannelFull = 9
+    };
+
+    enum ACLPermission 
+    {
+        ACLNone = 0x0,
+        ACLWrite = 0x1,
+        ACLTraverse = 0x2,
+        ACLEnter = 0x4,
+        ACLSpeak = 0x8,
+        ACLMuteDeafen = 0x10,
+        ACLMove = 0x20,
+        ACLMakeChannel = 0x40,
+        ACLLinkChannel = 0x80,
+        ACLWhisper = 0x100,
+        ACLTextMessage = 0x200,
+        ACLMakeTempChannel = 0x400,
+
+        // Root channel only
+        ACLKick = 0x10000,
+        ACLBan = 0x20000,
+        ACLRegister = 0x40000,
+        ACLSelfRegister = 0x80000,
+
+        ACLCached = 0x8000000,
+        ACLAll = 0xf07ff
     };
 
     class MumbleHeader 
@@ -218,4 +257,45 @@ namespace MumbleNetwork
 
     typedef std::list<MumbleNetwork::PendingMessage> PendingMessageList;
 
+    static QString PermissionName(ACLPermission p) 
+    {
+        switch (p) 
+        {
+            case ACLNone:
+                return "None";
+            case ACLWrite:
+                return "Write ACL";
+            case ACLTraverse:
+                return "Traverse";
+            case ACLEnter:
+                return "Enter";
+            case ACLSpeak:
+                return "Speak";
+            case ACLWhisper:
+                return "Whisper";
+            case ACLMuteDeafen:
+                return "Mute/Deafen";
+            case ACLMove:
+                return "Move";
+            case ACLMakeChannel:
+                return "Make channel";
+            case ACLMakeTempChannel:
+                return "Make temporary";
+            case ACLLinkChannel:
+                return "Link channel";
+            case ACLTextMessage:
+                return "Text message";
+            case ACLKick:
+                return "Kick";
+            case ACLBan:
+                return "Ban";
+            case ACLRegister:
+                return "Register User";
+            case ACLSelfRegister:
+                return "Register Self";
+            default:
+                break;
+        }
+        return QString();
+    }
 }

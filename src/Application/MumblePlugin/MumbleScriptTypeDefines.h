@@ -20,7 +20,10 @@ Q_DECLARE_METATYPE(QList<MumbleChannel*>)
 Q_DECLARE_METATYPE(QList<MumbleUser*>)
 Q_DECLARE_METATYPE(MumbleNetwork::ConnectionState)
 Q_DECLARE_METATYPE(MumbleNetwork::RejectReason)
+Q_DECLARE_METATYPE(MumbleNetwork::PermissionDeniedType)
+Q_DECLARE_METATYPE(MumbleNetwork::ACLPermission)
 Q_DECLARE_METATYPE(MumbleNetwork::NetworkMode)
+
 
 QScriptValue toScriptValueMumbleChannelList(QScriptEngine *engine, const QList<MumbleChannel*> &channels)
 {
@@ -76,10 +79,13 @@ void RegisterMumblePluginMetaTypes()
 {
     qRegisterMetaType<MumbleNetwork::ConnectionState>("MumbleNetwork::ConnectionState");
     qRegisterMetaType<MumbleNetwork::RejectReason>("MumbleNetwork::RejectReason");
+    qRegisterMetaType<MumbleNetwork::PermissionDeniedType>("MumbleNetwork::PermissionDeniedType");
+    qRegisterMetaType<MumbleNetwork::ACLPermission>("MumbleNetwork::ACLPermission");
     qRegisterMetaType<MumbleNetwork::NetworkMode>("MumbleNetwork::NetworkMode");
     qRegisterMetaType<QList<MumbleChannel*> >("QList<MumbleChannel*>");
     qRegisterMetaType<QList<MumbleUser*> >("QList<MumbleUser*>");
     qRegisterMetaType<QList<QByteArray> >("QList<QByteArray>");
+    qRegisterMetaType<QList<uint> >("QList<uint>");
 }
 
 void RegisterMumblePluginMetaTypes(QScriptEngine *engine)
@@ -99,6 +105,10 @@ void RegisterMumblePluginMetaTypes(QScriptEngine *engine)
         fromScriptValueEnum<MumbleNetwork::ConnectionState>);
     qScriptRegisterMetaType(engine, toScriptValueEnum<MumbleNetwork::RejectReason>, 
         fromScriptValueEnum<MumbleNetwork::RejectReason>);
+    qScriptRegisterMetaType(engine, toScriptValueEnum<MumbleNetwork::PermissionDeniedType>, 
+        fromScriptValueEnum<MumbleNetwork::PermissionDeniedType>);
+    qScriptRegisterMetaType(engine, toScriptValueEnum<MumbleNetwork::ACLPermission>, 
+        fromScriptValueEnum<MumbleNetwork::ACLPermission>);
     qScriptRegisterMetaType(engine, toScriptValueEnum<MumbleNetwork::NetworkMode>, 
         fromScriptValueEnum<MumbleNetwork::NetworkMode>);
 }

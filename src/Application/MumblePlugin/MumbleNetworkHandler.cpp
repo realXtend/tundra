@@ -17,6 +17,8 @@
 #include <QSslCipher>
 #include <QMutexLocker>
 
+#include <QDebug>
+
 using namespace MumbleNetwork;
 
 MumbleNetworkHandler::MumbleNetworkHandler(QString address, ushort port, QString username, QString password) :
@@ -183,8 +185,6 @@ void MumbleNetworkHandler::InitUDP()
 
 void MumbleNetworkHandler::OnConnected()
 {
-    LogInfo(LC + "OnConnected");
-
     MumbleProto::Version messageVersion;
     messageVersion.set_release(utf8(Application::FullIdentifier()));
     messageVersion.set_os(utf8(Application::Platform()));
@@ -492,21 +492,21 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
 {
     switch(id)
     {
-        case ServerSync:
+        case MumbleNetwork::ServerSync:
         {
             MumbleProto::ServerSync msg = ParseMessage<MumbleProto::ServerSync>(buffer);
             connectionInfo.sessionId = msg.session();
             emit ServerSynced(connectionInfo.sessionId);
             break;
         }
-        case ServerConfig:
+        case MumbleNetwork::ServerConfig:
         {
             MumbleProto::ServerConfig msg = ParseMessage<MumbleProto::ServerConfig>(buffer);
             /// @todo Detect max bandwidth and make it as max of our own?
             //if (msg.has_max_bandwidth())
             break;
         }
-        case Version:
+        case MumbleNetwork::Version:
         {
             MumbleProto::Version msg = ParseMessage<MumbleProto::Version>(buffer);
             LogDebug(LC + "Murmur server information:");
@@ -514,38 +514,38 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
             LogDebug(LC + "- OS: " + utf8(msg.os()) + " / " + utf8(msg.os_version()));
             break;
         }
-        case Reject:
+        case MumbleNetwork::Reject:
         {
             MumbleProto::Reject msg = ParseMessage<MumbleProto::Reject>(buffer);
             emit ConnectionRejected((MumbleNetwork::RejectReason)msg.type(), msg.has_reason() ? utf8(msg.reason()) : "");
             break;
         }
-        case ChannelState:
+        case MumbleNetwork::ChannelState:
         {
             MumbleProto::ChannelState msg = ParseMessage<MumbleProto::ChannelState>(buffer);
             emit ChannelUpdate(msg.channel_id(), msg.parent(), utf8(msg.name()), msg.has_description() ? utf8(msg.description()) : "");
             break;
         }
-        case ChannelRemove:
+        case MumbleNetwork::ChannelRemove:
         {
             MumbleProto::ChannelRemove msg = ParseMessage<MumbleProto::ChannelRemove>(buffer);
             emit ChannelRemoved(msg.channel_id());
             break;
         }
-        case UserState:
+        case MumbleNetwork::UserState:
         {
             MumbleProto::UserState msg = ParseMessage<MumbleProto::UserState>(buffer);
             emit UserUpdate(msg.session(), msg.channel_id(), utf8(msg.name()), utf8(msg.comment()), utf8(msg.hash()), 
                             msg.self_mute(), msg.self_deaf(), (connectionInfo.sessionId == msg.session() ? true : false));
             break;
         }
-        case UserRemove:
+        case MumbleNetwork::UserRemove:
         {
             MumbleProto::UserRemove msg = ParseMessage<MumbleProto::UserRemove>(buffer);
             emit UserLeft(msg.session(), msg.actor(), msg.has_ban() ? msg.ban() : false, msg.has_ban() ? !msg.ban() : false, utf8(msg.reason()));
             break;
         }
-        case UDPTunnel:
+        case MumbleNetwork::UDPTunnel:
         {
             if (buffer.length() < 1)
                 return;
@@ -564,7 +564,7 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
             }
             break;
         }
-        case CryptSetup:
+        case MumbleNetwork::CryptSetup:
         {
             MumbleProto::CryptSetup msg = ParseMessage<MumbleProto::CryptSetup>(buffer);
             if (msg.has_key() && msg.has_client_nonce() && msg.has_server_nonce()) 
@@ -591,7 +591,7 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
                 SendTCP(CryptSetup, messageCrypt);
             }
         }
-        case Ping:
+        case MumbleNetwork::Ping:
         {
             MumbleProto::Ping msg = ParseMessage<MumbleProto::Ping>(buffer);
             crypt.uiRemoteGood = msg.good();
@@ -625,12 +625,43 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
             }
             break;
         }
-        case PermissionQuery:
+        case MumbleNetwork::PermissionDenied:
+        {
+            MumbleProto::PermissionDenied message = ParseMessage<MumbleProto::PermissionDenied>(buffer);
+            emit PermissionDenied((MumbleNetwork::PermissionDeniedType)message.type(), (MumbleNetwork::ACLPermission)message.permission(),
+                message.has_channel_id() ? message.channel_id() : 0, message.has_session() ? message.session() : 0, message.has_reason() ? utf8(message.reason()) : "");
+            break;
+        }
+        case MumbleNetwork::TextMessage:
+        {
+            MumbleProto::TextMessage message = ParseMessage<MumbleProto::TextMessage>(buffer);
+            if (message.has_actor() && message.has_message())
+            {
+                QList<uint> userIds;
+                for(int i=0; i<message.session_size(); i++)
+                    userIds.push_back(message.session(i));
+                if (!userIds.isEmpty())
+                {
+                    if (userIds.contains(connectionInfo.sessionId))
+                        emit TextMessageReceived(true, QList<uint>(), message.actor(), utf8(message.message()));
+                }
+                else
+                {
+                    QList<uint> channelIds;
+                    for(int i=0; i<message.channel_id_size(); i++)
+                        channelIds.push_back(message.channel_id(i));
+                    if (!channelIds.isEmpty())
+                        emit TextMessageReceived(false, channelIds, message.actor(), utf8(message.message()));
+                }
+            }
+            break;
+        }
+        case MumbleNetwork::PermissionQuery:
         {
             /// @todo Check permissions if we have the right to speak/write messages, not terribly important in Tundra right now.
             break;
         }
-        case CodecVersion:
+        case MumbleNetwork::CodecVersion:
         {
             // Ignored because we only have one version of celt codec in Tundra.
             // You must have >= 1.2.2 murmur server to have proper codecs for VOIP to work.

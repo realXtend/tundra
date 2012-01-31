@@ -64,7 +64,11 @@ signals:
     void ServerSynced(uint sessionId);
 
     void NetworkModeChange(MumbleNetwork::NetworkMode mode, QString reason);
+
+    void TextMessageReceived(bool isPrivate, QList<uint> channelIds, uint senderId, QString message);
+
     void ConnectionRejected(MumbleNetwork::RejectReason reasonType, QString reasonMessage);
+    void PermissionDenied(MumbleNetwork::PermissionDeniedType denyType, MumbleNetwork::ACLPermission permission, uint channelId, uint targetUserId, QString reason);
 
     void ChannelUpdate(uint id, uint parentId, QString name, QString description);
     void ChannelRemoved(uint id);

@@ -62,8 +62,9 @@ void MumblePlugin::Initialize()
     framework_->Console()->RegisterCommand("mumbleconnect", "", this, SLOT(DebugConnect()));
     framework_->Console()->RegisterCommand("mumbledisconnect", "", this, SLOT(Disconnect()));
     framework_->Console()->RegisterCommand("mumblejoin", "", this, SLOT(JoinChannel(QString)));
-    framework_->Console()->RegisterCommand("mumblemute", "", this, SLOT(DebugMute()));
-    framework_->Console()->RegisterCommand("mumbleunmute", "", this, SLOT(DebugUnMute()));
+    framework_->Console()->RegisterCommand("mumbleselfmute", "", this, SLOT(DebugMute()));
+    framework_->Console()->RegisterCommand("mumbleselfunmute", "", this, SLOT(DebugUnMute()));
+    framework_->Console()->RegisterCommand("mumblemute", "", this, SLOT(DebugMute(QString )));
     framework_->Console()->RegisterCommand("mumbledeaf", "", this, SLOT(DebugDeaf()));
     framework_->Console()->RegisterCommand("mumbleundeaf", "", this, SLOT(DebugUnDeaf()));
     framework_->Console()->RegisterCommand("mumblewizard", "", this, SLOT(RunAudioWizard()));
@@ -165,15 +166,17 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
     connect(network_, SIGNAL(StateChange(MumbleNetwork::ConnectionState)), SLOT(OnStateChange(MumbleNetwork::ConnectionState)), Qt::QueuedConnection);
     connect(network_, SIGNAL(ServerSynced(uint)), SLOT(OnServerSynced(uint)), Qt::QueuedConnection);
     connect(network_, SIGNAL(NetworkModeChange(MumbleNetwork::NetworkMode, QString)), SLOT(OnNetworkModeChange(MumbleNetwork::NetworkMode, QString)), Qt::QueuedConnection);
+    
     connect(network_, SIGNAL(ConnectionRejected(MumbleNetwork::RejectReason, QString)), SLOT(OnConnectionRejected(MumbleNetwork::RejectReason, QString)), Qt::QueuedConnection);
+    connect(network_, SIGNAL(PermissionDenied(MumbleNetwork::PermissionDeniedType, MumbleNetwork::ACLPermission, uint, uint, QString)), 
+        SLOT(OnPermissionDenied(MumbleNetwork::PermissionDeniedType, MumbleNetwork::ACLPermission, uint, uint, QString)), Qt::QueuedConnection);
 
-    connect(network_, SIGNAL(ChannelUpdate(uint, uint, QString, QString)), 
-        SLOT(OnChannelUpdate(uint, uint, QString, QString)), Qt::QueuedConnection);
+    connect(network_, SIGNAL(TextMessageReceived(bool, QList<uint>, uint, QString)), SLOT(OnTextMessageReceived(bool, QList<uint>, uint, QString)), Qt::QueuedConnection);
+    connect(network_, SIGNAL(ChannelUpdate(uint, uint, QString, QString)), SLOT(OnChannelUpdate(uint, uint, QString, QString)), Qt::QueuedConnection);
     connect(network_, SIGNAL(ChannelRemoved(uint)), SLOT(OnChannelRemoved(uint)), Qt::QueuedConnection);
+    connect(network_, SIGNAL(UserLeft(uint, uint, bool, bool, QString)), SLOT(OnUserLeft(uint, uint, bool, bool, QString)), Qt::QueuedConnection);
     connect(network_, SIGNAL(UserUpdate(uint, uint, QString, QString, QString, bool, bool, bool)), 
         SLOT(OnUserUpdate(uint, uint, QString, QString, QString, bool, bool, bool)), Qt::QueuedConnection);
-    connect(network_, SIGNAL(UserLeft(uint, uint, bool, bool, QString)), 
-        SLOT(OnUserLeft(uint, uint, bool, bool, QString)), Qt::QueuedConnection);
 
     // Handle audio signals from network thread to audio thread.
     connect(network_, SIGNAL(AudioReceived(uint, QList<QByteArray>)), audio_, SLOT(OnAudioReceived(uint, QList<QByteArray>)), Qt::QueuedConnection);
@@ -187,8 +190,10 @@ void MumblePlugin::Disconnect(QString reason)
     foreach(MumbleUser *pu, pendingUsers_)
         SAFE_DELETE(pu);
     pendingUsers_.clear();
+    
+    // Note that this frees all channel users as well.
     foreach(MumbleChannel *c, channels_)
-        SAFE_DELETE(c); // Note that this frees all channel users as well.
+        SAFE_DELETE(c);
     channels_.clear();
 
     if (audioWizard)
@@ -220,6 +225,63 @@ void MumblePlugin::Disconnect(QString reason)
     state.Reset();
 }
 
+bool MumblePlugin::SendTextMessage(const QString &message)
+{
+    if (!state.serverSynced || state.connectionState != MumbleConnected || !network_)
+    {
+        LogError(LC + "Cannot send text message, not connected to a server");
+        return false;
+    }
+
+    MumbleUser *me = Me();
+    if (me)
+    {
+        MumbleChannel *channel = me->Channel();
+        if (channel)
+        {
+            MumbleProto::TextMessage messageText;
+            messageText.add_channel_id(channel->id);
+            messageText.set_message(utf8(message));
+            network_->SendTCP(TextMessage, messageText);
+            return true;
+        }
+        else
+            LogError(LC + "Could not find our current channel from the current state to send the text message.");
+    }
+    else
+        LogError(LC + "Could not find our user from the current state to send the text message.");
+
+    return false;
+}
+
+bool MumblePlugin::SendTextMessage(uint userId, const QString &message)
+{
+    if (!state.serverSynced || state.connectionState != MumbleConnected || !network_)
+    {
+        LogError(LC + "Cannot send text message to user with id " + QString::number(userId) + ", not connected to a server");
+        return false;
+    }
+
+    MumbleUser *target = User(userId);
+    if (target)
+    {
+        if (target->id != state.sessionId)
+        {
+            MumbleProto::TextMessage messageText;
+            messageText.add_session(target->id);
+            messageText.set_message(utf8(message));
+            network_->SendTCP(TextMessage, messageText);
+            return true;
+        }
+        else
+            LogError(LC + "Cannot sent text message to own user id " + QString::number(userId));
+    }
+    else
+        LogError(LC + "Could not find user with id " + QString::number(userId) + "from the server to send the text message.");
+        
+    return false;
+}
+
 bool MumblePlugin::JoinChannel(QString fullName)
 {
     if (state.connectionState != MumbleConnected || !network_)
@@ -233,7 +295,9 @@ bool MumblePlugin::JoinChannel(QString fullName)
         return JoinChannel(channel->id);
     else
     {
-        LogError(LC + "Could not find channel with full name \"" + fullName + "\" for join operation.");
+        QString reason = "Channel with full name \"" + fullName + "\" does not exist, cannot join.";
+        emit JoinChannelFailed(reason);
+        LogError(LC + reason);
         return false;
     }
 }
@@ -258,7 +322,9 @@ bool MumblePlugin::JoinChannel(uint id)
     }
     else
     {
-        LogError(LC + "Could not find channel with id\"" + QString::number(id) + "\" for join operation.");
+        QString reason = "Channel with id \"" + QString::number(id) + "\" does not exist, cannot join.";
+        emit JoinChannelFailed(reason);
+        LogError(LC + reason);
         return false;
     }
 }
@@ -322,6 +388,37 @@ MumbleUser* MumblePlugin::Me()
     if (!state.serverSynced)
         return 0;
     return User(state.sessionId);
+}
+
+void MumblePlugin::SetMuted(uint userId, bool muted)
+{
+    if (!state.serverSynced || !network_)
+        return;
+    if (userId == state.sessionId)
+        return;
+
+    MumbleUser *user = User(userId);
+    if (user)
+    {
+        if (user->isMuted == muted)
+            return;
+        
+        user->isMuted = muted;
+        user->EmitMuted();
+        emit UserMuted(user, user->isMuted);
+    }
+    else
+        LogError(LC + QString("Cannot mute user with id %1, no such user!").arg(userId));
+}
+
+void MumblePlugin::Mute(uint userId)
+{
+    SetMuted(userId, true);
+}
+
+void MumblePlugin::UnMute(uint userId)
+{
+    SetMuted(userId, false);
 }
 
 MumbleNetwork::ConnectionState MumblePlugin::State()
@@ -412,7 +509,10 @@ void MumblePlugin::SetInputAudioMuted(bool inputAudioMuted)
 void MumblePlugin::RunAudioWizard()
 {
     if (audioWizard && audioWizard->isVisible())
+    {
+        QApplication::setActiveWindow(audioWizard);
         return;
+    }
 
     if (audioWizard)
         delete audioWizard;
@@ -473,13 +573,89 @@ void MumblePlugin::OnConnectionRejected(MumbleNetwork::RejectReason reasonType, 
     Disconnect(reasonMessage);
 }
 
+void MumblePlugin::OnPermissionDenied(MumbleNetwork::PermissionDeniedType denyReason, MumbleNetwork::ACLPermission permission, uint channelId, uint targetUserId, QString reason)
+{
+    if (denyReason == PermissionDeniedPermission)
+    {
+        MumbleChannel *channel = Channel(channelId);
+        if (channel)
+        {
+            if (targetUserId == state.sessionId)
+            {
+                LogWarning(LC + QString("You were denied %1 privileges in %2").arg(MumbleNetwork::PermissionName(permission)).arg(channel->fullName));
+                if (reason.isEmpty())
+                    reason = QString("You were denied %1 privileges in %2").arg(MumbleNetwork::PermissionName(permission)).arg(channel->fullName);
+            }
+            else
+            {
+                MumbleUser *user = User(targetUserId);
+                if (user)
+                {    
+                    LogWarning(LC + QString("%1 was denied %2 privileges in %3").arg(user->name).arg(MumbleNetwork::PermissionName(permission)).arg(channel->fullName));
+                    if (reason.isEmpty())
+                        reason = QString("You were denied %1 privileges in %2").arg(MumbleNetwork::PermissionName(permission)).arg(channel->fullName);
+                }
+            }
+        }
+    }
+    else if (denyReason == PermissionDeniedSuperUser)
+    {
+        LogError(LC + "Permission denied: Cannot modify SuperUser.");
+        if (reason.isEmpty())
+            reason = "Cannot modify SuperUser.";
+    }
+    else if (denyReason == PermissionDeniedTextTooLong)
+    {
+        LogError(LC + "Permission denied: Text message too long.");
+        if (reason.isEmpty())
+            reason = "Text message too long.";
+    }
+    else if (denyReason == PermissionDeniedChannelFull)
+    {
+        LogError(LC + "Channel is full!");
+        if (reason.isEmpty())
+            reason = "Channel is full!";
+    }
+
+    emit PermissionDenied(denyReason, permission, channelId, targetUserId, reason);
+}
+
+void MumblePlugin::OnTextMessageReceived(bool isPrivate, QList<uint> channelIds, uint senderId, QString message)
+{
+    MumbleUser *sender = User(senderId);
+    if (!sender)
+        return;
+
+    if (isPrivate)
+    {
+        qDebug() << "Private from" << sender->name << "message:" << message;
+        emit PrivateTextMessageReceived(sender, message);
+    }
+    else
+    {
+        MumbleUser *me = Me();
+        if (me)
+        {
+            foreach(uint channelId, channelIds)
+            {
+                if (me->channelId == channelId)
+                {
+                    qDebug() << "Channel msg from" << sender->name << "message:" << message;
+                    emit ChannelTextMessageReceived(sender, message);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 void MumblePlugin::OnChannelUpdate(uint id, uint parentId, QString name, QString description)
 {
     MumbleChannel *channel = Channel(id);
     bool isNew = channel == 0;
     if (!channel)
     {
-        channel = new MumbleChannel();
+        channel = new MumbleChannel(this);
         channels_.push_back(channel);
     }
     channel->id = id;
@@ -504,15 +680,17 @@ void MumblePlugin::OnChannelUpdate(uint id, uint parentId, QString name, QString
 
     if (isNew)
     {
-        LogInfo(LC + "Created channel: " + channel->toString());
+        qDebug() << "{NEW CHANNEL}   "  << channel->toString().toStdString().c_str();
         emit ChannelCreated(channel);
         emit ChannelsChanged(channels_);
     }
     else
     {
-        LogInfo(LC + "Updated channel: " + channel->toString());
+        qDebug() << "{CHANNEL UPDATE}"  << channel->toString().toStdString().c_str();
         emit ChannelUpdated(channel);
     }
+
+    qDebug() << "";
 }
 
 void MumblePlugin::OnChannelRemoved(uint id)
@@ -531,12 +709,12 @@ void MumblePlugin::OnChannelRemoved(uint id)
         }
         if (childIndex != -1)
         {
-            MumbleChannel *childChannel = channels_.at(childIndex);
+            MumbleChannel *childChannel = channels_[childIndex];
             if (childChannel)
             {
                 uint childId = childChannel->id;
                 SAFE_DELETE(childChannel);
-                emit ChannelRemoved(childId);    
+                emit ChannelRemoved(childId);
             }
             channels_.removeAt(childIndex);
         }
@@ -554,77 +732,163 @@ void MumblePlugin::OnChannelRemoved(uint id)
             break;
         }
     }
-    if (index == -1)
-        return;
+    if (index != -1)
+    {
+        MumbleChannel *channel = channels_[index];   
+        qDebug() << "{CHANNEL REMOVE}"  << channel->toString().toStdString().c_str();
+        SAFE_DELETE(channel);
+        channels_.removeAt(index);
+        
+        emit ChannelRemoved(id);
+        emit ChannelsChanged(channels_);
 
-    MumbleChannel *channel = channels_.at(index);   
-    SAFE_DELETE(channel);
-    channels_.removeAt(index);
-
-    LogInfo(LC + "Removed channel " + QString::number(id) + " and its childen.");
-    emit ChannelRemoved(id);
-    emit ChannelsChanged(channels_);
+        qDebug() << "";
+    }
 }
 
 void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString comment, QString hash, bool selfMuted, bool selfDeaf, bool isMe)
 {
-    MumbleChannel *channel = Channel(channelId);
-    if (!channel)
-    {
-        LogError(LC + "Failed to find channel " + QString::number(channelId) + " for user " + QString::number(id));
-        return;
-    }
+    bool channelChange = false;
+    bool mutedChange = false;
+    bool selfMutedChange = false;
+    bool selfDeafChange = false;
 
-    MumbleUser *user = channel->User(id);
-    bool isNew = user == 0;
-    if (!user)
-    {
-        ///@todo make sure this sessionId is no longer in other channels.
-        user = new MumbleUser();
-        user->id = id;
-        user->channelId = channelId;
-        if (!state.serverSynced)
-            pendingUsers_.push_back(user);
-        else
-            channel->users.push_back(user);
-    }
-    if (user->id != id)
-        LogError(LC + "Found user who's session id seems to have changed!");
-
-    /// @todo inspect all properties and detect what changed, emit the appropriate signals.
-    if (isNew || (user->name != name && !name.isEmpty()))
-        user->name = name;
-    if (isNew || (user->comment != name && !comment.isEmpty()))
-        user->comment = comment;
-    if (isNew || (user->hash != name && !hash.isEmpty()))
-        user->hash = hash; // can be used to detect mute states when muted user changes channels
-
-    user->isSelfMuted = selfMuted;
-    user->isSelfDeaf = selfDeaf;
-    user->isMe = isMe;
-
-    if (!state.serverSynced)
-        return;
-
-    if (user->isMe)
-    {
-        state.fullChannelName = channel->fullName;
-        emit MeJoinedChannel(channel);
-    }
-
+    MumbleUser *user = User(id);
+    bool isNew = (user == 0);
+    
+    // Created new user
     if (isNew)
     {
-        LogInfo(LC + "Created user: " + user->toString());
-        emit UserUpdated(user);
-
-        if (isNew)
-            channel->EmitUsersChanged();
+        channelChange = true;
+        mutedChange = true;
+        selfMutedChange = true;
+        selfDeafChange = true;
+        
+        user = new MumbleUser(this);
+        user->id = id;
+        user->channelId = channelId;
+        user->name = name;
+        user->comment = comment;
+        user->hash = hash;
+        user->isSelfMuted = selfMuted;
+        user->isSelfDeaf = selfDeaf;
+        user->isMe = isMe;
+    }
+    // Existing user update
+    else if (user)
+    {
+        // Detect changed properties for existing user
+        if (user->channelId != channelId)
+        {
+            // Handle previous channel user removal and signaling
+            MumbleChannel *previousChannel = user->Channel();
+            if (previousChannel)
+            {
+                if (previousChannel->RemoveUser(user->id))
+                {
+                    qDebug() << "- previousChannel->EmitUserLeft" << user->id << user->name;
+                    qDebug() << "- previousChannel->EmitUsersChanged" << previousChannel->users.size();
+                    previousChannel->EmitUserLeft(user->id);
+                    previousChannel->EmitUsersChanged();
+                }
+            }
+            user->channelId = channelId;
+            channelChange = true;
+        }
+        if (user->isSelfMuted != selfMuted)
+        {
+            user->isSelfMuted = selfMuted;
+            selfMutedChange = true;
+        }
+        if (user->isSelfDeaf != selfDeaf)
+        {
+            user->isSelfDeaf = selfDeaf;
+            selfDeafChange = true;
+        }
     }
     else
     {
-        LogInfo(LC + "Updated user: " + user->toString());
+        LogError(LC + "Error on MumbleUser creation/update for id " + QString::number(id));
+        return;
+    }
+    
+    // Make sure we have the channel
+    MumbleChannel *channel = Channel(user->channelId);
+    if (!channel)
+    {
+        LogError(LC + "User creation/update detected unknown channel, aborting operation.");
+        SAFE_DELETE(user);
+        return;
+    }
+
+    // Not yet synced, push to pending
+    if (!state.serverSynced)
+    {
+        pendingUsers_.push_back(user);
+        return;
+    }
+
+    // Emit user created/updated
+    if (isNew)
+    {
+        if (user->isMe)
+        {
+            qDebug() << "#### ME CREATED" << user->id << user->name;
+            emit MeCreated(user);
+        }
+
+        qDebug() << "{CREATED}" << user->toString().toStdString().c_str();
+        emit UserCreated(user);
+    }
+    else
+    {
+        qDebug() << "{UPDATED}" << user->toString().toStdString().c_str();
         emit UserUpdated(user);
     }
+
+    // Emit user property changes
+    if (channelChange)
+    {
+        if (channel->AddUser(user))
+        {
+            if (user->isMe)
+            {
+                qDebug() << "#### ME JOINED " << channel->id << channel->fullName;
+                state.fullChannelName = channel->fullName;
+                emit JoinedChannel(channel);
+            }
+
+            qDebug() << "  user->EmitChannelChanged()";
+            user->EmitChannelChanged(channel);
+            qDebug() << "- channel->EmitUserJoined" << user->id << user->name;
+            qDebug() << "- channel->EmitUsersChanged" << channel->users.size();
+            channel->EmitUserJoined(user);
+            channel->EmitUsersChanged();
+        }
+    }
+    if (mutedChange)
+    {
+        qDebug() << "  user->EmitMuted()";
+        user->EmitMuted();
+        qDebug() << "# UserMuted" << user->id << user->isMuted;
+        emit UserMuted(user, user->isMuted);
+    }
+    if (selfMutedChange)
+    {
+        qDebug() << "  user->EmitSelfMuted()";
+        user->EmitSelfMuted();
+        qDebug() << "# UserSelfMuted" << user->id << user->isSelfMuted;
+        emit UserSelfMuted(user, user->isSelfMuted);
+    }
+    if (selfDeafChange)
+    {
+        qDebug() << "  user->EmitSelfDeaf()";
+        user->EmitSelfDeaf();
+        qDebug() << "# UserSelfDeaf" << user->id << user->isSelfDeaf;
+        emit UserSelfDeaf(user, user->isSelfDeaf);
+    }
+
+    qDebug() << "";
 }
 
 void MumblePlugin::OnUserLeft(uint id, uint actorId, bool banned, bool kicked, QString reason)
@@ -648,10 +912,13 @@ void MumblePlugin::OnUserLeft(uint id, uint actorId, bool banned, bool kicked, Q
     MumbleChannel *channel = ChannelForUser(id);
     if (channel)
     {
-        if (channel->User(id))
-            LogInfo(LC + "User left channel \"" + channel->name + "\": " + channel->User(id)->toString());
-        channel->RemoveUser(id);
-        channel->EmitUsersChanged();
+        MumbleUser *user = channel->User(id);
+        if (user)
+        {
+            if (channel->RemoveUser(id))
+                channel->EmitUsersChanged();
+            SAFE_DELETE(user);
+        }
     }
     else
         LogError(LC + "Could not find channel for disconnected user " + QString::number(id));
@@ -662,13 +929,39 @@ void MumblePlugin::OnUserLeft(uint id, uint actorId, bool banned, bool kicked, Q
 
 void MumblePlugin::OnServerSynced(uint sessionId)
 {
+    qDebug() << "";
+
     state.serverSynced = true;
     state.sessionId = sessionId;
 
     QString pendingChannelJoin = state.fullChannelName;
 
+    // Find and process own user ptr first, this is done because
+    // MeCreated and JoinedChannel signals are fired inside OnUserUpdate.
+    // We want to have these signals fire first so you can start to listen to
+    // the channel signals (user joined/left) of your own channel and get full information with them.
+    int meIndex = 0;
+    for(int i=0; i<pendingUsers_.length(); i++)
+    {
+        if (pendingUsers_.at(i)->id == state.sessionId)
+        {
+            OnUserUpdate(pendingUsers_.at(i)->id, pendingUsers_.at(i)->channelId, pendingUsers_.at(i)->name, pendingUsers_.at(i)->comment, 
+                pendingUsers_.at(i)->hash, pendingUsers_.at(i)->isSelfMuted, pendingUsers_.at(i)->isSelfDeaf, state.sessionId == pendingUsers_.at(i)->id);
+            meIndex = i;
+            SAFE_DELETE(pendingUsers_[i]);
+            break;
+        }
+    }
+    pendingUsers_.removeAt(meIndex);
+
+    // Iterate and create/join other users on the server
     foreach(MumbleUser *pu, pendingUsers_)
     {
+        if (!pu)
+        {
+            LogError(LC + "Error handlng pending users after server syncronized, was null!");
+            continue;
+        }
         OnUserUpdate(pu->id, pu->channelId, pu->name, pu->comment, pu->hash, pu->isSelfMuted, pu->isSelfDeaf, state.sessionId == pu->id);
         SAFE_DELETE(pu);
     }
@@ -680,8 +973,6 @@ void MumblePlugin::OnServerSynced(uint sessionId)
         LogError(LC + "Could not find own user ptr after connected!");
         return;
     }
-        
-    emit MeCreated(me);
 
     MumbleChannel *myChannel = Channel(me->channelId);
     if (!myChannel)
@@ -690,7 +981,7 @@ void MumblePlugin::OnServerSynced(uint sessionId)
         return;
     }
     if (state.fullChannelName != myChannel->fullName)
-        LogWarning(LC + "Current channel mismatch after connected!");
+        LogError(LC + "Current channel mismatch after connected!");
     
     // Join potential pending channel
     if (pendingChannelJoin != myChannel->fullName)
@@ -828,6 +1119,14 @@ void MumblePlugin::SaveSettings(MumbleAudio::AudioSettings settings)
     config->Set(data, "amplification", settings.amplification);
     config->Set(data, "VADmin", settings.VADmin);
     config->Set(data, "VADmax", settings.VADmax);
+}
+
+void MumblePlugin::DebugMute(QString userIdStr)
+{
+    uint id = userIdStr.toInt();
+    MumbleUser *u = User(id);
+    if (u)
+        SetMuted(u->id, !u->isMuted);
 }
 
 extern "C"
