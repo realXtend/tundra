@@ -34,7 +34,6 @@ public:
 public slots:
     /// Creates and shows the profiling window.
     void ShowProfilingWindow();
-    void DumpInputContexts();
 
 private slots:
     /// Starts profiling if the profiler widget is visible.

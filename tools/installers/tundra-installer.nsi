@@ -48,6 +48,12 @@ Section ""
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "hostwindowedserver" "Host in Windowed Tundra Server (UDP 2345)" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp"
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "openviewer" "Open Tundra Viewer in this Project Folder" "$INSTDIR\tundra.exe --config viewer.xml --storage $\"%1$\""
 
+  # Register URL handler for 'tundra://'.
+  WriteRegStr HKCR "tundra" "" "Tundra_URL_Handler"
+  WriteRegStr HKCR "tundra" "URL Protocol" ""
+  WriteRegStr HKCR "tundra\DefaultIcon" "" "$INSTDIR\data\ui\images\icon\TundraLogo32px.ico,0"
+  WriteRegStr HKCR "tundra\shell\open\command" "" "$INSTDIR\tundra.exe --login $\"%1$\""
+
   ExecWait '"$INSTDIR\oalinst.exe" /S'
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
   ExecWait '"$INSTDIR\dxwebsetup.exe"'
@@ -93,6 +99,9 @@ Section "Uninstall"
 
   SetShellVarContext all
   RMDir /r "$SMPROGRAMS\Tundra ${VERSION}"
+
+  # Remove the registered URL handler.
+  DeleteRegKey HKCR "tundra"
 
   # Unassociate file extension handlers
   !insertmacro APP_UNASSOCIATE "txml" "Tundra.Scenexmlfile"

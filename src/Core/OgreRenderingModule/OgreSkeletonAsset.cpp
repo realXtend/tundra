@@ -21,7 +21,7 @@ OgreSkeletonAsset::~OgreSkeletonAsset()
     Unload();
 }
 
-bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous)
+bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
 {
     if (!data_)
     {
@@ -33,6 +33,9 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
         LogError("Zero sized skeleton asset");
         return false;
     }
+
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+        allowAsynchronous = false;
 
     // Asynchronous loading
     // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.

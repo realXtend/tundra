@@ -15,7 +15,7 @@ public:
     OgreParticleAsset(AssetAPI *owner, const QString &type, const QString &name) : IAsset(owner, type, name) {}
     ~OgreParticleAsset();
 
-    virtual bool DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous);
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous);
 
     /// IAsset overload.
     /** The data will contain asset references in desanitated format. */

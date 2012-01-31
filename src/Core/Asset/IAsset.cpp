@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <set>
 
+#include "Profiler.h"
 #include "LoggingFunctions.h"
 
 #include "IAsset.h"
@@ -135,6 +136,7 @@ AssetPtr IAsset::Clone(QString newAssetName) const
 
 bool IAsset::LoadFromFile(QString filename)
 {
+    PROFILE(IAsset_LoadFromFile);
     filename = filename.trimmed(); ///\todo Sanitate.
     std::vector<u8> fileData;
     bool success = LoadFileToVector(filename, fileData);
@@ -158,6 +160,7 @@ bool IAsset::LoadFromFile(QString filename)
 
 bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
+    PROFILE(IAsset_LoadFromFileInMemory);
     if (!data || numBytes == 0)
     {
         LogDebug("LoadFromFileInMemory failed for asset \"" + ToString() + "\"! No data present!");

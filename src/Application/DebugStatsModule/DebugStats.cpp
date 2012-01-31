@@ -53,8 +53,6 @@ void DebugStatsModule::Initialize()
         this, SLOT(ShowProfilingWindow()));
     framework_->Console()->RegisterCommand("exec", "Invokes an Entity Action on an entity (debugging).",
         this, SLOT(Exec(const QStringList &)));
-    framework_->Console()->RegisterCommand("dumpinputcontexts", "Prints the list of input contexts to std::cout, for debugging purposes.",
-        this, SLOT(DumpInputContexts()));
 
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -95,11 +93,6 @@ void DebugStatsModule::ShowProfilingWindow()
     profilerWindow_->resize(650, 530);
     connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
     profilerWindow_->show();
-}
-
-void DebugStatsModule::DumpInputContexts()
-{
-    framework_->Input()->DumpInputContexts();
 }
 
 void DebugStatsModule::Update(f64 frametime)

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "TundraLogicModuleApi.h"
+#include "TundraProtocolModuleApi.h"
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 
@@ -19,7 +19,7 @@ namespace TundraLogic
 /** You can use SceneImporter to directly create and instantiate content from OGRE .mesh and .scene files,
     or to create scene descriptions for the aforementioned file formats. The scene descriptions can be modified
     and then instantiated using Scene::CreateContentFromSceneDesc(). */
-class TUNDRALOGIC_MODULE_API SceneImporter
+class TUNDRAPROTOCOL_MODULE_API SceneImporter
 {
 public:
     /// Constructs the importer.

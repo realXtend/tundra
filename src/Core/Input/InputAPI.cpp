@@ -212,9 +212,19 @@ void InputAPI::DumpInputContexts()
         LogInfo("Context " + QString::number(idx++) + ": \"" + ic->Name() + "\", priority " + QString::number(ic->Priority()));
 }
 
-InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
+void InputAPI::SetPriority(InputContextPtr inputContext, int newPriority)
 {
-    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(this, name.toStdString().c_str(), priority);
+    if (!inputContext)
+        return;
+
+    // When the priority of the input context changes, it must be re-inserted in sorted order into the input context list.
+    for(InputContextList::iterator iter = registeredInputContexts.begin();
+        iter != registeredInputContexts.end(); ++iter)
+        if ((*iter).lock() == inputContext)
+        {
+            registeredInputContexts.erase(iter);
+            break;
+        }
 
     // Do a sorted insert: Iterate and skip through all the input contexts that have a higher
     // priority than the desired new priority.
@@ -225,13 +235,20 @@ InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority
         if (!inputContext)
             continue;
 
-        if (inputContext->Priority() <= priority)
+        if (inputContext->Priority() <= newPriority)
             break;
     }
 
     // iter now points to the proper spot w.r.t the priority order. Insert there.
-    registeredInputContexts.insert(iter, boost::weak_ptr<InputContext>(newInputContext));
+    registeredInputContexts.insert(iter, boost::weak_ptr<InputContext>(inputContext));
 
+    inputContext->priority = newPriority;
+}
+
+InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
+{
+    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(this, name.toStdString().c_str(), priority);
+    SetPriority(newInputContext, priority);
     return newInputContext;
 }
 

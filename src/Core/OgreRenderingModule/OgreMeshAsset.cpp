@@ -20,7 +20,7 @@ OgreMeshAsset::~OgreMeshAsset()
     Unload();
 }
 
-bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous)
+bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
 {
     PROFILE(OgreMeshAsset_LoadFromFileInMemory);
     assert(data_);
@@ -29,6 +29,9 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
     
     /// Force an unload of this data first.
     Unload();
+
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+        allowAsynchronous = false;
 
     // Asynchronous loading
     // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
