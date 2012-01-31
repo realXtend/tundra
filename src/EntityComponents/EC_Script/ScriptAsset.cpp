@@ -19,7 +19,7 @@ void ScriptAsset::DoUnload()
     references.clear();
 }
 
-bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
+bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     QByteArray arr((const char *)data, numBytes);
     scriptContent = arr;

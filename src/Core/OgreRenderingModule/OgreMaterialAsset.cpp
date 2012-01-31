@@ -176,7 +176,7 @@ OgreMaterialAsset::~OgreMaterialAsset()
     Unload();
 }
 
-bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous)
+bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
 {
     // Remove old material if any
     Unload();
