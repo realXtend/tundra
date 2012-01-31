@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   ConsoleAPI.h
- *  @brief  Console core API.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   ConsoleAPI.h
+    @brief  Console core API. */
 
 #pragma once
 
@@ -50,10 +49,13 @@ public slots:
     /** @param name The function name to use for this command.
         @param desc A help description of this command.
         @param receiver The QObject instance that will be invoked when this command is executed.
-        @param member A slot identifier on the receiver QObject that is to be called when this command is executed.
-                      Use the SLOT() macro to specify this parameter, exactly like when using the QObject connect() function.
+        @param memberSlot A slot identifier on the receiver QObject that is to be called when this command is executed.
+            Use the SLOT() macro to specify this parameter, exactly like when using the QObject connect() function.
+        @param memberSlotDefaultArgs Additional identifier for a slot that has default arguments.
+            This is invoked in case the number of parameters provided for console command is less than the required amount.
+            Use the SLOT() macro to specify this parameter, exactly like when using the QObject connect() function. This argument is optional.
         @see UnregisterCommand */
-    void RegisterCommand(const QString &name, const QString &desc, QObject *receiver, const char *memberSlot);
+    void RegisterCommand(const QString &name, const QString &desc, QObject *receiver, const char *memberSlot, const char *memberSlotDefaultArgs = 0);
 
     /// Registers a new console command which triggers a signal when executed.
     /** Use this function from QtScript to implement custom console commands from a script.
@@ -139,11 +141,12 @@ class ConsoleCommand : public QObject
 
 public:
     /// Creates new console command. For internal usage of ConsoleAPI.
-    ConsoleCommand(const QString &commandName, const QString &desc, QObject *targetObj, const QString &funcName) :
+    ConsoleCommand(const QString &commandName, const QString &desc, QObject *targetObj, const QString &funcName, const QString &funcNameDefaultArgs) :
         name(commandName),
         description(desc),
         target(targetObj),
-        functionName(funcName)
+        functionName(funcName),
+        functionNameDefaultArgs(funcNameDefaultArgs)
     {
     }
 
@@ -176,4 +179,5 @@ private:
     QString description;
     QPointer<QObject> target;
     QString functionName;
+    QString functionNameDefaultArgs;
 };

@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
-
 #include "DebugOperatorNew.h"
 
 #include "KristalliProtocolModule.h"
+
 #include "Profiler.h"
 #include "CoreStringUtils.h"
 #include "UiAPI.h"
@@ -14,22 +14,12 @@
 #include "CoreException.h"
 
 #include <kNet.h>
-#include <kNet/qt/NetworkDialog.h>
 #include <kNet/UDPMessageConnection.h>
 
 #include <algorithm>
 #include <utility>
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
 
 using namespace kNet;
-
-namespace KristalliProtocol
-{
 
 namespace
 {
@@ -212,7 +202,6 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
     // If connection was made, enable a larger number of reconnection attempts in case it gets lost
     if (serverConnection && serverConnection->GetConnectionState() == ConnectionOK)
         reconnectAttempts = cReconnectAttempts;
-    
 }
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
@@ -388,5 +377,3 @@ UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 
     return 0;
 }
-
-} // ~KristalliProtocolModule namespace

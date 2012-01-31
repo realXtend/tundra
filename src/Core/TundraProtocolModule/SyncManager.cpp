@@ -1,24 +1,25 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
-#include "CoreStringUtils.h"
 #include "DebugOperatorNew.h"
+
 #include "KristalliProtocolModule.h"
 #include "SyncManager.h"
-#include "Scene.h"
-#include "Entity.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
 #include "Server.h"
 #include "TundraMessages.h"
 #include "MsgEntityAction.h"
+
+#include "Scene.h"
+#include "Entity.h"
+#include "CoreStringUtils.h"
 #include "EC_DynamicComponent.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 #include "Profiler.h"
-
 #include "EC_Placeable.h"
 #include "EC_RigidBody.h"
 
@@ -85,7 +86,7 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     updatePeriod_(1.0f / 20.0f),
     updateAcc_(0.0)
 {
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
 }
@@ -116,7 +117,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     
     if (!scene)
     {
-        LogError("Null scene, cannot replicate");
+        LogError("SyncManager::RegisterToScene: Null scene, cannot replicate");
         return;
     }
     
