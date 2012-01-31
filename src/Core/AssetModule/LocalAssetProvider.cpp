@@ -279,6 +279,8 @@ void LocalAssetProvider::CompletePendingFileDownloads()
     if (pendingUploads.size() > 0)
         return;
 
+    tick_t startTime = GetCurrentClockTime();
+
     while(pendingDownloads.size() > 0)
     {
         PROFILE(LocalAssetProvider_ProcessPendingDownload);
@@ -337,6 +339,11 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 
         // Signal the Asset API that this asset is now successfully downloaded.
         framework->Asset()->AssetTransferCompleted(transfer.get());
+
+        // Throttle asset loading to at most 16 msecs/frame.
+        const int maxLoadMSecs = 16;
+        if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
+            break;
     }
 }
 
