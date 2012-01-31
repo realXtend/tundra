@@ -17,8 +17,6 @@
 #include <QSslCipher>
 #include <QMutexLocker>
 
-#include <QDebug>
-
 using namespace MumbleNetwork;
 
 MumbleNetworkHandler::MumbleNetworkHandler(QString address, ushort port, QString username, QString password) :

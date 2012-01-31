@@ -627,10 +627,7 @@ void MumblePlugin::OnTextMessageReceived(bool isPrivate, QList<uint> channelIds,
         return;
 
     if (isPrivate)
-    {
-        qDebug() << "Private from" << sender->name << "message:" << message;
         emit PrivateTextMessageReceived(sender, message);
-    }
     else
     {
         MumbleUser *me = Me();
@@ -640,7 +637,6 @@ void MumblePlugin::OnTextMessageReceived(bool isPrivate, QList<uint> channelIds,
             {
                 if (me->channelId == channelId)
                 {
-                    qDebug() << "Channel msg from" << sender->name << "message:" << message;
                     emit ChannelTextMessageReceived(sender, message);
                     break;
                 }
