@@ -613,13 +613,12 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             uint numReplicatedComponents = 0;
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             {
-                if (!i->second->IsReplicated())
-                    continue;
-                ++numReplicatedComponents;
+                if (i->second->IsReplicated())
+                    ++numReplicatedComponents;
             }
             ds.AddVLE<kNet::VLE8_16_32>(numReplicatedComponents);
             
-            // Serialize each replicated component if not marked for pending state
+            // Serialize each replicated component
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             {
                 ComponentPtr comp = i->second;
