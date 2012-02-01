@@ -64,7 +64,8 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     heightField_(0),
     disconnected_(false),
     cachedShapeType_(-1),
-    cachedSize_(float3::zero)
+    cachedSize_(float3::zero),
+    clientExtrapolating(false)
 {
     owner_ = framework->GetModule<PhysicsModule>();
     
@@ -375,6 +376,8 @@ void EC_RigidBody::CreateBody()
     GetProperties(localInertia, m, collisionFlags);
     
     body_ = new btRigidBody(m, this, shape_, localInertia);
+    // TEST: Adjust the threshold of when to sleep the object - for reducing network bandwidth.
+//    body_->setSleepingThresholds(0.2f, 0.5f); // Bullet defaults are 0.8 and 1.0.
     body_->setUserPointer(this);
     body_->setCollisionFlags(collisionFlags);
     world_->BulletWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
@@ -430,7 +433,8 @@ void EC_RigidBody::getWorldTransform(btTransform &worldTrans) const
 void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
 {
     // Cannot modify server-authoritative physics object, rather get the transform changes through placeable attributes
-    if (!HasAuthority())
+    const bool hasAuthority = HasAuthority();
+    if (!hasAuthority && !clientExtrapolating)
         return;
     
     EC_Placeable* placeable = placeable_.lock().get();
@@ -440,6 +444,8 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     // Important: disconnect our own response to attribute changes to not create an endless loop!
     disconnected_ = true;
     
+    AttributeChange::Type changeType = hasAuthority ? AttributeChange::Default : AttributeChange::LocalOnly;
+
     // Set transform
     float3 position = worldTrans.getOrigin();
     Quat orientation = worldTrans.getRotation();
@@ -450,7 +456,7 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
         Transform newTrans = placeable->transform.Get();
         newTrans.SetPos(position.x, position.y, position.z);
         newTrans.SetOrientation(orientation);
-        placeable->transform.Set(newTrans, AttributeChange::Default);
+        placeable->transform.Set(newTrans, changeType);
     }
     else
     // The placeable has a parent itself
@@ -463,17 +469,22 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
             Transform newTrans = placeable->transform.Get();
             newTrans.SetPos(position);
             newTrans.SetOrientation(orientation);
-            placeable->transform.Set(newTrans, AttributeChange::Default);
+            placeable->transform.Set(newTrans, changeType);
         }
     }
     // Set linear & angular velocity
     if (body_)
     {
-        linearVelocity.Set(body_->getLinearVelocity(), AttributeChange::Default);
-        angularVelocity.Set(RadToDeg(body_->getAngularVelocity()), AttributeChange::Default);
+        linearVelocity.Set(body_->getLinearVelocity(), changeType);
+        angularVelocity.Set(RadToDeg(body_->getAngularVelocity()), changeType);
     }
     
     disconnected_ = false;
+}
+
+void EC_RigidBody::SetClientExtrapolating(bool isClientExtrapolating)
+{
+    clientExtrapolating = isClientExtrapolating;
 }
 
 void EC_RigidBody::OnTerrainRegenerated()

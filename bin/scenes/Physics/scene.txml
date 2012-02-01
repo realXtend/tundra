@@ -3781,6 +3781,13 @@
    <attribute value="true" name="Sunlight cast shadows"/>
    <attribute value="1" name="Brightness"/>
   </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="objectkill.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="2" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
  </entity>
  <entity id="-2147483647" sync="0">
   <component type="EC_Script" sync="1">

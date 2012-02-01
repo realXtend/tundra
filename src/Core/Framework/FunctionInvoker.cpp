@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   FuntionInvoker.cpp
- *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality with more user-friendly API.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   FuntionInvoker.cpp
+    @brief  Utility class which wraps QMetaObject::invokeMethod() functionality with more user-friendly API. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -15,12 +14,12 @@
 
 #include "MemoryLeakCheck.h"
 
-void FunctionInvoker::Invoke(QObject *obj, const QString &function, const QVariantList &params, 
+void FunctionInvoker::Invoke(QObject *obj, const QString &function, const QVariantList &params,
                              QVariant *ret, QString *errorMsg)
 {
     QList<IArgumentType *> args;
 
-    foreach(QVariant p, params)
+    foreach(const QVariant &p, params)
     {
         IArgumentType *arg = CreateArgumentType(p.typeName());
         if (!arg)
@@ -37,7 +36,7 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &function, const QVaria
     Invoke(obj, function, args, ret, errorMsg);
 }
 
-void FunctionInvoker::Invoke(QObject *obj, const QString &function, QList<IArgumentType *> &arguments, 
+void FunctionInvoker::Invoke(QObject *obj, const QString &function, QList<IArgumentType *> &arguments,
                              QVariant *ret, QString *errorMsg)
 {
     QList<QGenericArgument> args;
@@ -68,25 +67,28 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &function, QList<IArgum
     }
     catch(const Exception &e)
     {
-        LogError("The function call threw an Exception \"" + std::string(e.what()) + "\"!");
+        QString err("The function call threw an Exception \"" + QString(e.what()) + "\"!");
+        LogError("FunctionInvoker::Invoke: " + err);
         if (errorMsg)
-            errorMsg->append("The function call threw an Exception \"" + QString(e.what()) + "\"!");
+            errorMsg->append(err);
     }
     catch(const std::exception &e)
     {
-        LogError("The function call threw a std::exception \"" + std::string(e.what()) + "\"!");
+        QString err("The function call threw a std::exception \"" + QString(e.what()) + "\"!");
+        LogError("FunctionInvoker::Invoke: " + err);
         if (errorMsg)
-            errorMsg->append("The function call threw a std::exception \"" + QString(e.what()) + "\"!");
+            errorMsg->append(err);
     }
     catch(...)
     {
-        LogError("The function call threw an unknown exception!");
+        QString err("The function call threw an unknown exception!");
+        LogError("FunctionInvoker::Invoke: " + err);
         if (errorMsg)
-            errorMsg->append("The function call threw an unknown exception!");
+            errorMsg->append(err);
     }
 }
 
-void FunctionInvoker::Invoke(QObject *obj, const QString &functionSignature, const QStringList &params, 
+void FunctionInvoker::Invoke(QObject *obj, const QString &functionSignature, const QStringList &params,
                              QVariant *ret, QString *errorMsg)
 {
     QList<IArgumentType *> args = CreateArgumentList(obj, functionSignature);
@@ -127,10 +129,23 @@ QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, c
     return args;
 }
 
+int FunctionInvoker::NumArgsForFunction(const QObject *obj, const QString &signature)
+{
+    QByteArray normalizedSignature = QMetaObject::normalizedSignature(signature.toStdString().c_str());
+    const QMetaObject *mo = obj->metaObject();
+    for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+    {
+        const QMetaMethod &mm = mo->method(i);
+        if (normalizedSignature == QByteArray(mm.signature()))
+            return mm.parameterTypes().size();
+    }
+    return -1;
+}
+
 IArgumentType *FunctionInvoker::CreateArgumentType(const QString &type)
 {
     IArgumentType *arg = 0;
-
+    /// @todo Support For Entity *, and EntityPtr by using EntityReference.
     if (type == "void")
         arg = new VoidArgumentType;
     else if (type == "QString")
@@ -141,16 +156,28 @@ IArgumentType *FunctionInvoker::CreateArgumentType(const QString &type)
         arg = new ArgumentType<std::string>(type.toStdString().c_str());
     else if (type == "bool")
         arg = new ArgumentType<bool>(type.toStdString().c_str());
-    else if(type == "unsigned int" || type == "uint" || type == "size_t" || type == "entity_id_t")
+    else if(type == "unsigned short" || type == "ushort" || type == "u16")
+        arg = new ArgumentType<unsigned short>(type.toStdString().c_str());
+    else if(type == "short" || type == "s16")
+        arg = new ArgumentType<short>(type.toStdString().c_str());
+    else if(type == "unsigned int" || type == "uint" || type == "size_t" || type == "unsigned" || type == "entity_id_t" || type == "component_id_t")
         arg = new ArgumentType<unsigned int>(type.toStdString().c_str());
-    else if (type == "int")
+    else if (type == "int" || type == "signed")
         arg = new ArgumentType<int>(type.toStdString().c_str());
-    else if (type == "float")
+    else if (type == "u32" || type == "unsigned long")
+        arg = new ArgumentType<unsigned long>(type.toStdString().c_str());
+    else if (type == "s32" || type == "long")
+        arg = new ArgumentType<long>(type.toStdString().c_str());
+    else if (type == "float" || type == "f32")
         arg = new ArgumentType<float>(type.toStdString().c_str());
-    else if (type == "double")
+    else if (type == "double" || type == "f64")
         arg = new ArgumentType<double>(type.toStdString().c_str());
+    else if (type == "float3")
+        arg = new ArgumentType<float3>(type.toStdString().c_str());
+    else if (type == "Quat")
+        arg = new ArgumentType<Quat>(type.toStdString().c_str());
     else
-        LogError("FunctionInvoker: Unsupported argument type: " + type);
+        LogError("FunctionInvoker::CreateArgumentType: Unsupported argument type: " + type);
 
     return arg;
 }

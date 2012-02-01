@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   ConsoleAPI.cpp
- *  @brief  Console core API.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   ConsoleAPI.cpp
+    @brief  Console core API. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -19,6 +18,8 @@
 #include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 #include "FunctionInvoker.h"
+
+#include <boost/make_shared.hpp>
 
 #include <stdlib.h>
 
@@ -46,7 +47,7 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     RegisterCommand("loglevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
         this, SLOT(SetLogLevel(const QString &)));
 
-    shellInputThread = boost::shared_ptr<ShellInputThread>(new ShellInputThread);
+    shellInputThread = boost::make_shared<ShellInputThread>();
 
     QStringList logLevel = fw->CommandLineParameters("--loglevel");
     if (logLevel.size() >= 1)
@@ -83,9 +84,15 @@ QVariant ConsoleCommand::Invoke(const QStringList &params)
     // If we have a target QObject, invoke it.
     if (target)
     {
+        // Check if we're invoking function with default arguments.
+        QString func = functionName;
+        int numRequiredArgs = FunctionInvoker::NumArgsForFunction(target, functionName);
+        if (params.size() < numRequiredArgs && !functionNameDefaultArgs.isEmpty())
+            func = functionNameDefaultArgs;
+
         FunctionInvoker fi;
         QString errorMessage;
-        fi.Invoke(target, functionName, params, &returnValue, &errorMessage);
+        fi.Invoke(target, func, params, &returnValue, &errorMessage);
         if (!errorMessage.isEmpty())
             LogError("ConsoleCommand::Invoke returned an error: " + errorMessage);
     }
@@ -104,12 +111,12 @@ ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &
         return commands[name].get();
     }
 
-    boost::shared_ptr<ConsoleCommand> command = boost::shared_ptr<ConsoleCommand>(new ConsoleCommand(name, desc, 0, ""));
+    boost::shared_ptr<ConsoleCommand> command = boost::make_shared<ConsoleCommand>(name, desc, (QObject *)0, "", "");
     commands[name] = command;
     return command.get();
 }
 
-void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObject *receiver, const char *memberSlot)
+void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObject *receiver, const char *memberSlot, const char *memberSlotDefaultArgs)
 {
     if (commands.find(name) != commands.end())
     {
@@ -117,7 +124,7 @@ void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObje
         return;
     }
 
-    boost::shared_ptr<ConsoleCommand> command = boost::shared_ptr<ConsoleCommand>(new ConsoleCommand(name, desc, receiver, memberSlot+1));
+    boost::shared_ptr<ConsoleCommand> command = boost::make_shared<ConsoleCommand>(name, desc, receiver, memberSlot+1, memberSlotDefaultArgs ? memberSlotDefaultArgs+1 : "");
     commands[name] = command;
 }
 
