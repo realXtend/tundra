@@ -8,6 +8,10 @@ if (!server.IsRunning() && !framework.IsHeadless())
     engine.IncludeFile("crosshair.js");
 }
 
+else {
+    engine.IncludeFile("stub_crosshair.js"); //stub CrossHair for headless tests to run
+}
+
 // A simple walking avatar with physics & 1st/3rd person camera
 function SimpleAvatar(entity, comp)
 {
