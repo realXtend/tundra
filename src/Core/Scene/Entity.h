@@ -52,6 +52,7 @@ class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     Q_PROPERTY(bool local READ IsLocal)
     Q_PROPERTY(bool unacked READ IsUnacked)
     Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary)
+    Q_PROPERTY(QObjectList components READ ComponentsList);
 
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
@@ -350,6 +351,9 @@ public slots:
 
     /// introspection for the entity, returns all components
     const ComponentMap &Components() const { return components_; }
+
+    /// Returns entitys components as a QList<QObject*> for scripting purpouses.
+    QObjectList ComponentsList() const;
 
     /// Returns framework
     Framework *GetFramework() const { return framework_; }

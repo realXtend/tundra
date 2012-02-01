@@ -151,8 +151,13 @@ void TundraLogicModule::Initialize()
     client_ = boost::shared_ptr<Client>(new Client(this));
     server_ = boost::shared_ptr<Server>(new Server(this));
     
+    // Expose client and server to everyone
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
+
+    // Expose SyncManager only on the server side for scripting
+    if (server_->IsAboutToStart())
+        framework_->RegisterDynamicObject("syncmanager", syncManager_.get());
 
     framework_->Console()->RegisterCommand("startserver",
         "Starts a server. Usage: startserver(port,protocol)",
