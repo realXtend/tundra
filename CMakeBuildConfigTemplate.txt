@@ -147,3 +147,5 @@ endif ()
 if (ENABLE_OPEN_ASSET_IMPORT)
     AddProject(Application OpenAssetImport)         # Allows import of various mesh file formats
 endif ()
+
+#AddProject(Application AssetInterestPlugin)    # Options to only keep assets below certain distance threshold in memory. Can also unload all non used assets from memory. Exposed to scripts so scenes can set the behaviour.
