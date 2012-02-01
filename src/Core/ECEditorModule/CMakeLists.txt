@@ -38,7 +38,7 @@ link_package (QT_PROPERTY_BROWSER)
 link_modules (Framework Scene Input Console Ui OgreRenderingModule TundraProtocolModule)
 # EC_Sound is needed only for visualization purposes to access the attributes of EC_Sound.
 link_entity_components (EC_TransformGizmo EC_Highlight EC_Sound)
-
+target_link_libraries(${TARGET_NAME} QtSolutions_PropertyBrowser-head)
 SetupCompileFlagsWithPCH()
 
 final_target ()

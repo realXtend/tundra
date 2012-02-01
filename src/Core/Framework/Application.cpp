@@ -216,7 +216,7 @@ void Application::Message(const char *title, const char *text)
     MessageBoxA(0, text != 0 ? text : "", title != 0 ? title : "", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
     std::cerr << "Application::Message not implemented for current platform!" << std::endl;
-    assert(false && "Not implemented!");
+   // assert(false && "Not implemented!");
 #endif
 }
 void Application::Message(const std::string &title, const std::string &text)
@@ -230,7 +230,7 @@ void Application::Message(const wchar_t *title, const wchar_t *text)
     MessageBoxW(0, text != 0 ? text : L"", title != 0 ? title : L"", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
     std::cerr << "Application::Message not implemented for current platform!" << std::endl;
-    assert(false && "Not implemented!");
+   // assert(false && "Not implemented!");
 #endif
 }
 

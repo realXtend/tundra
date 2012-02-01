@@ -216,7 +216,7 @@ macro (sagase_configure_package PREFIX)
             # get header path
             foreach (pathnames_ ${${PREFIX}_PATH_NAMES})
                 foreach (header_extension_ ${HEADER_POSTFIXES})
-		    #message (STATUS "looking in " ${pathnames_}/${component_}${header_extension_} " - " ${include_paths})
+		 #   message (STATUS "looking in " ${pathnames_}/${component_}${header_extension_} " - " ${include_paths})
                     find_path (${PREFIX}_${component_}_INCLUDE_DIR 
                         ${pathnames_}/${component_}${header_extension_} 
                         ${include_paths})

@@ -21,8 +21,8 @@ add_definitions(-DAUDIO_API_EXPORTS)
 #add_definitions(-DAUDIO_API_DLL)
 
 use_package(OPENAL)
-use_package(OGG)
-use_package(VORBIS)
+use_package_ogg()
+use_package_vorbis()
 
 build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 # Use the SHARED option if we are building Audio project as a shared library.
@@ -31,8 +31,8 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 link_package(BOOST)
 link_package(QT4)
 link_package(OPENAL)
-link_package(OGG)
-link_package(VORBIS)
+link_package_ogg()
+link_package_vorbis()
 link_modules(Framework Math Asset)
 
 SetupCompileFlags()

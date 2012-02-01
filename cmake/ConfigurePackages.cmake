@@ -39,6 +39,8 @@ macro (configure_boost)
     endif()
     
     # BOOST_ROOT
+    message(STATUS ${ENV_TUNDRA_DEP_PATH})
+    message(STATUS ${BOOST_ROOT})
     sagase_configure_package (BOOST 
         NAMES Boost boost
         COMPONENTS ${BOOST_COMPONENTS}
@@ -211,7 +213,7 @@ macro (configure_ogg)
     sagase_configure_package(OGG
         NAMES ogg libogg
         COMPONENTS ogg libogg
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libogg)
+        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libogg ${ENV_TUNDRA_DEP_PATH}/ogg)
         
         # Force include dir on MSVC
         if (MSVC)
@@ -263,7 +265,7 @@ macro(use_package_knet)
     
     # Use KNET_DIR_QT47 if there, fallback to TUNDRA_DEP_PATH
     if ("${ENV_KNET_DIR_QT47}" STREQUAL "")
-        set (KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
+        set (KNET_DIR ${ENV_TUNDRA_DEP_PATH}/include)
     else ()
         message (STATUS "-- Using from env variable KNET_DIR_QT47")
         set (KNET_DIR ${ENV_KNET_DIR_QT47})
@@ -320,6 +322,34 @@ macro(link_package_bullet)
         target_link_libraries(${TARGET_NAME} debug LinearMath_d debug BulletDynamics_d debug BulletCollision_d)
     endif()
 endmacro()
+
+macro(use_package_ogg)
+	include_directories(${ENV_TUNDRA_DEP_PATH}/include/ogg)
+	link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
+endmacro()
+
+macro(link_package_ogg)
+	target_link_libraries(${TARGET_NAME} optimized ogg)
+endmacro()
+
+macro(use_package_vorbis)
+	include_directories(${ENV_TUNDRA_DEP_PATH}/include/vorbis)
+	link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
+endmacro()
+
+macro(link_package_vorbis)
+	target_link_libraries(${TARGET_NAME} optimized vorbis vorbisfile)
+endmacro()
+
+macro(use_package_theora)
+	include_directories(${ENV_TUNDRA_DEP_PATH}/include/theora)
+	link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
+endmacro()
+
+macro(link_package_theora)
+	target_link_libraries(${TARGET_NAME} optimized theora)
+endmacro()
+
 
 macro(use_package_assimp)
     # todo: convert to sagase_configure_package and sagase_report or custom FindAssimp.cmake

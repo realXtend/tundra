@@ -27,6 +27,8 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 #add_definitions (-DUSE_NVIDIA_PERFHUD)
 
 use_package_assimp()
+use_package_ogg()
+use_package_vorbis()
 use_core_modules(Framework Math Scene Ui Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
@@ -34,6 +36,8 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 GetOpenAssetImport()
 
 link_ogre()
+link_package_ogg()
+link_package_vorbis()
 link_modules (Framework Scene Ui Asset Console)
 
 SetupCompileFlagsWithPCH()

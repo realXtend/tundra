@@ -27,6 +27,11 @@ if (UNIX)
   target_link_libraries (${TARGET_NAME} dl)
 endif () 
 
+target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+
+link_package_ogg()
+link_package_vorbis()
+
 SetupCompileFlagsWithPCH()
 
 final_target()

@@ -338,23 +338,77 @@ else
     touch $tags/$what-done
 fi
 
-cd $build
-what=mumbleclient
-if test -f $tags/$what-done; then
-    echo $what is done
+BOOST_ROOT=$prefix
+QTDIR=/Users/ludocraft/QtSDK/Desktop/Qt/4.8.0/gcc
+QT_DIR=/Users/ludocraft/QtSDK/Desktop/Qt/4.8.0/gcc
+viewer=/Users/ludocraft/naali
+
+what=qtscriptgenerator
+if test -f $tags/$what-done; then 
+   echo $what is done
 else
-    test -d $what || git clone https://github.com/Adminotech/libmumble.git $what
+    cd $build
+    rm -rf $what
+    git clone git://gitorious.org/qt-labs/$what.git
     cd $what
-    cmake .
-    make VERBOSE=1 -j$NPROCS
-    cp libmumbleclient.dylib $prefix/lib
-    cp Mumble.pb.h $prefix/include
-    mkdir $prefix/include/$what
-    cp ./src/*.h $prefix/include/$what
+
+    cd generator
+    qmake
+    make
+    ./generator --include-paths=/Users/ludocraft/QtSDK/Desktop/Qt/4.8.0/gcc/include/
+    cd ..
+
+    cd qtbindings
+    sed -e "s/qtscript_phonon //" -e "s/qtscript_webkit //" < qtbindings.pro > x
+    mv x qtbindings.pro  
+    qmake
+    make
+    cd ..
+    cd ..
+    touch $tags/$what-done
+fi
+mkdir -p $viewer/bin/qtscript-plugins/script
+cp -f $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
+
+
+what=kNet
+if test -f $tags/$what-done; then 
+   echo $what is done
+else
+    cd $build
+    rm -rf kNet
+    git clone https://github.com/juj/kNet
+    cd kNet
+    sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
+    mv x CMakeLists.txt
+    cmake . -DCMAKE_BUILD_TYPE=Debug
+    make -j $nprocs
+    cp lib/libkNet.dylib $prefix/lib/
+    rsync -r include/* $prefix/include/
     touch $tags/$what-done
 fi
 
-cd $CLIENT
+#cd $build
+#what=mumbleclient
+#if test -f $tags/$what-done; then
+#    echo $what is done
+#else
+#    test -d $what || git clone https://github.com/Adminotech/libmumble.git $what
+#    cd $what
+#    cmake .
+#    make VERBOSE=1 -j$NPROCS
+#    cp libmumbleclient.dylib $prefix/lib
+#    cp Mumble.pb.h $prefix/include
+#    mkdir $prefix/include/$what
+#    cp ./src/*.h $prefix/include/$what
+#    touch $tags/$what-done
+#fi
+
+pwd
+echo $prefix
+echo $CLIENT #TODO this comes out empty.
+
+cd /Users/ludocraft/naali
 if [ "$RUN_CMAKE" == "1" ]; then
     TUNDRA_DEP_PATH=$prefix cmake .
 fi
