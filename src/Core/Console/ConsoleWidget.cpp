@@ -10,6 +10,8 @@
 #include "UiProxyWidget.h"
 #include "UiGraphicsView.h"
 #include "Framework.h"
+#include "ConfigAPI.h"
+#include "Math/MathFunc.h"
 
 #include <QPlainTextEdit>
 #include <QGraphicsView>
@@ -24,7 +26,8 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     framework(fw),
     graphicsView(fw->Ui()->GraphicsView()),
     proxyWidget(0),
-    commandHistoryIndex(-1)
+    commandHistoryIndex(-1),
+    lineEdit(0)
 {
     setStyleSheet(
         "QPlainTextEdit {"
@@ -49,6 +52,33 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
             "background-color: rgb(0,0,0);"
         "}");
 
+    // Console UI settings.
+    /// @todo Settings for colors?
+    const bool defaultInputEnabled = true;
+    const float defaultHeight = 0.5f;
+    const float defaultOpacity = 0.8f;
+    const int defaultAnimationSpeed = 300;
+
+    ConfigAPI &cfg = *framework->Config();
+    ConfigData consoleUi(ConfigAPI::FILE_FRAMEWORK, "console_ui");
+    // If we have "input_enabled" in config we very likely have all the other settings as well.
+    // If not, write the default settings to config for the next time.
+    if (!cfg.HasValue(consoleUi, "input_enabled"))
+    {
+        cfg.Set(consoleUi, "input_enabled", defaultInputEnabled);
+        cfg.Set(consoleUi, "relative_height", (double)defaultHeight);
+        cfg.Set(consoleUi, "opacity", (double)defaultOpacity);
+        cfg.Set(consoleUi, "animation_speed", defaultAnimationSpeed);
+    }
+
+    bool inputEnabled = cfg.Get(consoleUi, "input_enabled", defaultInputEnabled).toBool();
+    height = Clamp(cfg.Get(consoleUi, "relative_height", defaultHeight).toFloat(), 0.f, 1.f);
+    float opacity = Clamp(cfg.Get(consoleUi, "opacity", defaultOpacity).toFloat(), 0.f, 1.f);
+    int animationSpeed = cfg.Get(consoleUi, "animation_speed", defaultAnimationSpeed).toInt();
+
+    if (fw->HasCommandLineParameter("--noconsoleguiinput"))
+        inputEnabled = false; // Command line parameter authorative.
+
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
@@ -57,27 +87,27 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     proxyWidget = framework->Ui()->AddWidgetToScene(this, Qt::Widget);
     proxyWidget->setMinimumHeight(0);
     proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
-    /// \todo Opacity has no effect atm.
-    proxyWidget->setOpacity(0.8); ///<\todo Read opacity from config?
+    proxyWidget->setOpacity(opacity);
     proxyWidget->setZValue(20000);
 
     connect(framework->Ui()->GraphicsScene(), SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
 
-    // Init animation
     slideAnimation = new QPropertyAnimation(this);
     slideAnimation->setTargetObject(proxyWidget);
     slideAnimation->setPropertyName("geometry");
-    slideAnimation->setDuration(300);  ///<\todo Read animation speed from config?
+    slideAnimation->setDuration(animationSpeed);
 
     textEdit = new QPlainTextEdit(this);
     textEdit->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    lineEdit = new QLineEdit(this);
-    connect(lineEdit, SIGNAL(returnPressed()), SLOT(HandleInput()));
-
-    lineEdit->installEventFilter(this);
-
     layout->addWidget(textEdit);
-    layout->addWidget(lineEdit);
+
+    if (inputEnabled)
+    {
+        lineEdit = new QLineEdit(this);
+        connect(lineEdit, SIGNAL(returnPressed()), SLOT(HandleInput()));
+        lineEdit->installEventFilter(this);
+        layout->addWidget(lineEdit);
+    }
 }
 
 ConsoleWidget::~ConsoleWidget()
@@ -87,9 +117,12 @@ ConsoleWidget::~ConsoleWidget()
 
 void ConsoleWidget::PrintToConsole(const QString &text)
 {
-    QString html = Qt::escape(text);
-    DecorateString(html);
-    textEdit->appendHtml(html);
+    if (textEdit)
+    {
+        QString html = Qt::escape(text);
+        DecorateString(html);
+        textEdit->appendHtml(html);
+    }
 }
 
 void ConsoleWidget::ToggleConsole()
@@ -97,25 +130,26 @@ void ConsoleWidget::ToggleConsole()
     if (!graphicsView)
         return;
 
-    QGraphicsScene *current_scene = proxyWidget->scene();
-    if (!current_scene)
+    QGraphicsScene *graphicsScene = proxyWidget->scene();
+    if (!graphicsScene)
         return;
 
     proxyWidget->setVisible(proxyWidget->isVisible());
-    int current_height = graphicsView->height()*0.5;
+    int currentHeight = graphicsView->height() * height;
     if (!proxyWidget->isVisible())
     {
         slideAnimation->setStartValue(QRect(0, 0, graphicsView->width(), 0));
-        slideAnimation->setEndValue(QRect(0, 0, graphicsView->width(), current_height));
+        slideAnimation->setEndValue(QRect(0, 0, graphicsView->width(), currentHeight ));
         // Not bringing to front, works in UiProxyWidgets, hmm...
-        current_scene->setActiveWindow(proxyWidget);
-        current_scene->setFocusItem(proxyWidget, Qt::ActiveWindowFocusReason);
-        lineEdit->setFocus(Qt::MouseFocusReason);
+        graphicsScene->setActiveWindow(proxyWidget);
+        graphicsScene->setFocusItem(proxyWidget, Qt::ActiveWindowFocusReason);
+        if (lineEdit)
+            lineEdit->setFocus(Qt::MouseFocusReason);
         proxyWidget->show();
     }
     else
     {
-        slideAnimation->setStartValue(QRect(0, 0, graphicsView->width(), current_height));
+        slideAnimation->setStartValue(QRect(0, 0, graphicsView->width(), currentHeight));
         slideAnimation->setEndValue(QRect(0, 0, graphicsView->width(), 0));
         proxyWidget->hide();
     }
@@ -130,7 +164,7 @@ void ConsoleWidget::ClearLog()
 
 void ConsoleWidget::HandleInput()
 {
-    if (framework->IsHeadless())
+    if (framework->IsHeadless() || !lineEdit)
         return;
 
     QString cmd = lineEdit->text();
@@ -144,9 +178,9 @@ void ConsoleWidget::AdjustToSceneRect(const QRectF& rect)
 {
     if (proxyWidget->isVisible())
     {
-        QRectF new_size = rect;
-        new_size.setHeight(rect.height() * 0.5); ///<\todo Read height from config?
-        proxyWidget->setGeometry(new_size);
+        QRectF newSize = rect;
+        newSize.setHeight(rect.height() * height);
+        proxyWidget->setGeometry(newSize);
     }
     else
     {
@@ -221,43 +255,43 @@ bool ConsoleWidget::eventFilter(QObject *obj, QEvent *e)
 void ConsoleWidget::DecorateString(QString &str)
 {
     // Make all timestamp + module name blocks white
-    int block_end_index = 0;
+    int blockEndIndex = 0;
     // Code below disabled as we no longer have module+timestamp block.
 /*
-    int block_end_index = str.indexOf("]");
-    if (block_end_index != -1)
+    int blockEndIndex = str.indexOf("]");
+    if (blockEndIndex != -1)
     {
         QString span_start("<span style='color:white;'>");
         QString span_end("</span>");
-        block_end_index += span_start.length() + 1;
+        blockEndIndex += span_start.length() + 1;
         str.insert(0, "<span style='color:white;'>");
-        str.insert(block_end_index, "</span>");
-        block_end_index += span_end.length();
+        str.insert(blockEndIndex, "</span>");
+        blockEndIndex += span_end.length();
     }
     else
-        block_end_index = 0;
+        blockEndIndex = 0;
 */
     QRegExp regexp;
     regexp.setPattern(".*Debug:.*");
     if (regexp.exactMatch(str))
     {
-        str.insert(block_end_index, "<FONT COLOR=\"#999999\">");
+        str.insert(blockEndIndex, "<FONT COLOR=\"#999999\">");
         str.push_back("</FONT>");
         return;
     }
-
+/*
     regexp.setPattern(".*Notice:.*");
     if (regexp.exactMatch(str))
     {
-        str.insert(block_end_index, "<FONT COLOR=\"#0000FF\">");
+        str.insert(blockEndIndex, "<FONT COLOR=\"#0000FF\">");
         str.push_back("</FONT>");
         return;
     }
-
+*/
     regexp.setPattern(".*Warning:.*");
     if (regexp.exactMatch(str))
     {
-        str.insert(block_end_index, "<FONT COLOR=\"#FFFF00\">");
+        str.insert(blockEndIndex, "<FONT COLOR=\"#FFFF00\">");
         str.push_back("</FONT>");
         return;
     }
@@ -265,15 +299,15 @@ void ConsoleWidget::DecorateString(QString &str)
     regexp.setPattern(".*Error:.*");
     if (regexp.exactMatch(str))
     {
-        str.insert(block_end_index, "<FONT COLOR=\"#FF3300\">");
+        str.insert(blockEndIndex, "<FONT COLOR=\"#FF3300\">");
         str.push_back("</FONT>");
         return;
     }
-
+/*
     regexp.setPattern(".*Critical:.*");
     if (regexp.exactMatch(str))
     {
-        str.insert(block_end_index, "<FONT COLOR=\"#FF0000\">");
+        str.insert(blockEndIndex, "<FONT COLOR=\"#FF0000\">");
         str.push_back("</FONT>");
         return;
     }
@@ -281,8 +315,9 @@ void ConsoleWidget::DecorateString(QString &str)
     regexp.setPattern(".*Fatal:.*");
     if (regexp.exactMatch(str))
     {
-        str.insert(block_end_index, "<FONT COLOR=\"#9933CC\">");
+        str.insert(blockEndIndex, "<FONT COLOR=\"#9933CC\">");
         str.push_back("</FONT>");
         return;
     }
+*/
 }
