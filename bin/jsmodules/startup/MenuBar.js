@@ -1,7 +1,9 @@
 /**
     For conditions of distribution and use, see copyright notice in LICENSE
 
-    Implements basic menu bar for accessing common Tundra functionality and UIs. */
+    Implements basic menu bar for accessing common Tundra functionality and UIs.
+    NOTE: Clears any existing menus in the menu bar so make sure that this script
+    is loaded first, or replace with another implementation*/
 
 // Applicable only in headful mode.
 if (!framework.IsHeadless())
@@ -62,6 +64,9 @@ if (!framework.IsHeadless())
         var settingsMenu = menu.addMenu("&Settings");
         // Set unique object name so that other scripts can query this menu.
         settingsMenu.objectName = "SettingsMenu";
+
+        settingsMenu.addAction("Open config folder").triggered.connect(OpenConfigFolder);
+
         if (framework.GetModuleByName("MumbleVoip"))
             settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
         if (framework.GetModuleByName("CAVEStereo"))
@@ -191,5 +196,9 @@ if (!framework.IsHeadless())
 
     function OpenCaveWindow() {
         framework.GetModuleByName("CAVEStereo").ShowCaveWindow();
+    }
+    
+    function OpenConfigFolder() {
+        QDesktopServices.openUrl(new QUrl(config.GetConfigFolder()));
     }
 }
