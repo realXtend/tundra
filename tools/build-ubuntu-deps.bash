@@ -38,7 +38,7 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric"; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libogre-dev libboost-all-dev \
