@@ -4,7 +4,10 @@ import os
 import os.path
 
 #COMMON
-rexbinDir = "/home/" + getpass.getuser() + "/src/realxtend/naali/bin/" # make sure this refers to the tundra bin/
+rexbinDir = "/home/" + getpass.getuser() + "/src/tundra2-naali/bin/" # make sure this refers to the tundra bin/
+#note: could be relative from this file, right? XXX
+headless = True
+headless = "--headless" if headless else ""
 
 # wireshark directory for windows
 tsharkLocation = "c:/Program Files/Wireshark/"

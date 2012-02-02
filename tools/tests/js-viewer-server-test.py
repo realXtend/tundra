@@ -42,7 +42,7 @@ exitfileServer = logsDir + "/exitstatus.s"
 serverOutput = logsDir + "/s.out"
 viewerOutput = logsDir + "/v.out"
 
-testfile = rexbinDir + "/scenes/Avatar/avatar.txml"
+testfile = rexbinDir + "/scenes/Avatar/scene.txml"
 
 
 def main():
@@ -136,7 +136,7 @@ def runTest():
 ### PROCESS FUNCTIONS
 ### POSIX START
 def posixJsServer(serverScript):
-    s = "./Tundra --server --headless --run " + serverScript + " 2>&1 | tee " + serverOutput
+    s = "./Tundra --server " + config.headless + " --run " + serverScript + " 2>&1 | tee " + serverOutput
     #get exitcode and run
     servercode = posixRun(s)
     #write exitcode to file
@@ -144,19 +144,19 @@ def posixJsServer(serverScript):
         e.write(servercode)
 
 def posixJsViewer(viewerScript):
-    v = "./Tundra --headless --run " + viewerScript + " 2>&1 | tee " + viewerOutput
+    v = "./Tundra " + config.headless + " --run " + viewerScript + " 2>&1 | tee " + viewerOutput
     viewercode = posixRun(v)
     with open(exitfileViewer, 'w') as e:
         e.write(viewercode)
 
 def posixTxmlServer(serverScript):
-    s = "./Tundra --server --protocol tcp --headless --file " + testfile + " --run " + serverScript + " 2>&1 | tee " + serverOutput
+    s = "./Tundra --server --protocol tcp " + config.headless + " --file " + testfile + " --run " + serverScript + " 2>&1 | tee " + serverOutput
     servercode = posixRun(s)
     with open(exitfileServer, 'w') as e:
         e.write(str(servercode))
 
 def posixTxmlViewer(viewerScript):
-    v = "./Tundra --headless --storage " + os.path.dirname(testfile) + "/ --run " + viewerScript + " 2>&1 | tee " + viewerOutput
+    v = "./Tundra " + config.headless + " --storage " + os.path.dirname(testfile) + "/ --run " + viewerScript + " 2>&1 | tee " + viewerOutput
     viewercode = posixRun(v)
     with open(exitfileViewer, 'w') as e:
         e.write(str(viewercode))
@@ -173,7 +173,7 @@ def posixRun(str):
 
 ### NT START
 def ntJsServer(serverScript):
-    s = "Tundra.exe --headless --run " + serverScript + " > " + serverOutput + "2>&1"
+    s = "Tundra.exe " + config.headless + " --run " + serverScript + " > " + serverOutput + "2>&1"
     #get exitcode and run
     servercode = ntRun(s)
     #write exitcode to file
@@ -181,20 +181,20 @@ def ntJsServer(serverScript):
         e.write(servercode)
 
 def ntJsViewer(viewerScript):
-    v = "Tundra.exe --headless --run " + viewerScript + " > " + viewerOutput + "2>&1"
+    v = "Tundra.exe " + config.headless + " --run " + viewerScript + " > " + viewerOutput + "2>&1"
     viewercode = ntRun(v)
     with open(exitfileViewer, 'w') as e:
         e.write(viewercode)
 
 def ntTxmlServer(serverScript):
-    s = "Tundra.exe --headless --protocol tcp --file " + testfile + " --run " + serverScript + " > " + serverOutput + "2>&1"
+    s = "Tundra.exe " + config.headless + " --protocol tcp --file " + testfile + " --run " + serverScript + " > " + serverOutput + "2>&1"
     servercode = ntRun(s)
     with open(exitfileServer, 'w') as e:
         e.write(servercode)
 
 def ntTxmlViewer(viewerScript):
 #    v = "viewer.exe --headless --storage " + os.path.dirname(testfile) + "/ --run " + viewerScript + " > " + viewerOutput + "2>&1 | ECHO %ERRORLEVEL%" > asd.txt
-    v = "Tundra.exe --headless --storage " + os.path.dirname(testfile) + "/ --run " + viewerScript + " > " + viewerOutput + "2>&1"
+    v = "Tundra.exe " + config.headless + " --storage " + os.path.dirname(testfile) + "/ --run " + viewerScript + " > " + viewerOutput + "2>&1"
     viewercode = ntRun(v)
     with open(exitfileViewer, 'w') as e:
         e.write(viewercode)
