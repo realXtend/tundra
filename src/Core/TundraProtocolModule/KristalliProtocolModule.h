@@ -35,15 +35,15 @@ public:
 
     void Disconnect();
 
-        /// Starts a Kristalli server at the given port/transport.
-        /// @return true if successful
-        bool StartServer(unsigned short port, kNet::SocketTransportLayer transport);
-        
-        /// Stops Kristalli server
-        void StopServer();
-        
-        /// Invoked by the Network library for each received network message.
-        void HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t id, const char *data, size_t numBytes);
+    /// Starts a Kristalli server at the given port/transport.
+    /// @return true if successful
+    bool StartServer(unsigned short port, kNet::SocketTransportLayer transport);
+    
+    /// Stops Kristalli server
+    void StopServer();
+    
+    /// Invoked by the Network library for each received network message.
+    void HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t id, const char *data, size_t numBytes);
 
     /// Invoked by the Network library for each new connection
     void NewConnectionEstablished(kNet::MessageConnection* source);
@@ -82,9 +82,9 @@ public slots:
     void OpenKNetLogWindow();
 #endif
 
-    signals:
-        /// Triggered whenever a new message is received rom the network.
-        void NetworkMessageReceived(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char *data, size_t numBytes);
+signals:
+    /// Triggered whenever a new message is received rom the network.
+    void NetworkMessageReceived(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char *data, size_t numBytes);
 
     /// Triggered on the server side when a new user connects.
     void ClientConnectedEvent(UserConnection *connection);
