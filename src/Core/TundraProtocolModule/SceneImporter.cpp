@@ -109,7 +109,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
     }
 
     // Fill the placeable attributes
-    EC_Placeable* placeablePtr = checked_static_cast<EC_Placeable*>(newentity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change).get());
+    boost::shared_ptr<EC_Placeable> placeablePtr = boost::dynamic_pointer_cast<EC_Placeable>(newentity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change));
     if (placeablePtr)
         placeablePtr->transform.Set(worldtransform, AttributeChange::Disconnected);
     else
@@ -120,7 +120,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
     foreach(QString matName, material_names)
         materials.Append(AssetReference(prefix + matName + ".material"));
 
-    EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
+    boost::shared_ptr<EC_Mesh> meshPtr = boost::dynamic_pointer_cast<EC_Mesh>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change));
     if (meshPtr)
     {
         meshPtr->meshRef.Set(AssetReference(prefix + meshleafname), AttributeChange::Disconnected);
@@ -137,7 +137,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
         LogError("No EC_Mesh was created!");
 
     // Fill the name attributes
-    EC_Name * namePtr = checked_static_cast<EC_Name *>(newentity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
+    boost::shared_ptr<EC_Name> namePtr = boost::dynamic_pointer_cast<EC_Name>(newentity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change));
     if (namePtr)
         ///\todo Use name of scenedesc?
         namePtr->name.Set(meshleafname.replace(".mesh", ""), AttributeChange::Disconnected);
@@ -404,12 +404,12 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
     SceneAPI *sceneAPI = scene_->GetFramework()->Scene(); ///\todo Replace with scene_->SceneAPI();
 
     // Fill the mesh attributes
-    AssetReferenceList materials;
+    AssetReferenceList materials("OgreMaterial");
     foreach(QString matName, materialNames)
         materials.Append(AssetReference(path + "/" + matName + ".material"));
 
     /// \todo This creates dummy components, specifying a null scene during creation
-    EC_Mesh *mesh = sceneAPI->CreateComponent<EC_Mesh>(0).get();
+    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>(0);
     assert(mesh);
     if (mesh)
     {
@@ -432,7 +432,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
         }
     }
 
-    EC_Placeable *placeable = sceneAPI->CreateComponent<EC_Placeable>(0).get();
+    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
     assert(placeable);
     if (placeable)
         foreach(IAttribute *a, placeable->Attributes())
@@ -441,7 +441,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
             placeableDesc.attributes.append(attrDesc);
         }
 
-    EC_Name *name = sceneAPI->CreateComponent<EC_Name>(0).get();
+    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>(0);
     assert(name);
     if (name)
     {
@@ -763,15 +763,15 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                 LogInfo("Updating existing entity " + node_name);
             }
 
-            EC_Mesh* meshPtr = 0;
-            EC_Name* namePtr = 0;
-            EC_Placeable* placeablePtr = 0;
+            boost::shared_ptr<EC_Mesh> meshPtr;
+            boost::shared_ptr<EC_Name> namePtr;
+            boost::shared_ptr<EC_Placeable> placeablePtr;
 
             if (entity)
             {
-                meshPtr = checked_static_cast<EC_Mesh*>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
-                namePtr = checked_static_cast<EC_Name*>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
-                placeablePtr = checked_static_cast<EC_Placeable*>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change).get());
+                meshPtr = boost::dynamic_pointer_cast<EC_Mesh>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change));
+                namePtr = boost::dynamic_pointer_cast<EC_Name>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change));
+                placeablePtr = boost::dynamic_pointer_cast<EC_Placeable>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change));
                 assert(meshPtr && namePtr && placeablePtr);
                 if (meshPtr && namePtr && placeablePtr)
                 {
