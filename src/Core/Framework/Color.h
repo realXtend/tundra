@@ -51,18 +51,29 @@ public:
 
     Color(const QColor &other) { r = other.redF(); g = other.greenF(); b = other.blueF(); a = other.alphaF(); }
 
+    /// Implicit conversion to Color.
     operator QColor() const
     {
         return QColor(Clamp<int>(r*255.f, 0, 255), Clamp<int>(g*255.f, 0, 255), Clamp<int>(b*255.f, 0, 255), Clamp<int>(a*255.f, 0, 255));
     }
 
+    /// Returns Color as QColor.
+    QColor ToQColor() const { return *this; }
+
+    /// Implicit conversion to string.
     operator QString() const { return QString("Color(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a); }
+
+    /// Returns "Color(r,g,b,a)".
     QString ToString() const { return (QString)*this; }
-    /// For QtScript
+
+    /// For QtScript-compatibility.
     QString toString() const { return (QString)*this; }
 
 #ifdef MATH_OGRE_INTEROP
+    /// Returns Color as Ogre::ColourValue.
     Color(const Ogre::ColourValue &other) { r = other.r; g = other.g; b = other.b; a = other.a; }
+
+    /// Implicit conversion to Ogre::ColourValue.
     operator Ogre::ColourValue() const { return Ogre::ColourValue(r, g, b, a); }
 #endif
 };
