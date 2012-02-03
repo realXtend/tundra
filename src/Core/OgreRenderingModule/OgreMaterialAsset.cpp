@@ -176,6 +176,11 @@ OgreMaterialAsset::~OgreMaterialAsset()
     Unload();
 }
 
+namespace OgreRenderer
+{
+    extern QString lastLoadedOgreMaterial;
+}
+
 bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
 {
     // Remove old material if any
@@ -275,7 +280,9 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
         Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((u8 *)(&output_str[0]), output_str.size()));
 #include "EnableMemoryLeakCheck.h"
 
+        OgreRenderer::lastLoadedOgreMaterial = this->Name();
         matmgr.parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        OgreRenderer::lastLoadedOgreMaterial = "";
         ogreMaterial = matmgr.getByName(sanitatedname);
         if (ogreMaterial.isNull())
         {
