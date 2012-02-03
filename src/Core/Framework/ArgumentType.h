@@ -402,14 +402,14 @@ template<> inline void ArgumentType<int>::UpdateValueFromEditor()
 {
     QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
     if (e)
-        e->setValue(value);
+        value = e->value();
 }
 
 template<> inline void ArgumentType<int>::UpdateValueToEditor()
 {
     QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
     if (e)
-        value = e->value();
+        e->setValue(value);
 }
 
 template<> inline QString ArgumentType<int>::ToString() const
@@ -434,14 +434,14 @@ template<> inline void ArgumentType<unsigned long>::UpdateValueFromEditor()
 {
     QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
     if (e)
-        e->setValue(value);
+        value = e->value();
 }
 
 template<> inline void ArgumentType<unsigned long>::UpdateValueToEditor()
 {
     QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
     if (e)
-        value = e->value();
+        e->setValue(value);
 }
 
 template<> inline QString ArgumentType<unsigned long>::ToString() const
@@ -466,14 +466,14 @@ template<> inline void ArgumentType<long>::UpdateValueFromEditor()
 {
     QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
     if (e)
-        e->setValue(value);
+        value = e->value();
 }
 
 template<> inline void ArgumentType<long>::UpdateValueToEditor()
 {
     QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
     if (e)
-        value = e->value();
+        e->setValue(value);
 }
 
 template<> inline QString ArgumentType<long>::ToString() const
