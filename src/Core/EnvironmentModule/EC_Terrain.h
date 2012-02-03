@@ -346,6 +346,11 @@ public slots:
     /** This function blindly iterates through the whole terrain, so avoid calling it in performance-critical code. */
     float GetTerrainMaxHeight() const;
 
+    /// Resizes the terrain and recreates it.
+    /// newWidth and newHeight are the size of the new terrain, in # patches.
+    /// oldPatchStartX&Y specify the patch offset to copy the old terrain height values from.
+    void Resize(int newWidth, int newHeight, int oldPatchStartX = 0, int oldPatchStartY = 0);
+
 signals:
     /// Emitted when the terrain data is regenerated.
     void TerrainRegenerated();

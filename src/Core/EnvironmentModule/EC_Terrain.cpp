@@ -1438,6 +1438,22 @@ float EC_Terrain::GetTerrainMaxHeight() const
     return maxHeight;
 }
 
+void EC_Terrain::Resize(int newWidth, int newHeight, int oldPatchStartX, int oldPatchStartY)
+{
+    std::vector<Patch> newPatches(newWidth * newHeight);
+    for(int y = 0; y < newHeight && y + oldPatchStartY < yPatches.Get(); ++y)
+        for(int x = 0; x < newWidth && x + oldPatchStartX < xPatches.Get(); ++x)
+            newPatches[y * newWidth + x] = patches[(y + oldPatchStartY) * xPatches.Get() + x + oldPatchStartX];
+
+    patches = newPatches;
+    xPatches.Set(newWidth, AttributeChange::Disconnected);
+    yPatches.Set(newHeight, AttributeChange::Disconnected);
+    patchWidth = newWidth;
+    patchHeight = newHeight;
+    DirtyAllTerrainPatches();
+    RegenerateDirtyTerrainPatches();
+}
+
 void EC_Terrain::GetTerrainHeightRange(float &minHeight, float &maxHeight) const
 {
     minHeight = GetTerrainMinHeight();
