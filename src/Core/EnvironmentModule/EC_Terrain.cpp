@@ -68,11 +68,6 @@ EC_Terrain::~EC_Terrain()
 
 void EC_Terrain::UpdateSignals()
 {
-    disconnect(this, SLOT(OnAttributeUpdated(IAttribute *)));
-
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-        this, SLOT(OnAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
-
     Entity *parent = ParentEntity();
     CreateRootNode();
     if (parent)
@@ -101,7 +96,7 @@ void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
 {
     PROFILE(EC_Terrain_ResizeTerrain);
 
-    const int maxPatchSize = 32;
+    const int maxPatchSize = 256;
     // Do an artificial limit to a preset N patches per side. (This limit is way too large already for the current terrain vertex LOD management.)
     newPatchWidth = max(1, min(maxPatchSize, newPatchWidth));
     newPatchHeight = max(1, min(maxPatchSize, newPatchHeight));
@@ -158,36 +153,37 @@ void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
         }
 }
 
-void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
+void EC_Terrain::AttributesChanged()
 {
-    if (attribute->Name() == xPatches.Name() || attribute->Name() == yPatches.Name())
-    {
+    bool sizeChanged = xPatches.ValueChanged() || yPatches.ValueChanged();
+    bool needFullRecreate = uScale.ValueChanged() || vScale.ValueChanged();
+    bool needIncrementalRecreate = needFullRecreate || sizeChanged;
+
+    // If the height map source has changed, we are going to request the new terrain asset,
+    // which means that any changes to the current terrain attributes (size, scale, etc.) can
+    // be ignored - we will be doing a full reload of the terrain from the asset when it completes loading.
+    if (heightMap.ValueChanged())
+        sizeChanged = needFullRecreate = needIncrementalRecreate = false;
+
+    if (needFullRecreate)
+        DirtyAllTerrainPatches();
+    if (sizeChanged)
         ResizeTerrain(xPatches.Get(), yPatches.Get());
-        // Re-do all the geometry on the GPU.
+    if (needIncrementalRecreate)
         RegenerateDirtyTerrainPatches();
-    }
-    else if (attribute->Name() == nodeTransformation.Name())
-    {
+    if (nodeTransformation.ValueChanged())
         UpdateRootNodeTransform();
-    }
-    else if (attribute->Name() == material.Name())
+    if (material.ValueChanged())
     {
-        // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
         if (transfer)
             connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
-    else if (attribute->Name() == heightMap.Name())
+    if (heightMap.ValueChanged())
     {
         QString refBody;
         std::map<QString, QString> args = ParseAssetRefArgs(heightMap.Get().ref, &refBody);
         heightMapAsset->HandleAssetRefChange(framework->Asset(), refBody);
-    }
-    else if (attribute->Name() == uScale.Name() || attribute->Name() == vScale.Name())
-    {
-        // Re-do all the geometry on the GPU.
-        DirtyAllTerrainPatches();
-        RegenerateDirtyTerrainPatches();
     }
 }
 
@@ -223,6 +219,7 @@ void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
 
     if (assetData)
         LoadFromDataInMemory((const char*)&assetData->data[0], assetData->data.size());
+
     if (textureData)
     {
         if (textureData->DiskSource().isEmpty())
@@ -258,6 +255,7 @@ void EC_Terrain::DestroyPatch(int x, int y)
 
     if (world_.expired()) // Oops! Already destroyed
         return;
+
     Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
     
     EC_Terrain::Patch &patch = GetPatch(x, y);
@@ -384,7 +382,7 @@ float3 EC_Terrain::GetPointOnMapLocal(const float3 &point) const
 float EC_Terrain::GetDistanceToTerrain(const float3 &point) const
 {
     float3 pointOnMap = GetPointOnMap(point);
-    return point.z - pointOnMap.z;
+    return point.y - pointOnMap.y;
 }
 
 bool EC_Terrain::IsOnTopOfMap(const float3 &point) const
@@ -426,51 +424,35 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
     return h1 * (1.f - u - v) + h2 * u + h3 * v;
 }
 
-///\todo Delete this function and provide a proper replacement which returns local coordinate frames
-/// at the given point.
-///\bug Whether this is actually working at all is a result of random tweaking.
-/*
-float3 EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const float3& direction) const
+float3x4 EC_Terrain::TangentFrame(const float3 &worldPoint) const
 {
-    if (!rootNode)
-    {
-        LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
-        return float3(0, 0, 0);
-    }
-    float3 worldPos(x,y,z);
-    float3 local = GetPointOnMapLocal(worldPos);
-    // Get terrain normal.
-    float3 worldUp = GetInterpolatedNormal(local.x,local.y).Normalized();
+    float3 pointOnTerrainLocal = GetPointOnMapLocal(worldPoint);
 
-    // Get a vector which is perpendicular for direction and plane normal
-    float3 xVec = direction.Cross(worldUp).Normalized();
-    float3 front = worldUp.Cross(xVec).Normalized();
-    
-    xVec = -xVec;  // Why is this being done?
-    front = -front; // Why is this being done?
-      
-    Ogre::Matrix3 m3x3;
+    float3 normal = GetInterpolatedNormal(pointOnTerrainLocal.x, pointOnTerrainLocal.y);
+    float3x4 worldTransform = WorldTransform();
+    float3 xDir = worldTransform.Col(0); // +X dir of the terrain local map direction runs in this direction in world space.
 
-    m3x3[0][0] = xVec.x;
-    m3x3[0][1] = front.x;
-    m3x3[0][2] = worldUp.x;
-    m3x3[1][0] = xVec.y;
-    m3x3[1][1] = front.y;
-    m3x3[1][2] = worldUp.y;
-    m3x3[2][0] = xVec.z;
-    m3x3[2][1] = front.z;
-    m3x3[2][2] = worldUp.z; 
- 
-    Ogre::Quaternion q(m3x3);
-    Quat orientation(q.x, q.y,q.z, q.w);
-    
-    float3 rotations = orientation.ToEulerZYX();
-    std::swap(rotations.x, rotations.z);
-    
-    rotations *= RADTODEG;
-    return rotations;
+    // In local tangent space, the +Y axis maps to world-space normal of the terrain at that point.
+    float3x4 lookAt = float3x4::LookAt(float3::unitY, normal, float3::unitX, xDir);
+    lookAt.SetTranslatePart(GetPointOnMap(worldPoint));
+    return lookAt;
 }
-*/
+
+float3 EC_Terrain::Tangent(const float3 &worldPoint, const float3 &worldDir) const
+{
+    float3x4 tangentFrame = TangentFrame(worldPoint);
+    float3x4 toLocal = tangentFrame;
+    toLocal.InverseOrthonormal();
+    float3 localDir = toLocal.MulDir(worldDir);
+    localDir.y = 0; // Vector in the tangent plane is perpendicular to the surface normal.
+    return tangentFrame.MulDir(localDir).Normalized();
+}
+
+float3x4 EC_Terrain::WorldTransform() const
+{
+    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
+    return float4x4(worldTM).Float3x4Part();
+}
 
 void EC_Terrain::GetTriangleNormals(float x, float y, float3 &n1, float3 &n2, float3 &n3, float &u, float &v) const
 {
@@ -1472,44 +1454,51 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
 {
     PROFILE(EC_Terrain_RegenerateDirtyTerrainPatches);
 
-    for(int y = 0; y < patchHeight; ++y)
-        for(int x = 0; x < patchWidth; ++x)
-        {
-            EC_Terrain::Patch &scenePatch = GetPatch(x, y);
-            if (!scenePatch.patch_geometry_dirty || scenePatch.heightData.size() == 0)
-                continue;
-
-            bool neighborsLoaded = true;
-
-            const int neighbors[8][2] = 
-            { 
-                { -1, -1 }, { -1, 0 }, { -1, 1 },
-                {  0, -1 },            {  0, 1 },
-                {  1, -1 }, {  1, 0 }, {  1, 1 }
-            };
-
-            for(int i = 0; i < 8; ++i)
+    Entity *parentEntity = ParentEntity();
+    if (!parentEntity)
+        return;
+    EC_Placeable *position = parentEntity->GetComponent<EC_Placeable>().get();
+    if (!position)
+        return;
+    if (position->visible.Get()) // Only need to create GPU resources if the placeable itself is visible.
+    {
+        for(int y = 0; y < patchHeight; ++y)
+            for(int x = 0; x < patchWidth; ++x)
             {
-                int nX = x + neighbors[i][0];
-                int nY = y + neighbors[i][1];
-                if (nX >= 0 && nX < patchWidth &&
-                    nY >= 0 && nY < patchHeight &&
-                    GetPatch(nX, nY).heightData.size() == 0)
-                {
-                    neighborsLoaded = false;
-                    break;
-                }
-            }
+                EC_Terrain::Patch &scenePatch = GetPatch(x, y);
+                if (!scenePatch.patch_geometry_dirty || scenePatch.heightData.size() == 0)
+                    continue;
 
-            if (neighborsLoaded)
-                GenerateTerrainGeometryForOnePatch(x, y);
-        }
+                bool neighborsLoaded = true;
+
+                const int neighbors[8][2] = 
+                { 
+                    { -1, -1 }, { -1, 0 }, { -1, 1 },
+                    {  0, -1 },            {  0, 1 },
+                    {  1, -1 }, {  1, 0 }, {  1, 1 }
+                };
+
+                for(int i = 0; i < 8; ++i)
+                {
+                    int nX = x + neighbors[i][0];
+                    int nY = y + neighbors[i][1];
+                    if (nX >= 0 && nX < patchWidth &&
+                        nY >= 0 && nY < patchHeight &&
+                        GetPatch(nX, nY).heightData.size() == 0)
+                    {
+                        neighborsLoaded = false;
+                        break;
+                    }
+                }
+
+                if (neighborsLoaded)
+                    GenerateTerrainGeometryForOnePatch(x, y);
+            }
+    }
     
     // All the new geometry we created will be visible for Ogre by default. If the EC_Placeable's visible attribute is false,
     // we need to hide all newly created geometry.
     AttachTerrainRootNode();
-
-    ///\todo If this terrain only exists for physics heightfield purposes, don't create GPU resources for it at all.
 
     emit TerrainRegenerated();
 }
