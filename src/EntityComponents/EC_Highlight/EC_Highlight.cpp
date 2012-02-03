@@ -205,6 +205,7 @@ void EC_Highlight::CreateHighlightToOgreMaterial(OgreMaterialAsset* mat)
         mat->SetSceneBlend(i, pass1, Ogre::SBT_TRANSPARENT_ALPHA);
         mat->SetDepthWrite(i, pass1, false);
         mat->SetDepthBias(i, pass1, 1.f);
+        mat->SetHardwareCullingMode(i, pass1, Ogre::CULL_NONE);
         mat->SetVertexShader(i, pass1, "SolidAmbientVP");
         mat->SetPixelShader(i, pass1, "SolidAmbientFP");
         mat->SetAmbientColor(i, pass1, solidColor.Get());
@@ -213,6 +214,7 @@ void EC_Highlight::CreateHighlightToOgreMaterial(OgreMaterialAsset* mat)
         mat->SetSceneBlend(i, pass2, Ogre::SBT_TRANSPARENT_ALPHA);
         mat->SetDepthWrite(i, pass2, false);
         mat->SetDepthBias(i, pass2, 2.f);
+        mat->SetHardwareCullingMode(i, pass2, Ogre::CULL_NONE);
         mat->SetVertexShader(i, pass2, "SolidAmbientVP");
         mat->SetPixelShader(i, pass2, "SolidAmbientFP");
         mat->SetAmbientColor(i, pass2, outlineColor.Get());
