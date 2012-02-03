@@ -1,0 +1,26 @@
+material rex/DiffSpecflatNormal
+{
+	technique
+	{
+		pass
+		{
+			iteration once
+
+			vertex_program_ref rex/DiffSpecflatNormal
+			{
+			}
+			fragment_program_ref rex/DiffSpecflatNormal
+			{
+				param_named specularPower float 8.0
+			}
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+			texture_unit normalMap
+			{
+				texture TextureMissing.png
+			}
+		}
+	}
+}
