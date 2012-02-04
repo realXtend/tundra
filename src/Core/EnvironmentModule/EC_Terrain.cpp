@@ -193,13 +193,11 @@ void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
     assert(ogreMaterial);
     if (!ogreMaterial)
         return;
-
-    Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
     
     ///\todo We can't free here, since something else might be using the material.
 //    Ogre::MaterialManager::getSingleton().remove(currentMaterial.toStdString()); // Free up the old material.
 
-    currentMaterial = material->getName().c_str();
+    currentMaterial = ogreMaterial->ogreAssetName;
 
     // Also, we need to update each geometry patch to use the new material.
     for(int y = 0; y < patchHeight; ++y)
