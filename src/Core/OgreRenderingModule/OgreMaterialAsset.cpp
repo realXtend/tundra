@@ -255,8 +255,17 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
                             QString absolute_tex_name = assetAPI->ResolveAssetRef(Name(), tex_name.c_str());
                             references_.push_back(AssetReference(absolute_tex_name));
 //                            original_textures_.push_back(tex_name);
-                            // Sanitate the asset ID
+                            // Sanitate the asset reference
                             line = "texture " + AddDoubleQuotesIfNecessary(AssetAPI::SanitateAssetRef(absolute_tex_name).toStdString());
+                        }
+                        // Check for shadow_caster_material reference
+                        if (line.substr(0, 23) == "shadow_caster_material " && line.length() > 23)
+                        {
+                            std::string mat_name = QString(line.substr(23).c_str()).trimmed().toStdString();
+                            QString absolute_mat_name = assetAPI->ResolveAssetRef(Name(), mat_name.c_str());
+                            references_.push_back(AssetReference(absolute_mat_name));
+                            // Sanitate the asset reference
+                            line = "shadow_caster_material " + AddDoubleQuotesIfNecessary(AssetAPI::SanitateAssetRef(absolute_mat_name).toStdString());
                         }
                     }
 
@@ -275,59 +284,22 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
             }
         }
 
-        std::string output_str = output.str();
-#include "DisableMemoryLeakCheck.h"
-        Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((u8 *)(&output_str[0]), output_str.size()));
-#include "EnableMemoryLeakCheck.h"
+        parsedOgreMaterialAsset = output.str();
 
-        OgreRenderer::lastLoadedOgreMaterial = this->Name();
-        matmgr.parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        OgreRenderer::lastLoadedOgreMaterial = "";
-        ogreMaterial = matmgr.getByName(sanitatedname);
-        if (ogreMaterial.isNull())
-        {
-            LogWarning("DeserializeFromData: Failed to create an Ogre material from material asset: " + assetName);
-            return false;
-        }
-        if(!ogreMaterial->getNumTechniques())
-        {
-            LogWarning("DeserializeFromData: Failed to create an Ogre material, no Techniques in material asset: "  + assetName);
-            ogreMaterial.setNull();
-            return false;
-        }
-        
-        Renderer::ShadowQualitySetting shadowQuality = Renderer::Shadows_High; ///\todo Regression. Read this ahead of time.
-
-        //workaround: if receives shadows, check the amount of shadowmaps. If only 1 specified, add 2 more to support 3 shadowmaps
-        if(ogreMaterial->getReceiveShadows() && shadowQuality == Renderer::Shadows_High && ogreMaterial->getNumTechniques() > 0)
-        {
-            Ogre::Technique *tech = ogreMaterial->getTechnique(0);
-            if(tech)
+        // HACK: The AssetAPI::AssetLoadCompleted mechanism cannot accommodate materials referring to other materials!
+        // Everything loaded up?
+        bool depsLoaded = true;
+        for(size_t i = 0; i < references_.size(); ++i)
+            if (!assetAPI->GetAsset(references_[i].ref))
             {
-                Ogre::Technique::PassIterator passiterator = tech->getPassIterator();
-                while(passiterator.hasMoreElements())
-                {
-                    Ogre::Pass* pass = passiterator.getNext();
-                    Ogre::Pass::TextureUnitStateIterator texiterator = pass->getTextureUnitStateIterator();
-                    int shadowmaps = 0;
-                    while(texiterator.hasMoreElements())
-                    {
-                        Ogre::TextureUnitState* state = texiterator.getNext();
-                        if(state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
-                        {
-                            shadowmaps++;
-                        }
-                    }
-                    if (shadowmaps > 0 && shadowmaps < 3)
-                    {
-                        Ogre::TextureUnitState* sm2 = pass->createTextureUnitState();
-                        sm2->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
-
-                        Ogre::TextureUnitState* sm3 = pass->createTextureUnitState();
-                        sm3->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
-                    }
-                }
+                depsLoaded = false;
+                break;
             }
+
+        if (depsLoaded)
+        {
+            CreateOgreMaterial(parsedOgreMaterialAsset);
+            parsedOgreMaterialAsset = ""; // Save memory, this in-memory copy of the sanitated material is no longer used.
         }
     }
     catch(Ogre::Exception &e)
@@ -348,6 +320,19 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
 
     assetAPI->AssetLoadCompleted(Name());
     return true;
+}
+
+void OgreMaterialAsset::DependencyLoaded(AssetPtr dependee)
+{
+    // Everything loaded up?
+    for(size_t i = 0; i < references_.size(); ++i)
+        if (!assetAPI->GetAsset(references_[i].ref))
+            return;
+
+    CreateOgreMaterial(parsedOgreMaterialAsset);
+    parsedOgreMaterialAsset = ""; // Save memory, this in-memory copy of the sanitated material is no longer used.
+
+    LoadCompleted();
 }
 
 AssetPtr OgreMaterialAsset::Clone(QString newAssetName) const
@@ -448,7 +433,7 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
 
         // Make sure that asset refs/IDs are desanitated.
         QStringList keywords;
-        keywords << "material " << "texture ";
+        keywords << "material " << "texture " << "shadow_caster_material ";
         OgreRenderer::DesanitateAssetIds(materialData, keywords);
 
         data.clear();
@@ -654,6 +639,67 @@ bool OgreMaterialAsset::HasTechnique(int techIndex)
 bool OgreMaterialAsset::HasPass(int techIndex, int passIndex)
 {
     return GetPass(techIndex, passIndex) != 0;
+}
+
+bool OgreMaterialAsset::CreateOgreMaterial(const std::string &materialData)
+{
+    Ogre::MaterialManager& matmgr = Ogre::MaterialManager::getSingleton(); 
+
+#include "DisableMemoryLeakCheck.h"
+    Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((u8 *)(&materialData[0]), materialData.size()));
+#include "EnableMemoryLeakCheck.h"
+
+    OgreRenderer::lastLoadedOgreMaterial = this->Name();
+    matmgr.parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    OgreRenderer::lastLoadedOgreMaterial = "";
+    QString assetName = AssetAPI::SanitateAssetRef(Name());
+    ogreMaterial = matmgr.getByName(assetName.toStdString());
+    if (ogreMaterial.isNull())
+    {
+        LogWarning("DeserializeFromData: Failed to create an Ogre material from material asset: " + assetName);
+        return false;
+    }
+    if(!ogreMaterial->getNumTechniques())
+    {
+        LogWarning("DeserializeFromData: Failed to create an Ogre material, no Techniques in material asset: "  + assetName);
+        ogreMaterial.setNull();
+        return false;
+    }
+    
+    Renderer::ShadowQualitySetting shadowQuality = Renderer::Shadows_High; ///\todo Regression. Read this ahead of time.
+
+    //workaround: if receives shadows, check the amount of shadowmaps. If only 1 specified, add 2 more to support 3 shadowmaps
+    if(ogreMaterial->getReceiveShadows() && shadowQuality == Renderer::Shadows_High && ogreMaterial->getNumTechniques() > 0)
+    {
+        Ogre::Technique *tech = ogreMaterial->getTechnique(0);
+        if(tech)
+        {
+            Ogre::Technique::PassIterator passiterator = tech->getPassIterator();
+            while(passiterator.hasMoreElements())
+            {
+                Ogre::Pass* pass = passiterator.getNext();
+                Ogre::Pass::TextureUnitStateIterator texiterator = pass->getTextureUnitStateIterator();
+                int shadowmaps = 0;
+                while(texiterator.hasMoreElements())
+                {
+                    Ogre::TextureUnitState* state = texiterator.getNext();
+                    if(state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
+                    {
+                        shadowmaps++;
+                    }
+                }
+                if (shadowmaps > 0 && shadowmaps < 3)
+                {
+                    Ogre::TextureUnitState* sm2 = pass->createTextureUnitState();
+                    sm2->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
+
+                    Ogre::TextureUnitState* sm3 = pass->createTextureUnitState();
+                    sm3->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
+                }
+            }
+        }
+    }
+    return true;
 }
 
 bool OgreMaterialAsset::CreateOgreMaterial()
