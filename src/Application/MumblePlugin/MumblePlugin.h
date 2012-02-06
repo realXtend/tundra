@@ -74,7 +74,11 @@ public:
 
     /// This is for internal use only, to be called from AudioProcessor.
     /// @see Signal UserPositionalChange
-    void EmitPositionalChanged(MumbleUser *user);
+    void EmitUserPositionalChanged(MumbleUser *user);
+
+    /// This is for internal use only, to be called from AudioProcessor.
+    /// @see Signal UserSpeaking
+    void EmitUserSpeaking(MumbleUser *user);
 
 protected:
     // QObject override.
@@ -272,6 +276,12 @@ signals:
 
     /// User information updated.
     void UserUpdated(MumbleUser *user);
+
+    /// User speaking state changed.
+    /** If speaking is true, we are currently playing voice from him.
+        If false he is not speaking.
+        @see Signal MumbleUser::Speaking */
+    void UserSpeaking(MumbleUser *user, bool speaking);
 
     /** User local muted state changed by us.
         @see Signal MumbleUser::Muted */

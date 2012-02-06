@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>492</width>
-    <height>961</height>
+    <height>985</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -48,7 +48,7 @@ QPushButton#pushButtonProcessingHelp:pressed, #pushButtonTransmissionHelp:presse
 }
 
 QLabel#helpProcessing, #helpTransmission, #helpPositional {
-	color: rgb(66, 66, 66);
+	color: rgb(27, 27, 27);
 	background-color: rgb(245, 245, 245);
 	border: 1px solid grey;
 	border-radius: 3px;

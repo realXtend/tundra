@@ -84,6 +84,7 @@ QString MumbleChannel::toString() const
 MumbleUser::MumbleUser(MumblePlugin *owner) :
     owner_(owner),
     pos(float3::zero),
+    isSpeaking(false),
     isPositional(false),
     isMuted(false)
 {

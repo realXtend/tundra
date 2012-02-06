@@ -546,11 +546,11 @@ void MumblePlugin::OnStateChange(MumbleNetwork::ConnectionState newState)
         return;
     
     if (newState == MumbleConnecting)
-        LogInfo(LC + "State changed to \"MumbleConnecting\"");
+        LogDebug(LC + "State changed to \"MumbleConnecting\"");
     else if (newState == MumbleConnected)
-        LogInfo(LC + "State changed to \"MumbleConnected\"");
+        LogDebug(LC + "State changed to \"MumbleConnected\"");
     else if (newState == MumbleDisconnected)
-        LogInfo(LC + "State changed to \"MumbleDisconnected\"");
+        LogDebug(LC + "State changed to \"MumbleDisconnected\"");
 
     MumbleNetwork::ConnectionState oldState = state.connectionState;
     state.connectionState = newState;
@@ -1028,7 +1028,7 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
         {
             me->isPositional = false;
             me->EmitPositionalChanged();
-            EmitPositionalChanged(me);
+            EmitUserPositionalChanged(me);
         }
         return;
     }
@@ -1063,7 +1063,7 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
             {
                 me->isPositional = true;
                 me->EmitPositionalChanged();
-                EmitPositionalChanged(me);
+                EmitUserPositionalChanged(me);
             }
             packetInfo.pos = worldPos;
             packetInfo.isPositional = true;
@@ -1077,7 +1077,7 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
     {
         me->isPositional = false;
         me->EmitPositionalChanged();
-        EmitPositionalChanged(me);
+        EmitUserPositionalChanged(me);
     }
 }
 
@@ -1160,9 +1160,14 @@ void MumblePlugin::DebugMute(QString userIdStr)
         SetMuted(u->id, !u->isMuted);
 }
 
-void MumblePlugin::EmitPositionalChanged(MumbleUser *user)
+void MumblePlugin::EmitUserPositionalChanged(MumbleUser *user)
 {
     emit UserPositionalChanged(user, user->isPositional);
+}
+
+void MumblePlugin::EmitUserSpeaking(MumbleUser *user)
+{
+    emit UserSpeaking(user, user->isSpeaking);
 }
 
 extern "C"

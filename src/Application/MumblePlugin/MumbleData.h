@@ -17,6 +17,7 @@ Q_PROPERTY(uint channelId READ ChannelId)
 Q_PROPERTY(QString name READ Name)
 Q_PROPERTY(QString comment READ Comment)
 Q_PROPERTY(QString hash READ Hash)
+Q_PROPERTY(bool isSpeaking READ IsSpeaking)
 Q_PROPERTY(bool isMuted READ IsMuted)
 Q_PROPERTY(bool isSelfMuted READ IsSelfMuted)
 Q_PROPERTY(bool isSelfDeaf READ IsSelfDeaf)
@@ -31,6 +32,7 @@ public:
     QString name;
     QString comment;
     QString hash;
+    bool isSpeaking;
     bool isMuted;
     bool isSelfMuted;
     bool isSelfDeaf;
@@ -40,14 +42,18 @@ public:
 
     uint Id() { return id; }
     uint ChannelId() { return channelId; }
+    
     QString Name() { return name; }
     QString Comment() { return comment; }
     QString Hash() { return hash; }
+
+    bool IsSpeaking() { return isSpeaking; }
     bool IsMuted() { return isMuted; }
     bool IsSelfMuted() { return isSelfMuted; }
     bool IsSelfDeaf() { return isSelfDeaf; }
     bool IsMe() { return isMe; }
 
+    void EmitSpeaking() { emit Speaking(id, isSpeaking); }
     void EmitMuted() { emit Muted(id, isMuted); }
     void EmitSelfMuted() { emit SelfMuted(id, isSelfMuted); }
     void EmitSelfDeaf() { emit SelfDeaf(id, isSelfDeaf); }
@@ -64,6 +70,11 @@ public slots:
     QString toString() const;
 
 signals:
+    /// This users speaking state changed.
+    /// If speaking is true it means that we are playing this users voice currently.
+    /// If false the user is not sending voice to us currently and no playback is done.
+    void Speaking(uint userId, bool speaking);
+
     /// This users local muted state was changed by us.
     /// If muted is false we can no longer hear this user,
     /// if true we can hear his oncoming voice if there is any.
