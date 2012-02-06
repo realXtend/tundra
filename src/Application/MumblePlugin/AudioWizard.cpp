@@ -18,15 +18,16 @@ namespace MumbleAudio
         setupUi(this);
         setAttribute(Qt::WA_DeleteOnClose, true);
 
+        // Audio bar init
         audioBar = new Mumble::AudioBar(this);
         audioBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         audioBar->setMinimumHeight(28);
         audioBar->qcBelow = Qt::red;
         audioBar->qcAbove = Qt::green;
         audioBar->qcInside = Qt::yellow;
-
         audioBarLayout->insertWidget(1, audioBar);
 
+        // Quality
         if (currentSettings.quality == QualityLow)
             radioButtonLow->setChecked(true);
         else if (currentSettings.quality == QualityBalanced)
@@ -34,9 +35,11 @@ namespace MumbleAudio
         else if (currentSettings.quality == QualityHigh)
             radioButtonHigh->setChecked(true);
 
+        // Transmission mode
         comboBoxTransmitMode->setCurrentIndex(currentSettings.transmitMode == TransmitVoiceActivity ? 0 : 1);
         OnTransmitModeChanged(comboBoxTransmitMode->currentText());
 
+        // Audio processing
         int suppressValue = -currentSettings.suppression;
         sliderSuppression->setValue(suppressValue);
         OnSuppressChanged(suppressValue);
@@ -45,6 +48,7 @@ namespace MumbleAudio
         sliderAmplification->setValue(amplificationValue);
         OnAmplificationChanged(amplificationValue);
 
+        // Voice activity detection
         int silenceValue = static_cast<int>(currentSettings.VADmin * 32767.0f + 0.5f);
         sliderSilence->setValue(silenceValue);
         OnMinVADChanged(silenceValue);
@@ -53,6 +57,24 @@ namespace MumbleAudio
         sliderSpeech->setValue(speechValue);
         OnMaxVADChanged(speechValue);
 
+        // Positional audio
+        innerRangeSpinBox->setValue(settings.innerRange);
+        OnInnerRangeChanged(settings.innerRange);
+        outerRangeSpinBox->setMinimum(settings.innerRange + 1);
+        outerRangeSpinBox->setValue(settings.outerRange);
+        OnOuterRangeChanged(settings.outerRange);
+
+        checkBoxPositionalSend->setChecked(settings.allowSendingPositional);
+        OnAllowSendingPositionalChanged();
+        checkBoxPositionalReceive->setChecked(settings.allowReceivingPositional);
+        OnAllowReceivingPositionalChanged();
+
+        // Hide help labels by default
+        helpProcessing->hide();
+        helpTransmission->hide();
+        helpPositional->hide();
+
+        // Signaling
         connect(radioButtonLow, SIGNAL(clicked()), SLOT(OnQualityChanged()));
         connect(radioButtonBalanced, SIGNAL(clicked()), SLOT(OnQualityChanged()));
         connect(radioButtonHigh, SIGNAL(clicked()), SLOT(OnQualityChanged()));
@@ -69,14 +91,24 @@ namespace MumbleAudio
 
         connect(comboBoxTransmitMode, SIGNAL(currentIndexChanged(const QString&)), SLOT(OnTransmitModeChanged(const QString&)));
 
+        connect(pushButtonProcessingHelp, SIGNAL(clicked()), SLOT(OnProcessingHelpToggle()));
+        connect(pushButtonTransmissionHelp, SIGNAL(clicked()), SLOT(OnTransmissionHelpToggle()));
+        connect(pushButtonPositionalHelp, SIGNAL(clicked()), SLOT(OnPositionalHelpToggle()));
+
+        connect(innerRangeSpinBox, SIGNAL(valueChanged(int)), SLOT(OnInnerRangeChanged(int)));
+        connect(outerRangeSpinBox, SIGNAL(valueChanged(int)), SLOT(OnOuterRangeChanged(int)));
+
+        connect(checkBoxPositionalSend, SIGNAL(clicked()), SLOT(OnAllowSendingPositionalChanged()));
+        connect(checkBoxPositionalReceive, SIGNAL(clicked()), SLOT(OnAllowReceivingPositionalChanged()));
+
         buttonApply->setDisabled(true);
 
         show();
+        resize(1,1);
     }   
 
     AudioWizard::~AudioWizard()
     {
-
     }
 
     void AudioWizard::SetLevels(float level, bool isSpeech)
@@ -184,6 +216,69 @@ namespace MumbleAudio
         audioBar->update();
 
         buttonApply->setEnabled(true);
+    }
+
+    void AudioWizard::OnInnerRangeChanged(int value)
+    {
+        currentSettings.innerRange = value;
+        if (outerRangeSpinBox->value() < value + 1)
+            outerRangeSpinBox->setValue(value + 1);
+        outerRangeSpinBox->setMinimum(value + 1);
+
+        buttonApply->setEnabled(true);
+    }
+
+    void AudioWizard::OnOuterRangeChanged(int value)
+    {
+        currentSettings.outerRange = value;
+
+        buttonApply->setEnabled(true);
+    }
+
+    void AudioWizard::OnAllowSendingPositionalChanged()
+    {
+        currentSettings.allowSendingPositional = checkBoxPositionalSend->isChecked();
+
+        buttonApply->setEnabled(true);
+    }
+
+    void AudioWizard::OnAllowReceivingPositionalChanged()
+    {
+        currentSettings.allowReceivingPositional = checkBoxPositionalReceive->isChecked();
+        innerRangeSpinBox->setEnabled(currentSettings.allowReceivingPositional);
+        outerRangeSpinBox->setEnabled(currentSettings.allowReceivingPositional);
+
+        buttonApply->setEnabled(true);
+    }
+
+    void AudioWizard::OnProcessingHelpToggle()
+    {
+        helpProcessing->setVisible(!helpProcessing->isVisible());
+        
+        QString text = pushButtonProcessingHelp->text();
+        pushButtonProcessingHelp->setText(!helpProcessing->isVisible() ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
+        
+        resize(1,1);
+    }
+
+    void AudioWizard::OnTransmissionHelpToggle()
+    {
+        helpTransmission->setVisible(!helpTransmission->isVisible());
+
+        QString text = pushButtonTransmissionHelp->text();
+        pushButtonTransmissionHelp->setText(!helpTransmission->isVisible() ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
+
+        resize(1,1);
+    }
+
+    void AudioWizard::OnPositionalHelpToggle()
+    {
+        helpPositional->setVisible(!helpPositional->isVisible());
+
+        QString text = pushButtonPositionalHelp->text();
+        pushButtonPositionalHelp->setText(!helpPositional->isVisible() ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
+
+        resize(1,1);
     }
 
     void AudioWizard::OnOKPressed()

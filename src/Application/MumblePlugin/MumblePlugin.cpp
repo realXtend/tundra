@@ -56,6 +56,8 @@ void MumblePlugin::Initialize()
 
     framework_->RegisterDynamicObject("mumble", this);
 
+    // Audio processing with ~60 fps. This is not tied to FrameAPI::Updated or IModule::Update
+    // because we want to process audio at a steady and fast rate even if mainloop max fps is capped to eg. 30 fps.
     qobjTimerId_ = startTimer(15);
 
     /// @todo Remove everything below, was used for early development
@@ -93,7 +95,7 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
             PROFILE(MumblePlugin_Update_ProcessOutputAudio)
             VoicePacketInfo packetInfo(audio_->ProcessOutputAudio());
             ELIFORP(MumblePlugin_Update_ProcessOutputAudio)
-            if (!packetInfo.encodedFrames.isEmpty())
+            if (packetInfo.encodedFrames.size() > 0)
             {
                 PROFILE(MumblePlugin_Update_ProcessOutputNetwork)
                 if (network_)
@@ -123,10 +125,7 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
         PROFILE(MumblePlugin_Update_ProcessInputAudio)
         // Input audio
         if (!state.inputAudioMuted)
-        {
-            MumbleChannel *c = ChannelForUser(state.sessionId);
-            audio_->PlayInputAudio(c != 0 ? c->MutedUserIds() : QList<uint>());
-        }
+            audio_->PlayInputAudio(this);
         else
             audio_->ClearInputAudio();
         ELIFORP(MumblePlugin_Update_ProcessInputAudio)
@@ -179,7 +178,7 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
         SLOT(OnUserUpdate(uint, uint, QString, QString, QString, bool, bool, bool)), Qt::QueuedConnection);
 
     // Handle audio signals from network thread to audio thread.
-    connect(network_, SIGNAL(AudioReceived(uint, QList<QByteArray>)), audio_, SLOT(OnAudioReceived(uint, QList<QByteArray>)), Qt::QueuedConnection);
+    connect(network_, SIGNAL(AudioReceived(uint, uint, ByteArrayList, bool, float3)), audio_, SLOT(OnAudioReceived(uint, uint, ByteArrayList, bool, float3)), Qt::QueuedConnection);
     
     audio_->start();
     network_->start();
@@ -1035,13 +1034,17 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
 
     Entity *activeListener = 0;
     EntityList listenerEnts = scene->GetEntitiesWithComponent(EC_SoundListener::TypeNameStatic());
-    foreach(EntityPtr listenerEnt, listenerEnts)
+    for(EntityList::const_iterator iter = listenerEnts.begin(); iter != listenerEnts.end(); ++iter)
     {
-        EC_SoundListener *listener = listenerEnt->GetComponent<EC_SoundListener>().get();
-        if (listener && listener->ParentEntity() && listener->active.Get())
+        Entity *ent = (*iter).get();
+        if (ent)
         {
-            activeListener = listener->ParentEntity();
-            break;
+            EC_SoundListener *listener = ent->GetComponent<EC_SoundListener>().get();
+            if (listener && listener->ParentEntity() && listener->active.Get())
+            {
+                activeListener = listener->ParentEntity();
+                break;
+            }
         }
     }
 
@@ -1095,6 +1098,14 @@ MumbleAudio::AudioSettings MumblePlugin::LoadSettings()
         settings.VADmin = config->Get(data, "VADmin").toFloat();
     if (config->HasValue(data, "VADmax"))
         settings.VADmax = config->Get(data, "VADmax").toFloat();
+    if (config->HasValue(data, "innerRange"))
+        settings.innerRange = config->Get(data, "innerRange").toInt();
+    if (config->HasValue(data, "outerRange"))
+        settings.outerRange = config->Get(data, "outerRange").toInt();
+    if (config->HasValue(data, "allowSendingPositional"))
+        settings.allowSendingPositional = config->Get(data, "allowSendingPositional").toBool();
+    if (config->HasValue(data, "allowReceivingPositional"))
+        settings.allowReceivingPositional = config->Get(data, "allowReceivingPositional").toBool();
 
     return settings;
 }
@@ -1115,6 +1126,10 @@ void MumblePlugin::SaveSettings(MumbleAudio::AudioSettings settings)
     config->Set(data, "amplification", settings.amplification);
     config->Set(data, "VADmin", settings.VADmin);
     config->Set(data, "VADmax", settings.VADmax);
+    config->Set(data, "innerRange", settings.innerRange);
+    config->Set(data, "outerRange", settings.outerRange);
+    config->Set(data, "allowSendingPositional", settings.allowSendingPositional);
+    config->Set(data, "allowReceivingPositional", settings.allowReceivingPositional);
 }
 
 void MumblePlugin::DebugMute(QString userIdStr)
@@ -1123,6 +1138,11 @@ void MumblePlugin::DebugMute(QString userIdStr)
     MumbleUser *u = User(id);
     if (u)
         SetMuted(u->id, !u->isMuted);
+}
+
+void MumblePlugin::EmitPositionalChanged(MumbleUser *user)
+{
+    emit UserPositionalChanged(user, user->isPositional);
 }
 
 extern "C"

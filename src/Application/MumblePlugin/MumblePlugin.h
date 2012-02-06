@@ -49,11 +49,7 @@
       VAD is self written (techniques studied from native mumble client), other audio processing uses speexdsp library.
 
     @todo list of not implemented features:
-    - [trivial] Implement auto reconnect on disconnects. Optional and should be exposed to 3rd party code.
-    - [trivial] Implement reading position from input audio and actually provide position to AudioAPI/SoundChannel.
     - [trivial] Add per user voice activity detection, essentially signal when state changes Speaking(userid, bool)
-    - [trivial] Add global positional audio setting into audio wizard. This should be for the user to decide, 
-      affects both sending own position and other client voice playback with position. Should however default to true as we are a 3D world client.
     - [trivial] Remove debug prints and debug console command slots that were used for initial development.
     - [medium] Make new javascript example scene and script that uses the new MumblePlugin API to implement a nice client.
       Verify MumbleScriptTypeDefines.h exposes everything correctly to javascript with this example script! Fine tune signals for easy scripting.
@@ -75,6 +71,9 @@ public:
 
     /// IModule override.
     void Uninitialize();
+
+    /// @see Signal UserPositionalChange
+    void EmitPositionalChanged(MumbleUser *user);
 
 protected:
     // QObject override.
@@ -299,6 +298,13 @@ signals:
         If selfDeaf is true no one on the channel can hear him or send audio to him (guaranteed by the server). 
         @see Signal MumbleUser::SelfDeaf */
     void UserSelfDeaf(MumbleUser *user, bool selfDeaf);
+
+    /// This users positional state changed.
+    /** If positional is true this users audio is played with position.
+        False it is played as mono. 
+        @note You can access the position from MumbleUser::pos property. 
+        @see Signal MumbleUser::PositionalChanged */
+    void UserPositionalChanged(MumbleUser *user, bool positional);
 
     /** Own MumbleUser was created. Fired when all channels and users have
         been synced to us and we have a valid client session id. */

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "MumbleNetwork.h"
+#include "MumbleDefines.h"
 #include "MumbleData.h"
 
 #include "ScriptMetaTypeDefines.h"
@@ -18,12 +19,12 @@ Q_DECLARE_METATYPE(MumbleChannel*)
 Q_DECLARE_METATYPE(MumbleUser*)
 Q_DECLARE_METATYPE(QList<MumbleChannel*>)
 Q_DECLARE_METATYPE(QList<MumbleUser*>)
+Q_DECLARE_METATYPE(ByteArrayList)
 Q_DECLARE_METATYPE(MumbleNetwork::ConnectionState)
 Q_DECLARE_METATYPE(MumbleNetwork::RejectReason)
 Q_DECLARE_METATYPE(MumbleNetwork::PermissionDeniedType)
 Q_DECLARE_METATYPE(MumbleNetwork::ACLPermission)
 Q_DECLARE_METATYPE(MumbleNetwork::NetworkMode)
-
 
 QScriptValue toScriptValueMumbleChannelList(QScriptEngine *engine, const QList<MumbleChannel*> &channels)
 {
@@ -86,6 +87,7 @@ void RegisterMumblePluginMetaTypes()
     qRegisterMetaType<QList<MumbleUser*> >("QList<MumbleUser*>");
     qRegisterMetaType<QList<QByteArray> >("QList<QByteArray>");
     qRegisterMetaType<QList<uint> >("QList<uint>");
+    qRegisterMetaType<ByteArrayList >("ByteArrayList");
 }
 
 void RegisterMumblePluginMetaTypes(QScriptEngine *engine)

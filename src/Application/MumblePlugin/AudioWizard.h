@@ -39,6 +39,16 @@ namespace MumbleAudio
         void OnMinVADChanged(int value);
         void OnMaxVADChanged(int value);
 
+        void OnInnerRangeChanged(int value);
+        void OnOuterRangeChanged(int value);
+
+        void OnAllowSendingPositionalChanged();
+        void OnAllowReceivingPositionalChanged();
+
+        void OnProcessingHelpToggle();
+        void OnTransmissionHelpToggle();
+        void OnPositionalHelpToggle();
+
         void OnOKPressed();
         void OnCancelPressed();
         void OnApplyPressed();

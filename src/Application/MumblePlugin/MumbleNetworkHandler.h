@@ -75,7 +75,7 @@ signals:
     void UserUpdate(uint id, uint channelId, QString name, QString comment, QString hash, bool selfMuted, bool selfDeaf, bool isMe);
     void UserLeft(uint id, uint actorId, bool banned, bool kicked, QString reason);
     
-    void AudioReceived(uint userId, QList<QByteArray> frames);
+    void AudioReceived(uint userId, uint seq, ByteArrayList frames, bool isPositional, float3 pos);
 
 private slots:
     void OnConnected();
@@ -87,8 +87,8 @@ private slots:
     void OnUDPSocketRead();
 
 private:
-    void InitTCP();
-    void InitUDP();
+    bool InitTCP();
+    bool InitUDP();
     
     bool TCPAlive();
     bool UDPAlive();
@@ -96,10 +96,10 @@ private:
     // Handle incoming voice data stream from user. Handles both TCP and
     // UDP voice traffic after initial header information is parsed out
     // in their respective handlers.
-    void HandleVoicePacket(uint userId, Mumble::PacketDataStream &stream);
+    void HandleVoicePacket(uint userId, uint seq, Mumble::PacketDataStream &stream);
 
     // Prepares encoded packets into a PacketDataStream.
-    void PrepareVoicePacket(QList<QByteArray> &encodedFrames, Mumble::PacketDataStream &stream);
+    void PrepareVoicePacket(ByteArrayList &encodedFrames, Mumble::PacketDataStream &stream);
 
     QSslSocket *tcp;
     QUdpSocket *udp;

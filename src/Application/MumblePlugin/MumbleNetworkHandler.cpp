@@ -38,6 +38,7 @@ MumbleNetworkHandler::MumbleNetworkHandler(QString address, ushort port, QString
 
 MumbleNetworkHandler::~MumbleNetworkHandler()
 {
+    // Cleanup is done in run() when thread exits.
 }
 
 void MumbleNetworkHandler::run()
@@ -45,7 +46,13 @@ void MumbleNetworkHandler::run()
     exiting_ = false;
     emit StateChange(MumbleConnecting);
 
-    InitTCP();
+    // If false is returned there is no SSL support.
+    if (!InitTCP())
+    {
+        quit();
+        return;
+    }
+
     tcp->connectToHostEncrypted(connectionInfo.address, connectionInfo.port);
 
     timestamp.restart();
@@ -53,7 +60,7 @@ void MumbleNetworkHandler::run()
     pingTimer_->start(5000);
     connect(pingTimer_, SIGNAL(timeout()), SLOT(SendPing()));
 
-    int qobjTimerId = startTimer(10);
+    int qobjTimerId = startTimer(15); // ~60 fps
 
     exec(); // Blocks untill quit()
 
@@ -68,6 +75,8 @@ void MumbleNetworkHandler::run()
         tcp->disconnectFromHost();
         tcp->waitForDisconnected();
     }
+
+    // Note that tcp and udp objects are freed by Qt parenting.
 
     emit StateChange(MumbleDisconnected);
 }
@@ -90,12 +99,12 @@ void MumbleNetworkHandler::timerEvent(QTimerEvent *event)
     }
 }
 
-void MumbleNetworkHandler::InitTCP()
+bool MumbleNetworkHandler::InitTCP()
 {    
     if (!QSslSocket::supportsSsl())
     {
         LogError(LC + "SSL not supported, cannot initialize TCP connection!");
-        return;
+        return false;
     }
 
     QStringList addedCerts = Mumble::MumbleSSL::addSystemCA();
@@ -122,9 +131,11 @@ void MumbleNetworkHandler::InitTCP()
     connect(tcp, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(OnError(QAbstractSocket::SocketError)));
     connect(tcp, SIGNAL(sslErrors(const QList<QSslError>&)), SLOT(OnSslErrors(const QList<QSslError>&)));
     connect(tcp, SIGNAL(readyRead()), this, SLOT(OnTCPSocketRead()));
+
+    return true;
 }
 
-void MumbleNetworkHandler::InitUDP()
+bool MumbleNetworkHandler::InitUDP()
 {
     QMutexLocker udpLock(&mutexUDP);
 
@@ -179,6 +190,7 @@ void MumbleNetworkHandler::InitUDP()
     }
 */
 #endif
+    return true;
 }
 
 void MumbleNetworkHandler::OnConnected()
@@ -321,9 +333,9 @@ void MumbleNetworkHandler::OnUDPSocketRead()
                 uint userId = 0;
                 uint seq = 0;
                 stream >> userId;
-                stream >> seq; /// @todo detect if we have received > seq and ignore packet?
+                stream >> seq;
 
-                HandleVoicePacket(userId, stream);
+                HandleVoicePacket(userId, seq, stream);
                 break;
             }
             case UDPPing:
@@ -468,16 +480,16 @@ void MumbleNetworkHandler::SendVoicePacket(VoicePacketInfo &packetInfo)
         SendTCP(UDPTunnel, data, stream.size() + 1);
 }
 
-void MumbleNetworkHandler::PrepareVoicePacket(QList<QByteArray> &encodedFrames, Mumble::PacketDataStream &stream)
+void MumbleNetworkHandler::PrepareVoicePacket(ByteArrayList &encodedFrames, Mumble::PacketDataStream &stream)
 {
     // Sequence number
     stream << frameOutSequenceNumber;
     frameOutSequenceNumber++;
 
-    int frameCount = encodedFrames.count();
-    for (int i=0; i<frameCount; ++i) 
+    int frameCount = encodedFrames.size();
+    for(int i=0; i<frameCount; ++i)
     {
-        const QByteArray &qba = encodedFrames.takeFirst();
+        const QByteArray &qba = encodedFrames.at(i);
         unsigned char head = static_cast<unsigned char>(qba.size());
         if (i < frameCount - 1)
             head |= 0x80;
@@ -558,7 +570,7 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
                 stream >> userId;
                 stream >> seq;
 
-                HandleVoicePacket(userId, stream);
+                HandleVoicePacket(userId, seq, stream);
             }
             break;
         }
@@ -673,10 +685,10 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
     }
 }
 
-void MumbleNetworkHandler::HandleVoicePacket(uint userId, Mumble::PacketDataStream &stream)
+void MumbleNetworkHandler::HandleVoicePacket(uint userId, uint seq, Mumble::PacketDataStream &stream)
 {
-    QList<QByteArray> frames;
-
+    // Read audio frames
+    ByteArrayList frames;
     bool lastFrame = false;
     while(!lastFrame && stream.isValid())
     {
@@ -685,11 +697,26 @@ void MumbleNetworkHandler::HandleVoicePacket(uint userId, Mumble::PacketDataStre
         lastFrame = !(header & 0x80);
 
         if (frameSize > 0)
-            frames << QByteArray(stream.charPtr(), frameSize);
+            frames.push_back(QByteArray(stream.charPtr(), frameSize));
         stream.skip(frameSize);
     }
 
-    emit AudioReceived(userId, frames);
+    // Check and read positional data
+    bool isPositional = false;
+    float3 pos = float3::zero;
+    if (stream.left() > 0)
+    {
+        isPositional = true;
+
+        // Coordinate conversion: Mumble -> Naali 
+        stream >> pos.y;
+        stream >> pos.z;
+        stream >> pos.x;
+        pos.x *= -1;
+    }
+
+    if (frames.size() > 0)
+        emit AudioReceived(userId, seq, frames, isPositional, pos);
 }
 
 bool MumbleNetworkHandler::TCPAlive()

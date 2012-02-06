@@ -3,8 +3,10 @@
 #pragma once
 
 #include "MumbleFwd.h"
+#include "MumbleDefines.h"
 #include "CoreTypes.h"
 #include "Math/float3.h"
+
 #include "google/protobuf/message.h"
 
 #include <QObject>
@@ -205,7 +207,7 @@ namespace MumbleNetwork
 
     struct VoicePacketInfo
     {
-        VoicePacketInfo(QList<QByteArray> encodedFrames_) 
+        VoicePacketInfo(std::vector<QByteArray> encodedFrames_) 
         {
             isLoopBack = false;
             isPositional = false;
@@ -217,7 +219,7 @@ namespace MumbleNetwork
         bool isPositional;
         float3 pos;
 
-        QList<QByteArray> encodedFrames;
+        std::vector<QByteArray> encodedFrames;
     };
 
     struct TCPInfo

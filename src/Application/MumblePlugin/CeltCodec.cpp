@@ -42,10 +42,9 @@ namespace MumbleAudio
         return bitStreamVersion;
     }
 
-    int CeltCodec::Encode(SoundBuffer &pcmFrame, unsigned char *compressed, int bitrate)
+    int CeltCodec::Encode(const SoundBuffer &pcmFrame, unsigned char *compressed, int bitrate)
     {
         celt_encoder_ctl(Encoder(), CELT_SET_PREDICTION(0));
-        //celt_encoder_ctl(Encoder(), CELT_SET_VBR_RATE(bitrate));
         return celt_encode(Encoder(), (celt_int16*)&pcmFrame.data[0], MUMBLE_AUDIO_SAMPLES_IN_FRAME, compressed, qMin(bitrate / (8 * 100), 127));
     }
 

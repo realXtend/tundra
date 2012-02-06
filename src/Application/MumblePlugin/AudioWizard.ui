@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>492</width>
-    <height>426</height>
+    <height>961</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -29,9 +29,45 @@
    <string notr="true">QGroupBox {
 	font-size: 10pt;
 	font-weight: bold;
+}
+
+QPushButton#pushButtonProcessingHelp, #pushButtonTransmissionHelp, #pushButtonPositionalHelp {
+	border: 1px solid grey;
+	border-radius: 3px;
+	min-height: 20px;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0.165, x2:0, y2:0.864, stop:0 rgba(248, 248, 248, 255), stop:1 rgba(232, 232, 232, 255));
+}
+
+QPushButton#pushButtonProcessingHelp:hover, #pushButtonTransmissionHelp:hover, #pushButtonPositionalHelp:hover {
+	background-color: qlineargradient(spread:pad, x1:0, y1:0.165, x2:0, y2:0.864, stop:0 rgba(248, 248, 248, 50), stop:1 rgba(232, 232, 232, 50));
+}
+
+QPushButton#pushButtonProcessingHelp:pressed, #pushButtonTransmissionHelp:pressed, #pushButtonPositionalHelp:pressed {
+	border-color: black;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0.165, x2:0, y2:0.864, stop:0 rgba(248, 248, 248, 255), stop:1 rgba(232, 232, 232, 255));
+}
+
+QLabel#helpProcessing, #helpTransmission, #helpPositional {
+	color: rgb(66, 66, 66);
+	background-color: rgb(245, 245, 245);
+	border: 1px solid grey;
+	border-radius: 3px;
+	padding: 3px;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>During the configuration you are in server loop back mode. Meaning the audio is sent to the server and server only sends it back to us, no one else can hear you while configuring. This is a good way to verify how other clients will hear you with the given settings.
+
+Hit Apply to apply setting locally, OK to accept the changes and start normal playback/audio sending and Cancel to cancel any changes you have made.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QGroupBox" name="groupBoxQuality">
      <property name="font">
@@ -213,6 +249,31 @@ p, li { white-space: pre-wrap; }
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonProcessingHelp">
+        <property name="text">
+         <string>Show Audio Processing Help</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="helpProcessing">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Noise suppression is used to remove noice from the recorded microphone audio. Amplification can automatically increase volume when speking quietly and automatically decrese volume when loud spikes are detected.
+
+Remember to always set the mic volume reasonably high from your operating system and then adjust additional amplification if it is needed.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -412,6 +473,175 @@ p, li { white-space: pre-wrap; }
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonTransmissionHelp">
+        <property name="text">
+         <string>Show Transmission Mode Help</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="helpTransmission">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Continuous trasmission mode sends voice out all the time. Doing this has the drawback that it spends more bandwith for other users, hence it is not recommended. If you can't get voice activity detection to work well enough you can fall back to this mode.
+
+Voice activity detection can detect when you are speaking and only then send out audio. This saves processing and bandwidth on your and other clients. Activate the mode and adjust the two sliders so that when you speak normally it detects the speech. When the meter goes to green it starts sending audio and will send untill the meter goes to red for a certain perioid.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Positional Audio</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <item>
+         <widget class="QCheckBox" name="checkBoxPositionalSend">
+          <property name="text">
+           <string>Send Positional Audio</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxPositionalReceive">
+          <property name="text">
+           <string>Receive Positional Audio</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <widget class="QLabel" name="innerRangeLabel">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Full volume playback to</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="innerRangeSpinBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="innerMeterLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>meters</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_9">
+        <item>
+         <widget class="QLabel" name="outerRangeLabel">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>User completely muted at</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="outerRangeSpinBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="outerMeterLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>meters</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonPositionalHelp">
+        <property name="text">
+         <string>Show Positional Audio Help</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="helpPositional">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Checking Send Positional Audio will send active sound listener position with the audio data. The receiving client can disable playing back the audio with the position from other users.
+
+Checking Receive Positional Audio will play incoming voice with position if it is provided by the other client. You can set the playback ranges on when the volume starts to fade out and where it goes completely silent.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

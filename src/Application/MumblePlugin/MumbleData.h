@@ -51,6 +51,7 @@ public:
     void EmitMuted() { emit Muted(id, isMuted); }
     void EmitSelfMuted() { emit SelfMuted(id, isSelfMuted); }
     void EmitSelfDeaf() { emit SelfDeaf(id, isSelfDeaf); }
+    void EmitPositionalChanged() { emit PositionalChanged(id, isPositional); }
     void EmitChannelChanged(MumbleChannel *channel) { emit ChannelChanged(channel); }
 
 public slots:
@@ -77,6 +78,10 @@ signals:
     /// deafen/undeafen both incoming and outgoing voice himself.
     /// If selfDeaf is true no one on the channel can hear him or send audio to him (guaranteed by the server).
     void SelfDeaf(uint userId, bool selfDeaf);
+
+    /// This users positional audio boolean changed.
+    /// @note The position itself it not emitted, you can access it from the pos property.
+    void PositionalChanged(uint userId, bool positional);
 
     /// User changed channel.
     void ChannelChanged(MumbleChannel *channel);

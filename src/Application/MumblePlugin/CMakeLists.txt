@@ -140,6 +140,10 @@ if (APPLE)
     link_ogre()
 endif ()
 
+if (WIN32)
+    target_link_libraries (${TARGET_NAME} ws2_32.lib)
+endif()
+
 SetupCompileFlags()
 
 final_target ()

@@ -5,11 +5,14 @@
 #include "MumbleNetwork.h"
 
 #include <QObject>
+#include <QByteArray>
 #include <QString>
+
+#include <vector>
 #include <deque>
 #include <map>
 
-class SoundBuffer;
+typedef std::vector<QByteArray> ByteArrayList;
 
 struct MumblePluginState
 {
@@ -99,6 +102,10 @@ namespace MumbleAudio
             amplification = 19000;
             VADmin = 0.80f;
             VADmax = 0.98f;
+            innerRange = 30;
+            outerRange = 75;
+            allowSendingPositional = true;
+            allowReceivingPositional = true;
         }
 
         AudioSettings(const MumbleAudio::AudioSettings &other)
@@ -109,6 +116,10 @@ namespace MumbleAudio
             amplification = other.amplification;
             VADmin = other.VADmin;
             VADmax = other.VADmax;
+            innerRange = other.innerRange;
+            outerRange = other.outerRange;
+            allowSendingPositional = other.allowSendingPositional;
+            allowReceivingPositional = other.allowReceivingPositional;
         }
 
         MumbleAudio::AudioSettings &operator=(const MumbleAudio::AudioSettings &other)
@@ -119,6 +130,10 @@ namespace MumbleAudio
             amplification = other.amplification;
             VADmin = other.VADmin;
             VADmax = other.VADmax;
+            innerRange = other.innerRange;
+            outerRange = other.outerRange;
+            allowSendingPositional = other.allowSendingPositional;
+            allowReceivingPositional = other.allowReceivingPositional;
             return *this;
         }
 
@@ -128,6 +143,10 @@ namespace MumbleAudio
         int amplification;
         float VADmin;
         float VADmax;
+        int innerRange;
+        int outerRange;
+        bool allowSendingPositional;
+        bool allowReceivingPositional;
     };
 
     static int MUMBLE_AUDIO_SAMPLE_RATE = 48000;
@@ -140,9 +159,6 @@ namespace MumbleAudio
     static int MUMBLE_AUDIO_FRAMES_PER_PACKET_LOW = 5; // mumble original 6
     static int MUMBLE_AUDIO_FRAMES_PER_PACKET_BALANCED = 5; // mumble original 2
     static int MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA = 5; // mumble original 1
-
-    typedef std::deque<SoundBuffer> AudioFrameDeque;
-    typedef std::map<uint, AudioFrameDeque > AudioFrameMap;
 }
 
 #ifdef Q_OS_WIN

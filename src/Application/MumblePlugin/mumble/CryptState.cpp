@@ -40,6 +40,8 @@
 #include "CryptState.h"
 #include "Net.h"
 
+#include <Win.h> // Tundra include
+
 #include <openssl/rand.h>
 
 namespace Mumble

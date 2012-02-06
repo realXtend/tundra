@@ -16,7 +16,31 @@
 
 namespace MumbleAudio
 {
-    typedef std::map<uint, SoundChannelPtr> AudioChannelMap;
+    //////////////////////////////////////////////////////
+
+    typedef std::deque<SoundBuffer> AudioFrameDeque;
+
+    struct UserAudioState
+    {
+        UserAudioState ()
+        {
+            lastSeq = 0;
+            isPositional = false;
+            pos = float3::zero;
+            frames.clear();
+            soundChannel.reset();
+        }
+
+        uint lastSeq;
+        bool isPositional;
+        float3 pos;
+        AudioFrameDeque frames;
+        SoundChannelPtr soundChannel;
+    };
+    
+    typedef std::map<uint, UserAudioState > AudioStateMap;
+
+    //////////////////////////////////////////////////////
 
     class AudioProcessor : public QThread
     {
@@ -37,10 +61,13 @@ namespace MumbleAudio
         void run(); 
 
     public slots:
-        QList<QByteArray> ProcessOutputAudio();
+        ByteArrayList ProcessOutputAudio();
         void SetOutputAudioMuted(bool outputAudioMuted_);
 
-        void PlayInputAudio(QList<uint> mutedUserIds);
+        /// Plays all input audio frames from other users. 
+        /// Updates MumbleUser::isPositional and emits MumbleUser::PositionalChanged
+        /// and MumblePlugin::UserPositionalChanged
+        void PlayInputAudio(MumblePlugin *mumble);
         void SetInputAudioMuted(bool inputAudioMuted_);
         
         void ApplySettings(AudioSettings settings);
@@ -53,7 +80,7 @@ namespace MumbleAudio
         int CodecBitStreamVersion();
 
     private slots:
-        void OnAudioReceived(uint userId, QList<QByteArray> frames);
+        void OnAudioReceived(uint userId, uint seq, ByteArrayList frames, bool isPositional, float3 pos);
         
     private:
         void ResetSpeexProcessor();
@@ -66,9 +93,8 @@ namespace MumbleAudio
 
         SpeexPreprocessState *speexPreProcessor;
         AudioSettings audioSettings;
-        
-        AudioChannelMap userChannels;
-        AudioFrameMap inputFrames;
+
+        AudioStateMap inputAudioStates;
 
         QList<QByteArray> pendingEncodedFrames;
         QList<QByteArray> pendingVADPreBuffer;

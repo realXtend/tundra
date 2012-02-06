@@ -1,11 +1,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "AudioProcessor.h"
+#include "MumblePlugin.h"
+#include "MumbleData.h"
 #include "CeltCodec.h"
 #include "celt/celt.h"
 
-#include "AudioAPI.h"
 #include "Framework.h"
+#include "Profiler.h"
+#include "AudioAPI.h"
 #include "CoreDefines.h"
 #include "LoggingFunctions.h"
 
@@ -29,6 +32,7 @@ namespace MumbleAudio
 
     AudioProcessor::~AudioProcessor()
     {
+        // Cleanup is done in run() when thread exits.
     }
 
     void AudioProcessor::ResetSpeexProcessor()
@@ -88,8 +92,7 @@ namespace MumbleAudio
 
         {
             QMutexLocker lockInput(&mutexInput);
-            inputFrames.clear();
-            userChannels.clear();
+            inputAudioStates.clear();
             framework = 0;
         }
 
@@ -112,7 +115,7 @@ namespace MumbleAudio
 
         if (!outputAudioMuted)
         {
-            // Recording buffer 19200 bytes
+            // Recording buffer of 40 celt frames, 38400 bytes
             int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
             framework->Audio()->StartRecording("", MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
         }
@@ -179,14 +182,14 @@ namespace MumbleAudio
         return audioSettings;
     }
 
-    QList<QByteArray> AudioProcessor::ProcessOutputAudio()
+    ByteArrayList AudioProcessor::ProcessOutputAudio()
     {
         // This function is called in the main thread
         if (!framework)
-            return QList<QByteArray>();
+            return ByteArrayList();
 
         // Get recorded PCM frames
-        QList<SoundBuffer> pcmFrames;
+        std::vector<SoundBuffer> pcmFrames;
         uint celtFrameSize = MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8;
         while (framework->Audio()->GetRecordedSoundSize() > celtFrameSize)
         {
@@ -198,10 +201,10 @@ namespace MumbleAudio
         }
 
         // Encoded frames per packet
-        int framesPerPacket = 0;
+        uint framesPerPacket = 0;
 
         // Preprocess with speexdsp and encode with celt
-        QList<QByteArray> encodedFrames;
+        ByteArrayList encodedFrames;
         if (pcmFrames.size() > 0)
         {
             int localQualityBitrate = 0;
@@ -225,10 +228,12 @@ namespace MumbleAudio
 
             QMutexLocker lockCodec(&mutexCodec);
             if (!codec)
-                return QList<QByteArray>();
+                return ByteArrayList();
 
-            foreach(SoundBuffer pcmFrame, pcmFrames)
+            for (std::vector<SoundBuffer>::const_iterator pcmIter = pcmFrames.begin(); pcmIter != pcmFrames.end(); ++pcmIter)
             {
+                const SoundBuffer &pcmFrame = (*pcmIter);
+
                 isSpeech = true;
                 if (localPreProcess)
                 {
@@ -289,9 +294,11 @@ namespace MumbleAudio
                     {
                         if (pendingVADPreBuffer.size() > 0)
                         {
-                            encodedFrames.append(pendingVADPreBuffer);
+                            foreach (QByteArray VADPreBuffer, pendingVADPreBuffer)
+                                encodedFrames.push_back(VADPreBuffer);
                             pendingVADPreBuffer.clear();
                         }
+
                         encodedFrames.push_back(encodedFrame);
                     }
                     // If voice activity detection is enabled but this is 
@@ -325,17 +332,17 @@ namespace MumbleAudio
         {
             LogWarning(LC + "Output local buffer getting too large, reseting situation.");
             ClearOutputAudio();
-            return QList<QByteArray>();
+            return ByteArrayList();
         }
 
         // Nothing was captured and no pending
         if (encodedFrames.size() == 0 && pendingEncodedFrames.size() == 0)
-            return QList<QByteArray>();
+            return ByteArrayList();
 
         // Nothing was captured but we have pending
-        if (encodedFrames.size() == 0 && pendingEncodedFrames.size() >= framesPerPacket)
+        if (encodedFrames.size() == 0 && (uint)pendingEncodedFrames.size() >= framesPerPacket)
         {
-            QList<QByteArray> sendOutNow;
+            ByteArrayList sendOutNow;
             while (sendOutNow.size() < framesPerPacket)
                 sendOutNow.push_back(pendingEncodedFrames.takeFirst());
             return sendOutNow;
@@ -346,11 +353,12 @@ namespace MumbleAudio
             return encodedFrames;
 
         // Push current to pending
-        pendingEncodedFrames.append(encodedFrames);
+        for (ByteArrayList::const_iterator encodedIter = encodedFrames.begin(); encodedIter != encodedFrames.end(); ++encodedIter)
+            pendingEncodedFrames.append((*encodedIter));
 
         // Pull from pending if enough frames available
-        QList<QByteArray> sendOutNow;
-        if (pendingEncodedFrames.size() >= framesPerPacket)
+        ByteArrayList sendOutNow;
+        if ((uint)pendingEncodedFrames.size() >= framesPerPacket)
         {
             while (sendOutNow.size() < framesPerPacket)
                 sendOutNow.push_back(pendingEncodedFrames.takeFirst());
@@ -358,110 +366,99 @@ namespace MumbleAudio
         return sendOutNow;
     }
 
-    void AudioProcessor::PlayInputAudio(QList<uint> mutedUserIds)
+    void AudioProcessor::PlayInputAudio(MumblePlugin *mumble)
     {
         // This function is called in the main thread
         if (!framework)
             return;
 
-        // Remove pending channels, the remove operations are 
-        // made to the pending list from the audio thread
-        {
-            QMutexLocker lockChannels(&mutexAudioChannels);
-            if (!pendingSoundChannelRemoves.isEmpty())
-            {
-                foreach(uint channelUserId, pendingSoundChannelRemoves)
-                {
-                    AudioChannelMap::iterator channelIter = userChannels.find(channelUserId);
-                    if (channelIter != userChannels.end())
-                    {
-                        if (channelIter->second.get())
-                        {
-                            channelIter->second->Stop();
-                            channelIter->second.reset();
-                        }
-                        userChannels.erase(channelIter);
-                    }
-                }
-                pendingSoundChannelRemoves.clear();
-            }
-        }
-
+        // Lock pending audio channels, these cannot be release in the audio thread
+        QMutexLocker lockChannels(&mutexAudioChannels);
+        // Lock user audio states
         QMutexLocker lock(&mutexInput);
-        if (inputFrames.empty())
+        if (inputAudioStates.empty())
             return;
 
-        AudioFrameMap::iterator iter = inputFrames.begin();
-        AudioFrameMap::iterator end = inputFrames.end();
-        while(iter != end)
+        AudioStateMap::iterator end = inputAudioStates.end();
+        for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != end; ++iter)
         {
             uint userId = iter->first;
-            AudioFrameDeque &userFrames = iter->second;
+            UserAudioState &userAudioState = iter->second;
 
-            iter++;
-
-            if (userFrames.empty())    
+            // We must have the user if we are receiving audio from him.
+            MumbleUser *user = mumble->User(userId);
+            if (!user)            
                 continue;
 
-            // If user is muted skip playback and remove frames
-            if (mutedUserIds.contains(userId))
+            // Check and update user state, emit appropriate signals
+            if (user->isPositional != userAudioState.isPositional)
             {
-                userFrames.clear();
+                user->pos = userAudioState.pos;
+                user->isPositional = userAudioState.isPositional;
+                user->EmitPositionalChanged();
+                mumble->EmitPositionalChanged(user);
+            }
+
+            // If user is muted or it's sound channel is pending for removal.
+            // - MumbleUser::isMuted is the local mute that is not informed to the server.
+            // - Pending channel removes will happen on certain error states.
+            if (user->isMuted || pendingSoundChannelRemoves.contains(userId))
+            {
+                if (userAudioState.soundChannel.get())
                 {
-                    QMutexLocker lockChannels(&mutexAudioChannels);
-                    if (!pendingSoundChannelRemoves.contains(userId))
-                        pendingSoundChannelRemoves.append(userId);
+                    userAudioState.soundChannel->Stop();
+                    userAudioState.soundChannel.reset();
                 }
-                continue;
+                if (pendingSoundChannelRemoves.contains(userId))
+                    pendingSoundChannelRemoves.removeAll(userId);
+                if (user->isMuted)
+                {
+                    userAudioState.frames.clear();
+                    continue;
+                }
             }
 
-            // Find existing SoundChannel for user
-            SoundChannelPtr soundChannel;
-            AudioChannelMap::iterator channelIter = userChannels.find(userId);
-            if (channelIter != userChannels.end())
-            {
-                if (channelIter->second.get())
-                    soundChannel = channelIter->second;
-            }
+            if (userAudioState.frames.empty())    
+                continue;
 
             // Iterate audio frames for user
-            AudioFrameDeque::iterator frameIter = userFrames.begin();
-            AudioFrameDeque::iterator frameEnd = userFrames.end();
-            while(frameIter != frameEnd)
+            AudioFrameDeque::iterator frameEnd = userAudioState.frames.end();
+            for (AudioFrameDeque::iterator frameIter = userAudioState.frames.begin(); frameIter != frameEnd; ++frameIter)
             {
                 const SoundBuffer &frame = (*frameIter);
-                if (soundChannel.get())
+                if (userAudioState.soundChannel.get())
                 {
-                    // Add buffers to the sound channel
+                    // Update positional and position info
+                    if (userAudioState.soundChannel->IsPositional() != userAudioState.isPositional)
+                        userAudioState.soundChannel->SetPositional(userAudioState.isPositional);
+                    if (userAudioState.isPositional)
+                        userAudioState.soundChannel->SetPosition(userAudioState.pos);
+
+                    // Create new AudioAsset to be added to the sound channels playback buffer.
                     AudioAssetPtr audioAsset = framework->Audio()->CreateAudioAssetFromSoundBuffer(frame);
+                    
+                    // Add buffer to the sound channel
                     if (audioAsset.get())
-                        soundChannel->AddBuffer(audioAsset);
-                    // Something went wrong, remove broken SoundChannel
+                        userAudioState.soundChannel->AddBuffer(audioAsset);
+                    // Something went wrong, release "broken" SoundChannel and its data
                     else
                     {
-                        AudioChannelMap::iterator channelIterErase = userChannels.find(userId);
-                        if (channelIterErase != userChannels.end())
-                        {
-                            if (channelIterErase->second.get())
-                            {
-                                channelIterErase->second->Stop();
-                                channelIterErase->second.reset();
-                            }
-                            userChannels.erase(channelIterErase);
-                        }
+                        userAudioState.soundChannel->Stop();
+                        userAudioState.soundChannel.reset();
                     }
                 }
                 else
                 {
                     // Create sound channel with initial audio frame
-                    soundChannel = framework->Audio()->PlaySoundBuffer(frame, SoundChannel::Voice);
-                    userChannels[userId] = soundChannel;
+                    userAudioState.soundChannel = framework->Audio()->PlaySoundBuffer(frame, SoundChannel::Voice);
+                    userAudioState.soundChannel->SetPositional(userAudioState.isPositional);
+                    if (userAudioState.isPositional)
+                        userAudioState.soundChannel->SetPosition(userAudioState.pos);
                 }
-                frameIter++;
             }
 
             // Clear users input frames
-            userFrames.clear();
+            userAudioState.frames.clear();
         }
     }
     
@@ -469,8 +466,7 @@ namespace MumbleAudio
     {
         // This function should be called in the main thread
         QMutexLocker lock(&mutexInput);
-        inputFrames.clear();
-        userChannels.clear();
+        inputAudioStates.clear();
     }
 
     void AudioProcessor::ClearInputAudio(uint userId)
@@ -478,22 +474,15 @@ namespace MumbleAudio
         // This function should be called in the main thread
         QMutexLocker lock(&mutexInput);
         
-        AudioFrameMap::iterator frameIter = inputFrames.find(userId);
-        if (frameIter != inputFrames.end())
+        AudioStateMap::iterator userStateIter = inputAudioStates.find(userId);
+        if (userStateIter != inputAudioStates.end())
         {
-            frameIter->second.clear();
-            inputFrames.erase(frameIter);
-        }
-
-        AudioChannelMap::iterator channelIter = userChannels.find(userId);
-        if (channelIter != userChannels.end())
-        {
-            if (channelIter->second.get())
-            {
-                channelIter->second->Stop();
-                channelIter->second.reset();
-            }
-            userChannels.erase(channelIter);
+            UserAudioState &userState = userStateIter->second;
+            userState.frames.clear();
+            if (userState.soundChannel.get())
+                userState.soundChannel->Stop();
+            userState.soundChannel.reset();
+            inputAudioStates.erase(userStateIter);
         }
     }
 
@@ -549,10 +538,10 @@ namespace MumbleAudio
         }
     }
 
-    void AudioProcessor::OnAudioReceived(uint userId, QList<QByteArray> frames)
+    void AudioProcessor::OnAudioReceived(uint userId, uint seq, ByteArrayList frames, bool isPositional, float3 pos)
     {
         // This function is called in the audio thread
-        if (frames.isEmpty())
+        if (frames.size() == 0)
             return;
         
         {
@@ -566,14 +555,29 @@ namespace MumbleAudio
         }
 
         QMutexLocker lockBuffers(&mutexInput);
-        AudioFrameDeque &userFrames = inputFrames[userId];
+        UserAudioState &userAudioState = inputAudioStates[userId]; // Creates a new one if does not exist already.
+        
+        // If you change audio output settings in Mumble or various other things, sequence will reset to 0.
+        // If this is received we need to reset our tracking sequence number as well.
+        if (seq == 0)
+            userAudioState.lastSeq = 0;
+
+        // If this sequence is older than what has been previously received, ignore the frames
+        if (userAudioState.lastSeq > seq)
+            return;
+
+        // Update the users audio state struct
+        userAudioState.lastSeq = seq;
+        userAudioState.isPositional = isPositional;
+        if (userAudioState.isPositional)
+            userAudioState.pos = pos;
 
         // Check frame counts, clear input frames and pending frames from SoundChannel.
         // This happens when main thread is blocked from reading the queued frames but the network thread
         // is still filling the frame queue. If we release too much frames to AudioAPI/OpenAL it will eventually crash.
-        if ((userFrames.size() + frames.size()) > 10)
+        if ((userAudioState.frames.size() + frames.size()) > 10)
         {
-            userFrames.clear();
+            userAudioState.frames.clear();
             QMutexLocker lockChannels(&mutexAudioChannels);
             if (!pendingSoundChannelRemoves.contains(userId))
                 pendingSoundChannelRemoves.push_back(userId);
@@ -585,17 +589,18 @@ namespace MumbleAudio
         if (!codec)
             return;
 
-        foreach(QByteArray frame, frames)
+        for (ByteArrayList::const_iterator frameIter = frames.begin(); frameIter != frames.end(); ++frameIter)
         {
+            const QByteArray &inputFrame = (*frameIter);
             SoundBuffer soundFrame;
 
-            int celtResult = codec->Decode(frame.data(), frame.size(), soundFrame);
+            int celtResult = codec->Decode(inputFrame.data(), inputFrame.size(), soundFrame);
             if (celtResult == CELT_OK)
-                userFrames.push_back(soundFrame);
+                userAudioState.frames.push_back(soundFrame);
             else
             {
                 PrintCeltError(celtResult, true);
-                userFrames.clear();
+                userAudioState.frames.clear();
                 return;
             }            
         }

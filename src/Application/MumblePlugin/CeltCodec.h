@@ -25,7 +25,7 @@ namespace MumbleAudio
         CELTEncoder *Encoder();
         CELTDecoder *Decoder();
 
-        int Encode(SoundBuffer &pcmFrame, unsigned char *compressed, int bitrate);
+        int Encode(const SoundBuffer &pcmFrame, unsigned char *compressed, int bitrate);
         int Decode(const char *data, int dataLength, SoundBuffer &soundFrame);
 
     private:
