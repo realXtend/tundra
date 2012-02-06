@@ -10,7 +10,6 @@
 #include "AssetAPI.h"
 #include "TextureAsset.h"
 #include "IAssetTransfer.h"
-#include "XMLUtilities.h"
 
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
@@ -1700,22 +1699,22 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
 {
     if (attr == "ambient")
     {
-        SetAmbientColor(techIndex, passIndex, ParseColor(val.toStdString()));
+        SetAmbientColor(techIndex, passIndex, Color::FromString(val));
         return true;
     }
     if (attr == "diffuse")
     {
-        SetDiffuseColor(techIndex, passIndex, ParseColor(val.toStdString()));
+        SetDiffuseColor(techIndex, passIndex, Color::FromString(val));
         return true;
     }
     if (attr == "specular")
     {
-        SetSpecularColor(techIndex, passIndex, ParseColor(val.toStdString()));
+        SetSpecularColor(techIndex, passIndex, Color::FromString(val));
         return true;
     }
     if (attr == "emissive")
     {
-        SetEmissiveColor(techIndex, passIndex, ParseColor(val.toStdString()));
+        SetEmissiveColor(techIndex, passIndex, Color::FromString(val));
         return true;
     }
     if (attr == "scene_blend")
@@ -1869,7 +1868,7 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
     }
     if (attr == "tex_border_colour")
     {
-        texUnit->setTextureBorderColour(ParseColor(val.toStdString()));
+        texUnit->setTextureBorderColour(Color::FromString(val));
         return true;
     }
     
