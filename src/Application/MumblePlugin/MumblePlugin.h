@@ -72,6 +72,7 @@ public:
     /// IModule override.
     void Uninitialize();
 
+    /// This is for internal use only, to be called from AudioProcessor.
     /// @see Signal UserPositionalChange
     void EmitPositionalChanged(MumbleUser *user);
 
@@ -182,17 +183,6 @@ public slots:
         that networking to server works as expected.
         @note Default after connected is false. */
     void SetOutputAudioLoopBack(bool loopBack);
-
-    /// Set if our voice is positional. 
-    /** True sends active EC_SoundListener Entitys EC_Placeable position
-        to the server, this information gets relayed to other clients for positional audio playback.
-        False does not send position to the server hence making audio non positional.
-        @note When setting true make sure correct EC_SoundListener is active to have expected audio
-        playback experience in other clients. If no active EC_SoundListener is be found from the scene, 
-        sending positional audio is disabled automatically.
-        @note Set value is remembered between multiple connections but forgotten on module unload it
-        is not stored into any config on disk, your ui layer should do that if needed. */
-    void SetOutputAudioPositional(bool positional);
 
     /// Set if input audio is received from server. 
     /** @note Calling this function with true will make us not send or receive audio. If you are not receiving, you cannot send.

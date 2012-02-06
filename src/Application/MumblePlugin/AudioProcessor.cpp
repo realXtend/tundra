@@ -372,6 +372,21 @@ namespace MumbleAudio
         if (!framework)
             return;
 
+        // Read positional playback settings
+        int allowReceivingPositional = false;
+        int positionalInnerRange = 0;
+        int positionalOuterRange = 0;
+
+        {
+            QMutexLocker lockSettings(&mutexAudioSettings);
+            allowReceivingPositional = audioSettings.allowReceivingPositional;
+            if (allowReceivingPositional)
+            {
+                positionalInnerRange = audioSettings.innerRange;
+                positionalOuterRange = audioSettings.outerRange;
+            }
+        }
+
         // Lock pending audio channels, these cannot be release in the audio thread
         QMutexLocker lockChannels(&mutexAudioChannels);
         // Lock user audio states
@@ -429,10 +444,18 @@ namespace MumbleAudio
                 if (userAudioState.soundChannel.get())
                 {
                     // Update positional and position info
-                    if (userAudioState.soundChannel->IsPositional() != userAudioState.isPositional)
-                        userAudioState.soundChannel->SetPositional(userAudioState.isPositional);
-                    if (userAudioState.isPositional)
-                        userAudioState.soundChannel->SetPosition(userAudioState.pos);
+                    if (allowReceivingPositional)
+                    {
+                        if (userAudioState.soundChannel->IsPositional() != userAudioState.isPositional)
+                            userAudioState.soundChannel->SetPositional(userAudioState.isPositional);
+                        if (userAudioState.isPositional)
+                        {
+                            userAudioState.soundChannel->SetRange(static_cast<float>(positionalInnerRange), static_cast<float>(positionalOuterRange), 1.0f);
+                            userAudioState.soundChannel->SetPosition(userAudioState.pos);
+                        }
+                    }
+                    else if (!allowReceivingPositional && userAudioState.soundChannel->IsPositional())
+                        userAudioState.soundChannel->SetPositional(false);
 
                     // Create new AudioAsset to be added to the sound channels playback buffer.
                     AudioAssetPtr audioAsset = framework->Audio()->CreateAudioAssetFromSoundBuffer(frame);
@@ -451,9 +474,18 @@ namespace MumbleAudio
                 {
                     // Create sound channel with initial audio frame
                     userAudioState.soundChannel = framework->Audio()->PlaySoundBuffer(frame, SoundChannel::Voice);
-                    userAudioState.soundChannel->SetPositional(userAudioState.isPositional);
-                    if (userAudioState.isPositional)
-                        userAudioState.soundChannel->SetPosition(userAudioState.pos);
+                    if (userAudioState.soundChannel.get())
+                    {
+                        // Set positional if available and our local settings allows it
+                        if (allowReceivingPositional && userAudioState.isPositional)
+                        {
+                            userAudioState.soundChannel->SetPositional(true);
+                            userAudioState.soundChannel->SetRange(static_cast<float>(positionalInnerRange), static_cast<float>(positionalOuterRange), 1.0f);
+                            userAudioState.soundChannel->SetPosition(userAudioState.pos);
+                        }
+                        else
+                            userAudioState.soundChannel->SetPositional(false);
+                    }
                 }
             }
 

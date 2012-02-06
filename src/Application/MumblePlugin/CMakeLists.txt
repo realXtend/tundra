@@ -1,6 +1,6 @@
 
 macro (configure_speex)
-    set (SPEEX_ROOT C:/Work/admino-tundra/deps/custom/speex) # this is a hack for initial development
+    set (SPEEX_ROOT C:/Work/admino-mumble/deps/custom/speex) # this is a hack for initial development
     set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SPEEX_ROOT}/include)
     set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SPEEX_ROOT}/lib)
     set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${SPEEX_ROOT}/bin)
@@ -20,7 +20,7 @@ endmacro (configure_speex)
 macro (configure_protobuf)
     # Give cmake some hints where to look for libs/includes/executables in Find*.cmake helpers.
     # You can add paths here if the below are not maching to your setup.
-    set (PROTOBUF_ROOT C:/Work/admino-tundra/deps/custom/protobuf) # this is a hack for initial development
+    set (PROTOBUF_ROOT C:/Work/admino-mumble/deps/custom/protobuf) # this is a hack for initial development
     set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${PROTOBUF_ROOT}/include)
     set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${PROTOBUF_ROOT}/lib)
     set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${PROTOBUF_ROOT}/bin)
@@ -39,8 +39,12 @@ macro (configure_protobuf)
     # Remove FindProtobuf.cmake generated not found item
     list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
     
-    # Duplicate found includes to the proper variable so sagase is pleased. 
+    # Duplicate found includes to the proper variable so sagase is pleased. FindProtobuf.cmake
+    # does not always populate the PROTOBUF_INCLUDE_DIRS but does for PROTOBUF_INCLUDE_DIR that is cached, pleh.
+    # FindProtobuf.cmake is not particularly smart about finding the debug library 
+    # at least with a d.dll postfix that we currently have. Only use the release one.
     if (MSVC)
+      set (PROTOBUF_LIBRARIES ${PROTOBUF_LIBRARY})
       set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIR})
     endif ()
 
@@ -48,10 +52,13 @@ macro (configure_protobuf)
 endmacro (configure_protobuf)
 
 macro (configure_openssl)
+    # ${ENV_TUNDRA_DEP_PATH}/OpenSSL
+    set (OPENSSL_ROOT_DIR C:/Work/admino-mumble/deps/custom/OpenSSL)
+    
     sagase_configure_package(OPENSSL
         NAMES openssl
         COMPONENTS libeay32 ssleay32 ssl
-        PREFIXES C:/Work/admino-tundra/deps/custom/OpenSSL) # this is a hack for initial development
+        PREFIXES C:/Work/admino-mumble/deps/custom/OpenSSL) # this is a hack for initial development
         #PREFIXES ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
     
     message (STATUS "## EARLY DEVELOPMENT HACK ## OpenSSL lookup from: C:/Work/admino-tundra/deps/custom/OpenSSL")

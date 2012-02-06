@@ -152,7 +152,10 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
 
     LogInfo(LC + "Connecting to " + state.FullHost() + " as \"" + state.username + "\"");
 
-    audio_ = new MumbleAudio::AudioProcessor(framework_, LoadSettings());
+    MumbleAudio::AudioSettings currentSettings = LoadSettings();
+    state.outputPositional = currentSettings.allowSendingPositional;
+
+    audio_ = new MumbleAudio::AudioProcessor(framework_, currentSettings);
     audio_->moveToThread(audio_);
 
     network_ = new MumbleNetworkHandler(state.address, state.port, state.username, password);
@@ -437,7 +440,7 @@ void MumblePlugin::SetOutputAudioMuted(bool outputAudioMuted)
 {
     if (state.serverSynced)
     {
-        MumbleUser *me = User(state.sessionId);
+        MumbleUser *me = Me();
         if (!me)
         {
             LogError(LC + "Could not find own user ptr to set audio output muted state!");
@@ -469,16 +472,11 @@ void MumblePlugin::SetOutputAudioLoopBack(bool loopBack)
     state.outputAudioLoopBack = loopBack;
 }
 
-void MumblePlugin::SetOutputAudioPositional(bool positional)
-{
-    state.outputPositional = positional;
-}
-
 void MumblePlugin::SetInputAudioMuted(bool inputAudioMuted)
 {
     if (state.serverSynced)
     {
-        MumbleUser *me = User(state.sessionId);
+        MumbleUser *me = Me();
         if (!me)
         {
             LogError(LC + "Could not find own user ptr to set audio input muted state!");
@@ -962,7 +960,7 @@ void MumblePlugin::OnServerSynced(uint sessionId)
     }
     pendingUsers_.clear();
 
-    MumbleUser *me = User(state.sessionId);
+    MumbleUser *me = Me();
     if (!me)
     {
         LogError(LC + "Could not find own user ptr after connected!");
@@ -1014,23 +1012,27 @@ void MumblePlugin::OnScriptEngineCreated(QScriptEngine *engine)
 void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
 {
     packetInfo.isPositional = false;
-
     if (!state.serverSynced)
         return;
 
-    MumbleUser *me = User(state.sessionId);
+    MumbleUser *me = Me();
     if (!me)
     {
         LogError(LC + "Cannot update own MumbleUser positional information, ptr is null!");
         return;
     }
-    me->isPositional = false;
 
-    if (!framework_ || !framework_->Renderer())
+    if (!framework_ || !framework_->Renderer() || !framework_->Renderer()->MainCameraScene())
+    {
+        if (me->isPositional == true)
+        {
+            me->isPositional = false;
+            me->EmitPositionalChanged();
+            EmitPositionalChanged(me);
+        }
         return;
+    }
     Scene *scene = framework_->Renderer()->MainCameraScene();
-    if (!scene)
-        return;
 
     Entity *activeListener = 0;
     EntityList listenerEnts = scene->GetEntitiesWithComponent(EC_SoundListener::TypeNameStatic());
@@ -1055,11 +1057,28 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
         {
             float3 worldPos = placeable->WorldPosition();
             me->pos = worldPos;
-            me->isPositional = true;
+
+            // Change our positional state and emit signals.
+            if (me->isPositional == false)
+            {
+                me->isPositional = true;
+                me->EmitPositionalChanged();
+                EmitPositionalChanged(me);
+            }
             packetInfo.pos = worldPos;
             packetInfo.isPositional = true;
+            return;
         }
-    }        
+    }    
+
+    // If we get here no active EC_SoundListener could be found for our position.
+    // If our user is in positional state, change that to false and emit signals
+    if (me->isPositional == true)
+    {
+        me->isPositional = false;
+        me->EmitPositionalChanged();
+        EmitPositionalChanged(me);
+    }
 }
 
 void MumblePlugin::OnAudioSettingChanged(MumbleAudio::AudioSettings settings, bool saveConfig)
@@ -1068,6 +1087,7 @@ void MumblePlugin::OnAudioSettingChanged(MumbleAudio::AudioSettings settings, bo
     {
         if (saveConfig)
             SaveSettings(settings);
+        state.outputPositional = settings.allowSendingPositional;
         audio_->ApplySettings(settings);
     }
     else
