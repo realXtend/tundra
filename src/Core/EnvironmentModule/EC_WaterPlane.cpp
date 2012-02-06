@@ -5,7 +5,6 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_WaterPlane.h"
-#include "EC_Fog.h"
 
 #include "Entity.h"
 #include "EC_Placeable.h"
@@ -16,6 +15,7 @@
 #include "OgreWorld.h"
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"
+#include "Math/MathFunc.h"
 
 #include <Ogre.h>
 
@@ -46,18 +46,21 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     attachedToRoot_(false),
     cameraInsideWaterCube(false)
 {
-    static AttributeMetadata metadata;
+    static AttributeMetadata fogModeMetadata, segmentMetadata;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
-        metadata.enums[Ogre::FOG_NONE] = "NoFog";
-        metadata.enums[Ogre::FOG_EXP] = "Exponential";
-        metadata.enums[Ogre::FOG_EXP2] = "ExponentiallySquare";
-        metadata.enums[Ogre::FOG_LINEAR] = "Linear";
+        fogModeMetadata.enums[Ogre::FOG_NONE] = "NoFog";
+        fogModeMetadata.enums[Ogre::FOG_EXP] = "Exponential";
+        fogModeMetadata.enums[Ogre::FOG_EXP2] = "ExponentiallySquare";
+        fogModeMetadata.enums[Ogre::FOG_LINEAR] = "Linear";
+        segmentMetadata.minimum = "1"; // Exception spam from Ogre when < 1, crash when negative.
         metadataInitialized = true;
     }
 
-    fogMode.SetMetadata(&metadata);
+    fogMode.SetMetadata(&fogModeMetadata);
+    xSegments.SetMetadata(&segmentMetadata);
+    ySegments.SetMetadata(&segmentMetadata);
 
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
@@ -313,12 +316,14 @@ void EC_WaterPlane::CreateWaterPlane()
         int y = ySize.Get();
         float uTile =  scaleUfactor.Get() * x; // Default x-size 5000 --> uTile 1.0
         float vTile =  scaleVfactor.Get() * y;
-
+        // Clamp xSegments and ySegments: Exception spam from Ogre when < 1, crash when negative.
+        int xSeg = Clamp(xSegments.Get(), 1, std::numeric_limits<int>::max());
+        int ySeg = Clamp(ySegments.Get(), 1, std::numeric_limits<int>::max());
         try
         {
             Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(Name().toStdString(),
                 Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Y, 0),
-                x, y, xSegments.Get(), ySegments.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
+                x, y, xSeg, ySeg, true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
 
             entity_ = world->OgreSceneManager()->createEntity(world->GetUniqueObjectName("EC_WaterPlane_entity"), Name().toStdString().c_str());
             entity_->setMaterialName(materialName.Get().toStdString().c_str());
