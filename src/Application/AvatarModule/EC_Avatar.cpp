@@ -266,11 +266,10 @@ void EC_Avatar::SetupAttachments()
     mesh->RemoveAllAttachments();
     
     const std::vector<AvatarAttachment>& attachments = desc->attachments_;
-    
     for (uint i = 0; i < attachments.size(); ++i)
     {
         // Setup attachment meshes
-        mesh->SetAttachmentMesh(i, LookupAsset(attachments[i].mesh_).toStdString(), attachments[i].bone_name_, attachments[i].link_skeleton_);
+        mesh->SetAttachmentMesh(i, LookupAsset(attachments[i].mesh_).toStdString(), attachments[i].bone_name_.toStdString(), attachments[i].link_skeleton_);
         // Setup attachment mesh materials
         for (uint j = 0; j < attachments[i].materials_.size(); ++j)
             mesh->SetAttachmentMaterial(i, j, LookupAsset(attachments[i].materials_[j]).toStdString());
@@ -284,7 +283,7 @@ void EC_Avatar::SetupMorphs()
 {
     Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = AvatarDesc();
-    if ((!desc) || (!entity))
+    if (!desc || !entity)
         return;
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
@@ -294,11 +293,10 @@ void EC_Avatar::SetupMorphs()
     
     for (uint i = 0; i < morphs.size(); ++i)
     {
-        mesh->SetMorphWeight(QString::fromStdString(morphs[i].morph_name_), morphs[i].value_);
-        
+        mesh->SetMorphWeight(morphs[i].morph_name_, morphs[i].value_);
         // Also set position in attachment entities, if have the same morph
         for (uint j = 0; j < mesh->GetNumAttachments(); ++j)
-            mesh->SetAttachmentMorphWeight(j, QString::fromStdString(morphs[i].morph_name_), morphs[i].value_);
+            mesh->SetAttachmentMorphWeight(j, morphs[i].morph_name_, morphs[i].value_);
     }
 }
 
@@ -306,7 +304,7 @@ void EC_Avatar::SetupBoneModifiers()
 {
     Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = AvatarDesc();
-    if ((!desc) || (!entity))
+    if (!desc || !entity)
         return;
     ResetBones(entity);
     
@@ -372,17 +370,14 @@ void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value
     if ((!skeleton) || (!orig_skeleton))
         return;
     
-    if ((!skeleton->hasBone(modifier.bone_name_)) || (!orig_skeleton->hasBone(modifier.bone_name_)))
+    if (!skeleton->hasBone(modifier.bone_name_.toStdString()) || !orig_skeleton->hasBone(modifier.bone_name_.toStdString()))
         return; // Bone not found, nothing to do
         
-    Ogre::Bone* bone = skeleton->getBone(modifier.bone_name_);
-    Ogre::Bone* orig_bone = orig_skeleton->getBone(modifier.bone_name_);
-    
-    if (value < 0.0f)
-        value = 0.0f;
-    if (value > 1.0f)
-        value = 1.0f;
-    
+    Ogre::Bone* bone = skeleton->getBone(modifier.bone_name_.toStdString());
+    Ogre::Bone* orig_bone = orig_skeleton->getBone(modifier.bone_name_.toStdString());
+
+    value = Clamp(value, 0.0f, 1.0f);
+
     // Rotation
     {
         Ogre::Matrix3 rot_start, rot_end, rot_base, rot_orig;

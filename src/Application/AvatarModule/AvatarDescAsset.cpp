@@ -50,8 +50,7 @@ Quat QuatFromLegacyRexString(const QString& qStr)
     return q;
 }
 
-
-std::string modifierMode[] = {
+QString modifierMode[] = {
     "relative",
     "absolute",
     "cumulative"
@@ -243,7 +242,7 @@ bool AvatarDescAsset::ReadAvatarAppearance(const QDomDocument& source)
 void AvatarDescAsset::ReadBoneModifierSet(const QDomElement& source)
 {
     BoneModifierSet modifier_set;
-    modifier_set.name_ = source.attribute("name").toStdString();
+    modifier_set.name_ = source.attribute("name");
     unsigned num_bones = 0;
     
     QDomElement bones = source.firstChildElement("bones");
@@ -253,7 +252,7 @@ void AvatarDescAsset::ReadBoneModifierSet(const QDomElement& source)
         while (!bone.isNull())
         {
             BoneModifier modifier;
-            modifier.bone_name_ = bone.attribute("name").toStdString();
+            modifier.bone_name_ = bone.attribute("name");
             QDomElement rotation = bone.firstChildElement("rotation");
             QDomElement translation = bone.firstChildElement("translation");
             QDomElement scale = bone.firstChildElement("scale");
@@ -297,7 +296,7 @@ void AvatarDescAsset::ReadBoneModifierSet(const QDomElement& source)
 void AvatarDescAsset::ReadBoneModifierParameter(const QDomElement& source)
 {
     // Find existing modifier from the vector
-    std::string name = source.attribute("name").toStdString();
+    QString name = source.attribute("name");
     for (unsigned i = 0; i < boneModifiers_.size(); ++i)
     {
         if (boneModifiers_[i].name_ == name)
@@ -312,8 +311,8 @@ void AvatarDescAsset::ReadMorphModifier(const QDomElement& source)
 {
     MorphModifier morph;
     
-    morph.name_ = source.attribute("name").toStdString();
-    morph.morph_name_ = source.attribute("internal_name").toStdString();
+    morph.name_ = source.attribute("name");
+    morph.morph_name_ = source.attribute("internal_name");
     morph.value_ = source.attribute("influence", "0").toFloat();
 
     morphModifiers_.push_back(morph);
@@ -323,19 +322,18 @@ void AvatarDescAsset::ReadMasterModifier(const QDomElement& source)
 {
     MasterModifier master;
     
-    master.name_ = source.attribute("name").toStdString();
-    master.category_ = source.attribute("category").toStdString();
+    master.name_ = source.attribute("name");
+    master.category_ = source.attribute("category");
     master.value_ = source.attribute("position", "0").toFloat();
     
     QDomElement target = source.firstChildElement("target_modifier");
     while (!target.isNull())
     {
         SlaveModifier targetmodifier;
-        targetmodifier.name_ = target.attribute("name").toStdString();
+        targetmodifier.name_ = target.attribute("name");
         
-        std::string targettype = target.attribute("type").toStdString();
-        std::string targetmode = target.attribute("mode").toStdString();
-                 
+        QString targettype = target.attribute("type");
+        QString targetmode = target.attribute("mode");
         if (targettype == "morph")
             targetmodifier.type_ = AppearanceModifier::Morph;
         if (targettype == "bone")
@@ -384,20 +382,20 @@ void AvatarDescAsset::ReadAnimationDefinition(const QDomElement& elem)
 {
     if (elem.tagName() != "animation")
         return;
-    
-    std::string id = elem.attribute("id").toStdString();
-    if (id.empty())
-        id = elem.attribute("uuid").toStdString(); // legacy
-    if (id.empty())
+
+    QString id = elem.attribute("id");
+    if (id.isEmpty())
+        id = elem.attribute("uuid"); // legacy
+    if (id.isEmpty())
     {
         LogError("Missing animation identifier");
         return;
     }
     
-    std::string intname = elem.attribute("internal_name").toStdString();
-    if (intname.empty())
-        intname = elem.attribute("ogrename").toStdString(); // legacy
-    if (intname.empty())
+    QString intname = elem.attribute("internal_name");
+    if (intname.isEmpty())
+        intname = elem.attribute("ogrename"); // legacy
+    if (intname.isEmpty())
     {
         LogError("Missing mesh animation name");
         return;
@@ -406,7 +404,7 @@ void AvatarDescAsset::ReadAnimationDefinition(const QDomElement& elem)
     AnimationDefinition new_def;
     new_def.id_ = id;
     new_def.animation_name_ = intname;
-    new_def.name_ = elem.attribute("name").toStdString();
+    new_def.name_ = elem.attribute("name");
     
     new_def.looped_ = ParseBool(elem.attribute("looped", "true"));
     new_def.exclusive_ = ParseBool(elem.attribute("exclusive", "false"));
@@ -426,7 +424,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     
     QDomElement name = elem.firstChildElement("name");
     if (!name.isNull())
-        attachment.name_ = name.attribute("value").toStdString();
+        attachment.name_ = name.attribute("value");
 
     // Awesome new feature: we may define material(s) for attachment
     QDomElement material = elem.firstChildElement("material");
@@ -439,14 +437,14 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     QDomElement category = elem.firstChildElement("category");
     if (!category.isNull())
     {
-        attachment.category_ = category.attribute("name").toStdString();
+        attachment.category_ = category.attribute("name");
     }
     
     QDomElement mesh = elem.firstChildElement("mesh");
     if (!mesh.isNull())
     {
         attachment.mesh_ = mesh.attribute("name");
-        attachment.link_skeleton_ = ParseBool(mesh.attribute("linkskeleton").toStdString());
+        attachment.link_skeleton_ = ParseBool(mesh.attribute("linkskeleton"));
     }
     else
     {
@@ -460,9 +458,9 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
         QDomElement bone = avatar.firstChildElement("bone");
         if (!bone.isNull())
         {
-            attachment.bone_name_ = bone.attribute("name").toStdString();
+            attachment.bone_name_ = bone.attribute("name");
             if (attachment.bone_name_ == "None")
-                attachment.bone_name_ = std::string();
+                attachment.bone_name_ = QString();
             if (!bone.attribute("offset").isNull())
                 attachment.transform_.position_ = float3::FromString(bone.attribute("offset"));
             if (!bone.attribute("rotation").isNull())
@@ -490,16 +488,10 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
 
 void AvatarDescAsset::SetMasterModifierValue(const QString& name, float value)
 {
-    std::string nameStd = name.toStdString();
-    
-    if (value < 0.0) value = 0.0;
-    if (value > 1.0) value = 1.0;
-    
-    for (uint i = 0; i < masterModifiers_.size(); ++i)
-    {
-        if (masterModifiers_[i].name_ == nameStd)
+    for(uint i = 0; i < masterModifiers_.size(); ++i)
+        if (masterModifiers_[i].name_ == name)
         {
-            masterModifiers_[i].value_ = value;
+            masterModifiers_[i].value_ = Clamp(value, 0.0f, 1.0f);
             for (uint j = 0; j < masterModifiers_[i].modifiers_.size(); ++j)
             {
                 AppearanceModifier* mod = FindModifier(masterModifiers_[i].modifiers_[j].name_, masterModifiers_[i].modifiers_[j].type_);
@@ -510,18 +502,14 @@ void AvatarDescAsset::SetMasterModifierValue(const QString& name, float value)
             emit DynamicAppearanceChanged();
             return;
         }
-    }
 }
 
 void AvatarDescAsset::SetModifierValue(const QString& name, float value)
 {
-    std::string nameStd = name.toStdString();
-    
-    if (value < 0.0) value = 0.0;
-    if (value > 1.0) value = 1.0;
-    
+    value = Clamp(value, 0.0f, 1.0f);
+
     // Check first for a morph, then for bone
-    AppearanceModifier* mod = FindModifier(nameStd, AppearanceModifier::Morph);
+    AppearanceModifier* mod = FindModifier(name, AppearanceModifier::Morph);
     if (mod)
     {
         mod->value_ = value;
@@ -529,7 +517,7 @@ void AvatarDescAsset::SetModifierValue(const QString& name, float value)
         emit DynamicAppearanceChanged();
         return;
     }
-    mod = FindModifier(nameStd, AppearanceModifier::Bone);
+    mod = FindModifier(name, AppearanceModifier::Bone);
     if (mod)
     {
         mod->value_ = value;
@@ -547,7 +535,7 @@ void AvatarDescAsset::SetMaterial(uint index, const QString& ref)
     AssetReferencesChanged();
 }
 
-bool AvatarDescAsset::HasProperty(QString name) const
+bool AvatarDescAsset::HasProperty(const QString &name) const
 {
     QMap<QString, QString>::const_iterator i = properties_.find(name);
     if (i == properties_.end())
@@ -584,39 +572,32 @@ void AvatarDescAsset::DependencyLoaded(AssetPtr dependee)
 
 void AvatarDescAsset::CalculateMasterModifiers()
 {
-    for (uint i = 0; i < morphModifiers_.size(); ++i)
+    for(uint i = 0; i < morphModifiers_.size(); ++i)
         morphModifiers_[i].ResetAccumulation();
 
-    for (uint i = 0; i < boneModifiers_.size(); ++i)
+    for(uint i = 0; i < boneModifiers_.size(); ++i)
         boneModifiers_[i].ResetAccumulation();
 
-    for (uint i = 0; i < masterModifiers_.size(); ++i)
-    {
-        for (uint j = 0; j < masterModifiers_[i].modifiers_.size(); ++j)
+    for(uint i = 0; i < masterModifiers_.size(); ++i)
+        for(uint j = 0; j < masterModifiers_[i].modifiers_.size(); ++j)
         {
             AppearanceModifier* mod = FindModifier(masterModifiers_[i].modifiers_[j].name_, masterModifiers_[i].modifiers_[j].type_);
             if (mod)
             {
                 float slave_value = masterModifiers_[i].modifiers_[j].GetMappedValue(masterModifiers_[i].value_);
-                
                 mod->AccumulateValue(slave_value, masterModifiers_[i].modifiers_[j].mode_ == SlaveModifier::Average);
             }
         }
-    }
 }
 
-AppearanceModifier* AvatarDescAsset::FindModifier(const std::string& name, AppearanceModifier::ModifierType type)
+AppearanceModifier* AvatarDescAsset::FindModifier(const QString & name, AppearanceModifier::ModifierType type)
 {
-    for (uint i = 0; i < morphModifiers_.size(); ++i)
-    {
-        if ((morphModifiers_[i].name_ == name) && (morphModifiers_[i].type_ == type))
+    for(uint i = 0; i < morphModifiers_.size(); ++i)
+        if (morphModifiers_[i].name_ == name && morphModifiers_[i].type_ == type)
             return &morphModifiers_[i];
-    }
     for (uint i = 0; i < boneModifiers_.size(); ++i)
-    {
-        if ((boneModifiers_[i].name_ == name) && (boneModifiers_[i].type_ == type))
+        if (boneModifiers_[i].name_ == name && boneModifiers_[i].type_ == type)
             return &boneModifiers_[i];
-    }
     return 0;
 }
 
@@ -719,9 +700,9 @@ QDomElement AvatarDescAsset::WriteAnimationDefinition(QDomDocument& dest, const 
 {
     QDomElement elem = dest.createElement("animation");
     
-    elem.setAttribute("name", anim.name_.c_str());
-    elem.setAttribute("id", anim.id_.c_str());
-    elem.setAttribute("internal_name", anim.animation_name_.c_str());
+    elem.setAttribute("name", anim.name_);
+    elem.setAttribute("id", anim.id_);
+    elem.setAttribute("internal_name", anim.animation_name_);
     elem.setAttribute("looped", anim.looped_);
     elem.setAttribute("usevelocity", anim.use_velocity_);
     elem.setAttribute("alwaysrestart", anim.always_restart_);
@@ -738,9 +719,9 @@ void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest
     QDomElement parameter = dest.createElement("dynamic_animation_parameter");
     QDomElement modifier = dest.createElement("dynamic_animation");
     
-    parameter.setAttribute("name", bones.name_.c_str());
+    parameter.setAttribute("name", bones.name_);
     parameter.setAttribute("position", bones.value_);
-    modifier.setAttribute("name", bones.name_.c_str());
+    modifier.setAttribute("name", bones.name_);
 
     QDomElement base_animations = dest.createElement("base_animations");
     modifier.appendChild(base_animations);
@@ -768,19 +749,19 @@ void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest
 QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& bone) const
 {
     QDomElement elem = dest.createElement("bone");
-    elem.setAttribute("name", bone.bone_name_.c_str());
+    elem.setAttribute("name", bone.bone_name_);
     
     QDomElement rotation = dest.createElement("rotation");
     float3 e = RadToDeg(bone.start_.orientation_.ToEulerZYX());
     rotation.setAttribute("start", float3(e.z, e.y, e.x).ToString().c_str()); //WriteEulerAngles(bone.start_.orientation_));
     e = RadToDeg(bone.end_.orientation_.ToEulerZYX());
     rotation.setAttribute("end", float3(e.z, e.y, e.x).ToString().c_str()); //WriteEulerAngles(bone.end_.orientation_));
-    rotation.setAttribute("mode", modifierMode[bone.orientation_mode_].c_str());
+    rotation.setAttribute("mode", modifierMode[bone.orientation_mode_]);
     
     QDomElement translation = dest.createElement("translation");
     translation.setAttribute("start", bone.start_.position_.SerializeToString().c_str());
     translation.setAttribute("end", bone.end_.position_.SerializeToString().c_str());
-    translation.setAttribute("mode", modifierMode[bone.position_mode_].c_str());
+    translation.setAttribute("mode", modifierMode[bone.position_mode_]);
 
     QDomElement scale = dest.createElement("scale");
     scale.setAttribute("start", bone.start_.scale_.SerializeToString().c_str());
@@ -796,8 +777,8 @@ QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& b
 QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph) const
 {
     QDomElement elem = dest.createElement("morph_modifier");
-    elem.setAttribute("name", morph.name_.c_str());
-    elem.setAttribute("internal_name", morph.morph_name_.c_str());
+    elem.setAttribute("name", morph.name_);
+    elem.setAttribute("internal_name", morph.morph_name_);
     elem.setAttribute("influence", morph.value_);
     
     return elem;
@@ -806,13 +787,13 @@ QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphM
 QDomElement AvatarDescAsset::WriteMasterModifier(QDomDocument& dest, const MasterModifier& master) const
 {
     QDomElement elem = dest.createElement("master_modifier");
-    elem.setAttribute("name", master.name_.c_str());
+    elem.setAttribute("name", master.name_);
     elem.setAttribute("position", master.value_);
-    elem.setAttribute("category", master.category_.c_str());
+    elem.setAttribute("category", master.category_);
     for (uint i = 0; i < master.modifiers_.size(); ++i)
     {
         QDomElement target_elem = dest.createElement("target_modifier");
-        target_elem.setAttribute("name", master.modifiers_[i].name_.c_str());
+        target_elem.setAttribute("name", master.modifiers_[i].name_);
         if (master.modifiers_[i].type_ == AppearanceModifier::Morph)
             target_elem.setAttribute("type", "morph");
         else
@@ -839,7 +820,7 @@ QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAtt
     QDomElement elem = dest.createElement("attachment");
     
     QDomElement name_elem = dest.createElement("name");
-    name_elem.setAttribute("value", attachment.name_.c_str());
+    name_elem.setAttribute("value", attachment.name_);
     elem.appendChild(name_elem);
     
     QDomElement mesh_elem = dest.createElement("mesh");
@@ -858,19 +839,19 @@ QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAtt
     }
     
     QDomElement category_elem = dest.createElement("category");
-    category_elem.setAttribute("name", attachment.category_.c_str());
+    category_elem.setAttribute("name", attachment.category_);
     elem.appendChild(category_elem);
     
     QDomElement avatar_elem = dest.createElement("avatar");
     avatar_elem.setAttribute("name", mesh);
     
     {
-        std::string bonename = attachment.bone_name_;
-        if (bonename.empty())
-            bonename = "None";
+        QString boneName = attachment.bone_name_;
+        if (boneName.isEmpty())
+            boneName= "None";
 
         QDomElement bone_elem = dest.createElement("bone");
-        bone_elem.setAttribute("name", bonename.c_str());
+        bone_elem.setAttribute("name", boneName);
         bone_elem.setAttribute("offset", attachment.transform_.position_.SerializeToString().c_str());
         bone_elem.setAttribute("rotation", attachment.transform_.orientation_.SerializeToString().c_str());
         bone_elem.setAttribute("scale", attachment.transform_.scale_.SerializeToString().c_str());
