@@ -33,9 +33,9 @@ EC_Fog::EC_Fog(Scene* scene) :
         metadata.enums[Ogre::FOG_EXP] = "Exponentially";
         metadata.enums[Ogre::FOG_EXP2] = "ExponentiallySquare";
         metadata.enums[Ogre::FOG_LINEAR] = "Linearly";
-        mode.SetMetadata(&metadata);
         metadataInitialized = true;
     }
+    mode.SetMetadata(&metadata);
 
     // Only when rendering is enabled
     if (!framework->IsHeadless())
@@ -68,8 +68,6 @@ void EC_Fog::Update()
         return;
 
     world = w;
-
-    // Note: in Tundra1-series, if we were within EC_WaterPlane, the waterPlaneColor*fogColor was used as the scene fog color.
 
     // Specify the fog color.
     if (w->OgreSceneManager())
