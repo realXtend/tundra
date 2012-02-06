@@ -46,10 +46,12 @@
     - Celt codec that is tested to work against >=1.2.3 Murmur and native Mumble clients.
       Essentially meaning native Mumble clients can also join the channels and everyone should hear each other.
     - Voice activity detection, mic noise suppression and mic volume amplification. Provides ready made audio wizard for easy configuration.
-      VAD is self written (techniques studied from native mumble client), other audio processing uses speexdsp library.
+      VAD is self written (techniques studied from native mumble client), other audio processing uses speexdsp library. @see RunAudioWizard.
+    - Positional audio playback, transmission and audible radius from active sound listener. These can be set from audio wizard. @see RunAudioWizard.
+    - Extensive Qt signals for everything that is going on, easy to hook to these and provide a client GUI and scene interaction. 
+      Signals can be found from MumblePlugin, MumbleChannel and MumbleUser classes. In scripting you can access this functionality with 'mumble' eg. mumble.Connect(...);
 
     @todo list of not implemented features:
-    - [trivial] Add per user voice activity detection, essentially signal when state changes Speaking(userid, bool)
     - [trivial] Remove debug prints and debug console command slots that were used for initial development.
     - [medium] Make new javascript example scene and script that uses the new MumblePlugin API to implement a nice client.
       Verify MumbleScriptTypeDefines.h exposes everything correctly to javascript with this example script! Fine tune signals for easy scripting.
