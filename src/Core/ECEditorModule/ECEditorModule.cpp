@@ -57,8 +57,8 @@ void ECEditorModule::Initialize()
         cfg.Set(highlightConfig);
     highlightingEnabled = cfg.Get(highlightConfig).toBool();
 
-    framework_->Console()->RegisterCommand("doc", "Prints the class documentation for the given symbol.",
-        this, SLOT(ShowDocumentation(const QString &)));
+    framework_->Console()->RegisterCommand("doc", "Prints the class documentation for the given symbol."
+        "Usage example: 'doc(EC_Placeable::WorldPosition)'.", this, SLOT(ShowDocumentation(const QString &)));
 
     inputContext = framework_->Input()->RegisterInputContext("ECEditorInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -175,8 +175,9 @@ void ECEditorModule::ShowDocumentation(const QString &symbol)
         return;
     }
 
-    QWebView *webview = new QWebView();
+    QWebView *webview = new QWebView(framework_->Ui()->MainWindow());
     webview->setAttribute(Qt::WA_DeleteOnClose);
+    webview->setWindowFlags(Qt::Tool);
     webview->setHtml(documentation, styleSheetPath);
     webview->show();
 }
@@ -266,18 +267,13 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
                 if (activeScene)
                 {
                     // We can only manipulate entities that have placeable, but exclude temporarys (avatar, cameras etc.)
+                    /// @todo Shouldn't "select all" select all, not exclude some entities with some random criteria?
+                    /// Maybe add separate actions for the right-click context menu for each criteria (local, replicated, temprorary etc.)
                     QList<entity_id_t> entIdsSelection;
-                    QVariantList entIds = activeScene->GetEntityIdsWithComponent(EC_Placeable::TypeNameStatic());
-                    foreach(QVariant entId, entIds)
-                    {
-                        Entity *ent = activeScene->GetEntity(entId.toUInt()).get();
-                        if (ent)
-                        {
-                            if (ent->IsTemporary())
-                                continue;
-                            entIdsSelection.append(entId.toUInt());
-                        }
-                    }
+                    foreach(const EntityPtr &e, activeScene->GetEntitiesWithComponent(EC_Placeable::TypeNameStatic()))
+                        if (!e->IsTemporary())
+                            entIdsSelection.append(e->Id());
+
                     if (!entIdsSelection.isEmpty())
                         activeEditor->AddEntities(entIdsSelection, true);
                 }
