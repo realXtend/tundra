@@ -4,12 +4,10 @@
 
 #include "SceneWidgetComponentsApi.h"
 #include "IComponent.h"
-#include "IAttribute.h"
 #include "SceneFwd.h"
 #include "AssetFwd.h"
 
 #include <QTimer>
-#include <QImage>
 #include <QString>
 #include <QMenu>
 
@@ -157,5 +155,4 @@ private:
 
     /// If we are on a server or client.
     bool isServer_;
-    
 };

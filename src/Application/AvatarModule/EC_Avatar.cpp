@@ -399,19 +399,15 @@ void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value
         rot_end.ToEulerAnglesXYZ(ex, ey, ez);
         rot_orig.ToEulerAnglesXYZ(rx, ry, rz);
         
-        switch (modifier.orientation_mode_)
+        switch(modifier.orientation_mode_)
         {
         case BoneModifier::Absolute:
-            bx = 0;
-            by = 0;
-            bz = 0;
+            bx = by = bz = 0;
             break;
-            
         case BoneModifier::Relative:
             orig_bone->getInitialOrientation().ToRotationMatrix(rot_base);
             rot_base.ToEulerAnglesXYZ(bx, by, bz);
             break;
-            
         case BoneModifier::Cumulative:
             bone->getInitialOrientation().ToRotationMatrix(rot_base);
             rot_base.ToEulerAnglesXYZ(bx, by, bz);
@@ -440,15 +436,15 @@ void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value
         float ey = modifier.end_.position_.y;
         float ez = modifier.end_.position_.z;
         
-        Ogre::Vector3 trans, base;
-        trans = bone->getInitialPosition();
-        switch (modifier.position_mode_)
+        Ogre::Vector3 base(0,0,0);
+        Ogre::Vector3 trans = bone->getInitialPosition();
+        switch(modifier.position_mode_)
         {
-        case BoneModifier::Absolute:
-            base = Ogre::Vector3(0,0,0);
-            break;
         case BoneModifier::Relative:
             base = orig_bone->getInitialPosition();
+            break;
+        case BoneModifier::Absolute:
+        case BoneModifier::Cumulative:
             break;
         }
         
