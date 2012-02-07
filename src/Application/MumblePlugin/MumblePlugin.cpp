@@ -59,18 +59,6 @@ void MumblePlugin::Initialize()
     // Audio processing with ~60 fps. This is not tied to FrameAPI::Updated or IModule::Update
     // because we want to process audio at a steady and fast rate even if mainloop max fps is capped to eg. 30 fps.
     qobjTimerId_ = startTimer(15);
-
-    /// @todo Remove everything below, was used for early development
-    framework_->Console()->RegisterCommand("mumbleconnect", "", this, SLOT(DebugConnect()));
-    framework_->Console()->RegisterCommand("mumbledisconnect", "", this, SLOT(Disconnect()));
-    framework_->Console()->RegisterCommand("mumblejoin", "", this, SLOT(JoinChannel(QString)));
-    framework_->Console()->RegisterCommand("mumbleselfmute", "", this, SLOT(DebugMute()));
-    framework_->Console()->RegisterCommand("mumbleselfunmute", "", this, SLOT(DebugUnMute()));
-    framework_->Console()->RegisterCommand("mumblemute", "", this, SLOT(DebugMute(QString )));
-    framework_->Console()->RegisterCommand("mumbledeaf", "", this, SLOT(DebugDeaf()));
-    framework_->Console()->RegisterCommand("mumbleundeaf", "", this, SLOT(DebugUnDeaf()));
-    framework_->Console()->RegisterCommand("mumblewizard", "", this, SLOT(RunAudioWizard()));
-    DebugConnect(); 
 }
 
 void MumblePlugin::Uninitialize()
@@ -117,7 +105,12 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
             }
 
             if (audioWizard)
-                audioWizard->SetLevels(audio_->levelPeakMic, audio_->isSpeech);
+            {
+                float levelPeakMic = 0.0f;
+                bool speaking = false;
+                audio_->GetLevels(levelPeakMic, speaking);
+                audioWizard->SetLevels(levelPeakMic, speaking);
+            }
         }
         else
             audio_->ClearOutputAudio();
@@ -181,10 +174,10 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
         SLOT(OnUserUpdate(uint, uint, QString, QString, QString, bool, bool, bool)), Qt::QueuedConnection);
 
     // Handle audio signals from network thread to audio thread.
-    connect(network_, SIGNAL(AudioReceived(uint, uint, ByteArrayList, bool, float3)), audio_, SLOT(OnAudioReceived(uint, uint, ByteArrayList, bool, float3)), Qt::QueuedConnection);
+    connect(network_, SIGNAL(AudioReceived(uint, uint, ByteArrayVector, bool, float3)), audio_, SLOT(OnAudioReceived(uint, uint, ByteArrayVector, bool, float3)), Qt::QueuedConnection);
     
-    audio_->start();
-    network_->start();
+    audio_->start(QThread::HighestPriority);
+    network_->start(QThread::HighestPriority);
 }
 
 void MumblePlugin::Disconnect(QString reason)
@@ -213,16 +206,18 @@ void MumblePlugin::Disconnect(QString reason)
     {
         network_->exit();
         network_->wait();
-        
+        QCoreApplication::instance()->processEvents();
+    }
+    SAFE_DELETE(network_);
+
+    if (state.connectionState != MumbleDisconnected)
+    {
         if (!reason.isEmpty())
             LogInfo(LC + "Disconnected from " + state.FullHost() + ": " + reason);
         else
             LogInfo(LC + "Disconnected from " + state.FullHost());
         emit Disconnected(reason);
-
-        QCoreApplication::instance()->processEvents();
     }
-    SAFE_DELETE(network_);
 
     state.Reset();
 }
@@ -544,13 +539,6 @@ void MumblePlugin::OnStateChange(MumbleNetwork::ConnectionState newState)
     // Don't signal same state multiple times
     if (state.connectionState == newState)
         return;
-    
-    if (newState == MumbleConnecting)
-        LogDebug(LC + "State changed to \"MumbleConnecting\"");
-    else if (newState == MumbleConnected)
-        LogDebug(LC + "State changed to \"MumbleConnected\"");
-    else if (newState == MumbleDisconnected)
-        LogDebug(LC + "State changed to \"MumbleDisconnected\"");
 
     MumbleNetwork::ConnectionState oldState = state.connectionState;
     state.connectionState = newState;
@@ -673,17 +661,13 @@ void MumblePlugin::OnChannelUpdate(uint id, uint parentId, QString name, QString
 
     if (isNew)
     {
-        qDebug() << "{NEW CHANNEL}   "  << channel->toString().toStdString().c_str();
         emit ChannelCreated(channel);
         emit ChannelsChanged(channels_);
     }
     else
     {
-        qDebug() << "{CHANNEL UPDATE}"  << channel->toString().toStdString().c_str();
         emit ChannelUpdated(channel);
     }
-
-    qDebug() << "";
 }
 
 void MumblePlugin::OnChannelRemoved(uint id)
@@ -728,14 +712,11 @@ void MumblePlugin::OnChannelRemoved(uint id)
     if (index != -1)
     {
         MumbleChannel *channel = channels_[index];   
-        qDebug() << "{CHANNEL REMOVE}"  << channel->toString().toStdString().c_str();
         SAFE_DELETE(channel);
         channels_.removeAt(index);
         
         emit ChannelRemoved(id);
         emit ChannelsChanged(channels_);
-
-        qDebug() << "";
     }
 }
 
@@ -779,8 +760,6 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
             {
                 if (previousChannel->RemoveUser(user->id))
                 {
-                    qDebug() << "- previousChannel->EmitUserLeft" << user->id << user->name;
-                    qDebug() << "- previousChannel->EmitUsersChanged" << previousChannel->users.size();
                     previousChannel->EmitUserLeft(user->id);
                     previousChannel->EmitUsersChanged();
                 }
@@ -825,19 +804,11 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
     if (isNew)
     {
         if (user->isMe)
-        {
-            qDebug() << "#### ME CREATED" << user->id << user->name;
             emit MeCreated(user);
-        }
-
-        qDebug() << "{CREATED}" << user->toString().toStdString().c_str();
         emit UserCreated(user);
     }
     else
-    {
-        qDebug() << "{UPDATED}" << user->toString().toStdString().c_str();
         emit UserUpdated(user);
-    }
 
     // Emit user property changes
     if (channelChange)
@@ -846,42 +817,30 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
         {
             if (user->isMe)
             {
-                qDebug() << "#### ME JOINED " << channel->id << channel->fullName;
                 state.fullChannelName = channel->fullName;
                 emit JoinedChannel(channel);
             }
 
-            qDebug() << "  user->EmitChannelChanged()";
             user->EmitChannelChanged(channel);
-            qDebug() << "- channel->EmitUserJoined" << user->id << user->name;
-            qDebug() << "- channel->EmitUsersChanged" << channel->users.size();
             channel->EmitUserJoined(user);
             channel->EmitUsersChanged();
         }
     }
     if (mutedChange)
     {
-        qDebug() << "  user->EmitMuted()";
         user->EmitMuted();
-        qDebug() << "# UserMuted" << user->id << user->isMuted;
         emit UserMuted(user, user->isMuted);
     }
     if (selfMutedChange)
     {
-        qDebug() << "  user->EmitSelfMuted()";
         user->EmitSelfMuted();
-        qDebug() << "# UserSelfMuted" << user->id << user->isSelfMuted;
         emit UserSelfMuted(user, user->isSelfMuted);
     }
     if (selfDeafChange)
     {
-        qDebug() << "  user->EmitSelfDeaf()";
         user->EmitSelfDeaf();
-        qDebug() << "# UserSelfDeaf" << user->id << user->isSelfDeaf;
         emit UserSelfDeaf(user, user->isSelfDeaf);
     }
-
-    qDebug() << "";
 }
 
 void MumblePlugin::OnUserLeft(uint id, uint actorId, bool banned, bool kicked, QString reason)
@@ -922,8 +881,6 @@ void MumblePlugin::OnUserLeft(uint id, uint actorId, bool banned, bool kicked, Q
 
 void MumblePlugin::OnServerSynced(uint sessionId)
 {
-    qDebug() << "";
-
     state.serverSynced = true;
     state.sessionId = sessionId;
 
@@ -1150,14 +1107,6 @@ void MumblePlugin::SaveSettings(MumbleAudio::AudioSettings settings)
     config->Set(data, "outerRange", settings.outerRange);
     config->Set(data, "allowSendingPositional", settings.allowSendingPositional);
     config->Set(data, "allowReceivingPositional", settings.allowReceivingPositional);
-}
-
-void MumblePlugin::DebugMute(QString userIdStr)
-{
-    uint id = userIdStr.toInt();
-    MumbleUser *u = User(id);
-    if (u)
-        SetMuted(u->id, !u->isMuted);
 }
 
 void MumblePlugin::EmitUserPositionalChanged(MumbleUser *user)

@@ -53,15 +53,15 @@ endmacro (configure_protobuf)
 
 macro (configure_openssl)
     # ${ENV_TUNDRA_DEP_PATH}/OpenSSL
-    set (OPENSSL_ROOT_DIR C:/Work/admino-mumble/deps/custom/OpenSSL)
+    set (OPENSSL_ROOT_DIR ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
     
     sagase_configure_package(OPENSSL
         NAMES openssl
         COMPONENTS libeay32 ssleay32 ssl
-        PREFIXES C:/Work/admino-mumble/deps/custom/OpenSSL) # this is a hack for initial development
-        #PREFIXES ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
+        #PREFIXES C:/Work/admino-mumble/deps/custom/OpenSSL) # this is a hack for initial development
+        PREFIXES ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
     
-    message (STATUS "## EARLY DEVELOPMENT HACK ## OpenSSL lookup from: C:/Work/admino-tundra/deps/custom/OpenSSL")
+    #message (STATUS "## EARLY DEVELOPMENT HACK ## OpenSSL lookup from: C:/Work/admino-tundra/deps/custom/OpenSSL")
     
     # Remove FindOpenSSL.cmake generated not found items
     if (MSVC)
@@ -75,12 +75,19 @@ macro (configure_openssl)
 endmacro (configure_openssl)
 
 macro (configure_celt)
+    set (CELT_ROOT C:/Work/admino-mumble/deps/custom/celt) # this is a hack for initial development
+    set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CELT_ROOT}/include)
+    set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CELT_ROOT}/lib)
+    set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${CELT_ROOT}/bin)
+    
     sagase_configure_package(CELT
         NAMES celt
         COMPONENTS libcelt  # for libcelt
                    celt0    # for old celt0 name (linux?)
                    celt     # for celt.h
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/celt)
+        PREFIXES ${CELT_ROOT})
+        #PREFIXES ${ENV_TUNDRA_DEP_PATH}/celt)
+        
     sagase_configure_report (CELT)
 endmacro (configure_celt)
 

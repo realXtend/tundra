@@ -75,7 +75,7 @@ signals:
     void UserUpdate(uint id, uint channelId, QString name, QString comment, QString hash, bool selfMuted, bool selfDeaf, bool isMe);
     void UserLeft(uint id, uint actorId, bool banned, bool kicked, QString reason);
     
-    void AudioReceived(uint userId, uint seq, ByteArrayList frames, bool isPositional, float3 pos);
+    void AudioReceived(uint userId, uint seq, ByteArrayVector frames, bool isPositional, float3 pos);
 
 private slots:
     void OnConnected();
@@ -99,7 +99,7 @@ private:
     void HandleVoicePacket(uint userId, uint seq, Mumble::PacketDataStream &stream);
 
     // Prepares encoded packets into a PacketDataStream.
-    void PrepareVoicePacket(ByteArrayList &encodedFrames, Mumble::PacketDataStream &stream);
+    void PrepareVoicePacket(ByteArrayVector &encodedFrames, Mumble::PacketDataStream &stream);
 
     QSslSocket *tcp;
     QUdpSocket *udp;

@@ -19,7 +19,7 @@ Q_DECLARE_METATYPE(MumbleChannel*)
 Q_DECLARE_METATYPE(MumbleUser*)
 Q_DECLARE_METATYPE(QList<MumbleChannel*>)
 Q_DECLARE_METATYPE(QList<MumbleUser*>)
-Q_DECLARE_METATYPE(ByteArrayList)
+Q_DECLARE_METATYPE(ByteArrayVector)
 Q_DECLARE_METATYPE(MumbleNetwork::ConnectionState)
 Q_DECLARE_METATYPE(MumbleNetwork::RejectReason)
 Q_DECLARE_METATYPE(MumbleNetwork::PermissionDeniedType)
@@ -87,7 +87,7 @@ void RegisterMumblePluginMetaTypes()
     qRegisterMetaType<QList<MumbleUser*> >("QList<MumbleUser*>");
     qRegisterMetaType<QList<QByteArray> >("QList<QByteArray>");
     qRegisterMetaType<QList<uint> >("QList<uint>");
-    qRegisterMetaType<ByteArrayList >("ByteArrayList");
+    qRegisterMetaType<ByteArrayVector >("ByteArrayList");
 }
 
 void RegisterMumblePluginMetaTypes(QScriptEngine *engine)

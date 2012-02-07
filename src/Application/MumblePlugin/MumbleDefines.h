@@ -12,7 +12,7 @@
 #include <deque>
 #include <map>
 
-typedef std::vector<QByteArray> ByteArrayList;
+typedef std::vector<QByteArray> ByteArrayVector;
 
 struct MumblePluginState
 {

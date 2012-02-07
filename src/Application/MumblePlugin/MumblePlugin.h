@@ -13,7 +13,6 @@
 #include <QTimer>
 #include <QScriptEngine>
 #include <QPointer>
-#include <QUuid> // todo remove when DebugConnect is removed
 
 /** I watched Naali and Tundra Mumble functionality being developed for a long time.
     At the time the module was MumbleVoipModule and it was "over engineered" partly due to Naalis
@@ -52,8 +51,7 @@
       Signals can be found from MumblePlugin, MumbleChannel and MumbleUser classes. In scripting you can access this functionality with 'mumble' eg. mumble.Connect(...);
 
     @todo list of not implemented features:
-    - [trivial] Remove debug prints and debug console command slots that were used for initial development.
-    - [medium] Make new javascript example scene and script that uses the new MumblePlugin API to implement a nice client.
+    - Make new javascript example scene and script that uses the new MumblePlugin API to implement a nice client.
       Verify MumbleScriptTypeDefines.h exposes everything correctly to javascript with this example script! Fine tune signals for easy scripting.
 */
 class MumblePlugin : public IModule
@@ -345,14 +343,6 @@ private slots:
 
     MumbleAudio::AudioSettings LoadSettings();
     void SaveSettings(MumbleAudio::AudioSettings settings);
-
-    // Console command debugging, to be removed once initial development is completed.
-    void DebugConnect()     { Connect("127.0.0.1", 64738, "Debug" + QUuid::createUuid().toString(), "debug", "Root/test", false, false); }
-    void DebugMute()        { SetOutputAudioMuted(true); }
-    void DebugUnMute()      { SetOutputAudioMuted(false); }
-    void DebugDeaf()        { SetInputAudioMuted(true); }
-    void DebugUnDeaf()      { SetInputAudioMuted(false); }
-    void DebugMute(QString userIdStr);
 
 private:
     MumbleNetworkHandler *network_;

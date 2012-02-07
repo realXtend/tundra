@@ -12,10 +12,13 @@
 #include "ConsoleAPI.h"
 #include "LoggingFunctions.h"
 
+#include <QTcpSocket>
 #include <QByteArray>
 #include <QDataStream>
 #include <QSslCipher>
 #include <QMutexLocker>
+
+#include <QTime> // remove
 
 using namespace MumbleNetwork;
 
@@ -46,9 +49,28 @@ void MumbleNetworkHandler::run()
     exiting_ = false;
     emit StateChange(MumbleConnecting);
 
+    // Test that the host and port exists. We should not start the
+    // encrypted SSL socket connection before we know its safe.
+    // Unfortunately this has to be done due to OpenSSL crashing on us via
+    // QSslSocket if it does not exist.
+    QTcpSocket *socketTester = new QTcpSocket();
+    socketTester->connectToHost(connectionInfo.address, connectionInfo.port);
+    if (!socketTester->waitForConnected(30000))
+    {
+        SAFE_DELETE(socketTester);
+        emit Disconnected("Connection timed out.");
+        emit StateChange(MumbleDisconnected);
+        quit();
+        return;
+    }
+    socketTester->disconnectFromHost();
+    SAFE_DELETE(socketTester);
+
     // If false is returned there is no SSL support.
     if (!InitTCP())
     {
+        emit Disconnected("SSL not supported, cannot initialize TCP connection.");
+        emit StateChange(MumbleDisconnected);
         quit();
         return;
     }
@@ -102,10 +124,7 @@ void MumbleNetworkHandler::timerEvent(QTimerEvent *event)
 bool MumbleNetworkHandler::InitTCP()
 {    
     if (!QSslSocket::supportsSsl())
-    {
-        LogError(LC + "SSL not supported, cannot initialize TCP connection!");
         return false;
-    }
 
     QStringList addedCerts = Mumble::MumbleSSL::addSystemCA();
     foreach(QString certMsg, addedCerts)
@@ -125,6 +144,7 @@ bool MumbleNetworkHandler::InitTCP()
 
     tcp = new QSslSocket(this);
     tcp->setProtocol(QSsl::TlsV1);
+    tcp->moveToThread(this);
 
     connect(tcp, SIGNAL(encrypted()), this, SLOT(OnConnected()));
     connect(tcp, SIGNAL(disconnected()), SLOT(OnDisconnected()));
@@ -232,6 +252,10 @@ void MumbleNetworkHandler::OnError(QAbstractSocket::SocketError socketError)
         emit Disconnected("SSL handshake failed.");
     else if (socketError == QAbstractSocket::RemoteHostClosedError)
         emit Disconnected("Server closed connection.");
+    else
+        emit Disconnected("TCP socket error.");
+
+    quit();
 }
 
 void MumbleNetworkHandler::OnSslErrors(const QList<QSslError>& errors)
@@ -480,7 +504,7 @@ void MumbleNetworkHandler::SendVoicePacket(VoicePacketInfo &packetInfo)
         SendTCP(UDPTunnel, data, stream.size() + 1);
 }
 
-void MumbleNetworkHandler::PrepareVoicePacket(ByteArrayList &encodedFrames, Mumble::PacketDataStream &stream)
+void MumbleNetworkHandler::PrepareVoicePacket(ByteArrayVector &encodedFrames, Mumble::PacketDataStream &stream)
 {
     // Sequence number
     stream << frameOutSequenceNumber;
@@ -688,7 +712,7 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
 void MumbleNetworkHandler::HandleVoicePacket(uint userId, uint seq, Mumble::PacketDataStream &stream)
 {
     // Read audio frames
-    ByteArrayList frames;
+    ByteArrayVector frames;
     bool lastFrame = false;
     while(!lastFrame && stream.isValid())
     {
