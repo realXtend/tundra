@@ -18,8 +18,6 @@
 #include <QSslCipher>
 #include <QMutexLocker>
 
-#include <QTime> // remove
-
 using namespace MumbleNetwork;
 
 MumbleNetworkHandler::MumbleNetworkHandler(QString address, ushort port, QString username, QString password) :
