@@ -18,9 +18,10 @@ Q_PROPERTY(QString name READ Name)
 Q_PROPERTY(QString comment READ Comment)
 Q_PROPERTY(QString hash READ Hash)
 Q_PROPERTY(bool isSpeaking READ IsSpeaking)
-Q_PROPERTY(bool isMuted READ IsMuted)
+Q_PROPERTY(bool isMuted READ IsMuted WRITE SetMuted)
 Q_PROPERTY(bool isSelfMuted READ IsSelfMuted)
 Q_PROPERTY(bool isSelfDeaf READ IsSelfDeaf)
+Q_PROPERTY(bool isPositional READ IsPositional)
 Q_PROPERTY(bool isMe READ IsMe)
 
 public:
@@ -51,7 +52,16 @@ public:
     bool IsMuted() { return isMuted; }
     bool IsSelfMuted() { return isSelfMuted; }
     bool IsSelfDeaf() { return isSelfDeaf; }
+    bool IsPositional() { return isPositional; }
     bool IsMe() { return isMe; }
+
+    // Only emits if the speaking boolean changed.
+    // Also emits MumblePlugin::UserSpeaking signal.
+    void SetAndEmitSpeaking(bool speaking);
+
+    // Only emits if the positional boolean changed.
+    // Also emits MumblePlugin::UserPositionalChanged signal.
+    void SetAndEmitPositional(bool positional);
 
     void EmitSpeaking() { emit Speaking(id, isSpeaking); }
     void EmitMuted() { emit Muted(id, isMuted); }

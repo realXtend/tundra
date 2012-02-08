@@ -131,12 +131,13 @@ namespace MumbleAudio
             detectVAD = audioSettings.transmitMode == TransmitVoiceActivity;
             VADmin = audioSettings.VADmin;
             VADmax = audioSettings.VADmax;
-            
         }
 
         for (std::vector<SoundBuffer>::const_iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
         {
             const SoundBuffer &pcmFrame = (*pcmIter);
+            if (pcmFrame.data.size() == 0)
+                continue;
 
             isSpeech = true;
             if (localPreProcess)
@@ -466,12 +467,8 @@ namespace MumbleAudio
                 bool playing = false;
                 if (userAudioState.soundChannel.get() && userAudioState.soundChannel->State() == SoundChannel::Playing)
                     playing = true;
-                if (user->isSpeaking && !playing)
-                {
-                    user->isSpeaking = false;
-                    user->EmitSpeaking();
-                    mumble->EmitUserSpeaking(user);
-                }
+                if (!playing)
+                    user->SetAndEmitSpeaking(false);
                 continue;
             }
 
@@ -498,12 +495,10 @@ namespace MumbleAudio
                             }
 
                             // Check and update user positional state.
-                            if (user->isPositional != userAudioState.isPositional)
+                            if (!user->isMe && user->isPositional != userAudioState.isPositional)
                             {
                                 user->pos = userAudioState.pos;
-                                user->isPositional = userAudioState.isPositional;
-                                user->EmitPositionalChanged();
-                                mumble->EmitUserPositionalChanged(user);
+                                user->SetAndEmitPositional(userAudioState.isPositional);
                             }
                         }
                         else
@@ -513,22 +508,15 @@ namespace MumbleAudio
                                 userAudioState.soundChannel->SetPositional(false);
 
                             // Reset users positional state.
-                            if (user->isPositional)
+                            if (!user->isMe && user->isPositional)
                             {
                                 user->pos = float3::zero;
-                                user->isPositional = false;
-                                user->EmitPositionalChanged();
-                                mumble->EmitUserPositionalChanged(user);
+                                user->SetAndEmitPositional(false);
                             }
                         }
 
                         // Update user speaking state.
-                        if (!user->isSpeaking)
-                        {
-                            user->isSpeaking = true;
-                            user->EmitSpeaking();
-                            mumble->EmitUserSpeaking(user);
-                        }
+                        user->SetAndEmitSpeaking(true);
 
                         // Add buffer to the sound channel.
                         userAudioState.soundChannel->AddBuffer(audioAsset);
@@ -557,12 +545,7 @@ namespace MumbleAudio
                             userAudioState.soundChannel->SetPositional(false);
 
                         // Update user speaking state
-                        if (!user->isSpeaking)
-                        {
-                            user->isSpeaking = true;
-                            user->EmitSpeaking();
-                            mumble->EmitUserSpeaking(user);
-                        }
+                        user->SetAndEmitSpeaking(true);
                     }
                 }
             }

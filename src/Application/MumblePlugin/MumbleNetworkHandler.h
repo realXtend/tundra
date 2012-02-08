@@ -60,7 +60,6 @@ signals:
     void Connected(QString address, int port, QString username);
     void Disconnected(QString reason);
     
-    void StateChange(MumbleNetwork::ConnectionState newState);
     void ServerSynced(uint sessionId);
 
     void NetworkModeChange(MumbleNetwork::NetworkMode mode, QString reason);

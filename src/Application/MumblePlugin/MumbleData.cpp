@@ -47,6 +47,7 @@ bool MumbleChannel::AddUser(MumbleUser *user)
 {
     if (!users.contains(user))
     {
+        user->channelId = id;
         users.push_back(user);
         return true;
     }
@@ -99,9 +100,31 @@ QString MumbleUser::toString() const
     return QString("MumbleUser(id = %1 name = \"%2\" muted = %3 deaf = %4 self = %5)").arg(id).arg(name).arg(isSelfMuted).arg(isSelfDeaf).arg(isMe);
 }
 
+void MumbleUser::SetAndEmitSpeaking(bool speaking)
+{
+    if (isSpeaking != speaking)
+    {
+        isSpeaking = speaking;
+        EmitSpeaking();
+        if (owner_)
+            owner_->EmitUserSpeaking(this);
+    }
+}
+
+void MumbleUser::SetAndEmitPositional(bool positional)
+{
+    if (isPositional != positional)
+    {
+        isPositional = positional;
+        EmitPositionalChanged();
+        if (owner_)
+            owner_->EmitUserPositionalChanged(this);
+    }
+}
+
 void MumbleUser::SetMuted(bool muted)
 {
-    if (owner_)
+    if (isMuted != muted && owner_)
         owner_->SetMuted(id, muted);
 }
 

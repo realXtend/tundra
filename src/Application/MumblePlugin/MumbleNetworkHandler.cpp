@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "MumbleNetworkHandler.h"
-#include "mumble/SSL.h"
 #include "Mumble.pb.h"
 
 #include "celt/celt.h"
@@ -45,7 +44,6 @@ MumbleNetworkHandler::~MumbleNetworkHandler()
 void MumbleNetworkHandler::run()
 {
     exiting_ = false;
-    emit StateChange(MumbleConnecting);
 
     // Test that the host and port exists. We should not start the
     // encrypted SSL socket connection before we know its safe.
@@ -57,22 +55,24 @@ void MumbleNetworkHandler::run()
     {
         SAFE_DELETE(socketTester);
         emit Disconnected("Connection timed out.");
-        emit StateChange(MumbleDisconnected);
         quit();
         return;
     }
+    socketTester->waitForReadyRead(25);
     socketTester->disconnectFromHost();
+    if (socketTester->state() != QAbstractSocket::UnconnectedState)
+        socketTester->waitForDisconnected(100);
+    if (socketTester->isOpen())
+        socketTester->close();
     SAFE_DELETE(socketTester);
 
     // If false is returned there is no SSL support.
     if (!InitTCP())
     {
         emit Disconnected("SSL not supported, cannot initialize TCP connection.");
-        emit StateChange(MumbleDisconnected);
         quit();
         return;
     }
-
     tcp->connectToHostEncrypted(connectionInfo.address, connectionInfo.port);
 
     timestamp.restart();
@@ -84,21 +84,24 @@ void MumbleNetworkHandler::run()
 
     exec(); // Blocks untill quit()
 
-    killTimer(qobjTimerId);
-
     exiting_ = true;
+    killTimer(qobjTimerId);   
     pingTimer_->stop();
-
-    if (tcp->state() != QSslSocket::UnconnectedState)
+    
+    if (tcp && tcp->state() != QAbstractSocket::UnconnectedState)
     {
         requestedExit_ = true;
         tcp->disconnectFromHost();
         tcp->waitForDisconnected();
+        emit Disconnected("Disconnected by users request.");
     }
+    else
+        emit Disconnected("");
+
+    if (tcp && tcp->isOpen())
+        tcp->close();
 
     // Note that tcp and udp objects are freed by Qt parenting.
-
-    emit StateChange(MumbleDisconnected);
 }
 
 void MumbleNetworkHandler::timerEvent(QTimerEvent *event)
@@ -123,10 +126,6 @@ bool MumbleNetworkHandler::InitTCP()
 {    
     if (!QSslSocket::supportsSsl())
         return false;
-
-    QStringList addedCerts = Mumble::MumbleSSL::addSystemCA();
-    foreach(QString certMsg, addedCerts)
-        LogInfo(LC + certMsg);
 
     QList<QSslCipher> pref;
     foreach(QSslCipher c, QSslSocket::defaultCiphers()) 
@@ -158,7 +157,8 @@ bool MumbleNetworkHandler::InitUDP()
     QMutexLocker udpLock(&mutexUDP);
 
     udp = new QUdpSocket(this);
-    
+    udp->moveToThread(this);
+
     udpInfo.host = tcp->peerAddress();
     udpInfo.port = connectionInfo.port;
 
@@ -229,15 +229,10 @@ void MumbleNetworkHandler::OnConnected()
     InitUDP();
 
     emit Connected(connectionInfo.address, (int)connectionInfo.port, connectionInfo.username);
-    emit StateChange(MumbleConnected);
 }
 
 void MumbleNetworkHandler::OnDisconnected()
 {
-    if (requestedExit_)
-        emit Disconnected("Disconnected by users request.");
-    emit StateChange(MumbleDisconnected);
-
     if (!exiting_)
         quit();
 }
@@ -475,7 +470,7 @@ void MumbleNetworkHandler::SendVoicePacket(VoicePacketInfo &packetInfo)
     int messageFlags = 0;
     if (packetInfo.isLoopBack)
         messageFlags = 0x1f;
-    messageFlags |= (UDPMessageType::UDPVoiceCELTAlpha << 5);
+    messageFlags |= (UDPVoiceCELTAlpha << 5);
 
     char data[1024];
     data[0] = static_cast<unsigned char>(messageFlags);
@@ -549,7 +544,9 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
         case MumbleNetwork::Reject:
         {
             MumbleProto::Reject msg = ParseMessage<MumbleProto::Reject>(buffer);
-            emit ConnectionRejected((MumbleNetwork::RejectReason)msg.type(), msg.has_reason() ? utf8(msg.reason()) : "");
+            QString reason = msg.has_reason() ? utf8(msg.reason()) : "";
+            emit Disconnected(reason);
+            emit ConnectionRejected((MumbleNetwork::RejectReason)msg.type(), reason);
             break;
         }
         case MumbleNetwork::ChannelState:

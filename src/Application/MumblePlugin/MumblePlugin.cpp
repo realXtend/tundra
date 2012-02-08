@@ -8,6 +8,7 @@
 #include "AudioProcessor.h"
 
 #include "Mumble.pb.h"
+#include "mumble/SSL.h"
 
 #include "Framework.h"
 #include "Profiler.h"
@@ -45,6 +46,24 @@ MumblePlugin::~MumblePlugin()
 
 void MumblePlugin::Initialize()
 {
+    /** @note QSslSocket::supportsSsl() is eventually called, either explicitly by us
+        or by the QSslSocket when its connecting. The reason this is done in MumblePlugin::Initialize
+        is it blocks quite heavily (tested on windows) and it seems this cannot be avoided. For my test setups
+        on windows it takes about 3 seconds done here and about 7 seconds if the server connection and mainloop
+        are already running. Doing this here won't interrupt ui/mainloop in the first connection that is made
+        using MumbplePlugin, instead the startup time is hindered a bit, which again seems is unavoidable but in my opinion
+        makes the user experience a lot better. Also note this blocking was also present in previous MumbleVoipModule 
+        with libmumbeclient library, it just happened before the first connection (back then was a mystery why this happened 
+        as it was buried inside boost asio networking). Maybe this will gets fixed in newer version of OpenSSL or Qt, one can only hope. */
+    if (QSslSocket::supportsSsl())
+    {
+        QStringList addedCerts = Mumble::MumbleSSL::addSystemCA();
+        foreach(QString certMsg, addedCerts)
+            LogInfo(LC + certMsg);
+    }
+    else
+        LogWarning(LC + "SSL not supported, you cannot connect to Murmur servers without it. Either OpenSSL libraries are missing or your Qt libraries were build without OpenSSL support!");
+
     RegisterMumblePluginMetaTypes();
 
     // Register custom QObject and enum meta types to created script engines.
@@ -72,21 +91,35 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
     if (event->timerId() != qobjTimerId_)
         return;
 
+    // Input/output audio processing
     PROFILE(MumblePlugin_Update)
-
-    // Audio processing
     if (audio_ && state.serverSynced && state.connectionState == MumbleConnected)
     {
+        if (!network_)
+            return;
+        MumbleUser *me = Me();
+        if (!me)
+            return;
+
         // Output audio
         if (!state.outputAudioMuted)
         {
+            float levelPeakMic = 0.0f;
+            bool speaking = false;
+
             PROFILE(MumblePlugin_Update_ProcessOutputAudio)
             VoicePacketInfo packetInfo(audio_->ProcessOutputAudio());
+            audio_->GetLevels(levelPeakMic, speaking);
             ELIFORP(MumblePlugin_Update_ProcessOutputAudio)
+
             if (packetInfo.encodedFrames.size() > 0)
             {
+                // Remember that in Mumble protocol when you are 'deaf' (state.inputAudioMuted == true) 
+                // no one will hear you even if you send the voice packets to the server. Skip sending 
+                // anything in this case and mark as not speaking so the end user wont get alarmed 
+                // that his voice is going out in 'deaf' mode.
                 PROFILE(MumblePlugin_Update_ProcessOutputNetwork)
-                if (network_)
+                if (!state.inputAudioMuted)
                 {
                     packetInfo.isLoopBack = state.outputAudioLoopBack;
                     if (!packetInfo.isLoopBack && audioWizard)
@@ -95,25 +128,30 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
                     {
                         // Sets packetInfo.isPositional false if no active EC_SoundListener is found.
                         // If found updates packetInfo and our MumbleUser position.
-                        UpdatePositionalInfo(packetInfo); 
+                        UpdatePositionalInfo(packetInfo);
+                        me->SetAndEmitPositional(packetInfo.isPositional);
                     }
+                    else
+                        me->SetAndEmitPositional(false);
+                    me->SetAndEmitSpeaking(true);
+
                     network_->SendVoicePacket(packetInfo);
                 }
                 else
-                    LogError(LC + "Network ptr is null while sending out voice data!");
+                    me->SetAndEmitSpeaking(false);
                 ELIFORP(MumblePlugin_Update_ProcessOutputNetwork)
             }
+            else if (!speaking)
+                me->SetAndEmitSpeaking(false);
 
             if (audioWizard)
-            {
-                float levelPeakMic = 0.0f;
-                bool speaking = false;
-                audio_->GetLevels(levelPeakMic, speaking);
                 audioWizard->SetLevels(levelPeakMic, speaking);
-            }
         }
         else
+        {
+            me->SetAndEmitSpeaking(false);
             audio_->ClearOutputAudio();
+        }
 
         PROFILE(MumblePlugin_Update_ProcessInputAudio)
         // Input audio
@@ -128,13 +166,15 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
         audio_->ClearInputAudio();
         audio_->ClearOutputAudio();
     }
-
     ELIFORP(MumblePlugin_Update)
 }
 
 void MumblePlugin::Connect(QString address, int port, QString username, QString password, QString fullChannelName, bool outputAudioMuted, bool inputAudioMuted)
 {    
     Disconnect();
+
+    if (fullChannelName.trimmed().isEmpty())
+        fullChannelName = "Root";
 
     state.address = address;
     state.port = (ushort)port;
@@ -144,6 +184,8 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
     state.inputAudioMuted = inputAudioMuted;
 
     LogInfo(LC + "Connecting to " + state.FullHost() + " as \"" + state.username + "\"");
+    state.connectionState = MumbleConnecting;
+    emit StateChange(state.connectionState);
 
     MumbleAudio::AudioSettings currentSettings = LoadSettings();
     state.outputPositional = currentSettings.allowSendingPositional;
@@ -158,7 +200,6 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
     // Handle signals from network thread to the main thread.
     connect(network_, SIGNAL(Connected(QString, int, QString)), SLOT(OnConnected(QString, int, QString)), Qt::QueuedConnection);
     connect(network_, SIGNAL(Disconnected(QString)), SLOT(OnDisconnected(QString)), Qt::QueuedConnection);
-    connect(network_, SIGNAL(StateChange(MumbleNetwork::ConnectionState)), SLOT(OnStateChange(MumbleNetwork::ConnectionState)), Qt::QueuedConnection);
     connect(network_, SIGNAL(ServerSynced(uint)), SLOT(OnServerSynced(uint)), Qt::QueuedConnection);
     connect(network_, SIGNAL(NetworkModeChange(MumbleNetwork::NetworkMode, QString)), SLOT(OnNetworkModeChange(MumbleNetwork::NetworkMode, QString)), Qt::QueuedConnection);
     
@@ -176,8 +217,8 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
     // Handle audio signals from network thread to audio thread.
     connect(network_, SIGNAL(AudioReceived(uint, uint, ByteArrayVector, bool, float3)), audio_, SLOT(OnAudioReceived(uint, uint, ByteArrayVector, bool, float3)), Qt::QueuedConnection);
     
-    audio_->start(QThread::HighestPriority);
-    network_->start(QThread::HighestPriority);
+    audio_->start(QThread::HighPriority);
+    network_->start(QThread::HighPriority);
 }
 
 void MumblePlugin::Disconnect(QString reason)
@@ -206,20 +247,23 @@ void MumblePlugin::Disconnect(QString reason)
     {
         network_->exit();
         network_->wait();
-        QCoreApplication::instance()->processEvents();
     }
     SAFE_DELETE(network_);
 
-    if (state.connectionState != MumbleDisconnected)
+    if (state.connectionState != MumbleNetwork::MumbleDisconnected)
     {
         if (!reason.isEmpty())
             LogInfo(LC + "Disconnected from " + state.FullHost() + ": " + reason);
         else
             LogInfo(LC + "Disconnected from " + state.FullHost());
+        state.connectionState = MumbleNetwork::MumbleDisconnected;
+        emit StateChange(state.connectionState);
         emit Disconnected(reason);
     }
 
     state.Reset();
+
+    QCoreApplication::instance()->processEvents();    
 }
 
 bool MumblePlugin::SendTextMessage(const QString &message)
@@ -491,6 +535,14 @@ void MumblePlugin::SetInputAudioMuted(bool inputAudioMuted)
                 message.set_self_deaf(inputAudioMuted);
                 message.set_self_mute(state.outputAudioMuted);
                 network_->SendTCP(UserState, message);
+
+                // Reset everyone in out channel to not speaking state
+                // as the server is no longer sending us audio.
+                if (inputAudioMuted && me->Channel())
+                {
+                    foreach(MumbleUser *peerUser, me->Channel()->users)
+                        peerUser->SetAndEmitSpeaking(false);
+                }
             }
         }
     }
@@ -522,27 +574,25 @@ void MumblePlugin::RunAudioWizard()
 
     audioWizard = new AudioWizard(audio_->GetSettings());
     connect(audioWizard, SIGNAL(SettingsChanged(MumbleAudio::AudioSettings, bool)), SLOT(OnAudioSettingChanged(MumbleAudio::AudioSettings, bool)));
+    connect(audioWizard, SIGNAL(destroyed(QObject *)), SLOT(AudioWizardDestroyed()));
+}
+
+void MumblePlugin::AudioWizardDestroyed()
+{
+    if (audio_ && state.serverSynced)
+        audio_->ClearInputAudio(state.sessionId);
 }
 
 void MumblePlugin::OnConnected(QString address, int port, QString username)
 {
+    state.connectionState = MumbleConnected;
+    emit StateChange(state.connectionState);
     emit Connected(address, port, username);
 }
 
 void MumblePlugin::OnDisconnected(QString reason)
 {
     Disconnect(reason);
-}
-
-void MumblePlugin::OnStateChange(MumbleNetwork::ConnectionState newState)
-{
-    // Don't signal same state multiple times
-    if (state.connectionState == newState)
-        return;
-
-    MumbleNetwork::ConnectionState oldState = state.connectionState;
-    state.connectionState = newState;
-    emit StateChange(state.connectionState, oldState);
 }
 
 void MumblePlugin::OnNetworkModeChange(MumbleNetwork::NetworkMode mode, QString reason)
@@ -555,7 +605,6 @@ void MumblePlugin::OnNetworkModeChange(MumbleNetwork::NetworkMode mode, QString 
 void MumblePlugin::OnConnectionRejected(MumbleNetwork::RejectReason reasonType, QString reasonMessage)
 {
     emit ConnectionRejected(reasonType, reasonMessage);
-    Disconnect(reasonMessage);
 }
 
 void MumblePlugin::OnPermissionDenied(MumbleNetwork::PermissionDeniedType denyReason, MumbleNetwork::ACLPermission permission, uint channelId, uint targetUserId, QString reason)
@@ -821,6 +870,7 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
                 emit JoinedChannel(channel);
             }
 
+            user->channelId = channel->id;
             user->EmitChannelChanged(channel);
             channel->EmitUserJoined(user);
             channel->EmitUsersChanged();
@@ -969,6 +1019,8 @@ void MumblePlugin::OnScriptEngineCreated(QScriptEngine *engine)
 void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
 {
     packetInfo.isPositional = false;
+    if (!state.outputPositional)
+        return;
     if (!state.serverSynced)
         return;
 
@@ -982,11 +1034,7 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
     if (!framework_ || !framework_->Renderer() || !framework_->Renderer()->MainCameraScene())
     {
         if (me->isPositional == true)
-        {
-            me->isPositional = false;
-            me->EmitPositionalChanged();
-            EmitUserPositionalChanged(me);
-        }
+            me->SetAndEmitPositional(false);
         return;
     }
     Scene *scene = framework_->Renderer()->MainCameraScene();
@@ -1013,15 +1061,11 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
         if (placeable)
         {
             float3 worldPos = placeable->WorldPosition();
-            me->pos = worldPos;
-
+            
             // Change our positional state and emit signals.
+            me->pos = worldPos;
             if (me->isPositional == false)
-            {
-                me->isPositional = true;
-                me->EmitPositionalChanged();
-                EmitUserPositionalChanged(me);
-            }
+                me->SetAndEmitPositional(true);
             packetInfo.pos = worldPos;
             packetInfo.isPositional = true;
             return;
@@ -1031,11 +1075,7 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
     // If we get here no active EC_SoundListener could be found for our position.
     // If our user is in positional state, change that to false and emit signals
     if (me->isPositional == true)
-    {
-        me->isPositional = false;
-        me->EmitPositionalChanged();
-        EmitUserPositionalChanged(me);
-    }
+        me->SetAndEmitPositional(false);
 }
 
 void MumblePlugin::OnAudioSettingChanged(MumbleAudio::AudioSettings settings, bool saveConfig)
@@ -1046,6 +1086,10 @@ void MumblePlugin::OnAudioSettingChanged(MumbleAudio::AudioSettings settings, bo
             SaveSettings(settings);
         state.outputPositional = settings.allowSendingPositional;
         audio_->ApplySettings(settings);
+
+        MumbleUser *me = Me();
+        if (me)
+            me->SetAndEmitPositional(state.outputPositional);
     }
     else
         LogError(LC + "Audio wizard can't be shown, audio thread null!");

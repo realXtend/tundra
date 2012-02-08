@@ -212,7 +212,7 @@ signals:
 
     /** State of the connection changed from oldState to newState.
         @note This signal will trigged 'duplicates' with Connected ans Disconnected. */
-    void StateChange(MumbleNetwork::ConnectionState newState, MumbleNetwork::ConnectionState oldState);
+    void StateChange(MumbleNetwork::ConnectionState newState);
 
     /// Network mode changed to mode with reason. 
     /** Murmur is always connected first in TCP mode. After the initial ping(s) is replied UDP mode can be enabled 
@@ -319,7 +319,6 @@ private slots:
     // Usually verifies that data is good and emits one of the MumblePlugin signals, calls its public slots or modifies MumblePluginState.
     void OnConnected(QString address, int port, QString username);
     void OnDisconnected(QString reason);
-    void OnStateChange(MumbleNetwork::ConnectionState newState);
     void OnNetworkModeChange(MumbleNetwork::NetworkMode mode, QString reason);
     void OnConnectionRejected(MumbleNetwork::RejectReason reasonType, QString reasonMessage);
     void OnPermissionDenied(MumbleNetwork::PermissionDeniedType denyReason, MumbleNetwork::ACLPermission permission, uint channelId, uint targetUserId, QString reason);
@@ -340,6 +339,9 @@ private slots:
 
     // Updates our active EC_SoundListener position to the voice packet info.
     void UpdatePositionalInfo(MumbleNetwork::VoicePacketInfo &packetInfo);
+
+    // Audio widget is destroyed. We have to reset its user audio state object in the audio thread.
+    void AudioWizardDestroyed();
 
     MumbleAudio::AudioSettings LoadSettings();
     void SaveSettings(MumbleAudio::AudioSettings settings);
