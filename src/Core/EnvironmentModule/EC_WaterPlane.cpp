@@ -5,6 +5,8 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_WaterPlane.h"
+#include "EC_Fog.h"
+#include "EC_EnvironmentLight.h"
 
 #include "Entity.h"
 #include "EC_Placeable.h"
@@ -16,6 +18,7 @@
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"
 #include "Math/MathFunc.h"
+#include "Profiler.h"
 
 #include <Ogre.h>
 
@@ -182,6 +185,7 @@ void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Typ
 
 void EC_WaterPlane::Update()
 {
+    PROFILE(EC_WaterPlane_Update)
     OgreWorldPtr world = world_.lock();
     if (!world)
         return;
@@ -190,23 +194,26 @@ void EC_WaterPlane::Update()
     cameraInsideWaterCube = IsCameraInsideWaterCube();
     if (!cameraWasInsideWaterCube && cameraInsideWaterCube)
     {
-         // Save current fog settings, set underwater fog.
-        Ogre::SceneManager *mgr = world->OgreSceneManager();
-        prevFogSettings.mode = mgr->getFogMode();
-        prevFogSettings.color = mgr->getFogColour();
-        prevFogSettings.density = mgr->getFogDensity();
-        prevFogSettings.start = mgr->getFogStart();
-        prevFogSettings.end = mgr->getFogEnd();
-        prevFogSettings.viewportBackgroundColor = world_.lock()->Renderer()->MainViewport()->getBackgroundColour();
-        /// @todo in Tundra1-series, if we were within EC_WaterPlane, the waterPlaneColor*fogColor was used as the scene fog color.
-        /// Do we want to do the same here?
-        UpdateUnderwaterFog();
+        SetUnderwaterFog();
     }
     else if (cameraWasInsideWaterCube && !cameraInsideWaterCube)
     {
-        // Restore previous scene fog settings.
-        world->OgreSceneManager()->setFog((Ogre::FogMode)prevFogSettings.mode, prevFogSettings.color, prevFogSettings.density, prevFogSettings.start, prevFogSettings.end);
-        world->Renderer()->MainViewport()->setBackgroundColour(prevFogSettings.viewportBackgroundColor);
+        // Restore current scene fog settings, if existing, or fallback on default settings.
+        /// @todo Optimize
+        boost::shared_ptr<EC_Fog> sceneFog;
+        EntityList entities = ParentScene()->GetEntitiesWithComponent(EC_Fog::TypeNameStatic());
+        if (!entities.empty())
+            sceneFog = (*entities.begin())->GetComponent<EC_Fog>();
+        if (sceneFog)
+        {
+            world->OgreSceneManager()->setFog((Ogre::FogMode)sceneFog->mode.Get(),sceneFog->color.Get(),
+                sceneFog->expDensity.Get(), sceneFog->startDistance.Get(), sceneFog->endDistance.Get());
+            world->Renderer()->MainViewport()->setBackgroundColour(sceneFog->color.Get());
+        }
+        else // Set the default inefficient fog.
+        {
+            world->SetDefaultSceneFog();
+        }
     }
     // else status quo
 }
@@ -401,7 +408,7 @@ void EC_WaterPlane::OnAttributeUpdated(IAttribute* attribute, AttributeChange::T
     else if (attribute == &fogColor || attribute == &fogStartDistance || attribute == &fogEndDistance ||
         attribute == &fogMode || attribute == &fogExpDensity)
     {
-        UpdateUnderwaterFog();
+        SetUnderwaterFog();
     }
 /*
     // Currently commented out, working feature but not enabled yet.
@@ -542,13 +549,15 @@ void EC_WaterPlane::DetachEntity()
     }
 }
 
-void EC_WaterPlane::UpdateUnderwaterFog()
+void EC_WaterPlane::SetUnderwaterFog()
 {
     if (!ViewEnabled())
         return;
     OgreWorldPtr world = world_.lock();
     if (world)
     {
+        /// @todo in Tundra1-series, if we were within EC_WaterPlane, the waterPlaneColor*fogColor was used as the scene fog color.
+        /// Do we want to do the same here?
         world->OgreSceneManager()->setFog((Ogre::FogMode)fogMode.Get(), fogColor.Get(), fogExpDensity.Get(), fogStartDistance.Get(), fogEndDistance.Get());
         world->Renderer()->MainViewport()->setBackgroundColour(fogColor.Get());
     }

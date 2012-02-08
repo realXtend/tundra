@@ -207,7 +207,7 @@ private:
         @note Uses attribute @p rotation to for water plane defining water plane rotation */
     void SetOrientation();
 
-    void UpdateUnderwaterFog();
+    void SetUnderwaterFog();
 
     OgreWorldWeakPtr world_;
     Ogre::Entity* entity_;
@@ -218,18 +218,6 @@ private:
     int lastXsize_;
     int lastYsize_;
 
-    struct OgreFogSettings
-    {
-        int mode;
-        Color color;
-        float density;
-        float start;
-        float end;
-        Color viewportBackgroundColor;
-    };
-
-    /// Scene fog settings when entering underwater state.
-    OgreFogSettings prevFogSettings;
     /// Used for caching whether or not the camera is inside this water plane.
     /// If it was last frame, but isn't anymore, the original scene fog is restored (if existent in the first place).
     bool cameraInsideWaterCube;
