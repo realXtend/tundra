@@ -50,11 +50,8 @@ EC_Fog::~EC_Fog()
     if (framework->IsHeadless())
         return;
     OgreWorldPtr w = world.lock();
-    if (!w)
-        return;
-
-    w->OgreSceneManager()->setFog(Ogre::FOG_NONE);
-    w->Renderer()->MainViewport()->setBackgroundColour(Color()); // Color default ctor == black
+    if (w)
+        w->SetDefaultSceneFog();
 }
 
 void EC_Fog::Update()
