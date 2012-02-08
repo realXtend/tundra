@@ -1,40 +1,30 @@
 
 macro (configure_speex)
-    set (SPEEX_ROOT C:/Work/admino-mumble/deps/custom/speex) # this is a hack for initial development
-    set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${SPEEX_ROOT}/include)
-    set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${SPEEX_ROOT}/lib)
-    set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${SPEEX_ROOT}/bin)
-    
-    message (STATUS "## EARLY DEVELOPMENT HACK ## Speex lookup from: " ${SPEEX_ROOT})
-    
     sagase_configure_package(SPEEX
         NAMES speex
         COMPONENTS libspeex         # speex lib
                    libspeexdsp      # speex audio processing lib
                    speex            # speex.h to find include dir
-        PREFIXES ${SPEEX_ROOT} ${SPEEX_ROOT}/include/speex)  # this is a hack for initial development
+        PREFIXES ${ENV_TUNDRA_DEP_PATH}/speex)
         
     sagase_configure_report (SPEEX)
 endmacro (configure_speex)
 
 macro (configure_protobuf)
-    # Give cmake some hints where to look for libs/includes/executables in Find*.cmake helpers.
-    # You can add paths here if the below are not maching to your setup.
-    set (PROTOBUF_ROOT C:/Work/admino-mumble/deps/custom/protobuf) # this is a hack for initial development
-    set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${PROTOBUF_ROOT}/include)
-    set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${PROTOBUF_ROOT}/lib)
-    set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${PROTOBUF_ROOT}/bin)
-    
-    message (STATUS "## EARLY DEVELOPMENT HACK ## Protobuf lookup from: " ${PROTOBUF_ROOT})
+    # Give FindProtobuf.cmake some hints on windows, the script is not very good on its own if the full protobuf build is not present.
+    if (MSVC)
+        set (PROTOBUF_ROOT ${ENV_TUNDRA_DEP_PATH}/protobuf)
+        set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${PROTOBUF_ROOT}/include ${PROTOBUF_ROOT}/include/google/protobuf)
+        set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${PROTOBUF_ROOT}/lib)
+        set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${PROTOBUF_ROOT}/bin)
+    endif ()
     
     sagase_configure_package(PROTOBUF
-        NAMES google protobuf
-        COMPONENTS protobuf         # protobuf lib
-                   libprotobuf      # protobuf lib
+        NAMES protobuf
+        COMPONENTS libprotobuf      # protobuf lib
                    service          # service.h to find include dir
-        PREFIXES ${PROTOBUF_ROOT} ${PROTOBUF_ROOT}/include/google/protobuf)  # this is a hack for initial development
-        #PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf                            # Finding the libs
-        #         ${ENV_TUNDRA_DEP_PATH}/protobuf/include/google/protobuf)   # Finding the include
+        PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf                            # Finding the libs
+                 ${ENV_TUNDRA_DEP_PATH}/protobuf/include/google/protobuf)   # Finding the include
 
     # Remove FindProtobuf.cmake generated not found item
     list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
@@ -44,25 +34,22 @@ macro (configure_protobuf)
     # FindProtobuf.cmake is not particularly smart about finding the debug library 
     # at least with a d.dll postfix that we currently have. Only use the release one.
     if (MSVC)
-      set (PROTOBUF_LIBRARIES ${PROTOBUF_LIBRARY})
-      set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIR})
+        set (PROTOBUF_LIBRARIES ${PROTOBUF_LIBRARY})
+        set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIR})
     endif ()
 
     sagase_configure_report (PROTOBUF)
 endmacro (configure_protobuf)
 
 macro (configure_openssl)
-    # ${ENV_TUNDRA_DEP_PATH}/OpenSSL
+    # This is a variable FindOpenSSL.cmake will inspect.
     set (OPENSSL_ROOT_DIR ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
     
     sagase_configure_package(OPENSSL
         NAMES openssl
         COMPONENTS libeay32 ssleay32 ssl
-        #PREFIXES C:/Work/admino-mumble/deps/custom/OpenSSL) # this is a hack for initial development
         PREFIXES ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
-    
-    #message (STATUS "## EARLY DEVELOPMENT HACK ## OpenSSL lookup from: C:/Work/admino-tundra/deps/custom/OpenSSL")
-    
+       
     # Remove FindOpenSSL.cmake generated not found items
     if (MSVC)
         list(REMOVE_ITEM OPENSSL_LIBRARIES debug optimized SSL_EAY_RELEASE-NOTFOUND LIB_EAY_RELEASE-NOTFOUND SSL_EAY_DEBUG-NOTFOUND LIB_EAY_DEBUG-NOTFOUND NOTFOUND)
@@ -74,19 +61,13 @@ macro (configure_openssl)
     sagase_configure_report (OPENSSL)
 endmacro (configure_openssl)
 
-macro (configure_celt)
-    set (CELT_ROOT C:/Work/admino-mumble/deps/custom/celt) # this is a hack for initial development
-    set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${CELT_ROOT}/include)
-    set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${CELT_ROOT}/lib)
-    set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${CELT_ROOT}/bin)
-    
+macro (configure_celt)    
     sagase_configure_package(CELT
         NAMES celt
         COMPONENTS libcelt  # for libcelt
                    celt0    # for old celt0 name (linux?)
                    celt     # for celt.h
-        PREFIXES ${CELT_ROOT})
-        #PREFIXES ${ENV_TUNDRA_DEP_PATH}/celt)
+        PREFIXES ${ENV_TUNDRA_DEP_PATH}/celt)
         
     sagase_configure_report (CELT)
 endmacro (configure_celt)
