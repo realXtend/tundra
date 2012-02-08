@@ -34,18 +34,23 @@ MumblePlugin::MumblePlugin() :
     IModule("MumblePlugin"),
     LC("[MumblePlugin]: "),
     network_(0),
-    audio_(0)
+    audio_(0),
+    qobjTimerId_(-1)
 {
     state.Reset();
 }
 
 MumblePlugin::~MumblePlugin()
 {
-    QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>()); // Hides a qt memory leak
+    if (!framework_->IsHeadless())
+        QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>()); // Hides a qt memory leak
 }
 
 void MumblePlugin::Initialize()
 {
+    if (framework_->IsHeadless())
+        return;
+
     /** @note QSslSocket::supportsSsl() is eventually called, either explicitly by us
         or by the QSslSocket when its connecting. The reason this is done in MumblePlugin::Initialize
         is it blocks quite heavily (tested on windows) and it seems this cannot be avoided. For my test setups
@@ -82,8 +87,11 @@ void MumblePlugin::Initialize()
 
 void MumblePlugin::Uninitialize()
 {
-    killTimer(qobjTimerId_);
-    Disconnect("Client exiting.");
+    if (!framework_->IsHeadless())
+    {
+        killTimer(qobjTimerId_);
+        Disconnect("Client exiting.");
+    }
 }
 
 void MumblePlugin::timerEvent(QTimerEvent *event)
@@ -170,7 +178,13 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
 }
 
 void MumblePlugin::Connect(QString address, int port, QString username, QString password, QString fullChannelName, bool outputAudioMuted, bool inputAudioMuted)
-{    
+{
+    if (framework_->IsHeadless())
+    {
+        LogError(LC + "Cannot connect in headless mode!");
+        return;
+    }
+
     Disconnect();
 
     if (fullChannelName.trimmed().isEmpty())
@@ -552,6 +566,9 @@ void MumblePlugin::SetInputAudioMuted(bool inputAudioMuted)
 
 void MumblePlugin::RunAudioWizard()
 {
+    if (framework_->IsHeadless())
+        return;
+
     if (audioWizard && audioWizard->isVisible())
     {
         QApplication::setActiveWindow(audioWizard);
