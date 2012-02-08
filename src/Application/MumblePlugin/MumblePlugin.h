@@ -49,10 +49,6 @@
     - Positional audio playback, transmission and audible radius from active sound listener. These can be set from audio wizard. @see RunAudioWizard.
     - Extensive Qt signals for everything that is going on, easy to hook to these and provide a client GUI and scene interaction. 
       Signals can be found from MumblePlugin, MumbleChannel and MumbleUser classes. In scripting you can access this functionality with 'mumble' eg. mumble.Connect(...);
-
-    @todo list of not implemented features:
-    - Make new javascript example scene and script that uses the new MumblePlugin API to implement a nice client.
-      Verify MumbleScriptTypeDefines.h exposes everything correctly to javascript with this example script! Fine tune signals for easy scripting.
 */
 class MumblePlugin : public IModule
 {
