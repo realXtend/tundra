@@ -100,6 +100,7 @@ else
     rm -rf kNet
     git clone https://github.com/juj/kNet
     cd kNet
+    git checkout stable
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
     mv x CMakeLists.txt
     cmake . -DCMAKE_BUILD_TYPE=Debug
