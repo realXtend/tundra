@@ -88,9 +88,10 @@ if (!framework.IsHeadless())
 
     // Help menu
     var helpMenu = menu.addMenu("&Help");
-    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
-    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
-    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
+    var browserIcon = new QIcon(installDir + "data/ui/images/icon/browser.ico");
+    helpMenu.addAction(browserIcon, "Wiki").triggered.connect(OpenWikiUrl);
+    helpMenu.addAction(browserIcon, "Doxygen").triggered.connect(OpenDoxygenUrl);
+    helpMenu.addAction(browserIcon, "Mailing list").triggered.connect(OpenMailingListUrl);
 
     function NewScene() {
         scene.RemoveAllEntities();

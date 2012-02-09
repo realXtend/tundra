@@ -436,7 +436,7 @@ var BrowserManager = Class.extend
         bookmarksmenu.addSeparator();
         var manageAction = bookmarksmenu.addAction("Manage Bookmarks");
         manageAction.font = titleFont;
-        manageAction.icon = new QIcon("./data/ui/images/browser/settings.png");
+        manageAction.icon = new QIcon(uiBase + "settings.png");
         manageAction.triggered.connect(p_.bookmarks.manageBookmarks);
             
         // Execute menu and act on it
@@ -479,7 +479,7 @@ var BrowserManager = Class.extend
         messageBox.addButton("Set As Homepage", QMessageBox.YesRole);
         messageBox.addButton("Add To Bookmarks", QMessageBox.AcceptRole);
         messageBox.addButton("Cancel", QMessageBox.NoRole);
-        messageBox.iconPixmap = new QPixmap("./data/ui/images/browser/favorites.png");
+        messageBox.iconPixmap = new QPixmap(uiBase + "favorites.png");
         
         var result = messageBox.exec();
         // Return is StandarButton not ButtonRole
