@@ -16,6 +16,7 @@
 #include "CoreTypes.h"
 #include "FrameworkFwd.h"
 #include <boost/enable_shared_from_this.hpp>
+#include <QObject>
 
 /// Interface for modules. When creating new modules, inherit from this class.
 /** See @ref ModuleArchitecture for details. */

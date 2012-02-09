@@ -544,12 +544,18 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
         ProfilerNodeTree *node = iter->get();
 
         const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
-        if (timings_node && timings_node->num_called_ == 0 && !show_unused_)
+
+        QTreeWidgetItem *item = FindItemByName(qtNode, node->Name().c_str());
+
+        if (timings_node && timings_node->num_called_custom_ == 0 && !show_unused_ && !QString(node->Name().c_str()).startsWith("Thread"))
+        {
+            if (item)
+                delete item;
             continue;
+        }
 
 //        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
 
-        QTreeWidgetItem *item = FindItemByName(qtNode, node->Name().c_str());
         if (!item)
         {
             item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
@@ -1225,8 +1231,6 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
         node = iter->get();
 
         const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
-        if (timings_node && timings_node->num_called_ == 0 && !show_unused_)
-            continue;
 
         QTreeWidgetItem *item = FindItemByName(tree_profiling_data_, node->Name().c_str());
         if (!item)

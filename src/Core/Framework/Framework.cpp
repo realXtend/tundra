@@ -239,6 +239,7 @@ Framework::Framework(int argc_, char** argv_) :
     input = new InputAPI(this);
     console = new ConsoleAPI(this);
     console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
+    console->RegisterCommand("inputcontexts", "Prints all currently registered input contexts in InputAPI.", input, SLOT(DumpInputContexts()));
 
     /// @todo Remove when SceneInteract is moved out of the core.
     scene->GetSceneInteract()->Initialize(this);

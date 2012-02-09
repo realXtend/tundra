@@ -6,6 +6,9 @@
 #include "SceneFwd.h"
 
 #include "kNet/PolledTimer.h"
+#include "kNet/Types.h"
+#include "Transform.h"
+#include "Math/float3.h"
 
 #include <QObject>
 #include <QVariant>
@@ -158,6 +161,38 @@ struct EntitySyncState
     
     kNet::PolledTimer updateTimer; ///< Last update received timer
     float avgUpdateInterval; ///< Average network update interval in seconds
+
+    // Special cases for rigid body streaming:
+    // On the server side, remember the last sent rigid body parameters, so that we can perform effective pruning of redundant data.
+    Transform transform;
+    float3 linearVelocity;
+    float3 angularVelocity;
+    kNet::tick_t lastNetworkSendTime;
+};
+
+struct RigidBodyInterpolationState
+{
+    // On the client side, remember the state for performing Hermite interpolation (C1, i.e. pos and vel are continuous).
+    struct RigidBodyState
+    {
+        float3 pos;
+        float3 vel;
+        Quat rot;
+        float3 scale;
+        float3 angVel; // Angular velocity in Euler ZYX.
+    };
+
+    RigidBodyState interpStart;
+    RigidBodyState interpEnd;
+    float interpTime;
+
+    // If true, we are using linear inter/extrapolation to move the entity.
+    // If false, we have handed off this entity for physics to extrapolate.
+    bool interpolatorActive;
+
+    /// Remembers the packet id of the most recently received network sync packet. Used to enforce
+    /// proper ordering (generate latest-data-guarantee messaging) for the received movement packets.
+    kNet::packet_id_t lastReceivedPacketCounter;
 };
 
 /// State change request to permit/deny changes.
@@ -238,6 +273,9 @@ public:
 
     /// Entity sync states
     std::map<entity_id_t, EntitySyncState> entities; 
+
+    /// Entity interpolations
+    std::map<entity_id_t, RigidBodyInterpolationState> entityInterpolations;
 
 signals:
     /// This signal is emitted when a entity is being added to the client sync state.

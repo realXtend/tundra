@@ -364,10 +364,10 @@ void TransformEditor::DeleteGizmo()
     if (s && gizmo)
         s->RemoveEntity(gizmo->Id());
 
-    if (editorSettings) // Save position to config.
+    if (s && s->GetFramework() && s->GetFramework()->Config() && editorSettings) // Save position to config.
     {
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "eceditor", cTransformEditorWindowPos);
-        scene.lock()->GetFramework()->Config()->Set(configData, cTransformEditorWindowPos, editorSettings->pos());
+        s->GetFramework()->Config()->Set(configData, cTransformEditorWindowPos, editorSettings->pos());
     }
     SAFE_DELETE(editorSettings);
 }

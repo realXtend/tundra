@@ -30,6 +30,7 @@
   <jsplugin path="RendererSettings.js" />
   <jsplugin path="SoundSettings.js" />
   <jsplugin path="LoginScreen.js" />
+  <jsplugin path="LoadingScreen.js" />
 
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
