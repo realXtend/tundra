@@ -198,19 +198,17 @@ void EC_WaterPlane::Update()
     }
     else if (cameraWasInsideWaterCube && !cameraInsideWaterCube)
     {
-        // Restore current scene fog settings, if existing, or fallback on default settings.
+        // Restore current scene fog settings, if existing.
         /// @todo Optimize
-        boost::shared_ptr<EC_Fog> sceneFog;
         EntityList entities = ParentScene()->GetEntitiesWithComponent(EC_Fog::TypeNameStatic());
         if (!entities.empty())
-            sceneFog = (*entities.begin())->GetComponent<EC_Fog>();
-        if (sceneFog)
         {
+            EC_Fog *sceneFog = (*entities.begin())->GetComponent<EC_Fog>().get();
             world->OgreSceneManager()->setFog((Ogre::FogMode)sceneFog->mode.Get(),sceneFog->color.Get(),
                 sceneFog->expDensity.Get(), sceneFog->startDistance.Get(), sceneFog->endDistance.Get());
             world->Renderer()->MainViewport()->setBackgroundColour(sceneFog->color.Get());
         }
-        else // Set the default inefficient fog.
+        else // No scene fog, set the default ineffective fog.
         {
             world->SetDefaultSceneFog();
         }
@@ -408,7 +406,9 @@ void EC_WaterPlane::OnAttributeUpdated(IAttribute* attribute, AttributeChange::T
     else if (attribute == &fogColor || attribute == &fogStartDistance || attribute == &fogEndDistance ||
         attribute == &fogMode || attribute == &fogExpDensity)
     {
-        SetUnderwaterFog();
+        // Apply fog immediately only if the camera is within the water cube.
+        if (IsCameraInsideWaterCube())
+            SetUnderwaterFog();
     }
 /*
     // Currently commented out, working feature but not enabled yet.
