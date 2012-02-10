@@ -372,9 +372,15 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
     }
 
     EntityDesc entityDesc("", meshEntityName);
-    ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
-    ComponentDesc placeableDesc = { EC_Placeable::TypeNameStatic() };
-    ComponentDesc nameDesc = { EC_Name::TypeNameStatic() };
+
+    ComponentDesc meshDesc;
+    meshDesc.typeName = EC_Mesh::TypeNameStatic();
+
+    ComponentDesc placeableDesc;
+    placeableDesc.typeName = EC_Placeable::TypeNameStatic();
+
+    ComponentDesc nameDesc;
+    nameDesc.typeName = EC_Name::TypeNameStatic();
 
     if (isUrl)
     {

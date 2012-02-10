@@ -74,7 +74,7 @@ public:
     /// Gets user by connection ID. Returns null if no such connection
     UserConnection* GetUserConnection(u8 id);
 
-    /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
+    /// What trasport layer to use. Read on startup from "--protocol <udp|tcp>". Defaults to UDP if no start param was given.
     kNet::SocketTransportLayer defaultTransport;
 
 #ifdef KNET_USE_QT

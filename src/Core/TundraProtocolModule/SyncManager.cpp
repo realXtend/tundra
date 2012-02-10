@@ -520,7 +520,8 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
         boost::shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : boost::shared_ptr<EC_Placeable>();
         if (!placeable.get())
         {
-            iter = state->entityInterpolations.erase(iter);
+            std::map<entity_id_t, RigidBodyInterpolationState>::iterator del = iter++;
+            state->entityInterpolations.erase(del);
             continue;
         }
 

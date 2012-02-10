@@ -49,7 +49,7 @@ Section ""
   !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "openviewer" "Open Tundra Viewer in this Project Folder" "$INSTDIR\tundra.exe --config viewer.xml --storage $\"%1$\""
 
   # Register URL handler for 'tundra://'.
-  WriteRegStr HKCR "tundra" "" "Tundra_URL_Handler"
+  WriteRegStr HKCR "tundra" "" "URL:tundra Protocol"
   WriteRegStr HKCR "tundra" "URL Protocol" ""
   WriteRegStr HKCR "tundra\DefaultIcon" "" "$INSTDIR\data\ui\images\icon\TundraLogo32px.ico,0"
   WriteRegStr HKCR "tundra\shell\open\command" "" "$INSTDIR\tundra.exe --login $\"%1$\""
