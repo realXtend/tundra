@@ -338,10 +338,13 @@ else
     touch $tags/$what-done
 fi
 
-BOOST_ROOT=$prefix
-QTDIR=/Users/ludocraft/QtSDK/Desktop/Qt/4.8.0/gcc
-QT_DIR=/Users/ludocraft/QtSDK/Desktop/Qt/4.8.0/gcc
-viewer=/Users/ludocraft/naali
+echo Prefix is 
+echo $prefix
+BOOST_ROOT=$prefix/include
+BOOST_ROOT=/Users/lc/naali-deps/include
+QTDIR=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc
+QT_DIR=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc
+viewer=/Users/lc/naali
 
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
@@ -355,7 +358,7 @@ else
     cd generator
     qmake
     make
-    ./generator --include-paths=/Users/ludocraft/QtSDK/Desktop/Qt/4.8.0/gcc/include/
+    ./generator --include-paths=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc/include/
     cd ..
 
     cd qtbindings
@@ -365,11 +368,10 @@ else
     make
     cd ..
     cd ..
+    mkdir -p $viewer/bin/qtplugins/script
+    cp -f $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
     touch $tags/$what-done
 fi
-mkdir -p $viewer/bin/qtscript-plugins/script
-cp -f $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
-
 
 what=kNet
 if test -f $tags/$what-done; then 
@@ -407,8 +409,10 @@ fi
 pwd
 echo $prefix
 echo $CLIENT #TODO this comes out empty.
-
-cd /Users/ludocraft/naali
+echo BOOST_ROOT IS $BOOST_ROOT
+BOOST_INCLUDEDIR=/Users/lc/naali-deps/include/boost
+	
+cd /Users/lc/naali
 if [ "$RUN_CMAKE" == "1" ]; then
     TUNDRA_DEP_PATH=$prefix cmake .
 fi

@@ -320,6 +320,8 @@ use_package_theora()
 # This will find kNet and set the global include and library directories
 use_package_knet() 
 
+set(BOOST_ROOT /Users/lc/naali-deps/include)
+message(NOTICE "Using boost from ${BOOST_ROOT}")
       set(Boost_FIND_REQUIRED TRUE)
       set(Boost_FIND_QUIETLY TRUE)
       set(Boost_DEBUG FALSE)
