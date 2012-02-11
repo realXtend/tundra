@@ -411,7 +411,12 @@ void AssetModule::ConsoleDumpAssetTransfers()
         AssetPtr assetPtr = asset->GetAsset(i->first);
         unsigned numPendingDependencies = assetPtr ? asset->NumPendingDependencies(assetPtr) : 0;
         if (numPendingDependencies > 0)
+        {
             LogInfo(i->first + ", " + QString::number(numPendingDependencies) + " pending dependencies");
+            std::vector<AssetReference> refs = assetPtr->FindReferences();
+            for(size_t i = 0; i < refs.size(); ++i)
+                LogInfo("   Depends on \"" + refs[i].ref + "\", of type \"" + refs[i].type + "\"");
+        }
         else
             LogInfo(i->first);
     }
@@ -421,10 +426,12 @@ void AssetModule::ConsoleDumpAssetTransfers()
     for(unsigned i = 0; i < readyTransfers.size(); ++i)
         LogInfo(readyTransfers[i]->source.ref);
 
-    //const AssetAPI::AssetDependenciesMap &dependencies = asset->DebugGetAssetDependencies();
-    //LogInfo("Asset dependencies:");
-    //for (AssetAPI::AssetDependenciesMap::const_iterator i = dependencies.begin(); i != dependencies.end(); ++i)
-    //    LogInfo(i->first + " " + i->second);
+    /*
+    const AssetAPI::AssetDependenciesMap &dependencies = asset->DebugGetAssetDependencies();
+    LogInfo("Asset dependencies:");
+    for (AssetAPI::AssetDependenciesMap::const_iterator i = dependencies.begin(); i != dependencies.end(); ++i)
+        LogInfo("\"" + i->first + "\" -> \"" + i->second + "\"");
+    */
 }
 
 void AssetModule::ConsoleDumpAssets()

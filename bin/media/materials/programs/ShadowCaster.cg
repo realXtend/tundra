@@ -25,16 +25,17 @@ void mainVSAlpha(in float4 pos : POSITION,
 {
 	oPos = mul(worldViewProj, pos);
 	oPos.xy += texelOffsets.zw * oPos.w;
+	oTex = tex;
 	oDepth = oPos.zw;
 }
 
-uniform sampler2D diffuseMap; // PS
+uniform sampler2D baseMap; // PS
 
 void mainPSAlpha(in float2 tex,
             in float2 depth,
             out float4 oCol : COLOR)
 {
-	float alpha = tex2D(diffuseMap, tex).a;
+	float alpha = tex2D(baseMap, tex).a;
 	float d = depth.x / depth.y;
 	oCol = float4(d,d,d,alpha);
 }

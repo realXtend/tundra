@@ -3,22 +3,25 @@
 #pragma once
 
 #include "CoreDefines.h"
-#include "IRenderer.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "SceneFwd.h"
 #include "Math/MathFwd.h"
+#include "IRenderer.h"
+#include "Color.h"
 
 #include <QObject>
 #include <QList>
 
-#include <OgreRenderQueue.h>
-
 #include <boost/enable_shared_from_this.hpp>
+
+#include <set>
 
 class Framework;
 class DebugLines;
 class Transform;
+
+class QRect;
 
 /// Contains the Ogre representation of a scene, ie. the Ogre Scene
 class OGRE_MODULE_API OgreWorld : public QObject, public boost::enable_shared_from_this<OgreWorld>
@@ -37,10 +40,17 @@ public:
     /// Returns an unique name to create Ogre objects that require a mandatory name. Calls the parent Renderer
     /** @param prefix Prefix for the name. */
     std::string GetUniqueObjectName(const std::string &prefix);
-    
+
     /// Dump the debug geometry drawn this frame to the debug geometry vertex buffer. Called by Renderer before rendering.
     void FlushDebugGeometry();
-    
+
+    /// The default color used as ambient light for Ogre's SceneManager.
+    static Color DefaultSceneAmbientLightColor() { return Color(0.364f, 0.364f, 0.364f, 1.f); }
+
+    /// Sets scene fog to default ineffective settings, which plays nice with the SuperShader.
+    /** Use this if you have altered the Ogre SceneManager's fog and want to reset it. */
+    void SetDefaultSceneFog();
+
 public slots:
     /// Does raycast into the world from viewport coordinates, using specific selection layer(s)
     /** The coordinates are a position in the render window, not scaled to [0,1].

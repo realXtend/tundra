@@ -6,7 +6,7 @@
 #include "Color.h"
 #include "OgreModuleFwd.h"
 
-/// Environment fog.
+/// Adds environment fog to the scene.
 /** <table class="header">
     <tr>
     <td>

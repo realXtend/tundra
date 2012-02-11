@@ -657,15 +657,18 @@ void EC_AnimationController::PlayAnim(const QString &name, const QString &fadein
     bool exclusive_ = false;
     if (exclusive.length())
         exclusive_ = ParseBool(exclusive);
-    if (!exclusive_)
-    {
-        if (!EnableAnimation(name, false, fadein_, false))
-            LogWarning("Failed to play animation " + name);
-    }
+
+    bool success;
+    if (exclusive_)
+        success = EnableExclusiveAnimation(name, false, fadein_, false);
     else
+        success = EnableAnimation(name, false, fadein_, false);
+    if (!success)
     {
-        if (!EnableExclusiveAnimation(name, false, fadein_, false))
-            LogWarning("Failed to play animation " + name);
+        QStringList anims = GetAvailableAnimations();
+        void (*log)(const QString &) = LogDebug; if (anims.length() > 0) log = LogWarning;
+        log("Failed to play animation \"" + name + "\" on entity " + ParentEntity()->Name());
+        log("The entity has " + QString::number(anims.length()) + " animations available: " + anims.join(","));
     }
 }
 
@@ -686,15 +689,18 @@ void EC_AnimationController::PlayLoopedAnim(const QString &name, const QString &
     bool exclusive_ = false;
     if (exclusive.length())
         exclusive_ = ParseBool(exclusive);
-    if (!exclusive_)
-    {
-        if (!EnableAnimation(name, true, fadein_, false))
-            LogWarning("Failed to play looped animation " + name);
-    }
+
+    bool success;
+    if (exclusive_)
+        success = EnableExclusiveAnimation(name, true, fadein_, fadein_, false);
     else
+        success = EnableAnimation(name, true, fadein_, false);
+    if (!success)
     {
-        if (!EnableExclusiveAnimation(name, true, fadein_, fadein_, false))
-            LogWarning("Failed to play looped animation " + name);
+        QStringList anims = GetAvailableAnimations();
+        void (*log)(const QString &) = LogDebug; if (anims.length() > 0) log = LogWarning;
+        log("Failed to play looped animation \"" + name + "\" on entity " + ParentEntity()->Name());
+        log("The entity has " + QString::number(anims.length()) + " animations available: " + anims.join(","));
     }
 }
 
@@ -715,23 +721,18 @@ void EC_AnimationController::PlayReverseAnim(const QString &name, const QString 
     bool exclusive_ = false;
     if (exclusive.length())
         exclusive_ = ParseBool(exclusive);
-    if (!exclusive_)
-    {
-        if (!EnableAnimation(name, true, fadein_, false))
-        {
-            LogWarning("Failed to play reverse animation " + name);
-            return;
-        }
-        SetAnimationToEnd(name);
-        SetAnimationSpeed(name, -1.0f);
-    }
+    bool success;
+    if (exclusive_)
+        success = EnableAnimation(name, true, fadein_, false);
     else
+        success = EnableExclusiveAnimation(name, true, fadein_, fadein_, false);
+    if (!success)
     {
-        if (!EnableExclusiveAnimation(name, true, fadein_, fadein_, false))
-        {
-            LogWarning("Failed to play reverse animation " + name);
-            return;
-        }
+        QStringList anims = GetAvailableAnimations();
+        void (*log)(const QString &) = LogDebug; if (anims.length() > 0) log = LogWarning;
+        log("Failed to play animation \"" + name + "\" in reverse on entity " + ParentEntity()->Name());
+        log("The entity has " + QString::number(anims.length()) + " animations available: " + anims.join(","));
+
         SetAnimationToEnd(name);
         SetAnimationSpeed(name, -1.0f);
     }
@@ -751,18 +752,19 @@ void EC_AnimationController::PlayAnimAutoStop(const QString &name, const QString
     bool exclusive_ = false;
     if (exclusive.length())
         exclusive_ = ParseBool(exclusive);
-    if (!exclusive_)
-    {
-        if (!EnableAnimation(name, false, fadein_, false))
-            LogWarning("Failed to play animation " + name);
-        // Enable autostop, and start always from the beginning
-        SetAnimationAutoStop(name, true);
-        SetAnimationTimePosition(name, 0.0f);
-    }
+    bool success;
+    if (exclusive_)
+        success = EnableExclusiveAnimation(name, false, fadein_, false);
     else
+        success = EnableAnimation(name, false, fadein_, false);
+
+    if (!success)
     {
-        if (!EnableExclusiveAnimation(name, false, fadein_, false))
-            LogWarning("Failed to play animation " + name);
+        QStringList anims = GetAvailableAnimations();
+        void (*log)(const QString &) = LogDebug; if (anims.length() > 0) log = LogWarning;
+        log("Failed to play animation \"" + name + "\" on entity " + ParentEntity()->Name());
+        log("The entity has " + QString::number(anims.length()) + " animations available: " + anims.join(","));
+
         // Enable autostop, and start always from the beginning
         SetAnimationAutoStop(name, true);
         SetAnimationTimePosition(name, 0.0f);

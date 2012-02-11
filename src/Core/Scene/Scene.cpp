@@ -230,7 +230,7 @@ EntityList Scene::GetEntitiesWithComponent(const QString &typeName, const QStrin
     while(it != entities_.end())
     {
         EntityPtr entity = it->second;
-        if ((name.isEmpty() && entity->GetComponent(typeName)) || entity->GetComponent(name))
+        if ((name.isEmpty() && entity->GetComponent(typeName)) || entity->GetComponent(typeName, name))
             entities.push_back(entity);
         ++it;
     }
