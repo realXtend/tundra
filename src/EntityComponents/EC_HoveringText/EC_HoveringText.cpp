@@ -345,9 +345,17 @@ void EC_HoveringText::AttributesChanged()
 
     if (material.ValueChanged())
     {
-        // If the material was cleared, erase the material from Ogre billboard as well.
+        // Don't render the HoveringText if it's not using a material.
+        bool isVisible = !material.Get().ref.isEmpty();
+        billboardSet_->setVisible(isVisible);
+
+        // If the material was cleared, erase the material from Ogre billboard as well. (we might be deleting the material in Tundra Asset API)
         if (material.Get().ref.isEmpty() && billboardSet_)
+#if OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 7 && OGRE_VERSION_PATCH <= 2
+            billboardSet_->setMaterialName("BaseWhite"); // BaseWhite is an Ogre-internal default material which always exists.
+#else // Ogre::BillboardSet::setMaterial() only available at Ogre 1.7.3 and newer.
             billboardSet_->setMaterial(Ogre::MaterialPtr());
+#endif
         else
             materialAsset.HandleAssetRefChange(&material);
     }
