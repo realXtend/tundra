@@ -347,7 +347,7 @@ void EC_HoveringText::AttributesChanged()
     {
         // If the material was cleared, erase the material from Ogre billboard as well.
         if (material.Get().ref.isEmpty() && billboardSet_)
-            billboardSet_->setMaterial(Ogre::MaterialPtr());
+            billboardSet_->setMaterialName(""); //1.7.2 compatibility, up from 1.7.3 can do: Ogre::MaterialPtr());
         else
             materialAsset.HandleAssetRefChange(&material);
     }
