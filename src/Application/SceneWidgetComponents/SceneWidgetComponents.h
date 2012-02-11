@@ -70,7 +70,9 @@ private slots:
     void Reset();
 
     void OnWebViewReady(bool succesfull);
+#ifndef QT_NO_OPENSSL
     void OnWebViewSslErrors(QNetworkReply *reply, const QList<QSslError>& errors);    
+#endif
 
 private:
     QNetworkAccessManager *networkManager_;
