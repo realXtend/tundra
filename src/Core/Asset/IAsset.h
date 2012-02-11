@@ -148,7 +148,7 @@ public:
     void LoadCompleted();
 
     /// Called whenever another asset this asset depends on is loaded. The default implementation will check if the asset itself is loaded, and the
-    /// number of dependencies: if it was the last dependency, Loaded() will be mitted.
+    /// number of dependencies: if it was the last dependency, Loaded() will be emitted.
     virtual void DependencyLoaded(AssetPtr dependee);
 
     /// Returns all the assets this asset refers to (but not the references those assets refer to).

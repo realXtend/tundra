@@ -185,7 +185,7 @@ public slots:
     float3 GetPointOnMap(const float3 &point) const;
 
     /// Returns the point on the terrain in local space that lies on top of the given world space coordinate.
-    /// @param point The point in world space to get the corresponding map point (in local space) for.
+    /// @param point The point in world space to get the corresponding map point (in local space of the terrain) for.
     float3 GetPointOnMapLocal(const float3 &point) const;
 
     /// Returns the signed distance (in world space) of the given point to the corresponding map point on the terrain.
@@ -230,6 +230,16 @@ public slots:
     /// @note This assumes that "mesh" which is rotation for terrain is searched is orginally authored to look -y - axis.
     /// \todo This function will be deleted.
 //    float3 GetTerrainRotationAngles(float x, float y, float z, const float3& direction) const;
+
+    /// Returns the local terrain tangent frame at the given terrain world coordinates.
+    /// @param worldPoint A point in the world space. This point is projected onto the terrain, and the tangent frame along
+    ///     the terrain on that point is returned.
+    float3x4 TangentFrame(const float3 &worldPoint) const;
+
+    float3 Tangent(const float3 &worldPoint, const float3 &worldDir) const;
+
+    /// Returns the local->world transform of the terrain.
+    float3x4 WorldTransform() const;
 
     /// Removes all stored terrain patches and the associated Ogre scene nodes.
     void Destroy();
@@ -336,6 +346,11 @@ public slots:
     /** This function blindly iterates through the whole terrain, so avoid calling it in performance-critical code. */
     float GetTerrainMaxHeight() const;
 
+    /// Resizes the terrain and recreates it.
+    /// newWidth and newHeight are the size of the new terrain, in # patches.
+    /// oldPatchStartX&Y specify the patch offset to copy the old terrain height values from.
+    void Resize(int newWidth, int newHeight, int oldPatchStartX = 0, int oldPatchStartY = 0);
+
 signals:
     /// Emitted when the terrain data is regenerated.
     void TerrainRegenerated();
@@ -343,9 +358,6 @@ signals:
 private slots:
     /// Emitted when the parrent entity has been set.
     void UpdateSignals();
-
-    /// Emitted when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
 
     void MaterialAssetLoaded(AssetPtr asset);
     void TerrainAssetLoaded(AssetPtr asset);
@@ -355,6 +367,8 @@ private slots:
     void AttachTerrainRootNode();
 
 private:
+    void AttributesChanged();
+
     /// Creates the patch parent/root node if it does not exist.
     /** After this function returns, the 'root' member node will exist, unless Ogre rendering subsystem fails. */
     void CreateRootNode();

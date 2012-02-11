@@ -11,11 +11,6 @@
 #include <boost/smart_ptr.hpp>
 #include <list>
 
-namespace kNet
-{
-    typedef unsigned long message_id_t;
-}
-
 class KristalliProtocolModule;
 
 namespace TundraLogic

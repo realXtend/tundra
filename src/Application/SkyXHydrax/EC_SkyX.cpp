@@ -252,7 +252,7 @@ void EC_SkyX::CreateLights()
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
         Ogre::SceneManager *sm = w->OgreSceneManager();
         impl->originalAmbientColor = sm->getAmbientLight();
-        sm->setAmbientLight(Color(0.364f, 0.364f, 0.364f, 1.f));
+        sm->setAmbientLight(OgreWorld::DefaultSceneAmbientLightColor());
 
         impl->sunlight = sm->createLight(w->Renderer()->GetUniqueObjectName("SkyXSunlight"));
         impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);

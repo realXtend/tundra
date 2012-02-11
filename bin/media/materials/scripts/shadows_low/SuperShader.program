@@ -413,6 +413,54 @@ fragment_program rex/DiffSpecflatNormalShadowLumFP cg
     }
 }
 
+vertex_program rex/DiffSpecflatNormalVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DSPECULAR_LIGHTING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+	}
+}
+
+fragment_program rex/DiffSpecflatNormalFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DSPECULAR_LIGHTING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+    }
+}
+
 vertex_program rex/DiffSpecflatShadowVP cg
 {
 	source SuperShader.cg
