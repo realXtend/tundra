@@ -61,7 +61,8 @@ public slots:
     ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
     /// Shows Doxygen documentation for symbol in external window.
-    /** @param symbolName Name of the symbol (class, function, etc.) */
+    /** @param symbolName Name of the symbol (class, function, etc.)
+        @bug Works only for functions, not for classes. */
     void ShowDocumentation(const QString &symbolName);
 
     /// ECEditor has gained a focus event and need to set as active editor.

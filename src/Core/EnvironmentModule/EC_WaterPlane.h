@@ -9,9 +9,6 @@
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
 
-#include <QString>
-#include <OgreColourValue.h>
-
 /// Makes the entity a water plane.
 /**
 <table class="header">
@@ -22,7 +19,7 @@
 Water plane component creates a cubic water plane. Inside the water cube scene fog is overridden by underwater fog properties.
 Despite the cubic nature, water plane is visible for the outside viewer only as a plane.
 
-Registered by EnviromentComponents plugin.
+Registered by EnvironmentComponents plugin.
 
 <b>Attributes</b>:
 <ul>
@@ -57,7 +54,7 @@ Registered by EnviromentComponents plugin.
 <li> float : fogEndDistance.
 <div> Underwater fog end distance (meters) </div>
 <li> enum :  fogMode.
-<div> UnderWater fog mode, defines how Fog density increases.</div>
+<div> UnderWater fog mode, defines how Fog density increases. See EC_Fog::FogMode. </div>
 </ul>
 
 Does not emit any actions.
@@ -97,11 +94,11 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Quat, rotation);
     Q_PROPERTY(Quat rotation READ getrotation WRITE setrotation);
 
-    ///U Scale, factor which defines how many times the texture should be repeated in the u direction.
+    /// U Scale, factor which defines how many times the texture should be repeated in the u direction.
     DEFINE_QPROPERTY_ATTRIBUTE(float, scaleUfactor);
     Q_PROPERTY(float scaleUfactor READ getscaleUfactor WRITE setscaleUfactor);
 
-    ///V Scale, factor which defines how many times the texture should be repeated in the v direction.
+    /// V Scale, factor which defines how many times the texture should be repeated in the v direction.
     DEFINE_QPROPERTY_ATTRIBUTE(float, scaleVfactor);
     Q_PROPERTY(float scaleVfactor READ getscaleVfactor WRITE setscaleVfactor);
 
@@ -119,6 +116,8 @@ public:
     Q_PROPERTY(QString materialName READ getmaterialName WRITE setmaterialName);
 
     /// Material asset reference.
+    /// @note Currently unused!
+    /// @todo Use instead of materialName!
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
     Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
 
@@ -130,39 +129,40 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Color, fogColor);
     Q_PROPERTY(Color fogColor READ getfogColor WRITE setfogColor);
 
-    /// Underwater fog start distance (meters)
+    /// Underwater fog start distance (meters), Linear only.
     DEFINE_QPROPERTY_ATTRIBUTE(float, fogStartDistance);
     Q_PROPERTY(float fogStartDistance READ getfogStartDistance WRITE setfogStartDistance);
 
-    /// Underwater fog end distance (meters)
+    /// Underwater fog end distance (meters)), Linear only.
     DEFINE_QPROPERTY_ATTRIBUTE(float, fogEndDistance);
     Q_PROPERTY(float fogEndDistance READ getfogEndDistance WRITE setfogEndDistance);
 
-    /// UnderWater fog mode, defines how Fog density increases.
+    /// Underwater fog mode, defines how fog density increases.
     DEFINE_QPROPERTY_ATTRIBUTE(int, fogMode);
     Q_PROPERTY(int fogMode READ getfogMode WRITE setfogMode);
 
-    /// Returns color value in Ogre format.
-    Ogre::ColourValue GetFogColorAsOgreValue() const;
+    /// The density of the fog in Exponentially or ExponentiallySquare mode, as a value between 0 and 1. The default is 0.001.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, fogExpDensity);
+    Q_PROPERTY(float fogExpDensity READ getfogExpDensity WRITE setfogExpDensity);
 
-public slots: 
+public slots:
     /// Returns true if camera is inside of water cube.
     bool IsCameraInsideWaterCube();
 
     /// Returns true if point is inside of water cube.
-    /// @param point in world coordinate system.
+    /** @param point in world coordinate system. */
     bool IsPointInsideWaterCube(const float3& point) const;
 
     /// Returns the point on the water plane in world space that lies on top of the given world space coordinate.
-    /// @param point The point in world space to get the corresponding map point (in world space) for.
+    /** @param point The point in world space to get the corresponding map point (in world space) for. */
     float3 GetPointOnPlane(const float3 &point) const;
 
     /// Returns distance from plane (note, here is assumption that point is top/or below plane), distance in here is distance from water plane surface.
-    /// @param point is point in world coordinate system.
+    /** @param point is point in world coordinate system. */
     float GetDistanceToWaterPlane(const float3& point) const;
 
     /// Returns true if given point is top or below water plane.
-    /// @param point is in world coordinate system.
+    /** @param point is in world coordinate system. */
     bool IsTopOrBelowWaterPlane(const float3& point) const;
 
     /// When called creates new water plane into world and tries to attach it.
@@ -171,17 +171,12 @@ public slots:
     /// When called removes water plane from world.
     void RemoveWaterPlane();
 
-    /// Attach a new entity to scene node that world scene owns.
-    void AttachEntity();
-
-    /// Detach entity from the scene node.
-    void DetachEntity();
-
+private slots:
     /// Called If some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
 
     /// Called if parent entity has set.
-    void SetParent();
+    void Create();
 
     /// Called if component is removed from parent entity.
     void ComponentRemoved(IComponent* component, AttributeChange::Type type);
@@ -189,26 +184,30 @@ public slots:
     /// Called if component is added to parent entity.
     void ComponentAdded(IComponent* component, AttributeChange::Type type);
 
-private:
-    /// Finds out that is EC_Placeable component connected to same entity where water plane component is placed. 
-    /** @returns component pointer to EC_Placeable component.
-    */
-    ComponentPtr FindPlaceable() const;
+    void Update();
 
-    /// Helper function which is used to update water plane state.
-    void ChangeWaterPlane(IAttribute* attribute);
+private:
+    /// Attach a new entity to scene node that world scene owns.
+    void AttachEntity();
+
+    /// Detach entity from the scene node.
+    void DetachEntity();
+
+    /// Finds out that is EC_Placeable component connected to same entity where water plane component is placed. 
+    /** @returns component pointer to EC_Placeable component. */
+    ComponentPtr FindPlaceable() const;
 
     /// Changes water plane position.
     /** This function should be called only if the parent entity of this component has no EC_Placeable component.
-        @note Uses attribute @p position to for water plane defining water plane position 
-    */
+        @note Uses attribute @p position to for water plane defining water plane position  */
     void SetPosition();
 
     /// Changes water plane rotation
     /** This function should be called only if the parent entity of this component has no EC_Placeable component.
-        @note Uses attribute @p rotation to for water plane defining water plane rotation
-    */
+        @note Uses attribute @p rotation to for water plane defining water plane rotation */
     void SetOrientation();
+
+    void SetUnderwaterFog();
 
     OgreWorldWeakPtr world_;
     Ogre::Entity* entity_;
@@ -218,4 +217,8 @@ private:
     bool attachedToRoot_;
     int lastXsize_;
     int lastYsize_;
+
+    /// Used for caching whether or not the camera is inside this water plane.
+    /// If it was last frame, but isn't anymore, the original scene fog is restored (if existent in the first place).
+    bool cameraInsideWaterCube;
 };

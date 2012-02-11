@@ -59,8 +59,7 @@ void ECAttributeEditor<T>::UpdateMultiEditorValue(IAttribute *attribute)
 {
     QStringList stringList;
     MultiEditPropertyManager *propertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);
-    // If editor's ui isn't initialized no point to continue.
-    if (!propertyManager)
+    if (!propertyManager) // If editor's ui isn't initialized no point to continue.
         return;
 
     if(attribute)

@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneDesc.h
- *  @brief  Light-weigth structures for describing scene and its contents.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneDesc.h
+    @brief  Light-weigth structures for describing scene and its contents. */
 
 #pragma once
 
@@ -47,19 +46,17 @@ struct EntityDesc
     QList<ComponentDesc> components; ///< List of components the entity has.
 
     /// Default constructor.
-    EntityDesc()
+    EntityDesc() : local(false), temporary(false)
     {
-        local = false;
-        temporary = false;
     }
     
     /// Constructor with full input param list.
-    EntityDesc(QString id_, QString name_ = QString(), bool local_ = false, bool temporary_ = false)
+    EntityDesc(const QString &entityId, const QString &entityName = "", bool isLocal = false, bool isTemporary = false) :
+        id(entityId),
+        name(entityName),
+        local(isLocal),
+        temporary(isTemporary)
     {
-        id = id_;
-        name = name_;
-        local = local_;
-        temporary = temporary_;
     }
 
     /// Equality operator. Returns true if ID and name match, false otherwise.
@@ -69,7 +66,7 @@ struct EntityDesc
     }
 };
 
-/// Description of an entity-component (IComponent).
+/// Description of an entity-component (EC_*, IComponent).
 struct ComponentDesc
 {
     QString typeName; ///< Type name.
@@ -111,7 +108,7 @@ struct AttributeDesc
     }
 };
 
-/// Description of an asset (IAsset) or an asset reference (AssetReference).
+/// Description of an asset (*Asset, IAsset) or an asset reference (AssetReference).
 struct AssetDesc
 {
     QString source; ///< Specifies the source filename for the location of this asset.

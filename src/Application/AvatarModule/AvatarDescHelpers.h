@@ -34,7 +34,7 @@ struct AV_MODULE_API AppearanceModifier
     };
 
     /// Modifier name
-    std::string name_;
+    QString name_;
     /// Modifier type
     ModifierType type_;
     /// Manual state. If true, master modifiers have no effect
@@ -74,7 +74,7 @@ struct AV_MODULE_API BoneModifier
     };    
     
     /// Name of bone in avatar skeleton
-    std::string bone_name_;
+    QString bone_name_;
     /// Start transform
     AvatarTransform start_;
     /// End transform
@@ -107,7 +107,7 @@ struct AV_MODULE_API BoneModifierSet : public AppearanceModifier
 struct AV_MODULE_API MorphModifier : public AppearanceModifier
 {
     /// Name of morph animation
-    std::string morph_name_;
+    QString morph_name_;
     
     MorphModifier() :
         AppearanceModifier(Morph)
@@ -143,7 +143,7 @@ struct AV_MODULE_API SlaveModifier
     /// Value mapping table. If empty, identity mapping
     std::vector<ValueMapping> mapping_;
     /// Name 
-    std::string name_;
+    QString name_;
     /// Type
     AppearanceModifier::ModifierType type_;
     
@@ -158,9 +158,9 @@ struct AV_MODULE_API MasterModifier
     /// Current position value (0.0 - 1.0)
     float value_;
     /// Name
-    std::string name_;
+    QString name_;
     /// Category description
-    std::string category_;
+    QString category_;
     /// Modifiers controlled 
     std::vector<SlaveModifier> modifiers_;
 };
@@ -171,11 +171,11 @@ typedef std::vector<MasterModifier> MasterModifierVector;
 struct AV_MODULE_API AnimationDefinition
 {
     /// Most likely a UUID
-    std::string id_;
+    QString id_;
     /// Identifying human-readable name, not mandatory and not used directly in code
-    std::string name_;
+    QString name_;
     /// Actual animation name in the mesh/skeleton
-    std::string animation_name_;
+    QString animation_name_;
     /// Should play looped?
     bool looped_;
     /// Exclusive; override (stop) other animations
@@ -210,7 +210,7 @@ struct AV_MODULE_API AnimationDefinition
 struct AV_MODULE_API AvatarAttachment
 {
     /// Name of attachment
-    std::string name_;
+    QString name_;
     /// Mesh asset reference
     QString mesh_;
     /// Materials used by the attachment mesh
@@ -220,9 +220,9 @@ struct AV_MODULE_API AvatarAttachment
     /// Transform 
     AvatarTransform transform_;
     /// Category of attachment
-    std::string category_;
+    QString category_;
     /// Base bone of attachment. Empty if attached directly to avatar scene node
-    std::string bone_name_;
+    QString bone_name_;
     /// Polygons indices to hide from avatar when using this attachment
     std::vector<uint> vertices_to_hide_;
 };

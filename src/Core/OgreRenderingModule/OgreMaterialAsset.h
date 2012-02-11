@@ -220,12 +220,19 @@ private slots:
     void OnTransferFailed(IAssetTransfer *transfer, QString reason);
 
 private:
+    void DependencyLoaded(AssetPtr dependee);
     bool CreateOgreMaterial();
+    bool CreateOgreMaterial(const std::string& materialData);
     bool SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal);
     bool SetTechniqueAttribute(Ogre::Technique* tech, int techIndex, const QString& attr, const QString& val, const QString& origVal);
     bool SetPassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr, const QString& val, const QString& origVal);
     bool SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit, int techIndex, int passIndex, int tuIndex, const QString& attr, const QString& val, const QString& origVal);
     
+    /// Contains the original ogre material data that was downloaded, but with all material and texture references
+    /// rewritten to refer to assets loaded from the Tundra Asset system (and not Ogre resource managers).
+    std::string parsedOgreMaterialAsset;
+    int numDependenciesCompleted;
+
     /// Pending texture apply operation due to a texture asset request
     struct PendingTextureApply
     {

@@ -3,7 +3,9 @@
 #include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
+
 #include "EC_EnvironmentLight.h"
+
 #include "EC_Placeable.h"
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
@@ -23,7 +25,7 @@
 EC_EnvironmentLight::EC_EnvironmentLight(Scene* scene) :
     IComponent(scene),
     sunColor(this, "Sunlight color", Color(0.639f,0.639f,0.639f)),
-    ambientColor(this, "Ambient light color", Color(0.364f, 0.364f, 0.364f, 1.f)),
+    ambientColor(this, "Ambient light color", OgreWorld::DefaultSceneAmbientLightColor()),
     sunDirection(this, "Sunlight direction vector", float3(-1.f, -1.f, -1.f)),
     sunCastShadows(this, "Sunlight cast shadows", true),
     brightness(this, "Brightness", 1.0f),
@@ -41,77 +43,64 @@ EC_EnvironmentLight::EC_EnvironmentLight(Scene* scene) :
 
 EC_EnvironmentLight::~EC_EnvironmentLight()
 {
-    if (ogreWorld.expired())
-        return;
-
     RemoveSunlight();
+    OgreWorldPtr world = ogreWorld.lock();
+    if (world) // Restore the default ambient color so that we don't end up with a black scene.
+        world->OgreSceneManager()->setAmbientLight(OgreWorld::DefaultSceneAmbientLightColor());
 }
 
 void EC_EnvironmentLight::UpdateSunlight()
 {
-    if (ogreWorld.lock() != 0)
+    if (ogreWorld.expired())
+        return;
+
+    if (!sunlight)
+        CreateSunlight();
+    if (sunlight)
     {
-        if (!sunlight)
-            CreateSunlight();
+        Color col = sunColor.Get();
+        float b = Max(brightness.Get(), 1e-3f);
+        // Manually apply brightness multiplier to the sun diffuse color
+        col.r *= b;
+        col.g *= b;
+        col.b *= b;
         
-        if (sunlight)
-        {
-            Color col = sunColor.Get();
-            float b = std::max(brightness.Get(), 1e-3f);
-            // Manually apply brightness multiplier to the sun diffuse color
-            col.r *= b;
-            col.g *= b;
-            col.b *= b;
-            
-            sunlight->setDiffuseColour(col);
-            sunlight->setCastShadows(sunCastShadows.Get());
-            sunlight->setDirection(sunDirection.Get());
-        }
+        sunlight->setDiffuseColour(col);
+        sunlight->setCastShadows(sunCastShadows.Get());
+        sunlight->setDirection(sunDirection.Get());
     }
 }
 
 void EC_EnvironmentLight::RemoveSunlight()
 {
-    if (ogreWorld.expired())
-        return;
-
     OgreWorldPtr world = ogreWorld.lock();
-    if (sunlight != 0)
-    {
-        Ogre::SceneManager *sceneManager = world->OgreSceneManager();
-        sceneManager->destroyLight(sunlight);
-        sunlight = 0;
-    }
+    if (world && sunlight)
+        world->OgreSceneManager()->destroyLight(sunlight);
+    sunlight = 0;
 }
 
 void EC_EnvironmentLight::CreateSunlight()
 {
-    if (ogreWorld.expired())
-        return;
-
     OgreWorldPtr world = ogreWorld.lock();
-
-    Ogre::SceneManager* sceneManager = world->OgreSceneManager();
-    sunlight = sceneManager->createLight(world->GetUniqueObjectName("EC_EnvironmentLight_Sunlight"));
-
-    sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
-    sunlight->setSpecularColour(0.0f,0.0f,0.0f);
+    if (world)
+    {
+        sunlight = world->OgreSceneManager()->createLight(world->GetUniqueObjectName("EC_EnvironmentLight_Sunlight"));
+        sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
+        sunlight->setSpecularColour(0.0f,0.0f,0.0f);
+    }
 }
 
 void EC_EnvironmentLight::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute == &sunColor || attribute == &brightness || attribute == &sunDirection || attribute == &sunCastShadows)
         UpdateSunlight();
-    else if (attribute == &ambientColor )
+    else if (attribute == &ambientColor)
         UpdateAmbientLight();
 }
 
 void EC_EnvironmentLight::UpdateAmbientLight()
 {
-    if (ogreWorld.lock() != 0) 
-    {
-        Ogre::SceneManager *sceneMgr = ogreWorld.lock()->OgreSceneManager();
-        assert(sceneMgr);
-        sceneMgr->setAmbientLight(ambientColor.Get());
-    }
+    OgreWorldPtr world = ogreWorld.lock();
+    if (world)
+        world->OgreSceneManager()->setAmbientLight(ambientColor.Get());
 }

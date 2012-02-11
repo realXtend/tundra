@@ -62,6 +62,9 @@ static const float MAX_FRAME_TIME = 0.1f;
 
 namespace OgreRenderer
 {
+    /// A DIRTY HACK to enable the Ogre logger to actually report to the user about which material parsing failed.
+    QString lastLoadedOgreMaterial = "";
+
     /// @cond PRIVATE
     class OgreLogListener : public Ogre::LogListener
     {
@@ -91,23 +94,28 @@ namespace OgreRenderer
                     return; // This is benign, meshes without normals do not need to get tangents either.
             }
 
+            if (str.contains("Compiler error") && !lastLoadedOgreMaterial.isEmpty())
+                str = "When compiling material " + lastLoadedOgreMaterial + ": " + str;
+
             if (lml == Ogre::LML_CRITICAL)
+            {
                 // Some Ogre Critical messages are actually not errors. For example MaterialSerializer's log messages.
-                LogError(message);
+                LogError(str);
+            }
             else if (lml == Ogre::LML_TRIVIAL)
-                LogDebug(message);
+                LogDebug(str);
             else // lml == Ogre::LML_NORMAL here.
             {
                 // Because Ogre distinguishes different log levels *VERY POORLY* (practically all messages come in the LML_NORMAL), 
                 // we need to use manual format checks to guess between Info/Warning/Error/Critical channels.
                 if ((str.contains("error ", Qt::CaseInsensitive) || str.contains("error:", Qt::CaseInsensitive)) || str.contains("critical", Qt::CaseInsensitive))
-                    LogError(message);
+                    LogError(str);
                 else if (str.contains("warning", Qt::CaseInsensitive) || str.contains("unexpected", Qt::CaseInsensitive) || str.contains("unknown", Qt::CaseInsensitive) || str.contains("cannot", Qt::CaseInsensitive) || str.contains("can not", Qt::CaseInsensitive))
-                    LogWarning(message);
+                    LogWarning(str);
                 else if (str.startsWith("*-*-*"))
-                    LogInfo(message);
+                    LogInfo(str);
                 else
-                    LogDebug(message);
+                    LogDebug(str);
             }
         }
     };

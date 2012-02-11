@@ -1,3 +1,6 @@
+// For conditions of distribution and use, see copyright notice in LICENSE   
+// LoginBrowser.js - Reference implementation of a more complex browser based login widget.
+// Features a 3D world tab + normal browser tabs, with bookmarking and browser settings (proxy, cache etc.)
 
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
@@ -33,7 +36,7 @@ var BrowserManager = Class.extend
         this.settings = new BrowserSettings(this);
         this.browserstorage = new BrowserStorage(this);
         this.bookmarks = new BrowserBookmarks(this);
-		this.classiclogin = new ClassicLogin();
+        this.classiclogin = new ClassicLogin();
 
         // Load widget and init children etc.
         this.browser = ui.LoadFromFile(uiBase + "LoginWebWidget.ui", false);
@@ -436,7 +439,7 @@ var BrowserManager = Class.extend
         bookmarksmenu.addSeparator();
         var manageAction = bookmarksmenu.addAction("Manage Bookmarks");
         manageAction.font = titleFont;
-        manageAction.icon = new QIcon("./data/ui/images/browser/settings.png");
+        manageAction.icon = new QIcon(uiBase + "settings.png");
         manageAction.triggered.connect(p_.bookmarks.manageBookmarks);
             
         // Execute menu and act on it
@@ -448,7 +451,7 @@ var BrowserManager = Class.extend
                 p_.openUrl(url);
         }
     },
-    
+
     onFavoritePressed: function()
     {
         var addressBarInput = p_.addressBar.lineEdit().text;
@@ -479,7 +482,7 @@ var BrowserManager = Class.extend
         messageBox.addButton("Set As Homepage", QMessageBox.YesRole);
         messageBox.addButton("Add To Bookmarks", QMessageBox.AcceptRole);
         messageBox.addButton("Cancel", QMessageBox.NoRole);
-        messageBox.iconPixmap = new QPixmap("./data/ui/images/browser/favorites.png");
+        messageBox.iconPixmap = new QPixmap(uiBase + "favorites.png");
         
         var result = messageBox.exec();
         // Return is StandarButton not ButtonRole
@@ -771,8 +774,8 @@ var BrowserTab = Class.extend
         this.webview.iconChanged.connect(this, this.iconChanged);
         this.webview.page().unsupportedContent.connect(this, this.unsupportedContent);
         
-		if (focusNewTab)
-			tabs.currentIndex = this.myIndex();
+        if (focusNewTab)
+            tabs.currentIndex = this.myIndex();
     },
 
     myIndex: function()
@@ -905,11 +908,11 @@ var BrowserSettings = Class.extend
         
         this.readConfig();
     },
-	
+
     onSettingsProxyClick: function() 
     {
         var p_s = p_.settings;
-        var prxyhst = findChild(p_s.widget, "proxyHostLineEdit");       	
+        var prxyhst = findChild(p_s.widget, "proxyHostLineEdit");
         var prxyprt = findChild(p_s.widget, "proxyPortLineEdit");
         var proxycheckbox = findChild(p_s.widget, "enableProxy");
         prxyhst.setEnabled(proxycheckbox.checked);
@@ -930,7 +933,7 @@ var BrowserSettings = Class.extend
         var mainWinSize = ui.MainWindow().size;
         
         var center_x = mainWinPosi.x() + (mainWinSize.width() / 2);
-        var center_y = mainWinPosi.y() + (mainWinSize.height() / 2);       
+        var center_y = mainWinPosi.y() + (mainWinSize.height() / 2);
         
         p_s.widget.pos = new QPoint(center_x - (p_s.widget.width / 2), center_y - (p_s.widget.height / 2));
         p_s.widget.visible = true;
@@ -1052,7 +1055,7 @@ var BrowserSettings = Class.extend
         
         child = findChild(p_s.widget, "enableCache");
         child.checked = p_s.cacheEnabled;
-		
+
         child = findChild(p_s.widget, "enableProxy");
         child.checked = p_s.proxyEnabled;
         p_s.onSettingsProxyClick();
@@ -1119,7 +1122,7 @@ var BrowserSettings = Class.extend
             this.cacheEnabled = true;
         else
             this.cacheEnabled = false;
-	
+
         if (!config.HasValue(this.configFile, this.behaviourSection, "enable_proxy"))
             config.Set(this.configFile, this.behaviourSection, "enable_proxy", "false");
         this.proxyEnabled = config.Get(this.configFile, this.behaviourSection, "enable_proxy");
@@ -1606,16 +1609,16 @@ var ClassicLogin = Class.extend
 ({
     init: function()
     {
-		this.configFile = "tundra";
-		this.configSection = "client";
+        this.configFile = "tundra";
+        this.configSection = "client";
 
-		this.widget = new QWidget();
-		this.widget.setLayout(new QVBoxLayout());
-		this.widget.layout().setContentsMargins(0,0,0,0);
+        this.widget = new QWidget();
+        this.widget.setLayout(new QVBoxLayout());
+        this.widget.layout().setContentsMargins(0,0,0,0);
 
-		var child = ui.LoadFromFile(uiBase + "LoginWidget.ui", false);
-		child.setParent(this.widget);
-		this.widget.layout().addWidget(child, 0, 0);
+        var child = ui.LoadFromFile(uiBase + "LoginWidget.ui", false);
+        child.setParent(this.widget);
+        this.widget.layout().addWidget(child, 0, 0);
 
         this.loadingFrame = findChild(this.widget, "LoadingFrame");
         this.loadingLabel = findChild(this.loadingFrame, "loadingLabel");
@@ -1625,29 +1628,29 @@ var ClassicLogin = Class.extend
         this.exitFromLoading = findChild(this.loadingFrame, "pushButton_ExitLoading");
         
         this.loginFrame = findChild(this.widget, "MainFrame");
-		this.loginButton = findChild(this.widget, "pushButton_Connect");
-		this.exitButton = findChild(this.widget, "pushButton_Exit");
-		this.serverAddressLineEdit = findChild(this.widget, "lineEdit_WorldAddress");
-		this.usernameLineEdit = findChild(this.widget, "lineEdit_Username");
-		this.passwordLineEdit = findChild(this.widget, "lineEdit_Password");
-		this.tcpButton = findChild(this.widget, "radioButton_ProtocolTCP");
-		this.udpButton = findChild(this.widget, "radioButton_ProtocolUDP");
+        this.loginButton = findChild(this.widget, "pushButton_Connect");
+        this.exitButton = findChild(this.widget, "pushButton_Exit");
+        this.serverAddressLineEdit = findChild(this.widget, "lineEdit_WorldAddress");
+        this.usernameLineEdit = findChild(this.widget, "lineEdit_Username");
+        this.passwordLineEdit = findChild(this.widget, "lineEdit_Password");
+        this.tcpButton = findChild(this.widget, "radioButton_ProtocolTCP");
+        this.udpButton = findChild(this.widget, "radioButton_ProtocolUDP");
 
-		var logoLabel = findChild(this.widget, "label_ClientLogo");
-		logoLabel.pixmap = new QPixmap(appInstallDir + "data/ui/images/realxtend_logo.png");
+        var logoLabel = findChild(this.widget, "label_ClientLogo");
+        logoLabel.pixmap = new QPixmap(appInstallDir + "data/ui/images/realxtend_logo.png");
 
-		// Connections
-		this.cancelFromLoading.clicked.connect(this, this.cancelLoginPressed);
+        // Connections
+        this.cancelFromLoading.clicked.connect(this, this.cancelLoginPressed);
         this.exitFromLoading.clicked.connect(this, this.exit);
-		this.loginButton.clicked.connect(this, this.loginPressed);
-		this.serverAddressLineEdit.returnPressed.connect(this, this.loginPressed);
-		this.usernameLineEdit.returnPressed.connect(this, this.loginPressed);
-		this.passwordLineEdit.returnPressed.connect(this, this.loginPressed);
-		this.exitButton.clicked.connect(this, this.exit);
-		
-		browserplugin.ShowProgressScreenRequest.connect(this, this.showLoadingScreen);
-		browserplugin.HideProgressScreenRequest.connect(this, this.hideLoadingScreen);
-		browserplugin.UpdateProgressScreenRequest.connect(this, this.updateLoadingScreen);
+        this.loginButton.clicked.connect(this, this.loginPressed);
+        this.serverAddressLineEdit.returnPressed.connect(this, this.loginPressed);
+        this.usernameLineEdit.returnPressed.connect(this, this.loginPressed);
+        this.passwordLineEdit.returnPressed.connect(this, this.loginPressed);
+        this.exitButton.clicked.connect(this, this.exit);
+        
+        browserplugin.ShowProgressScreenRequest.connect(this, this.showLoadingScreen);
+        browserplugin.HideProgressScreenRequest.connect(this, this.hideLoadingScreen);
+        browserplugin.UpdateProgressScreenRequest.connect(this, this.updateLoadingScreen);
         browserplugin.UpdateProgressImageRequest.connect(this, this.updateLoadinScreenImage);
         
         client.AboutToConnect.connect(this, this.onAboutToConnect);
@@ -1656,205 +1659,205 @@ var ClassicLogin = Class.extend
         this.loadingHideTimer.singleShot = true;
         this.loadingHideTimer.timeout.connect(this, this.hideLoadingScreen);
         
-		this.readConfigToUi();
-		
-		if (!framework.HasCommandLineParameter("--login"))
-		    this.loadingFrame.visible = false;
-		else
-		    this.showLoadingScreen("Initializing login...");
-	},
-		
-	focus: function()
-	{
-	    this.serverAddressLineEdit.setFocus(Qt.ActiveWindowFocusReason);
-	},
-	
-	readConfigToUi: function()
-	{
-	    // Make double sure with "" default value and null 
-		// checks that we can in any case insert var to ui
-		configServer = framework.Config().Get(this.configFile, this.configSection, "login_server", "");
-		if (configServer == null)
-			configServer = "";
-		configUsername = framework.Config().Get(this.configFile, this.configSection, "login_username", "");
-		if (configUsername == null)
-			configUsername = "";
-		configProtocol = framework.Config().Get(this.configFile, this.configSection, "login_protocol", "");
-		if (configProtocol == null)
-			configProtocol = "";
+        this.readConfigToUi();
+        
+        if (!framework.HasCommandLineParameter("--login"))
+            this.loadingFrame.visible = false;
+        else
+            this.showLoadingScreen("Initializing login...");
+    },
+        
+    focus: function()
+    {
+        this.serverAddressLineEdit.setFocus(Qt.ActiveWindowFocusReason);
+    },
 
-		this.serverAddressLineEdit.text = configServer;
-		this.usernameLineEdit.text = configUsername;
-		if (configProtocol == "tcp")
-			this.tcpButton.checked = true;
-		else if (configProtocol == "udp")
-			this.udpButton.checked = true;
-	},
-		
-	writeConfigFromUi: function() 
-	{
-		// Downside of this is that user may do something to the UI elements while logging in.
-		// In Tundra its so fast that doubt that will happen. Can be fixed to read in to configX values in LoginPresse()
-		framework.Config().Set(this.configFile, this.configSection, "login_server", this.trimField(this.serverAddressLineEdit.text));
-		framework.Config().Set(this.configFile, this.configSection, "login_username", this.trimField(this.usernameLineEdit.text));
-		framework.Config().Set(this.configFile, this.configSection, "login_protocol", this.getProtocol());
-	},
+    readConfigToUi: function()
+    {
+        // Make double sure with "" default value and null 
+        // checks that we can in any case insert var to ui
+        configServer = framework.Config().Get(this.configFile, this.configSection, "login_server", "");
+        if (configServer == null)
+            configServer = "";
+        configUsername = framework.Config().Get(this.configFile, this.configSection, "login_username", "");
+        if (configUsername == null)
+            configUsername = "";
+        configProtocol = framework.Config().Get(this.configFile, this.configSection, "login_protocol", "");
+        if (configProtocol == null)
+            configProtocol = "";
 
-	trimField: function(text) 
-	{
-		return text.replace(/^\s+|\s+$/g, "");
-	},
+        this.serverAddressLineEdit.text = configServer;
+        this.usernameLineEdit.text = configUsername;
+        if (configProtocol == "tcp")
+            this.tcpButton.checked = true;
+        else if (configProtocol == "udp")
+            this.udpButton.checked = true;
+    },
+        
+    writeConfigFromUi: function() 
+    {
+        // Downside of this is that user may do something to the UI elements while logging in.
+        // In Tundra its so fast that doubt that will happen. Can be fixed to read in to configX values in LoginPresse()
+        framework.Config().Set(this.configFile, this.configSection, "login_server", this.trimField(this.serverAddressLineEdit.text));
+        framework.Config().Set(this.configFile, this.configSection, "login_username", this.trimField(this.usernameLineEdit.text));
+        framework.Config().Set(this.configFile, this.configSection, "login_protocol", this.getProtocol());
+    },
 
-	getProtocol: function() 
-	{
-		if (this.tcpButton.checked)
-			return "tcp";
-		else if (this.udpButton.checked)
-			return "udp";
-		return "";
-	},
-	
-	cancelLoginPressed: function()
-	{
-	    client.Logout();
-	},
+    trimField: function(text) 
+    {
+        return text.replace(/^\s+|\s+$/g, "");
+    },
 
-	loginPressed: function()
-	{
-		client.ClearLoginProperties();
+    getProtocol: function() 
+    {
+        if (this.tcpButton.checked)
+            return "tcp";
+        else if (this.udpButton.checked)
+            return "udp";
+        return "";
+    },
 
-		var username = this.trimField(this.usernameLineEdit.text);
-		var password = this.trimField(this.passwordLineEdit.text);
-		var protocol = this.getProtocol();
-		if (protocol == "")
-			return;
-		
-		var port = 2345;
-		var hostAndPort = this.trimField(this.serverAddressLineEdit.text).split(':');
-		if (hostAndPort.length < 1)
-		{
-			console.LogError("You have to give host to login!");
-			return;
-		}
-		if (hostAndPort.length > 1)
-			port = parseInt(hostAndPort[1]);
+    cancelLoginPressed: function()
+    {
+        client.Logout();
+    },
+
+    loginPressed: function()
+    {
+        client.ClearLoginProperties();
+
+        var username = this.trimField(this.usernameLineEdit.text);
+        var password = this.trimField(this.passwordLineEdit.text);
+        var protocol = this.getProtocol();
+        if (protocol == "")
+            return;
+        
+        var port = 2345;
+        var hostAndPort = this.trimField(this.serverAddressLineEdit.text).split(':');
+        if (hostAndPort.length < 1)
+        {
+            console.LogError("You have to give host to login!");
+            return;
+        }
+        if (hostAndPort.length > 1)
+            port = parseInt(hostAndPort[1]);
 
         p_.classiclogin.onConnecting(username);
-		client.Login(hostAndPort[0], port, username, password, protocol);
-	},
-	
-	onAboutToConnect: function()
-	{
-	    var username = client.GetLoginProperty("username");
-	    if (username == null || username == "")
-	        this.showLoadingScreen("Connecting to the server...");
-	    else
-	        this.onConnecting(username);
-	},
-	
-	onConnecting: function(username)
-	{
-	    this.showLoadingScreen("Connecting as " + username + "...");
-	},
+        client.Login(hostAndPort[0], port, username, password, protocol);
+    },
 
-	onConnected: function()
-	{
-		this.writeConfigFromUi();
-		
-		// Automatically show loading screen, but
-		// so that it wont hang the indefinitely if a scene
-		// script does not call browseruiplugin.HideProgressScreen()
-		// when scene has been loaded, start a timer. If showLoadingScreen
-		// or updateLoginScreen is called the timer is stopped as that
-		// indicates that a script is indeed calling it and will take care of the 
-		// hiding logic. Yah, this is a bit complicated but only way to show
-		// loading screen without having awkward loading phase if the ui is shown from the world.
-		// Then you'll see black screen or some random place where the initial camera is in the scene.
-		this.showLoadingScreen("Loading world...");
-		this.loadingHideTimer.start(10 * 1000); // 10 seconds
-	},
-
-	onDisconnected: function()
+    onAboutToConnect: function()
     {
-		this.showLoginScreen();
-		this.show();
-	},
-	
-	loadingScreenVisible: function()
-	{
-	    return this.loadingFrame.visible;
-	},
-	
-	showLoadingScreen: function(message)
-	{
-	    this.hideLoginScreen();    
-	    this.loadingFrame.visible = true;
-	    
-	    if (message == null || message == "")
-	        message = "Loading world...";
-	    if (this.loadingLabel.text != message)
-	        this.loadingLabel.text = message;
-	        
-	    if (this.loadingHideTimer.active)
-	        this.loadingHideTimer.stop();
-	      
-	    if (p_ != null)  
-	        p_.refreshSqueezer();
-	},
-	
-	updateLoadingScreen: function(message, progress)
-	{
-	    if (!this.loadingFrame.visible)
-	        this.loadingFrame.visible = true;
-	        
-	    if (message == null || message == "")
-	        message = "Loading world...";
-	    if (this.loadingLabel.text != message)
-	        this.loadingLabel.text = message;
-	    
-	    if (progress < 0)
-	    {
-	        // Built in constant animation in Qt
-	        this.loadingProgress.minimum = 0;
-	        this.loadingProgress.maximum = 0;
-	        this.loadingProgress.value = 0;
-	    }
-	    else
-	    {
-	        // Actual given progress value between 0-100.
-	        // We don't want to auto hide when progress hits 100,
-	        // as there might be some additional logic after this
-	        // whoever is calling this function.
-	        if (progress > 100)
-	            progress = 100;
-	            
-	        this.loadingProgress.minimum = 0;
-	        this.loadingProgress.maximum = 100;
-	        this.loadingProgress.value = progress;
-	    }
-	    
-	    if (this.loadingHideTimer.active)
-	        this.loadingHideTimer.stop();
-	},
-	
-	updateLoadinScreenImage: function(qimage)
-	{
-	    this.loadingImageLabel.pixmap = QPixmap.fromImage(qimage);
-	},
-	
-	hideLoadingScreen: function()
-	{
-	    if (this.loadingFrame.visible)
-	        this.loadingFrame.visible = false;
-	    this.loadingImageLabel.pixmap = new QPixmap();
-	    
-	    if (this.loadingHideTimer.active)
-	        this.loadingHideTimer.stop();
-	        
-	    if (p_ != null)  
-	        p_.refreshSqueezer();
-	},
-	
+        var username = client.GetLoginProperty("username");
+        if (username == null || username == "")
+            this.showLoadingScreen("Connecting to the server...");
+        else
+            this.onConnecting(username);
+    },
+
+    onConnecting: function(username)
+    {
+        this.showLoadingScreen("Connecting as " + username + "...");
+    },
+
+    onConnected: function()
+    {
+        this.writeConfigFromUi();
+        
+        // Automatically show loading screen, but
+        // so that it wont hang the indefinitely if a scene
+        // script does not call browseruiplugin.HideProgressScreen()
+        // when scene has been loaded, start a timer. If showLoadingScreen
+        // or updateLoginScreen is called the timer is stopped as that
+        // indicates that a script is indeed calling it and will take care of the 
+        // hiding logic. Yah, this is a bit complicated but only way to show
+        // loading screen without having awkward loading phase if the ui is shown from the world.
+        // Then you'll see black screen or some random place where the initial camera is in the scene.
+        this.showLoadingScreen("Loading world...");
+        this.loadingHideTimer.start(10 * 1000); // 10 seconds
+    },
+
+    onDisconnected: function()
+    {
+        this.showLoginScreen();
+        this.show();
+    },
+
+    loadingScreenVisible: function()
+    {
+        return this.loadingFrame.visible;
+    },
+
+    showLoadingScreen: function(message)
+    {
+        this.hideLoginScreen();    
+        this.loadingFrame.visible = true;
+        
+        if (message == null || message == "")
+            message = "Loading world...";
+        if (this.loadingLabel.text != message)
+            this.loadingLabel.text = message;
+            
+        if (this.loadingHideTimer.active)
+            this.loadingHideTimer.stop();
+          
+        if (p_ != null)  
+            p_.refreshSqueezer();
+    },
+
+    updateLoadingScreen: function(message, progress)
+    {
+        if (!this.loadingFrame.visible)
+            this.loadingFrame.visible = true;
+            
+        if (message == null || message == "")
+            message = "Loading world...";
+        if (this.loadingLabel.text != message)
+            this.loadingLabel.text = message;
+        
+        if (progress < 0)
+        {
+            // Built in constant animation in Qt
+            this.loadingProgress.minimum = 0;
+            this.loadingProgress.maximum = 0;
+            this.loadingProgress.value = 0;
+        }
+        else
+        {
+            // Actual given progress value between 0-100.
+            // We don't want to auto hide when progress hits 100,
+            // as there might be some additional logic after this
+            // whoever is calling this function.
+            if (progress > 100)
+                progress = 100;
+                
+            this.loadingProgress.minimum = 0;
+            this.loadingProgress.maximum = 100;
+            this.loadingProgress.value = progress;
+        }
+        
+        if (this.loadingHideTimer.active)
+            this.loadingHideTimer.stop();
+    },
+
+    updateLoadinScreenImage: function(qimage)
+    {
+        this.loadingImageLabel.pixmap = QPixmap.fromImage(qimage);
+    },
+
+    hideLoadingScreen: function()
+    {
+        if (this.loadingFrame.visible)
+            this.loadingFrame.visible = false;
+        this.loadingImageLabel.pixmap = new QPixmap();
+        
+        if (this.loadingHideTimer.active)
+            this.loadingHideTimer.stop();
+            
+        if (p_ != null)  
+            p_.refreshSqueezer();
+    },
+
     showLoginScreen: function()
     {
         this.hideLoadingScreen();
@@ -1879,10 +1882,10 @@ var ClassicLogin = Class.extend
         this.loadingFrame.visible = false;
     },
 
-	exit: function() 
-	{
-		framework.Exit();
-	}
+    exit: function() 
+    {
+        framework.Exit();
+    }
 });
 
 // Common utility functions
@@ -1906,7 +1909,7 @@ function ParseTundraLoginInfo(urlString)
     if (loginPort == -1)
         loginPort = 2345;
     if (loginProtocol == "" || loginProtocol == null)
-        loginProtocol = "tcp";
+        loginProtocol = "udp";
         
     var loginInfo = { "username" : loginUsername,
                       "password" : loginPassword,

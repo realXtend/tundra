@@ -121,7 +121,7 @@ void AvatarEditor::RebuildEditView()
         v_box->setSpacing(6);
 
         // Strip away .xml from the attachment name for slightly nicer display
-        std::string attachment_name = attachments[y].name_;
+        std::string attachment_name = attachments[y].name_.toStdString();
         std::size_t pos = attachment_name.find(".xml");
         if (pos != std::string::npos)
             attachment_name = attachment_name.substr(0, pos);
@@ -185,14 +185,14 @@ void AvatarEditor::RebuildEditView()
             v_box->setSpacing(6);
 
             // Create elements
-            label = new QLabel(QString::fromStdString(bone_modifiers[i].name_));
+            label = new QLabel(bone_modifiers[i].name_);
             label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
             label->setFixedWidth(200);
 
             slider = new QScrollBar(Qt::Horizontal);
             slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             slider->setFixedHeight(20);
-            slider->setObjectName(QString::fromStdString(bone_modifiers[i].name_));
+            slider->setObjectName(bone_modifiers[i].name_);
             slider->setMinimum(0);
             slider->setMaximum(100);
             slider->setPageStep(10);
@@ -216,14 +216,14 @@ void AvatarEditor::RebuildEditView()
             v_box->setSpacing(6);
 
             // Create elements
-            label = new QLabel(QString::fromStdString(morph_modifiers[i].name_));
+            label = new QLabel(morph_modifiers[i].name_);
             label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
             label->setFixedWidth(200);
 
             slider = new QScrollBar(Qt::Horizontal);
             slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             slider->setFixedHeight(20);
-            slider->setObjectName(QString::fromStdString(morph_modifiers[i].name_));
+            slider->setObjectName(morph_modifiers[i].name_);
             slider->setMinimum(0);
             slider->setMaximum(100);
             slider->setPageStep(10);
@@ -251,7 +251,7 @@ void AvatarEditor::RebuildEditView()
         std::map<std::string, uint> item_count;
         for(uint i = 0; i < master_modifiers.size(); ++i)
         {
-            std::string category_name = master_modifiers[i].category_;
+            std::string category_name = master_modifiers[i].category_.toStdString();
             if (item_count.find(category_name) == item_count.end())
                 item_count[category_name] = 0;
 
@@ -275,14 +275,14 @@ void AvatarEditor::RebuildEditView()
             v_box->setSpacing(6);
 
             // Create elements
-            label = new QLabel(QString::fromStdString(master_modifiers[i].name_));
+            label = new QLabel(master_modifiers[i].name_);
             label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             label->setFixedWidth(200);
 
             slider = new QScrollBar(Qt::Horizontal);
             slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             slider->setFixedHeight(20);
-            slider->setObjectName(QString::fromStdString(master_modifiers[i].name_));
+            slider->setObjectName(master_modifiers[i].name_);
             slider->setMinimum(0);
             slider->setMaximum(100);
             slider->setPageStep(10);

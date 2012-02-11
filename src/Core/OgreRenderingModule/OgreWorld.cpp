@@ -1,17 +1,21 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #define MATH_OGRE_INTEROP
 
 #include "OgreWorld.h"
 #include "Renderer.h"
-#include "Entity.h"
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "Scene.h"
 #include "OgreCompositionHandler.h"
+#include "OgreShadowCameraSetupFocusedPSSM.h"
+#include "OgreBulletCollisionsDebugLines.h"
+
+#include "Entity.h"
+#include "Scene.h"
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "FrameAPI.h"
@@ -25,10 +29,10 @@
 #include "Math/float3.h"
 #include "Geometry/Circle.h"
 #include "Geometry/Sphere.h"
-#include "OgreShadowCameraSetupFocusedPSSM.h"
-#include "OgreBulletCollisionsDebugLines.h"
 
 #include <Ogre.h>
+
+#include "MemoryLeakCheck.h"
 
 OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     framework_(scene->GetFramework()),
@@ -40,9 +44,7 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     debugLinesNoDepth_(0)
 {
     assert(renderer_->IsInitialized());
-    
-    Ogre::Root* root = Ogre::Root::getSingletonPtr();
-    sceneManager_ = root->createSceneManager(Ogre::ST_GENERIC, scene->Name().toStdString());
+    sceneManager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, scene->Name().toStdString());
     if (!framework_->IsHeadless())
     {
         rayQuery_ = sceneManager_->createRayQuery(Ogre::Ray());
@@ -51,12 +53,12 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
 
         // If fog is FOG_NONE, force it to some default ineffective settings, because otherwise SuperShader shows just white
         if (sceneManager_->getFogMode() == Ogre::FOG_NONE)
-            sceneManager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
+            SetDefaultSceneFog();
         // Set a default ambient color that matches the default ambient color of EC_EnvironmentLight, in case there is no environmentlight component.
-        sceneManager_->setAmbientLight(Ogre::ColourValue(0.364f, 0.364f, 0.364f, 1.f));
-        
+        sceneManager_->setAmbientLight(DefaultSceneAmbientLightColor());
+
         SetupShadows();
-        
+
 #include "DisableMemoryLeakCheck.h"
         debugLines_ = new DebugLines("PhysicsDebug");
         debugLinesNoDepth_ = new DebugLines("PhysicsDebugNoDepth");
@@ -65,7 +67,7 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
         sceneManager_->getRootSceneNode()->attachObject(debugLinesNoDepth_);
         debugLinesNoDepth_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY);
     }
-    
+
     connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
 }
 
@@ -91,13 +93,29 @@ OgreWorld::~OgreWorld()
     if (comp)
         comp->RemoveAllCompositors();
     
-    Ogre::Root* root = Ogre::Root::getSingletonPtr();
-    root->destroySceneManager(sceneManager_);
+    Ogre::Root::getSingleton().destroySceneManager(sceneManager_);
 }
 
 std::string OgreWorld::GetUniqueObjectName(const std::string &prefix)
 {
     return renderer_->GetUniqueObjectName(prefix);
+}
+
+void OgreWorld::FlushDebugGeometry()
+{
+    if (debugLines_)
+        debugLines_->draw();
+    if (debugLinesNoDepth_)
+        debugLinesNoDepth_->draw();
+}
+
+void OgreWorld::SetDefaultSceneFog()
+{
+    if (sceneManager_)
+    {
+        sceneManager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
+        Renderer()->MainViewport()->setBackgroundColour(Color()); // Color default ctor == black
+    }
 }
 
 RaycastResult* OgreWorld::Raycast(int x, int y)
@@ -113,7 +131,7 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
     
     int width = renderer_->WindowWidth();
     int height = renderer_->WindowHeight();
-    if ((!width) || (!height))
+    if (!width || !height)
         return &result_; // Headless
     Ogre::Camera* camera = VerifyCurrentSceneCamera();
     if (!camera)
@@ -305,7 +323,7 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect) const
 
     int width = renderer_->WindowWidth();
     int height = renderer_->WindowHeight();
-    if ((!width) || (!height))
+    if (!width || !height)
         return l; // Headless
     Ogre::Camera* camera = VerifyCurrentSceneCamera();
     if (!camera)
@@ -442,13 +460,12 @@ void OgreWorld::OnUpdated(float timeStep)
             // Check for change in visibility status
             bool last = lastVisibleEntities_.find(id) != lastVisibleEntities_.end();
             bool now = visibleEntities_.find(id) != visibleEntities_.end();
-            
-            if ((!last) && (now))
+            if (!last && now)
             {
                 emit EntityEnterView(entity);
                 entity->EmitEnterView(activeCamera);
             }
-            else if ((last) && (!now))
+            else if (last && !now)
             {
                 emit EntityLeaveView(entity);
                 entity->EmitLeaveView(activeCamera);
@@ -600,7 +617,7 @@ EC_Camera* OgreWorld::VerifyCurrentSceneCameraComponent() const
     if (!cameraComponent)
         return 0;
     Entity* entity = cameraComponent->ParentEntity();
-    if ((!entity) || (entity->ParentScene() != scene_.lock().get()))
+    if (!entity || entity->ParentScene() != scene_.lock().get())
         return 0;
     
     return cameraComponent;
@@ -786,12 +803,4 @@ void OgreWorld::DebugDrawSoundSource(const float3 &soundPos, float soundInnerRad
 
     DebugDrawSphere(soundPos, soundInnerRadius, 24*3*3*3, 1, 0, 0, depthTest);
     DebugDrawSphere(soundPos, soundOuterRadius, 24*3*3*3, 0, 1, 0, depthTest);
-}
-
-void OgreWorld::FlushDebugGeometry()
-{
-    if (debugLines_)
-        debugLines_->draw();
-    if (debugLinesNoDepth_)
-        debugLinesNoDepth_->draw();
 }

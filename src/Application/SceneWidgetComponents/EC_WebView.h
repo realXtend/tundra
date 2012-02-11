@@ -193,8 +193,9 @@ private slots:
     void ResetWebView(bool ignoreVisibility = false);
 
     /// Handle browser SSL errors.
+#ifndef QT_NO_OPENSSL
     void OnSslErrors(QNetworkReply *reply, const QList<QSslError>& errors);
-
+#endif
     /// Handler for QWebView::linkClicked(const QUrl&)
     void LoadRequested(const QUrl &url);
 

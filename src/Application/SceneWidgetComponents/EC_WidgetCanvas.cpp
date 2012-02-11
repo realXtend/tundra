@@ -388,7 +388,7 @@ bool EC_WidgetCanvas::Blit(const QImage &source, Ogre::TexturePtr destination)
                 if (lock.Pitch == sourceStride)
                     memcpy(lock.pBits, source.bits(), sourceStride * source.height());
                 else
-                    for(size_t y = 0; y < source.height(); ++y)
+                    for(int y = 0; y < source.height(); ++y)
                         memcpy((u8*)lock.pBits + lock.Pitch * y, source.bits() + sourceStride * y, sourceStride);
                 surface->UnlockRect();
             }

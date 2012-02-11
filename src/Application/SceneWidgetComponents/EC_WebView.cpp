@@ -523,8 +523,10 @@ void EC_WebView::PrepareWebview()
     QNetworkAccessManager *networkAccess = webview_->page()->networkAccessManager();
     if (networkAccess)
     {
+#ifndef QT_NO_OPENSSL
         connect(networkAccess, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)), 
             this, SLOT(OnSslErrors(QNetworkReply*, const QList<QSslError>&)), Qt::UniqueConnection);
+#endif
 
 #ifdef SCENEWIDGET_BROWSER_SHARED_DATA
         BrowserUiPlugin *browserPlugin = framework->GetModule<BrowserUiPlugin>();
@@ -587,6 +589,7 @@ void EC_WebView::ResetWebView(bool ignoreVisibility)
     webviewHasContent_ = false;
 }
 
+#ifndef QT_NO_OPENSSL
 void EC_WebView::OnSslErrors(QNetworkReply *reply, const QList<QSslError>& errors)
 {
     LogWarning("EC_WebView: Could not load page, ssl errors occurred in url '" + getwebviewUrl() + "'");
@@ -599,6 +602,7 @@ void EC_WebView::OnSslErrors(QNetworkReply *reply, const QList<QSslError>& error
     }
     StopBrowser();
 }
+#endif
 
 void EC_WebView::LoadRequested(const QUrl &url)
 {
