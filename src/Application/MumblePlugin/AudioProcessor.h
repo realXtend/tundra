@@ -14,6 +14,7 @@
 #include <QThread>
 #include <QMutex>
 
+/// @cond PRIVATE
 namespace MumbleAudio
 {
     //////////////////////////////////////////////////////
@@ -153,3 +154,4 @@ namespace MumbleAudio
         QString LC;
     };
 }
+/// @endcond

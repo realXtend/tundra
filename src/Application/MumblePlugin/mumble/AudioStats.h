@@ -34,6 +34,7 @@
 #include <QList>
 #include <QColor>
 
+/// @cond PRIVATE
 namespace Mumble
 {
     class AudioBar : public QWidget 
@@ -54,3 +55,4 @@ namespace Mumble
 		QList<Qt::BrushStyle> qlReplacementBrushes;
     };
 }
+/// @endcond

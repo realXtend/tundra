@@ -15,6 +15,7 @@
 #include <QDataStream>
 #include <QHostAddress>
 
+/// @cond PRIVATE
 namespace MumbleNetwork
 {
     typedef ::google::protobuf::Message MumbleMessage;
@@ -301,3 +302,4 @@ namespace MumbleNetwork
         return QString();
     }
 }
+/// @endcond

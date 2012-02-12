@@ -10,6 +10,7 @@
 
 class SoundBuffer;
 
+/// @cond PRIVATE
 namespace MumbleAudio
 {
     class CeltCodec : public QObject
@@ -36,3 +37,4 @@ namespace MumbleAudio
         int bitStreamVersion;
     };
 }
+/// @endcond

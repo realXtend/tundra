@@ -28,11 +28,11 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef MUMBLE_SSL_H_
-#define MUMBLE_SSL_H_
+#pragma once
 
 #include <QStringList>
 
+/// @cond PRIVATE
 namespace Mumble
 {
     class MumbleSSL 
@@ -41,4 +41,4 @@ namespace Mumble
 	    static QStringList addSystemCA();
     };
 }
-#endif
+/// @endcond

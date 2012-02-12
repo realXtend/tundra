@@ -34,6 +34,7 @@
 
 #include "Timer.h"
 
+/// @cond PRIVATE
 namespace Mumble
 {
     class CryptState 
@@ -75,3 +76,4 @@ namespace Mumble
 		void encrypt(const unsigned char *source, unsigned char *dst, unsigned int plain_length);
     };
 }
+/// @endcond

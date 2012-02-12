@@ -34,6 +34,7 @@
  * GCC doesn't yet do inter-object-file inlining, so unfortunately, this all has to be defined here.
  */
 
+/// @cond PRIVATE
 namespace Mumble
 {
     class PacketDataStream 
@@ -450,3 +451,4 @@ namespace Mumble
 	    }
     };
 }
+/// @endcond
