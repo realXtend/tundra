@@ -21,9 +21,9 @@ Obtain Tundra from
 <h2>Getting Started</h2>
 Follow these first steps.
 <ul>
-<li>todo What is Tundra?
 <li>\ref BuildOnWindows "Building and Running Tundra on Windows".
 <li>\ref BuildOnUbuntu "Building and Running Tundra on Ubuntu 11.10".
+<li>\ref BuildOnMac "Building and Running Tundra on Mac OS X".
 <li>\ref RunningTundra "Configuring and Running Tundra."
 </ul>
 </td>
