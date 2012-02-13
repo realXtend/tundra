@@ -233,7 +233,7 @@ public:
 		@param outNormal [out] An array of size numVertices which will receive vertex normals. If this parameter is null, vertex normals are not generated.
 		@param outUV [out] An array of size numVertices which will receive UV coordinates. If this parameter is null, UV coordinates are not generated.
 		@param numVertices The size of the input arrays outPos and outNormal. This value should be of form 12 + 6*n for some n >= 0.
-						  To generate a perfect geosphere, pass in a number of form 3 * 4 * 3^k for some k >= 0.
+						  To generate a perfect geosphere, pass in a number of form 3 * 4 * 3^k for some k >= 0 (12, 36, 108, 324, ...).
 		@return The actual number of vertices generated (== the number of elements written to outPos and outNormal). */
 	int Triangulate(float3 *outPos, float3 *outNormal, float2 *outUV, int numVertices);
 

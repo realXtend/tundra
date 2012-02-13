@@ -1,7 +1,9 @@
 /**
     For conditions of distribution and use, see copyright notice in LICENSE
 
-    Implements basic menu bar for accessing common Tundra functionality and UIs. */
+    Implements basic menu bar for accessing common Tundra functionality and UIs.
+    NOTE: Clears any existing menus in the menu bar so make sure that this script
+    is loaded first, or replace with another implementation*/
 
 // Applicable only in headful mode.
 if (!framework.IsHeadless())
@@ -25,7 +27,12 @@ if (!framework.IsHeadless())
     screenshotAct.triggered.connect(TakeScreenshot);
     screenshotAct.enabled = false;
 
+    fileMenu.addSeparator();
+    fileMenu.addAction("Clear Asset Cache").triggered.connect(ClearAssetCache);
+    fileMenu.addSeparator();
+
     //fileMenu.addAction("New scene").triggered.connect(NewScene);
+
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
     {
@@ -62,6 +69,9 @@ if (!framework.IsHeadless())
         var settingsMenu = menu.addMenu("&Settings");
         // Set unique object name so that other scripts can query this menu.
         settingsMenu.objectName = "SettingsMenu";
+
+        settingsMenu.addAction("Open config folder").triggered.connect(OpenConfigFolder);
+
         if (framework.GetModuleByName("MumbleVoip"))
             settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
         if (framework.GetModuleByName("CAVEStereo"))
@@ -88,9 +98,10 @@ if (!framework.IsHeadless())
 
     // Help menu
     var helpMenu = menu.addMenu("&Help");
-    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
-    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
-    helpMenu.addAction(new QIcon(installDir + "data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
+    var browserIcon = new QIcon(installDir + "data/ui/images/icon/browser.ico");
+    helpMenu.addAction(browserIcon, "Wiki").triggered.connect(OpenWikiUrl);
+    helpMenu.addAction(browserIcon, "Doxygen").triggered.connect(OpenDoxygenUrl);
+    helpMenu.addAction(browserIcon, "Mailing list").triggered.connect(OpenMailingListUrl);
 
     function NewScene() {
         scene.RemoveAllEntities();
@@ -122,6 +133,56 @@ if (!framework.IsHeadless())
         var mainCamera = renderer.MainCameraComponent();
         var imgPath = mainCamera.SaveScreenshot();
         QDesktopServices.openUrl(new QUrl(imgPath));
+    }
+
+    function ClearAssetCache() {
+        // Show some additional info: count and size of removed files
+        var cachePath = asset.GetAssetCache().CacheDirectory();
+        if (cachePath != "" && cachePath != null)
+        {
+            var count = 0;
+            var size = 0;
+
+            var cacheDir = new QDir(cachePath);
+            var cacheFiles = cacheDir.entryInfoList();  // Using flags here would be nice but does not seem to work
+            for(var i=0; i<cacheFiles.length; ++i)
+            {
+                try
+                {
+                    if (cacheFiles[i].isFile() && cacheFiles[i].exists())
+                    {
+                        count++;
+                        size += cacheFiles[i].size();
+                    }
+                }
+                catch(e)
+                {
+                    console.LogError("Failed to iterate files in cache: " + e);
+                    count = null;
+                    size = null;
+                    break;
+                }
+            }
+
+            // Clear the cache. If we happen to throw here we wont show false log/ui information.
+            asset.GetAssetCache().ClearAssetCache();
+
+            // Log to console
+            var msg = "";
+            if (count != null && size != null)
+            {
+                // Round to two decimals
+                var roundedSize = Math.round(((size/1024)/1024) * Math.pow(10,2)) / Math.pow(10,2);
+                msg = "Cleared " + count + " files with total size of " + roundedSize + " mb from asset cache."
+            }
+            else
+                msg = "Errors occurred while calculating cache file information. Cache cleared.";
+            console.LogInfo(msg);
+
+            // Show information box for user. Note: this will block so not the most convenient.
+            if (ui.MainWindow() != null)
+                QMessageBox.information(ui.MainWindow(), "Cache Cleared", msg);
+        }
     }
 
     function CheckForUpdates() {
@@ -191,5 +252,9 @@ if (!framework.IsHeadless())
 
     function OpenCaveWindow() {
         framework.GetModuleByName("CAVEStereo").ShowCaveWindow();
+    }
+    
+    function OpenConfigFolder() {
+        QDesktopServices.openUrl(new QUrl(config.GetConfigFolder()));
     }
 }

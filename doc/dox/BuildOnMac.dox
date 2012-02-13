@@ -1,0 +1,50 @@
+/**
+
+\page BuildOnMac Building and Running Tundra on Mac OS X 10.7
+
+This page lists the necessary steps to build Tundra on Mac OS X 10.7.3 or newer. Previous OS X versions might work, but these steps were written against the specified versions.
+
+\section MacPrereqs Prerequisites
+
+<ol>
+<li>Install cmake from <a href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</a>.
+<li>Install Qt from <a href="http://qt.nokia.com/downloads">http://qt.nokia.com/downloads</a>.
+<li>Add the Qt qmake tool to your system PATH by editing the file .profile in your home directory, and specifying the directory where your qmake resides, e.g. <pre>export PATH=$PATH:/Users/<myusername>/QtSDK/Desktop/Qt/4.8.0/gcc/bin</pre>. For more information on specifying the PATH, see <a href="http://keito.me/tutorials/macosx_path">http://keito.me/tutorials/macosx_path</a>.
+<li>Install XCode from Apple App Store (requires an Apple ID).
+<li>Download a prebuilt Ogre 1.7.4 SDK or newer from <a href="http://www.ogre3d.org/download/sdk/">http://www.ogre3d.org/download/sdk/</a>.
+<ul>
+   <li>After the download has finished, open the downloaded .dmg file, and open the OgreSDK folder in the folder that pops up.
+   <li>Browse into the directory OgreSDK/lib/release, and copy the Ogre.framework directory into ~/Library/Frameworks, so that you will have a directory ~/Library/Frameworks/Ogre.framework/. Create the needed subdirectories if they do not exist.
+   <li>Browse into the directory OgreSDK/lib/, and copy all the .dylib files there into (naali git trunk)/bin/Contents/Plugins. Create the needed subdirectories if they do not exist.
+</ul>
+<li>Install git from <a href="http://git-scm.com/download">http://git-scm.com/download</a>.
+<li>Clone the Tundra repository by running <pre>git clone https://github.com/realXtend/naali</pre>
+</ol>
+
+These instructions assume that the git clone command was run at the user's home directory, i.e. that Tundra git trunk resides in the folder ~/naali.
+
+\section MacFirstTimeBuild First-Time Build
+
+Open up a new terminal window, and
+<ol>
+<li>Create a new directory that will contain the library dependencies required by Tundra by typing <pre>mkdir ~/naali-deps</pre>
+<li>Change into the directory naali/tools, and run <pre>./build-mac-deps.bash -d ~/naali-deps</pre>
+</ol>
+
+When you build Tundra for the first time, the build script will locate and build all the necessary dependencies that are required for Tundra. This will take some time. Note that when the script is building boost, there is a long pause during which nothing is printed on the screen, that is normal.
+
+<p>When the script has finished, the directory ~/naali-deps/ will have been populated with several different 3rd party libraries and the finished build of Tundra is placed at ~/naali/bin/.
+
+\section MacIncrementalBuild Incremental Build and Full Rebuild
+
+Steps to perform a rebuild:
+
+<ul>
+<li>If you only modified some C++ file, you can simply re-run make in the naali/ root directory.
+<li>If you added new files, or modified the CMakeBuildConfig.txt file, you will need to re-run build-mac-deps.bash.
+<li>If you modified cmake variables which cmake caches, you may need to clean up the cmake variable cache by deleting the file naali/CMakeCache.txt before running build-mac-deps.bash.
+</ol>
+
+<p>To view or report outstanding issues related to building on Mac, please visit the <a href="https://github.com/realXtend/naali/issues">Tundra github issue tracker</a>.
+*/
+

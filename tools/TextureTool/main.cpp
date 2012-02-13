@@ -122,6 +122,14 @@ struct RawImage
 
         return data[(y * width + x) * numColorPlanes + numColorPlanes-1];
     }
+
+    void SetAlpha(int x, int y, int a)
+    {
+        if (numColorPlanes == 1 || numColorPlanes == 3)
+            std::cout << "Error! Image does not have an alpha channel to set!" << std::endl;
+        else
+            data[(y * width + x) * numColorPlanes + numColorPlanes-1] = a;
+    }
 };
 
 /// Converts the image color format in-place.
@@ -202,6 +210,39 @@ void BGR888ToRGB888(RawImage &img)
 
 /// Halves the texture size by averaging every adjacent 2x2 block into one pixel. Operates in-place. 
 /// Requires that the image dimensions are divisible by two.
+void HalveTextureSizeBiased(RawImage &img)
+{
+    RawImage copy = img;
+// The following assumption is not strictly needed, it just means we will discard one column or row of pixels at the edge of the image.
+//    assert(img.width % 2 == 0);
+//    assert(img.height % 2 == 0);
+    img.width /= 2;
+    img.height /= 2;
+
+    img.data.resize(img.width * img.height * img.numColorPlanes);
+    for(int y = 0; y < img.height; ++y)
+        for(int x = 0; x < img.width; ++x)
+        {
+            int a[4];
+            a[0] = copy.GetAlpha(x*2, y*2);
+            a[1] = copy.GetAlpha(x*2+1, y*2);
+            a[2] = copy.GetAlpha(x*2, y*2+1);
+            a[3] = copy.GetAlpha(x*2+1, y*2+1);
+            int sum = a[0] + a[1] + a[2] + a[3];
+            int alpha = max(max(a[0], a[1]), max(a[2], a[3]));
+
+            for(int c = 0; c < img.numColorPlanes; ++c)
+            {
+                if (sum > 0)
+                    img.SetPlane(x, y, c, (copy.GetPlane(x*2, y*2, c)*a[0] + copy.GetPlane(x*2+1, y*2, c)*a[1] + copy.GetPlane(x*2, y*2+1, c)*a[2] + copy.GetPlane(x*2+1, y*2+1, c)*a[3] + sum/2)/sum);
+                else
+                    img.SetPlane(x, y, c, (copy.GetPlane(x*2, y*2, c) + copy.GetPlane(x*2+1, y*2, c) + copy.GetPlane(x*2, y*2+1, c) + copy.GetPlane(x*2+1, y*2+1, c)+2)/4);
+            }
+            img.SetAlpha(x, y, alpha);
+
+        }
+}
+
 void HalveTextureSize(RawImage &img)
 {
     RawImage copy = img;
@@ -216,6 +257,94 @@ void HalveTextureSize(RawImage &img)
         for(int x = 0; x < img.width; ++x)
             for(int c = 0; c < img.numColorPlanes; ++c)
                 img.SetPlane(x, y, c, (copy.GetPlane(x*2, y*2, c) + copy.GetPlane(x*2+1, y*2, c) + copy.GetPlane(x*2, y*2+1, c) + copy.GetPlane(x*2+1, y*2+1, c)+2)/4);
+}
+
+int BinarySearchBestCutoffAlpha(const RawImage &img, int numPixelsToShow)
+{
+    int w = img.width/2;
+    int h = img.height/2;
+    int minAlpha = 0;
+    int maxAlpha = 255;
+    float minAlphaFrac = 0.f;
+    float maxAlphaFrac = 1.f;
+
+    int numOpaque;
+    while(minAlpha+1 < maxAlpha)
+    {
+        int alpha = (minAlpha + maxAlpha + 1) / 2;
+        numOpaque = 0;
+        for(int y = 0; y < h; ++y)
+            for(int x = 0; x < w; ++x)
+            {
+                int a = (img.GetAlpha(x*2, y*2) + img.GetAlpha(x*2+1, y*2) + img.GetAlpha(x*2, y*2+1) + img.GetAlpha(x*2+1, y*2+1)+2)/4;
+                if (a >= alpha)
+                    ++numOpaque;
+            }
+        std::cout << "For size " << w << "x" << h << ", the cutoff alpha of " << alpha << " will give " << numOpaque << "(" << (numOpaque * 100.f / (w*h)) << "%) opaque pixels." << std::endl;
+
+        float frac = (float)numOpaque / (w*h);
+        // Too many are visible?
+        if (numOpaque > numPixelsToShow)
+        {
+            minAlpha = alpha;
+            minAlphaFrac = frac;
+        }
+        else if (numOpaque < numPixelsToShow)
+        {
+            maxAlpha = alpha;
+            maxAlphaFrac = frac;
+        }
+        else // Exact match?
+            return alpha;
+    }
+    float desiredFrac = (float)numPixelsToShow / (w*h);
+    if (minAlphaFrac >= desiredFrac)
+        maxAlpha = minAlpha;
+    std::cout << "For size " << w << "x" << h << ", the cutoff alpha of " << maxAlpha << " will give " << numOpaque << "(" << (numOpaque * 100.f / (w*h)) << "%) opaque pixels." << std::endl;
+    return maxAlpha;
+}
+
+#define CLAMP(x, min, max) ((x) < (min) ? (min) : ((x) > (max) ? (max) : (x)))
+
+// If alpha == alphaCutoffLevel, it is counted as being visible.
+void HalveTextureSizeForAlphaTest(RawImage &img, int alphaCutoffLevel)
+{
+    RawImage copy = img;
+// The following assumption is not strictly needed, it just means we will discard one column or row of pixels at the edge of the image.
+//    assert(img.width % 2 == 0);
+//    assert(img.height % 2 == 0);
+    img.width /= 2;
+    img.height /= 2;
+
+    // Count the number of opaque pixels in the higher mip level.
+    int numOpaque = 0;
+    for(int y = 0; y < copy.height; ++y)
+        for(int x = 0; x < copy.width; ++x)
+            if (copy.GetAlpha(x, y) >= alphaCutoffLevel)
+                ++numOpaque;
+  
+    // Compute a new cutoff level.
+    int lowerMipAlphaCutoffLevel = BinarySearchBestCutoffAlpha(copy, (numOpaque+3)/4);
+    std::cout << "Size " << copy.width << "x" << copy.height << " has " << numOpaque << " opaque pixels (" << (numOpaque * 100.f / (copy.width*copy.height)) << "%). Lower level shall use cutoff alpha of " << lowerMipAlphaCutoffLevel << std::endl;
+
+    float alphaScale = (float)alphaCutoffLevel / lowerMipAlphaCutoffLevel;
+
+    img.data.resize(img.width * img.height * img.numColorPlanes);
+    for(int y = 0; y < img.height; ++y)
+        for(int x = 0; x < img.width; ++x)
+        {
+            int a = (copy.GetAlpha(x*2, y*2) + copy.GetAlpha(x*2+1, y*2) + copy.GetAlpha(x*2, y*2+1) + copy.GetAlpha(x*2+1, y*2+1)+2)/4;
+            int newAlpha = (int)CLAMP(a * alphaScale + 0.5f, 0, 255);
+            float colorScale = (float)a / newAlpha;
+
+            for(int c = 0; c < img.numColorPlanes; ++c)
+            {
+                int val = (copy.GetPlane(x*2, y*2, c) + copy.GetPlane(x*2+1, y*2, c) + copy.GetPlane(x*2, y*2+1, c) + copy.GetPlane(x*2+1, y*2+1, c)+2)/4;
+                int newVal = (int)CLAMP(val * colorScale + 0.5f, 0, 255);
+                img.SetPlane(x, y, c, newVal);
+            }
+            img.SetAlpha(x, y, newAlpha);
+        }
 }
 
 #ifdef J2K_DECODE_SUPPORT
@@ -417,7 +546,7 @@ int CountMaxMipSize(int w, int h)
 /// something more flexible was better, like a command line flag '--onlyifformat==D3DFMT_A8R8G8B8'?
 /// alphaChoose: If true, only processes the file if it has alpha channel. (These are intended to be later saved as DXT5)
 ///              If false, only processes the file if it does not have an alpha channel. (These are to be later saved as DXT1)
-void ConvertFileToDDS(std::string filename, LPDIRECT3DDEVICE9 device, bool alphaChoose, int maxTexSize)
+void ConvertFileToDDS(std::string filename, LPDIRECT3DDEVICE9 device, bool alphaChoose, int maxTexSize, int alphaTestCutoff)
 {
     RawImage imageData;
 #ifdef J2K_DECODE_SUPPORT
@@ -464,6 +593,7 @@ void ConvertFileToDDS(std::string filename, LPDIRECT3DDEVICE9 device, bool alpha
     int oldH = imageData.height;
     while(imageData.width > maxTexSize || imageData.height > maxTexSize)
         HalveTextureSize(imageData);
+
     if (oldW != imageData.width || oldH != imageData.height)
         cout << "Resized texture from " << oldW << "x" << oldH << " to " << imageData.width << "x" << imageData.height << endl;
 
@@ -499,7 +629,12 @@ void ConvertFileToDDS(std::string filename, LPDIRECT3DDEVICE9 device, bool alpha
         memcpy(rect.pBits, &imageData.data[0], imageData.data.size());
         texture->UnlockRect(level);
         ++level;
-        HalveTextureSize(imageData);
+        if (alphaTestCutoff < -1)
+            HalveTextureSizeBiased(imageData);
+        else if (alphaTestCutoff >= 0) // Using alpha test aware mipmap generation?
+            HalveTextureSizeForAlphaTest(imageData, alphaTestCutoff);
+        else
+            HalveTextureSize(imageData);
     }
 
     // Save to file. Convert the output filename ending to '.dds'.
@@ -640,9 +775,10 @@ int main(int argc, char **argv)
     ///\todo Provide a better method for command line input filtering (boost::program_options or something).
     bool alphaChoose = (ParseParameter(argc, argv, "--hasalpha", false, 0) != 0);
     int maxTexSize = ParseParameter(argc, argv, "--maxtexsize", true, 16384);
+    int alphaCutoff  = ParseParameter(argc, argv, "--alphatest", true, -1);
 
     LPDIRECT3DDEVICE9 device = InitD3DDevice(d3d9);
-    ConvertFileToDDS(argv[1], device, alphaChoose, maxTexSize);
+    ConvertFileToDDS(argv[1], device, alphaChoose, maxTexSize, alphaCutoff);
 
     device->Release();
     d3d9->Release();

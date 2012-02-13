@@ -17,7 +17,7 @@
 class Entity;
 class SceneSyncState;
 
-/// Represents a client conncetion on the server side.
+/// Represents a client connection on the server side.
 class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
 {
     Q_OBJECT

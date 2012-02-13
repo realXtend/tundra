@@ -129,10 +129,10 @@ AddProject(Application JavascriptModule)        # Allows QtScript-created scene 
 AddProject(Application PythonScriptModule)      # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
 AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 
-# Both are doable in linux, but need some prep work for fetching the deps etc. For vlc some code changes need to be done.
-# Remove the win32 check once the mumble and vlc deps are fetched in the deps build scripts. For mumble this is same as msantalas libmumbleclient and vlc apt-get libvlc-dev.
+# Remove the win32 check once the mumble and vlc deps are fetched in the linux build scripts. 
+# For MumblePlugin this is same as apt-get libspeex and protobuf ~2.4.1 and VlcPlugin apt-get libvlc-dev.
 if (WIN32)
-    AddProject(Application MumbleVoipModule)    # VOIP communication using the Mumble library. Depends on OgreRenderingModule and TundraProtocolModule.
+    AddProject(Application MumblePlugin)        # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
     AddProject(Application VlcPlugin)           # Adds media playback capabilities with libVLC and entity components.
 endif ()
 

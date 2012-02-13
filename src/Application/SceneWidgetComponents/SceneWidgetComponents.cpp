@@ -324,6 +324,7 @@ void SceneWidgetComponents::OnWebViewReady(bool succesfull)
     ProcessNextRenderingRequest();
 }
 
+#ifndef QT_NO_OPENSSL
 void SceneWidgetComponents::OnWebViewSslErrors(QNetworkReply *reply, const QList<QSslError>& errors)
 {
     LogWarning("WebRenderingRequest: Could not load page, ssl errors occurred in url '" + reply->url().toString() + "'");
@@ -335,6 +336,7 @@ void SceneWidgetComponents::OnWebViewSslErrors(QNetworkReply *reply, const QList
             LogWarning("- " + err.errorString());
     }
 }
+#endif
 
 // WebRenderRequest
 

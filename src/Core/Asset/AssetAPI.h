@@ -33,7 +33,7 @@ std::map<QString, QString> ParseAssetRefArgs(const QString &url, QString *body);
 /// If an empty string is submitted, and empty string will be output, so that an empty string won't suddenly point to the filesystem root.
 QString GuaranteeTrailingSlash(const QString &source);
 
-typedef std::map<QString, AssetPtr> AssetMap;
+typedef std::map<QString, AssetPtr, QStringLessThanNoCase> AssetMap;
 typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
 
 typedef std::vector<AssetStoragePtr> AssetStorageVector;

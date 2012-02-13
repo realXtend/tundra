@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="img">
+    <file>voice-active.png</file>
+    <file>voice-inactive.png</file>
+  </qresource>
+</RCC>
