@@ -110,6 +110,7 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
     return "";
 }
 
+/// @todo Make this function handle arbitrary asset refs.
 QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
 {
     QString filename;
