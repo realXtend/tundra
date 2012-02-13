@@ -8,7 +8,6 @@
 #include "SceneFwd.h"
 #include "Math/MathFwd.h"
 #include "IRenderer.h"
-#include "Color.h"
 
 #include <QObject>
 #include <QList>
@@ -20,6 +19,7 @@
 class Framework;
 class DebugLines;
 class Transform;
+class Color;
 
 class QRect;
 
@@ -45,7 +45,7 @@ public:
     void FlushDebugGeometry();
 
     /// The default color used as ambient light for Ogre's SceneManager.
-    static Color DefaultSceneAmbientLightColor() { return Color(0.364f, 0.364f, 0.364f, 1.f); }
+    static Color DefaultSceneAmbientLightColor();
 
     /// Sets scene fog to default ineffective settings, which plays nice with the SuperShader.
     /** Use this if you have altered the Ogre SceneManager's fog and want to reset it. */
