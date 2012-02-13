@@ -138,6 +138,10 @@ Framework::Framework(int argc_, char** argv_) :
     ///\todo Delete the CommandLineParameterMap mechanism altogether.
     /// Instead, provide the command line parameter help from a help file, where all the various command line parameters can be assembled.
     CommandLineParameterMap cmdLineDescs;
+#ifdef WIN32
+    cmdLineDescs.commands["--console"] = "Shows a text-based console along with the main UI window.";
+    cmdLineDescs.commands["--sharedconsole"] = "Same as '--console' but attaches the Tundra console to the parent process, without creating new command promt for the console.";
+#endif
     cmdLineDescs.commands["--help"] = "Produce help message"; // Framework
     cmdLineDescs.commands["--version"] = "Produce version information"; // Framework
     cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework
@@ -160,6 +164,12 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt"; // ConsoleAPI
     cmdLineDescs.commands["--physicsrate"] = "Specifies the number of physics simulation steps per second. Default: 60"; // PhysicsModule
     cmdLineDescs.commands["--physicsmaxsteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6"; // PhysicsModule
+    cmdLineDescs.commands["--splash"] = "Shows splash screen during the startup."; // Framework
+    cmdLineDescs.commands["--fullscreen"] = "Starts application in fullscreen mode."; // OgreRenderingModule
+    cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
+    cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
+    cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
+    cmdLineDescs.commands["--hide_benign_ogre_messages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
 
     apiVersionInfo = new ApiVersionInfo(Application::Version());
     applicationVersionInfo = new ApplicationVersionInfo(Application::OrganizationName(), Application::ApplicationName(), Application::Version());
