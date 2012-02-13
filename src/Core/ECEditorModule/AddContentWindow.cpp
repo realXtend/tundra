@@ -518,15 +518,14 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                 adIt.next();
                 if (adIt.value().typeName == "assetreference" || adIt.value().typeName == "assetreferencelist")
                 {
-                    QStringList values = adIt.value().value.split(";");
                     QStringList newValues;
-                    foreach(QString value, values)
+                    foreach(QString value, adIt.value().value.split(";", QString::SkipEmptyParts))
                     {
-                        if (value.isEmpty())
-                            continue;
-
+                        QString assetBaseName = AssetAPI::ExtractFilenameFromAssetRef(value);
+                        newValues << (useDefaultStorage ? assetBaseName : dest->GetFullAssetURL(assetBaseName));
+                        // Old buggy code, "value == key.first" never true
+/*
                         QString subname;
-
                         if (!keysWithSubname.isEmpty())
                         {
                             ///\todo This string manipulation/crafting doesn't work for .zip files, only for materials and COLLADA files
@@ -535,7 +534,7 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                             QString str = value.mid(slashIdx + 1, dotIdx - slashIdx - 1);
 
                             foreach(const SceneDesc::AssetMapKey &key, keysWithSubname)
-                                if (value == key.first && str == key.second)
+                                if (value == key.first && str == key.second) // Note: value == key.first did not match ever for assets with subname
                                 {
                                     value = key.first;
                                     subname = key.second;
@@ -557,6 +556,7 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                             else
                                 newValues << dest->GetFullAssetURL(sceneDesc.assets[key].destinationName);
                         }
+*/
                     }
 
                     if (!newValues.isEmpty())
