@@ -5,6 +5,7 @@
 #include "IComponent.h"
 #include "CoreTypes.h"
 #include "Color.h"
+#include "Math/float3.h"
 #include "Math/Quat.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"

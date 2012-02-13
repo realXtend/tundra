@@ -18,12 +18,13 @@
 #include "OgreMaterialAsset.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
+#include "Math/MathFunc.h"
 
 #include <QUiLoader>
 
 #include "MemoryLeakCheck.h"
 
-const QString cNoShader("NoShader/Unknown");
+static const char *cNoShader = "NoShader/Unknown";
 
 OgreMaterialEditor::OgreMaterialEditor(const AssetPtr &materialAsset, Framework *fw, QWidget *parent) :
     QWidget(parent),
