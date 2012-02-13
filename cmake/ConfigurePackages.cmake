@@ -5,69 +5,72 @@
 # build instructions should go in <Module>/CMakeLists.txt. The rest should
 # remain generic.
 
-macro (configure_boost)
-    # boost filesystem version used
-    # Disabled, as boost filesystem no longer used. If taken back in use, enable.
-    # add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
+macro(configure_boost)
 
-    if (MSVC)
-        set(Boost_USE_MULTITHREADED TRUE)
-        set(Boost_USE_STATIC_LIBS TRUE)
-    else ()
-        set(Boost_USE_STATIC_LIBS FALSE)
-    endif ()
+if (MSVC)
+    set(Boost_USE_MULTITHREADED TRUE)
+    set(Boost_USE_STATIC_LIBS TRUE)
+else ()
+    set(Boost_USE_STATIC_LIBS FALSE)
+endif ()
 
-    if (UNIX)
-        set (BOOST_COMPONENTS boost_thread boost_regex)
-    else ()
-        set (BOOST_COMPONENTS thread regex)
-    endif ()
- 
-    # Set BOOST_ROOT to our deps if not defined so the FindBoost.cmake 
-    # macro is used in a any situation inside sagase_configure_package().
-    if (MSVC AND "${ENV_BOOST_ROOT}" STREQUAL "")
-        if (WIN32)
-            # Fallback to the deps boost if a overriding env variable is not set. 
-            SET (BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
-        else () 
-            # For linux etc. boost is found from system. If not it will anyway
-            # fallback to brute force search to ENV_TUNDRA_DEP_PATH like before.
-            SET (BOOST_ROOT "")
-        endif ()
-    else ()
-        SET (BOOST_ROOT ${ENV_BOOST_ROOT})
-    endif()
-    
-    # BOOST_ROOT
-    message(STATUS ${ENV_TUNDRA_DEP_PATH})
-    message(STATUS ${BOOST_ROOT})
-    sagase_configure_package (BOOST 
-        NAMES Boost boost
-        COMPONENTS ${BOOST_COMPONENTS}
-        PREFIXES ${BOOST_ROOT} ${ENV_TUNDRA_DEP_PATH})
+# Boost lookup rules:
+# 1. If a CMake variable BOOST_ROOT was set before calling configure_boost(), that directory is used.
+# 2. Otherwise, if an environment variable BOOST_ROOT was set, use that.
+# 3. Otherwise, use Boost from the Tundra deps directory.
 
-    if (APPLE)
-        set (BOOST_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/lib)
-        set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
-    endif()
+if ("${BOOST_ROOT}" STREQUAL "")
+   SET(BOOST_ROOT $ENV{BOOST_ROOT})
+endif()
 
-    # Setting the BOOST_ROOT will result in linking failures on Visual Studio as found release and debug
-    # libs get mixed up. On windows we will empty out the Boost_LIBRARIES list and count on the 
-    # auto-linking feature boost provides. http://www.boost.org/doc/libs/1_35_0/more/getting_started/windows.html#auto-linking
-    if (MSVC)
-        # Reset libraries list so VC will perform auto-linking.
-        set (BOOST_LIBRARIES "")
-        # Not needed anymore as BOOST_ROOT finds these properly. 
-        # Didnt remove yet eiher so nothing breaks, added empty checks instead to not add duplicated.
-        if ("${BOOST_INCLUDE_DIRS}" STREQUAL "")
-            set (BOOST_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS} $ENV{BOOST_ROOT}/include)
-        endif ()
-        if ("${BOOST_LIBRARY_DIRS}" STREQUAL "")
-            set (BOOST_LIBRARY_DIRS ${BOOST_LIBRARY_DIRS} $ENV{BOOST_ROOT}/lib)
-        endif ()
-    endif ()
+if ("${BOOST_ROOT}" STREQUAL "")
+   SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
+endif()
 
-    sagase_configure_report (BOOST)
+message(STATUS "BOOST_ROOT set to " ${BOOST_ROOT})
+
+set(Boost_FIND_REQUIRED TRUE)
+set(Boost_FIND_QUIETLY TRUE)
+set(Boost_DEBUG FALSE)
+set(Boost_USE_MULTITHREADED TRUE)
+set(Boost_DETAILED_FAILURE_MSG FALSE)
+set(Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1")
+set(Boost_USE_STATIC_LIBS TRUE)
+
+if (UNIX)
+   find_package(Boost 1.46.1 COMPONENTS boost_thread boost_regex)
+else()
+   find_package(Boost 1.46.1 COMPONENTS thread regex)   
+endif()
+
+if (Boost_FOUND)
+   include_directories(${Boost_INCLUDE_DIRS})
+   link_directories(${Boost_LIBRARY_DIRS})
+else()
+   message(FATAL_ERROR "Boost not found!")
+endif()
+
+if (APPLE)
+    set (BOOST_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/lib)
+    set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
+endif()
+
+# Setting the BOOST_ROOT will result in linking failures on Visual Studio as found release and debug
+# libs get mixed up. On windows we will empty out the Boost_LIBRARIES list and count on the 
+# auto-linking feature boost provides. http://www.boost.org/doc/libs/1_35_0/more/getting_started/windows.html#auto-linking
+#if (MSVC)
+#    # Reset libraries list so VC will perform auto-linking.
+#    set (BOOST_LIBRARIES "")
+#    # Not needed anymore as BOOST_ROOT finds these properly. 
+#    # Didnt remove yet eiher so nothing breaks, added empty checks instead to not add duplicated.
+#    if ("${BOOST_INCLUDE_DIRS}" STREQUAL "")
+#        set (BOOST_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS} $ENV{BOOST_ROOT}/include)
+#    endif ()
+#    if ("${BOOST_LIBRARY_DIRS}" STREQUAL "")
+#        set (BOOST_LIBRARY_DIRS ${BOOST_LIBRARY_DIRS} $ENV{BOOST_ROOT}/lib)
+#    endif ()
+#endif ()
+
 endmacro (configure_boost)
 
 macro (configure_qt4)
