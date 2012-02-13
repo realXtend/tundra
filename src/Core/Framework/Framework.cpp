@@ -179,7 +179,7 @@ Framework::Framework(int argc_, char** argv_) :
 
     if (HasCommandLineParameter("--help"))
     {
-        LogInfo("Supported command line arguments: ");
+        LogInfo("Supported command line arguments (case-insensitive):");
         std::cout << cmdLineDescs.ToString();
     }
 
