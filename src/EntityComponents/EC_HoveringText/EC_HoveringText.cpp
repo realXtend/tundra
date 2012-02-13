@@ -346,8 +346,11 @@ void EC_HoveringText::AttributesChanged()
     if (material.ValueChanged())
     {
         // Don't render the HoveringText if it's not using a material.
-        bool isVisible = !material.Get().ref.isEmpty();
-        billboardSet_->setVisible(isVisible);
+        if (billboardSet_)
+        {
+            bool isVisible = !material.Get().ref.isEmpty();
+            billboardSet_->setVisible(isVisible);
+        }
 
         // If the material was cleared, erase the material from Ogre billboard as well. (we might be deleting the material in Tundra Asset API)
         if (material.Get().ref.isEmpty() && billboardSet_)
