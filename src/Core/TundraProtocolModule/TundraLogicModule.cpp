@@ -18,22 +18,14 @@
 #include "ConfigAPI.h"
 #include "IComponentFactory.h"
 #include "Scene.h"
-#include "Application.h"
-#include "CoreStringUtils.h"
 #include "AssetAPI.h"
 #include "ConsoleAPI.h"
 #include "AssetAPI.h"
-#include "GenericAssetFactory.h"
 #include "CoreException.h"
 
 #include "EC_Name.h"
 #include "EC_DynamicComponent.h"
 #include "EC_InputMapper.h"
-#include "EC_Camera.h"
-#include "EC_Placeable.h"
-#include "EC_AnimationController.h"
-#include "EC_Mesh.h"
-#include "EC_OgreCustomObject.h"
 
 #ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
@@ -352,9 +344,9 @@ void TundraLogicModule::LoadStartupScene()
             LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
             bool useBinary = startupScene.indexOf(".tbin") != -1;
             if (!useBinary)
-                scene->LoadSceneXML(startupScene, false/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+                scene->LoadSceneXML(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
             else
-                scene->LoadSceneBinary(startupScene, false/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+                scene->LoadSceneBinary(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
         }
     }
 }
@@ -370,9 +362,9 @@ void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
     {
         bool useBinary = sceneDiskSource.endsWith(".tbin");
         if (!useBinary)
-            scene->LoadSceneXML(sceneDiskSource, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+            scene->LoadSceneXML(sceneDiskSource, true/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
         else
-            scene->LoadSceneBinary(sceneDiskSource, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+            scene->LoadSceneBinary(sceneDiskSource, true/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
     }
     else
         LogError("Could not resolve disk source for loaded scene file " + asset->Name());

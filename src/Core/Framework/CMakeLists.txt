@@ -25,6 +25,7 @@ link_modules(Math Scene Ui Input Asset Audio Console)
 if (UNIX)
   # for dlopen() etc used in PluginAPI
   target_link_libraries (${TARGET_NAME} dl)
+  target_link_libraries (${TARGET_NAME} rt)
 endif () 
 
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})

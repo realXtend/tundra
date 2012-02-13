@@ -1,14 +1,14 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   TreeWidgetItemExpandMemory.cpp
- *  @brief  Utility class for keeping track of expanded items at a tree widget.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   TreeWidgetItemExpandMemory.cpp
+    @brief  Utility class for keeping track of expanded items at a tree widget. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "TreeWidgetItemExpandMemory.h"
+
 #include "Framework.h"
 #include "ConfigAPI.h"
 
@@ -31,7 +31,7 @@ void TreeWidgetItemExpandMemory::ExpandItem(QTreeWidget *treeWidget, const QTree
     if (!item)
         return;
 
-    if (items.find(GetIndentifierText(item)) != items.end())
+    if (items.find(IndentifierForItem(item)) != items.end())
         treeWidget->expandItem(item);
     else
         treeWidget->collapseItem(item);
@@ -40,7 +40,7 @@ void TreeWidgetItemExpandMemory::ExpandItem(QTreeWidget *treeWidget, const QTree
         ExpandItem(treeWidget, item->child(i));
 }
 
-QString TreeWidgetItemExpandMemory::GetIndentifierText(const QTreeWidgetItem *item) const
+QString TreeWidgetItemExpandMemory::IndentifierForItem(const QTreeWidgetItem *item) const
 {
     QList<QTreeWidgetItem *> items;
     const QTreeWidgetItem *c = item;
@@ -61,42 +61,43 @@ QString TreeWidgetItemExpandMemory::GetIndentifierText(const QTreeWidgetItem *it
 
 void TreeWidgetItemExpandMemory::Load()
 {
-    QStringList setting = framework->Config()->Get("uimemory", "tree state", "expanded").toString().split("|");
-    foreach(QString s, setting)
+    items.clear();
+    QStringList setting = framework->Config()->Get("uimemory", groupName + " tree state", "expanded").toString().split("|");
+    foreach(const QString &s, setting)
         if (!s.isEmpty())
             items.insert(s);
 }
 
 void TreeWidgetItemExpandMemory::Save()
 {
-    QString state = QString::fromStdString(ToString());
+    QString state = ToString();
     if (!state.isEmpty())
-        framework->Config()->Set("uimemory", "tree state", "expanded", state);
+        framework->Config()->Set("uimemory", groupName + " tree state", "expanded", state);
 }
 
 void TreeWidgetItemExpandMemory::HandleItemExpanded(QTreeWidgetItem *item)
 {
-    QString idText = GetIndentifierText(item);
+    QString idText = IndentifierForItem(item);
     int idx = idText.lastIndexOf('.');
-    if ((!idText.isEmpty()) && (idx != idText.size() - 1))
+    if (!idText.isEmpty() && (idx != idText.size() - 1))
         items.insert(idText);
 }
 
 void TreeWidgetItemExpandMemory::HandleItemCollapsed(QTreeWidgetItem *item)
 {
-    QString idText = GetIndentifierText(item);
+    QString idText = IndentifierForItem(item);
     int idx = idText.lastIndexOf('.');
-    if ((!idText.isEmpty()) && (idx != idText.size() - 1))
+    if (!idText.isEmpty() && (idx != idText.size() - 1))
         items.remove(idText);
 }
 
-std::string TreeWidgetItemExpandMemory::ToString() const
+QString TreeWidgetItemExpandMemory::ToString() const
 {
-    std::string ret;
+    QString ret;
     int idx = 0;
-    foreach(QString item, items)
+    foreach(const QString &item, items)
     {
-        ret.append(item.toStdString());
+        ret.append(item);
         if (idx < items.size() - 1)
             ret.append("|");
         ++idx;
@@ -104,4 +105,3 @@ std::string TreeWidgetItemExpandMemory::ToString() const
 
     return ret;
 }
-

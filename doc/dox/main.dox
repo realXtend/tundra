@@ -1,5 +1,5 @@
 /*! \mainpage
- 
+
 \section intro_sec Introduction
 
 Welcome to the Tundra developer documentation. This page is a site map that assembles together all the major features offered by Tundra.
@@ -10,8 +10,9 @@ Welcome to the Tundra developer documentation. This page is a site map that asse
 <h2>Download</h2>
 Obtain Tundra from
 <ul>
-<li><a href="http://code.google.com/p/realxtend-naali/downloads/list">A binary distribution</a>.
-<li><a href="http://github.com/realXtend">Source repository on github</a>. Remember to checkout to the <b>tundra2</b> branch.
+<li><a href="http://code.google.com/p/realxtend-naali/downloads/list">A binary distribution</a> (Windows and Mac).
+<li><a href="http://tundra.ludocraft.com/builds/nightly/">Nightly developer builds</a> (Windows) from the LudoCraft fork.
+<li><a href="http://github.com/realXtend">Source repository on github</a>.
 <li><a href="http://code.google.com/p/realxtend-tundra-deps/">Binary dependencies repository on Google code</a>.
 </ul>
 <a href="http://github.com/realXtend/naali/blob/develop/license.txt">Tundra distribution license</a>.
@@ -20,8 +21,9 @@ Obtain Tundra from
 <h2>Getting Started</h2>
 Follow these first steps.
 <ul>
-<li>todo What is Tundra?
 <li>\ref BuildOnWindows "Building and Running Tundra on Windows".
+<li>\ref BuildOnUbuntu "Building and Running Tundra on Ubuntu 11.10".
+<li>\ref BuildOnMac "Building and Running Tundra on Mac OS X".
 <li>\ref RunningTundra "Configuring and Running Tundra."
 </ul>
 </td>

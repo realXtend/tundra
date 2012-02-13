@@ -118,10 +118,10 @@ void KristalliProtocolModule::Unload()
 
 void KristalliProtocolModule::Initialize()
 {
-    defaultTransport = kNet::SocketOverTCP;
+    defaultTransport = kNet::SocketOverUDP;
     QStringList cmdLineParams = framework_->CommandLineParameters("--protocol");
-    if (cmdLineParams.size() > 0 && cmdLineParams.first().trimmed().toLower() == "udp")
-        defaultTransport = kNet::SocketOverUDP;
+    if (cmdLineParams.size() > 0 && cmdLineParams.first().trimmed().toLower() == "tcp")
+        defaultTransport = kNet::SocketOverTCP;
 
 #ifdef KNET_USE_QT
     framework_->Console()->RegisterCommand("kNet", "Shows the kNet statistics window.", this, SLOT(OpenKNetLogWindow()));

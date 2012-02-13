@@ -283,7 +283,7 @@ void JavascriptInstance::IncludeFile(const QString &path)
         return;
     }
 
-    QScriptValue result = engine_->evaluate(script);
+    QScriptValue result = engine_->evaluate(script, path);
 
     includedFiles.push_back(path);
     

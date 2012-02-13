@@ -60,4 +60,5 @@ private:
     int commandHistoryIndex; ///< Current command history index.
     QString commandStub; ///< Current command stub used for autocompletion/suggestion
     QStringList prevSuggestions; ///< Already shown suggestions.
+    float height; ///< Relative height [0,1] of the console UI.
 };

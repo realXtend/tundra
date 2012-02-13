@@ -648,7 +648,8 @@ bool AddContentWindow::CreateNewDesctiption()
         }
     }
 
-    if (dest && !dest->Writable())
+    // Note: if no assets are going to be uploaded, no need to show the error and cancel the flow
+    if (dest && !dest->Writable() && !filteredDesc.assets.empty())
     {
         QString errorMsg = tr("Read-only storage %1 cannot be used for asset upload.").arg(dest->Name());
         uploadStatusLabel->setText(errorMsg);
@@ -747,7 +748,8 @@ bool AddContentWindow::UploadAssets()
         }
     }
 
-    if (dest && !dest->Writable())
+    // Note: if no assets are going to be uploaded, no need to show the error and cancel the flow
+    if (dest && !dest->Writable() && !filteredDesc.assets.empty())
     {
         QString errorMsg = tr("Read-only storage %1 cannot be used for asset upload.").arg(dest->Name());
         uploadStatusLabel->setText(errorMsg);
@@ -958,7 +960,8 @@ void AddContentWindow::RewriteDestinationNames()
         }
     }
 
-    if (dest && !dest->Writable())
+    // Note: if no assets are going to be uploaded, no need to show the error and cancel the flow
+    if (dest && !dest->Writable() && !filteredDesc.assets.empty())
     {
         QString errorMsg = tr("Read-only storage %1 cannot be used for asset upload.").arg(dest->Name());
         uploadStatusLabel->setText(errorMsg);

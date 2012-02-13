@@ -10,7 +10,6 @@
 
 #include "Entity.h"
 #include "Scene.h"
-#include "XMLUtilities.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"

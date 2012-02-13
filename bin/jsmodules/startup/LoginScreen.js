@@ -1,3 +1,8 @@
+/*
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    LoginScreen.js - Reference implementation of a simple login screen functionality. */
+
 // !ref: local://LoginWidget.ui
 
 engine.ImportExtension("qt.core");
@@ -24,7 +29,11 @@ var configProtocol = null;
 if (!server.IsAboutToStart())
     SetupLoginScreen();
 
-function SetupLoginScreen() {
+function SetupLoginScreen()
+{
+    if (framework.IsHeadless())
+        return; // Running headless client
+
     widget = new QWidget();
     widget.setLayout(new QVBoxLayout());
 
@@ -61,7 +70,8 @@ function SetupLoginScreen() {
     ReadConfigToUi();
 }
 
-function ReadConfigToUi() {
+function ReadConfigToUi()
+{
     // Make double sure with "" default value and null 
     // checks that we can in any case insert var to ui
     configServer = framework.Config().Get(configFile, configSection, "login_server", "");
@@ -82,7 +92,8 @@ function ReadConfigToUi() {
         udpButton.checked = true;
 }
 
-function WriteConfigFromUi() {
+function WriteConfigFromUi()
+{
     // Downside of this is that user may do something to the UI elements while loggin in.
     // In Tundra its so fast that doubt that will happen. Can be fixed to read in to configX values in LoginPresse()
     framework.Config().Set(configFile, configSection, "login_server", TrimField(serverAddressLineEdit.text));
@@ -90,11 +101,13 @@ function WriteConfigFromUi() {
     framework.Config().Set(configFile, configSection, "login_protocol", GetProtocol());
 }
 
-function TrimField(txt) {
+function TrimField(txt)
+{
     return txt.replace(/^\s+|\s+$/g,"");
 }
 
-function GetProtocol() {
+function GetProtocol()
+{
     if (tcpButton.checked)
         return "tcp";
     else if (udpButton.checked)
@@ -102,7 +115,8 @@ function GetProtocol() {
     return "";
 }
 
-function LoginPressed() {
+function LoginPressed()
+{
     client.ClearLoginProperties();
 
     var username = TrimField(usernameLineEdit.text);
@@ -128,22 +142,32 @@ function LoginPressed() {
     infotext.show();
 }
 
-function HideLoginScreen() {
+function HideLoginScreen()
+{
+    if (framework.IsHeadless())
+        return; // Running headless client
+
     widget.setVisible(false);
     infotext.text = "";
     infotext.hide();
 }
 
-function ShowLoginScreen() {
+function ShowLoginScreen()
+{
+    if (framework.IsHeadless())
+        return; // Running headless client
+
     widget.setVisible(true);
 }
 
-function LoginFailed() {
+function LoginFailed()
+{
     infotext.text = "Failed to connect: " + client.GetLoginProperty("LoginFailed");
     infotext.show();
     frame.DelayedExecute(5.0).Triggered.connect(function(){infotext.hide();});
 }
 
-function Exit() {
+function Exit()
+{
     framework.Exit();
 }

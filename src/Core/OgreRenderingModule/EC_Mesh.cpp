@@ -605,7 +605,8 @@ bool EC_Mesh::SetMaterial(uint index, const QString& material_name)
     
     if (index >= entity_->getNumSubEntities())
     {
-        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": illegal submesh index " + QString::number(index));
+        LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": illegal submesh index " + QString::number(index) + 
+            ". Mesh \"" + meshRef.Get().ref + "\" has only " + QString::number(entity_->getNumSubEntities()) + " submeshes!");
         return false;
     }
     

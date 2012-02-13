@@ -1,12 +1,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_SceneWidgetComponents_EC_WidgetCanvas_h
-#define incl_SceneWidgetComponents_EC_WidgetCanvas_h
+#pragma once
 
 #include "SceneWidgetComponentsApi.h"
 #include "IComponent.h"
-#include "IAttribute.h"
-#include "OgreModuleFwd.h"
 
 #include <QMap>
 #include <QImage>
@@ -15,12 +12,6 @@
 #include <QString>
 
 #include <OgreTexture.h>
-
-namespace Ogre
-{
-    class TextureManager;
-    class MaterialManager;
-}
 
 class QTimer;
 
@@ -31,9 +22,13 @@ class QTimer;
 <td>
 <h2>WidgetCanvas</h2>
 
-\note This component will not sync to network, it is made for local rendering use. It is also not meant to be used directly from the entity-component editor, as you need to pass QWidget* etc for it to do anything. Other components utilizes it when they need QWidget painting done to a 3D object. 
+\note This component will not sync to network, it is made for local rendering use.
+It is also not meant to be used directly from the entity-component editor, as you
+need to pass QWidget* etc for it to do anything. Other components utilizes it when
+they need QWidget painting done to a 3D object. 
 
-Paints UI widgets on to a 3D object surface via EC_Mesh and a submesh index. So a EC_Mesh needs to be present on the entity this component is used.
+Paints UI widgets on to a 3D object surface via EC_Mesh and a submesh index.
+So a EC_Mesh needs to be present on the entity this component is used.
 
 Registered by SceneWidgetComponents plugin.
 
@@ -59,7 +54,7 @@ Registered by SceneWidgetComponents plugin.
 
 Does not emit any actions.
 
-<b>Depends on the component OgreCustomObject and OgreMesh</b>. 
+<b>Depends on the component OgreCustomObject and EC_Mesh</b>.
 </table> */
 class SCENEWIDGET_MODULE_API EC_WidgetCanvas : public IComponent
 {
@@ -84,11 +79,11 @@ public slots:
     void SetSubmeshes(const QList<uint> &submeshes);
     void SetSelfIllumination(bool illuminating);
 
-    QWidget *GetWidget() { return widget_; }
-    const int GetRefreshRate() { return update_interval_msec_; }
-    QList<uint> GetSubMeshes() { return submeshes_; }
+    QWidget *GetWidget() const { return widget_; }
+    int GetRefreshRate() const { return update_interval_msec_; }
+    QList<uint> GetSubMeshes() const { return submeshes_; }
 
-    QString GetMaterialName() { return QString::fromStdString(material_name_); }
+    QString GetMaterialName() const  { return QString::fromStdString(material_name_); }
     void UpdateSubmeshes();
 
 private slots:
@@ -117,5 +112,3 @@ private:
     QImage buffer_;
     bool mesh_hooked_;
 };
-
-#endif
