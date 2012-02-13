@@ -38,31 +38,27 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric"; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
-	sudo aptitude -y install python-dev libogg-dev libvorbis-dev \
+	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libogre-dev libboost-all-dev \
 	 ccache libqt4-dev python-dev freeglut3-dev \
 	 libxml2-dev cmake libalut-dev libtheora-dev \
 	 liboil0.3-dev mercurial unzip xsltproc libqtscript4-qtbindings
 fi
 
-what=bullet-2.77
+what=bullet-2.79-rev2440
 if test -f $tags/$what-done; then
     echo $what is done
 else
     cd $build
-    rm -rf $what
+    whatdir=${what%%-rev*}
+    rm -rf $whatdir
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
-    cd $what
-    # This patch is for GCC 4.6. It overrides a known issue with bullet 2.77 and gcc 4.6
-    # When Tundra upgrades to bullet 2.78 or later, this should be removed.
-    if [ "`gcc --version |head -n 1|cut -f 4 -d " "|cut -c -3`" == "4.6" ]; then
-        sed -i "s/static const T[\t]zerodummy/memset(\&value, 0, sizeof(T))/" ./src/BulletSoftBody/btSoftBodyInternals.h
-        sed -i "s/value=zerodummy;//" ./src/BulletSoftBody/btSoftBodyInternals.h
-    fi
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -fPIC -DNDEBUG -DBT_NO_PROFILE" .
+    cd $whatdir
+    sed -i s/OpenCL// src/BulletMultiThreaded/GpuSoftBodySolvers/CMakeLists.txt
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g -fPIC" .
     make -j $nprocs
     make install
     touch $tags/$what-done
@@ -104,6 +100,7 @@ else
     rm -rf kNet
     git clone https://github.com/juj/kNet
     cd kNet
+    git checkout stable
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
     mv x CMakeLists.txt
     cmake . -DCMAKE_BUILD_TYPE=Debug

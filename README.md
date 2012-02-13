@@ -1,5 +1,5 @@
-realXtend Tundra 2.1
-====================
+realXtend Tundra
+================
 
 Tundra is a scriptable 3D internet application development platform. It is aimed primarily for application developers, as a platform for creating networked 3D worlds with customized content.
 

@@ -156,6 +156,12 @@ void InputContext::TriggerGestureEvent(GestureEvent &gesture)
     }    
 }
 
+void InputContext::SetPriority(int newPriority)
+{
+    assert(inputApi);
+    inputApi->SetPriority(shared_from_this(), newPriority);
+}
+
 int InputContext::KeyPressedCount(Qt::Key keyCode) const
 {
     HeldKeysMap::const_iterator iter = heldKeysBuffered.find(keyCode);

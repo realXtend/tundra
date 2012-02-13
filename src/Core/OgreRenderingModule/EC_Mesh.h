@@ -317,9 +317,6 @@ public slots:
     ///\todo Remove, leave just one.
     QString GetMatName(uint index) const { return GetMaterialName(index).c_str(); }
 
-    ///\todo Is this needed? If not, remove.
-    QVector3D GetWorldSize() const;
-
     /// Returns adjustment position
     float3 GetAdjustPosition() const;
 

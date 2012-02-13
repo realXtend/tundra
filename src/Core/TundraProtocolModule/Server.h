@@ -4,27 +4,13 @@
 
 #include "CoreDefines.h"
 #include "CoreTypes.h"
-#include "TundraLogicModuleApi.h"
-#include "UserConnectedResponseData.h"
+#include "TundraProtocolModuleApi.h"
+#include "TundraProtocolModuleFwd.h"
 
-#include <kNet.h>
+#include "kNet/Types.h"
 
 #include <QObject>
 #include <QVariant>
-
-struct MsgLogin;
-class MessageConnection;
-
-typedef unsigned long message_id_t;
-
-namespace KristalliProtocol
-{
-    class KristalliProtocolModule;
-}
-
-class UserConnection;
-typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
-typedef std::list<UserConnectionPtr> UserConnectionList;
 
 class QScriptEngine;
 
@@ -32,10 +18,8 @@ class Framework;
 
 namespace TundraLogic
 {
-class TundraLogicModule;
-
 /// Implements Tundra server functionality.
-class TUNDRALOGIC_MODULE_API Server : public QObject
+class TUNDRAPROTOCOL_MODULE_API Server : public QObject
 {
     Q_OBJECT
 
@@ -45,27 +29,19 @@ public:
 
     /// Perform any per-frame processing
     void Update(f64 frametime);
-    
-    /// Create server scene & start server
-    /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
-        @return True if successful, false otherwise. No scene will be created if starting the server fails. */
-    bool Start(unsigned short port, QString protocol = "");
-    
-    /// Stop server & delete server scene
-    void Stop();
-    
+
     /// Get matching userconnection from a messageconnection, or null if unknown
     UserConnection* GetUserConnection(kNet::MessageConnection* source) const;
-    
+
     /// Get all connected users
     UserConnectionList& GetUserConnections() const;
-    
+
     /// Get all authenticated users
     UserConnectionList GetAuthenticatedUsers() const;
-        
+
     /// Set current action sender. Called by SyncManager
     void SetActionSender(UserConnection* user);
-    
+
     /// Returns the backend server object. Use this object to Broadcast messages
     /// to all currently connected clients.
     kNet::NetworkServer *GetServer() const;
@@ -80,7 +56,7 @@ signals:
         client and the applications on the client computer can read them as needed. */
     void UserConnected(int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
     
-    void MessageReceived(UserConnection *connection, kNet::message_id_t id, const char* data, size_t numBytes);
+    void MessageReceived(UserConnection *connection, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
     /// A user has disconnected
     void UserDisconnected(int connectionID, UserConnection* connection);
@@ -92,6 +68,14 @@ signals:
     void ServerStopped();
     
 public slots:
+    /// Create server scene & start server
+    /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
+        @return True if successful, false otherwise. No scene will be created if starting the server fails. */
+    bool Start(unsigned short port, QString protocol = "");
+
+    /// Stop server & delete server scene
+    void Stop();
+
     /// Get whether server is running
     bool IsRunning() const;
 
@@ -118,10 +102,10 @@ public slots:
     
     /// Initialize server datatypes for a script engine
     void OnScriptEngineCreated(QScriptEngine* engine);
-    
+
 private slots:
     /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
     /// Handle a user disconnecting
     void HandleUserDisconnected(UserConnection* user);

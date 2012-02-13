@@ -12,7 +12,7 @@ class UniqueIdGenerator
 {
 public:
     // Last replicated ID is guaranteed to fit inside 30 bits since we send them into the network as VLE8/16/32.
-    static const entity_id_t LAST_REPLICATED_ID = 0x3fffffff;
+    static const entity_id_t LAST_REPLICATED_ID = 0x3fffffff; // Used as a bitmask, so must be of form 2^n-1.
     static const entity_id_t FIRST_UNACKED_ID = 0x40000000;
     static const entity_id_t FIRST_LOCAL_ID = 0x80000000;
     

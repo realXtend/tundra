@@ -43,8 +43,9 @@ TextureAsset::~TextureAsset()
     Unload();
 }
 
-bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
+bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
+    PROFILE(TextureAsset_DeserializeFromData);
     if (!data)
     {
         LogError("TextureAsset::DeserializeFromData failed: Cannot deserialize from input null pointer!");
@@ -59,6 +60,9 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bo
     // A NullAssetFactory has been registered on headless mode.
     // We should never be here in headless mode.
     assert(!assetAPI->IsHeadless());
+
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+        allowAsynchronous = false;
 
     // Asynchronous loading
     // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
@@ -177,6 +181,7 @@ void TextureAsset::RegenerateAllMipLevels()
 */
 bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
+    PROFILE(TextureAsset_SerializeTo);
     if (ogreTexture.isNull())
     {
         LogWarning("SerializeTo: Called on an unloaded texture \"" + Name() + "\".");
@@ -230,6 +235,7 @@ bool TextureAsset::IsLoaded() const
 
 QImage TextureAsset::ToQImage(Ogre::Texture* tex, size_t faceIndex, size_t mipmapLevel)
 {
+    PROFILE(TextureAsset_ToQImage);
     if (!tex)
     {
         LogError("TextureAsset::ToQImage: Can't convert texture to QImage, null texture pointer");
@@ -369,6 +375,7 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
 void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps, bool dynamic,
                                        float xRadius, float yRadius)
 {
+    PROFILE(TextureAsset_SetContentsDrawText);
     text = text.replace("\\n", "\n");
 
     // Create transparent pixmap

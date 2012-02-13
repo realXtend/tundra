@@ -96,21 +96,14 @@ void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
 
 void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
 {
-    if(attribute == &contextName || attribute == &contextPriority)
-    {
-        inputContext.reset();
-        inputContext = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
-        connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
-    }
+    if (attribute == &contextName)
+        inputContext->SetName(contextName.Get());
+    else if (attribute == &contextPriority)
+        inputContext->SetPriority(contextPriority.Get());
     else if(attribute == &takeKeyboardEventsOverQt)
-    {
         inputContext->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
-    }
     else if(attribute == &takeMouseEventsOverQt)
-    {
         inputContext->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
-    }
 }
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *e)

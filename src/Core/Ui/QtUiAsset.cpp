@@ -28,7 +28,7 @@ QtUiAsset::~QtUiAsset()
 {
 }
 
-bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
+bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     refs.clear();
     originalData.clear();

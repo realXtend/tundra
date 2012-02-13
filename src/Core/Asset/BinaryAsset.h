@@ -28,7 +28,7 @@ public:
         data.clear(); 
     }
 
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous)
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
     {
         data.clear();
         data.insert(data.end(), data_, data_ + numBytes);

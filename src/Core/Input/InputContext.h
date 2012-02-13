@@ -119,9 +119,16 @@ public slots:
     // Trigger gesture event signals
     void TriggerGestureEvent(GestureEvent &gesture);
 
-    /// Returns the user-defined name of this InputContext. The name is
-    /// read-only, and associated with the context at creation time.
+    /// Returns the user-defined name of this InputContext. The name cannot be used as an unique identifier, it is only
+    /// present for human-readable purposes.
     QString Name() const { return name; }
+
+    /// Sets the name of this InputContext. The name cannot be used as an unique identifier, it is only
+    /// present for human-readable purposes.
+    void SetName(const QString &name_) { name = name_; }
+
+    /// Adjusts the priority of this input context.
+    void SetPriority(int newPriority);
 
     /// Tests whether the given key was pressed down in this context.
     /// @return The keypress count for the given keycode. If 0, means that
@@ -227,5 +234,7 @@ private:
     // InputContexts are noncopyable.
     InputContext(const InputContext &);
     void operator=(const InputContext &);
+
+    friend class InputAPI;
 };
 

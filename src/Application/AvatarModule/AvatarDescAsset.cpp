@@ -80,7 +80,7 @@ void AvatarDescAsset::DoUnload()
     properties_.clear();
 }
 
-bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
+bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     // Store the raw XML as a string
     QByteArray bytes((const char *)data, numBytes);
