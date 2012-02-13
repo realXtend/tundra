@@ -387,6 +387,9 @@ void Framework::Go()
     // Delete all modules.
     modules.clear();
 
+    // The module that registered renderer is now unloaded, reset the interface pointer.
+    renderer = 0;
+
     // Now that each module has been deleted, they've closed all their windows as well. Tear down the main UI.
     ui->Reset();
 

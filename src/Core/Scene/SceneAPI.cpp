@@ -64,6 +64,8 @@ ScenePtr SceneAPI::GetScene(const QString &name) const
 
 Scene *SceneAPI::MainCameraScene()
 {
+    if (!framework || !framework->Renderer())
+        return 0;
     return framework->Renderer()->MainCameraScene();
 }
 
