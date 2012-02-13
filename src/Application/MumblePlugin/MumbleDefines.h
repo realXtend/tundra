@@ -14,6 +14,7 @@
 
 typedef std::vector<QByteArray> ByteArrayVector;
 
+/// @cond PRIVATE
 struct MumblePluginState
 {
     bool serverSynced;
@@ -166,3 +167,5 @@ namespace MumbleAudio
 #else
 #define MUMBLE_STACKVAR(type, varname, count) type varname[count]
 #endif
+
+/// @endcond

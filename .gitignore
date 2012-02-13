@@ -64,7 +64,10 @@ pdb-files.zip
 # Python files
 *.pyc
 *.pyd
+
+# Python windows runtime deps
 *Python26.zip
+bin/pyplugins/websocketserver
 
 # editor temporary files
 *.swp

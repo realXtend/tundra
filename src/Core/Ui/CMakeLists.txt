@@ -21,7 +21,7 @@ add_definitions (-DUI_API_EXPORTS)
 # If defined, we are building the Ui project as a DLL.
 # add_definitions (-DUI_API_DLL)
 
-link_package (BOOST)
+#link_package (BOOST)
 link_package (QT4)
 link_modules (Framework Asset)
 

@@ -42,7 +42,7 @@
     - Encrypted UDP for input and output voice traffic.
     - Network mode auto detection and on the fly change from TCP to UDP and from UDP to TCP. This switch is done
       if UDP latencies get too high or ping stops responding. On the fly auto switch to TCP network mode should not be audible to the user.
-    - Celt codec that is tested to work against >=1.2.3 Murmur and native Mumble clients.
+    - Celt codec that is tested to work against >=1.2.3a Murmur and native Mumble clients.
       Essentially meaning native Mumble clients can also join the channels and everyone should hear each other.
     - Voice activity detection, mic noise suppression and mic volume amplification. Provides ready made audio wizard for easy configuration.
       VAD is self written (techniques studied from native mumble client), other audio processing uses speexdsp library. @see RunAudioWizard.

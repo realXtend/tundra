@@ -34,6 +34,7 @@
 
 // All timer resolutions are in microseconds.
 
+/// @cond PRIVATE
 namespace Mumble
 {
     class Timer 
@@ -57,3 +58,4 @@ namespace Mumble
 		bool operator>(const Timer &other) const;
     };
 }
+/// @endcond

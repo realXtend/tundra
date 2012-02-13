@@ -37,10 +37,7 @@
 #include <qendian.h>
 #include <Win.h> // Tundra include
 
-#ifndef DEFAULT_MUMBLE_PORT
-#define DEFAULT_MUMBLE_PORT 64738
-#endif
-
+/// @cond PRIVATE
 namespace Mumble
 {
     struct HostAddress {
@@ -102,3 +99,4 @@ namespace Mumble
     #endif
     #endif
 }
+/// @endcond

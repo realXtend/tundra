@@ -653,7 +653,10 @@ EXCLUDE                = ../.git \
                          ../src/Core/OgreRenderingModule/EC_OgreCustomObject.h \
                          ../src/Core/OgreRenderingModule/EC_OgreCustomObject.cpp \
                          ../src/Application/KinectModule \
-                         ../src/Application/OpenAssetImport
+                         ../src/Application/OpenAssetImport \
+                         ../src/Application/MumblePlugin/mumble \
+                         ../src/Application/MumblePlugin/Mumble.pb.h \
+                         ../src/Application/MumblePlugin/Mumble.pb.cc
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 

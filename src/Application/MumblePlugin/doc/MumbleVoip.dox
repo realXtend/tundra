@@ -1,0 +1,248 @@
+/**
+
+\page MumbleVoipSetup Setting up Mumble VOIP
+
+Tundra contains a built in Mumble VOIP (Voice over IP) client. The functionality is implemented by the MumblePlugin.
+
+This page explains Mumble and its server counterpart Murmur in short detail and then we focus on how you can enable Mumble VOIP capabilities in your scene with a client application.
+
+\section MumbleVoipFeatures MumblePlugin features
+
+- SSL TCP for tunneled input and output voice traffic and general protocol messages.
+- Encrypted UDP for input and output voice traffic.
+- Network mode auto detection and on the fly change from TCP to UDP and from UDP to TCP.
+- Celt codec 0.11.1 that is tested to work against >=1.2.3a Murmur and native Mumble clients. Essentially meaning native Mumble clients can also join the channels and everyone will hear each other.
+- Two way channel and private text messaging.
+- Voice activity detection, mic noise suppression and mic volume amplification. Positional audio playback and transmission. MumblePlugin provides ready made audio wizard for easy configuration to the end user fir all of mentioned settings.
+- Extensively exposed to scripting for you to implement your VOIP application frontend.
+
+\section MumbleVoipDetails Mumble and Murmur basic concepts
+
+Mumble project hosts two components, Mumble client and Murmur server. Mumble homepage http://www.mumble.com/ Mumble source https://github.com/mumble-voip/mumble 
+
+Now let's cover the basics in particular from a Tundra MumblePlugin and mumble client script point of view.
+
+<b>Security:</b> In Murmur you'll have multiple tiers of security. Murmur default is no password, anyone can get it and anyone can join any channel and send messages to anyone etc. For the most basic setup you probably want to secure your server with a master password that the script you will be using to connect will know, or maybe you can expect the users to know the password, the choice is yours. If you want to extend this security model you can define user accounts and grant them different channel access rights etc., but we won't be covering that now. See MumblePlugin::Connect and MumblePlugin::JoinChannel.
+
+The TCP voice traffic is done over SSL and UDP voice traffic is encrypted. This is accomplished with a crypto setup with the server over the secured TCP during/right after login procedures.
+
+<b>Note on SSL certificates:</b> The native Mumble client will ask for the user's input when it encouters a new Murmur server certificate. This is a simple popup with a possibility to inspect the certificate and accept or reject it. If you reject the certificate you cannot login to the server, if you accept it any SSL error on the QSslSocket are ignored. In Tundra this certificate popup is not presented to the end user, this is how it was in our previous implementation and that is how it works now too. If you are using a Mumble VOIP application and you hit "Connect" you are thereby accepting the SSL certificate that the server has, there are no other validation steps. This might change in the future if we figure out a non-intrusive way of doing so.
+
+<b>Channels:</b> When you join a Murmur server, you cannot directly specify the channel name at least on the protocol level. For our client you can specify a channel during login, it will connect to the root channel of the server and then immidiately join the specified channel. Murmur server has a tree-like structure of channels and the tree can have multiple root channels. At minimum the server will have one root channel with id 0, this is called "Root" but if you want to play around, the default superusers should be able to rename it. Also note in the context of Tundra you have to know the full name of the channel for it to be unique, eg. "Root/tundra/channel-one" so it is unique as multiple subchannels might have "channel-one". The end user should not have to worry about this and MumbleChannel has this information built-in. Preferably in code you will deal with channel IDs, see MumbleChannel::fullName and MumbleChannel::id.
+
+<b>In/Out voice transmission:</b> In the Mumble protocol you can mute your own voice from going out, but if you mute incoming voice you cannot send audio at the same time. These two modes are called selfMuted that means no audio sending and selfDeaf you are not sending or receiving. See MumblePlugin::SetOutputAudioMuted, MumblePlugin::SetInputAudioMuted and MumbleUser::isMuted, MumbleUser::isSelfMuted, MumbleUser::isSelfDeaf.
+
+<b>Audio preprocessing and positional audio:</b> As noted in the feature list, MumblePlugin provides audio processing. This is a subset of the features in the native Mumble client but for the end user perhaps the most important ones. As Tundra is a 3D virtual world client/server it's of course fitting that we also have positional audio. Clients can send their current position with the voice packets to the other clients. In Tundra we leverage the AudioAPI and SoundChannel positional audio playback capabilities and EC_SoundListener component to provide our current inworld position. From a script perspective your responsibility is only to set an active EC_SoundListener to the entity the client is controlling, e.g. the avatar. This is already done in the scenes/Avatar example scene, look into it for reference.
+
+At the end we cannot force anyone to listen to positional audio even if the voice stream would include it. The end user always has the ability to disable sending and playing back of positional audio from the audio wizard if he so chooses. Also the audible range is customizable. See MumblePlugin::RunAudioWizard for configuring audio processing, voice activity detection and positional audio.
+
+<b>Superusers:</b> Superusers are the equivalent of super admins in Mumble/Murmur. They can manipulate the channel tree, kick/ban/mute users etc. These capabilities are not implemented into MumblePlugin, yes you can login as superuser if you know the password, but our interface will not let you do administrative task on the server. For this you should use the native Mumble client. This can be implemented in the future if there are real world use cases for it. I could see how certain Tundra users would like to be admins on the server for example moderating a 3D conference, kicking/silencing out bad behaving clients on channels, giving users exclusive speech rights and silencing others and so forth. However MumblePlugin will notify you if you are doing something you don't have permission to with the MumblePlugin::PermissionDenied	signal.
+
+\section MumbleVoipServerSetup Setting up your Murmur server
+
+<span style="background-color: grey;color: white;padding: 3px;"><code>If you already have an older version of Mumble, first uninstall it. Version >=1.2.3<b>a</b> is required according to the Mumble project because <=1.2.3 versions have expired certificates!</code></span>
+
+-# Download the >=1.2.3a Mumble installer for your platform: http://www.mumble.com/ 
+-# In the <code>Custom Setup</code> step in the install process, include Murmur into the installed components. Murmur is NOT a part of the default installation.
+
+<b>Configuring:</b> Before running the server you may want to configure a master password and possibly change the port of the server. You need to open incoming and outgoing UDP and TCP to the port, default port is 64738. Go to the Mumble install directory and open <code>murmur.ini</code> to change the settings.
+
+<b>Defining and using superuser:</b> To setup a superuser password to your server, run <code>murmur -supw <your_password></code> on your command prompt in the installation folder. You only need to define the superuser password once (you can of course change it if you'd like), it will be remembered. You will be using this account to make your channel tree structure to the server. To do so, open the Mumble client and connect to your localhost server with username '<code>superuser</code>' and with the password you just set. Note that you'll have to of course run the server first before connecting. The <code>murmur -supw</code> won't run the server, it will just set the password, additionally the server should be closed when setting the password.
+
+<b>Starting the server:</b> To run Murmur server simply run the <code>murmur</code> executable. For Windows users this would be <code>murmur.exe</code> and it can also be found from start menu in the Mumble folder. You don't need any startup parameters once you have configured the .ini and defined the superuser password. If you want to host an always running Murmur server just configure your web server to always start this executable.
+
+\section MumbleVoipExampleCode Example Javascript code
+
+There is a more extensive example script of a Mumble application that is shipped as a part of Tundra. I won't go as deep here but instead cover the basics. See your Tundra installation folder for /scenes/Mumble/MumbleApplication.js for the full code. These examples take snippets from the full script but are modified to only show the important parts.
+
+Note that you can use the example script as-is in your world, it is a fully working client. Only things you might want to tweak is fill your server details to the <code>_connectionInfo</code> object at the top of the file. This way your users don't have to know or type your server information to the user interface, instead whey will be automatically filled in.
+
+<b>Detecting we are in a client and running the application</b>
+
+We want this application only to run if we are not on a server and we are not running in headless mode (no main window). Additionally Tundra must have MumblePlugin loaded, as it is an optional module and all startup .xml configs might not include it. First we import the needed Qt extension for the UI and then call our startup function.
+
+\code
+if (!server.IsRunning() && !framework.IsHeadless())
+{
+    if (framework.GetModuleByName("MumblePlugin") != null)
+    {
+        engine.ImportExtension("qt.core");
+        engine.ImportExtension("qt.gui");
+
+        StartClient();
+    }
+    else
+        console.LogError("MumblePlugin not preset, its not in your startup config?");
+}
+\endcode
+
+<b>Hooking up to MumblePlugin signals</b>
+
+\code
+// Globals
+var _userList = null;
+
+function StartClient()
+{
+    // NOTE: mumble variable is automatically exposed to javascript engines, 
+    // you don't have to do anything to acquire or request it. 
+    // It's there if the MumblePlugin module has been loaded on startup.
+    // Be careful not to do 'mumble = something;', this will remove the object
+    // from your script engine. You can do 'mumble = framework.GetModuleByName("MumblePlugin")' 
+    // to get it back, but I would advice avoiding hacking around like this!
+    
+    // Connection state signals
+    mumble.Connected.connect(OnConnected);
+    mumble.Disconnected.connect(OnDisconnected);
+    mumble.ConnectionRejected.connect(OnRejected);
+
+    // Channel join signal
+    mumble.JoinedChannel.connect(OnJoinedChannel);
+
+    // User state change signals
+    mumble.UserMuted.connect(OnUserLocalMuteChanged);
+    mumble.UserSelfMuted.connect(OnUserSelfMutedChange);
+    mumble.UserSelfDeaf.connect(OnUserSelfDeafChange);
+    mumble.UserSpeaking.connect(OnUserSpeakingChange);
+    mumble.UserPositionalChanged.connect(OnUserPositionalChange);
+    
+    // Channel text message signal
+    mumble.ChannelTextMessageReceived.connect(OnChannelTextMessageReceived);
+    
+    // Init our main ui
+    var widget = uil.LoadFromFile(uiRef);
+    
+    // Get needed ui widgets for signal connections
+    var connectButton = findChild(widget "connectButton");
+    var disconnectButton = findChild(widget, "disconnectButton");
+    var audioWizardButton = findChild(widget, "wizardButton");
+    _userList = findChild(widget, "userList");
+    
+    // Connect to our slot
+    connectButton.clicked.connect(ConnectToServer);
+    
+    // Direct signal to slot connections to MumblePlugin C++ QObject.
+    // Pressing the buttons will invoke slots directly in MumblePlugin
+    disconnectButton.clicked.connect(mumble, mumble.Disconnect); 
+    audioWizardButton.clicked.connect(mumble, mumble.RunAudioWizard);
+}
+
+function ConnectToServer()
+{
+    var connectionInfo =
+    {
+        // Modify if you want to connect to a remote host
+        host      : "127.0.0.1",
+        // Modify if you changed port
+        port      : 64738,
+        // Modify if you defined a server password
+        password  : "",             
+        // Modify to change the channel
+        channel   : "Root",
+        // Get this clients username from login properties
+        username  : client.GetLoginProperty("username"),
+
+        outputMutedAfterConnected : false,
+        intputMutedAfterConnected : false
+    };
+    
+    mumble.Connect(connectionInfo.host, connectionInfo.port, connectionInfo.username, connectionInfo.password, 
+        connectionInfo.channel, connectionInfo.outputMutedAfterConnected, connectionInfo.intputMutedAfterConnected);
+}
+\endcode
+
+<b>Handlign signals from MumblePlugin</b>
+
+Here are examples of your application functions that we connected MumblePlugin signals to in <code>StartClient()</b>. 
+In your actual application these functions should update the UI state, for this simple example we can just log prints.
+
+\code
+/* For the ramaining functions that are not defined here: OnUserLocalMuteChanged, OnUserSelfMutedChange, OnUserSelfDeafChange, 
+   OnUserSpeakingChange, OnUserPositionalChange and OnChannelTextMessageReceived you can update the user or inworld indicators that 
+   the user muted himself, is not receiving input or is currently speaking with different icons etc.
+   It up to you how you implement your user interface. As said before see /scenes/Mumble/MumbleApplication.js for a complete script example how to accomplish this.
+   The example also shows how to control your input/output voice, locally mute certain users etc. */
+
+function OnConnected(host, port, username)
+{
+    console.LogInfo("Connected to " + host + ":" + port.toString() + " as " + username);
+    
+    // Notify UI that you were connected, update state
+}
+
+function OnDisconnected(reason)
+{
+    if (reason != "")
+        console.LogInfo("Disconnected: " + reason);
+    else
+        console.LogInfo("Disconnected");
+        
+    // Notify UI that you were disconnected, update state
+}
+
+function OnRejected(rejectType, reason)
+{
+    // Show popup window that says "Wrong server password"
+    if (rejectType.value == 4) // enum RejectReasonWrongServerPW
+        QMessageBox.warning(ui.MainWindow(), "", reason);
+    // Show popup window that says "Server is full"
+    else if (rejectType.value == 6) // enum RejectReasonServerFull
+        QMessageBox.warning(ui.MainWindow(), "", "Server is full");
+}
+
+function OnJoinedChannel(mumbleChannel)
+{
+    console.LogInfo("Joined channel with id " + mumbleChannel.id + " and name '" + mumbleChannel.fullName + "'");
+
+    // Now that we joined a channel we want to track users joining and leaving the channel.
+    // This can be done safely without worrying if we get all channel users. If you connect at this stage you
+    // are guaranteed to get signals for all users in the channel including your self.
+    mumbleChannel.UserJoined.connect(OnUserJoinedPresentChannel);
+    mumbleChannel.UserLeft.connect(OnUserLeftPresentChannel);
+    
+    // Clear channel users list in the UI, you will populate it with the signals that will fire next
+    _userList.clear();
+}
+
+function OnUserJoinedPresentChannel(mumbleUser)
+{
+    // UI example using QListWidget and populating it with QListWidgetItems
+    console.LogInfo("User with id " + mumbleUser.id + " and name " + mumbleUser.name + " joined");
+    
+    var listItem = new QListWidgetItem(user.mumbleUser + " (" + mumbleUser.id.toString() + ")");
+    
+    // Store the user id into the object so we dont have to keep a separate map of them
+    listItem.setData(Qt.UserRole, mumbleUser.id);
+
+    // Make our name text bold
+    if (mumbleUser.isMe)
+    {
+        var font = listItem.font();
+        font.setBold(true);
+        listItem.setFont(font);
+    }
+    
+    _userList.addItem(listItem);
+}
+
+function OnUserLeftPresentChannel(userId)
+{
+    // Find user with id and remove it from list
+    console.LogInfo("User with id " + userId + " left");
+
+    var userData = null;
+    for(var i=0; i<_userList.count; ++i)
+    {
+        var item = _userList.item(i);
+        if (item != null && item.data(Qt.UserRole) == userId)
+        {
+            userData = { listItem: item, row: i };
+            break;
+        }
+    }
+    
+    if (userData != null)
+        _userList.takeAt(userData.row);
+}
+\endcode
+*/

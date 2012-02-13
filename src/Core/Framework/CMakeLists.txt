@@ -28,7 +28,7 @@ if (UNIX)
   target_link_libraries (${TARGET_NAME} rt)
 endif () 
 
-target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+#target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 
 link_package_ogg()
 link_package_vorbis()

@@ -8,6 +8,7 @@
 #include "ui_AudioWizard.h"
 #include <QPixmap>
 
+/// @cond PRIVATE
 namespace Mumble
 {
     class AudioBar;
@@ -66,3 +67,4 @@ namespace MumbleAudio
         QPixmap inactivePixmap;
     };
 }
+/// @endcond
