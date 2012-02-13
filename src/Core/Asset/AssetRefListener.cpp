@@ -44,14 +44,18 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
     
     assert(assetApi);
 
-    // Connect to AssetAPI signal once. Must keep as Qt::QueuedConnection for a delayed signal.
+    // Disconnect any existing hook to OnAssetCreated. This will be connected if the request fails.
     if (!myAssetAPI)
         myAssetAPI = assetApi;
     disconnect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)));
 
+    // If the ref is empty, don't go any further as it will just trigger the LogWarning below.
     assetRef = assetRef.trimmed();
-    requestedRef = AssetReference(assetRef, assetType);
+    if (assetRef.isEmpty())
+        return;
+
     ///\todo This needs to be removed.
+    requestedRef = AssetReference(assetRef, assetType);
     inspectCreated = false;
 
     AssetTransferPtr transfer = assetApi->RequestAsset(assetRef, assetType);
@@ -98,10 +102,12 @@ void AssetRefListener::OnAssetLoaded(AssetPtr assetData)
 
 void AssetRefListener::OnTransferFailed(IAssetTransfer* transfer, QString reason)
 {
+    ///\todo This whole logic needs to be removed. Also clean disconnect() of the signal in HandleAssetRefChange().
+
+    // Transfer failed, hook to AssetCreated to monitor if our asset gets created at a later stage.
     if (myAssetAPI)
         connect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)), Qt::QueuedConnection);
 
-    ///\todo This needs to be removed.
     inspectCreated = true;
     emit TransferFailed(transfer, reason);
 }

@@ -160,7 +160,7 @@ void EC_SlideShow::ShowSlide(int index)
         bool isRequested = listener->property("isRequested").toBool();
 
         // Empty ref
-        if (isEmpty)
+        if (isEmpty || textureRef.trimmed().isEmpty())
         {
             if (sceneComponentsPlugin)
                 canvas->Update(sceneComponentsPlugin->DrawMessageTexture(QString("No texture set for slide %1").arg(index), false));
@@ -580,12 +580,14 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
             assetListeners_.append(listener);
 
             // Stop here if empty ref or not a texture
-            if (slideRef.isEmpty() || framework->Asset()->GetResourceTypeFromAssetRef(slideRef) != "Texture")
+            if (slideRef.isEmpty())
             {
-                if (slideRef.isEmpty())
-                    listener->setProperty("isEmpty", true);
-                else if (framework->Asset()->GetResourceTypeFromAssetRef(slideRef) != "Texture")
-                    listener->setProperty("isTexture", false);
+                listener->setProperty("isEmpty", true);
+                continue;
+            }
+            if (framework->Asset()->GetResourceTypeFromAssetRef(slideRef) != "Texture")
+            {
+                listener->setProperty("isTexture", false);
                 continue;
             }
             
