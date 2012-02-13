@@ -26,6 +26,9 @@
 #include "MemoryLeakCheck.h"
 
 Q_DECLARE_METATYPE(UserConnection*);
+Q_DECLARE_METATYPE(TundraLogic::SyncManager*);
+Q_DECLARE_METATYPE(SceneSyncState*);
+Q_DECLARE_METATYPE(StateChangeRequest*);
 Q_DECLARE_METATYPE(UserConnectedResponseData*);
 
 using namespace kNet;
@@ -355,6 +358,9 @@ void qScriptValueToNull(const QScriptValue &value, T &v)
 void Server::OnScriptEngineCreated(QScriptEngine* engine)
 {
     qScriptRegisterQObjectMetaType<UserConnection*>(engine);
+    qScriptRegisterQObjectMetaType<SyncManager*>(engine);
+    qScriptRegisterQObjectMetaType<SceneSyncState*>(engine);
+    qScriptRegisterQObjectMetaType<StateChangeRequest*>(engine);
     ///\todo Write proper serialization and deserialization.
     qScriptRegisterMetaType<UserConnectedResponseData*>(engine, qScriptValueFromNull<UserConnectedResponseData*>, qScriptValueToNull<UserConnectedResponseData*>);
 }

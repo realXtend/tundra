@@ -635,3 +635,12 @@ QString Entity::ToString() const
     else
         return QString("Entity \"") + name + "\" (ID: " + QString::number(Id()) + ")";
 }
+
+QObjectList Entity::ComponentsList() const
+{
+    QObjectList compList;
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (i->second.get())
+            compList << i->second.get();
+    return compList;
+}
