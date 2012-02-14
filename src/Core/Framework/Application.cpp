@@ -215,8 +215,8 @@ void Application::Message(const char *title, const char *text)
 #ifdef WIN32
     MessageBoxA(0, text != 0 ? text : "", title != 0 ? title : "", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
-    std::cerr << "Application::Message not implemented for current platform!" << std::endl;
-   // assert(false && "Not implemented!");
+    ///\todo The intention is to write a modal system message, but this simply prints to log.
+    std::cerr << "Application::Message: " << title << ": " << text << std::endl;
 #endif
 }
 void Application::Message(const std::string &title, const std::string &text)
@@ -229,8 +229,8 @@ void Application::Message(const wchar_t *title, const wchar_t *text)
 #ifdef WIN32
     MessageBoxW(0, text != 0 ? text : L"", title != 0 ? title : L"", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
-    std::cerr << "Application::Message not implemented for current platform!" << std::endl;
-   // assert(false && "Not implemented!");
+    ///\todo The intention is to write a modal system message, but this simply prints to log.
+    std::wcerr << L"Application::Message: " << title << L": " << text << std::endl;
 #endif
 }
 
