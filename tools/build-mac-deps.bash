@@ -391,7 +391,7 @@ else
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
     mv x CMakeLists.txt
     cmake . -DCMAKE_BUILD_TYPE=Debug
-    make -j $nprocs
+    make -j$NPROCS
     cp lib/libkNet.dylib $prefix/lib/
     rsync -r include/* $prefix/include/
     touch $tags/$what-done
