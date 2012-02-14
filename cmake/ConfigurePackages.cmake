@@ -203,8 +203,6 @@ macro (configure_sparkle)
 endmacro (configure_sparkle)
 
 macro(use_package_knet)
-    message ("** Configuring KNET")
-    
     set(KNET_DIR ${ENV_KNET_DIR_QT47})
     
     # If KNET_DIR_QT47 was not specified, use kNet from TUNDRA_DEP_PATH.
@@ -228,8 +226,6 @@ macro(link_package_knet)
 endmacro()
 
 macro(use_package_bullet)
-    # todo: convert to sagase_configure_package and sagase_report or custom FindBullet.cmake
-    message(STATUS "todo: fix use_package_bullet() from hardcoded one to more robust using sagase.")
     if (WIN32)
         if ("${ENV_BULLET_DIR}" STREQUAL "")
             set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH}/Bullet)
@@ -317,8 +313,6 @@ endmacro()
 
 
 macro(use_package_assimp)
-    # todo: convert to sagase_configure_package and sagase_report or custom FindAssimp.cmake
-    message(STATUS "todo: fix use_package_assimp() from hardcoded one to more robust using sagase.")
     if (WIN32)
         if ("${ENV_ASSIMP_DIR}" STREQUAL "")
            set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH}/assimp)
