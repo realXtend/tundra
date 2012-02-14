@@ -93,7 +93,7 @@ cp -lf $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
 
 
 what=kNet
-if false && test -f $tags/$what-done; then 
+if test -f $tags/$what-done; then 
    echo $what is done
 else
     cd $build
