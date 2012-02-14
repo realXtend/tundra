@@ -33,9 +33,6 @@ if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only ne
     target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
 
-link_package_ogg()
-link_package_vorbis()
-
 SetupCompileFlagsWithPCH()
 
 final_target()

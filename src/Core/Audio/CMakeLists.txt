@@ -28,7 +28,6 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 # Use the SHARED option if we are building Audio project as a shared library.
 #build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-#link_package(BOOST)
 link_package(QT4)
 link_package(OPENAL)
 link_package_ogg()

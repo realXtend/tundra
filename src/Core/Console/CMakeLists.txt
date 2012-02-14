@@ -23,7 +23,6 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 #add_definitions(-DCONSOLE_API_EXPORTS)
 
-#link_package(BOOST)
 link_package(QT4)
 
 link_modules(Framework Math Ui Input)
