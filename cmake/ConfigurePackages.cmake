@@ -205,28 +205,21 @@ endmacro (configure_sparkle)
 macro(use_package_knet)
     message ("** Configuring KNET")
     
-    # Use KNET_DIR_QT47 if there, fallback to TUNDRA_DEP_PATH
-    if ("${ENV_KNET_DIR_QT47}" STREQUAL "")
-        set (KNET_DIR ${ENV_TUNDRA_DEP_PATH}/include)
-    else ()
-        message (STATUS "-- Using from env variable KNET_DIR_QT47")
-        set (KNET_DIR ${ENV_KNET_DIR_QT47})
-    endif ()
+    set(KNET_DIR ${ENV_KNET_DIR_QT47})
     
-    # Report findings
-    include_directories (${KNET_DIR}/include)
-    message (STATUS "-- Include Directories:")
-    message (STATUS "       " ${KNET_DIR}/include)
-    link_directories (${KNET_DIR}/lib)
-    message (STATUS "-- Library Directories:")
-    message (STATUS "       " ${KNET_DIR}/lib)
-    message (STATUS "-- Libraries:")
-    message (STATUS "       kNet")
-    message ("")
-    
-    if (UNIX)    
-        add_definitions (-DUNIX)
+    # If KNET_DIR_QT47 was not specified, use kNet from TUNDRA_DEP_PATH.
+    if ("${KNET_DIR}" STREQUAL "")
+        if (MSVC)
+            set(KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
+        else()
+            set(KNET_DIR ${ENV_TUNDRA_DEP_PATH})
+        endif()
     endif()
+
+    include_directories (${KNET_DIR}/include)
+    link_directories (${KNET_DIR}/lib)
+
+    message (STATUS "Using kNet from $(KNET_DIR)")
 endmacro()
 
 macro(link_package_knet)
