@@ -236,6 +236,8 @@ if (MSVC)
     # In Visual Studio, use unicode character set
     add_definitions(-DUNICODE -D_UNICODE)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+else()
+    add_definitions(-DUNIX) # Currently, kNet uses this flag for Unix OSes. (required also for client-side headers). TODO: Clean this up so it's not required.
 endif()
 
 # On all platforms, we enable PCH files by default.
