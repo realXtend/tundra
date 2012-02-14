@@ -161,7 +161,11 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     QString originalAssetRef = assetRef;
     assetRef = assetRef.trimmed();
     QString assetRefWithoutSubAssetName;
-    AssetAPI::ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, 0, 0, &assetRefWithoutSubAssetName);
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, 0, 0, &assetRefWithoutSubAssetName);
+    
+    assert(refType == AssetRefExternalUrl);
+    UNREFERENCED_PARAM(refType);
+    
     assetRef = assetRefWithoutSubAssetName;
     if (!IsValidRef(assetRef))
     {
