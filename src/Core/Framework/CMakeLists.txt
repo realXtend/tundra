@@ -28,7 +28,10 @@ if (UNIX)
   target_link_libraries (${TARGET_NAME} rt)
 endif () 
 
-#target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+# Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propapage from here to each library.
+if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
+    target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+endif()
 
 link_package_ogg()
 link_package_vorbis()

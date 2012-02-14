@@ -303,8 +303,10 @@ message ("\n\n=========== Configuring Dependencies ===========\n")
 # Find needed external libraries, abort on error
 configure_boost()
 configure_qt4()
-configure_python()
-#configure_python_qt()
+if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
+    configure_python()
+    configure_python_qt()
+endif()
 configure_ogre()
 configure_qtpropertybrowser()
 configure_openal ()
