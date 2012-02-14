@@ -22,7 +22,7 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules(Math Scene Ui Input Asset Audio Console)
 
-if (UNIX)
+if (UNIX AND NOT APPLE)
   # for dlopen() etc used in PluginAPI
   target_link_libraries (${TARGET_NAME} dl)
   target_link_libraries (${TARGET_NAME} rt)
