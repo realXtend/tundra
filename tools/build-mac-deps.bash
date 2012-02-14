@@ -62,7 +62,7 @@ RELWITHDEBINFO="0"
 RUN_CMAKE="1"
 RUN_MAKE="1"
 NPROCS=`sysctl -n hw.ncpu`
-CLIENT=
+viewer=
 
 if [ $# -eq "$NO_ARGS" ]; then
     echo " ERROR: No options selected"
@@ -98,7 +98,7 @@ while [ "$1" != "" ]; do
                                                 shift
                                                 continue
                                             fi
-                                            CLIENT=$1
+                                            viewer=$1
                                             ;;
 
         -q | --qt-path )                    shift
@@ -150,12 +150,25 @@ if [ $REQUIRED_ARGS_COUNT -ne $REQUIRED_ARGS ]; then
     fnDisplayHelpAndExit
 fi
 
-if [ ! -d $CLIENT ]; then
-    CLIENT=$DEPS/../tundra2
+# If the path to the Tundra root directory was not specified, assume the script
+# is being run from (gittrunk)/tools, so viewer=(gittrunk).
+if [ -z $viewer] || [! -d $viewer]; then
+    cwd=$(pwd)       # Temporarily save this path to the build script.
+    viewer=$(pwd)/.. # Assume the build script lies at gittrunk/tools.
+    cd $viewer
+    viewer=$(pwd)
+    cd $cwd        # Go back to not alter cwd.
 fi
 
-if [ ! -d $QTDIR ]; then
-    export QTDIR=/usr/local/Trolltech/Qt-4.7.1
+if [ -z $QTDIR] || [! -d $QTDIR ]; then
+    #TODO This is very very prone to fail on anyone's system. (but at least we will correctly instruct to use --qt-path)
+    if [ -d /usr/local/Trolltech/Qt-4.7.1 ]; then
+        export QTDIR=/usr/local/Trolltech/Qt-4.7.1
+    elif [ -d ~/QtSDK/Desktop/Qt/4.8.0/gcc ]; then
+        export QTDIR=~/QtSDK/Desktop/Qt/4.8.0/gcc
+    else
+       echo "ERROR! Cannot find Qt. Please specify Qt directory with the --qt-path parameter."
+    fi
 fi
 
 prefix=$DEPS
@@ -338,13 +351,7 @@ else
     touch $tags/$what-done
 fi
 
-echo Prefix is 
-echo $prefix
-BOOST_ROOT=$prefix/include
-BOOST_ROOT=/Users/lc/naali-deps/include
-QTDIR=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc
-QT_DIR=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc
-viewer=/Users/lc/naali
+BOOST_ROOT=$DEPS/include
 
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
@@ -406,13 +413,11 @@ fi
 #    touch $tags/$what-done
 #fi
 
-pwd
-echo $prefix
-echo $CLIENT #TODO this comes out empty.
-echo BOOST_ROOT IS $BOOST_ROOT
 BOOST_INCLUDEDIR=/Users/lc/naali-deps/include/boost
-	
-cd /Users/lc/naali
+
+# All deps are now fetched and built. Do the actual Tundra build.
+
+cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
     TUNDRA_DEP_PATH=$prefix cmake .
 fi

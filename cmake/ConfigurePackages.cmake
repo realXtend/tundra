@@ -24,7 +24,11 @@ if ("${BOOST_ROOT}" STREQUAL "")
 endif()
 
 if ("${BOOST_ROOT}" STREQUAL "")
-   SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
+   if (NOT APPLE)
+      SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
+   else()
+      SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/include)
+   endif()
 endif()
 
 message(STATUS "BOOST_ROOT set to " ${BOOST_ROOT})
