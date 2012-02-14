@@ -1,1 +1,0 @@
-tundrad --server --headless --config server-headless.xml
