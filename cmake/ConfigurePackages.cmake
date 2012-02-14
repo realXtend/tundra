@@ -51,22 +51,6 @@ if (APPLE)
     set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
 endif()
 
-# Setting the BOOST_ROOT will result in linking failures on Visual Studio as found release and debug
-# libs get mixed up. On windows we will empty out the Boost_LIBRARIES list and count on the 
-# auto-linking feature boost provides. http://www.boost.org/doc/libs/1_35_0/more/getting_started/windows.html#auto-linking
-#if (MSVC)
-#    # Reset libraries list so VC will perform auto-linking.
-#    set (BOOST_LIBRARIES "")
-#    # Not needed anymore as BOOST_ROOT finds these properly. 
-#    # Didnt remove yet eiher so nothing breaks, added empty checks instead to not add duplicated.
-#    if ("${BOOST_INCLUDE_DIRS}" STREQUAL "")
-#        set (BOOST_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS} $ENV{BOOST_ROOT}/include)
-#    endif ()
-#    if ("${BOOST_LIBRARY_DIRS}" STREQUAL "")
-#        set (BOOST_LIBRARY_DIRS ${BOOST_LIBRARY_DIRS} $ENV{BOOST_ROOT}/lib)
-#    endif ()
-#endif ()
-
 endmacro (configure_boost)
 
 macro (configure_qt4)
@@ -207,51 +191,6 @@ macro (configure_openal)
         endif ()
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
-
-macro (configure_ogg)
-    sagase_configure_package(OGG
-        NAMES ogg libogg
-        COMPONENTS ogg libogg
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libogg ${ENV_TUNDRA_DEP_PATH}/ogg)
-        
-        # Force include dir on MSVC
-        if (MSVC)
-             set (OGG_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/libogg/include)
-        endif ()
-    sagase_configure_report (OGG)
-endmacro (configure_ogg)
-
-macro (configure_vorbis)
-if (APPLE)
-    sagase_configure_package(VORBIS
-        NAMES vorbisfile vorbis libvorbis libvorbisfile
-        COMPONENTS vorbis libvorbis vorbisfile libvorbisfile
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libvorbis)
-else()
-    sagase_configure_package(VORBIS
-        NAMES vorbisfile vorbis libvorbis
-        COMPONENTS vorbis libvorbis libvorbisfile
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libvorbis)
-endif()
-        # Force include dir on MSVC
-        if (MSVC)
-             set (VORBIS_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/libvorbis/include)
-        endif ()
-    sagase_configure_report (VORBIS)
-endmacro (configure_vorbis)
-
-macro (configure_theora)
-    sagase_configure_package(THEORA
-        NAMES theora libtheora
-        COMPONENTS theora libtheora
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libtheora)
-        
-        # Force include dir on MSVC
-        if (MSVC)
-             set (THEORA_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/libtheora/include)
-        endif ()
-    sagase_configure_report (THEORA)
-endmacro (configure_theora)
 
 macro (configure_sparkle)
     FIND_LIBRARY (SPARKLE_LIBRARY NAMES Sparkle)

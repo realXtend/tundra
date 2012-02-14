@@ -313,9 +313,6 @@ configure_openal ()
 use_package_ogg()
 use_package_vorbis()
 use_package_theora()
-#configure_ogg ()
-#configure_vorbis ()
-#configure_theora()
 
 # This will find kNet and set the global include and library directories
 use_package_knet() 
@@ -324,8 +321,6 @@ message ("\n** Adding global include and link directories")
 use_package(OGRE)
 use_package(QT4)
 use_package(OPENAL)
-#use_package(OGG)
-#use_package(VORBIS)
 
 set (CORE_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/src/Core)
 include_directories (${CORE_MODULE_DIRECTORY}/Input)
