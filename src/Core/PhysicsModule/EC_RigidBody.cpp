@@ -10,6 +10,7 @@
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
+
 #include "Profiler.h"
 #include "OgreMeshAsset.h"
 #include "Entity.h"
@@ -21,12 +22,10 @@
 #include "IAssetTransfer.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
-#include "Geometry/AABB.h"
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
-
 #include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
 #include <set>
 
