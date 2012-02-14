@@ -351,8 +351,6 @@ else
     touch $tags/$what-done
 fi
 
-BOOST_ROOT=$DEPS/include
-
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
    echo $what is done
@@ -413,9 +411,12 @@ fi
 #    touch $tags/$what-done
 #fi
 
-BOOST_INCLUDEDIR=/Users/lc/naali-deps/include/boost
-
 # All deps are now fetched and built. Do the actual Tundra build.
+
+# Explicitly specify where the tundra deps boost resides, to allow cmake FindBoost pick it up.
+export BOOST_ROOT=$DEPS/include
+export BOOST_INCLUDEDIR=$DEPS/include/boost
+export BOOST_LIBRARYDIR=$DEPS/lib
 
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
