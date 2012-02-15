@@ -171,12 +171,17 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         foreach(AssetItem *item, sel.assets)
             if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
             {
-                deleteSourceAction->setDisabled(true);
                 deleteCacheAction->setDisabled(true);
-                reloadFromSourceAction->setDisabled(true);
+                // If asset is an external URL, do not disable deleteFromSource & reloadFromSource
+                if (AssetAPI::ParseAssetRef(item->Asset()->Name()) != AssetAPI::AssetRefExternalUrl)
+                {
+                    deleteSourceAction->setDisabled(true);
+                    reloadFromSourceAction->setDisabled(true);
+                }
                 unloadAction->setDisabled(true);
                 openFileLocationAction->setDisabled(true);
                 openInExternalEditor->setDisabled(true);
+                
                 break;
             }
 
