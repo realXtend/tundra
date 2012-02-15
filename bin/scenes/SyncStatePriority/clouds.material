@@ -1,0 +1,14 @@
+material scenesyncstate_clouds 
+{
+	technique
+	{
+		pass
+		{
+            emissive 1 1 1 1
+			texture_unit
+			{
+				texture clouds.jpg
+			}
+		}
+	}
+}

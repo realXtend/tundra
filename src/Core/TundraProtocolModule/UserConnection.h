@@ -15,6 +15,7 @@
 #include <QObject>
 
 class Entity;
+class SceneSyncState;
 
 /// Represents a client connection on the server side.
 class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
@@ -48,7 +49,7 @@ public slots:
     /// Execute an action on an entity, sent only to the specific user
     void Exec(QObject* entity, const QString &action, const QStringList &params);
     
-    /// Get connectionid
+    /// Get connection id
     int GetConnectionID() const;
     
     /// Get raw login data
