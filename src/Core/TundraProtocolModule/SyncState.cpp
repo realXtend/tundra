@@ -10,6 +10,7 @@
 
 #include "LoggingFunctions.h"
 
+/// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 typedef std::map<entity_id_t, ComponentIdList >::const_iterator PendingConstIter;
 typedef std::map<entity_id_t, ComponentIdList >::iterator PendingIter;
 
@@ -27,6 +28,7 @@ SceneSyncState::~SceneSyncState()
 
 // Public slots
 
+/// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 QVariantList SceneSyncState::PendingEntityIDs() const
 {
     QVariantList list;
@@ -42,6 +44,7 @@ QVariantList SceneSyncState::PendingEntityIDs() const
     return list;
 }
 
+/// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 entity_id_t SceneSyncState::NextPendingEntityID() const
 {
     if (pendingComponents.empty())
@@ -52,11 +55,13 @@ entity_id_t SceneSyncState::NextPendingEntityID() const
     return front->first;
 }
 
+/// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 bool SceneSyncState::HasPendingEntities() const
 {
     return !pendingComponents.empty();
 }
 
+/// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 bool SceneSyncState::HasPendingEntity(entity_id_t id) const
 {
     PendingConstIter iter = pendingComponents.find(id);
@@ -68,6 +73,7 @@ bool SceneSyncState::HasPendingEntity(entity_id_t id) const
     return !iter->second.empty();
 }
 
+/// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 void SceneSyncState::MarkEntityPending(entity_id_t id)
 {
     if (!isServer_)
@@ -83,6 +89,7 @@ void SceneSyncState::MarkEntityPending(entity_id_t id)
     FillPendingComponents(id);  // Mark all components from the entity as pending
 }
 
+/// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 void SceneSyncState::MarkPendingEntitiesDirty()
 {
     if (!isServer_)
@@ -101,6 +108,7 @@ void SceneSyncState::MarkPendingEntitiesDirty()
         MarkPendingEntityDirty(entId);
 }
 
+/// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 void SceneSyncState::MarkPendingEntityDirty(entity_id_t id)
 {
     if (!isServer_)
@@ -183,6 +191,11 @@ void SceneSyncState::MarkComponentProcessed(entity_id_t id, component_id_t compI
 
 void SceneSyncState::MarkEntityDirty(entity_id_t id)
 {
+    PROFILE(SyncState_MarkEntityDirty);
+
+    ///@todo This logic should be removed. If a script rejects a change, it results in the change *never* being sent to the client.
+    ///      E.g. if the script decides to reject a change due to the target entity being too far, and then the entity comes closer,
+    ///      the change will not be replicated again, since rejecting here caused SyncState to lose tracking the change.
     // Return if the whole entity change request was rejected
     if (isServer_ && !ShouldMarkAsDirty(id))
         return;
@@ -199,6 +212,9 @@ void SceneSyncState::MarkEntityDirty(entity_id_t id)
 
 void SceneSyncState::MarkEntityRemoved(entity_id_t id)
 {
+    PROFILE(SyncState_MarkEntityRemoved);
+
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     if (isServer_)
         RemovePendingEntity(id);
 
@@ -224,6 +240,7 @@ void SceneSyncState::MarkEntityRemoved(entity_id_t id)
 
 void SceneSyncState::MarkComponentDirty(entity_id_t id, component_id_t compId)
 {
+    PROFILE(SyncState_MarkComponentDirty);
     if (isServer_ && !ShouldMarkAsDirty(id))
         return;
 
@@ -236,6 +253,8 @@ void SceneSyncState::MarkComponentDirty(entity_id_t id, component_id_t compId)
 
 void SceneSyncState::MarkComponentRemoved(entity_id_t id, component_id_t compId)
 {
+    PROFILE(SyncState_MarkComponentRemoved);
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     if (isServer_)
         RemovePendingComponent(id, compId);
 

@@ -288,24 +288,31 @@ signals:
 
 public slots:
     /// Removes the entity from the sync state and puts it to the pending list.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     void MarkEntityPending(entity_id_t id);
 
     /// Adds all currently pending entities to the clients sync state.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     void MarkPendingEntitiesDirty();
 
     /// Adds entity with id to the clients sync state.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     void MarkPendingEntityDirty(entity_id_t id);
 
     /// Returns all pending entity IDs.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     QVariantList PendingEntityIDs() const;
 
     /// Returns 0 if no pending entities.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     entity_id_t NextPendingEntityID() const;
 
     /// Returns if we have any pending entitys.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     bool HasPendingEntities() const;
 
     /// Returns if we have pending entity with id.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     bool HasPendingEntity(entity_id_t id) const;
 
 public:
@@ -346,6 +353,9 @@ private:
     // Fills entitys pending components with all of its component ids.
     void FillPendingComponents(entity_id_t id);
 
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
+    /// @todo This data structure needs to be removed. This is double book-keeping. Instead, track the dirty and pending entities
+    ///       with the same dirty bit in EntitySyncState and ComponentSyncState.
     std::map<entity_id_t, ComponentIdList > pendingComponents;
 
     StateChangeRequest changeRequest_;
