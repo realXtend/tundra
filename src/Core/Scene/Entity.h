@@ -52,7 +52,6 @@ class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     Q_PROPERTY(bool local READ IsLocal)
     Q_PROPERTY(bool unacked READ IsUnacked)
     Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary)
-    Q_PROPERTY(QObjectList components READ ComponentsList);
 
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
