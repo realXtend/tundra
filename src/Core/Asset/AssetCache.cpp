@@ -126,8 +126,9 @@ QDateTime AssetCache::LastModified(const QString &assetRef)
 
     // Ignore msec
     QDateTime dateTime;
+    dateTime.setTimeSpec(Qt::UTC);
     dateTime.setDate(QDate((int)sysTime.wYear, (int)sysTime.wMonth, (int)sysTime.wDay));
-    dateTime.setTime(QTime((int)sysTime.wHour, (int)sysTime.wMinute, (int)sysTime.wSecond, 0)); 
+    dateTime.setTime(QTime((int)sysTime.wHour, (int)sysTime.wMinute, (int)sysTime.wSecond, 0));
     return dateTime;
 #else
     QDateTime dateTime;
