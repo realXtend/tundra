@@ -206,6 +206,80 @@ namespace MumbleNetwork
         return QString::fromUtf8(str.data(), static_cast<int>(str.length()));
     }
 
+    struct MumbleUserState
+    {
+        MumbleUserState()
+        {
+            hasId = false;
+            hasChannelId = false;
+            hasName = false;
+            hasComment = false;
+            hasHash = false;
+            hasSelfMute = false;
+            hasSelfDeaf = false;
+            
+            id = 0;
+            channelId =0;
+            selfMuted = false;
+            selfDeaf = false;
+            isMe = false;
+        }
+
+        void Merge(const MumbleUserState &other)
+        {
+            if (id != other.id)
+                return;
+
+            // Might see tedious but we must be able to merge the states.
+            // This way changes wont be lost if a state is pending to be applied
+            // and while doing so gets multiple updates.
+
+            if (other.hasId)
+            {
+                hasId = true;
+                id = other.id;
+            }
+            if (other.hasChannelId)
+            {
+                hasChannelId = true;
+                channelId = other.channelId;
+            }
+            if (other.hasName)
+            {
+                hasName = true;
+                name = other.name;
+            }
+            if (other.hasComment)
+            {
+                hasComment = true;
+                comment = other.comment;
+            }
+            if (other.hasHash)
+            {
+                hasHash = true;
+                hash = other.hasHash;
+            }
+            if (other.hasSelfMute)
+            {
+                hasSelfMute = true;
+                selfMuted = other.selfMuted;
+            }
+            if (other.hasSelfDeaf)
+            {
+                hasSelfDeaf = true;
+                selfDeaf = other.selfDeaf;
+            }
+        }
+
+        // State change indicators
+        bool hasId, hasChannelId, hasName, hasComment, hasHash, hasSelfMute, hasSelfDeaf;
+
+        // Actual state value if indicator for it is true
+        uint id, channelId;
+        QString name, comment, hash;
+        bool selfMuted, selfDeaf, isMe;
+    };
+
     struct VoicePacketInfo
     {
         VoicePacketInfo(std::vector<QByteArray> encodedFrames_) 

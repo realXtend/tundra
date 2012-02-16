@@ -71,7 +71,7 @@ signals:
 
     void ChannelUpdate(uint id, uint parentId, QString name, QString description);
     void ChannelRemoved(uint id);
-    void UserUpdate(uint id, uint channelId, QString name, QString comment, QString hash, bool selfMuted, bool selfDeaf, bool isMe);
+    void UserUpdate(MumbleNetwork::MumbleUserState userState);
     void UserLeft(uint id, uint actorId, bool banned, bool kicked, QString reason);
     
     void AudioReceived(uint userId, uint seq, ByteArrayVector frames, bool isPositional, float3 pos);

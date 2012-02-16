@@ -321,7 +321,7 @@ private slots:
     void OnTextMessageReceived(bool isPrivate, QList<uint> channelIds, uint senderId, QString message);
     void OnChannelUpdate(uint id, uint parentId, QString name, QString description);
     void OnChannelRemoved(uint id);
-    void OnUserUpdate(uint id, uint channelId, QString name, QString comment, QString hash, bool selfMuted, bool selfDeaf, bool isMe);
+    void OnUserUpdate(MumbleNetwork::MumbleUserState userState);
     void OnUserLeft(uint id, uint actorId, bool banned, bool kicked, QString reason);
 
     // Stores to local user profile disk config if saveConfig is true. Receives this signal from AudioWizards OK, Cancel and Apply buttons.
@@ -347,7 +347,7 @@ private:
     MumbleAudio::AudioProcessor *audio_;
 
     QList<MumbleChannel*> channels_;
-    QList<MumbleUser*> pendingUsers_;
+    QList<MumbleNetwork::MumbleUserState> pendingUsersStates_;
     
     MumblePluginState state;
 

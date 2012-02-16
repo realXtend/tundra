@@ -225,8 +225,7 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
     connect(network_, SIGNAL(ChannelUpdate(uint, uint, QString, QString)), SLOT(OnChannelUpdate(uint, uint, QString, QString)), Qt::QueuedConnection);
     connect(network_, SIGNAL(ChannelRemoved(uint)), SLOT(OnChannelRemoved(uint)), Qt::QueuedConnection);
     connect(network_, SIGNAL(UserLeft(uint, uint, bool, bool, QString)), SLOT(OnUserLeft(uint, uint, bool, bool, QString)), Qt::QueuedConnection);
-    connect(network_, SIGNAL(UserUpdate(uint, uint, QString, QString, QString, bool, bool, bool)), 
-        SLOT(OnUserUpdate(uint, uint, QString, QString, QString, bool, bool, bool)), Qt::QueuedConnection);
+    connect(network_, SIGNAL(UserUpdate(MumbleNetwork::MumbleUserState)), SLOT(OnUserUpdate(MumbleNetwork::MumbleUserState)), Qt::QueuedConnection);
 
     // Handle audio signals from network thread to audio thread.
     connect(network_, SIGNAL(AudioReceived(uint, uint, ByteArrayVector, bool, float3)), audio_, SLOT(OnAudioReceived(uint, uint, ByteArrayVector, bool, float3)), Qt::QueuedConnection);
@@ -237,10 +236,8 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
 
 void MumblePlugin::Disconnect(QString reason)
 {
-    foreach(MumbleUser *pu, pendingUsers_)
-        SAFE_DELETE(pu);
-    pendingUsers_.clear();
-    
+    pendingUsersStates_.clear();
+
     // Note that this frees all channel users as well.
     foreach(MumbleChannel *c, channels_)
         SAFE_DELETE(c);
@@ -339,7 +336,7 @@ bool MumblePlugin::SendTextMessage(uint userId, const QString &message)
 
 bool MumblePlugin::JoinChannel(QString fullName)
 {
-    if (state.connectionState != MumbleConnected || !network_)
+    if (!state.serverSynced || state.connectionState != MumbleConnected || !network_)
     {
         LogError(LC + "Could not find channel with full name \"" + fullName + "\" not connected to a server.");
         return false;
@@ -359,10 +356,22 @@ bool MumblePlugin::JoinChannel(QString fullName)
 
 bool MumblePlugin::JoinChannel(uint id)
 {
-    if (state.connectionState != MumbleConnected || !network_)
+    if (!state.serverSynced || state.connectionState != MumbleConnected || !network_)
     {
         LogError(LC + "Could not find channel with id\"" + QString::number(id) + "\" for join operation.");
         return false;
+    }
+
+    MumbleUser *me = Me();
+    if (!me)
+    {
+        LogError(LC + "Could not join channel, own user ptr null!");
+        return false;
+    }
+    if (me->channelId == id)
+    {
+        LogInfo(LC + "Already joined to the requested channel.");
+        return true;
     }
 
     MumbleChannel *channel = Channel(id);
@@ -786,14 +795,39 @@ void MumblePlugin::OnChannelRemoved(uint id)
     }
 }
 
-void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString comment, QString hash, bool selfMuted, bool selfDeaf, bool isMe)
+void MumblePlugin::OnUserUpdate(MumbleNetwork::MumbleUserState userState)
 {
+    if (!userState.hasId)
+    {
+        LogWarning(LC + "User update received without user id, cannot act on it!");
+        return;
+    }
+
+    // Not yet synced, push/merge to pending
+    if (!state.serverSynced)
+    {
+        bool pendingMerged = false;
+        for(int iPend=0; iPend<pendingUsersStates_.size(); iPend++)
+        {
+            MumbleNetwork::MumbleUserState &pendingState = pendingUsersStates_[iPend];
+            if (pendingState.id == userState.id)
+            {
+                pendingState.Merge(userState);
+                pendingMerged = true;
+                break;
+            }
+        }
+        if (!pendingMerged)
+            pendingUsersStates_.push_back(userState);
+        return;
+    }
+
     bool channelChange = false;
     bool mutedChange = false;
     bool selfMutedChange = false;
     bool selfDeafChange = false;
 
-    MumbleUser *user = User(id);
+    MumbleUser *user = User(userState.id);
     bool isNew = (user == 0);
     
     // Created new user
@@ -805,20 +839,20 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
         selfDeafChange = true;
         
         user = new MumbleUser(this);
-        user->id = id;
-        user->channelId = channelId;
-        user->name = name;
-        user->comment = comment;
-        user->hash = hash;
-        user->isSelfMuted = selfMuted;
-        user->isSelfDeaf = selfDeaf;
-        user->isMe = isMe;
+        user->id = userState.id;
+        user->channelId = userState.channelId;
+        user->name = userState.name;
+        user->comment = userState.comment;
+        user->hash = userState.hash;
+        user->isSelfMuted = userState.selfMuted;
+        user->isSelfDeaf = userState.selfDeaf;
+        user->isMe = userState.isMe;
     }
     // Existing user update
     else if (user)
     {
         // Detect changed properties for existing user
-        if (user->channelId != channelId)
+        if (userState.hasChannelId && user->channelId != userState.channelId)
         {
             // Handle previous channel user removal and signaling
             MumbleChannel *previousChannel = user->Channel();
@@ -830,23 +864,23 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
                     previousChannel->EmitUsersChanged();
                 }
             }
-            user->channelId = channelId;
+            user->channelId = userState.channelId;
             channelChange = true;
         }
-        if (user->isSelfMuted != selfMuted)
+        if (userState.hasSelfMute && user->isSelfMuted != userState.selfMuted)
         {
-            user->isSelfMuted = selfMuted;
+            user->isSelfMuted = userState.selfMuted;
             selfMutedChange = true;
         }
-        if (user->isSelfDeaf != selfDeaf)
+        if (userState.hasSelfDeaf && user->isSelfDeaf != userState.selfDeaf)
         {
-            user->isSelfDeaf = selfDeaf;
+            user->isSelfDeaf = userState.selfDeaf;
             selfDeafChange = true;
         }
     }
     else
     {
-        LogError(LC + "Error on MumbleUser creation/update for id " + QString::number(id));
+        LogError(LC + "Error on MumbleUser creation/update for id " + QString::number(userState.id));
         return;
     }
     
@@ -856,13 +890,6 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
     {
         LogError(LC + "User creation/update detected unknown channel, aborting operation.");
         SAFE_DELETE(user);
-        return;
-    }
-
-    // Not yet synced, push to pending
-    if (!state.serverSynced)
-    {
-        pendingUsers_.push_back(user);
         return;
     }
 
@@ -889,7 +916,18 @@ void MumblePlugin::OnUserUpdate(uint id, uint channelId, QString name, QString c
 
             user->channelId = channel->id;
             user->EmitChannelChanged(channel);
+            
+            // For "me" also emit all other users from channel. So the 3rd party code listening does 
+            // not have to listen to MumbleChannel::UserChanged or query MumbleChannel::users.
+            // When JoinedChannel(MumbleChannel) is fired you can just hook to MumbleChannel::UserJoined
+            // and you can be confident that this will give you all users currently in the channel.
             channel->EmitUserJoined(user);
+            if (user->isMe)
+            {
+                foreach(MumbleUser *userIter, channel->users)
+                    if (userIter && userIter != user)
+                        channel->EmitUserJoined(userIter);
+            }
             channel->EmitUsersChanged();
         }
     }
@@ -915,16 +953,16 @@ void MumblePlugin::OnUserLeft(uint id, uint actorId, bool banned, bool kicked, Q
     if (!state.serverSynced)
     {
         int index = -1;
-        for(int i=0; i<pendingUsers_.count(); i++)
+        for(int i=0; i<pendingUsersStates_.count(); i++)
         {
-            if (pendingUsers_.at(i)->id == id)
+            if (pendingUsersStates_.at(i).id == id)
             {
                 index = i;
                 break;
             }
         }
         if (index != -1)
-            pendingUsers_.removeAt(index);
+            pendingUsersStates_.removeAt(index);
         return;
     }
 
@@ -957,32 +995,25 @@ void MumblePlugin::OnServerSynced(uint sessionId)
     // MeCreated and JoinedChannel signals are fired inside OnUserUpdate.
     // We want to have these signals fire first so you can start to listen to
     // the channel signals (user joined/left) of your own channel and get full information with them.
-    int meIndex = 0;
-    for(int i=0; i<pendingUsers_.length(); i++)
+    int meIndex = -1;
+    for(int i=0; i<pendingUsersStates_.length(); i++)
     {
-        if (pendingUsers_.at(i)->id == state.sessionId)
+        MumbleNetwork::MumbleUserState &meState = pendingUsersStates_[i];
+        if (meState.id == state.sessionId)
         {
-            OnUserUpdate(pendingUsers_.at(i)->id, pendingUsers_.at(i)->channelId, pendingUsers_.at(i)->name, pendingUsers_.at(i)->comment, 
-                pendingUsers_.at(i)->hash, pendingUsers_.at(i)->isSelfMuted, pendingUsers_.at(i)->isSelfDeaf, state.sessionId == pendingUsers_.at(i)->id);
+            meState.isMe = true;
+            OnUserUpdate(meState);
             meIndex = i;
-            SAFE_DELETE(pendingUsers_[i]);
             break;
         }
     }
-    pendingUsers_.removeAt(meIndex);
+    if (meIndex != -1)
+        pendingUsersStates_.removeAt(meIndex);
 
     // Iterate and create/join other users on the server
-    foreach(MumbleUser *pu, pendingUsers_)
-    {
-        if (!pu)
-        {
-            LogError(LC + "Error handlng pending users after server syncronized, was null!");
-            continue;
-        }
-        OnUserUpdate(pu->id, pu->channelId, pu->name, pu->comment, pu->hash, pu->isSelfMuted, pu->isSelfDeaf, state.sessionId == pu->id);
-        SAFE_DELETE(pu);
-    }
-    pendingUsers_.clear();
+    foreach(MumbleNetwork::MumbleUserState pendingState, pendingUsersStates_)
+        OnUserUpdate(pendingState);
+    pendingUsersStates_.clear();
 
     MumbleUser *me = Me();
     if (!me)

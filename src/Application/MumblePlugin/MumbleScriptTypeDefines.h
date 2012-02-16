@@ -20,6 +20,7 @@ Q_DECLARE_METATYPE(MumbleUser*)
 Q_DECLARE_METATYPE(QList<MumbleChannel*>)
 Q_DECLARE_METATYPE(QList<MumbleUser*>)
 Q_DECLARE_METATYPE(ByteArrayVector)
+Q_DECLARE_METATYPE(MumbleNetwork::MumbleUserState)
 Q_DECLARE_METATYPE(MumbleNetwork::ConnectionState)
 Q_DECLARE_METATYPE(MumbleNetwork::RejectReason)
 Q_DECLARE_METATYPE(MumbleNetwork::PermissionDeniedType)
@@ -78,6 +79,7 @@ void fromScriptValueMumbleUserList(const QScriptValue &obj, QList<MumbleUser*> &
 
 void RegisterMumblePluginMetaTypes()
 {
+    qRegisterMetaType<MumbleNetwork::MumbleUserState>("MumbleNetwork::MumbleUserState");
     qRegisterMetaType<MumbleNetwork::ConnectionState>("MumbleNetwork::ConnectionState");
     qRegisterMetaType<MumbleNetwork::RejectReason>("MumbleNetwork::RejectReason");
     qRegisterMetaType<MumbleNetwork::PermissionDeniedType>("MumbleNetwork::PermissionDeniedType");
