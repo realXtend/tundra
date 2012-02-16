@@ -44,4 +44,10 @@ if (WIN32)
 target_link_libraries (${TARGET_NAME} ws2_32.lib)
 endif()
 
+# Xcode hack: For a very unknown reason, link_package_bullet() does not cause Xcode to add Bullet libs to PhysicsModule linked libs list.
+# So, add it manually. TODO: Figure this out and remove the following lines. link_package_bullet() should do the job for Xcode as well.
+if (XCODE_VERSION)
+target_link_libraries(${TARGET_NAME} LinearMath BulletDynamics BulletCollision)
+endif()
+
 final_target ()

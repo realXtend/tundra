@@ -96,10 +96,21 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         Ogre::Image image;
         image.load(stream);
 
+        // If we are submitting a .dds file which did not contain mip maps, don't have Ogre generating them either.
+        // Reasons:
+        // 1. Not all textures need mipmaps, i.e. if the texture is always shown with 1:1 texel-to-pixel ratio, then the mip levels are never needed.
+        // 2. Ogre has a bug on Apple, that it fails to generate mipmaps for .dds files which contain only one mip level and are DXT1-compressed (it tries to autogenerate, but always results in black texture data)
+        // 3. If the texture is updated dynamically, we might not afford to regenerate mips at each update.
+        int numMipmapsInImage = image.getNumMipmaps(); // Note: This is actually numMipmaps - 1: Ogre doesn't think the first level is a mipmap.
+        int numMipmapsToUseOnGPU = Ogre::MIP_DEFAULT;
+        if (numMipmapsInImage == 0 && this->Name().endsWith(".dds", Qt::CaseInsensitive))
+            numMipmapsToUseOnGPU = 0;
+
         if (ogreTexture.isNull()) // If we are creating this texture for the first time, create a new Ogre::Texture object.
         {
             ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
-            ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+            ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image, Ogre::TEX_TYPE_2D, 
+                numMipmapsToUseOnGPU);
         }
         else // If we're loading on top of an Ogre::Texture we've created before, don't lose the old Ogre::Texture object, but reuse the old.
         {    // This will allow all existing materials to keep referring to this texture, and they'll get the updated texture image immediately.

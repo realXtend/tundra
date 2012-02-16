@@ -9,7 +9,6 @@ macro (PrintUsedEnvVariables)
     message ("\n=========== Used Environment Variables ===========\n")
     message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
     message (STATUS "QTDIR            = " ${ENV_QT_DIR})
-    message (STATUS "BOOST_ROOT       = " ${ENV_BOOST_ROOT})
     message (STATUS "OGRE_HOME        = " ${ENV_OGRE_HOME})
     message (STATUS "SKYX_HOME        = " ${ENV_SKYX_HOME})
     message (STATUS "HYDRAX_HOME      = " ${ENV_HYDRAX_HOME})
@@ -237,6 +236,8 @@ if (MSVC)
     # In Visual Studio, use unicode character set
     add_definitions(-DUNICODE -D_UNICODE)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+else()
+    add_definitions(-DUNIX) # Currently, kNet uses this flag for Unix OSes. (required also for client-side headers). TODO: Clean this up so it's not required.
 endif()
 
 # On all platforms, we enable PCH files by default.
@@ -265,7 +266,6 @@ setup_clean_install_step()
 # OGRE_HOME, SKYX_HOME, HYDRAX_HOME, KNET_DIR_QT47, BULLET_DIR, ASSIMP_DIR
 file (TO_CMAKE_PATH "$ENV{TUNDRA_DEP_PATH}" ENV_TUNDRA_DEP_PATH)
 file (TO_CMAKE_PATH "$ENV{QTDIR}" ENV_QT_DIR)
-file (TO_CMAKE_PATH "$ENV{BOOST_ROOT}" ENV_BOOST_ROOT)
 file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 file (TO_CMAKE_PATH "$ENV{SKYX_HOME}" ENV_SKYX_HOME)
 file (TO_CMAKE_PATH "$ENV{HYDRAX_HOME}" ENV_HYDRAX_HOME)
@@ -305,25 +305,24 @@ message ("\n\n=========== Configuring Dependencies ===========\n")
 # Find needed external libraries, abort on error
 configure_boost()
 configure_qt4()
-configure_python()
-configure_python_qt()
+if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
+    configure_python()
+    configure_python_qt()
+endif()
 configure_ogre()
 configure_qtpropertybrowser()
 configure_openal ()
-configure_ogg ()
-configure_vorbis ()
-configure_theora()
+use_package_ogg()
+use_package_vorbis()
+use_package_theora()
 
 # This will find kNet and set the global include and library directories
 use_package_knet() 
 
 message ("\n** Adding global include and link directories")
-use_package(BOOST)
 use_package(OGRE)
 use_package(QT4)
 use_package(OPENAL)
-use_package(OGG)
-use_package(VORBIS)
 
 set (CORE_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/src/Core)
 include_directories (${CORE_MODULE_DIRECTORY}/Input)

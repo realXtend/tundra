@@ -5,67 +5,56 @@
 # build instructions should go in <Module>/CMakeLists.txt. The rest should
 # remain generic.
 
-macro (configure_boost)
-    # boost filesystem version used
-    # Disabled, as boost filesystem no longer used. If taken back in use, enable.
-    # add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
+macro(configure_boost)
 
-    if (MSVC)
-        set(Boost_USE_MULTITHREADED TRUE)
-        set(Boost_USE_STATIC_LIBS TRUE)
-    else ()
-        set(Boost_USE_STATIC_LIBS FALSE)
-    endif ()
+if (MSVC)
+    set(Boost_USE_MULTITHREADED TRUE)
+    set(Boost_USE_STATIC_LIBS TRUE)
+else ()
+    set(Boost_USE_STATIC_LIBS FALSE)
+endif ()
 
-    if (UNIX)
-        set (BOOST_COMPONENTS boost_thread boost_regex)
-    else ()
-        set (BOOST_COMPONENTS thread regex)
-    endif ()
- 
-    # Set BOOST_ROOT to our deps if not defined so the FindBoost.cmake 
-    # macro is used in a any situation inside sagase_configure_package().
-    if (MSVC AND "${ENV_BOOST_ROOT}" STREQUAL "")
-        if (WIN32)
-            # Fallback to the deps boost if a overriding env variable is not set. 
-            SET (BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
-        else () 
-            # For linux etc. boost is found from system. If not it will anyway
-            # fallback to brute force search to ENV_TUNDRA_DEP_PATH like before.
-            SET (BOOST_ROOT "")
-        endif ()
-    else ()
-        SET (BOOST_ROOT ${ENV_BOOST_ROOT})
-    endif()
-    
-    # BOOST_ROOT
-    sagase_configure_package (BOOST 
-        NAMES Boost boost
-        COMPONENTS ${BOOST_COMPONENTS}
-        PREFIXES ${BOOST_ROOT} ${ENV_TUNDRA_DEP_PATH})
+# Boost lookup rules:
+# 1. If a CMake variable BOOST_ROOT was set before calling configure_boost(), that directory is used.
+# 2. Otherwise, if an environment variable BOOST_ROOT was set, use that.
+# 3. Otherwise, use Boost from the Tundra deps directory.
 
-    if (APPLE)
-        set (BOOST_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/lib)
-        set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
-    endif()
+if ("${BOOST_ROOT}" STREQUAL "")
+   SET(BOOST_ROOT $ENV{BOOST_ROOT})
+endif()
 
-    # Setting the BOOST_ROOT will result in linking failures on Visual Studio as found release and debug
-    # libs get mixed up. On windows we will empty out the Boost_LIBRARIES list and count on the 
-    # auto-linking feature boost provides. http://www.boost.org/doc/libs/1_35_0/more/getting_started/windows.html#auto-linking
-    if (MSVC)
-        # Reset libraries list so VC will perform auto-linking.
-        set (BOOST_LIBRARIES "")
-        # Not needed anymore as BOOST_ROOT finds these properly. 
-        # Didnt remove yet eiher so nothing breaks, added empty checks instead to not add duplicated.
-        if ("${BOOST_INCLUDE_DIRS}" STREQUAL "")
-            set (BOOST_INCLUDE_DIRS ${BOOST_INCLUDE_DIRS} $ENV{BOOST_ROOT}/include)
-        endif ()
-        if ("${BOOST_LIBRARY_DIRS}" STREQUAL "")
-            set (BOOST_LIBRARY_DIRS ${BOOST_LIBRARY_DIRS} $ENV{BOOST_ROOT}/lib)
-        endif ()
-    endif ()
+if ("${BOOST_ROOT}" STREQUAL "")
+   if (NOT APPLE)
+      SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
+   else()
+      SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/include)
+   endif()
+endif()
 
-    sagase_configure_report (BOOST)
+message(STATUS "BOOST_ROOT set to " ${BOOST_ROOT})
+
+set(Boost_FIND_REQUIRED TRUE)
+set(Boost_FIND_QUIETLY TRUE)
+set(Boost_DEBUG FALSE)
+set(Boost_USE_MULTITHREADED TRUE)
+set(Boost_DETAILED_FAILURE_MSG FALSE)
+set(Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1")
+set(Boost_USE_STATIC_LIBS TRUE)
+
+find_package(Boost 1.46.1 COMPONENTS thread regex)   
+
+if (Boost_FOUND)
+   include_directories(${Boost_INCLUDE_DIRS})
+   link_directories(${Boost_LIBRARY_DIRS})
+else()
+   message(FATAL_ERROR "Boost not found!")
+endif()
+
+if (APPLE)
+    set (BOOST_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/lib)
+    set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
+endif()
+
 endmacro (configure_boost)
 
 macro (configure_qt4)
@@ -207,51 +196,6 @@ macro (configure_openal)
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
 
-macro (configure_ogg)
-    sagase_configure_package(OGG
-        NAMES ogg libogg
-        COMPONENTS ogg libogg
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libogg)
-        
-        # Force include dir on MSVC
-        if (MSVC)
-             set (OGG_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/libogg/include)
-        endif ()
-    sagase_configure_report (OGG)
-endmacro (configure_ogg)
-
-macro (configure_vorbis)
-if (APPLE)
-    sagase_configure_package(VORBIS
-        NAMES vorbisfile vorbis libvorbis libvorbisfile
-        COMPONENTS vorbis libvorbis vorbisfile libvorbisfile
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libvorbis)
-else()
-    sagase_configure_package(VORBIS
-        NAMES vorbisfile vorbis libvorbis
-        COMPONENTS vorbis libvorbis libvorbisfile
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libvorbis)
-endif()
-        # Force include dir on MSVC
-        if (MSVC)
-             set (VORBIS_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/libvorbis/include)
-        endif ()
-    sagase_configure_report (VORBIS)
-endmacro (configure_vorbis)
-
-macro (configure_theora)
-    sagase_configure_package(THEORA
-        NAMES theora libtheora
-        COMPONENTS theora libtheora
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libtheora)
-        
-        # Force include dir on MSVC
-        if (MSVC)
-             set (THEORA_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/libtheora/include)
-        endif ()
-    sagase_configure_report (THEORA)
-endmacro (configure_theora)
-
 macro (configure_sparkle)
     FIND_LIBRARY (SPARKLE_LIBRARY NAMES Sparkle)
     set (SPARKLE_INCLUDE_DIRS ${SPARKLE_LIBRARY}/Headers)
@@ -259,30 +203,21 @@ macro (configure_sparkle)
 endmacro (configure_sparkle)
 
 macro(use_package_knet)
-    message ("** Configuring KNET")
+    set(KNET_DIR ${ENV_KNET_DIR_QT47})
     
-    # Use KNET_DIR_QT47 if there, fallback to TUNDRA_DEP_PATH
-    if ("${ENV_KNET_DIR_QT47}" STREQUAL "")
-        set (KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
-    else ()
-        message (STATUS "-- Using from env variable KNET_DIR_QT47")
-        set (KNET_DIR ${ENV_KNET_DIR_QT47})
-    endif ()
-    
-    # Report findings
-    include_directories (${KNET_DIR}/include)
-    message (STATUS "-- Include Directories:")
-    message (STATUS "       " ${KNET_DIR}/include)
-    link_directories (${KNET_DIR}/lib)
-    message (STATUS "-- Library Directories:")
-    message (STATUS "       " ${KNET_DIR}/lib)
-    message (STATUS "-- Libraries:")
-    message (STATUS "       kNet")
-    message ("")
-    
-    if (UNIX)    
-        add_definitions (-DUNIX)
+    # If KNET_DIR_QT47 was not specified, use kNet from TUNDRA_DEP_PATH.
+    if ("${KNET_DIR}" STREQUAL "")
+        if (MSVC)
+            set(KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
+        else()
+            set(KNET_DIR ${ENV_TUNDRA_DEP_PATH})
+        endif()
     endif()
+
+    include_directories (${KNET_DIR}/include)
+    link_directories (${KNET_DIR}/lib)
+
+    message (STATUS "Using kNet from $(KNET_DIR)")
 endmacro()
 
 macro(link_package_knet)
@@ -291,8 +226,6 @@ macro(link_package_knet)
 endmacro()
 
 macro(use_package_bullet)
-    # todo: convert to sagase_configure_package and sagase_report or custom FindBullet.cmake
-    message(STATUS "todo: fix use_package_bullet() from hardcoded one to more robust using sagase.")
     if (WIN32)
         if ("${ENV_BULLET_DIR}" STREQUAL "")
             set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH}/Bullet)
@@ -321,9 +254,65 @@ macro(link_package_bullet)
     endif()
 endmacro()
 
+macro(use_package_ogg)
+    if (MSVC)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libogg/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libogg/lib)
+    elseif (APPLE)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/include/ogg)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
+    endif()
+endmacro()
+
+macro(link_package_ogg)
+    if (MSVC)
+        target_link_libraries(${TARGET_NAME} optimized libogg)
+        target_link_libraries(${TARGET_NAME} debug liboggd)
+    else()
+        target_link_libraries(${TARGET_NAME} general ogg)
+    endif()
+endmacro()
+
+macro(use_package_vorbis)
+    if (MSVC)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/lib)
+    elseif (APPLE)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/include/vorbis)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
+    endif()
+endmacro()
+
+macro(link_package_vorbis)
+    if (MSVC)
+        target_link_libraries(${TARGET_NAME} optimized libvorbis optimized libvorbisfile)
+        target_link_libraries(${TARGET_NAME} debug libvorbisd debug libvorbisfiled)
+    else()
+        target_link_libraries(${TARGET_NAME} general vorbis general vorbisfile)
+    endif()
+endmacro()
+
+macro(use_package_theora)
+    if (MSVC)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/lib)
+    elseif (APPLE)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/include/theora)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
+    endif()
+endmacro()
+
+macro(link_package_theora)
+    if (MSVC)
+        target_link_libraries(${TARGET_NAME} optimized libtheora)
+        target_link_libraries(${TARGET_NAME} debug libtheorad)
+    else()
+        target_link_libraries(${TARGET_NAME} general theora)
+    endif()
+endmacro()
+
+
 macro(use_package_assimp)
-    # todo: convert to sagase_configure_package and sagase_report or custom FindAssimp.cmake
-    message(STATUS "todo: fix use_package_assimp() from hardcoded one to more robust using sagase.")
     if (WIN32)
         if ("${ENV_ASSIMP_DIR}" STREQUAL "")
            set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH}/assimp)
