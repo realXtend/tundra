@@ -1193,10 +1193,14 @@ void TimeProfilerWindow::RefreshProfilingData()
 
         int numFrames = 1;
         ProfilerNode *processFrameNode = dynamic_cast<ProfilerNode*>(profiler.FindBlockByName("Framework_ProcessOneFrame")); // We use this node to estimate FPS for display.
-        if (processFrameNode)
-            numFrames = std::max<int>(processFrameNode->num_called_custom_, 1);
         char str[256];
-        sprintf(str, "%.2f FPS (%.2f msecs/frame)", (numFrames * 1000.f / msecsOccurred), msecsOccurred / numFrames);
+        if (processFrameNode)
+        {
+            numFrames = std::max<int>(processFrameNode->num_called_custom_, 1);
+            sprintf(str, "%.2f FPS (%.2f msecs/frame)", (numFrames * 1000.f / msecsOccurred), msecsOccurred / numFrames);
+        }
+        else
+            sprintf(str, "- FPS");
         labelTimings->setText(str);
         profiler.Release();
     }
