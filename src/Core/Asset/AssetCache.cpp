@@ -1,13 +1,15 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
+
 #include "DebugOperatorNew.h"
-#include <boost/algorithm/string.hpp>
-#include <QList>
 
 #include "AssetCache.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+
 #include "Framework.h"
 #include "LoggingFunctions.h"
 
+#include <QDateTime>
 #include <QUrl>
 #include <QFile>
 #include <QDataStream>

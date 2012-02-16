@@ -26,8 +26,6 @@
 #include <QList>
 #include <QMap>
 
-#include <boost/thread.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
 #include "MemoryLeakCheck.h"

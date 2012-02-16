@@ -5,7 +5,6 @@
 
 #include "AudioPreviewEditor.h"
 #include "AudioSignalLabel.h"
-#include "OgreAssetEditorModule.h"
 
 #include "Framework.h"
 #include "Application.h"

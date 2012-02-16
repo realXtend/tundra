@@ -1,14 +1,15 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
+
 #include "DebugOperatorNew.h"
-#include <QList>
-#include <boost/thread.hpp>
-#include <QByteArray>
-#include <set>
+
+#include "IAsset.h"
+#include "AssetAPI.h"
 
 #include "Profiler.h"
 #include "LoggingFunctions.h"
 
-#include "IAsset.h"
-#include "AssetAPI.h"
+#include <set>
+
 #include "MemoryLeakCheck.h"
 
 IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
