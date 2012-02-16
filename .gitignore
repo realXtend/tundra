@@ -106,3 +106,5 @@ bin/data/translations/*.ts
 *.dylib
 *.DS_Store
 *.xcodeproj
+CMakeScripts/
+tundra.build/
