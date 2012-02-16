@@ -120,7 +120,7 @@ public:
     void SetDebugGeometryEnabled(bool enable);
     
     /// Get debug geometry enabled status
-    bool IsDebugGeometryEnabled() const { return drawDebugGeometry_; }
+    bool IsDebugGeometryEnabled() const;
     
     /// Enable/disable physics simulation
     void SetRunning(bool enable) { runPhysics_ = enable; }
@@ -194,10 +194,7 @@ private:
     
     /// Draw physics debug geometry, if debug drawing enabled
     void DrawDebugGeometry();
-    
-    /// Debug geometry enabled flag
-    bool drawDebugGeometry_;
-    
+
     /// Debug geometry manually enabled/disabled (with physicsdebug console command). If true, do not automatically enable/disable debug geometry anymore
     bool drawDebugManuallySet_;
     
