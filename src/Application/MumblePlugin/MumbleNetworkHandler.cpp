@@ -564,8 +564,38 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
         case MumbleNetwork::UserState:
         {
             MumbleProto::UserState msg = ParseMessage<MumbleProto::UserState>(buffer);
-            emit UserUpdate(msg.session(), msg.channel_id(), utf8(msg.name()), utf8(msg.comment()), utf8(msg.hash()), 
-                            msg.self_mute(), msg.self_deaf(), (connectionInfo.sessionId == msg.session() ? true : false));
+
+            // Fill in our applications user state struct, we don't want the MumblePlugin layer to
+            // know anything about MumbleProto data structures. But we need to know exactly what has changed.
+            // Otherwise we will start to get our of sync with the server.
+            MumbleNetwork::MumbleUserState userState;
+            userState.hasId = msg.has_session();
+            userState.hasChannelId = msg.has_channel_id();
+            userState.hasName = msg.has_name();
+            userState.hasComment = msg.has_comment();
+            userState.hasHash = msg.has_hash();
+            userState.hasSelfMute = msg.has_self_mute();
+            userState.hasSelfDeaf = msg.has_self_deaf();
+
+            if (userState.hasId)
+            {
+                userState.id = msg.session();
+                userState.isMe = connectionInfo.sessionId == userState.id ? true : false;
+            }
+            if (userState.hasChannelId)
+                userState.channelId = msg.channel_id();
+            if (userState.hasName)
+                userState.name = utf8(msg.name());
+            if (userState.hasComment)
+                userState.comment = utf8(msg.comment());
+            if (userState.hasHash)
+                userState.hash = utf8(msg.hash());
+            if (userState.hasSelfMute)
+                userState.selfMuted = msg.self_mute();
+            if (userState.hasSelfDeaf)
+                userState.selfDeaf = msg.self_deaf();
+
+            emit UserUpdate(userState);
             break;
         }
         case MumbleNetwork::UserRemove:
