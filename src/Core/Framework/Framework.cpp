@@ -142,28 +142,28 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--console"] = "Shows a text-based console along with the main UI window.";
     cmdLineDescs.commands["--sharedconsole"] = "Same as '--console' but attaches the Tundra console to the parent process, without creating new command promt for the console.";
 #endif
-    cmdLineDescs.commands["--help"] = "Produce help message"; // Framework
-    cmdLineDescs.commands["--version"] = "Produce version information"; // Framework
-    cmdLineDescs.commands["--headless"] = "Run in headless mode without any windows or rendering"; // Framework
-    cmdLineDescs.commands["--disablerunonload"] = "Do not start script applications (EC_Script's with applicationName defined) automatically"; //JavascriptModule
-    cmdLineDescs.commands["--server"] = "Start Tundra server"; // TundraLogicModule
-    cmdLineDescs.commands["--port"] = "Start server in the specified port"; // TundraLogicModule
-    cmdLineDescs.commands["--protocol"] = "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified."; // KristalliProtocolModule
-    cmdLineDescs.commands["--fpslimit"] = "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable"; // Framework
-    cmdLineDescs.commands["--run"] = "Run script on startup"; // JavaScriptModule
-    cmdLineDescs.commands["--file"] = "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
-    cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup"; // AssetModule
-    cmdLineDescs.commands["--config"] = "Specifies the startup configration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml"; // Framework & PluginAPI
+    cmdLineDescs.commands["--help"] = "Produces help message."; // Framework
+    cmdLineDescs.commands["--version"] = "Produces version information."; // Framework
+    cmdLineDescs.commands["--headless"] = "Runs Tundra in headless mode without any windows or rendering."; // Framework
+    cmdLineDescs.commands["--disablerunonload"] = "Prevents script applications (EC_Script's with applicationName defined) staring automatically."; //JavascriptModule
+    cmdLineDescs.commands["--server"] = "Starts Tundra as server."; // TundraLogicModule
+    cmdLineDescs.commands["--port"] = "Specifies the Tundra server port."; // TundraLogicModule
+    cmdLineDescs.commands["--protocol"] = "Specifies the Tundra server protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to udp if no protocol is spesified."; // KristalliProtocolModule
+    cmdLineDescs.commands["--fpslimit"] = "Specifies the FPS cap to use in rendering. Default: 60. Pass in 0 to disable."; // Framework
+    cmdLineDescs.commands["--run"] = "Runs script on startup"; // JavaScriptModule
+    cmdLineDescs.commands["--file"] = "Specifies a startup scene file. Multiple files supported. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
+    cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup."; // AssetModule
+    cmdLineDescs.commands["--config"] = "Specifies a startup configration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml'."; // Framework & PluginAPI
     cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional."; // TundraLogicModule & AssetModule
-    cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username"; // TundraLogicModule & AssetModule
+    cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username."; // TundraLogicModule & AssetModule
     cmdLineDescs.commands["--netrate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
     cmdLineDescs.commands["--noassetcache"] = "Disable asset cache."; // Framework
     cmdLineDescs.commands["--assetcachedir"] = "Specify asset cache directory to use."; // Framework
     cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
-    cmdLineDescs.commands["--loglevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'"; // ConsoleAPI
-    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt"; // ConsoleAPI
-    cmdLineDescs.commands["--physicsrate"] = "Specifies the number of physics simulation steps per second. Default: 60"; // PhysicsModule
-    cmdLineDescs.commands["--physicsmaxsteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6"; // PhysicsModule
+    cmdLineDescs.commands["--loglevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
+    cmdLineDescs.commands["--logfile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt'."; // ConsoleAPI
+    cmdLineDescs.commands["--physicsrate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
+    cmdLineDescs.commands["--physicsmaxsteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6."; // PhysicsModule
     cmdLineDescs.commands["--splash"] = "Shows splash screen during the startup."; // Framework
     cmdLineDescs.commands["--fullscreen"] = "Starts application in fullscreen mode."; // OgreRenderingModule
     cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
