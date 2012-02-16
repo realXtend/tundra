@@ -75,7 +75,11 @@ namespace OgreRenderer
         {
         }
 
+#if OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 7 && OGRE_VERSION_PATCH <= 3
         void messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
+#else
+        void messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool &)
+#endif
         {
             QString str = message.c_str();
 
