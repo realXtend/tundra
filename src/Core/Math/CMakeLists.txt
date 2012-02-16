@@ -26,7 +26,6 @@ use_core_modules(Framework)
 
 build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
-link_package(BOOST)
 link_package(QT4)
 
 link_modules(Framework)

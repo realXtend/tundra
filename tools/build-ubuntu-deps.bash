@@ -93,7 +93,7 @@ cp -lf $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
 
 
 what=kNet
-if false && test -f $tags/$what-done; then 
+if test -f $tags/$what-done; then 
    echo $what is done
 else
     cd $build
@@ -148,23 +148,26 @@ else
     touch $tags/hydrax-done
 fi
 # SkyX build
-if test -f $tags/skyx-done; then
-    echo "SkyX-done"
-else
-    cd $build/$depdir/skyx
-    if [ -z "$OGRE_HOME" ]; then
-	    OGRE_HOME=`pkg-config --variable=prefix OGRE`
-        if [ -z "$OGRE_HOME" ]; then
-            echo "OGRE_HOME not defined, check your pkg-config or set OGRE_HOME manually.";
-            exit 0;
-        fi
-    fi
-    echo "Using OGRE_HOME = $OGRE_HOME"
-    SKYX_SOURCE_DIR=`pwd`
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix .
-    make -j $nprocs install
-    touch $tags/skyx-done
-fi
+
+echo "NOTE: SkyX build is disabled. To enable, uncomment SkyX code from build-ubuntu-deps.bash, and enable SKYX in main CMakeFiles.txt"
+echo "See https://github.com/realXtend/naali/issues/320"
+#if test -f $tags/skyx-done; then
+#    echo "SkyX-done"
+#else
+#    cd $build/$depdir/skyx
+#    if [ -z "$OGRE_HOME" ]; then
+#	    OGRE_HOME=`pkg-config --variable=prefix OGRE`
+#        if [ -z "$OGRE_HOME" ]; then
+#            echo "OGRE_HOME not defined, check your pkg-config or set OGRE_HOME manually.";
+#            exit 0;
+#        fi
+#    fi
+#    echo "Using OGRE_HOME = $OGRE_HOME"
+#    SKYX_SOURCE_DIR=`pwd`
+#    cmake -DCMAKE_INSTALL_PREFIX=$prefix .
+#    make -j $nprocs install
+#    touch $tags/skyx-done
+#fi
 # PythonQT build
 if test -f $tags/pythonqt-done; then
     echo "PythonQt-done"

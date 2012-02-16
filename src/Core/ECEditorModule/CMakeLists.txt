@@ -39,6 +39,11 @@ link_modules (Framework Scene Input Console Ui OgreRenderingModule TundraProtoco
 # EC_Sound is needed only for visualization purposes to access the attributes of EC_Sound.
 link_entity_components (EC_TransformGizmo EC_Highlight EC_Sound)
 
+#TODO Fix up QtPropertyBrowser file naming on Mac.
+if (APPLE)
+    target_link_libraries(${TARGET_NAME} QtSolutions_PropertyBrowser-head)
+endif()
+
 SetupCompileFlagsWithPCH()
 
 final_target ()

@@ -22,11 +22,16 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules(Math Scene Ui Input Asset Audio Console)
 
-if (UNIX)
+if (UNIX AND NOT APPLE)
   # for dlopen() etc used in PluginAPI
   target_link_libraries (${TARGET_NAME} dl)
   target_link_libraries (${TARGET_NAME} rt)
 endif () 
+
+# Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propapage from here to each library.
+if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
+    target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+endif()
 
 SetupCompileFlagsWithPCH()
 

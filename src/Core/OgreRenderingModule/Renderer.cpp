@@ -252,15 +252,22 @@ namespace OgreRenderer
         // Load plugins
         QStringList loadedPlugins = LoadPlugins(pluginsFilename);
 
+        // Read the default rendersystem from Config API.
+        rendersystem_name = framework->Config()->Get(configData, "rendering plugin").toString().toStdString();
+
 #ifdef _WINDOWS
-        // WIN default to DirectX
-        rendersystem_name = framework->Config()->Get(configData, "rendering plugin").toString().toStdString();
-        if (framework->IsHeadless() && (loadedPlugins.contains("RenderSystem_NULL", Qt::CaseInsensitive) || loadedPlugins.contains("RenderSystem_NULL_d", Qt::CaseInsensitive)))
-            rendersystem_name = "NULL Rendering Subsystem";
-#else
-        // X11/MAC default to OpenGL
-        rendersystem_name = framework->Config()->Get(configData, "rendering plugin").toString().toStdString();
+        // If --direct3d9 is specified, it overrides the option that was set in config.
+        if (framework->HasCommandLineParameter("--d3d9") || framework->HasCommandLineParameter("--direct3d9"))
+            rendersystem_name = "Direct3D9 Rendering Subsystem";
 #endif
+
+        // If --opengl is specified, it overrides the option that was set in config.
+        if (framework->HasCommandLineParameter("--opengl"))
+            rendersystem_name = "OpenGL Rendering Subsystem";
+
+        // --nullrenderer disables all Ogre rendering ops.
+        if (framework->HasCommandLineParameter("--nullrenderer"))
+            rendersystem_name = "NULL Rendering Subsystem";
 
         textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
 
@@ -268,10 +275,15 @@ namespace OgreRenderer
         rendersystem = ogreRoot->getRenderSystemByName(rendersystem_name);
 
 #ifdef _WINDOWS
-        // If windows did not have DirectX fallback to OpenGL
+        // If windows did not have Direct3D fallback to OpenGL.
         if (!rendersystem)
             rendersystem = ogreRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
+
+        // If windows did not have OpenGL fallback to Direct3D.
+        if (!rendersystem)
+            rendersystem = ogreRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
 #endif
+
         if (!rendersystem)
             throw Exception("Could not find Ogre rendersystem.");
 

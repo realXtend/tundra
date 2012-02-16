@@ -41,8 +41,10 @@ Steps to perform a rebuild:
 
 <ul>
 <li>If you only modified some C++ file, you can simply re-run make in the naali/ root directory.
+<li>To clean up all intermediate C++ symbol files in the build, issue the command 'make clean'.
 <li>If you added new files, or modified the CMakeBuildConfig.txt file, you will need to re-run build-mac-deps.bash.
 <li>If you modified cmake variables which cmake caches, you may need to clean up the cmake variable cache by deleting the file naali/CMakeCache.txt before running build-mac-deps.bash.
+<li>If you want to restore the whole repository into a clean state as it was when you originally cloned it, issue the command 'git clean -x -d -f' in the repository root directory. Be warned though, this will delete ALL untracked files inside the repository directory, even those you added yourself.
 </ol>
 
 <p>To view or report outstanding issues related to building on Mac, please visit the <a href="https://github.com/realXtend/naali/issues">Tundra github issue tracker</a>.
