@@ -19,7 +19,7 @@
 #define TRACESTART(x) kNet::PolledTimer polledTimer_##x;
 #define TRACEEND(x) std::cout << #x << " finished in " << polledTimer_##x.MSecsElapsed() << " msecs." << std::endl;
 
-#if (defined(_POSIX_C_SOURCE) || defined(_WINDOWS)) && defined(PROFILING)
+#if defined(PROFILING)
 
 /// Profiles a block of code in current scope. Ends the profiling when it goes out of scope
 /** Name of the profiling block must be unique in the scope, so do not use the name of the function
