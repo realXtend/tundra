@@ -111,6 +111,16 @@ while [ "$1" != "" ]; do
                                             export QTDIR=$1
                                             ;;
 
+        -o | --ogre-path )                  shift
+                                            if [ ! -d $1 ]; then
+                                                echo "ERROR: Bad directory for --ogre-path: $1"
+                                                ERRORS_OCCURED="1"
+                                                shift
+                                                continue
+                                            fi
+                                            export OGRE_HOME=$1
+                                            ;;
+
         -nc | --no-run-cmake )              RUN_CMAKE="0"
                                             ;;
 
