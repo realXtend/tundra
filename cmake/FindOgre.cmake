@@ -44,13 +44,21 @@ macro(configure_ogre)
         set(OGRE_DIR $ENV{OGRE_HOME})
     endif()
 
-    if ("${OGRE_DIR}" STREQUAL "")
-        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/Ogre)
-            set(OGRE_DIR ${ENV_TUNDRA_DEP_PATH}/Ogre)
-        elseif (APPLE)
+    # On Apple, Ogre comes in the form of a Framework. The user has to have this manually installed.
+    if (APPLE)
+        if ("${OGRE_DIR}" STREQUAL "" OR NOT IS_DIRECTORY ${OGRE_DIR}/lib)
             find_library(OGRE_LIBRARY Ogre)
             set(OGRE_DIR ${OGRE_LIBRARY})
+        else()
+ #           set(OGRE_DIR ${OGRE_DIR}/lib/Ogre.framework) # User specified custom Ogre directory pointing to Ogre Hg trunk directory.
+            set(OGRE_BUILD_CONFIG "relwithdebinfo") # TODO: We would like to link to debug in debug mode, release in release etc, not always fixed to this.
+            set(OGRE_LIBRARY ${OGRE_DIR}/lib/relwithdebinfo/Ogre.framework)
         endif()
+    endif()
+         
+    # Finally, if no Ogre found, assume the deps path.
+    if ("${OGRE_DIR}" STREQUAL "")
+        set(OGRE_DIR ${ENV_TUNDRA_DEP_PATH}/Ogre)
     endif()
 
     # The desired Ogre path is set in OGRE_DIR. The Ogre source tree comes in two flavors:
@@ -59,10 +67,15 @@ macro(configure_ogre)
     # We want to support both so that one can do active development on the Ogre Hg repository, without
     # having to always do the intermediate SDK installation/deployment step.
     
-    if (APPLE AND IS_DIRECTORY ${OGRE_DIR}/Headers)
-        include_directories(${OGRE_DIR}/Headers)
-        link_directories(${OGRE_DIR})
-        
+    if (APPLE)# AND IS_DIRECTORY ${OGRE_DIR}/Headers) # OGRE_DIR points to a manually installed Ogre.framework?
+        if (IS_DIRECTORY ${OGRE_DIR}/lib)
+            include_directories(${OGRE_DIR}/lib/relwithdebinfo/Ogre.framework/Headers)
+            link_directories(${OGRE_DIR}/lib/relwithdebinfo/Ogre.framework)
+        else()
+            include_directories(${OGRE_DIR}/Headers)
+            link_directories(${OGRE_DIR})
+        endif()
+        message(STATUS "Using Ogre from directory " ${OGRE_DIR})
     elseif (IS_DIRECTORY ${OGRE_DIR}/OgreMain) # Ogre path points to #1 above.    
         include_directories(${OGRE_DIR}/include)
         include_directories(${OGRE_DIR}/OgreMain/include)
