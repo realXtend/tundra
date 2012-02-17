@@ -46,8 +46,8 @@ static const float MAX_FRAME_TIME = 0.1f;
 #undef SAFE_DELETE_ARRAY
 
 #include <d3d9.h>
-#include <RenderSystems/Direct3D9/OgreD3D9HardwarePixelBuffer.h>
-#include <RenderSystems/Direct3D9/OgreD3D9RenderWindow.h>
+#include <OgreD3D9HardwarePixelBuffer.h>
+#include <OgreD3D9RenderWindow.h>
 #endif
 
 #include <QCloseEvent>
