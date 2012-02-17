@@ -155,19 +155,43 @@ macro (configure_skyx)
 endmacro (configure_skyx)
 
 macro (configure_hydrax)
-    # Prioritize env variable HYDRAX_HOME to be searched first
-    # to allow custom hydrax builds agains a custom ogre (potentially from OGRE_HOME)
-    sagase_configure_package (HYDRAX
-        NAMES Hydrax HYDRAX hydrax
-        COMPONENTS Hydrax HYDRAX hydrax
-        PREFIXES ${ENV_HYDRAX_HOME} ${ENV_TUNDRA_DEP_PATH})
+	if (NOT MSVC)
+		# Prioritize env variable HYDRAX_HOME to be searched first
+		# to allow custom hydrax builds agains a custom ogre (potentially from OGRE_HOME)
+		sagase_configure_package (HYDRAX
+			NAMES Hydrax HYDRAX hydrax
+			COMPONENTS Hydrax HYDRAX hydrax
+			PREFIXES ${ENV_HYDRAX_HOME} ${ENV_TUNDRA_DEP_PATH})
 
-    if (NOT WIN32)
-       set (HYDRAX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/Hydrax)
-    endif ()
+		set (HYDRAX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/Hydrax)
 
-    sagase_configure_report (HYDRAX)
+		sagase_configure_report (HYDRAX)
+	endif()
 endmacro (configure_hydrax)
+
+macro(use_package_hydrax)
+    if (MSVC) # TODO inclusion chains for using Hydrax from deps for other platforms.
+	
+# Hydrax lookup rules:
+# 1. If the environment variable HYDRAX_HOME is set, use that directory.
+# 2. Otherwise, use the deps directory path.
+
+	if (NOT "$ENV{HYDRAX_HOME}" STREQUAL "")
+		set(HYDRAX_HOME $ENV{HYDRAX_HOME})
+	else()
+		set(HYDRAX_HOME ${ENV_TUNDRA_DEP_PATH}/Hydrax)
+	endif()
+
+    include_directories(${HYDRAX_HOME}/include)
+    link_directories(${HYDRAX_HOME}/lib)
+	endif()
+endmacro()
+
+macro(link_package_hydrax)
+	if (MSVC) # TODO linkage settings for using Hydrax from deps for other platforms.
+		target_link_libraries(${TARGET_NAME} optimized Hydrax debug Hydraxd)
+	endif()
+endmacro()
 
 macro (configure_qtpropertybrowser)
     sagase_configure_package (QT_PROPERTY_BROWSER
