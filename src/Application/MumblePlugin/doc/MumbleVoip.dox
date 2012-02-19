@@ -77,12 +77,14 @@ if (!server.IsRunning() && !framework.IsHeadless())
 
 function OnScriptDestroyed()
 {
-    // This function is called automatically by then egine when the EC_Script component that is
-    // running your application is destoyed, for example when you disconnect
-    // from a Tundra server and the scene is destroyed.
-    // This ensures you leave the VOIP server if a connection is open.
+    // This function is called automatically by the engine when the EC_Script component that is
+    // running this application is destoyed. For example when you disconnect from a Tundra server 
+    // and the scene is destroyed. This ensures you leave the VOIP server if a connection is open.
     if (!server.IsRunning() && !framework.IsHeadless() && framework.GetModuleByName("MumblePlugin") != null)
+    {
+        mumble.Disconnected.disconnect(OnDisconnected);
         mumble.Disconnect("Client exiting");
+    }
 }
 \endcode
 
