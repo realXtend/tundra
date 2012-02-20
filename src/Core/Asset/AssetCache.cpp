@@ -1,13 +1,15 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
+
 #include "DebugOperatorNew.h"
-#include <boost/algorithm/string.hpp>
-#include <QList>
 
 #include "AssetCache.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+
 #include "Framework.h"
 #include "LoggingFunctions.h"
 
+#include <QDateTime>
 #include <QUrl>
 #include <QFile>
 #include <QDataStream>
@@ -124,8 +126,9 @@ QDateTime AssetCache::LastModified(const QString &assetRef)
 
     // Ignore msec
     QDateTime dateTime;
+    dateTime.setTimeSpec(Qt::UTC);
     dateTime.setDate(QDate((int)sysTime.wYear, (int)sysTime.wMonth, (int)sysTime.wDay));
-    dateTime.setTime(QTime((int)sysTime.wHour, (int)sysTime.wMinute, (int)sysTime.wSecond, 0)); 
+    dateTime.setTime(QTime((int)sysTime.wHour, (int)sysTime.wMinute, (int)sysTime.wSecond, 0));
     return dateTime;
 #else
     QDateTime dateTime;

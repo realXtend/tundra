@@ -65,6 +65,7 @@ public slots:
     virtual QString Type() const;
 
     /// Returns all assetrefs currently known in this asset storage. Does not load the assets
+    /// @deprecated Do not call this. Rather query for assets through AssetAPI.
     virtual QStringList GetAllAssetRefs() { return assetRefs; }
     
     /// Refresh asset refs. Issues a directory query and emits AssetChanged signals immediately

@@ -173,6 +173,9 @@ public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap GetAllAssets() const { return assets; }
 
+    /// Returns all assets of a specific type.
+    AssetMap GetAllAssetsOfType(const QString& type);
+
     /// Returns the known asset storage instances in the system.
     AssetStorageVector GetAssetStorages() const;
 

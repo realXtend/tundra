@@ -70,6 +70,7 @@ public:
 
 public slots:
     /// Returns all assetrefs currently known to exist in this asset storage. Does not load the assets, and does not refresh the list automatically
+    /// @deprecated Do not call this. Not guaranteed to be implemented by all asset storages. Rather query for assets through AssetAPI.
     virtual QStringList GetAllAssetRefs() { return QStringList(); }
 
     /// Refresh assetrefs. Depending on storage type, may either finish immediately or take some time. AssetChanged signals will be emitted.

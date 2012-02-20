@@ -26,8 +26,6 @@
 #include <QList>
 #include <QMap>
 
-#include <boost/thread.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
 #include "MemoryLeakCheck.h"
@@ -150,6 +148,19 @@ void AssetAPI::SetDefaultAssetStorage(const AssetStoragePtr &storage)
         LogInfo("Set asset storage \"" + storage->Name() + "\" as the default storage (" + storage->SerializeToString() + ").");
     else
         LogInfo("Set (null) as the default asset storage.");
+}
+
+AssetMap AssetAPI::GetAllAssetsOfType(const QString& type)
+{
+    AssetMap ret;
+    
+    for (AssetMap::const_iterator i = assets.begin(); i != assets.end(); ++i)
+    {
+        if (!i->second->Type().compare(type, Qt::CaseInsensitive))
+            ret[i->first] = i->second;
+    }
+    
+    return ret;
 }
 
 std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
