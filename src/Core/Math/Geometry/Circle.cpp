@@ -45,20 +45,12 @@ float3 Circle::BasisV() const
 
 float3 Circle::GetPoint(float angleRadians) const
 {
-#ifndef __APPLE__
-	return pos + r * (cos(angleRadians) * BasisU() + sin(angleRadians) * BasisV());
-#else
-	return pos + r * (BasisU().operator*(cos(angleRadians)) + BasisV().operator*(sin(angleRadians)));
-#endif
+	return pos + r * (Cos(angleRadians) * BasisU() + Sin(angleRadians) * BasisV());
 }
 
 float3 Circle::GetPoint(float angleRadians, float d) const
 {
-#ifndef __APPLE__
-	return pos + r * d * (cos(angleRadians) * BasisU() + sin(angleRadians) * BasisV());
-#else
-	return pos + r * d * (BasisU().operator*(cos(angleRadians)) + BasisV().operator*(sin(angleRadians)));
-#endif
+	return pos + r * d * (Cos(angleRadians) * BasisU() + Sin(angleRadians) * BasisV());
 }
 
 float3 Circle::ExtremePoint(const float3 &direction) const

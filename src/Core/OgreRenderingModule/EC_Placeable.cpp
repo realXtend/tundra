@@ -570,11 +570,7 @@ Entity *EC_Placeable::ParentPlaceableEntity() const
 
 EC_Placeable *EC_Placeable::ParentPlaceableComponent() const
 {
-    Entity *p = ParentPlaceableEntity();
-    if (p)
-        return p->GetComponent<EC_Placeable>().get();
-    else
-        return 0;
+    return parentPlaceable_;
 }
 
 bool EC_Placeable::IsGrandparentOf(Entity *entity) const
@@ -928,6 +924,7 @@ float3x4 EC_Placeable::LocalToWorld() const
 
     // Otherwise, compute the world matrix using our Tundra scene structures (not the Ogre scene structures, which can be out-of-date!)
     EC_Placeable *parentPlaceable = ParentPlaceableComponent();
+    assert(parentPlaceable != this);
     float3x4 localToWorld = parentPlaceable ? (parentPlaceable->LocalToWorld() * LocalToParent()) : LocalToParent();
 
 #ifdef _DEBUG

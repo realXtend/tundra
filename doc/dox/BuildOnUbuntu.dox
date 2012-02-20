@@ -30,6 +30,7 @@ When you build Tundra for the first time, the build script will locate and build
 <p>While you can always run the build-ubuntu-deps.bash file to rebuild Tundra after you have modified a source file, it is not very feasible since the script often takes quite a long time to finish (also see <a href="https://github.com/realXtend/naali/issues/311">github issue #311</a>).
 
 <p>If you only modified some C++ file, you can simply re-run make in the naali/ root directory.
+<p>To clean up all intermediate C++ symbol files in the build, issue the command 'make clean'.
 <p>If you added new files, or modified the CMakeBuildConfig.txt file, you will need to re-run cmake, with the following steps:
 <ol>
 <li>Specify the required environment variable by issuing the command<pre>TUNDRA_DEP_PATH=/home/myuser/naali-deps/</pre> (or wherever build-ubuntu-deps.bash created the dependencies to - the sibling directory of naali/)
@@ -37,6 +38,8 @@ When you build Tundra for the first time, the build script will locate and build
 </ol>
 
 If you modified some cmake variables, you may need to clean up any build variables cmake has cached by deleting the file naali/CMakeCache.txt before running cmake.
+
+<p>If you want to restore the whole repository into a clean state as it was when you originally cloned it, issue the command 'git clean -x -d -f' in the repository root directory. Be warned though, this will delete ALL untracked files inside the repository directory, even those you added yourself.
 
 \section AdditionalNotes Notes
 

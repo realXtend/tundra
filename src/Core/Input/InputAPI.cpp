@@ -130,7 +130,7 @@ void InputAPI::SetMouseCursorVisible(bool visible)
         // was when mouse was hidden.
         QApplication::restoreOverrideCursor();
         QCursor::setPos(mouseFPSModeEnterX, mouseFPSModeEnterY);
-
+        
         ApplyMouseCursorOverride();
     }
     else
@@ -140,6 +140,12 @@ void InputAPI::SetMouseCursorVisible(bool visible)
         mouseFPSModeEnterX = QCursor::pos().x();
         mouseFPSModeEnterY = QCursor::pos().y();
     }
+    
+    assert(framework->Ui() && framework->Ui()->GraphicsView());
+    QGraphicsView *view = framework->Ui()->GraphicsView();
+    QPoint mousePos = view->mapFromGlobal(QCursor::pos());
+    lastMouseX = mousePos.x();
+    lastMouseY = mousePos.y();
 }
 
 bool InputAPI::IsMouseCursorVisible() const
@@ -692,8 +698,11 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.x = mousePos.x();
         mouseEvent.y = mousePos.y();
         mouseEvent.z = 0;
-        mouseEvent.relativeX = mouseEvent.x - lastMouseX;
-        mouseEvent.relativeY = mouseEvent.y - lastMouseY;
+        // Mouse presses do not carry relative mouse movement information at the same time.
+        // (separate relative movement messages are passed for first-person mode moves)
+        mouseEvent.relativeX = 0;
+        mouseEvent.relativeY = 0;
+        
         mouseEvent.relativeZ = 0;
         mouseEvent.modifiers = currentModifiers;
 
@@ -761,19 +770,24 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
             mouseEvent.x = mainView->size().width()/2;
             mouseEvent.y = mainView->size().height()/2;
 
+            QGraphicsView *view = framework->Ui()->GraphicsView();
+            QPoint centeredCursorPosLocal = QPoint(view->size().width()/2, view->size().height()/2);
+
             // If the main window is not active, the mouse recentering logic is not active either.
             // If that is the case, don't output relative movement information (because it couldn't be calculated properly)
-            if (!mainWindow || !mainWindow->isActiveWindow())
+            if (!mainWindow || !mainWindow->isActiveWindow() || centeredCursorPosLocal == mousePos)
             {
                 mouseEvent.relativeX = 0;
                 mouseEvent.relativeY = 0;
+                lastMouseX = centeredCursorPosLocal.x();
+                lastMouseY = centeredCursorPosLocal.y();
             }
         }
-        
+
         // If there wasn't any change to the mouse relative coords in FPS mode, ignore this event.
         if (!mouseCursorVisible && mouseEvent.relativeX == 0 && mouseEvent.relativeY == 0)
             return true;
-
+        
         mouseEvent.globalX = e->globalX(); // Note that these may "jitter" when mouse is in relative movement mode.
         mouseEvent.globalY = e->globalY();
         mouseEvent.otherButtons = e->buttons();

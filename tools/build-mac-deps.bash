@@ -62,7 +62,7 @@ RELWITHDEBINFO="0"
 RUN_CMAKE="1"
 RUN_MAKE="1"
 NPROCS=`sysctl -n hw.ncpu`
-CLIENT=
+viewer=
 
 if [ $# -eq "$NO_ARGS" ]; then
     echo " ERROR: No options selected"
@@ -98,7 +98,7 @@ while [ "$1" != "" ]; do
                                                 shift
                                                 continue
                                             fi
-                                            CLIENT=$1
+                                            viewer=$1
                                             ;;
 
         -q | --qt-path )                    shift
@@ -150,12 +150,25 @@ if [ $REQUIRED_ARGS_COUNT -ne $REQUIRED_ARGS ]; then
     fnDisplayHelpAndExit
 fi
 
-if [ ! -d $CLIENT ]; then
-    CLIENT=$DEPS/../tundra2
+# If the path to the Tundra root directory was not specified, assume the script
+# is being run from (gittrunk)/tools, so viewer=(gittrunk).
+if [ -z $viewer] || [! -d $viewer]; then
+    cwd=$(pwd)       # Temporarily save this path to the build script.
+    viewer=$(pwd)/.. # Assume the build script lies at gittrunk/tools.
+    cd $viewer
+    viewer=$(pwd)
+    cd $cwd        # Go back to not alter cwd.
 fi
 
-if [ ! -d $QTDIR ]; then
-    export QTDIR=/usr/local/Trolltech/Qt-4.7.1
+if [ -z $QTDIR] || [! -d $QTDIR ]; then
+    #TODO This is very very prone to fail on anyone's system. (but at least we will correctly instruct to use --qt-path)
+    if [ -d /usr/local/Trolltech/Qt-4.7.1 ]; then
+        export QTDIR=/usr/local/Trolltech/Qt-4.7.1
+    elif [ -d ~/QtSDK/Desktop/Qt/4.8.0/gcc ]; then
+        export QTDIR=~/QtSDK/Desktop/Qt/4.8.0/gcc
+    else
+       echo "ERROR! Cannot find Qt. Please specify Qt directory with the --qt-path parameter."
+    fi
 fi
 
 prefix=$DEPS
@@ -375,23 +388,34 @@ else
     touch $tags/$what-done
 fi
 
-cd $build
-what=mumbleclient
-if test -f $tags/$what-done; then
-    echo $what is done
+what=qtscriptgenerator
+if test -f $tags/$what-done; then 
+   echo $what is done
 else
-    test -d $what || git clone https://github.com/Adminotech/libmumble.git $what
+    cd $build
+    rm -rf $what
+    git clone git://gitorious.org/qt-labs/$what.git
     cd $what
-    cmake .
-    make VERBOSE=1 -j$NPROCS
-    cp libmumbleclient.dylib $prefix/lib
-    cp Mumble.pb.h $prefix/include
-    mkdir $prefix/include/$what
-    cp ./src/*.h $prefix/include/$what
+
+    cd generator
+    qmake
+    make
+    ./generator --include-paths=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc/include/
+    cd ..
+
+    cd qtbindings
+    sed -e "s/qtscript_phonon //" -e "s/qtscript_webkit //" < qtbindings.pro > x
+    mv x qtbindings.pro  
+    qmake
+    make
+    cd ..
+    cd ..
+    mkdir -p $viewer/bin/qtplugins/script
+    cp -f $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
     touch $tags/$what-done
 fi
 
-cd $CLIENT
+cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
     TUNDRA_DEP_PATH=$prefix cmake .
 fi

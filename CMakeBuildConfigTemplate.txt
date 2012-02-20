@@ -18,8 +18,16 @@
 set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
 set (BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
 set (ENABLE_BUILD_OPTIMIZATIONS 0)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
-set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
-set (ENABLE_SKYX 1)                 # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
+if (NOT APPLE)
+   set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
+else() # TODO Apple build script does not build with Hydrax.
+   set (ENABLE_HYDRAX 0)
+endif()
+if (UNIX) # TODO: Ubuntu and Apple build scripts do not work with SkyX at the moment. See https://github.com/realXtend/naali/issues/320 
+   set (ENABLE_SKYX 0)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
+else()
+   set (ENABLE_SKYX 1)
+endif()
 set (ENABLE_OGRE_ASSET_EDITOR 1)    # Enables Ogre asset editor module.
 set (ENABLE_OPEN_ASSET_IMPORT 0)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
 set (ENABLE_PROFILING 1)            # Enable the following flag to add compile with support for a built-in execution time profiler.
@@ -126,7 +134,9 @@ AddProject(Application DebugStatsModule)        # Enables a developer window for
 AddProject(Application SkyXHydrax)              # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
 AddProject(Application SceneWidgetComponents)   # Provide ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application JavascriptModule)        # Allows QtScript-created scene script instances.
-AddProject(Application PythonScriptModule)      # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
+if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
+    AddProject(Application PythonScriptModule)      # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
+endif()
 AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 
 # Remove the win32 check once the mumble and vlc deps are fetched in the linux build scripts. 
