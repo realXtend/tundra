@@ -203,7 +203,7 @@ macro (configure_sparkle)
 endmacro (configure_sparkle)
 
 macro(use_package_knet)
-    set(KNET_DIR ${ENV_KNET_DIR_QT47})
+    set(KNET_DIR $ENV{KNET_DIR_QT47})
     
     # If KNET_DIR_QT47 was not specified, use kNet from TUNDRA_DEP_PATH.
     if ("${KNET_DIR}" STREQUAL "")
@@ -217,7 +217,7 @@ macro(use_package_knet)
     include_directories (${KNET_DIR}/include)
     link_directories (${KNET_DIR}/lib)
 
-    message (STATUS "Using kNet from $(KNET_DIR)")
+    message (STATUS "Using kNet from ${KNET_DIR}")
 endmacro()
 
 macro(link_package_knet)
