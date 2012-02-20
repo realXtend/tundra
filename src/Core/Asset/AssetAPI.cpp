@@ -1552,6 +1552,12 @@ void AssetAPI::EmitAssetStorageAdded(AssetStoragePtr newStorage)
 
 QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
 {
+    storageString = storageString.trimmed();
+    // Swallow the right-most ';' if it exists to allow both forms "http://www.server.com/" and "http://www.server.com/;" below,
+    // although the latter is somewhat odd form.
+    if (storageString.endsWith(";")) 
+        storageString = storageString.left(storageString.length()-1);
+
     // Treat simple strings of form "http://myserver.com/" as "src=http://myserver.com/".
     if (storageString.indexOf(';') == -1 && storageString.indexOf('=') == -1)
         storageString = "src=" + storageString;
