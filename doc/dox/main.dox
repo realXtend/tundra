@@ -57,6 +57,7 @@ See the following pages for help on working on the Tundra codebase.
 <ul><li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.</ul>
 <ul><li><a href="http://clb.demon.fi/knet/">kNet documentation</a>.</ul>
 <ul><li><a href="http://clb.demon.fi/MathGeoLib/">Game Math and Geometry Library</a>.</ul>
+<li>\ref TundraSecurity "Tundra and Security"
 </ul>
 </ul>
 </td>

@@ -273,8 +273,6 @@ void MumblePlugin::Disconnect(QString reason)
     }
 
     state.Reset();
-
-    QCoreApplication::instance()->processEvents();    
 }
 
 bool MumblePlugin::SendTextMessage(const QString &message)
