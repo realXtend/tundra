@@ -75,6 +75,7 @@ public:
     /// Constructs a QByteArray from QDateTime. Returns value as Sun, 06 Nov 1994 08:49:37 GMT - RFC 822.
     QByteArray ToHttpDate(const QDateTime &dateTime);
 
+    virtual void Update(f64 frametime);
 private slots:
     void AboutToExit();
     void OnHttpTransferFinished(QNetworkReply *reply);

@@ -143,6 +143,15 @@ QByteArray HttpAssetProvider::ToHttpDate(const QDateTime &dateTime)
     return QLocale::c().toString(dateTime, "ddd, dd MMM yyyy hh:mm:ss").toAscii() + QByteArray(" GMT");
 }
         
+std::vector<HttpAssetTransferPtr> delayedTransfers;
+
+void HttpAssetProvider::Update(f64 frametime)
+{
+    for(size_t i = 0; i < delayedTransfers.size(); ++i)
+        framework->Asset()->AssetTransferCompleted(delayedTransfers[i].get());
+    delayedTransfers.clear();
+}
+
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
     if (!networkAccessManager)
@@ -173,25 +182,47 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
         return AssetTransferPtr();
     }
 
-    QNetworkRequest request;
-    request.setUrl(QUrl(assetRef));
-    request.setRawHeader("User-Agent", "realXtend Tundra");
-    
-    // Fill 'If-Modified-Since' header if we have a valid cache item.
-    // Server can then reply with 304 Not Modified.
-    QDateTime cacheLastModified = framework->Asset()->GetAssetCache()->LastModified(assetRef);
-    if (cacheLastModified.isValid())
-        request.setRawHeader("If-Modified-Since", ToHttpDate(cacheLastModified));
-    
-    QNetworkReply *reply = networkAccessManager->get(request);
-
     HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
     transfer->source.ref = originalAssetRef;
     transfer->assetType = assetType;
     transfer->provider = shared_from_this();
     transfer->storage = GetStorageForAssetRef(assetRef);
     transfer->diskSourceType = IAsset::Cached; // The asset's disk source will represent a cached version of the original on the http server
-    transfers[reply] = transfer;
+
+    AssetCache *cache = framework->Asset()->GetAssetCache();
+    QString filenameInCache = cache ? cache->FindInCache(assetRef) : QString();
+    if (cache && framework->HasCommandLineParameter("--disable_http_ifmodifiedsince") && !filenameInCache.isEmpty())
+    {
+        // Read cache file to transfer asset data
+        QFile cacheFile(filenameInCache);
+        if (cacheFile.open(QIODevice::ReadOnly))
+        {
+            QByteArray cacheData = cacheFile.readAll();
+            transfer->rawAssetData.insert(transfer->rawAssetData.end(), cacheData.data(), cacheData.data() + cacheData.size());
+            cacheFile.close();
+            transfer->SetCachingBehavior(false, filenameInCache);
+            delayedTransfers.push_back(transfer);
+//            framework->Asset()->AssetTransferCompleted(transfer.get());
+        }
+ //       else
+  //          framework->Asset()->AssetTransferFailed(transfer.get(), "HttpAssetProvider: Failed to read file '" + filenameInCache + "' from cache!");
+    }
+    else
+    {
+        QNetworkRequest request;
+        request.setUrl(QUrl(assetRef));
+        request.setRawHeader("User-Agent", "realXtend Tundra");
+    
+        // Fill 'If-Modified-Since' header if we have a valid cache item.
+        // Server can then reply with 304 Not Modified.
+        QDateTime cacheLastModified = framework->Asset()->GetAssetCache()->LastModified(assetRef);
+        if (cacheLastModified.isValid())
+            request.setRawHeader("If-Modified-Since", ToHttpDate(cacheLastModified));
+        
+        QNetworkReply *reply = networkAccessManager->get(request);
+
+        transfers[reply] = transfer;
+    }
     return transfer;
 }
 
