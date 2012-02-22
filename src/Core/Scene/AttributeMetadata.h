@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   AttributeMetadata.h
- *  @brief  Attribute metadata contains information about the attribute.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   AttributeMetadata.h
+    @brief  Attribute metadata contains information about the attribute. */
 
 #pragma once
 
@@ -55,7 +54,7 @@ public:
     };
 
     typedef QList<ButtonInfo> ButtonInfoList;
-    typedef std::map<int, std::string> EnumDescMap_t;
+    typedef std::map<int, QString> EnumDescMap_t;
 
     /// Default constructor.
     AttributeMetadata() : interpolation(None), designable(true) {}
