@@ -43,7 +43,8 @@ public:
     /// @param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
     /// @param liveUpdate Whether assets will be reloaded whenever they change. \todo For HTTP storages, this currently means only watching the disk cache changes
     /// @param autoDiscoverable Whether recursive PROPFIND queries will be immediately performed on the storage to discover assets
-    HttpAssetStoragePtr AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate = true, bool autoDiscoverable = false);
+    /// @param liveUpload Whether assets modified in cache will be re-uploaded. \todo Not implemented
+    HttpAssetStoragePtr AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate = true, bool autoDiscoverable = false, bool liveUpload = false);
 
     virtual std::vector<AssetStoragePtr> GetStorages() const;
 

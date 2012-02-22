@@ -63,7 +63,7 @@ void HttpAssetStorage::RefreshAssetRefs()
 QString HttpAssetStorage::SerializeToString(bool networkTransfer) const
 {
     QString str = "type=" + Type() + ";name=" + storageName +  ";src=" + baseAddress + ";readonly=" + BoolToString(!writable) +
-        ";liveupdate=" + BoolToString(liveUpdate) + ";autodiscoverable=" + BoolToString(autoDiscoverable) + ";replicated=" +
+        ";liveupdate=" + BoolToString(liveUpdate) + ";liveupload=" + BoolToString(liveUpload) + ";autodiscoverable=" + BoolToString(autoDiscoverable) + ";replicated=" +
         BoolToString(isReplicated) + ";trusted=" + TrustStateToString(trustState);
     if (!networkTransfer)
         str = str + (localDir.isEmpty() ? QString() : ";localdir=" + localDir);

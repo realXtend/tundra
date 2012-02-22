@@ -20,6 +20,7 @@ public:
     IAssetStorage()
     :writable(true),
     liveUpdate(true),
+    liveUpload(false),
     autoDiscoverable(true),
     isReplicated(true),
     trustState(StorageAskTrust)
@@ -87,6 +88,9 @@ public slots:
     /// Specifies whether the assets in the storage should be subject to live update, once loaded
     virtual bool HasLiveUpdate() const { return liveUpdate; }
     
+    /// Specifies whether the assets in the storage should be automatically re-uploaded when edited in the cache
+    virtual bool HasLiveUpload() const { return liveUpload; }
+    
     /// Specifies whether the asset storage has automatic discovery of new assets enabled
     virtual bool AutoDiscoverable() const { return autoDiscoverable; }
 
@@ -139,6 +143,9 @@ protected:
 
     /// If true, assets in this storage are subject to live update after loading.
     bool liveUpdate;
+    
+    /// If true, assets in this storage are subject to reupload if edited in the asset cache.
+    bool liveUpload;
     
     /// If true, storage has automatic discovery of new assets enabled.
     bool autoDiscoverable;

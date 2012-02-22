@@ -411,6 +411,9 @@ signals:
     /// Emitted before an assets disk source will be removed.
     void DiskSourceAboutToBeRemoved(AssetPtr asset);
     
+    /// An asset's disk source has been modified. Practically only emitted for files in the asset cache.
+    void AssetDiskSourceChanged(AssetPtr asset);
+    
     /// Emitted when an asset has been uploaded
     void AssetUploaded(const QString &assetRef);
 

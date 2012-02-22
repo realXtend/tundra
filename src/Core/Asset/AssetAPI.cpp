@@ -1284,10 +1284,16 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
         {
             // If available, check the storage whether assets loaded from it should be live-updated.
             // Otherwise assume live-update == true
+            
             bool shouldLiveUpdate = true;
             AssetStoragePtr storage = asset->GetAssetStorage();
             if (storage)
                 shouldLiveUpdate = storage->HasLiveUpdate();
+
+            // Localassetprovider implements its own watcher. Therefore only add paths which refer to the assetcache to the AssetAPI watcher
+            if (!assetCache || !diskSource.startsWith(assetCache->CacheDirectory(), Qt::CaseInsensitive))
+                shouldLiveUpdate = false;
+            
             if (shouldLiveUpdate)
             {
                 diskSourceChangeWatcher->removePath(diskSource);
@@ -1618,6 +1624,8 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
                 LogError("Failed to reload changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\"!");
             else
                 LogDebug("Reloaded changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\".");
+            
+            emit AssetDiskSourceChanged(asset);
         }
     }
 }
