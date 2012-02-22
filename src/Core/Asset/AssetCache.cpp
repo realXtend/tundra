@@ -86,7 +86,7 @@ QString AssetCache::StoreAsset(AssetPtr asset)
 QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, const QString &assetName)
 {
     QString absolutePath = GetDiskSourceByRef(assetName);
-    bool success = SaveAssetFromMemoryToFile(data, numBytes, absolutePath.toStdString().c_str());
+    bool success = SaveAssetFromMemoryToFile(data, numBytes, absolutePath);
     if (success)
         return absolutePath;
     return "";

@@ -232,12 +232,12 @@ bool IAsset::SaveToFile(const QString &filename, const QString &serializationPar
         return false;
     }
 
-    return SaveAssetFromMemoryToFile(&data[0], data.size(), filename.toStdString().c_str());
+    return SaveAssetFromMemoryToFile(&data[0], data.size(), filename);
 }
 
 bool IAsset::SaveCachedCopyToFile(const QString &filename)
 {
-    return CopyAssetFile(DiskSource().toStdString().c_str(), filename.toStdString().c_str());
+    return CopyAssetFile(DiskSource(), filename);
 }
 
 void IAsset::SetAssetProvider(AssetProviderPtr provider_)

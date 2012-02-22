@@ -799,7 +799,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     assetRef = assetRef.trimmed();
 
     if (assetType.length() == 0)
-        assetType = GetResourceTypeFromAssetRef(assetRef.toLower().toStdString().c_str());
+        assetType = GetResourceTypeFromAssetRef(assetRef.toLower());
 
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
     QString namedStorage;
@@ -988,7 +988,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     }
     if (dynamic_cast<NullAssetFactory*>(factory.get()))
         return AssetPtr();
-    AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
+    AssetPtr asset = factory->CreateEmptyAsset(this, name);
 
     if (!asset)
     {
