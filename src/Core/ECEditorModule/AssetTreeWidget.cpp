@@ -28,6 +28,7 @@
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
 #include "IAssetTypeFactory.h"
+#include "Win.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -524,8 +525,31 @@ void AssetTreeWidget::OpenFileLocation()
     AssetItem *item = selection.first();
     if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
     {
+        bool success = false;
+#ifdef _WINDOWS
+        // Custom code for Windows, as we want to use explorer.exe with the /select switch.
+        // Craft command line string, use the full filename, not directory.
+        QString path = QDir::toNativeSeparators(item->Asset()->DiskSource());
+        WCHAR commandLineStr[256] = {};
+        WCHAR wcharPath[256] = {};
+        mbstowcs(wcharPath, path.toStdString().c_str(), 254);
+        wsprintf(commandLineStr, L"explorer.exe /select,%s", wcharPath);
+
+        STARTUPINFO startupInfo;
+        memset(&startupInfo, 0, sizeof(STARTUPINFO));
+        startupInfo.cb = sizeof(STARTUPINFO);
+        PROCESS_INFORMATION processInfo;
+        memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
+        success = CreateProcessW(NULL, commandLineStr, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS,
+            NULL, NULL, &startupInfo, &processInfo);
+
+        CloseHandle(processInfo.hProcess);
+        CloseHandle(processInfo.hThread);
+#else
         QString path = QDir::toNativeSeparators(QFileInfo(item->Asset()->DiskSource()).dir().path());
-        if (!QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode)))
+        success = QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
+#endif
+        if (!success)
             LogError("AssetTreeWidget::OpenFileLocation: failed to open " + path);
     }
 }
