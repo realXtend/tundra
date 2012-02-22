@@ -1,8 +1,8 @@
 /**
 
-\page BuildOnMac Building and Running Tundra on Mac OS X 10.7
+\page BuildOnMac Building and Running Tundra on Mac OS X 10.6 or 10.7
 
-This page lists the necessary steps to build Tundra on Mac OS X 10.7.3 or newer. Previous OS X versions might work, but are untested.
+This page lists the necessary steps to build Tundra on Mac OS X 10.6.8 or newer. Previous OS X versions might work, but are untested. Latest tested version is 10.7.3.
 
 \section MacPrereqs Prerequisites
 
@@ -32,6 +32,11 @@ Open up a new terminal window, and
 </ol>
 
 When you build Tundra for the first time, the build script will locate and build all the necessary dependencies that are required for Tundra. This will take some time. Note that when the script is building boost, there is a long pause during which nothing is printed on the screen, that is normal.
+
+<ul>
+<li>NOTE: If you get this error when building the dependencies (in QtScript bindings for Qt):  <em>no matching function for call to 'QFutureIterator<QScriptValue>::QFutureIterator()' -- /Users/<username>/QtSDK/Desktop/Qt/4.8.0/gcc/include/QtCore/qfuture.h:1 note: candidates are: QFutureIterator<T>::QFutureIterator(const QFuture<T>&) [with T = QScriptValue]</em></li>
+<li>.. fix it by adding Qt includes to qtscript generators path e.g. by setting this environment variable: export INCLUDE=/Users/<myusername>/QtSDK/Desktop/Qt/4.8.0/gcc/include</li>
+</ul>
 
 <p>When the script has finished, the directory ~/naali-deps/ will have been populated with several different 3rd party libraries and the finished build of Tundra is placed at ~/naali/bin/.
 
