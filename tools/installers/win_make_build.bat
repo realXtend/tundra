@@ -6,7 +6,7 @@ cd ..\..
 rmdir build /S /Q
 md build
 copy README.md build
-copy LICENSE build
+copy LICENSE build\LICENSE.txt
 copy tools\installers\vcredist_x86.exe build
 copy tools\installers\oalinst.exe build
 copy tools\installers\dxwebsetup.exe build
