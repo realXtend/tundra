@@ -676,14 +676,23 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
     if (!scene)
         return;
 
-    kNet::NetworkMessage *msg = destination->StartNewMessage(cRigidBodyUpdateMessage, 4096);
+    const int maxMessageSizeBytes = 1400;
+    kNet::NetworkMessage *msg = destination->StartNewMessage(cRigidBodyUpdateMessage, maxMessageSizeBytes);
     msg->contentID = 0;
     msg->inOrder = true;
     msg->reliable = false;
-    kNet::DataSerializer ds(msg->data, 4096);
+    kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
 
     for(std::list<EntitySyncState*>::iterator iter = state->dirtyQueue.begin(); iter != state->dirtyQueue.end(); ++iter)
     {
+        const int maxRigidBodyMessageSizeBits = 350; // An update for a single rigid body can take at most this many bits. (conservative bound)
+        // If we filled up this message, send it out and start crafting anothero one.
+        if (maxMessageSizeBytes * 8 - ds.BitsFilled() <= maxRigidBodyMessageSizeBits)
+        {
+            destination->EndAndQueueMessage(msg, ds.BytesFilled());
+            msg = destination->StartNewMessage(cRigidBodyUpdateMessage, maxMessageSizeBytes);
+            ds = kNet::DataSerializer(msg->data, maxMessageSizeBytes);
+        }
         EntitySyncState &ess = **iter;
 
         if (ess.isNew || ess.removed)
@@ -803,33 +812,33 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
             continue;
 
         int bitIdx = ds.BitsFilled();
-        ds.AddVLE<kNet::VLE8_16_32>(ess.id);
+        ds.AddVLE<kNet::VLE8_16_32>(ess.id); // Sends max. 32 bits.
 
-        ds.AddArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2);
-        if (posSendType == 1)
+        ds.AddArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2); // Sends fixed 8 bits.
+        if (posSendType == 1) // Sends fixed 57 bits.
         {
             ds.AddSignedFixedPoint(11, 8, t.pos.x);
             ds.AddSignedFixedPoint(11, 8, t.pos.y);
             ds.AddSignedFixedPoint(11, 8, t.pos.z);
         }
-        else if (posSendType == 2)
+        else if (posSendType == 2) // Sends fixed 96 bits.
         {
             ds.Add<float>(t.pos.x);
             ds.Add<float>(t.pos.y);
             ds.Add<float>(t.pos.z);
-        }
+        }        
 
         if (rotSendType == 1) // Orientation with 1 DOF, only yaw.
         {
             // The transform is looking straight forward, i.e. the +y vector of the transform local space points straight towards +y in world space.
             // Therefore the forward vector has y == 0, so send (x,z) as a 2D vector.
-            ds.AddNormalizedVector2D(rot.Col(2).x, rot.Col(2).z, 8);
+            ds.AddNormalizedVector2D(rot.Col(2).x, rot.Col(2).z, 8);  // Sends fixed 8 bits.
         }
         else if (rotSendType == 2) // Orientation with 2 DOF, yaw and pitch.
         {
             float3 forward = rot.Col(2);
             forward.Normalize();
-            ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8);
+            ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8); // Sends fixed 17 bits.
         }
         else if (rotSendType == 3) // Orientation with 3 DOF, full yaw, pitch and roll.
         {
@@ -843,28 +852,30 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
                 axis = -axis;
                 angle = 2.f * 3.141592654f - angle;
             }
+
+            // Sends 10-31 bits.
             u32 quantizedAngle = ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
             if (quantizedAngle != 0)
                 ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
         }
 
-        if (scaleSendType == 1)
+        if (scaleSendType == 1) // Sends fixed 32 bytes.
         {
             ds.Add<float>(t.scale.x);
         }
-        else if (scaleSendType == 2)
+        else if (scaleSendType == 2) // Sends fixed 96 bits.
         {
             ds.Add<float>(t.scale.x);
             ds.Add<float>(t.scale.y);
             ds.Add<float>(t.scale.z);
         }
 
-        if (velSendType == 1)
+        if (velSendType == 1) // Sends fixed 32 bits.
         {
             ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 11, 10, 3, 8);
             ess.linearVelocity = linearVel;
         }
-        else if (velSendType == 2)
+        else if (velSendType == 2) // Sends fixed 39 bits.
         {
             ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 11, 10, 10, 8);
             ess.linearVelocity = linearVel;
@@ -882,6 +893,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
                 axis = -axis;
                 angle = 2.f * 3.141592654f - angle;
             }
+             // Sends at most 31 bits.
             u32 quantizedAngle = ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
             if (quantizedAngle != 0)
                 ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
