@@ -1,13 +1,17 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
+
 #include "StableHeaders.h"
 
 #include "UiPlane.h"
-
-#include <OgreOverlay.h>
-#include <OgrePanelOverlayElement.h>
-#include "LoggingFunctions.h"
 #include "OgreMaterialAsset.h"
 #include "TextureAsset.h"
 #include "RenderWindow.h"
+
+#include "Math/MathFunc.h"
+#include "LoggingFunctions.h"
+
+#include <OgreOverlay.h>
+#include <OgrePanelOverlayElement.h>
 
 UiPlane::UiPlane(Framework *framework, RenderWindow *renderWindow)
 :overlay(0), overlayElement(0), anchorX(-1), anchorY(-1), fw(framework), rw(renderWindow)

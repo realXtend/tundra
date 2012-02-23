@@ -3,6 +3,7 @@
 #pragma once
 
 #include "PhysicsModuleApi.h"
+#include "PhysicsModuleFwd.h"
 #include "IModule.h"
 #include "SceneFwd.h"
 
@@ -14,7 +15,6 @@ namespace Ogre
     class Mesh;
 }
 
-class btTriangleMesh;
 class QScriptEngine;
 
 #ifdef PROFILING
@@ -23,10 +23,6 @@ class QTreeWidgetItem;
 
 namespace Physics
 {
-
-struct ConvexHullSet;
-class PhysicsWorld;
-
 /// Provides physics rendering by utilizing Bullet.
 class PHYSICS_MODULE_API PhysicsModule : public IModule
 {

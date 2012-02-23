@@ -1,43 +1,50 @@
 /**
+\page SceneModelPage Scenes, entities, components and attributes.
 
-\page SceneModelPage Scenes, entities and components.
+    The Scene-Entity-Component-Attribute model describes the Tundra virtual world.
+    Entity Actions provide a kind of Remote Procedure Call (RPC) mechanism for communication
+    between objects.
 
-	The scene, entity and component model describes the virtual world of the viewer.
+    @todo This page should not contain factual errors, but is pending a proper rewrite!
 
 \section scene_sec Scene
 
-	At the highest level, the world (and some other parts aswell) is composed of one or
-	more scenes. Scenes are generic containers for entities.
-
-	Iterators are provided for iterating through all entities in a scene. If you wish to
-	access components of a specific type inside the entities, iterating with
-	Foundation::ComponentManager is the preferred way.
+    At the highest level, the world (and some other parts aswell) is composed of one or
+    more scenes. Scenes are generic containers for entities.
 
 \section entity_scene_sec Entity
 
-	An entity is a presence in the scene. Entities contain components, which define
-	data and behaviour for the entity.
+    An entity is a presence in the scene containing no functionality itself.
+    Entities contain components, which define data and behavior for the entity.
 
-	Entities can contain any number of components of any type. They can even contain
-	several different instances of the same type of component. It is up to the component
-	to make sure this causes no problems.
+    Entities can contain any number of components of any type. They can even contain
+    several different instances of the same type of component. It is up to the component
+    to make sure this causes no problems.
 
 \section component_scene_sec Component
 
-	Components are lightweight containers of entity specific data and behaviour. It
-	is recommended though that components minimize the amount of behaviour they
-	define and instead let parent modules handle the behaviour, based on the data
-	the component contains.
+    A Component is a container of entity specific data (stored in attributes) and behaviour.
+
+    See the \ref component_base "Entity-Component Reference" for the set of available built-in components.
+
+\section attriubte_scene_sec Attribute
+
+    An attribute is a data of which changes are synchronized automatically between the participants.
+
+\section entity_action_sec Entity Actions
+
+    Entity actions are used for communication between objects allowing more complicated in-world logic
+    to be built in slightly more data-driven fashion.
+
+    Read more from <a href="http://groups.google.com/group/realxtend-dev">Entity Actions memo</a>.
 
 \section usage_scene_sec Usage
-	
-	Components are accessed through entities and entities are accessed through scenes.
-	Scenes can be accessed, created and removed through the Framework.
-	
-	Please note that components, entities and scenes are managed as shared pointers.
-	If you wish to store a pointer for longer period of time, over the scope of a 
-	single function, weak pointer is preferred to avoid dangling references and to
-	make sure when component, entity or scene is removed, it gets destroyed properly
-	right away.
 
+    Components are accessed through entities and entities are accessed through scenes.
+    Scenes can be accessed, created and removed through the SceneAPI.
+
+    Please note that in the C++ code, components, entities and scenes are managed as shared pointers.
+    If you wish to store a pointer for longer period of time, over the scope of a single function,
+    weak pointer is preferred to avoid dangling references and to make sure when component, entity,
+    or scene is removed, it gets destroyed properly right away.
 */

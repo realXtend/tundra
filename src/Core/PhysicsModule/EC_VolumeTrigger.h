@@ -5,11 +5,7 @@
 #include "IComponent.h"
 #include "CoreDefines.h"
 #include "Math/float3.h"
-
-// forward declares
-namespace Physics { class PhysicsModule; class PhysicsWorld; }
-class Entity;
-class EC_RigidBody;
+#include "PhysicsModuleFwd.h"
 
 /// Physics volume trigger component
 /**
@@ -62,8 +58,7 @@ Does not emit any actions.
       Also if you enable/disable 'byPivot' option when entities are inside the volume, no signals may get send for those entities,
       and they may not show up in any list of entities contained in this volume trigger until the entities move.
 
-</table>
-*/
+</table> */
 class EC_VolumeTrigger : public IComponent
 {
     friend class Physics::PhysicsWorld;
@@ -92,32 +87,27 @@ signals:
     void entityLeave(Entity* entity/*, const float3& position*/);
 
 public slots:
-
     /// Get a list of entities currently residing inside the volume.
     /** @note Return value is invalidated by physics update.
-        @return list of entities
-     */
+        @return list of entities */
     QList<EntityWeakPtr> GetEntitiesInside() const;
 
     /// Returns number of entities inside this volume trigger. 
     /** Use with GetEntityInside() to get all entities inside this volume.
         @note Return value is invalidated by physics update.
-        @return Number of entities inside this volume
-    */
+        @return Number of entities inside this volume */
     int GetNumEntitiesInside() const;
 
     /// Gets entity that is inside this volume trigger with specified index.
     /** Use with GetNumEntitiesInside() to get all entities inside this volume.
         @note Use together with GetNumEntitiesInside() during the same physics
               update frame, because physics update may change the number of 
-              entities inside the volume.
-    */
+              entities inside the volume. */
     Entity* GetEntityInside(int idx) const;
 
     /// Returns a list of entities by name which currently reside inside the volume.
     /** @note Return value is invalidated by physics update.
-        @return list of entity names
-     */
+        @return list of entity names */
     QStringList GetEntityNamesInside() const;
 
     /// Returns an approximate percent of how much of the entity is inside this volume, [0,1]
@@ -126,8 +116,7 @@ public slots:
         @note Return value is invalidated by physics update.
 
         @param entity entity
-        @return approximated percent of how much of the entity is inside this volume
-    */
+        @return approximated percent of how much of the entity is inside this volume */
     float GetEntityInsidePercent(const Entity* entity) const;
 
 
@@ -135,25 +124,20 @@ public slots:
     /** If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
         @note Uses axis aligned bounding boxes for calculations, so it is not accurate.
         @note Return value is invalidated by physics update.
-
         @param name entity name
-        @return approximated percent of how much of the entity is inside this volume
-    */
+        @return approximated percent of how much of the entity is inside this volume */
     float GetEntityInsidePercentByName(const QString &name) const;
 
     /// Returns true if specified entity can be found in the 'interesting entities' list
     /** If list of entities for this volume trigger is empty, returns always true for any entity name
         (even non-existing ones)
         @param name entity name
-        @return true if events are triggered for the names entity, false otherwise
-    */
+        @return true if events are triggered for the names entity, false otherwise */
     bool IsInterestingEntity(const QString &name) const;
 
     /// Returns true if the pivot point of the specified entity is inside this volume trigger
     /** @note Return value is invalidated by physics update.
-        
-        @return true if the pivot point of the specified entity is inside the volume, false otherwise
-    */
+        @return true if the pivot point of the specified entity is inside the volume, false otherwise */
     bool IsPivotInside(Entity *entity) const;
 
     /// Returns true if given world coordinate point is inside volume. 
@@ -186,4 +170,3 @@ private:
         this volume or if it left the volume during last physics update. */
     QMap<EntityWeakPtr, bool> entities_;
 };
-

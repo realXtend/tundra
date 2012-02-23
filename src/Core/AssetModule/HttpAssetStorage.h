@@ -46,6 +46,7 @@ public slots:
     virtual QString BaseURL() const { return baseAddress; }
     
     /// Returns all assetrefs currently known in this asset storage. Does not load the assets
+    /// @deprecated Do not call this. Rather query for assets through AssetAPI.
     virtual QStringList GetAllAssetRefs() { return assetRefs; }
     
     /// Refresh http asset refs, issues webdav PROPFIND requests. AssetChanged signals will be emitted if new assets are found.

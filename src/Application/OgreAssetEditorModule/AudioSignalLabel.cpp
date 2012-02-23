@@ -2,8 +2,8 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "AudioSignalLabel.h"
-#include "OgreAssetEditorModule.h"
 
 #include "MemoryLeakCheck.h"
 

@@ -1,3 +1,6 @@
+var dialogWidth = 800;
+var dialogHeight = 200;
+
 if (!framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
@@ -13,9 +16,9 @@ if (!framework.IsHeadless())
     proxy.windowFlags = 0;
     proxy.visible = false;
     proxy.focusPolicy = Qt.NoFocus;
-    proxy.x = ui.GraphicsView().width/2 - 250;
-    proxy.y = ui.GraphicsView().height/2 - 40;
-    label.resize(500, 200);
+    proxy.x = (ui.GraphicsView().width - dialogWidth)/2;
+    proxy.y = (ui.GraphicsView().height - dialogHeight)/2;
+    label.resize(dialogWidth, dialogHeight);
 
     var prevPendingTransfers = [];
 
@@ -46,21 +49,21 @@ function OnFrameUpdate()
             pendingTransfers.push(url);
         }
     }
-    
+
     var newPendingTransfers = ArrayDiff(pendingTransfers, prevPendingTransfers);
-    var completedTransfers = ArrayDiff(prevPendingTransfers, pendingTransfers);        
+    var completedTransfers = ArrayDiff(prevPendingTransfers, pendingTransfers);
     prevPendingTransfers = pendingTransfers;
     if (newPendingTransfers.length > 0 || completedTransfers.length > 0)
     {
         numAssetsLoaded += completedTransfers.length;
-        
+
         mostRecentCompletedTransfers = mostRecentCompletedTransfers.concat(completedTransfers);
         var numTransfersToShow = 3;
         if (mostRecentCompletedTransfers.length > numTransfersToShow)
             mostRecentCompletedTransfers.splice(0, mostRecentCompletedTransfers.length - numTransfersToShow);
-           
-        proxy.x = ui.GraphicsView().width/2 - 250;
-        proxy.y = ui.GraphicsView().height/2 - 40;        
+
+        proxy.x = (ui.GraphicsView().width - dialogWidth)/2;
+        proxy.y = (ui.GraphicsView().height - dialogHeight)/2;
         if (pendingTransfers.length == 0)
             label.text = "Done.";
         else

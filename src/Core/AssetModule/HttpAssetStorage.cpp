@@ -63,7 +63,7 @@ void HttpAssetStorage::RefreshAssetRefs()
 QString HttpAssetStorage::SerializeToString(bool networkTransfer) const
 {
     QString str = "type=" + Type() + ";name=" + storageName +  ";src=" + baseAddress + ";readonly=" + BoolToString(!writable) +
-        ";liveupdate=" + BoolToString(liveUpdate) + ";autodiscoverable=" + BoolToString(autoDiscoverable) + ";replicated=" +
+        ";liveupdate=" + BoolToString(liveUpdate) + ";liveupload=" + BoolToString(liveUpload) + ";autodiscoverable=" + BoolToString(autoDiscoverable) + ";replicated=" +
         BoolToString(isReplicated) + ";trusted=" + TrustStateToString(trustState);
     if (!networkTransfer)
         str = str + (localDir.isEmpty() ? QString() : ";localdir=" + localDir);
@@ -158,7 +158,13 @@ void HttpAssetStorage::OnHttpTransferFinished(QNetworkReply *reply)
                             if (!assetRefs.contains(newAssetRef))
                             {
                                 assetRefs.push_back(newAssetRef);
-                                emit AssetChanged(refUrl, "", IAssetStorage::AssetCreate);
+                                // AssetAPI will prepend the baseAddress to the asset name when creating the new unloaded asset.
+                                // Therefore make sure it's not added twice
+                                QString localRef = refUrl;
+                                if (newAssetRef.indexOf(baseAddress, 0, Qt::CaseInsensitive) == 0)
+                                    localRef = newAssetRef.mid(baseAddress.length());
+                                
+                                emit AssetChanged(localRef, "", IAssetStorage::AssetCreate);
                             }
                             LogDebug("PROPFIND found assetref " + newAssetRef);
                         }

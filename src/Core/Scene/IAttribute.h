@@ -9,6 +9,7 @@
 #include "CoreDefines.h"
 #include "CoreStringUtils.h"
 #include "AttributeChangeType.h"
+#include "SceneFwd.h"
 
 #include <boost/enable_shared_from_this.hpp>
 
@@ -17,9 +18,6 @@ namespace kNet
     class DataSerializer;
     class DataDeserializer;
 }
-
-class AttributeMetadata;
-class IComponent;
 
 class QScriptValue;
 class QVariant;

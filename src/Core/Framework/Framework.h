@@ -6,14 +6,10 @@
 
 #include <QObject>
 #include <QStringList>
-#include <QMap>
 
 #include <boost/smart_ptr.hpp>
 
 #include <vector>
-
-//class ConnectionAPI;
-//class ServerAPI;
 
 /// The system root access object.
 class Framework : public QObject
@@ -139,13 +135,13 @@ public slots:
     void Exit();
 
     /// Returns whether or not the command line arguments contain a specific value.
-    /** @param value Key or value with possible prefixes. */
+    /** @param value Key or value with possible prefixes, case-insensitive. */
     bool HasCommandLineParameter(const QString &value) const;
 
     /// Returns list of command line parameter values for a specific @c key, f.ex. "--file".
     /** Value is considered to be the command line argument following the @c key.
         If the argument following @c key is another key-type argument (--something), it's not appended to the return list.
-        @param key Key with possible prefixes. */
+        @param key Key with possible prefixes, case-insensitive */
     QStringList CommandLineParameters(const QString &key) const;
 
     /// Prints to console all the used startup options.

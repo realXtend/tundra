@@ -6,10 +6,9 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
-#include "SceneDesc.h"
 #include "UniqueIdGenerator.h"
 #include "Math/float3.h"
-#include "ChangeRequest.h"
+#include "SceneDesc.h"
 
 #include <QObject>
 #include <QVariant>
@@ -17,7 +16,8 @@
 #include <boost/enable_shared_from_this.hpp>
 
 class Framework;
-class SceneAPI;
+/// @todo Not nice: UserConnection is a class from TundraProtocolModule, so Scene core API "depends" on it currently.
+/// Maybe have some kind of UserConnection interface class defined in Framework and use that instead.
 class UserConnection;
 class QDomDocument;
 

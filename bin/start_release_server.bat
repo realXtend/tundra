@@ -1,1 +1,0 @@
-tundra --server --config plugins.xml

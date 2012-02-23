@@ -64,6 +64,9 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<float3>& dest)
 {
     dest.clear();
     
+    try
+    {
+
     for(uint i = 0; i < mesh->getNumSubMeshes(); ++i)
     {
         Ogre::SubMesh* submesh = mesh->getSubMesh(i);
@@ -123,6 +126,13 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<float3>& dest)
         
         vbuf->unlock();
         ibuf->unlock();
+    }
+
+    } catch(Ogre::Exception &e)
+    {
+        ///\todo Fix Ogre to not allow meshes like this to be successfully created.
+        LogError("GetTrianglesFromMesh failed for mesh! Ogre threw an exception: " + QString(e.what()));
+        dest.clear();
     }
 }
 

@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneFwd.h
- *  @brief  Forward declarations and typedefs for Scene-related clasess.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneFwd.h
+    @brief  Forward declarations and typedefs for Scene-related classes. */
 
 #pragma once
 
@@ -11,37 +10,31 @@
 #include <list>
 #include <vector>
 #include <map>
-
 #include <QString>
-#include <QSharedPointer>
-#include <QWeakPointer>
 
-class Entity;
+class SceneAPI;
 class Scene;
-
-typedef boost::shared_ptr<Scene> ScenePtr;
-typedef boost::weak_ptr<Scene> SceneWeakPtr;
-
-typedef boost::weak_ptr<Entity> EntityWeakPtr;
-typedef boost::shared_ptr<Entity> EntityPtr;
-
-typedef std::list<EntityPtr> EntityList;
+class Entity;
+class IComponent;
+class IComponentFactory;
+class IAttribute;
+class AttributeMetadata;
+class ChangeRequest;
 
 struct SceneDesc;
 struct EntityDesc;
 struct ComponentDesc;
 struct AttributeDesc;
 struct AssetDesc;
-
 struct EntityReference;
 
-class IComponentFactory;
-class IComponent;
-class IAttribute;
-
+typedef boost::shared_ptr<Scene> ScenePtr;
+typedef boost::weak_ptr<Scene> SceneWeakPtr;
+typedef boost::weak_ptr<Entity> EntityWeakPtr;
+typedef boost::shared_ptr<Entity> EntityPtr;
+typedef std::list<EntityPtr> EntityList;
 typedef boost::shared_ptr<IComponent> ComponentPtr;
 typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
 typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef std::vector<IAttribute*> AttributeVector;
 typedef std::map<QString, ScenePtr> SceneMap;
-

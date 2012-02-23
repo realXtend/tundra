@@ -1,4 +1,8 @@
-// For conditions of distribution and use, see copyright notice in LICENSE
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   Transform.h
+    @brief  Describes transformation of an object in 3D space. */
 
 #pragma once
 
@@ -210,13 +214,28 @@ public:
         return !(*this == rhs);
     }
 
-    QString toString() const
-    {
-        return "Transform(Pos:(" + QString::number(pos.x) + "," + QString::number(pos.y) + "," + QString::number(pos.z) + ") Rot:(" +
-            QString::number(rot.x) + "," + QString::number(rot.y) + "," + QString::number(rot.z) + " Scale:(" +
-            QString::number(scale.x) + "," + QString::number(scale.y) + "," + QString::number(scale.z) + "))";
-    }
+    /// Implicit conversion to string.
+    /** @see ToString */
+    operator QString() const;
 
+    /// Returns "Transform(Pos:(x,y,z)) Rot:(x,y,z) Scale:(x,y,z))".
+    QString ToString() const { return (QString)*this; }
+
+    /// For QtScript-compatibility.
+    QString toString() const { return (QString)*this; }
+
+    /// Returns "px,py,pz,rx,ry,rz,sx,sy,sz".
+    /** This is the preferred format for the Transfrom if it has to be serialized to a string for machine transfer.
+        @todo Remove commas from the string. */
+    QString SerializeToString() const;
+
+    /// Parses a string to a new Color.
+    /** Accepted format is "px,py,pz,rx,ry,rz,sx,sy,sz".
+        @sa SerializeToString */
+    static Transform FromString(const char *str);
+
+    /// This is an overloaded function.
+    static Transform FromString(const QString &str) { return FromString(str.simplified().toStdString().c_str()); }
 };
 
 Q_DECLARE_METATYPE(Transform)
