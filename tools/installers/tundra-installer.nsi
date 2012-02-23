@@ -102,6 +102,7 @@ Section "Start Menu Shortcuts"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\Github Source Repository.lnk" "https://github.com/realXtend/naali" ""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\Online Documentation.lnk" "http://www.realxtend.org/doxygen/" ""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\License.lnk" "$INSTDIR\LICENSE.txt" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\What's New.lnk" "$INSTDIR\WhatsNew.txt" ""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\Report a Bug.lnk" "https://github.com/realXtend/naali/issues" ""
 SectionEnd
 
