@@ -1,33 +1,30 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   FrameworkFwd.h
- *  @brief  Forward declarations and type defines for commonly used Framework classes.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   FrameworkFwd.h
+    @brief  Forward declarations and type defines for commonly used Framework classes. */
 
 #pragma once
 
-#include <boost/smart_ptr.hpp>
-
 class Framework;
-class Profiler;
+class Application;
 class RaycastResult;
 class IRenderer;
-
-class UiAPI;
+class Profiler;
+class ProfilerQObj;
+class IModule;
+class Color;
+class Transform;
+class Exception;
 class FrameAPI;
+class ConfigAPI;
+class PluginAPI;
+class ApiVersionInfo;
+class ApplicationVersionInfo;
+// The following are external to Framework
+class UiAPI;
 class InputAPI;
 class AudioAPI;
 class AssetAPI;
 class ConsoleAPI;
 class SceneAPI;
-class ConfigAPI;
-class PluginAPI;
-
-class Application;
-class ApiVersionInfo;
-class ApplicationVersionInfo;
-
-class Profiler;
-class ProfilerQObj;
-class IModule;

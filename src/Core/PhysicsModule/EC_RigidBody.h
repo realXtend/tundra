@@ -4,30 +4,16 @@
 
 #include "CoreDefines.h"
 #include "IComponent.h"
-#include "LinearMath/btMotionState.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
-
-#include "Math/MathFwd.h"
 #include "Geometry/AABB.h"
 #include "PhysicsModuleApi.h"
+#include "PhysicsModuleFwd.h"
 
-#include <QVector>
-
-class btRigidBody;
-class btCollisionShape;
-class btTriangleMesh;
-class btHeightfieldTerrainShape;
+#include <LinearMath/btMotionState.h>
 
 class EC_Placeable;
 class EC_Terrain;
-
-namespace Physics
-{
-    class PhysicsModule;
-    class PhysicsWorld;
-    struct ConvexHullSet;
-}
 
 /// Physics rigid body entity component
 /**
@@ -115,8 +101,7 @@ Set to 0,0,0 to make for example an avatar capsule that does not tip over by its
 Does not emit any actions.
 
 <b>Depends on the component Placeable, and optionally on Mesh & Terrain to copy the collision shape from them</b>.
-</table>
-*/
+</table> */
 class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
 {
     friend class Physics::PhysicsWorld;
@@ -226,33 +211,28 @@ signals:
         @param distance Contact distance
         @param impulse Impulse applied to the objects to separate them
         @param newCollision True if same collision did not happen on the previous frame.
-        If collision has multiple contact points, newCollision can only be true for the first of them.
-     */
+        If collision has multiple contact points, newCollision can only be true for the first of them. */
     void PhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
     
 public slots:
 
     /// Set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
-    /** @return true if successful (EC_Mesh could be found and contained a mesh reference)
-     */
+    /** @return true if successful (EC_Mesh could be found and contained a mesh reference) */
     bool SetShapeFromVisibleMesh();
 
     /// Set linear velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
-        @param velocity New linear velocity
-     */
+        @param velocity New linear velocity */
     void SetLinearVelocity(const float3& velocity);
     
     /// Set angular velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
-        @param angularVelocity New angular velocity, specified in degrees / sec
-     */
+        @param angularVelocity New angular velocity, specified in degrees / sec */
     void SetAngularVelocity(const float3& angularVelocity);
     
     /// Apply a force to the body
     /** @param force Force
-        @param position Object space position, by default center
-     */
+        @param position Object space position, by default center */
     void ApplyForce(const float3& force, const float3& position = float3::zero);
     
     /// Apply a torque to the body
@@ -262,13 +242,11 @@ public slots:
     
     /// Apply an impulse to the body
     /** @param impulse Impulse
-        @param position Object space position, by default center
-     */
+        @param position Object space position, by default center */
     void ApplyImpulse(const float3& impulse, const float3& position = float3::zero);
     
     /// Apply a torque impulse to the body
-    /** @param torqueImpulse Torque impulse
-     */
+    /** @param torqueImpulse Torque impulse */
     void ApplyTorqueImpulse(const float3& torqueImpulse);
     
     /// Force the body to activate (wake up)
@@ -286,15 +264,13 @@ public slots:
     /// Forcibly set rotation
     /** Use this instead of just setting the placeable's full transform to allow linear motion
         to continue uninterrupted (with proper inter-step interpolation)
-        @param rotation New rotation (eulers)
-     */
+        @param rotation New rotation (eulers) */
     void SetRotation(const float3& rotation);
     
     /// Rotate the body
     /** Use this instead of just setting the placeable's full transform to allow linear motion
         to continue uninterrupted (with proper inter-step interpolation)
-        @param rotation Delta rotation (eulers)
-     */
+        @param rotation Delta rotation (eulers) */
     void Rotate(const float3& rotation);
     
     /// Return linear velocity
@@ -304,20 +280,17 @@ public slots:
     float3 GetAngularVelocity();
     
     /// Return physics world
-    Physics::PhysicsWorld* GetPhysicsWorld() { return world_; }
+    Physics::PhysicsWorld* GetPhysicsWorld() const { return world_; }
 
     /// Constructs axis-aligned bounding box from bullet collision shape
     /** @param outMin The minimum corner of the box
-        @param outMax The maximum corner of the box
-    */
+        @param outMax The maximum corner of the box */
     void GetAabbox(float3 &outAabbMin, float3 &outAabbMax);
 
     btRigidBody* GetRigidBody() const { return body_; }
     
     /// Return whether have authority. On the client, returns false for non-local objects.
     bool HasAuthority() const;
-    
-//    QVariant Shape() const;
 
     /// Returns the minimal axis-aligned bounding box that encloses the collision shape of this rigid body.
     /// Note that this function may be called even if the shape of this rigid body is not AABB.
@@ -368,8 +341,7 @@ private:
     void RemoveBody();
     
     /// Re-add the body to the physics world because of its some properties changing
-    /** (also recalculates those properties as necessary, and sets collisionshape for the body if it has changed)
-     */
+    /** (also recalculates those properties as necessary, and sets collisionshape for the body if it has changed) */
     void ReaddBody();
     
     /// Update scale from placeable & own size setting
@@ -433,5 +405,3 @@ private:
     /// Heightfield values, for the case the shape is a heightfield.
     std::vector<float> heightValues_;
 };
-
-

@@ -122,7 +122,7 @@ template<> std::string Attribute<float>::ToString() const
 {
     return ::ToString<float>(Get());
 }
-    
+
 template<> std::string Attribute<Quat>::ToString() const
 {
     return Get().SerializeToString();
@@ -145,11 +145,7 @@ template<> std::string Attribute<float4>::ToString() const
 
 template<> std::string Attribute<Color>::ToString() const
 {
-    const Color &value = Get();
-    return ::ToString<float>(value.r) + " " +
-        ::ToString<float>(value.g) + " " +
-        ::ToString<float>(value.b) + " " +
-        ::ToString<float>(value.a);
+    return Get().SerializeToString().toStdString();
 }
 
 template<> std::string Attribute<AssetReference>::ToString() const
@@ -197,31 +193,12 @@ template<> std::string Attribute<QVariantList>::ToString() const
 
 template<> std::string Attribute<Transform>::ToString() const
 {
-    QString value("");
-    const Transform &transform = Get();
-    float3 editValues[3];
-    editValues[0] = transform.pos;
-    editValues[1] = transform.rot;
-    editValues[2] = transform.scale;
-
-    for(uint i = 0; i < 3; i++)
-    {
-        value += QString::number(editValues[i].x);
-        value += ",";
-        value += QString::number(editValues[i].y);
-        value += ",";
-        value += QString::number(editValues[i].z);
-        if(i < 2)
-            value += ",";
-    }
-    return value.toStdString();
+    return Get().SerializeToString().toStdString();
 }
 
 template<> std::string Attribute<QPoint>::ToString() const
 {
-    const QPoint &value = Get();
-    return ::ToString<int>(value.x()) + " " +
-        ::ToString<int>(value.y());
+    return ::ToString<int>(Get().x()) + " " + ::ToString<int>(Get().y());
 }
 
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
@@ -356,31 +333,7 @@ template<> void Attribute<float>::FromString(const std::string& str, AttributeCh
 
 template<> void Attribute<Color>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    Color value;
-    StringVector components = SplitString(str, ' ');
-    if (components.size() == 3)
-    {
-        try
-        {
-            value.r = ParseString<float>(components[0]);
-            value.g = ParseString<float>(components[1]);
-            value.b = ParseString<float>(components[2]);
-            Set(value, change);
-        }
-        catch(...) {}
-    }
-    if (components.size() == 4)
-    {
-        try
-        {
-            value.r = ParseString<float>(components[0]);
-            value.g = ParseString<float>(components[1]);
-            value.b = ParseString<float>(components[2]);
-            value.a = ParseString<float>(components[3]);
-            Set(value, change);
-        }
-        catch(...) {}
-    }
+    Set(Color::FromString(str.c_str()), change);
 }
 
 template<> void Attribute<Quat>::FromString(const std::string& str, AttributeChange::Type change)
@@ -415,9 +368,8 @@ template<> void Attribute<AssetReferenceList>::FromString(const std::string& str
     QStringList components = strValue.split(';');
     for(int i = 0; i < components.size(); i++)
         value.Append(AssetReference(components[i]));
-    if (value.Size() == 1)
-        if (value[0].ref.trimmed().isEmpty())
-            value.RemoveLast();
+    if (value.Size() == 1 && value[0].ref.trimmed().isEmpty())
+        value.RemoveLast();
 
     Set(value, change);
 }
@@ -429,8 +381,7 @@ template<> void Attribute<EntityReference>::FromString(const std::string& str, A
 
 template<> void Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    QVariant value(QString(str.c_str()));
-    Set(value, change);
+    Set(str.c_str(), change);
 }
 
 template<> void Attribute<QVariantList >::FromString(const std::string& str, AttributeChange::Type change)
@@ -438,39 +389,17 @@ template<> void Attribute<QVariantList >::FromString(const std::string& str, Att
     QVariantList value;
     QString strValue = QString::fromStdString(str);
     QStringList components = strValue.split(';');
-
     for(int i = 0; i < components.size(); i++)
         value.push_back(QVariant(components[i]));
-    if(value.size() == 1)
-        if(value[0] == "")
-            value.pop_back();
+    if(value.size() == 1 && value[0] == "")
+        value.pop_back();
+
     Set(value, change);
 }
 
 template<> void Attribute<Transform>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    StringVector elements = SplitString(str, ',');
-    if (elements.size() != 9)
-    {
-        ::LogError("Attribute<Transform>::FromString failed: Can't deserialize string \"" + str + "\"!");
-        return;
-    }
-
-    float posX = ParseString<float>(elements[0], 0.0f);
-    float posY = ParseString<float>(elements[1], 0.0f);
-    float posZ = ParseString<float>(elements[2], 0.0f);
-    float eulerX = ParseString<float>(elements[3], 0.0f);
-    float eulerY = ParseString<float>(elements[4], 0.0f);
-    float eulerZ = ParseString<float>(elements[5], 0.0f);
-    float scaleX = ParseString<float>(elements[6], 0.0f);
-    float scaleY = ParseString<float>(elements[7], 0.0f);
-    float scaleZ = ParseString<float>(elements[8], 0.0f);
-
-    Transform result;
-    result.SetPos(posX, posY, posZ);
-    result.SetRotation(eulerX, eulerY, eulerZ);
-    result.SetScale(scaleX, scaleY, scaleZ);
-    Set(result, change);
+    Set(Transform::FromString(str.c_str()), change);
 }
 
 template<> void Attribute<QPoint>::FromString(const std::string& str, AttributeChange::Type change)

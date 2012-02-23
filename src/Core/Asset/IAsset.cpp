@@ -1,14 +1,15 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
+
 #include "DebugOperatorNew.h"
-#include <QList>
-#include <boost/thread.hpp>
-#include <QByteArray>
-#include <set>
+
+#include "IAsset.h"
+#include "AssetAPI.h"
 
 #include "Profiler.h"
 #include "LoggingFunctions.h"
 
-#include "IAsset.h"
-#include "AssetAPI.h"
+#include <set>
+
 #include "MemoryLeakCheck.h"
 
 IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
@@ -231,12 +232,12 @@ bool IAsset::SaveToFile(const QString &filename, const QString &serializationPar
         return false;
     }
 
-    return SaveAssetFromMemoryToFile(&data[0], data.size(), filename.toStdString().c_str());
+    return SaveAssetFromMemoryToFile(&data[0], data.size(), filename);
 }
 
 bool IAsset::SaveCachedCopyToFile(const QString &filename)
 {
-    return CopyAssetFile(DiskSource().toStdString().c_str(), filename.toStdString().c_str());
+    return CopyAssetFile(DiskSource(), filename);
 }
 
 void IAsset::SetAssetProvider(AssetProviderPtr provider_)

@@ -1,0 +1,69 @@
+/**
+
+\page TundraSecurity Tundra and Security
+
+Tundra utilizes several different third-party libraries, and implements a messaging protocol which is extensively generic. By default, if you host a server from scratch, it will be <b>open for access</b> for anyone, with <b>all modifications allowed</b>. Any client that logs into the world can author new Qt-based scripts which have open access to the server system and the systems of all clients. This is convenient for getting started or when hosting applications on Tundra servers on a secure intranet, but for public internet access, it is <span style="color:red; font-weight: bold;"> extremely insecure </span>.
+
+\section SecureServer Securing your Tundra Server
+
+A Tundra user can <b>interact with the scene</b> in the following ways:
+   - Create or delete an entity.
+   - Create or delete a component in an entity.
+   - Modify the value of an attribute in a component of an entity.
+   - Create or delete a dynamic attribute in the special EC_DynamicComponent type.
+
+On the server side, it is possible to add a hook to handle all scene modification messages in order to filter out and restrict prohibited actions from being applied on the server. To do that, add the following script to run on the server:
+<pre>
+// Disallow clients from modifying *anything* in the scene.
+scene.AboutToModifyEntity.connect(OnAboutToModifyEntity);
+function OnAboutToModifyEntity(req, user, entity)
+{
+	req.allowed = false;
+}
+</pre>
+
+Additionally, the user can send RPC-like commands called <b>Entity Actions</b> to the server, and to all peers (relayed via the server). By default, an entity action does nothing, if no script code is registered to handle the action. To apply access control to any entity actions you have implemented, simply write the appropriate permission checks to the handler functions of your entity actions.
+
+Of particular note is the capability to modify <b>Asset References</b> on existing entities in the scene. If the user has the permission to alter asset references on the server, he can most likely control which assets (potentially scripts!) the server will load and execute. Therefore for a public server, the user should not be able to modify any asset reference attributes.
+
+The Tundra server itself does not store a database of assets, it simply refers to external asset storage locations for the assets that are used in the scene. The server downloads and uses the same assets than the clients. This means that if a user has the capability of uploading assets to any of the storages used by the server, he might be able to replace an existing asset used by a scene, again potentially causing the server to load and use a malformed asset.
+
+\section TundraAssetTypes Asset Types used in Tundra
+
+The following table lists the core asset types used with Tundra.
+
+<table>
+<tr><td>Type</td>                  <td>Server</td><td>Client</td><td>Safe?</td></tr>
+<tr><td>Ogre Mesh (.mesh)</td>          <td>X</td><td>X</td><td>No</td></tr>
+<tr><td>QtScript (.js)</td>             <td>X</td><td>X</td><td>No</td></tr>
+<tr><td>Terrain (.ntf)</td>             <td>X</td><td>X</td><td>Yes</td></tr>
+<tr><td>Ogre Skeleton (.skeleton)</td>  <td>-</td><td>X</td><td>No</td></tr>
+<tr><td>Ogre Material (.material)</td>  <td>-</td><td>X</td><td>No</td></tr>
+<tr><td>Ogre Particle (.particle)</td>  <td>-</td><td>X</td><td>No</td></tr>
+<tr><td>Texture (.png, .dds, etc.)</td> <td>-</td><td>X</td><td>No</td></tr>
+<tr><td>Audio (.wav, .ogg)</td>         <td>-</td><td>X</td><td>No</td></tr>
+<tr><td>Qt UI (.ui)</td>                <td>-</td><td>X</td><td>No</td></tr>
+<tr><td>Tundra Avatar (.avatar)</td>    <td>-</td><td>X</td><td>No</td></tr>
+</table>
+
+A <b>X</b> mark denotes that the given role downloads and uses the particular asset type.
+
+The last column lists whether the given asset types are currently considered "sandbox" secure, meaning that the asset loaders are prepared to handle and sanitize bad and malformed input received from those content types. Loosely this should be understood as <i>"is the loader guaranteed not to crash, to the best of our knowledge, when loading this type of content?"</i>
+
+All Ogre asset types are well known to be insecure. Do not allow an untrusted user to inject new Ogre mesh assets to be utilized by the server, or it may be possible for the user to cause your server to crash (or even something worse). Other Ogre asset types, i.e. skeleton files, material files, particle files and also the Ogre-loaded texture files are also considered <span style="color: red;">unsafe</span>. Tundra builds starting from 2.2.1 are generated against a forked branch of Ogre called <a href="https://bitbucket.org/clb/ogre-safe-nocrashes/overview">'ogre-safe-nocrashes'</a>, which is a branch designed to evolve Ogre 3D towards safer asset manipulation code.
+
+\section SecureClient Securing your Tundra Client
+
+From the user's perspective, the goal for security is to be able to safely visit untrusted Tundra servers which might contain insecure or malevolent content. <span style="color: red;">Currently, this is not possible.</span> Therefore, we recommend the users to <b>only</b> visit servers which they know to trust in advance.
+
+For the best amount of security as a client, make sure you are <b>not</b> running the client with any of the following command line configuration flags enabled:
+<ul>
+<li><i>--trustserverstorages</i>: Considers all the asset storages the server is using as trustworthy. If an asset storage is trusted, executing scripts from that storage is allowed.
+<li><i>--accept_unknown_http_sources</i>: Allows asset requests to be performed to HTTP servers other than the ones specified by the server.
+<li><i>--accept_unknown_local_sources</i>: Allows asset requests to be performed to local disk paths outside the currently specified storages.
+</ul>
+
+Client-side security is a goal for Tundra, and the various client-side security tasks are managed at the <a href="https://github.com/realXtend/naali/issues?labels=Security">github issue tracker under the label security</a>.
+
+As time progresses and tasks on this front are completed, this page will be updated accordingly.
+*/

@@ -376,9 +376,8 @@ template<> void ECAttributeEditor<int>::Initialize()
             prop = intPropertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), name_);
             rootProperty_ = prop;
             QStringList enumNames;
-            AttributeMetadata::EnumDescMap_t::iterator iter = metaData->enums.begin();
-            for(; iter != metaData->enums.end(); ++iter)
-                enumNames << QString::fromStdString(iter->second);
+            for(AttributeMetadata::EnumDescMap_t::iterator iter = metaData->enums.begin(); iter != metaData->enums.end(); ++iter)
+                enumNames << iter->second;
 
             prop->setAttribute("enumNames", enumNames);
         }
@@ -436,7 +435,7 @@ template<> void ECAttributeEditor<int>::Set(QtProperty *property)
     if (listenEditorChangedSignal_)
     {
         int newValue = 0;
-        std::string valueString = property->valueText().toStdString();
+        QString valueString = property->valueText();
         if ((metaDataFlag_ & UsingEnums) != 0)
         {
             ComponentPtr comp = components_[0].lock();
@@ -454,7 +453,7 @@ template<> void ECAttributeEditor<int>::Set(QtProperty *property)
                     newValue = iter->first;
         }
         else
-            newValue = ParseString<int>(valueString);
+            newValue = valueString.toInt();
         SetValue(newValue);
     }
 }

@@ -20,26 +20,17 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
-    // Connect to asset refs ready signal of existing storages (+ refresh them now)
-    var assetStorages = asset.GetAssetStorages();
-    for (var i = 0; i < assetStorages.length; ++i)
-    {
-        assetStorages[i].AssetRefsChanged.connect(PopulateAvatarUiMenu);
-        assetStorages[i].RefreshAssetRefs();
-    }
-    // Connect to adding new storages
-    asset.AssetStorageAdded.connect(OnAssetStorageAdded);
+    // Initial population
+    PopulateAvatarUiMenu();
+
+    // Connect to asset changes
+    asset.AssetCreated.connect(OnAssetCreated);
 }
 
-function OnAssetStorageAdded(storage)
+function OnAssetCreated(asset)
 {
-    storage.AssetRefsChanged.connect(PopulateAvatarUiMenu);
-    storage.RefreshAssetRefs();
-}
-
-function EndsWith(str, suffix)
-{
-    return str.indexOf(suffix) == (str.length - suffix.length);
+    if (asset.Type() == "Avatar")
+        PopulateAvatarUiMenu();
 }
 
 function PopulateAvatarUiMenu()
@@ -50,20 +41,11 @@ function PopulateAvatarUiMenu()
 
     avatarMenu.clear();
 
-    var assetStorages = asset.GetAssetStorages();
-    for (var i = 0; i < assetStorages.length; ++i)
+    var assetList = asset.GetAllAssetsOfType("Avatar");
+    for (var i = 0; i < assetList.length; ++i)
     {
-        var assetList = assetStorages[i].GetAllAssetRefs();
-        for (var j = 0; j < assetList.length; ++j)
-        {
-            var assetNameLower = assetList[j].toLowerCase();
-            // Can not check the actual asset type from the ref only. But for now assume xml = avatar xml
-            if ((EndsWith(assetNameLower, ".xml")) || (EndsWith(assetNameLower, ".avatar")))
-            {
-                var assetName = assetList[j];
-                var handler = new MenuActionHandler(assetName);
-                avatarMenu.addAction(assetName).triggered.connect(handler, handler.triggered);
-            }
-        }
+        var assetName = assetList[i].Name();
+        var handler = new MenuActionHandler(assetName);
+        avatarMenu.addAction(assetName).triggered.connect(handler, handler.triggered);
     }
 }

@@ -273,8 +273,6 @@ void MumblePlugin::Disconnect(QString reason)
     }
 
     state.Reset();
-
-    QCoreApplication::instance()->processEvents();    
 }
 
 bool MumblePlugin::SendTextMessage(const QString &message)
@@ -973,7 +971,10 @@ void MumblePlugin::OnUserLeft(uint id, uint actorId, bool banned, bool kicked, Q
         if (user)
         {
             if (channel->RemoveUser(id))
+            {
+                channel->EmitUserLeft(id);
                 channel->EmitUsersChanged();
+            }
             SAFE_DELETE(user);
         }
     }

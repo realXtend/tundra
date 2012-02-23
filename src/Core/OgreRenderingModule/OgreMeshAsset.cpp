@@ -78,7 +78,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
     }
     catch (Ogre::Exception &e)
     {
-        LogError(QString("OgreMeshAsset::DeserializeFromData: Ogre::MeshSerializer::importMesh failed: ") + e.what());
+        LogError(QString("OgreMeshAsset::DeserializeFromData: Ogre::MeshSerializer::importMesh failed when loading asset '" + Name() + "': ") + e.what());
         return false;
     }
     

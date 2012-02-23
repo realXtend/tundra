@@ -36,7 +36,6 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
     maxSubSteps_(6), // If fps is below 10, we start to slow down physics
     isClient_(isClient),
     runPhysics_(true),
-    drawDebugGeometry_(false),
     drawDebugManuallySet_(false),
     debugDrawMode_(0),
     cachedOgreWorld_(0)
@@ -106,13 +105,13 @@ void PhysicsWorld::Simulate(f64 frametime)
     // However, do not do this if user has used the physicsdebug console command
     if (!drawDebugManuallySet_)
     {
-        if ((!drawDebugGeometry_) && (!debugRigidBodies_.empty()))
+        if ((!IsDebugGeometryEnabled()) && (!debugRigidBodies_.empty()))
             SetDebugGeometryEnabled(true);
-        if ((drawDebugGeometry_) && (debugRigidBodies_.empty()))
+        if ((IsDebugGeometryEnabled()) && (debugRigidBodies_.empty()))
             SetDebugGeometryEnabled(false);
     }
     
-    if (drawDebugGeometry_)
+    if (IsDebugGeometryEnabled())
         DrawDebugGeometry();
 }
 
@@ -260,19 +259,21 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
 
 void PhysicsWorld::SetDebugGeometryEnabled(bool enable)
 {
-    if (scene_.expired() || !scene_.lock()->ViewEnabled() || drawDebugGeometry_ == enable)
+    if (scene_.expired() || !scene_.lock()->ViewEnabled() || IsDebugGeometryEnabled() == enable)
         return;
 
-    drawDebugGeometry_ = enable;
-    if (!enable)
-        setDebugMode(0);
-    else
-        setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+    /// @todo Make possisble to set other debug modes too.
+    setDebugMode(enable ? btIDebugDraw::DBG_DrawWireframe : btIDebugDraw::DBG_NoDebug);
+}
+
+bool PhysicsWorld::IsDebugGeometryEnabled() const
+{
+    return getDebugMode() != btIDebugDraw::DBG_NoDebug;
 }
 
 void PhysicsWorld::DrawDebugGeometry()
 {
-    if (!drawDebugGeometry_)
+    if (!IsDebugGeometryEnabled())
         return;
 
     PROFILE(PhysicsModule_DrawDebugGeometry);
@@ -296,7 +297,7 @@ void PhysicsWorld::reportErrorWarning(const char* warningString)
 
 void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
-    if (drawDebugGeometry_ && cachedOgreWorld_)
+    if (IsDebugGeometryEnabled() && cachedOgreWorld_)
         cachedOgreWorld_->DebugDrawLine(from, to, color.x(), color.y(), color.z());
 }
 

@@ -2,14 +2,13 @@
 
 #pragma once
 
+#include "CoreTypes.h"
+#include "AssetFwd.h"
+
 #include <QString>
-#include <QUrl>
 #include <QDir>
 #include <QObject>
 #include <QDateTime>
-
-#include "CoreTypes.h"
-#include "AssetFwd.h"
 
 /// Implements a disk cache for asset files to avoid re-downloading assets between runs.
 class AssetCache : public QObject

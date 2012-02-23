@@ -74,6 +74,18 @@ if (!server.IsRunning() && !framework.IsHeadless())
     else
         console.LogError("MumblePlugin not preset, its not in your startup config?");
 }
+
+function OnScriptDestroyed()
+{
+    // This function is called automatically by the engine when the EC_Script component that is
+    // running this application is destoyed. For example when you disconnect from a Tundra server 
+    // and the scene is destroyed. This ensures you leave the VOIP server if a connection is open.
+    if (!server.IsRunning() && !framework.IsHeadless() && framework.GetModuleByName("MumblePlugin") != null)
+    {
+        mumble.Disconnected.disconnect(OnDisconnected);
+        mumble.Disconnect("Client exiting");
+    }
+}
 \endcode
 
 <b>Hooking up to MumblePlugin signals</b>
@@ -151,7 +163,7 @@ function ConnectToServer()
 }
 \endcode
 
-<b>Handlign signals from MumblePlugin</b>
+<b>Handling signals from MumblePlugin</b>
 
 Here are examples of your application functions that we connected MumblePlugin signals to in <code>StartClient()</b>. 
 In your actual application these functions should update the UI state, for this simple example we can just log prints.

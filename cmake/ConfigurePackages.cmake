@@ -39,9 +39,8 @@ set(Boost_DEBUG FALSE)
 set(Boost_USE_MULTITHREADED TRUE)
 set(Boost_DETAILED_FAILURE_MSG FALSE)
 set(Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1")
-set(Boost_USE_STATIC_LIBS TRUE)
 
-find_package(Boost 1.46.1 COMPONENTS thread regex)   
+find_package(Boost 1.39.0 COMPONENTS thread regex)
 
 if (Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
@@ -227,7 +226,7 @@ macro (configure_sparkle)
 endmacro (configure_sparkle)
 
 macro(use_package_knet)
-    set(KNET_DIR ${ENV_KNET_DIR_QT47})
+    set(KNET_DIR $ENV{KNET_DIR_QT47})
     
     # If KNET_DIR_QT47 was not specified, use kNet from TUNDRA_DEP_PATH.
     if ("${KNET_DIR}" STREQUAL "")
@@ -241,7 +240,7 @@ macro(use_package_knet)
     include_directories (${KNET_DIR}/include)
     link_directories (${KNET_DIR}/lib)
 
-    message (STATUS "Using kNet from $(KNET_DIR)")
+    message (STATUS "Using kNet from ${KNET_DIR}")
 endmacro()
 
 macro(link_package_knet)

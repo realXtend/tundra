@@ -480,10 +480,9 @@ void MumbleNetworkHandler::SendVoicePacket(VoicePacketInfo &packetInfo)
 
     if (packetInfo.isPositional)
     {
-        // Tundra to Mumble coordinate conversion
+        stream << packetInfo.pos.x;
         stream << packetInfo.pos.y;
         stream << packetInfo.pos.z;
-        stream << -packetInfo.pos.x;
     }
 
     NetworkMode localNetworkMode = MumbleTCPMode;
@@ -756,12 +755,9 @@ void MumbleNetworkHandler::HandleVoicePacket(uint userId, uint seq, Mumble::Pack
     if (stream.left() > 0)
     {
         isPositional = true;
-
-        // Coordinate conversion: Mumble -> Naali 
+        stream >> pos.x;
         stream >> pos.y;
         stream >> pos.z;
-        stream >> pos.x;
-        pos.x *= -1;
     }
 
     if (frames.size() > 0)
