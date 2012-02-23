@@ -1453,22 +1453,6 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
     return dependents;
 }
 
-bool AssetAPI::ShouldReplicateAssetDiscovery(const QString& assetRef)
-{
-    AssetAPI::AssetRefType type = ParseAssetRef(assetRef);
-    if (type == AssetAPI::AssetRefInvalid || type == AssetAPI::AssetRefLocalPath || type == AssetAPI::AssetRefLocalUrl || type == AssetAPI::AssetRefRelativePath)
-        return false;
-    else
-    {
-        AssetPtr asset = GetAsset(assetRef);
-        AssetStoragePtr storage = asset ? asset->GetAssetStorage() : AssetStoragePtr();
-        if (storage && !storage->IsReplicated())
-            return false;
-        else
-            return true;
-    }
-}
-
 int AssetAPI::NumPendingDependencies(AssetPtr asset) const
 {
     int numDependencies = 0;
