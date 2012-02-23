@@ -4,9 +4,8 @@
 
 #include "CoreDefines.h"
 #include "PhysicsModuleApi.h"
+#include "PhysicsModuleFwd.h"
 #include "Math/float3.h"
-
-class btConvexHullShape;
 
 namespace Physics
 {

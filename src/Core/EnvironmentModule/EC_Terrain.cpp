@@ -582,7 +582,7 @@ bool EC_Terrain::SaveToFile(QString filename)
         LogError("The EC_Terrain is in inconsistent state. Cannot save.");
         return false;
     }
-
+    /// @todo Unicode support
     FILE *handle = fopen(filename.toStdString().c_str(), "wb");
     if (!handle)
     {

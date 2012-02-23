@@ -161,7 +161,11 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     QString originalAssetRef = assetRef;
     assetRef = assetRef.trimmed();
     QString assetRefWithoutSubAssetName;
-    AssetAPI::ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, 0, 0, &assetRefWithoutSubAssetName);
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, 0, 0, &assetRefWithoutSubAssetName);
+    
+    assert(refType == AssetAPI::AssetRefExternalUrl);
+    UNREFERENCED_PARAM(refType);
+    
     assetRef = assetRefWithoutSubAssetName;
     if (!IsValidRef(assetRef))
     {
@@ -264,12 +268,15 @@ AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString
 
     bool liveUpdate = true;
     bool autoDiscoverable = false;
+    bool liveUpload = false;
     if (s.contains("liveupdate"))
         liveUpdate = ParseBool(s["liveupdate"]);
+    if (s.contains("liveupload"))
+        liveUpdate = ParseBool(s["liveupload"]);
     if (s.contains("autodiscoverable"))
         autoDiscoverable = ParseBool(s["autodiscoverable"]);
     
-    HttpAssetStoragePtr newStorage = AddStorageAddress(protocolPath, name, liveUpdate, autoDiscoverable);
+    HttpAssetStoragePtr newStorage = AddStorageAddress(protocolPath, name, liveUpdate, autoDiscoverable, liveUpload);
 
     // Set local dir if specified
     ///\bug Refactor these sets to occur inside AddStorageAddress so that when the NewStorageAdded signal is emitted, these values are up to date.
@@ -442,7 +449,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     }
 }
 
-HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate, bool autoDiscoverable)
+HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate, bool autoDiscoverable, bool liveUpload)
 {    QString locationCleaned = GuaranteeTrailingSlash(address.trimmed());
 
     // Check if a storage with this name already exists.
@@ -459,6 +466,7 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
     storage->baseAddress = locationCleaned;
     storage->storageName = storageName;
     storage->liveUpdate = liveUpdate;
+    storage->liveUpload = liveUpload;
     storage->autoDiscoverable = autoDiscoverable;
     storage->provider = this->shared_from_this();
     storages.push_back(storage);

@@ -109,6 +109,11 @@ void OgreWorld::FlushDebugGeometry()
         debugLinesNoDepth_->draw();
 }
 
+Color OgreWorld::DefaultSceneAmbientLightColor()
+{
+    return Color(0.364f, 0.364f, 0.364f, 1.f);
+}
+
 void OgreWorld::SetDefaultSceneFog()
 {
     if (sceneManager_)

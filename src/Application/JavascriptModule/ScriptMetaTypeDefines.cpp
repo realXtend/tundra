@@ -111,6 +111,7 @@ QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &ass
 {
     QScriptValue v = engine->newArray(assetMap.size());
     int idx = 0;
+    /// \todo Want to change this to an associative array on the script side.
     for(AssetMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
     {
         QScriptValue elem = qScriptValueFromBoostSharedPtr(engine, iter->second);

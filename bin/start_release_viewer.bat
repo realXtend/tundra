@@ -1,1 +1,0 @@
-tundra --config viewer.xml

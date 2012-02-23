@@ -34,4 +34,3 @@ inline bool RayTestSingle(const float3& rayFrom, const float3& rayTo, btRigidBod
 
     return resultCallback.hasHit();
 }
-

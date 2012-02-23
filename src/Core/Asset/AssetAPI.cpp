@@ -26,8 +26,6 @@
 #include <QList>
 #include <QMap>
 
-#include <boost/thread.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
 #include "MemoryLeakCheck.h"
@@ -150,6 +148,19 @@ void AssetAPI::SetDefaultAssetStorage(const AssetStoragePtr &storage)
         LogInfo("Set asset storage \"" + storage->Name() + "\" as the default storage (" + storage->SerializeToString() + ").");
     else
         LogInfo("Set (null) as the default asset storage.");
+}
+
+AssetMap AssetAPI::GetAllAssetsOfType(const QString& type)
+{
+    AssetMap ret;
+    
+    for (AssetMap::const_iterator i = assets.begin(); i != assets.end(); ++i)
+    {
+        if (!i->second->Type().compare(type, Qt::CaseInsensitive))
+            ret[i->first] = i->second;
+    }
+    
+    return ret;
 }
 
 std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
@@ -788,7 +799,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     assetRef = assetRef.trimmed();
 
     if (assetType.length() == 0)
-        assetType = GetResourceTypeFromAssetRef(assetRef.toLower().toStdString().c_str());
+        assetType = GetResourceTypeFromAssetRef(assetRef.toLower());
 
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
     QString namedStorage;
@@ -977,7 +988,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     }
     if (dynamic_cast<NullAssetFactory*>(factory.get()))
         return AssetPtr();
-    AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
+    AssetPtr asset = factory->CreateEmptyAsset(this, name);
 
     if (!asset)
     {
@@ -1273,10 +1284,16 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
         {
             // If available, check the storage whether assets loaded from it should be live-updated.
             // Otherwise assume live-update == true
+            
             bool shouldLiveUpdate = true;
             AssetStoragePtr storage = asset->GetAssetStorage();
             if (storage)
                 shouldLiveUpdate = storage->HasLiveUpdate();
+
+            // Localassetprovider implements its own watcher. Therefore only add paths which refer to the assetcache to the AssetAPI watcher
+            if (!assetCache || !diskSource.startsWith(assetCache->CacheDirectory(), Qt::CaseInsensitive))
+                shouldLiveUpdate = false;
+            
             if (shouldLiveUpdate)
             {
                 diskSourceChangeWatcher->removePath(diskSource);
@@ -1541,6 +1558,12 @@ void AssetAPI::EmitAssetStorageAdded(AssetStoragePtr newStorage)
 
 QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
 {
+    storageString = storageString.trimmed();
+    // Swallow the right-most ';' if it exists to allow both forms "http://www.server.com/" and "http://www.server.com/;" below,
+    // although the latter is somewhat odd form.
+    if (storageString.endsWith(";")) 
+        storageString = storageString.left(storageString.length()-1);
+
     // Treat simple strings of form "http://myserver.com/" as "src=http://myserver.com/".
     if (storageString.indexOf(';') == -1 && storageString.indexOf('=') == -1)
         storageString = "src=" + storageString;
@@ -1601,6 +1624,8 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
                 LogError("Failed to reload changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\"!");
             else
                 LogDebug("Reloaded changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\".");
+            
+            emit AssetDiskSourceChanged(asset);
         }
     }
 }
