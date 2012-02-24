@@ -139,6 +139,7 @@ macro (configure_python_qt)
 endmacro (configure_python_qt)
 
 macro (configure_skyx)
+	if (NOT MSVC)
     # Prioritize env variable SKYX_HOME to be searched first
     # to allow custom skyx builds agains a custom ogre (potentially from OGRE_HOME)
     sagase_configure_package (SKYX
@@ -151,6 +152,7 @@ macro (configure_skyx)
     endif ()
     
     sagase_configure_report (SKYX)
+    endif()
 endmacro (configure_skyx)
 
 macro (configure_hydrax)
@@ -189,6 +191,30 @@ endmacro()
 macro(link_package_hydrax)
 	if (MSVC) # TODO linkage settings for using Hydrax from deps for other platforms.
 		target_link_libraries(${TARGET_NAME} optimized Hydrax debug Hydraxd)
+	endif()
+endmacro()
+
+macro(use_package_skyx)
+    if (MSVC) # TODO inclusion chains for using SkyX from deps for other platforms.
+	
+# SkyX lookup rules:
+# 1. If the environment variable SKYX_HOME is set, use that directory.
+# 2. Otherwise, use the deps directory path.
+
+	if (NOT "$ENV{SKYX_HOME}" STREQUAL "")
+		set(SKYX_HOME $ENV{SKYX_HOME})
+	else()
+		set(SKYX_HOME ${ENV_TUNDRA_DEP_PATH}/SkyX)
+	endif()
+
+    include_directories(${SKYX_HOME}/include)
+    link_directories(${SKYX_HOME}/lib)
+	endif()
+endmacro()
+
+macro(link_package_skyx)
+	if (MSVC) # TODO linkage settings for using Hydrax from deps for other platforms.
+		target_link_libraries(${TARGET_NAME} optimized SkyX debug SkyX_d)
 	endif()
 endmacro()
 

@@ -29,12 +29,13 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 
 if (ENABLE_SKYX)
     add_definitions(-DSKYX_ENABLED)
-    use_package(SKYX)
+    use_package(SKYX) # Other OSes #TODO:REMOVE THIS!
+    use_package_skyx() # Windows 
 endif()
 if (ENABLE_HYDRAX)
     add_definitions(-DHYDRAX_ENABLED)
-    use_package(HYDRAX)
-	use_package_hydrax()
+    use_package(HYDRAX)  # Other OSes #TODO:REMOVE THIS!
+	use_package_hydrax() # Windows
 endif()
 
 use_core_modules(Framework Math Scene OgreRenderingModule)
@@ -46,11 +47,12 @@ link_modules(Framework Math Scene OgreRenderingModule)
 link_ogre()
 
 if (ENABLE_SKYX)
-    link_package (SKYX)
+    link_package (SKYX)  # Other OSes #TODO:REMOVE THIS!
+    link_package_skyx() # Windows
 endif()
 if (ENABLE_HYDRAX)
-    link_package(HYDRAX)
-	link_package_hydrax()
+    link_package(HYDRAX)  # Other OSes #TODO:REMOVE THIS!
+	link_package_hydrax() # Windows
 endif()
 
 SetupCompileFlags()
