@@ -22,12 +22,13 @@
 #include "Profiler.h"
 #include "EC_Placeable.h"
 #include "EC_RigidBody.h"
-
 #include "SceneAPI.h"
 
 #include <kNet.h>
 
 #include <cstring>
+
+#include <boost/make_shared.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -222,10 +223,11 @@ void SyncManager::NewUserConnected(UserConnection* user)
     }
     
     // Connect to actions sent to specifically to this user
-    connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
+    connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)),
+        this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
-    user->syncState = boost::shared_ptr<SceneSyncState>(new SceneSyncState(user->GetConnectionID(), owner_->IsServer()));
+    user->syncState = boost::make_shared<SceneSyncState>(user->GetConnectionID(), owner_->IsServer());
     user->syncState->SetParentScene(scene_);
 
     if (owner_->IsServer())
