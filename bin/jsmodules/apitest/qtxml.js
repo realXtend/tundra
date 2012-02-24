@@ -1,8 +1,7 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.xml");
 
-print("hep");
-
+print("< JS qt.xml example:");
 
 //converted the c++ in http://doc.trolltech.com/4.6/qdomdocument.html
 var doc = new QDomDocument("mydocument");
@@ -57,4 +56,4 @@ print(doc);
 print((doc.toString()));
 */
 
-print(" - ");
+print(".. /qt xml example end> ");
