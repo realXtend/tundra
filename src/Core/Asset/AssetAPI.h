@@ -373,9 +373,6 @@ public slots:
     /// A utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset) const;
 
-    /// A utility function that checks whether an asset ref's discovery or deletion should be replicated
-    bool ShouldReplicateAssetDiscovery(const QString &assetRef);
-    
     /// Handle discovery of a new asset through the AssetDiscovery network message
     void HandleAssetDiscovery(const QString &assetRef, const QString &assetType);
 

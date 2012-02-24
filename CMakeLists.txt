@@ -314,7 +314,6 @@ configure_qtpropertybrowser()
 configure_openal ()
 use_package_ogg()
 use_package_vorbis()
-use_package_theora()
 
 # This will find kNet and set the global include and library directories
 use_package_knet() 

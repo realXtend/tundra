@@ -1453,22 +1453,6 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
     return dependents;
 }
 
-bool AssetAPI::ShouldReplicateAssetDiscovery(const QString& assetRef)
-{
-    AssetAPI::AssetRefType type = ParseAssetRef(assetRef);
-    if (type == AssetAPI::AssetRefInvalid || type == AssetAPI::AssetRefLocalPath || type == AssetAPI::AssetRefLocalUrl || type == AssetAPI::AssetRefRelativePath)
-        return false;
-    else
-    {
-        AssetPtr asset = GetAsset(assetRef);
-        AssetStoragePtr storage = asset ? asset->GetAssetStorage() : AssetStoragePtr();
-        if (storage && !storage->IsReplicated())
-            return false;
-        else
-            return true;
-    }
-}
-
 int AssetAPI::NumPendingDependencies(AssetPtr asset) const
 {
     int numDependencies = 0;
@@ -1616,16 +1600,24 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
         QString assetDiskSource = iter->second->DiskSource();
         if (!assetDiskSource.isEmpty() && QDir(assetDiskSource) == path && QFile::exists(assetDiskSource))
         {
-            LogInfo("AssetAPI: Detected file changes in '" + path_ + "', reloading asset.");
-
             AssetPtr asset = iter->second;
-            bool success = asset->LoadFromCache();
-            if (!success)
-                LogError("Failed to reload changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\"!");
+            AssetStoragePtr storage = asset->GetAssetStorage();
+            if (storage)
+            {
+                if (storage->HasLiveUpdate())
+                {
+                    LogInfo("AssetAPI: Detected file changes in '" + path_ + "', reloading asset.");
+                    bool success = asset->LoadFromCache();
+                    if (!success)
+                        LogError("Failed to reload changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\"!");
+                    else
+                        LogDebug("Reloaded changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\".");
+                }
+                
+                emit AssetDiskSourceChanged(asset);
+            }
             else
-                LogDebug("Reloaded changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\".");
-            
-            emit AssetDiskSourceChanged(asset);
+                LogError("Detected file change for a storageless asset " + asset->Name());
         }
     }
 }
