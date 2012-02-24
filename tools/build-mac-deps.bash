@@ -380,7 +380,7 @@ else
     cd ..
 
     cd qtbindings
-    sed -e "s/qtscript_phonon //" -e "s/qtscript_webkit //" < qtbindings.pro > x
+    sed -e "s/qtscript_phonon //" < qtbindings.pro > x
     mv x qtbindings.pro  
     qmake
     make
