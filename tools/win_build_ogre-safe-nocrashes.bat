@@ -1,34 +1,40 @@
 @echo off
 
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::
 :: This batch file will do its best to checkout Tundras custom Ogre fork with skyx, hydrax and null renderer plugins.
 :: Initially this is for VS2008, but with small tweaks it can be done for VS2010 also.
 :: Do note that this is experimental and might not work for everyone out of the box. Also this might not be the 
 :: most readable thing in the world, but hey its a batch script, what did you expect?
-
-:: See your setup is up to the following requirements before running.
+::
+:: See your setup is up to the following requirements before running:
 :: 1. In order for this path to work you need to the following in PATH: hg.exe, git.exe and cmake.exe
 :: 2. In order for the git sources branch checkout to work deps/sources must not exist or be completely empty the first time you run this scripts.
 :: 3. If you don't have VS2008 installed to C:\Program Files (x86)\Microsoft Visual Studio 9.0 (default) modify the VS_ROOT variable and cross your fingers
-:: 4. It's recommended to have DirectX SDK installer, you can find it from microsoft with a simple google search.
-
-:: Current main features
-:: - Tries its best to detect needed steps and gives instructions if 'manual' work is needed (eg. Ogre Dependencies)
-:: - Does also update all source repos, so when deps change in their respective repos running this script again will update everything.
-:: - Sets Visual Studio 2008 cmd line environment
+:: 4. It's recommended to have DirectX SDK installed when building Ogre, you can find it from microsoft with a simple google search.
+::
+:: Current main features:
+:: - Tries its best to detect needed steps and gives instructions if 'manual' work is needed (eg. Ogre dependencies)
+:: - Also updates all source repos, so when deps change in their respective repos running this script again will update everything and build + install.
+:: - Sets minimal Visual Studio 2008 cmd line environment to get msbuild.exe to work.
 :: - Fetches Tundra deps sources branch from google-code via git
 ::   + Clones to /deps/sources 
 :: - Fetches Tundra Ogre fork 'ogre-safe-nocrashes' v1-8 branch from bitbucket via hg
 ::   + Clones to /deps/sources/ogre-safe-nocrashes
 :: - Builds and installs 'ogre-safe-nocrashes' in both RelWithDebInfo and Debug mode
+::   + Build includes boost (same as Tundra uses) for background thread support.
 ::   + Installs to /deps/sources/ogre-safe-nocrashes/SDK (Ogre build default)
-
-:: Todo list
+::
+:: Todo list:
 :: - Build SkyX from deps/sources/skyx
 :: - Build HydraX from deps/sources/hydrax
 :: - Build Null Rendersystem from deps/sources/RenderSystem_Null
 :: - Modify win_cmake_vs2008.bat to detect what ogre and its plugins have been built in
 ::   deps/sources and set <DEP>_ROOT to point to the folders.
-:: - Handle copying needed runtime DLLs from the built projects to bin every time this script is ran
+:: - Handle copying needed runtime DLLs from the built projects to bin every time this script is ran.
+:: - Make script with same functionality for VS2010? This will pretty much be a copy paste job once VS2008 logic is completed.
+::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 for /f %%i in ("%0") do set RUN_PATH=%%~dpi
 
