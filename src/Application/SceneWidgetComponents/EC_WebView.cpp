@@ -13,6 +13,7 @@
 
 #include "IRenderer.h"
 
+#include "Application.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 
@@ -351,8 +352,12 @@ QMenu *EC_WebView::GetInteractionMenu(bool createSubmenu)
 {
     int currentControlId = getcontrollerId();
     
+    QString installDir = Application::InstallationDirectory();
+    if (installDir.isEmpty())
+        installDir = "./";
+    
     QMenu *actionMenu = new QMenu(0);
-    actionMenu->addAction(QIcon("./data/ui/images/icon/browser.ico"), "Show", this, SLOT(InteractShowRequest()));
+    actionMenu->addAction(QIcon(installDir + "data/ui/images/icon/browser.ico"), "Show", this, SLOT(InteractShowRequest()));
     if (currentControlId == NoneControlID && !webviewLoading_)
         actionMenu->addAction("Share Browsing", this, SLOT(InteractControlRequest()));
     else if (currentControlId == NoneControlID && webviewLoading_)
@@ -377,7 +382,8 @@ QMenu *EC_WebView::GetInteractionMenu(bool createSubmenu)
     if (createSubmenu)
     {
         QMenu *rootMenu = new QMenu(0);
-        QMenu *subMenu = rootMenu->addMenu(QIcon("./data/ui/images/icon/browser.ico"), "Browser");
+        
+        QMenu *subMenu = rootMenu->addMenu(QIcon(installDir + "data/ui/images/icon/browser.ico"), "Browser");
         subMenu->addActions(actionMenu->actions());
         return rootMenu;
     }
@@ -1025,10 +1031,22 @@ void EC_WebView::EntityClicked(Entity *entity, Qt::MouseButton button, RaycastRe
 }
 
 void EC_WebView::InteractShowRequest()
-{
+{    
+    /// @todo Rewrite this control hacking stuff so something more sensible.
+    /// This is required atm due to the web page rendering queue for non-controlled,
+    /// 0-fps EC_WebViews, so we don't have to reserve QWebView in mem.
+
+    // Automatically get control so the 2D widget is created.
+    bool autoControlled = false;
+    if (getcontrollerId() == NoneControlID && getrenderRefreshRate() <= 0)
+    {
+        autoControlled = true;
+        InteractControlRequest();
+    }
+        
     if (getcontrollerId() != NoneControlID || getrenderRefreshRate() > 0)
         PrepareWebview();
-
+        
     if (!webview_)
         return;
 
@@ -1047,6 +1065,10 @@ void EC_WebView::InteractShowRequest()
     webview_->show();
     webview_->activateWindow();
     QApplication::setActiveWindow(webview_);
+    
+    // Auto release control if it was only for creating the temporary 2D widget.
+    if (autoControlled && getcontrollerId() == myControllerId_ && getrenderRefreshRate() <= 0)
+        InteractControlReleaseRequest();
 }
 
 void EC_WebView::InteractControlRequest()
