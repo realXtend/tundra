@@ -72,6 +72,7 @@ var BrowserManager = Class.extend
         this.addressBar = new QComboBox();
         this.addressBar.setFixedHeight(23);
         this.addressBar.editable = true;
+        this.addressBar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred);
         this.progressBar = findChild(this.browser, "progressBar");
         this.progressBar.visible = false;
         
@@ -89,6 +90,7 @@ var BrowserManager = Class.extend
         this.browserToolBar.iconSize = new QSize(23,23);
         this.browserToolBar.floatable = false;
         this.browserToolBar.movable = false;
+        this.browserToolBar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed);
         
         this.actionBack = new QAction(new QIcon(uiBase + "back.png"), "", null);
         this.actionBack.triggered.connect(this.onBack);
@@ -151,6 +153,7 @@ var BrowserManager = Class.extend
         this.addressAndFavoritesBar.layout().setContentsMargins(0,0,0,0);
         this.addressAndFavoritesBar.layout().addWidget(this.addressBar, 1, 0);
         this.addressAndFavoritesBar.layout().addWidget(this.favoritesToolBar, 0, 0);
+        this.addressAndFavoritesBar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed);
 
         // Splitter
         this.splitter = new QSplitter(Qt.Horizontal);
@@ -161,8 +164,16 @@ var BrowserManager = Class.extend
         this.splitter.addWidget(this.toolBar);
         this.splitter.setStretchFactor(0, 2);
         this.splitterStartState = this.splitter.saveState();
+        this.splitter.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed);
+        
+        // Stretcher lable for connected state, this aligs the runtime added QActions to the right side of the ui.
+        this.connectedStretchLabel = new QLabel();
+        this.connectedStretchLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed);
+        this.connectedStretchLabel.visible = false;
+        this.connectedStretchLabel.styleSheet = "QLabel { background-color: transparent; }";
         
         // Combine ui
+        controlLayout.addWidget(this.connectedStretchLabel, 0, 0);
         controlLayout.addWidget(this.browserToolBar, 0, 0);
         controlLayout.addWidget(this.splitter, 0, 0);
         
@@ -276,10 +287,11 @@ var BrowserManager = Class.extend
                 containerWidget.setLayout(new QHBoxLayout());
                 containerWidget.layout().setSpacing(0);
                 containerWidget.layout().setContentsMargins(0,0,0,0);
+                containerWidget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed);
                 
                 var nameLabel = new QLabel(group);
                 nameLabel.setStyleSheet("color: grey; font: Arial; font-size: 12px;");
-                nameLabel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding);
+                nameLabel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed);
                 nameLabel.alignment = Qt.AlignTop;
                 
                 containerWidget.layout().addWidget(nameLabel, 0, 0);
@@ -573,6 +585,11 @@ var BrowserManager = Class.extend
     {
         if (index != 0)
         {
+            p_.connectedStretchLabel.visible = false;
+            p_.browserToolBar.visible = true;
+            p_.addressAndFavoritesBar.visible = true;
+            p_.addressBar.visible = true;
+            
             var tab = p_.tabs.widget(index);
             p_.addressBar.lineEdit().text = tab.url.toString();
             p_.actionAddFavorite.enabled = true;
@@ -589,7 +606,8 @@ var BrowserManager = Class.extend
             p_.actionRefreshStop.enabled = false;
             
             if (p_.connected)
-            {
+            {     
+                /*           
                 // Login must not end in "/" or it wont look proper
                 var loginPropAddress = client.GetLoginProperty("address");
                 if (loginPropAddress.charAt(loginPropAddress.length-1) == "/")
@@ -604,20 +622,35 @@ var BrowserManager = Class.extend
                     tundraUrl = tundraUrl + "&avatarurl=" + client.GetLoginProperty("avatarurl");
 
                 p_.addressBar.lineEdit().text = tundraUrl;
-                p_.actionAddFavorite.enabled = true;
+                */
                 
+                p_.connectedStretchLabel.visible = true;
+                p_.browserToolBar.visible = false;
+                p_.addressAndFavoritesBar.visible = false;
+                p_.addressBar.visible = false;
+                p_.actionAddFavorite.enabled = true;
+                p_.tabs.setTabToolTip(0, "Connected to a Tundra server");
+                p_.tabs.setTabText(0, "Tundra");
+                
+                /*
                 p_.tabs.setTabToolTip(0, tundraUrl);
                 var tundraUrlShortened = tundraUrl.substring(9);
                 if (tundraUrlShortened.length > 23)
                     tundraUrlShortened = tundraUrlShortened.substring(0,20) + "...";
                 p_.tabs.setTabText(0, tundraUrlShortened);
+                */
             }
             else
             {
+                p_.connectedStretchLabel.visible = false;
+                p_.browserToolBar.visible = true;
+                p_.addressAndFavoritesBar.visible = true;
+                p_.addressBar.visible = true;
+                
                 p_.addressBar.lineEdit().text = "local://LoginWidget.ui";
                 p_.actionAddFavorite.enabled = false;
                 p_.tabs.setTabToolTip(0, "Login");
-                p_.tabs.setTabText(0, "Login")
+                p_.tabs.setTabText(0, "Login");
             }
         }
         p_.refreshSqueezer();
