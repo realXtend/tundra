@@ -1,3 +1,61 @@
+v2.3.0 - https://github.com/realXtend/naali/compare/tundra2.2.0...tundra2.3.0
+------
+Note: The numbers with # signs refer to github issue tracker numbers, e.g. #314 -> https://github.com/realXtend/naali/issues/314 .
+ - Implemented a new path for streaming rigid bodies over the network. This allows a far larger number of concurrent clients on a server. (#314, #322, #354)
+   - Comparative profile of the Physics demo scene: http://dl.dropbox.com/u/40949268/Tundra/Tundra_RigidBody_PhysicsScene.png
+   - Old rigid body streaming code was about 70bytes/update: http://dl.dropbox.com/u/40949268/Tundra/OldRigidBodyStreaming_70b.png
+   - New code averages at about 11bytes/update: http://dl.dropbox.com/u/40949268/Tundra/NewRigidBodyPackets_11b.png
+   - User counts as large as 64 users are doable, but largely depends on what is running in the scene: http://dl.dropbox.com/u/40949268/Tundra/kNetServer64users.png
+ - Updated Physics demo scene. Added a new Physics2 demo scene.
+ - Fixed security issues in SyncManager sync action filter hooks.
+ - Fix a crash that occurred with TransformEditor.
+ - Fix a bug where the avatar mouse controls would not work at all on some scenes.
+ - Add support for launching Tundra from a web browser using the tundra:// protocol URL.
+ - Limit local asset file loads to keep at least 30fps rendering rate, if possible.
+ - Added a new loading screen script to display scene/asset loading status, for improved responsiveness. (#328, #330)
+ - Fixed several UI issues with the Profiler display window.
+ - Greatly improved scene loading performance for large scenes that are loaded from the local filesystem. (#327)
+ - Added a --no_async_asset_load command line option to allow disabling the background asset loader thread. (Can improve performance, see https://github.com/realXtend/naali/issues/332 )
+ - Added a new plugin: AssetInterestPlugin, which performs runtime-unloading of unused assets to keep memory consumption down on large scenes.
+ - Added a script-driven throttling mechanism to scene server->client synchronization mechanism to improve user responsiveness when logging in to a scene. (#302, #337, )
+ - Added a new "Open config folder" option to the Settings menu.
+ - Fix a regression bug introduced in 2.2.0 which broke .mesh file importing by drag-n-drop.
+ - Added improved error logging in several situations: when loading bad materials, when misusing animationcontroller and mesh components, and when printing out script errors.
+ - Added script functions for tangent frame computations along the terrain. (#298)
+ - Added a new shader program combination: DiffSpecflatNormal.
+ - Added a built-in material Wireframe.material for debugging aid.
+ - Fix several issues and enable calling more functions with the generic function invoker.
+ - Add support for alpha-tested shadows.
+    - Old: http://dl.dropbox.com/u/40949268/Tundra/OldShadows.png
+    - New: http://dl.dropbox.com/u/40949268/Tundra/AlphaShadows.png
+ - Moved to build Tundra against a ogre fork ogre-safe-nocrashes (https://bitbucket.org/clb/ogre-safe-nocrashes/overview), instead of the ogre trunk to improve security and fix bugs.
+   - Fork based on Ogre 1.8.0 branch, instead of 1.7.3.
+   - Fixes issues with Ogre crashing on certain .dds files. (#345)
+   - Fixes an Ogre crash related to bad .material files. (#343)
+   - Fixes an Ogre crash when a .mesh does not contain any normals. (#386)
+   - Fixes a crash when editing a .hdx asset twice while Tundra is running, caused by an Ogre crash to a dangling compositor pointer access. (#41, #331)
+   - Fix crash issues with malformed mesh inputs. (#377)
+ - TextureTool: Added two different mipmap generation options for creating mipmaps for alpha-tested textures.
+ - Fix a bug where underwater fog did not work for EC_WaterPlane. (#342)
+ - Fix a crash bug with bad EC_WaterPlane segments attribute values.
+ - Make Tundra consistently use UDP as the default protocol in every situation. The use of TCP is in general discouraged, and should only be enabled for testing or firewall penetration.
+ - Updated to newest stable kNet version.
+ - Fixed Scene::GetEntitiesWithComponent to actually work.
+ - Rewrote the Mumble VOIP implementation from scratch. (#349)
+ - Fixed a bug where asset dependencies could not be satisfied due to case sensitivity issues on Windows.
+ - Added a new "Clear Asset Cache" menu option.
+ - Added support to Asset API to do asset live-upload. See http://groups.google.com/group/realxtend-dev/browse_thread/thread/6f44c428b09c3a52
+ - Fixed a bug with mouse movement not working on Mac.
+ - Changed Tundra .dds loading to not automatically generate mip levels for .dds textures that did not contain them. (#356)
+ - Fixed a crash if user attempted to cyclically parent entities to each other.
+ - Added new command line parameters --opengl, --direct3d9, --d3d9 and --nullrenderer.
+    - Note: The nullrenderer plugin is not however shipped with this release, due to incompatibilities with Ogre 1.8.0.
+ - Added support for liveupdate (and liveupload) to work on assets that reside in the asset cache.
+ - Improved "Open File Location" assets window context menu option to select the asset file on Windows, instead of just opening the folder.
+ - Greatly improved the loading times of large terrains.
+ - Other closed issues:
+   - #98, #251, #340, #84, #323, #355, #48, #310, #351, #362, #375, #384, #376, #387, #390, #321, #336, #389.
+
 v2.2.0 - https://github.com/realXtend/naali/compare/tundra2.1.3...tundra2.2.0
 ------
  - New command line parameters "--version", "--fullscreen".
