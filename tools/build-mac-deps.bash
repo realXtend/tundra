@@ -220,7 +220,7 @@ else
 
     cd $pkgbase
     ./bootstrap.sh --prefix=$prefix
-    ./bjam --layout=versioned --build-type=complete install
+    ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex install
     touch $tags/$what-done
 fi
 
