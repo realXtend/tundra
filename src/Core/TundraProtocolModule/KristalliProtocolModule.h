@@ -77,10 +77,8 @@ public:
     /// What trasport layer to use. Read on startup from "--protocol <udp|tcp>". Defaults to UDP if no start param was given.
     kNet::SocketTransportLayer defaultTransport;
 
-#ifdef KNET_USE_QT
 public slots:
     void OpenKNetLogWindow();
-#endif
 
 signals:
     /// Triggered whenever a new message is received rom the network.

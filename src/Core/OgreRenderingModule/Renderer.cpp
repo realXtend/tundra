@@ -46,8 +46,8 @@ static const float MAX_FRAME_TIME = 0.1f;
 #undef SAFE_DELETE_ARRAY
 
 #include <d3d9.h>
-#include <RenderSystems/Direct3D9/OgreD3D9HardwarePixelBuffer.h>
-#include <RenderSystems/Direct3D9/OgreD3D9RenderWindow.h>
+#include <OgreD3D9HardwarePixelBuffer.h>
+#include <OgreD3D9RenderWindow.h>
 #endif
 
 #include <QCloseEvent>
@@ -235,19 +235,6 @@ namespace OgreRenderer
 
         ogreRoot = OgreRootPtr(new Ogre::Root("", configFilename, logfilepath));
 
-        //Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_LOW);
-
-// On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
-// On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
-///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)
-#ifdef UNIX
-        if (framework->IsHeadless())
-        {
-            // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
-            new Ogre::DefaultHardwareBufferManager();
-        }
-#endif
-
 #include "EnableMemoryLeakCheck.h"
 
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
@@ -305,14 +292,20 @@ namespace OgreRenderer
         if (map.find("Floating-point mode") != map.end())
             rendersystem->setConfigOption("Floating-point mode", "Consistent");
 
-        // Set the found rendering system
-        ogreRoot->setRenderSystem(rendersystem);
-
-        // Initialise but don't create rendering window yet
-        ogreRoot->initialise(false);
-
-        if (!framework->IsHeadless())
+        if (framework->IsHeadless())
         {
+            // If we are running in headless mode, initialize the Ogre 'DefaultHardwareBufferManager', which is a software-emulation
+            // mode for Ogre's HardwareBuffers (i.e. can create meshes into CPU memory).
+            new Ogre::DefaultHardwareBufferManager(); // This creates a Ogre manager singleton, so can discard the return value from operator new.
+        }
+        else
+        {
+            // Set the found rendering system
+            ogreRoot->setRenderSystem(rendersystem);
+
+            // Initialise but don't create rendering window yet
+            ogreRoot->initialise(false);
+
             try
             {
                 int width = framework->Ui()->GraphicsView()->viewport()->size().width();

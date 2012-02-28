@@ -133,17 +133,19 @@ void KristalliProtocolModule::Uninitialize()
     Disconnect();
 }
 
-#ifdef KNET_USE_QT
 void KristalliProtocolModule::OpenKNetLogWindow()
 {
+#ifdef KNET_USE_QT
     if (!networkDialog)
     {
         networkDialog = new NetworkDialog(0, &network);
         networkDialog->setAttribute(Qt::WA_DeleteOnClose);
     }
     networkDialog->show();
-}
+#else
+    ::LogError("Cannot open kNet logging window - kNet was not built with Qt enabled!");
 #endif
+}
 
 void KristalliProtocolModule::Update(f64 /*frametime*/)
 {
