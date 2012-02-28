@@ -22,6 +22,9 @@ fnDisplayHelpAndExit()
     echo "                                      /usr/local/Trolltech/Qt-4.7.1                                                "
     echo "                                      NOTE: This option will overwrite the value in environment variable QTDIR     "
     echo " "
+    echo " -o <PATH> | --ogre-path <PATH>       Specifies the path where a custom Ogre root directory is located. If this is "
+    echo "                                      not specified, the default-installed Ogre framework will be used.            "
+    echo " "
     echo " -rwdi | --release-with-debug-info    Enables debugging information to be included in compile-time"
     echo " "
     echo " -nc | --no-run-cmake                 Do not run 'cmake .' after the dependencies are built. (The default is that  "
@@ -109,6 +112,16 @@ while [ "$1" != "" ]; do
                                                 continue
                                             fi
                                             export QTDIR=$1
+                                            ;;
+
+        -o | --ogre-path )                  shift
+                                            if [ ! -d $1 ]; then
+                                                echo "ERROR: Bad directory for --ogre-path: $1"
+                                                ERRORS_OCCURED="1"
+                                                shift
+                                                continue
+                                            fi
+                                            export OGRE_HOME=$1
                                             ;;
 
         -nc | --no-run-cmake )              RUN_CMAKE="0"
@@ -367,7 +380,7 @@ else
     cd ..
 
     cd qtbindings
-    sed -e "s/qtscript_phonon //" -e "s/qtscript_webkit //" < qtbindings.pro > x
+    sed -e "s/qtscript_phonon //" < qtbindings.pro > x
     mv x qtbindings.pro  
     qmake
     make
