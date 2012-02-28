@@ -111,11 +111,7 @@ void Client::Login(const QString& address, unsigned short port, const QString& u
         transportLayer = kNet::SocketOverTCP;
     else if (p == "udp")
         transportLayer = kNet::SocketOverUDP;
-    else
-    {
-        ::LogError("Client::Login: Unrecognized protocol: " + p);
-        return;
-    }
+
     Login(address, port, transportLayer);
 }
 
