@@ -107,13 +107,13 @@ void Client::Login(const QString& address, unsigned short port, const QString& u
 
     QString p = protocol.trimmed().toLower();
     kNet::SocketTransportLayer transportLayer = kNet::SocketOverUDP;
-    if (p == "tcp")
+    if (p.compare("tcp", Qt::CaseInsensitive) == 0)
         transportLayer = kNet::SocketOverTCP;
-    else if (p == "udp")
+    else if (p.compare("udp", Qt::CaseInsensitive) == 0)
         transportLayer = kNet::SocketOverUDP;
-    else if (!p.isEmpty())
+    else if (!p.trimmed().isEmpty())
     {
-        ::LogError("Aborting login due to unrecognized protocol: " + p);
+        ::LogError("Client::Login: Cannot log to server using unrecognized protocol: " + p);
         return;
     }
     Login(address, port, transportLayer);
