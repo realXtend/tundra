@@ -91,6 +91,7 @@ Section "Start Menu Shortcuts"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host ChatApplication Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\ChatApplication\scene.txml$\" --server --headless"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host EntityMoveTest Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\EntityMoveTest\scene.txml$\" --server --headless"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host ReplicationTest Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\ReplicationTest\scene.txml$\" --server --headless"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host SynchronizedPhysicsTest Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Physics2\scene.txml$\" --server --headless"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Connect to Localhost.lnk" "$INSTDIR\tundra.exe" "--connect localhost;2345;udp;avatar"
 
   CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Visit Online"
