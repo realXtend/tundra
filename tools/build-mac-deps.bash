@@ -165,7 +165,7 @@ fi
 
 # If the path to the Tundra root directory was not specified, assume the script
 # is being run from (gittrunk)/tools, so viewer=(gittrunk).
-if [ -z $viewer] || [! -d $viewer]; then
+if [ -z $viewer ] || [ ! -d $viewer ]; then
     cwd=$(pwd)       # Temporarily save this path to the build script.
     viewer=$(pwd)/.. # Assume the build script lies at gittrunk/tools.
     cd $viewer
@@ -173,7 +173,7 @@ if [ -z $viewer] || [! -d $viewer]; then
     cd $cwd        # Go back to not alter cwd.
 fi
 
-if [ -z $QTDIR] || [! -d $QTDIR ]; then
+if [ -z $QTDIR ] || [ ! -d $QTDIR ]; then
     #TODO This is very very prone to fail on anyone's system. (but at least we will correctly instruct to use --qt-path)
     if [ -d /usr/local/Trolltech/Qt-4.7.1 ]; then
         export QTDIR=/usr/local/Trolltech/Qt-4.7.1
