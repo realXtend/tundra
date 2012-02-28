@@ -415,6 +415,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
 
         if (reply->error() == QNetworkReply::NoError)
         {
+            transfer->replyData = reply->readAll();
             QString ref = reply->url().toString();
             LogDebug("Http upload to address \"" + ref + "\" returned successfully.");
             framework->Asset()->AssetUploadTransferCompleted(transfer.get());

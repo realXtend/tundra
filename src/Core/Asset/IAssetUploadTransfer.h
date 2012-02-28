@@ -28,6 +28,9 @@ public:
     /// Contains the raw asset data to upload. If sourceFilename=="", the data is taken from this array instead.
     std::vector<u8> assetData;
 
+    /// Contains the reply from the storage if one was provided. Eg. HTTP PUT/POST may give response data in the body.
+    QByteArray replyData;
+    
     /// Specifies the destination name for the asset.
     QString destinationName;
 
@@ -49,6 +52,7 @@ public slots:
     }
 
     QByteArray RawData() const { return QByteArray::fromRawData((const char*)&assetData[0], assetData.size()); }
+    QByteArray RawReplyData() const { return replyData; }
 
     QString SourceFilename() const { return sourceFilename; }
     QString DestinationName() const { return destinationName; }
