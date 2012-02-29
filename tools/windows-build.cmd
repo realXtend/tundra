@@ -1,5 +1,13 @@
 @echo off
 
+set GENERATOR="Visual Studio 9 2008"
+cd ..
+set PATH=%PATH%;"%CD%\tools\utils-windows"
+set TOOLS=%CD%\tools
+set TUNDRA_DIR="%CD%"
+set DEPS=%CD%\deps
+cd %TOOLS%
+
 cecho {0A}This script fetches and builds all Tundra dependencies.{# #}{\n}
 echo Requirements:
 echo 1. Install SVN and set svn.exe to PATH.
@@ -11,13 +19,6 @@ echo  - http://tortoisehg.bitbucket.org/
 echo 4. Execute this file from Visual Studio 2008/2010 Command Prompt.
 echo.
 
-set GENERATOR="Visual Studio 9 2008"
-cd ..
-set PATH=%PATH%;"%CD%\tools\utils-windows"
-set TOOLS=%CD%\tools
-set TUNDRA_DIR="%CD%"
-set DEPS=%CD%\deps
-
 cecho {0D}Assuming Tundra git trunk is found at %TUNDRA_DIR%.{# #}{\n}
 cecho {0E}Warning: The path %TUNDRA_DIR% may not contain spaces! (qmake breaks on them).{# #}{\n}
 cecho {0E}Warning: This script is not fully unattended once you continue.{# #}{\n}
@@ -25,7 +26,6 @@ cecho {0E}         When building Qt, you must press 'y' once for the script to p
 echo.
 
 echo If you are not ready with the above, press Ctrl-C to abort!
-cd %TOOLS%
 pause
 
 :: Make sure we call .Net Framework 3.5 version of msbuild, to be able to build VS2008 solutions.
@@ -39,16 +39,16 @@ set QTDIR=%DEPS%\Qt
 
 IF NOT EXIST "%DEPS%\Qt". (
    cd "%DEPS%"
-   IF NOT EXIST qt-everywhere-opensource-src-4.8.0.zip. (
-      cecho {0D}Downloading Qt 4.8.0. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.8.0.zip
+   IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
+      cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
+      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.8.0 sources to "%DEPS%\Qt".{# #}{\n}
-   7za x -y qt-everywhere-opensource-src-4.8.0.zip
+   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\Qt".{# #}{\n}
+   7za x -y qt-everywhere-opensource-src-4.7.4.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   ren qt-everywhere-opensource-src-4.8.0 qt
+   ren qt-everywhere-opensource-src-4.7.4 qt
    IF NOT EXIST "%DEPS%\Qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
@@ -57,10 +57,7 @@ IF NOT EXIST "%DEPS%\Qt". (
 IF NOT EXIST "%DEPS%\Qt\lib\QtCore4.dll". (
    cd "%DEPS%\Qt"
    cecho {0D}Configuring Qt build. Please answer 'y'!.{# #}{\n}
-   configure -debug-and-release -opensource -shared -ltcg -no-qt3support -no-opengl -no-openvg -platform win32-msvc2008 -no-dbus -no-webkit -nomake examples -nomake demos
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cecho {0D}Running qmake for Qt.{# #}{\n}
-   qmake
+   configure -debug-and-release -opensource -shared -ltcg -no-qt3support -no-opengl -no-openvg -platform win32-msvc2008 -no-dbus -nomake examples -nomake demos
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Building qt. Please be patient, this will take a while.{# #}{\n}
    nmake /nologo
