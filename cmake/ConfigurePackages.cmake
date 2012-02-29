@@ -402,7 +402,8 @@ endmacro()
 
 macro(link_package_qtpropertybrowser)
     if (MSVC)
-        # TODO
+        target_link_libraries(${TARGET_NAME} debug QtSolutions_PropertyBrowser-headd.lib)
+        target_link_libraries(${TARGET_NAME} optimized QtSolutions_PropertyBrowser-head.lib)
     endif()
 endmacro()
 
