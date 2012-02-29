@@ -96,6 +96,8 @@ IF NOT EXIST "%DEPS%\bullet\". (
 )
 
 set BOOST_ROOT=%DEPS%\boost
+set BOOST_INCLUDEDIR=%DEPS%\boost
+set BOOST_LIBRARYDIR=%DEPS%\boost\stage\lib
 
 IF NOT EXIST "%DEPS%\boost". (
    cecho {0D}Cloning Boost into "%DEPS%\boost".{# #}{\n}
@@ -137,7 +139,7 @@ cd "%DEPS%\kNet"
 IF NOT EXIST kNet.sln. (
    cecho {0D}Running cmake for kNet.{# #}{\n}
    del /Q CMakeCache.txt
-   cmake . -G %GENERATOR%
+   cmake . -G %GENERATOR% -DBOOST_ROOT="%DEPS%\boost"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
@@ -234,7 +236,7 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg". (
 IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL". (
    cecho {0D}Attaching RenderSystem_NULL to be built with ogre-safe-nocrashes.{# #}{\n}
    mkdir "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL"
-   rem echo add_subdirectory(RenderSystem_Null) >> "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
+   echo add_subdirectory(RenderSystem_Null) >> "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
 )
 
 cecho {0D}Updating RenderSystem_NULL to the newest version in ogre-safe-nocrashes.{# #}{\n}
@@ -338,12 +340,32 @@ IF NOT EXIST "%DEPS%\qt-solutions". (
    call git clone git://gitorious.org/qt-solutions/qt-solutions.git
    IF NOT EXIST "%DEPS%\qt-solutions\.git" GOTO :ERROR
    cd qt-solutions\qtpropertybrowser
+
+   REM Don't build examples.
+   sed -e "s/SUBDIRS+=examples//" < qtpropertybrowser.pro > qtpropertybrowser.pro.sed
+   del qtpropertybrowser.pro
+   ren qtpropertybrowser.pro.sed qtpropertybrowser.pro
+
+   call configure -library
    qmake
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    nmake /nologo
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\*.dll" "%TUNDRA_BIN%"
 ) ELSE (
    cecho {0D}qtpropertybrowser already built. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
+   cecho {0D}OpenAL does not exist. Unzipping a prebuilt package.{# #}{\n}
+   copy "%TOOLS%\utils-windows\OpenAL.zip" "%DEPS%\"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   cd "%DEPS%\"
+   7za x OpenAL.zip
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   del /Q OpenAL.zip
+) ELSE (
+   cecho {0D}OpenAL already prepared. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\ogg". (
