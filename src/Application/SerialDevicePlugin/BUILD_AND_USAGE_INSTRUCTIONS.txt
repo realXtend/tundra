@@ -1,0 +1,16 @@
+
+1.  Download https://github.com/downloads/Adminotech/tundra/qextserialport-vs2008.7z
+2.  Extract everything to <tundra_git_root>/src/Application/SerialDevicePlugin/qextserialport
+3.  Add 'AddProject(Application SerialDevicePlugin)' to <tundra_git_root>/CMakeBuildConfig.txt
+4.  Run cmake
+5.  Open solution and build.
+
+The plugin is exposed to javascript as 'serialdevices', for example:
+
+    var deviceList = serialdevices.PortInfoList();
+    for(var i=0; i<deviceList.length; i++)
+        print(deviceList[i]);
+    var device = serialdevices.CreateDevice(deviceList[0].portName);
+    device.open(QIODevice::ReadWrite);
+    device.read(...);
+    device.write(...);
