@@ -26,8 +26,8 @@
 #undef SAFE_DELETE_ARRAY
 #endif
 #include <d3d9.h>
-#include <RenderSystems/Direct3D9/OgreD3D9RenderSystem.h>
-#include <RenderSystems/Direct3D9/OgreD3D9HardwarePixelBuffer.h>
+#include <OgreD3D9RenderSystem.h>
+#include <OgreD3D9HardwarePixelBuffer.h>
 #endif
 
 #include "MemoryLeakCheck.h"

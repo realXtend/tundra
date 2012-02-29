@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include <OgreTexture.h>
-
-#include <boost/shared_ptr.hpp>
+#include "OgreModuleApi.h"
 #include "IAsset.h"
 #include "AssetAPI.h"
+
 #include <QImage>
-#include "OgreModuleApi.h"
+
+#include <OgreTexture.h>
 #include <OgreResourceBackgroundQueue.h>
 
 /// Represents a texture on the GPU.

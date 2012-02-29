@@ -11,6 +11,7 @@
 #include "AssetReference.h"
 #include "EntityReference.h"
 #include "SceneInteract.h"
+#include "LoggingFunctions.h"
 
 #include "Color.h"
 #include "Math/Quat.h"

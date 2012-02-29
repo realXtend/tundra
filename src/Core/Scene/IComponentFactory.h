@@ -2,14 +2,13 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#include <QString>
 #include "CoreTypes.h"
 #include "IComponent.h"
-#include "LoggingFunctions.h"
 
-class IComponent;
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+
+#include <QString>
 
 /// A common interface for factories which instantiate components of different types.
 class IComponentFactory

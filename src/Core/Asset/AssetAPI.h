@@ -173,6 +173,9 @@ public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap GetAllAssets() const { return assets; }
 
+    /// Returns all assets of a specific type.
+    AssetMap GetAllAssetsOfType(const QString& type);
+
     /// Returns the known asset storage instances in the system.
     AssetStorageVector GetAssetStorages() const;
 
@@ -370,9 +373,6 @@ public slots:
     /// A utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset) const;
 
-    /// A utility function that checks whether an asset ref's discovery or deletion should be replicated
-    bool ShouldReplicateAssetDiscovery(const QString &assetRef);
-    
     /// Handle discovery of a new asset through the AssetDiscovery network message
     void HandleAssetDiscovery(const QString &assetRef, const QString &assetType);
 
@@ -407,6 +407,9 @@ signals:
 
     /// Emitted before an assets disk source will be removed.
     void DiskSourceAboutToBeRemoved(AssetPtr asset);
+    
+    /// An asset's disk source has been modified. Practically only emitted for files in the asset cache.
+    void AssetDiskSourceChanged(AssetPtr asset);
     
     /// Emitted when an asset has been uploaded
     void AssetUploaded(const QString &assetRef);

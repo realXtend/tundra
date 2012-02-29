@@ -311,7 +311,7 @@ void AssetModule::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAsset
     QString assetType = QString::fromStdString(BufferToString(msg.assetType));
     
     // Check for possible malicious discovery message and ignore it. Otherwise let AssetAPI handle
-    if (!framework_->Asset()->ShouldReplicateAssetDiscovery(assetRef))
+    if (!ShouldReplicateAssetDiscovery(assetRef))
         return;
     
     // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
@@ -331,7 +331,7 @@ void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDe
     QString assetRef = QString::fromStdString(BufferToString(msg.assetRef));
     
     // Check for possible malicious delete message and ignore it. Otherwise let AssetAPI handle
-    if (!framework_->Asset()->ShouldReplicateAssetDiscovery(assetRef))
+    if (!ShouldReplicateAssetDiscovery(assetRef))
         return;
     
     // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
@@ -349,7 +349,7 @@ void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDe
 void AssetModule::OnAssetUploaded(const QString& assetRef)
 {
     // Check whether the asset upload needs to be replicated
-    if (!framework_->Asset()->ShouldReplicateAssetDiscovery(assetRef))
+    if (!ShouldReplicateAssetDiscovery(assetRef))
         return;
     
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
@@ -377,7 +377,7 @@ void AssetModule::OnAssetUploaded(const QString& assetRef)
 void AssetModule::OnAssetDeleted(const QString& assetRef)
 {
     // Check whether the asset delete needs to be replicated
-    if (!framework_->Asset()->ShouldReplicateAssetDiscovery(assetRef))
+    if (!ShouldReplicateAssetDiscovery(assetRef))
         return;
     
     TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
@@ -445,6 +445,31 @@ void AssetModule::ConsoleDumpAssets()
             name += " (unloaded)";
         LogInfo(name);
     }
+}
+
+bool AssetModule::ShouldReplicateAssetDiscovery(const QString& assetRef)
+{
+    QString protocol;
+    AssetAPI::AssetRefType type = AssetAPI::ParseAssetRef(assetRef, &protocol);
+    if (type == AssetAPI::AssetRefInvalid || type == AssetAPI::AssetRefLocalPath || type == AssetAPI::AssetRefLocalUrl || type == AssetAPI::AssetRefRelativePath)
+        return false;
+    else
+    {
+        AssetPtr asset = framework_->Asset()->GetAsset(assetRef);
+        AssetStoragePtr storage = asset ? asset->GetAssetStorage() : AssetStoragePtr();
+        // If the storage exists, simply check that it's replicated and it is an HttpAssetStorage
+        /// \todo Evaluate whether asset discovery should be/needs to be supported for other assetstorages
+        if (storage && storage->IsReplicated() && dynamic_cast<HttpAssetStorage*>(storage.get()) != 0)
+            return true;
+        // If the storage does not exist, check the protocol part of the ref.
+        if (!storage)
+        {
+            if (protocol.compare("http", Qt::CaseInsensitive) == 0 || protocol.compare("https", Qt::CaseInsensitive) == 0)
+                return true;
+        }
+    }
+    
+    return false;
 }
 
 extern "C"

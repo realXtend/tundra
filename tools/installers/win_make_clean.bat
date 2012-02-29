@@ -106,6 +106,7 @@ del libtheorad.dll
 ::del QtSql4.dll :: PythonScriptModule depends on this via PythonQt_QtAll.dll
 ::del QtSvg4.dll :: PythonScriptModule depends on this via PythonQt_QtAll.dll
 
+del /Q *.suo
 del Qt3Support4.dll
 del QtCLucene4.dll
 del QtDesigner4.dll

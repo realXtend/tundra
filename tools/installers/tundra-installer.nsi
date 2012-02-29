@@ -2,7 +2,7 @@
 
 # Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
 !ifndef VERSION
-!define VERSION "2.2.0"
+!define VERSION "2.3.0"
 !endif
 
 Name "Tundra ${VERSION}"
@@ -91,7 +91,20 @@ Section "Start Menu Shortcuts"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host ChatApplication Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\ChatApplication\scene.txml$\" --server --headless"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host EntityMoveTest Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\EntityMoveTest\scene.txml$\" --server --headless"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host ReplicationTest Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\ReplicationTest\scene.txml$\" --server --headless"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Host SynchronizedPhysicsTest Demo Locally.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Physics2\scene.txml$\" --server --headless"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Server-Client Demos\Connect to Localhost.lnk" "$INSTDIR\tundra.exe" "--connect localhost;2345;udp;avatar"
+
+  CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Visit Online"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Visit Online\LudoCraft Circus.lnk" "http://tundra.ludocraft.com/circus/" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Visit Online\RealXtend Login Portal.lnk" "http://login.realxtend.org/" ""
+
+  CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Developers"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\Binary Downloads.lnk" "http://code.google.com/p/realxtend-naali/downloads/list" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\Github Source Repository.lnk" "https://github.com/realXtend/naali" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\Online Documentation.lnk" "http://www.realxtend.org/doxygen/" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\License.lnk" "$INSTDIR\LICENSE.txt" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\What's New.lnk" "$INSTDIR\WhatsNew.txt" ""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Developers\Report a Bug.lnk" "https://github.com/realXtend/naali/issues" ""
 SectionEnd
 
 Section "Uninstall"

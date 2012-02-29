@@ -5,6 +5,7 @@
 #include "CoreTypes.h"
 #include "SceneFwd.h"
 #include "PhysicsModuleApi.h"
+#include "PhysicsModuleFwd.h"
 #include "Math/float3.h"
 #include "Math/MathFwd.h"
 
@@ -12,17 +13,8 @@
 
 #include <set>
 #include <QObject>
-#include <QVector>
 
 #include <boost/enable_shared_from_this.hpp>
-
-class btCollisionConfiguration;
-class btBroadphaseInterface;
-class btConstraintSolver;
-class btDiscreteDynamicsWorld;
-class btDispatcher;
-class btCollisionObject;
-class EC_RigidBody;
 
 class OgreWorld;
 
@@ -52,9 +44,6 @@ public:
 
 namespace Physics
 {
-
-class PhysicsModule;
-
 /// A physics world that encapsulates a Bullet physics world
 class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw, public boost::enable_shared_from_this<PhysicsWorld>
 {
@@ -131,7 +120,7 @@ public:
     void SetDebugGeometryEnabled(bool enable);
     
     /// Get debug geometry enabled status
-    bool IsDebugGeometryEnabled() const { return drawDebugGeometry_; }
+    bool IsDebugGeometryEnabled() const;
     
     /// Enable/disable physics simulation
     void SetRunning(bool enable) { runPhysics_ = enable; }
@@ -205,10 +194,7 @@ private:
     
     /// Draw physics debug geometry, if debug drawing enabled
     void DrawDebugGeometry();
-    
-    /// Debug geometry enabled flag
-    bool drawDebugGeometry_;
-    
+
     /// Debug geometry manually enabled/disabled (with physicsdebug console command). If true, do not automatically enable/disable debug geometry anymore
     bool drawDebugManuallySet_;
     
@@ -224,4 +210,5 @@ private:
     /// Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
     std::set<EC_RigidBody*> debugRigidBodies_;
 };
+
 }

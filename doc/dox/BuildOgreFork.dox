@@ -1,0 +1,43 @@
+/**
+
+\page BuildOgreFork Building Tundra with the ogre-safe-nocrashes fork.
+
+Tundra is best used with a custom fork of Ogre called 'ogre-safe-nocrashes'. The repository is hosted at Bitbucket: <a href="https://bitbucket.org/clb/ogre-safe-nocrashes/">https://bitbucket.org/clb/ogre-safe-nocrashes/</a>. That fork fixes several crash issues inside Ogre, and some scenes cannot be loaded without them. The shipped Tundra installers since version 2.2.1 are all compiled against this fork.
+
+Follow these steps:
+<ol>
+<li>Install <a href="http://mercurial.selenic.com/">Mercurial</a> if you do not have it already. If you are on Windows, we recommend using the <a href="http://tortoisehg.bitbucket.org/">TortoiseHg</a> GUI.
+<li>Open a terminal window, navigate to a folder you want to clone ogre-safe-nocrashes into, and clone Ogre by typing <pre>hg clone https://bitbucket.org/clb/ogre-safe-nocrashes</pre>
+<li>Check out the Ogre v1.8 branch (not the default branch), by typing <pre>hg checkout v1-8</pre>
+<li>Download the Ogre dependencies package from <a href="http://www.ogre3d.org/download/source">http://www.ogre3d.org/download/source</a>.
+<ul><li>Windows: Chooose the "Microsoft Visual C++ Dependencies Package".
+<li>Mac OS X: Choose the "Mac OS X Universal Precompiled Dependencies" package.
+</ul>
+<li>Make a new directory "Dependencies" inside the ogre-safe-nocrashes Hg trunk directory. Unzip (on Mac, this is a directory move operation) the package to ogre-safe-nocrashes\\Dependencies.
+<li>Set OGRE_HOME environment variable to the new path you cloned Ogre into.
+<ul><li>Windows: Type <pre>SetX OGRE_HOME C:\\Directory\\To\\ogre-safe-nocrashes\\ </pre>
+<li>Mac OS X: Type <pre>export OGRE_HOME=/directory/to/ogre-safe-nocrashes/</pre>
+</ul>
+<li>Run cmake to configure the build:
+<ul><li>Windows: <pre>cmake -G "Visual Studio 9 2008" -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1</pre>
+<li>Mac OS X: <pre>cmake -G Xcode -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1</pre>
+</ul>
+<li>Build Ogre.
+<ul><li>Windows: Open the Ogre.sln file and build at least the Debug and RelWithDebInfo targets. (or use MSBuild on the command line to build the solution)
+<li>Mac OS X: Type <pre>xcodebuild -configuration RelWithDebInfo</pre>
+</ul>
+<li>Install Ogre shared libraries into the Tundra bin/ directory.
+<ul><li>Windows: Copy all .dll files from ogre-safe-nocrashes\\bin\\debug and ogre-safe-nocrashes\\bin\\relwithdebinfo into the Tundragittrunk\\bin\\.
+<li>Mac OS X: <ul><li>Copy ogre-safe-nocrashes/lib/relwithdebinfo/*.dylib to Tundragittrunk/bin/.
+   <li>Copy the folder tree ogre-safe-nocrashes/lib/relwithdebinfo/Ogre.framework to Tundragittrunk/Frameworks/Ogre.framework
+   </ul>
+</ul>
+<li>Regenerate Tundra cmake files to use the new OGRE_HOME path.
+<ul><li>Windows: Delete Tundragittrunk\\CMakeCache.txt and re-run cmake. Note: Do NOT call the provided win_update_deps_vs2008.bat any more to update the deps git repository, since it naively copies over your custom ogre DLL files!
+<li>Mac OS X: Delete old CMakeCache.txt. Rerun Tundragittrunk/build-mac-deps.bash and specify the parameter --ogre-path /directory/to/ogre-safe-nocrashes/.
+</ul>
+<li>Rebuild Tundra as usual.
+</ul>
+
+
+*/

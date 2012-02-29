@@ -44,6 +44,8 @@
 #include <OgreMesh.h>
 #include <OgreEntity.h>
 
+#include <kNet/Network.h>
+
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
@@ -123,22 +125,6 @@ void AssetInterestPlugin::Unload()
         delete widget_;
 }
 
-std::string FormatBytes(int bytes)
-{
-    char str[256];
-    if (bytes < 0)
-        return "-";
-    if (bytes <= 1024)
-        sprintf(str, "%d Bytes", bytes);
-    else if (bytes <= 1024 * 1024)
-        sprintf(str, "%.2f KBytes", bytes / 1024.f);
-    else if (bytes <= 1024 * 1024 * 1024)
-        sprintf(str, "%.2f MBytes", bytes / 1024.f / 1024.f);
-    else
-        sprintf(str, "%.2f GBytes", bytes / 1024.f / 1024.f / 1024.f);
-    return str;
-}
-
 template<typename T>
 int CountSize(Ogre::MapIterator<T> iter)
 {
@@ -183,10 +169,10 @@ void AssetInterestPlugin::Update(f64 frametime)
     {
         if (ui_.meshManagerStatus)
             ui_.meshManagerStatus->setText("Count: " + QString::number(CountSize(MeshMan().getResourceIterator())) + 
-                " Memory usage: " + FormatBytes((int)MeshMan().getMemoryUsage()).c_str());
+                " Memory usage: " + kNet::FormatBytes((u64)MeshMan().getMemoryUsage()).c_str());
         if (ui_.textureManagerStatus)
             ui_.textureManagerStatus->setText("Count: " + QString::number(CountSize(TexMan().getResourceIterator())) + 
-                " Memory usage: " + FormatBytes((int)TexMan().getMemoryUsage()).c_str());
+                " Memory usage: " + kNet::FormatBytes((u64)TexMan().getMemoryUsage()).c_str());
     }
 
     // We don't have to run this logic very often.

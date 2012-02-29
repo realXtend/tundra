@@ -263,7 +263,7 @@ void AssetItem::SetText(IAsset *asset)
 
     bool unloaded = !asset->IsLoaded();
     bool fileMissing = !asset->DiskSource().isEmpty() && asset->DiskSourceType() == IAsset::Original && !QFile::exists(asset->DiskSource());
-    bool memoryOnly = asset->DiskSource().isEmpty() && asset->DiskSourceType() == IAsset::Programmatic;
+    bool memoryOnly = asset->DiskSource().isEmpty() && !asset->GetAssetStorage() && asset->DiskSourceType() == IAsset::Programmatic;
     bool diskSourceMissing = asset->DiskSource().isEmpty();
     bool isModified = asset->IsModified();
 

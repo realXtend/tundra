@@ -22,6 +22,9 @@ fnDisplayHelpAndExit()
     echo "                                      /usr/local/Trolltech/Qt-4.7.1                                                "
     echo "                                      NOTE: This option will overwrite the value in environment variable QTDIR     "
     echo " "
+    echo " -o <PATH> | --ogre-path <PATH>       Specifies the path where a custom Ogre root directory is located. If this is "
+    echo "                                      not specified, the default-installed Ogre framework will be used.            "
+    echo " "
     echo " -rwdi | --release-with-debug-info    Enables debugging information to be included in compile-time"
     echo " "
     echo " -nc | --no-run-cmake                 Do not run 'cmake .' after the dependencies are built. (The default is that  "
@@ -111,6 +114,16 @@ while [ "$1" != "" ]; do
                                             export QTDIR=$1
                                             ;;
 
+        -o | --ogre-path )                  shift
+                                            if [ ! -d $1 ]; then
+                                                echo "ERROR: Bad directory for --ogre-path: $1"
+                                                ERRORS_OCCURED="1"
+                                                shift
+                                                continue
+                                            fi
+                                            export OGRE_HOME=$1
+                                            ;;
+
         -nc | --no-run-cmake )              RUN_CMAKE="0"
                                             ;;
 
@@ -152,7 +165,7 @@ fi
 
 # If the path to the Tundra root directory was not specified, assume the script
 # is being run from (gittrunk)/tools, so viewer=(gittrunk).
-if [ -z $viewer] || [! -d $viewer]; then
+if [ -z $viewer ] || [ ! -d $viewer ]; then
     cwd=$(pwd)       # Temporarily save this path to the build script.
     viewer=$(pwd)/.. # Assume the build script lies at gittrunk/tools.
     cd $viewer
@@ -160,7 +173,7 @@ if [ -z $viewer] || [! -d $viewer]; then
     cd $cwd        # Go back to not alter cwd.
 fi
 
-if [ -z $QTDIR] || [! -d $QTDIR ]; then
+if [ -z $QTDIR ] || [ ! -d $QTDIR ]; then
     #TODO This is very very prone to fail on anyone's system. (but at least we will correctly instruct to use --qt-path)
     if [ -d /usr/local/Trolltech/Qt-4.7.1 ]; then
         export QTDIR=/usr/local/Trolltech/Qt-4.7.1
@@ -212,7 +225,7 @@ else
 
     cd $pkgbase
     ./bootstrap.sh --prefix=$prefix
-    ./bjam --layout=versioned --build-type=complete install
+    ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex install
     touch $tags/$what-done
 fi
 
@@ -404,7 +417,7 @@ else
     cd ..
 
     cd qtbindings
-    sed -e "s/qtscript_phonon //" -e "s/qtscript_webkit //" < qtbindings.pro > x
+    sed -e "s/qtscript_phonon //" < qtbindings.pro > x
     mv x qtbindings.pro  
     qmake
     make

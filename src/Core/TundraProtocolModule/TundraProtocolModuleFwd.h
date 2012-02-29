@@ -26,7 +26,7 @@ typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
 typedef boost::weak_ptr<UserConnection> UserConnectionWeakPtr;
 typedef std::list<UserConnectionPtr> UserConnectionList;
 
-struct SceneSyncState;
+class SceneSyncState;
 struct EntitySyncState;
 struct ComponentSyncState;
 struct UserConnectedResponseData;

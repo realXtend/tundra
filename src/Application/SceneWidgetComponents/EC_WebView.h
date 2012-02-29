@@ -150,7 +150,9 @@ public slots:
     /// Enables/disables the QWebView scrollbars.
     void EnableScrollbars(bool enabled);
 
-    /// Handles request to show the QWebView
+    /// Handles request to show the QWebView. Showing the 2D webview widget requires someone to have
+    /// control over the browsing. This function will automatically claim control if no one else
+    /// has it. Either way showing the 2D widget should work. The control is reseted once the widget has been created.
     void InteractShowRequest();
 
     /// Handles requests to take control of sharing

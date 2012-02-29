@@ -1,9 +1,12 @@
-// For conditions of distribution and use, see copyright notice in LICENSE
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   Color.h
+    @brief  A 4-component color value, component values are floating-points [0.0, 1.0]. */
 
 #pragma once
 
 #include "CoreTypes.h"
-#include "Math/MathFunc.h"
 
 #include <QMetaType>
 #include <QColor>
@@ -52,16 +55,14 @@ public:
     Color(const QColor &other) { r = other.redF(); g = other.greenF(); b = other.blueF(); a = other.alphaF(); }
 
     /// Implicit conversion to Color.
-    operator QColor() const
-    {
-        return QColor(Clamp<int>(r*255.f, 0, 255), Clamp<int>(g*255.f, 0, 255), Clamp<int>(b*255.f, 0, 255), Clamp<int>(a*255.f, 0, 255));
-    }
+    operator QColor() const;
 
     /// Returns Color as QColor.
     QColor ToQColor() const { return *this; }
 
     /// Implicit conversion to string.
-    operator QString() const { return QString("Color(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a); }
+    /** @see ToString*/
+    operator QString() const;
 
     /// Returns "Color(r,g,b,a)".
     QString ToString() const { return (QString)*this; }
@@ -69,37 +70,15 @@ public:
     /// For QtScript-compatibility.
     QString toString() const { return (QString)*this; }
 
-    /// Returns "r g b a". This is the preferred format for the Color if it has to be serialized to a string for machine transfer.
-    QString SerializeToString() const
-    {
-        char str[256];
-        sprintf(str, "%f %f %f %f", r, g, b, a);
-        return str;
-    }
+    /// Returns "r g b a".
+    /** This is the preferred format for the Color if it has to be serialized to a string for machine transfer.
+        @sa FromString */
+    QString SerializeToString() const;
 
     /// Parses a string to a new Color.
-    /** Accepted formats are: "r,g,b,a" or "(r,g,b,a)" or "(r;g;b;a)" or "r g b" or "r,g,b" or "(r,g,b)" or "(r;g;b)" or "r g b" . */
-    static Color FromString(const char *str)
-    {
-        assume(str);
-        if (!str)
-            return Color();
-        if (*str == '(')
-            ++str;
-        Color c;
-        c.r = (float)strtod(str, const_cast<char**>(&str));
-        if (*str == ',' || *str == ';')
-            ++str;
-        c.g = (float)strtod(str, const_cast<char**>(&str));
-        if (*str == ',' || *str == ';')
-            ++str;
-        c.b = (float)strtod(str, const_cast<char**>(&str));
-        if (*str == ',' || *str == ';')
-            ++str;
-        if (str && *str != '\0') // alpha optional
-            c.a = (float)strtod(str, const_cast<char**>(&str));
-        return c;
-    }
+    /** Accepted formats are: "r,g,b,a" or "(r,g,b,a)" or "(r;g;b;a)" or "r g b" or "r,g,b" or "(r,g,b)" or "(r;g;b)" or "r g b" .
+        @sa SerializeToString */
+    static Color FromString(const char *str);
 
     /// This is an overloaded function.
     static Color FromString(const QString &str) { return FromString(str.simplified().toStdString().c_str()); }

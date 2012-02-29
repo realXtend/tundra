@@ -70,6 +70,9 @@ private slots:
 private:
     void ProcessCommandLineOptions();
 
+    /// Check from an assetref whether it should be replicated when a modify or a delete to it is detected.
+    bool ShouldReplicateAssetDiscovery(const QString& assetRef);
+
     /// Whenever we receive a new asset storage from the server, this function is called to determine if the storage is to be trusted.
     void DetermineStorageTrustStatus(AssetStoragePtr storage);
 

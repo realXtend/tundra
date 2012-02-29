@@ -22,6 +22,7 @@
 #include "ConsoleAPI.h"
 #include "IComponentFactory.h"
 #include "QScriptEngineHelpers.h"
+#include "LoggingFunctions.h"
 
 #include <btBulletDynamicsCommon.h>
 

@@ -582,7 +582,7 @@ bool EC_Terrain::SaveToFile(QString filename)
         LogError("The EC_Terrain is in inconsistent state. Cannot save.");
         return false;
     }
-
+    /// @todo Unicode support
     FILE *handle = fopen(filename.toStdString().c_str(), "wb");
     if (!handle)
     {
@@ -1472,9 +1472,7 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
     if (!parentEntity)
         return;
     EC_Placeable *position = parentEntity->GetComponent<EC_Placeable>().get();
-    if (!position)
-        return;
-    if (position->visible.Get()) // Only need to create GPU resources if the placeable itself is visible.
+    if (!GetFramework()->IsHeadless() && (!position || position->visible.Get())) // Only need to create GPU resources if the placeable itself is visible.
     {
         for(int y = 0; y < patchHeight; ++y)
             for(int x = 0; x < patchWidth; ++x)

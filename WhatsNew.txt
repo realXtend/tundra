@@ -1,0 +1,490 @@
+v2.3.0 - https://github.com/realXtend/naali/compare/tundra2.2.0...tundra2.3.0
+------
+Note: The numbers with # signs refer to github issue tracker numbers, e.g. #314 -> https://github.com/realXtend/naali/issues/314 .
+ - Implemented a new path for streaming rigid bodies over the network. This allows a far larger number of concurrent clients on a server. (#314, #322, #354)
+   - Comparative profile of the Physics demo scene: http://dl.dropbox.com/u/40949268/Tundra/Tundra_RigidBody_PhysicsScene.png
+   - Old rigid body streaming code was about 70bytes/update: http://dl.dropbox.com/u/40949268/Tundra/OldRigidBodyStreaming_70b.png
+   - New code averages at about 11bytes/update: http://dl.dropbox.com/u/40949268/Tundra/NewRigidBodyPackets_11b.png
+   - User counts as large as 64 users are doable, but largely depends on what is running in the scene: http://dl.dropbox.com/u/40949268/Tundra/kNetServer64users.png
+ - Updated Physics demo scene. Added a new Physics2 demo scene.
+ - Fixed security issues in SyncManager sync action filter hooks.
+ - Fix a crash that occurred with TransformEditor.
+ - Fix a bug where the avatar mouse controls would not work at all on some scenes.
+ - Add support for launching Tundra from a web browser using the tundra:// protocol URL.
+ - Limit local asset file loads to keep at least 30fps rendering rate, if possible.
+ - Added a new loading screen script to display scene/asset loading status, for improved responsiveness. (#328, #330)
+ - Fixed several UI issues with the Profiler display window.
+ - Greatly improved scene loading performance for large scenes that are loaded from the local filesystem. (#327)
+ - Added a --no_async_asset_load command line option to allow disabling the background asset loader thread. (Can improve performance, see https://github.com/realXtend/naali/issues/332 )
+ - Added a new plugin: AssetInterestPlugin, which performs runtime-unloading of unused assets to keep memory consumption down on large scenes.
+ - Added a script-driven throttling mechanism to scene server->client synchronization mechanism to improve user responsiveness when logging in to a scene. (#302, #337, )
+ - Added a new "Open config folder" option to the Settings menu.
+ - Fix a regression bug introduced in 2.2.0 which broke .mesh file importing by drag-n-drop.
+ - Added improved error logging in several situations: when loading bad materials, when misusing animationcontroller and mesh components, and when printing out script errors.
+ - Added script functions for tangent frame computations along the terrain. (#298)
+ - Added a new shader program combination: DiffSpecflatNormal.
+ - Added a built-in material Wireframe.material for debugging aid.
+ - Fix several issues and enable calling more functions with the generic function invoker.
+ - Add support for alpha-tested shadows.
+    - Old: http://dl.dropbox.com/u/40949268/Tundra/OldShadows.png
+    - New: http://dl.dropbox.com/u/40949268/Tundra/AlphaShadows.png
+ - Moved to build Tundra against a ogre fork ogre-safe-nocrashes (https://bitbucket.org/clb/ogre-safe-nocrashes/overview), instead of the ogre trunk to improve security and fix bugs.
+   - Fork based on Ogre 1.8.0 branch, instead of 1.7.3.
+   - Fixes issues with Ogre crashing on certain .dds files. (#345)
+   - Fixes an Ogre crash related to bad .material files. (#343)
+   - Fixes an Ogre crash when a .mesh does not contain any normals. (#386)
+   - Fixes a crash when editing a .hdx asset twice while Tundra is running, caused by an Ogre crash to a dangling compositor pointer access. (#41, #331)
+   - Fix crash issues with malformed mesh inputs. (#377)
+ - TextureTool: Added two different mipmap generation options for creating mipmaps for alpha-tested textures.
+ - Fix a bug where underwater fog did not work for EC_WaterPlane. (#342)
+ - Fix a crash bug with bad EC_WaterPlane segments attribute values.
+ - Make Tundra consistently use UDP as the default protocol in every situation. The use of TCP is in general discouraged, and should only be enabled for testing or firewall penetration.
+ - Updated to newest stable kNet version.
+ - Fixed Scene::GetEntitiesWithComponent to actually work.
+ - Rewrote the Mumble VOIP implementation from scratch. (#349)
+ - Fixed a bug where asset dependencies could not be satisfied due to case sensitivity issues on Windows.
+ - Added a new "Clear Asset Cache" menu option.
+ - Added support to Asset API to do asset live-upload. See http://groups.google.com/group/realxtend-dev/browse_thread/thread/6f44c428b09c3a52
+ - Fixed a bug with mouse movement not working on Mac.
+ - Changed Tundra .dds loading to not automatically generate mip levels for .dds textures that did not contain them. (#356)
+ - Fixed a crash if user attempted to cyclically parent entities to each other.
+ - Added new command line parameters --opengl, --direct3d9, --d3d9 and --nullrenderer.
+    - Note: The nullrenderer plugin is not however shipped with this release, due to incompatibilities with Ogre 1.8.0.
+ - Added support for liveupdate (and liveupload) to work on assets that reside in the asset cache.
+ - Improved "Open File Location" assets window context menu option to select the asset file on Windows, instead of just opening the folder.
+ - Greatly improved the loading times of large terrains.
+ - Other closed issues:
+   - #98, #251, #340, #84, #323, #355, #48, #310, #351, #362, #375, #384, #376, #387, #390, #321, #336, #389.
+
+v2.2.0 - https://github.com/realXtend/naali/compare/tundra2.1.3...tundra2.2.0
+------
+ - New command line parameters "--version", "--fullscreen".
+ - New command line parameters "--console", "--sharedconsole" to allow specifying whether to show a text-based console along with the main UI window.
+ - New command line parameter "--splash" to control the display of the startup splash screen.
+ - New command line parameters for Ogre rendering: "--vsync", "--vsyncFrequency", "--antialias".
+ - Updated to a new version of MathGeoLib, which adds support for several new geometry types for scripts (see http://clb.demon.fi/MathGeoLib/reference.html)
+ - Updated SkyX version to 0.2.1.
+ - New sound settings dialog.
+ - Add support for scripts to directly receive touch events on touch-based systems.
+ - Support specifying Hydrax configuration as an asset (instead of taking a hardcoded file in Tundra installation directory)
+ - Wider support for scripts to access renderer and ui properties.
+ - Allow accessing SoundChannels from QtScript.
+ - New rewritten HTTP Asset Cache to avoid issues with QNetworkDiskCache.
+ - Add support for specifying asset storages in scene files, to allow easier bundling of assets with scenes.
+ - Updated demo scenes: Render-to-texture, Compositor, Tooltip, ECSound, Physics, DayNight.
+ - New demo scenes: AnimatedUI, EntityMoveTest, ReplicationTest.
+ - New UIPlane feature allow scripts to directly generate 2D screen content (HUD items, overlays) that is blitted using Ogre (GPU).
+ - Support profiling CPU time consumption in QtScripts.
+ - Enable support for raycasting to billboard and hoveringtext components.
+ - Fix a problem where entities did not always parent themselves properly to bones of meshes.
+ - Fix a crash related to parent-child chains of entities.
+ - Fix a crash on headless server when EC_Fog is present in the scene.
+ - Fix problems with Unicode strings in assets and command line parameters.
+ - Fix a problem where meshes loaded over HTTP did not have tangent frames generated.
+ - Fix about a hundred other crashes or problems.
+
+v2.1.3 - https://github.com/realXtend/naali/compare/tundra2.1.2...tundra2.1.3
+------
+ - Merged against the latest Ludocraft Tundra branch. See full commit log for features.
+ - CAVEStereoModule is now included in the installer. It loads to the default Tundra and the Browser UI client Tundra. The module does nothing if in headless mode, there is not overhead for headless servers.
+ - SlideShow component now renders properly for the first slide, also shows informative textures is asset is empty ref, not a texture, null, still downloading or failed to load.
+ - New --version parameter that shows API and Application version information. The version info will always be printed but not visible in the gui console. Windows spesific bug that you need to also pass --headless with --version if you want to see it, this will be addressed later.
+
+v2.1.2
+------
+ - https://github.com/realXtend/naali/compare/tundra2.1.0...tundra2.1.2
+
+v2.1.0 - https://github.com/realXtend/naali/compare/tundra2.0.0...tundra2.1.0
+------
+ - http://groups.google.com/group/realxtend-dev/browse_thread/thread/7671cc73135d28ba/44310921bf5583e0
+
+v2.0.0 - https://github.com/realXtend/naali/compare/tundra1.0.8...tundra2.0.0
+------
+Deleted code and deprecations.
+ - Deleted EventManager and the internal event system queue mechanism
+(EventManager.h, IEventData.h). Direct signal-slots are used instead, as
+they are more convenient.
+    - Rewrote all uses of EventManager to provide a proper signalling API,
+e.g. in TundraLogicModule Server.cpp and Client.cpp.
+ - Deleted obsolete ConfigurationManager.
+ - Deleted ServiceManager and the concept of services.
+ - Deleted UiServiceInterface.
+ - Deleted rotten EC_BillboardWidget, EC_MovableTextOverlay.
+ - Deleted dependency to the PoCo library altogether, and other smaller
+3rd party libraries like curl.
+ - Removed the use of GetModuleManager wherever applicable. Modules are
+queried directly through Framework::GetModule, not via a separate
+manager.
+ - Deleted EC_ChatBubble, EC_Clone, EC_Gizmo, EC_Ruler, EC_Selected,
+EC_VideoSource, EC_3DCanvas, EC_3DCanvasSource, EC_Videosource. These
+features can be reimplemented as plugins proper outside of core.
+ - Deleted the folder EC_3DGizmo, which has gone unused.
+ - Deleted PhononPlayerModule, ScenePersistenceModule, UpdateModule,
+pending a refresh to the new plugin mechanism.
+ - Deleted CAVEStereoModule, pending a refresh to the new plugin mechanism.
+ - Deleted IntervalTimer and LockFreeList core objects (unused).
+ - Deprecated OgreRendererService (currently under the name IRenderer),
+replaced with the mechanism below.
+ - Deprecated the concept of 'current active scene' and 'the default
+scene'. Instead, use a single 'current active camera on the main UI'
+query.
+ - Removed hash-based asset reload checks and booleans for isLoaded.
+ - Deleted badly placed Renderer::RenderAvatar.
+ - Deleted QGraphicsEffects from UiProxyWidget.
+ - Deleted Platform.h, PlatformNix.h, PlatformWin.h as unneeded.
+ - Deleted unused Root logging functionality and Framework thread task
+mechanism.
+ - Removal of several **Raw workarounds. (more still exist, which should
+be rid of asap)
+ - Removed all legacy code that was unmaintained, unused or otherwise
+badly implemented to be harmful to use. Core code should either implement
+properly or not at all - temporary hacks will not be accepted without a
+very good reason.
+ 
+Solution reorganization
+ - Deleted the obsolete projects Foundation, Interfaces, RexCommon.
+ - Deleted the obsolete projects InWorldChatModule, InventoryModule,
+RpcUtilities, RexLogicModule, ProtocolUtilities, ProtocolModuleOpenSim,
+ProtocolModuleTaiga, HttpUtilities and Core.
+ - Deleted the obsolete components EC_HoveringWidget, EC_NetworkPosition,
+EC_OpenSimPresence, EC_OpenSimPrim.
+ - Removed SceneStructureModule and moved all its contents to
+ECEditorModule (these two always come together or not at all).
+ - Moved EC_InputMapper to Input project.
+ - Moved EC_DynamicComponent to Scene project.
+ - Grouped EC_SoundListener and EC_Sound to same project to improve
+compilation times.
+ - Moved EC_Light to OgreRenderingModule.
+ - Deleted the use of PCH in all EntityComponents projects in which it
+doesn't help compilation times.
+ - Replaced server.exe and viewer.exe with a single tundra.exe, uses
+--server parameter to decide whether to start a server, and --config
+viewer.xml if to start a client viewer UI.
+ 
+New Plugin API (mostly never used directly)
+ - New plugin mechanism for a simpler and more flexible plugin
+implementation.
+ - Implemented a new plugins.xml to configure the set of modules and
+startup .js files to load. Use --config startup parameter to specify the
+set of modules to load.
+ - Removed the module description XML files and startup-time sorting based
+on dependencies.
+ 
+Finished the work on Asset API
+ - Fixed several bugs where storages, providers and disk sources were not
+remembered for assets when taking them from the web cache.
+ - Unify the handling different asset ref forms into Asset API.
+ - Implemented an Asset Ref resolving step, where a relative ref is
+resolved (possibly inside some context) to an absolute ref.
+ - Reimplemented the signalling flow of asset downloads to guarantee a
+coherent signal flow independent of how an asset is loaded.
+    - some changes to signals to remove ambiguity, e.g. renamed
+IAssetTransfer::Loaded() to IAssetTransfer::Succeeded() to avoid
+confusion with IAsset::Loaded().
+ - Implemented context-based relative asset handling to allow relative
+dependencies between assets to work properly
+ - Implemented asset refs to named asset storages which allows scenes to
+be transferred from one server to another without having to manually
+search&replace script refs.
+ - Implemented subassetname specifications to assetrefs to allow pointing
+to a part of an asset inside an asset.
+ - Implemented asset storage synchronization on login to be able to refer
+to assets using relative names or named storage specifiers on the server.
+ - Implemented a push-based asset update notification mechanism (e.g.
+alongside HTTP storages) so clients automatically know to fetch the
+newest version of an asset as soon as it is available.
+ - Implemented a text serialization mechanism ("serialized storage
+strings") for systematically handling configuration for different types
+of asset storages
+ - Implemented an asset discovery mechanism that synchronizes folders of
+assets from a networked storage (e.g. using PROPFIND when over HTTP).
+ - Formalized the concept of an Empty asset: URL to fetch is known,
+neither loaded or locally cached data is available.
+ - Formalized the concept of an Unloaded asset: URL to fetch is known,
+data is available locally, but the contents are offloaded from (GPU)
+memory.
+ - Added a null asset factory (e.g. for headless mode), and removed
+several IsHeadless() checks sprinkled in hardcoded places.
+ - Deleted the decoding step of an asset transfer (decoding occurs on
+asset load)
+ 
+New math library (float2, float3, float4, float3x3, float3x4, float4x4, Quat)
+ - Automatically generated bindings instead of manual ones.
+ - Removed manually written Transform, Quaternion and Vector QScriptValue
+bindings.
+ - Remove use of previous Irrlicht math code which lacked in features and
+used inconsistent conventions
+ - Math objects for geometric computations, symmetric in C++ and QtScript.
+(AABB, OBB, Sphere, Line, LineSegment, Ray, Triangle, Plane)
+ - Example preliminary documentation here
+http://clb.demon.fi/dump/DocGenerator/
+ 
+Reimplemented environment-related functionality.
+ - SkyX and HydraX integration.
+ - Deleted the use of Caelum altogether, replaced with SkyX (optionally).
+ - Deleted all badly structured EC_Skybox, EC_SkyDome, EC_SkyPlane,
+Sky-templates.h.
+ - Deleted rotten EC_OgreEnvironment and EC_OgreSky.
+ - Reimplemented EC_Sky as a more generic attribute-based sky component
+when SkyX is not used.
+ 
+Avatar
+ - Implemented AvatarDescAsset and EC_Avatar to use the Asset API.
+ - Reimplemented avatar script as a more extensible way to allow extending
+own animation playback and controlling which built-in behavior is used
+and when.
+ - Simplified the mechanism how avatar description files refer to other
+assets.
+ - Partially reimplemented the avatar editor against the mechanism.
+ - Removed object camera/tripod camera controls from the avatar script,
+they need to be separate applications (or optionally removable).
+ - Deleted old EC_AvatarAppearance, EC_Controllable, EC_OpenSimAvatar
+components and other obsolete avatar uploading functionality.
+ 
+Reimplemented Console API
+ - Deleted the old ConsoleCommandStruct registration mechanism.
+ - Implemented console commands to operate directly on Qt slots.
+ - Moved FunctionInvoker to core to enable the above. Will be used for
+entity actions as well in the future.
+ - Autocompletion suggestions.
+ - Enable browsing previously typed commands.
+ - Deleted MODULE_LOGGING_FUNCTIONS #define macros and reimplemented
+logging via much simpler means.
+ - Deleted DEFINE_LOGGING_FUNCTIONS.
+ 
+More robust asset support
+ - Implemented script-accessible modification functions for TextureAsset
+(SetContents, SetContentsDrawText, SetContentsFill, QImage interop)
+ - Exposed OgreMaterialAsset material specifications for C++ and QtScripts.
+ - Reimplemented asset editors for textures, meshes, materials and
+particle scripts, with syntax highlighting support.
+ - Added support for the handling of relative refs to ParticleAsset,
+QtUiAsset, Script and OgreMaterialAssets.
+ - Implemented QtUiAsset::Instantiate() to be used over
+UiApi::LoadFromFile wherever applicable.
+ 
+New component factory mechanism
+ - Removed ComponentManager, DECLARE_EC and DECLARE_MODULE_EC.
+ - Deleted Foundation.h, IComponentRegistrar.h,
+ - Implemented a new simpler registrable component factory similar to
+asset factories.
+ 
+More robust component types
+ - Implemented EC_Material which allows replicated modification of
+materials e.g. for animation purposes.
+ - Reimplemented EC_HoveringText with more features and control over how
+text is generated. Removed hardcoded animation logic in the component
+that is more flexibly implemented in scripts.
+ - Reimplemented EC_Highlight with attribute-based features.
+ - Improved EC_ParticleSystem to work with AssetRefListener.
+ - Renamed EC_OgreCamera to EC_Camera and filled it with utility functions
+(GetMouseRay(), IsObjectVisible()) and attributes (up vector). Refactored
+it to use the new math classes.
+ - Implemented isKinematic property for EC_Rigidbody.
+ - Switched convex hull generation code due to critical bugs in the
+previous algorithm.
+ - Deleted PostProcessWidget. Improved EC_OgreCompositor to enable
+asset-based compositors.
+ - Added a sample demo UI to bin/scenes/Compositor/ to showcase the
+different compositors.
+ - Remove hashing from component type names to prepare for new optimized
+sync protocol implementation.
+ - Reimplemented EC_Billboard to support attributes and AssetRefListener.
+ - Removed IComponent::IsSerializable() - all components are serializable.
+ 
+Likely breaking changes
+ - Reimplemented and simplified EC_Placeable which had became a
+inconsistent mess of random conveniency functions. Now math code is
+properly handled in the new math classes instead of built-in into
+EC_Placeable functions.
+ - Removed the use of hardcoded conversion scenenodes in the scene graph
+to flip y<->z. Now all input data is used as-is without runtime
+conversions. Reimplemented asset importers to not perform swap hacks.
+ - Core API function naming refactored to be more consistent in all classes.
+ - Deleted Entity::HasComponent. (just call Entity::GetComponent and test
+for null).
+ - Deleted the excessive use of namespaces throughout the core API - they
+aren't needed, and make code much more verbose than it needs to be.
+ - Deleted SceneAPI::GetSceneRaw.
+ - Deleted Entity::GetComponentRaw().
+ 
+Refactored the core scene structure to support additional augmented scene
+views of the core scene:
+ - OgreWorld contains the Ogre-specific data of the core scene
+ - PhysicsWorld contains the Bullet-specific data of the scene
+ - Users can register their own scenes, in case the
+entity-component-attribute mechanism is limiting.
+ - Exposed to scripts as "scene.ogre." and "scene.physics." objects.
+Operates as the primary interface of
+   both visibility- and physics -related scene queries for scripts.
+ - Implemented frustum-based visibility queries for scripts along the
+raycast queries.
+ - Implemented OnEnterView and OnLeaveView -mechanisms to allow scripts
+and plugins to implement visibility-based optimization on their script
+logic.
+ 
+Editor improvements
+ - Enabled changing entities' temporary status from Scene Structure window.
+ - Enabled changing entities' local/replicated status from Scene Structure
+window.
+ - Enabled a dialog-based "..."-selection for assets in the EC editor
+asset refs.
+ - Added "E"-button to ECEditor to open an asset in an asset ref to an
+editor.
+ - Enable cloning assets from the editor.
+ - Show asset status in Assets window.
+ - Added "Do not alter asset references" option to scene import dialog,
+which leaves relative asset refs intact.
+ 
+Other API and misc. changes
+ - Added Entity::Clone()
+ - Deleted Renderer::RepaintUi().
+ - Added FunctionDialog for the Assets menu for accessing functions from
+individual assets, providers and storages from the UI.
+ - Added IAssetStorage::Type()
+ - Removed Framework::GetModuleQObj with Framework::GetModuleByName,
+exposed IModule to scripts.
+ - Added script access for specifying exact EC_AnimationController
+animation timing parameters.
+ - Fixed EC_VolumeTrigger to actually work.
+ - Optimized OgreMaterialAsset clones to do a direct in-memory copy
+instead of going through disk.
+ - Implemented a separate RedirectedPaintWidget for optimized Qt UI
+blitting in certain cases.
+ - Fixed Profiler crashes and issues where it lost some profiling blocks.
+ - Deleted UiApi::AddWidgetToSceneRaw.
+ - Reimplemented the managing of important directory paths to centralized
+functions:
+   - Application::SetCurrentWorkingDirectory().
+   - Application::CurrentWorkingDirectory()
+   - Application::InstallationDirectory()
+   - Application::UserDataDirectory()
+   - Application::UserDocumentsDirectory().
+ - Implemented and tested unicode support for path handling.
+ - Reimplemented all code to use the abovementioned folders instead of
+assuming cwd is some specific directory, to prepare to run Tundra
+in-process in a web browser plugin.
+ - Deleted AssetModule::AddHttpStorage and replaced it with a more generic
+AssetModule::AddAssetStorage which uses serialized storage strings.
+ - Deleted poorly structured IAssetProvider::AddStorage, replaced by
+serialized storage strings.
+ - Reimplemented frame-time limiter to sleep inside Qt's event loop
+instead of the Ogre renderer.
+ - Implemented IAssetStorage::GetAllAssetRefs() to enable querying storage
+contents.
+ - Fixed SceneManager entity ID allocation to return guaranteedly unique
+IDs. Added runtime checks for known critical (but never yet seen) bugs in
+SyncManager.
+ 
+Input API improvements.
+ - Tied the setting of mouse cursor to InputContexts so that they get
+cleaned up after contexts are deleted or overridden by priority, to avoid
+commonly seen user bugs where an override is never cleared.
+ - Implemented InputAPI::MousePos.
+ - Reimplemented mouse double click handling in InputAPI, deleted related
+test booleans.
+ - Treat input as being over Qt when mouse cursor is hidden
+ 
+Entity parenting support.
+- Implemented support for parenting entities to other entities or bones of
+meshes.
+- Implemented EntityReference attribute type.
+- Added EC_Mesh::GetAvailableBones().
+- Implemented script-accessible support for querying mesh bone transforms.
+
+v1.0.8 - https://github.com/realXtend/naali/compare/tundra1.0.7...tundra1.0.8
+------
+ - New Kinect, joystick and wiimote code. This is still experimental work but the supporting python code is now there. We are not yet shipping the needed DLLs but you are free to try on your own. We will ship the needed DLLs once the python code is working properly under windows.
+ - Code for ARModule: Simple support for augmented reality things. You can feed your reality camera feed to the background of the scene. The module also provides a simple EC that controls the depth/color buffer write for the entitys mesh. This module is not shipped (yet) with the installer. You can build it from sources if you want to experiment, ask more from Pforce on IRC.
+ - Code for MobilityModule: Utilizes QtModility to get information about battery state, connectivity etc. This information can be used for login in scripts. This module is not yet shipped, but you can build it from souces if you want to experiment. Will possibly ship for windows releases in the future when refined a bit, as this will be useful for laptops.
+ - Cave/StereoModule: Added new stereoscopy modes: Horizontal, Vertical and Checkboard. Also added functionality to flip the rendering on these modes.
+ - NullRenderer Ogre plugin: This plugin is used in headless mode (on windows only for now). Eliminates the need to have directx on server machines. Also loads the OgreRender module nicely without a remote GUI for a windows servers. This enables programs to start a tundra server on the desktop space without having a active remote to the server, also enables things like autorestarting on crashes if you want to implement something like this. The plugin will be enabled on linux aswell once tested properly there.
+ - EC_WebView: Added illuminating attribute to control the lighting of a webview texture. If enabled the material/texture is emissive (emitting light basically) so its readable also in dark conditions. Enabled by default.
+ - Avatar (simpleavatar.js) applications camera now evades obstables. Camera should not go outside of walls/obstacles so that you cannot see your avatar anymore. Supporting raycast functions added to OgreRenderer::Renderer.
+ - SlideSircle example scene got a lot of updates from therauli.
+ - OgreRenderer now prints what plugins it loads succesfully and also what rendering plugin it takes into use. Useful if you want to know if you are actually running dx or opengl etc.
+ - The "get back" buttons of object focus mode and freefly are now alot smaller and semi transparent so they wont hide the scene too much.
+ - EC_RigidBody: Added toggle functions for gravityEnabled for single entities. Added InterpolateUpwards function that forces the body not to flip over.
+ - EC_Placeable: More script exposing.
+ - IControlDevice: Added new interface for DevicesAPI that joysticks and other controller can utilise, has nice signals for control devices versus the plain IDevice.
+ - EC_LaserPointer: All lasers were tracking all clients, so it was a mess to use this. Also now hides the laser if you go on top of UI or outside the main window rect.
+ - Alt+Left Mouse Click on objects now focuses on the click position not the mesh origin.
+ - When going into object focus mode stop the avatar movement and rotation.
+ - EC_HoveringText: Fix couple crash bugs where image size was not validated before pushed to ogre.
+
+v1.0.7 - https://github.com/realXtend/naali/compare/tundra1.0.6...tundra1.0.7
+------
+ - New framework update logic that has a frame limiter that does not use thread sleep anymore. This will let Qt:s main loop breath a bit more resulting in more responsive ui and make rendering fps more steady. You can set the fps with start param --fpslimiter as usual.
+ - The in viewer web browser now has disk cache, disk icon database and cookie support to speed up browsing and to be more pleasant with cookies. The cache/cookie settings can be modified from the browser settings ui, they can both be also cleared from there.
+ - The in viewer web browser now has bookmark support. You can add, remove, edit and re-order your bookmarks. Accessed with the bookmark icon on the right side of browser toolbar.
+ - New DevicesAPI for registering and getting devices. The device can be anything, data the device emits to interesting parties can be anything that QVariant supports. See more from the http://realxtend.org/doxygen/device_api_page.html doxygen for examples.
+ - SceneInteract: Entity action 'MouseRelease' added when mouse press is released on the entity and 'MouseScroll' when mouse is scrolled on the entity.
+ - Object focus camera is back, can be used with Alt + left mouse click to object. Has UI to get back to last active camera.
+ - Avatar application adds a toggle freecam/avcam button to browser toolbar. Has UI button to show when you are in freecam mode and pressing button will return you to av cam.
+ - AssetCache will now more actively try to resolve if cache files are corrupted. Mainly happens on linux as its possible to open a file in write mode from more than one process. So cache files may have gotten corrupted if you were running multiple viewer/server instances that fetched same assets and accessed the asset cache.
+
+v1.0.6 - https://github.com/realXtend/naali/compare/tundra1.0.5...tundra1.0.6
+------
+ - New web browser like ui for the client. You can think of Tundra as a web browser that also has 3D rendering capabilities. There is one static tab for login if you are disconnected or for the 3D content if you are connected.
+ - You can jump to web tabs and have as many open as you like, both in disconnected and connected states. There is also a feature to set your home page, bookmarks will follow later. Basic idea is that tundra:// urls can be set as your home page, you can modify the browser settings to auto join the server too if youd like. You can also directly login to a world by writing tundra://server:port/?username=<your_name>[&protocol=udp/tcp] (inside [] is optional, it defaults to tcp) on any tab and it will connect to that world and jump to the 3D tab.
+ - There is a new content area for tools on the browser ui. When inworld you should notice there are two icons added there Scene and Assets, so you dont have to use Shift+S/A or the top menus to access them. Inworld scripts can also add their own actions there, so depending on the world you might have more tools available to you. When disconnected the world tools are always cleared from the ui. Brief example on how to add your tools at the end.
+Please give me some feed back how you like the new browser like interface. For web tabs all modern web sites should work ok (using 4.7.1 QWebKit under the hood) and has flash support as well.
+ - New realxtend login portal. This utilizes our registered tundra:// protocol (currently only on windows). There are two ways it can be used 1) Login with your browser of choice (chrome/firefox/ie etc.), it will launch a Tundra client and login to the world. 2) Go to this page with your Tundra clients browser, do a login and it will connect to the world with your current client. Hosting for the actual Tundra servers is provided from Adminotech Ltd.
+ - Menu items have been arranged a bit better, there is a new sub menu called settings.
+ - Renderer settings are back and operational, this means ctrl+f will toggle full screen mode once again.
+ - New EC_ProxomityTrigger.
+ - New EC_LaserPointer.
+ - UiServiceInterface was removed. See more under JavaScript Breaking Changes.
+ - EC_Avatars attribute appearanceId renamed to appearanceRef. See more under JavaScript Breaking Changes.
+ - New module CameraInputModule that provides web camera input. Also a test app you can access in a client from "View -> Web Camera". See how to utilize this new webcam api from http://www.realxtend.org/doxygen/class_camera_input_module.html under Detailed Description.
+ - Post-processing settings are back in business. Accessed from menu View -> Post-prosessing.
+ - New python irc client. Toni can post specifics about this if interested on using it. You can eg. make a Tundra server report to a IRC channel when a user logged in or out.
+
+v1.0.5 - https://github.com/realXtend/naali/compare/tundra1.0.4...tundra1.0.5
+------
+ - Viewer executable now has --login support for URLs. Viewer is also registered to the operating system for handling tundra:// scheme URLs. Essentially means you can make tundra:// login links to websites and the browser will invoke Tundra viewer to login to the world with specified credentials and other data. See more details about usage from our doxygen http://www.realxtend.org/doxygen/runningnaali.html (will be updated to be there in the next 12h).
+ - EC_Sounce: Added a "Play on load" boolean attribute. Set this to true if you want the sound to start playing once its loaded via the asset system.
+ - class.jsl "library" is now available for Tundra JavaScripts for object orientated scripting. See more from http://ejohn.org/blog/simple-javascript-inheritance/
+ - Installer should now make better checks if directx9 is installed on the target machine.
+ - NaaliUI got renamed to UiAPI to be consistent with other API naming. UiProxyWidget moved from Interfaces under Ui (UiAPI) project.
+ - Audio got renamed to AudioAPI to be consistent with other API naming.
+ - TundaLogicModules Server class has now new getters for running servers port and protocol.
+ - The dialog for adding entities and assets got a small ui facelift to be consistent with our other framework windows.
+ - Fixed when .txml or .mesh drops would create local entities instead of replicated onces.
+ - Fixed jsmodules/startup/AutoServerStore.js script to function with the new SceneAPI.
+ - Removed double console printing from headless mode.
+ - Fixed physics slowdown when fps limit was defined for the mainloop/rendering.
+
+v1.0.4 - https://github.com/realXtend/naali/compare/tundra1.0.2...tundra1.0.4
+------
+ - New framework APIs: SceneAPI and ConfigAPI.
+ - New scene persistance script for Tundra server end users. Will load last content on startup to server and store current content on server stop. Is not enabled by default so server admins can enable it if they wish: look for jsmodules/startup/AutoServerStore.js in your install directory, read the documentation from the script.
+Components Attribute metadata can now have designable boolean false. This makes the attribute not show in the editor/designer UI for the user. The attribute is still modifyable from code and will synchronize over network as before.
+ - New support for QSize, QSizeF, QPoint, QPointF as Attribute types. They will be replicated over network and who in the editor UI as you would expect.
+ - New EC_WebView entity component. This essentially replaces EC_3DCanvasSource with a better implementations. Features include: better preparing and rendering handling (no more grey textures on webview 3D objects), shared browsing where one user can take control of the browsing experience and his view will be synched to all clients (rendered both inworld and to their 2D preview. You need to have the components attribute 'interactive' to true and it will give you a context menu when clicked inworld to start shared browsing and showing the 2D widget.
+ - SceneInteract has been moved out of RexLogic to SceneAPI. Can be accessed from framwork->Scene()->GetSceneInteract(). Now give more data on EntityClicked signal: what mouse button was pressed and the raycast result data. Still accessible from javascript with "sceneinteract.Function()" like before.
+ - Improved handling on .txml scene drag and drop events. Tundra will now inspect all the scripts in the scene for additional dependencies. For the end user this is very nice as you dont have to manually copy assets that were not referenced in the actual .txml content.
+ - Avatar application in scenes/Avatar got 1st person mode, to enable it zoom in to the avatar untill you hit the mode. This avatar application is just a reference implementation, but is provided so people who want avatars in their worlds can go and drop the application in to their server. Note: you might have to relogin with client after you have applied the script to your world.
+ - QtUiAsset parser improvements.
+ - Many framework APIs renamed to be consistent. For example InputAPI and FrameAPI.
+ - Enhanced python script taiga2tundra for porting opensim style naali scene xml into tundra txml format. Useful for making the transition from taiga to tundra with existing content.
+ - Mumble session object has better script support for adding channels.
+ - Exposed NaaliApplication object (QApplication) from framework to scripts as "application".
+ - User interface windows for Scene Struct, Asset and Entity-Component editor got a facelift. Also their shorcuts shift+a/s/e will also now toggle visibility not just show.
+ - AssetAPI didn't always emit IAssetTransfer::Loaded() when the asset was in memory already. Manifested for many users with invisible avatars if you had multiple avatars with same appearance (like Jack).
+ - Drag and dropping .txml files from web did not put content to actual drop/raycast position after download.
+ - Mouse event propagition fix for OS X.
+ - Fixed bug where EC_InputMapper was not checking if KeyEvent was alredy handled before processing and sending it forward.
+ - Made Scene Struct, Asset and EC Editor windows mark their processed KeyEvents as handled. Fixed the bug where you would press shift+s/a and your avatar/camera would move.
+
+v1.0.2
+------
+ - https://github.com/realXtend/naali/compare/tundra1.0.1...tundra1.0.2
+
+v1.0.1
+------
+ - https://github.com/realXtend/naali/compare/1.0-preview...tundra1.0.1
+
+v1.0-preview
+------------
+ First public release. See https://github.com/realXtend/naali/tree/1.0-preview

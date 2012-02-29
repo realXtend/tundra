@@ -22,12 +22,13 @@
 #include "Profiler.h"
 #include "EC_Placeable.h"
 #include "EC_RigidBody.h"
-
 #include "SceneAPI.h"
 
 #include <kNet.h>
 
 #include <cstring>
+
+#include <boost/make_shared.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -222,10 +223,11 @@ void SyncManager::NewUserConnected(UserConnection* user)
     }
     
     // Connect to actions sent to specifically to this user
-    connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
+    connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)),
+        this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
-    user->syncState = boost::shared_ptr<SceneSyncState>(new SceneSyncState(user->GetConnectionID(), owner_->IsServer()));
+    user->syncState = boost::make_shared<SceneSyncState>(user->GetConnectionID(), owner_->IsServer());
     user->syncState->SetParentScene(scene_);
 
     if (owner_->IsServer())
@@ -561,11 +563,24 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
 //        r.interpTime = std::min(1.0f, r.interpTime + (float)frametime / interpPeriod);
         r.interpTime += (float)frametime / interpPeriod;
 
+        // Objects without a rigidbody, or with mass 0 never extrapolate (objects with mass 0 are stationary for Bullet).
+        const bool isNewtonian = rigidBody && rigidBody->mass.Get() > 0;
+
         float3 pos;
         if (r.interpTime < 1.0f) // Interpolating between two messages from server.
-            pos = HermiteInterpolate(r.interpStart.pos, r.interpStart.vel * interpPeriod, r.interpEnd.pos, r.interpEnd.vel * interpPeriod, r.interpTime);
+        {
+            if (isNewtonian)
+                pos = HermiteInterpolate(r.interpStart.pos, r.interpStart.vel * interpPeriod, r.interpEnd.pos, r.interpEnd.vel * interpPeriod, r.interpTime);
+            else
+                pos = HermiteInterpolate(r.interpStart.pos, float3::zero, r.interpEnd.pos, float3::zero, r.interpTime);
+        }
         else // Linear extrapolation if server has not sent an update.
-            pos = r.interpEnd.pos + r.interpEnd.vel * (r.interpTime-1.f) * interpPeriod;
+        {
+            if (isNewtonian)
+                pos = r.interpEnd.pos + r.interpEnd.vel * (r.interpTime-1.f) * interpPeriod;
+            else
+                pos = r.interpEnd.pos;
+        }
         ///\todo Orientation is only interpolated, and capped to end result. Also extrapolate orientation.
         Quat rot = Quat::Slerp(r.interpStart.rot, r.interpEnd.rot, Clamp01(r.interpTime));
         float3 scale = float3::Lerp(r.interpStart.scale, r.interpEnd.scale, Clamp01(r.interpTime));
@@ -676,14 +691,23 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
     if (!scene)
         return;
 
-    kNet::NetworkMessage *msg = destination->StartNewMessage(cRigidBodyUpdateMessage, 4096);
+    const int maxMessageSizeBytes = 1400;
+    kNet::NetworkMessage *msg = destination->StartNewMessage(cRigidBodyUpdateMessage, maxMessageSizeBytes);
     msg->contentID = 0;
     msg->inOrder = true;
     msg->reliable = false;
-    kNet::DataSerializer ds(msg->data, 4096);
+    kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
 
     for(std::list<EntitySyncState*>::iterator iter = state->dirtyQueue.begin(); iter != state->dirtyQueue.end(); ++iter)
     {
+        const int maxRigidBodyMessageSizeBits = 350; // An update for a single rigid body can take at most this many bits. (conservative bound)
+        // If we filled up this message, send it out and start crafting anothero one.
+        if (maxMessageSizeBytes * 8 - ds.BitsFilled() <= maxRigidBodyMessageSizeBits)
+        {
+            destination->EndAndQueueMessage(msg, ds.BytesFilled());
+            msg = destination->StartNewMessage(cRigidBodyUpdateMessage, maxMessageSizeBytes);
+            ds = kNet::DataSerializer(msg->data, maxMessageSizeBytes);
+        }
         EntitySyncState &ess = **iter;
 
         if (ess.isNew || ess.removed)
@@ -803,33 +827,33 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
             continue;
 
         int bitIdx = ds.BitsFilled();
-        ds.AddVLE<kNet::VLE8_16_32>(ess.id);
+        ds.AddVLE<kNet::VLE8_16_32>(ess.id); // Sends max. 32 bits.
 
-        ds.AddArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2);
-        if (posSendType == 1)
+        ds.AddArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2); // Sends fixed 8 bits.
+        if (posSendType == 1) // Sends fixed 57 bits.
         {
             ds.AddSignedFixedPoint(11, 8, t.pos.x);
             ds.AddSignedFixedPoint(11, 8, t.pos.y);
             ds.AddSignedFixedPoint(11, 8, t.pos.z);
         }
-        else if (posSendType == 2)
+        else if (posSendType == 2) // Sends fixed 96 bits.
         {
             ds.Add<float>(t.pos.x);
             ds.Add<float>(t.pos.y);
             ds.Add<float>(t.pos.z);
-        }
+        }        
 
         if (rotSendType == 1) // Orientation with 1 DOF, only yaw.
         {
             // The transform is looking straight forward, i.e. the +y vector of the transform local space points straight towards +y in world space.
             // Therefore the forward vector has y == 0, so send (x,z) as a 2D vector.
-            ds.AddNormalizedVector2D(rot.Col(2).x, rot.Col(2).z, 8);
+            ds.AddNormalizedVector2D(rot.Col(2).x, rot.Col(2).z, 8);  // Sends fixed 8 bits.
         }
         else if (rotSendType == 2) // Orientation with 2 DOF, yaw and pitch.
         {
             float3 forward = rot.Col(2);
             forward.Normalize();
-            ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8);
+            ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8); // Sends fixed 17 bits.
         }
         else if (rotSendType == 3) // Orientation with 3 DOF, full yaw, pitch and roll.
         {
@@ -843,28 +867,30 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
                 axis = -axis;
                 angle = 2.f * 3.141592654f - angle;
             }
+
+            // Sends 10-31 bits.
             u32 quantizedAngle = ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
             if (quantizedAngle != 0)
                 ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
         }
 
-        if (scaleSendType == 1)
+        if (scaleSendType == 1) // Sends fixed 32 bytes.
         {
             ds.Add<float>(t.scale.x);
         }
-        else if (scaleSendType == 2)
+        else if (scaleSendType == 2) // Sends fixed 96 bits.
         {
             ds.Add<float>(t.scale.x);
             ds.Add<float>(t.scale.y);
             ds.Add<float>(t.scale.z);
         }
 
-        if (velSendType == 1)
+        if (velSendType == 1) // Sends fixed 32 bits.
         {
             ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 11, 10, 3, 8);
             ess.linearVelocity = linearVel;
         }
-        else if (velSendType == 2)
+        else if (velSendType == 2) // Sends fixed 39 bits.
         {
             ds.AddVector3D(linearVel.x, linearVel.y, linearVel.z, 11, 10, 10, 8);
             ess.linearVelocity = linearVel;
@@ -882,6 +908,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
                 axis = -axis;
                 angle = 2.f * 3.141592654f - angle;
             }
+             // Sends at most 31 bits.
             u32 quantizedAngle = ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
             if (quantizedAngle != 0)
                 ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
@@ -1012,65 +1039,72 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
             }
         }
 
-        if (e)
+        if (!e) // Discard this message - we don't have the entity in our scene to which the message applies to.
+            continue;
+
+        // Did anything change?
+        if (posSendType != 0 || rotSendType != 0 || scaleSendType != 0 || velSendType != 0 || angVelSendType != 0)
         {
-            if (posSendType != 0 || rotSendType != 0 || scaleSendType != 0 || velSendType != 0 || angVelSendType != 0)
+            // Create or update the interpolation state.
+            Transform orig = placeable->transform.Get();
+
+            std::map<entity_id_t, RigidBodyInterpolationState>::iterator iter = server_syncstate_.entityInterpolations.find(entityID);
+            if (iter != server_syncstate_.entityInterpolations.end())
             {
-                // Create or update the interpolation state.
-                Transform orig = placeable->transform.Get();
+                RigidBodyInterpolationState &interp = iter->second;
 
-                std::map<entity_id_t, RigidBodyInterpolationState>::iterator iter = server_syncstate_.entityInterpolations.find(entityID);
-                if (iter != server_syncstate_.entityInterpolations.end())
-                {
-                    RigidBodyInterpolationState &interp = iter->second;
+                if (kNet::PacketIDIsNewerThan(interp.lastReceivedPacketCounter, packetId))
+                    continue; // This is an out-of-order received packet. Ignore it. (latest-data-guarantee)
+                interp.lastReceivedPacketCounter = packetId;
 
-                    if (kNet::PacketIDIsNewerThan(interp.lastReceivedPacketCounter, packetId))
-                        continue; // This is an out-of-order received packet. Ignore it. (latest-data-guarantee)
-                    interp.lastReceivedPacketCounter = packetId;
+                const float interpPeriod = updatePeriod_; // Time in seconds how long interpolating the Hermite spline from [0,1] should take.
+                float3 curVel;
 
-                    const float interpPeriod = updatePeriod_; // Time in seconds how long interpolating the Hermite spline from [0,1] should take.
-                    float3 curVel;
-                    if (interp.interpTime < 1.0f)
-                        curVel = HermiteDerivative(interp.interpStart.pos, interp.interpStart.vel*interpPeriod, interp.interpEnd.pos, interp.interpEnd.vel*interpPeriod, interp.interpTime);
-                    else
-                        curVel = interp.interpEnd.vel;
-                    float3 curAngVel = float3::zero; ///\todo
-                    interp.interpStart.pos = orig.pos;
-                    if (posSendType != 0)
-                        interp.interpEnd.pos = t.pos;
-                    interp.interpStart.rot = orig.Orientation();
-                    if (rotSendType != 0)
-                        interp.interpEnd.rot = t.Orientation();
-                    interp.interpStart.scale = orig.scale;
-                    if (scaleSendType != 0)
-                        interp.interpEnd.scale = t.scale;
-                    interp.interpStart.vel = curVel;
-                    if (velSendType != 0)
-                        interp.interpEnd.vel = newLinearVel;
-                    interp.interpStart.angVel = curAngVel;
-                    if (angVelSendType != 0)
-                        interp.interpEnd.angVel = newAngVel;
-                    interp.interpTime = 0.f;
-                    interp.interpolatorActive = true;
-                }
+                if (interp.interpTime < 1.0f)
+                    curVel = HermiteDerivative(interp.interpStart.pos, interp.interpStart.vel*interpPeriod, interp.interpEnd.pos, interp.interpEnd.vel*interpPeriod, interp.interpTime);
                 else
-                {
-                    RigidBodyInterpolationState interp;
-                    interp.interpStart.pos = orig.pos;
+                    curVel = interp.interpEnd.vel;
+                float3 curAngVel = float3::zero; ///\todo
+                interp.interpStart.pos = orig.pos;
+                if (posSendType != 0)
                     interp.interpEnd.pos = t.pos;
-                    interp.interpStart.rot = orig.Orientation();
+                interp.interpStart.rot = orig.Orientation();
+                if (rotSendType != 0)
                     interp.interpEnd.rot = t.Orientation();
-                    interp.interpStart.scale = orig.scale;
+                interp.interpStart.scale = orig.scale;
+                if (scaleSendType != 0)
                     interp.interpEnd.scale = t.scale;
-                    interp.interpStart.vel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
+                interp.interpStart.vel = curVel;
+                if (velSendType != 0)
                     interp.interpEnd.vel = newLinearVel;
-                    interp.interpStart.angVel = rigidBody ? rigidBody->angularVelocity.Get() : float3::zero;
+                interp.interpStart.angVel = curAngVel;
+                if (angVelSendType != 0)
                     interp.interpEnd.angVel = newAngVel;
-                    interp.interpTime = 0.f;
-                    interp.lastReceivedPacketCounter = packetId;
-                    interp.interpolatorActive = true;
-                    server_syncstate_.entityInterpolations[entityID] = interp;
-                }
+                interp.interpTime = 0.f;
+                interp.interpolatorActive = true;
+
+                // Objects without a rigidbody, or with mass 0 never extrapolate (objects with mass 0 are stationary for Bullet).
+                const bool isNewtonian = rigidBody && rigidBody->mass.Get() > 0;
+                if (!isNewtonian)
+                    interp.interpStart.vel = interp.interpEnd.vel = float3::zero;
+            }
+            else
+            {
+                RigidBodyInterpolationState interp;
+                interp.interpStart.pos = orig.pos;
+                interp.interpEnd.pos = t.pos;
+                interp.interpStart.rot = orig.Orientation();
+                interp.interpEnd.rot = t.Orientation();
+                interp.interpStart.scale = orig.scale;
+                interp.interpEnd.scale = t.scale;
+                interp.interpStart.vel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
+                interp.interpEnd.vel = newLinearVel;
+                interp.interpStart.angVel = rigidBody ? rigidBody->angularVelocity.Get() : float3::zero;
+                interp.interpEnd.angVel = newAngVel;
+                interp.interpTime = 0.f;
+                interp.lastReceivedPacketCounter = packetId;
+                interp.interpolatorActive = true;
+                server_syncstate_.entityInterpolations[entityID] = interp;
             }
         }
     }
