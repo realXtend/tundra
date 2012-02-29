@@ -219,12 +219,14 @@ macro(link_package_skyx)
 endmacro()
 
 macro (configure_qtpropertybrowser)
-    sagase_configure_package (QT_PROPERTY_BROWSER
-        NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
-        COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
-    
-    sagase_configure_report (QT_PROPERTY_BROWSER)
+    if (NOT MSVC)
+      sagase_configure_package (QT_PROPERTY_BROWSER
+          NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
+          COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
+          PREFIXES ${ENV_TUNDRA_DEP_PATH})
+
+      sagase_configure_report (QT_PROPERTY_BROWSER)
+    endif()
 endmacro (configure_qtpropertybrowser)
 
 macro (configure_openal)
@@ -305,8 +307,10 @@ endmacro()
 
 macro(use_package_ogg)
     if (MSVC)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/libogg/include)
-        link_directories(${ENV_TUNDRA_DEP_PATH}/libogg/lib)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libogg/include) # For prebuilt VS2008/VS2010 deps.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libogg/lib) # For prebuilt VS2008/VS2010 deps.
+
+        include_directories($ENV{TUNDRA_DEP_PATH}/ogg/include) # For full-built deps.
     elseif (APPLE)
         include_directories(${ENV_TUNDRA_DEP_PATH}/include/ogg)
         link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
@@ -315,8 +319,10 @@ endmacro()
 
 macro(link_package_ogg)
     if (MSVC)
-        target_link_libraries(${TARGET_NAME} optimized libogg)
-        target_link_libraries(${TARGET_NAME} debug liboggd)
+#        target_link_libraries(${TARGET_NAME} optimized libogg)
+#        target_link_libraries(${TARGET_NAME} debug liboggd)
+        target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32/Release/libogg_static.lib)
+        target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32/Debug/libogg_static.lib)
     else()
         target_link_libraries(${TARGET_NAME} general ogg)
     endif()
@@ -324,8 +330,10 @@ endmacro()
 
 macro(use_package_vorbis)
     if (MSVC)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/include)
-        link_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/lib)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/include) # For prebuilt VS2008/VS2010 deps.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/lib) # For prebuilt VS2008/VS2010 deps.
+
+        include_directories(${ENV_TUNDRA_DEP_PATH}/vorbis/include) # For full-built deps.
     elseif (APPLE)
         include_directories(${ENV_TUNDRA_DEP_PATH}/include/vorbis)
         link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
@@ -334,8 +342,13 @@ endmacro()
 
 macro(link_package_vorbis)
     if (MSVC)
-        target_link_libraries(${TARGET_NAME} optimized libvorbis optimized libvorbisfile)
-        target_link_libraries(${TARGET_NAME} debug libvorbisd debug libvorbisfiled)
+#        target_link_libraries(${TARGET_NAME} optimized libvorbis optimized libvorbisfile)
+#        target_link_libraries(${TARGET_NAME} debug libvorbisd debug libvorbisfiled)
+
+        target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Release/libvorbis_static.lib)
+        target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Release/libvorbisfile_static.lib)
+        target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Debug/libvorbis_static.lib)
+        target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Debug/libvorbisfile_static.lib)
     else()
         target_link_libraries(${TARGET_NAME} general vorbis general vorbisfile)
     endif()
@@ -343,8 +356,8 @@ endmacro()
 
 macro(use_package_theora)
     if (MSVC)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/include)
-        link_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/lib)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/include) # For prebuilt VS2008/VS2010 deps.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/lib) # For prebuilt VS2008/VS2010 deps.
     elseif (APPLE)
         include_directories(${ENV_TUNDRA_DEP_PATH}/include/theora)
         link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
@@ -360,6 +373,20 @@ macro(link_package_theora)
     endif()
 endmacro()
 
+macro(use_package_qtpropertybrowser)
+    if (MSVC)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
+        include_directories(${ENV_TUNDRA_DEP_PATH}/QtPropertyBrowser/includes) # For prebuilt deps vs2008.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/QtPropertyBrowser/lib) # For prebuilt deps vs2008.
+    endif()
+endmacro()
+
+macro(link_package_qtpropertybrowser)
+    if (MSVC)
+        # TODO
+    endif()
+endmacro()
 
 macro(use_package_assimp)
     if (WIN32)
