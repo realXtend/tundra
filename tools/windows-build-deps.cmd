@@ -24,6 +24,7 @@ cecho {0D}Assuming Tundra git trunk is found at %TUNDRA_DIR%.{# #}{\n}
 cecho {0E}Warning: The path %TUNDRA_DIR% may not contain spaces! (qmake breaks on them).{# #}{\n}
 cecho {0E}Warning: This script is not fully unattended once you continue.{# #}{\n}
 cecho {0E}         When building Qt, you must press 'y' once for the script to proceed.{# #}{\n}
+cecho {0E}Warning: You will need roughly 25GB of disk space to proceed.{# #}{\n}
 echo.
 
 echo If you are not ready with the above, press Ctrl-C to abort!
@@ -201,6 +202,13 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
 )
 
+IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core.dll". (
+   cecho {0D}Deploying QtScript plugin DLLs.{# #}{\n}
+   mkdir "%TUNDRA_BIN%\qtplugins\script"
+   xcopy /Q /E /I /C /H /R /Y "%DEPS%\qtscriptgenerator\plugins\script\*.dll" "%TUNDRA_BIN%\qtplugins\script"
+) ELSE (
+   cecho {0D}QtScript plugin DLLs already deployed. Skipping.{# #}{\n}
+)
 IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
    cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
    cd "%DEPS%"
