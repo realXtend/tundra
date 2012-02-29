@@ -211,7 +211,6 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
    wget "http://garr.dl.sourceforge.net/project/ogre/ogre-dependencies-vc%%2B%%2B/1.7/OgreDependencies_MSVC_20101231.zip"
    IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
       cecho {0C}Error downloading Ogre depencencies! Aborting!{# #}{\n}
-      pause
       GOTO:EOF
    )
 
@@ -349,3 +348,4 @@ GOTO :EOF
 
 :ERROR
 cecho {0C}An error occurred! Aborting!{# #}{\n}
+pause
