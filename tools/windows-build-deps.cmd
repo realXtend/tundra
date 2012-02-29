@@ -244,7 +244,7 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg". (
 IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL". (
    cecho {0D}Attaching RenderSystem_NULL to be built with ogre-safe-nocrashes.{# #}{\n}
    mkdir "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL"
-   echo add_subdirectory(RenderSystem_Null) >> "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
+   echo add_subdirectory(RenderSystem_NULL) >> "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
 )
 
 cecho {0D}Updating RenderSystem_NULL to the newest version in ogre-safe-nocrashes.{# #}{\n}
