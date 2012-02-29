@@ -275,7 +275,7 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
     ::LogInfo("Server started");
     ::LogInfo(QString("* Port     : ") + QString::number(port));
     ::LogInfo(QString("* Protocol : ") + (transport == kNet::SocketOverUDP ? "UDP" : "TCP"));
-    ::LogInfo(QString("* Headless : ") + (framework_->IsHeadless() == true ? "True" : "False"));
+    ::LogInfo(QString("* Headless : ") + BoolToString(framework_->IsHeadless()));
     return true;
 }
 

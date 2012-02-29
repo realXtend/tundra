@@ -86,7 +86,7 @@ bool Server::Start(unsigned short port, QString protocol)
     // Start server
     if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
     {
-        ::LogError("Failed to start server in port " + ToString<int>(port));
+        ::LogError("Failed to start server in port " + QString::number(port));
         return false;
     }
 
@@ -140,14 +140,14 @@ bool Server::IsAboutToStart() const
     return framework_->HasCommandLineParameter("--server");
 }
 
-int Server::GetPort() const
+int Server::Port() const
 {
-    return current_port_;
+    return IsRunning() ? current_port_ : -1;
 }
 
-QString Server::GetProtocol() const
+QString Server::Protocol() const
 {
-    return current_protocol_;
+    return IsRunning() ? current_protocol_ : "";
 }
 
 UserConnectionList Server::GetAuthenticatedUsers() const
@@ -226,22 +226,22 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
     UserConnection *user = GetUserConnection(source);
     if (!user)
     {
-        ::LogWarning("Server: dropping message " + ToString(messageId) + " from unknown connection \"" + source->ToString() + "\"");
+        ::LogWarning(QString("Server: dropping message %1 from unknown connection \"%2\".").arg(messageId).arg(source->ToString().c_str()));
         return;
     }
 
     // If we are server, only allow the login message from an unauthenticated user
-    if (messageId != cLoginMessage && user->properties["authenticated"] != "true")
+    if (messageId != MsgLogin::messageID && user->properties["authenticated"] != "true")
     {
         UserConnection* user = GetUserConnection(source);
-        if ((!user) || (user->properties["authenticated"] != "true"))
+        if (!user || user->properties["authenticated"] != "true")
         {
-            ::LogWarning("Server: dropping message " + ToString(messageId) + " from unauthenticated user");
+            ::LogWarning("Server: dropping message " + QString::number(messageId) + " from unauthenticated user");
             /// \todo something more severe, like disconnecting the user
             return;
         }
     }
-    else if (messageId == cLoginMessage)
+    else if (messageId == MsgLogin::messageID)
     {
         MsgLogin msg(data, numBytes);
         HandleLogin(source, msg);
@@ -255,7 +255,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     UserConnection* user = GetUserConnection(source);
     if (!user)
     {
-        ::LogWarning("Login message from unknown user");
+        ::LogWarning("Server::HandleLogin: Login message from an unknown user.");
         return;
     }
     
@@ -263,7 +263,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     QString loginData = QString::fromStdString(BufferToString(msg.loginData));
     bool success = xml.setContent(loginData);
     if (!success)
-        ::LogWarning("Received malformed xml logindata from user " + ToString<int>(user->userID));
+        ::LogWarning("Server::HandleLogin: Received malformed XML login data from user " + QString::number(user->userID));
     
     // Fill the user's logindata, both in raw format and as keyvalue pairs
     user->loginData = loginData;
@@ -280,7 +280,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     emit UserAboutToConnect(user->userID, user);
     if (user->properties["authenticated"] != "true")
     {
-        ::LogInfo("User with connection ID " + ToString<int>(user->userID) + " was denied access");
+        ::LogInfo("User with connection ID " + QString::number(user->userID) + " was denied access");
         MsgLoginReply reply;
         reply.success = 0;
         reply.userID = 0;
@@ -290,7 +290,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         return;
     }
     
-    ::LogInfo("User with connection ID " + ToString<int>(user->userID) + " logged in");
+    ::LogInfo("User with connection ID " + QString::number(user->userID) + " logged in");
     
     // Allow entityactions & EC sync from now on
     MsgLoginReply reply;
