@@ -67,16 +67,19 @@ IF NOT EXIST "%DEPS%\Qt\lib\QtCore4.dll". (
    del /s /q mocinclude.tmp
    nmake /nologo
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   REM We (re)built Qt, so delete QtCore4.dll in Tundra bin\ to force DLL deployment below.
+   del /Q "%TUNDRA_BIN%\QtCore4.dll"
+) ELSE (
+   cecho {0D}Qt already built. Skipping.{# #}{\n}
+)
 
-   cecho {0D}Deploying qt DLLs to Tundra bin\.{# #}{\n}
+IF NOT EXIST "%TUNDRA_BIN%\QtCore4.dll". (
+   cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
    copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    mkdir "%TUNDRA_BIN%\qtplugins"
    xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-
-) ELSE (
-   cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\bullet\". (
@@ -109,7 +112,7 @@ IF NOT EXIST "%DEPS%\boost". (
 ::
 ::   del user-config.jam
 ::   rename user-config.new.jam user-config.jam
-   copy /Y "%TOOLS%\windows\boost-user-config-vs2008.jam" "%DEPS%\boost\tools\build\v2\user-config.jam"
+   copy /Y "%TOOLS%\utils-windows\boost-user-config-vs2008.jam" "%DEPS%\boost\tools\build\v2\user-config.jam"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd "%DEPS%\boost"
    cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
@@ -144,14 +147,17 @@ msbuild kNet.sln /p:configuration=Debug /nologo
 msbuild kNet.sln /p:configuration=RelWithDebInfo /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-IF NOT EXIST "%DEPS%\qtscriptgenerator". (
+IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}Cloning QtScriptGenerator into "%DEPS%\qtscriptgenerator".{# #}{\n}
    cd "%DEPS%"
    call git clone git://gitorious.org/qt-labs/qtscriptgenerator
    IF NOT EXIST "%DEPS%\qtscriptgenerator\.git" GOTO :ERROR
+) ELSE (
+   cecho {0D}QtScriptGenerator already cloned. Skipping.{# #}{\n}
+)
 
-   cd qtscriptgenerator
-   cd generator
+IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll". (
+   cd "%DEPS%\qtscriptgenerator\generator"
    cecho {0D}Running qmake for QtScriptGenerator.{# #}{\n}
    qmake
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -163,11 +169,31 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd ..
    cd qtbindings
+
+   sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" < qtbindings.pro > qtbindings.pro.sed
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   del /Q qtbindings.pro
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   ren qtbindings.pro.sed qtbindings.pro
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+   REM Fix bad script generation for webkit.
+   REM TODO: Could try some sed replacement, but can't make the regex escaping rules work from command line.
+   REM sed -e s/"QWebPluginFactory_Extension_values[] = "/"QWebPluginFactory_Extension_values[1] = "// -e "s/qtscript_QWebPluginFactory_Extension_keys[] = /qtscript_QWebPluginFactory_Extension_keys[1] = //" < "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp" > "%DEPS%\qtscript_QWebPluginFactory.cpp"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   del "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   REM move "%DEPS%\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
+   copy /Y "%TOOLS%\utils-windows\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
    cecho {0D}Running qmake for qtbindings plugins.{# #}{\n}
    qmake
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
-   nmake /nologo
+   nmake debug /nologo
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   nmake release /nologo
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
@@ -257,6 +283,8 @@ cecho {0D}Deploying Ogre DLLs to Tundra bin\ directory.{# #}{\n}
 copy /Y "%DEPS%\ogre-safe-nocrashes\bin\debug\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0C}NOTE: Skipping PythonQt build for now!{# #}{\n}
