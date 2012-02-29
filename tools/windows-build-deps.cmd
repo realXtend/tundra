@@ -5,6 +5,7 @@ cd ..
 set PATH=%PATH%;"%CD%\tools\utils-windows"
 set TOOLS=%CD%\tools
 set TUNDRA_DIR="%CD%"
+set TUNDRA_BIN=%CD%\bin
 set DEPS=%CD%\deps
 cd %TOOLS%
 
@@ -59,13 +60,21 @@ IF NOT EXIST "%DEPS%\Qt\lib\QtCore4.dll". (
    cecho {0D}Configuring Qt build. Please answer 'y'!.{# #}{\n}
    configure -debug-and-release -opensource -shared -ltcg -no-qt3support -no-opengl -no-openvg -platform win32-msvc2008 -no-dbus -nomake examples -nomake demos
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cecho {0D}Building qt. Please be patient, this will take a while.{# #}{\n}
+   cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
    nmake /nologo
    :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
    set ERRORLEVEL=0
    del /s /q mocinclude.tmp
    nmake /nologo
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+   cecho {0D}Deploying qt DLLs to Tundra bin\.{# #}{\n}
+   copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   mkdir "%TUNDRA_BIN%\qtplugins"
+   xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
 ) ELSE (
    cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
@@ -244,6 +253,12 @@ msbuild INSTALL.vcproj /p:configuration=Debug /clp:ErrorsOnly /nologo
 msbuild INSTALL.vcproj /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
+cecho {0D}Deploying Ogre DLLs to Tundra bin\ directory.{# #}{\n}
+copy /Y "%DEPS%\ogre-safe-nocrashes\bin\debug\*.dll" "%TUNDRA_BIN%"
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+copy /Y "%DEPS%\ogre-safe-nocrashes\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
 cecho {0C}NOTE: Skipping PythonQt build for now!{# #}{\n}
 REM IF NOT EXIST "%DEPS%\realxtend-tundra-deps\PythonQt\lib\PythonQt.lib". (
 REM    cd "%DEPS%\realxtend-tundra-deps\PythonQt"
@@ -273,10 +288,20 @@ msbuild SKYX.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
 msbuild SKYX.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
+cecho {0D}Deploying SkyX DLLs to Tundra bin\.{# #}{\n}
+copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\debug\*.dll" "%TUNDRA_BIN%"
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
 cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
 cd "%DEPS%\realxtend-tundra-deps\hydrax\msvc9"
 msbuild Hydrax.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
 msbuild Hydrax.sln /p:configuration=Release /clp:ErrorsOnly /nologo
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+cecho {0D}Deploying Hydrax DLLs to Tundra bin\.{# #}{\n}
+copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\lib\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 IF NOT EXIST "%DEPS%\qt-solutions". (
@@ -342,7 +367,7 @@ IF NOT EXIST "%DEPS%\speex". (
    cecho {0D}Speex already built. Skipping.{# #}{\n}
 )
 
-cecho {0A}All done.{# #}{\n}
+cecho {0A}Tundra dependencies built.{# #}{\n}
 cd %TOOLS%
 GOTO :EOF
 
