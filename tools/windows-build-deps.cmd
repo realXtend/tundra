@@ -17,7 +17,9 @@ echo 2. Install Hg and set hg.exe to PATH.
 echo  - http://tortoisehg.bitbucket.org/
 echo 3. Install git and set git.exe to PATH.
 echo  - http://tortoisehg.bitbucket.org/
-echo 4. Execute this file from Visual Studio 2008/2010 Command Prompt.
+echo 4. Install DirectX SDK June 2010.
+echo  - http://www.microsoft.com/download/en/details.aspx?id=6812
+echo 5. Execute this file from Visual Studio 2008/2010 Command Prompt.
 echo.
 
 cecho {0D}Assuming Tundra git trunk is found at %TUNDRA_DIR%.{# #}{\n}
