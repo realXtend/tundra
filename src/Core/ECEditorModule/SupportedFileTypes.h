@@ -8,10 +8,11 @@
 #pragma once
 
 // Supported file extensions.
-const QString cTundraXmlFileExtension(".txml");     ///< Tundra XML file extension.
-const QString cTundraBinFileExtension(".tbin");     ///< Tundra binary file extension.
-const QString cOgreMeshFileExtension(".mesh");      ///< OGRE mesh file extension.
-const QString cOgreSceneFileExtension(".scene");    ///< Tundra binary file extension.
+const QString cTundraXmlFileExtension(".txml");      ///< Tundra XML file extension.
+const QString cTundraBinFileExtension(".tbin");      ///< Tundra binary file extension.
+const QString cOgreMeshFileExtension(".mesh");       ///< OGRE mesh file extension.
+const QString cOgreSceneFileExtension(".scene");     ///< Tundra binary file extension.
+const QString cTundraAvatarFileExtension(".avatar"); ///< Tundra avatar file extension.
 
 // File filter definitions for supported files.
 const QString cOgreSceneFileFilter(QApplication::translate("SupportedFileTypes", "OGRE scene (*.scene)")); ///< OGRE .scene
@@ -26,6 +27,7 @@ const QString cMeshFileFilter(QApplication::translate("SceneTreeWidget", "Mesh (
 
 const QString cTundraXmlFileFilter(QApplication::translate("SupportedFileTypes", "Tundra scene XML (*.txml)")); ///< Tundra XML file filter.
 const QString cTundraBinaryFileFilter(QApplication::translate("SupportedFileTypes", "Tundra Binary Format (*.tbin)")); ///< Tundra binary file filter.
+const QString cAvatarFileFilter(QApplication::translate("SupportedFileTypes", "Tundra avatar description file (*.avatar)")); ///< Tundra avatar file filter.
 
 #ifdef ASSIMP_ENABLED
 /// All supported file formats if Open Asset Import (http://assimp.sourceforge.net/) is used.

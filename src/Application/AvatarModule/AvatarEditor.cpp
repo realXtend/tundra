@@ -10,6 +10,7 @@
 #include "SceneAPI.h"
 #include "Scene.h"
 #include "QtUtils.h"
+#include "../../Core/ECEditorModule/SupportedFileTypes.h"
 
 #include "Entity.h"
 
@@ -433,24 +434,33 @@ void AvatarEditor::changeEvent(QEvent* e)
 
 void AvatarEditor::LoadAvatar()
 {
-    ///\todo Remove or re-implement this function?
-    LogError("AvatarEditor::LoadAvatar deprecated and not implemented.");
-    /*
-    const std::string filter = "Avatar description file (*.xml);;Avatar mesh (*.mesh)";
-    std::string filename = GetOpenFileName(filter, "Choose avatar file");
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = QtUtils::OpenFileDialogNonModal(cAvatarFileFilter, tr("Choose avatar file"), "", 0, this, SLOT(OpenFileDialogClosed(int)), false);
+}
 
-    if (!filename.empty())
-    {
-        AvatarHandlerPtr avatar_handler = avatar_module_->GetAvatarHandler();
-        EntityPtr entity = GetAvatarEntity();
-        if (!entity)
-        {
-            AvatarModule::LogError("User avatar not in scene, cannot load appearance");
-            return;
-        }
-        avatar_handler->GetAppearanceHandler().LoadAppearance(entity, filename);
-    }
-    */
+void AvatarEditor::OpenFileDialogClosed(int result)
+{
+    QFileDialog * dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    if (dialog->selectedFiles().isEmpty())
+        return;
+
+    Entity* entity;
+    EC_Avatar* avatar;
+    AvatarDescAsset* desc;
+    if (!GetAvatarDesc(entity, avatar, desc))
+        return;
+
+    // Since the dialog is set to not allow multiple file selection, assume
+    // that there is only one file selected.
+    desc->LoadFromFile(dialog->selectedFiles().first());
 }
 
 void AvatarEditor::RevertAvatar()
@@ -567,23 +577,7 @@ QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::str
     tabs->addTab(tab_scroll, name_with_space);
     return tab_panel;
 }
-/*
-std::string AvatarEditor::GetOpenFileName(const std::string& filter, const std::string& prompt)
-{
-    std::string filename = QtUtils::GetOpenFileName(filter, prompt, last_directory_);
-    if (!filename.empty())
-        last_directory_ = QFileInfo(filename.c_str()).dir().path().toStdString();
-    return filename; 
-}
 
-std::string AvatarEditor::GetSaveFileName(const std::string& filter, const std::string& prompt)
-{
-    std::string filename = QtUtils::GetSaveFileName(filter, prompt, last_directory_);
-    if (!filename.empty())
-        last_directory_ = QFileInfo(filename.c_str()).dir().path().toStdString();
-    return filename; 
-}
-*/
 bool AvatarEditor::GetAvatarDesc(Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc)
 {
     entity = avatarEntity_.lock().get();
