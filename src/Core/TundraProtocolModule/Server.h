@@ -73,10 +73,6 @@ public slots:
     /// Returns all authenticated users.
     UserConnectionList AuthenticatedUsers() const;
 
-    /// Get connected users' connection ID's
-    /** @todo This script-hack function is same as GetAuthenticatedUsers, remove this and expose UserConnectionList to QtScript. */
-    QVariantList GetConnectionIDs() const;
-
     /// Get userconnection structure corresponding to connection ID
     /** @todo Rename to UserConnection or UserConnectionById. */
     UserConnection* GetUserConnection(int connectionID) const;
@@ -86,22 +82,26 @@ public slots:
         @todo Rename to ActionSender. */
     UserConnection* GetActionSender() const;
 
-    int GetPort() const; ///< @deprecated This function will be removed in the future, use Port instead.
-    QString GetProtocol() const; ///< @deprecated This function will be removed in the future, use Protocol instead.
+    QVariantList GetConnectionIDs() const; ///< @deprecated Use AuthenticatedUsers.
+    int GetPort() const; ///< @deprecated Use Port or 'port' property.
+    QString GetProtocol() const; ///< @deprecated Use Protocol or 'protocol' property.
 
 signals:
     /// A user is connecting. This is your chance to deny access.
-    /** Call user->Disconnect() to deny access and kick the user out */ 
+    /** Call user->Disconnect() to deny access and kick the user out.
+        @todo the connectionID parameter is unnecessary as it can be retrieved from connection. */
     void UserAboutToConnect(int connectionID, UserConnection* connection);
 
     /// A user has connected (and authenticated)
-    /** @param responseData The handler of this signal can add his own application-specific data to this structure. This data is sent to the
-        client and the applications on the client computer can read them as needed. */
+    /** @param responseData The handler of this signal can add his own application-specific data to this structure.
+        This data is sent to the client and the applications on the client computer can read them as needed.
+        @todo the connectionID parameter is unnecessary as it can be retrieved from connection. */
     void UserConnected(int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
 
     void MessageReceived(UserConnection *connection, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
     /// A user has disconnected
+    /** @todo the connectionID parameter is unnecessary as it can be retrieved from connection. */
     void UserDisconnected(int connectionID, UserConnection* connection);
 
     /// The server has been started

@@ -42,7 +42,7 @@ Client::~Client()
 {
 }
 
-void Client::Update(f64 frametime)
+void Client::Update(f64 /*frametime*/)
 {
     // If we aren't a server, check pending login
     if (!owner_->IsServer())
@@ -189,7 +189,7 @@ void Client::DoLogout(bool fail)
     
     if (fail)
     {
-        QString failreason = GetLoginProperty("LoginFailed");
+        QString failreason = LoginProperty("LoginFailed");
         emit LoginFailed(failreason);
     }
     else // An user deliberately disconnected from the world, and not due to a connection error.
@@ -222,10 +222,10 @@ void Client::SetLoginProperty(QString key, QString value)
     properties[key] = value;
 }
 
-QString Client::GetLoginProperty(QString key) const
+QString Client::LoginProperty(QString key) const
 {
     key = key.trimmed();
-    std::map<QString, QString>::const_iterator i = properties.find(key);
+    LoginPropertyMap::const_iterator i = properties.find(key);
     if (i != properties.end())
         return i->second;
     else
@@ -236,7 +236,7 @@ QString Client::LoginPropertiesAsXml() const
 {
     QDomDocument xml;
     QDomElement rootElem = xml.createElement("login");
-    for(std::map<QString, QString>::const_iterator iter = properties.begin(); iter != properties.end(); ++iter)
+    for(LoginPropertyMap::const_iterator iter = properties.begin(); iter != properties.end(); ++iter)
     {
         QDomElement elem = xml.createElement(iter->first);
         elem.setAttribute("value", iter->second);
@@ -278,9 +278,9 @@ kNet::MessageConnection* Client::GetConnection()
 void Client::OnConnectionAttemptFailed()
 {
     // Provide a reason why the connection failed.
-    QString address = GetLoginProperty("address");
-    QString port = GetLoginProperty("port");
-    QString protocol = GetLoginProperty("protocol");
+    QString address = LoginProperty("address");
+    QString port = LoginProperty("port");
+    QString protocol = LoginProperty("protocol");
 
     QString failReason = "Could not connect to host";
     if (!address.isEmpty())
