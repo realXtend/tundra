@@ -49,17 +49,15 @@ public:
 
     /// Returns the backend server object.
     /** Use this object to Broadcast messages to all currently connected clients.
-        @todo Rename to (KNet)Server or similar. */
+        @todo Rename to (KNet)NetworkServer or similar. */
     kNet::NetworkServer *GetServer() const;
 
     /// Returns server's port.
-    /** @return Server port number, or -1 if server is not running.
-        @todo Rename to Port */
+    /** @return Server port number, or -1 if server is not running. */
     int Port() const;
 
     /** Returns server's protocol.
-        @return 'udp', tcp', or an empty string if server is not running.
-        @todo Rename to Protocol */
+        @return 'udp', tcp', or an empty string if server is not running. */
     QString Protocol() const;
 
 signals:
