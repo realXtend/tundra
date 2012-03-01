@@ -21,17 +21,12 @@ if (!server.IsRunning()) {
     server.UserDisconnected.connect(ServerHandleUserDisconnected);
     
     // If there are connected users when this script was added, add av for all of them
-    var userIdList = server.GetConnectionIDs();
-    if (userIdList.length > 0)
+    var users = server.AuthenticatedUsers();
+    if (users.length > 0)
         print("[Avatar Application] Application started. Creating avatars for logged in clients.");
 
-    for (var i=0; i < userIdList.length; i++)
-    {
-        var userId = userIdList[i];
-        var userConnection = server.GetUserConnection(userId);
-        if (userConnection != null)
-            ServerHandleUserConnected(userId, userConnection);
-    }
+    for(var i=0; i < users.length; i++)
+        ServerHandleUserConnected(users[i].id, users[i]);
 }
 
 function ClientHandleToggleCamera() {

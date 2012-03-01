@@ -56,15 +56,10 @@ ServerControl.prototype.PrivateClientMessage = function(sender, receiver, msg)
     if (msg.length > 0)
     {
         var userIDs = new Array();
-        userIDs = server.GetConnectionIDs();
-        for(var i = 0; i < userIDs.length; i++)
-        {
-            if(server.GetUserConnection(userIDs[i]).GetProperty("username") == receiver)
-            {
-                server.GetUserConnection(userIDs[i]).Exec(scene.GetEntityByName("ChatApplication"), "ServerSendPrivateMessage", sender + ": " + msg);
-            }    
-            
-        }
+        users = server.AuthenticatedUsers();
+        for(var i = 0; i < users.length; i++)
+            if (users[i].GetProperty("username") == receiver)
+                users[i].Exec(scene.GetEntityByName("ChatApplication"), "ServerSendPrivateMessage", sender + ": " + msg);
     }
 }
 
@@ -110,19 +105,15 @@ function ClientControl(userName)
             print("Error: Avatar not found");
             return;
         }
-
-
     }
-    
 }
+
 ClientControl.prototype.HideText = function() {
     
     if (this.hoveringText != null) {
         this.hoveringText.text = " ";
     }
 }
-
-
 
 ClientControl.prototype.SendMessage = function() {
     // Try to be flexible: If we specified a username field in the login
@@ -139,7 +130,6 @@ ClientControl.prototype.SendMessage = function() {
         this.hoveringText.text = msg;
     frame.DelayedExecute(this.showTextTime).Triggered.connect(this, this.HideText);
 }
-
 
 ClientControl.prototype.ReceiveServerMessage = function(msg)
 {
@@ -313,10 +303,6 @@ ClientControl.prototype.OpenPrivateChatWidget = function(userStr)
     }
 }
 
-
-
-
-
 var chatControl;
 var users;
 
@@ -326,7 +312,7 @@ if (server.IsRunning())
     chatControl = new ServerControl();
 }
 else
-{    
+{
     print("Starting Chat Client");
     
     // Ui only for client
@@ -389,8 +375,6 @@ else
         chatControl.ToggleLog();
     }
     me.Exec(4, "NewUserConnected", client.GetLoginProperty("username"));
-    
-    
 }
 
 function CreateUser()
@@ -400,8 +384,3 @@ function CreateUser()
     proxy.visible = true;
     chatControl = new ClientControl(userName);
 }
-
-
-
-
-
