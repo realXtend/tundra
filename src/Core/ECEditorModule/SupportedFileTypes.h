@@ -24,7 +24,7 @@ const QString cMeshFileFilter(QApplication::translate("SceneTreeWidget", "Mesh (
     "*.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)"));
 #endif
 
-const QString cTundraXmlFileFilter(QApplication::translate("SupportedFileTypes", "Tundra scene XML(*.txml)")); ///< Tundra XML file filter.
+const QString cTundraXmlFileFilter(QApplication::translate("SupportedFileTypes", "Tundra scene XML (*.txml)")); ///< Tundra XML file filter.
 const QString cTundraBinaryFileFilter(QApplication::translate("SupportedFileTypes", "Tundra Binary Format (*.tbin)")); ///< Tundra binary file filter.
 
 #ifdef ASSIMP_ENABLED
