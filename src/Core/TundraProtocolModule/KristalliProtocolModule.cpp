@@ -19,6 +19,10 @@
 #include <algorithm>
 #include <utility>
 
+#include <boost/make_shared.hpp>
+
+#include "MemoryLeakCheck.h"
+
 using namespace kNet;
 
 namespace
@@ -301,7 +305,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     source->RegisterInboundMessageHandler(this);
     
-    UserConnectionPtr connection(new UserConnection());
+    UserConnectionPtr connection = boost::make_shared<UserConnection>();
     connection->userID = AllocateNewConnectionID();
     connection->connection = source;
     connections.push_back(connection);
