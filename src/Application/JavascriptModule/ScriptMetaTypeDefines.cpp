@@ -73,6 +73,7 @@ Q_DECLARE_METATYPE(IAssetStorage::TrustState);
 Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_DECLARE_METATYPE(UiMainWindow*);
 Q_DECLARE_METATYPE(UiGraphicsView*);
+Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 // Scene API defines.
 Q_DECLARE_METATYPE(SceneAPI*);
