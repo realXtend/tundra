@@ -33,16 +33,11 @@ public:
     void Update(f64 frametime);
 
     /// Get matching userconnection from a messageconnection, or null if unknown
-    /// @todo Rename to UserConnectionForMessageConnection or similar.
+    /// @todo Rename to UserConnection(ForMessageConnection) or similar.
     UserConnection* GetUserConnection(kNet::MessageConnection* source) const;
 
     /// Get all connected users
-    /// @todo Rename to UserConnections
-    UserConnectionList& GetUserConnections() const;
-
-    /// Get all authenticated users
-    /// @todo Rename to AuthenticatedUsers
-    UserConnectionList GetAuthenticatedUsers() const;
+    UserConnectionList& UserConnections() const;
 
     /// Set current action sender. Called by SyncManager
     void SetActionSender(UserConnection* user);
@@ -59,6 +54,40 @@ public:
     /** Returns server's protocol.
         @return 'udp', tcp', or an empty string if server is not running. */
     QString Protocol() const;
+
+public slots:
+    /// Create server scene & start server
+    /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
+        @return True if successful, false otherwise. No scene will be created if starting the server fails. */
+    bool Start(unsigned short port, QString protocol = "");
+
+    /// Stop server & delete server scene
+    void Stop();
+
+    /// Get whether server is running
+    bool IsRunning() const;
+
+    /// Get whether server is about to start.
+    bool IsAboutToStart() const;
+
+    /// Returns all authenticated users.
+    UserConnectionList AuthenticatedUsers() const;
+
+    /// Get connected users' connection ID's
+    /** @todo This script-hack function is same as GetAuthenticatedUsers, remove this and expose UserConnectionList to QtScript. */
+    QVariantList GetConnectionIDs() const;
+
+    /// Get userconnection structure corresponding to connection ID
+    /** @todo Rename to UserConnection or UserConnectionById. */
+    UserConnection* GetUserConnection(int connectionID) const;
+
+    /// Get current sender of an action.
+    /** Valid (non-null) only while an action packet is being handled. Null if it was invoked by server
+        @todo Rename to ActionSender. */
+    UserConnection* GetActionSender() const;
+
+    int GetPort() const; ///< @deprecated This function will be removed in the future, use Port instead.
+    QString GetProtocol() const; ///< @deprecated This function will be removed in the future, use Protocol instead.
 
 signals:
     /// A user is connecting. This is your chance to deny access.
@@ -81,49 +110,15 @@ signals:
     /// The server has been stopped
     void ServerStopped();
 
-public slots:
-    /// Create server scene & start server
-    /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
-        @return True if successful, false otherwise. No scene will be created if starting the server fails. */
-    bool Start(unsigned short port, QString protocol = "");
-
-    /// Stop server & delete server scene
-    void Stop();
-
-    /// Get whether server is running
-    bool IsRunning() const;
-
-    /// Get whether server is about to start.
-    bool IsAboutToStart() const;
-
-    /// @todo Add deprecation warning print, and instructions to use 'port' property, and and remove this function.
-    int GetPort() const { return Port(); }
-
-    /// @todo Add deprecation warning print, and instructions to use 'protocol' property, and and remove this function.
-    QString GetProtocol() { return Protocol(); }
-
-    /// Get connected users' connection ID's
-    /** @todo This script-hack function is same as GetAuthenticatedUsers, remove this and expose UserConnectionList to QtScript. */
-    QVariantList GetConnectionIDs() const;
-
-    /// Get userconnection structure corresponding to connection ID
-    /** @todo Rename to UserConnectionById. */
-    UserConnection* GetUserConnection(int connectionID) const;
-
-    /// Get current sender of an action.
-    /** Valid (non-null) only while an action packet is being handled. Null if it was invoked by server
-        @todo Rename to ActionSender. */
-    UserConnection* GetActionSender() const;
-
-    /// Initialize server datatypes for a script engine
-    void OnScriptEngineCreated(QScriptEngine* engine);
-
 private slots:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
     /// Handle a user disconnecting
     void HandleUserDisconnected(UserConnection* user);
+
+    /// Initialize server datatypes for a script engine
+    void OnScriptEngineCreated(QScriptEngine* engine);
 
 private:
     /// Handle a login message

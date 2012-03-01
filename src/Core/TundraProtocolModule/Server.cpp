@@ -26,6 +26,8 @@
 #include "MemoryLeakCheck.h"
 
 Q_DECLARE_METATYPE(UserConnection*);
+Q_DECLARE_METATYPE(UserConnectionPtr);
+Q_DECLARE_METATYPE(UserConnectionList);
 Q_DECLARE_METATYPE(TundraLogic::SyncManager*);
 Q_DECLARE_METATYPE(SceneSyncState*);
 Q_DECLARE_METATYPE(StateChangeRequest*);
@@ -150,44 +152,45 @@ QString Server::Protocol() const
     return IsRunning() ? current_protocol_ : "";
 }
 
-UserConnectionList Server::GetAuthenticatedUsers() const
+int Server::GetPort() const
+{
+    LogWarning("Server::GetPort: This function signature is deprecated will be removed. Migrate to using Port or 'port' property instead.");
+    return Port();
+}
+
+QString Server::GetProtocol() const
+{
+    LogWarning("Server::GetProtocol: This function signature is deprecated will be removed. Migrate to using Protocol or 'protocol' property instead.");
+    return Protocol();
+}
+
+UserConnectionList Server::AuthenticatedUsers() const
 {
     UserConnectionList ret;
-    
-    UserConnectionList& all = owner_->GetKristalliModule()->GetUserConnections();
-    for(UserConnectionList::const_iterator iter = all.begin(); iter != all.end(); ++iter)
-    {
-        if ((*iter)->properties["authenticated"] == "true")
-            ret.push_back(*iter);
-    }
-    
+    foreach(const UserConnectionPtr &user, UserConnections())
+        if (user->properties["authenticated"] == "true")
+            ret.push_back(user);
     return ret;
 }
 
 QVariantList Server::GetConnectionIDs() const
 {
+    LogWarning("Server::GetConnectionIDs: This function signature is deprecated will be removed. Migrate to using AuthenticatedUsers instead.");
     QVariantList ret;
-    
-    UserConnectionList users = GetAuthenticatedUsers();
-    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
-        ret.push_back(QVariant((*iter)->userID));
-    
+    foreach(const UserConnectionPtr &user, AuthenticatedUsers())
+        ret.push_back(QVariant(user->userID));
     return ret;
 }
 
 UserConnection* Server::GetUserConnection(int connectionID) const
 {
-    UserConnectionList users = GetAuthenticatedUsers();
-    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
-    {
-        if ((*iter)->userID == connectionID)
-            return ((*iter).get());
-    }
-    
+    foreach(const UserConnectionPtr &user, AuthenticatedUsers())
+        if (user->userID == connectionID)
+            return user.get();
     return 0;
 }
 
-UserConnectionList& Server::GetUserConnections() const
+UserConnectionList& Server::UserConnections() const
 {
     return owner_->GetKristalliModule()->GetUserConnections();
 }
@@ -236,7 +239,7 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
         UserConnection* user = GetUserConnection(source);
         if (!user || user->properties["authenticated"] != "true")
         {
-            ::LogWarning("Server: dropping message " + QString::number(messageId) + " from unauthenticated user");
+            ::LogWarning("Server: dropping message " + QString::number(messageId) + " from unauthenticated user.");
             /// \todo something more severe, like disconnecting the user
             return;
         }
@@ -263,7 +266,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     QString loginData = QString::fromStdString(BufferToString(msg.loginData));
     bool success = xml.setContent(loginData);
     if (!success)
-        ::LogWarning("Server::HandleLogin: Received malformed XML login data from user " + QString::number(user->userID));
+        ::LogWarning("Server::HandleLogin: Received malformed XML login data from user " + QString::number(user->userID) + ".");
     
     // Fill the user's logindata, both in raw format and as keyvalue pairs
     user->loginData = loginData;
@@ -280,7 +283,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     emit UserAboutToConnect(user->userID, user);
     if (user->properties["authenticated"] != "true")
     {
-        ::LogInfo("User with connection ID " + QString::number(user->userID) + " was denied access");
+        ::LogInfo("User with connection ID " + QString::number(user->userID) + " was denied access.");
         MsgLoginReply reply;
         reply.success = 0;
         reply.userID = 0;
@@ -290,7 +293,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         return;
     }
     
-    ::LogInfo("User with connection ID " + QString::number(user->userID) + " logged in");
+    ::LogInfo("User with connection ID " + QString::number(user->userID) + " logged in.");
     
     // Allow entityactions & EC sync from now on
     MsgLoginReply reply;
@@ -298,22 +301,20 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     reply.userID = user->userID;
     
     // Tell everyone of the client joining (also the user who joined)
-    UserConnectionList users = GetAuthenticatedUsers();
+    UserConnectionList users = AuthenticatedUsers();
     MsgClientJoined joined;
     joined.userID = user->userID;
-    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
-        (*iter)->connection->Send(joined);
+    foreach(const UserConnectionPtr &u, users)
+        u->connection->Send(joined);
     
     // Advertise the users who already are in the world, to the new user
-    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
-    {
-        if ((*iter)->userID != user->userID)
+    foreach(const UserConnectionPtr &u, users)
+        if (u->userID != user->userID)
         {
             MsgClientJoined joined;
-            joined.userID = (*iter)->userID;
+            joined.userID = u->userID;
             user->connection->Send(joined);
         }
-    }
     
     // Tell syncmanager of the new user
     owner_->GetSyncManager()->NewUserConnected(user);
@@ -334,15 +335,15 @@ void Server::HandleUserDisconnected(UserConnection* user)
     // Tell everyone of the client leaving
     MsgClientLeft left;
     left.userID = user->userID;
-    UserConnectionList users = GetAuthenticatedUsers();
-    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
-    {
-        if ((*iter)->userID != user->userID)
-            (*iter)->connection->Send(left);
-    }
-    
+    foreach(const UserConnectionPtr &u, AuthenticatedUsers())
+        if (u->userID != user->userID)
+            u->connection->Send(left);
+
     emit UserDisconnected(user->userID, user);
 }
+
+namespace
+{
 
 template<typename T>
 QScriptValue qScriptValueFromNull(QScriptEngine *engine, const T &v)
@@ -355,6 +356,33 @@ void qScriptValueToNull(const QScriptValue &value, T &v)
 {
 }
 
+void fromScriptValueUserConnectionList(const QScriptValue &obj, UserConnectionList &ents)
+{
+    ents.clear();
+    QScriptValueIterator it(obj);
+    while(it.hasNext())
+    {
+        it.next();
+        UserConnection *u = qobject_cast<UserConnection *>(it.value().toQObject());
+        if (u)
+            ents.push_back(u->shared_from_this());
+    }
+}
+
+QScriptValue toScriptValueUserConnectionList(QScriptEngine *engine, const UserConnectionList &cons)
+{
+    QScriptValue scriptValue = engine->newArray();
+    int i = 0;
+    for(UserConnectionList::const_iterator iter = cons.begin(); iter != cons.end(); ++iter)
+    {
+        scriptValue.setProperty(i, engine->newQObject((*iter).get()));
+        ++i;
+    }
+    return scriptValue;
+}
+
+} // ~unnamed namespace
+
 void Server::OnScriptEngineCreated(QScriptEngine* engine)
 {
     qScriptRegisterQObjectMetaType<UserConnection*>(engine);
@@ -363,6 +391,8 @@ void Server::OnScriptEngineCreated(QScriptEngine* engine)
     qScriptRegisterQObjectMetaType<StateChangeRequest*>(engine);
     ///\todo Write proper serialization and deserialization.
     qScriptRegisterMetaType<UserConnectedResponseData*>(engine, qScriptValueFromNull<UserConnectedResponseData*>, qScriptValueToNull<UserConnectedResponseData*>);
+    qScriptRegisterMetaType<UserConnectionPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+    qScriptRegisterMetaType<UserConnectionList>(engine, toScriptValueUserConnectionList, fromScriptValueUserConnectionList);
 }
 
 }
