@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreTypes.h"
+#include "Math/float2.h"
 #include "Math/float3.h"
 
 #include <QObject>
@@ -54,6 +55,30 @@ public:
     float u;
     /// V coord in entity. 0 if no texture mapping
     float v;
+};
+
+///\todo This structure replaces and obsoletes the above. Delete the above one.
+struct RayQueryResult
+{
+    /// Entity that was hit, null if none
+    Entity* entity;
+    /// Component which was hit.
+    IComponent *component;
+    /// World coordinates of hit position
+    float3 pos;
+    /// World face normal of hit
+    float3 normal;
+    /// Submesh index in entity, starting from 0
+    unsigned submeshIndex;
+    /// Triangle index in submesh
+    unsigned triangleIndex;
+    /// The UV coordinates of the first texture channel in the mesh. (0,0) if no texture mapping.
+    float2 uv;
+    /// Barycentric coordinates along the triangle.
+    float2 barycentricUV;
+    // With barycentric coordinates (0,0) corresponds to triangle's v0, (1,0) to v1, and (0,1) to v2. barycentricU + barycentricV <= 1.
+    /// Distance along the ray to the point of intersection. If this is FLOAT_INF, then no intersection has occurred.
+    float t;
 };
 
 /// Describes the system renderer.

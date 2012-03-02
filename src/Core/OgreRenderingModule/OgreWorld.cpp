@@ -14,6 +14,7 @@
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "OgreBulletCollisionsDebugLines.h"
 
+#include "OgreMeshAsset.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "Profiler.h"
@@ -164,8 +165,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
     result_.entity = 0;
     result_.component = 0;
     
-    const Ogre::Ray& ogreRay = rayQuery_->getRay();
-    Ray ray(ogreRay.getOrigin(), ogreRay.getDirection());
+    Ray ray = rayQuery_->getRay();
     
     Ogre::RaySceneQueryResult &results = rayQuery_->execute();
     float closestDistance = -1.0f;
@@ -211,27 +211,42 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
         Ogre::Entity* meshEntity = dynamic_cast<Ogre::Entity*>(entry.movable);
         if (meshEntity)
         {
-            float meshClosestDistance;
-            unsigned subMeshIndex;
-            unsigned triangleIndex;
-            float3 hitPoint;
-            float3 normal;
-            float2 uv;
-            
-            if (EC_Mesh::Raycast(meshEntity, ray, &meshClosestDistance, &subMeshIndex, &triangleIndex, &hitPoint, &normal, &uv))
+            RayQueryResult r;
+            bool hit;
+
+            if (meshEntity->hasSkeleton())
+                hit = EC_Mesh::Raycast(meshEntity, ray, &r.t, &r.submeshIndex, &r.triangleIndex, &r.pos, &r.normal, &r.uv);
+            else
             {
-                if (closestDistance < 0.0f || meshClosestDistance < closestDistance)
-                {
-                    closestDistance = meshClosestDistance;
-                    result_.entity = entity;
-                    result_.component = component;
-                    result_.pos = hitPoint;
-                    result_.normal = normal;
-                    result_.submesh = subMeshIndex;
-                    result_.index = triangleIndex;
-                    result_.u = uv.x;
-                    result_.v = uv.y;
-                }
+                EC_Mesh *mesh = entity->GetComponent<EC_Mesh>().get();
+                assert(mesh);
+                boost::shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh->MeshAsset();
+                if (!ogreMeshAsset)
+                    continue;
+                float3x4 worldToLocal = placeable->WorldToLocal();
+                Ray localRay = worldToLocal * ray;
+                float oldLength = localRay.dir.Normalize();
+                if (oldLength == 0)
+                    continue;
+                r = ogreMeshAsset->Raycast(localRay);
+                hit = r.t < std::numeric_limits<float>::infinity();
+                float3x4 localToWorld = placeable->LocalToWorld();
+                r.pos = localToWorld.MulPos(r.pos);
+                r.normal = localToWorld.MulDir(r.normal);
+                r.t = r.pos.Distance(ray.pos); ///\todo Can optimize out a sqrt.
+            }
+
+            if (hit && (closestDistance < 0.0f || r.t < closestDistance))
+            {
+                closestDistance = r.t;
+                result_.entity = entity;
+                result_.component = component;
+                result_.pos = r.pos;
+                result_.normal = r.normal;
+                result_.submesh = r.submeshIndex;
+                result_.index = r.triangleIndex;
+                result_.u = r.uv.x;
+                result_.v = r.uv.y;
             }
         }
         else
@@ -306,8 +321,8 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                     closestDistance = entry.distance;
                     result_.entity = entity;
                     result_.component = component;
-                    result_.pos = ogreRay.getPoint(closestDistance);
-                    result_.normal = -ogreRay.getDirection();
+                    result_.pos = ray.GetPoint(closestDistance);
+                    result_.normal = -ray.dir;
                     result_.submesh = 0;
                     result_.index = 0;
                     result_.u = 0.0f;

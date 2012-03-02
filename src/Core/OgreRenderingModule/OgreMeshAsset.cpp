@@ -1,12 +1,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
+#include "Win.h"
 #include "DebugOperatorNew.h"
 #include "OgreMeshAsset.h"
 #include "OgreRenderingModule.h"
 #include "AssetAPI.h"
 #include "AssetCache.h"
 #include "Profiler.h"
+#include "Geometry/Ray.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -92,6 +94,173 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
     else 
     {
         return false;
+    }
+}
+
+struct KdTreeRayQueryFirstHitVisitor
+{
+    RayQueryResult result;
+
+    KdTreeRayQueryFirstHitVisitor()
+    {
+        result.entity = 0;
+        result.component = 0;
+        result.t = std::numeric_limits<float>::infinity();
+        result.triangleIndex = KdTree<Triangle>::BUCKET_SENTINEL;
+        result.submeshIndex = (u32)-1;
+    }
+    bool operator()(KdTree<Triangle> &tree, const KdTreeNode &leaf, const Ray &ray, float tNear, float tFar)
+    {
+        u32 *bucket = tree.Bucket(leaf.bucketIndex);
+        assert(bucket);
+        while(*bucket != KdTree<Triangle>::BUCKET_SENTINEL)
+        {
+            const Triangle &tri = tree.Object(*bucket);
+            float u, v, t;
+            bool intersects = Triangle::IntersectLineTri(ray.pos, ray.dir, tri.a, tri.b, tri.c, u, v, t);
+            if (intersects && t >= tNear && t <= tFar && t < result.t)
+            {
+                result.t = t;
+                result.pos = ray.GetPoint(t);
+                result.triangleIndex = *bucket;
+                result.submeshIndex = (u32)-1;
+                result.barycentricUV = float2(u,v);
+            }
+            ++bucket;
+        }
+        return result.t < std::numeric_limits<float>::infinity(); // If we hit a triangle, no need to visit any farther nodes, since we are only interested in the nearest hit.
+    }
+};
+
+RayQueryResult OgreMeshAsset::Raycast(const Ray &ray)
+{
+    if (meshData.NumObjects() == 0)
+        CreateKdTree();
+    KdTreeRayQueryFirstHitVisitor visitor;
+    meshData.RayQuery(ray, visitor);
+    if (visitor.result.triangleIndex != KdTree<Triangle>::BUCKET_SENTINEL)
+    {
+        visitor.result.normal = normals[visitor.result.triangleIndex];
+        float2 uv = (uvs.size() > visitor.result.triangleIndex*3+2) ?
+                       (1.f - visitor.result.barycentricUV.x - visitor.result.barycentricUV.y) * uvs[visitor.result.triangleIndex*3]
+                       + visitor.result.barycentricUV.x * uvs[visitor.result.triangleIndex*3+1]
+                       + visitor.result.barycentricUV.y * uvs[visitor.result.triangleIndex*3+2]
+                    : float2(-1, -1);
+        visitor.result.uv = uv;
+        int triangleIndex = visitor.result.triangleIndex;
+        for(size_t i = 0; i < subMeshTriangleCounts.size(); ++i)
+        {
+            if (triangleIndex < subMeshTriangleCounts[i])
+            {
+                visitor.result.submeshIndex = i;
+                break;
+            }
+            else
+                triangleIndex -= subMeshTriangleCounts[i];
+        }
+    }
+    return visitor.result;
+}
+
+void OgreMeshAsset::CreateKdTree()
+{
+    meshData.Clear();
+    normals.clear();
+    uvs.clear();
+    subMeshTriangleCounts.clear();
+    for(unsigned short i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh *submesh = ogreMesh->getSubMesh(i);
+        assert(submesh);
+        
+        Ogre::VertexData *vertexData = submesh->useSharedVertices ? ogreMesh->sharedVertexData : submesh->vertexData;
+        assert(vertexData);
+        
+        const Ogre::VertexElement *posElem = vertexData->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
+        if (!posElem)
+        {
+            subMeshTriangleCounts.push_back(0);
+            continue; // No position element. Ignore this submesh.
+        }
+        
+        Ogre::HardwareVertexBufferSharedPtr vbufPos = vertexData->vertexBufferBinding->getBuffer(posElem->getSource());
+
+        unsigned char *pos = (unsigned char*)vbufPos->lock(Ogre::HardwareBuffer::HBL_READ_ONLY);
+        assert(pos);
+        unsigned posOffset = posElem->getOffset();
+        unsigned posSize = vbufPos->getVertexSize();
+        
+        // Texcoord element is not mandatory
+        unsigned char *texCoord = 0;
+        unsigned texOffset = 0;
+        unsigned texSize = 0;
+        Ogre::HardwareVertexBufferSharedPtr vbufTex;
+        const Ogre::VertexElement *texElem = vertexData->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
+        if (texElem)
+        {
+            vbufTex = vertexData->vertexBufferBinding->getBuffer(texElem->getSource());
+            // Check if the texcoord buffer is different than the position buffer, in that case lock it separately
+            if (vbufTex != vbufPos)
+                texCoord = static_cast<unsigned char*>(vbufTex->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+            else
+                texCoord = pos;
+            texOffset = texElem->getOffset();
+            texSize = vbufTex->getVertexSize();
+        }
+        
+        Ogre::IndexData *indexData = submesh->indexData;
+        Ogre::HardwareIndexBufferSharedPtr ibuf = indexData->indexBuffer;
+
+        u32 *pLong = (u32*)ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY);
+        u16 *pShort = (u16*)pLong;
+        const bool use32BitIndices = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
+        
+        for(unsigned j = 0; j+2 < indexData->indexCount; j += 3)
+        {
+            unsigned i0, i1, i2;
+            if (use32BitIndices)
+            {
+                i0 = pLong[j];
+                i1 = pLong[j+1];
+                i2 = pLong[j+2];
+            }
+            else
+            {
+                i0 = pShort[j];
+                i1 = pShort[j+1];
+                i2 = pShort[j+2];
+            }
+            
+            float3 v0 = *(float3*)(pos + posOffset + i0 * posSize);
+            float3 v1 = *(float3*)(pos + posOffset + i1 * posSize);
+            float3 v2 = *(float3*)(pos + posOffset + i2 * posSize);
+            Triangle t(v0, v1, v2);
+            meshData.AddObjects(&t, 1);
+
+            if (texElem)
+            {
+                uvs.push_back(*((float2*)(texCoord + texOffset + i0 * texSize)));
+                uvs.push_back(*((float2*)(texCoord + texOffset + i1 * texSize)));
+                uvs.push_back(*((float2*)(texCoord + texOffset + i2 * texSize)));
+            }
+
+            float3 edge1 = v1 - v0;
+            float3 edge2 = v2 - v0;
+            float3 normal = edge1.Cross(edge2);
+            normal.Normalize();
+            normals.push_back(normal);
+        }
+        subMeshTriangleCounts.push_back(indexData->indexCount / 3);
+        
+        vbufPos->unlock();
+        if (!vbufTex.isNull() && vbufTex != vbufPos)
+            vbufTex->unlock();
+        ibuf->unlock();
+    }
+
+    {
+        PROFILE(OgreMeshAsset_KdTree_Build);
+        meshData.Build();
     }
 }
 
