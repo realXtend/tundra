@@ -51,6 +51,7 @@ if (!framework.IsHeadless())
     {
         viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
         viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
+        viewMenu.addAction("Key Bindings").triggered.connect(OpenKeyBindingsWindow);
     }
 
     var ecEditor = framework.GetModuleByName("ECEditor");
@@ -208,6 +209,10 @@ if (!framework.IsHeadless())
 
     function OpenAssetsWindow() {
         framework.GetModuleByName("SceneStructure").ToggleAssetsWindow();
+    }
+
+    function OpenKeyBindingsWindow() {
+        framework.GetModuleByName("SceneStructure").ToggleKeyBindingsWindow();
     }
 
     function OpenProfilerWindow() {
