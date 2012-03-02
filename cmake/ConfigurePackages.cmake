@@ -376,6 +376,8 @@ macro(use_package_theora)
     if (MSVC)
         include_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/include) # For prebuilt VS2008/VS2010 deps.
         link_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/lib) # For prebuilt VS2008/VS2010 deps.
+        
+        include_directories(${ENV_TUNDRA_DEP_PATH}/theora/include) # For full-built deps.        
     elseif (APPLE)
         include_directories(${ENV_TUNDRA_DEP_PATH}/include/theora)
         link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
@@ -384,8 +386,13 @@ endmacro()
 
 macro(link_package_theora)
     if (MSVC)
-        target_link_libraries(${TARGET_NAME} optimized libtheora)
-        target_link_libraries(${TARGET_NAME} debug libtheorad)
+        if (IS_DIRECTORY $ENV{TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32) # Using full-built deps.
+            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32/Release_SSE2/libtheora_static.lib)
+            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32/Debug/libtheora_static.lib)
+        else() # Using pre-built VS2008/VS2010 deps.
+            target_link_libraries(${TARGET_NAME} optimized libtheora)
+            target_link_libraries(${TARGET_NAME} debug libtheorad)
+        endif()
     else()
         target_link_libraries(${TARGET_NAME} general theora)
     endif()
