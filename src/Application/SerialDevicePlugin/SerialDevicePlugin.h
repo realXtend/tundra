@@ -75,6 +75,14 @@ public slots:
         @note Remember to close the device with CloseDevice */
     QextSerialPort *CreateDevice(QString portName, BaudRateType baudRate, DataBitsType dataBits, ParityType parity,
                                StopBitsType stopBits, FlowType flowControl, QextSerialPort::QueryMode mode = QextSerialPort::EventDriven);
+    //Open port
+    bool OpenDevice(QextSerialPort *device);
+
+    //Write To Port
+    void WriteToDevice(QextSerialPort *device, QString command);
+
+    //Read From Port
+    QString ReadFromDevice(QextSerialPort *device);
 
     // Closes a device. Do not use the device after calling this as the ptr will be freed.
     bool CloseDevice(QString portName);
