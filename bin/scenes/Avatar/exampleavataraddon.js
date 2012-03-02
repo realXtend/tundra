@@ -30,7 +30,7 @@ ExampleAvatarAddon.prototype.ServerInitialize = function()
 ExampleAvatarAddon.prototype.ClientInitialize = function()
 {
     // Initialization is only necessary for own avatar. Do nothing with others' avatars
-    if (this.me.name == "Avatar" + client.GetConnectionID()) {
+    if (this.me.name == "Avatar" + client.connectionId) {
         ownAvatar = true;
 
         // Connect keys to the inputmapper actions

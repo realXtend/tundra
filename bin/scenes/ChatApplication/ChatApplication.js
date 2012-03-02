@@ -87,7 +87,7 @@ function ClientControl(userName)
     this.showTextTime = 4;
 
     if (this.hoveringText == null) {
-        var name = "Avatar" + client.GetConnectionID();
+        var name = "Avatar" + client.connectionId;
         var entity = scene.GetEntityByName(name);
         if (entity != null) {
             this.hoveringText = entity.CreateComponent("EC_HoveringText");
@@ -119,12 +119,12 @@ ClientControl.prototype.SendMessage = function() {
     // Try to be flexible: If we specified a username field in the login
     // properties when connecting, use that field as the username. Otherwise,
     // we show the login screen and ask the username from there.
-    var name = client.GetLoginProperty("username");
+    var name = client.LoginProperty("username");
     if (name.length == 0)
         name = this.name;
 
     var msg = lineEdit.text;
-    me.Exec(2, "ClientSendMessage", client.GetLoginProperty("username"), msg);
+    me.Exec(2, "ClientSendMessage", client.LoginProperty("username"), msg);
     lineEdit.text = "";
     if (this.hoveringText != null)
         this.hoveringText.text = msg;
@@ -144,7 +144,7 @@ ClientControl.prototype.SendPrivateMessage = function() {
     var msg = line.text;
     if (msg.length > 0) {
         ownPrivateLog.append("me: " + msg);
-        me.Exec(2, "ClientSendPrivateMessage", client.GetLoginProperty("username"), this.widget.windowTitle, msg);
+        me.Exec(2, "ClientSendPrivateMessage", client.LoginProperty("username"), this.widget.windowTitle, msg);
         line.text = "";
     }
 }
@@ -168,7 +168,7 @@ ClientControl.prototype.ReceivePrivateServerMessage = function(msg)
 ClientControl.prototype.NewUserConnected = function(msg)
 {
     userListWidget.addItem(msg);
-    me.Exec(2, "ServerUpdateUserList", client.GetLoginProperty("username"));
+    me.Exec(2, "ServerUpdateUserList", client.LoginProperty("username"));
 }
 
 ClientControl.prototype.UpdateUserList = function(user)
@@ -176,7 +176,7 @@ ClientControl.prototype.UpdateUserList = function(user)
     var hasUser = false;
     for(var i = 0; i < userListWidget.count; i++)
     {
-        if(userListWidget.item(i).text() == user || client.GetLoginProperty("username") == user )
+        if(userListWidget.item(i).text() == user || client.LoginProperty("username") == user )
         {
             hasUser = true;
         }
@@ -351,7 +351,7 @@ else
     // Try to be flexible: If we specified a username field in the login
     // properties when connecting, use that field as the username. Otherwise,
     // we show the login screen and ask the username from there.
-    var username = client.GetLoginProperty("username");
+    var username = client.LoginProperty("username");
     if (username.length == 0)
     {
         var joinWidget = ui.LoadFromFile("local://JoinWidget.ui", false);
@@ -374,7 +374,7 @@ else
         chatControl = new ClientControl(username);
         chatControl.ToggleLog();
     }
-    me.Exec(4, "NewUserConnected", client.GetLoginProperty("username"));
+    me.Exec(4, "NewUserConnected", client.LoginProperty("username"));
 }
 
 function CreateUser()

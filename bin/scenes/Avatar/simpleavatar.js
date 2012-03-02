@@ -347,7 +347,7 @@ SimpleAvatar.prototype.ClientInitialize = function() {
     // Check if this is our own avatar
     // Note: bad security. For now there's no checking who is allowed to invoke actions
     // on an entity, and we could theoretically control anyone's avatar
-    if (this.me.name == "Avatar" + client.GetConnectionID()) {
+    if (this.me.name == "Avatar" + client.connectionId) {
         this.ownAvatar = true;
         this.ClientCreateInputMapper();
         this.ClientCreateAvatarCamera();

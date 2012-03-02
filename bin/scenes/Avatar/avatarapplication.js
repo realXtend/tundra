@@ -34,7 +34,7 @@ function ClientHandleToggleCamera() {
     var freelookcameraentity = scene.GetEntityByName("FreeLookCamera");
     var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     var freecameralistener = freelookcameraentity.GetComponent("EC_SoundListener");
-    var avatarent = scene.GetEntityByName("Avatar" + client.GetConnectionID());
+    var avatarent = scene.GetEntityByName("Avatar" + client.connectionId);
     var avatarlistener = avatarent.GetComponent("EC_SoundListener");
     if ((freelookcameraentity == null) || (avatarcameraentity == null))
         return;

@@ -162,7 +162,7 @@ function ShowLoginScreen()
 
 function LoginFailed()
 {
-    infotext.text = "Failed to connect: " + client.GetLoginProperty("LoginFailed");
+    infotext.text = "Failed to connect: " + client.LoginProperty("LoginFailed");
     infotext.show();
     frame.DelayedExecute(5.0).Triggered.connect(function(){infotext.hide();});
 }
