@@ -1282,6 +1282,7 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
         const QString diskSource = asset->DiskSource();
         if (diskSourceChangeWatcher && !diskSource.isEmpty())
         {
+            PROFILE(AssetAPI_AssetLoadCompleted_DiskWatcherSetup);
             // If available, check the storage whether assets loaded from it should be live-updated.
             // Otherwise assume live-update == true
             
@@ -1300,6 +1301,8 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
                 diskSourceChangeWatcher->addPath(diskSource);
             }
         }
+
+        PROFILE(AssetAPI_AssetLoadCompleted_ProcessDependencies);
 
         // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
         RequestAssetDependencies(asset);
