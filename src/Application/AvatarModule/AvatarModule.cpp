@@ -34,10 +34,9 @@ void AvatarModule::Load()
 
 void AvatarModule::Initialize()
 {
-    avatarEditor = new AvatarEditor(this);
     framework_->Console()->RegisterCommand("editavatar",
         "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
-        this, SLOT(EditAvatar(const QString &)));
+        this, SLOT(EditAvatarConsole(const QString &)));
 }
 
 AvatarEditor* AvatarModule::GetAvatarEditor() const
@@ -57,9 +56,32 @@ void AvatarModule::EditAvatar(const QString &entityName)
     /// \todo Clone the avatar asset for editing
     /// \todo Allow avatar asset editing without an avatar entity in the scene
     avatarEditor->SetEntityToEdit(entity);
-    
+}
+
+void AvatarModule::ToggleAvatarEditorWindow()
+{
     if (avatarEditor)
-        avatarEditor->show();
+    {
+        avatarEditor->setVisible(!avatarEditor->isVisible());
+        if (!avatarEditor->isVisible())
+        {
+            // \ todo Save window position
+            avatarEditor->close();
+        }
+        return;
+    }
+
+    avatarEditor = new AvatarEditor(this);
+    avatarEditor->setAttribute(Qt::WA_DeleteOnClose);
+    avatarEditor->setWindowFlags(Qt::Tool);
+    // \ todo Load window position
+    avatarEditor->show();
+}
+
+void AvatarModule::EditAvatarConsole(const QString &entityName)
+{
+    ToggleAvatarEditorWindow();
+    EditAvatar(entityName);
 }
 
 extern "C"

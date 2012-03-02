@@ -27,6 +27,12 @@ public slots:
     /// Start editing a specific entity's avatar
     void EditAvatar(const QString &entityName);
 
+    /// Open or close the Avatar Editor window
+    void ToggleAvatarEditorWindow();
+
+    /// Starts the Avatar Editor from the console with editavatar(entityname)
+    void EditAvatarConsole(const QString &entityName);
+
 private:
     QPointer<AvatarEditor> avatarEditor;
 };
