@@ -35,13 +35,10 @@ AvatarEditor::AvatarEditor(AvatarModule *avatar_module) :
     avatar_module_(avatar_module)
 {
     InitEditorWindow();
-    last_directory_ = avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory",
-        QDir::currentPath()).toString().toStdString();
 }
 
 AvatarEditor::~AvatarEditor()
 {
-    avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory", QString::fromStdString(last_directory_));
 }
 
 void AvatarEditor::InitEditorWindow()

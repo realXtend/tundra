@@ -84,9 +84,6 @@ private:
     /// Create or get a tabbed scrollarea panel
     QWidget* GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name);
 
-    /// Last used directory for selecting avatars, attachments, textures
-    std::string last_directory_;
-
     /// Avatar entity to edit
     EntityWeakPtr avatarEntity_;
     /// Avatar asset to edit
