@@ -8,6 +8,8 @@
 #pragma once
 
 #include <QObject>
+#include <QMap>
+#include <QString>
 
 /// Interface for different script instances, e.g. Javascript or Python.
 class IScriptInstance : public QObject
@@ -33,6 +35,10 @@ public:
 
     /// Return whether the script has been run.
     virtual bool IsEvaluated() const = 0;
+    
+public slots:
+    /// Dumps engine information into a string. Used for debugging/profiling.
+    virtual QMap<QString, uint> DumpEngineInformation() = 0;
     
 protected:
     /// Whether this instance executed trusted code or not. 

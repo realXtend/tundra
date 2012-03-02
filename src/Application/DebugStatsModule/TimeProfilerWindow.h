@@ -25,6 +25,7 @@ class QTextEdit;
 class QMenu;
 class QPushButton;
 class QTextStream;
+class QTableWidget;
 
 class Framework;
 class ProfilerNodeTree;
@@ -63,6 +64,7 @@ public slots:
     void SetVisibility(bool visibility) { visibility_ = visibility; }
     void ShowMeshAsset(QTreeWidgetItem* item, int column);
     void ShowTextureAsset(QTreeWidgetItem* item, int column);
+    void RefreshScriptProfilingData();
 
 signals:
     void Visible(bool visible);
@@ -135,6 +137,8 @@ private:
     QTreeWidget* tree_gpu_assets_;
     QTreeWidget* tree_font_assets_;
     QTextEdit* text_scenecomplexity_;
+    QTableWidget *table_scripts_;
+    QLabel *label_scripts_;
 
 #ifdef OGREASSETEDITOR_ENABLED
     TexturePreviewEditor* tex_preview_;

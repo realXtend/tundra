@@ -90,7 +90,7 @@ void DebugStatsModule::ShowProfilingWindow()
     profilerWindow_ = new TimeProfilerWindow(framework_);
     profilerWindow_->setParent(framework_->Ui()->MainWindow());
     profilerWindow_->setWindowFlags(Qt::Tool);
-    profilerWindow_->resize(650, 530);
+    profilerWindow_->resize(1050, 530);
     connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
     profilerWindow_->show();
 }
