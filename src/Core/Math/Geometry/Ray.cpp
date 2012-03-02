@@ -278,17 +278,17 @@ std::string Ray::ToString() const
 
 Ray operator *(const float3x3 &transform, const Ray &ray)
 {
-	return Ray(transform * ray.pos, transform * ray.dir);
+	return Ray(transform * ray.pos, transform * ray.dir.Normalized());
 }
 
 Ray operator *(const float3x4 &transform, const Ray &ray)
 {
-	return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir));
+	return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir).Normalized());
 }
 
 Ray operator *(const float4x4 &transform, const Ray &ray)
 {
-	return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir));
+	return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir).Normalized());
 }
 
 Ray operator *(const Quat &transform, const Ray &ray)
