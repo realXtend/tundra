@@ -43,6 +43,7 @@ public:
         LoggedIn
     };
 
+    /// @todo Expose to QtScript.
     typedef std::map<QString, QString> LoginPropertyMap;
 
     /// Returns connection/login state
@@ -99,6 +100,7 @@ public slots:
     QString LoginProperty(QString key) const;
 
     /// Returns all the login properties that will be used to login to the server.
+    /// @todo QtScript doens't understand references.
     LoginPropertyMap &LoginProperties() { return properties; }
 
     /// Returns all the currently set login properties as an XML text.
