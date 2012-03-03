@@ -31,8 +31,9 @@
 
 #include "MemoryLeakCheck.h"
 
-AvatarEditor::AvatarEditor(AvatarModule *avatar_module) :
-    avatar_module_(avatar_module)
+AvatarEditor::AvatarEditor(Framework *fw, QWidget *parent) :
+    QWidget(parent),
+    framework(fw)
 {
     InitEditorWindow();
 }

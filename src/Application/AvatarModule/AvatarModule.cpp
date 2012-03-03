@@ -1,8 +1,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
+
 #include "AvatarModule.h"
 #include "AvatarEditor.h"
+
 #include "Scene.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
@@ -11,6 +13,8 @@
 #include "AvatarDescAsset.h"
 #include "ConsoleAPI.h"
 #include "IComponentFactory.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 #include "EC_Avatar.h"
 
@@ -71,7 +75,7 @@ void AvatarModule::ToggleAvatarEditorWindow()
         return;
     }
 
-    avatarEditor = new AvatarEditor(this);
+    avatarEditor = new AvatarEditor(framework_, framework_->Ui()->MainWindow());
     avatarEditor->setAttribute(Qt::WA_DeleteOnClose);
     avatarEditor->setWindowFlags(Qt::Tool);
     // \ todo Load window position
