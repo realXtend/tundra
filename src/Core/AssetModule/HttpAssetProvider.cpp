@@ -11,6 +11,7 @@
 #include "AssetCache.h"
 #include "IAsset.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include <QAbstractNetworkCache>
 #include <QNetworkAccessManager>
@@ -154,6 +155,7 @@ void HttpAssetProvider::Update(f64 frametime)
 
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
+    PROFILE(HttpAssetProvider_RequestAsset);
     if (!networkAccessManager)
         CreateAccessManager();
 
@@ -193,6 +195,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     QString filenameInCache = cache ? cache->FindInCache(assetRef) : QString();
     if (cache && framework->HasCommandLineParameter("--disable_http_ifmodifiedsince") && !filenameInCache.isEmpty())
     {
+        PROFILE(HttpAssetProvider_ReadFileFromCache);
         // Read cache file to transfer asset data
         QFile cacheFile(filenameInCache);
         if (cacheFile.open(QIODevice::ReadOnly))
