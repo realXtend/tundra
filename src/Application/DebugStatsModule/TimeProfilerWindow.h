@@ -77,6 +77,8 @@ private slots:
     void CopyMeshAssetName();
     void CopyMaterialAssetName();
     void PopulateBulletStats();
+    void TimingRefreshIntervalChanged();
+    void RefreshProfilerWindow();
 
 private:
     bool eventFilter(QObject *obj, QEvent *event);

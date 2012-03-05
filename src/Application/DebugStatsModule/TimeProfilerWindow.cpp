@@ -8,6 +8,7 @@
 #include "DebugStats.h"
 #include "HighPerfClock.h"
 #include "Framework.h"
+#include "FrameAPI.h"
 #include "Application.h"
 #include "Scene.h"
 #include "OgreRenderingModule.h"
@@ -215,9 +216,15 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
         menu_material_assets_->addAction(copyAssetName);
     }
 
+    profiler_update_timer_.setSingleShot(true);
+    connect(&profiler_update_timer_, SIGNAL(timeout()), this, SLOT(RefreshProfilerWindow()));
+
+    connect(findChild<QPushButton*>("buttonRefresh"), SIGNAL(pressed()), this, SLOT(RefreshProfilingData()));
 #ifdef OGREASSETEDITOR_ENABLED
     tex_preview_ = 0;
 #endif
+
+    connect(combo_timing_refresh_interval_, SIGNAL(currentIndexChanged(int)), this, SLOT(TimingRefreshIntervalChanged()));
 }
 
 namespace
@@ -599,6 +606,11 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
                 else
                     sprintf(str, "-");
                 item->setText(10, str);
+                float timeSpentInThisExclusive = timings_node->total_custom_ - max(timeSpentInChildren, 0.f);
+                sprintf(str, "%.2fms", timeSpentInThisExclusive * 1000.f / numFrames);
+                item->setText(11, str);
+                sprintf(str, "%.2fms", timeSpentInThisExclusive * 1000.f);
+                item->setText(12, str);
             }
             else
             {
@@ -609,6 +621,8 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
                 item->setText(8, "-");
                 item->setText(9, "-");
                 item->setText(10, "-");
+                item->setText(11, "-");
+                item->setText(12, "-");
             }
             ColorTreeWidgetItemByTime(item, timings_node->total_custom_ * 1000.f / numFrames);
         }
@@ -628,6 +642,23 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
 void TimeProfilerWindow::RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<u64, double> > &frameTimes)
 {
     ///\todo Implement.
+}
+
+void DumpProfilerSpikes(ProfilerNodeTree *node, float limit, int frameNumber)
+{
+    const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
+    if (timings_node && timings_node->custom_elapsed_max_*1000.f >= limit)
+    {
+        LogInfo("Frame " + QString::number(frameNumber) + ", " + QString(node->Name().c_str()) + ": " + QString::number(timings_node->custom_elapsed_max_*1000.f) + " msecs.");
+        timings_node->num_called_custom_ = 0;
+        timings_node->total_custom_ = 0;
+        timings_node->custom_elapsed_min_ = 1e9;
+        timings_node->custom_elapsed_max_ = 0;
+    }
+
+    const ProfilerNodeTree::NodeList &children = node->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+        DumpProfilerSpikes(iter->get(), limit, frameNumber);
 }
 
 void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair<u64, double> > &frameTimes)
@@ -724,6 +755,20 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
 
     //if (timePerFrame >= logThreshold_ )
     //     DumpNodeData();
+
+    QPushButton *loggerEnabled = findChild<QPushButton*>("loggerApply");
+    if (loggerEnabled && loggerEnabled->isChecked())
+    {
+        float threshold = 100.f;
+        QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
+        if (box != 0)
+            threshold = (float)box->value();
+
+        Profiler &profiler = *framework_->GetProfiler();
+        profiler.Lock();
+        DumpProfilerSpikes(profiler.GetRoot(), threshold, framework_->Frame()->FrameNumber());
+        profiler.Release();
+    }
 }
 
 /*
@@ -986,10 +1031,16 @@ int TimeProfilerWindow::ReadProfilingRefreshInterval()
     assert(combo_timing_refresh_interval_);
 
     // Positive values denote
-    const int refreshTimes[] = { 10000, 5000, 2000, 1000, 500 };
+    const int refreshTimes[] = { -1, 10000, 5000, 2000, 1000, 500 };
 
     int selection = combo_timing_refresh_interval_->currentIndex();
     return refreshTimes[min(max(selection, 0), (int)(sizeof(refreshTimes)/sizeof(refreshTimes[0])-1))];
+}
+
+void TimeProfilerWindow::TimingRefreshIntervalChanged()
+{
+    findChild<QPushButton*>("buttonRefresh")->setEnabled(ReadProfilingRefreshInterval() <= 0);
+    RefreshProfilerWindow();
 }
 
 template<typename T>
@@ -1099,7 +1150,7 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
         findChild<QLabel*>("labelParticleSystems")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::ParticleSystemFactory::FACTORY_TYPE_NAME))));
     }
 
-    QTimer::singleShot(500, this, SLOT(RefreshOgreProfilingWindow()));
+    profiler_update_timer_.start(500);
 }
 
 static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::ofstream &file)
@@ -1172,6 +1223,11 @@ void TimeProfilerWindow::DumpSceneComplexityToFile()
     file << text_scenecomplexity_->toPlainText().toStdString();
 }
 
+void TimeProfilerWindow::RefreshProfilerWindow()
+{
+    OnProfilerWindowTabChanged(tab_widget_->currentIndex());
+}
+
 void TimeProfilerWindow::RefreshProfilingData()
 {
 #ifdef PROFILING
@@ -1210,7 +1266,9 @@ void TimeProfilerWindow::RefreshProfilingData()
     else
         RefreshProfilingDataList(msecsOccurred);
 
-    QTimer::singleShot(ReadProfilingRefreshInterval(), this, SLOT(RefreshProfilingData()));
+    int refreshInterval = ReadProfilingRefreshInterval();
+    if (refreshInterval > 0) // If refreshInterval < 0, we treat it as 'user refreshes manually'.
+        profiler_update_timer_.start(refreshInterval);
 #endif
 }
 
@@ -1277,6 +1335,11 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
                 else
                     sprintf(str, "-");
                 item->setText(10, str);
+                float timeSpentInThisExclusive = timings_node->total_custom_ - max(timeSpentInChildren, 0.f);
+                sprintf(str, "%.2fms", timeSpentInThisExclusive * 1000.f / numFrames);
+                item->setText(11, str);
+                sprintf(str, "%.2fms", timeSpentInThisExclusive * 1000.f);
+                item->setText(12, str);
             }
             else
             {
@@ -1287,6 +1350,8 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
                 item->setText(8, "-");
                 item->setText(9, "-");
                 item->setText(10, "-");
+                item->setText(11, "-");
+                item->setText(12, "-");
             }
 
             ColorTreeWidgetItemByTime(item, timings_node->total_custom_ * 1000.f / numFrames);
