@@ -6,9 +6,10 @@
 #include "TundraProtocolModuleApi.h"
 #include "TundraProtocolModuleFwd.h"
 #include "AssetFwd.h"
-#include "kNetFwd.h"
-#include "kNet/Types.h"
 #include "Math/float3.h"
+
+#include <kNetFwd.h>
+#include <kNet/Types.h>
 
 namespace TundraLogic
 {
@@ -57,15 +58,16 @@ public slots:
         const float3 &scale = float3(1.f,1.f,1.f), bool inspectForMaterialsAndSkeleton = true);
 
 private slots:
-    void StartupSceneLoaded(AssetPtr asset);
+    void StartupSceneTransfedSucceeded(AssetPtr asset);
     void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
 
 private:
     /// Handles a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
-    /// Loads the startup scene
+    /// Loads the startup scene(s) specified by --file command line parameter.
     void LoadStartupScene();
+    void LoadStartupScene(const QString &file);
 
     boost::shared_ptr<SyncManager> syncManager_; ///< Sync manager
     boost::shared_ptr<Client> client_; ///< Client

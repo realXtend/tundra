@@ -141,9 +141,9 @@ void TundraLogicModule::Load()
 
 void TundraLogicModule::Initialize()
 {
-    syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this));
-    client_ = boost::shared_ptr<Client>(new Client(this));
-    server_ = boost::shared_ptr<Server>(new Server(this));
+    syncManager_ = boost::make_shared<SyncManager>(this);
+    client_ = boost::make_shared<Client>(this);
+    server_ = boost::make_shared<Server>(this);
     
     // Expose client and server to everyone
     framework_->RegisterDynamicObject("client", client_.get());
@@ -248,10 +248,8 @@ void TundraLogicModule::Update(f64 frametime)
     {
         if (autoStartServer_)
             server_->Start(autoStartServerPort_); 
-
-        // Load startup scene here (if we have one)
-        LoadStartupScene();
-
+        if (framework_->HasCommandLineParameter("--file")) // Load startup scene here (if we have one)
+            LoadStartupScene();
         checkDefaultServerStart = false;
     }
     ///\todo Remove this hack and find a better solution
@@ -268,7 +266,7 @@ void TundraLogicModule::Update(f64 frametime)
             if (loginUrl.isValid())
                 client_->Login(loginUrl);
             else
-                LogError("Login URL is not valid after strict parsing: " + cmdLineParams.first());
+                LogError("TundraLogicModule: Login URL is not valid after strict parsing: " + cmdLineParams.first());
         }
 
         checkLoginStart = false;
@@ -284,7 +282,7 @@ void TundraLogicModule::Update(f64 frametime)
                 client_->Login(/*addr*/params[0], /*port*/params[1].toInt(), /*username*/params[3],
                     /*optional passwd*/ params.size() >= 5 ? params[4] : "", /*protocol*/params[2]);
             else
-                LogError("Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
+                LogError("TundraLogicModule: Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
         }
         checkConnectStart = false;
     }
@@ -335,45 +333,51 @@ void TundraLogicModule::LoadStartupScene()
         AssetAPI::AssetRefType sceneRefType = AssetAPI::ParseAssetRef(startupScene);
         if (sceneRefType != AssetAPI::AssetRefLocalPath && sceneRefType != AssetAPI::AssetRefRelativePath)
         {
+            LogInfo("TundraLogicModule: Starting transfer for startup scene " + startupScene);
             AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene);
             if (!sceneTransfer.get())
             {
-                LogError("Asset transfer initialization failed for scene file " + startupScene + " failed");
+                LogError("TundraLogicModule::LoadStartupScene:: Asset transfer initialization failed for scene file " + startupScene + " failed.");
                 return;
             }
-            connect(sceneTransfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(StartupSceneLoaded(AssetPtr)));
+            connect(sceneTransfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(StartupSceneTransfedSucceeded(AssetPtr)));
             connect(sceneTransfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(StartupSceneTransferFailed(IAssetTransfer*, QString)));
-            LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
         }
         else
         {
-            LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
-            bool useBinary = startupScene.indexOf(".tbin") != -1;
-            if (!useBinary)
-                scene->LoadSceneXML(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-            else
-                scene->LoadSceneBinary(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
+            LoadStartupScene(startupScene);
         }
     }
 }
 
-void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
+void TundraLogicModule::LoadStartupScene(const QString &startupScene)
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
+    {
+        LogError("TundraLogicModule::LoadStartupScene: no main camera scene!");
         return;
+    }
+
+    LogInfo("Loading startup scene from " + startupScene + " ...");
+    kNet::PolledTimer timer;
+    bool useBinary = startupScene.indexOf(".tbin") != -1;
+    QList<Entity *> entities;
+    if (!useBinary)
+        entities = scene->LoadSceneXML(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
+    else
+        entities = scene->LoadSceneBinary(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
+    LogInfo("Loading of startup scene finished. %1 entities created in %2 msecs.").arg(entities.size()).arg(timer.MSecsElapsed()));
+}
+
+void TundraLogicModule::StartupSceneTransfedSucceeded(AssetPtr asset)
+{
 
     QString sceneDiskSource = asset->DiskSource();
-    if (!sceneDiskSource.isEmpty())
-    {
-        bool useBinary = sceneDiskSource.endsWith(".tbin");
-        if (!useBinary)
-            scene->LoadSceneXML(sceneDiskSource, true/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-        else
-            scene->LoadSceneBinary(sceneDiskSource, true/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-    }
-    else
+    if (sceneDiskSource.isEmpty())
         LogError("Could not resolve disk source for loaded scene file " + asset->Name());
+    else // Load the scene
+        LoadStartupScene(sceneDiskSource);
 }
 
 void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason)
