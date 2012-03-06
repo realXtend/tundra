@@ -44,17 +44,36 @@ public:
 
 public slots:
     /// Saves scene to an XML file
-    /// @param asBinary If true, saves as .tbin. Otherwise saves as .txml.
-    void SaveScene(QString filename, bool asBinary = false, bool saveTemporaryEntities = false, bool saveLocalEntities = true);
+    /** @param asBinary If true, saves as .tbin. Otherwise saves as .txml.
+        @param saveTemporaryEntities Do we want to save temporary entities.
+        @param saveLocalEntities Do we want to save local entities.
+        @return Was the operation successful.*/
+    bool SaveScene(QString filename, bool asBinary = false, bool saveTemporaryEntities = false, bool saveLocalEntities = true);
 
     /// Loads scene from an XML file.
-    void LoadScene(QString filename, bool clearScene = true, bool useEntityIDsFromFile = true);
+    /** @param asBinary If true, saves as .tbin. Otherwise saves as .txml.
+        @param clearScene Do we want to clear existing scene contents.
+        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file.
+            If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity
+            IDs from the files are ignored, and new IDs are generated for the created entities.
+        @return Was the operation successful.*/
+    bool LoadScene(QString filename, bool clearScene = true, bool useEntityIDsFromFile = true);
 
     /// Imports a dotscene.
-    void ImportScene(QString filename, bool clearScene = true, bool replace = true);
+    /** @param asBinary If true, saves as .tbin. Otherwise saves as .txml.
+        @param clearScene Do we want to clear existing scene contents.
+        @param replaceExisting Do we want replace possible already existing entities with the same name.
+        @return Was the operation successful.*/
+    bool ImportScene(QString filename, bool clearScene = true, bool replaceExisting = true);
 
     /// Imports one mesh as a new entity.
-    void ImportMesh(QString filename, const float3 &pos = float3(0.f,0.f,0.f), const float3 &rot = float3(0.f,0.f,0.f),
+    /** @param filename Source filename for the mesh.
+        @param pos Position for created entity.
+        @param rot Rotation for created entity.
+        @param scale Scale for created entity.
+        @param inspectForMaterialsAndSkeleton Load and inspect mesh for materials and skeleton.
+        @return Was the operation successful. */
+    bool ImportMesh(QString filename, const float3 &pos = float3(0.f,0.f,0.f), const float3 &rot = float3(0.f,0.f,0.f),
         const float3 &scale = float3(1.f,1.f,1.f), bool inspectForMaterialsAndSkeleton = true);
 
 private slots:
