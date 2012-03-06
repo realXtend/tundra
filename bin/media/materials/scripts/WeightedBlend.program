@@ -231,3 +231,141 @@ fragment_program WeightedBlendLightmapAlphamaskFS cg
 		param_named lightMapFactor float 1	
 	}
 }
+
+
+
+vertex_program WeightedBlendLightmapSeparateUVVS cg
+{
+	source WeightedBlend.cg
+	entry_point mainVS
+	profiles vs_3_0 arbvp1
+	compile_arguments -DLIGHTMAP -DSEPARATE_LIGHTMAP_UV
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto worldMatrix world_matrix
+
+		//Directional lighting
+		param_named_auto lightDir0 light_position 0
+		param_named_auto lightDiffuseColor0 light_diffuse_colour 0
+
+		//Fog
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program WeightedBlendLightmapSeparateUVFS cg
+{
+	source WeightedBlend.cg
+	entry_point mainPS
+	profiles ps_3_0 arbfp1
+	compile_arguments -DLIGHTMAP -DSEPARATE_LIGHTMAP_UV
+
+	default_params
+	{
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
+	}
+}
+
+
+vertex_program WeightedBlendShadowLightmapVS cg
+{
+	source WeightedBlend.cg
+	entry_point mainVS
+	profiles vs_3_0 arbvp1
+	compile_arguments -DSHADOW_MAPPING -DPSSM_SHADOWS -DLIGHTMAP
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto worldMatrix world_matrix
+
+		//Directional lighting
+		param_named_auto lightDir0 light_position 0
+		param_named_auto lightDiffuseColor0 light_diffuse_colour 0
+
+		//Fog
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+        // Shadows
+		param_named_auto lightViewProj0	texture_viewproj_matrix 0
+		param_named_auto lightViewProj1	texture_viewproj_matrix 1
+		param_named_auto lightViewProj2	texture_viewproj_matrix 2
+	}
+}
+
+fragment_program WeightedBlendShadowLightmapFS cg
+{
+	source WeightedBlend.cg
+	entry_point mainPS
+	profiles ps_3_0 arbfp1
+	compile_arguments -DSHADOW_MAPPING -DPSSM_SHADOWS -DLIGHTMAP
+
+	default_params
+	{
+  	    // Ambient
+		param_named_auto ambient ambient_light_colour
+        	
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+        param_named invShadowmapSize float 0.000976562
+        
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
+	}
+}
+
+
+vertex_program WeightedBlendShadowLightmapSeparateUVVS cg
+{
+	source WeightedBlend.cg
+	entry_point mainVS
+	profiles vs_3_0 arbvp1
+	compile_arguments -DSHADOW_MAPPING -DPSSM_SHADOWS -DLIGHTMAP -DSEPARATE_LIGHTMAP_UV
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto worldMatrix world_matrix
+
+		//Directional lighting
+		param_named_auto lightDir0 light_position 0
+		param_named_auto lightDiffuseColor0 light_diffuse_colour 0
+
+		//Fog
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+        // Shadows
+		param_named_auto lightViewProj0	texture_viewproj_matrix 0
+		param_named_auto lightViewProj1	texture_viewproj_matrix 1
+		param_named_auto lightViewProj2	texture_viewproj_matrix 2
+	}
+}
+
+fragment_program WeightedBlendShadowLightmapSeparateUVFS cg
+{
+	source WeightedBlend.cg
+	entry_point mainPS
+	profiles ps_3_0 arbfp1
+	compile_arguments -DSHADOW_MAPPING -DPSSM_SHADOWS -DLIGHTMAP -DSEPARATE_LIGHTMAP_UV
+
+	default_params
+	{
+  	    // Ambient
+		param_named_auto ambient ambient_light_colour
+
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+        param_named invShadowmapSize float 0.000976562
+        
+		// Light mapping parameters.
+		param_named lightMapFactor float 1
+	}
+}
