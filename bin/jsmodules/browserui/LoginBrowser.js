@@ -23,6 +23,26 @@ var defaultIcon = new QIcon(uiBase + "default-tool.png");
 // There are minimum sizes for all widgets
 var magicHeightValue = 61;
 
+var _macUIPrefix = "mac_";
+var _loginWebWidgetUrl = "";
+var _loginWebSettingsUrl = "";
+var _loginWidgetUrl = "";
+
+if (framework.application.platform == "mac")
+{
+    _loginWebWidgetUrl = _macUIPrefix + "LoginWebWidget.ui";
+    _loginWebSettingsUrl = _macUIPrefix + "LoginWebSettings.ui";
+    _loginWidgetUrl = _macUIPrefix + "LoginWidget.ui";
+}
+else
+{
+
+    _loginWebWidgetUrl = "LoginWebWidget.ui";
+    _loginWebSettingsUrl = "LoginWebSettings.ui";
+    _loginWidgetUrl = "LoginWidget.ui";
+}
+
+
 // Browser manager controls the web login widget.
 // This object will use private p_ variable in 
 // functions that are potentially called from outside.
@@ -39,7 +59,7 @@ var BrowserManager = Class.extend
         this.classiclogin = new ClassicLogin();
 
         // Load widget and init children etc.
-        this.browser = ui.LoadFromFile(uiBase + "LoginWebWidget.ui", false);
+        this.browser = ui.LoadFromFile(uiBase + _loginWebWidgetUrl, false);
         this.browser.windowFlags = Qt.Widget;
         
         var styleSheet = this.browser.styleSheet;
@@ -916,7 +936,7 @@ var BrowserSettings = Class.extend
         this.urlSection = "url";
         this.behaviourSection = "behaviour";
         
-        this.widget = ui.LoadFromFile(uiBase + "LoginWebSettings.ui", false);        
+        this.widget = ui.LoadFromFile(uiBase + _loginWebSettingsUrl, false);
         this.widget.setParent(ui.MainWindow());
         this.widget.setWindowFlags(Qt.Tool);
         this.widget.visible = false;
@@ -1649,7 +1669,7 @@ var ClassicLogin = Class.extend
         this.widget.setLayout(new QVBoxLayout());
         this.widget.layout().setContentsMargins(0,0,0,0);
 
-        var child = ui.LoadFromFile(uiBase + "LoginWidget.ui", false);
+        var child = ui.LoadFromFile(uiBase + _loginWidgetUrl, false);
         child.setParent(this.widget);
         this.widget.layout().addWidget(child, 0, 0);
 
