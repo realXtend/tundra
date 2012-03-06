@@ -367,7 +367,7 @@ void TundraLogicModule::LoadStartupScene(const QString &startupScene)
         entities = scene->LoadSceneXML(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
     else
         entities = scene->LoadSceneBinary(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-    LogInfo("Loading of startup scene finished. %1 entities created in %2 msecs.").arg(entities.size()).arg(timer.MSecsElapsed()));
+    LogInfo(QString("Loading of startup scene finished. %1 entities created in %2 msecs.").arg(entities.size()).arg(timer.MSecsElapsed()));
 }
 
 void TundraLogicModule::StartupSceneTransfedSucceeded(AssetPtr asset)
