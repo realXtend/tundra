@@ -67,7 +67,6 @@ private:
 
     /// Loads the startup scene(s) specified by --file command line parameter.
     void LoadStartupScene();
-    void LoadStartupScene(const QString &file);
 
     boost::shared_ptr<SyncManager> syncManager_; ///< Sync manager
     boost::shared_ptr<Client> client_; ///< Client

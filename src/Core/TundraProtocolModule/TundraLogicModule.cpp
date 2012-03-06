@@ -345,39 +345,18 @@ void TundraLogicModule::LoadStartupScene()
         }
         else
         {
-            LoadStartupScene(startupScene);
+            LoadScene(startupScene, false, false);
         }
     }
 }
 
-void TundraLogicModule::LoadStartupScene(const QString &startupScene)
-{
-    Scene *scene = GetFramework()->Scene()->MainCameraScene();
-    if (!scene)
-    {
-        LogError("TundraLogicModule::LoadStartupScene: no main camera scene!");
-        return;
-    }
-
-    LogInfo("Loading startup scene from " + startupScene + " ...");
-    kNet::PolledTimer timer;
-    bool useBinary = startupScene.indexOf(".tbin") != -1;
-    QList<Entity *> entities;
-    if (!useBinary)
-        entities = scene->LoadSceneXML(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-    else
-        entities = scene->LoadSceneBinary(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-    LogInfo(QString("Loading of startup scene finished. %1 entities created in %2 msecs.").arg(entities.size()).arg(timer.MSecsElapsed()));
-}
-
 void TundraLogicModule::StartupSceneTransfedSucceeded(AssetPtr asset)
 {
-
     QString sceneDiskSource = asset->DiskSource();
     if (sceneDiskSource.isEmpty())
         LogError("Could not resolve disk source for loaded scene file " + asset->Name());
     else // Load the scene
-        LoadStartupScene(sceneDiskSource);
+        LoadScene(sceneDiskSource, false, false);
 }
 
 void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason)
@@ -424,18 +403,16 @@ void TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEnt
         LogError("TundraLogicModule::LoadScene: Empty filename given!");
         return;
     }
-    
-    bool useBinary = false;
-    if (filename.contains(".tbin", Qt::CaseInsensitive))
-        useBinary = true;
 
+    LogInfo("Loading startup scene from " + filename + " ...");
+    kNet::PolledTimer timer;
+    bool useBinary = filename.indexOf(".tbin", 0, Qt::CaseInsensitive) != -1;
     QList<Entity *> entities;
     if (!useBinary)
         entities = scene->LoadSceneXML(filename, clearScene, useEntityIDsFromFile, AttributeChange::Default);
     else
         entities = scene->LoadSceneBinary(filename, clearScene, useEntityIDsFromFile, AttributeChange::Default);
-
-    LogInfo("TundraLogicModule::LoadScene: Loaded " + QString::number(entities.size()) + " entities.");
+    LogInfo(QString("Loading of startup scene finished. %1 entities created in %2 msecs.").arg(entities.size()).arg(timer.MSecsElapsed()));
 }
 
 void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool replace)
