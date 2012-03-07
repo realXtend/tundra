@@ -1,0 +1,110 @@
+/**
+
+\page TerrainHeightmaps Working with Tundra Terrains (.ntf files)
+
+This page documents the currently available methods for generating Tundra Terrain files to be used with the Terrain component, and how to perform related tasks with the Terrain.
+
+\section TerrainProgrammatic 1. Craft .ntf Files Manually
+
+If you are a programmer, you might find generating the binary .ntf files directly the easiest option. The Tundra .ntf file format is very straightforward, and looks as follows:
+<pre>u32 numPatchesInXDirection;
+u32 numPatchesInYDirection;
+numPatchesInXDirection * numPatchesInYDirection {
+   float patchData[16*16];
+}
+</pre>
+
+A patch is a 16*16 regular grid of vertices. A Tundra terrain consists of a given number of these patches in X and Y directions. Within a single patch, the 256 vertices of the patch
+are laid out like a top-down 2D image, i.e. x0y0, x1y0, x2y0, ..., x15y0, x0y1, x1y1, ..., x15y15. The float value for each vertex specifies the height of the terrain at that vertex.
+The total number of vertices used by the terrain is 256*numPatchesInXDirection*numPatchesInYDirection.
+
+Note: There is an arbitrary hardcoded limit for the Tundra terrain file loader to only allow 256*256 patches in total for a single terrain, to avoid malicious memory allocation sizes.
+
+You can use any external program to generate these files.
+
+\section TerrainUseImages 2. Use Image Files Directly
+
+The Terrain component can also take in image files directly. When using this option, instead of specifying a .ntf file, you will specify an image file in the HeightMap asset reference of the Terrain component.
+The file will be treated as an 8-bit grayscale image (r, g and b components are averaged). The color values are interpreted in the normalized [0, 1] float range.
+
+To support terrains of different heights (and not just unit height), two scaling parameters <b>scale</b> and <b>offset</b> are supported. These map the [0,1] range to values [0,1]*scale + offset = [offset, offset*scale].
+
+To specify the offset and scale values, set the HeightMap asset reference in the form <i>"myterrainheightmap.png?scale=100&offset=10"</i>. If scale or offset are not specified, the values scale=30, offset=0 are used.
+
+Overall, this method is somewhat limiting, since it only allows 256 distinct height values for the whole terrain. Therefore, this method is only recommended for simple flattish terrains, or to just quickly get started with something,
+to be improved later on.
+
+If you want to, you can convert an image file to a .ntf terrain file. To do that, proceed to the \ref TerrainSaveToFile below after performing the above steps.
+
+\section TerrainUseMesh 3a. Convert a Mesh to a Terrain
+
+Because the Terrain is a regular grid, and Tundra does not yet support view-dependent terrain rendering algorithms, this is the currently preferred method for authoring terrains. The general idea is to author the terrain as
+a standard mesh file and use that for rendering the terrain. This allows far less triangles to be used than regular grid heightmaps do.
+
+To enable collisions on this terrain mesh, one could add a <b>RigidBody</b> component with a <b>TriangleMesh</b> shape type to the terrain, which will work. However, that method is *very* costly for the physics engine, and
+therefore it is desirable to generate a corresponding terrain .ntf file from the mesh, purely for the physics engine to use. With this setup, you will have a visible entity with the <b>Mesh</b> component that will be used for display,
+and another hidden entity with the <b>Terrain</b> and <b>RigidBody</b> components that will be used for collisions.
+
+To author a terrain heightmap from the mesh data, perform the following steps:
+
+<ol><li>Create a new entity <b>VisibleTerrain</b> to the scene, populate it with the <b>Placeable</b> and <b>Mesh</b> components, and add your terrain mesh file to the mesh. Apply materials to this mesh to make it render as desired.
+<li>Position the terrain to place.
+<li>Create a new entity <b>CollisionsTerrain</b> to the scene, populate it with the <b>Placeable</b> and <b>Terrain</b> components.
+<li>Open the <b>Scene Structure</b> dialog and find the <b>CollisionsTerrain</b> entity in the scene. Expand the entity in the treeview, and right-click on its <b>Terrain</b> component. Choose <i>Functions...</i>
+<li>In the dialog that opens, find the function "void GenerateFromSceneEntity(QString entityName)" in the drop-down control.
+<li>In the QString entityName textbox, type in "VisibleTerrain". Click Execute.
+<li>Tundra will now convert the mesh in the VisibleTerrain entity to a regular grid heightmap in the CollisionsTerrain entity. Wait patiently, since this step can take quite a long time and while this step is being done,
+Tundra will be unresponsive. There are no progress indicators.
+<li>After the process completes, reposition the CollisionsTerrain entity in the scene so that it coincides with the geometry in the VisibleTerrain entity.
+<li>Open the CollisionsTerrain entity in the <b>Entity-Component Editor</b> and untick the <b>Visible</b> checkbox from the Placeable component to hide the heightmap.
+</ol>
+
+After performing the above steps, the new terrain is now in use in the Terrain component. At this point, the terrain heightmap data persists only in memory. If you now closed Tundra, the conversion would be lost.
+To permanently store the new generated terrain data to disk, see \ref TerrainSaveToFile below.
+
+\section TerrainSaveToFile Saving the Currently Visible Terrain Data to File (.ntf)
+
+After you have programmatically generated or modified terrain heightmap data in memory, you will need to save it to disk so that it will persist between different Tundra runs. Perform the following steps:
+
+<ol><li>Open the <b>Scene Structure</b> dialog and find the entity that contains the terrain. Expand the entity in the treeview, and right-click on its <b>Terrain</b> component. Choose <i>Functions...</i>
+<li>In the dialog that opens, find the function "bool SaveToFile(QString filename)" in the drop-down control.
+<li>In the QString filename textbox, type in the <b>full absolute path</b> to the filename on disk you want to store the currently visible terrain to, e.g. <i>C:\\myscene\\assets\\terrain.ntf</i>. Be sure to specify the suffix .ntf as well. The path you specify should point to a local asset storage of the current scene.
+<li>Click on the Execute button.
+<li>Tundra will now save the heightmap data to the file you specified. Wait patiently, since while this step is being done, Tundra will be unresponsive. After this step completes, the <b>Return value</b> dialog should display "EC_Terrain true".
+If not, saving the file has probably failed. Check the path and try again.
+<li>Click Close.
+<li>Open the terrain entity in the <b>Entity-Component Editor</b>.
+<li>In the <b>Heightmap</b> attribute of the <b>Terrain</b> component, specify the name of the newly saved terrain .ntf file. This field should only contain the base filename of the terrain asset, not the full path, because (by default) Tundra local asset loading lookup searches paths recursively.
+<li>Remember to save the scene.
+</ol>
+
+Hint: You can also save the current terrain to a grayscale image file, by choosing the "bool SaveToImageFile(QString filename, float minHeight, float maxHeight);" option.
+
+\section TerrainCollisions Enabling Physics Collisions to a Terrain
+
+If you have an entity with a <b>Terrain</b> component in the scene, it will not react to physics by default. To make the terrain take part in the physics simulations, perform the following steps:
+
+<ol><li>Open the entity with the Terrain component in the <b>Entity-Component Editor</b>.
+<li>Right-click on an empty area of the editor window, and choose <i>Add New Component...</i>.
+<li>Choose the <b>RigidBody</b> component. Click on <i>Add</i>.
+<li>Find the RigidBody component in the Entity-Component Editor window. Change the <b>Shape type</b> attribute to <b>HeightField</b>. This will cause the RigidBody component to read the physics geometry data from the Terrain component directly.
+</ol>
+
+Important! When using the HeightField Shape type, the Terrain and RigidBody components must be in the <b>same</b> entity. Otherwise, the RigidBody component will not know which Terrain component to read the heightmap data from.
+
+\section WeightedTerrainTexture Authoring Weighted Blending for Diffuse Texturing (Texture Splatting)
+
+Tundra ships with a material which enables three different diffuse textures to be blended into the terrain, to create some variety in the texture. To utilize this material, perform the following steps:
+<ol><li>Create three diffuse textures Diffuse1.png, Diffuse2.png, Diffuse3.png. (e.g. Grass.png, Dirt.png, Snow.png)
+<li>Create a blend weight texture Blend.png.
+<li>Create a mesh with two UV coordinate sets:
+<li>UV channel 0 will sample the diffuse textures, so author the UV channel 0 to tile/repeat as desired.
+<li>UV channel 1 will sample the blend weight texture, and usually the whole terrain will mapped onto this texture without repeating.
+<li>Copy the RexTerrainPCF_Weighted.material from bin/media/materials/scripts to the scene assets folder.
+<li>Adapt the texture refs and the material name to your needs.
+</ol>
+
+The RexTerrainPCF_Weighted.material uses a shader that computes the diffuse color at each texel based on the equation
+
+   blend[uv1].r * diffuse1[uv0] + blend[uv1].g * diffuse2[uv0] + blend[uv1].b * diffuse3[uv0].
+*/
