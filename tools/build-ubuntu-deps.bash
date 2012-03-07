@@ -208,6 +208,22 @@ else
     make -j $nprocs
     rm -f $prefix/lib/libPythonQt*
     cp -a lib/libPythonQt* $prefix/lib/
+    
+    # work around PythonQt vs Qt 4.8 incompatibility
+    cd src
+    make moc_PythonQtStdDecorators.cpp
+    ed moc_PythonQtStdDecorators.cpp <<EOF
+/qt_static_metacall
+-
+a
+#undef emit
+.
+w
+q
+EOF
+    cd ..
+    # end of workaround
+
     cp src/PythonQt*.h $prefix/include/
     cp extensions/PythonQt_QtAll/PythonQt*.h $prefix/include/
     touch $tags/pythonqt-done

@@ -23,7 +23,7 @@ if (NOT APPLE)
 else() # TODO Apple build script does not build with Hydrax.
    set (ENABLE_HYDRAX 0)
 endif()
-if (UNIX) # TODO: Ubuntu and Apple build scripts do not work with SkyX at the moment. See https://github.com/realXtend/naali/issues/320 
+if (APPLE) # TODO: Apple build script does not work with SkyX at the moment. See https://github.com/realXtend/naali/issues/320 
    set (ENABLE_SKYX 0)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 else()
    set (ENABLE_SKYX 1)
