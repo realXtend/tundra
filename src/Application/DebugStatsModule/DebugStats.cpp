@@ -119,7 +119,7 @@ void DebugStatsModule::Update(f64 frametime)
         if (!profilerWindow_->isVisible())
             return;
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
-        profilerWindow_->DoThresholdLogging();
+//        profilerWindow_->DoThresholdLogging();
     }
 }
 
