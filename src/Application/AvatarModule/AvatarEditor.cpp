@@ -119,9 +119,9 @@ void AvatarEditor::RebuildEditView()
         v_box->setContentsMargins(6,3,6,3);
         v_box->setSpacing(6);
 
-        // Strip away .avatar from the attachment name for slightly nicer display
+        // Strip away .xml from the attachment name for slightly nicer display
         std::string attachment_name = attachments[y].name_.toStdString();
-        std::size_t pos = attachment_name.find(".avatar");
+        std::size_t pos = attachment_name.find(".xml");
         if (pos != std::string::npos)
             attachment_name = attachment_name.substr(0, pos);
 
