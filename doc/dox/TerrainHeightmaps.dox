@@ -34,6 +34,9 @@ To specify the offset and scale values, set the HeightMap asset reference in the
 Overall, this method is somewhat limiting, since it only allows 256 distinct height values for the whole terrain. Therefore, this method is only recommended for simple flattish terrains, or to just quickly get started with something,
 to be improved later on.
 
+Each pixel of the image corresponds to a single vertex on the terrain. The total number of the vertices in the resulting terrain therefore equals the number of pixels in the input image (rounded up to the next boundary of 
+16 pixels).Since a single patch is 16x16 vertices in size, it is best to use only images which have width and height divisible by 16.
+
 If you want to, you can convert an image file to a .ntf terrain file. To do that, proceed to the \ref TerrainSaveToFile below after performing the above steps.
 
 \section TerrainUseMesh 3a. Convert a Mesh to a Terrain
