@@ -1064,7 +1064,7 @@ void EC_Mesh::ApplyMaterial()
             // Only apply the material if it is loaded and has no dependencies
             QString assetFullName = assetAPI->ResolveAssetRef("", materialList[i].ref);
             AssetPtr asset = assetAPI->GetAsset(assetFullName);
-            if ((asset) && (assetAPI->NumPendingDependencies(asset) == 0))
+            if (asset && !assetAPI->HasPendingDependencies(asset))
                 SetMaterial(i, assetFullName);
         }
     }

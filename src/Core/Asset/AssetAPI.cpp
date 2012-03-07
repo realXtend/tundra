@@ -1310,7 +1310,7 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
         // If we don't have any outstanding dependencies 
         // for the transfer, succeed and remove the transfer
         if (iter != currentTransfers.end())
-            if (NumPendingDependencies(asset) == 0)
+            if (!HasPendingDependencies(asset))
                 AssetDependenciesCompleted(iter->second);
     }
     else
@@ -1369,6 +1369,7 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
 
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
 {
+    PROFILE(AssetAPI_AssetDependenciesCompleted);
     // Emit success for this transfer
     transfer->EmitTransferSucceeded();
     
@@ -1384,7 +1385,7 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished: but data size was 0 bytes!");
         return;
     }
-    
+
     pendingDownloadRequests.erase(transfer->source.ref);
 }
 
@@ -1410,6 +1411,7 @@ void AssetAPI::NotifyAssetDependenciesChanged(AssetPtr asset)
 
 void AssetAPI::RequestAssetDependencies(AssetPtr asset)
 {
+    PROFILE(AssetAPI_RequestAssetDependencies);
     // Make sure we have most up-to-date internal view of the asset dependencies.
     NotifyAssetDependenciesChanged(asset);
 
@@ -1431,6 +1433,7 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
 
 void AssetAPI::RemoveAssetDependencies(QString asset)
 {
+    PROFILE(AssetAPI_RemoveAssetDependencies);
     for(size_t i = 0; i < assetDependencies.size(); ++i)
         if (QString::compare(assetDependencies[i].first, asset, Qt::CaseInsensitive) == 0)
         {
@@ -1458,6 +1461,7 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
 
 int AssetAPI::NumPendingDependencies(AssetPtr asset) const
 {
+    PROFILE(AssetAPI_NumPendingDependencies);
     int numDependencies = 0;
 
     std::vector<AssetReference> refs = asset->FindReferences();
@@ -1495,6 +1499,44 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset) const
     }
 
     return numDependencies;
+}
+
+bool AssetAPI::HasPendingDependencies(AssetPtr asset) const
+{
+    PROFILE(AssetAPI_HasPendingDependencies);
+
+    std::vector<AssetReference> refs = asset->FindReferences();
+    for(size_t i = 0; i < refs.size(); ++i)
+    {
+        if (refs[i].ref.isEmpty())
+            continue;
+
+        // We silently ignore this dependency if the asset type in question is disabled.
+        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(GetResourceTypeFromAssetRef(refs[i])).get()))
+            continue;
+
+        AssetPtr existing = GetAsset(refs[i].ref);
+        if (!existing) // Not loaded, just mark the single one
+            return true;
+        else
+        {            
+            if (existing->IsEmpty())
+                return true; // If asset is empty, count it as an unloaded dependency
+            else
+            {
+                if (!existing->IsLoaded())
+                    return true;
+                // Ask the dependencies of the dependency, we want all of the asset
+                // down the chain to be loaded before we load the base asset
+                // Note: if the dependency is unloaded, it may or may not be able to tell the dependencies correctly
+                bool dependencyHasDependencies = HasPendingDependencies(existing);
+                if (dependencyHasDependencies)
+                    return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &assetType)
@@ -1589,7 +1631,7 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
         if (iter != currentTransfers.end())
         {
             AssetTransferPtr transfer = iter->second;
-            if (NumPendingDependencies(dependent) == 0)
+            if (!HasPendingDependencies(dependent))
                 AssetDependenciesCompleted(transfer);
         }
     }
