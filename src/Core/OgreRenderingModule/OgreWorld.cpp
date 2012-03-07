@@ -219,8 +219,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
             else
             {
                 EC_Mesh *mesh = entity->GetComponent<EC_Mesh>().get();
-                assert(mesh);
-                boost::shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh->MeshAsset();
+                boost::shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh ? mesh->MeshAsset() : boost::shared_ptr<OgreMeshAsset>();
                 if (!ogreMeshAsset)
                     continue;
                 float3x4 worldToLocal = placeable->WorldToLocal();
