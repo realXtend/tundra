@@ -4,23 +4,16 @@
 # WINDOWS: Uses some more custom logic on windows to find things correct either from Tunda deps, Ogre SDK or Ogre source repo clone.
 
 if (NOT WIN32 AND NOT APPLE)
-# TODO Remove the use of Sagase for Linux and Mac Ogre lookup.
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()
 macro(configure_ogre)
-    # Mac
-    if (APPLE)
-        FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
-        set(OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
-        set(OGRE_LIBRARIES ${OGRE_LIBRARY})
-    # Linux
-    else()
-        sagase_configure_package (OGRE 
-            NAMES Ogre OgreSDK ogre OGRE
-            COMPONENTS Ogre ogre OGRE OgreMain 
-            PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
-    endif ()
-
-    sagase_configure_report(OGRE)
+  find_path(OGRE_LIBRARY_DIR NAMES lib/libOgreMain.so
+    HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+  
+  find_path(OGRE_INCLUDE_DIR Ogre.h
+    HINTS ${ENV_OGRE_HOME}/include ${ENV_NAALI_DEP_PATH}/include
+    PATH_SUFFIXES OGRE)
+  include_directories(${OGRE_INCLUDE_DIR})
+  link_directories(${OGRE_LIBRARY_DIR})
 endmacro()
     
 else() # Windows Ogre lookup.
