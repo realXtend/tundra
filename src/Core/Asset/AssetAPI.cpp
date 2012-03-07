@@ -1283,22 +1283,29 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
         if (diskSourceChangeWatcher && !diskSource.isEmpty())
         {
             PROFILE(AssetAPI_AssetLoadCompleted_DiskWatcherSetup);
+
             // If available, check the storage whether assets loaded from it should be live-updated.
-            // Otherwise assume live-update == true
             
-            bool shouldLiveUpdate = true;
+            // By default disable liveupdate for all assets which come outside any known Tundra asset storage.
+            // This is because the feature is most likely not used, and setting up the watcher below consumes
+            // system resources and CPU time. To enable the disk watcher, make sure that the asset comes from
+            // a storage known to Tundra and set liveupdate==true for that asset storage.
+            // Note that this means that also local assets outside all storages with absolute path names like 
+            // 'C:\mypath\asset.png' will always have liveupdate disabled.
             AssetStoragePtr storage = asset->GetAssetStorage();
             if (storage)
-                shouldLiveUpdate = storage->HasLiveUpdate();
-
-            // Localassetprovider implements its own watcher. Therefore only add paths which refer to the assetcache to the AssetAPI watcher
-            if (!assetCache || !diskSource.startsWith(assetCache->CacheDirectory(), Qt::CaseInsensitive))
-                shouldLiveUpdate = false;
-            
-            if (shouldLiveUpdate)
             {
-                diskSourceChangeWatcher->removePath(diskSource);
-                diskSourceChangeWatcher->addPath(diskSource);
+                bool shouldLiveUpdate = storage->HasLiveUpdate();
+
+                // Localassetprovider implements its own watcher. Therefore only add paths which refer to the assetcache to the AssetAPI watcher
+                if (shouldLiveUpdate && (!assetCache || !diskSource.startsWith(assetCache->CacheDirectory(), Qt::CaseInsensitive)))
+                    shouldLiveUpdate = false;
+
+                if (shouldLiveUpdate)
+                {
+                    diskSourceChangeWatcher->removePath(diskSource);
+                    diskSourceChangeWatcher->addPath(diskSource);
+                }
             }
         }
 
