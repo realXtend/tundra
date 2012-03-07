@@ -97,7 +97,7 @@ void AvatarEditor::RebuildEditView()
         lineEdit->setObjectName(QString::fromStdString(ToString<int>(y))); // Material index
         lineEdit->setText(materials[y]);
         connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(ChangeMaterial()));
-        
+
         v_box->addWidget(lineEdit);
         materials_layout->addLayout(v_box);
     }
@@ -228,7 +228,7 @@ void AvatarEditor::RebuildEditView()
             slider->setPageStep(10);
             slider->setValue(morph_modifiers[i].value_ * 100.0f);
             connect(slider, SIGNAL(valueChanged(int)), SLOT(MorphModifierValueChanged(int)));
-            
+
             // Add to layouts
             v_box->addWidget(label);
             v_box->addWidget(slider);
@@ -365,7 +365,7 @@ void AvatarEditor::MorphModifierValueChanged(int value)
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
-    
+
     desc->SetModifierValue(control_name, value / 100.0f);
 }
 
@@ -383,7 +383,7 @@ void AvatarEditor::BoneModifierValueChanged(int value)
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
-    
+
     desc->SetModifierValue(control_name, value / 100.0f);
 }
 
@@ -401,7 +401,7 @@ void AvatarEditor::MasterModifierValueChanged(int value)
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
-    
+
     desc->SetMasterModifierValue(control_name, value / 100.0f);
 }
 
@@ -425,7 +425,7 @@ void AvatarEditor::SetEntityToEdit(EntityPtr entity)
                 connect(newDesc, SIGNAL(AppearanceChanged()), this, SLOT(RebuildEditView()));
         }
     }
-    
+
     RebuildEditView();
 }
 
@@ -487,7 +487,7 @@ void AvatarEditor::SaveAvatar()
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
-    
+
     /// \todo use upload functionality. For now just saves to disk, overwriting the original file.
     desc->SaveToFile(desc->DiskSource());
 }
@@ -497,10 +497,10 @@ void AvatarEditor::ChangeMaterial()
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender());
     if (!lineEdit)
         return;
-    
+
     std::string index_str = lineEdit->objectName().toStdString();
     uint index = ParseString<uint>(index_str);
-    
+
     Entity* entity;
     EC_Avatar* avatar;
     AvatarDescAsset* desc;
@@ -533,7 +533,7 @@ void AvatarEditor::RemoveAttachment()
         avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
         QTimer::singleShot(250, this, SLOT(RebuildEditView()));
     }
-    
+
     */
 }
 
@@ -549,7 +549,7 @@ void AvatarEditor::AddAttachment()
         EntityPtr entity = GetAvatarEntity();
         if (!entity)
             return;
-            
+
         avatar_module_->GetAvatarHandler()->GetAppearanceHandler().AddAttachment(entity, filename);
         QTimer::singleShot(250, this, SLOT(RebuildEditView()));
     }
@@ -572,9 +572,9 @@ QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::str
             return tab_panel;
         }
     }
-           
+
     QWidget* tab_panel = new QWidget();
-    
+
     QScrollArea* tab_scroll = new QScrollArea();
     tab_scroll->setWidgetResizable(true);
     tab_scroll->setWidget(tab_panel);
