@@ -329,16 +329,23 @@ void AvatarEditor::ClearPanel(QWidget* panel)
     QLayoutItem *child;
     while((child = panel->layout()->takeAt(0)) != 0)
     {
-        QWidget* widget = child->widget();
-        if (widget)
+        QLayout* layout = child->layout();
+        if (layout)
         {
-            widget->hide();
-            widget->deleteLater();
-
+            QLayoutItem *grandchild;
+            while((grandchild = layout->takeAt(0)) != 0)
+            {
+                QWidget* widget = grandchild->widget();
+                if (widget)
+                {
+                    widget->hide();
+                    widget->deleteLater();
+                }
+                delete grandchild;
+            }
         }
         delete child;
     }
-
     //QVBoxLayout *box_layout = dynamic_cast<QVBoxLayout*>(panel->layout());
     //if (box_layout)
     //    box_layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
