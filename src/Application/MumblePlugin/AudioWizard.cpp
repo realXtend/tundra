@@ -1,11 +1,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "AudioWizard.h"
+#include "Framework.h"
+#include "AudioAPI.h"
 #include "mumble/AudioStats.h"
+#include "LoggingFunctions.h"
 
 namespace MumbleAudio
 {
-    AudioWizard::AudioWizard(AudioSettings settings) : 
+    AudioWizard::AudioWizard(Framework *framework, AudioSettings settings) : 
         peakTicks(0),
         peakMax(0)
     {
@@ -17,7 +20,7 @@ namespace MumbleAudio
 
         setupUi(this);
         setAttribute(Qt::WA_DeleteOnClose, true);
-
+        
         // Audio bar init
         audioBar = new Mumble::AudioBar(this);
         audioBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -26,6 +29,21 @@ namespace MumbleAudio
         audioBar->qcAbove = Qt::green;
         audioBar->qcInside = Qt::yellow;
         audioBarLayout->insertWidget(1, audioBar);
+
+        // Input devices
+        QStringList inputDevices = framework->Audio()->GetRecordingDevices();
+        comboBoxInputDevice->clear();
+        comboBoxInputDevice->addItems(inputDevices);
+        if (!settings.recordingDevice.isEmpty())
+        {
+            int index = comboBoxInputDevice->findText(settings.recordingDevice);
+            if (index != -1)
+                comboBoxInputDevice->setCurrentIndex(index);
+            else
+                LogWarning("[MumblePlugin]: Config input device '" + settings.recordingDevice + "' could not be found from available input devices.");
+        }
+        else
+            comboBoxInputDevice->setCurrentIndex(0);
 
         // Quality
         if (currentSettings.quality == QualityLow)
@@ -81,16 +99,22 @@ namespace MumbleAudio
 
         connect(sliderSuppression, SIGNAL(valueChanged(int)), SLOT(OnSuppressChanged(int)));
         connect(sliderAmplification, SIGNAL(valueChanged(int)), SLOT(OnAmplificationChanged(int)));
-
         connect(sliderSilence, SIGNAL(valueChanged(int)), SLOT(OnMinVADChanged(int)));
         connect(sliderSpeech, SIGNAL(valueChanged(int)), SLOT(OnMaxVADChanged(int)));
+
+        connect(sliderSuppression, SIGNAL(sliderReleased()), SLOT(OnSliderReleased()));
+        connect(sliderAmplification, SIGNAL(sliderReleased()), SLOT(OnSliderReleased()));        
+        connect(sliderSilence, SIGNAL(sliderReleased()), SLOT(OnSliderReleased()));
+        connect(sliderSpeech, SIGNAL(sliderReleased()), SLOT(OnSliderReleased()));
 
         connect(buttonOK, SIGNAL(clicked()), SLOT(OnOKPressed()));
         connect(buttonCancel, SIGNAL(clicked()), SLOT(OnCancelPressed()));
         connect(buttonApply, SIGNAL(clicked()), SLOT(OnApplyPressed()));
 
+        connect(comboBoxInputDevice, SIGNAL(currentIndexChanged(const QString&)), SLOT(OnInputDeviceChanged(const QString&)));
         connect(comboBoxTransmitMode, SIGNAL(currentIndexChanged(const QString&)), SLOT(OnTransmitModeChanged(const QString&)));
 
+        connect(buttonAdvanced, SIGNAL(clicked()), SLOT(OnAdvancedToggle()));
         connect(pushButtonProcessingHelp, SIGNAL(clicked()), SLOT(OnProcessingHelpToggle()));
         connect(pushButtonTransmissionHelp, SIGNAL(clicked()), SLOT(OnTransmissionHelpToggle()));
         connect(pushButtonPositionalHelp, SIGNAL(clicked()), SLOT(OnPositionalHelpToggle()));
@@ -102,7 +126,9 @@ namespace MumbleAudio
         connect(checkBoxPositionalReceive, SIGNAL(clicked()), SLOT(OnAllowReceivingPositionalChanged()));
 
         buttonApply->setDisabled(true);
-
+        groupBoxQuality->setVisible(false);
+        groupBoxProcessing->setVisible(false);
+        
         show();
         resize(1,1);
     }   
@@ -148,6 +174,14 @@ namespace MumbleAudio
         buttonApply->setEnabled(true);
     }
 
+    void AudioWizard::OnInputDeviceChanged(const QString &deviceName)
+    {
+        currentSettings.recordingDevice = deviceName;
+        
+        // Automatically apply this option when changed.
+        OnApplyPressed();
+    }
+    
     void AudioWizard::OnTransmitModeChanged(const QString &mode)
     {
         if (mode == "Voice Activity")
@@ -168,7 +202,8 @@ namespace MumbleAudio
         audioBar->iValue = 0;
         audioBar->update();
 
-        buttonApply->setEnabled(true);
+        // Automatically apply this option when changed.
+        OnApplyPressed();
     }
 
     void AudioWizard::OnSuppressChanged(int value)
@@ -217,7 +252,7 @@ namespace MumbleAudio
 
         buttonApply->setEnabled(true);
     }
-
+       
     void AudioWizard::OnInnerRangeChanged(int value)
     {
         currentSettings.innerRange = value;
@@ -249,6 +284,18 @@ namespace MumbleAudio
         outerRangeSpinBox->setEnabled(currentSettings.allowReceivingPositional);
 
         buttonApply->setEnabled(true);
+    }
+
+    void AudioWizard::OnAdvancedToggle()
+    {
+        bool visible = !groupBoxQuality->isVisible();
+        groupBoxQuality->setVisible(visible);
+        groupBoxProcessing->setVisible(visible);
+        
+        QString text = buttonAdvanced->text();
+        buttonAdvanced->setText(!visible ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
+        
+        resize(1,1);
     }
 
     void AudioWizard::OnProcessingHelpToggle()
@@ -297,5 +344,12 @@ namespace MumbleAudio
     {
         emit SettingsChanged(currentSettings, true);
         buttonApply->setDisabled(true);
+    }
+    
+    void AudioWizard::OnSliderReleased()
+    {
+        // Automatically apply when a slider is released. We don't want to spam 
+        // settings changed signal when the slider is still being moved.
+        OnApplyPressed();
     }
 }

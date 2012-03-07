@@ -3,6 +3,7 @@
 #pragma once
 
 #include "MumbleFwd.h"
+#include "FrameworkFwd.h"
 #include "MumbleDefines.h"
 
 #include "ui_AudioWizard.h"
@@ -21,7 +22,7 @@ namespace MumbleAudio
     Q_OBJECT
 
     public:
-        AudioWizard(AudioSettings settings);
+        AudioWizard(Framework *framework, AudioSettings settings);
         ~AudioWizard();
 
         void SetLevels(float level, bool isSpeech);
@@ -32,6 +33,7 @@ namespace MumbleAudio
     private slots:
         void OnQualityChanged();
 
+        void OnInputDeviceChanged(const QString &deviceName);
         void OnTransmitModeChanged(const QString &mode);
 
         void OnSuppressChanged(int value);
@@ -39,13 +41,14 @@ namespace MumbleAudio
         
         void OnMinVADChanged(int value);
         void OnMaxVADChanged(int value);
-
+        
         void OnInnerRangeChanged(int value);
         void OnOuterRangeChanged(int value);
 
         void OnAllowSendingPositionalChanged();
         void OnAllowReceivingPositionalChanged();
 
+        void OnAdvancedToggle();
         void OnProcessingHelpToggle();
         void OnTransmissionHelpToggle();
         void OnPositionalHelpToggle();
@@ -53,6 +56,7 @@ namespace MumbleAudio
         void OnOKPressed();
         void OnCancelPressed();
         void OnApplyPressed();
+        void OnSliderReleased();
 
     private:
         AudioSettings currentSettings;
