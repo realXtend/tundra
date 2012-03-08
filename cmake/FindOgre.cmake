@@ -8,12 +8,17 @@ if (NOT WIN32 AND NOT APPLE)
 macro(configure_ogre)
   find_path(OGRE_LIBRARY_DIR NAMES lib/libOgreMain.so
     HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
-  
+
   find_path(OGRE_INCLUDE_DIR Ogre.h
     HINTS ${ENV_OGRE_HOME}/include ${ENV_NAALI_DEP_PATH}/include
     PATH_SUFFIXES OGRE)
+
+  find_library(OGRE_LIBRARY OgreMain
+    HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+
   include_directories(${OGRE_INCLUDE_DIR})
   link_directories(${OGRE_LIBRARY_DIR})
+
 endmacro()
     
 else() # Windows Ogre lookup.
@@ -96,10 +101,7 @@ macro(link_ogre)
     if (WIN32)
         target_link_libraries(${TARGET_NAME} debug OgreMain_d debug RenderSystem_Direct3D9_d)
         target_link_libraries(${TARGET_NAME} optimized OgreMain optimized RenderSystem_Direct3D9)
-    elseif (APPLE)
-        target_link_libraries(${TARGET_NAME} ${OGRE_LIBRARY})
     else()
-        use_package(OGRE)
-        link_package(OGRE)
+        target_link_libraries(${TARGET_NAME} ${OGRE_LIBRARY})
     endif()
 endmacro()
