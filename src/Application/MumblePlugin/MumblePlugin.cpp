@@ -578,7 +578,8 @@ void MumblePlugin::RunAudioWizard()
 
     if (audioWizard && audioWizard->isVisible())
     {
-        QApplication::setActiveWindow(audioWizard);
+        audioWizard->activateWindow();
+        audioWizard->raise();
         return;
     }
 

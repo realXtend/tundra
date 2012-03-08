@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>492</width>
-    <height>985</height>
+    <height>823</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -65,7 +65,7 @@ QPushButton#buttonAdvanced {
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupBoxTransmission">
      <property name="title">
       <string>Transmission</string>
      </property>
@@ -260,36 +260,11 @@ QPushButton#buttonAdvanced {
         </item>
        </layout>
       </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonTransmissionHelp">
-        <property name="text">
-         <string>Show Help</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="helpTransmission">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Continuous trasmission mode sends voice out all the time. Doing this has the drawback that it spends more bandwith for other users, hence it is not recommended. If you can't get voice activity detection to work well enough you can fall back to this mode.
-
-Voice activity detection can detect when you are speaking and only then send out audio. This saves processing and bandwidth on your and other clients. Activate the mode and adjust the two sliders so that when you speak normally it detects the speech. When the meter goes to green it starts sending audio and will send untill the meter goes to red for a certain perioid.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="groupBoxPositional">
      <property name="title">
       <string>Positional Audio</string>
      </property>
@@ -403,31 +378,6 @@ Voice activity detection can detect when you are speaking and only then send out
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonPositionalHelp">
-        <property name="text">
-         <string>Show Help</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="helpPositional">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Checking Send Positional Audio will send active sound listener position with the audio data. The receiving client can disable playing back the audio with the position from other users.
-
-Checking Receive Positional Audio will play incoming voice with position if it is provided by the other client. You can set the playback ranges on when the volume starts to fade out and where it goes completely silent.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
@@ -630,31 +580,6 @@ p, li { white-space: pre-wrap; }
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonProcessingHelp">
-        <property name="text">
-         <string>Show Help</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="helpProcessing">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Noise suppression is used to remove noice from the recorded microphone audio. Amplification can automatically increase volume when speking quietly and automatically decrese volume when loud spikes are detected.
-
-Remember to always set the mic volume reasonably high from your operating system and then adjust additional amplification if it is needed.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>

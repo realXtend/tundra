@@ -87,10 +87,27 @@ namespace MumbleAudio
         checkBoxPositionalReceive->setChecked(settings.allowReceivingPositional);
         OnAllowReceivingPositionalChanged();
 
-        // Hide help labels by default
-        helpProcessing->hide();
-        helpTransmission->hide();
-        helpPositional->hide();
+        // Setting tooltips
+        QString tooltipTr;
+        QString tooltipProc;
+        QString tooltipPos;
+
+        tooltipTr  = "<strong>Continuous trasmission</strong> mode sends voice out all the time. Doing this has the drawback that it spends more bandwith for other users,";
+        tooltipTr += "hence it is not recommended. If you can't get voice activity detection to work well enough you can fall back to this mode.<br /><br />";
+        tooltipTr += "<strong>Voice activity</strong> detection can detect when you are speaking and only then send out audio. This saves processing and bandwidth on you ";
+        tooltipTr += "and other clients. Activate the mode and adjust the two sliders so that when you speak normally it detects the speech. When the meter goes to green it";
+        tooltipTr += "starts sending audio and will send untill the meter goes to red for a certain period.";
+        groupBoxTransmission->setToolTip(tooltipTr);
+
+        tooltipProc  = "<strong>Noise suppression</strong> is used to remove noice from the recorded microphone audio. <br /><br />";
+        tooltipProc += "<strong>Amplification</strong> can automatically increase volume when speking quietly and automatically decrese volume when loud spikes are detected.<br /><br />";
+        tooltipProc += "Remember to always set the mic volume reasonably high from your operating system and then adjust additional amplification if it is needed.";
+        groupBoxProcessing->setToolTip(tooltipProc);
+
+        tooltipPos  = "Checking <strong>Send Positional Audio</strong> will send active sound listener position with the audio data. The receiving client can disable playing back the audio with the position from other users.<br /><br />";
+        tooltipPos += "Checking <strong>Receive Positional Audio</strong> will play incoming voice with position if it is provided by the other client.<br /><br />";
+        tooltipPos += "You can set the playback ranges on when the volume starts to fade out and where it goes completely silent.";
+        groupBoxPositional->setToolTip(tooltipPos);
 
         // Signaling
         connect(radioButtonLow, SIGNAL(clicked()), SLOT(OnQualityChanged()));
@@ -115,9 +132,6 @@ namespace MumbleAudio
         connect(comboBoxTransmitMode, SIGNAL(currentIndexChanged(const QString&)), SLOT(OnTransmitModeChanged(const QString&)));
 
         connect(buttonAdvanced, SIGNAL(clicked()), SLOT(OnAdvancedToggle()));
-        connect(pushButtonProcessingHelp, SIGNAL(clicked()), SLOT(OnProcessingHelpToggle()));
-        connect(pushButtonTransmissionHelp, SIGNAL(clicked()), SLOT(OnTransmissionHelpToggle()));
-        connect(pushButtonPositionalHelp, SIGNAL(clicked()), SLOT(OnPositionalHelpToggle()));
 
         connect(innerRangeSpinBox, SIGNAL(valueChanged(int)), SLOT(OnInnerRangeChanged(int)));
         connect(outerRangeSpinBox, SIGNAL(valueChanged(int)), SLOT(OnOuterRangeChanged(int)));
@@ -128,8 +142,11 @@ namespace MumbleAudio
         buttonApply->setDisabled(true);
         groupBoxQuality->setVisible(false);
         groupBoxProcessing->setVisible(false);
-        
+
+        setMinimumSize(492, 575);
+        setMaximumSize(492, 824);
         show();
+
         resize(1,1);
     }   
 
@@ -294,38 +311,7 @@ namespace MumbleAudio
         
         QString text = buttonAdvanced->text();
         buttonAdvanced->setText(!visible ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
-        
-        resize(1,1);
-    }
-
-    void AudioWizard::OnProcessingHelpToggle()
-    {
-        helpProcessing->setVisible(!helpProcessing->isVisible());
-        
-        QString text = pushButtonProcessingHelp->text();
-        pushButtonProcessingHelp->setText(!helpProcessing->isVisible() ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
-        
-        resize(1,1);
-    }
-
-    void AudioWizard::OnTransmissionHelpToggle()
-    {
-        helpTransmission->setVisible(!helpTransmission->isVisible());
-
-        QString text = pushButtonTransmissionHelp->text();
-        pushButtonTransmissionHelp->setText(!helpTransmission->isVisible() ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
-
-        resize(1,1);
-    }
-
-    void AudioWizard::OnPositionalHelpToggle()
-    {
-        helpPositional->setVisible(!helpPositional->isVisible());
-
-        QString text = pushButtonPositionalHelp->text();
-        pushButtonPositionalHelp->setText(!helpPositional->isVisible() ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
-
-        resize(1,1);
+        resize(visible ? QSize(999,999) : QSize(1,1));
     }
 
     void AudioWizard::OnOKPressed()

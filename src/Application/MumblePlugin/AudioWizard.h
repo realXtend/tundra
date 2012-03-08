@@ -49,9 +49,6 @@ namespace MumbleAudio
         void OnAllowReceivingPositionalChanged();
 
         void OnAdvancedToggle();
-        void OnProcessingHelpToggle();
-        void OnTransmissionHelpToggle();
-        void OnPositionalHelpToggle();
 
         void OnOKPressed();
         void OnCancelPressed();
