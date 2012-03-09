@@ -24,7 +24,7 @@ class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
 
 public:
     /// Constructs the window.
-    /** @param fw Framwork.
+    /** @param fw Framework.
         @parent parent Parent widget. */
     explicit AvatarEditor(Framework *fw, QWidget *parent = 0);
     ~AvatarEditor();
