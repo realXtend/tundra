@@ -518,6 +518,7 @@ void AvatarEditor::RemoveAttachment()
         return;
 
     uint index = button->objectName().toUInt();
+    // Relies on the button's UI index and the attachment index in AvatarDescAsset->attachments_ being the same.
     desc->RemoveAttachment(index);
 }
 
