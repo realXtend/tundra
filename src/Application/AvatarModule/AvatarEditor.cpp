@@ -511,9 +511,6 @@ void AvatarEditor::ChangeMaterial()
 
 void AvatarEditor::RemoveAttachment()
 {
-    ///\todo Remove or re-implement this function?
-    LogError("AvatarEditor::RemoveAttachment deprecated and not implemented.");
-    /*
     QPushButton* button = qobject_cast<QPushButton*>(sender());
     if (!button)
         return;
@@ -521,20 +518,13 @@ void AvatarEditor::RemoveAttachment()
     std::string index_str = button->objectName().toStdString();
     uint index = ParseString<uint>(index_str);
 
-    EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-    if (!appearance)
+    Entity* entity;
+    EC_Avatar* avatar;
+    AvatarDescAsset* desc;
+    if (!GetAvatarDesc(entity, avatar, desc))
         return;
 
-    AvatarAttachmentVector attachments = appearance->GetAttachments();
-    if (index < attachments.size())
-    {
-        attachments.erase(attachments.begin() + index);
-        appearance->SetAttachments(attachments);
-        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
-        QTimer::singleShot(250, this, SLOT(RebuildEditView()));
-    }
-
-    */
+    desc->RemoveAttachment(index);
 }
 
 void AvatarEditor::AddAttachment()
