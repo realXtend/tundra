@@ -4,6 +4,7 @@
 
 #include "AvatarModule.h"
 #include "AvatarModuleApi.h"
+#include "QtUtils.h"
 #include "SceneFwd.h"
 
 #include "ui_avatareditor.h"
@@ -13,6 +14,7 @@
 class QTabWidget;
 class EC_Avatar;
 class AvatarDescAsset;
+class Framework;
 typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 /// Avatar editing window.
@@ -21,7 +23,10 @@ class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
     Q_OBJECT
 
 public:
-    explicit AvatarEditor(AvatarModule *avatar_module);
+    /// Constructs the window.
+    /** @param fw Framework.
+        @parent parent Parent widget. */
+    explicit AvatarEditor(Framework *fw, QWidget *parent = 0);
     ~AvatarEditor();
 
 public slots:
@@ -68,9 +73,6 @@ signals:
     void EditorHideMessages();
 
 private:
-    /// Owner module.
-    AvatarModule *avatar_module_;
-
     /// Create editor window
     void InitEditorWindow();
     
@@ -83,19 +85,18 @@ private:
     /// Create or get a tabbed scrollarea panel
     QWidget* GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name);
 
-/*
-    /// Ask a filename from the user. Store the directory used.
-    std::string GetOpenFileName(const std::string& filter, const std::string& prompt);
-    /// Ask a filename from the user for saving. Store the directory used.
-    std::string GetSaveFileName(const std::string& filter, const std::string& prompt);
-*/
-    /// Last used directory for selecting avatars, attachments, textures
-    std::string last_directory_;
-
+    Framework *framework; ///< Framework.
     /// Avatar entity to edit
     EntityWeakPtr avatarEntity_;
     /// Avatar asset to edit
     boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 
+    QPointer<QFileDialog> fileDialog; ///< Keeps track of the latest opened file save/open dialog.
+
     bool reverting_;
+
+private slots:
+    /// Called by open file dialog when it's closed.
+    /** @param result Result of dialog clousre. Open is 1, Cancel is 0. */
+    void OpenFileDialogClosed(int result);
 };
