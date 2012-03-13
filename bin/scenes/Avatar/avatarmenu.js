@@ -7,7 +7,7 @@ function MenuActionHandler(assetRef, index)
 
 MenuActionHandler.prototype.triggered = function()
 {
-    var avatarEntity = scene.GetEntity("Avatar" + client.GetConnectionID());
+    var avatarEntity = scene.GetEntityByName("Avatar" + client.GetConnectionID());
     if (avatarEntity == null)
         return;
     var r = avatarEntity.avatar.appearanceRef;

@@ -57,6 +57,9 @@ if (!framework.IsHeadless())
     if (ecEditor)
         viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
 
+    if (framework.GetModuleByName("Avatar"))
+        viewMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
+
     if (framework.GetModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
@@ -237,6 +240,12 @@ if (!framework.IsHeadless())
     function OpenEcEditorWindow() {
         framework.GetModuleByName("ECEditor").ShowEditorWindow();
     }
+
+    function OpenAvatarEditorWindow() {
+        framework.GetModuleByName("Avatar").ToggleAvatarEditorWindow();
+        if (client.IsConnected())
+           framework.GetModuleByName("Avatar").EditAvatar("Avatar" + client.GetConnectionID())
+   }
 
     function ShowEditingGizmo(show) {
         framework.GetModuleByName("ECEditor").gizmoEnabled = show;
