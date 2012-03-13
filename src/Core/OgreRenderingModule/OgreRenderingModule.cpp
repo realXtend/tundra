@@ -20,6 +20,7 @@
 #include "OgreParticleAsset.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreMaterialAsset.h"
+#include "OgreProfilerHook.h"
 #include "TextureAsset.h"
 
 #include "Application.h"
@@ -29,6 +30,7 @@
 #include "AssetCache.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
+#include "Profiler.h"
 #include "ConsoleAPI.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
@@ -40,9 +42,43 @@ namespace OgreRenderer
 
 std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "CACHED_ASSETS_GROUP";
 
+DWORD mainThreadId;
+void Profiler_BeginBlock(const char *name)
+{
+#ifdef PROFILING
+    if (GetCurrentThreadId() != mainThreadId)
+        return;
+    Framework *fw = Framework::Instance();
+    Profiler *p = fw ? fw->GetProfiler() : 0;
+    if (p)
+        p->StartBlock((std::string("OGRE_") + name).c_str());
+#endif
+}
+
+void Profiler_EndBlock()
+{
+#ifdef PROFILING
+    if (GetCurrentThreadId() != mainThreadId)
+        return;
+    Framework *fw = Framework::Instance();
+    Profiler *p = fw ? fw->GetProfiler() : 0;
+    if (p)
+    {
+        ProfilerNodeTree *treeNode = p->current_node_;
+        if (!treeNode)
+            return;
+        p->EndBlock(treeNode->Name());
+    }
+#endif
+
+}
+
 OgreRenderingModule::OgreRenderingModule() : 
     IModule("OgreRendering")
 {
+    mainThreadId = GetCurrentThreadId();
+    OgreProfiler_BeginBlock = Profiler_BeginBlock;
+    OgreProfiler_EndBlock = Profiler_EndBlock;
 }
 
 OgreRenderingModule::~OgreRenderingModule()

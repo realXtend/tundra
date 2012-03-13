@@ -377,7 +377,7 @@ public:
 
     void Reset();
 
-private:
+//private:
     /// The single global root node object.
     /// This is a dummy root node that doesn't track any  timing statistics, but just contains
     /// all the root blocks of each thread as its children.

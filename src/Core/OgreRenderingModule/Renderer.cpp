@@ -360,6 +360,8 @@ namespace OgreRenderer
         }
 
         initialized = true;
+
+        Ogre::Profiler::getSingleton().setEnabled(true);
     }
 
     void Renderer::SetFullScreen(bool value)
