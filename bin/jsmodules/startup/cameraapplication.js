@@ -1,13 +1,13 @@
 // A startup script that hooks to scene added & scene cleared signals, and creates a local freelook camera upon either signal.
 // Also adds Locate functionality to the SceneStructureWindow.
 
-framework.Scene().SceneAdded.connect(OnSceneAdded);
-
 if (!framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
+    
     ui.ContextMenuAboutToOpen.connect(OnContextMenu);
+    framework.Scene().SceneAdded.connect(OnSceneAdded);
 }
 
 var scene = null;
@@ -21,9 +21,12 @@ function OnSceneAdded(scenename)
 {
     // Get pointer to scene through framework
     scene = framework.Scene().GetScene(scenename);
-    scene.SceneCleared.connect(OnSceneCleared);
-    scene.EntityCreated.connect(OnEntityCreated)
-    CreateCamera(scene);
+    if (scene != null)
+    {
+        scene.SceneCleared.connect(OnSceneCleared);
+        scene.EntityCreated.connect(OnEntityCreated)
+        CreateCamera(scene);
+    }
 }
 
 function OnSceneCleared(scene)
@@ -33,8 +36,9 @@ function OnSceneCleared(scene)
 
 function OnEntityCreated(entity, change)
 {
+    // This was the signal for our camera, ignore
     if (entity.id == cameraEntityId)
-        return; // This was the signal for our camera, ignore
+        return;
 
     // If a freelookcamera entity is loaded from the scene, use it instead; delete the one we created
     if (entity.name == "FreeLookCamera")
@@ -64,16 +68,11 @@ function CreateCamera(scene)
     if (scene.GetEntityByName("FreeLookCamera") != null)
         return;
 
-    var entity = scene.CreateLocalEntity(["EC_Script", "EC_Camera", "EC_Placeable"]);
-    entity.SetName("FreeLookCamera");
-    entity.SetTemporary(true);
-
-    var script = entity.GetComponent("EC_Script");
-    script.type = "js";
-    script.runOnLoad = true;
-    var r = script.scriptRef;
-    r.ref = "local://freelookcamera.js";
-    script.scriptRef = r;
+    var entity = scene.CreateLocalEntity(["EC_Placeable", "EC_Script", "EC_Camera", "EC_Name"]);
+    entity.name = "FreeLookCamera";
+    entity.temporary = true;
+    entity.script.runOnLoad = true;
+    entity.script.scriptRef = new AssetReference("local://freelookcamera.js");
 
     cameraEntityId = entity.id;
     createdCameraEntityId = entity.id;
