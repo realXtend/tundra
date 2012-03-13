@@ -37,9 +37,15 @@
 #include <qendian.h>
 #include <Win.h> // Tundra include
 
+#ifdef __APPLE__
+#include <netinet/in.h>
+#endif
+
 /// @cond PRIVATE
 namespace Mumble
 {
+    template<class T> class QTypeInfo;
+
     struct HostAddress {
 	    union {
 		    Q_IPV6ADDR qip6;

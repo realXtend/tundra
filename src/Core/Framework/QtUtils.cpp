@@ -91,6 +91,11 @@ namespace QtUtils
         dialog->setFileMode(QFileDialog::AnyFile);
         dialog->setAcceptMode(QFileDialog::AcceptSave);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+#ifdef __APPLE__
+        dialog->setOption(QFileDialog::DontUseNativeDialog, true);
+#endif
+
         QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
         dialog->show();
         dialog->resize(500, 300);

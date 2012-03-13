@@ -275,30 +275,3 @@ void UiGraphicsView::dragMoveEvent(QDragMoveEvent *e)
     QGraphicsItem *underMouse = GetVisibleItemAtCoords(e->pos().x(), e->pos().y());
     emit DragMoveEvent(e, underMouse);
 }
-
-#ifdef Q_WS_MAC
-void UiGraphicsView::mousePressEvent(QMouseEvent *event)
-{
-    QGraphicsView::mousePressEvent(event);
-}
-
-void UiGraphicsView::mouseReleaseEvent(QMouseEvent *event)
-{
-    QGraphicsView::mouseReleaseEvent(event);
-}
-
-void UiGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
-{
-    QGraphicsView::mouseDoubleClickEvent(event);
-}
-
-void UiGraphicsView::mouseMoveEvent(QMouseEvent *event)
-{
-    QGraphicsView::mouseMoveEvent(event);
-}
-
-void UiGraphicsView::wheelEvent(QWheelEvent *event)
-{
-    QGraphicsView::wheelEvent(event);
-}
-#endif
