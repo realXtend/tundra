@@ -27,6 +27,8 @@ public:
 
     ~OgreMeshAsset();
 
+    virtual bool LoadFromFile(QString filename);
+
     /// Load mesh from memory
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous);
 

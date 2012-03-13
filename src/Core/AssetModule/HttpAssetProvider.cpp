@@ -371,14 +371,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             if (replyCode == 304)
             {
                 // Read cache file to transfer asset data
-                QFile cacheFile(cache->FindInCache(sourceRef));
-                if (cacheFile.open(QIODevice::ReadOnly))
-                {
-                    QByteArray cacheData = cacheFile.readAll();
-                    transfer->rawAssetData.insert(transfer->rawAssetData.end(), cacheData.data(), cacheData.data() + cacheData.size());
-                    cacheFile.close();
-                }
-                else
+                if (cache->FindInCache(sourceRef).isEmpty())
                     error = "Http GET for address \"" + reply->url().toString() + "\" returned '304 Not Modified' but existing cache file could not be opened: \"" + cache->GetDiskSourceByRef(sourceRef) + "\"";
             }
             // 200 OK

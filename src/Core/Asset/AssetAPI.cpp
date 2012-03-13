@@ -1203,7 +1203,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     transfer->EmitAssetDownloaded();
 
     const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
-    transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
+    if (data)
+        transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
+    else
+        transfer->asset->LoadFromFile(transfer->asset->DiskSource());
 
     //bool success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
     //if (!success)
@@ -1386,12 +1389,6 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
         currentTransfers.erase(iter);
     else // Even if we didn't know about this transfer, just print a warning and continue execution here nevertheless.
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
-
-    if (transfer->rawAssetData.size() == 0)
-    {
-        LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished: but data size was 0 bytes!");
-        return;
-    }
 
     pendingDownloadRequests.erase(transfer->source.ref);
 }

@@ -22,12 +22,17 @@ OgreMeshAsset::~OgreMeshAsset()
     Unload();
 }
 
+bool OgreMeshAsset::LoadFromFile(QString filename)
+{
+    if (!assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+        return DeserializeFromData(0, 0, true);
+    else
+        return IAsset::LoadFromFile(filename);
+}
+
 bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
 {
     PROFILE(OgreMeshAsset_LoadFromFileInMemory);
-    assert(data_);
-    if (!data_)
-        return false;
     
     /// Force an unload of this data first.
     Unload();
@@ -55,6 +60,10 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
             return true;
         }
     }
+
+    assert(data_);
+    if (!data_)
+        return false;
 
     // Synchronous loading
     if (ogreMesh.isNull())

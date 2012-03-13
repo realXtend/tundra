@@ -43,19 +43,17 @@ TextureAsset::~TextureAsset()
     Unload();
 }
 
+bool TextureAsset::LoadFromFile(QString filename)
+{
+    if (!assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+        return DeserializeFromData(0, 0, true);
+    else
+        return IAsset::LoadFromFile(filename);
+}
+
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     PROFILE(TextureAsset_DeserializeFromData);
-    if (!data)
-    {
-        LogError("TextureAsset::DeserializeFromData failed: Cannot deserialize from input null pointer!");
-        return false;
-    }
-    if (numBytes == 0)
-    {
-        LogError("TextureAsset::DeserializeFromData failed: numBytes == 0!");
-        return false;
-    }
 
     // A NullAssetFactory has been registered on headless mode.
     // We should never be here in headless mode.
@@ -83,6 +81,17 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             return true;
         }
     }   
+
+    if (!data)
+    {
+        LogError("TextureAsset::DeserializeFromData failed: Cannot deserialize from input null pointer!");
+        return false;
+    }
+    if (numBytes == 0)
+    {
+        LogError("TextureAsset::DeserializeFromData failed: numBytes == 0!");
+        return false;
+    }
 
     // Synchronous loading
     try
@@ -386,6 +395,7 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
 void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps, bool dynamic,
                                        float xRadius, float yRadius)
 {
+    return; ///\todo DISABLED FOR PROFILING! DON'T COMMIT!
     PROFILE(TextureAsset_SetContentsDrawText);
     text = text.replace("\\n", "\n");
 
