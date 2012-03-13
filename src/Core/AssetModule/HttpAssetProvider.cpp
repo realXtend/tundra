@@ -143,7 +143,9 @@ QByteArray HttpAssetProvider::ToHttpDate(const QDateTime &dateTime)
     // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822.
     return QLocale::c().toString(dateTime, "ddd, dd MMM yyyy hh:mm:ss").toAscii() + QByteArray(" GMT");
 }
-        
+
+#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
+
 std::vector<HttpAssetTransferPtr> delayedTransfers;
 
 void HttpAssetProvider::Update(f64 frametime)
@@ -152,6 +154,8 @@ void HttpAssetProvider::Update(f64 frametime)
         framework->Asset()->AssetTransferCompleted(delayedTransfers[i].get());
     delayedTransfers.clear();
 }
+
+#endif
 
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
@@ -193,24 +197,21 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
 
     AssetCache *cache = framework->Asset()->GetAssetCache();
     QString filenameInCache = cache ? cache->FindInCache(assetRef) : QString();
+#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
     if (cache && framework->HasCommandLineParameter("--disable_http_ifmodifiedsince") && !filenameInCache.isEmpty())
     {
         PROFILE(HttpAssetProvider_ReadFileFromCache);
-        // Read cache file to transfer asset data
-        QFile cacheFile(filenameInCache);
-        if (cacheFile.open(QIODevice::ReadOnly))
+
+        if (QFile::exists(filenameInCache))
         {
-            QByteArray cacheData = cacheFile.readAll();
-            transfer->rawAssetData.insert(transfer->rawAssetData.end(), cacheData.data(), cacheData.data() + cacheData.size());
-            cacheFile.close();
             transfer->SetCachingBehavior(false, filenameInCache);
             delayedTransfers.push_back(transfer);
-//            framework->Asset()->AssetTransferCompleted(transfer.get());
         }
- //       else
-  //          framework->Asset()->AssetTransferFailed(transfer.get(), "HttpAssetProvider: Failed to read file '" + filenameInCache + "' from cache!");
+        else
+            framework->Asset()->AssetTransferFailed(transfer.get(), "HttpAssetProvider: Failed to read file '" + filenameInCache + "' from cache!");
     }
     else
+#endif
     {
         QNetworkRequest request;
         request.setUrl(QUrl(assetRef));
