@@ -69,7 +69,7 @@ void AvatarModule::ToggleAvatarEditorWindow()
         avatarEditor->setVisible(!avatarEditor->isVisible());
         if (!avatarEditor->isVisible())
         {
-            // \ todo Save window position
+            /// \todo Save window position
             avatarEditor->close();
         }
         return;
