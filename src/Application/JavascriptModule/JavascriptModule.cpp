@@ -61,11 +61,6 @@ void JavascriptModule::Initialize()
 {
     connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
 
-    // support qtscript-plugins dir under bin, can't rely on system qt having
-    // up to date qtscript bindings
-    QString pluginspath("./qtscript-plugins");
-    QCoreApplication::addLibraryPath(pluginspath);
-
     RegisterCoreMetaTypes();
 
     framework_->Console()->RegisterCommand(
