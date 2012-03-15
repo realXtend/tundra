@@ -38,9 +38,8 @@ set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 :: Add qmake from our downloaded Qt to PATH.
 set PATH=%DEPS%\Qt\bin;%PATH%
 
-set QMAKESPEC=win32-msvc2008
-::set QTDIR=%DEPS%\Qt
-set QTDIR=C:\Qt\2010.05\qt
+set QMAKESPEC=%DEPS%\Qt\mkspecs\win32-msvc2008
+set QTDIR=%DEPS%\Qt
 
 IF NOT EXIST "%DEPS%\Qt". (
    cd "%DEPS%"
