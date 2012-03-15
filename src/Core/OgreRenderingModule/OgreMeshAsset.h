@@ -2,12 +2,17 @@
 
 #pragma once
 
+#include "Math/MathNamespace.h"
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 #include "OgreModuleApi.h"
 
 #include <OgreMesh.h>
 #include <OgreResourceBackgroundQueue.h>
+#include "Math/float2.h"
+#include "Geometry/KdTree.h"
+#include "Geometry/Triangle.h"
+#include "IRenderer.h"
 
 /// Represents an Ogre .mesh loaded to the GPU.
 class OGRE_MODULE_API OgreMeshAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
@@ -52,10 +57,22 @@ public:
 
     //std::vector<QString> originalMaterials;
 
+public slots:
+    RayQueryResult Raycast(const Ray &ray);
+
 private:
+    /// Precomputes a kD-tree for the triangle data of this mesh.
+    void CreateKdTree();
+
     /// Process mesh data after loading to create tangents and such.
     bool GenerateMeshdata();
 
+    /// Stores a CPU-side version of the mesh geometry data (positions), for raycasting purposes.
+    KdTree<Triangle> meshData;
+
+    std::vector<float3> normals; ///< Triangle normals. One per triangle (not per-vertex normals).
+    std::vector<float2> uvs; 
+    std::vector<int> subMeshTriangleCounts;
 };
 
 typedef boost::shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;

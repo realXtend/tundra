@@ -1064,7 +1064,7 @@ void EC_Mesh::ApplyMaterial()
             // Only apply the material if it is loaded and has no dependencies
             QString assetFullName = assetAPI->ResolveAssetRef("", materialList[i].ref);
             AssetPtr asset = assetAPI->GetAsset(assetFullName);
-            if ((asset) && (assetAPI->NumPendingDependencies(asset) == 0))
+            if (asset && !assetAPI->HasPendingDependencies(asset))
                 SetMaterial(i, assetFullName);
         }
     }
@@ -1293,6 +1293,27 @@ AABB EC_Mesh::LocalAABB() const
         return AABB();
 
     return AABB(mesh->getBounds());
+}
+
+OgreMeshAssetPtr EC_Mesh::MeshAsset() const
+{
+    if (!meshAsset)
+        return OgreMeshAssetPtr();
+    return boost::dynamic_pointer_cast<OgreMeshAsset>(meshAsset->Asset());
+}
+
+boost::shared_ptr<OgreMaterialAsset> EC_Mesh::MaterialAsset(int materialIndex) const
+{
+    if (materialIndex < 0 || materialIndex >= (int)materialAssets.size())
+        return boost::shared_ptr<OgreMaterialAsset>();
+    return boost::dynamic_pointer_cast<OgreMaterialAsset>(materialAssets[materialIndex]->Asset());
+}
+
+boost::shared_ptr<OgreSkeletonAsset> EC_Mesh::SkeletonAsset() const
+{
+    if (!skeletonAsset)
+        return boost::shared_ptr<OgreSkeletonAsset>();
+    return boost::dynamic_pointer_cast<OgreSkeletonAsset>(skeletonAsset->Asset());
 }
 
 Ogre::Vector2 FindUVs(const Ogre::Vector3& hitPoint, const Ogre::Vector3& t1, const Ogre::Vector3& t2, const Ogre::Vector3& t3, const Ogre::Vector2& tex1, const Ogre::Vector2& tex2, const Ogre::Vector2& tex3)
