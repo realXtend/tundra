@@ -44,7 +44,7 @@ function OnSceneAdded(scenename)
 
 function OnEntityCreated(entity, change)
 {
-    if (!server.IsRunning() && entity.name == "Avatar" + client.GetConnectionID())
+    if (!server.IsRunning() && entity.name == "Avatar" + client.connectionId)
     {
         avatarEntityId = entity.id;
         frame.Updated.connect(ProduceRandomMovement);

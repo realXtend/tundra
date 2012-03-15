@@ -10,7 +10,9 @@ void mainVS(float4 pos    : POSITION,
           float3 normal : NORMAL,
           float2 tex0    : TEXCOORD0, // Diffuse texture channel.
           float2 tex1    : TEXCOORD1, // Blend texture channel.
-
+#ifdef SEPARATE_LIGHTMAP_UV
+          float2 tex2    : TEXCOORD2, // Lightmap texture channel.
+#endif
           uniform float4x4 worldViewProjMatrix,
           uniform float4x4 worldMatrix,
 
@@ -25,7 +27,11 @@ void mainVS(float4 pos    : POSITION,
           out float4 oPos      : POSITION,
           out float4 oDirectionalColor : TEXCOORD6, // Dynamic color based on the single sun directional light. the w value is just the z-coordinate of the vertex, packed here.
           out float2 oTex0     : TEXCOORD0, // Diffuse texture channel.
-          out float2 oTex1     : TEXCOORD1, // Blend/lightmap texture channel.
+#ifndef SEPARATE_LIGHTMAP_UV
+          out float2 oTex1     : TEXCOORD1, // Blend texture channel
+#else
+          out float4 oTex1     : TEXCOORD1, // Blend UV in xy, lightmap UV in zw
+#endif
 #ifdef SHADOW_MAPPING
           out float4 oShadowTex0 : TEXCOORD3,
 #ifdef PSSM_SHADOWS
@@ -39,7 +45,11 @@ void mainVS(float4 pos    : POSITION,
     oPos = mul(worldViewProjMatrix, pos);
 
     oTex0 = tex0;
+#ifndef SEPARATE_LIGHTMAP_UV
     oTex1 = tex1;
+#else
+    oTex1 = float4(tex1.x, tex1.y, tex2.x, tex2.y);
+#endif
 
     //Fog params packed as: exp_density, linear_start, linear_end, 1.0 / (linear_end - linear_start)
     //Store fog density to w
@@ -64,7 +74,11 @@ void mainVS(float4 pos    : POSITION,
 void mainPS(float4 pos    : POSITION,
           float4 directionalColor : TEXCOORD6,
           float2 tex0   : TEXCOORD0, // Diffuse texture channel.
+#ifndef SEPARATE_LIGHTMAP_UV
           float2 tex1   : TEXCOORD1, // Blend texture channel.
+#else
+          float4 tex1   : TEXCOORD1, // Blend UV in xy, lightmap UV in zw
+#endif
           float4 fog    : TEXCOORD2,
 #ifdef SHADOW_MAPPING
           float4 shadowTex0 : TEXCOORD3,
@@ -94,7 +108,7 @@ void mainPS(float4 pos    : POSITION,
           out float4 col : COLOR)
 {
     //Get texture and their weights
-	float4 weights = tex2D(blend, tex1);
+	float4 weights = tex2D(blend, tex1.xy);
 	weights.xyz /= (weights.x + weights.y + weights.z);
 
 #ifdef ALPHAMASK
@@ -150,7 +164,18 @@ void mainPS(float4 pos    : POSITION,
 
 
 #ifdef LIGHTMAP
-    light = tex2D(lightMap, tex1).rgb * lightMapFactor;
+    #ifndef SEPARATE_LIGHTMAP_UV
+        light = tex2D(lightMap, tex1).rgb;
+    #else
+        light = tex2D(lightMap, tex1.zw).rgb;
+    #endif
+    
+    #ifndef SHADOW_MAPPING
+        light *= lightMapFactor;
+    #else
+        light = min(ambient.rgb + float3(lightness), light);
+        light *= lightMapFactor;
+    #endif
 #else
     light = ambient.rgb + lightness * directionalColor.rgb;
 #endif
@@ -161,4 +186,3 @@ void mainPS(float4 pos    : POSITION,
     // Fog
     col.rgb = col.rgb * fog.w + fog.xyz * (1.f - fog.w);
 }
-
