@@ -29,8 +29,9 @@ cecho {0E}         When building Qt, you must press 'y' once for the script to p
 cecho {0E}Warning: You will need roughly 25GB of disk space to proceed.{# #}{\n}
 echo.
 
-echo If you are not ready with the above, press Ctrl-C to abort!
+echo If you are not ready with the above, press Ctrl-C to abort!\n
 pause
+echo.
 
 :: Make sure we call .Net Framework 3.5 version of msbuild, to be able to build VS2008 solutions.
 set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
@@ -41,18 +42,62 @@ set PATH=%DEPS%\Qt\bin;%PATH%
 set QMAKESPEC=%DEPS%\Qt\mkspecs\win32-msvc2008
 set QTDIR=%DEPS%\Qt
 
-IF NOT EXIST "%DEPS%\Qt". (
+IF NOT EXIST "%DEPS%\OpenSSL\src". (
    cd "%DEPS%"
-   IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
-      cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
+
+   IF NOT EXIST openssl-0.9.8u.tar.gz. (
+      cecho {0D}Downloading OpenSSL 0.9.8u.{# #}{\n}
+      wget http://www.openssl.org/source/openssl-0.9.8u.tar.gz
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\Qt".{# #}{\n}
-   7za x -y qt-everywhere-opensource-src-4.7.4.zip
+   mkdir OpenSSL
+   cecho {0D}Extracting OpenSSL 0.9.8u sources to "%DEPS%\OpenSSL\src".{# #}{\n}
+   7za e -y openssl-0.9.8u.tar.gz
+   7za x -y -oOpenSSL openssl-0.9.8u.tar
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   ren qt-everywhere-opensource-src-4.7.4 qt
+   cd OpenSSL
+   ren openssl-0.9.8u src
+   cd ..
+   IF NOT EXIST "%DEPS%\OpenSSL\src" GOTO :ERROR
+   rm openssl-0.9.8u.tar
+) ELSE (
+    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%DEPS%\OpenSSL\bin\ssleay32.dll". (
+   cd "%DEPS%\OpenSSL\src"
+   cecho {0D}Configuring OpenSSL build.{# #}{\n}
+   perl Configure VC-WIN32 --prefix=%DEPS%\OpenSSL
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
+   ms\do_masm
+   cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}
+   nmake -f ms\ntdll.mak
+   nmake -f ms\ntdll.mak install
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+) ELSE (
+   cecho {0D}OpenSSL already built. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
+   cecho {0D}Deploying OpenSSL DLLs to Tundra bin\.{# #}{\n}
+   copy /Y "%DEPS%\OpenSSL\bin\*.dll" "%TUNDRA_BIN%"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+)
+
+IF NOT EXIST "%DEPS%\Qt". (
+   cd "%DEPS%"
+   IF NOT EXIST qt-everywhere-opensource-src-4.8.0.zip. (
+      cecho {0D}Downloading Qt 4.8.0. Please be patient, this will take a while.{# #}{\n}
+      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.8.0.zip
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   )
+
+   cecho {0D}Extracting Qt 4.8.0 sources to "%DEPS%\Qt".{# #}{\n}
+   7za x -y qt-everywhere-opensource-src-4.8.0.zip
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   ren qt-everywhere-opensource-src-4.8.0 qt
    IF NOT EXIST "%DEPS%\Qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
@@ -61,7 +106,7 @@ IF NOT EXIST "%DEPS%\Qt". (
 IF NOT EXIST "%DEPS%\Qt\lib\QtCore4.dll". (
    cd "%DEPS%\Qt"
    cecho {0D}Configuring Qt build. Please answer 'y'!.{# #}{\n}
-   configure -debug-and-release -opensource -shared -ltcg -no-qt3support -no-opengl -no-openvg -platform win32-msvc2008 -no-dbus -nomake examples -nomake demos
+   configure -platform win32-msvc2008 -debug-and-release -opensource -shared -ltcg -mp -no-qt3support -no-opengl -no-openvg  -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff -openssl -I "%DEPS%\OpenSSL\include" -L "%DEPS%\OpenSSL\lib"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
    nmake /nologo
@@ -211,6 +256,7 @@ IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core.dll". (
 ) ELSE (
    cecho {0D}QtScript plugin DLLs already deployed. Skipping.{# #}{\n}
 )
+
 IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
    cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
    cd "%DEPS%"
@@ -436,4 +482,5 @@ GOTO :EOF
 
 :ERROR
 cecho {0C}An error occurred! Aborting!{# #}{\n}
+cd %TOOLS%
 pause
