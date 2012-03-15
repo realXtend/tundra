@@ -20,7 +20,10 @@
 #include "OgreParticleAsset.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreMaterialAsset.h"
+#include "OgreProfiler.h"
+#ifdef OGRE_HAS_PROFILER_HOOKS
 #include "OgreProfilerHook.h"
+#endif
 #include "TextureAsset.h"
 
 #include "Application.h"
@@ -41,6 +44,8 @@ namespace OgreRenderer
 {
 
 std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "CACHED_ASSETS_GROUP";
+
+#ifdef OGRE_HAS_PROFILER_HOOKS
 
 DWORD mainThreadId;
 void Profiler_BeginBlock(const char *name)
@@ -64,21 +69,24 @@ void Profiler_EndBlock()
     Profiler *p = fw ? fw->GetProfiler() : 0;
     if (p)
     {
-        ProfilerNodeTree *treeNode = p->current_node_;
+        ProfilerNodeTree *treeNode = p->CurrentNode();
         if (!treeNode)
             return;
         p->EndBlock(treeNode->Name());
     }
 #endif
-
 }
+
+#endif
 
 OgreRenderingModule::OgreRenderingModule() : 
     IModule("OgreRendering")
 {
+#ifdef OGRE_HAS_PROFILER_HOOKS
     mainThreadId = GetCurrentThreadId();
     OgreProfiler_BeginBlock = Profiler_BeginBlock;
     OgreProfiler_EndBlock = Profiler_EndBlock;
+#endif
 }
 
 OgreRenderingModule::~OgreRenderingModule()
