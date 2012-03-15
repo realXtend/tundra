@@ -20,7 +20,11 @@
   <plugin path="MumblePlugin" />                <!-- Depends on OgreRenderingModule, JavascriptModule and TundraLogicModule -->
   <plugin path="VlcPlugin" />                   <!-- Depends on SceneWidgetComponents -->
   <plugin path="CAVEStereoModule" />            <!-- Depends on OgreRenderingModule -->
-    
+  <plugin path="StreamsModule" />
+  <plugin path="OpenDocuments" />
+  <plugin path="KNetProvider" />
+  <plugin path="EC_QmlApp" />
+
   <!-- TODO: Currently the above <plugin> items are loaded in the order they are specified, but below, the jsplugin items are loaded in an undefined order. Use the order specified here as the load order. -->
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
@@ -29,15 +33,16 @@
   <jsplugin path="MenuBar.js" />
   <jsplugin path="RendererSettings.js" />
   <jsplugin path="SoundSettings.js" />
-  <jsplugin path="LoadingScreen.js" />
+  <jslugin path="LoadingScreen.js" />
 
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
   <!-- pyplugin path="pythonqt_console.py" /-->         <!-- shows qt py console. could enable by default when add to menu etc. for controls, now just shows directly when is enabled here -->
-  
+
+  <ption name="--disable_http_ifmodifiedsince" />
   <option name="--trustserverstorages" />
   <option name="--accept_unknown_http_sources" />
   <option name="--accept_unknown_local_sources" />
-  <option name="--fpslimit" value="60" />
+  <option name="--fpslimit" value="0" />
   <option name="--hide_benign_ogre_messages" />
 </Tundra>

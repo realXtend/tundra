@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneStructureModule.h
- *  @brief  Provides UIs for scene and asset maintenance and content import.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneStructureModule.h
+    @brief  Provides UIs for scene and asset maintenance and content import. */
 
 #pragma once
 
@@ -25,6 +24,7 @@ class QDropEvent;
 
 class SceneStructureWindow;
 class AssetsWindow;
+class KeyBindingsConfigWindow;
 
 class EC_Mesh;
 class ECEditorWindow;
@@ -82,6 +82,9 @@ public slots:
     /// Toggles visibility of Assets window.
     void ToggleAssetsWindow();
 
+    /// Toggles visibility of Key Bindings window.
+    void ToggleKeyBindingsWindow();
+
 private:
     void SaveWindowPosition(QWidget *widget, const QString &settingName);
     void LoadWindowPosition(QWidget *widget, const QString &settingName);
@@ -94,9 +97,10 @@ private:
         QList<uint> affectedIndexes;
     };
 
-    QPointer<SceneStructureWindow> sceneWindow; ///< Scene Structure window.
-    QPointer<AssetsWindow> assetsWindow;///< Assets window.
-    boost::shared_ptr<InputContext> inputContext; ///< Input context.
+    QPointer<SceneStructureWindow> sceneWindow;
+    QPointer<AssetsWindow> assetsWindow;
+    QPointer<KeyBindingsConfigWindow> keyBindingsWindow;
+    boost::shared_ptr<InputContext> inputContext;
 
     SceneMaterialDropData materialDropData;
     QHash<QString, float3> urlToDropPos;

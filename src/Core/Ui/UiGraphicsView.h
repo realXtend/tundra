@@ -88,9 +88,7 @@ private:
     // We override the Qt widget drag-n-drop events to be able to expose them as Qt signals (DragEnterEvent, DragMoveEvent and DropEvent)
     // to all client applications. The individual modules can listen to those signals to be able to perform drag-n-drop
     // handling of custom mime types.
-#ifdef Q_WS_MAC
-public:
-#endif
+
     void dragEnterEvent(QDragEnterEvent *e);
     void dragLeaveEvent(QDragLeaveEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
@@ -98,12 +96,4 @@ public:
 
 private slots:
     void HandleSceneChanged(const QList<QRectF> &rectangles);
-#ifdef Q_WS_MAC
-public:
-    void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void wheelEvent(QWheelEvent *event);
-#endif
 };

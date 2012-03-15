@@ -1,5 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "KeyBindingsConfigWindow.h"
@@ -26,7 +27,8 @@
 
 #include "MemoryLeakCheck.h"
 
-KeyBindingsConfigWindow::KeyBindingsConfigWindow(Framework *fw) :
+KeyBindingsConfigWindow::KeyBindingsConfigWindow(Framework *fw, QWidget *parent) :
+    QWidget(parent),
     framework(fw),
     configList(0)
 {
@@ -57,7 +59,6 @@ KeyBindingsConfigWindow::KeyBindingsConfigWindow(Framework *fw) :
     PopulateBindingsList();
 
     setWindowTitle(tr("Key bindings"));
-    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 KeyBindingsConfigWindow::~KeyBindingsConfigWindow()

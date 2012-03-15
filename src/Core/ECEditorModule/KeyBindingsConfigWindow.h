@@ -11,14 +11,14 @@ class QTreeWidgetItem;
 
 class Framework;
 
-/// @todo Re-implement from script and re-enable functionality, hidden from documentation for now.
-/// @cond PRIVATE
+/// Key binding configuration window.
+/** @todo Pending a re-implementation from QtScript. */
 class KeyBindingsConfigWindow : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit KeyBindingsConfigWindow(Framework *fw);
+    explicit KeyBindingsConfigWindow(Framework *fw, QWidget *parent = 0);
     ~KeyBindingsConfigWindow();
 
 public slots:
@@ -45,4 +45,3 @@ private:
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 };
-/// @endcond

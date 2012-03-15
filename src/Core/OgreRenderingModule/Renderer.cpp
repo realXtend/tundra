@@ -296,7 +296,9 @@ namespace OgreRenderer
         {
             // If we are running in headless mode, initialize the Ogre 'DefaultHardwareBufferManager', which is a software-emulation
             // mode for Ogre's HardwareBuffers (i.e. can create meshes into CPU memory).
+#include "DisableMemoryLeakCheck.h"
             new Ogre::DefaultHardwareBufferManager(); // This creates a Ogre manager singleton, so can discard the return value from operator new.
+#include "EnableMemoryLeakCheck.h"
         }
         else
         {

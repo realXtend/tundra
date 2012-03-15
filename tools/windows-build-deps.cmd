@@ -38,8 +38,9 @@ set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 :: Add qmake from our downloaded Qt to PATH.
 set PATH=%DEPS%\Qt\bin;%PATH%
 
-set QMAKESPEC=%DEPS%\Qt\mkspecs\win32-msvc2008
-set QTDIR=%DEPS%\Qt
+set QMAKESPEC=win32-msvc2008
+::set QTDIR=%DEPS%\Qt
+set QTDIR=C:\Qt\2010.05\qt
 
 IF NOT EXIST "%DEPS%\Qt". (
    cd "%DEPS%"
@@ -276,7 +277,7 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
 
 IF NOT EXIST OGRE.sln. (
    cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
-   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1 -DOGRE_PROFILING:BOOL=ON
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 

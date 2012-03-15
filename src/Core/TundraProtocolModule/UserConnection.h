@@ -21,11 +21,9 @@ class SceneSyncState;
 class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
 {
     Q_OBJECT
-    
+    Q_PROPERTY(int id READ GetConnectionID)
+
 public:
-    /// Connection ID property
-    Q_PROPERTY (int id READ GetConnectionID)
-    
     UserConnection() :
         userID(0)
     {
@@ -50,15 +48,18 @@ public slots:
     void Exec(QObject* entity, const QString &action, const QStringList &params);
     
     /// Get connection id
+    /// @todo Rename to ConnectionId, make non-slot (already exposed as Qt property).
     int GetConnectionID() const;
     
     /// Get raw login data
+    /// @todo Rename to LoginData.
     QString GetLoginData() const;
      
     /// Set a property
     void SetProperty(const QString& key, const QString& value);
     
     /// Get a property
+    /// @todo Rename to Property.
     QString GetProperty(const QString& key) const;
     
     /// Deny connection. Call as a response to server.UserAboutToConnect() if necessary

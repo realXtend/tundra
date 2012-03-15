@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   OgreAssetEditorModule.cpp
- *  @brief  Provides editing and previewing tools for various asset types.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   OgreAssetEditorModule.cpp
+    @brief  Provides editing and previewing tools for various asset types. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -49,10 +48,7 @@ void OgreAssetEditorModule::Uninitialize()
 
 bool OgreAssetEditorModule::IsSupportedAssetType(const QString &type) const
 {
-    if (/*type == "OgreMesh" || */type == "OgreMaterial" || type == "OgreParticle" || type == "Audio" || type == "Texture")
-        return true;
-    else
-        return false;
+    return (/*type == "OgreMesh" || */type == "OgreMaterial" || type == "OgreParticle" || type == "Audio" || type == "Texture");
 }
 
 void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
@@ -136,7 +132,7 @@ extern "C"
 {
 DLLEXPORT void TundraPluginMain(Framework *fw)
 {
-    IModule *module = new OgreAssetEditorModule();
-    fw->RegisterModule(module);
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
+    fw->RegisterModule(new OgreAssetEditorModule());
 }
 }

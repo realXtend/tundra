@@ -7,7 +7,7 @@ function FindUserAvatar()
 {
     var scene = framework.Scene().MainCameraScene();
     if (scene && client.IsConnected())
-        return scene.GetEntityByName("Avatar" + client.GetConnectionID());
+        return scene.GetEntityByName("Avatar" + client.connectionId);
     else
         return null;
 }

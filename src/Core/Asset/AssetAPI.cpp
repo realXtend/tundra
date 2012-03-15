@@ -1161,7 +1161,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         transfer->EmitAssetDownloaded();
         transfer->EmitTransferSucceeded();
         pendingDownloadRequests.erase(transfer->source.ref);
-        currentTransfers.erase(transfer->source.ref);
+        AssetTransferMap::iterator iter = FindTransferIterator(transfer.get());
+        if (iter != currentTransfers.end())
+            currentTransfers.erase(iter);
         return;
     }
 
