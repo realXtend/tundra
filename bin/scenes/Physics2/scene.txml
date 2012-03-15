@@ -23073,7 +23073,7 @@
    <attribute value="true" name="Run on load"/>
    <attribute value="" name="Script class name"/>
    <attribute value="" name="Script application name"/>
-   <attribute value="0" name="Run mode"/>
+   <attribute value="2" name="Run mode"/>
   </component>
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,0,0,0.1,0.1,0.1" name="Transform"/>
