@@ -395,7 +395,6 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
 void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps, bool dynamic,
                                        float xRadius, float yRadius)
 {
-    return; ///\todo DISABLED FOR PROFILING! DON'T COMMIT!
     PROFILE(TextureAsset_SetContentsDrawText);
     text = text.replace("\\n", "\n");
 
