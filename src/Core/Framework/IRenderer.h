@@ -6,6 +6,7 @@
 #include "Math/float2.h"
 #include "Math/float3.h"
 
+#include <limits>
 #include <QObject>
 
 class Scene;
@@ -60,6 +61,13 @@ public:
 ///\todo This structure replaces and obsoletes the above. Delete the above one.
 struct RayQueryResult
 {
+    RayQueryResult()
+    :entity(0), component(0), pos(float3::nan), 
+    normal(float3::nan), submeshIndex((unsigned)-1), triangleIndex((unsigned)-1), 
+    uv(float2::nan), barycentricUV(float2::nan), t(std::numeric_limits<float>::quiet_NaN())
+    {
+    }
+
     /// Entity that was hit, null if none
     Entity* entity;
     /// Component which was hit.

@@ -143,6 +143,8 @@ struct KdTreeRayQueryFirstHitVisitor
 
 RayQueryResult OgreMeshAsset::Raycast(const Ray &ray)
 {
+    if (!ogreMesh.get())
+        return RayQueryResult();
     if (meshData.NumObjects() == 0)
         CreateKdTree();
     KdTreeRayQueryFirstHitVisitor visitor;
