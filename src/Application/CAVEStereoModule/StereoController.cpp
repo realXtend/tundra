@@ -87,7 +87,7 @@ namespace CAVEStereo
             QVector<Ogre::RenderWindow*> windows = getRenderWindows();
             for(int i=0; i< windows.size();i++)
             {
-                StereoManager* mngr = new StereoManager();
+                StereoManager* mngr = new StereoManager(renderer_);
                 Ogre::RenderWindow *original_window = windows.at(i);
                 Ogre::Viewport * viewport = original_window->getViewport(0);
                 mngr->init(viewport,0,StereoManager::SM_ANAGLYPH);
@@ -112,7 +112,7 @@ namespace CAVEStereo
             {
                 QString name = prefix_;
                 name += QString::number(number_of_views_);
-                StereoManager* mngr = new StereoManager();
+                StereoManager* mngr = new StereoManager(renderer_);
                 Ogre::RenderWindow *original_window = windows.at(i);
                 Ogre::Viewport *viewport = original_window->getViewport(0);
                 ExternalRenderWindow* window = new ExternalRenderWindow(); 
@@ -141,7 +141,7 @@ namespace CAVEStereo
             {
                 QString name = prefix_;
                 name += QString::number(number_of_views_);
-                StereoManager* mngr = new StereoManager();
+                StereoManager* mngr = new StereoManager(renderer_);
                 Ogre::RenderWindow *original_window = windows.at(i);
                 Ogre::Viewport *viewport = original_window->getViewport(0);
 
@@ -164,7 +164,7 @@ namespace CAVEStereo
             {
                 QString name = prefix_;
                 name += QString::number(number_of_views_);
-                StereoManager* mngr = new StereoManager();
+                StereoManager* mngr = new StereoManager(renderer_);
                 Ogre::RenderWindow *original_window = windows.at(i);
                 Ogre::Viewport *viewport = original_window->getViewport(0);
 
@@ -191,7 +191,7 @@ namespace CAVEStereo
             {
                 QString name = prefix_;
                 name += QString::number(number_of_views_);
-                StereoManager* mngr = new StereoManager();
+                StereoManager* mngr = new StereoManager(renderer_);
                 Ogre::RenderWindow *original_window = windows.at(i);
                 Ogre::Viewport *viewport = original_window->getViewport(0);
 
@@ -217,7 +217,7 @@ namespace CAVEStereo
             {
                 QString name = prefix_;
                 name += QString::number(number_of_views_);
-                StereoManager* mngr = new StereoManager();
+                StereoManager* mngr = new StereoManager(renderer_);
                 Ogre::RenderWindow *original_window = windows.at(i);
                 Ogre::Viewport *viewport = original_window->getViewport(0);
 
