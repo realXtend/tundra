@@ -46,6 +46,9 @@ If you modified some cmake variables, you may need to clean up any build variabl
 <ul>
 <li>Currently, Tundra does not automatically build on the Ubuntu 10.04 LTS version.
 <li>The build script build-ubuntu-deps.bash does not include the Ogre Cg Plugin in the build. (the Cg plugin is required for Tundra to compile Cg shaders)
+<ul>
+<li>To get Cg you need a version of Ogre built with it. One that is known to work with 11.04 at least is from the personal repository of Andrew Fenn. You can get that by doing this before running the build script: sudo add-apt-repository ppa:andrewfenn/ogredev</li>
+</ul>
 <li>For Qt, the version 4.7.0 is required. Tundra does not build with Qt 4.6.x or older.
 <li>For Ogre, the version 1.7.3 is preferred. Tundra does not build with Ogre 1.6.x or older. It might build with an older 1.7.x.
 <li>For Boost, the version 1.40.0 or newer is required.
