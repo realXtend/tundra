@@ -4,6 +4,7 @@ echo.
 :: User defined variables
 set GENERATOR="Visual Studio 9 2008"
 set BUILD_OPENSSL=TRUE
+set USE_JOM=TRUE
 
 :: Populate path variables
 cd ..
@@ -17,14 +18,22 @@ cd %TOOLS%
 
 :: Print user defined variables
 cecho {0A}Script configuration:{# #}{\n}
-echo CMake Generator  = %GENERATOR%
-echo Build OpenSSL    = %BUILD_OPENSSL%
+echo CMake Generator   = %GENERATOR%
+echo Build OpenSSL     = %BUILD_OPENSSL%
+echo Build Qt with JOM = %USE_JOM%
 echo.
 
 :: Validate user defined variables
 IF NOT %BUILD_OPENSSL% == FALSE (
    IF NOT %BUILD_OPENSSL% == TRUE (
       cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE{# #}{\n}
+      GOTO :ERROR
+   ) 
+)
+
+IF NOT %USE_JOM% == FALSE (
+   IF NOT %USE_JOM% == TRUE (
+      cecho {0E}USE_JOM needs to be either TRUE or FALSE{# #}{\n}
       GOTO :ERROR
    ) 
 )
@@ -87,7 +96,10 @@ IF NOT EXIST "%DEPS%\openssl\src". (
    cd openssl
    ren openssl-0.9.8u src
    cd ..
-   IF NOT EXIST "%DEPS%\openssl\src" GOTO :ERROR
+   IF NOT EXIST "%DEPS%\openssl\src". (
+      cecho {0E}Failed to rename %DEPS%\openssl\openssl-0.9.8u to %DEPS%\openssl\src. Permission denied for your account?{# #}{\n}
+      GOTO :ERROR
+   )
    rm openssl-0.9.8u.tar
 ) ELSE (
    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
@@ -143,37 +155,79 @@ IF NOT EXIST "%DEPS%\Qt". (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
 )
 
+IF %USE_JOM%==FALSE GOTO :SKIP_JOM
+IF NOT EXIST "%DEPS%\Qt\jom\jom.exe". (
+   cd "%DEPS%"
+   IF NOT EXIST jom_1_0_11.zip. (
+      cecho {0D}Downloading JOM build tool for Qt.{# #}{\n}
+      wget ftp://ftp.qt.nokia.com/jom/jom_1_0_11.zip
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   )
+
+   cecho {0D}Installing JOM build tool for to %DEPS%\Qt\jom.{# #}{\n}
+   mkdir %DEPS%\Qt\jom
+   7za x -y -oQt\jom jom_1_0_11.zip
+) ELSE (
+   cecho {0D}JOM already installed to %DEPS%\Qt\jom. Skipping.{# #}{\n}
+)
+
+:SKIP_JOM
+
 :: Enable OpenSSL in the Qt if OpenSSL build is enabled. For some reason if you 
 :: echo QT_OPENSSL_CONFIGURE inside the IF statement it will always be empty. 
-:: Hence the secondary IF to print it out when build is enabled.
+:: Hence the secondary IF to print it out when build is enabled. Only print these if Qt will be built
 SET QT_OPENSSL_CONFIGURE=
 IF %BUILD_OPENSSL%==TRUE (
-   cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
+   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
    SET QT_OPENSSL_CONFIGURE=-openssl -I "%DEPS%\openssl\include" -L "%DEPS%\openssl\lib"
 ) ELSE (
-   cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
+   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
 )
-IF %BUILD_OPENSSL%==TRUE echo '%QT_OPENSSL_CONFIGURE%'
-   
-IF NOT EXIST "%DEPS%\Qt\lib\QtCore4.dll". (
+IF %BUILD_OPENSSL%==TRUE (
+    IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". echo '%QT_OPENSSL_CONFIGURE%'
+)
+
+IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
    cd "%DEPS%\Qt"
-   cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}  
-   configure -platform win32-msvc2008 -debug-and-release -opensource -shared -ltcg -mp -no-qt3support -no-opengl -no-openvg  -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   
+   IF NOT EXIST "configure.cache". (
+      cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
+      configure -platform win32-msvc2008 -debug-and-release -opensource -shared -no-qt3support -no-opengl -no-openvg  -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   ) ELSE (
+      cecho {0D}Qt already configured. Remove %DEPS%\Qt\configure.cache to trigger a reconfigure.{# #}{\n}
+   )
+   
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
-   nmake /nologo
-   :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
-   set ERRORLEVEL=0
-   del /s /q mocinclude.tmp
-   nmake /nologo
+   IF %USE_JOM%==TRUE (
+      cecho {0D}- Building Qt with jom{# #}{\n}
+      jom\jom.exe
+      :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
+      set ERRORLEVEL=0
+      del /s /q mocinclude.tmp
+      jom\jom.exe
+   ) ELSE (
+      cecho {0D}- Building Qt with nmake{# #}{\n}
+      nmake /nologo
+      :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
+      set ERRORLEVEL=0
+      del /s /q mocinclude.tmp
+      nmake /nologo
+   )
+   
+   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
+      cecho {0E}Warning: Qt\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
+      GOTO :ERROR
+   )
+   
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   REM We (re)built Qt, so delete QtCore4.dll in Tundra bin\ to force DLL deployment below.
-   del /Q "%TUNDRA_BIN%\QtCore4.dll"
+   REM We (re)built Qt, so delete QtWebKit4.dll in Tundra bin\ to force DLL deployment below.
+   del /Q "%TUNDRA_BIN%\QtWebKit4.dll"
 ) ELSE (
    cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%TUNDRA_BIN%\QtCore4.dll". (
+IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
    copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -264,7 +318,13 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    qmake
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Building QtScriptGenerator.{# #}{\n}
-   nmake /nologo
+   IF %USE_JOM%==TRUE (
+      cecho {0D}- Building QtScriptGenerator with jom{# #}{\n}
+      "%DEPS%\Qt\jom\jom.exe"
+   ) ELSE (
+      cecho {0D}- Building QtScriptGenerator with nmake{# #}{\n}
+      nmake /nologo
+   )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Executing QtScriptGenerator.{# #}{\n}
    call release\generator
@@ -293,9 +353,17 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    qmake
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
-   nmake debug /nologo
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   nmake release /nologo
+   IF %USE_JOM%==TRUE (
+      cecho {0D}- Building qtscript plugins with jom{# #}{\n}
+      "%DEPS%\Qt\jom\jom.exe" debug
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+      "%DEPS%\Qt\jom\jom.exe" release
+   ) ELSE (
+      cecho {0D}- Building qtscript plugins with nmake{# #}{\n}
+      nmake debug /nologo
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+      nmake release /nologo
+   )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
@@ -359,7 +427,7 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
    wget "http://garr.dl.sourceforge.net/project/ogre/ogre-dependencies-vc%%2B%%2B/1.7/OgreDependencies_MSVC_20101231.zip"
    IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
       cecho {0C}Error downloading Ogre depencencies! Aborting!{# #}{\n}
-      GOTO:EOF
+      GOTO :EOF
    )
 
    cecho {0D}Extracting Ogre prebuilt dependencies package.{# #}{\n}
@@ -397,7 +465,7 @@ copy /Y "%DEPS%\ogre-safe-nocrashes\bin\debug\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN"
+copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0C}NOTE: Skipping PythonQt build for now!{# #}{\n}
@@ -460,7 +528,13 @@ IF NOT EXIST "%DEPS%\qt-solutions". (
    call configure -library
    qmake
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   nmake /nologo
+   IF %USE_JOM%==TRUE (
+      cecho {0D}- Building QtPropertyBrowser with jom{# #}{\n}
+      "%DEPS%\Qt\jom\jom.exe"
+   ) ELSE (
+      cecho {0D}- Building QtPropertyBrowser with nmake{# #}{\n}
+      nmake /nologo
+   )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\*.dll" "%TUNDRA_BIN%"
 ) ELSE (
@@ -516,13 +590,20 @@ IF NOT EXIST "%DEPS%\theora". (
 )
 
 IF NOT EXIST "%DEPS%\speex". (
+   cd "%DEPS%"
+   :: Speex does not have a tagged release for MSVC2008! So, check out trunk instead.
    cecho {0D}Cloning Speex into "%DEPS%\speex".{# #}{\n}
-   :: speex does not have a tagged release for MSVC2008! So, check out trunk instead.
-   svn checkout http://svn.xiph.org/trunk/speex/ "%DEPS%\speex"
-   cd "%DEPS%\speex\win32\VS2008"
+   svn checkout http://svn.xiph.org/trunk/speex/ speex
+   cd speex\win32\VS2008
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Building Speex. Please be patient, this will take a while.{# #}{\n}
    msbuild libspeex.sln /p:configuration=Debug /t:libspeex /clp:ErrorsOnly /nologo
    msbuild libspeex.sln /p:configuration=Release /t:libspeex /clp:ErrorsOnly /nologo
+   :: For some reason /t:libspeex;libspeexdsp wont build the dsp lib, so do it separately.
+   :: Only build release because the target directory and name are the same for debug and release.
+   msbuild libspeexdsp\libspeexdsp.vcproj /p:configuration=Release /clp:ErrorsOnly /nologo
+   :: Copy libspeex.lib also to \lib
+   copy /Y Win32\Release\libspeex.lib "%DEPS%\speex\lib"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Speex already built. Skipping.{# #}{\n}
@@ -541,9 +622,12 @@ IF NOT EXIST "%DEPS%\protobuf". (
    7za x -y protobuf-2.4.1.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ren protobuf-2.4.1 protobuf
-   IF NOT EXIST "%DEPS%\Qt" GOTO :ERROR
+   IF NOT EXIST "%DEPS%\protobuf". (
+      cecho {0E}Failed to rename %DEPS%\protobuf-2.4.1 to %DEPS%\protobuf. Permission denied for your account?{# #}{\n}
+      GOTO :ERROR
+   )
 ) ELSE (
-   cecho {0D}Profobuf already downloaded. Skipping.{# #}{\n}
+   cecho {0D}Google Profobuf already downloaded. Skipping.{# #}{\n}
 )
 
 :: This project builds both release and debug as libprotobuf.lib but CMake >=2.8.5
