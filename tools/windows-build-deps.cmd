@@ -62,7 +62,7 @@ echo.
 
 cecho {0A}Assuming Tundra git trunk is found at %TUNDRA_DIR%.{# #}{\n}
 cecho {0E}Warning: The path %TUNDRA_DIR% may not contain spaces! (qmake breaks on them).{# #}{\n}
-cecho {0E}Warning: You will need roughly 25GB of disk space to proceed.{# #}{\n}
+cecho {0E}Warning: You will need roughly 15GB of disk space to proceed.{# #}{\n}
 cecho {0E}Warning: This script is not fully unattended once you continue.{# #}{\n}
 cecho {0E}         When building Qt, you must press 'y' once for the script to proceed.{# #}{\n}
 echo.
@@ -468,7 +468,7 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-cecho {0C}NOTE: Skipping PythonQt build for now!{# #}{\n}
+cecho {0E}NOTE: Skipping PythonQt build for now!{# #}{\n}
 REM IF NOT EXIST "%DEPS%\realxtend-tundra-deps\PythonQt\lib\PythonQt.lib". (
 REM    cd "%DEPS%\realxtend-tundra-deps\PythonQt"
 REM    IF NOT EXIST PythonQt.sln. (
@@ -675,6 +675,43 @@ IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
    copy /Y "*.h" "%DEPS%\celt\include\"
 ) ELSE (
    cecho {0D}Celt already built. Skipping.{# #}{\n}
+)
+
+:: VLC
+IF NOT EXIST "%DEPS%\vlc". (
+   CD "%DEPS%"
+   IF NOT EXIST "%DEPS%\vlc-2.0.0-win32.zip". (
+      cecho {0D}Downloading VLC 2.0.0{# #}{\n}
+      wget http://sourceforge.net/projects/vlc/files/2.0.0/win32/vlc-2.0.0-win32.zip/download
+      IF NOT EXIST "%DEPS%\vlc-2.0.0-win32.zip". GOTO :ERROR
+   )
+   mkdir vlc
+   cecho {0D}Extracting VLC 2.0.0 package to "%DEPS%\vlc\vlc-2.0.0"{# #}{\n}
+   7za x -y -ovlc vlc-2.0.0-win32.zip
+   cd vlc
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   mkdir lib
+   mkdir include
+   mkdir bin\vlcplugins
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   cecho {0D}Copying needed files to %DEPS%\vlc\bin \lib and \include{# #}{\n}
+   copy /Y vlc-2.0.0\*.dll bin\
+   xcopy /E /I /C /H /R /Y vlc-2.0.0\plugins\*.* bin\vlcplugins
+   xcopy /E /I /C /H /R /Y vlc-2.0.0\sdk\include\*.* include
+   copy /Y vlc-2.0.0\sdk\lib\*.lib lib\
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   :: Force deployment
+   del /Q "%TUNDRA_BIN%\libvlc.dll"
+) ELSE (
+   cecho {0D}VLC 2.0.0 already fetched. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
+   cecho {0D}Deploying VLC 2.0.0 DLLs to Tundra bin\{# #}{\n}
+   xcopy /E /I /C /H /R /Y "%DEPS%\vlc\bin\*.*" "%TUNDRA_BIN%"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+) ELSE (
+   cecho {0D}VLC 2.0.0 already deployed. Skipping.{# #}{\n}
 )
 
 echo.
