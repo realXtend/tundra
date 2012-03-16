@@ -5,12 +5,6 @@ echo.
 set GENERATOR="Visual Studio 9 2008"
 set BUILD_OPENSSL=TRUE
 
-:: Print user defined variables
-cecho {0A}Script configuration:{# #}{\n}
-echo CMake Generator  = %GENERATOR%
-echo Build OpenSSL    = %BUILD_OPENSSL%
-echo.
-
 :: Populate path variables
 cd ..
 set ORIGINAL_PATH=%PATH%
@@ -21,11 +15,17 @@ set TUNDRA_BIN=%CD%\bin
 set DEPS=%CD%\deps
 cd %TOOLS%
 
+:: Print user defined variables
+cecho {0A}Script configuration:{# #}{\n}
+echo CMake Generator  = %GENERATOR%
+echo Build OpenSSL    = %BUILD_OPENSSL%
+echo.
+
 :: Validate user defined variables
 IF NOT %BUILD_OPENSSL% == FALSE (
    IF NOT %BUILD_OPENSSL% == TRUE (
       cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE{# #}{\n}
-      GOTO :EOF
+      GOTO :ERROR
    ) 
 )
 
@@ -51,11 +51,11 @@ IF %BUILD_OPENSSL%==TRUE (
 )
 echo.
 
-cecho {0D}Assuming Tundra git trunk is found at %TUNDRA_DIR%.{# #}{\n}
+cecho {0A}Assuming Tundra git trunk is found at %TUNDRA_DIR%.{# #}{\n}
 cecho {0E}Warning: The path %TUNDRA_DIR% may not contain spaces! (qmake breaks on them).{# #}{\n}
+cecho {0E}Warning: You will need roughly 25GB of disk space to proceed.{# #}{\n}
 cecho {0E}Warning: This script is not fully unattended once you continue.{# #}{\n}
 cecho {0E}         When building Qt, you must press 'y' once for the script to proceed.{# #}{\n}
-cecho {0E}Warning: You will need roughly 25GB of disk space to proceed.{# #}{\n}
 echo.
 
 echo If you are not ready with the above, press Ctrl-C to abort!\n
@@ -568,7 +568,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
 :: Celt
 IF NOT EXIST "%DEPS%\celt\.git" (
    cd "%DEPS%"
-   cecho {0D}Cloning Celt into "%DEPS%\celt".{# #}{\n}
+   cecho {0D}Cloning Celt 0.11.1 into "%DEPS%\celt".{# #}{\n}
    git clone git://git.xiph.org/celt.git
    cd celt
    git checkout -b v0.11.1
@@ -584,7 +584,7 @@ IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
    copy /Y "%TOOLS%\utils-windows\libcelt.vcproj" "%DEPS%\celt\libcelt"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    
-   cecho {0D}Building Celt.{# #}{\n}
+   cecho {0D}Building Celt 0.11.1.{# #}{\n}
    msbuild libcelt.vcproj /p:configuration=Debug /clp:ErrorsOnly /nologo
    msbuild libcelt.vcproj /p:configuration=Release /clp:ErrorsOnly /nologo
    IF NOT EXIST "%DEPS%\celt\include". mkdir %DEPS%\celt\include
