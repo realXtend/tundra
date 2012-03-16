@@ -1,7 +1,19 @@
 @echo off
+echo.
 
+:: User defined variables
 set GENERATOR="Visual Studio 9 2008"
+set BUILD_OPENSSL=TRUE
+
+:: Print user defined variables
+cecho {0A}Script configuration:{# #}{\n}
+echo CMake Generator  = %GENERATOR%
+echo Build OpenSSL    = %BUILD_OPENSSL%
+echo.
+
+:: Populate path variables
 cd ..
+set ORIGINAL_PATH=%PATH%
 set PATH=%PATH%;"%CD%\tools\utils-windows"
 set TOOLS=%CD%\tools
 set TUNDRA_DIR="%CD%"
@@ -9,6 +21,15 @@ set TUNDRA_BIN=%CD%\bin
 set DEPS=%CD%\deps
 cd %TOOLS%
 
+:: Validate user defined variables
+IF NOT %BUILD_OPENSSL% == FALSE (
+   IF NOT %BUILD_OPENSSL% == TRUE (
+      cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE{# #}{\n}
+      GOTO :EOF
+   ) 
+)
+
+:: Print scripts usage information
 cecho {0A}This script fetches and builds all Tundra dependencies.{# #}{\n}
 echo Requirements:
 echo 1. Install SVN and set svn.exe to PATH.
@@ -19,7 +40,15 @@ echo 3. Install git and set git.exe to PATH.
 echo  - http://tortoisehg.bitbucket.org/
 echo 4. Install DirectX SDK June 2010.
 echo  - http://www.microsoft.com/download/en/details.aspx?id=6812
-echo 5. Execute this file from Visual Studio 2008/2010 Command Prompt.
+IF %BUILD_OPENSSL%==TRUE (
+   echo 5. To build OpenSSL install Active Perl and set perl.exe to PATH.
+   echo  - http://www.activestate.com/activeperl/downloads
+   cecho {0E}   NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
+   cecho {0E}   provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
+   echo 6. Execute this file from Visual Studio 2008/2010 Command Prompt.
+) ELSE (
+   echo 5. Execute this file from Visual Studio 2008/2010 Command Prompt.
+)
 echo.
 
 cecho {0D}Assuming Tundra git trunk is found at %TUNDRA_DIR%.{# #}{\n}
@@ -36,56 +65,67 @@ echo.
 :: Make sure we call .Net Framework 3.5 version of msbuild, to be able to build VS2008 solutions.
 set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 
-:: Add qmake from our downloaded Qt to PATH.
-set PATH=%DEPS%\Qt\bin;%PATH%
+:: OpenSSL
+IF %BUILD_OPENSSL%==FALSE (
+   cecho {0D}Building OpenSSL disabled. Skipping.{# #}{\n}
+   GOTO :SKIP_OPENSSL
+)
 
-set QMAKESPEC=%DEPS%\Qt\mkspecs\win32-msvc2008
-set QTDIR=%DEPS%\Qt
-
-IF NOT EXIST "%DEPS%\OpenSSL\src". (
+IF NOT EXIST "%DEPS%\openssl\src". (
    cd "%DEPS%"
-
    IF NOT EXIST openssl-0.9.8u.tar.gz. (
       cecho {0D}Downloading OpenSSL 0.9.8u.{# #}{\n}
       wget http://www.openssl.org/source/openssl-0.9.8u.tar.gz
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   mkdir OpenSSL
-   cecho {0D}Extracting OpenSSL 0.9.8u sources to "%DEPS%\OpenSSL\src".{# #}{\n}
+   mkdir openssl
+   cecho {0D}Extracting OpenSSL 0.9.8u sources to "%DEPS%\openssl\src".{# #}{\n}
    7za e -y openssl-0.9.8u.tar.gz
-   7za x -y -oOpenSSL openssl-0.9.8u.tar
+   7za x -y -oopenssl openssl-0.9.8u.tar
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cd OpenSSL
+   cd openssl
    ren openssl-0.9.8u src
    cd ..
-   IF NOT EXIST "%DEPS%\OpenSSL\src" GOTO :ERROR
+   IF NOT EXIST "%DEPS%\openssl\src" GOTO :ERROR
    rm openssl-0.9.8u.tar
 ) ELSE (
-    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
+   cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%DEPS%\OpenSSL\bin\ssleay32.dll". (
-   cd "%DEPS%\OpenSSL\src"
+IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
+   cd "%DEPS%\openssl\src"
    cecho {0D}Configuring OpenSSL build.{# #}{\n}
-   perl Configure VC-WIN32 --prefix=%DEPS%\OpenSSL
+   perl Configure VC-WIN32 --prefix=%DEPS%\openssl
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
-   ms\do_masm
+   call ms\do_masm.bat
    cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}
    nmake -f ms\ntdll.mak
    nmake -f ms\ntdll.mak install
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   REM We (re)built OpenSSL, so delete ssleay32.dll in Tundra bin\ to force DLL deployment below.
+   del /Q "%TUNDRA_BIN%\ssleay32.dll"
 ) ELSE (
    cecho {0D}OpenSSL already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
-   cecho {0D}Deploying OpenSSL DLLs to Tundra bin\.{# #}{\n}
-   copy /Y "%DEPS%\OpenSSL\bin\*.dll" "%TUNDRA_BIN%"
+   cd "%DEPS%"
+   cecho {0D}Deploying OpenSSL DLLs to Tundra bin\{# #}{\n}
+   copy /Y "openssl\bin\*.dll" "%TUNDRA_BIN%"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
+:SKIP_OPENSSL
+
+:: Add qmake.exe from our downloaded Qt to PATH.
+set PATH=%DEPS%\Qt\bin;%PATH%
+
+set QMAKESPEC=%DEPS%\Qt\mkspecs\win32-msvc2008
+set QTDIR=%DEPS%\Qt
+
+:: Qt
 IF NOT EXIST "%DEPS%\Qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.8.0.zip. (
@@ -103,10 +143,22 @@ IF NOT EXIST "%DEPS%\Qt". (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
 )
 
+:: Enable OpenSSL in the Qt if OpenSSL build is enabled. For some reason if you 
+:: echo QT_OPENSSL_CONFIGURE inside the IF statement it will always be empty. 
+:: Hence the secondary IF to print it out when build is enabled.
+SET QT_OPENSSL_CONFIGURE=
+IF %BUILD_OPENSSL%==TRUE (
+   cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
+   SET QT_OPENSSL_CONFIGURE=-openssl -I "%DEPS%\openssl\include" -L "%DEPS%\openssl\lib"
+) ELSE (
+   cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
+)
+IF %BUILD_OPENSSL%==TRUE echo '%QT_OPENSSL_CONFIGURE%'
+   
 IF NOT EXIST "%DEPS%\Qt\lib\QtCore4.dll". (
    cd "%DEPS%\Qt"
-   cecho {0D}Configuring Qt build. Please answer 'y'!.{# #}{\n}
-   configure -platform win32-msvc2008 -debug-and-release -opensource -shared -ltcg -mp -no-qt3support -no-opengl -no-openvg  -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff -openssl -I "%DEPS%\OpenSSL\include" -L "%DEPS%\OpenSSL\lib"
+   cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}  
+   configure -platform win32-msvc2008 -debug-and-release -opensource -shared -ltcg -mp -no-qt3support -no-opengl -no-openvg  -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
    nmake /nologo
@@ -476,11 +528,80 @@ IF NOT EXIST "%DEPS%\speex". (
    cecho {0D}Speex already built. Skipping.{# #}{\n}
 )
 
+:: Google Protobuf
+IF NOT EXIST "%DEPS%\protobuf". (
+   cd "%DEPS%"
+   IF NOT EXIST protobuf-2.4.1.zip. (
+      cecho {0D}Downloading Google Protobuf 2.4.1{# #}{\n}
+      wget http://protobuf.googlecode.com/files/protobuf-2.4.1.zip
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   )
+   
+   cecho {0D}Extracting Google Protobuf 2.4.1 sources to "%DEPS%\protobuf".{# #}{\n}
+   7za x -y protobuf-2.4.1.zip
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   ren protobuf-2.4.1 protobuf
+   IF NOT EXIST "%DEPS%\Qt" GOTO :ERROR
+) ELSE (
+   cecho {0D}Profobuf already downloaded. Skipping.{# #}{\n}
+)
+
+:: This project builds both release and debug as libprotobuf.lib but CMake >=2.8.5
+:: will know this and find them properly from vsprojects\Release|Debug as long as PROTOBUF_SRC_ROOT_FOLDER
+:: is set properly. Because of this we can skip copying things to /lib /bin /include folders.
+IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
+   cd "%DEPS%\protobuf\vsprojects"
+   cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
+   vcbuild /c /upgrade libprotobuf.vcproj $ALL
+   vcbuild /c /upgrade libprotoc.vcproj Release
+   vcbuild /c /upgrade protoc.vcproj Release
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   echo.
+   cecho {0D}Building Google Protobuf. Please be patient, this will take a while.{# #}{\n}
+   msbuild protobuf.sln /p:configuration=Debug /t:libprotobuf /clp:ErrorsOnly /nologo
+   msbuild protobuf.sln /p:configuration=Release /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+) ELSE (
+   cecho {0D}Google Protobuf already built. Skipping.{# #}{\n}
+)
+
+:: Celt
+IF NOT EXIST "%DEPS%\celt\.git" (
+   cd "%DEPS%"
+   cecho {0D}Cloning Celt into "%DEPS%\celt".{# #}{\n}
+   git clone git://git.xiph.org/celt.git
+   cd celt
+   git checkout -b v0.11.1
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+) ELSE (
+   cecho {0D}Celt already cloned. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
+   cd "%DEPS%\celt\libcelt"
+   :: The project does not provide VS2008 solution file
+   cecho {0D}Copying VS2008 project file to "%DEPS%\celt\libcelt\libcelt.vcproj."{# #}{\n}
+   copy /Y "%TOOLS%\utils-windows\libcelt.vcproj" "%DEPS%\celt\libcelt"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   
+   cecho {0D}Building Celt.{# #}{\n}
+   msbuild libcelt.vcproj /p:configuration=Debug /clp:ErrorsOnly /nologo
+   msbuild libcelt.vcproj /p:configuration=Release /clp:ErrorsOnly /nologo
+   IF NOT EXIST "%DEPS%\celt\include". mkdir %DEPS%\celt\include
+   copy /Y "*.h" "%DEPS%\celt\include\"
+) ELSE (
+   cecho {0D}Celt already built. Skipping.{# #}{\n}
+)
+
+echo.
 cecho {0A}Tundra dependencies built.{# #}{\n}
+set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 GOTO :EOF
 
 :ERROR
+echo.
 cecho {0C}An error occurred! Aborting!{# #}{\n}
+set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 pause
