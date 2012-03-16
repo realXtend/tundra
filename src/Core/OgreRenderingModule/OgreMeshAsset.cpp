@@ -173,6 +173,42 @@ RayQueryResult OgreMeshAsset::Raycast(const Ray &ray)
     return visitor.result;
 }
 
+Triangle OgreMeshAsset::Tri(int submeshIndex, int triangleIndex)
+{
+    if (subMeshTriangleCounts.size() == 0)
+        CreateKdTree();
+
+    if (triangleIndex < 0 || NumTris(submeshIndex) < triangleIndex)
+    {
+        LogError("Invalid triangle index to call to OgreMeshAsset::Tri(submeshIndex=" + QString::number(submeshIndex) + ", triangleIndex=" + QString::number(triangleIndex) + "), the specified submesh has only " + NumTris(submeshIndex) + " triangles!");
+        return Triangle();
+    }
+    // Shift to index in proper location of the submesh triangles array.
+    for(int i = 0; i < submeshIndex; ++i)
+        triangleIndex += subMeshTriangleCounts[i];
+    return meshData.Object(triangleIndex);
+}
+
+int OgreMeshAsset::NumSubmeshes()
+{
+    if (subMeshTriangleCounts.size() == 0)
+        CreateKdTree();
+
+    return subMeshTriangleCounts.size();
+}
+
+int OgreMeshAsset::NumTris(int submeshIndex)
+{
+    if (subMeshTriangleCounts.size() == 0)
+        CreateKdTree();
+
+    if (submeshIndex >= 0 && submeshIndex < subMeshTriangleCounts.size())
+        return subMeshTriangleCounts[submeshIndex];
+
+    LogError("Ogre mesh " + Name() + " does not contain " + QString::number(submeshIndex+1) + " submeshes! (has only " + QString::number(subMeshTriangleCounts.size()) + ")");
+    return 0;
+}
+
 void OgreMeshAsset::CreateKdTree()
 {
     meshData.Clear();

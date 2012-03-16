@@ -62,6 +62,13 @@ public:
 public slots:
     RayQueryResult Raycast(const Ray &ray);
 
+    /// Returns the given triangle of the mesh data.
+    Triangle Tri(int submeshIndex, int triangleIndex);
+
+    int NumSubmeshes();
+
+    int NumTris(int submeshIndex);
+
 private:
     /// Precomputes a kD-tree for the triangle data of this mesh.
     void CreateKdTree();
