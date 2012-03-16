@@ -1022,8 +1022,8 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
-        if (materialList[i].ref == ogreMaterial->Name() ||
-            framework->Asset()->ResolveAssetRef("", materialList[i].ref) == ogreMaterial->Name()) ///<///\todo The design of whether the ResolveAssetRef should occur here, or internal to Asset API needs to be revisited.
+        if (materialList[i].ref.compare(ogreMaterial->Name(), Qt::CaseInsensitive) == 0 ||
+            framework->Asset()->ResolveAssetRef("", materialList[i].ref).compare(ogreMaterial->Name(), Qt::CaseInsensitive) == 0) ///<///\todo The design of whether the ResolveAssetRef should occur here, or internal to Asset API needs to be revisited.
         {
             SetMaterial(i, ogreMaterial->Name());
             assetUsed = true;
