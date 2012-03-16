@@ -1451,11 +1451,11 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
                 
                 float3 localHitPoint = ogreLocalRay.getPoint(hit.second);
                 float3 worldHitPoint = localToWorld.TransformPos(localHitPoint);
-                
+
                 if (subMeshIndex)
                     *subMeshIndex = i;
                 if (triangleIndex)
-                    *triangleIndex = j;
+                    *triangleIndex = j / 3;
                 if (distance)
                     *distance = (worldHitPoint - ray.pos).Length();
                 if (hitPosition)
