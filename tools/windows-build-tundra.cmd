@@ -1,4 +1,5 @@
 @echo off
+echo.
 
 set GENERATOR="Visual Studio 9 2008"
 
@@ -37,23 +38,25 @@ SET VLC_ROOT=%DEPS%\vlc
 
 :: Disable python untill it has been fixed to windows-build-deps.cmd!
 SET TUNDRA_PYTHON_ENABLED=FALSE
-IF %TUNDRA_PYTHON_ENABLED%==FALSE cecho {0E}Warning: Disabling Python from the build.{# #}{\n}
+IF %TUNDRA_PYTHON_ENABLED%==FALSE cecho {0E}Disabling Python from the build until deps are automated!{# #}{\n}
+echo.
 
 IF NOT EXIST Tundra.sln. (
    del /Q CMakeCache.txt
-   cecho {0D}Running cmake for Tundra.{# #}{\n}
+   cecho {0D}Running CMake for Tundra.{# #}{\n}
    cmake.exe -G %GENERATOR% -DBOOST_ROOT="%DEPS%\boost"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   echo.
 ) ELSE (
-   cecho {0D}Tundra.sln exists. Skipping cmake call for Tundra. Delete Tundra.sln to force cmake a rerun.{# #}{\n}
+   cecho {0A}Tundra.sln exists. Skipping CMake call for Tundra.{# #}{\n}
+   cecho {0A}Delete %CD%\Tundra.sln to trigger a CMake rerun.{# #}{\n}
 )
+echo.
 
 cecho {0D}Building Tundra.{# #}{\n}
 msbuild tundra.sln /p:Configuration=RelWithDebInfo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-
 echo.
+
 cecho {0A}Tundra build finished.{# #}{\n}
 :: Finish in same directory we started in.
 cd TOOLS

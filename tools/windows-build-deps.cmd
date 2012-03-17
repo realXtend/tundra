@@ -654,9 +654,14 @@ IF NOT EXIST "%DEPS%\celt\.git" (
    cd "%DEPS%"
    cecho {0D}Cloning Celt 0.11.1 into "%DEPS%\celt".{# #}{\n}
    git clone git://git.xiph.org/celt.git
+   :: Copy config.h from head to the 0.11.1 tag.
    cd celt
-   git checkout -b v0.11.1
+   copy /Y msvc\config.h config.h
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   git checkout -b v0.11.1 v0.11.1
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   mkdir msvc
+   copy /Y config.h msvc\config.h
 ) ELSE (
    cecho {0D}Celt already cloned. Skipping.{# #}{\n}
 )
@@ -671,8 +676,8 @@ IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
    cecho {0D}Building Celt 0.11.1.{# #}{\n}
    msbuild libcelt.vcproj /p:configuration=Debug /clp:ErrorsOnly /nologo
    msbuild libcelt.vcproj /p:configuration=Release /clp:ErrorsOnly /nologo
-   IF NOT EXIST "%DEPS%\celt\include". mkdir %DEPS%\celt\include
-   copy /Y "*.h" "%DEPS%\celt\include\"
+   IF NOT EXIST "%DEPS%\celt\include\celt". mkdir %DEPS%\celt\include\celt
+   copy /Y "*.h" "%DEPS%\celt\include\celt\"
 ) ELSE (
    cecho {0D}Celt already built. Skipping.{# #}{\n}
 )
