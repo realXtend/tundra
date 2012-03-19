@@ -134,8 +134,10 @@ AddProject(Application DebugStatsModule)        # Enables a developer window for
 AddProject(Application SkyXHydrax)              # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
 AddProject(Application SceneWidgetComponents)   # Provide ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application JavascriptModule)        # Allows QtScript-created scene script instances.
-if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
+if (NOT APPLE AND NOT WIN32) # Python and PythonQt are not available currently on Mac.
     AddProject(Application PythonScriptModule)      # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
+else()
+    message(WARNING "TODO: Python and PythonQt build scripts are not enabled for the current platform!")
 endif()
 AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 
