@@ -35,15 +35,6 @@ AvatarEditor::AvatarEditor(Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw)
 {
-    InitEditorWindow();
-}
-
-AvatarEditor::~AvatarEditor()
-{
-}
-
-void AvatarEditor::InitEditorWindow()
-{
     setupUi(this);
 
     // Connect signals
@@ -63,6 +54,10 @@ void AvatarEditor::InitEditorWindow()
     panel_attachments->setLayout(layout);
 
     setWindowTitle(tr("Avatar Editor"));
+}
+
+AvatarEditor::~AvatarEditor()
+{
 }
 
 void AvatarEditor::RebuildEditView()

@@ -23,7 +23,7 @@ class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
     Q_OBJECT
 
 public:
-    /// Constructs the window.
+    /// Constructs and initializes the window.
     /** @param fw Framework.
         @parent parent Parent widget. */
     explicit AvatarEditor(Framework *fw, QWidget *parent = 0);
@@ -68,9 +68,6 @@ protected:
     void changeEvent(QEvent* e);
 
 private:
-    /// Create editor window
-    void InitEditorWindow();
-    
     /// Get the avatar entity, avatar component, and avatar description. If all are non-null, return true
     bool GetAvatarDesc(Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
 
