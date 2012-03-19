@@ -144,6 +144,9 @@ void Application::InitializeSplash()
         splashScreen->setFont(QFont("Calibri", 9));
         splashScreen->show();
         splashScreen->activateWindow();
+#ifdef __APPLE__
+        splashScreen->raise();
+#endif
     }
 }
 
@@ -183,6 +186,14 @@ QStringList Application::FindQmFiles(const QDir& dir)
 void Application::Go()
 {
     SAFE_DELETE(splashScreen);
+
+#ifdef __APPLE__
+    if (framework->Ui()->MainWindow())
+    {
+        framework->Ui()->MainWindow()->activateWindow();
+        framework->Ui()->MainWindow()->raise();
+    }
+#endif
 
     installEventFilter(this);
 
