@@ -114,9 +114,9 @@ void AvatarEditor::RebuildEditView()
         v_box->setContentsMargins(6,3,6,3);
         v_box->setSpacing(6);
 
-        // Strip away .xml from the attachment name for slightly nicer display
+        // Strip away .attachment from the attachment name for slightly nicer display
         QString attachment_name = attachments[y].name_;
-        attachment_name.replace(".xml", "");
+        attachment_name.replace(".attachment", "");
 
         // Create elements
         label = new QLabel(attachment_name);
@@ -521,7 +521,7 @@ void AvatarEditor::AddAttachment()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(QApplication::translate("SupportedFileTypes", "Attachment files (*.xml)"), tr("Choose attachment file"), "", 0, this, SLOT(OpenAttachmentDialogClosed(int)), false);
+    fileDialog = QtUtils::OpenFileDialogNonModal(cAttachmentFileFilter, tr("Choose attachment file"), "", 0, this, SLOT(OpenAttachmentDialogClosed(int)), false);
 }
 
 void AvatarEditor::OpenAttachmentDialogClosed(int result)
