@@ -67,11 +67,6 @@ protected:
     /// QWidget override.
     void changeEvent(QEvent* e);
 
-signals:
-    void EditorStatus(const QString &message, int timeout = 7000);
-    void EditorError(const QString &message, int timeout = 7000);
-    void EditorHideMessages();
-
 private:
     /// Create editor window
     void InitEditorWindow();
