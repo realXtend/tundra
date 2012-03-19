@@ -12,9 +12,9 @@ ApiVersionInfo::ApiVersionInfo(const char *version)
         LogError("ApiVersionInfo: More than 4 numbers given. Ignoring extra numbers.");
     for(int i = 0; i < numbers.size() && i < 4; ++i)
     {
-        bool ok;
-        versionNumbers_.push_back(numbers[i].toInt(&ok));
-        assert(ok);
+        int versionNumber = 0;
+        sscanf(numbers[i].toStdString().c_str(), "%d", &versionNumber); // If fails, push 0.
+        versionNumbers_.push_back(versionNumber);
     }
     // Guarantee trailing zeros.
     while(versionNumbers_.size() < 4)
@@ -76,14 +76,15 @@ ApplicationVersionInfo::ApplicationVersionInfo(const char *organization, const c
     organization_(organization),
     name_(name)
 {
+    ///\todo Delete the copy-pasted code. This is an exact duplicate of ApiVersionInfo::ApiVersionInfo.
     QStringList numbers = QString(version).split('.');
     if (numbers.size() > 4)
         LogError("ApiVersionInfo: More than 4 numbers given. Ignoring extra numbers.");
     for(int i = 0; i < numbers.size() && i < 4; ++i)
     {
-        bool ok;
-        versionNumbers_.push_back(numbers[i].toInt(&ok));
-        assert(ok);
+        int versionNumber = 0;
+        sscanf(numbers[i].toStdString().c_str(), "%d", &versionNumber); // If fails, push 0.
+        versionNumbers_.push_back(versionNumber);
     }
     // Guarantee trailing zeros.
     while(versionNumbers_.size() < 4)
@@ -118,6 +119,7 @@ QString ApplicationVersionInfo::GetName() const
 
 QString ApplicationVersionInfo::GetVersion() const
 {
+    ///\todo Delete the copy-pasted code. This is an exact duplicate of ApiVersionInfo::GetFullIdentifier() const.
     QString versionString;
     std::vector<uint>::const_iterator itr;
     for (itr = versionNumbers_.begin(); itr < versionNumbers_.end(); ++itr)

@@ -305,9 +305,11 @@ message ("\n\n=========== Configuring Dependencies ===========\n")
 # Find needed external libraries, abort on error
 configure_boost()
 configure_qt4()
-if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
+if (NOT APPLE AND NOT WIN32) # Python and PythonQt are not available currently on Mac.
     configure_python()
     configure_python_qt()
+else()
+    message(WARNING "TODO: Python and PythonQt build scripts are not enabled for the current platform!")
 endif()
 configure_ogre()
 configure_qtpropertybrowser()

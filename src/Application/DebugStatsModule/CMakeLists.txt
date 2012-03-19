@@ -33,7 +33,7 @@ GetOpenAssetImport()
 SetupCompileFlagsWithPCH()
 
 if (MSVC)
-	target_link_libraries (${TARGET_NAME} pdh.lib)
+	target_link_libraries (${TARGET_NAME} pdh.lib ws2_32.lib)
 endif (MSVC)
 
 final_target ()

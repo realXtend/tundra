@@ -1,5 +1,6 @@
 #include "IAssetTransfer.h"
 #include "IAsset.h"
+#include "Profiler.h"
 
 void IAssetTransfer::EmitAssetDownloaded()
 {
@@ -8,6 +9,7 @@ void IAssetTransfer::EmitAssetDownloaded()
 
 void IAssetTransfer::EmitTransferSucceeded()
 {
+    PROFILE(IAssetTransfer_AssetDependenciesCompleted);
     emit Succeeded(this->asset);
 }
 

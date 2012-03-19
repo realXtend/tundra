@@ -11,6 +11,7 @@
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+#include "Profiler.h"
 
 #include "Framework.h"
 #include "LoggingFunctions.h"
@@ -60,6 +61,7 @@ bool LocalAssetProvider::IsValidRef(QString assetRef, QString)
 
 AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
+    PROFILE(LocalAssetProvider_RequestAsset);
     if (assetRef.isEmpty())
         return AssetTransferPtr();
     assetType = assetType.trimmed();

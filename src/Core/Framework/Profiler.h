@@ -377,6 +377,9 @@ public:
 
     void Reset();
 
+    /// Returns the currently topmost active node on the profiler tree.
+    /// Only used internally, *NOT* for public use.
+    ProfilerNodeTree *CurrentNode() { return current_node_; }
 private:
     /// The single global root node object.
     /// This is a dummy root node that doesn't track any  timing statistics, but just contains

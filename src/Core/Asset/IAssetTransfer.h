@@ -77,7 +77,7 @@ public slots:
     bool CachingAllowed() const { return cachingAllowed; }
 
     // Script getters for public attributes
-    QByteArray RawData() const { return QByteArray::fromRawData((const char*)&rawAssetData[0], rawAssetData.size()); }
+    QByteArray RawData() const { if (rawAssetData.size() == 0) return QByteArray(); else return QByteArray::fromRawData((const char*)&rawAssetData[0], rawAssetData.size()); }
     QString SourceUrl() const { return source.ref; }
     QString AssetType() const { return assetType; }
     AssetPtr Asset() const { return asset; }

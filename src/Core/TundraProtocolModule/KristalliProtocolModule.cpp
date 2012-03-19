@@ -156,7 +156,10 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
     if (serverConnection)
+    {
+        PROFILE(KristalliProtocolModule_kNet_client_Process);
         serverConnection->Process();
+    }
 
     // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
     // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
@@ -170,6 +173,8 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
     // Process server incoming connections & messages if server up
     if (server)
     {
+        PROFILE(KristalliProtocolModule_kNet_server_Process);
+
         server->Process();
 
         // In Tundra, we *never* keep half-open server->client connections alive. 

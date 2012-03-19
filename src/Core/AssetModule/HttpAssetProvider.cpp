@@ -11,6 +11,7 @@
 #include "AssetCache.h"
 #include "IAsset.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include <QAbstractNetworkCache>
 #include <QNetworkAccessManager>
@@ -142,9 +143,23 @@ QByteArray HttpAssetProvider::ToHttpDate(const QDateTime &dateTime)
     // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822.
     return QLocale::c().toString(dateTime, "ddd, dd MMM yyyy hh:mm:ss").toAscii() + QByteArray(" GMT");
 }
-        
+
+#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
+
+std::vector<HttpAssetTransferPtr> delayedTransfers;
+
+void HttpAssetProvider::Update(f64 frametime)
+{
+    for(size_t i = 0; i < delayedTransfers.size(); ++i)
+        framework->Asset()->AssetTransferCompleted(delayedTransfers[i].get());
+    delayedTransfers.clear();
+}
+
+#endif
+
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
+    PROFILE(HttpAssetProvider_RequestAsset);
     if (!networkAccessManager)
         CreateAccessManager();
 
@@ -173,25 +188,45 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
         return AssetTransferPtr();
     }
 
-    QNetworkRequest request;
-    request.setUrl(QUrl(assetRef));
-    request.setRawHeader("User-Agent", "realXtend Tundra");
-    
-    // Fill 'If-Modified-Since' header if we have a valid cache item.
-    // Server can then reply with 304 Not Modified.
-    QDateTime cacheLastModified = framework->Asset()->GetAssetCache()->LastModified(assetRef);
-    if (cacheLastModified.isValid())
-        request.setRawHeader("If-Modified-Since", ToHttpDate(cacheLastModified));
-    
-    QNetworkReply *reply = networkAccessManager->get(request);
-
     HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
     transfer->source.ref = originalAssetRef;
     transfer->assetType = assetType;
     transfer->provider = shared_from_this();
     transfer->storage = GetStorageForAssetRef(assetRef);
     transfer->diskSourceType = IAsset::Cached; // The asset's disk source will represent a cached version of the original on the http server
-    transfers[reply] = transfer;
+
+    AssetCache *cache = framework->Asset()->GetAssetCache();
+    QString filenameInCache = cache ? cache->FindInCache(assetRef) : QString();
+#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
+    if (cache && framework->HasCommandLineParameter("--disable_http_ifmodifiedsince") && !filenameInCache.isEmpty())
+    {
+        PROFILE(HttpAssetProvider_ReadFileFromCache);
+
+        if (QFile::exists(filenameInCache))
+        {
+            transfer->SetCachingBehavior(false, filenameInCache);
+            delayedTransfers.push_back(transfer);
+        }
+        else
+            framework->Asset()->AssetTransferFailed(transfer.get(), "HttpAssetProvider: Failed to read file '" + filenameInCache + "' from cache!");
+    }
+    else
+#endif
+    {
+        QNetworkRequest request;
+        request.setUrl(QUrl(assetRef));
+        request.setRawHeader("User-Agent", "realXtend Tundra");
+    
+        // Fill 'If-Modified-Since' header if we have a valid cache item.
+        // Server can then reply with 304 Not Modified.
+        QDateTime cacheLastModified = framework->Asset()->GetAssetCache()->LastModified(assetRef);
+        if (cacheLastModified.isValid())
+            request.setRawHeader("If-Modified-Since", ToHttpDate(cacheLastModified));
+        
+        QNetworkReply *reply = networkAccessManager->get(request);
+
+        transfers[reply] = transfer;
+    }
     return transfer;
 }
 
@@ -336,14 +371,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             if (replyCode == 304)
             {
                 // Read cache file to transfer asset data
-                QFile cacheFile(cache->FindInCache(sourceRef));
-                if (cacheFile.open(QIODevice::ReadOnly))
-                {
-                    QByteArray cacheData = cacheFile.readAll();
-                    transfer->rawAssetData.insert(transfer->rawAssetData.end(), cacheData.data(), cacheData.data() + cacheData.size());
-                    cacheFile.close();
-                }
-                else
+                if (cache->FindInCache(sourceRef).isEmpty())
                     error = "Http GET for address \"" + reply->url().toString() + "\" returned '304 Not Modified' but existing cache file could not be opened: \"" + cache->GetDiskSourceByRef(sourceRef) + "\"";
             }
             // 200 OK
