@@ -524,21 +524,33 @@ void AvatarEditor::RemoveAttachment()
 
 void AvatarEditor::AddAttachment()
 {
-    ///\todo Remove or re-implement this function?
-    LogError("AvatarEditor::AddAttachment deprecated and not implemented.");
-    /*
-    const std::string filter = "Attachment description file (*.xml)";
-    std::string filename = GetOpenFileName(filter, "Choose attachment file");
-    if (!filename.empty())
-    {
-        EntityPtr entity = GetAvatarEntity();
-        if (!entity)
-            return;
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = QtUtils::OpenFileDialogNonModal(QApplication::translate("SupportedFileTypes", "Attachment files (*.xml)"), tr("Choose attachment file"), "", 0, this, SLOT(OpenAttachmentDialogClosed(int)), false);
+}
 
-        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().AddAttachment(entity, filename);
-        QTimer::singleShot(250, this, SLOT(RebuildEditView()));
-    }
-    */
+void AvatarEditor::OpenAttachmentDialogClosed(int result)
+{
+    QFileDialog * dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    if (dialog->selectedFiles().isEmpty())
+        return;
+
+    Entity* entity;
+    EC_Avatar* avatar;
+    AvatarDescAsset* desc;
+    if (!GetAvatarDesc(entity, avatar, desc))
+        return;
+
+    // Since the dialog is set to not allow multiple file selection, assume
+    // that there is only one file selected.
+    desc->AddAttachment(dialog->selectedFiles().first());
 }
 
 QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name)
