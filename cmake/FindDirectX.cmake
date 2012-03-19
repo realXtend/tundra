@@ -16,7 +16,7 @@ macro (configure_directx)
         # We start with Microsoft DirectX SDK (August 2008) 9.24.1400
         # Example of path is C:\apps_x86\Microsoft DirectX SDK (August 2008)\Include
         
-        find_path(DirectX_INCLUDE_DIR d3d9.h
+        find_path(DirectX_INCLUDE_DIR d3dx9.h
             "$ENV{DIRECTX_ROOT}/Include"
             "$ENV{DXSDK_DIR}/Include"
             "C:/apps_x86/Microsoft DirectX SDK*/Include"
