@@ -80,6 +80,9 @@ public slots:
     /// Remove an attachment
     /** @param index The index of the attachment in attachments_ to be removed. */
     void RemoveAttachment(uint index);
+    /// Add an attachment
+    /** @param filename The name of the .xml file to open and parse as an attachment. */
+    void AddAttachment(QString filename);
     /// Return whether a property exists
     bool HasProperty(const QString &name) const;
     /// Return property value, or empty if does not exist
