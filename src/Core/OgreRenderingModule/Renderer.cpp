@@ -364,7 +364,8 @@ namespace OgreRenderer
         initialized = true;
 
 #if OGRE_PROFILING == 1
-        Ogre::Profiler::getSingleton().setEnabled(true);
+        if (!framework->IsHeadless())
+            Ogre::Profiler::getSingleton().setEnabled(true);
 #endif
     }
 
