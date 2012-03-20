@@ -389,26 +389,6 @@ else
     touch $tags/$what-done
 fi
 
-cd $build
-what=speex
-urlbase=http://downloads.xiph.org/releases/speex
-pkgbase=speex-1.2rc1
-dlurl=$urlbase/$pkgbase.tar.gz
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-    rm -rf $pkgbase
-    zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || curl -L -o $zip $dlurl
-    tar xzf $zip
-
-    cd $pkgbase
-    ./configure --prefix=$prefix
-    make VERBOSE=1 -j$NPROCS
-    make install
-    touch $tags/$what-done
-fi
-
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
    echo $what is done
