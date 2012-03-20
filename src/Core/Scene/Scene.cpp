@@ -1082,7 +1082,6 @@ SceneDesc Scene::CreateSceneDescFromBinary(const QString &filename) const
 
     sceneDesc.filename = filename;
 
-    ///\todo Use Latin 1 encoding?
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -1243,8 +1242,8 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
     Entity* entity = comp ? comp->ParentEntity() : 0;
     Scene* scene = entity ? entity->ParentScene() : 0;
     
-    if ((length <= 0.0f) || (!attr) || (!attr->Metadata()) || (attr->Metadata()->interpolation == AttributeMetadata::None) ||
-        (!comp) || (!entity) || (!scene) || (scene != this))
+    if (length <= 0.0f || !attr || !attr->Metadata() || attr->Metadata()->interpolation == AttributeMetadata::None ||
+        !comp || !entity || !scene || scene != this)
     {
         delete endvalue;
         return false;

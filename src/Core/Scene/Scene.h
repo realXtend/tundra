@@ -143,6 +143,56 @@ public:
         @return List of created entities. */
     QList<Entity *> CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change);
 
+    /// Emits notification of an attribute changing. Called by IComponent.
+    /** @param comp Component pointer
+        @param attribute Attribute pointer
+        @param change Change signalling mode */
+    void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
+
+    /// Emits notification of an attribute having been created. Called by IComponent's with dynamic structure
+    /** @param comp Component pointer
+        @param attribute Attribute pointer
+        @param change Change signalling mode */
+    void EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
+
+    /// Emits notification of an attribute about to be deleted. Called by IComponent's with dynamic structure
+    /** @param comp Component pointer
+        @param attribute Attribute pointer
+        @param change Change signalling mode */
+     void EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
+
+    /// Emits a notification of a component being added to entity. Called by the entity
+    /** @param entity Entity pointer
+        @param comp Component pointer
+        @param change Change signalling mode */
+    void EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
+
+    /// Emits a notification of a component being removed from entity. Called by the entity
+    /** @param entity Entity pointer
+        @param comp Component pointer
+        @param change Change signalling mode
+        @note This is emitted before just before the component is removed. */
+    void EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
+
+    /// Emits a notification of an entity being removed.
+    /** @note the entity pointer will be invalid shortly after!
+        @param entity Entity pointer
+        @param change Change signalling mode */
+    void EmitEntityRemoved(Entity* entity, AttributeChange::Type change);
+
+    /// Emits a notification of an entity action being triggered.
+    /** @param entity Entity pointer
+        @param action Name of the action
+        @param params Parameters
+        @param type Execution type. */
+    void EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
+
+    /// Emits a notification of an entity creation acked by the server, and the entity ID changing as a result. Called by SyncManager
+    void EmitEntityAcked(Entity* entity, entity_id_t oldId);
+
+    /// Emits a notification of a component creation acked by the server, and the component ID changing as a result. Called by SyncManager
+    void EmitComponentAcked(IComponent* component, component_id_t oldId);
+
 public slots:
     /// Creates new entity that contains the specified components.
     /** Entities should never be created directly, but instead created with this function.
@@ -248,62 +298,6 @@ public slots:
     /// @todo Remove and expose EntityMap and Entities to script.
     EntityList GetAllEntities() const;
 
-    /// Emits notification of an attribute changing. Called by IComponent.
-    /** @param comp Component pointer
-        @param attribute Attribute pointer
-        @param change Change signalling mode */
-    void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
-
-    /// Emits notification of an attribute having been created. Called by IComponent's with dynamic structure
-    /** @param comp Component pointer
-        @param attribute Attribute pointer
-        @param change Change signalling mode */
-    void EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
-
-    /// Emits notification of an attribute about to be deleted. Called by IComponent's with dynamic structure
-    /** @param comp Component pointer
-        @param attribute Attribute pointer
-        @param change Change signalling mode */
-     void EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
-
-    /// Emits a notification of a component being added to entity. Called by the entity
-    /** @param entity Entity pointer
-        @param comp Component pointer
-        @param change Change signalling mode */
-    void EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
-
-    /// Emits a notification of a component being removed from entity. Called by the entity
-    /** @param entity Entity pointer
-        @param comp Component pointer
-        @param change Change signalling mode
-        @note This is emitted before just before the component is removed. */
-    void EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
-
-    /// Emits a notification of an entity having been created
-    /** Creates are also automatically signalled at the end of frame, so you do not necessarily need to call this.
-        @param entity Entity pointer
-        @param change Change signalling mode */
-    void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
-
-    /// Emits a notification of an entity being removed.
-    /** @note the entity pointer will be invalid shortly after!
-        @param entity Entity pointer
-        @param change Change signalling mode */
-    void EmitEntityRemoved(Entity* entity, AttributeChange::Type change);
-
-    /// Emits a notification of an entity action being triggered.
-    /** @param entity Entity pointer
-        @param action Name of the action
-        @param params Parameters
-        @param type Execution type. */
-    void EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
-
-    /// Emits a notification of an entity creation acked by the server, and the entity ID changing as a result. Called by SyncManager
-    void EmitEntityAcked(Entity* entity, entity_id_t oldId);
-
-    /// Emits a notification of a component creation acked by the server, and the component ID changing as a result. Called by SyncManager
-    void EmitComponentAcked(IComponent* component, component_id_t oldId);
-
     /// Loads the scene from XML.
     /** @param filename File name
         @param clearScene Do we want to clear the existing scene.
@@ -376,6 +370,12 @@ public slots:
         @user entity Connection that is requesting permission to modify an entity.
         @param entity Entity that is requested to be modified. */
     bool AllowModifyEntity(UserConnection *user, Entity *entity);
+
+    /// Emits a notification of an entity having been created
+    /** Creates are also automatically signalled at the end of frame, so you do not necessarily need to call this.
+        @param entity Entity pointer
+        @param change Change signalling mode */
+    void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
     /// @todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
 /*
