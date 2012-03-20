@@ -29,7 +29,7 @@ const QString cMeshFileFilter(QApplication::translate("SceneTreeWidget", "Mesh (
 const QString cTundraXmlFileFilter(QApplication::translate("SupportedFileTypes", "Tundra scene XML (*.txml)")); ///< Tundra XML file filter.
 const QString cTundraBinaryFileFilter(QApplication::translate("SupportedFileTypes", "Tundra Binary Format (*.tbin)")); ///< Tundra binary file filter.
 const QString cAvatarFileFilter(QApplication::translate("SupportedFileTypes", "Tundra avatar description file (*.avatar)")); ///< Tundra avatar file filter.
-const QString cAttachmentFileFilter(QApplication::translate("SupportedFileTypes", "Tundra avatar attachment description file (*.attachment)")); ///< Tundra avatar attachment file filter.
+const QString cAttachmentFileFilter(QApplication::translate("SupportedFileTypes", "Tundra avatar attachment description file (*.attachment *.xml)")); ///< Tundra avatar attachment file filter. Includes *.xml for backwards compatibility.
 
 #ifdef ASSIMP_ENABLED
 /// All supported file formats if Open Asset Import (http://assimp.sourceforge.net/) is used.
