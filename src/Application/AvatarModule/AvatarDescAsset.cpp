@@ -571,6 +571,7 @@ void AvatarDescAsset::AddAttachment(QString filename)
     if (!elem.isNull())
     {
         ReadAttachment(elem);
+        AssetReferencesChanged();
         emit AppearanceChanged();
     }
     else
