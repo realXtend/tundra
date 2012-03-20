@@ -400,15 +400,15 @@ else
 
     cd generator
     qmake
-    make
-    ./generator --include-paths=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc/include/
+    make all
+    ./generator --include-paths=$QTDIR/include/
     cd ..
 
     cd qtbindings
     sed -e "s/qtscript_phonon //" < qtbindings.pro > x
     mv x qtbindings.pro  
     qmake
-    make
+    make all
     cd ..
     cd ..
     mkdir -p $viewer/bin/qtplugins/script
