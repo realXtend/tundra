@@ -50,6 +50,11 @@
 #pragma warning(pop)
 #endif
 
+#ifdef __APPLE__
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#endif
+
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
 #include <crtdbg.h>
