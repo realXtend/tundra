@@ -24,7 +24,11 @@ OgreMeshAsset::~OgreMeshAsset()
 
 bool OgreMeshAsset::LoadFromFile(QString filename)
 {
-    if (!assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+    bool allowAsynchronous = true;
+    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+        allowAsynchronous = false;
+    
+    if (allowAsynchronous)
         return DeserializeFromData(0, 0, true);
     else
         return IAsset::LoadFromFile(filename);
@@ -37,14 +41,14 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
     /// Force an unload of this data first.
     Unload();
 
-    if (assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
         allowAsynchronous = false;
 
     // Asynchronous loading
     // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
     // 2. We have a rendering window for Ogre as Ogre::ResourceBackgroundQueue does not work otherwise. Its not properly initialized without a rendering window.
     // 3. The Ogre we are building against has thread support.
-    if (allowAsynchronous && assetAPI->GetAssetCache() && !assetAPI->IsHeadless() && (OGRE_THREAD_SUPPORT != 0))
+    if (allowAsynchronous)
     {
         // We can only do threaded loading from disk, and not any disk location but only from asset cache.
         // local:// refs will return empty string here and those will fall back to the non-threaded loading.
@@ -61,10 +65,12 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
         }
     }
 
-    assert(data_);
     if (!data_)
+    {
+        LogError("OgreMeshAsset::DeserializeFromData: Cannot deserialize from null input data");
         return false;
-
+    }
+    
     // Synchronous loading
     if (ogreMesh.isNull())
     {   
