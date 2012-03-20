@@ -23,6 +23,11 @@
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
 
+#ifdef EC_Script_ENABLED
+#include "IScriptInstance.h"
+#include "EC_Script.h"
+#endif
+
 #include <utility>
 
 #include <QVBoxLayout>
@@ -34,6 +39,7 @@
 #include <QTreeWidgetItemIterator>
 #include <QtAlgorithms>
 #include <QTextEdit>
+#include <QTableWidget>
 #include <QMenu>
 
 #include "EC_RigidBody.h"
@@ -162,6 +168,18 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
     connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
     connect(findChild<QPushButton*>("buttonDumpSceneComplexity"), SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
 
+    label_scripts_ = findChild<QLabel*>("labelScriptsInfo");
+    table_scripts_ = findChild<QTableWidget*>("tableWidgetScripts");
+    table_scripts_->horizontalHeader()->resizeSection(3, 80);
+    table_scripts_->horizontalHeader()->resizeSection(4, 60);
+    table_scripts_->horizontalHeader()->resizeSection(5, 70);
+    table_scripts_->horizontalHeader()->resizeSection(6, 55);
+    table_scripts_->horizontalHeader()->resizeSection(7, 55);
+    table_scripts_->horizontalHeader()->resizeSection(8, 60);
+    table_scripts_->horizontalHeader()->resizeSection(9, 60);
+    table_scripts_->horizontalHeader()->resizeSection(10, 55);
+    table_scripts_->horizontalHeader()->resizeSection(11, 60);
+    
     frame_time_update_x_pos_ = 0;
     logThreshold_ = 100.0;
 
@@ -297,6 +315,165 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
     tex_preview_->show();
 #else
     LogError("Cannot open texture preview editor - AssetEditorModule not enabled.");
+#endif
+}
+
+void TimeProfilerWindow::RefreshScriptProfilingData()
+{
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 15 || !table_scripts_ || !label_scripts_)
+        return;   
+    
+#ifdef EC_Script_ENABLED
+    QTime t;
+    t.start();
+    
+    if (!framework_->Scene()->MainCameraScene())
+    {
+        label_scripts_->setText("Scene is null, no scripts running.");
+        return;
+    }
+    EntityList scripts = framework_->Scene()->MainCameraScene()->GetEntitiesWithComponent(EC_Script::TypeNameStatic());
+    if (scripts.empty())
+    {
+        label_scripts_->setText("No scripts running in the scene");
+        return;
+    }
+    
+    // This is the column order in the table widget. Also the dump QMap should have these keys if filled properly.
+    QStringList keys;
+    keys << "QScriptValues" << "Objects" << "Functions" << "Strings" << "Arrays" << "Numbers" << "Booleans" << "Is null" << "QObjects" << "QObject methods";
+    
+    bool createdNew = false;
+    QList<entity_id_t> processedParentEnts;
+    for(EntityList::iterator iter=scripts.begin(); iter!=scripts.end(); iter++)
+    {
+        EntityPtr ent = (*iter);
+        if (!ent.get())
+            continue;
+
+        EC_Script *script = ent->GetComponent<EC_Script>().get();
+        if (!script || !script->ScriptInstance() || !script->ScriptInstance()->IsEvaluated())
+            continue;
+        
+        QMap<QString, uint> dump = script->ScriptInstance()->DumpEngineInformation();
+        if (!dump.isEmpty())
+        {
+            if (!processedParentEnts.contains(ent->Id()))
+                processedParentEnts.push_back(ent->Id());
+
+            QString idStr = QString::number(ent->Id());
+            
+            QStringList scriptRefs;
+            foreach(QVariant variantRef, script->scriptRef.Get().refs)
+            {
+                QString ref = variantRef.value<AssetReference>().ref;
+                if (!ref.isEmpty())
+                    scriptRefs << ref;
+            }
+            QString scriptRefCombined = scriptRefs.join(", ");
+                
+            QTableWidgetItem *existingItem = 0;
+            foreach(QTableWidgetItem *item, table_scripts_->findItems(idStr, Qt::MatchExactly))
+            {
+                if (item->column() == 0)
+                {
+                    existingItem = item;
+                    break;
+                }
+            }
+            
+            if (!existingItem)
+            {
+                // Create new cell and init data
+                int row = table_scripts_->rowCount();
+                table_scripts_->insertRow(row);
+                table_scripts_->setItem(row, 0, new QTableWidgetItem(idStr));
+                table_scripts_->setItem(row, 1, new QTableWidgetItem(ent->Name()));
+                table_scripts_->setItem(row, 2, new QTableWidgetItem(script->Name()));
+                for (int i=0; i<keys.size(); i++)
+                    table_scripts_->setItem(row, i+3, new QTableWidgetItem(QString::number(dump.value(keys[i], 0))));
+                table_scripts_->setItem(row, table_scripts_->columnCount()-1, new QTableWidgetItem(scriptRefCombined));
+                createdNew = true;
+            }
+            else 
+            {
+                int row = existingItem->row();
+                
+                // Update names, they might have been renamed. Only set when changed to save update rendering costs.
+                if (table_scripts_->item(row, 1) && table_scripts_->item(row, 1)->text() != ent->Name()) 
+                    table_scripts_->item(row, 1)->setText(ent->Name());
+                if (table_scripts_->item(row, 2) && table_scripts_->item(row, 2)->text() != script->Name()) 
+                    table_scripts_->item(row, 2)->setText(script->Name());
+                    
+                // Iterate dump map with column keys
+                for (int i=0; i<keys.size(); i++)
+                {
+                    uint value = dump.value(keys[i], 0);
+                    QString valueStr = QString::number(value);
+                    if (table_scripts_->item(row, i+3)) 
+                    {
+                        // Only update if value changed or toUint() fails
+                        bool ok = false;
+                        uint cellValue = table_scripts_->item(row, i+3)->text().toUInt(&ok);
+                        if (ok)
+                        {
+                            if (cellValue != value)
+                            {
+                                int difference = value - cellValue;
+                                QString diffString = (difference < 0 ? " (" : " (+") + QString::number(difference) + ")";
+                                table_scripts_->item(row, i+3)->setText(valueStr + diffString);
+                            }
+                        }
+                        else
+                            table_scripts_->item(row, i+3)->setText(valueStr);
+                    }
+                }
+                
+                // Update script refs
+                QTableWidgetItem *refsColumnItem = table_scripts_->item(row, table_scripts_->columnCount()-1);
+                if (refsColumnItem && refsColumnItem->text() != scriptRefCombined)
+                    refsColumnItem->setText(scriptRefCombined);
+            }
+        }
+    }
+    
+    // This is done to show the entity/component name nicely at all times
+    if (createdNew)
+    {
+        table_scripts_->resizeColumnToContents(0);
+        table_scripts_->resizeColumnToContents(1);
+        table_scripts_->resizeColumnToContents(2);
+    }
+        
+    // If any removed entities/scripts are found, nuke the whole table.
+    // It will get a fresh update on the next cycle, and is whole lot easier than
+    // removing row by row as the indexes change when removed.
+    bool clearTable = false;
+    for (int i=0; i<table_scripts_->rowCount(); i++)
+    {
+        if (table_scripts_->item(i, 0))
+        {
+            entity_id_t id = table_scripts_->item(i, 0)->text().toUInt();
+            if (!processedParentEnts.contains(id))
+            {
+                clearTable = true;
+                break;
+            }
+        }
+    }
+    if (clearTable)
+    {
+        table_scripts_->clearContents();
+        while(table_scripts_->rowCount() > 0)
+            table_scripts_->removeRow(0);
+    }
+    
+    int elapsed = t.elapsed();
+    label_scripts_->setText(QString("<span style=\"color:rgb(120,120,120);\">Information gathered in " + (elapsed <= 0 ? "<1" : QString::number(elapsed)) + " msec</span>"));
+        
+    QTimer::singleShot(1000, this, SLOT(RefreshScriptProfilingData()));
+#else
+    label_scripts_->setText("EC_Script not enabled in the build, cannot show information.");
 #endif
 }
 
@@ -501,6 +678,8 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 14: // Bullet collision statistics
         PopulateBulletStats();
         break;
+    case 15: // Scripts
+        RefreshScriptProfilingData();
     }
 }
 

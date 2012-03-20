@@ -98,15 +98,16 @@ namespace MumbleAudio
         {
             // Default settings
             quality = QualityBalanced;
-            transmitMode = TransmitContinuous;
+            transmitMode = TransmitVoiceActivity;
             suppression = -30;
             amplification = 19000;
-            VADmin = 0.80f;
-            VADmax = 0.98f;
+            VADmin = 0.35f;
+            VADmax = 0.65f;
             innerRange = 30;
             outerRange = 75;
             allowSendingPositional = true;
             allowReceivingPositional = true;
+            recordingDevice = "";
         }
 
         AudioSettings(const MumbleAudio::AudioSettings &other)
@@ -121,6 +122,7 @@ namespace MumbleAudio
             outerRange = other.outerRange;
             allowSendingPositional = other.allowSendingPositional;
             allowReceivingPositional = other.allowReceivingPositional;
+            recordingDevice = other.recordingDevice;
         }
 
         MumbleAudio::AudioSettings &operator=(const MumbleAudio::AudioSettings &other)
@@ -135,6 +137,7 @@ namespace MumbleAudio
             outerRange = other.outerRange;
             allowSendingPositional = other.allowSendingPositional;
             allowReceivingPositional = other.allowReceivingPositional;
+            recordingDevice = other.recordingDevice;
             return *this;
         }
 
@@ -148,6 +151,7 @@ namespace MumbleAudio
         int outerRange;
         bool allowSendingPositional;
         bool allowReceivingPositional;
+        QString recordingDevice;
     };
 
     static int MUMBLE_AUDIO_SAMPLE_RATE = 48000;

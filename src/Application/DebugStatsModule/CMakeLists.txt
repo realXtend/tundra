@@ -21,11 +21,13 @@ add_definitions (-DDEBUGSTATS_MODULE_EXPORTS)
 
 use_package_bullet()
 use_core_modules(Framework Math Scene OgreRenderingModule AssetModule Input Ui Console EnvironmentModule PhysicsModule)
+use_entity_components(EC_Script)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
 link_modules(Framework Math Scene OgreRenderingModule EnvironmentModule AssetModule Input Ui Console PhysicsModule)
+link_entity_components(EC_Script)
 
 GetOgreAssetEditor()
 GetOpenAssetImport()

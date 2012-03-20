@@ -191,8 +191,6 @@ void SceneSyncState::MarkComponentProcessed(entity_id_t id, component_id_t compI
 
 void SceneSyncState::MarkEntityDirty(entity_id_t id)
 {
-    PROFILE(SyncState_MarkEntityDirty);
-
     ///@todo This logic should be removed. If a script rejects a change, it results in the change *never* being sent to the client.
     ///      E.g. if the script decides to reject a change due to the target entity being too far, and then the entity comes closer,
     ///      the change will not be replicated again, since rejecting here caused SyncState to lose tracking the change.
@@ -212,8 +210,6 @@ void SceneSyncState::MarkEntityDirty(entity_id_t id)
 
 void SceneSyncState::MarkEntityRemoved(entity_id_t id)
 {
-    PROFILE(SyncState_MarkEntityRemoved);
-
     /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     if (isServer_)
         RemovePendingEntity(id);
@@ -240,7 +236,6 @@ void SceneSyncState::MarkEntityRemoved(entity_id_t id)
 
 void SceneSyncState::MarkComponentDirty(entity_id_t id, component_id_t compId)
 {
-    PROFILE(SyncState_MarkComponentDirty);
     if (isServer_ && !ShouldMarkAsDirty(id))
         return;
 
@@ -253,7 +248,6 @@ void SceneSyncState::MarkComponentDirty(entity_id_t id, component_id_t compId)
 
 void SceneSyncState::MarkComponentRemoved(entity_id_t id, component_id_t compId)
 {
-    PROFILE(SyncState_MarkComponentRemoved);
     /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     if (isServer_)
         RemovePendingComponent(id, compId);
@@ -304,14 +298,14 @@ bool SceneSyncState::ShouldMarkAsDirty(entity_id_t id)
     if (HasPendingEntity(id))
         return false;
 
-    PROFILE(SceneSyncState_ShouldMarkAsDirty_Entity);
-
     // Only request if this entity does not have a sync state yet.
     // Otherwise this id will spam the signal handler on every change if
     // the addition to sync state was accepted.
     std::map<entity_id_t, EntitySyncState>::iterator i = entities.find(id);
     if (i == entities.end())
     {
+        PROFILE(SyncState_Emit_AboutToDirtyEntity);
+        
         // Scene or entity null, do not process yet.
         if (!FillRequest(id))
             return false;
