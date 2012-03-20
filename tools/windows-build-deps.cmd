@@ -41,22 +41,29 @@ IF NOT %USE_JOM% == FALSE (
 :: Print scripts usage information
 cecho {0A}This script fetches and builds all Tundra dependencies.{# #}{\n}
 echo Requirements:
-echo 1. Install SVN and set svn.exe to PATH.
+echo 1. Install SVN and make sure 'svn' is accessible from PATH.
 echo  - http://tortoisesvn.net/downloads.html, install with command line tools!
-echo 2. Install Hg and set hg.exe to PATH.
+echo 2. Install Hg and make sure 'hg' is accessible from PATH.
 echo  - http://tortoisehg.bitbucket.org/
-echo 3. Install git and set git.exe to PATH.
-echo  - http://tortoisehg.bitbucket.org/
+echo 3. Install git and make sure 'git' is accessible from PATH.
+echo  - http://code.google.com/p/tortoisegit/
 echo 4. Install DirectX SDK June 2010.
 echo  - http://www.microsoft.com/download/en/details.aspx?id=6812
+echo 5. Install cmake and make sure 'cmake' is accessible from PATH.
+echo  - http://www.cmake.org/
+echo 6. Install Visual Studio 2008 with SP1. (Express is ok)
+echo  - http://www.microsoft.com/download/en/details.aspx?id=14597
+echo 7. Install Windows SDK.
+echo  - http://www.microsoft.com/download/en/details.aspx?id=8279
+
 IF %BUILD_OPENSSL%==TRUE (
-   echo 5. To build OpenSSL install Active Perl and set perl.exe to PATH.
+   echo 8. To build OpenSSL install Active Perl and set perl.exe to PATH.
    echo  - http://www.activestate.com/activeperl/downloads
    cecho {0E}   NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
    cecho {0E}   provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
-   echo 6. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo 9. Execute this file from Visual Studio 2008/2010 Command Prompt.
 ) ELSE (
-   echo 5. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo 8. Execute this file from Visual Studio 2008/2010 Command Prompt.
 )
 echo.
 
