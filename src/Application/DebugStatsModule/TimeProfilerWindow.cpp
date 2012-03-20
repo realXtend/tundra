@@ -4,8 +4,8 @@
 #include "DebugOperatorNew.h"
 
 #include "TimeProfilerWindow.h"
+
 #include "Profiler.h"
-#include "DebugStats.h"
 #include "HighPerfClock.h"
 #include "Framework.h"
 #include "FrameAPI.h"
@@ -23,6 +23,10 @@
 #include "OgreWorld.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
+#include "EC_RigidBody.h"
+#include "PhysicsModule.h"
+#include "PhysicsWorld.h"
+#include "IAsset.h"
 
 #include <utility>
 
@@ -37,15 +41,7 @@
 #include <QTextEdit>
 #include <QMenu>
 
-#include "EC_RigidBody.h"
-#include "btBulletDynamicsCommon.h"
-
-#include "PhysicsModule.h"
-#include "PhysicsWorld.h"
-
-#ifdef OGREASSETEDITOR_ENABLED
-#include "TexturePreviewEditor.h"
-#endif
+#include <btBulletDynamicsCommon.h>
 
 #include <OgreFontManager.h>
 
@@ -57,7 +53,9 @@ using namespace std;
 
 const QString DEFAULT_LOG_DIR("logs");
 
-TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
+TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
+    QWidget(parent),
+    framework_(fw)
 {
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/profiler.ui");
@@ -185,9 +183,9 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
     if (!logDirectory_.exists(DEFAULT_LOG_DIR))
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
-
-    connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
-    connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
+    ///\todo Regression. Reimplement support for meshes and other types
+//    connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
+    connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
 
     // Add a context menu to Textures, Meshes and Materials widgets.
     if (tree_texture_assets_)
@@ -222,10 +220,6 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
     connect(&profiler_update_timer_, SIGNAL(timeout()), this, SLOT(RefreshProfilerWindow()));
 
     connect(findChild<QPushButton*>("buttonRefresh"), SIGNAL(pressed()), this, SLOT(RefreshProfilingData()));
-#ifdef OGREASSETEDITOR_ENABLED
-    tex_preview_ = 0;
-#endif
-
     connect(combo_timing_refresh_interval_, SIGNAL(currentIndexChanged(int)), this, SLOT(TimingRefreshIntervalChanged()));
 }
 
@@ -279,32 +273,26 @@ void TimeProfilerWindow::CopyMaterialAssetName()
     CopySelectedItemName(tree_material_assets_);
 }
 
-void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
+void TimeProfilerWindow::ShowAsset(QTreeWidgetItem* item, int column)
 {
-#ifdef OGREASSETEDITOR_ENABLED
-    ///\todo Reimplement.
-#else
-    LogError("Cannot open texture preview editor - AssetEditorModule not enabled.");
-#endif
-}
-
-void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
-{
-#ifdef OGREASSETEDITOR_ENABLED
-    AssetPtr textureAsset = framework_->Asset()->GetAsset(item->text(0));
-    if (textureAsset)
+    AssetPtr asset = framework_->Asset()->GetAsset(item->text(0));
+    if (asset)
     {
-        LogError("TimeProfilerWindow::ShowTextureAsset: could not obtain texture " + item->text(0));
+        LogError("TimeProfilerWindow::ShowAsset: could not obtain asset " + item->text(0));
         return;
     }
 
-    if (tex_preview_ == 0)
-        tex_preview_ = new TexturePreviewEditor(textureAsset, framework_, this);
-    tex_preview_->Open();
-    tex_preview_->show();
-#else
-    LogError("Cannot open texture preview editor - AssetEditorModule not enabled.");
-#endif
+    QMenu dummyMenu;
+    QList<QObject*> targets;
+    targets.push_back(asset.get());
+
+    framework_->Ui()->EmitContextMenuAboutToOpen(dummyMenu, targets);
+    foreach(QAction* action, dummyMenu->actions())
+        if (action->text() == "Open")
+        {
+            action->activate(QAction::ActionEvent());
+            break;
+        }
 }
 
 void TimeProfilerWindow::ChangeLoggerThreshold()
@@ -335,7 +323,6 @@ bool LessThen(const QTreeWidgetItem* left, const QTreeWidgetItem* right)
 
 void TimeProfilerWindow::Arrange()
 {
-    // Arrange. 
     if (!tab_widget_)
         return;
 
