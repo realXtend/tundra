@@ -250,18 +250,6 @@ else
     touch $tags/$what-done
 fi
 
-cd $prefix
-what=knet
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-    test -d $what || git clone https://github.com/juj/kNet.git $what
-    cd $what
-    cmake .
-    make VERBOSE=1 -j$NPROCS
-    touch $tags/$what-done
-fi
-
 cd $build
 what=ogg
 urlbase=http://downloads.xiph.org/releases/ogg
@@ -395,6 +383,26 @@ else
     tar xzf $zip
 
     cd $pkgbase
+    ./configure --prefix=$prefix --enable-shared=NO
+    make VERBOSE=1 -j$NPROCS
+    make install
+    touch $tags/$what-done
+fi
+
+cd $build
+what=speex
+urlbase=http://downloads.xiph.org/releases/speex
+pkgbase=speex-1.2rc1
+dlurl=$urlbase/$pkgbase.tar.gz
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    rm -rf $pkgbase
+    zip=$tarballs/$pkgbase.tar.gz
+    test -f $zip || curl -L -o $zip $dlurl
+    tar xzf $zip
+
+    cd $pkgbase
     ./configure --prefix=$prefix
     make VERBOSE=1 -j$NPROCS
     make install
@@ -427,6 +435,46 @@ else
     cp -f $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
     touch $tags/$what-done
 fi
+
+what=kNet
+if test -f $tags/$what-done; then 
+   echo $what is done
+else
+    cd $build
+    rm -rf kNet
+    git clone https://github.com/juj/kNet
+    cd kNet
+    sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
+    mv x CMakeLists.txt
+    cmake . -DCMAKE_BUILD_TYPE=Debug
+    make -j$NPROCS
+    cp lib/libkNet.dylib $prefix/lib/
+    rsync -r include/* $prefix/include/
+    touch $tags/$what-done
+fi
+
+#cd $build
+#what=mumbleclient
+#if test -f $tags/$what-done; then
+#    echo $what is done
+#else
+#    test -d $what || git clone https://github.com/Adminotech/libmumble.git $what
+#    cd $what
+#    cmake .
+#    make VERBOSE=1 -j$NPROCS
+#    cp libmumbleclient.dylib $prefix/lib
+#    cp Mumble.pb.h $prefix/include
+#    mkdir $prefix/include/$what
+#    cp ./src/*.h $prefix/include/$what
+#    touch $tags/$what-done
+#fi
+
+# All deps are now fetched and built. Do the actual Tundra build.
+
+# Explicitly specify where the tundra deps boost resides, to allow cmake FindBoost pick it up.
+export BOOST_ROOT=$DEPS/include
+export BOOST_INCLUDEDIR=$DEPS/include/boost
+export BOOST_LIBRARYDIR=$DEPS/lib
 
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then

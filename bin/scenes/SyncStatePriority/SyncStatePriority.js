@@ -48,15 +48,15 @@ function OnFrameUpdate(frametime)
     data.updateT = 0.0;
 
     // Iterate all connections
-    var connectionIds = server.GetConnectionIDs();
-    if (connectionIds.length <= 0)
+    var users = server.AuthenticatedUsers();
+    if (users.length <= 0)
         return;
 
     profiler.BeginBlock("SyncPriority_Update");
 
-    for (var i=0; i<connectionIds.length; ++i)
+    for (var i=0; i<users.length; ++i)
     {
-        var connId = connectionIds[i];
+        var connId = users[i].id;
         var sceneState = syncmanager.SceneState(connId);
         var clientState = data.clientStates[connId.toString()];
 
