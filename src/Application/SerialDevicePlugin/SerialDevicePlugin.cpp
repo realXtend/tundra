@@ -63,6 +63,11 @@ QList<QSerialPortInfo*> SerialDevicePlugin::PortInfoList()
 QextSerialPort *SerialDevicePlugin::CreateDevice(QString portName, QextSerialPort::QueryMode mode)
 {
     QextSerialPort *device = new QextSerialPort(portName, mode);
+    device->setBaudRate(BAUD4800);
+    device->setFlowControl(FLOW_OFF);
+    device->setParity(PAR_NONE);
+    device->setDataBits(DATA_8);
+    device->setStopBits(STOP_2);
     openDevices_.push_back(device);
     return device;
 }
@@ -77,6 +82,32 @@ QextSerialPort *SerialDevicePlugin::CreateDevice(QString portName, BaudRateType 
     device->setStopBits(stopBits);
     device->setFlowControl(flowControl);
     return device;
+}
+
+bool SerialDevicePlugin::OpenDevice(QextSerialPort *device)
+{
+    device->open(QIODevice::ReadWrite);
+    return device->isOpen();
+}
+
+void SerialDevicePlugin::WriteToDevice(QextSerialPort *device, QString command)
+{
+    device->write(command.toAscii(), command.length());
+}
+
+QString SerialDevicePlugin::ReadFromDevice(QextSerialPort *device)
+{
+    int numBytes;
+
+    numBytes = device->bytesAvailable();
+    if(numBytes > 1024)
+        numBytes = 1024;
+
+    QByteArray i = device->read(numBytes);
+
+    QString msg = i;
+
+    return msg;
 }
 
 bool SerialDevicePlugin::CloseDevice(QString portName)
