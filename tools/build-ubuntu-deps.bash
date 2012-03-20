@@ -94,8 +94,8 @@ else
     cd ..
     touch $tags/$what-done
 fi
-mkdir -p $viewer/bin/qtscript-plugins/script
-cp -lf $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
+mkdir -p $viewer/bin/qtplugins/script
+cp -lf $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
 
 
 what=kNet
