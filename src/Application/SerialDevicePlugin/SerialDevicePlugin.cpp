@@ -109,6 +109,11 @@ bool SerialDevicePlugin::OpenDevice(QextSerialPort *device)
 
 bool SerialDevicePlugin::CheckDevice(QextSerialPort *device)
 {
+    if (!device)
+    {
+        LogError(LC + "CheckDevice called with null device ptr!");
+        return false;
+    }
     return device->isOpen();
 }
 
