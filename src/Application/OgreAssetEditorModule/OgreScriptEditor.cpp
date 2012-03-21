@@ -1,16 +1,14 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   OgreScriptEditor.cpp
- *  @brief  Text editing tool for OGRE material and particle scripts.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   OgreScriptEditor.cpp
+    @brief  Text editing tool for OGRE material and particle scripts. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "OgreScriptEditor.h"
 #include "OgreAssetEditorModule.h"
-#include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
 #include "OgreScriptHighlighter.h"
 
@@ -39,9 +37,9 @@ OgreScriptEditor::OgreScriptEditor(const AssetPtr &scriptAsset, Framework *fw, Q
     asset(scriptAsset),
     lineEditName(0),
     buttonSaveAs(0),
-    textEdit(0),
-    propertyTable(0),
-    materialProperties(0)
+    textEdit(0)
+//    propertyTable(0),
+//    materialProperties(0)
 {
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/ogrescripteditor.ui");
@@ -80,8 +78,8 @@ OgreScriptEditor::OgreScriptEditor(const AssetPtr &scriptAsset, Framework *fw, Q
 
 OgreScriptEditor::~OgreScriptEditor()
 {
-    SAFE_DELETE(propertyTable);
-    SAFE_DELETE(materialProperties);
+//    SAFE_DELETE(propertyTable);
+//    SAFE_DELETE(materialProperties);
 }
 
 void OgreScriptEditor::SetScriptAsset(const AssetPtr &scriptAsset)
@@ -213,6 +211,7 @@ void OgreScriptEditor::ValidateScriptName(const QString &name)
     buttonSaveAs->setEnabled(valid);
 }
 
+/*
 void OgreScriptEditor::PropertyChanged(int row, int column)
 {
     QTableWidgetItem *nameItem = propertyTable->item(row, column - 2);
@@ -229,7 +228,7 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
     if (type == "TEX_1D" || type == "TEX_2D" || type == "TEX_3D" && type == "TEX_CUBEMAP")
     {
         // If the texture name is not valid UUID or URL it can't be used.
-        if (1/*RexUUID::IsValid(newValueString)*/)
+        if (IsValidUuid(newValueString))
             valid = true;
         else if(newValueString.indexOf("http://") != -1)
             valid = true;
@@ -265,6 +264,7 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
 
     propertyTable->setCurrentItem(valueItem, QItemSelectionModel::Deselect);
 }
+*/
 
 void OgreScriptEditor::CreateTextEdit()
 {
@@ -280,10 +280,11 @@ void OgreScriptEditor::CreateTextEdit()
     textEdit->show();
 }
 
+/*
 void OgreScriptEditor::CreatePropertyEditor()
 {
-    PropertyMap propMap = materialProperties->GetPropertyMap();
-    PropertyMapIter it(propMap);
+    ShaderParameterMap propMap = materialProperties->GetPropertyMap();
+    ShaderParameterMapIter it(propMap);
 
     propertyTable = new PropertyTableWidget(propMap.size(), 3);
     QVBoxLayout *layout = findChild<QWidget *>("OgreScriptEditor")->findChild<QVBoxLayout *>("verticalLayoutEditor");
@@ -327,6 +328,7 @@ void OgreScriptEditor::CreatePropertyEditor()
 
     connect(propertyTable, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
 }
+*/
 
 void OgreScriptEditor::OnAssetTransferSucceeded(AssetPtr scriptAsset)
 {

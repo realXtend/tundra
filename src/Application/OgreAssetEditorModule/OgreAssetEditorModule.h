@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   OgreAssetEditorModule.h
- *  @brief  Provides editing and previewing tools for various asset types.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   OgreAssetEditorModule.h
+    @brief  Provides editing and previewing tools for various asset types. */
 
 #pragma once
 
