@@ -47,10 +47,13 @@ std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "CACHED_ASSETS_GROUP";
 
 #ifdef OGRE_HAS_PROFILER_HOOKS
 
+#ifdef WIN32
 DWORD mainThreadId;
+#endif
+
 void Profiler_BeginBlock(const char *name)
 {
-#ifdef PROFILING
+#if defined(PROFILING) && defined(WIN32)
     if (GetCurrentThreadId() != mainThreadId)
         return;
     Framework *fw = Framework::Instance();
@@ -62,7 +65,7 @@ void Profiler_BeginBlock(const char *name)
 
 void Profiler_EndBlock()
 {
-#ifdef PROFILING
+#if defined(PROFILING) && defined(WIN32)
     if (GetCurrentThreadId() != mainThreadId)
         return;
     Framework *fw = Framework::Instance();
@@ -83,7 +86,9 @@ OgreRenderingModule::OgreRenderingModule() :
     IModule("OgreRendering")
 {
 #ifdef OGRE_HAS_PROFILER_HOOKS
+#ifdef WIN32
     mainThreadId = GetCurrentThreadId();
+#endif
     OgreProfiler_BeginBlock = Profiler_BeginBlock;
     OgreProfiler_EndBlock = Profiler_EndBlock;
 #endif
