@@ -2511,7 +2511,7 @@ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr
     if (item == 0)
         return;
 
-    item->setText(0,resource->getName().c_str());
+    item->setText(0, AssetAPI::DesanitateAssetRef(resource->getName()).c_str());
     QString size;
     size.setNum(resource->getSize());
     item->setText(1,size);
