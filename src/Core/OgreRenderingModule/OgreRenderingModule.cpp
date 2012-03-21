@@ -79,7 +79,7 @@ void Profiler_EndBlock()
 
 #endif
 
-OgreRenderingModule::OgreRenderingModule() : 
+OgreRenderingModule::OgreRenderingModule() :
     IModule("OgreRendering")
 {
 #ifdef OGRE_HAS_PROFILER_HOOKS
@@ -174,9 +174,13 @@ void OgreRenderingModule::Initialize()
             Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
     }
 
-    framework_->Console()->RegisterCommand("RenderStats", "Prints out render statistics.",
+    framework_->Console()->RegisterCommand("renderStats", "Prints out render statistics.",
         this, SLOT(ConsoleStats()));
-    framework_->Console()->RegisterCommand("SetMaterialAttribute", "Sets an attribute on a material asset",
+#if OGRE_PROFILING == 1
+    framework_->Console()->RegisterCommand("ogreProf", "Toggles visibility of the Ogre profiler overlay.",
+        this, SLOT(ToggleOgreProfilerOverlay()));
+#endif
+    framework_->Console()->RegisterCommand("setMaterialAttribute", "Sets an attribute on a material asset",
         this, SLOT(SetMaterialAttribute(const QStringList &)));
 }
 
@@ -209,12 +213,25 @@ void OgreRenderingModule::ConsoleStats()
         LogError("No renderer found!");
 }
 
+void OgreRenderingModule::ToggleOgreProfilerOverlay()
+{
+#if OGRE_PROFILING == 1
+    if (!framework_->IsHeadless())
+    {
+        bool enabled = Ogre::Profiler::getSingleton().getEnabled();
+        Ogre::Profiler::getSingleton().setEnabled(!enabled);
+    }
+#else
+    LogError("OgreRenderingModule::ToggleOgreProfilerOverlay: Ogre built without profiling support, cannot show profiler overlay.");
+#endif
+}
+
 void OgreRenderingModule::OnSceneAdded(const QString& name)
 {
     ScenePtr scene = GetFramework()->Scene()->GetScene(name);
     if (!scene)
     {
-        LogError("Could not find created scene");
+        LogError("OgreRenderingModule::OnSceneAdded: Could not find created scene");
         return;
     }
     
@@ -230,7 +247,7 @@ void OgreRenderingModule::OnSceneRemoved(const QString& name)
     ScenePtr scene = GetFramework()->Scene()->GetScene(name);
     if (!scene)
     {
-        LogError("Could not find scene about to be removed");
+        LogError("OgreRenderingModule::OnSceneRemoved: Could not find scene about to be removed");
         return;
     }
     
@@ -246,19 +263,19 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
 {
     if (params.size() < 3)
     {
-        LogError("Usage: SetMaterialAttribute(asset,attribute,value)");
+        LogError("OgreRenderingModule::SetMaterialAttribute: Usage: SetMaterialAttribute(asset,attribute,value)");
         return;
     }
     AssetPtr assetPtr = framework_->Asset()->GetAsset(framework_->Asset()->ResolveAssetRef("", params[0]));
     if (!assetPtr || !assetPtr->IsLoaded())
     {
-        LogError("No asset found or not loaded");
+        LogError("OgreRenderingModule::SetMaterialAttribute: No asset found or not loaded");
         return;
     }
     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(assetPtr.get());
     if (!matAsset)
     {
-        LogError("Not a material asset");
+        LogError("OgreRenderingModule::SetMaterialAttribute: Not a material asset");
         return;
     }
     matAsset->SetAttribute(params[1], params[2]);
@@ -273,7 +290,6 @@ extern "C"
 DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new OgreRenderer::OgreRenderingModule();
-    fw->RegisterModule(module);
+    fw->RegisterModule(new OgreRenderer::OgreRenderingModule());
 }
 }

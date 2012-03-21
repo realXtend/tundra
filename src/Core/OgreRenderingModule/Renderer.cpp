@@ -362,11 +362,6 @@ namespace OgreRenderer
         }
 
         initialized = true;
-
-#if OGRE_PROFILING == 1
-        if (!framework->IsHeadless())
-            Ogre::Profiler::getSingleton().setEnabled(true);
-#endif
     }
 
     void Renderer::SetFullScreen(bool value)
