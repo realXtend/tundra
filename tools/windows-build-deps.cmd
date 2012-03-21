@@ -147,16 +147,16 @@ set QTDIR=%DEPS%\Qt
 :: Qt
 IF NOT EXIST "%DEPS%\Qt". (
    cd "%DEPS%"
-   IF NOT EXIST qt-everywhere-opensource-src-4.8.0.zip. (
-      cecho {0D}Downloading Qt 4.8.0. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.8.0.zip
+   IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
+      cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
+      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.8.0 sources to "%DEPS%\Qt".{# #}{\n}
-   7za x -y qt-everywhere-opensource-src-4.8.0.zip
+   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\Qt".{# #}{\n}
+   7za x -y qt-everywhere-opensource-src-4.7.4.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   ren qt-everywhere-opensource-src-4.8.0 qt
+   ren qt-everywhere-opensource-src-4.7.4 qt
    IF NOT EXIST "%DEPS%\Qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
