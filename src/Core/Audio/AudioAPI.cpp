@@ -27,8 +27,7 @@
 
 using namespace std;
 
-/// @cond PRIVATE
-struct AudioApiImpl
+struct AudioAPI::AudioApiImpl
 {
 public:
     AudioApiImpl() :
@@ -69,7 +68,6 @@ public:
     /// Master gain for individual sound types
     std::map<SoundChannel::SoundType, float> soundMasterGain;
 };
-/// @endcond PRIVATE
 
 AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_)
 :impl(new AudioApiImpl),
