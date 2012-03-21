@@ -107,6 +107,11 @@ bool SerialDevicePlugin::OpenDevice(QextSerialPort *device)
     }
 }
 
+bool SerialDevicePlugin::CheckDevice(QextSerialPort *device)
+{
+    return device->isOpen();
+}
+
 void SerialDevicePlugin::WriteToDevice(QextSerialPort *device, QString command)
 {
     if (device)
