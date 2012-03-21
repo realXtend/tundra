@@ -286,8 +286,8 @@ void TimeProfilerWindow::ShowAsset(QTreeWidgetItem* item, int column)
     QList<QObject*> targets;
     targets.push_back(asset.get());
 
-    framework_->Ui()->EmitContextMenuAboutToOpen(dummyMenu, targets);
-    foreach(QAction* action, dummyMenu->actions())
+    framework_->Ui()->EmitContextMenuAboutToOpen(&dummyMenu, targets);
+    foreach(QAction* action, dummyMenu.actions())
         if (action->text() == "Open")
         {
             action->activate(QAction::ActionEvent());
