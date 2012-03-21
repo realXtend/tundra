@@ -276,7 +276,7 @@ void TimeProfilerWindow::CopyMaterialAssetName()
 void TimeProfilerWindow::ShowAsset(QTreeWidgetItem* item, int column)
 {
     AssetPtr asset = framework_->Asset()->GetAsset(item->text(0));
-    if (asset)
+    if (!asset)
     {
         LogError("TimeProfilerWindow::ShowAsset: could not obtain asset " + item->text(0));
         return;
