@@ -27,6 +27,13 @@ bool OgreMeshAsset::LoadFromFile(QString filename)
     bool allowAsynchronous = true;
     if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
         allowAsynchronous = false;
+    QString cacheDiskSource;
+    if (allowAsynchronous)
+    {
+        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        if (cacheDiskSource.isEmpty())
+            allowAsynchronous = false;
+    }
     
     if (allowAsynchronous)
         return DeserializeFromData(0, 0, true);
@@ -43,7 +50,14 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
 
     if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
         allowAsynchronous = false;
-
+    QString cacheDiskSource;
+    if (allowAsynchronous)
+    {
+        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        if (cacheDiskSource.isEmpty())
+            allowAsynchronous = false;
+    }
+    
     // Asynchronous loading
     // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
     // 2. We have a rendering window for Ogre as Ogre::ResourceBackgroundQueue does not work otherwise. Its not properly initialized without a rendering window.
@@ -53,16 +67,12 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
         // We can only do threaded loading from disk, and not any disk location but only from asset cache.
         // local:// refs will return empty string here and those will fall back to the non-threaded loading.
         // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
-        QString cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
-        if (!cacheDiskSource.isEmpty())
-        {
-            QFileInfo fileInfo(cacheDiskSource);
-            std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
-            //! \todo - Should we set this somewhere for async path?: ogreMesh->setAutoBuildEdgeLists(false);
-            loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::MeshManager::getSingleton().getResourceType(),
-                              sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
-            return true;
-        }
+        QFileInfo fileInfo(cacheDiskSource);
+        std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
+        //! \todo - Should we set this somewhere for async path?: ogreMesh->setAutoBuildEdgeLists(false);
+        loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::MeshManager::getSingleton().getResourceType(),
+                          sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
+        return true;
     }
 
     if (!data_)

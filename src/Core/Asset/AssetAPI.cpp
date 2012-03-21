@@ -1349,21 +1349,28 @@ void AssetAPI::AssetLoadFailed(const QString assetRef)
 
 void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)
 {
-    uploadTransfer->EmitTransferCompleted();
-
     QString assetRef = uploadTransfer->AssetRef();
+    
+    // Clear our cache of this data.
+    /// @note We could actually update our cache with the same version of the asset that we just uploaded,
+    /// to avoid downloading what we just uploaded. That can be implemented later.
+    if (assetCache)
+        assetCache->DeleteAsset(assetRef);
+    
+    // If we have the asset (with possible old contents) in memory, unload it now
+    {
+        AssetPtr asset = GetAsset(assetRef);
+        if (asset && asset->IsLoaded())
+            asset->Unload();
+    }
+    
+    uploadTransfer->EmitTransferCompleted();
     
     emit AssetUploaded(assetRef);
     
     // We've completed an asset upload transfer. See if there is an asset download transfer that is waiting
     // for this upload to complete. 
     
-    // Before issuing a request, clear our cache of this data.
-    /// @note We could actually update our cache with the same version of the asset that we just uploaded,
-    /// to avoid downloading what we just uploaded. That can be implemented later.
-    if (assetCache)
-        assetCache->DeleteAsset(assetRef);
-
     currentUploadTransfers.erase(assetRef); // Note: this might kill the 'transfer' ptr if we were the last one to hold on to it. Don't dereference transfer below this.
     PendingDownloadRequestMap::iterator iter = pendingDownloadRequests.find(assetRef);
     if (iter != pendingDownloadRequests.end())
