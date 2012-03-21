@@ -325,7 +325,7 @@ template<> void ECAttributeEditor<float>::Set(QtProperty *property)
 {
     if(listenEditorChangedSignal_)
     {
-        float newValue = ParseString<float>(property->valueText().toStdString());
+        float newValue = property->valueText().toFloat();
         SetValue(newValue);
     }
 }
@@ -1041,9 +1041,9 @@ template<> void ECAttributeEditor<QPoint>::Set(QtProperty *property)
             QPoint newValue = attribute->Get();
             QString propertyName = property->propertyName();
             if (propertyName == "x")
-                newValue.setX(ParseString<int>(property->valueText().toStdString()));
+                newValue.setX(property->valueText().toInt());
             else if(propertyName == "y")
-                newValue.setY(ParseString<int>(property->valueText().toStdString()));
+                newValue.setY(property->valueText().toInt());
             SetValue(newValue);
         }
     }
