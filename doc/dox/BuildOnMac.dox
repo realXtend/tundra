@@ -53,5 +53,20 @@ Steps to perform a rebuild:
 </ol>
 
 <p>To view or report outstanding issues related to building on Mac, please visit the <a href="https://github.com/realXtend/naali/issues">Tundra github issue tracker</a>.
+
+  \section MacPreparingAnInstaller How to Generate an Installable Application Bundle
+  
+If you want to generate an installer package (.dmg) which deploys Tundra as an OSX application, follow these steps:
+
+<ol>
+<li>Make sure you have built Tundra according to the full instructions above.
+<li>Open a terminal and browse to ~/naali.
+<li>Type <b>./max-bundle-app.bash</b>. This will deploy Tundra into an application bundle in ~/naali/build/Tundra.app.
+<li>Type <b>./max-app-fix.bash</b>. This will fix up broken OSX .dylib lookup chains by repeatedly calling <a href="http://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man1/install_name_tool.1.html">install_name_tool</a> on all .dylibs inside the bundle. Additionally, it will deploy any missing non-system .dylibs into the bundle. This step utilizes an external tool from <a href="https://github.com/juj/MacAppFix">juj/MacAppFix</a>.
+<li>Type <b>./mac-create-dmg.bash</b>. This will create a .dmg disk image of the app bundle in ~/naali/build/Tundra.app.
+</ol>
+
+After the last step, a disk image will be generated to ~/naali/tundra.dmg.
+
 */
 
