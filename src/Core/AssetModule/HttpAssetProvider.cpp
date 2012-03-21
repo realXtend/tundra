@@ -19,7 +19,15 @@
 #include <QNetworkReply>
 #include <QLocale>
 
+// Disable C4245 warning (signed/unsigned mismatch) coming from boost
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4245)
+#endif
 #include <boost/date_time/local_time/local_time.hpp>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include "MemoryLeakCheck.h"
 

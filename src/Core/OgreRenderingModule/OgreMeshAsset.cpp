@@ -208,7 +208,7 @@ int OgreMeshAsset::NumTris(int submeshIndex)
     if (subMeshTriangleCounts.size() == 0)
         CreateKdTree();
 
-    if (submeshIndex >= 0 && submeshIndex < subMeshTriangleCounts.size())
+    if (submeshIndex >= 0 && (size_t)submeshIndex < subMeshTriangleCounts.size())
         return subMeshTriangleCounts[submeshIndex];
 
     LogError("Ogre mesh " + Name() + " does not contain " + QString::number(submeshIndex+1) + " submeshes! (has only " + QString::number(subMeshTriangleCounts.size()) + ")");

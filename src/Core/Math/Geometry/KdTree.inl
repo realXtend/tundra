@@ -59,7 +59,9 @@ void KdTree<T>::SplitLeaf(int nodeIndex, const AABB &nodeAABB, int numObjectsInB
 	u32 *rightBucket = new u32[numObjectsInBucket+1];
 
 	int leftIdx = 0;
+    (void)leftIdx;
 	int rightIdx = 0;
+    (void)rightIdx;
 	u32 *curObject = buckets[curBucketIndex];
 	u32 *l = leftBucket;
 	u32 *r = rightBucket;
@@ -239,7 +241,7 @@ void KdTree<T>::Build()
 	u32 *rootBucket = new u32[objects.size()+1];
 	for(size_t i = 0; i < objects.size(); ++i)
 		rootBucket[i] = i;
-	rootBucket[objects.size()] = -1; // The value -1 acts as a terminating sentinel index value.
+	rootBucket[objects.size()] = BUCKET_SENTINEL;
 	buckets.push_back(rootBucket);
 
 	rootAABB = BoundingAABB(rootBucket);
