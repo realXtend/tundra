@@ -23,11 +23,14 @@ echo "Deleting old Tundra.app bundle."
 rm -rf build/Tundra.app/
 
 echo "Creating new Tundra.app bundle structure."
-mkdir -p build/Tundra.app/Contents/{Components,Frameworks,MacOS,Plugins,Resources}
+mkdir -p $bundledir/Contents/{Components,Frameworks,MacOS,Plugins,Resources}
+mkdir -p $bundledir/Contents/Resources/Scripts
 
 echo "Deploying Tundra files to app bundle in $bundledir."
 cp -R bin/* $bundledir/Contents/MacOS
 cp -R tools/installers/mac/* $bundledir/Contents
+cp tools/mac-tundra-launcher.app/Contents/MacOS/applet $bundledir/Contents/MacOS
+cp tools/mac-tundra-launcher.app/Contents/Resources/Scripts/main.scpt $bundledir/Contents/Resources/Scripts
 
 echo "Deploying Qt frameworks from $qtlibdir to app bundle."
 cp -R $qtlibdir/QtCore.framework $frameworksdir
