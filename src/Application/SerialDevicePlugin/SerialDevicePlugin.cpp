@@ -63,6 +63,12 @@ QList<QSerialPortInfo*> SerialDevicePlugin::PortInfoList()
 QextSerialPort *SerialDevicePlugin::CreateDevice(QString portName, QextSerialPort::QueryMode mode)
 {
     QextSerialPort *device = new QextSerialPort(portName, mode);
+    if (!device)
+    {
+        LogError(LC + "Failed to create new device with port name '" + portName + "'");
+        return 0;
+    }
+    
     device->setBaudRate(BAUD4800);
     device->setFlowControl(FLOW_OFF);
     device->setParity(PAR_NONE);
@@ -76,6 +82,9 @@ QextSerialPort *SerialDevicePlugin::CreateDevice(QString portName, BaudRateType 
     StopBitsType stopBits, FlowType flowControl, QextSerialPort::QueryMode mode)
 {
     QextSerialPort *device = CreateDevice(portName, mode);
+    if (!device)
+        return 0;
+        
     device->setBaudRate(baudRate);
     device->setDataBits(dataBits);
     device->setParity(parity);
@@ -86,17 +95,34 @@ QextSerialPort *SerialDevicePlugin::CreateDevice(QString portName, BaudRateType 
 
 bool SerialDevicePlugin::OpenDevice(QextSerialPort *device)
 {
-    device->open(QIODevice::ReadWrite);
-    return device->isOpen();
+    if (device)
+    {
+        device->open(QIODevice::ReadWrite);
+        return device->isOpen();
+    }
+    else
+    {
+        LogError(LC + "OpenDevice called with null device ptr!");
+        return false;
+    }
 }
 
 void SerialDevicePlugin::WriteToDevice(QextSerialPort *device, QString command)
 {
-    device->write(command.toAscii(), command.length());
+    if (device)
+        device->write(command.toAscii(), command.length());
+    else
+        LogError(LC + "WriteToDevice called with null device ptr!");
 }
 
 QString SerialDevicePlugin::ReadFromDevice(QextSerialPort *device)
 {
+    if (!device)
+    {
+        LogError(LC + "ReadFromDevice called with null device ptr!");
+        return "";
+    }
+
     int numBytes;
 
     numBytes = device->bytesAvailable();
@@ -104,7 +130,6 @@ QString SerialDevicePlugin::ReadFromDevice(QextSerialPort *device)
         numBytes = 1024;
 
     QByteArray i = device->read(numBytes);
-
     QString msg = i;
 
     return msg;
@@ -129,6 +154,12 @@ bool SerialDevicePlugin::CloseDevice(QString portName)
 
 bool SerialDevicePlugin::CloseDevice(QextSerialPort *device)
 {
+    if (!device)
+    {
+        LogError(LC + "CloseDevice called with null device ptr!");
+        return false;
+    }
+    
     int removeIndex = -1;
     for(int i=0; i<openDevices_.size(); i++)
     {
