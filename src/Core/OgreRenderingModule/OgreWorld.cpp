@@ -218,18 +218,29 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 hit = EC_Mesh::Raycast(meshEntity, ray, &r.t, &r.submeshIndex, &r.triangleIndex, &r.pos, &r.normal, &r.uv);
             else
             {
+                Ogre::SceneNode *node = meshEntity->getParentSceneNode();
+                if (!node)
+                {
+                    LogError("EC_Mesh::Raycast called for a mesh entity that is not attached to a scene node. Returning no result.");
+                    return false;
+                }
+
+                assume(!float3(node->_getDerivedScale()).IsZero());
+                float3x4 localToWorld = float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
+                assume(localToWorld.IsColOrthogonal());
+                float3x4 worldToLocal = localToWorld.Inverted();
+
                 EC_Mesh *mesh = entity->GetComponent<EC_Mesh>().get();
                 boost::shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh ? mesh->MeshAsset() : boost::shared_ptr<OgreMeshAsset>();
                 if (!ogreMeshAsset)
                     continue;
-                float3x4 worldToLocal = placeable->WorldToLocal();
+
                 Ray localRay = worldToLocal * ray;
                 float oldLength = localRay.dir.Normalize();
                 if (oldLength == 0)
                     continue;
                 r = ogreMeshAsset->Raycast(localRay);
                 hit = r.t < std::numeric_limits<float>::infinity();
-                float3x4 localToWorld = placeable->LocalToWorld();
                 r.pos = localToWorld.MulPos(r.pos);
                 r.normal = localToWorld.MulDir(r.normal);
                 r.t = r.pos.Distance(ray.pos); ///\todo Can optimize out a sqrt.
