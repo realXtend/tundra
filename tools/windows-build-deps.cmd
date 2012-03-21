@@ -107,7 +107,7 @@ IF NOT EXIST "%DEPS%\openssl\src". (
       cecho {0E}Failed to rename %DEPS%\openssl\openssl-0.9.8u to %DEPS%\openssl\src. Permission denied for your account?{# #}{\n}
       GOTO :ERROR
    )
-   rm openssl-0.9.8u.tar
+   del openssl-0.9.8u.tar
 ) ELSE (
    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
 )
