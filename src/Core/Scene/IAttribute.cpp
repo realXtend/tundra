@@ -303,32 +303,17 @@ template<> void Attribute<bool>::FromString(const std::string& str, AttributeCha
 
 template<> void Attribute<int>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    try
-    {
-        int value = ParseString<int>(str);
-        Set(value, change);
-    }
-    catch(...) {}
+    Set(ParseString<int>(str, DefaultValue()), change);
 }
 
 template<> void Attribute<uint>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    try
-    {
-        uint value = ParseString<uint>(str);
-        Set(value, change);
-    }
-    catch(...) {}
+    Set(ParseString<uint>(str, DefaultValue()), change);
 }
 
 template<> void Attribute<float>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    try
-    {
-        float value = ParseString<float>(str);
-        Set(value, change);
-    }
-    catch(...) {}
+    Set(ParseString<float>(str, DefaultValue()), change);
 }
 
 template<> void Attribute<Color>::FromString(const std::string& str, AttributeChange::Type change)
@@ -404,18 +389,8 @@ template<> void Attribute<Transform>::FromString(const std::string& str, Attribu
 
 template<> void Attribute<QPoint>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    StringVector components = SplitString(str, ' ');
-    if (components.size() == 2)
-    {
-        try
-        {
-            QPoint value;
-            value.setX(ParseString<int>(components[0]));
-            value.setY(ParseString<int>(components[1]));
-            Set(value, change);
-        }
-        catch(...) {}
-    }
+    const float2 value = float2::FromString(str);
+    Set(QPoint(value.x, value.y), change);
 }
 
 // FROMQVARIANT TEMPLATE IMPLEMENTATIONS.

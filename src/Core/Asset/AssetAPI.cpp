@@ -3,6 +3,7 @@
 #include "DebugOperatorNew.h"
 
 #include "AssetAPI.h"
+#include "CoreDefines.h"
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 #include "IAssetStorage.h"
