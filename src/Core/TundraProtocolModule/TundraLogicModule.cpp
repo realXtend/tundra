@@ -36,17 +36,9 @@
 #include "EC_HoveringText.h"
 #endif
 
-#ifdef EC_Ruler_ENABLED
-#include "EC_Ruler.h"
-#endif
-
 #ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
 #include "EC_SoundListener.h"
-#endif
-
-#ifdef EC_Gizmo_ENABLED
-#include "EC_Gizmo.h"
 #endif
 
 #ifdef EC_PlanarMirror_ENABLED
@@ -105,12 +97,6 @@ void TundraLogicModule::Load()
 #endif
 #ifdef EC_HoveringText_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_HoveringText>));
-#endif
-#ifdef EC_Ruler_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Ruler>));
-#endif
-#ifdef EC_SoundRuler_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundRuler>));
 #endif
 #ifdef EC_ParticleSystem_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
