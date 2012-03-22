@@ -991,7 +991,8 @@ void AddContentWindow::HandleUploadProgress(bool successful, IAssetUploadTransfe
     {
         uploadStatusLabel->setText(QString(tr("%1/%2 uploads completed successfully")).arg(numSuccessfulUploads).arg(numTotalUploads));
         // Save most recently used storage to config.
-        framework->Config()->Set(ConfigData(ConfigAPI::FILE_FRAMEWORK, cAddContentDialogSetting, cRecentStorageSetting, CurrentStorageName()));
+        ConfigData c(ConfigAPI::FILE_FRAMEWORK, cAddContentDialogSetting, cRecentStorageSetting, CurrentStorageName());
+        framework->Config()->Set(c);
         // Emit AssetUploadCompleted which initiates CreateEntities
         emit AssetUploadCompleted(CurrentStorage(), numSuccessfulUploads, numFailedUploads);
     }
