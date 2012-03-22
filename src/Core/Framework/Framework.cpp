@@ -171,10 +171,10 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
     cmdLineDescs.commands["--hide_benign_ogre_messages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
 
-    apiVersionInfo = new ApiVersionInfo(Application::Version());
-    applicationVersionInfo = new ApplicationVersionInfo(Application::OrganizationName(), Application::ApplicationName(), Application::Version());
+    apiVersionInfo = new VersionInfo(Application::Version());
+    applicationVersionInfo = new VersionInfo(Application::Version());
 
-    LogInfo("* API version         : " + apiVersionInfo->GetFullIdentifier());
+    LogInfo("* API version         : " + apiVersionInfo->Version());
     LogInfo("* Application version : " + Application::FullIdentifier());
 
     if (HasCommandLineParameter("--help"))
@@ -490,12 +490,12 @@ IRenderer *Framework::Renderer() const
     return renderer;
 }
 
-ApiVersionInfo *Framework::ApiVersion() const
+VersionInfo *Framework::ApiVersion() const
 {
     return apiVersionInfo;
 }
 
-ApplicationVersionInfo *Framework::ApplicationVersion() const
+VersionInfo *Framework::ApplicationVersion() const
 {
     return applicationVersionInfo;
 }
