@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   ECEditorWindow.cpp
- *  @brief  Entity-component editor window.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   ECEditorWindow.cpp
+    @brief  Entity-component editor window. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
