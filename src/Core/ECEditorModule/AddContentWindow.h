@@ -1,14 +1,14 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   AddContentWindow.h
- *  @brief  Window for adding new content and uploading assets.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   AddContentWindow.h
+    @brief  Window for adding new content and uploading assets. */
 
 #pragma once
 
 #include <QWidget>
 
+#include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
 #include "AssetFwd.h"
 #include "SceneDesc.h"
@@ -23,18 +23,15 @@ class QLabel;
 
 /// Window for adding new content and uploading assets.
 /** The window is modal and is deleted when it's closed. */
-class AddContentWindow : public QWidget
+class ECEDITOR_MODULE_API AddContentWindow : public QWidget
 {
     Q_OBJECT
 
 public:
     /// Constructs the window.
-    /** @param fw Framework.
-        @param dest Destination scene.
+    /** @param dest Destination scene.
         @param parent Parent widget. */
-    AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent = 0);
-
-    /// Destructor.
+    AddContentWindow(const ScenePtr &dest, QWidget *parent = 0);
     ~AddContentWindow();
 
     /// Adds scene description to be shown in the window.
@@ -55,6 +52,17 @@ public:
     void SetContentPosition(const float3 &pos) { position = pos; }
 
 signals:
+    /// Emitted when possible entity creations are completed.
+    /** @param entities */
+    void EntitiesCreated(const QList<Entity *> &entities);
+
+    /// Emitted when possible asset uploads are completed.
+    /** @param storage Storage where assets were uploaded.
+        @param numSuccessful Number of successful uploads.
+        @param numFailed Number of failed uploads.*/
+    void AssetUploadCompleted(const AssetStoragePtr &storage, int numSuccessful, int numFailed);
+
+    /// @deprecated use AssetUploadCompleted and EntitiesCreated instead @todo Remove
     void Completed(bool contentAdded, const QString &uploadBaseUrl);
 
 protected:
@@ -65,8 +73,7 @@ private:
     Q_DISABLE_COPY(AddContentWindow)
 
     /// Creates entity items to the entity tree widget.
-    /** @param sceneDescs Source scene desc.
-        @param entityDescs List of entity descriptions. */
+    /** @param entityDescs List of entity descriptions. */
     void AddEntities(const QList<EntityDesc> &entityDescs);
 
     /// Creates asset items to the asset tree widget.
@@ -83,34 +90,36 @@ private:
     /// Returns name of the currently selected asset storage.
     QString CurrentStorageName() const;
 
+    AssetStoragePtr CurrentStorage() const;
+
     /// Generates contents of asset storage combo box. Sets default storage selected as default.
     void GenerateStorageComboBoxContents();
 
-    QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
-    QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
-    Framework *framework; ///< Framework.
+    QTreeWidget *entityTreeWidget;
+    QTreeWidget *assetTreeWidget;
+    Framework *framework;
     SceneWeakPtr scene; ///< Destination scene.
     QList<SceneDesc> sceneDescs; ///< Current scene description(s) shown on the window.
-    QPushButton *addContentButton; ///< Add content button.
-    QPushButton *cancelButton; ///< Cancel/close button.
-    QComboBox *storageComboBox; ///< Asset storage combo box.
+    QPushButton *addContentButton;
+    QPushButton *cancelButton;
+    QComboBox *storageComboBox;
     float3 position; ///< Centralization position for instantiated context (if used).
 
     // Uploading
     QLabel *uploadStatusLabel;
     QProgressBar *uploadProgressBar;
-    int progressStep_;
-    int failedUploads_;
-    int successfulUploads;
-    int totalUploads_;
+    int uploadProgressStep;
+    int numFailedUploads;
+    int numSuccessfulUploads;
+    int numTotalUploads; ///< Number of uploads initiated, set at UploadAssets()
 
     // Entities add
     QLabel *entityStatusLabel;
     QProgressBar *entityProgressBar;
 
     // Parent widget
-    QWidget *parentEntities_;
-    QWidget *parentAssets_;
+    QWidget *entityView;
+    QWidget *assetView;
 
     // Selected entities and assets
     SceneDesc filteredDesc;
@@ -131,16 +140,21 @@ private slots:
     /// Start content creation and asset uploading.
     void AddContent();
 
-    /// Create new scene description with ui check box selections
-    bool CreateNewDesctiption();
+    /// Returns description of the currently selected/filtered content.
+    SceneDesc CurrentContent() const;
 
-    /// Start uploading
-    bool UploadAssets();
+    /// Creates new scene description with ui check box selections.
+    void CreateNewDesctiption();
 
-    /// Add entities to scene (automatically called when all transfers finish)
-    void AddEntities();
+    bool CheckForStorageValidity();
 
-    /// Centers this window to the app main window
+    /// Starts uploading of assets, if applicable.
+    void UploadAssets();
+
+    /// Add entities to scene.
+    bool CreateEntities();
+
+    /// @todo Remove from here and create a utility function UiMainWindow::CenterWidget
     void CenterToMainWindow();
 
     /// Set entity related widgets visibility.
@@ -148,9 +162,6 @@ private slots:
 
     /// Set assets related widgets visibility.
     void SetAssetsVisible(bool visible);
-
-    /// Closes the window.
-    void Close();
 
     /// Checks if tree widget column is editable.
     /** @param item Item which was double-clicked.
@@ -160,15 +171,10 @@ private slots:
     /// Rewrites the destination names of all assets in the UI accordingly to the selected asset storage.
     void RewriteDestinationNames();
 
-    /// Handles completed upload asset transfer.
-    /** @param transfer Completed transfer. */
+    /// Calls HandleUploadProgress(true, transfer).
     void HandleUploadCompleted(IAssetUploadTransfer *transfer);
-
-    /// Handles failed upload asset transfer.
-    /** @param transfer Failed transfer. */
-    void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
-
-    void UpdateUploadStatus(bool successful, const QString &assetRef);
-
-    void CheckUploadTotals();
+    /// Calls HandleUploadProgress(false, transfer)
+    void HandleUploadFailed(IAssetUploadTransfer *transfer);
+    /// Handles upload progress and updates the UI.
+    void HandleUploadProgress(bool successful, IAssetUploadTransfer *transfer);
 };

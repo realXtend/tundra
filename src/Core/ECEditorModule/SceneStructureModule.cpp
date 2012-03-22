@@ -208,7 +208,8 @@ void SceneStructureModule::InstantiateContent(const QStringList &filenames, cons
 
     if (!sceneDescs.isEmpty())
     {
-        AddContentWindow *addContent = new AddContentWindow(framework_, scene->shared_from_this());
+        AddContentWindow *addContent = new AddContentWindow(scene->shared_from_this(), framework_->Ui()->MainWindow());
+        addContent->setWindowFlags(Qt::Tool);
         addContent->AddDescription(sceneDescs);
         if (worldPos != float3::zero)
             addContent->SetContentPosition(worldPos);
@@ -687,7 +688,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
 
                     // Add our dropped material to the raycasted submesh,
                     // append empty string or the current material string to the rest of them
-                    AssetReferenceList currentMaterials = mesh->getmeshMaterial();
+                    const AssetReferenceList &currentMaterials = mesh->meshMaterial.Get();
                     AssetReferenceList afterMaterials;
                     for(uint i=0; i<subMeshCount; ++i)
                     {
@@ -773,8 +774,9 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         }
 
                         // Show add content window
-                        AddContentWindow *addMaterials = new AddContentWindow(framework_, scene->shared_from_this());
+                        AddContentWindow *addMaterials = new AddContentWindow(scene->shared_from_this(), framework_->Ui()->MainWindow());
                         connect(addMaterials, SIGNAL(Completed(bool, const QString&)), SLOT(FinishMaterialDrop(bool, const QString&)));
+                        addMaterials->setWindowFlags(Qt::Tool);
                         addMaterials->AddDescription(sceneDesc);
                         addMaterials->show();
                     }
@@ -872,7 +874,8 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     }
 
     // Show add content window
-    AddContentWindow *addContent = new AddContentWindow(framework_, scene->shared_from_this());
+    AddContentWindow *addContent = new AddContentWindow(scene->shared_from_this(), framework_->Ui()->MainWindow());
+    addContent->setWindowFlags(Qt::Tool);
     addContent->AddDescription(sceneDesc);
     addContent->SetContentPosition(adjustPos);
     addContent->show();

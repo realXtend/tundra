@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   AssetTreeWidget.cpp
- *  @brief  Tree widget showing all available assets.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   AssetTreeWidget.cpp
+    @brief  Tree widget showing all available assets. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -25,6 +24,7 @@
 #include "AssetCache.h"
 #include "QtUtils.h"
 #include "UiAPI.h"
+#include "UiMainWindow.h"
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
 #include "IAssetTypeFactory.h"
@@ -511,7 +511,8 @@ void AssetTreeWidget::SaveAssetDialogClosed(int result)
 
 void AssetTreeWidget::Upload(const QStringList &files)
 {
-    AddContentWindow *addContent = new AddContentWindow(framework, framework->Scene()->MainCameraScene()->shared_from_this());
+    AddContentWindow *addContent = new AddContentWindow(framework->Scene()->MainCameraScene()->shared_from_this(), framework->Ui()->MainWindow());
+    addContent->setWindowFlags(Qt::Tool);
     addContent->AddAssets(files);
     addContent->show();
 }
@@ -640,4 +641,3 @@ void AssetTreeWidget::FunctionDialogFinished(int result)
                 dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
         }
 }
-
