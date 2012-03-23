@@ -1,3 +1,53 @@
+v2.3.1 - https://github.com/realXtend/naali/compare/tundra2.3.0...tundra2.3.1
+------
+Note: The numbers with # signs refer to github issue tracker numbers, e.g. #314 -> https://github.com/realXtend/naali/issues/314 .
+ - Migrated to a new build system on Windows, which builds nearly all dependencies for Tundra automatically. As a result, updated a lot of 3rd party libraries to newer versions: (#415)
+   - Qt 4.7.4
+   - Bullet 2.78
+   - Boost 1.49
+   - kNet: latest stable tag (will automatically pick up and rebuild when a new stable is out)
+   - qtscriptgenerator: latest master (identifies itself as 0.2)
+   - ogre-safe-nocrashes: Pulled to latest trunk at each build and rebuilt. Based on 1.8.0-unstable (Byatis)
+   - RenderSystem_NULL: Unknown.
+   - SkyX: 0.2.1 (?) modified with our custom changes
+   - Hydrax: 0.5.1 modified with our custom changes
+   - OpenAL:  Summer 2009 : Version 2.0.7.0 (?) ( http://connect.creativelabs.com/openal/Downloads/Forms/AllItems.aspx )
+   - Ogg: 1.3.0
+   - Vorbis: 1.3.3
+   - Theora: 1.1.1
+   - Speex: latest trunk, due to VS2008 and VS2010 build scripts not existing for the latest tag.
+   - QtPropertyBrowser: latest trunk, versioned 2.6
+ - Server object now has 'port' and 'protocol' member properties.
+ - Deprecated server.GetPort() and server.GetProtocol() member functions.
+ - Server object now has 'UserConnections()' member function, which returns a list of all connected user connections.
+ - Server object now has 'AuthenticatedUsers()' member function, which returns a list of all connected and authenticated user connections.
+ - Deprecated server.GetConnectionIDs(). Call server.AuthenticatedUsers() instead.
+ - Fixed various asset transfer handling bugs in Asset API.
+ - Deprecated Client::GetConnectionID. Use client.connectionID and Client::ConnectionID() instead.
+ - Deprecated Client::GetLoginProperty function. Use client.LoginProperty(key) and Client::LoginProperty(QString key) instead.
+ - Added a new script profiler tab to the Profiler window to allow profiling script memory consumption. (#403)
+ - Optimized ray-mesh triangle intersection by caching the mesh data into a kD-tree in OgreMeshAsset. (#416)
+ - Added support to profiler to refresh the profiler window at manual intervals.
+ - Reimplemented threshold logging to print results immedately to console window, instead of writing to file.
+ - Optimized Asset API internals to speed up asset loading locally and from the network.
+ - Optimized Asset API disk I/O usage for loading assets.
+ - Enabled Tundra to show timing information from inside Ogre, SkyX and Hydrax if built with ogre-safe-nocrashes branch.
+ - Fixed a crash in CAVEStereModule StereoController.
+ - Disabled Asset liveupdate for all assets outside storages registered to Tundra due to performance reasons. If you want to use liveupdate, make sure the asset is in a known asset storage.
+ - Improved MumblePlugin UI.
+ - Fixed a problem with improper case sensitive string checks that caused materials of some meshes to not load in EC_Mesh.
+ - Deprecated scene.GetEntity() and scene.GetEntityByName() in favor of more explicit scene.EntityByName() and scene.EntityById().
+ - Deprecated scene.GetEntitiesWithComponent() in favor of scene.EntitiesWithComponent() function.
+ - Added EC_Hydrax::HeightAt(worldPos) helper function to query the water height below a given world point.
+ - Added a script API to query mesh triangle data from script: OgreMeshAsset::NumSubmeshes(), OgreMeshAsset::NumTris() and OgreMeshAsset::Tri().
+ - Implemented support for making Mac app bundles and .dmg installers from a Tundra build.
+ - Added new 'ogreProf' console command to enable the Ogre profiler overlay, if Ogre was built with profiling enabled.
+ - Fixed Entity parenting when entity IDs are to be generated while instantiating the entities. (#431)
+ - Fixed a crash bug when trying to open an unloaded asset to the asset editor. (#400)
+ - Other closed issues:
+   - #151, #153, #249, #338, #404, #410, #413, #417
+ - Note: PythonScriptModule is not enabled for this build: see issue #434.
+
 v2.3.0 - https://github.com/realXtend/naali/compare/tundra2.2.0...tundra2.3.0
 ------
 Note: The numbers with # signs refer to github issue tracker numbers, e.g. #314 -> https://github.com/realXtend/naali/issues/314 .
