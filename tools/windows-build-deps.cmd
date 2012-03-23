@@ -199,7 +199,7 @@ IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
    
    IF NOT EXIST "configure.cache". (
       cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
-      configure -platform win32-msvc2008 -debug-and-release -opensource -shared -no-qt3support -no-opengl -no-openvg  -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+      configure -platform win32-msvc2008 -debug-and-release -opensource -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ) ELSE (
       cecho {0D}Qt already configured. Remove %DEPS%\Qt\configure.cache to trigger a reconfigure.{# #}{\n}
