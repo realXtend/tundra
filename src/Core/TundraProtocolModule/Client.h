@@ -43,8 +43,6 @@ public:
         LoggedIn
     };
 
-    typedef std::map<QString, QString> LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
-
     /// Returns connection/login state
     ClientLoginState LoginState() const { return loginstate_; }
 
