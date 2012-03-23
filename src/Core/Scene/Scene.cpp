@@ -12,6 +12,7 @@
 #include "EC_Name.h"
 #include "AttributeMetadata.h"
 #include "ChangeRequest.h"
+#include "EntityReference.h"
 
 #include "Framework.h"
 #include "Application.h"
@@ -25,6 +26,7 @@
 #include <QFile>
 #include <QDir>
 #include <QTextStream>
+#include <QHash>
 
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
@@ -589,6 +591,8 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         framework_->Asset()->DeserializeAssetStorageFromString(Application::ParseWildCardFilename(storage_elem.attribute("specifier")), false);
         storage_elem = storage_elem.nextSiblingElement("storage");
     }
+    
+    QHash<entity_id_t, entity_id_t> oldToNewIds;
 
     // Spawn all entities in the scene storage.
     QDomElement ent_elem = scene_elem.firstChildElement("entity");
@@ -602,7 +606,12 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         QString id_str = ent_elem.attribute("id");
         entity_id_t id = !id_str.isEmpty() ? static_cast<entity_id_t>(id_str.toInt()) : 0;
         if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
+        {
+            entity_id_t originaId = id;
             id = replicated ? NextFreeId() : NextFreeIdLocal();
+            if (originaId != 0 && !oldToNewIds.contains(originaId))
+                oldToNewIds[originaId] = id;
+        }
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
         {
@@ -655,7 +664,26 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
             EntityPtr entityShared = entities[i].lock();
             const Entity::ComponentMap &components = entityShared->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            {
+                if (!useEntityIDsFromFile && i->second->TypeName() == "EC_Placeable")
+                {
+                    // Go and fix parent ref of EC_Placeable if new entity IDs were generated
+                    IAttribute *iAttr = i->second->GetAttribute("Parent entity ref");
+                    Attribute<EntityReference> *parenRef = iAttr != 0 ? dynamic_cast<Attribute<EntityReference> *>(iAttr) : 0;
+                    if (parenRef && !parenRef->Get().IsEmpty())
+                    {
+                        QString ref = parenRef->Get().ref;
+                        
+                        // We only need to fix the id parent refs.
+                        // Ones with entity names should work as expected.
+                        bool isNumber = false;
+                        entity_id_t refId = ref.toUInt(&isNumber);
+                        if (isNumber && refId > 0 && oldToNewIds.contains(refId))
+                            parenRef->Set(EntityReference(oldToNewIds[refId]), change);
+                    }
+                }
                 i->second->ComponentChanged(change);
+            }
         }
     }
     
