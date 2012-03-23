@@ -56,7 +56,7 @@ public slots:
     SourceType DiskSourceType() const { return diskSourceType; }
     
     /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.
-    bool LoadFromFile(QString filename);
+    virtual bool LoadFromFile(QString filename);
 
     /// Forces a reload of this asset from its disk source. Returns true if loading succeeded, false otherwise.
     bool LoadFromCache();

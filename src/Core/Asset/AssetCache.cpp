@@ -6,6 +6,7 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 
+#include "CoreDefines.h"
 #include "Framework.h"
 #include "LoggingFunctions.h"
 

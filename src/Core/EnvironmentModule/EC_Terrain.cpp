@@ -23,8 +23,10 @@
 #include "Profiler.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
+
 #include <Ogre.h>
 #include <utility>
+#include <boost/make_shared.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -34,12 +36,12 @@ using namespace OgreRenderer;
 EC_Terrain::EC_Terrain(Scene* scene) :
     IComponent(scene),
     nodeTransformation(this, "Transform"),
-    xPatches(this, "Grid Width"),
-    yPatches(this, "Grid Height"),
-    material(this, "Material"),
+    xPatches(this, "Grid Width", 1),
+    yPatches(this, "Grid Height", 1),
+    material(this, "Material", AssetReference("Ogre Media:RexTerrainPCF.material")),
     heightMap(this, "Heightmap"),
-    uScale(this, "Tex. U scale"),
-    vScale(this, "Tex. V scale"),
+    uScale(this, "Tex. U scale", 0.13f),
+    vScale(this, "Tex. V scale", 0.13f),
     patchWidth(1),
     patchHeight(1),
     rootNode(0)
@@ -49,15 +51,10 @@ EC_Terrain::EC_Terrain(Scene* scene) :
 
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
-    xPatches.Set(1, AttributeChange::Disconnected);
-    yPatches.Set(1, AttributeChange::Disconnected);
     patches.resize(1);
     MakePatchFlat(0, 0, 0.f);
-    uScale.Set(0.13f, AttributeChange::Disconnected);
-    vScale.Set(0.13f, AttributeChange::Disconnected);
-    material.Set(AssetReference("local://RexTerrainPCF.material"), AttributeChange::Disconnected);
 
-    heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
+    heightMapAsset = boost::make_shared<AssetRefListener>();
     connect(heightMapAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(TerrainAssetLoaded(AssetPtr)));
 }
 
@@ -71,7 +68,7 @@ void EC_Terrain::UpdateSignals()
     Entity *parent = ParentEntity();
     CreateRootNode();
     if (parent)
-    {    
+    {
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection);
         connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection); // The Attach function also handles detaches.
     }
@@ -241,7 +238,6 @@ void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
     }
 }
 
-/// Releases all GPU resources used for the given patch.
 void EC_Terrain::DestroyPatch(int x, int y)
 {
     if (x >= patchWidth || y >= patchHeight || x < 0 || y < 0)
@@ -1199,8 +1195,6 @@ void EC_Terrain::AttachTerrainRootNode()
     }
 }
 
-/// Creates Ogre geometry data for the single given patch, or updates the geometry for an existing
-/// patch if the associated Ogre resources already exist.
 void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 {
     PROFILE(EC_Terrain_GenerateTerrainGeometryForOnePatch);

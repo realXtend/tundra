@@ -29,7 +29,7 @@ namespace OgreRenderer
         virtual void Uninitialize();
 
         /// Returns the renderer.
-        RendererPtr GetRenderer() const { return renderer; }
+        const RendererPtr &GetRenderer() const { return renderer; }
 
         /// Ogre resource group for cached asset files.
         static std::string CACHE_RESOURCE_GROUP;
@@ -37,6 +37,10 @@ namespace OgreRenderer
     public slots:
         /// Prints renderer stats to console.
         void ConsoleStats();
+
+        /// Toggles visibility of the Ogre profiler overlay.
+        /** @note Applicable only if Ogre built with profiler support. */
+        void ToggleOgreProfilerOverlay();
 
         /// Sets attribute value for material.
         void SetMaterialAttribute(const QStringList &params);

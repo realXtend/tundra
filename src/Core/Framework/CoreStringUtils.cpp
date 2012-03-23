@@ -155,7 +155,7 @@ void ReplaceCharInplace(std::string& str, char replace_this, char replace_with)
         if (str[i] == replace_this) str[i] = replace_with;
 }
 
-uint GetHash(const std::string& str)
+uint ComputeHash(const std::string& str)
 {
     uint ret = 0;
     
@@ -175,11 +175,6 @@ uint GetHash(const std::string& str)
     return ret;
 }
 
-uint GetHash(const QString& str)
-{
-    return GetHash(str.toStdString());
-}
-
 bool ParseBool(QString value)
 {
     value = value.trimmed().toLower();
@@ -192,9 +187,4 @@ bool ParseBool(QString value)
     if (value == "true")
         return true;
     return false;
-}
-
-bool ParseBool(const std::string &value)
-{
-    return ParseBool(QString::fromStdString(value));
 }

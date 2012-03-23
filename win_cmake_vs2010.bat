@@ -42,6 +42,7 @@ if exist "deps\vs2010\README" (
 :set_env_variables
 SET QTDIR=%TUNDRA_DEP_PATH%\Qt
 SET QMAKESPEC=%QTDIR%\mkspecs\win32-msvc2010
+SET TUNDRA_PYTHON_ENABLED=TRUE
 echo.
 goto :run_cmake
 

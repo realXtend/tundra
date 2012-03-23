@@ -1,14 +1,17 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
+
 #include "Win.h"
 #include "AudioAPI.h"
+#include "AudioAsset.h"
+#include "SoundChannel.h"
+
+#include "CoreDefines.h"
 #include "CoreTypes.h"
 #include "AssetAPI.h"
-#include "AudioAsset.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
-#include "SoundChannel.h"
 #include "LoggingFunctions.h"
 #include "Framework.h"
 #include "Profiler.h"
@@ -27,8 +30,7 @@
 
 using namespace std;
 
-/// @cond PRIVATE
-struct AudioApiImpl
+struct AudioAPI::AudioApiImpl
 {
 public:
     AudioApiImpl() :
@@ -69,7 +71,6 @@ public:
     /// Master gain for individual sound types
     std::map<SoundChannel::SoundType, float> soundMasterGain;
 };
-/// @endcond PRIVATE
 
 AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_)
 :impl(new AudioApiImpl),

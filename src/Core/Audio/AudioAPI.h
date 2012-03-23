@@ -150,5 +150,6 @@ private:
 
     AssetAPI *assetAPI;
 
+    struct AudioApiImpl;
     AudioApiImpl *impl;
 };

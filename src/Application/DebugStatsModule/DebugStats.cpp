@@ -54,6 +54,9 @@ void DebugStatsModule::Initialize()
     framework_->Console()->RegisterCommand("exec", "Invokes an Entity Action on an entity (debugging).",
         this, SLOT(Exec(const QStringList &)));
 
+    framework_->Console()->RegisterCommand("rprof", "Refreshes the profiler time display.",
+        this, SLOT(RefreshProfilingWindow()));
+
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 }
@@ -87,12 +90,17 @@ void DebugStatsModule::ShowProfilingWindow()
         return;
     }
 
-    profilerWindow_ = new TimeProfilerWindow(framework_);
-    profilerWindow_->setParent(framework_->Ui()->MainWindow());
+    profilerWindow_ = new TimeProfilerWindow(framework_, framework_->Ui()->MainWindow());
     profilerWindow_->setWindowFlags(Qt::Tool);
     profilerWindow_->resize(650, 530);
     connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
     profilerWindow_->show();
+}
+
+void DebugStatsModule::RefreshProfilingWindow()
+{
+    if (profilerWindow_)
+        profilerWindow_->RefreshProfilingData();
 }
 
 void DebugStatsModule::Update(f64 frametime)
@@ -110,7 +118,7 @@ void DebugStatsModule::Update(f64 frametime)
         if (!profilerWindow_->isVisible())
             return;
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
-        profilerWindow_->DoThresholdLogging();
+//        profilerWindow_->DoThresholdLogging();
     }
 }
 

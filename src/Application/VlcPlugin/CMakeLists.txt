@@ -1,9 +1,16 @@
 
 macro(configure_vlc)
+    if ("${VLC_ROOT}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{VLC_ROOT}" VLC_ROOT)
+    endif()
+    if ("${VLC_ROOT}" STREQUAL "")
+        SET(VLC_ROOT ${ENV_TUNDRA_DEP_PATH}/vlc)
+    endif()
+    
     sagase_configure_package(VLC
         NAMES vlc
         COMPONENTS libvlc libvlccore
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
+        PREFIXES ${VLC_ROOT})
     sagase_configure_report (VLC)
 endmacro()
 

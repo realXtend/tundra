@@ -5,15 +5,11 @@
 	<key>CFBundleExecutable</key>
 	<string>applet</string>
 	<key>CFBundleVersion</key>
-	<string>2.1.3</string>
+	<string>2.3.0</string>
 	<key>CFBundleName</key>
 	<string>Tundra</string>
 	<key>LSMultipleInstancesProhibited</key>
 	<false/>
-	<key>SUFeedUrl</key>
-	<string> <!-- the URL to the appcast needed for the updates --> </string>
-	<key>SUPublicDSAKeyFile</key>
-	<string><!-- the RSA public key file name which is stored inside <BUNDLE>/Contents/Resources --> </string>
 	<key>CFBundleIconFile</key>
 	<string>Icon.icns</string>
 	<key>CFBundleIdentifier</key>

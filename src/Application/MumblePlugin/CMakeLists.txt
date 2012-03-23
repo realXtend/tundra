@@ -1,73 +1,60 @@
-
 macro (configure_speex)
+    if ("${SPEEX_ROOT}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{SPEEX_ROOT}" SPEEX_ROOT)
+    endif()
+    if ("${SPEEX_ROOT}" STREQUAL "")
+        SET(SPEEX_ROOT ${ENV_TUNDRA_DEP_PATH}/speex)
+    endif()
+    
     sagase_configure_package(SPEEX
         NAMES speex
         COMPONENTS libspeex         # speex lib
                    libspeexdsp      # speex audio processing lib
                    speex            # speex.h to find include dir
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/speex)
+        PREFIXES ${SPEEX_ROOT})
         
     sagase_configure_report (SPEEX)
 endmacro (configure_speex)
 
-macro (configure_protobuf)
-    # Give FindProtobuf.cmake some hints on windows, the script is not very good on its own if the full protobuf build is not present.
-    if (MSVC)
-        set (PROTOBUF_ROOT ${ENV_TUNDRA_DEP_PATH}/protobuf)
-        set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${PROTOBUF_ROOT}/include ${PROTOBUF_ROOT}/include/google/protobuf)
-        set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${PROTOBUF_ROOT}/lib)
-        set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${PROTOBUF_ROOT}/bin)
-    endif ()
-    
-    sagase_configure_package(PROTOBUF
-        NAMES protobuf
-        COMPONENTS libprotobuf      # protobuf lib
-                   service          # service.h to find include dir
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf                            # Finding the libs
-                 ${ENV_TUNDRA_DEP_PATH}/protobuf/include/google/protobuf)   # Finding the include
+macro (configure_protobuf)   
+    if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
+        SET(PROTOBUF_SRC_ROOT_FOLDER $ENV{PROTOBUF_SRC_ROOT_FOLDER})
+    endif()
+    if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
+        SET(PROTOBUF_SRC_ROOT_FOLDER ${ENV_TUNDRA_DEP_PATH}/protobuf)
+    endif()
 
-    # Remove FindProtobuf.cmake generated not found item
-    list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
-    
-    # Duplicate found includes to the proper variable so sagase is pleased. FindProtobuf.cmake
-    # does not always populate the PROTOBUF_INCLUDE_DIRS but does for PROTOBUF_INCLUDE_DIR that is cached, pleh.
-    # FindProtobuf.cmake is not particularly smart about finding the debug library 
-    # at least with a d.dll postfix that we currently have. Only use the release one.
-    if (MSVC)
-        set (PROTOBUF_LIBRARIES ${PROTOBUF_LIBRARY})
-        set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIR})
-    endif ()
-
+    find_package(Protobuf REQUIRED)
     sagase_configure_report (PROTOBUF)
 endmacro (configure_protobuf)
 
-macro (configure_openssl)
-    # This is a variable FindOpenSSL.cmake will inspect.
-    set (OPENSSL_ROOT_DIR ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
+macro (configure_openssl)       
+    if ("${OPENSSL_ROOT_DIR}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{OPENSSL_ROOT_DIR}" OPENSSL_ROOT_DIR)
+    endif()
+    if ("${OPENSSL_ROOT_DIR}" STREQUAL "")
+        SET(OPENSSL_ROOT_DIR ${ENV_TUNDRA_DEP_PATH}/openssl)
+    endif()
     
-    sagase_configure_package(OPENSSL
-        NAMES openssl
-        COMPONENTS libeay32 ssleay32 ssl
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
-       
-    # Remove FindOpenSSL.cmake generated not found items
-    if (MSVC)
-        list(REMOVE_ITEM OPENSSL_LIBRARIES debug optimized SSL_EAY_RELEASE-NOTFOUND LIB_EAY_RELEASE-NOTFOUND SSL_EAY_DEBUG-NOTFOUND LIB_EAY_DEBUG-NOTFOUND NOTFOUND)
-    endif ()
-    
-    # Duplicate found includes to the proper variable so sagase is pleased.
-    set(OPENSSL_INCLUDE_DIRS ${OPENSSL_INCLUDE_DIR})
-    
+    find_package(OpenSSL REQUIRED)
+    set(OPENSSL_INCLUDE_DIRS ${OPENSSL_INCLUDE_DIR}) # Duplicate found includes to the proper variable so sagase is pleased.
     sagase_configure_report (OPENSSL)
 endmacro (configure_openssl)
 
-macro (configure_celt)    
+macro (configure_celt)
+    if ("${CELT_ROOT}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{CELT_ROOT}" CELT_ROOT)
+    endif()
+    if ("${CELT_ROOT}" STREQUAL "")
+        SET(CELT_ROOT ${ENV_TUNDRA_DEP_PATH}/celt)
+    endif()
+
     sagase_configure_package(CELT
         NAMES celt
         COMPONENTS libcelt  # for libcelt
                    celt0    # for old celt0 name (linux?)
                    celt     # for celt.h
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/celt)
+        PREFIXES ${CELT_ROOT})
         
     sagase_configure_report (CELT)
 endmacro (configure_celt)

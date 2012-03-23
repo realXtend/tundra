@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   OgreMaterialEditor.h
- *  @brief  Non-text high-level editing tool for OGRE material scripts.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   OgreMaterialEditor.h
+    @brief  Non-text high-level editing tool for OGRE material scripts. */
 
 #pragma once
 

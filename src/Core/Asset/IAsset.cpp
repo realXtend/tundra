@@ -42,7 +42,7 @@ bool IAsset::LoadFromCache()
 
     AssetPtr thisAsset = shared_from_this();
 
-    if (assetAPI->NumPendingDependencies(thisAsset) > 0)
+    if (assetAPI->HasPendingDependencies(thisAsset))
         assetAPI->RequestAssetDependencies(thisAsset);
 
     return success;
@@ -185,9 +185,10 @@ void IAsset::DependencyLoaded(AssetPtr dependee)
 
 void IAsset::LoadCompleted()
 {
+    PROFILE(IAsset_LoadCompleted);
     // If asset was loaded successfully, and there are no pending dependencies, emit Loaded() now.
     AssetPtr thisAsset = this->shared_from_this();
-    if (IsLoaded() && assetAPI->NumPendingDependencies(thisAsset) == 0)
+    if (IsLoaded() && !assetAPI->HasPendingDependencies(thisAsset))
         emit Loaded(thisAsset);
 }
 

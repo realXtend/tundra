@@ -12,8 +12,6 @@
 #include "AssetRefListener.h"
 #include "Math/float3.h"
 
-struct EC_HydraxImpl;
-
 /// A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
 /** This is a singleton type component and only one component per scene is allowed.
     Provides means of creating photorealistic environments together with EC_SkyX.
@@ -80,11 +78,18 @@ public:
 //    DEFINE_QPROPERTY_ATTRIBUTE(int, normalMode);
 //    Q_PROPERTY(int normalMode READ getnormalMode WRITE setnormalMode);
 
-    ///\todo SaveConfig
-//public slots:
-    //SaveConfig(const QString &filename);
+public slots:
+    /// Returns the height of the simulated water at the specified world-space coordinates.
+    /** @param worldPos World-space point (y omitted).
+        @return Water height (world-space y) at the given position, or -1 if the point was outside of the water. */
+    float HeightAt(const float3 &worldPos) const;
+    /// This is an overloaded function.
+    /** @param x X-coordinate in world-space.
+        @param z Z-coordinate in world-space. */
+    float HeightAt(float x, float z) const;
 
 private:
+    struct EC_HydraxImpl;
     EC_HydraxImpl *impl;
     AssetRefListener configRefListener;
 

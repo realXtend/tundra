@@ -608,6 +608,7 @@ void JavascriptModule::UnloadStartupScripts()
 
 void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp)
 {
+    PROFILE(JSModule_PrepareScriptInstance);
     static std::set<QObject*> checked;
     
     // Register framework's dynamic properties (service objects) and the framework itself to the script engine

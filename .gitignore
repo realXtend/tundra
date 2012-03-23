@@ -30,6 +30,7 @@ src/*/*/RelWithDebInfo
 */Debug/
 */Release/
 */RelWithDebInfo/
+tundra.sln.cache
 
 # Unix-specific build objects
 Makefile

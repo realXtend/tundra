@@ -35,6 +35,8 @@ public slots:
     /// Creates and shows the profiling window.
     void ShowProfilingWindow();
 
+    void RefreshProfilingWindow();
+
 private slots:
     /// Starts profiling if the profiler widget is visible.
     /** @param bool visible Visibility. */

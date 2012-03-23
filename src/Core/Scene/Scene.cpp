@@ -113,7 +113,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     return entity;
 }
 
-EntityPtr Scene::GetEntity(entity_id_t id) const
+EntityPtr Scene::EntityById(entity_id_t id) const
 {
     EntityMap::const_iterator it = entities_.find(id);
     if (it != entities_.end())
@@ -122,7 +122,7 @@ EntityPtr Scene::GetEntity(entity_id_t id) const
     return EntityPtr();
 }
 
-EntityPtr Scene::GetEntityByName(const QString &name) const
+EntityPtr Scene::EntityByName(const QString &name) const
 {
     if (name.isEmpty())
         return EntityPtr();
@@ -172,7 +172,7 @@ void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
     entities_[new_id] = old_entity;
 }
 
-void Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
+bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
 {
     EntityMap::iterator it = entities_.find(id);
     if (it != entities_.end())
@@ -185,26 +185,26 @@ void Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
         // If entity somehow manages to live, at least it doesn't belong to the scene anymore
         del_entity->SetScene(0);
         del_entity.reset();
+        return true;
     }
+    return false;
 }
 
-void Scene::RemoveAllEntities(bool send_events, AttributeChange::Type change)
+void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
 {
     ///\todo Rewrite this function to call Scene::RemoveEntity and not duplicate the logic here.
-
     EntityMap::iterator it = entities_.begin();
     while(it != entities_.end())
     {
         // If entity somehow manages to live, at least it doesn't belong to the scene anymore
-        if (send_events)
-        {
+        if (signal)
             EmitEntityRemoved(it->second.get(), change);
-        }
+
         it->second->SetScene(0);
         ++it;
     }
     entities_.clear();
-    if (send_events)
+    if (signal)
         emit SceneCleared(this);
     
     idGenerator_.Reset();
@@ -223,7 +223,7 @@ entity_id_t Scene::NextFreeIdLocal()
     return idGenerator_.AllocateLocal();
 }
 
-EntityList Scene::GetEntitiesWithComponent(const QString &typeName, const QString &name) const
+EntityList Scene::EntitiesWithComponent(const QString &typeName, const QString &name) const
 {
     std::list<EntityPtr> entities;
     EntityMap::const_iterator it = entities_.begin();
@@ -271,7 +271,7 @@ void Scene::EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChan
 
 void Scene::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
-    if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
+    if (!comp || !attribute || change == AttributeChange::Disconnected)
         return;
     if (change == AttributeChange::Default)
         change = comp->UpdateMode();
@@ -281,7 +281,7 @@ void Scene::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, Attrib
 void Scene::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
     // "Stealth" addition (disconnected changetype) is not supported. Always signal.
-    if ((!comp) || (!attribute))
+    if (!comp || !attribute)
         return;
     if (change == AttributeChange::Default)
         change = comp->UpdateMode();
@@ -291,7 +291,7 @@ void Scene::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, Attribut
 void Scene::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
     // "Stealth" removal (disconnected changetype) is not supported. Always signal.
-    if ((!comp) || (!attribute))
+    if (!comp || !attribute)
         return;
     if (change == AttributeChange::Default)
         change = comp->UpdateMode();
@@ -361,14 +361,12 @@ void Scene::EmitComponentAcked(IComponent* comp, component_id_t oldId)
         emit ComponentAcked(comp, oldId);
 }
 
-QVariantList Scene::GetEntityIdsWithComponent(const QString &type_name) const
+QVariantList Scene::GetEntityIdsWithComponent(const QString &typeName) const
 {
+    LogWarning("Scene::GetEntityIdsWithComponent is deprecated and will be removed. Migrate to using EntitiesWithComponent instead.");
     QVariantList ret;
-
-    EntityList entities = GetEntitiesWithComponent(type_name);
-    foreach(const EntityPtr &e, entities)
-        ret.append(QVariant(e->Id()));
-
+    foreach(const EntityPtr &e, EntitiesWithComponent(typeName))
+        ret.append(e->Id());
     return ret;
 }
 
@@ -1084,7 +1082,6 @@ SceneDesc Scene::CreateSceneDescFromBinary(const QString &filename) const
 
     sceneDesc.filename = filename;
 
-    ///\todo Use Latin 1 encoding?
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -1245,8 +1242,8 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
     Entity* entity = comp ? comp->ParentEntity() : 0;
     Scene* scene = entity ? entity->ParentScene() : 0;
     
-    if ((length <= 0.0f) || (!attr) || (!attr->Metadata()) || (attr->Metadata()->interpolation == AttributeMetadata::None) ||
-        (!comp) || (!entity) || (!scene) || (scene != this))
+    if (length <= 0.0f || !attr || !attr->Metadata() || attr->Metadata()->interpolation == AttributeMetadata::None ||
+        !comp || !entity || !scene || scene != this)
     {
         delete endvalue;
         return false;

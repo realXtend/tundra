@@ -2,11 +2,14 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   OgreMaterialUtils.h
-    @brief  Contains some often needed utlitity functions when dealing with OGRE material scripts. */
+    @brief  Utilitity functions for dealing with OGRE material scripts. */
 
 #pragma once
 
 #include <OgreMaterial.h>
+#include <OgreTexture.h>
+#include <OgreGpuProgram.h>
+
 #include "CoreTypes.h"
 #include "OgreModuleApi.h"
 
@@ -87,4 +90,19 @@ namespace OgreRenderer
     /// Searches directory recursively and returns list of found material files.
     /** @param dir Directory to be searched. */
     QStringList OGRE_MODULE_API FindMaterialFiles(const QString &dir);
+
+    typedef QMap<QString, QVariant> ShaderParameterMap;
+    typedef QMapIterator<QString, QVariant> ShaderParameterMapIter;
+
+    /// Gathers name-value map of shader parameters of Ogre material.
+    /** Vertex shader, fragment/pixel shader and texture unit names are appended with " VP", " FP" and " TU" respectively.
+        @param material Material to be inspected.
+        @return Property map QMap[QString(name), QVariant[QMap[QString(type), QVariant(value)]]]. */
+    ShaderParameterMap OGRE_MODULE_API GatherShaderParameters(const Ogre::MaterialPtr &material, bool includeTextureUnits = false);
+
+    /// Utility function for converting Ogre::GpuConstantType enum to type string.
+    QString OGRE_MODULE_API GpuConstantTypeToString(Ogre::GpuConstantType type);
+
+    /// Utility function for converting Ogre::GpuConstantType enum to type string.
+    QString OGRE_MODULE_API TextureTypeToString(Ogre::TextureType type);
 }

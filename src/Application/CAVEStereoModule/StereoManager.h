@@ -53,6 +53,11 @@ However, this manager is completely indepedent from this patch, the dual output 
 for example two non-fullscreen windows or a windows with two viewports inside.
 */
 
+namespace OgreRenderer
+{
+    class Renderer;
+}
+
 namespace CAVEStereo
 {
     class StereoManager
@@ -132,6 +137,7 @@ namespace CAVEStereo
         };
         friend class DeviceLostListener;
 
+        OgreRenderer::Renderer* renderer_;
         Ogre::Camera *camera_;
         StereoCameraListener left_cam_listener_, right_cam_listener_;
         DeviceLostListener device_list_listener_;
@@ -183,7 +189,7 @@ namespace CAVEStereo
 
     public:
         //--------------init--------------
-        StereoManager(void);
+        StereoManager(OgreRenderer::Renderer* renderer);
         ~StereoManager(void);
         /** The manager should be initialized with two viewports if you want dual output stereo (SM_DUALOUTPUT).
         If you want red/blue anaglyph stereo (SM_ANAGLYPH) you only need one viewport, just set the rightViewport to NULL.
@@ -283,6 +289,8 @@ namespace CAVEStereo
         to a file. Then this file can be used to initialize the manager.  */
         void saveConfig(const Ogre::String &filename) const;
         StereoMode loadConfig(const Ogre::String &filename);
+        
+        OgreRenderer::Renderer* getRenderer() { return renderer_; }
     };
 }
 
