@@ -13,6 +13,7 @@
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
 #include "UserConnectedResponseData.h"
+#include "Client.h"
 
 #include "CoreStringUtils.h"
 #include "SceneAPI.h"
@@ -32,6 +33,7 @@ Q_DECLARE_METATYPE(TundraLogic::SyncManager*);
 Q_DECLARE_METATYPE(SceneSyncState*);
 Q_DECLARE_METATYPE(StateChangeRequest*);
 Q_DECLARE_METATYPE(UserConnectedResponseData*);
+Q_DECLARE_METATYPE(TundraLogic::Client::LoginPropertyMap);
 
 using namespace kNet;
 
@@ -381,6 +383,25 @@ QScriptValue toScriptValueUserConnectionList(QScriptEngine *engine, const UserCo
     return scriptValue;
 }
 
+QScriptValue qScriptValueFromLoginPropertyMap(QScriptEngine *engine, const TundraLogic::Client::LoginPropertyMap &map)
+{
+    QScriptValue v = engine->newArray(map.size());
+    for(TundraLogic::Client::LoginPropertyMap::const_iterator iter = map.begin(); iter != map.end(); ++iter)
+        v.setProperty((*iter).first, (*iter).second);
+    return v;
+}
+
+void qScriptValueToLoginPropertyMap(const QScriptValue &value, TundraLogic::Client::LoginPropertyMap &map)
+{
+    map.clear();
+    QScriptValueIterator it(value);
+    while(it.hasNext())
+    {
+        it.next();
+        map[it.name()] = it.value().toString();
+    }
+}
+
 } // ~unnamed namespace
 
 void Server::OnScriptEngineCreated(QScriptEngine* engine)
@@ -393,6 +414,8 @@ void Server::OnScriptEngineCreated(QScriptEngine* engine)
     qScriptRegisterMetaType<UserConnectedResponseData*>(engine, qScriptValueFromNull<UserConnectedResponseData*>, qScriptValueToNull<UserConnectedResponseData*>);
     qScriptRegisterMetaType<UserConnectionPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<UserConnectionList>(engine, toScriptValueUserConnectionList, fromScriptValueUserConnectionList);
+    qRegisterMetaType<TundraLogic::Client::LoginPropertyMap>("LoginPropertyMap");
+    qScriptRegisterMetaType<TundraLogic::Client::LoginPropertyMap>(engine, qScriptValueFromLoginPropertyMap, qScriptValueToLoginPropertyMap);
 }
 
 }
