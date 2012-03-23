@@ -36,17 +36,9 @@
 #include "EC_HoveringText.h"
 #endif
 
-#ifdef EC_Ruler_ENABLED
-#include "EC_Ruler.h"
-#endif
-
 #ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
 #include "EC_SoundListener.h"
-#endif
-
-#ifdef EC_Gizmo_ENABLED
-#include "EC_Gizmo.h"
 #endif
 
 #ifdef EC_PlanarMirror_ENABLED
@@ -106,21 +98,12 @@ void TundraLogicModule::Load()
 #ifdef EC_HoveringText_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_HoveringText>));
 #endif
-#ifdef EC_Ruler_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Ruler>));
-#endif
-#ifdef EC_SoundRuler_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundRuler>));
-#endif
 #ifdef EC_ParticleSystem_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
 #endif
 #ifdef EC_Sound_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sound>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundListener>));
-#endif
-#ifdef EC_Gizmo_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Gizmo>));
 #endif
 #ifdef EC_PlanarMirror_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PlanarMirror>));
@@ -426,7 +409,7 @@ bool TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
         return false;
     }
 
-    LogInfo("Import Ogre .scene " + filename + " ...");
+    LogInfo("Importing Ogre .scene " + filename + " ...");
 
     kNet::PolledTimer timer;
     SceneImporter importer(scene->shared_from_this());
@@ -452,7 +435,7 @@ bool TundraLogicModule::ImportMesh(QString filename, const float3 &pos, const fl
         return false;
     }
 
-    LogInfo("Import Ogre .mesh " + filename + " ...");
+    LogInfo("Importing Ogre .mesh " + filename + " ...");
 
     SceneImporter importer(scene->shared_from_this());
     EntityPtr entity = importer.ImportMesh(filename, QFileInfo(filename).dir().path(), Transform(pos, rot, scale),
