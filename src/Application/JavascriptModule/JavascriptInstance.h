@@ -77,6 +77,9 @@ public slots:
     /// Return whether has been evaluated
     virtual bool IsEvaluated() const { return evaluated; }
 
+    /// Dumps engine information into a string. Used for debugging/profiling.
+    virtual QMap<QString, uint> DumpEngineInformation();
+    
     /// Check and print error if the engine has an uncaught exception
     bool CheckAndPrintException(const QString& message, const QScriptValue& result);
 
@@ -95,7 +98,10 @@ private:
     void DeleteEngine();
 
     QString LoadScript(const QString &fileName);
-
+    
+    void GetObjectInformation(const QScriptValue &object, QSet<qint64> &ids, uint &valueCount, uint &objectCount, uint &nullCount, uint &numberCount, 
+        uint &boolCount, uint &stringCount, uint &arrayCount, uint &funcCount, uint &qobjCount, uint &qobjMethodCount);
+        
     QScriptEngine *engine_; ///< Qt script engine.
 
     // The script content for a JavascriptInstance is loaded either using the Asset API or 

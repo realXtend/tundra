@@ -250,9 +250,16 @@ namespace MumbleAudio
 
         if (!outputAudioMuted)
         {
-            // Recording buffer of 40 celt frames, 38400 bytes
-            int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
-            framework->Audio()->StartRecording("", MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
+            QMutexLocker lock(&mutexAudioSettings);
+            {
+                // Recording buffer of 40 celt frames, 38400 bytes
+                int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
+                if (!framework->Audio()->StartRecording(audioSettings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize))
+                {
+                    LogWarning("Could not open recording device '" + audioSettings.recordingDevice + "'. Trying to open the default device instead.");
+                    framework->Audio()->StartRecording("", MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
+                }
+            }
         }
         else
             framework->Audio()->StopRecording();
@@ -277,6 +284,7 @@ namespace MumbleAudio
     void AudioProcessor::ApplySettings(AudioSettings settings)
     {
         bool positionalRangesChanged = false;
+        bool recondingDeviceChanged = false;
         int changedInnerRange = 0;
         int changedOuterRange = 0;
 
@@ -284,6 +292,10 @@ namespace MumbleAudio
         {
             QMutexLocker lock(&mutexAudioSettings);
 
+            // Detect recording device changed
+            if (audioSettings.recordingDevice != settings.recordingDevice)
+                recondingDeviceChanged = true;
+                
             // Detect if positional playback ranges changed.
             if (audioSettings.innerRange != settings.innerRange || audioSettings.outerRange != settings.outerRange)
             {
@@ -333,6 +345,26 @@ namespace MumbleAudio
 
         preProcessorReset = true;
         ResetSpeexProcessor();
+        
+        // Start recording with the new device if changed.
+        // If recording is not enabled, change to false,
+        // it will be applied on the when mute state is changed.
+        {
+            QMutexLocker lock(&mutexAudioMute);
+            if (recondingDeviceChanged && outputAudioMuted)
+                recondingDeviceChanged = false;
+        }
+        if (recondingDeviceChanged)
+        {
+            LogInfo(LC + "Recording device change detected to '" + (settings.recordingDevice.isEmpty() ? "Default Recording Device" : settings.recordingDevice) + "'.");
+            framework->Audio()->StopRecording();
+            
+            // Recording buffer of 40 celt frames, 38400 bytes
+            int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
+            framework->Audio()->StartRecording(settings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
+            
+            ClearOutputAudio();
+        }
     }
 
     MumbleAudio::AudioSettings AudioProcessor::GetSettings()
@@ -378,10 +410,10 @@ namespace MumbleAudio
         // This ensures that when our local queue is getting too big
         // (network cant send fast enough) we reset the situation.
         /// @todo If this happens we should increase the frames per packet automatically?
-        /// @todo smarter logic, trim the list instead
+        /// @todo smarter logic, trim the list from the beginning instead only as much as is needed.
         if (pendingEncodedFrames.size() > 20)
         {
-            LogWarning(LC + "Output local buffer getting too large, reseting situation.");
+            LogDebug(LC + "Output local buffer getting too large, reseting situation.");
             pendingEncodedFrames.clear();
         }
         // No queued encoded frames

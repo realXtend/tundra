@@ -21,6 +21,7 @@ class QTextEdit;
 class QMenu;
 class QPushButton;
 class QTextStream;
+class QTableWidget;
 
 class Framework;
 class ProfilerNodeTree;
@@ -58,6 +59,7 @@ public slots:
     void ChangeLoggerThreshold();
     void SetVisibility(bool visibility) { visibility_ = visibility; }
     void ShowAsset(QTreeWidgetItem* item, int column);
+    void RefreshScriptProfilingData();
 
 signals:
     void Visible(bool visible);
@@ -132,4 +134,6 @@ private:
     QTreeWidget* tree_gpu_assets_;
     QTreeWidget* tree_font_assets_;
     QTextEdit* text_scenecomplexity_;
+    QTableWidget *table_scripts_;
+    QLabel *label_scripts_;
 };

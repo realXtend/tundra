@@ -41,6 +41,10 @@ public:
     /// IScriptInstance override.
     bool IsEvaluated() const { return evaluated_; }
     
+public slots:
+    /// Dumps engine information into a string. Used for debugging/profiling.
+    virtual QMap<QString, uint> DumpEngineInformation() { return QMap<QString, uint>(); };
+    
 private:
     PythonQtObjectPtr context_; ///< Python context for this script instance.
     QString filename_; ///< Script filename.

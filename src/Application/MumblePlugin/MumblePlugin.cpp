@@ -578,7 +578,8 @@ void MumblePlugin::RunAudioWizard()
 
     if (audioWizard && audioWizard->isVisible())
     {
-        QApplication::setActiveWindow(audioWizard);
+        audioWizard->activateWindow();
+        audioWizard->raise();
         return;
     }
 
@@ -596,7 +597,7 @@ void MumblePlugin::RunAudioWizard()
         return;
     }
 
-    audioWizard = new AudioWizard(audio_->GetSettings());
+    audioWizard = new AudioWizard(framework_, audio_->GetSettings());
     connect(audioWizard, SIGNAL(SettingsChanged(MumbleAudio::AudioSettings, bool)), SLOT(OnAudioSettingChanged(MumbleAudio::AudioSettings, bool)));
     connect(audioWizard, SIGNAL(destroyed(QObject *)), SLOT(AudioWizardDestroyed()));
 }
@@ -1176,7 +1177,8 @@ MumbleAudio::AudioSettings MumblePlugin::LoadSettings()
         settings.allowSendingPositional = config->Get(data, "allowSendingPositional").toBool();
     if (config->HasValue(data, "allowReceivingPositional"))
         settings.allowReceivingPositional = config->Get(data, "allowReceivingPositional").toBool();
-
+    if (config->HasValue(data, "recordingDevice"))
+        settings.recordingDevice = config->Get(data, "recordingDevice").toString();
     return settings;
 }
 
@@ -1200,6 +1202,7 @@ void MumblePlugin::SaveSettings(MumbleAudio::AudioSettings settings)
     config->Set(data, "outerRange", settings.outerRange);
     config->Set(data, "allowSendingPositional", settings.allowSendingPositional);
     config->Set(data, "allowReceivingPositional", settings.allowReceivingPositional);
+    config->Set(data, "recordingDevice", settings.recordingDevice);
 }
 
 void MumblePlugin::EmitUserPositionalChanged(MumbleUser *user)
