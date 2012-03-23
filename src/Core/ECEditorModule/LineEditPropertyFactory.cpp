@@ -34,14 +34,12 @@ LineEditWithButtons::~LineEditWithButtons()
 }
 
 LineEditPropertyFactory::LineEditPropertyFactory(QObject *parent):
-    QtAbstractEditorFactory<QtStringPropertyManager>(parent),
-    invoker_(new FunctionInvoker())
+    QtAbstractEditorFactory<QtStringPropertyManager>(parent)
 {
 }
 
 LineEditPropertyFactory::~LineEditPropertyFactory()
 {
-    SAFE_DELETE(invoker_);
 }
 
 void LineEditPropertyFactory::AddButtons(AttributeMetadata::ButtonInfoList buttons)
@@ -134,7 +132,7 @@ void LineEditPropertyFactory::OnButtonClicked()
             {
                 QVariantList list;
                 list.push_back(QVariant(button->objectName()));
-                invoker_->Invoke(comp.get(), function, list);
+                FunctionInvoker::Invoke(comp.get(), function, list);
             }
         }
     }
