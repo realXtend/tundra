@@ -199,7 +199,7 @@ IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
    
    IF NOT EXIST "configure.cache". (
       cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
-      configure -platform win32-msvc2008 -debug-and-release -opensource -shared -no-qt3support -no-opengl -no-openvg  -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+      configure -platform win32-msvc2008 -debug-and-release -opensource -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ) ELSE (
       cecho {0D}Qt already configured. Remove %DEPS%\Qt\configure.cache to trigger a reconfigure.{# #}{\n}
@@ -705,11 +705,11 @@ IF NOT EXIST "%DEPS%\vlc". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    mkdir lib
    mkdir include
-   mkdir bin\vlcplugins
+   mkdir bin\plugins\vlcplugins
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Copying needed files to %DEPS%\vlc\bin \lib and \include{# #}{\n}
    copy /Y vlc-2.0.0\*.dll bin\
-   xcopy /E /I /C /H /R /Y vlc-2.0.0\plugins\*.* bin\vlcplugins
+   xcopy /E /I /C /H /R /Y vlc-2.0.0\plugins\*.* bin\plugins\vlcplugins
    xcopy /E /I /C /H /R /Y vlc-2.0.0\sdk\include\*.* include
    copy /Y vlc-2.0.0\sdk\lib\*.lib lib\
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
