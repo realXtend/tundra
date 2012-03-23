@@ -7,8 +7,9 @@
 #include "UiGraphicsView.h"
 #include "QtUiAsset.h"
 #include "UiProxyWidget.h"
-#include "Application.h"
 
+#include "CoreDefines.h"
+#include "Application.h"
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"

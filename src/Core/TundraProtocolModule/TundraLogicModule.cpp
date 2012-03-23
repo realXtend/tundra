@@ -36,17 +36,9 @@
 #include "EC_HoveringText.h"
 #endif
 
-#ifdef EC_Ruler_ENABLED
-#include "EC_Ruler.h"
-#endif
-
 #ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
 #include "EC_SoundListener.h"
-#endif
-
-#ifdef EC_Gizmo_ENABLED
-#include "EC_Gizmo.h"
 #endif
 
 #ifdef EC_PlanarMirror_ENABLED
@@ -106,12 +98,6 @@ void TundraLogicModule::Load()
 #ifdef EC_HoveringText_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_HoveringText>));
 #endif
-#ifdef EC_Ruler_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Ruler>));
-#endif
-#ifdef EC_SoundRuler_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundRuler>));
-#endif
 #ifdef EC_ParticleSystem_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
 #endif
@@ -141,9 +127,9 @@ void TundraLogicModule::Load()
 
 void TundraLogicModule::Initialize()
 {
-    syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this));
-    client_ = boost::shared_ptr<Client>(new Client(this));
-    server_ = boost::shared_ptr<Server>(new Server(this));
+    syncManager_ = boost::make_shared<SyncManager>(this);
+    client_ = boost::make_shared<Client>(this);
+    server_ = boost::make_shared<Server>(this);
     
     // Expose client and server to everyone
     framework_->RegisterDynamicObject("client", client_.get());
@@ -248,10 +234,8 @@ void TundraLogicModule::Update(f64 frametime)
     {
         if (autoStartServer_)
             server_->Start(autoStartServerPort_); 
-
-        // Load startup scene here (if we have one)
-        LoadStartupScene();
-
+        if (framework_->HasCommandLineParameter("--file")) // Load startup scene here (if we have one)
+            LoadStartupScene();
         checkDefaultServerStart = false;
     }
     ///\todo Remove this hack and find a better solution
@@ -268,7 +252,7 @@ void TundraLogicModule::Update(f64 frametime)
             if (loginUrl.isValid())
                 client_->Login(loginUrl);
             else
-                LogError("Login URL is not valid after strict parsing: " + cmdLineParams.first());
+                LogError("TundraLogicModule: Login URL is not valid after strict parsing: " + cmdLineParams.first());
         }
 
         checkLoginStart = false;
@@ -284,7 +268,7 @@ void TundraLogicModule::Update(f64 frametime)
                 client_->Login(/*addr*/params[0], /*port*/params[1].toInt(), /*username*/params[3],
                     /*optional passwd*/ params.size() >= 5 ? params[4] : "", /*protocol*/params[2]);
             else
-                LogError("Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
+                LogError("TundraLogicModule: Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
         }
         checkConnectStart = false;
     }
@@ -317,63 +301,45 @@ void TundraLogicModule::LoadStartupScene()
     if (hasFile && files.isEmpty())
         LogError("TundraLogicModule: --file specified without a value.");
 
-    foreach(const QString &file, files)
+    foreach(QString file, files)
     {
-        QString startupScene;
         // If the file parameter uses the full storage specifier format, parse the "src" keyvalue
         if (file.indexOf(';') != -1 || file.indexOf('=') != -1)
         {
             QMap<QString, QString> keyValues = AssetAPI::ParseAssetStorageString(file);
-            startupScene = keyValues["src"];
+            file = keyValues["src"];
         }
-        else
-            startupScene = file;
-        
+
         // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
         // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
         // scene we now load will be able to refer to local:// assets in its subfolders.
-        AssetAPI::AssetRefType sceneRefType = AssetAPI::ParseAssetRef(startupScene);
+        AssetAPI::AssetRefType sceneRefType = AssetAPI::ParseAssetRef(file);
         if (sceneRefType != AssetAPI::AssetRefLocalPath && sceneRefType != AssetAPI::AssetRefRelativePath)
         {
-            AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene);
-            if (!sceneTransfer.get())
+            LogInfo("TundraLogicModule: Starting transfer of startup scene " + file);
+            AssetTransferPtr transfer = framework_->Asset()->RequestAsset(file);
+            if (transfer)
             {
-                LogError("Asset transfer initialization failed for scene file " + startupScene + " failed");
-                return;
+                connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(StartupSceneTransfedSucceeded(AssetPtr)));
+                connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(StartupSceneTransferFailed(IAssetTransfer*, QString)));
             }
-            connect(sceneTransfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(StartupSceneLoaded(AssetPtr)));
-            connect(sceneTransfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(StartupSceneTransferFailed(IAssetTransfer*, QString)));
-            LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
+            else
+                LogError("TundraLogicModule: Asset transfer initialization failed for startup scene " + file);
         }
         else
         {
-            LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
-            bool useBinary = startupScene.indexOf(".tbin") != -1;
-            if (!useBinary)
-                scene->LoadSceneXML(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-            else
-                scene->LoadSceneBinary(startupScene, false/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
+            LoadScene(file, false, false);
         }
     }
 }
 
-void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
+void TundraLogicModule::StartupSceneTransfedSucceeded(AssetPtr asset)
 {
-    Scene *scene = GetFramework()->Scene()->MainCameraScene();
-    if (!scene)
-        return;
-
     QString sceneDiskSource = asset->DiskSource();
-    if (!sceneDiskSource.isEmpty())
-    {
-        bool useBinary = sceneDiskSource.endsWith(".tbin");
-        if (!useBinary)
-            scene->LoadSceneXML(sceneDiskSource, true/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-        else
-            scene->LoadSceneBinary(sceneDiskSource, true/*clearScene*/, false/*useEntityIDsFromFile*/, AttributeChange::Default);
-    }
-    else
+    if (sceneDiskSource.isEmpty())
         LogError("Could not resolve disk source for loaded scene file " + asset->Name());
+    else // Load the scene
+        LoadScene(sceneDiskSource, false, false);
 }
 
 void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason)
@@ -381,103 +347,105 @@ void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QSt
     LogError("Failed to load startup scene from " + transfer->SourceUrl() + " reason: " + reason);
 }
 
-void TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemporaryEntities, bool saveLocalEntities)
+bool TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemporaryEntities, bool saveLocalEntities)
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("TundraLogicModule::SaveScene: No active scene found!");
-        return;
+        return false;
     }
     filename = filename.trimmed();
     if (filename.isEmpty())
     {
         LogError("TundraLogicModule::SaveScene: Empty filename given!");
-        return;
+        return false;
     }
     
-    bool success;
-    if (!asBinary)
-        success = scene->SaveSceneXML(filename, saveTemporaryEntities, saveLocalEntities);
-    else
+    bool success = false;
+    if (asBinary)
         success = scene->SaveSceneBinary(filename, saveTemporaryEntities, saveLocalEntities);
-
-    if (!success)
-        LogError("SaveScene failed!");
+    else
+        success = scene->SaveSceneXML(filename, saveTemporaryEntities, saveLocalEntities);
+    return success;
 }
 
-void TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEntityIDsFromFile)
+bool TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEntityIDsFromFile)
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("TundraLogicModule::LoadScene: No active scene found!");
-        return;
+        return false;
     }
     filename = filename.trimmed();
     if (filename.isEmpty())
     {
         LogError("TundraLogicModule::LoadScene: Empty filename given!");
-        return;
+        return false;
     }
-    
-    bool useBinary = false;
-    if (filename.contains(".tbin", Qt::CaseInsensitive))
-        useBinary = true;
 
+    LogInfo("Loading startup scene from " + filename + " ...");
+    kNet::PolledTimer timer;
+    bool useBinary = filename.indexOf(".tbin", 0, Qt::CaseInsensitive) != -1;
     QList<Entity *> entities;
-    if (!useBinary)
-        entities = scene->LoadSceneXML(filename, clearScene, useEntityIDsFromFile, AttributeChange::Default);
-    else
+    if (useBinary)
         entities = scene->LoadSceneBinary(filename, clearScene, useEntityIDsFromFile, AttributeChange::Default);
-
-    LogInfo("TundraLogicModule::LoadScene: Loaded " + QString::number(entities.size()) + " entities.");
+    else
+        entities = scene->LoadSceneXML(filename, clearScene, useEntityIDsFromFile, AttributeChange::Default);
+    LogInfo(QString("Loading of startup scene finished. %1 entities created in %2 msecs.").arg(entities.size()).arg(timer.MSecsElapsed()));
+    return entities.size() > 0;
 }
 
-void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool replace)
+bool TundraLogicModule::ImportScene(QString filename, bool clearScene, bool replace)
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("TundraLogicModule::ImportScene: No active scene found!");
-        return;
+        return false;
     }
     filename = filename.trimmed();
     if (filename.isEmpty())
     {
         LogError("TundraLogicModule::ImportScene: Empty filename given!");
-        return;
+        return false;
     }
 
-    QString path = QFileInfo(filename).dir().path();
+    LogInfo("Import Ogre .scene " + filename + " ...");
 
+    kNet::PolledTimer timer;
     SceneImporter importer(scene->shared_from_this());
-    QList<Entity *> entities = importer.Import(filename, path, Transform(), "local://", AttributeChange::Default, clearScene, replace);
+    QList<Entity *> entities = importer.Import(filename, QFileInfo(filename).dir().path(), Transform(),
+        "local://", AttributeChange::Default, clearScene, replace);
 
-    LogInfo("TundraLogicModule::ImportScene: Imported " + QString::number(entities.size()) + " entities.");
+    LogInfo(QString("Importing of Ogre .scene finished. %1 entities created in %2 msecs.").arg(entities.size()).arg(timer.MSecsElapsed()));
+    return entities.size() > 0;
 }
 
-void TundraLogicModule::ImportMesh(QString filename, const float3 &pos, const float3 &rot, const float3 &scale, bool inspect)
+bool TundraLogicModule::ImportMesh(QString filename, const float3 &pos, const float3 &rot, const float3 &scale, bool inspect)
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
         LogError("TundraLogicModule::ImportMesh: No active scene found!");
-        return;
+        return false;
     }
     filename = filename.trimmed();
     if (filename.isEmpty())
     {
         LogError("TundraLogicModule::ImportMesh: Empty filename given!");
-        return;
+        return false;
     }
 
-    QString path = QFileInfo(filename).dir().path();
+    LogInfo("Import Ogre .mesh " + filename + " ...");
 
     SceneImporter importer(scene->shared_from_this());
-    EntityPtr entity = importer.ImportMesh(filename, path, Transform(pos, rot, scale), "", "local://", AttributeChange::Default, inspect);
+    EntityPtr entity = importer.ImportMesh(filename, QFileInfo(filename).dir().path(), Transform(pos, rot, scale),
+        "", "local://", AttributeChange::Default, inspect);
     if (!entity)
         LogError("TundraLogicModule::ImportMesh: import failed for " + filename + ".");
+    return entity != 0;
 }
 
 bool TundraLogicModule::IsServer() const

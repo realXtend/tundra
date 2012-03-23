@@ -11,10 +11,6 @@
 #include <QString>
 #include <Ogre.h>
 
-#ifdef OGREASSETEDITOR_ENABLED
-class TexturePreviewEditor;
-#endif
-
 class QTreeWidget;
 class QComboBox;
 class QTabWidget;
@@ -38,7 +34,7 @@ class TimeProfilerWindow : public QWidget
 
 public:
     /// The ctor adds this window to scene, but does not show it.
-    explicit TimeProfilerWindow(Framework *fw);
+    explicit TimeProfilerWindow(Framework *fw, QWidget *parent = 0);
     void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<u64, double> > &frameTimes);
     void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<u64, double> > &frameTimes);
     void DoThresholdLogging();
@@ -62,8 +58,7 @@ public slots:
     //void DumpNodeData();
     void ChangeLoggerThreshold();
     void SetVisibility(bool visibility) { visibility_ = visibility; }
-    void ShowMeshAsset(QTreeWidgetItem* item, int column);
-    void ShowTextureAsset(QTreeWidgetItem* item, int column);
+    void ShowAsset(QTreeWidgetItem* item, int column);
     void RefreshScriptProfilingData();
 
 signals:
@@ -79,6 +74,8 @@ private slots:
     void CopyMeshAssetName();
     void CopyMaterialAssetName();
     void PopulateBulletStats();
+    void TimingRefreshIntervalChanged();
+    void RefreshProfilerWindow();
 
 private:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -139,8 +136,4 @@ private:
     QTextEdit* text_scenecomplexity_;
     QTableWidget *table_scripts_;
     QLabel *label_scripts_;
-
-#ifdef OGREASSETEDITOR_ENABLED
-    TexturePreviewEditor* tex_preview_;
-#endif
 };

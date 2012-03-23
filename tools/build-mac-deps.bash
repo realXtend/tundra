@@ -196,6 +196,11 @@ if [ "$RELWITHDEBINFO" == "1" ]; then
     export CXXFLAGS="-gdwarf-2 -O0"
     export CMAKE_C_FLAGS="-gdwarf-2 -O0"
     export CMAKE_CXX_FLAGS="-gdwarf-2 -O0"
+else
+    export CFLAGS="-03"
+    export CXXFLAGS="-03"
+    export CMAKE_C_FLAGS="-03"
+    export CMAKE_CXX_FLAGS="-03"
 fi
 
 export PATH=$prefix/bin:$QTDIR/bin:$PATH
@@ -364,6 +369,26 @@ else
     touch $tags/$what-done
 fi
 
+cd $build
+what=speex
+urlbase=http://downloads.xiph.org/releases/speex
+pkgbase=speex-1.2rc1
+dlurl=$urlbase/$pkgbase.tar.gz
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    rm -rf $pkgbase
+    zip=$tarballs/$pkgbase.tar.gz
+    test -f $zip || curl -L -o $zip $dlurl
+    tar xzf $zip
+
+    cd $pkgbase
+    ./configure --prefix=$prefix --enable-shared=NO
+    make VERBOSE=1 -j$NPROCS
+    make install
+    touch $tags/$what-done
+fi
+
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
    echo $what is done
@@ -375,15 +400,15 @@ else
 
     cd generator
     qmake
-    make
-    ./generator --include-paths=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc/include/
+    make all
+    ./generator --include-paths=$QTDIR/include/
     cd ..
 
     cd qtbindings
     sed -e "s/qtscript_phonon //" < qtbindings.pro > x
     mv x qtbindings.pro  
     qmake
-    make
+    make all
     cd ..
     cd ..
     mkdir -p $viewer/bin/qtplugins/script

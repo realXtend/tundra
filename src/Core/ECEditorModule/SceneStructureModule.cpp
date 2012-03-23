@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneStructureModule.cpp
- *  @brief  Provides UIs for scene and asset maintenance and content import.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneStructureModule.cpp
+    @brief  Provides UIs for scene and asset maintenance and content import. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -13,6 +12,7 @@
 #include "AssetsWindow.h"
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
+#include "KeyBindingsConfigWindow.h"
 
 #include "SceneAPI.h"
 #include "AssetAPI.h"
@@ -51,11 +51,13 @@
 // Shortcuts for config keys.
 static const char *cSceneWindowPos = "scene window pos";
 static const char *cAssetWindowPos = "asset window pos";
+static const char *cKeyBindingsWindowPos = "key bindings window pos";
 
 SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
     sceneWindow(0),
     assetsWindow(0),
+    keyBindingsWindow(0),
     toolTipWidget(0),
     toolTip(0)
 {
@@ -65,6 +67,7 @@ SceneStructureModule::~SceneStructureModule()
 {
     SAFE_DELETE(sceneWindow);
     SAFE_DELETE(assetsWindow);
+    SAFE_DELETE(keyBindingsWindow);
     SAFE_DELETE(toolTipWidget);
 }
 
@@ -110,6 +113,7 @@ void SceneStructureModule::Uninitialize()
 {
     SaveWindowPosition(sceneWindow.data(), cSceneWindowPos);
     SaveWindowPosition(assetsWindow.data(), cAssetWindowPos);
+    SaveWindowPosition(keyBindingsWindow.data(), cKeyBindingsWindowPos);
 }
 
 void SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)
@@ -204,7 +208,8 @@ void SceneStructureModule::InstantiateContent(const QStringList &filenames, cons
 
     if (!sceneDescs.isEmpty())
     {
-        AddContentWindow *addContent = new AddContentWindow(framework_, scene->shared_from_this());
+        AddContentWindow *addContent = new AddContentWindow(scene->shared_from_this(), framework_->Ui()->MainWindow());
+        addContent->setWindowFlags(Qt::Tool);
         addContent->AddDescription(sceneDescs);
         if (worldPos != float3::zero)
             addContent->SetContentPosition(worldPos);
@@ -286,16 +291,12 @@ bool SceneStructureModule::IsSupportedFileType(const QString &fileRef)
 
 bool SceneStructureModule::IsMaterialFile(const QString &fileRef)
 {
-    if (fileRef.toLower().endsWith(".material"))
-        return true;
-    return false;
+    return fileRef.toLower().endsWith(".material");
 }
 
 bool SceneStructureModule::IsUrl(const QString &fileRef)
 {
-    if (fileRef.startsWith("http://") || fileRef.startsWith("https://"))
-        return true;
-    return false;
+    return fileRef.startsWith("http://") || fileRef.startsWith("https://");
 }
 
 void SceneStructureModule::CleanReference(QString &fileRef)
@@ -322,18 +323,19 @@ void SceneStructureModule::ToggleSceneStructureWindow()
             SaveWindowPosition(sceneWindow.data(), cSceneWindowPos);
             sceneWindow->close();
         }
-        return;
     }
+    else
+    {
+        sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
+        sceneWindow->setAttribute(Qt::WA_DeleteOnClose);
+        sceneWindow->setWindowFlags(Qt::Tool);
+        sceneWindow->SetScene(GetFramework()->Scene()->MainCameraScene()->shared_from_this());
+        LoadWindowPosition(sceneWindow.data(), cSceneWindowPos);
+        sceneWindow->show();
 
-    sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
-    sceneWindow->setAttribute(Qt::WA_DeleteOnClose);
-    sceneWindow->setWindowFlags(Qt::Tool);
-    sceneWindow->SetScene(GetFramework()->Scene()->MainCameraScene()->shared_from_this());
-    LoadWindowPosition(sceneWindow.data(), cSceneWindowPos);
-    sceneWindow->show();
-
-    // Reflect possible current selection of EC editor to Scene Structure window right away.
-    SyncSelectionWithEcEditor(framework_->GetModule<ECEditorModule>()->ActiveEditor());
+        // Reflect possible current selection of EC editor to Scene Structure window right away.
+        SyncSelectionWithEcEditor(framework_->GetModule<ECEditorModule>()->ActiveEditor());
+    }
 }
 
 void SceneStructureModule::ToggleAssetsWindow()
@@ -346,14 +348,36 @@ void SceneStructureModule::ToggleAssetsWindow()
             SaveWindowPosition(assetsWindow.data(), cAssetWindowPos);
             assetsWindow->close();
         }
-        return;
     }
+    else
+    {
+        assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
+        assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
+        assetsWindow->setWindowFlags(Qt::Tool);
+        LoadWindowPosition(assetsWindow.data(), cAssetWindowPos);
+        assetsWindow->show();
+    }
+}
 
-    assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
-    assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
-    assetsWindow->setWindowFlags(Qt::Tool);
-    LoadWindowPosition(assetsWindow.data(), cAssetWindowPos);
-    assetsWindow->show();
+void SceneStructureModule::ToggleKeyBindingsWindow()
+{
+    if (keyBindingsWindow)
+    {
+        keyBindingsWindow->setVisible(!keyBindingsWindow->isVisible());
+        if (!keyBindingsWindow->isVisible())
+        {
+            SaveWindowPosition(keyBindingsWindow.data(), cKeyBindingsWindowPos);
+            keyBindingsWindow->close();
+        }
+    }
+    else
+    {
+        keyBindingsWindow = new KeyBindingsConfigWindow(framework_, framework_->Ui()->MainWindow());
+        keyBindingsWindow->setAttribute(Qt::WA_DeleteOnClose);
+        keyBindingsWindow->setWindowFlags(Qt::Tool);
+        LoadWindowPosition(keyBindingsWindow.data(), cAssetWindowPos);
+        keyBindingsWindow->show();
+    }
 }
 
 void SceneStructureModule::SaveWindowPosition(QWidget *widget, const QString &settingName)
@@ -383,15 +407,21 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
     InputAPI &input = *framework_->Input();
     const QKeySequence showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
     const QKeySequence showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));
+    const QKeySequence showKeyBindings = input.KeyBinding("ShowKeyBindingsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_K));
     if (e->Sequence()== showSceneStruct)
     {
         ToggleSceneStructureWindow();
-        e->handled = true;
+        e->Suppress();
     }
     if (e->Sequence() == showAssets)
     {
         ToggleAssetsWindow();
-        e->handled = true;
+        e->Suppress();
+    }
+    if (e->Sequence() == showKeyBindings)
+    {
+        ToggleKeyBindingsWindow();
+        e->Suppress();
     }
 }
 
@@ -658,7 +688,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
 
                     // Add our dropped material to the raycasted submesh,
                     // append empty string or the current material string to the rest of them
-                    AssetReferenceList currentMaterials = mesh->getmeshMaterial();
+                    const AssetReferenceList &currentMaterials = mesh->meshMaterial.Get();
                     AssetReferenceList afterMaterials;
                     for(uint i=0; i<subMeshCount; ++i)
                     {
@@ -744,8 +774,9 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         }
 
                         // Show add content window
-                        AddContentWindow *addMaterials = new AddContentWindow(framework_, scene->shared_from_this());
+                        AddContentWindow *addMaterials = new AddContentWindow(scene->shared_from_this(), framework_->Ui()->MainWindow());
                         connect(addMaterials, SIGNAL(Completed(bool, const QString&)), SLOT(FinishMaterialDrop(bool, const QString&)));
+                        addMaterials->setWindowFlags(Qt::Tool);
                         addMaterials->AddDescription(sceneDesc);
                         addMaterials->show();
                     }
@@ -843,7 +874,8 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     }
 
     // Show add content window
-    AddContentWindow *addContent = new AddContentWindow(framework_, scene->shared_from_this());
+    AddContentWindow *addContent = new AddContentWindow(scene->shared_from_this(), framework_->Ui()->MainWindow());
+    addContent->setWindowFlags(Qt::Tool);
     addContent->AddDescription(sceneDesc);
     addContent->SetContentPosition(adjustPos);
     addContent->show();

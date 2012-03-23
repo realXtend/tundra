@@ -22,15 +22,6 @@
 #include <QWebSettings>
 #include <QSplashScreen>
 
-#ifdef Q_WS_MAC
-#include <QMouseEvent>
-#include <QWheelEvent>
-#include <QDropEvent>
-#include "UiMainWindow.h"
-#include "UiAPI.h"
-#include "UiGraphicsView.h"
-#endif
-
 #if defined(_WINDOWS)
 #include "Win.h"
 #include <shlobj.h>
@@ -321,8 +312,8 @@ QString Application::InstallationDirectory()
     return qstr.left(trailingSlash+1); // +1 so that we return the trailing slash as well.
 #else
     ///\todo Implement.
-    LogWarning("Application::InstallationDirectory not implemented for this platform.");
-    return ".";
+    LogDebug("Application::InstallationDirectory not implemented for this platform. Returning './'");
+    return "./";
 #endif
 }
 
@@ -434,50 +425,6 @@ void Application::ReadTargetFpsLimitFromConfig()
 
 bool Application::eventFilter(QObject *obj, QEvent *event)
 {
-#ifdef Q_WS_MAC // workaround for Mac, because mouse events are not received as it ought to be
-    QMouseEvent *mouse = dynamic_cast<QMouseEvent*>(event);
-    if (mouse)
-    {
-        if (dynamic_cast<UiMainWindow*>(obj))
-        {
-            switch(event->type())
-            {
-            case QEvent::MouseButtonPress:
-                framework->Ui()->GraphicsView()->mousePressEvent(mouse);
-                break;
-            case QEvent::MouseButtonRelease:
-                framework->Ui()->GraphicsView()->mouseReleaseEvent(mouse);
-                break;
-            case QEvent::MouseButtonDblClick:
-                framework->Ui()->GraphicsView()->mouseDoubleClickEvent(mouse);
-                break;
-            case QEvent::MouseMove:
-                if (mouse->buttons() == Qt::LeftButton)
-                    framework->Ui()->GraphicsView()->mouseMoveEvent(mouse);
-                break;
-            }
-        }
-    }
-    QDropEvent *drop = dynamic_cast<QDropEvent*>(event);
-    if (drop)
-    {
-        if (dynamic_cast<UiMainWindow*>(obj))
-        {
-            switch (event->type())
-            {
-                case QEvent::DragEnter:
-                    framework->Ui()->GraphicsView()->dragEnterEvent(dynamic_cast<QDragEnterEvent*>(event));
-                    break;
-                case QEvent::DragMove:
-                    framework->Ui()->GraphicsView()->dragMoveEvent(dynamic_cast<QDragMoveEvent*>(event));
-                    break;
-                case QEvent::Drop:
-                    framework->Ui()->GraphicsView()->dropEvent(drop);
-                    break;
-            }
-        }
-    }
-#endif
     try
     {
         if (obj == this)

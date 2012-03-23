@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   ScriptMetaTypeDefines.cpp
- *  @brief  Registration of the Core API objects to Javascript.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   ScriptMetaTypeDefines.cpp
+    @brief  Registration of the Core API objects to QtScript. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -40,7 +39,6 @@
 #include "QScriptEngineHelpers.h"
 #include "InputAPI.h"
 
-#include <QUiLoader>
 #include <QFile>
 #include <QFontDatabase>
 
@@ -272,6 +270,7 @@ static QScriptValue math_MathBreakOnAssume(QScriptContext *context, QScriptEngin
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
+    // Math
     register_float2_prototype(engine);
     register_float3_prototype(engine);
     register_float3x3_prototype(engine);
@@ -330,7 +329,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<component_id_t>("component_id_t");
     qScriptRegisterMetaType(engine, toScriptUInt<component_id_t>, fromScriptUInt<component_id_t>);
 
-    // Framework metatype
+    // Framework metatypes.
     qScriptRegisterQObjectMetaType<Framework*>(engine);
     qScriptRegisterQObjectMetaType<IModule*>(engine);
     
@@ -384,7 +383,6 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
     qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
-    qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
 
     // Add support to create proxy widgets in javascript side.
     QScriptValue object = engine->scriptValueFromQMetaObject<UiProxyWidget>();

@@ -77,6 +77,9 @@ public slots:
     void SetModifierValue(const QString& name, float value);
     /// Change a material ref
     void SetMaterial(uint index, const QString& ref);
+    /// Remove an attachment
+    /** @param index The index of the attachment in attachments_ to be removed. */
+    void RemoveAttachment(uint index);
     /// Return whether a property exists
     bool HasProperty(const QString &name) const;
     /// Return property value, or empty if does not exist

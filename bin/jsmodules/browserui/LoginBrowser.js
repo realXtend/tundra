@@ -609,17 +609,17 @@ var BrowserManager = Class.extend
             {     
                 /*           
                 // Login must not end in "/" or it wont look proper
-                var loginPropAddress = client.GetLoginProperty("address");
+                var loginPropAddress = client.LoginProperty("address");
                 if (loginPropAddress.charAt(loginPropAddress.length-1) == "/")
                     loginPropAddress = loginPropAddress.substring(0, loginPropAddress.length-1);
                 
                 // Add all the relevant params we can find from the login properties, skip password though
-                var tundraUrl = "tundra://" + loginPropAddress + ":" + client.GetLoginProperty("port");
-                tundraUrl = tundraUrl + "/?username=" + client.GetLoginProperty("username");
-                if (client.GetLoginProperty("protocol") != "")
-                    tundraUrl = tundraUrl + "&protocol=" + client.GetLoginProperty("protocol");
-                if (client.GetLoginProperty("avatarurl") != "")
-                    tundraUrl = tundraUrl + "&avatarurl=" + client.GetLoginProperty("avatarurl");
+                var tundraUrl = "tundra://" + loginPropAddress + ":" + client.LoginProperty("port");
+                tundraUrl = tundraUrl + "/?username=" + client.LoginProperty("username");
+                if (client.LoginProperty("protocol") != "")
+                    tundraUrl = tundraUrl + "&protocol=" + client.LoginProperty("protocol");
+                if (client.LoginProperty("avatarurl") != "")
+                    tundraUrl = tundraUrl + "&avatarurl=" + client.LoginProperty("avatarurl");
 
                 p_.addressBar.lineEdit().text = tundraUrl;
                 */
@@ -1781,7 +1781,7 @@ var ClassicLogin = Class.extend
 
     onAboutToConnect: function()
     {
-        var username = client.GetLoginProperty("username");
+        var username = client.LoginProperty("username");
         if (username == null || username == "")
             this.showLoadingScreen("Connecting to the server...");
         else

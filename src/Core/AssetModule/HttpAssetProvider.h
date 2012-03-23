@@ -19,6 +19,10 @@ class QNetworkReply;
 class HttpAssetStorage;
 typedef boost::shared_ptr<HttpAssetStorage> HttpAssetStoragePtr;
 
+// Uncomment to enable a --disable_http_ifmodifiedsince command line parameter.
+// This is used to profile the performance effect the HTTP queries have on scene loading times.
+// #define HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
+
 /// Adds support for downloading assets over the web using the 'http://' specifier.
 class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<HttpAssetProvider>
 {
@@ -74,6 +78,10 @@ public:
     
     /// Constructs a QByteArray from QDateTime. Returns value as Sun, 06 Nov 1994 08:49:37 GMT - RFC 822.
     QByteArray ToHttpDate(const QDateTime &dateTime);
+
+#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
+    virtual void Update(f64 frametime);
+#endif
 
 private slots:
     void AboutToExit();

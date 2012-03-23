@@ -391,6 +391,8 @@ private:
     /// @param textureName The Ogre texture resource name to set.
     void SetTerrainMaterialTexture(int index, const QString &textureName);
 
+    /// Creates Ogre geometry data for the single given patch, or updates the geometry for an existing
+    /// patch if the associated Ogre resources already exist.
     void GenerateTerrainGeometryForOnePatch(int patchX, int patchY);
 
     boost::shared_ptr<AssetRefListener> heightMapAsset;

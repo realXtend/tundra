@@ -19,6 +19,10 @@
 #include <algorithm>
 #include <utility>
 
+#include <boost/make_shared.hpp>
+
+#include "MemoryLeakCheck.h"
+
 using namespace kNet;
 
 namespace
@@ -152,7 +156,10 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
     if (serverConnection)
+    {
+        PROFILE(KristalliProtocolModule_kNet_client_Process);
         serverConnection->Process();
+    }
 
     // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
     // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
@@ -166,6 +173,8 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
     // Process server incoming connections & messages if server up
     if (server)
     {
+        PROFILE(KristalliProtocolModule_kNet_server_Process);
+
         server->Process();
 
         // In Tundra, we *never* keep half-open server->client connections alive. 
@@ -275,7 +284,7 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
     ::LogInfo("Server started");
     ::LogInfo(QString("* Port     : ") + QString::number(port));
     ::LogInfo(QString("* Protocol : ") + (transport == kNet::SocketOverUDP ? "UDP" : "TCP"));
-    ::LogInfo(QString("* Headless : ") + (framework_->IsHeadless() == true ? "True" : "False"));
+    ::LogInfo(QString("* Headless : ") + BoolToString(framework_->IsHeadless()));
     return true;
 }
 
@@ -301,7 +310,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     source->RegisterInboundMessageHandler(this);
     
-    UserConnectionPtr connection(new UserConnection());
+    UserConnectionPtr connection = boost::make_shared<UserConnection>();
     connection->userID = AllocateNewConnectionID();
     connection->connection = source;
     connections.push_back(connection);

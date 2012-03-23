@@ -34,6 +34,8 @@ For the latest info, see http://www.ogre3d.org/
 // Last update jan 19 2010
 #include "StableHeaders.h"
 #include "StereoManager.h"
+#include "Renderer.h"
+#include "LoggingFunctions.h"
 #include <vector>
 #include <limits>
 
@@ -55,7 +57,18 @@ namespace CAVEStereo
     {
         if(evt.source != viewport_)
             return;
-        camera_ = viewport_->getCamera();
+        // Poll OgreRenderer for the active camera
+        Ogre::Camera* currentCam = stereo_mngr_->getRenderer()->MainOgreCamera();
+        if (!currentCam)
+            return;
+        
+        if (currentCam != camera_)
+        {
+            //LogInfo("Camera changed!");
+            viewport_->setCamera(currentCam);
+            camera_ = currentCam;
+        }
+
         assert(camera_);
         stereo_mngr_->setCamera(camera_);
 
@@ -80,7 +93,8 @@ namespace CAVEStereo
 
         // update the frustum offset
         Ogre::Real offset = (is_lefteye_ ? -0.5f : 0.5f) * stereo_mngr_->getEyesSpacing();
-        offset += (is_lefteye_ ? -1:1) * stereo_mngr_->getPixelOffset() * (1.f/camera_->getViewport()->getActualWidth());
+        // Was camera_->getViewport() which was liable to crash
+        offset += (is_lefteye_ ? -1:1) * stereo_mngr_->getPixelOffset() * (1.f/viewport_->getActualWidth());
 
         if(!stereo_mngr_->is_custom_projection_)
         {
@@ -149,8 +163,9 @@ namespace CAVEStereo
     }
 
     //------------------------ init Stereo Manager --------------------------
-    StereoManager::StereoManager(void)
+    StereoManager::StereoManager(OgreRenderer::Renderer* renderer)
     {
+        renderer_ = renderer;
         stereo_mode_ = SM_NONE;
         debug_plane_ = NULL;
         debug_plane_node_ = NULL;

@@ -5,8 +5,12 @@
 # NOTE: This macro needs to be called before any other install macros or cmake install(...) calls are done, so its the first step!       
 #
 macro (setup_clean_install_step)
-    install (CODE "message(STATUS \"Cleaning install directory: \" ${CMAKE_INSTALL_PREFIX})")
-    install (CODE "file (REMOVE_RECURSE ${CMAKE_INSTALL_PREFIX})")
+    # Never do the recursive remove to the install dir on other systems than windows.
+    # This might do horrible things if you set CMAKE_INSTALL_PREFIX to /usr or similar.
+    if (WIN32)
+        install (CODE "message(STATUS \"Cleaning install directory: \" ${CMAKE_INSTALL_PREFIX})")
+        install (CODE "file (REMOVE_RECURSE ${CMAKE_INSTALL_PREFIX})")
+    endif()
 endmacro ()
 
 # Macro for installing a directory into the install prefix.

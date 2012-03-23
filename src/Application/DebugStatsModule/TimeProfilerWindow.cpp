@@ -4,10 +4,11 @@
 #include "DebugOperatorNew.h"
 
 #include "TimeProfilerWindow.h"
+
 #include "Profiler.h"
-#include "DebugStats.h"
 #include "HighPerfClock.h"
 #include "Framework.h"
+#include "FrameAPI.h"
 #include "Application.h"
 #include "Scene.h"
 #include "OgreRenderingModule.h"
@@ -22,6 +23,10 @@
 #include "OgreWorld.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
+#include "EC_RigidBody.h"
+#include "PhysicsModule.h"
+#include "PhysicsWorld.h"
+#include "IAsset.h"
 
 #ifdef EC_Script_ENABLED
 #include "IScriptInstance.h"
@@ -42,17 +47,11 @@
 #include <QTableWidget>
 #include <QMenu>
 
-#include "EC_RigidBody.h"
-#include "btBulletDynamicsCommon.h"
-
-#include "PhysicsModule.h"
-#include "PhysicsWorld.h"
-
-#ifdef OGREASSETEDITOR_ENABLED
-#include "TexturePreviewEditor.h"
-#endif
+#include <btBulletDynamicsCommon.h>
 
 #include <OgreFontManager.h>
+
+#include <kNet/Network.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -60,7 +59,9 @@ using namespace std;
 
 const QString DEFAULT_LOG_DIR("logs");
 
-TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
+TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
+    QWidget(parent),
+    framework_(fw)
 {
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/profiler.ui");
@@ -200,9 +201,9 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
     if (!logDirectory_.exists(DEFAULT_LOG_DIR))
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
-
-    connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
-    connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
+    ///\todo Regression. Reimplement support for meshes and other types
+//    connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
+    connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
 
     // Add a context menu to Textures, Meshes and Materials widgets.
     if (tree_texture_assets_)
@@ -233,9 +234,11 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
         menu_material_assets_->addAction(copyAssetName);
     }
 
-#ifdef OGREASSETEDITOR_ENABLED
-    tex_preview_ = 0;
-#endif
+    profiler_update_timer_.setSingleShot(true);
+    connect(&profiler_update_timer_, SIGNAL(timeout()), this, SLOT(RefreshProfilerWindow()));
+
+    connect(findChild<QPushButton*>("buttonRefresh"), SIGNAL(pressed()), this, SLOT(RefreshProfilingData()));
+    connect(combo_timing_refresh_interval_, SIGNAL(currentIndexChanged(int)), this, SLOT(TimingRefreshIntervalChanged()));
 }
 
 namespace
@@ -288,32 +291,26 @@ void TimeProfilerWindow::CopyMaterialAssetName()
     CopySelectedItemName(tree_material_assets_);
 }
 
-void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
+void TimeProfilerWindow::ShowAsset(QTreeWidgetItem* item, int column)
 {
-#ifdef OGREASSETEDITOR_ENABLED
-    ///\todo Reimplement.
-#else
-    LogError("Cannot open texture preview editor - AssetEditorModule not enabled.");
-#endif
-}
-
-void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
-{
-#ifdef OGREASSETEDITOR_ENABLED
-    AssetPtr textureAsset = framework_->Asset()->GetAsset(item->text(0));
-    if (textureAsset)
+    AssetPtr asset = framework_->Asset()->GetAsset(item->text(0));
+    if (!asset)
     {
-        LogError("TimeProfilerWindow::ShowTextureAsset: could not obtain texture " + item->text(0));
+        LogError("TimeProfilerWindow::ShowAsset: could not obtain asset " + item->text(0));
         return;
     }
 
-    if (tex_preview_ == 0)
-        tex_preview_ = new TexturePreviewEditor(textureAsset, framework_, this);
-    tex_preview_->Open();
-    tex_preview_->show();
-#else
-    LogError("Cannot open texture preview editor - AssetEditorModule not enabled.");
-#endif
+    QMenu dummyMenu;
+    QList<QObject*> targets;
+    targets.push_back(asset.get());
+
+    framework_->Ui()->EmitContextMenuAboutToOpen(&dummyMenu, targets);
+    foreach(QAction* action, dummyMenu.actions())
+        if (action->text() == "Open")
+        {
+            action->activate(QAction::ActionEvent());
+            break;
+        }
 }
 
 void TimeProfilerWindow::RefreshScriptProfilingData()
@@ -503,7 +500,6 @@ bool LessThen(const QTreeWidgetItem* left, const QTreeWidgetItem* right)
 
 void TimeProfilerWindow::Arrange()
 {
-    // Arrange. 
     if (!tab_widget_)
         return;
 
@@ -778,6 +774,11 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
                 else
                     sprintf(str, "-");
                 item->setText(10, str);
+                float timeSpentInThisExclusive = timings_node->total_custom_ - max(timeSpentInChildren, 0.f);
+                sprintf(str, "%.2fms", timeSpentInThisExclusive * 1000.f / numFrames);
+                item->setText(11, str);
+                sprintf(str, "%.2fms", timeSpentInThisExclusive * 1000.f);
+                item->setText(12, str);
             }
             else
             {
@@ -788,6 +789,8 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
                 item->setText(8, "-");
                 item->setText(9, "-");
                 item->setText(10, "-");
+                item->setText(11, "-");
+                item->setText(12, "-");
             }
             ColorTreeWidgetItemByTime(item, timings_node->total_custom_ * 1000.f / numFrames);
         }
@@ -807,6 +810,23 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
 void TimeProfilerWindow::RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<u64, double> > &frameTimes)
 {
     ///\todo Implement.
+}
+
+void DumpProfilerSpikes(ProfilerNodeTree *node, float limit, int frameNumber)
+{
+    const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
+    if (timings_node && timings_node->custom_elapsed_max_*1000.f >= limit)
+    {
+        LogInfo("Frame " + QString::number(frameNumber) + ", " + QString(node->Name().c_str()) + ": " + QString::number(timings_node->custom_elapsed_max_*1000.f) + " msecs.");
+        timings_node->num_called_custom_ = 0;
+        timings_node->total_custom_ = 0;
+        timings_node->custom_elapsed_min_ = 1e9;
+        timings_node->custom_elapsed_max_ = 0;
+    }
+
+    const ProfilerNodeTree::NodeList &children = node->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+        DumpProfilerSpikes(iter->get(), limit, frameNumber);
 }
 
 void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair<u64, double> > &frameTimes)
@@ -903,6 +923,20 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
 
     //if (timePerFrame >= logThreshold_ )
     //     DumpNodeData();
+
+    QPushButton *loggerEnabled = findChild<QPushButton*>("loggerApply");
+    if (loggerEnabled && loggerEnabled->isChecked())
+    {
+        float threshold = 100.f;
+        QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
+        if (box != 0)
+            threshold = (float)box->value();
+
+        Profiler &profiler = *framework_->GetProfiler();
+        profiler.Lock();
+        DumpProfilerSpikes(profiler.GetRoot(), threshold, framework_->Frame()->FrameNumber());
+        profiler.Release();
+    }
 }
 
 /*
@@ -1165,10 +1199,16 @@ int TimeProfilerWindow::ReadProfilingRefreshInterval()
     assert(combo_timing_refresh_interval_);
 
     // Positive values denote
-    const int refreshTimes[] = { 10000, 5000, 2000, 1000, 500 };
+    const int refreshTimes[] = { -1, 10000, 5000, 2000, 1000, 500 };
 
     int selection = combo_timing_refresh_interval_->currentIndex();
     return refreshTimes[min(max(selection, 0), (int)(sizeof(refreshTimes)/sizeof(refreshTimes[0])-1))];
+}
+
+void TimeProfilerWindow::TimingRefreshIntervalChanged()
+{
+    findChild<QPushButton*>("buttonRefresh")->setEnabled(ReadProfilingRefreshInterval() <= 0);
+    RefreshProfilerWindow();
 }
 
 template<typename T>
@@ -1183,47 +1223,13 @@ int CountSize(Ogre::MapIterator<T> iter)
     return count;
 }
 
-std::string FormatBytes(int bytes)
-{
-    char str[256];
-    if (bytes < 0)
-        return "-";
-    if (bytes <= 1024)
-        sprintf(str, "%d Bytes", bytes);
-    else if (bytes <= 1024 * 1024)
-        sprintf(str, "%.2f KBytes", bytes / 1024.f);
-    else if (bytes <= 1024 * 1024 * 1024)
-        sprintf(str, "%.2f MBytes", bytes / 1024.f / 1024.f);
-    else
-        sprintf(str, "%.2f GBytes", bytes / 1024.f / 1024.f / 1024.f);
-
-    return str;
-}
-
-std::string FormatBytes(double bytes)
-{
-    char str[256];
-    if (bytes < 0)
-        return "-";
-    if (bytes <= 1024)
-        sprintf(str, "%.1f Bytes", (float)bytes);
-    else if (bytes <= 1024 * 1024)
-        sprintf(str, "%.2f KBytes", (float)bytes / 1024.f);
-    else if (bytes <= 1024 * 1024 * 1024)
-        sprintf(str, "%.2f MBytes", (float)bytes / 1024.f / 1024.f);
-    else
-        sprintf(str, "%.2f GBytes", (float)bytes / 1024.f / 1024.f / 1024.f);
-
-    return str;
-}
-
 static std::string ReadOgreManagerStatus(Ogre::ResourceManager &manager)
 {
     char str[256];
     Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
     sprintf(str, "Budget: %s, Usage: %s, # of resources: %d",
-        FormatBytes((int)manager.getMemoryBudget()).c_str(),
-        FormatBytes((int)manager.getMemoryUsage()).c_str(),
+        kNet::FormatBytes((u64)manager.getMemoryBudget()).c_str(),
+        kNet::FormatBytes((u64)manager.getMemoryUsage()).c_str(),
         CountSize(iter));
     return str;
 }
@@ -1278,7 +1284,7 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
         findChild<QLabel*>("labelParticleSystems")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::ParticleSystemFactory::FACTORY_TYPE_NAME))));
     }
 
-    QTimer::singleShot(500, this, SLOT(RefreshOgreProfilingWindow()));
+    profiler_update_timer_.start(500);
 }
 
 static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::ofstream &file)
@@ -1351,6 +1357,11 @@ void TimeProfilerWindow::DumpSceneComplexityToFile()
     file << text_scenecomplexity_->toPlainText().toStdString();
 }
 
+void TimeProfilerWindow::RefreshProfilerWindow()
+{
+    OnProfilerWindowTabChanged(tab_widget_->currentIndex());
+}
+
 void TimeProfilerWindow::RefreshProfilingData()
 {
 #ifdef PROFILING
@@ -1389,7 +1400,9 @@ void TimeProfilerWindow::RefreshProfilingData()
     else
         RefreshProfilingDataList(msecsOccurred);
 
-    QTimer::singleShot(ReadProfilingRefreshInterval(), this, SLOT(RefreshProfilingData()));
+    int refreshInterval = ReadProfilingRefreshInterval();
+    if (refreshInterval > 0) // If refreshInterval < 0, we treat it as 'user refreshes manually'.
+        profiler_update_timer_.start(refreshInterval);
 #endif
 }
 
@@ -1456,6 +1469,11 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
                 else
                     sprintf(str, "-");
                 item->setText(10, str);
+                float timeSpentInThisExclusive = timings_node->total_custom_ - max(timeSpentInChildren, 0.f);
+                sprintf(str, "%.2fms", timeSpentInThisExclusive * 1000.f / numFrames);
+                item->setText(11, str);
+                sprintf(str, "%.2fms", timeSpentInThisExclusive * 1000.f);
+                item->setText(12, str);
             }
             else
             {
@@ -1466,6 +1484,8 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
                 item->setText(8, "-");
                 item->setText(9, "-");
                 item->setText(10, "-");
+                item->setText(11, "-");
+                item->setText(12, "-");
             }
 
             ColorTreeWidgetItemByTime(item, timings_node->total_custom_ * 1000.f / numFrames);
@@ -1652,7 +1672,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
         
         item->setText(0, QString(i->first.c_str()));
         item->setText(1, QString(QString("%1").arg(i->second.count_)));
-        item->setText(2, QString(FormatBytes((int)i->second.size_).c_str()));
+        item->setText(2, QString(kNet::FormatBytes((int)i->second.size_).c_str()));
         
         ++i;
     }
@@ -1667,8 +1687,8 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
         item->setText(0, QString((*j).id_.c_str()));
         item->setText(1, QString((*j).type_.c_str()));
         item->setText(2, QString((*j).provider_.c_str()));
-        item->setText(3, QString(FormatBytes((int)(*j).size_).c_str()));
-        item->setText(4, QString(FormatBytes((int)(*j).received_).c_str()));
+        item->setText(3, QString(kNet::FormatBytes((int)(*j).size_).c_str()));
+        item->setText(4, QString(kNet::FormatBytes((int)(*j).received_).c_str()));
         ++j;
     }
 
@@ -2670,7 +2690,7 @@ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr
     if (item == 0)
         return;
 
-    item->setText(0,resource->getName().c_str());
+    item->setText(0, AssetAPI::DesanitateAssetRef(resource->getName()).c_str());
     QString size;
     size.setNum(resource->getSize());
     item->setText(1,size);

@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   ECEditorWindow.h
- *  @brief  Entity-component editor window.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   ECEditorWindow.h
+    @brief  Entity-component editor window. */
 
 #pragma once
 
@@ -171,15 +170,9 @@ public slots:
     void HighlightEntity(const EntityPtr &entity, bool highlight);
 
 signals:
-    /// \todo Remove, one signal (the one below is enough)
-    void EditEntityXml(EntityPtr entity);
-
     /// Emitted user wants to edit entity's EC attributes in XML editor.
     /** @param entities list of entities */
     void EditEntityXml(const QList<EntityPtr> &entities);
-
-    /// \todo Remove, one signal (the one below is enough)
-    void EditComponentXml(ComponentPtr component);
 
     /// Emitted user wants to edit EC attributes in XML editor.
     /** @param list of components */
@@ -250,5 +243,3 @@ private:
     bool hasFocus; ///< To track if this editor has a focus.
     TransformEditor *transformEditor;
 };
-
-Q_DECLARE_METATYPE(ECEditorWindow *)

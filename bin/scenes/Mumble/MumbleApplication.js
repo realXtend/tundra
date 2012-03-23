@@ -159,8 +159,8 @@ function ShowConnectDialog()
         widgets.port.value = _connectionInfo.port;
         widgets.password.text = _connectionInfo.password;
         widgets.channel.text = _connectionInfo.channel;
-        if (client != null && client.GetLoginProperty("username") != "")
-            widgets.username.text = client.GetLoginProperty("username");
+        if (client != null && client.LoginProperty("username") != "")
+            widgets.username.text = client.LoginProperty("username");
         else
             widgets.username.text = "MumbleTestUser";
     }

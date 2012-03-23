@@ -13,13 +13,16 @@
 #include "EC_Light.h"
 #include "EC_OgreCompositor.h"
 #include "EC_RttTarget.h"
-#include "EC_SelectionBox.h"
 #include "EC_Material.h"
 #include "OgreWorld.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreMaterialAsset.h"
+#include "OgreProfiler.h"
+#ifdef OGRE_HAS_PROFILER_HOOKS
+#include "OgreProfilerHook.h"
+#endif
 #include "TextureAsset.h"
 
 #include "Application.h"
@@ -29,6 +32,7 @@
 #include "AssetCache.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
+#include "Profiler.h"
 #include "ConsoleAPI.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
@@ -40,9 +44,53 @@ namespace OgreRenderer
 
 std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "CACHED_ASSETS_GROUP";
 
-OgreRenderingModule::OgreRenderingModule() : 
+#ifdef OGRE_HAS_PROFILER_HOOKS
+
+#ifdef WIN32
+DWORD mainThreadId;
+#endif
+
+void Profiler_BeginBlock(const char *name)
+{
+#if defined(PROFILING) && defined(WIN32)
+    if (GetCurrentThreadId() != mainThreadId)
+        return;
+    Framework *fw = Framework::Instance();
+    Profiler *p = fw ? fw->GetProfiler() : 0;
+    if (p)
+        p->StartBlock((std::string("OGRE_") + name).c_str());
+#endif
+}
+
+void Profiler_EndBlock()
+{
+#if defined(PROFILING) && defined(WIN32)
+    if (GetCurrentThreadId() != mainThreadId)
+        return;
+    Framework *fw = Framework::Instance();
+    Profiler *p = fw ? fw->GetProfiler() : 0;
+    if (p)
+    {
+        ProfilerNodeTree *treeNode = p->CurrentNode();
+        if (!treeNode)
+            return;
+        p->EndBlock(treeNode->Name());
+    }
+#endif
+}
+
+#endif
+
+OgreRenderingModule::OgreRenderingModule() :
     IModule("OgreRendering")
 {
+#ifdef OGRE_HAS_PROFILER_HOOKS
+#ifdef WIN32
+    mainThreadId = GetCurrentThreadId();
+#endif
+    OgreProfiler_BeginBlock = Profiler_BeginBlock;
+    OgreProfiler_EndBlock = Profiler_EndBlock;
+#endif
 }
 
 OgreRenderingModule::~OgreRenderingModule()
@@ -59,7 +107,6 @@ void OgreRenderingModule::Load()
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Camera>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_OgreCompositor>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RttTarget>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SelectionBox>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Material>));
 
     // Create asset type factories for each asset OgreRenderingModule provides to the system.
@@ -130,9 +177,13 @@ void OgreRenderingModule::Initialize()
             Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
     }
 
-    framework_->Console()->RegisterCommand("RenderStats", "Prints out render statistics.",
+    framework_->Console()->RegisterCommand("renderStats", "Prints out render statistics.",
         this, SLOT(ConsoleStats()));
-    framework_->Console()->RegisterCommand("SetMaterialAttribute", "Sets an attribute on a material asset",
+#if OGRE_PROFILING == 1
+    framework_->Console()->RegisterCommand("ogreProf", "Toggles visibility of the Ogre profiler overlay.",
+        this, SLOT(ToggleOgreProfilerOverlay()));
+#endif
+    framework_->Console()->RegisterCommand("setMaterialAttribute", "Sets an attribute on a material asset",
         this, SLOT(SetMaterialAttribute(const QStringList &)));
 }
 
@@ -165,12 +216,25 @@ void OgreRenderingModule::ConsoleStats()
         LogError("No renderer found!");
 }
 
+void OgreRenderingModule::ToggleOgreProfilerOverlay()
+{
+#if OGRE_PROFILING == 1
+    if (!framework_->IsHeadless())
+    {
+        bool enabled = Ogre::Profiler::getSingleton().getEnabled();
+        Ogre::Profiler::getSingleton().setEnabled(!enabled);
+    }
+#else
+    LogError("OgreRenderingModule::ToggleOgreProfilerOverlay: Ogre built without profiling support, cannot show profiler overlay.");
+#endif
+}
+
 void OgreRenderingModule::OnSceneAdded(const QString& name)
 {
     ScenePtr scene = GetFramework()->Scene()->GetScene(name);
     if (!scene)
     {
-        LogError("Could not find created scene");
+        LogError("OgreRenderingModule::OnSceneAdded: Could not find created scene");
         return;
     }
     
@@ -186,7 +250,7 @@ void OgreRenderingModule::OnSceneRemoved(const QString& name)
     ScenePtr scene = GetFramework()->Scene()->GetScene(name);
     if (!scene)
     {
-        LogError("Could not find scene about to be removed");
+        LogError("OgreRenderingModule::OnSceneRemoved: Could not find scene about to be removed");
         return;
     }
     
@@ -202,19 +266,19 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
 {
     if (params.size() < 3)
     {
-        LogError("Usage: SetMaterialAttribute(asset,attribute,value)");
+        LogError("OgreRenderingModule::SetMaterialAttribute: Usage: SetMaterialAttribute(asset,attribute,value)");
         return;
     }
     AssetPtr assetPtr = framework_->Asset()->GetAsset(framework_->Asset()->ResolveAssetRef("", params[0]));
     if (!assetPtr || !assetPtr->IsLoaded())
     {
-        LogError("No asset found or not loaded");
+        LogError("OgreRenderingModule::SetMaterialAttribute: No asset found or not loaded");
         return;
     }
     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(assetPtr.get());
     if (!matAsset)
     {
-        LogError("Not a material asset");
+        LogError("OgreRenderingModule::SetMaterialAttribute: Not a material asset");
         return;
     }
     matAsset->SetAttribute(params[1], params[2]);
@@ -229,7 +293,6 @@ extern "C"
 DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new OgreRenderer::OgreRenderingModule();
-    fw->RegisterModule(module);
+    fw->RegisterModule(new OgreRenderer::OgreRenderingModule());
 }
 }

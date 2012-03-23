@@ -10,6 +10,7 @@
 #include "SceneAPI.h"
 #include "Scene.h"
 #include "QtUtils.h"
+#include "../../Core/ECEditorModule/SupportedFileTypes.h"
 
 #include "Entity.h"
 
@@ -30,17 +31,15 @@
 
 #include "MemoryLeakCheck.h"
 
-AvatarEditor::AvatarEditor(AvatarModule *avatar_module) :
-    avatar_module_(avatar_module)
+AvatarEditor::AvatarEditor(Framework *fw, QWidget *parent) :
+    QWidget(parent),
+    framework(fw)
 {
     InitEditorWindow();
-    last_directory_ = avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory",
-        QDir::currentPath()).toString().toStdString();
 }
 
 AvatarEditor::~AvatarEditor()
 {
-    avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory", QString::fromStdString(last_directory_));
 }
 
 void AvatarEditor::InitEditorWindow()
@@ -95,10 +94,10 @@ void AvatarEditor::RebuildEditView()
 
         // Create editor for material ref
         QLineEdit* lineEdit = new QLineEdit();
-        lineEdit->setObjectName(QString::fromStdString(ToString<int>(y))); // Material index
+        lineEdit->setObjectName(QString::number(y)); // Material index
         lineEdit->setText(materials[y]);
         connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(ChangeMaterial()));
-        
+
         v_box->addWidget(lineEdit);
         materials_layout->addLayout(v_box);
     }
@@ -121,17 +120,15 @@ void AvatarEditor::RebuildEditView()
         v_box->setSpacing(6);
 
         // Strip away .xml from the attachment name for slightly nicer display
-        std::string attachment_name = attachments[y].name_.toStdString();
-        std::size_t pos = attachment_name.find(".xml");
-        if (pos != std::string::npos)
-            attachment_name = attachment_name.substr(0, pos);
+        QString attachment_name = attachments[y].name_;
+        attachment_name.replace(".xml", "");
 
         // Create elements
-        label = new QLabel(QString::fromStdString(attachment_name));
+        label = new QLabel(attachment_name);
         label->setFixedWidth(200);
 
         button = new QPushButton("Remove");
-        button->setObjectName(QString::fromStdString(ToString<int>(y))); // Attachment index
+        button->setObjectName(QString::number(y)); // Attachment index
         button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         connect(button, SIGNAL(clicked()), SLOT(RemoveAttachment()));
 
@@ -229,7 +226,7 @@ void AvatarEditor::RebuildEditView()
             slider->setPageStep(10);
             slider->setValue(morph_modifiers[i].value_ * 100.0f);
             connect(slider, SIGNAL(valueChanged(int)), SLOT(MorphModifierValueChanged(int)));
-            
+
             // Add to layouts
             v_box->addWidget(label);
             v_box->addWidget(slider);
@@ -330,16 +327,23 @@ void AvatarEditor::ClearPanel(QWidget* panel)
     QLayoutItem *child;
     while((child = panel->layout()->takeAt(0)) != 0)
     {
-        QWidget* widget = child->widget();
-        if (widget)
+        QLayout* layout = child->layout();
+        if (layout)
         {
-            widget->hide();
-            widget->deleteLater();
-
+            QLayoutItem *grandchild;
+            while((grandchild = layout->takeAt(0)) != 0)
+            {
+                QWidget* widget = grandchild->widget();
+                if (widget)
+                {
+                    widget->hide();
+                    widget->deleteLater();
+                }
+                delete grandchild;
+            }
         }
         delete child;
     }
-
     //QVBoxLayout *box_layout = dynamic_cast<QVBoxLayout*>(panel->layout());
     //if (box_layout)
     //    box_layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
@@ -359,7 +363,7 @@ void AvatarEditor::MorphModifierValueChanged(int value)
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
-    
+
     desc->SetModifierValue(control_name, value / 100.0f);
 }
 
@@ -377,7 +381,7 @@ void AvatarEditor::BoneModifierValueChanged(int value)
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
-    
+
     desc->SetModifierValue(control_name, value / 100.0f);
 }
 
@@ -395,7 +399,7 @@ void AvatarEditor::MasterModifierValueChanged(int value)
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
-    
+
     desc->SetMasterModifierValue(control_name, value / 100.0f);
 }
 
@@ -419,7 +423,7 @@ void AvatarEditor::SetEntityToEdit(EntityPtr entity)
                 connect(newDesc, SIGNAL(AppearanceChanged()), this, SLOT(RebuildEditView()));
         }
     }
-    
+
     RebuildEditView();
 }
 
@@ -433,24 +437,33 @@ void AvatarEditor::changeEvent(QEvent* e)
 
 void AvatarEditor::LoadAvatar()
 {
-    ///\todo Remove or re-implement this function?
-    LogError("AvatarEditor::LoadAvatar deprecated and not implemented.");
-    /*
-    const std::string filter = "Avatar description file (*.xml);;Avatar mesh (*.mesh)";
-    std::string filename = GetOpenFileName(filter, "Choose avatar file");
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = QtUtils::OpenFileDialogNonModal(cAvatarFileFilter, tr("Choose avatar file"), "", 0, this, SLOT(OpenFileDialogClosed(int)), false);
+}
 
-    if (!filename.empty())
-    {
-        AvatarHandlerPtr avatar_handler = avatar_module_->GetAvatarHandler();
-        EntityPtr entity = GetAvatarEntity();
-        if (!entity)
-        {
-            AvatarModule::LogError("User avatar not in scene, cannot load appearance");
-            return;
-        }
-        avatar_handler->GetAppearanceHandler().LoadAppearance(entity, filename);
-    }
-    */
+void AvatarEditor::OpenFileDialogClosed(int result)
+{
+    QFileDialog * dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    if (dialog->selectedFiles().isEmpty())
+        return;
+
+    Entity* entity;
+    EC_Avatar* avatar;
+    AvatarDescAsset* desc;
+    if (!GetAvatarDesc(entity, avatar, desc))
+        return;
+
+    // Since the dialog is set to not allow multiple file selection, assume
+    // that there is only one file selected.
+    desc->LoadFromFile(dialog->selectedFiles().first());
 }
 
 void AvatarEditor::RevertAvatar()
@@ -472,7 +485,7 @@ void AvatarEditor::SaveAvatar()
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
-    
+
     /// \todo use upload functionality. For now just saves to disk, overwriting the original file.
     desc->SaveToFile(desc->DiskSource());
 }
@@ -482,44 +495,30 @@ void AvatarEditor::ChangeMaterial()
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender());
     if (!lineEdit)
         return;
-    
-    std::string index_str = lineEdit->objectName().toStdString();
-    uint index = ParseString<uint>(index_str);
-    
+
     Entity* entity;
     EC_Avatar* avatar;
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
+    uint index = lineEdit->objectName().toUInt();
     desc->SetMaterial(index, lineEdit->text().trimmed());
 }
 
 void AvatarEditor::RemoveAttachment()
 {
-    ///\todo Remove or re-implement this function?
-    LogError("AvatarEditor::RemoveAttachment deprecated and not implemented.");
-    /*
     QPushButton* button = qobject_cast<QPushButton*>(sender());
     if (!button)
         return;
 
-    std::string index_str = button->objectName().toStdString();
-    uint index = ParseString<uint>(index_str);
-
-    EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-    if (!appearance)
+    Entity* entity;
+    EC_Avatar* avatar;
+    AvatarDescAsset* desc;
+    if (!GetAvatarDesc(entity, avatar, desc))
         return;
 
-    AvatarAttachmentVector attachments = appearance->GetAttachments();
-    if (index < attachments.size())
-    {
-        attachments.erase(attachments.begin() + index);
-        appearance->SetAttachments(attachments);
-        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
-        QTimer::singleShot(250, this, SLOT(RebuildEditView()));
-    }
-    
-    */
+    uint index = button->objectName().toUInt();
+    desc->RemoveAttachment(index);
 }
 
 void AvatarEditor::AddAttachment()
@@ -534,7 +533,7 @@ void AvatarEditor::AddAttachment()
         EntityPtr entity = GetAvatarEntity();
         if (!entity)
             return;
-            
+
         avatar_module_->GetAvatarHandler()->GetAppearanceHandler().AddAttachment(entity, filename);
         QTimer::singleShot(250, this, SLOT(RebuildEditView()));
     }
@@ -557,9 +556,9 @@ QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::str
             return tab_panel;
         }
     }
-           
+
     QWidget* tab_panel = new QWidget();
-    
+
     QScrollArea* tab_scroll = new QScrollArea();
     tab_scroll->setWidgetResizable(true);
     tab_scroll->setWidget(tab_panel);
@@ -567,23 +566,7 @@ QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::str
     tabs->addTab(tab_scroll, name_with_space);
     return tab_panel;
 }
-/*
-std::string AvatarEditor::GetOpenFileName(const std::string& filter, const std::string& prompt)
-{
-    std::string filename = QtUtils::GetOpenFileName(filter, prompt, last_directory_);
-    if (!filename.empty())
-        last_directory_ = QFileInfo(filename.c_str()).dir().path().toStdString();
-    return filename; 
-}
 
-std::string AvatarEditor::GetSaveFileName(const std::string& filter, const std::string& prompt)
-{
-    std::string filename = QtUtils::GetSaveFileName(filter, prompt, last_directory_);
-    if (!filename.empty())
-        last_directory_ = QFileInfo(filename.c_str()).dir().path().toStdString();
-    return filename; 
-}
-*/
 bool AvatarEditor::GetAvatarDesc(Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc)
 {
     entity = avatarEntity_.lock().get();

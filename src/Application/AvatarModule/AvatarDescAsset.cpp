@@ -535,6 +535,17 @@ void AvatarDescAsset::SetMaterial(uint index, const QString& ref)
     AssetReferencesChanged();
 }
 
+void AvatarDescAsset::RemoveAttachment(uint index)
+{
+    if (index < attachments_.size())
+    {
+        attachments_.erase(attachments_.begin() + index);
+        emit AppearanceChanged();
+    }
+    else
+        LogError("Failed to remove attachment at index " + QString::number(index) + "! Only " + attachments_.size() + "  attachments exist on the avatar asset!");
+}
+
 bool AvatarDescAsset::HasProperty(const QString &name) const
 {
     QMap<QString, QString>::const_iterator i = properties_.find(name);
@@ -566,7 +577,7 @@ void AvatarDescAsset::DependencyLoaded(AssetPtr dependee)
     IAsset::DependencyLoaded(dependee);
     
     // Emit AppearanceChanged() when all references have been loaded, and the avatar description is ready to use
-    if (assetAPI->NumPendingDependencies(this->shared_from_this()) == 0)
+    if (!assetAPI->HasPendingDependencies(this->shared_from_this()))
         emit AppearanceChanged();
 }
 
