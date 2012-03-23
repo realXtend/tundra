@@ -1,16 +1,30 @@
 // A freelook camera script. Upon run, creates necessary components if they don't exist yet, and hooks to the InputMapper's
 // input context to process camera movement (WASD + mouse)
 
-var rotate_sensitivity = 0.3;
-var move_sensitivity = 30.0;
-var motion_z = 0;
-var motion_y = 0;
-var motion_x = 0;
-
-Initialize();
+// Global application data
+var _g =
+{
+    connected : false,
+    rotate :
+    {
+        sensitivity : 0.3
+    },
+    move :
+    {
+        sensitivity : 30.0,
+        amount : new float3(0,0,0)
+    },
+    motion : new float3(0,0,0)
+};
 
 function Initialize()
 {
+    // Connect to camera changed signal. This disconnects frame updates when camera is not active
+    // and connects back when camera is active. This is a optimization not to have any update processing
+    // when the camera is not active. Note that for clients this saves 2x fps updates as the empty "TundraServer"
+    // scene would think it is active even when the scene is not visible!
+    renderer.MainCameraChanged.connect(ActiveCameraChanged);
+
     // Create components & setup default position/lookat for the camera
     var camera = me.GetOrCreateComponent("EC_Camera");
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
@@ -21,19 +35,10 @@ function Initialize()
     var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if (!avatarcameraentity)
     {
-        camera.SetActive();
+        camera.SetActive(); // This will connect frame updates for this script.
         soundlistener.active = true;
     }
 
-    /*
-    var transform = placeable.transform;
-    var initialRot = camera.InitialRotation();
-    transform.rot = initialRot;
-    placeable.transform = transform;
-    */
-
-    // Hook to update tick
-    frame.Updated.connect(Update);
     // Register press & release action mappings to the inputmapper, use higher priority than RexMovementInput to be sure
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = true;
@@ -58,6 +63,7 @@ function Initialize()
     inputmapper.RegisterMapping("Down", "Stop(back)", 3);
     inputmapper.RegisterMapping("Left", "Stop(left)", 3);
     inputmapper.RegisterMapping("Right", "Stop(right)", 3);
+    inputmapper.enabled = true;
 
     // Connect actions
     me.Action("Move").Triggered.connect(HandleMove);
@@ -69,69 +75,77 @@ function Initialize()
     var inputContext = inputmapper.GetInputContext();
     if (inputContext.GestureStarted && inputContext.GestureUpdated)
     {
-	    inputContext.GestureStarted.connect(GestureStarted);
-	    inputContext.GestureUpdated.connect(GestureUpdated);
+        inputContext.GestureStarted.connect(GestureStarted);
+        inputContext.GestureUpdated.connect(GestureUpdated);
     }
 }
 
 function IsCameraActive()
 {
-    var camera = me.GetComponent("EC_Camera");
-    return camera.IsActive();
+    return (me.camera == null ? false : me.camera.IsActive());
 }
 
 function Update(frametime)
 {
-	profiler.BeginBlock("freelookcamera_Update");
+    profiler.BeginBlock("FreeLookCamera_Update");
     if (!IsCameraActive())
     {
-        motion_x = 0;
-        motion_y = 0;
-        motion_z = 0;
-		profiler.EndBlock();
+        profiler.EndBlock();
         return;
     }
 
-    var placeable = me.placeable;
-    var motionvec = new float3(motion_x * move_sensitivity * frametime,
-                               motion_y * move_sensitivity * frametime,
-                               -motion_z * move_sensitivity * frametime);
-    motionvec = placeable.Orientation().Mul(motionvec);
-    var newpos = placeable.Position().Add(motionvec);
-    placeable.SetPosition(newpos.x, newpos.y, newpos.z);
-	profiler.EndBlock();
+    if (_g.move.amount.x == 0 && _g.move.amount.y == 0 && _g.move.amount.z == 0)
+    {
+        profiler.EndBlock();
+        return;
+    }
+
+    _g.motion.x = _g.move.amount.x * _g.move.sensitivity * frametime;
+    _g.motion.y = _g.move.amount.y * _g.move.sensitivity * frametime;
+    _g.motion.z = _g.move.amount.z * _g.move.sensitivity * frametime;
+
+    _g.motion = me.placeable.Orientation().Mul(_g.motion);
+    me.placeable.SetPosition(me.placeable.Position().Add(_g.motion));
+
+    profiler.EndBlock();
 }
 
 function HandleMove(param)
 {
+    if (!IsCameraActive())
+        return;
+
     if (param == "forward")
-        motion_z = 1;
-    if (param == "back")
-        motion_z = -1;
-    if (param == "right")
-        motion_x = 1;
-    if (param == "left")
-        motion_x = -1;
-    if (param == "up")
-        motion_y = 1;
-    if (param == "down")
-        motion_y = -1;
+        _g.move.amount.z = -1;
+    else if (param == "back")
+        _g.move.amount.z = 1;
+    else if (param == "right")
+        _g.move.amount.x = 1;
+    else if (param == "left")
+        _g.move.amount.x = -1;
+    else if (param == "up")
+        _g.move.amount.y = 1;
+    else if (param == "down")
+        _g.move.amount.y = -1;
 }
 
 function HandleStop(param)
 {
-    if ((param == "forward") && (motion_z == 1))
-        motion_z = 0;
-    if ((param == "back") && (motion_z == -1))
-        motion_z = 0;
-    if ((param == "right") && (motion_x == 1))
-        motion_x = 0;
-    if ((param == "left") && (motion_x == -1))
-        motion_x = 0;
-    if ((param == "up") && (motion_y == 1))
-        motion_y = 0;
-    if ((param == "down") && (motion_y == -1))
-        motion_y = 0;
+    if (!IsCameraActive())
+        return;
+
+    if ((param == "forward") && (_g.move.amount.z == -1))
+        _g.move.amount.z = 0;
+    else if ((param == "back") && (_g.move.amount.z == 1))
+        _g.move.amount.z = 0;
+    else if ((param == "right") && (_g.move.amount.x == 1))
+        _g.move.amount.x = 0;
+    else if ((param == "left") && (_g.move.amount.x == -1))
+        _g.move.amount.x = 0;
+    else if ((param == "up") && (_g.move.amount.y == 1))
+        _g.move.amount.y = 0;
+    else if ((param == "down") && (_g.move.amount.y == -1))
+        _g.move.amount.y = 0;
 }
 
 function HandleMouseLookX(param)
@@ -139,14 +153,8 @@ function HandleMouseLookX(param)
     if (!IsCameraActive())
         return;
 
-    var move = parseInt(param);
-    var placeable = me.GetComponent("EC_Placeable");
-
-    var move = parseInt(param);
-    
     var transform = me.placeable.transform;
-    transform.rot.y -= rotate_sensitivity * move;
-    
+    transform.rot.y -= _g.rotate.sensitivity * parseInt(param);
     me.placeable.transform = transform;
 }
 
@@ -155,15 +163,12 @@ function HandleMouseLookY(param)
     if (!IsCameraActive())
         return;
 
-    var move = parseInt(param);
-    
     var transform = me.placeable.transform;
-    transform.rot.x -= rotate_sensitivity * move;
+    transform.rot.x -= _g.rotate.sensitivity * parseInt(param);
     if (transform.rot.x > 90.0)
         transform.rot.x = 90.0;
     if (transform.rot.x < -90.0)
         transform.rot.x = -90.0;
-
     me.placeable.transform = transform;
 }
 
@@ -202,3 +207,58 @@ function GestureUpdated(gestureEvent)
         gestureEvent.Accept();
     }
 }
+
+function OnScriptDestroyed() 
+{
+    renderer.MainCameraChanged.disconnect(ActiveCameraChanged);
+}
+
+function DisconnectApplication()
+{
+    if (_g.connected)
+    {
+        // Disconnect frame updates and enabled inputmapper + soundlistener
+        frame.Updated.disconnect(Update);
+        if (me.inputmapper != null)
+            me.inputmapper.enabled = false;
+        if (me.soundlistener != null)
+            me.soundlistener.active = false;
+        _g.connected = false;
+
+        _g.move.amount.x = 0;
+        _g.move.amount.y = 0;
+        _g.move.amount.z = 0;
+    }
+}
+
+function ConnectApplication()
+{
+    if (!_g.connected)
+    {
+        // Connect frame updates and enabled inputmapper + soundlistener
+        frame.Updated.connect(Update);
+        if (me.inputmapper != null)
+            me.inputmapper.enabled = true;
+        if (me.soundlistener != null)
+            me.soundlistener.active = true;
+        _g.connected = true;
+
+        _g.move.amount.x = 0;
+        _g.move.amount.y = 0;
+        _g.move.amount.z = 0;
+    }
+}
+
+function ActiveCameraChanged(cameraEnt)
+{
+    if (cameraEnt == null)
+        return;
+
+    if (cameraEnt == me)
+        ConnectApplication();
+    else
+        DisconnectApplication();
+}
+
+if (!framework.IsHeadless())
+    Initialize();

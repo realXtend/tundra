@@ -74,6 +74,10 @@ void JavascriptModule::Initialize()
     framework_->Console()->RegisterCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
         this, SLOT(LoadStartupScripts()));
+        
+    framework_->Console()->RegisterCommand(
+        "JsDumpInfo", "Dumps all EC_Script information to console",
+        this, SLOT(DumpScriptInfo()));
 
     // Initialize startup scripts
     LoadStartupScripts();
@@ -102,6 +106,46 @@ void JavascriptModule::RunString(const QString &codestr, const QVariantMap &cont
     }
 
     engine->evaluate(codestr);
+}
+
+void JavascriptModule::DumpScriptInfo()
+{
+    if (!framework_->Scene()->MainCameraScene())
+    {
+        LogInfo("Scene is null, no scripts running.");
+        return;
+    }
+    EntityList scripts = framework_->Scene()->MainCameraScene()->GetEntitiesWithComponent(EC_Script::TypeNameStatic());
+    if (scripts.empty())
+    {
+        LogInfo("No scripts running in the scene");
+        return;
+    }
+    for(EntityList::iterator iter=scripts.begin(); iter!=scripts.end(); iter++)
+    {
+        EntityPtr ent = (*iter);
+        if (!ent.get())
+            continue;
+
+        EC_Script *script = ent->GetComponent<EC_Script>().get();
+        if (!script)
+            continue;
+        JavascriptInstance *jsInstance = dynamic_cast<JavascriptInstance*>(script->ScriptInstance());
+        if (!jsInstance)
+            continue;
+        if (!jsInstance->IsEvaluated())
+            continue;
+            
+        QMap<QString, uint> dump = jsInstance->DumpEngineInformation();
+        
+        QString dumpStr = QString("QScriptValues %1 Objects %10 IsNull %2 Numbers %3 Bools %4 Strings %5 Arrays %6 Functions %7 QObjects %8 QObjMethods %9")
+            .arg(dump["QScriptValues"], 3, 10, QLatin1Char('0')).arg(dump["Is null"], 3, 10, QLatin1Char(' ')).arg(dump["Numbers"], 3, 10, QLatin1Char('0'))
+            .arg(dump["Booleans"], 3, 10, QLatin1Char('0')).arg(dump["Strings"], 3, 10, QLatin1Char('0')).arg(dump["Arrays"], 3, 10, QLatin1Char('0'))
+            .arg(dump["Functions"], 3, 10, QLatin1Char('0')).arg(dump["QObjects"], 3, 10, QLatin1Char('0')).arg(dump["QObject methods"], 3, 10, QLatin1Char('0'))
+            .arg(dump["Objects"], 3, 10, QLatin1Char('0'));
+
+        LogInfo(QString("Entity: %1 %2\n  { ").arg(ent->Id()).arg(ent->Name()) + dumpStr + " }");
+    }
 }
 
 void JavascriptModule::RunScript(const QString &scriptFileName)

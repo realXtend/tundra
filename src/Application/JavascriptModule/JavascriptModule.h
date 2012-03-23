@@ -37,6 +37,8 @@ public:
     void PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp = 0);
 
 public slots:
+    void DumpScriptInfo();
+    
     /// Executes js file.
     void RunScript(const QString &scriptFilename);
 
