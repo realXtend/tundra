@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   TransformEditor.cpp
- *  @brief  Controls Transform attributes for groups of entities.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   TransformEditor.cpp
+    @brief  Controls Transform attributes for groups of entities. */
 
 #include "StableHeaders.h"
 #include "TransformEditor.h"

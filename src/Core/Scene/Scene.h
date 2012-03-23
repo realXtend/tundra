@@ -346,8 +346,7 @@ public slots:
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities. */
     QList<Entity *> CreateContentFromXml(const QString &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
-
-    /// This is an overloaded function.
+    /// @overload
     /** @param xml XML document. */
     QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
 
@@ -359,8 +358,7 @@ public slots:
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities. */
     QList<Entity *> CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change);
-
-    /// This is an overloaded function.
+    /// @overload
     /** @param data Data buffer.
         @param numBytes Data size.*/
     QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change);

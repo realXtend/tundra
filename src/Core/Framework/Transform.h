@@ -233,9 +233,7 @@ public:
     /** Accepted format is "px,py,pz,rx,ry,rz,sx,sy,sz".
         @sa SerializeToString */
     static Transform FromString(const char *str);
-
-    /// This is an overloaded function.
-    static Transform FromString(const QString &str) { return FromString(str.simplified().toStdString().c_str()); }
+    static Transform FromString(const QString &str) { return FromString(str.simplified().toStdString().c_str()); } ///< @overload
 };
 
 Q_DECLARE_METATYPE(Transform)

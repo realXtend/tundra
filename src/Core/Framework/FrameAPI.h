@@ -35,8 +35,8 @@ public slots:
         @param member Member slot. */
     void DelayedExecute(float time, const QObject *receiver, const char *member);
 
-    /** This is an overloaded function.
-        This function is provided for convenience for scripting languages
+    /// @overload
+    /** This function is provided for convenience for scripting languages
         @param time Time in seconds.
         @note Never returns null pointer
         @note Never store the returned pointer. */

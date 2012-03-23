@@ -109,7 +109,7 @@ struct AssetReferenceList
             return refs[i].value<AssetReference>();
     }
 
-    /// This is an overloaded function.
+    /// @overload
     /** @note Doesn't return reference for script-compatibility/safety. */
     const AssetReference operator[] (int i) const
     {

@@ -133,13 +133,13 @@ public slots:
     /** If there are several components with the specified type, returns the first component found (arbitrary).
         @param type_name type of the component */
     ComponentPtr GetComponent(const QString &type_name) const;
-    /// This is an overloaded function.
+    /// @overload
     /** @param typeId Unique type ID. */
     ComponentPtr GetComponent(u32 typeId) const;
-    /// This is an overloaded function.
+    /// @overload
     /** @param name Specifies the name of the component to fetch. This can be used to distinguish between multiple instances of components of same type. */
     ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
-    /// This is an overloaded function.
+    /// @overload
     /** @param typeId The type id of the component to get.
         @param name name of the component */
     ComponentPtr GetComponent(u32 typeId, const QString &name) const;
@@ -150,13 +150,13 @@ public slots:
         @param replicated Whether new component will be replicated through network
         @return Pointer to the component, or an empty pointer if the component could be retrieved or created. */
     ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    /// @overload
     /** @param name If specified, the component having the given name is returned, or created if it doesn't exist. */
     ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    /// @overload
     /** @param typeId Identifies the component type to create by the id of the type instead of the name. */
     ComponentPtr GetOrCreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    /// @overload
     /** @param name name of the component */
     ComponentPtr GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
 
@@ -172,13 +172,13 @@ public slots:
         @return Retuns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
         is that a component with the same (typename, name) pair exists, or that components of the given typename are not recognized by the system. */
     ComponentPtr CreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    /// @overload
     /** @param name name of the component */
     ComponentPtr CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    /// @overload
     /** @param typeId Unique type ID of the component. */
     ComponentPtr CreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    /// @overload
     /** @param typeId Unique type ID of the component.
         @param name name of the component */
     ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
@@ -299,15 +299,14 @@ public slots:
         @param p2 2nd parameter for the action, if applicable.
         @param p3 3rd parameter for the action, if applicable. */
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QString &p1 = "", const QString &p2 = "", const QString &p3 = "");
-
-    /// This is an overloaded function.
+    /// @overload
     /** @param type Execution type(s), i.e. where the actions is executed.
         @param action Name of the action.
         @param params List of parameters for the action. */
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QStringList &params);
-
-    /// This is an overloaded function. Experimental overload using QVariant. Converts the variants to strings.
-    /** @note If called from JavaScript, syntax '<targetEntity>["Exec(EntityAction::ExecTypeField,QString,QVariantList)"](2, "name", params);' must be used.
+    /// @overload
+    /** Experimental overload using QVariant. Converts the variants to strings.
+        @note If called from JavaScript, syntax '<targetEntity>["Exec(EntityAction::ExecTypeField,QString,QVariantList)"](2, "name", params);' must be used.
         @param type Execution type(s), i.e. where the actions is executed.
         @param action Name of the action.
         @param params List of parameters for the action. */

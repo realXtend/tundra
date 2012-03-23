@@ -83,7 +83,7 @@ public slots:
     /** @param worldPos World-space point (y omitted).
         @return Water height (world-space y) at the given position, or -1 if the point was outside of the water. */
     float HeightAt(const float3 &worldPos) const;
-    /// This is an overloaded function.
+    /// @overload
     /** @param x X-coordinate in world-space.
         @param z Z-coordinate in world-space. */
     float HeightAt(float x, float z) const;

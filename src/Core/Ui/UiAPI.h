@@ -71,8 +71,7 @@ public slots:
     /// Removes widget's proxy widget from the scene.
     /** @param widget Widget. */
     void RemoveWidgetFromScene(QWidget *widget);
-
-    /// This is an overloaded function.
+    /// @overload
     /** Removes proxy widget from the scene.
         @param widget Proxy widget. */
     void RemoveWidgetFromScene(QGraphicsProxyWidget *widget);
@@ -93,8 +92,7 @@ public slots:
     /// Brings the widget's proxy widget to front in the graphics scene and sets focus to it.
     /** @param widget Widget. */
     void BringWidgetToFront(QWidget *widget) const;
-
-    /// This is an overloaded function.
+    /// @overload
     /** Brings the widget's proxy widget to front in the graphics scene and sets focus to it.
         @param widget Proxy widget. */
     void BringWidgetToFront(QGraphicsProxyWidget *widget) const { return BringProxyWidgetToFront(widget); }
