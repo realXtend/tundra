@@ -51,15 +51,15 @@ EC_Sky::EC_Sky(Scene* scene) :
         {
             // Add default values, hardcoded
             /// HACK use hardcoded-values because ogre textureunit state class cannot find out texture names for cubic_texture type.
-            lst.Append(AssetReference(names[0].c_str()));
-            lst.Append(AssetReference("rex_sky_back.dds"));
-            lst.Append(AssetReference("rex_sky_left.dds"));
-            lst.Append(AssetReference("rex_sky_right.dds"));
-            lst.Append(AssetReference("rex_sky_top.dds"));
-            lst.Append(AssetReference("rex_sky_bot.dds"));
-    }
+            lst.Append(AssetReference("local://rex_sky_front.dds"));
+            lst.Append(AssetReference("local://rex_sky_back.dds"));
+            lst.Append(AssetReference("local://rex_sky_left.dds"));
+            lst.Append(AssetReference("local://rex_sky_right.dds"));
+            lst.Append(AssetReference("local://rex_sky_top.dds"));
+            lst.Append(AssetReference("local://rex_sky_bot.dds"));
+        }
 
-    textureRefs.Set(lst, AttributeChange::LocalOnly);
+        textureRefs.Set(lst, AttributeChange::LocalOnly);
     }
 
     // Disable old sky.

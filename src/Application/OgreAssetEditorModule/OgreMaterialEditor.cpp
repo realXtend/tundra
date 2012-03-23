@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   OgreMaterialEditor.cpp
- *  @brief  Non-text high-level editing tool for OGRE material scripts.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   OgreMaterialEditor.cpp
+    @brief  Non-text high-level editing tool for OGRE material scripts. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -16,7 +15,7 @@
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "OgreMaterialAsset.h"
-#include "OgreMaterialProperties.h"
+#include "OgreMaterialUtils.h"
 #include "PropertyTableWidget.h"
 #include "Math/MathFunc.h"
 
@@ -920,8 +919,8 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
     if (label)
         label->hide();
 
-    PropertyMap propMap = GatherShaderParameters(mat->ogreMaterial);
-    PropertyMapIter it(propMap);
+    OgreRenderer::ShaderParameterMap propMap = OgreRenderer::GatherShaderParameters(mat->ogreMaterial);
+    OgreRenderer::ShaderParameterMapIter it(propMap);
     if (propMap.size())
     {
         if (label)
@@ -945,7 +944,7 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
             nameItem->setFlags(Qt::ItemIsEnabled);
             // Property type, set non-editable.
             Ogre::GpuConstantType type = (Ogre::GpuConstantType)typeValuePair.begin().key().toInt();
-            QTableWidgetItem *typeItem = new QTableWidgetItem(OgreMaterialProperties::GpuConstantTypeToString(type));
+            QTableWidgetItem *typeItem = new QTableWidgetItem(OgreRenderer::GpuConstantTypeToString(type));
             typeItem->setFlags(Qt::ItemIsEnabled);
             // Property value
             QTableWidgetItem *valueItem = new QTableWidgetItem;

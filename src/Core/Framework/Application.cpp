@@ -328,8 +328,8 @@ QString Application::InstallationDirectory()
     return qstr.left(trailingSlash+1); // +1 so that we return the trailing slash as well.
 #else
     ///\todo Implement.
-    LogWarning("Application::InstallationDirectory not implemented for this platform.");
-    return ".";
+    LogDebug("Application::InstallationDirectory not implemented for this platform. Returning './'");
+    return "./";
 #endif
 }
 

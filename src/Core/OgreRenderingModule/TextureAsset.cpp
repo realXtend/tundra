@@ -43,9 +43,59 @@ TextureAsset::~TextureAsset()
     Unload();
 }
 
+bool TextureAsset::LoadFromFile(QString filename)
+{
+    bool allowAsynchronous = true;
+    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+        allowAsynchronous = false;
+    QString cacheDiskSource;
+    if (allowAsynchronous)
+    {
+        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        if (cacheDiskSource.isEmpty())
+            allowAsynchronous = false;
+    }
+    
+    if (allowAsynchronous)
+        return DeserializeFromData(0, 0, true);
+    else
+        return IAsset::LoadFromFile(filename);
+}
+
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     PROFILE(TextureAsset_DeserializeFromData);
+
+    // A NullAssetFactory has been registered on headless mode.
+    // We should never be here in headless mode.
+    assert(!assetAPI->IsHeadless());
+
+    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+        allowAsynchronous = false;
+    QString cacheDiskSource;
+    if (allowAsynchronous)
+    {
+        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        if (cacheDiskSource.isEmpty())
+            allowAsynchronous = false;
+    }
+    
+    // Asynchronous loading
+    // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
+    // 2. We have a rendering window for Ogre as Ogre::ResourceBackgroundQueue does not work otherwise. Its not properly initialized without a rendering window.
+    // 3. The Ogre we are building against has thread support.
+    if (allowAsynchronous)
+    {
+        // We can only do threaded loading from disk, and not any disk location but only from asset cache.
+        // local:// refs will return empty string here and those will fall back to the non-threaded loading.
+        // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
+        QFileInfo fileInfo(cacheDiskSource);
+        std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
+        loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::TextureManager::getSingleton().getResourceType(),
+                          sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
+        return true;
+    }
+
     if (!data)
     {
         LogError("TextureAsset::DeserializeFromData failed: Cannot deserialize from input null pointer!");
@@ -56,33 +106,6 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         LogError("TextureAsset::DeserializeFromData failed: numBytes == 0!");
         return false;
     }
-
-    // A NullAssetFactory has been registered on headless mode.
-    // We should never be here in headless mode.
-    assert(!assetAPI->IsHeadless());
-
-    if (assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
-        allowAsynchronous = false;
-
-    // Asynchronous loading
-    // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
-    // 2. We have a rendering window for Ogre as Ogre::ResourceBackgroundQueue does not work otherwise. Its not properly initialized without a rendering window.
-    // 3. The Ogre we are building against has thread support.
-    if (allowAsynchronous && assetAPI->GetAssetCache() && !assetAPI->IsHeadless() && (OGRE_THREAD_SUPPORT != 0))
-    {
-        // We can only do threaded loading from disk, and not any disk location but only from asset cache.
-        // local:// refs will return empty string here and those will fall back to the non-threaded loading.
-        // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
-        QString cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
-        if (!cacheDiskSource.isEmpty())
-        {
-            QFileInfo fileInfo(cacheDiskSource);
-            std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
-            loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::TextureManager::getSingleton().getResourceType(),
-                              sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
-            return true;
-        }
-    }   
 
     // Synchronous loading
     try

@@ -58,8 +58,9 @@ if (!framework.IsHeadless())
     if (ecEditor)
         viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
 
-    if (framework.GetModuleByName("Avatar"))
-        viewMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
+    // TODO: Avatar Editor menu action disabled for now, as it's not fully ready for end-users
+//    if (framework.GetModuleByName("Avatar"))
+//        viewMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
 
     if (framework.GetModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);

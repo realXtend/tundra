@@ -94,7 +94,7 @@ void AvatarEditor::RebuildEditView()
 
         // Create editor for material ref
         QLineEdit* lineEdit = new QLineEdit();
-        lineEdit->setObjectName(QString::fromStdString(ToString<int>(y))); // Material index
+        lineEdit->setObjectName(QString::number(y)); // Material index
         lineEdit->setText(materials[y]);
         connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(ChangeMaterial()));
 
@@ -120,17 +120,15 @@ void AvatarEditor::RebuildEditView()
         v_box->setSpacing(6);
 
         // Strip away .xml from the attachment name for slightly nicer display
-        std::string attachment_name = attachments[y].name_.toStdString();
-        std::size_t pos = attachment_name.find(".xml");
-        if (pos != std::string::npos)
-            attachment_name = attachment_name.substr(0, pos);
+        QString attachment_name = attachments[y].name_;
+        attachment_name.replace(".xml", "");
 
         // Create elements
-        label = new QLabel(QString::fromStdString(attachment_name));
+        label = new QLabel(attachment_name);
         label->setFixedWidth(200);
 
         button = new QPushButton("Remove");
-        button->setObjectName(QString::fromStdString(ToString<int>(y))); // Attachment index
+        button->setObjectName(QString::number(y)); // Attachment index
         button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         connect(button, SIGNAL(clicked()), SLOT(RemoveAttachment()));
 
@@ -498,14 +496,12 @@ void AvatarEditor::ChangeMaterial()
     if (!lineEdit)
         return;
 
-    std::string index_str = lineEdit->objectName().toStdString();
-    uint index = ParseString<uint>(index_str);
-
     Entity* entity;
     EC_Avatar* avatar;
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
+    uint index = lineEdit->objectName().toUInt();
     desc->SetMaterial(index, lineEdit->text().trimmed());
 }
 
@@ -515,15 +511,13 @@ void AvatarEditor::RemoveAttachment()
     if (!button)
         return;
 
-    std::string index_str = button->objectName().toStdString();
-    uint index = ParseString<uint>(index_str);
-
     Entity* entity;
     EC_Avatar* avatar;
     AvatarDescAsset* desc;
     if (!GetAvatarDesc(entity, avatar, desc))
         return;
 
+    uint index = button->objectName().toUInt();
     desc->RemoveAttachment(index);
 }
 

@@ -2,9 +2,10 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "OgreCompositionHandler.h"
 #include "OgreRenderingModule.h"
-#include "OgreMaterialProperties.h"
+#include "OgreMaterialUtils.h"
 
 #include <OgreCompositorManager.h>
 #include <OgreTechnique.h>
@@ -184,8 +185,8 @@ QStringList OgreCompositionHandler::CompositorParameters(const std::string &comp
             for(uint passIdx = 0; passIdx < ct->getOutputTargetPass()->getNumPasses(); ++passIdx)
             {
                 Ogre::MaterialPtr material = ct->getOutputTargetPass()->getPass(passIdx)->getMaterial();
-                PropertyMap props = GatherShaderParameters(material);
-                PropertyMapIter it(props);
+                OgreRenderer::ShaderParameterMap props = OgreRenderer::GatherShaderParameters(material);
+                OgreRenderer::ShaderParameterMapIter it(props);
                 while(it.hasNext())
                 {
                     it.next();

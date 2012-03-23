@@ -20,6 +20,10 @@ namespace Ogre
     class Bone;
 }
 
+class OgreMeshAsset;
+class OgreMaterialAsset;
+class OgreSkeletonAsset;
+
 /// Ogre mesh entity component
 /**
 <table class="header">
@@ -399,6 +403,12 @@ public slots:
 
     /// Returns the local space axis-aligned bounding box of this object.
     AABB LocalAABB() const;
+
+    boost::shared_ptr<OgreMeshAsset> MeshAsset() const;
+
+    boost::shared_ptr<OgreMaterialAsset> MaterialAsset(int materialIndex) const;
+
+    boost::shared_ptr<OgreSkeletonAsset> SkeletonAsset() const;
 
 public:
     /// Raycast into an Ogre mesh entity using a world-space ray. Returns true if a hit happens, in which case the fields (which are not null) are filled appropriately

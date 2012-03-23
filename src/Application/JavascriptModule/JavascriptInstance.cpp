@@ -18,6 +18,7 @@
 #include "Application.h"
 #include "IAssetStorage.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include <QDir>
 #include <QFile>
@@ -154,6 +155,7 @@ void JavascriptInstance::GetObjectInformation(const QScriptValue &object, QSet<q
 
 void JavascriptInstance::Load()
 {
+    PROFILE(JSInstance_Load);
     if (!engine_)
         CreateEngine();
 
@@ -207,6 +209,7 @@ void JavascriptInstance::Load()
 
 QString JavascriptInstance::LoadScript(const QString &fileName)
 {
+    PROFILE(JSInstance_LoadScript);
     QString filename = fileName.trimmed();
 
     // First check if the include was supposed to go through the Asset API.
@@ -261,6 +264,7 @@ void JavascriptInstance::Unload()
 
 void JavascriptInstance::Run()
 {
+    PROFILE(JSInstance_Run);
     // Need to have either absolute file path source or an Asset API source.
     if (scriptRefs_.empty() && program_.isEmpty())
     {
@@ -296,6 +300,7 @@ void JavascriptInstance::Run()
     
     for (unsigned i = 0; i < numScripts; ++i)
     {
+        PROFILE(JSInstance_Evaluate);
         QString scriptSourceFilename = (useAssets ? scriptRefs_[i]->Name() : sourceFile);
         QString &scriptContent = (useAssets ? scriptRefs_[i]->scriptContent : program_);
 

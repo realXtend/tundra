@@ -373,6 +373,11 @@ public slots:
     /// A utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset) const;
 
+    /// A utility function that returns true if the given asset still has some unloaded dependencies left to process.
+    /// @note For performance reasons, calling this function is highly advisable instead of calling NumPendingDependencies, if it is only
+    ///       desirable to known whether the asset has any pending dependencies or not.
+    bool HasPendingDependencies(AssetPtr asset) const;
+
     /// Handle discovery of a new asset through the AssetDiscovery network message
     void HandleAssetDiscovery(const QString &assetRef, const QString &assetType);
 

@@ -577,7 +577,7 @@ void AvatarDescAsset::DependencyLoaded(AssetPtr dependee)
     IAsset::DependencyLoaded(dependee);
     
     // Emit AppearanceChanged() when all references have been loaded, and the avatar description is ready to use
-    if (assetAPI->NumPendingDependencies(this->shared_from_this()) == 0)
+    if (!assetAPI->HasPendingDependencies(this->shared_from_this()))
         emit AppearanceChanged();
 }
 

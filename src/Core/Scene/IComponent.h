@@ -80,6 +80,7 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
     Q_PROPERTY(QString typeName READ TypeName)
     Q_PROPERTY(bool replicated READ IsReplicated)
     Q_PROPERTY(bool local READ IsLocal)
+    /// @note Use "component.updateMode = { value : <AttributeChange::Type value as int> };" syntax when settings updateMode from QtScript.
     Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode)
     Q_PROPERTY (uint id READ Id)
     Q_PROPERTY (bool unacked READ IsUnacked)

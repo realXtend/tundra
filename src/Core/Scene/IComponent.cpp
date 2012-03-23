@@ -300,7 +300,7 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
     if (!Name().isEmpty())
         comp_element.setAttribute("name", Name());
     // Components with no network sync are never network-serialized. However we might be serializing to a file
-    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(replicated)));
+    comp_element.setAttribute("sync", BoolToString(replicated));
     
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
@@ -506,7 +506,7 @@ void IComponent::SetTemporary(bool enable)
 
 bool IComponent::IsTemporary() const
 {
-    if ((parentEntity) && (parentEntity->IsTemporary()))
+    if (parentEntity && parentEntity->IsTemporary())
         return true;
     return temporary;
 }

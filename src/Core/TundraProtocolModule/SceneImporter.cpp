@@ -792,9 +792,8 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                         {
                             QString material_name = subentity_elem.attribute("materialName") + ".material";
                             material_name.replace('/', '_');
-                            
-                            int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
-                            
+
+                            int index = subentity_elem.attribute("index").toInt();
                             material_name = prefix + material_name;
                             if (index >= materials.size())
                                 materials.resize(index + 1);
