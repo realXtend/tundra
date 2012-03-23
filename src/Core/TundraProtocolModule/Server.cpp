@@ -413,7 +413,6 @@ void Server::OnScriptEngineCreated(QScriptEngine* engine)
     qScriptRegisterMetaType<UserConnectedResponseData*>(engine, qScriptValueFromNull<UserConnectedResponseData*>, qScriptValueToNull<UserConnectedResponseData*>);
     qScriptRegisterMetaType<UserConnectionPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<UserConnectionList>(engine, toScriptValueUserConnectionList, fromScriptValueUserConnectionList);
-//    qRegisterMetaType<TundraLogic::Client::LoginPropertyMap>("LoginPropertyMap");
     qScriptRegisterMetaType<LoginPropertyMap>(engine, qScriptValueFromLoginPropertyMap, qScriptValueToLoginPropertyMap);
 }
 
