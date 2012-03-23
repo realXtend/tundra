@@ -705,11 +705,11 @@ IF NOT EXIST "%DEPS%\vlc". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    mkdir lib
    mkdir include
-   mkdir bin\vlcplugins
+   mkdir bin\plugins\vlcplugins
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Copying needed files to %DEPS%\vlc\bin \lib and \include{# #}{\n}
    copy /Y vlc-2.0.0\*.dll bin\
-   xcopy /E /I /C /H /R /Y vlc-2.0.0\plugins\*.* bin\vlcplugins
+   xcopy /E /I /C /H /R /Y vlc-2.0.0\plugins\*.* bin\plugins\vlcplugins
    xcopy /E /I /C /H /R /Y vlc-2.0.0\sdk\include\*.* include
    copy /Y vlc-2.0.0\sdk\lib\*.lib lib\
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
