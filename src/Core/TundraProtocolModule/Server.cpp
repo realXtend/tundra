@@ -42,9 +42,7 @@ namespace TundraLogic
 Server::Server(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
-    current_port_(-1),
-    current_protocol_(""),
-    actionsender_(0)
+    current_port_(-1)
 {
 }
 
@@ -183,12 +181,12 @@ QVariantList Server::GetConnectionIDs() const
     return ret;
 }
 
-UserConnection* Server::GetUserConnection(int connectionID) const
+UserConnectionPtr Server::GetUserConnection(int connectionID) const
 {
     foreach(const UserConnectionPtr &user, AuthenticatedUsers())
         if (user->userID == connectionID)
-            return user.get();
-    return 0;
+            return user;
+    return UserConnectionPtr();
 }
 
 UserConnectionList& Server::UserConnections() const
@@ -196,19 +194,19 @@ UserConnectionList& Server::UserConnections() const
     return owner_->GetKristalliModule()->GetUserConnections();
 }
 
-UserConnection* Server::GetUserConnection(kNet::MessageConnection* source) const
+UserConnectionPtr Server::GetUserConnection(kNet::MessageConnection* source) const
 {
     return owner_->GetKristalliModule()->GetUserConnection(source);
 }
 
-void Server::SetActionSender(UserConnection* user)
+void Server::SetActionSender(const UserConnectionPtr &user)
 {
-    actionsender_ = user;
+    actionSender = user;
 }
 
-UserConnection* Server::GetActionSender() const
+UserConnectionPtr Server::GetActionSender() const
 {
-    return actionsender_;
+    return actionSender.lock();
 }
 
 kNet::NetworkServer *Server::GetServer() const
@@ -227,7 +225,7 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
     if (!owner_->IsServer())
         return;
 
-    UserConnection *user = GetUserConnection(source);
+    UserConnectionPtr user = GetUserConnection(source);
     if (!user)
     {
         ::LogWarning(QString("Server: dropping message %1 from unknown connection \"%2\".").arg(messageId).arg(source->ToString().c_str()));
@@ -237,7 +235,7 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
     // If we are server, only allow the login message from an unauthenticated user
     if (messageId != MsgLogin::messageID && user->properties["authenticated"] != "true")
     {
-        UserConnection* user = GetUserConnection(source);
+        UserConnectionPtr user = GetUserConnection(source);
         if (!user || user->properties["authenticated"] != "true")
         {
             ::LogWarning("Server: dropping message " + QString::number(messageId) + " from unauthenticated user.");
@@ -251,12 +249,12 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
         HandleLogin(source, msg);
     }
 
-    emit MessageReceived(user, packetId, messageId, data, numBytes);
+    emit MessageReceived(user.get(), packetId, messageId, data, numBytes);
 }
 
 void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
 {
-    UserConnection* user = GetUserConnection(source);
+    UserConnectionPtr user = GetUserConnection(source);
     if (!user)
     {
         ::LogWarning("Server::HandleLogin: Login message from an unknown user.");
@@ -281,7 +279,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     }
     
     user->properties["authenticated"] = "true";
-    emit UserAboutToConnect(user->userID, user);
+    emit UserAboutToConnect(user->userID, user.get());
     if (user->properties["authenticated"] != "true")
     {
         ::LogInfo("User with connection ID " + QString::number(user->userID) + " was denied access.");
@@ -324,7 +322,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     // Ask them to fill the contents of a UserConnectedResponseData structure. This will
     // be sent to the client so that the scripts and applications on the client system can configure themselves.
     UserConnectedResponseData responseData;
-    emit UserConnected(user->userID, user, &responseData);
+    emit UserConnected(user->userID, user.get(), &responseData);
 
     QByteArray responseByteData = responseData.responseData.toByteArray(-1);
     reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());

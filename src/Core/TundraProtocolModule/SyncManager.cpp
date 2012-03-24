@@ -104,14 +104,14 @@ void SyncManager::SetUpdatePeriod(float period)
     updatePeriod_ = period;
 }
 
-SceneSyncState* SyncManager::SceneState(int connectionId)
+SceneSyncState* SyncManager::SceneState(int connectionId) const
 {
     if (!owner_->IsServer())
         return 0;
     return SceneState(owner_->GetServer()->GetUserConnection(connectionId));
 }
 
-SceneSyncState* SyncManager::SceneState(UserConnection *connection)
+SceneSyncState* SyncManager::SceneState(const UserConnectionPtr &connection) const
 {
     if (!owner_->IsServer())
         return 0;
@@ -211,7 +211,7 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
     currentSender = 0;
 }
 
-void SyncManager::NewUserConnected(UserConnection* user)
+void SyncManager::NewUserConnected(const UserConnectionPtr &user)
 {
     PROFILE(SyncManager_NewUserConnected);
 
@@ -223,7 +223,7 @@ void SyncManager::NewUserConnected(UserConnection* user)
     }
     
     // Connect to actions sent to specifically to this user
-    connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)),
+    connect(user.get(), SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)),
         this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
@@ -231,7 +231,7 @@ void SyncManager::NewUserConnected(UserConnection* user)
     user->syncState->SetParentScene(scene_);
 
     if (owner_->IsServer())
-        emit SceneStateCreated(user, user->syncState.get());
+        emit SceneStateCreated(user.get(), user->syncState.get());
 
     for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
@@ -1438,8 +1438,8 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
         return true;
     
     // And for now, always also trust scene actions from clients, if they are known and authenticated
-    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if ((!user) || (user->properties["authenticated"] != "true"))
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (!user || user->properties["authenticated"] != "true")
         return false;
     
     return true;
@@ -1448,7 +1448,7 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)
 {
     assert(source);
-    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
     
     // Get matching syncstate for reflecting the changes
     SceneSyncState* state = GetSceneSyncState(source);
@@ -1459,7 +1459,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
         return;
     }
 
-    if (!scene->AllowModifyEntity(user, 0)) //should be 'ModifyScene', but ModifyEntity is now the signal that covers all
+    if (!scene->AllowModifyEntity(user.get(), 0)) //should be 'ModifyScene', but ModifyEntity is now the signal that covers all
         return;
 
     bool isServer = owner_->IsServer();
@@ -1642,8 +1642,8 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             return;
         }
 
-        UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
-        if (!scene->AllowModifyEntity(user, entity.get()))
+        UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
+        if (!scene->AllowModifyEntity(user.get(), entity.get()))
             return;
         
         // Read the components
@@ -1759,8 +1759,8 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const char
 
     EntityPtr entity = scene->GetEntity(entityID);
 
-    UserConnection *user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if (entity && !scene->AllowModifyEntity(user, entity.get()))
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (entity && !scene->AllowModifyEntity(user.get(), entity.get()))
         return;
 
     if (!scene->GetEntity(entityID))
@@ -1800,8 +1800,8 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
 
     EntityPtr entity = scene->GetEntity(entityID);
 
-    UserConnection *user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if (entity && !scene->AllowModifyEntity(user, entity.get()))
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (entity && !scene->AllowModifyEntity(user.get(), entity.get()))
         return;
 
     if (!entity)
@@ -1853,14 +1853,14 @@ void SyncManager::HandleCreateAttributes(kNet::MessageConnection* source, const 
         return;
     
     EntityPtr entity = scene->GetEntity(entityID);
-    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
     if (!entity)
     {
         LogWarning("Entity " + QString::number(entityID) + " not found for CreateAttributes message");
         return;
     }
 
-    if (!scene->AllowModifyEntity(user, 0)) //to check if creating entities is allowed (for this user)
+    if (!scene->AllowModifyEntity(user.get(), 0)) //to check if creating entities is allowed (for this user)
         return;
 
     std::vector<IAttribute*> addedAttrs;
@@ -1947,8 +1947,8 @@ void SyncManager::HandleRemoveAttributes(kNet::MessageConnection* source, const 
     
     EntityPtr entity = scene->GetEntity(entityID);
 
-    UserConnection *user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if (entity && !scene->AllowModifyEntity(user, entity.get()))
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (entity && !scene->AllowModifyEntity(user.get(), entity.get()))
         return;
 
     if (!entity)
@@ -1999,9 +1999,9 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
         return;
         
     EntityPtr entity = scene->GetEntity(entityID);
-    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
 
-    if (entity && !scene->AllowModifyEntity(user, entity.get())) // check if allowed to modify this entity.
+    if (entity && !scene->AllowModifyEntity(user.get(), entity.get())) // check if allowed to modify this entity.
         return;
 
     if (!entity)
@@ -2262,7 +2262,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
         Server* server = owner_->GetServer().get();
         if (server)
         {
-            UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+            UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
             server->SetActionSender(user);
         }
     }
@@ -2298,7 +2298,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     // Clear the action sender after action handling
     Server *server = owner_->GetServer().get();
     if (server)
-        server->SetActionSender(0);
+        server->SetActionSender(UserConnectionPtr());
 }
 
 SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connection)

@@ -34,13 +34,13 @@ public:
 
     /// Get matching userconnection from a messageconnection, or null if unknown
     /// @todo Rename to UserConnection(ForMessageConnection) or similar.
-    UserConnection* GetUserConnection(kNet::MessageConnection* source) const;
+    UserConnectionPtr GetUserConnection(kNet::MessageConnection* source) const;
 
     /// Get all connected users
     UserConnectionList& UserConnections() const;
 
     /// Set current action sender. Called by SyncManager
-    void SetActionSender(UserConnection* user);
+    void SetActionSender(const UserConnectionPtr &user);
 
     /// Returns the backend server object.
     /** Use this object to Broadcast messages to all currently connected clients.
@@ -75,12 +75,12 @@ public slots:
 
     /// Get userconnection structure corresponding to connection ID
     /** @todo Rename to UserConnection or UserConnectionById. */
-    UserConnection* GetUserConnection(int connectionID) const;
+    UserConnectionPtr GetUserConnection(int connectionID) const;
 
     /// Get current sender of an action.
     /** Valid (non-null) only while an action packet is being handled. Null if it was invoked by server
         @todo Rename to ActionSender. */
-    UserConnection* GetActionSender() const;
+    UserConnectionPtr GetActionSender() const;
 
     QVariantList GetConnectionIDs() const; ///< @deprecated Use AuthenticatedUsers.
     int GetPort() const; ///< @deprecated Use Port or 'port' property.
@@ -124,7 +124,7 @@ private:
     /// Handle a login message
     void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
 
-    UserConnection* actionsender_;
+    UserConnectionWeakPtr actionSender;
     TundraLogicModule* owner_;
     Framework* framework_;
     int current_port_;
