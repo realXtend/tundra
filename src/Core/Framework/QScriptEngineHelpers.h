@@ -63,5 +63,5 @@ void qScriptValueToBoostSharedPtr(const QScriptValue &value, boost::shared_ptr<T
         ptr.reset();
         return;
     }
-    ptr = obj->shared_from_this();
+    ptr = boost::dynamic_pointer_cast<T>(obj->shared_from_this());
 }
