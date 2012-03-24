@@ -340,6 +340,7 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
         else
         {
             LogError("EC_Hydrax: Unknown noise param in loaded config, acceptable = FFT/Perlin.");
+            SAFE_DELETE(impl);
             return;
         }
 
@@ -355,5 +356,8 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
     catch (Ogre::Exception &e)
     {
         LogError(std::string("EC_Hydrax: Ogre threw exception while loading new config: ") + e.what());
+        if (impl && impl->hydrax)
+            impl->hydrax->remove();
+        SAFE_DELETE(impl);
     }
 }
