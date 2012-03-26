@@ -1,12 +1,8 @@
 #!/bin/bash
+# script to build naali and most deps.
+
 set -e
 set -x
-
-# script to build naali and most deps.
-#
-# if you want to use caelum, install ogre and nvidia cg from
-# ppa:andrewfenn/ogredev, change the caelum setting to 1 in
-# top-level CMakeBuildConfig.txt and enable Cg module in bin/plugins-unix.cfg
 
 
 viewer=$(dirname $(readlink -f $0))/..
@@ -30,6 +26,7 @@ mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 
 export PATH=$prefix/bin:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
+export NAALI_DEP_PATH=$prefix
 export LDFLAGS="-L$prefix/lib -Wl,-rpath -Wl,$prefix/lib"
 export LIBRARY_PATH=$prefix/lib
 export C_INCLUDE_PATH=$prefix/include
@@ -38,13 +35,22 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric" && tty >/dev/null; then
+private_ogre=true # build own ogre by default, since ubuntu shipped ogre is too old and/or built without thread support
+
+if [ x$private_ogre != xtrue ]; then
+    more="libogre-dev"
+else
+    more="nvidia-cg-toolkit" # ubuntu libogre-dev build-deps don't include cg
+    export OGRE_HOME=$prefix
+fi
+
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
-	 build-essential g++ libogre-dev libboost-all-dev \
+	 build-essential g++ libboost-all-dev libois-dev \
 	 ccache libqt4-dev python-dev freeglut3-dev \
 	 libxml2-dev cmake libalut-dev libtheora-dev \
-	 liboil0.3-dev mercurial unzip xsltproc libqtscript4-qtbindings
+	 liboil0.3-dev mercurial unzip xsltproc $more
 fi
 
 what=bullet-2.79-rev2440
@@ -76,7 +82,7 @@ else
     cd generator
     qmake
     make -j $nprocs
-    ./generator --include-paths=/usr/include/qt4
+    ./generator --include-paths=`qmake -query QT_INSTALL_HEADERS`
     cd ..
 
     cd qtbindings
@@ -88,8 +94,8 @@ else
     cd ..
     touch $tags/$what-done
 fi
-mkdir -p $viewer/bin/qtscript-plugins/script
-cp -lf $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
+mkdir -p $viewer/bin/qtplugins/script
+cp -lf $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
 
 
 what=kNet
@@ -110,6 +116,26 @@ else
     touch $tags/$what-done
 fi
 
+
+if [ x$private_ogre = xtrue ]; then
+    sudo apt-get build-dep libogre-dev
+    what=ogre
+    if test -f $tags/$what-done; then
+        echo $what is done
+    else
+        cd $build
+        rm -rf $what
+	test -f $tarballs/$what.tar.bz2 || wget -O $tarballs/$what.tar.bz2 'http://downloads.sourceforge.net/project/ogre/ogre/1.7/ogre_src_v1-7-3.tar.bz2?r=http%3A%2F%2Fwww.ogre3d.org%2Fdownload%2Fsource&ts=1319633319&use_mirror=switch'
+	tar jxf $tarballs/$what.tar.bz2
+        cd ${what}_src_v1-7-3/
+        mkdir -p $what-build
+        cd $what-build
+        cmake .. -DCMAKE_INSTALL_PREFIX=$prefix
+        make -j $nprocs VERBOSE=1
+        make install
+        touch $tags/$what-done
+    fi
+fi
 
 # HydraX, SkyX and PythonQT are build from the realxtend own dependencies.
 # At least for the time being, until changes to those components flow into
@@ -149,25 +175,25 @@ else
 fi
 # SkyX build
 
-echo "NOTE: SkyX build is disabled. To enable, uncomment SkyX code from build-ubuntu-deps.bash, and enable SKYX in main CMakeFiles.txt"
-echo "See https://github.com/realXtend/naali/issues/320"
-#if test -f $tags/skyx-done; then
-#    echo "SkyX-done"
-#else
-#    cd $build/$depdir/skyx
-#    if [ -z "$OGRE_HOME" ]; then
-#	    OGRE_HOME=`pkg-config --variable=prefix OGRE`
-#        if [ -z "$OGRE_HOME" ]; then
-#            echo "OGRE_HOME not defined, check your pkg-config or set OGRE_HOME manually.";
-#            exit 0;
-#        fi
-#    fi
-#    echo "Using OGRE_HOME = $OGRE_HOME"
-#    SKYX_SOURCE_DIR=`pwd`
-#    cmake -DCMAKE_INSTALL_PREFIX=$prefix .
-#    make -j $nprocs install
-#    touch $tags/skyx-done
-#fi
+if test -f $tags/skyx-done; then
+   echo "SkyX-done"
+else
+   cd $build/$depdir/skyx
+   my_ogre_home=$OGRE_HOME
+   if [ -z "$my_ogre_home" ]; then
+	    my_ogre_home=`pkg-config --variable=prefix OGRE`
+       if [ -z "$my_ogre_home" ]; then
+           echo "OGRE_HOME not defined, check your pkg-config or set OGRE_HOME manually.";
+           exit 0;
+       fi
+   fi
+   echo "Using OGRE_HOME = $OGRE_HOME"
+   SKYX_SOURCE_DIR=`pwd`
+   env OGRE_HOME=$my_ogre_home/lib/OGRE cmake -DCMAKE_INSTALL_PREFIX=$prefix .
+   make -j $nprocs install
+   touch $tags/skyx-done
+fi
+
 # PythonQT build
 if test -f $tags/pythonqt-done; then
     echo "PythonQt-done"
@@ -182,6 +208,22 @@ else
     make -j $nprocs
     rm -f $prefix/lib/libPythonQt*
     cp -a lib/libPythonQt* $prefix/lib/
+    
+    # work around PythonQt vs Qt 4.8 incompatibility
+    cd src
+    make moc_PythonQtStdDecorators.cpp
+    ed moc_PythonQtStdDecorators.cpp <<EOF
+/qt_static_metacall
+-
+a
+#undef emit
+.
+w
+q
+EOF
+    cd ..
+    # end of workaround
+
     cp src/PythonQt*.h $prefix/include/
     cp extensions/PythonQt_QtAll/PythonQt*.h $prefix/include/
     touch $tags/pythonqt-done
@@ -217,5 +259,5 @@ cat > ccache-g++-wrapper <<EOF
 exec ccache g++ -O -g \$@
 EOF
 chmod +x ccache-g++-wrapper
-TUNDRA_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" .
+TUNDRA_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" . -DCMAKE_MODULE_PATH=$prefix/lib/SKYX/cmake
 make -j $nprocs VERBOSE=1
