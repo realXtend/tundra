@@ -119,30 +119,53 @@ bool SerialDevicePlugin::CheckDevice(QextSerialPort *device)
 
 void SerialDevicePlugin::WriteToDevice(QextSerialPort *device, QString command)
 {
-    if (device)
-        device->write(command.toAscii(), command.length());
-    else
-        LogError(LC + "WriteToDevice called with null device ptr!");
-}
+    try
+    {
+        if (device)
+        {
+            if (device->isOpen())
+                device->write(command.toAscii(), command.length());
+            else
+                LogError(LC + "Device is not open!");
+        }
+        else
+            LogError(LC + "WriteToDevice called with null device ptr!");
+    }
+    catch(char *str)
+    {
+        LogError(LC + *str);
+    }
+ }
 
 QString SerialDevicePlugin::ReadFromDevice(QextSerialPort *device)
 {
-    if (!device)
+    try
     {
-        LogError(LC + "ReadFromDevice called with null device ptr!");
-        return "";
+        if (!device)
+        {
+            LogError(LC + "ReadFromDevice called with null device ptr!");
+            return "";
+        }
+
+        if (device->isOpen())
+        {
+            int numBytes;
+
+            numBytes = device->bytesAvailable();
+            if(numBytes > 1024)
+                numBytes = 1024;
+
+            QByteArray i = device->read(numBytes);
+            QString msg = i;
+
+            return msg;
+        } else
+            return "";
     }
-
-    int numBytes;
-
-    numBytes = device->bytesAvailable();
-    if(numBytes > 1024)
-        numBytes = 1024;
-
-    QByteArray i = device->read(numBytes);
-    QString msg = i;
-
-    return msg;
+    catch(char *str)
+    {
+        LogError(LC + *str);
+    }
 }
 
 bool SerialDevicePlugin::CloseDevice(QString portName)
