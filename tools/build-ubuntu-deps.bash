@@ -34,8 +34,9 @@ export CPLUS_INCLUDE_PATH=$prefix/include
 export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
+export TUNDRA_PYTHON_ENABLED=TRUE
 
-private_ogre=true # build own ogre by default, since ubuntu shipped ogre is too old and/or built without thread support
+private_ogre=false # build own ogre by default, since ubuntu shipped ogre is too old and/or built without thread support
 
 if [ x$private_ogre != xtrue ]; then
     more="libogre-dev"
