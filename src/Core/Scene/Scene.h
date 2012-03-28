@@ -298,6 +298,9 @@ public slots:
     /// @todo Remove and expose EntityMap and Entities to script.
     EntityList GetAllEntities() const;
 
+    /// Returns all entities in the scene.
+    EntityMap Entities() /*non-const intentionally*/ { return entities_; }
+
     /// Loads the scene from XML.
     /** @param filename File name
         @param clearScene Do we want to clear the existing scene.
