@@ -322,13 +322,6 @@ void Scene::EmitEntityCreated(Entity *entity, AttributeChange::Type change)
         emit EntityCreated(entity, change);
 }
 
-/*
-void Scene::EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change)
-{
-    return EmitEntityCreated(dynamic_cast<Entity*>(entity), change);
-}
-*/
-
 void Scene::EmitEntityRemoved(Entity* entity, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
@@ -373,31 +366,6 @@ QVariantList Scene::GetEntityIdsWithComponent(const QString &typeName) const
     return ret;
 }
 
-/*
-QList<Entity*> Scene::GetEntitiesWithComponentRaw(const QString &type_name) const
-{
-    QList<Entity*> ret;
-
-    EntityList entities = GetEntitiesWithComponent(type_name);
-    foreach(EntityPtr e, entities)
-        ret.append(e.get());
-
-    return ret;
-}
-*/
-/*
-QVariantList Scene::LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
-{
-    QVariantList ret;
-    QList<Entity *> entities = LoadSceneXML(filename, clearScene, useEntityIDsFromFile, change);
- 
-    foreach(Entity * e, entities)
-        ret.append(QVariant(e->Id()));
-
-    return ret;
-}
-*/
-
 QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
@@ -436,11 +404,9 @@ QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
     {
         bool serialize = true;
         if (iter->second->IsLocal() && !getlocal)
-                serialize = false;
-
+            serialize = false;
         if (iter->second->IsTemporary() && !gettemporary)
-                serialize = false;
-
+            serialize = false;
         if (serialize) 
         {
             /* copied from GetEntityXML so that we can get local and temporary components also.
