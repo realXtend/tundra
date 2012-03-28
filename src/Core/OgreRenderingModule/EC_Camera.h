@@ -120,30 +120,6 @@ public slots:
     /// Adjust a pitch/yaw/roll Euler rotation vector using the up vector
     float3 AdjustedRotation(const float3& rotation) const;
 
-    /// Sets near clip distance
-    /** @param nearclip new near clip distance */
-    ///\todo Remove, exposed as Attribute nearPlane
-    void SetNearClip(float nearclip);
-    /// returns near clip distance
-    ///\todo Remove, exposed as Attribute nearPlane
-    float NearClip() const;
-
-    /// sets far clip distance
-    /** @param farclip new far clip distance */
-    ///\todo Remove, exposed as Attribute farPlane
-    void SetFarClip(float farclip);
-    /// returns far clip distance
-    ///\todo Remove, exposed as Attribute farPlane
-    float FarClip() const;
-
-    /// Sets vertical fov 
-    /** @param fov new vertical fov in radians  */
-    ///\todo Remove, exposed as Attribute verticalFov
-    void SetVerticalFov(float fov);
-    /// returns vertical fov as radians
-    ///\todo Remove, exposed as Attribute verticalFov
-    float VerticalFov() const;
-
     /// Returns the currently used view aspect ratio (width/height).
     float AspectRatio() const;
 
@@ -193,6 +169,13 @@ public slots:
 
     /// Stops tracking an entity's visibility
     void StopViewTracking(Entity* entity);
+
+    void SetNearClip(float nearclip); ///< @deprecated use attribute nearPlane @todo Remove
+    float NearClip() const; ///< @deprecated use attribute nearPlane @todo Remove
+    void SetFarClip(float farclip); ///< @deprecated use attribute farPlane @todo Remove
+    float FarClip() const; ///< @deprecated use attribute farPlane @todo Remove
+    void SetVerticalFov(float fov); ///< @deprecated use attribute verticalFov @todo Remove
+    float VerticalFov() const; ///< @deprecated use attribute verticalFov @todo Remove
 
 signals:
     /// An entity has entered the view
