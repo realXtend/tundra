@@ -74,6 +74,8 @@ QextSerialPort *SerialDevicePlugin::CreateDevice(QString portName, QextSerialPor
     device->setParity(PAR_NONE);
     device->setDataBits(DATA_8);
     device->setStopBits(STOP_2);
+    device->setTimeout(500);
+    device->flush();
     openDevices_.push_back(device);
     return device;
 }
@@ -90,6 +92,8 @@ QextSerialPort *SerialDevicePlugin::CreateDevice(QString portName, BaudRateType 
     device->setParity(parity);
     device->setStopBits(stopBits);
     device->setFlowControl(flowControl);
+    device->setTimeout(500);
+    device->flush();
     return device;
 }
 
@@ -97,7 +101,7 @@ bool SerialDevicePlugin::OpenDevice(QextSerialPort *device)
 {
     if (device)
     {
-        device->open(QIODevice::ReadWrite);
+        device->open(QIODevice::ReadWrite | QIODevice::Unbuffered);
         return device->isOpen();
     }
     else
@@ -124,7 +128,10 @@ void SerialDevicePlugin::WriteToDevice(QextSerialPort *device, QString command)
         if (device)
         {
             if (device->isOpen())
+            {
+                device->flush();
                 device->write(command.toAscii(), command.length());
+            }
             else
                 LogError(LC + "Device is not open!");
         }
@@ -149,11 +156,11 @@ QString SerialDevicePlugin::ReadFromDevice(QextSerialPort *device)
 
         if (device->isOpen())
         {
-            int numBytes;
+            qint64 numBytes;
 
             numBytes = device->bytesAvailable();
-            if(numBytes > 1024)
-                numBytes = 1024;
+            //if (numBytes > 1024)
+                //numBytes = 1024;
 
             QByteArray i = device->read(numBytes);
             QString msg = i;
