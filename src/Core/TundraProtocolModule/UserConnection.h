@@ -66,9 +66,9 @@ public slots:
     /// Forcibly kills this connection without notifying the peer.
     void Close();
 
-    int GetConnectionID() const { return ConnectionId(); }  ///< @deprecated Use ConnectionId or 'id' @todo Add warning print
-    QString GetLoginData() const { return LoginData(); }  ///< @deprecated Use LoginData @todo Add warning print
-    QString GetProperty(const QString& key) const { return Property(key); } ///< @deprecated Use Property @todo Add warning print
+    int GetConnectionID() const { return ConnectionId(); }  /**< @deprecated Use ConnectionId or 'id' @todo Add warning print */
+    QString GetLoginData() const { return LoginData(); }  /**< @deprecated Use LoginData @todo Add warning print */
+    QString GetProperty(const QString& key) const { return Property(key); } /**< @deprecated Use Property @todo Add warning print */
 
 signals:
     /// Emitted when action has been triggered for this specific user connection.

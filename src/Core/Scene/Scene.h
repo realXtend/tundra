@@ -334,13 +334,13 @@ public slots:
 
     /// Creates scene content from XML.
     /** @param xml XML document as string.
-        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file. 
+        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file.
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities. */
     QList<Entity *> CreateContentFromXml(const QString &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
-    QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change); ///< @overload @param xml XML document.
+    QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change); /**< @overload @param xml XML document. */
 
     /// Creates scene content from binary file.
     /** @param filename File name.
@@ -350,7 +350,7 @@ public slots:
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities. */
     QList<Entity *> CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change);
-    QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change); ///< @overload @param data Data buffer @param numBytes Data size.
+    QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change); /**< @overload @param data Data buffer @param numBytes Data size. */
 
     /// Checks whether editing an entity is allowed.
     /** Emits AboutToModifyEntity.
@@ -365,14 +365,14 @@ public slots:
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
     // DEPRECATED function signatures
-    EntityPtr GetEntity(entity_id_t id) const { return EntityById(id); }  ///< @deprecated Use EntityById @todo Add warning print, remove in some distant future
-    EntityPtr GetEntityByName(const QString& name) const { return EntityByName(name); } ///< @deprecated Use EntityByName  @todo Add warning print, remove in some distant future
-    EntityList GetEntitiesWithComponent(const QString &typeName, const QString &name = "") const { return EntitiesWithComponent(typeName, name); } ///< @deprecated Use EntitiesWithComponent @todo Add warning print, remove in some distant future
-    EntityList GetAllEntities() const; ///< @deprecated @todo Add warning print, remove in some distant future
-    QVariantList GetEntityIdsWithComponent(const QString &typeName) const; ///< @deprecated Use EntitiesWithComponent instead @todo Remove.
-    Entity* GetEntityRaw(uint id) const { return GetEntity(id).get(); } ///< @deprecated Use EntityById @todo Remove
-    bool DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity((entity_id_t)id, change); } ///< @deprecated Use RemoveEntity @todo Remove
-    bool RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity(entityid, change); } ///< @deprecated Use RemoveEntity @todo Remove
+    EntityPtr GetEntity(entity_id_t id) const { return EntityById(id); } /**< @deprecated Use EntityById @todo Add warning print, remove in some distant future */
+    EntityPtr GetEntityByName(const QString& name) const { return EntityByName(name); } /**< @deprecated Use EntityByName  @todo Add warning print, remove in some distant future */
+    EntityList GetEntitiesWithComponent(const QString &typeName, const QString &name = "") const { return EntitiesWithComponent(typeName, name); } ///< @deprecated Use EntitiesWithComponent @todo Add warning print, remove in some distant future */
+    EntityList GetAllEntities() const; /**< @deprecated @todo Add warning print, remove in some distant future */
+    QVariantList GetEntityIdsWithComponent(const QString &typeName) const; /**< @deprecated Use EntitiesWithComponent instead @todo Remove. */
+    Entity* GetEntityRaw(uint id) const { return GetEntity(id).get(); } /**< @deprecated Use EntityById @todo Remove */
+    bool DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity((entity_id_t)id, change); } /**< @deprecated Use RemoveEntity @todo Remove */
+    bool RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity(entityid, change); } /**< @deprecated Use RemoveEntity @todo Remove */
 
 signals:
     /// Signal when an attribute of a component has changed

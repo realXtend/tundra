@@ -48,7 +48,7 @@ public slots:
     /** @note This slot is only exposed on Server, other wise will return null ptr.
         @param int connection ID of the client. */
     SceneSyncState* SceneState(int connectionId) const;
-    SceneSyncState* SceneState(const UserConnectionPtr &connection) const; ///< @overload @param connection Client connection ptr.
+    SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /**< @overload @param connection Client connection.*/
 
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.

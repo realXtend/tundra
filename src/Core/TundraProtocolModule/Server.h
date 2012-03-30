@@ -51,8 +51,8 @@ public:
     /** @return Server port number, or -1 if server is not running. */
     int Port() const;
 
-    /** Returns server's protocol.
-        @return 'udp', tcp', or an empty string if server is not running. */
+    /// Returns server's protocol.
+    /** @return 'udp', tcp', or an empty string if server is not running. */
     QString Protocol() const;
 
 public slots:
@@ -64,27 +64,27 @@ public slots:
     /// Stop server & delete server scene
     void Stop();
 
-    /// Get whether server is running
+    /// Returns whether server is running
     bool IsRunning() const;
 
-    /// Get whether server is about to start.
+    /// Returns whether server is about to start.
     bool IsAboutToStart() const;
 
     /// Returns all authenticated users.
     UserConnectionList AuthenticatedUsers() const;
 
-    /// Get userconnection structure corresponding to connection ID
+    /// Returns connection corresponding to a connection ID.
     /** @todo Rename to UserConnection or UserConnectionById. */
     UserConnectionPtr GetUserConnection(int connectionID) const;
 
-    /// Get current sender of an action.
-    /** Valid (non-null) only while an action packet is being handled. Null if it was invoked by server
-        @todo Rename to ActionSender. */
-    UserConnectionPtr GetActionSender() const;
+    /// Returns current sender of an action.
+    /** Valid (non-null) only while an action packet is being handled. Null if it was invoked by server */
+    UserConnectionPtr ActionSender() const;
 
-    QVariantList GetConnectionIDs() const; ///< @deprecated Use AuthenticatedUsers.
-    int GetPort() const; ///< @deprecated Use Port or 'port' property.
-    QString GetProtocol() const; ///< @deprecated Use Protocol or 'protocol' property.
+    QVariantList GetConnectionIDs() const; /**< @deprecated Use AuthenticatedUsers. */
+    int GetPort() const; /**< @deprecated Use Port or 'port' property. */
+    QString GetProtocol() const; /**< @deprecated Use Protocol or 'protocol' property. */
+    UserConnectionPtr GetActionSender() const; /**< @deprecated Use ActionSender. */
 
 signals:
     /// A user is connecting. This is your chance to deny access.
