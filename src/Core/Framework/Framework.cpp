@@ -55,7 +55,7 @@ struct CommandLineParameterMap
 #else
             struct winsize w;
             ioctl(0, TIOCGWINSZ, &w);
-            const int maxLineWidth = (int)w.ws_row;
+            const int maxLineWidth = (int)w.ws_col;
 #endif
             int cmdLength = it.key().length();
             ss << it.key().toStdString();
