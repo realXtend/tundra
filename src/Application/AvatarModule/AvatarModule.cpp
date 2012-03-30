@@ -52,11 +52,17 @@ void AvatarModule::EditAvatar(const QString &entityName)
 {
     Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
-        return;// ConsoleResultFailure("No scene");
+    {
+        LogError("AvatarModule::EditAvatar: No scene");
+        return;
+    }
     EntityPtr entity = scene->GetEntityByName(entityName);
     if (!entity)
-        return;// ConsoleResultFailure("No such entity " + entityName.toStdString());
-    
+    {
+        LogError("No such entity " + entityName.toStdString());
+        return;
+    }
+
     /// \todo Clone the avatar asset for editing
     /// \todo Allow avatar asset editing without an avatar entity in the scene
     avatarEditor->SetEntityToEdit(entity);
