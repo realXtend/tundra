@@ -33,12 +33,9 @@ public:
 public slots:
     /// Rebuild edit view
     void RebuildEditView();
-    
+
     /// Save avatar
     void SaveAvatar();
-    
-    /// Load new avatar asset
-    void LoadAvatar();
 
     /// Revert avatar edits
     void RevertAvatar();
