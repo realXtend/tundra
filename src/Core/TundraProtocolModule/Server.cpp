@@ -163,6 +163,12 @@ QString Server::GetProtocol() const
     return Protocol();
 }
 
+UserConnectionPtr Server::GetActionSender() const
+{
+    LogWarning("Server::GetActionSender: This function signature is deprecated will be removed. Migrate to using ActionSender instead.");
+    return ActionSender();
+}
+
 UserConnectionList Server::AuthenticatedUsers() const
 {
     UserConnectionList ret;
@@ -174,7 +180,8 @@ UserConnectionList Server::AuthenticatedUsers() const
 
 QVariantList Server::GetConnectionIDs() const
 {
-    LogWarning("Server::GetConnectionIDs: This function signature is deprecated will be removed. Migrate to using AuthenticatedUsers instead.");
+    /// @todo Add warning print
+//    LogWarning("Server::GetConnectionIDs: This function signature is deprecated will be removed. Migrate to using AuthenticatedUsers instead.");
     QVariantList ret;
     foreach(const UserConnectionPtr &user, AuthenticatedUsers())
         ret.push_back(QVariant(user->userID));
@@ -204,7 +211,7 @@ void Server::SetActionSender(const UserConnectionPtr &user)
     actionSender = user;
 }
 
-UserConnectionPtr Server::GetActionSender() const
+UserConnectionPtr Server::ActionSender() const
 {
     return actionSender.lock();
 }

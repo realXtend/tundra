@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   AssetsWindow.h
- *  @brief  The main UI for managing asset storages and assets.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   AssetsWindow.h
+    @brief  The main UI for managing asset storages and assets. */
 
 #pragma once
 
@@ -20,7 +19,9 @@ class Framework;
 class AssetTreeWidget;
 
 /// The main UI for managing asset storages and assets.
-/** Most of the functionality provided by AssetsWindow is implemented in AssetTreeWidget. */
+/** Assets window can be used either for generic browsing and maintaining of all known
+    assets in the system, or as an asset picker/selection tool.
+    Most of the functionality provided by AssetsWindow is implemented in AssetTreeWidget. */
 class AssetsWindow : public QWidget
 {
     Q_OBJECT

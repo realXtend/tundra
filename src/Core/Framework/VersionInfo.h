@@ -11,11 +11,11 @@
 class VersionInfo : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString version READ Version)
-    Q_PROPERTY(uint major READ Major)
-    Q_PROPERTY(uint minor READ Minor)
-    Q_PROPERTY(uint majorPatch READ MajorPatch)
-    Q_PROPERTY(uint minorPatch READ MinorPatch)
+    Q_PROPERTY(QString version READ Version) ///< @copydoc Version
+    Q_PROPERTY(uint major READ Major) ///< @copydoc Major
+    Q_PROPERTY(uint minor READ Minor) ///< @copydoc Minor
+    Q_PROPERTY(uint majorPatch READ MajorPatch) ///< @copydoc MajorPatch
+    Q_PROPERTY(uint minorPatch READ MinorPatch) ///< @copydoc MinorPatch
 
 public:
     /// Constucts version information from string.
