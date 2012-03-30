@@ -421,10 +421,11 @@ void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent, RaycastResult *raycast
     // Detect type and send the Qt event
     QPoint widgetPos((int)widget_->width() * raycast->u, (int)widget_->height() * (1.f-raycast->v));
     
-    // Don't register a hit for transparent widget parts.
+    // Don't register a hit for transparent widget parts. Make mouse event not handled so it will continue to propagate.
     if (!renderBuffer_.isNull() && (renderBuffer_.pixel(widgetPos) & 0xFF000000) == 0x00000000)
     {
         CheckMouseState();
+        mEvent->handled = false;
         return;
     }
     

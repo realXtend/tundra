@@ -126,9 +126,11 @@ void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
         
         if (hitWidgetBillboard == widgetBillboard)
         {
-            widgetBillboard->OnMouseEvent(mEvent, raycast);
             mEvent->handled = true;
+            widgetBillboard->OnMouseEvent(mEvent, raycast);
         }
+        else
+            widgetBillboard->CheckMouseState();
     }
 }
 
