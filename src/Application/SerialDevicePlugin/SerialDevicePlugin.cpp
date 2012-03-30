@@ -138,9 +138,9 @@ void SerialDevicePlugin::WriteToDevice(QextSerialPort *device, QString command)
         else
             LogError(LC + "WriteToDevice called with null device ptr!");
     }
-    catch(char *str)
+    catch(...)
     {
-        LogError(LC + *str);
+        LogError(LC + "Unknown exception in WriteToDevice()");
     }
  }
 
@@ -169,9 +169,60 @@ QString SerialDevicePlugin::ReadFromDevice(QextSerialPort *device)
         } else
             return "";
     }
-    catch(char *str)
+    catch(...)
     {
-        LogError(LC + *str);
+        LogError(LC + "Unknown exception in ReadFromDevice()");
+    }
+}
+
+int SerialDevicePlugin::BytesAvailable(QextSerialPort *device)
+{
+    try
+    {
+        if (!device)
+        {
+            LogError(LC + "BytesAvailable called with null device ptr!");
+            return -1;
+        }
+        if (device->isOpen())
+            return device->bytesAvailable();
+        else
+            return -1;
+    } 
+    catch(...)
+    {
+        LogError(LC + "Unknown exception in BytesAvailable()");
+    }
+}
+
+QString SerialDevicePlugin::ReadFromDevice(QextSerialPort *device, int bytes)
+{
+    try
+    {
+        if (!device)
+        {
+            LogError(LC + "ReadFromDevice called with null device ptr!");
+            return "";
+        }
+
+        if (device->isOpen())
+        {
+            if (bytes > device->bytesAvailable())
+            {
+                LogWarning(LC + "ReadFromDevice(device, bytes): You are asking more bytes than the device has to offer, aborting.");
+                return "";
+            }
+
+            QByteArray i = device->read(bytes);
+            QString msg = i;
+            return msg;
+        } 
+        else
+            return "";
+    }
+    catch(...)
+    {
+        LogError(LC + "Unknown exception in ReadFromDevice()");
     }
 }
 
