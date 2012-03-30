@@ -19,6 +19,7 @@
 
 #include "EC_WebView.h"
 #include "EC_WidgetBillboard.h"
+#include "EC_Billboard.h"
 
 #include <QPainter>
 #include <QNetworkReply>
@@ -98,53 +99,36 @@ void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
         return;
     if (framework_->Ui()->GraphicsView()->GetVisibleItemAtCoords(mEvent->x, mEvent->y) != 0)
         return;
-
-    // Filter out not wanted events here so we don't 
-    // do the potentially costly raycast unnecessarily.
-    if (mEvent->handled || mEvent->IsRightButtonDown())
-        return;
-    else if (et == MouseEvent::MouseScroll)
-        return;
-
-    float closestDistance = 100000.0;
-    EC_WidgetBillboard *closestComponent = 0;
-
+        
+    RaycastResult *raycast = framework_->Renderer()->Raycast(mEvent->x, mEvent->y);
+    IComponent* hitComponent = raycast != 0 ? raycast->component : 0;
+    EC_Billboard *hitBillboard = hitComponent != 0 ? dynamic_cast<EC_Billboard*>(hitComponent) : 0;
+    EC_WidgetBillboard *hitWidgetBillboard = 0;
+    if (hitBillboard && hitBillboard->ParentEntity())
+        hitWidgetBillboard = hitBillboard->ParentEntity()->GetComponent<EC_WidgetBillboard>().get();
+    
     EntityList ents = framework_->Scene()->MainCameraScene()->GetEntitiesWithComponent(EC_WidgetBillboard::TypeNameStatic());
-    EntityList::const_iterator iter = ents.begin();
-
-    // Find the closest hit EC_WidgetBillboard
-    while (iter != ents.end())
+    for (EntityList::const_iterator iter = ents.begin(); iter != ents.end(); ++iter)
     {
         EntityPtr ent = *iter;
-        ++iter;
-
         if (!ent.get())
             continue;
 
         EC_WidgetBillboard *widgetBillboard = dynamic_cast<EC_WidgetBillboard*>(ent->GetComponent(EC_WidgetBillboard::TypeNameStatic()).get());
         if (!widgetBillboard)
             continue;
-
-        bool hit = false; float2 uv; float distance;
-        widgetBillboard->RaycastBillboard(mEvent->x, mEvent->y, hit, uv, distance);
-
-        if (hit)
+        
+        if (!raycast || !hitWidgetBillboard || mEvent->handled || mEvent->IsRightButtonDown() || et == MouseEvent::MouseScroll)
         {
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestComponent = widgetBillboard;
-            }
-        }
-        else
             widgetBillboard->CheckMouseState();
-    }
-
-    // Redirect mouse event for the closest EC_WidgetBillboard
-    if (closestComponent)
-    {
-        closestComponent->OnMouseEvent(mEvent);
-        mEvent->handled = true;
+            continue;
+        }
+        
+        if (hitWidgetBillboard == widgetBillboard)
+        {
+            widgetBillboard->OnMouseEvent(mEvent, raycast);
+            mEvent->handled = true;
+        }
     }
 }
 

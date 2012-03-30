@@ -38,6 +38,7 @@
 #include <QPaintEvent>
 #include <QMouseEvent>
 #include <QResizeEvent>
+#include <QFocusEvent>
 
 EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
     IComponent(scene),
@@ -400,35 +401,33 @@ bool EC_WidgetBillboard::eventFilter(QObject *obj, QEvent *e)
     return QObject::eventFilter(obj, e);
 }
 
-void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent)
+void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent, RaycastResult *raycast)
 {
-    if (!getacceptInput() || !getvisible())
-        return;
-    if (!IsPrepared() || !widget_)
-        return;
-
-    MouseEvent::EventType et = mEvent->eventType;
-
-    // Filter out not wanted events here so we don't 
-    // do the potentially costly raycast unnecessarily.
-    if (mEvent->handled || mEvent->IsRightButtonDown())
-        return;
-    else if (et == MouseEvent::MouseScroll)
-        return;
-
-    bool hit;
-    float2 uv;
-    float distance;
-
-    RaycastBillboard(mEvent->x, mEvent->y, hit, uv, distance);
-    if (!hit)
+    if (!getacceptInput() || !getvisible() || !IsPrepared() || !widget_)
     {
         CheckMouseState();
         return;
     }
 
+    // Filter out not wanted events here so we don't 
+    // do the potentially costly raycast unnecessarily.
+    MouseEvent::EventType et = mEvent->eventType;
+    if (mEvent->IsRightButtonDown() || et == MouseEvent::MouseScroll)
+    {
+        CheckMouseState();
+        return;
+    }
+    
     // Detect type and send the Qt event
-    QPoint widgetPos((int)widget_->width() * uv.x, (int)widget_->height() * uv.y);
+    QPoint widgetPos((int)widget_->width() * raycast->u, (int)widget_->height() * (1.f-raycast->v));
+    
+    // Don't register a hit for transparent widget parts.
+    if (!renderBuffer_.isNull() && (renderBuffer_.pixel(widgetPos) & 0xFF000000) == 0x00000000)
+    {
+        CheckMouseState();
+        return;
+    }
+    
     QEvent::Type type = (et == MouseEvent::MousePressed ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease);
     if (et == MouseEvent::MouseMove)
     {
@@ -454,90 +453,6 @@ void EC_WidgetBillboard::OnMouseEvent(MouseEvent *mEvent)
         leftPressReleased_ = false;
 }
 
-void EC_WidgetBillboard::RaycastBillboard(int mouseX, int mouseY, bool &hit, float2 &uv, float &distance)
-{
-    hit = false;
-    
-    if (!getacceptInput() || !getvisible())
-        return;
-    if (!IsPrepared() || !widget_ || !renderer_.get())
-        return;
-
-    // Gather needed ptrs
-    Ogre::Camera *camera = renderer_->MainOgreCamera();
-    if (!camera)
-        return;
-    RaycastResult *raycast = renderer_->Raycast(mouseX, mouseY);
-    if (!raycast)
-        return;
-    EC_Billboard *myBillboard = GetBillboardComponent();
-    if (!myBillboard)
-        return;
-    Ogre::Billboard *bb = myBillboard->GetBillBoard();
-    Ogre::BillboardSet *bbSet = myBillboard->GetBillBoardSet();
-    if (!bb || !bbSet)
-        return;
-
-    // Expand to range -1 - +1 and divert y because 
-    // after view/projection transforms, y increases upwards
-    QSize viewSize = framework->Ui()->GraphicsView()->size();
-    float screenX = (float)mouseX / viewSize.width();
-    float screenY = (float)mouseY / viewSize.height();
-    screenX = (screenX * 2) - 1;
-    screenY = (screenY * 2) - 1;
-    screenY = -screenY;
-
-    Ogre::Vector3 camPos = camera->getDerivedPosition();    
-
-    Ogre::Matrix4 worldMatrix;
-    bbSet->getWorldTransforms(&worldMatrix);
-
-    QSizeF srcSize(myBillboard->getwidth(), myBillboard->getheight());
-    
-    Ogre::Vector3 worldPos;
-    Ogre::Vector3 srcPos = bb->getPosition();
-    srcPos = worldMatrix * srcPos;
-    worldPos = srcPos;
-    srcPos = camera->getViewMatrix() * srcPos;
-
-    QRectF bbRect(srcPos.x - srcSize.width() * 0.5,
-                  srcPos.y - srcSize.height() * 0.5,
-                  srcSize.width(), srcSize.height());
-
-    Ogre::Vector3 min(bbRect.topLeft().x(), bbRect.topLeft().y(), srcPos.z);
-    Ogre::Vector3 max(bbRect.bottomRight().x(), bbRect.bottomRight().y(), srcPos.z);
-
-    min = camera->getProjectionMatrix() * min;
-    max = camera->getProjectionMatrix() * max;
-
-    QRectF screenSpaceRect(min.x, min.y, max.x-min.x, max.y-min.y);
-    if (screenSpaceRect.contains(screenX, screenY))
-    {
-        // Check if hit entity is closer than our billboard
-        if (raycast->entity)
-        {
-            Ogre::Vector3 hitEntityPos(raycast->pos.x, raycast->pos.y, raycast->pos.z);
-            if (Ogre::Vector3(hitEntityPos - camPos).squaredLength() < 
-                Ogre::Vector3(worldPos - camPos).squaredLength())
-                return;
-        }
-
-        screenX -= screenSpaceRect.left();
-        screenX /= screenSpaceRect.width();
-        screenY -= screenSpaceRect.top();
-        screenY /= screenSpaceRect.height();
-
-        // We have a hit, fill out the data
-        hit = true;
-        uv = float2(screenX, 1-screenY);
-        distance = Ogre::Vector3(worldPos - camPos).squaredLength();
-
-        // Don't register a hit for transparent widget parts.
-        if (!renderBuffer_.isNull() && (renderBuffer_.pixel((int)widget_->width() * uv.x, (int)widget_->height() * uv.y) & 0xFF000000) == 0x00000000)
-            hit = false;
-    }
-}
-
 bool EC_WidgetBillboard::SendWidgetMouseEvent(QPoint pos, QEvent::Type type, Qt::MouseButton button, Qt::KeyboardModifier modifier)
 {
     if (!widget_ || !widgetContainer_ || !widgetContainer_->viewport())
@@ -554,25 +469,45 @@ bool EC_WidgetBillboard::SendWidgetMouseEvent(QPoint pos, QEvent::Type type, Qt:
     return QApplication::sendEvent(widgetContainer_->viewport(), &qtEvent);
 }
 
+bool EC_WidgetBillboard::SendFocusOutEvent()
+{
+    if (!widget_ || !widgetContainer_ || !widgetContainer_->viewport())
+        return false;
+    QFocusEvent qtEvent = QFocusEvent(QEvent::FocusOut);
+    return QApplication::sendEvent(widget_, &qtEvent);
+}
+
 void EC_WidgetBillboard::CheckMouseState()
 {
     if (!widget_ || !widgetContainer_ || !widgetContainer_->scene())
         return;
-
+    
+    bool checked = false;
+    
     // If we have "unacked" press, release it now as 
     // we are no longer on top of the widget.
     if (!leftPressReleased_)
     {
-        leftPressReleased_ = true;
-        SendWidgetMouseEvent(QPoint(0,0), QEvent::MouseButtonRelease, Qt::LeftButton);
-        SendWidgetMouseEvent(QPoint(0,0), QEvent::MouseMove, Qt::NoButton);
+        SendWidgetMouseEvent(QPoint(0,0), QEvent::MouseButtonRelease, Qt::LeftButton); // total hack
+        SendWidgetMouseEvent(QPoint(0,0), QEvent::MouseMove, Qt::NoButton); // total hack
+        SendFocusOutEvent();
         Render();
+        
+        leftPressReleased_ = true;
+        checked = true;
     }
 
     // If we have tracking the mouse as in sent 
     // a QEvent::MouseMove out send a hover out now.
     if (trackingMouseMove_)
     {
+        if (!checked)
+        {
+            SendWidgetMouseEvent(QPoint(0,0), QEvent::MouseButtonRelease, Qt::LeftButton); // total hack
+            SendWidgetMouseEvent(QPoint(0,0), QEvent::MouseMove, Qt::NoButton); // total hack
+            SendFocusOutEvent();
+            Render();
+        }
         trackingMouseMove_ = false;
         emit WidgetMouseHoverOut();
     }
