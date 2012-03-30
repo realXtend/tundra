@@ -546,6 +546,40 @@ void AvatarDescAsset::RemoveAttachment(uint index)
         LogError("Failed to remove attachment at index " + QString::number(index) + "! Only " + attachments_.size() + "  attachments exist on the avatar asset!");
 }
 
+void AvatarDescAsset::AddAttachment(QString filename)
+{
+    QFile file(filename);
+    QDomDocument attachDoc("Attachment");
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        LogError("AvatarDescAsset::AddAttachment: Failed to open file '" + filename + "' for reading.");
+        return;
+    }
+
+    if (!attachDoc.setContent(&file))
+    {
+        file.close();
+        LogError("AvatarDescAsset::AddAttachment: Could not parse attachment description file " + filename);
+        return;
+    }
+
+    file.close();
+
+    QDomElement elem = attachDoc.firstChildElement("attachment");
+
+    if (!elem.isNull())
+    {
+        ReadAttachment(elem);
+        AssetReferencesChanged();
+        emit AppearanceChanged();
+    }
+    else
+    {
+        LogError("AvatarDescAsset::AddAttachment: Null attachment in " + filename);
+    }
+}
+
 bool AvatarDescAsset::HasProperty(const QString &name) const
 {
     QMap<QString, QString>::const_iterator i = properties_.find(name);

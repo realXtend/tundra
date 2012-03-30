@@ -10,7 +10,13 @@
 #include "SceneAPI.h"
 #include "Scene.h"
 #include "QtUtils.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#include "AssetFwd.h"
+#include "IAssetTransfer.h"
+#include "AssetReference.h"
 #include "../../Core/ECEditorModule/SupportedFileTypes.h"
+#include "../../Core/ECEditorModule/AssetsWindow.h"
 
 #include "Entity.h"
 
@@ -35,20 +41,11 @@ AvatarEditor::AvatarEditor(Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw)
 {
-    InitEditorWindow();
-}
-
-AvatarEditor::~AvatarEditor()
-{
-}
-
-void AvatarEditor::InitEditorWindow()
-{
     setupUi(this);
 
     // Connect signals
     connect(but_save, SIGNAL(clicked()), SLOT(SaveAvatar()));
-    connect(but_load, SIGNAL(clicked()), SLOT(LoadAvatar()));
+    connect(but_load, SIGNAL(clicked()), SLOT(OpenAvatarAsset()));
     connect(but_revert, SIGNAL(clicked()), SLOT(RevertAvatar()));
     connect(but_attachment, SIGNAL(clicked()), this, SLOT(AddAttachment()));
 
@@ -63,6 +60,10 @@ void AvatarEditor::InitEditorWindow()
     panel_attachments->setLayout(layout);
 
     setWindowTitle(tr("Avatar Editor"));
+}
+
+AvatarEditor::~AvatarEditor()
+{
 }
 
 void AvatarEditor::RebuildEditView()
@@ -119,9 +120,9 @@ void AvatarEditor::RebuildEditView()
         v_box->setContentsMargins(6,3,6,3);
         v_box->setSpacing(6);
 
-        // Strip away .xml from the attachment name for slightly nicer display
+        // Strip away .attachment from the attachment name for slightly nicer display
         QString attachment_name = attachments[y].name_;
-        attachment_name.replace(".xml", "");
+        attachment_name.replace(".attachment", "");
 
         // Create elements
         label = new QLabel(attachment_name);
@@ -435,35 +436,73 @@ void AvatarEditor::changeEvent(QEvent* e)
         QWidget::changeEvent(e);
 }
 
-void AvatarEditor::LoadAvatar()
+void AvatarEditor::OpenAvatarAsset()
 {
-    if (fileDialog)
-        fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(cAvatarFileFilter, tr("Choose avatar file"), "", 0, this, SLOT(OpenFileDialogClosed(int)), false);
+    previousAvatar_ = avatarAsset_;
+
+    AssetsWindow *assetsWindow = new AssetsWindow("Avatar", framework, framework->Ui()->MainWindow());
+    connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
+    connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
+    assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
+    assetsWindow->setWindowFlags(Qt::Tool);
+    assetsWindow->show();
 }
 
-void AvatarEditor::OpenFileDialogClosed(int result)
+void AvatarEditor::HandleAssetPicked(AssetPtr avatarAsset)
 {
-    QFileDialog * dialog = dynamic_cast<QFileDialog *>(sender());
-    assert(dialog);
-    if (!dialog)
-        return;
+    if (!avatarAsset->IsLoaded())
+    {
+        AssetTransferPtr transfer = framework->Asset()->RequestAsset(avatarAsset->Name(), avatarAsset->Type(), true);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(OnAssetTransferSucceeded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
+    }
+    else
+        OnAssetTransferSucceeded(avatarAsset);
+}
 
-    if (result != QDialog::Accepted)
-        return;
+void AvatarEditor::OnAssetTransferSucceeded(AssetPtr asset)
+{
+    AvatarDescAssetPtr avatarAsset = boost::dynamic_pointer_cast<AvatarDescAsset>(asset);
 
-    if (dialog->selectedFiles().isEmpty())
-        return;
+    if (avatarAsset)
+        SetAsset(avatarAsset);
+    else
+        LogError("AvatarEditor::OnAssetTransferSucceeded: not an avatar asset");
+}
 
-    Entity* entity;
-    EC_Avatar* avatar;
-    AvatarDescAsset* desc;
-    if (!GetAvatarDesc(entity, avatar, desc))
-        return;
+void AvatarEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
+{
+    LogError("AvatarEditor::OnAssetTransferFailed: " + reason);
+}
 
-    // Since the dialog is set to not allow multiple file selection, assume
-    // that there is only one file selected.
-    desc->LoadFromFile(dialog->selectedFiles().first());
+void AvatarEditor::SetAsset(AvatarDescAssetPtr desc)
+{
+    // Disconnect from old avatar asset change signals
+    AvatarDescAsset* oldDesc = avatarAsset_.lock().get();
+    if (oldDesc)
+        disconnect(oldDesc, SIGNAL(AppearanceChanged()), this, SLOT(RebuildEditView()));
+
+    avatarAsset_.reset();
+
+    AvatarDescAsset* newDesc = desc.get();
+    if (newDesc)
+        connect(newDesc, SIGNAL(AppearanceChanged()), this, SLOT(RebuildEditView()));
+
+    avatarAsset_ = desc;
+
+    avatarEntity_.lock().get()->GetComponent<EC_Avatar>().get()->appearanceRef.Set(AssetReference(desc->Name()), AttributeChange::Default);
+
+    RebuildEditView();
+}
+
+void AvatarEditor::RestoreOriginalValue()
+{
+    if (previousAvatar_.lock())
+    {
+        SetAsset(previousAvatar_.lock());
+    }
+    else
+        LogError("AvatarEditor::RestoreOriginalValue: No previous avatar found.");
 }
 
 void AvatarEditor::RevertAvatar()
@@ -518,26 +557,39 @@ void AvatarEditor::RemoveAttachment()
         return;
 
     uint index = button->objectName().toUInt();
+    // Relies on the button's UI index and the attachment index in AvatarDescAsset->attachments_ being the same.
     desc->RemoveAttachment(index);
 }
 
 void AvatarEditor::AddAttachment()
 {
-    ///\todo Remove or re-implement this function?
-    LogError("AvatarEditor::AddAttachment deprecated and not implemented.");
-    /*
-    const std::string filter = "Attachment description file (*.xml)";
-    std::string filename = GetOpenFileName(filter, "Choose attachment file");
-    if (!filename.empty())
-    {
-        EntityPtr entity = GetAvatarEntity();
-        if (!entity)
-            return;
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = QtUtils::OpenFileDialogNonModal(cAttachmentFileFilter, tr("Choose attachment file"), "", 0, this, SLOT(OpenAttachmentDialogClosed(int)), false);
+}
 
-        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().AddAttachment(entity, filename);
-        QTimer::singleShot(250, this, SLOT(RebuildEditView()));
-    }
-    */
+void AvatarEditor::OpenAttachmentDialogClosed(int result)
+{
+    QFileDialog * dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    if (dialog->selectedFiles().isEmpty())
+        return;
+
+    Entity* entity;
+    EC_Avatar* avatar;
+    AvatarDescAsset* desc;
+    if (!GetAvatarDesc(entity, avatar, desc))
+        return;
+
+    // Since the dialog is set to not allow multiple file selection, assume
+    // that there is only one file selected.
+    desc->AddAttachment(dialog->selectedFiles().first());
 }
 
 QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name)

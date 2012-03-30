@@ -6,6 +6,7 @@
 #include "AvatarModuleApi.h"
 #include "QtUtils.h"
 #include "SceneFwd.h"
+#include "AssetFwd.h"
 
 #include "ui_avatareditor.h"
 
@@ -23,7 +24,7 @@ class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
     Q_OBJECT
 
 public:
-    /// Constructs the window.
+    /// Constructs and initializes the window.
     /** @param fw Framework.
         @parent parent Parent widget. */
     explicit AvatarEditor(Framework *fw, QWidget *parent = 0);
@@ -62,20 +63,18 @@ public slots:
 
     /// Set avatar entity and asset to edit
     void SetEntityToEdit(EntityPtr entity);
-    
+
+    /// Set avatar asset to edit
+    void SetAsset(AvatarDescAssetPtr desc);
+
+    /// Open an AssetsWindow to choose an avatar asset to the editor. Saves previously opened avatar to previousAvatar_ for canceling the pick.
+    void OpenAvatarAsset();
+
 protected:
     /// QWidget override.
     void changeEvent(QEvent* e);
 
-signals:
-    void EditorStatus(const QString &message, int timeout = 7000);
-    void EditorError(const QString &message, int timeout = 7000);
-    void EditorHideMessages();
-
 private:
-    /// Create editor window
-    void InitEditorWindow();
-    
     /// Get the avatar entity, avatar component, and avatar description. If all are non-null, return true
     bool GetAvatarDesc(Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
 
@@ -90,6 +89,8 @@ private:
     EntityWeakPtr avatarEntity_;
     /// Avatar asset to edit
     boost::weak_ptr<AvatarDescAsset> avatarAsset_;
+    /// Previous avatar asset, saved when the AssetsWindow for loading new avatar is opened
+    boost::weak_ptr<AvatarDescAsset> previousAvatar_;
 
     QPointer<QFileDialog> fileDialog; ///< Keeps track of the latest opened file save/open dialog.
 
@@ -97,6 +98,26 @@ private:
 
 private slots:
     /// Called by open file dialog when it's closed.
-    /** @param result Result of dialog clousre. Open is 1, Cancel is 0. */
+    /** @param result Result of dialog closure. Open is 1, Cancel is 0. */
     void OpenFileDialogClosed(int result);
+
+    /// Called by open attachment file dialog when it's closed.
+    /** @param result Result of dialog closure. Open is 1, Cancel is 0. */
+    void OpenAttachmentDialogClosed(int result);
+
+    /// Load the avatar picked in OpenAvatarAsset to the editor. If the asset is not loaded, load it.
+    /** @param asset The chosen avatar asset */
+    void HandleAssetPicked(AssetPtr asset);
+
+    /// When avatar pick is canceled, restore previously loaded avatar (from previousAvatar_)
+    void RestoreOriginalValue();
+
+    /// On successful transfer of avatar asset, load the asset to the editor
+    /** @param asset Succesfully loaded avatar asset to be loaded into the editor. */
+    void OnAssetTransferSucceeded(AssetPtr asset);
+
+    /// On avatar asset transfer error, give an error message
+    /** @param transfer IAssetTransfer
+        @param reason Failure reason. */
+    void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
 };
