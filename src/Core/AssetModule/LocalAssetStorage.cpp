@@ -155,7 +155,10 @@ void LocalAssetStorage::SetupWatcher()
     changeWatcher = new QFileSystemWatcher();
 
     // Add directory contents to watch list.
-    LogDebug("LocalAssetStorage::SetupWatcher: adding " + directory + " recursive=" + BoolToString(recursive));
+    if (recursive) // Make a visible log message - we may hang here for several seconds, since this step involves recursive iteration.
+        LogInfo("LocalAssetStorage::SetupWatcher: recursively adding " + directory + " to file change notification watcher. This may take a while.");
+    else
+        LogDebug("LocalAssetStorage::SetupWatcher: adding " + directory + " recursive=" + BoolToString(recursive));
 
     QStringList paths = DirectorySearch(directory, recursive, QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 #ifndef Q_WS_MAC
