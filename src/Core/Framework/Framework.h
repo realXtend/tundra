@@ -49,7 +49,7 @@ public:
                or a property with that name was registered already.
         @note There is no unregister option. It can be implemented if someone finds it useful, but at this point
          we are going with a "unload-only-on-close" behavior. */
-    bool RegisterDynamicObject(QString name, QObject *object);
+    bool RegisterDynamicObject(const char *name, QObject *object);
 
     /// Cancel a pending exit
     void CancelExit();
@@ -96,12 +96,14 @@ public slots:
     /// Returns core API Plugin object.
     PluginAPI *Plugins() const;
 
-    /// Returns Tundra API version info object.
-    ///\todo Delete/simplify.
+    /// The Tundra API version information of this build.
+    /** May differ from the end user application version of the default distribution, i.e. app may change when api stays same.
+        @todo Delete/simplify. */
     VersionInfo *ApiVersion() const;
 
-    /// Returns Tundra application version info object.
-    ///\todo Delete/simplify.
+    /// The Tundra application version information of this build.
+    /** @sa Application
+        @todo Delete/simplify. */
     VersionInfo *ApplicationVersion() const;
 
     /// Registers the system Renderer object.
@@ -110,7 +112,7 @@ public slots:
 
     /// Returns the system Renderer object.
     /** @note Please don't use this function. It exists for dependency inversion purposes only.
-        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->Renderer(); to directly obtain the renderer,
+        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
         as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation. */
     IRenderer *Renderer() const;
 
@@ -147,6 +149,9 @@ public slots:
     /// Prints to console all the used startup options.
     void PrintStartupOptions();
 
+    /// Prints to console all the registered dynamic objects.
+    void PrintDynamicObjects();
+
 private:
     Q_DISABLE_COPY(Framework)
 
@@ -155,32 +160,27 @@ private:
 
     bool exitSignal; ///< If true, exit application.
 #ifdef PROFILING
-    Profiler *profiler; ///< Profiler.
+    Profiler *profiler;
 #endif
     ProfilerQObj *profilerQObj; ///< We keep this QObject always alive, even when profiling is not enabled, so that scripts don't have to check whether profiling is enabled or disabled.
     bool headless; ///< Are we running in the headless mode.
     Application *application; ///< The main QApplication object.
-    FrameAPI *frame; ///< The Frame API.
-    ConsoleAPI *console; ///< The console API.
-    UiAPI *ui; ///< The UI API.
-    InputAPI *input; ///< The Input API.
-    AssetAPI *asset; ///< The Asset API.
-    AudioAPI *audio; ///< The Audio API.
-    SceneAPI *scene; ///< The Scene API.
-    ConfigAPI *config; ///< The Config API.
+    FrameAPI *frame;
+    ConsoleAPI *console;
+    UiAPI *ui;
+    InputAPI *input;
+    AssetAPI *asset;
+    AudioAPI *audio;
+    SceneAPI *scene;
+    ConfigAPI *config;
     PluginAPI *plugin;
     IRenderer *renderer;
 
     /// Stores all command line parameters and startup options specified in the Config XML files.
     QStringList startupOptions;
 
-    /// The Tundra API version info of this build. May differ from the end user 
-    /// application version of the default distribution, i.e. app may change when api stays same.
-    ///\todo Delete/simplify.
-    VersionInfo *apiVersionInfo;
-    /// The Tundra application version info for this build.
-    ///\todo Delete/simplify.
-    VersionInfo *applicationVersionInfo;
+    /// @todo Delete/simplify.
+    VersionInfo *apiVersionInfo, *applicationVersionInfo;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
     std::vector<boost::shared_ptr<IModule> > modules;
