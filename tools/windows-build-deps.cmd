@@ -155,14 +155,8 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 
 :SKIP_OPENSSL
 
-:: Add qmake.exe from our downloaded Qt to PATH.
-set PATH=%DEPS%\Qt\bin;%PATH%
-
-set QMAKESPEC=%DEPS%\Qt\mkspecs\win32-msvc2008
-set QTDIR=%DEPS%\Qt
-
 :: Qt
-IF NOT EXIST "%DEPS%\Qt". (
+IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
       cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
@@ -170,17 +164,19 @@ IF NOT EXIST "%DEPS%\Qt". (
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\Qt".{# #}{\n}
-   7za x -y qt-everywhere-opensource-src-4.7.4.zip
+   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\qt".{# #}{\n}
+   mkdir qt
+   7za x -y -oqt qt-everywhere-opensource-src-4.7.4.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   ren qt-everywhere-opensource-src-4.7.4 qt
-   IF NOT EXIST "%DEPS%\Qt" GOTO :ERROR
+   cd qt
+   ren qt-everywhere-opensource-src-4.7.4 qt-src-4.7.4
+   IF NOT EXIST "%DEPS%\qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
 )
 
 IF %USE_JOM%==FALSE GOTO :SKIP_JOM
-IF NOT EXIST "%DEPS%\Qt\jom\jom.exe". (
+IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
    IF NOT EXIST jom_1_0_11.zip. (
       cecho {0D}Downloading JOM build tool for Qt.{# #}{\n}
@@ -188,11 +184,11 @@ IF NOT EXIST "%DEPS%\Qt\jom\jom.exe". (
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Installing JOM build tool for to %DEPS%\Qt\jom.{# #}{\n}
-   mkdir %DEPS%\Qt\jom
-   7za x -y -oQt\jom jom_1_0_11.zip
+   cecho {0D}Installing JOM build tool for to %DEPS%\qt\jom.{# #}{\n}
+   mkdir %DEPS%\qt\jom
+   7za x -y -oqt\jom jom_1_0_11.zip
 ) ELSE (
-   cecho {0D}JOM already installed to %DEPS%\Qt\jom. Skipping.{# #}{\n}
+   cecho {0D}JOM already installed to %DEPS%\qt\jom. Skipping.{# #}{\n}
 )
 
 :SKIP_JOM
@@ -202,34 +198,40 @@ IF NOT EXIST "%DEPS%\Qt\jom\jom.exe". (
 :: Hence the secondary IF to print it out when build is enabled. Only print these if Qt will be built
 SET QT_OPENSSL_CONFIGURE=
 IF %BUILD_OPENSSL%==TRUE (
-   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
    SET QT_OPENSSL_CONFIGURE=-openssl -I "%DEPS%\openssl\include" -L "%DEPS%\openssl\lib"
 ) ELSE (
-   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
 )
 IF %BUILD_OPENSSL%==TRUE (
-    IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". echo '%QT_OPENSSL_CONFIGURE%'
+    IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". echo '%QT_OPENSSL_CONFIGURE%'
 )
 
-IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
-   cd "%DEPS%\Qt"
+IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
+   IF NOT EXIST "%DEPS%\qt\qt-src-4.7.4". (
+      cecho {0E}Warning: %DEPS%\qt\qt-src-4.7.4 does not exist, extracting Qt failed?.{# #}{\n}
+      GOTO :ERROR
+   )
+   cd "%DEPS%\qt\qt-src-4.7.4"
    
    IF NOT EXIST "configure.cache". (
       cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
-      configure -platform win32-msvc2008 -debug-and-release -opensource -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+      configure -platform win32-msvc2008 -debug-and-release -opensource -prefix "%DEPS%\qt" -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ) ELSE (
-      cecho {0D}Qt already configured. Remove %DEPS%\Qt\configure.cache to trigger a reconfigure.{# #}{\n}
+      cecho {0D}Qt already configured. Remove %DEPS%\qt\qt-src-4.7.4\configure.cache to trigger a reconfigure.{# #}{\n}
    )
    
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building Qt with jom{# #}{\n}
-      jom\jom.exe
+      "%DEPS%\Qt\jom\jom.exe"
       :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
       set ERRORLEVEL=0
       del /s /q mocinclude.tmp
-      jom\jom.exe
+      "%DEPS%\Qt\jom\jom.exe"
+      cecho {0D}Installing Qt to prefix %DEPS%\qt{# #}{\n}
+      "%DEPS%\Qt\jom\jom.exe" install
    ) ELSE (
       cecho {0D}- Building Qt with nmake{# #}{\n}
       nmake /nologo
@@ -237,10 +239,12 @@ IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
       set ERRORLEVEL=0
       del /s /q mocinclude.tmp
       nmake /nologo
+      cecho {0D}Installing Qt to prefix %DEPS%\qt{# #}{\n}
+      nmake install
    )
    
-   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
-      cecho {0E}Warning: Qt\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\bin\QtWebKit4.dll". (
+      cecho {0E}Warning: qt\bin\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
       GOTO :ERROR
    )
    
@@ -250,6 +254,12 @@ IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
 ) ELSE (
    cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
+
+:: Setup now built Qt to PATH (qmake), QTDIR and QMAKESPEC.
+:: These will be utilized by other dependencies that need Qt.
+set PATH=%DEPS%\qt\bin;%PATH%
+set QMAKESPEC=%DEPS%\qt\mkspecs\win32-msvc2008
+set QTDIR=%DEPS%\qt
 
 IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
