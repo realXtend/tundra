@@ -230,8 +230,6 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
       set ERRORLEVEL=0
       del /s /q mocinclude.tmp
       "%DEPS%\Qt\jom\jom.exe"
-      cecho {0D}Installing Qt to prefix %DEPS%\qt{# #}{\n}
-      "%DEPS%\Qt\jom\jom.exe" install
    ) ELSE (
       cecho {0D}- Building Qt with nmake{# #}{\n}
       nmake /nologo
@@ -239,12 +237,19 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
       set ERRORLEVEL=0
       del /s /q mocinclude.tmp
       nmake /nologo
-      cecho {0D}Installing Qt to prefix %DEPS%\qt{# #}{\n}
-      nmake install
+   )
+
+   IF NOT EXIST "%DEPS%\qt\qt-src-4.7.4\lib\QtWebKit4.dll". (
+      cecho {0E}Warning: %DEPS%\qt\qt-src-4.7.4\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
+      GOTO :ERROR
    )
    
-   IF NOT EXIST "%DEPS%\qt\bin\QtWebKit4.dll". (
-      cecho {0E}Warning: qt\bin\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
+   :: Don't use jom for install. It seems to hang easily, maybe beacuse it tries to use multiple cores.
+   cecho {0D}Installing Qt to %DEPS%\qt{# #}{\n}
+   nmake install
+      
+   IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
+      cecho {0E}Warning: %DEPS%\qt\lib\QtWebKit4.dll not present, Qt install failed?.{# #}{\n}
       GOTO :ERROR
    )
    
@@ -268,6 +273,11 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    mkdir "%TUNDRA_BIN%\qtplugins"
    xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   :: Clean out some definately not needed Qt DLLs from bin
+   :: QtCLucene does not have a public API and QtDesigner* are for QtCretor etc.
+   :: Others we could (should) remove right here: QtSvg, QtSql, QtTest and QtHelp.
+   del /Q "%TUNDRA_BIN%\QtCLucene4*.dll"
+   del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
 )
 
 IF NOT EXIST "%DEPS%\bullet\". (
