@@ -3,6 +3,7 @@ echo.
 
 :: User defined variables
 set GENERATOR="Visual Studio 9 2008"
+SET BUILD_RELEASE=FALSE
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
 
@@ -17,10 +18,20 @@ set DEPS=%CD%\deps
 cd %TOOLS%
 
 :: Print user defined variables
+cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
+echo.
 cecho {0A}Script configuration:{# #}{\n}
-echo CMake Generator   = %GENERATOR%
-echo Build OpenSSL     = %BUILD_OPENSSL%
-echo Build Qt with JOM = %USE_JOM%
+cecho {0D}  CMake Generator    = %GENERATOR%{# #}{\n}
+echo    - Passed to CMake -G option
+cecho {0D}  Build Release = %BUILD_RELEASE%{# #}{\n}
+echo    - Build Release mode in addition to RelWithDebInfo when possible.
+echo      Default is disabled, enable if you are planning to deploy
+echo      Tundra in Release mode.
+cecho {0D}  Build OpenSSL      = %BUILD_OPENSSL%{# #}{\n}
+echo    - Build OpenSSL, requires Active Perl.
+cecho {0D}  Build Qt with JOM  = %USE_JOM%{# #}{\n}
+echo    - Use jom.exe instead of nmake.exe to build qmake projects.
+echo      Default enabled as jom is significantly faster by usin all CPUs.
 echo.
 
 :: Validate user defined variables
@@ -38,32 +49,38 @@ IF NOT %USE_JOM% == FALSE (
    ) 
 )
 
+IF NOT %BUILD_RELEASE% == FALSE (
+   IF NOT %BUILD_RELEASE% == TRUE (
+      cecho {0E}BUILD_RELEASE needs to be either TRUE or FALSE{# #}{\n}
+      GOTO :ERROR
+   ) 
+)
+
 :: Print scripts usage information
-cecho {0A}This script fetches and builds all Tundra dependencies.{# #}{\n}
-echo Requirements:
-echo 1. Install SVN and make sure 'svn' is accessible from PATH.
-echo  - http://tortoisesvn.net/downloads.html, install with command line tools!
-echo 2. Install Hg and make sure 'hg' is accessible from PATH.
-echo  - http://tortoisehg.bitbucket.org/
-echo 3. Install git and make sure 'git' is accessible from PATH.
-echo  - http://code.google.com/p/tortoisegit/
-echo 4. Install DirectX SDK June 2010.
-echo  - http://www.microsoft.com/download/en/details.aspx?id=6812
-echo 5. Install cmake and make sure 'cmake' is accessible from PATH.
-echo  - http://www.cmake.org/
-echo 6. Install Visual Studio 2008 with SP1. (Express is ok)
-echo  - http://www.microsoft.com/download/en/details.aspx?id=14597
-echo 7. Install Windows SDK.
-echo  - http://www.microsoft.com/download/en/details.aspx?id=8279
+cecho {0A}Requirements for a successful execution:{# #}{\n}
+echo   1. Install SVN and make sure 'svn' is accessible from PATH.
+echo    - http://tortoisesvn.net/downloads.html, install with command line tools!
+echo   2. Install Hg and make sure 'hg' is accessible from PATH.
+echo    - http://tortoisehg.bitbucket.org/
+echo   3. Install git and make sure 'git' is accessible from PATH.
+echo    - http://code.google.com/p/tortoisegit/
+echo   4. Install DirectX SDK June 2010.
+echo    - http://www.microsoft.com/download/en/details.aspx?id=6812
+echo   5. Install cmake and make sure 'cmake' is accessible from PATH.
+echo    - http://www.cmake.org/
+echo   6. Install Visual Studio 2008 with SP1. (Express is ok)
+echo    - http://www.microsoft.com/download/en/details.aspx?id=14597
+echo   7. Install Windows SDK.
+echo    - http://www.microsoft.com/download/en/details.aspx?id=8279
 
 IF %BUILD_OPENSSL%==TRUE (
-   echo 8. To build OpenSSL install Active Perl and set perl.exe to PATH.
-   echo  - http://www.activestate.com/activeperl/downloads
-   cecho {0E}   NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
-   cecho {0E}   provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
-   echo 9. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo   8. To build OpenSSL install Active Perl and set perl.exe to PATH.
+   echo    - http://www.activestate.com/activeperl/downloads
+   cecho {0E}     NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
+   cecho {0E}     provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
+   echo   9. Execute this file from Visual Studio 2008/2010 Command Prompt.
 ) ELSE (
-   echo 8. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo   8. Execute this file from Visual Studio 2008/2010 Command Prompt.
 )
 echo.
 
@@ -305,9 +322,8 @@ IF NOT EXIST kNet.sln. (
 )
 cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
 msbuild kNet.sln /p:configuration=Debug /nologo
-::msbuild kNet.sln /p:configuration=MinSizeRel /nologo
-::msbuild kNet.sln /p:configuration=Release /nologo
 msbuild kNet.sln /p:configuration=RelWithDebInfo /nologo
+IF %BUILD_RELEASE%==TRUE msbuild kNet.sln /p:configuration=Release /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
@@ -456,22 +472,19 @@ REM   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_
 
 cecho {0D}Building ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
 msbuild OGRE.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
-::msbuild OGRE.sln /p:configuration=MinSizeRel /clp:ErrorsOnly /nologo
-::msbuild OGRE.sln /p:configuration=Release /clp:ErrorsOnly /nologo
 msbuild OGRE.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
+IF %BUILD_RELEASE%==TRUE msbuild OGRE.sln /p:configuration=Release /clp:ErrorsOnly /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying ogre-safe-nocrashes SDK directory.{# #}{\n}
 msbuild INSTALL.vcproj /p:configuration=Debug /clp:ErrorsOnly /nologo
-::msbuild INSTALL.vcproj /p:configuration=MinSizeRel /clp:ErrorsOnly /nologo
-::msbuild INSTALL.vcproj /p:configuration=Release /clp:ErrorsOnly /nologo
-msbuild INSTALL.vcproj /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
+IF %BUILD_RELEASE%==FALSE (msbuild INSTALL.vcproj /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo) ELSE (msbuild INSTALL.vcproj /p:configuration=Release /clp:ErrorsOnly /nologo)
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying Ogre DLLs to Tundra bin\ directory.{# #}{\n}
 copy /Y "%DEPS%\ogre-safe-nocrashes\bin\debug\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-copy /Y "%DEPS%\ogre-safe-nocrashes\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
+IF %BUILD_RELEASE%==FALSE (copy /Y "%DEPS%\ogre-safe-nocrashes\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%") ELSE (copy /Y "%DEPS%\ogre-safe-nocrashes\bin\release\*.dll" "%TUNDRA_BIN%")
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -500,15 +513,14 @@ IF NOT EXIST SKYX.sln. (
 )
 cecho {0D}Building SkyX. Please be patient, this will take a while.{# #}{\n}
 msbuild SKYX.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
-::msbuild SKYX.sln /p:configuration=MinSizeRel /clp:ErrorsOnly /nologo
-::msbuild SKYX.sln /p:configuration=Release /clp:ErrorsOnly /nologo
 msbuild SKYX.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
+IF %BUILD_RELEASE%==TRUE msbuild SKYX.sln /p:configuration=Release /clp:ErrorsOnly /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying SkyX DLLs to Tundra bin\.{# #}{\n}
 copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\debug\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
+IF %BUILD_RELEASE%==FALSE (copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%") ELSE (copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\release\*.dll" "%TUNDRA_BIN%")
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
@@ -546,7 +558,7 @@ IF NOT EXIST "%DEPS%\qt-solutions". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\*.dll" "%TUNDRA_BIN%"
 ) ELSE (
-   cecho {0D}qtpropertybrowser already built. Skipping.{# #}{\n}
+   cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
