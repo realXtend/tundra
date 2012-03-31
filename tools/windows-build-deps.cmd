@@ -471,9 +471,9 @@ REM   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_
 )
 
 cecho {0D}Building ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
-msbuild OGRE.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
-msbuild OGRE.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
-IF %BUILD_RELEASE%==TRUE msbuild OGRE.sln /p:configuration=Release /clp:ErrorsOnly /nologo
+msbuild OGRE.sln /p:configuration=Debug /nologo
+msbuild OGRE.sln /p:configuration=RelWithDebInfo /nologo
+IF %BUILD_RELEASE%==TRUE msbuild OGRE.sln /p:configuration=Release /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying ogre-safe-nocrashes SDK directory.{# #}{\n}
@@ -556,9 +556,17 @@ IF NOT EXIST "%DEPS%\qt-solutions". (
       nmake /nologo
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\*.dll" "%TUNDRA_BIN%"
+   :: Force deployment
+   del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
 ) ELSE (
    cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
+   cecho {0D}Deploying QtPropertyBrowser DLLs.{# #}{\n}
+   copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
+) ELSE (
+   cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
