@@ -315,6 +315,12 @@ void SceneStructureModule::CleanReference(QString &fileRef)
 
 void SceneStructureModule::ToggleSceneStructureWindow()
 {
+    if (!GetFramework()->Scene()->MainCameraScene())
+    {
+        LogError("SceneStructureModule::ToggleSceneStructureWindow: Main camera scene is null.");
+        return;
+    }
+
     if (sceneWindow)
     {
         sceneWindow->setVisible(!sceneWindow->isVisible());
