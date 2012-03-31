@@ -3,7 +3,7 @@ echo.
 
 :: User defined variables
 set GENERATOR="Visual Studio 9 2008"
-SET BUILD_RELEASE=FALSE
+set BUILD_RELEASE=FALSE
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
 
@@ -276,7 +276,7 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    :: Clean out some definately not needed Qt DLLs from bin
    :: QtCLucene does not have a public API and QtDesigner* are for QtCretor etc.
    :: Others we could (should) remove right here: QtSvg, QtSql, QtTest and QtHelp.
-   del /Q "%TUNDRA_BIN%\QtCLucene4*.dll"
+   del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
 )
 
