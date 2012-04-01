@@ -56,7 +56,11 @@ macro(configure_ogre)
          
     # Finally, if no Ogre found, assume the deps path.
     if ("${OGRE_DIR}" STREQUAL "")
-        set(OGRE_DIR ${ENV_TUNDRA_DEP_PATH}/Ogre)
+        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogre-safe-nocrashes)
+            set(OGRE_DIR ${ENV_TUNDRA_DEP_PATH}/ogre-safe-nocrashes)
+        else()
+            set(OGRE_DIR ${ENV_TUNDRA_DEP_PATH}/Ogre)
+        endif()
     endif()
 
     # The desired Ogre path is set in OGRE_DIR. The Ogre source tree comes in two flavors:
