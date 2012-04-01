@@ -312,7 +312,7 @@ macro(use_package_bullet)
 endmacro()
 
 macro(link_package_bullet)
-    if (IS_DIRECTORY ${ENV_BULLET_DIR}/msvc/2008)
+    if (IS_DIRECTORY ${ENV_BULLET_DIR}/msvc/2008) # full prebuilt deps
         if (WIN32)
             target_link_libraries(${TARGET_NAME} debug ${ENV_BULLET_DIR}/msvc/2008/lib/debug/LinearMath.lib)
             target_link_libraries(${TARGET_NAME} debug ${ENV_BULLET_DIR}/msvc/2008/lib/debug/BulletDynamics.lib)
@@ -320,6 +320,15 @@ macro(link_package_bullet)
             target_link_libraries(${TARGET_NAME} optimized ${ENV_BULLET_DIR}/msvc/2008/lib/release/LinearMath.lib)
             target_link_libraries(${TARGET_NAME} optimized ${ENV_BULLET_DIR}/msvc/2008/lib/release/BulletDynamics.lib)
             target_link_libraries(${TARGET_NAME} optimized ${ENV_BULLET_DIR}/msvc/2008/lib/release/BulletCollision.lib)
+        endif()
+    elseif (IS_DIRECTORY ${BULLET_DIR}/lib/Release) # prebuilt deps package
+        if (WIN32)
+            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/LinearMath.lib)
+            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/BulletDynamics.lib)
+            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/BulletCollision.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/LinearMath.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/BulletDynamics.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/BulletCollision.lib)
         endif()
     else()
         target_link_libraries(${TARGET_NAME} optimized LinearMath optimized BulletDynamics optimized BulletCollision)
@@ -423,6 +432,7 @@ endmacro()
 macro(use_package_qtpropertybrowser)
     if (MSVC)
         include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
+        include_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/include) # For prebuilt deps mirrored from full-built deps.
         include_directories(${ENV_TUNDRA_DEP_PATH}/QtPropertyBrowser/includes) # For prebuilt deps vs2008.
         link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
         link_directories(${ENV_TUNDRA_DEP_PATH}/QtPropertyBrowser/lib) # For prebuilt deps vs2008.
