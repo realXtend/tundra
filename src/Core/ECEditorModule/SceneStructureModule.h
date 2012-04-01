@@ -100,6 +100,7 @@ private:
     QPointer<SceneStructureWindow> sceneWindow;
     QPointer<AssetsWindow> assetsWindow;
     QPointer<KeyBindingsConfigWindow> keyBindingsWindow;
+    QPointer<ECEditorWindow> syncedECEditor;
     boost::shared_ptr<InputContext> inputContext;
 
     SceneMaterialDropData materialDropData;

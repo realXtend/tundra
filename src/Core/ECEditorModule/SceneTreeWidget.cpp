@@ -672,6 +672,8 @@ void SceneTreeWidget::EditInNew()
 
     editor->setParent(framework->Ui()->MainWindow());
     editor->setWindowFlags(Qt::Tool);
+
+    /// \note Calling show and activate here makes the editor emit FocusChanged(this) twice in a row.
     editor->show();
     editor->activateWindow();
     ecEditors.push_back(editor);
