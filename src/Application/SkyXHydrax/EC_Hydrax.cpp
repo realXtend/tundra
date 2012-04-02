@@ -340,12 +340,20 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
         else
         {
             LogError("EC_Hydrax: Unknown noise param in loaded config, acceptable = FFT/Perlin.");
+            SAFE_DELETE(impl);
             return;
         }
 
         // Load config from the asset data string.
         impl->hydrax->remove();
         impl->hydrax->loadCfgString(configData.toStdString());
+        
+        // Override the shader mode specified in the config - OpenGL should always use GLSL, D3D HLSL.
+        // (Cg is never used, for compatibility, since it requires an extra install and some Linux systems don't always have it enabled)
+        if (QString(Ogre::Root::getSingleton().getRenderSystem()->getName().c_str()).contains("OpenGL"))
+            impl->hydrax->setShaderMode(Hydrax::MaterialManager::SM_GLSL);
+        else
+            impl->hydrax->setShaderMode(Hydrax::MaterialManager::SM_HLSL);
         impl->hydrax->create();
 
         // The position attribute is always authoritative from the component attribute.
@@ -355,5 +363,8 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
     catch (Ogre::Exception &e)
     {
         LogError(std::string("EC_Hydrax: Ogre threw exception while loading new config: ") + e.what());
+        if (impl && impl->hydrax)
+            impl->hydrax->remove();
+        SAFE_DELETE(impl);
     }
 }

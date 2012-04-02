@@ -2,7 +2,7 @@
 
 # Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
 !ifndef VERSION
-!define VERSION "2.3.0"
+!define VERSION "2.3.1"
 !endif
 
 Name "Tundra ${VERSION}"

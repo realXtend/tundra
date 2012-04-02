@@ -81,7 +81,6 @@
 #include "EC_Name.h"
 #include "EC_OgreCompositor.h"
 #include "EC_InputMapper.h"
-#include "EC_SelectionBox.h"
 
 // EC_Script
 #include "ScriptAsset.h"
@@ -326,7 +325,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EC_Name::staticMetaObject);
             PythonQt::self()->registerClass(&EC_OgreCompositor::staticMetaObject);
             PythonQt::self()->registerClass(&EC_InputMapper::staticMetaObject);
-            PythonQt::self()->registerClass(&EC_SelectionBox::staticMetaObject);
 
             // Conditional ECs
 #ifdef EC_Highlight_ENABLED

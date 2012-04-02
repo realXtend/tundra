@@ -185,49 +185,49 @@ void VlcMediaPlayer::OnStatusUpdate(const PlayerStatus &status)
 
 const QList<QByteArray> VlcMediaPlayer::GenerateVlcParameters()
 {
-    QString folderToFind = "vlcplugins";
-    QDir pluginDir(Application::InstallationDirectory());
-
-    if (pluginDir.exists(folderToFind))
-        pluginDir.cd(folderToFind);
-    else
-    {
-        // This most likely means we are running 
-        // inside a IDE from the viewer projects folder.
-        // as in tundra/Viewer/{RelWithDebInfo|Debug|Release}
-        while (!pluginDir.exists("bin"))
-        {
-            if (!pluginDir.cdUp())
-#ifndef Q_WS_MAC
-                throw std::exception("Fatal error, could not find vlc plugins path!");
-#else
-            {
-                VlcPluginsException vlcexc;
-                throw vlcexc;
-            }
-#endif
-        }
-        pluginDir.cd("bin");
-        pluginDir.cd(folderToFind);
-    }
-
-    // Validate
-    if (!pluginDir.absolutePath().endsWith(folderToFind))
-#ifndef Q_WS_MAC
-        throw std::exception("Fatal error, could not find vlc plugins path!");
-#else
-    {
-        VlcPluginsException vlcexc;
-        throw vlcexc;
-    }
-#endif
-
-    // Set plugin path
-    QString pluginPath = QLatin1Literal("--plugin-path=") % QDir::toNativeSeparators(pluginDir.absolutePath());
-
     QList<QByteArray> params;
-    params << QFile::encodeName(pluginPath);    // Plugin path
-    params << QByteArray("--intf=dummy");       // No interface
+    params << QByteArray("--intf=dummy"); // No interface
+    
+    // --plugin-path lib startup parameter is only supported and needed in VLC 1.x.
+    // For >=2.0.0 the plugins are located in <tundra_install_dir>/plugins/vlcplugins.
+    // VLC will always look recursively for plugins (5 levels) from /plugins.
+    QString vlcLibVersion(libvlc_get_version());
+    if (vlcLibVersion.startsWith("1"))
+    {    
+        QString folderToFind = "vlcplugins";
+        QDir pluginDir(Application::InstallationDirectory());
+
+        if (pluginDir.exists(folderToFind))
+            pluginDir.cd(folderToFind);
+        else
+        {
+            // This most likely means we are running 
+            // inside a IDE from the viewer projects folder.
+            // as in tundra/Viewer/{RelWithDebInfo|Debug|Release}
+            while (!pluginDir.exists("bin"))
+            {
+                if (!pluginDir.cdUp())
+                {
+                    LogWarning("VlcMediaPlayer: Cannot find vlcplugins folder for plugins, starting without specifying plugin path.");
+                    return params;
+                }
+            }
+            pluginDir.cd("bin");
+            pluginDir.cd(folderToFind);
+        }
+
+        // Validate
+        if (!pluginDir.absolutePath().endsWith(folderToFind))
+        {
+            LogWarning("VlcMediaPlayer: Cannot find vlcplugins folder for plugins, starting without specifying plugin path.");
+            return params;
+        }
+
+        // Set plugin path to start params
+        QString pluginPath = QLatin1Literal("--plugin-path=") % QDir::toNativeSeparators(pluginDir.absolutePath());
+        params << QFile::encodeName(pluginPath);
+    }
+    
     return params;
 }
 

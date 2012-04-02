@@ -140,6 +140,13 @@ void ECEditorModule::ShowEditorWindow()
 {
     if (framework_->IsHeadless())
         return;
+    
+    // Check null scene here, don't let it go to the ECEditorWindow ctor.
+    if (!GetFramework()->Scene()->MainCameraScene())
+    {
+        LogError("ECEditorModule::ShowEditorWindow: Main camera scene is null.");
+        return;
+    }
 
     ConfigAPI &config = *framework_->Config();
     ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), cECEditorWindowPos);

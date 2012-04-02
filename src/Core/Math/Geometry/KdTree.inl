@@ -70,16 +70,26 @@ void KdTree<T>::SplitLeaf(int nodeIndex, const AABB &nodeAABB, int numObjectsInB
 	while(*curObject != BUCKET_SENTINEL)
 	{
 		AABB aabb = objects[*curObject].BoundingAABB();
+        bool placed = false;
 		if (leftAABB.Intersects(aabb))
 		{
 			*l++ = *curObject;
 			++numObjectsLeft;
+            placed = true;
 		}
 		if (rightAABB.Intersects(aabb))
 		{
 			*r++ = *curObject;
 			++numObjectsRight;
+            placed = true;
 		}
+        if (!placed) // Numerical precision issues: bounding box doesn't intersect either anymore, so place into both children.
+        {
+			*l++ = *curObject;
+			++numObjectsLeft;
+			*r++ = *curObject;
+			++numObjectsRight;
+        }
 		++curObject;
 	}
 	*l = BUCKET_SENTINEL;
@@ -315,7 +325,7 @@ inline void KdTree<T>::RayQuery(const Ray &r, Func &nodeProcessFunc)
 
 	// Check if the ray has internal or external origin relative to the scene root node.
 	if (tNear >= 0.f)
-		stack[entryPoint].pos = r.pos + (tNear + travelEpsilon) * r.dir;
+		stack[entryPoint].pos = r.pos + tNear * r.dir;//(tNear + travelEpsilon) * r.dir;
 	else
 		stack[entryPoint].pos = r.pos;
 

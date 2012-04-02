@@ -16,6 +16,7 @@
 #include "UiMainWindow.h"
 #include "Framework.h"
 #include "AssetAPI.h"
+#include "IAsset.h"
 #include "IAssetStorage.h"
 #include "IAssetUploadTransfer.h"
 #include "SceneDesc.h"
@@ -755,7 +756,30 @@ void AddContentWindow::UploadAssets()
             if (ad.dataInMemory)
                 transfer = framework->Asset()->UploadAssetFromFileInMemory((const u8*)ad.data.data(), ad.data.size(), dest, ad.destinationName);
             else
-                transfer = framework->Asset()->UploadAssetFromFile(ad.source, dest, ad.destinationName);
+            {
+                AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(ad.source);
+                if (refType == AssetAPI::AssetRefLocalPath || refType == AssetAPI::AssetRefRelativePath)
+                    transfer = framework->Asset()->UploadAssetFromFile(ad.source, dest, ad.destinationName);
+                else
+                {
+                    AssetPtr asset = framework->Asset()->GetAsset(ad.source);
+                    if (asset)
+                    {
+                        if (!asset->DiskSource().isEmpty() && QFile::exists(asset->DiskSource()))
+                            transfer = framework->Asset()->UploadAssetFromFile(asset->DiskSource(), dest, ad.destinationName);
+                        else
+                        {
+                            QByteArray data = asset->GetRawData();
+                            if (data.length() > 0)
+                                transfer = framework->Asset()->UploadAssetFromFileInMemory(data, dest->Name(), ad.destinationName);
+                            else
+                                LogError("Cannot upload asset '" + ad.source + "' from memory to destination '" + ad.destinationName + "'! The source asset serialized to 0 size!");
+                        }
+                    }
+                    else
+                        LogError("Cannot upload asset from source '" + ad.source + "' to destination '" + ad.destinationName + "'! The source asset location is unknown!");
+                }
+            }
 
             if (transfer &&
                 connect(transfer.get(), SIGNAL(Completed(IAssetUploadTransfer *)),

@@ -150,7 +150,6 @@ public:
     static const u32 BUCKET_SENTINEL = 0xFFFFFFFF;
 
 private:
-	static const int maxNodes = 256 * 1024;
 	static const int maxTreeDepth = 30;
 
 	std::vector<KdTreeNode> nodes;
