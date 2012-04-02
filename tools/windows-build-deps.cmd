@@ -207,13 +207,20 @@ IF %BUILD_OPENSSL%==TRUE (
     IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". echo '%QT_OPENSSL_CONFIGURE%'
 )
 
+:: Set QMAKESPEC and QTDIR in case we are going to build qt. If we don't do this
+:: a system set QMAKESPEC might take over the build in some bizarre fashion.
+:: Note 1: QTDIR is not used while build, neither should QMAKESPEC be used when -platform is given to configure.
+:: Note 2: We cannot do this inside the qt IF without @setlocal EnableDelayedExpansion.
+set QMAKESPEC=%DEPS%\qt\qt-src-4.7.4\mkspecs\win32-msvc2008
+set QTDIR=%DEPS%\qt\qt-src-4.7.4
+
 IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
    IF NOT EXIST "%DEPS%\qt\qt-src-4.7.4". (
       cecho {0E}Warning: %DEPS%\qt\qt-src-4.7.4 does not exist, extracting Qt failed?.{# #}{\n}
       GOTO :ERROR
    )
    cd "%DEPS%\qt\qt-src-4.7.4"
-   
+
    IF NOT EXIST "configure.cache". (
       cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
       configure -platform win32-msvc2008 -debug-and-release -opensource -prefix "%DEPS%\qt" -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
@@ -225,11 +232,11 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building Qt with jom{# #}{\n}
-      "%DEPS%\Qt\jom\jom.exe"
+      "%DEPS%\qt\jom\jom.exe"
       :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
       set ERRORLEVEL=0
       del /s /q mocinclude.tmp
-      "%DEPS%\Qt\jom\jom.exe"
+      "%DEPS%\qt\jom\jom.exe"
    ) ELSE (
       cecho {0D}- Building Qt with nmake{# #}{\n}
       nmake /nologo
@@ -243,25 +250,30 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
       cecho {0E}Warning: %DEPS%\qt\qt-src-4.7.4\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
       GOTO :ERROR
    )
-   
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
    :: Don't use jom for install. It seems to hang easily, maybe beacuse it tries to use multiple cores.
    cecho {0D}Installing Qt to %DEPS%\qt{# #}{\n}
    nmake install
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
       
    IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
       cecho {0E}Warning: %DEPS%\qt\lib\QtWebKit4.dll not present, Qt install failed?.{# #}{\n}
       GOTO :ERROR
    )
-   
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   REM We (re)built Qt, so delete QtWebKit4.dll in Tundra bin\ to force DLL deployment below.
-   del /Q "%TUNDRA_BIN%\QtWebKit4.dll"
+
+   :: We (re)built Qt, so delete QtWebKit4.dll in Tundra bin\ to force DLL deployment below.
+   IF EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
+      del /Q "%TUNDRA_BIN%\QtWebKit4.dll"
+   )
+
 ) ELSE (
    cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
 
-:: Setup now built Qt to PATH (qmake), QTDIR and QMAKESPEC.
-:: These will be utilized by other dependencies that need Qt.
+:: Setup now built Qt to PATH (for qmake.exe), QTDIR and QMAKESPEC.
+:: These will be utilized by other dependencies that need Qt in this script.
 set PATH=%DEPS%\qt\bin;%PATH%
 set QMAKESPEC=%DEPS%\qt\mkspecs\win32-msvc2008
 set QTDIR=%DEPS%\qt
@@ -363,7 +375,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    cecho {0D}Building QtScriptGenerator.{# #}{\n}
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building QtScriptGenerator with jom{# #}{\n}
-      "%DEPS%\Qt\jom\jom.exe"
+      "%DEPS%\qt\jom\jom.exe"
    ) ELSE (
       cecho {0D}- Building QtScriptGenerator with nmake{# #}{\n}
       nmake /nologo
@@ -398,9 +410,9 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building qtscript plugins with jom{# #}{\n}
-      "%DEPS%\Qt\jom\jom.exe" debug
+      "%DEPS%\qt\jom\jom.exe" debug
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-      "%DEPS%\Qt\jom\jom.exe" release
+      "%DEPS%\qt\jom\jom.exe" release
    ) ELSE (
       cecho {0D}- Building qtscript plugins with nmake{# #}{\n}
       nmake debug /nologo
@@ -570,7 +582,7 @@ IF NOT EXIST "%DEPS%\qt-solutions". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building QtPropertyBrowser with jom{# #}{\n}
-      "%DEPS%\Qt\jom\jom.exe"
+      "%DEPS%\qt\jom\jom.exe"
    ) ELSE (
       cecho {0D}- Building QtPropertyBrowser with nmake{# #}{\n}
       nmake /nologo
