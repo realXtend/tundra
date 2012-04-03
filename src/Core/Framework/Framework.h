@@ -49,7 +49,7 @@ public:
                or a property with that name was registered already.
         @note There is no unregister option. It can be implemented if someone finds it useful, but at this point
          we are going with a "unload-only-on-close" behavior. */
-    bool RegisterDynamicObject(const char *name, QObject *object);
+    bool RegisterDynamicObject(QString name, QObject *object);
 
     /// Cancel a pending exit
     void CancelExit();
