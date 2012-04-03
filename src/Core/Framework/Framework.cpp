@@ -521,20 +521,20 @@ IModule *Framework::GetModuleByName(const QString &name) const
     return 0;
 }
 
-bool Framework::RegisterDynamicObject(const char *name, QObject *object)
+bool Framework::RegisterDynamicObject(QString name, QObject *object)
 {
-    if (!name || QString(name).length() == 0 || !object)
+    if (name.length() == 0 || !object)
     {
-        LogError("Framework::RegisterDynamicObject: null or empty name, or null object passed.");
+        LogError("Framework::RegisterDynamicObject: empty name or null object passed.");
         return false;
     }
-    if (property(name).isValid()) // We never override a property if it already exists.
+    if (property(name.toStdString().c_str()).isValid()) // We never override a property if it already exists.
     {
         LogError(QString("Framework::RegisterDynamicObject: Dynamic object with name \"%1\" already registered.").arg(name));
         return false;
     }
 
-    setProperty(name, QVariant::fromValue<QObject*>(object));
+    setProperty(name.toStdString().c_str(), QVariant::fromValue<QObject*>(object));
 
     return true;
 }
