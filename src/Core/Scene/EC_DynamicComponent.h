@@ -124,8 +124,7 @@ public slots:
         @param index Index to attribute list.
         @return Return attribute value as QVariant if attribute has been found, else return null QVariant. */
     QVariant GetAttribute(int index) const;
-
-    /// This is an overloaded function.
+    /// @overload
     /** @param name Name of the attribute. */
     QVariant GetAttribute(const QString &name) const;
 
@@ -142,8 +141,7 @@ public slots:
         @param value Value of the attribute.
         @param change Change type. */
     void SetAttribute(int index, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
-
-    /// This is an overloaded function.
+    /// @overload
     /** @param name Name of the attribute.
         @param value Value of the attribute.
         @param change Change type. */

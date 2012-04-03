@@ -59,16 +59,12 @@ public slots:
         @param layerMask Which selection layer(s) to use (bitmask)
         @return Raycast result structure */
     RaycastResult* Raycast(int x, int y, unsigned layerMask);
-
-    /// This is an overloaded function.
+    /// @overload
     /** Does raycast into the world from viewport coordinates, using all selection layers
-        The coordinates are a position in the render window, not scaled to [0,1].
         @param x Horizontal position for the origin of the ray
-        @param y Vertical position for the origin of the ray
-        @return Raycast result structure */
+        @param y Vertical position for the origin of the ray */
     RaycastResult* Raycast(int x, int y);
-
-    /// This is an overloaded function.
+    /// @overload
     /** Does raycast into the world using a ray in world space coordinates. */
     RaycastResult* Raycast(const Ray& ray, unsigned layerMask);
 

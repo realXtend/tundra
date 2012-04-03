@@ -241,8 +241,7 @@ public slots:
     /** @param entity Entity for which relationship is to be inspected.
         @note Each entity is its own grand parent. */
     bool IsGrandparentOf(Entity *entity) const;
-
-    /// This is an overloaded function.
+    /// @overload
     /** @param placeable Placeable component, of which relationship is to be inspected.
         @note Each entity is its own grand parent. */
     bool IsGrandparentOf(EC_Placeable *placeable) const;
@@ -251,8 +250,7 @@ public slots:
     /** @param entity Entity for which relationship is to be inspected.
         @note Each entity is its own grand child. */
     bool IsGrandchildOf(Entity *entity) const;
-
-    /// This is an overloaded function.
+    /// @overload
     /** @param placeable Placeable component, of which relationship is to be inspected.
         @note Each entity is its own grand child. */
     bool IsGrandchildOf(EC_Placeable *placeable) const;

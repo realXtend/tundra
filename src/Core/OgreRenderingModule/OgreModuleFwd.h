@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   OgreModuleFwd.h
- *  @brief  Forward declarations for commonly used OgreRenderingModule and Ogre classes.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   OgreModuleFwd.h
+    @brief  Forward declarations for commonly used OgreRenderingModule and Ogre classes. */
 
 #pragma once
 
@@ -44,7 +43,18 @@ namespace OgreRenderer
 class OgreCompositionHandler;
 class GaussianListener;
 class OgreWorld;
+
+class TextureAsset;
+class OgreMeshAsset;
 class OgreMaterialAsset;
+class OgreSkeletonAsset;
+class OgreParticleAsset;
+
+typedef boost::shared_ptr<TextureAsset> TextureAssetPtr;
+typedef boost::shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;
+typedef boost::shared_ptr<OgreMaterialAsset> OgreMaterialAssetPtr;
+typedef boost::shared_ptr<OgreSkeletonAsset> OgreSkeletonAssetPtr;
+typedef boost::shared_ptr<OgreParticleAsset> OgreParticleAssetPtr;
 
 class EC_AnimationController;
 class EC_Camera;

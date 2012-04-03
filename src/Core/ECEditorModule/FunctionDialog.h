@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   FunctionDialog.h
- *  @brief  Dialog for invoking Qt slots (i.e. functions) of entities and components.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   FunctionDialog.h
+    @brief  Dialog for invoking Qt slots (i.e. functions) of entities and components. */
 
 #pragma once
 
@@ -21,7 +20,6 @@ class QTextEdit;
 class QCheckBox;
 
 class IArgumentType;
-class FunctionInvoker;
 struct InvokeItem;
 
 /// Utility data structure for indentifying and handling of function signatures.
@@ -125,7 +123,6 @@ private:
     void Initialize();
     void Populate(const QMetaObject *mo, std::set<FunctionMetadata> &fmds);
 
-    FunctionInvoker *invoker; ///< Function invoker object.
     QLabel *targetsLabel; ///< Label showing the target objects.
     FunctionComboBox *functionComboBox; ///< Function combo box
     QTextEdit *doxygenView; ///< View for doxygen documentation.

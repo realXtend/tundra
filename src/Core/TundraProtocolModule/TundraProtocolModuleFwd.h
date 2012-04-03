@@ -8,8 +8,11 @@
 
 #include <kNetFwd.h>
 
+#include <QString>
+
 #include <boost/smart_ptr.hpp>
 #include <list>
+#include <map>
 
 class KristalliProtocolModule;
 
@@ -30,6 +33,8 @@ class SceneSyncState;
 struct EntitySyncState;
 struct ComponentSyncState;
 struct UserConnectedResponseData;
+
+typedef std::map<QString, QString> LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
 
 struct MsgLogin;
 struct MsgLoginReply;

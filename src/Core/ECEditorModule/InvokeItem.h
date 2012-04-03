@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   InvokeItem.h
- *  @brief  Struct used to storage information about invoked Entity Action or Function call.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   InvokeItem.h
+    @brief  Struct used to store information about invoked Entity Action or Function call. */
 
 #pragma once
 
@@ -11,10 +10,10 @@
 #include "EntityAction.h"
 
 /// Struct used to storage information about invokable Entity Action or Function call.
-/**	@todo Consider storing entity actions as Entity::Exec() function calls. */
+/** @todo Consider storing entity actions as Entity::Exec() function calls. */
 struct ECEDITOR_MODULE_API InvokeItem
 {
-    /// Default constructor. Sets type and execTypes member variables to Unknown/Invalid.
+    /// Default constructor. Sets @c type and @c execTypes member variables to Unknown/Invalid.
     InvokeItem();
 
     /// Constructor which creates InvokeItem from string read from setting file.

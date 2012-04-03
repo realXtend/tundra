@@ -43,14 +43,14 @@ public:
         LoggedIn
     };
 
-    /// @todo Expose to QtScript.
-    typedef std::map<QString, QString> LoginPropertyMap;
-
     /// Returns connection/login state
     ClientLoginState LoginState() const { return loginstate_; }
 
     /// Returns client connection ID (from loginreply message), or zero if not connected.
     int ConnectionId() const { return client_id_; }
+
+    /// Returns all the login properties that will be used to login to the server.
+    LoginPropertyMap &LoginProperties() { return properties; }
 
     /// Returns the underlying kNet MessageConnection object that represents this connection.
     /** This function may return null in the case the connection is not active.
@@ -100,8 +100,7 @@ public slots:
     QString LoginProperty(QString key) const;
 
     /// Returns all the login properties that will be used to login to the server.
-    /// @todo QtScript doens't understand references.
-    LoginPropertyMap &LoginProperties() { return properties; }
+    LoginPropertyMap LoginProperties() const { return properties; }
 
     /// Returns all the currently set login properties as an XML text.
     QString LoginPropertiesAsXml() const;

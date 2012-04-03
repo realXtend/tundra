@@ -79,9 +79,7 @@ public:
     /** Accepted formats are: "r,g,b,a" or "(r,g,b,a)" or "(r;g;b;a)" or "r g b" or "r,g,b" or "(r,g,b)" or "(r;g;b)" or "r g b" .
         @sa SerializeToString */
     static Color FromString(const char *str);
-
-    /// This is an overloaded function.
-    static Color FromString(const QString &str) { return FromString(str.simplified().toStdString().c_str()); }
+    static Color FromString(const QString &str) { return FromString(str.simplified().toStdString().c_str()); } ///< @overload
 
 #ifdef MATH_OGRE_INTEROP
     /// Returns Color as Ogre::ColourValue.

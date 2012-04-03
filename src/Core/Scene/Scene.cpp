@@ -242,6 +242,7 @@ EntityList Scene::EntitiesWithComponent(const QString &typeName, const QString &
 
 EntityList Scene::GetAllEntities() const
 {
+    LogWarning("Scene::GetAllEntities: this function is deprecated and will be removed. Use Scene::Entities instead");
     std::list<EntityPtr> entities;
     EntityMap::const_iterator it = entities_.begin();
     while(it != entities_.end())

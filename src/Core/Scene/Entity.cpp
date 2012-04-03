@@ -638,6 +638,7 @@ QString Entity::ToString() const
 
 QObjectList Entity::ComponentsList() const
 {
+    LogWarning("Entity::ComponentsLis: this function is deprecated and will be removed. Use Entity::Components instead");
     QObjectList compList;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         if (i->second.get())

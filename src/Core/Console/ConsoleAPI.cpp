@@ -90,9 +90,8 @@ QVariant ConsoleCommand::Invoke(const QStringList &params)
         if (params.size() < numRequiredArgs && !functionNameDefaultArgs.isEmpty())
             func = functionNameDefaultArgs;
 
-        FunctionInvoker fi;
         QString errorMessage;
-        fi.Invoke(target, func, params, &returnValue, &errorMessage);
+        FunctionInvoker::Invoke(target, func, params, &returnValue, &errorMessage);
         if (!errorMessage.isEmpty())
             LogError("ConsoleCommand::Invoke returned an error: " + errorMessage);
     }

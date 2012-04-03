@@ -72,18 +72,9 @@ public slots:
     /// Creates EC attribute XML editor widget for entities and components.
     /** @param entities List of entity pointers. */
     void CreateXmlEditor(const QList<EntityPtr> &entities);
-
-    /// This is an overloaded function.
-    /** @param entity Entity pointer. */
-    void CreateXmlEditor(EntityPtr entity);
-
-    /// This is an overloaded function.
-    /** @param component Component pointer. */
-    void CreateXmlEditor(ComponentPtr component);
-
-    /// This is an overloaded function.
-    /** @param components List of component pointers. */
-    void CreateXmlEditor(const QList<ComponentPtr> &components);
+    void CreateXmlEditor(EntityPtr entity); ///< @overload
+    void CreateXmlEditor(ComponentPtr component); ///< @overload
+    void CreateXmlEditor(const QList<ComponentPtr> &components); ///< @overload
 
 signals:
     /// Signal is emitted when active ECEditorWindow's selection has changed.

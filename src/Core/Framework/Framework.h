@@ -98,11 +98,11 @@ public slots:
 
     /// Returns Tundra API version info object.
     ///\todo Delete/simplify.
-    ApiVersionInfo *ApiVersion() const;
+    VersionInfo *ApiVersion() const;
 
     /// Returns Tundra application version info object.
     ///\todo Delete/simplify.
-    ApplicationVersionInfo *ApplicationVersion() const;
+    VersionInfo *ApplicationVersion() const;
 
     /// Registers the system Renderer object.
     /** @note Please don't use this function. Called only by the OgreRenderingModule which implements the rendering subsystem. */
@@ -177,11 +177,10 @@ private:
     /// The Tundra API version info of this build. May differ from the end user 
     /// application version of the default distribution, i.e. app may change when api stays same.
     ///\todo Delete/simplify.
-    ApiVersionInfo *apiVersionInfo;
-
+    VersionInfo *apiVersionInfo;
     /// The Tundra application version info for this build.
     ///\todo Delete/simplify.
-    ApplicationVersionInfo *applicationVersionInfo;
+    VersionInfo *applicationVersionInfo;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
     std::vector<boost::shared_ptr<IModule> > modules;

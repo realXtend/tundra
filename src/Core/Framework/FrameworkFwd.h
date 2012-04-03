@@ -19,8 +19,7 @@ class Exception;
 class FrameAPI;
 class ConfigAPI;
 class PluginAPI;
-class ApiVersionInfo;
-class ApplicationVersionInfo;
+class VersionInfo;
 // The following are external to Framework
 class UiAPI;
 class InputAPI;

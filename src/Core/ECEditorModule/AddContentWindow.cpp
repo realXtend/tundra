@@ -450,7 +450,7 @@ void AddContentWindow::AddAssets(const SceneDesc &sceneDesc, const SceneDesc::As
             }
         }
         */
-        if ((a.typeName == "material" && a.data.isEmpty()) || res == AssetAPI::FileQueryLocalFileMissing)
+        if ((a.typeName == "OgreMaterial" && a.data.isEmpty()) || res == AssetAPI::FileQueryLocalFileMissing)
         {
             // File not found, mark the item red and disable it.
             aItem->setBackgroundColor(cColumnAssetSourceName, QColor(255,0,0,200));
@@ -683,7 +683,7 @@ void AddContentWindow::CreateNewDesctiption()
         {
             // Add textures to special map for later use.
             ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
-            if (aitem->desc.typeName == "texture")
+            if (aitem->desc.typeName == "Texture")
             {
                 int idx = aitem->desc.source.lastIndexOf("/");
                 refs[aitem->desc.source.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
@@ -698,7 +698,7 @@ void AddContentWindow::CreateNewDesctiption()
     while(rewriteIt.hasNext())
     {
         rewriteIt.next();
-        if (rewriteIt.value().typeName.contains("material", Qt::CaseInsensitive))
+        if (rewriteIt.value().typeName.contains("OgreMaterial", Qt::CaseInsensitive))
             ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
             ReplaceReferences(rewriteIt.value().data, refs);
     }

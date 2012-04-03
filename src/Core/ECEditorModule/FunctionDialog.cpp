@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   FunctionDialog.cpp
- *  @brief  Dialog for invoking Qt slots (i.e. functions) of entities and components.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   FunctionDialog.cpp
+    @brief  Dialog for invoking Qt slots (i.e. functions) of entities and components. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -111,16 +110,14 @@ void FunctionComboBox::Clear()
 
 FunctionDialog::FunctionDialog(const QObjectWeakPtrList &objs, QWidget *parent) :
     QDialog(parent, 0),
-    objects(objs),
-    invoker(new FunctionInvoker)
+    objects(objs)
 {
     Initialize();
 }
 
 FunctionDialog::FunctionDialog(const QObjectWeakPtrList &objs, const InvokeItem &invokeItem, QWidget *parent) :
     QDialog(parent, 0),
-    objects(objs),
-    invoker(new FunctionInvoker)
+    objects(objs)
 {
     Initialize();
 
@@ -142,7 +139,6 @@ FunctionDialog::FunctionDialog(const QObjectWeakPtrList &objs, const InvokeItem 
 FunctionDialog::~FunctionDialog()
 {
     qDeleteAll(currentArguments);
-    SAFE_DELETE(invoker);
 }
 
 QObjectWeakPtrList FunctionDialog::Objects() const
@@ -319,7 +315,7 @@ void FunctionDialog::UpdateEditors()
 
     qDeleteAll(currentArguments);
     currentArguments.clear();
-    currentArguments = invoker->CreateArgumentList(obj, fmd.signature);
+    currentArguments = FunctionInvoker::CreateArgumentList(obj, fmd.signature);
     if (currentArguments.empty() || (currentArguments.size() != fmd.parameters.size()))
         return;
 

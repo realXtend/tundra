@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   TransformEditor.h
- *  @brief  Controls Transform attributes for groups of entities.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   TransformEditor.h
+    @brief  Controls Transform attributes for groups of entities. */
 
 #pragma once
 
@@ -72,18 +71,12 @@ public:
     /// Appends selection with new entities.
     /** @param entities Entities to be added. */
     void AppendSelection(const QList<EntityPtr> &entities);
-
-    /// This is an overloaded function.
-    /** @param entity Entity to be added. */
-    void AppendSelection(const EntityPtr &entity);
+    void AppendSelection(const EntityPtr &entity); ///< @overload
 
     /// Removes entities from selection.
     /** @param entities Entities to be removed. */
     void RemoveFromSelection(const QList<EntityPtr> &entities);
-
-    /// This is an overloaded function.
-    /** @param entity Entity to be removed. */
-    void RemoveFromSelection(const EntityPtr &entity);
+    void RemoveFromSelection(const EntityPtr &entity); ///< @overload
 
     /// Clears the selection.
     void ClearSelection();

@@ -17,7 +17,6 @@
 
 class QLineEdit;
 class QPushButton;
-class FunctionInvoker;
 class EditorButtonFactory;
 typedef QMap<QtProperty *, QWidget *> PropertyToWidgetMap;
 typedef QMap<QWidget *, QtProperty *> WidgetToPropertyMap;
@@ -85,6 +84,5 @@ private:
     PropertyToComponentList components2_;
     QList<ComponentWeakPtr> components_;
     AttributeMetadata::ButtonInfoList buttons_; ///< @todo replace this with QMap<QtProperty*, ButtonInfoList> so that create buttons can vary based on QtProperty.
-    FunctionInvoker *invoker_;
 };
 /// @endcond
