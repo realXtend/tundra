@@ -932,10 +932,12 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
         if (box != 0)
             threshold = (float)box->value();
 
+#ifdef PROFILING
         Profiler &profiler = *framework_->GetProfiler();
         profiler.Lock();
         DumpProfilerSpikes(profiler.GetRoot(), threshold, framework_->Frame()->FrameNumber());
         profiler.Release();
+#endif
     }
 }
 
