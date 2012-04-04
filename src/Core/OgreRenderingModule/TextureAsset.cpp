@@ -17,6 +17,7 @@
 #include <QFileInfo>
 
 #include <Ogre.h>
+#include <squish.h>
 
 #if defined(DIRECTX_ENABLED) && defined(WIN32)
 #ifdef SAFE_DELETE
@@ -177,6 +178,9 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             ogreTexture->createInternalResources();
         }
 
+        if (assetAPI->GetFramework()->HasCommandLineParameter("--autodxtcompress"))
+            CompressTexture();
+        
         // We did a synchronous load, must call AssetLoadCompleted here.
         assetAPI->AssetLoadCompleted(Name());
         return true;
@@ -200,6 +204,9 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
         ogreTexture = Ogre::TextureManager::getSingleton().getByName(ogreAssetName.toStdString(), OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
         if (!ogreTexture.isNull())
         {
+            if (assetAPI->GetFramework()->HasCommandLineParameter("--autodxtcompress"))
+                CompressTexture();
+            
             assetAPI->AssetLoadCompleted(assetRef);
             return;
         }
@@ -455,4 +462,131 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
     }
 
     SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps, dynamic, false);
+}
+
+void TextureAsset::CompressTexture()
+{
+#if defined(DIRECTX_ENABLED) && defined(WIN32)
+    if (ogreTexture.isNull())
+        return;
+    
+    Ogre::PixelFormat sourceFormat = ogreTexture->getFormat();
+    if (sourceFormat >= Ogre::PF_DXT1 && sourceFormat <= Ogre::PF_DXT5)
+        return; // Already compressed, do nothing
+    if ((sourceFormat >= Ogre::PF_L8 && sourceFormat <= Ogre::PF_BYTE_LA) || sourceFormat == Ogre::PF_R8)
+        return; // 1 or 2 byte format, leave alone
+    
+    // Ogre will crash on OpenGL if it tries to get texture data. Therefore perform a no-op on OpenGL
+    /// \todo Fix the crash
+    // (note: on OpenGL memory use of the Tundra process is less critical anyway, as the system memory copy
+    // of the texture is contained by the display driver)
+    if (Ogre::Root::getSingletonPtr()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+    {
+        LogWarning("Skipping CompressTexture on OpenGL as it is prone to crash");
+        return;
+    }
+    
+    LogDebug("CompressTexture " + Name() + " image format " + QString::number(sourceFormat));
+    
+    // Get original texture data
+    std::vector<unsigned char*> imageData;
+    std::vector<Ogre::PixelBox> imageBoxes;
+    
+    for (unsigned level = 0; level <= ogreTexture->getNumMipmaps(); ++level)
+    {
+        try
+        {
+            Ogre::HardwarePixelBufferSharedPtr buf = ogreTexture->getBuffer(0, level);
+            unsigned char* levelData = new unsigned char[buf->getWidth() * buf->getHeight() * 4];
+            imageData.push_back(levelData);
+            Ogre::PixelBox levelBox(Ogre::Box(0, 0, buf->getWidth(), buf->getHeight()), Ogre::PF_A8B8G8R8, levelData);
+            buf->blitToMemory(levelBox);
+            imageBoxes.push_back(levelBox);
+        }
+        catch (...)
+        {
+            break;
+        }
+    }
+    
+    // Determine format
+    /// \todo Experiment with quality options
+    int flags = squish::kColourRangeFit; // Lowest quality, but fastest
+    size_t bytesPerBlock = 8;
+    Ogre::PixelFormat newFormat = Ogre::PF_DXT1;
+    if (ogreTexture->hasAlpha())
+    {
+        LogDebug("Compressing as DXT5");
+        newFormat = Ogre::PF_DXT5;
+        bytesPerBlock = 16;
+        flags |= squish::kDxt5;
+    }
+    else
+    {
+        LogDebug("Compressing as DXT1");
+        flags |= squish::kDxt1;
+    }
+    
+    // Compress original texture data
+    std::vector<unsigned char*> compressedImageData;
+    
+    for (unsigned level = 0; level < imageBoxes.size(); ++level)
+    {
+        int compressedSize = squish::GetStorageRequirements(imageBoxes[level].right, imageBoxes[level].bottom, flags);
+        LogDebug("Compressing level " + QString::number(level) + " " + QString::number(imageBoxes[level].right) + "x" + QString::number(imageBoxes[level].bottom) + " into " + QString::number(compressedSize) + " bytes");
+        unsigned char* compressedData = new unsigned char[compressedSize];
+        squish::CompressImage((squish::u8*)imageData[level], imageBoxes[level].right, imageBoxes[level].bottom, compressedData, flags);
+        compressedImageData.push_back(compressedData);
+    }
+    
+    // Change Ogre texture format
+    ogreTexture->freeInternalResources(); 
+    ogreTexture->setFormat(newFormat);
+    ogreTexture->setNumMipmaps(imageBoxes.size() - 1);
+    ogreTexture->createInternalResources();
+    
+    // Upload compressed texture data
+    for (unsigned level = 0; level < imageBoxes.size(); ++level)
+    {
+        try
+        {
+            Ogre::HardwarePixelBufferSharedPtr buf = ogreTexture->getBuffer(0, level);
+            
+            // Ogre does not load the texture data properly if the miplevel width is not divisible by 4, so we write manual code for Direct3D9
+            /// \todo Fix bug in ogre-safe-nocrashes branch. It also affects Ogre's loading of already compressed DDS files
+            
+            size_t numRows = (buf->getHeight() + 3) / 4;
+            int sourceStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
+            unsigned char* src = compressedImageData[level];
+            
+            Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(buf.get());
+            assert(pixelBuffer);
+            LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(Ogre::D3D9RenderSystem::getActiveD3D9Device());
+            if (surface)
+            {
+                D3DLOCKED_RECT lock;
+                HRESULT hr = surface->LockRect(&lock, 0, 0);
+                if (SUCCEEDED(hr))
+                {
+                    if (lock.Pitch == sourceStride)
+                        memcpy(lock.pBits, src, sourceStride * numRows);
+                    else
+                        for(size_t y = 0; y < numRows; ++y)
+                            memcpy((u8*)lock.pBits + lock.Pitch * y, src + sourceStride * y, sourceStride);
+                    surface->UnlockRect();
+                }
+            }
+        }
+        catch (...)
+        {
+            break;
+        }
+    }
+    
+    // Delete CPU-side temp image data
+    for (unsigned i = 0; i < imageData.size(); ++i)
+        delete[] imageData[i];
+    for (unsigned i = 0; i < compressedImageData.size(); ++i)
+        delete[] compressedImageData[i];
+#endif
 }

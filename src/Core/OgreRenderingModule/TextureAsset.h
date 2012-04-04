@@ -67,6 +67,9 @@ public:
 
     //void RegenerateAllMipLevels();
 
+    /// Compress texture to suitable DXT format.
+    void CompressTexture();
+
     /// This points to the loaded texture asset, if it is present.
     Ogre::TexturePtr ogreTexture;
 
