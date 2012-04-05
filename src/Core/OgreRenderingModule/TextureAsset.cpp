@@ -694,7 +694,37 @@ void TextureAsset::ReduceTextureSize()
             unsigned char* levelData = new unsigned char[Ogre::PixelUtil::getMemorySize(buf->getWidth(), buf->getHeight(), 1, buf->getFormat())];
             imageData.push_back(levelData);
             Ogre::PixelBox levelBox(Ogre::Box(0, 0, buf->getWidth(), buf->getHeight()), buf->getFormat(), levelData);
-            buf->blitToMemory(levelBox);
+            
+            if (sourceFormat >= Ogre::PF_DXT1 && sourceFormat <= Ogre::PF_DXT5)
+            {
+                // Ogre does not retrieve the texture data properly if the miplevel width is not divisible by 4, so we write manual code for Direct3D9
+                /// \todo Fix bug in ogre-safe-nocrashes branch
+                size_t bytesPerBlock = sourceFormat == Ogre::PF_DXT1 ? 8 : 16;
+                size_t numRows = (buf->getHeight() + 3) / 4;
+                int destStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
+                unsigned char* dest = levelData;
+                
+                Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(buf.get());
+                assert(pixelBuffer);
+                LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(Ogre::D3D9RenderSystem::getActiveD3D9Device());
+                if (surface)
+                {
+                    D3DLOCKED_RECT lock;
+                    HRESULT hr = surface->LockRect(&lock, 0, 0);
+                    if (SUCCEEDED(hr))
+                    {
+                        if (lock.Pitch == destStride)
+                            memcpy(dest, lock.pBits, destStride * numRows);
+                        else
+                            for(size_t y = 0; y < numRows; ++y)
+                                memcpy(dest + destStride * y, (u8*)lock.pBits + lock.Pitch * y, destStride);
+                        surface->UnlockRect();
+                    }
+                }
+            }
+            else
+                buf->blitToMemory(levelBox);
+            
             imageBoxes.push_back(levelBox);
         }
         catch (std::exception& e)
