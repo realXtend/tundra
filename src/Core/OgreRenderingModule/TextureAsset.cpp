@@ -664,6 +664,8 @@ void TextureAsset::ReduceTextureSize()
     if (ogreTexture->getWidth() <= maxTextureSize && ogreTexture->getHeight() <= maxTextureSize)
         return; // Texture OK, no reduction needed
     
+    PROFILE(TextureAsset_ReduceTextureSize);
+    
     size_t origWidth = ogreTexture->getWidth();
     size_t origHeight = ogreTexture->getHeight();
     
