@@ -13,6 +13,9 @@ class GestureEvent : public QObject
 {
     Q_OBJECT
     Q_ENUMS(EventType)
+    Q_PROPERTY(EventType eventType READ Type)
+    Q_PROPERTY(QGesture* gesture READ Gesture)
+    Q_PROPERTY(Qt::GestureType text READ GestureType)
 
 public:
     GestureEvent() :
@@ -49,17 +52,18 @@ public:
     /// By default, this field is set to false when the event is fired to the event queue.
     bool handled;
 
+    EventType Type() const { return eventType; }
+
 public slots:
     /// Marks this event as having been handled already, which will suppress this event from
     /// going on to lower input context levels.
     void Suppress() { handled = true; }
     void Accept() { handled = true; }
 
-    QGesture *Gesture() const { return gesture; }
-    Qt::GestureType GestureType() const { return gestureType; }
+    bool IsStartedEvent() const { return eventType == GestureStarted; }
+    bool IsUpdatedEvent() const { return eventType == GestureUpdated; }
+    bool IsFinishedEvent() const { return eventType == GestureFinished || eventType == GestureCanceled; }
 
-    bool IsStartedEvent() { if (eventType == GestureStarted) return true; else return false; }
-    bool IsUpdatedEvent() { if (eventType == GestureUpdated) return true; else return false; }
-    bool IsFinishedEvent() { if ((eventType == GestureFinished) || (eventType == GestureCanceled)) return true; else return false; }
+    QGesture *Gesture() const { return gesture; } ///< @todo Doesn't need to be a slot; exposed as Q_PROPERTY
+    Qt::GestureType GestureType() const { return gestureType; } ///< @todo Doesn't need to be a slot; exposed as Q_PROPERTY
 };
-

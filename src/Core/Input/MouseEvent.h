@@ -18,7 +18,6 @@ class MouseEvent : public QObject
     Q_ENUMS(MouseButton)
     Q_ENUMS(EventType)
     Q_ENUMS(PressOrigin)
-    // Meta-information wrappers for dynamic languages.
     Q_PROPERTY(EventType eventType READ GetEventType)
     Q_PROPERTY(MouseButton button READ GetMouseButton)
     Q_PROPERTY(PressOrigin origin READ GetPressOrigin)
@@ -164,12 +163,12 @@ public:
     unsigned long OtherButtons() const { return otherButtons; }
 
     QGraphicsItem *ItemUnderMouse() const { return itemUnderMouse; }
-    
+
+    EventType Type() const { return eventType; }
+    MouseButton Button() const { return button; }
+    PressOrigin Origin() const { return origin; }
+
 public slots:
-    EventType GetEventType() const { return eventType; } ///<\todo Don't need to be a slot, exposed as QPROPERTY
-    MouseButton GetMouseButton() const { return button; } ///<\todo Don't need to be a slot, exposed as QPROPERTY
-    PressOrigin GetPressOrigin() const { return origin; } ///<\todo Don't need to be a slot, exposed as QPROPERTY
-    
     /// Marks this event as having been handled already, which will suppress this event from
     /// going on to lower input context levels.
     void Suppress() { handled = true; }
@@ -197,5 +196,9 @@ public slots:
     bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; } // On windows, this is associated to the Win key.
 
     // Returns if mouse is over a graphics item in the scene
-    bool IsItemUnderMouse() const { if (itemUnderMouse) return true; else return false; }
+    bool IsItemUnderMouse() const { return itemUnderMouse != 0; }
+
+    MouseEvent::EventType GetEventType() const { return Type(); } /** @deprecated Use Type or 'eventType' @todo Remove */
+    MouseEvent::MouseButton GetMouseButton() const { return Button(); } /** @deprecated Use Button or 'button' @todo Remove */
+    MouseEvent::PressOrigin GetPressOrigin() const { return Origin(); } /** @deprecated Use Origin or 'origin' @todo Remove */
 };
