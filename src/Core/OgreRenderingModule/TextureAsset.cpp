@@ -566,14 +566,14 @@ void TextureAsset::CompressTexture()
     Ogre::PixelFormat newFormat = Ogre::PF_DXT1;
     if (ogreTexture->hasAlpha())
     {
-        LogWarning("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT5");
+        LogDebug("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT5");
         newFormat = Ogre::PF_DXT5;
         bytesPerBlock = 16;
         flags |= squish::kDxt5;
     }
     else
     {
-        LogWarning("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT1");
+        LogDebug("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT1");
         flags |= squish::kDxt1;
     }
     
