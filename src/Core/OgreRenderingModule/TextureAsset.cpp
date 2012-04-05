@@ -476,6 +476,8 @@ void TextureAsset::CompressTexture()
     if ((sourceFormat >= Ogre::PF_L8 && sourceFormat <= Ogre::PF_BYTE_LA) || sourceFormat == Ogre::PF_R8)
         return; // 1 or 2 byte format, leave alone
     
+    PROFILE(TextureAsset_CompressTexture);
+    
     // Ogre will crash on OpenGL if it tries to get texture data. Therefore perform a no-op on OpenGL
     /// \todo Fix the crash
     // (note: on OpenGL memory use of the Tundra process is less critical anyway, as the system memory copy
@@ -485,8 +487,6 @@ void TextureAsset::CompressTexture()
         LogWarning("Skipping CompressTexture on OpenGL as it is prone to crash");
         return;
     }
-    
-    LogDebug("CompressTexture " + Name() + " image format " + QString::number(sourceFormat));
     
     // Get original texture data
     std::vector<unsigned char*> imageData;
@@ -503,27 +503,27 @@ void TextureAsset::CompressTexture()
             buf->blitToMemory(levelBox);
             imageBoxes.push_back(levelBox);
         }
-        catch (...)
+        catch (std::exception& e)
         {
+            LogError("TextureAsset::CompressTexture: Caught exception " + QString(e.what()) + " while handling miplevel " + QString::number(level) + ", aborting.");
             break;
         }
     }
     
     // Determine format
-    /// \todo Experiment with quality options
     int flags = squish::kColourRangeFit; // Lowest quality, but fastest
     size_t bytesPerBlock = 8;
     Ogre::PixelFormat newFormat = Ogre::PF_DXT1;
     if (ogreTexture->hasAlpha())
     {
-        LogDebug("Compressing as DXT5");
+        LogDebug("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT5");
         newFormat = Ogre::PF_DXT5;
         bytesPerBlock = 16;
         flags |= squish::kDxt5;
     }
     else
     {
-        LogDebug("Compressing as DXT1");
+        LogDebug("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT1");
         flags |= squish::kDxt1;
     }
     
@@ -577,8 +577,9 @@ void TextureAsset::CompressTexture()
                 }
             }
         }
-        catch (...)
+        catch (std::exception& e)
         {
+            LogError("TextureAsset::CompressTexture: Caught exception " + QString(e.what()) + " while handling miplevel " + QString::number(level) + ", aborting.");
             break;
         }
     }
