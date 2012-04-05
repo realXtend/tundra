@@ -177,9 +177,8 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
 
             ogreTexture->createInternalResources();
         }
-
-        if (assetAPI->GetFramework()->HasCommandLineParameter("--autodxtcompress"))
-            CompressTexture();
+        
+        PostProcessTexture();
         
         // We did a synchronous load, must call AssetLoadCompleted here.
         assetAPI->AssetLoadCompleted(Name());
@@ -204,8 +203,7 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
         ogreTexture = Ogre::TextureManager::getSingleton().getByName(ogreAssetName.toStdString(), OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
         if (!ogreTexture.isNull())
         {
-            if (assetAPI->GetFramework()->HasCommandLineParameter("--autodxtcompress"))
-                CompressTexture();
+            PostProcessTexture();
             
             assetAPI->AssetLoadCompleted(assetRef);
             return;
@@ -464,11 +462,28 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
     SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps, dynamic, false);
 }
 
+void TextureAsset::PostProcessTexture()
+{
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--autodxtcompress"))
+        CompressTexture();
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--maxtexturesize"))
+        ReduceTextureSize();
+}
+
 void TextureAsset::CompressTexture()
 {
 #if defined(DIRECTX_ENABLED) && defined(WIN32)
     if (ogreTexture.isNull())
         return;
+    
+    QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxtexturesize");
+    size_t maxTextureSize = 0;
+    if (sizeParam.size() > 0)
+    {
+        int size = sizeParam.first().toInt();
+        if (size > 0)
+            maxTextureSize = size;
+    }
     
     Ogre::PixelFormat sourceFormat = ogreTexture->getFormat();
     if (sourceFormat >= Ogre::PF_DXT1 && sourceFormat <= Ogre::PF_DXT5)
@@ -492,11 +507,21 @@ void TextureAsset::CompressTexture()
     std::vector<unsigned char*> imageData;
     std::vector<Ogre::PixelBox> imageBoxes;
     
-    for (unsigned level = 0; level <= ogreTexture->getNumMipmaps(); ++level)
+    size_t numMipmaps = ogreTexture->getNumMipmaps();
+    
+    for (size_t level = 0; level <= numMipmaps; ++level)
     {
         try
         {
             Ogre::HardwarePixelBufferSharedPtr buf = ogreTexture->getBuffer(0, level);
+            
+            // If a max texture size is set, and mipmaps are present in the source texture, reject those larger than acceptable texture size, however ensure at least 1 mipmap
+            if (maxTextureSize > 0 && numMipmaps > 0)
+            {
+                if (level < numMipmaps && imageBoxes.size() == 0 && (buf->getWidth() > maxTextureSize || buf->getHeight() > maxTextureSize))
+                    continue;
+            }
+            
             unsigned char* levelData = new unsigned char[buf->getWidth() * buf->getHeight() * 4];
             imageData.push_back(levelData);
             Ogre::PixelBox levelBox(Ogre::Box(0, 0, buf->getWidth(), buf->getHeight()), Ogre::PF_A8B8G8R8, levelData);
@@ -510,27 +535,52 @@ void TextureAsset::CompressTexture()
         }
     }
     
+    // If we only have 1 mipmap, and it is too large, resample it now
+    if (maxTextureSize > 0 && imageBoxes.size() == 1 && (imageBoxes[0].right > maxTextureSize || imageBoxes[0].bottom > maxTextureSize))
+    {
+        size_t targetWidth = imageBoxes[0].right;
+        size_t targetHeight = imageBoxes[0].bottom;
+        while (targetWidth > maxTextureSize || targetHeight > maxTextureSize)
+        {
+            targetWidth >>= 1;
+            targetHeight >>= 1;
+        }
+        if (!targetWidth)
+            targetWidth = 1;
+        if (!targetHeight)
+            targetHeight = 1;
+        
+        unsigned char* scaledPixelData = new unsigned char[targetWidth * targetHeight * 4];
+        Ogre::PixelBox targetBox(Ogre::Box(0, 0, targetWidth, targetHeight), Ogre::PF_A8B8G8R8, scaledPixelData);
+        Ogre::Image::scale(imageBoxes[0], targetBox);
+        
+        // Delete the unscaled original data and replace the original pixelbox
+        delete[] imageData[0];
+        imageData[0] = scaledPixelData;
+        imageBoxes[0] = targetBox;
+    }
+    
     // Determine format
     int flags = squish::kColourRangeFit; // Lowest quality, but fastest
     size_t bytesPerBlock = 8;
     Ogre::PixelFormat newFormat = Ogre::PF_DXT1;
     if (ogreTexture->hasAlpha())
     {
-        LogDebug("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT5");
+        LogWarning("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT5");
         newFormat = Ogre::PF_DXT5;
         bytesPerBlock = 16;
         flags |= squish::kDxt5;
     }
     else
     {
-        LogDebug("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT1");
+        LogWarning("CompressTexture " + Name() + " image format " + QString::number(sourceFormat) + ", compressing as DXT1");
         flags |= squish::kDxt1;
     }
     
     // Compress original texture data
     std::vector<unsigned char*> compressedImageData;
     
-    for (unsigned level = 0; level < imageBoxes.size(); ++level)
+    for (size_t level = 0; level < imageBoxes.size(); ++level)
     {
         int compressedSize = squish::GetStorageRequirements(imageBoxes[level].right, imageBoxes[level].bottom, flags);
         LogDebug("Compressing level " + QString::number(level) + " " + QString::number(imageBoxes[level].right) + "x" + QString::number(imageBoxes[level].bottom) + " into " + QString::number(compressedSize) + " bytes");
@@ -540,13 +590,15 @@ void TextureAsset::CompressTexture()
     }
     
     // Change Ogre texture format
-    ogreTexture->freeInternalResources(); 
+    ogreTexture->freeInternalResources();
+    ogreTexture->setWidth(imageBoxes[0].right);
+    ogreTexture->setHeight(imageBoxes[0].bottom);
     ogreTexture->setFormat(newFormat);
     ogreTexture->setNumMipmaps(imageBoxes.size() - 1);
     ogreTexture->createInternalResources();
     
     // Upload compressed texture data
-    for (unsigned level = 0; level < imageBoxes.size(); ++level)
+    for (size_t level = 0; level < imageBoxes.size(); ++level)
     {
         try
         {
@@ -585,9 +637,162 @@ void TextureAsset::CompressTexture()
     }
     
     // Delete CPU-side temp image data
-    for (unsigned i = 0; i < imageData.size(); ++i)
+    for (size_t i = 0; i < imageData.size(); ++i)
         delete[] imageData[i];
-    for (unsigned i = 0; i < compressedImageData.size(); ++i)
+    for (size_t i = 0; i < compressedImageData.size(); ++i)
         delete[] compressedImageData[i];
 #endif
 }
+
+void TextureAsset::ReduceTextureSize()
+{
+#if defined(DIRECTX_ENABLED) && defined(WIN32)
+    if (ogreTexture.isNull())
+        return;
+    
+    QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxtexturesize");
+    size_t maxTextureSize = 0;
+    if (sizeParam.size() > 0)
+    {
+        int size = sizeParam.first().toInt();
+        if (size > 0)
+            maxTextureSize = size;
+    }
+    if (!maxTextureSize)
+        return;
+    
+    if (ogreTexture->getWidth() <= maxTextureSize && ogreTexture->getHeight() <= maxTextureSize)
+        return; // Texture OK, no reduction needed
+    
+    size_t origWidth = ogreTexture->getWidth();
+    size_t origHeight = ogreTexture->getHeight();
+    
+    if (Ogre::Root::getSingletonPtr()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+    {
+        LogWarning("Skipping ReduceTextureSize on OpenGL as it is prone to crash");
+        return;
+    }
+    
+    Ogre::PixelFormat sourceFormat = ogreTexture->getFormat();
+    
+    // Get original texture data
+    std::vector<unsigned char*> imageData;
+    std::vector<Ogre::PixelBox> imageBoxes;
+    
+    size_t numMipmaps = ogreTexture->getNumMipmaps();
+    
+    // If mipmaps are present in the source texture, reject those larger than acceptable texture size, however ensure at least 1 mipmap
+    for (size_t level = 0; level <= numMipmaps; ++level)
+    {
+        try
+        {
+            Ogre::HardwarePixelBufferSharedPtr buf = ogreTexture->getBuffer(0, level);
+            
+            if (numMipmaps > 0 && level < numMipmaps && imageBoxes.size() == 0 && (buf->getWidth() > maxTextureSize || buf->getHeight() > maxTextureSize))
+                continue;
+            
+            unsigned char* levelData = new unsigned char[Ogre::PixelUtil::getMemorySize(buf->getWidth(), buf->getHeight(), 1, buf->getFormat())];
+            imageData.push_back(levelData);
+            Ogre::PixelBox levelBox(Ogre::Box(0, 0, buf->getWidth(), buf->getHeight()), buf->getFormat(), levelData);
+            buf->blitToMemory(levelBox);
+            imageBoxes.push_back(levelBox);
+        }
+        catch (std::exception& e)
+        {
+            LogError("TextureAsset::ReduceTextureSize: Caught exception " + QString(e.what()) + " while handling miplevel " + QString::number(level) + ", aborting.");
+            break;
+        }
+    }
+    
+    // If only one level, resize it. But do not attempt this for textures which already are DXT compressed
+    if (imageBoxes.size() == 1 && (imageBoxes[0].right > maxTextureSize || imageBoxes[0].bottom > maxTextureSize))
+    {
+        if (sourceFormat >= Ogre::PF_DXT1 && sourceFormat <= Ogre::PF_DXT5)
+        {
+            LogWarning("TextureAsset::ReduceTextureSize: not resizing already DDS compressed texture " + Name());
+            for (size_t i = 0; i < imageData.size(); ++i)
+                delete[] imageData[i];
+            return;
+        }
+        
+        size_t targetWidth = imageBoxes[0].right;
+        size_t targetHeight = imageBoxes[0].bottom;
+        while (targetWidth > maxTextureSize || targetHeight > maxTextureSize)
+        {
+            targetWidth >>= 1;
+            targetHeight >>= 1;
+        }
+        if (!targetWidth)
+            targetWidth = 1;
+        if (!targetHeight)
+            targetHeight = 1;
+        
+        unsigned char* scaledPixelData = new unsigned char[Ogre::PixelUtil::getMemorySize(targetWidth, targetHeight, 1, sourceFormat)];
+        Ogre::PixelBox targetBox(Ogre::Box(0, 0, targetWidth, targetHeight), sourceFormat, scaledPixelData);
+        Ogre::Image::scale(imageBoxes[0], targetBox);
+        
+        // Delete the unscaled original data and replace the original pixelbox
+        delete[] imageData[0];
+        imageData[0] = scaledPixelData;
+        imageBoxes[0] = targetBox;
+    }
+    
+    // Change texture parameters
+    ogreTexture->freeInternalResources();
+    ogreTexture->setWidth(imageBoxes[0].right);
+    ogreTexture->setHeight(imageBoxes[0].bottom);
+    ogreTexture->setNumMipmaps(imageBoxes.size() - 1);
+    ogreTexture->createInternalResources();
+    
+    // Upload new texture data
+    for (size_t level = 0; level < imageBoxes.size(); ++level)
+    {
+        try
+        {
+            Ogre::HardwarePixelBufferSharedPtr buf = ogreTexture->getBuffer(0, level);
+            
+            if (sourceFormat >= Ogre::PF_DXT1 && sourceFormat <= Ogre::PF_DXT5)
+            {
+                // Ogre does not load the texture data properly if the miplevel width is not divisible by 4, so we write manual code for Direct3D9
+                /// \todo Fix bug in ogre-safe-nocrashes branch. It also affects Ogre's loading of already compressed DDS files
+                size_t bytesPerBlock = sourceFormat == Ogre::PF_DXT1 ? 8 : 16;
+                size_t numRows = (buf->getHeight() + 3) / 4;
+                int sourceStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
+                unsigned char* src = imageData[level];
+                
+                Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(buf.get());
+                assert(pixelBuffer);
+                LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(Ogre::D3D9RenderSystem::getActiveD3D9Device());
+                if (surface)
+                {
+                    D3DLOCKED_RECT lock;
+                    HRESULT hr = surface->LockRect(&lock, 0, 0);
+                    if (SUCCEEDED(hr))
+                    {
+                        if (lock.Pitch == sourceStride)
+                            memcpy(lock.pBits, src, sourceStride * numRows);
+                        else
+                            for(size_t y = 0; y < numRows; ++y)
+                                memcpy((u8*)lock.pBits + lock.Pitch * y, src + sourceStride * y, sourceStride);
+                        surface->UnlockRect();
+                    }
+                }
+            }
+            else
+                buf->blitFromMemory(imageBoxes[level]);
+        }
+        catch (std::exception& e)
+        {
+            LogError("TextureAsset::ReduceTextureSize: Caught exception " + QString(e.what()) + " while handling miplevel " + QString::number(level) + ", aborting.");
+            break;
+        }
+    }
+    
+    // Delete CPU-side temp image data
+    for (size_t i = 0; i < imageData.size(); ++i)
+        delete[] imageData[i];
+    
+    LogDebug("TextureAsset::ReduceTextureSize: asset " + Name() + " reduced from " + QString::number(origWidth) + "x" + QString::number(origHeight) + " to " + QString::number(ogreTexture->getWidth()) + "x" + QString::number(ogreTexture->getHeight()));
+#endif
+}
+

@@ -67,9 +67,15 @@ public:
 
     //void RegenerateAllMipLevels();
 
-    /// Compress texture to suitable DXT format.
+    /// Perform post-processing after loading (DXT compression and size reduction) according to command line options
+    void PostProcessTexture();
+    
+    /// Compress texture to suitable DXT format. Also, if applicable, reduce texture size at the same time.
     void CompressTexture();
 
+    /// Reduce texture size only according to command line options
+    void ReduceTextureSize();
+    
     /// This points to the loaded texture asset, if it is present.
     Ogre::TexturePtr ogreTexture;
 
