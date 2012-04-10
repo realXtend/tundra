@@ -743,40 +743,51 @@ IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
 )
 
 :: VLC
+IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". (
+  CD "%DEPS%"
+  rmdir /S /Q "%DEPS%\vlc"
+  cecho {0D}Downloading VLC 2.0.1{# #}{\n}
+  wget http://sourceforge.net/projects/vlc/files/2.0.1/win32/vlc-2.0.1-win32.zip/download
+  IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". GOTO :ERROR
+) ELSE (
+   cecho {0D}VLC 2.0.1 already downloaded. Skipping.{# #}{\n}
+)
+
 IF NOT EXIST "%DEPS%\vlc". (
    CD "%DEPS%"
-   IF NOT EXIST "%DEPS%\vlc-2.0.0-win32.zip". (
-      cecho {0D}Downloading VLC 2.0.0{# #}{\n}
-      wget http://sourceforge.net/projects/vlc/files/2.0.0/win32/vlc-2.0.0-win32.zip/download
-      IF NOT EXIST "%DEPS%\vlc-2.0.0-win32.zip". GOTO :ERROR
-   )
    mkdir vlc
-   cecho {0D}Extracting VLC 2.0.0 package to "%DEPS%\vlc\vlc-2.0.0"{# #}{\n}
-   7za x -y -ovlc vlc-2.0.0-win32.zip
+   cecho {0D}Extracting VLC 2.0.1 package to "%DEPS%\vlc\vlc-2.0.1"{# #}{\n}
+   7za x -y -ovlc vlc-2.0.1-win32.zip
    cd vlc
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    mkdir lib
    mkdir include
    mkdir bin\plugins\vlcplugins
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cecho {0D}Copying needed files to %DEPS%\vlc\bin \lib and \include{# #}{\n}
-   copy /Y vlc-2.0.0\*.dll bin\
-   xcopy /E /I /C /H /R /Y vlc-2.0.0\plugins\*.* bin\plugins\vlcplugins
-   xcopy /E /I /C /H /R /Y vlc-2.0.0\sdk\include\*.* include
-   copy /Y vlc-2.0.0\sdk\lib\*.lib lib\
+   :: Copy from extraced location to our subfolders
+   cecho {0D}Copying needed VLC 2.0.1 files to \bin \lib and \include{# #}{\n}
+   copy /Y vlc-2.0.1\*.dll bin\
+   xcopy /E /I /C /H /R /Y vlc-2.0.1\plugins\*.* bin\plugins\vlcplugins
+   xcopy /E /I /C /H /R /Y vlc-2.0.1\sdk\include\*.* include
+   copy /Y vlc-2.0.1\sdk\lib\*.lib lib\
+   :: Remove extracted folder, not needed anymore
+   rmdir /S /Q vlc-2.0.1
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Force deployment
+   :: Force deployment and clean vlc plugins cache file
    del /Q "%TUNDRA_BIN%\libvlc.dll"
+   rmdir /S /Q "%TUNDRA_BIN%\plugins\vlcplugins"
+   del /Q "%TUNDRA_BIN%\plugins\plugins*.dat"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}VLC 2.0.0 already fetched. Skipping.{# #}{\n}
+   cecho {0D}VLC 2.0.1 already extracted. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
-   cecho {0D}Deploying VLC 2.0.0 DLLs to Tundra bin\{# #}{\n}
+   cecho {0D}Deploying VLC 2.0.1 DLLs to Tundra bin\{# #}{\n}
    xcopy /E /I /C /H /R /Y "%DEPS%\vlc\bin\*.*" "%TUNDRA_BIN%"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}VLC 2.0.0 already deployed. Skipping.{# #}{\n}
+   cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
 )
 
 echo.
