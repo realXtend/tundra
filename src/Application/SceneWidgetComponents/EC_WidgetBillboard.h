@@ -86,16 +86,17 @@ private slots:
     /// Handles uiRef asset load fail.
     void OnUiAssetLoadFailed(IAssetTransfer *transfer, QString reason);
 
-    /// Handles main input context mouse events.
-    void OnMouseEvent(MouseEvent *mEvent);
-
-    /// Does a raycast to the billboard. Sets hit, uv and distance accordingly.
-    void RaycastBillboard(int mouseX, int mouseY, bool &hit, float2 &uv, float &distance);
+    /// Handles main input context mouse events. 
+    /// @note This shoul only be called if raycast->component == this.
+    void OnMouseEvent(MouseEvent *mEvent, RaycastResult *raycast);
 
     /// Sends a mouse event to the widget container scene that redirects the input to the actual widget.
     /// @return bool True if event was handled, false otherwise.
     bool SendWidgetMouseEvent(QPoint pos, QEvent::Type type, Qt::MouseButton button, Qt::KeyboardModifier modifier = Qt::NoModifier);
 
+    /// Sends focus out event for the widget.
+    bool SendFocusOutEvent();
+    
     /// Checks if we have "unacked" mouse press events pending or mouse hover out to be sent out.
     void CheckMouseState();
 
