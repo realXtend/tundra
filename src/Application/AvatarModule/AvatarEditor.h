@@ -94,10 +94,6 @@ private:
     bool reverting_;
 
 private slots:
-    /// Called by open file dialog when it's closed.
-    /** @param result Result of dialog closure. Open is 1, Cancel is 0. */
-    void OpenFileDialogClosed(int result);
-
     /// Called by open attachment file dialog when it's closed.
     /** @param result Result of dialog closure. Open is 1, Cancel is 0. */
     void OpenAttachmentDialogClosed(int result);
