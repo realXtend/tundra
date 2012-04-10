@@ -633,7 +633,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
             if (!scene)
                 return;
 
-            foreach(const EntityPtr &cam, scene->GetEntitiesWithComponent(EC_Camera::TypeNameStatic()))
+            foreach(const EntityPtr &cam, scene->EntitiesWithComponent(EC_Camera::TypeNameStatic()))
                 if (cam->GetComponent<EC_Camera>()->IsActive())
                 {
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();

@@ -115,7 +115,7 @@ private slots:
         @param comp Component which was removed. */
     void RemoveComponent(Entity *entity, IComponent *comp);
 
-    /// This is an overloaded function.
+    /// @overload
     /** This is called only by EC_DynamicComponent when asset ref attribute is added to it.
         @param attr AssetReference attribute. */
     void AddAssetReference(IAttribute *attr);

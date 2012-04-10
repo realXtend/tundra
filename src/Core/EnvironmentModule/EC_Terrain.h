@@ -323,7 +323,7 @@ public slots:
         @param ogreMeshResourceName Internal Ogre resource name. */
     void GenerateFromOgreMesh(QString ogreMeshResourceName);
 
-    /// This is an overloaded function.
+    /// @overload
     /** @param ogreMeshResourceName Internal Ogre resource name.
         @param transform Desired tranform for the generated terrain. */
     void GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::Matrix4 &transform);

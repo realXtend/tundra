@@ -140,7 +140,7 @@ public slots:
     /// Sets the overall scene blend mode of a pass
     /** See Ogre::SceneBlendType for @c blendMode */
     bool SetSceneBlend(int techIndex, int passIndex, unsigned blendMode);
-    /// This is an overloaded function.
+    /// @overload
     /** Sets the source and destination blend factors separately.
         See Ogre::SceneBlendFactor for @c srcFactor and @c dstFactor. */
     bool SetSceneBlend(int techIndex, int passIndex, unsigned srcFactor, unsigned dstFactor);
@@ -191,7 +191,7 @@ public slots:
     /** Sets the same mode for u, v and w.
         See Ogre::TextureUnitState::TextureAddressingMode for @c mode. */
     bool SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned mode);
-    /// This is an overloaded function. 
+    /// @overload
     /** Specifies the mode for u, v and w separately */
     bool SetTextureAddressingMode(int techIndex, int passIndex, int texUnitIndex, unsigned uMode, unsigned vMode, unsigned wMode);
     unsigned TextureAddressingModeU(int techIndex, int passIndex, int texUnitIndex) const;

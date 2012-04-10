@@ -143,8 +143,7 @@ public slots:
 
     /// Removes a key mapping
     void RemoveMapping(const QKeySequence &keySeq, int eventType = 1);
-    /// This is an overloaded function.
-    void RemoveMapping(const QString &keySeqString, int eventType = 1);
+    void RemoveMapping(const QString &keySeqString, int eventType = 1); ///< @overload
 
     /// Returns the input context of this input mapper.
     InputContext *GetInputContext() const { return inputContext.get(); }

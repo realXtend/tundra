@@ -26,7 +26,7 @@ public:
     ~UiGraphicsView();
 
     /// Returns the currently shown UI content as an image.
-    QImage *BackBuffer();
+    QImage *BackBuffer() const;
 
     /// Returns true if there are rectangles pending repaint in the view.
     bool IsViewDirty() const;
@@ -39,7 +39,8 @@ public:
 
 public slots:
     /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
-    QGraphicsItem *GetVisibleItemAtCoords(int x, int y) const;
+    QGraphicsItem *VisibleItemAtCoords(int x, int y) const;
+    QGraphicsItem *GetVisibleItemAtCoords(int x, int y) const { return VisibleItemAtCoords(x,y); } ///< @deprecated Use VisibleItemAtCoords. @todo Add warning print
 
     /// Sets a new size for this widget. Will emit the WindowResized signal.
     void Resize(int newWidth, int newHeight);
@@ -49,25 +50,22 @@ signals:
     void WindowResized(int newWidth, int newHeight);
 
     /// Emitted when DragEnterEvent is received for the main window.
-    /** @param e Event.
-        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget.
-    */
+    /** @param e Drag enter event from Qt as is.
+        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget. */
     void DragEnterEvent(QDragEnterEvent *e, QGraphicsItem *widgetUnderMouse);
 
     /// Emitted when DragLeaveEvent is received for the main window.
-    /** @param e Event. */
+    /** @param e Drag leave event from Qt as is. */
     void DragLeaveEvent(QDragLeaveEvent *e);
 
     /// Emitted when DragMoveEvent is received for the main window.
-    /** @param e Event.
-        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget.
-    */
+    /** @param e Drage move event from Qt as is.
+        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget. */
     void DragMoveEvent(QDragMoveEvent *e, QGraphicsItem *widgetUnderMouse);
 
     /// Emitted when DropEvent is received for the main window.
-    /** @param e Event.
-        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget.
-    */
+    /** @param e Drop event from Qt as is.
+        @param widgetUnderMouse Graphics item that is under the drop event, null if no widget. */
     void DropEvent(QDropEvent *e, QGraphicsItem *widgetUnderMouse);
 
 private:

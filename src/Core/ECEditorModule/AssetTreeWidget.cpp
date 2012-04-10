@@ -623,8 +623,7 @@ void AssetTreeWidget::FunctionDialogFinished(int result)
 
             QString errorMsg;
             QVariant ret;
-            FunctionInvoker invoker;
-            invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
+            FunctionInvoker::Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
 
             QString retValStr;
             ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.

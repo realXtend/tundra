@@ -171,8 +171,8 @@ void EC_LaserPointer::Update(MouseEvent *e)
                 EC_Placeable *placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
                 if (placeable)
                 {
-                    float3 position = placeable->transform.Get().pos;
-                    if (position != startPos.Get())
+                    float3 position = placeable->WorldPosition();
+                    if (!position.Equals(startPos.Get()))
                         startPos.Set(position, AttributeChange::Default);
                 }
                 endPos.Set(result->pos, AttributeChange::Default);
@@ -238,8 +238,8 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
         if (!placeable)
             return;
 
-        float3 position = placeable->transform.Get().pos;
-        if (position != startPos.Get())
+        float3 position = placeable->WorldPosition();
+        if (!position.Equals(startPos.Get()))
             startPos.Set(position, AttributeChange::Default);
 
         // If mouse cursor is visible (not in first-person mode), see if we are inside the main window or there is a graphics item under the mouse

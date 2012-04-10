@@ -238,8 +238,7 @@ public slots:
         This function is called by IAttribute::Changed whenever the value in that
         attribute is changed. */
     void EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
-
-    /// This is an overloaded function.
+    /// @overload
     /** @param attributeName Name of the attribute that changed. @note this is a no-op if the named attribute is not found.
         @param change Informs to the component the type of change that occurred. */
     void EmitAttributeChanged(const QString& attributeName, AttributeChange::Type change);

@@ -83,6 +83,3 @@ private:
     std::vector<float2> uvs; 
     std::vector<int> subMeshTriangleCounts;
 };
-
-typedef boost::shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;
-

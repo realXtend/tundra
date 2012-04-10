@@ -113,41 +113,20 @@ public slots:
         all attributes at creation, or to only add new attributes on the server. */
     IAttribute *CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
-    /// \todo Unneeded, will removed. Do not use.
-    /// Create new attribute that type is QVariant.
-    /** @param name Name of the attribute. */
-    void AddQVariantAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default);
-
     /// Get attribute value as QVariant.
     /** If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
         Use QVariant's isNull method to check if the variant value is initialized.
         @param index Index to attribute list.
         @return Return attribute value as QVariant if attribute has been found, else return null QVariant. */
     QVariant GetAttribute(int index) const;
-
-    /// This is an overloaded function.
-    /** @param name Name of the attribute. */
-    QVariant GetAttribute(const QString &name) const;
-
-    /// \todo Unneeded, will removed. Do not use.
-    /// Inserts new attribute value to attribute. Note: this is only meant to be used from QtScript.
-    /** @param name Name of the attribute.
-        @param value Value of the attribute.
-        @param change Change type.
-        @todo remove this from dynamic component when possible. */
-    void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change = AttributeChange::Default);
+    QVariant GetAttribute(const QString &name) const; /**< @overload @param name Name of the attribute. */
 
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
         @param value Value of the attribute.
         @param change Change type. */
     void SetAttribute(int index, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
-
-    /// This is an overloaded function.
-    /** @param name Name of the attribute.
-        @param value Value of the attribute.
-        @param change Change type. */
-    void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
+    void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Default); /**< @overload @param name Name of the attribute. */
 
     /// Returns name of attribute with the specific @c index
     /** @param index Index of the attribute. */
@@ -168,6 +147,9 @@ public slots:
 
     /// Removes all attributes from the component
     void RemoveAllAttributes(AttributeChange::Type change = AttributeChange::Default);
+
+    void AddQVariantAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use CreateAttribute('qvariant') @todo Remove */
+    void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use SetAttribute @todo Remove */
 
 private:
     /// Convert attribute index without holes (used by client) into actual attribute index. Returns below zero if not found. Requires a linear search.

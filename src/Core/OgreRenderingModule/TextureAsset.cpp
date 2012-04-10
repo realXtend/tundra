@@ -64,6 +64,12 @@ bool TextureAsset::LoadFromFile(QString filename)
 
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--notextures"))
+    {
+        assetAPI->AssetLoadCompleted(Name());
+        return true;
+    }
+    
     PROFILE(TextureAsset_DeserializeFromData);
 
     // A NullAssetFactory has been registered on headless mode.
@@ -132,8 +138,21 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         if (ogreTexture.isNull()) // If we are creating this texture for the first time, create a new Ogre::Texture object.
         {
             ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
-            ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image, Ogre::TEX_TYPE_2D, 
-                numMipmapsToUseOnGPU);
+            
+            // Optionally load textures to default pool for memory use debugging. Do not use in production use due to possible crashes on device loss & missing mipmaps!
+            // Note: this does not affect async loading path, so specify additionally --no_async_asset_load to be sure textures are loaded through this path
+            // Furthermore, it may still allocate virtual memory address space due to using AGP memory mapping (we would not actually need a dynamic texture, but there's no way to tell Ogre that)
+            if (assetAPI->GetFramework()->HasCommandLineParameter("--d3ddefaultpool"))
+            {
+                ogreTexture = Ogre::TextureManager::getSingleton().createManual(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,image.getWidth(), 
+                    image.getHeight(), numMipmapsToUseOnGPU, image.getFormat(), Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+                ogreTexture->loadImage(image);
+            }
+            else
+            {
+                ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image, Ogre::TEX_TYPE_2D, 
+                    numMipmapsToUseOnGPU);
+            }
         }
         else // If we're loading on top of an Ogre::Texture we've created before, don't lose the old Ogre::Texture object, but reuse the old.
         {    // This will allow all existing materials to keep referring to this texture, and they'll get the updated texture image immediately.

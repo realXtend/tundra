@@ -50,7 +50,7 @@ public slots:
         @todo clearScene not used currently for anything. */
     void InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene);
 
-    /// This is an overloaded function
+    /// @overload
     /** @param filenames Content filename.
         @todo clearScene not used currently for anything. */
     void InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene);

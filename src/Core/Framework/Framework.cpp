@@ -171,10 +171,10 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
     cmdLineDescs.commands["--hide_benign_ogre_messages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
 
-    apiVersionInfo = new ApiVersionInfo(Application::Version());
-    applicationVersionInfo = new ApplicationVersionInfo(Application::OrganizationName(), Application::ApplicationName(), Application::Version());
+    apiVersionInfo = new VersionInfo(Application::Version());
+    applicationVersionInfo = new VersionInfo(Application::Version());
 
-    LogInfo("* API version         : " + apiVersionInfo->GetFullIdentifier());
+    LogInfo("* API version         : " + apiVersionInfo->Version());
     LogInfo("* Application version : " + Application::FullIdentifier());
 
     if (HasCommandLineParameter("--help"))
@@ -249,7 +249,8 @@ Framework::Framework(int argc_, char** argv_) :
     input = new InputAPI(this);
     console = new ConsoleAPI(this);
     console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
-    console->RegisterCommand("inputcontexts", "Prints all currently registered input contexts in InputAPI.", input, SLOT(DumpInputContexts()));
+    console->RegisterCommand("inputContexts", "Prints all currently registered input contexts in InputAPI.", input, SLOT(DumpInputContexts()));
+    console->RegisterCommand("dynamicObjects", "Prints all currently registered dynamic objets in Framework.", this, SLOT(PrintDynamicObjects()));
 
     /// @todo Remove when SceneInteract is moved out of the core.
     scene->GetSceneInteract()->Initialize(this);
@@ -490,12 +491,12 @@ IRenderer *Framework::Renderer() const
     return renderer;
 }
 
-ApiVersionInfo *Framework::ApiVersion() const
+VersionInfo *Framework::ApiVersion() const
 {
     return apiVersionInfo;
 }
 
-ApplicationVersionInfo *Framework::ApplicationVersion() const
+VersionInfo *Framework::ApplicationVersion() const
 {
     return applicationVersionInfo;
 }
@@ -523,11 +524,15 @@ IModule *Framework::GetModuleByName(const QString &name) const
 bool Framework::RegisterDynamicObject(QString name, QObject *object)
 {
     if (name.length() == 0 || !object)
+    {
+        LogError("Framework::RegisterDynamicObject: empty name or null object passed.");
         return false;
-
-    // We never override a property if it already exists.
-    if (property(name.toStdString().c_str()).isValid())
+    }
+    if (property(name.toStdString().c_str()).isValid()) // We never override a property if it already exists.
+    {
+        LogError(QString("Framework::RegisterDynamicObject: Dynamic object with name \"%1\" already registered.").arg(name));
         return false;
+    }
 
     setProperty(name.toStdString().c_str(), QVariant::fromValue<QObject*>(object));
 
@@ -670,4 +675,11 @@ void Framework::PrintStartupOptions()
             ++i;
         }
     }
+}
+
+void Framework::PrintDynamicObjects()
+{
+    LogInfo("Dynamic objects:");
+    foreach(const QByteArray &obj, dynamicPropertyNames())
+        LogInfo(QString(obj));
 }

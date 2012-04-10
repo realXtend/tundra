@@ -47,6 +47,7 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     RegisterCommand("loglevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
         this, SLOT(SetLogLevel(const QString &)));
 
+    /// \todo Visual Leak Detector shows a memory leak originating from this allocation although the shellInputThread is released in the destructor. Perhaps a shared pointer is held elsewhere.
     shellInputThread = boost::make_shared<ShellInputThread>();
 
     QStringList logLevel = fw->CommandLineParameters("--loglevel");
@@ -90,9 +91,8 @@ QVariant ConsoleCommand::Invoke(const QStringList &params)
         if (params.size() < numRequiredArgs && !functionNameDefaultArgs.isEmpty())
             func = functionNameDefaultArgs;
 
-        FunctionInvoker fi;
         QString errorMessage;
-        fi.Invoke(target, func, params, &returnValue, &errorMessage);
+        FunctionInvoker::Invoke(target, func, params, &returnValue, &errorMessage);
         if (!errorMessage.isEmpty())
             LogError("ConsoleCommand::Invoke returned an error: " + errorMessage);
     }
