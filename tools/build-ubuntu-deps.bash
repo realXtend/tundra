@@ -50,7 +50,7 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev
 	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libboost-all-dev libois-dev \
 	 ccache libqt4-dev python-dev freeglut3-dev \
-	 libxml2-dev cmake libalut-dev libtheora-dev \
+	 libxml2-dev cmake libalut-dev libtheora-dev ed \
 	 liboil0.3-dev mercurial unzip xsltproc $more
 fi
 
@@ -119,7 +119,9 @@ fi
 
 
 if [ x$private_ogre = xtrue ]; then
-    sudo apt-get build-dep libogre-dev
+    if tty >/dev/null; then
+	sudo apt-get build-dep libogre-dev
+    fi
     what=ogre
     if test -f $tags/$what-done; then
         echo $what is done
