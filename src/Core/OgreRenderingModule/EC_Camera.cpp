@@ -178,6 +178,11 @@ void EC_Camera::SetActive()
     }
 
     world_.lock()->Renderer()->SetMainCamera(ParentEntity());
+
+    // Forcibly update the aspect ratio for the new camera. Ogre has a bug that activating a new camera will not automatically re-apply the aspect ratio automatically,
+    // if its setAutoAspectRatio was set to true. Therefore, re-apply the aspect ratio when activating a new camera to the main viewport.
+    camera_->setAspectRatio(AspectRatio());
+    camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); ///\note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). 
 }
 
 float EC_Camera::NearClip() const
