@@ -61,7 +61,11 @@ public slots:
     void UpdateAssetItem(AssetPtr asset) { UpdateAssetItem(asset.get()); }
 
 signals:
-    /// Emitted when asset was picked.
+    /// Emitted when an asset is selected from the list, can be used for e.g. previewing the asset.
+    /** @param asset Asset that is selected. */
+    void SelectedAssetChanged(AssetPtr asset);
+
+    /// Emitted when asset was picked (not just selected).
     /** @param asset Asset that was picked. */
     void AssetPicked(AssetPtr asset);
 
@@ -96,7 +100,7 @@ private slots:
     void CheckTreeExpandStatus(QTreeWidgetItem *item);
 
     void AssetDoubleClicked(QTreeWidgetItem *item, int column);
-    void PickAsset(QTreeWidgetItem *);
+    void ChangeSelectedAsset(QTreeWidgetItem *);
     void PickAssetAndClose();
     void Cancel();
 };

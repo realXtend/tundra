@@ -441,6 +441,7 @@ void AvatarEditor::OpenAvatarAsset()
     previousAvatar_ = avatarAsset_;
 
     AssetsWindow *assetsWindow = new AssetsWindow("Avatar", framework, framework->Ui()->MainWindow());
+    connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
