@@ -11,12 +11,13 @@ macro (configure_speex)
         COMPONENTS libspeex         # speex lib
                    libspeexdsp      # speex audio processing lib
                    speex            # speex.h to find include dir
-        PREFIXES ${SPEEX_ROOT})
+        PREFIXES ${SPEEX_ROOT}      # full prebuilt deps
+                 ${SPEEX_ROOT}/lib/Release) # packaged prebuilt deps
         
     sagase_configure_report (SPEEX)
 endmacro (configure_speex)
 
-macro (configure_protobuf)   
+macro (configure_protobuf)
     if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
         SET(PROTOBUF_SRC_ROOT_FOLDER $ENV{PROTOBUF_SRC_ROOT_FOLDER})
     endif()
@@ -25,6 +26,18 @@ macro (configure_protobuf)
     endif()
 
     find_package(Protobuf REQUIRED)
+    
+    # Stupid FindProtobuf.cmake does not find includes on windows for packaged deps, set manually.
+    # It is assuming include path is <protobuf>/vcprojects/include on windows, ARGH!
+    if ("${PROTOBUF_INCLUDE_DIR}" STREQUAL "PROTOBUF_INCLUDE_DIR-NOTFOUND")
+        if (IS_DIRECTORY ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+            set (PROTOBUF_INCLUDE_DIR ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+            set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+        else()
+            message(FATAL_ERROR "Could not detect include folder from ${PROTOBUF_SRC_ROOT_FOLDER}/include")
+        endif()
+    endif()
+    
     sagase_configure_report (PROTOBUF)
 endmacro (configure_protobuf)
 

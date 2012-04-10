@@ -3,6 +3,7 @@ echo.
 
 :: User defined variables
 set GENERATOR="Visual Studio 9 2008"
+set BUILD_RELEASE=FALSE
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
 
@@ -17,10 +18,20 @@ set DEPS=%CD%\deps
 cd %TOOLS%
 
 :: Print user defined variables
+cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
+echo.
 cecho {0A}Script configuration:{# #}{\n}
-echo CMake Generator   = %GENERATOR%
-echo Build OpenSSL     = %BUILD_OPENSSL%
-echo Build Qt with JOM = %USE_JOM%
+cecho {0D}  CMake Generator    = %GENERATOR%{# #}{\n}
+echo    - Passed to CMake -G option
+cecho {0D}  Build Release = %BUILD_RELEASE%{# #}{\n}
+echo    - Build Release mode in addition to RelWithDebInfo when possible.
+echo      Default is disabled, enable if you are planning to deploy
+echo      Tundra in Release mode.
+cecho {0D}  Build OpenSSL      = %BUILD_OPENSSL%{# #}{\n}
+echo    - Build OpenSSL, requires Active Perl.
+cecho {0D}  Build Qt with JOM  = %USE_JOM%{# #}{\n}
+echo    - Use jom.exe instead of nmake.exe to build qmake projects.
+echo      Default enabled as jom is significantly faster by usin all CPUs.
 echo.
 
 :: Validate user defined variables
@@ -38,32 +49,38 @@ IF NOT %USE_JOM% == FALSE (
    ) 
 )
 
+IF NOT %BUILD_RELEASE% == FALSE (
+   IF NOT %BUILD_RELEASE% == TRUE (
+      cecho {0E}BUILD_RELEASE needs to be either TRUE or FALSE{# #}{\n}
+      GOTO :ERROR
+   ) 
+)
+
 :: Print scripts usage information
-cecho {0A}This script fetches and builds all Tundra dependencies.{# #}{\n}
-echo Requirements:
-echo 1. Install SVN and make sure 'svn' is accessible from PATH.
-echo  - http://tortoisesvn.net/downloads.html, install with command line tools!
-echo 2. Install Hg and make sure 'hg' is accessible from PATH.
-echo  - http://tortoisehg.bitbucket.org/
-echo 3. Install git and make sure 'git' is accessible from PATH.
-echo  - http://code.google.com/p/tortoisegit/
-echo 4. Install DirectX SDK June 2010.
-echo  - http://www.microsoft.com/download/en/details.aspx?id=6812
-echo 5. Install cmake and make sure 'cmake' is accessible from PATH.
-echo  - http://www.cmake.org/
-echo 6. Install Visual Studio 2008 with SP1. (Express is ok)
-echo  - http://www.microsoft.com/download/en/details.aspx?id=14597
-echo 7. Install Windows SDK.
-echo  - http://www.microsoft.com/download/en/details.aspx?id=8279
+cecho {0A}Requirements for a successful execution:{# #}{\n}
+echo   1. Install SVN and make sure 'svn' is accessible from PATH.
+echo    - http://tortoisesvn.net/downloads.html, install with command line tools!
+echo   2. Install Hg and make sure 'hg' is accessible from PATH.
+echo    - http://tortoisehg.bitbucket.org/
+echo   3. Install git and make sure 'git' is accessible from PATH.
+echo    - http://code.google.com/p/tortoisegit/
+echo   4. Install DirectX SDK June 2010.
+echo    - http://www.microsoft.com/download/en/details.aspx?id=6812
+echo   5. Install cmake and make sure 'cmake' is accessible from PATH.
+echo    - http://www.cmake.org/
+echo   6. Install Visual Studio 2008 with SP1. (Express is ok)
+echo    - http://www.microsoft.com/download/en/details.aspx?id=14597
+echo   7. Install Windows SDK.
+echo    - http://www.microsoft.com/download/en/details.aspx?id=8279
 
 IF %BUILD_OPENSSL%==TRUE (
-   echo 8. To build OpenSSL install Active Perl and set perl.exe to PATH.
-   echo  - http://www.activestate.com/activeperl/downloads
-   cecho {0E}   NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
-   cecho {0E}   provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
-   echo 9. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo   8. To build OpenSSL install Active Perl and set perl.exe to PATH.
+   echo    - http://www.activestate.com/activeperl/downloads
+   cecho {0E}     NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
+   cecho {0E}     provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
+   echo   9. Execute this file from Visual Studio 2008/2010 Command Prompt.
 ) ELSE (
-   echo 8. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo   8. Execute this file from Visual Studio 2008/2010 Command Prompt.
 )
 echo.
 
@@ -138,14 +155,8 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 
 :SKIP_OPENSSL
 
-:: Add qmake.exe from our downloaded Qt to PATH.
-set PATH=%DEPS%\Qt\bin;%PATH%
-
-set QMAKESPEC=%DEPS%\Qt\mkspecs\win32-msvc2008
-set QTDIR=%DEPS%\Qt
-
 :: Qt
-IF NOT EXIST "%DEPS%\Qt". (
+IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
       cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
@@ -153,17 +164,19 @@ IF NOT EXIST "%DEPS%\Qt". (
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\Qt".{# #}{\n}
-   7za x -y qt-everywhere-opensource-src-4.7.4.zip
+   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\qt".{# #}{\n}
+   mkdir qt
+   7za x -y -oqt qt-everywhere-opensource-src-4.7.4.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   ren qt-everywhere-opensource-src-4.7.4 qt
-   IF NOT EXIST "%DEPS%\Qt" GOTO :ERROR
+   cd qt
+   ren qt-everywhere-opensource-src-4.7.4 qt-src-4.7.4
+   IF NOT EXIST "%DEPS%\qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
 )
 
 IF %USE_JOM%==FALSE GOTO :SKIP_JOM
-IF NOT EXIST "%DEPS%\Qt\jom\jom.exe". (
+IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
    IF NOT EXIST jom_1_0_11.zip. (
       cecho {0D}Downloading JOM build tool for Qt.{# #}{\n}
@@ -171,11 +184,11 @@ IF NOT EXIST "%DEPS%\Qt\jom\jom.exe". (
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Installing JOM build tool for to %DEPS%\Qt\jom.{# #}{\n}
-   mkdir %DEPS%\Qt\jom
-   7za x -y -oQt\jom jom_1_0_11.zip
+   cecho {0D}Installing JOM build tool for to %DEPS%\qt\jom.{# #}{\n}
+   mkdir %DEPS%\qt\jom
+   7za x -y -oqt\jom jom_1_0_11.zip
 ) ELSE (
-   cecho {0D}JOM already installed to %DEPS%\Qt\jom. Skipping.{# #}{\n}
+   cecho {0D}JOM already installed to %DEPS%\qt\jom. Skipping.{# #}{\n}
 )
 
 :SKIP_JOM
@@ -185,34 +198,38 @@ IF NOT EXIST "%DEPS%\Qt\jom\jom.exe". (
 :: Hence the secondary IF to print it out when build is enabled. Only print these if Qt will be built
 SET QT_OPENSSL_CONFIGURE=
 IF %BUILD_OPENSSL%==TRUE (
-   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
    SET QT_OPENSSL_CONFIGURE=-openssl -I "%DEPS%\openssl\include" -L "%DEPS%\openssl\lib"
 ) ELSE (
-   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
 )
 IF %BUILD_OPENSSL%==TRUE (
-    IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". echo '%QT_OPENSSL_CONFIGURE%'
+    IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". echo '%QT_OPENSSL_CONFIGURE%'
 )
 
-IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
-   cd "%DEPS%\Qt"
+IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
+   IF NOT EXIST "%DEPS%\qt\qt-src-4.7.4". (
+      cecho {0E}Warning: %DEPS%\qt\qt-src-4.7.4 does not exist, extracting Qt failed?.{# #}{\n}
+      GOTO :ERROR
+   )
+   cd "%DEPS%\qt\qt-src-4.7.4"
    
    IF NOT EXIST "configure.cache". (
       cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
-      configure -platform win32-msvc2008 -debug-and-release -opensource -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+      configure -platform win32-msvc2008 -debug-and-release -opensource -prefix "%DEPS%\qt" -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ) ELSE (
-      cecho {0D}Qt already configured. Remove %DEPS%\Qt\configure.cache to trigger a reconfigure.{# #}{\n}
+      cecho {0D}Qt already configured. Remove %DEPS%\qt\qt-src-4.7.4\configure.cache to trigger a reconfigure.{# #}{\n}
    )
    
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building Qt with jom{# #}{\n}
-      jom\jom.exe
+      "%DEPS%\Qt\jom\jom.exe"
       :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
       set ERRORLEVEL=0
       del /s /q mocinclude.tmp
-      jom\jom.exe
+      "%DEPS%\Qt\jom\jom.exe"
    ) ELSE (
       cecho {0D}- Building Qt with nmake{# #}{\n}
       nmake /nologo
@@ -221,9 +238,18 @@ IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
       del /s /q mocinclude.tmp
       nmake /nologo
    )
+
+   IF NOT EXIST "%DEPS%\qt\qt-src-4.7.4\lib\QtWebKit4.dll". (
+      cecho {0E}Warning: %DEPS%\qt\qt-src-4.7.4\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
+      GOTO :ERROR
+   )
    
-   IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
-      cecho {0E}Warning: Qt\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
+   :: Don't use jom for install. It seems to hang easily, maybe beacuse it tries to use multiple cores.
+   cecho {0D}Installing Qt to %DEPS%\qt{# #}{\n}
+   nmake install
+      
+   IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
+      cecho {0E}Warning: %DEPS%\qt\lib\QtWebKit4.dll not present, Qt install failed?.{# #}{\n}
       GOTO :ERROR
    )
    
@@ -234,6 +260,12 @@ IF NOT EXIST "%DEPS%\Qt\lib\QtWebKit4.dll". (
    cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
 
+:: Setup now built Qt to PATH (qmake), QTDIR and QMAKESPEC.
+:: These will be utilized by other dependencies that need Qt.
+set PATH=%DEPS%\qt\bin;%PATH%
+set QMAKESPEC=%DEPS%\qt\mkspecs\win32-msvc2008
+set QTDIR=%DEPS%\qt
+
 IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
    copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
@@ -241,6 +273,11 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    mkdir "%TUNDRA_BIN%\qtplugins"
    xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   :: Clean out some definately not needed Qt DLLs from bin
+   :: QtCLucene does not have a public API and QtDesigner* are for QtCretor etc.
+   :: Others we could (should) remove right here: QtSvg, QtSql, QtTest and QtHelp.
+   del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
+   del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
 )
 
 IF NOT EXIST "%DEPS%\bullet\". (
@@ -305,9 +342,8 @@ IF NOT EXIST kNet.sln. (
 )
 cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
 msbuild kNet.sln /p:configuration=Debug /nologo
-::msbuild kNet.sln /p:configuration=MinSizeRel /nologo
-::msbuild kNet.sln /p:configuration=Release /nologo
 msbuild kNet.sln /p:configuration=RelWithDebInfo /nologo
+IF %BUILD_RELEASE%==TRUE msbuild kNet.sln /p:configuration=Release /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
@@ -455,23 +491,20 @@ REM   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_
 )
 
 cecho {0D}Building ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
-msbuild OGRE.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
-::msbuild OGRE.sln /p:configuration=MinSizeRel /clp:ErrorsOnly /nologo
-::msbuild OGRE.sln /p:configuration=Release /clp:ErrorsOnly /nologo
-msbuild OGRE.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
+msbuild OGRE.sln /p:configuration=Debug /nologo
+msbuild OGRE.sln /p:configuration=RelWithDebInfo /nologo
+IF %BUILD_RELEASE%==TRUE msbuild OGRE.sln /p:configuration=Release /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying ogre-safe-nocrashes SDK directory.{# #}{\n}
 msbuild INSTALL.vcproj /p:configuration=Debug /clp:ErrorsOnly /nologo
-::msbuild INSTALL.vcproj /p:configuration=MinSizeRel /clp:ErrorsOnly /nologo
-::msbuild INSTALL.vcproj /p:configuration=Release /clp:ErrorsOnly /nologo
-msbuild INSTALL.vcproj /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
+IF %BUILD_RELEASE%==FALSE (msbuild INSTALL.vcproj /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo) ELSE (msbuild INSTALL.vcproj /p:configuration=Release /clp:ErrorsOnly /nologo)
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying Ogre DLLs to Tundra bin\ directory.{# #}{\n}
 copy /Y "%DEPS%\ogre-safe-nocrashes\bin\debug\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-copy /Y "%DEPS%\ogre-safe-nocrashes\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
+IF %BUILD_RELEASE%==FALSE (copy /Y "%DEPS%\ogre-safe-nocrashes\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%") ELSE (copy /Y "%DEPS%\ogre-safe-nocrashes\bin\release\*.dll" "%TUNDRA_BIN%")
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -500,15 +533,14 @@ IF NOT EXIST SKYX.sln. (
 )
 cecho {0D}Building SkyX. Please be patient, this will take a while.{# #}{\n}
 msbuild SKYX.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
-::msbuild SKYX.sln /p:configuration=MinSizeRel /clp:ErrorsOnly /nologo
-::msbuild SKYX.sln /p:configuration=Release /clp:ErrorsOnly /nologo
 msbuild SKYX.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo
+IF %BUILD_RELEASE%==TRUE msbuild SKYX.sln /p:configuration=Release /clp:ErrorsOnly /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying SkyX DLLs to Tundra bin\.{# #}{\n}
 copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\debug\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
+IF %BUILD_RELEASE%==FALSE (copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%") ELSE (copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\release\*.dll" "%TUNDRA_BIN%")
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
@@ -544,9 +576,17 @@ IF NOT EXIST "%DEPS%\qt-solutions". (
       nmake /nologo
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\*.dll" "%TUNDRA_BIN%"
+   :: Force deployment
+   del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
 ) ELSE (
-   cecho {0D}qtpropertybrowser already built. Skipping.{# #}{\n}
+   cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
+   cecho {0D}Deploying QtPropertyBrowser DLLs.{# #}{\n}
+   copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
+) ELSE (
+   cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (

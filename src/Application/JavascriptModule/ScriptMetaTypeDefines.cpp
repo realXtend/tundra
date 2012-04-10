@@ -305,10 +305,10 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<InputContext*>(engine);
     qRegisterMetaType<InputContextPtr>("InputContextPtr");
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<InputContext>, qScriptValueToBoostSharedPtr<InputContext>);
-    qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
-    qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
-    qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
-    qRegisterMetaType<GestureEvent::EventType>("GestureEvent::EventType");
+    qRegisterMetaType<KeyEvent::EventType>("EventType");
+    qRegisterMetaType<MouseEvent::EventType>("EventType");
+    qRegisterMetaType<MouseEvent::MouseButton>("MouseButton");
+    qRegisterMetaType<GestureEvent::EventType>("EventType");
     qRegisterMetaType<InputAPI::KeyBindingMap>("KeyBindingMap");
     qScriptRegisterMetaType<InputAPI::KeyBindingMap>(engine, qScriptValueFromKeyBindingMap, qScriptValueToKeyBindingMap);
 

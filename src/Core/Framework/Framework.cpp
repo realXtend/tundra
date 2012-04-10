@@ -170,7 +170,10 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
     cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
     cmdLineDescs.commands["--hide_benign_ogre_messages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
-
+    cmdLineDescs.commands["--no_async_asset_load"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
+    cmdLineDescs.commands["--autodxtcompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
+    cmdLineDescs.commands["--maxtexturesize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
+    
     apiVersionInfo = new VersionInfo(Application::Version());
     applicationVersionInfo = new VersionInfo(Application::Version());
 
