@@ -592,6 +592,7 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
 
 bool Framework::HasCommandLineParameter(const QString &value) const
 {
+    ///\todo Convert startupOptions to a key-value map.
     for(int i = 0; i < startupOptions.size(); ++i)
         if (!startupOptions[i].compare(value, Qt::CaseInsensitive))
             return true;
@@ -600,6 +601,8 @@ bool Framework::HasCommandLineParameter(const QString &value) const
 
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
+    ///\todo Remove all this logic. This is Win32-specific command line parsing, and should be done only once for Win32,
+    /// and stored in an already processed format for faster retrieval.
     QStringList ret;
     for(int i = 0; i+1 < startupOptions.size(); ++i)
     {
