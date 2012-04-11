@@ -18,9 +18,9 @@ class MouseEvent : public QObject
     Q_ENUMS(MouseButton)
     Q_ENUMS(EventType)
     Q_ENUMS(PressOrigin)
-    Q_PROPERTY(EventType eventType READ GetEventType)
-    Q_PROPERTY(MouseButton button READ GetMouseButton)
-    Q_PROPERTY(PressOrigin origin READ GetPressOrigin)
+    Q_PROPERTY(EventType eventType READ Type)
+    Q_PROPERTY(MouseButton button READ Button)
+    Q_PROPERTY(PressOrigin origin READ Origin)
     Q_PROPERTY(int x READ X)
     Q_PROPERTY(int y READ Y)
     Q_PROPERTY(int z READ Z)
@@ -193,12 +193,12 @@ public slots:
     bool HasShiftModifier() const { return (modifiers & Qt::ShiftModifier) != 0; }
     bool HasCtrlModifier() const { return (modifiers & Qt::ControlModifier) != 0; }
     bool HasAltModifier() const { return (modifiers & Qt::AltModifier) != 0; }
-    bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; } // On windows, this is associated to the Win key.
+    bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; } // On Windows, this is associated to the Win key.
 
     // Returns if mouse is over a graphics item in the scene
     bool IsItemUnderMouse() const { return itemUnderMouse != 0; }
 
-    MouseEvent::EventType GetEventType() const { return Type(); } /** @deprecated Use Type or 'eventType' @todo Remove */
-    MouseEvent::MouseButton GetMouseButton() const { return Button(); } /** @deprecated Use Button or 'button' @todo Remove */
-    MouseEvent::PressOrigin GetPressOrigin() const { return Origin(); } /** @deprecated Use Origin or 'origin' @todo Remove */
+    MouseEvent::EventType GetEventType() const { return Type(); } /**< @deprecated Use Type or 'eventType' @todo Remove */
+    MouseEvent::MouseButton GetMouseButton() const { return Button(); } /**< @deprecated Use Button or 'button' @todo Remove */
+    MouseEvent::PressOrigin GetPressOrigin() const { return Origin(); } /**< @deprecated Use Origin or 'origin' @todo Remove */
 };

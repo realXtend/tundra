@@ -15,7 +15,7 @@ class GestureEvent : public QObject
     Q_ENUMS(EventType)
     Q_PROPERTY(EventType eventType READ Type)
     Q_PROPERTY(QGesture* gesture READ Gesture)
-    Q_PROPERTY(Qt::GestureType text READ GestureType)
+    Q_PROPERTY(Qt::GestureType gestureType READ GestureType)
 
 public:
     GestureEvent() :
@@ -60,10 +60,9 @@ public slots:
     void Suppress() { handled = true; }
     void Accept() { handled = true; }
 
-    bool IsStartedEvent() const { return eventType == GestureStarted; }
-    bool IsUpdatedEvent() const { return eventType == GestureUpdated; }
-    bool IsFinishedEvent() const { return eventType == GestureFinished || eventType == GestureCanceled; }
-
     QGesture *Gesture() const { return gesture; } ///< @todo Doesn't need to be a slot; exposed as Q_PROPERTY
     Qt::GestureType GestureType() const { return gestureType; } ///< @todo Doesn't need to be a slot; exposed as Q_PROPERTY
+    bool IsStartedEvent() const { return eventType == GestureStarted; } /**< @deprecated Use Type or 'eventType' @todo Remove. */
+    bool IsUpdatedEvent() const { return eventType == GestureUpdated; } /**< @deprecated Use Type or 'eventType' @todo Remove. */
+    bool IsFinishedEvent() const { return eventType == GestureFinished || eventType == GestureCanceled; } /**< @deprecated Use Type or 'eventType' @todo Remove. */
 };

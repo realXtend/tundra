@@ -110,8 +110,7 @@ public slots:
     /// Returns the pressed key with the modifier bits in it.
     int KeyWithModifier() const { return (int)keyCode | (int)modifiers; }
 
-    /// \todo Temp func: Python keyCode is broken, this is a temp getter to make inputcontext keyevent work again in python.
+    /// @todo Remove Temp func: Python keyCode is broken, this is a temp getter to make inputcontext keyevent work again in python.
     int keyCodeInt() const { return (int)keyCode; }
-
-    KeyEvent::EventType GetEventType() const { return Type(); } /** @deprecated Use Type or 'eventType' instead. @todo Remove */
+    KeyEvent::EventType GetEventType() const { return Type(); } /**< @deprecated Use Type or 'eventType' instead. @todo Remove */
 };
