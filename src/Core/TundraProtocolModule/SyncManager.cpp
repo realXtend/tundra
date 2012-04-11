@@ -687,6 +687,8 @@ void SyncManager::Update(f64 frametime)
 
 void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination, SceneSyncState* state)
 {
+    PROFILE(SyncManager_ReplicateRigidBodyChanges);
+    
     ScenePtr scene = scene_.lock();
     if (!scene)
         return;

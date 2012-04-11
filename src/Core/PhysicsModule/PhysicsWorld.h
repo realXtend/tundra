@@ -201,6 +201,9 @@ private:
     /// Whether should run physics. Default true
     bool runPhysics_;
     
+    /// Variable timestep flag
+    bool useVariableTimestep_;
+    
     /// Bullet debug draw / debug behaviour flags
     int debugDrawMode_;
     

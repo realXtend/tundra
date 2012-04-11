@@ -173,6 +173,7 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--no_async_asset_load"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
     cmdLineDescs.commands["--autodxtcompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
     cmdLineDescs.commands["--maxtexturesize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
+    cmdLineDescs.commands["--variablephysicsstep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
     
     apiVersionInfo = new VersionInfo(Application::Version());
     applicationVersionInfo = new VersionInfo(Application::Version());

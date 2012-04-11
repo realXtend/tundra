@@ -37,6 +37,7 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
     isClient_(isClient),
     runPhysics_(true),
     drawDebugManuallySet_(false),
+    useVariableTimestep_(false),
     debugDrawMode_(0),
     cachedOgreWorld_(0)
 {
@@ -47,6 +48,10 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
     world_ = new btDiscreteDynamicsWorld(collisionDispatcher_, broadphase_, solver_, collisionConfiguration_);
     world_->setDebugDrawer(this);
     world_->setInternalTickCallback(TickCallback, (void*)this, false);
+    
+    Framework* fw = scene->GetFramework();
+    if (fw->HasCommandLineParameter("--variablephysicsstep"))
+        useVariableTimestep_ = true;
 }
 
 PhysicsWorld::~PhysicsWorld()
@@ -98,7 +103,17 @@ void PhysicsWorld::Simulate(f64 frametime)
     
     {
         PROFILE(Bullet_stepSimulation); ///\note Do not delete or rename this PROFILE() block. The DebugStats profiler uses this string as a label to know where to inject the Bullet internal profiling data.
-        world_->stepSimulation((float)frametime, maxSubSteps_, physicsUpdatePeriod_);
+        
+        // Use variable timestep if enabled, and if frame timestep exceeds the single physics simulation substep
+        if (useVariableTimestep_ && frametime > physicsUpdatePeriod_)
+        {
+            float clampedTimeStep = (float)frametime;
+            if (clampedTimeStep > 0.1f)
+                clampedTimeStep = 0.1f; // Advance max. 1/10 sec. during one frame
+            world_->stepSimulation(clampedTimeStep, 0, clampedTimeStep);
+        }
+        else
+            world_->stepSimulation((float)frametime, maxSubSteps_, physicsUpdatePeriod_);
     }
     
     // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
