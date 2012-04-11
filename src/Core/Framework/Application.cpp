@@ -30,6 +30,10 @@
 #include <conio.h>
 #endif
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 // For generating minidump
 #include <dbghelp.h>
@@ -310,9 +314,26 @@ QString Application::InstallationDirectory()
         return ""; // Some kind of error occurred.
 
     return qstr.left(trailingSlash+1); // +1 so that we return the trailing slash as well.
+#elif defined(__APPLE__)
+    char path[1024];
+    uint32_t size = sizeof(path)-2;
+    int ret = _NSGetExecutablePath(path, &size);
+    if (ret == 0 && size > 0)
+    {
+        // The returned path also contains the executable name, so strip that off from the path name.
+        QString p = path;
+        int lastSlash = p.lastIndexOf("/");
+        if (lastSlash != -1)
+            p = p.left(lastSlash+1);
+        return p;
+    }
+    else
+    {
+        LogError("Application::InstallationDirectory: _NSGetExecutablePath failed! Returning './'");
+        return "./";
+    }
 #else
-    ///\todo Implement.
-    LogDebug("Application::InstallationDirectory not implemented for this platform. Returning './'");
+    LogError("Application::InstallationDirectory not implemented for this platform. Returning './'");
     return "./";
 #endif
 }
