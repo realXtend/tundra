@@ -1853,9 +1853,12 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
 
     if (file.endsWith(".ui", Qt::CaseInsensitive))
         return "QtUiFile";
-        
+
     if (file.endsWith(".avatar", Qt::CaseInsensitive))
         return "Avatar";
+
+    if (file.endsWith(".attachment", Qt::CaseInsensitive))
+        return "AvatarAttachment";
 
     if (file.endsWith(".pdf", Qt::CaseInsensitive))
         return "PdfAsset";

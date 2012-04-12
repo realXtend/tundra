@@ -15,6 +15,7 @@
 #include "AssetFwd.h"
 #include "IAssetTransfer.h"
 #include "AssetReference.h"
+#include "BinaryAsset.h"
 #include "../../Core/ECEditorModule/SupportedFileTypes.h"
 #include "../../Core/ECEditorModule/AssetsWindow.h"
 
@@ -47,7 +48,7 @@ AvatarEditor::AvatarEditor(Framework *fw, QWidget *parent) :
     connect(but_save, SIGNAL(clicked()), SLOT(SaveAvatar()));
     connect(but_load, SIGNAL(clicked()), SLOT(OpenAvatarAsset()));
     connect(but_revert, SIGNAL(clicked()), SLOT(RevertAvatar()));
-    connect(but_attachment, SIGNAL(clicked()), this, SLOT(AddAttachment()));
+    connect(but_attachment, SIGNAL(clicked()), this, SLOT(OpenAttachmentAsset()));
 
     QVBoxLayout *layout = new QVBoxLayout();
     layout->setContentsMargins(0,0,0,0);
@@ -562,35 +563,62 @@ void AvatarEditor::RemoveAttachment()
     desc->RemoveAttachment(index);
 }
 
-void AvatarEditor::AddAttachment()
+void AvatarEditor::OpenAttachmentAsset()
 {
-    if (fileDialog)
-        fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(cAttachmentFileFilter, tr("Choose attachment file"), "", 0, this, SLOT(OpenAttachmentDialogClosed(int)), false);
+    AssetsWindow *assetsWindow = new AssetsWindow("AvatarAttachment", framework, framework->Ui()->MainWindow());
+    connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAttachmentPicked(AssetPtr)));
+    assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
+    assetsWindow->setWindowFlags(Qt::Tool);
+    assetsWindow->show();
 }
 
-void AvatarEditor::OpenAttachmentDialogClosed(int result)
+void AvatarEditor::HandleAttachmentPicked(AssetPtr attachmentAsset)
 {
-    QFileDialog * dialog = dynamic_cast<QFileDialog *>(sender());
-    assert(dialog);
-    if (!dialog)
-        return;
+    if (!attachmentAsset->IsLoaded())
+    {
+        AssetTransferPtr transfer = framework->Asset()->RequestAsset(attachmentAsset->Name(), attachmentAsset->Type(), true);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(AddAttachment(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer *, QString)), SLOT(OnAssetTransferFailed(IAssetTransfer *, QString)));
+    }
+    else
+        AddAttachment(attachmentAsset);
+}
 
-    if (result != QDialog::Accepted)
+void AvatarEditor::AddAttachment(AssetPtr assetPtr)
+{
+    if (!assetPtr)
+    {
+        LogError("AvatarEditor::AddAttachment: null asset given.");
         return;
-
-    if (dialog->selectedFiles().isEmpty())
+    }
+    else if (assetPtr->Type() != "AvatarAttachment")
+    {
+        LogError("AvatarEditor::AddAttachment: not an attachment asset");
         return;
+    }
+    else
+    {
+        // Check that the assetPtr is a BinaryAssetPtr
+        BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(assetPtr);
+        if (assetData)
+        {
+            std::vector<u8> data;
+            if (assetPtr->SerializeTo(data))
+            {
+                data.push_back('\0');
+                QString string((const char *)&data[0]);
 
-    Entity* entity;
-    EC_Avatar* avatar;
-    AvatarDescAsset* desc;
-    if (!GetAvatarDesc(entity, avatar, desc))
-        return;
-
-    // Since the dialog is set to not allow multiple file selection, assume
-    // that there is only one file selected.
-    desc->AddAttachment(dialog->selectedFiles().first());
+                if (avatarAsset_.lock())
+                    avatarAsset_.lock()->AddAttachment(string);
+                else
+                    LogError("AvatarEditor::AddAttachment: No avatar to attach to!");
+            }
+            else
+                LogError("AvatarEditor::AddAttachment: Could not serialize data!");
+        }
+        else
+            LogError("AvatarEditor::AddAttachment: null asset given.");
+    }
 }
 
 QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name)

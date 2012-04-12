@@ -43,9 +43,6 @@ public slots:
     /// Change avatar's material
     void ChangeMaterial();
 
-    /// New attachment
-    void AddAttachment();
-
     /// Remove attachment
     void RemoveAttachment();
 
@@ -66,6 +63,9 @@ public slots:
 
     /// Open an AssetsWindow to choose an avatar asset to the editor. Saves previously opened avatar to previousAvatar_ for canceling the pick.
     void OpenAvatarAsset();
+
+    /// Open an AssetsWindow to choose an attachment asset. Picking an asset adds it to the avatar. Changing selection and canceling don't cause any additional operations within AvatarEditor.
+    void OpenAttachmentAsset();
 
 protected:
     /// QWidget override.
@@ -89,15 +89,9 @@ private:
     /// Previous avatar asset, saved when the AssetsWindow for loading new avatar is opened
     boost::weak_ptr<AvatarDescAsset> previousAvatar_;
 
-    QPointer<QFileDialog> fileDialog; ///< Keeps track of the latest opened file save/open dialog.
-
     bool reverting_;
 
 private slots:
-    /// Called by open attachment file dialog when it's closed.
-    /** @param result Result of dialog closure. Open is 1, Cancel is 0. */
-    void OpenAttachmentDialogClosed(int result);
-
     /// Load the avatar picked in OpenAvatarAsset to the editor. If the asset is not loaded, load it.
     /** @param asset The chosen avatar asset */
     void HandleAssetPicked(AssetPtr asset);
@@ -113,4 +107,12 @@ private slots:
     /** @param transfer IAssetTransfer
         @param reason Failure reason. */
     void OnAssetTransferFailed(IAssetTransfer *transfer, QString reason);
+
+    /// Add the attachment picked in OpenAttachmentAsset to the avatar. If the asset is not loaded, load it.
+    /** @param attachmentAsset The chosen attachment asset */
+    void HandleAttachmentPicked(AssetPtr attachmentAsset);
+
+    /// Add the attachment to the avatar after checking its validity and serializing it to a string.
+    /** @param asset Succesfully loaded attachment asset to be added to the avatar.*/
+    void AddAttachment(AssetPtr assetPtr);
 };
