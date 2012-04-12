@@ -11,6 +11,12 @@
 #include "RenderWindow.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "OgreCompositionHandler.h"
+#include "UiPlane.h"
+#include "TextureAsset.h"
+#include "OgreMeshAsset.h"
+#include "OgreMaterialAsset.h"
+#include "OgreSkeletonAsset.h"
+#include "OgreParticleAsset.h"
 
 #include "Application.h"
 #include "UiGraphicsView.h"
@@ -25,14 +31,24 @@
 #include "LoggingFunctions.h"
 #include "ConfigAPI.h"
 #include "QScriptEngineHelpers.h"
-#include "UiPlane.h"
 
 #include <Ogre.h>
 #include <OgreDefaultHardwareBufferManager.h>
 
-Q_DECLARE_METATYPE(EC_Placeable*);
-Q_DECLARE_METATYPE(EC_Camera*);
-Q_DECLARE_METATYPE(UiPlane*);
+Q_DECLARE_METATYPE(EC_Placeable*)
+Q_DECLARE_METATYPE(EC_Camera*)
+Q_DECLARE_METATYPE(UiPlane*)
+// Ogre asset types and ptr typedefs
+Q_DECLARE_METATYPE(OgreMeshAsset*)
+Q_DECLARE_METATYPE(TextureAsset*)
+Q_DECLARE_METATYPE(OgreMaterialAsset*)
+Q_DECLARE_METATYPE(OgreSkeletonAsset*)
+Q_DECLARE_METATYPE(OgreParticleAsset*)
+Q_DECLARE_METATYPE(TextureAssetPtr)
+Q_DECLARE_METATYPE(OgreMeshAssetPtr)
+Q_DECLARE_METATYPE(OgreMaterialAssetPtr)
+Q_DECLARE_METATYPE(OgreSkeletonAssetPtr)
+Q_DECLARE_METATYPE(OgreParticleAssetPtr)
 
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;
@@ -958,5 +974,16 @@ namespace OgreRenderer
         qScriptRegisterQObjectMetaType<EC_Placeable*>(engine);
         qScriptRegisterQObjectMetaType<EC_Camera*>(engine);
         qScriptRegisterQObjectMetaType<UiPlane*>(engine);
+        // Ogre asset types and ptr typedefs
+        qScriptRegisterQObjectMetaType<TextureAsset*>(engine);
+        qScriptRegisterQObjectMetaType<OgreMeshAsset*>(engine);
+        qScriptRegisterQObjectMetaType<OgreMaterialAsset*>(engine);
+        qScriptRegisterQObjectMetaType<OgreSkeletonAsset*>(engine);
+        qScriptRegisterQObjectMetaType<OgreParticleAsset*>(engine);
+        qScriptRegisterMetaType<TextureAssetPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+        qScriptRegisterMetaType<OgreMeshAssetPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+        qScriptRegisterMetaType<OgreMaterialAssetPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+        qScriptRegisterMetaType<OgreSkeletonAssetPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+        qScriptRegisterMetaType<OgreParticleAssetPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     }
 }

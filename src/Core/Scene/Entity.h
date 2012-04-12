@@ -25,7 +25,7 @@ class QDomElement;
     Entities should not be directly created, instead use Scene::CreateEntity().
 
     Each component type that is added to this entity is registered as
-    Q_PROPERTY as in following syntax EC_Light -> light, where EC_ is cutted off
+    Q_PROPERTY as in following syntax EC_Light -> light, where EC_ is cut off
     and name is converted to low case format. This allow scripter to get access to
     component using a following code "entity.mesh.SetMesh("mesh id");"
     
@@ -40,8 +40,7 @@ class QDomElement;
     @note   Entity can have multiple components with same component type name as long as
             the component names are unique.
 
-    \ingroup Scene_group
-*/
+    \ingroup Scene_group */
 class Entity : public QObject, public boost::enable_shared_from_this<Entity>
 {
     Q_OBJECT
@@ -126,67 +125,70 @@ public:
         @param name name of the component */
     ComponentPtr CreateComponentWithId(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
+    /// introspection for the entity, returns all components
+    const ComponentMap &Components() const { return components_; }
+
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
     ComponentPtr GetComponentById(component_id_t id) const;
-    /// Returns a component with type 'type_name' or empty pointer if component was not found
+    /// Returns a component with type 'typeName' or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary).
-        @param type_name type of the component */
-    ComponentPtr GetComponent(const QString &type_name) const;
-    /// This is an overloaded function.
+        @param typeName type of the component */
+    ComponentPtr GetComponent(const QString &typeName) const;
+    /// @overload
     /** @param typeId Unique type ID. */
     ComponentPtr GetComponent(u32 typeId) const;
-    /// This is an overloaded function.
+    /// @overload
     /** @param name Specifies the name of the component to fetch. This can be used to distinguish between multiple instances of components of same type. */
-    ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
-    /// This is an overloaded function.
+    ComponentPtr GetComponent(const QString &typeName, const QString &name) const;
+    /// @overload
     /** @param typeId The type id of the component to get.
         @param name name of the component */
     ComponentPtr GetComponent(u32 typeId, const QString &name) const;
 
-    /// Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
-    /** @param type_name The type string of the component to create, obtained from IComponent::TypeName().
+    /// Returns a component with type 'typeName' or creates & adds it if not found. If could not create, returns empty pointer
+    /** @param typeName The type string of the component to create, obtained from IComponent::TypeName().
         @param change Change signalling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
         @return Pointer to the component, or an empty pointer if the component could be retrieved or created. */
-    ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    ComponentPtr GetOrCreateComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
+    /// @overload
     /** @param name If specified, the component having the given name is returned, or created if it doesn't exist. */
-    ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    ComponentPtr GetOrCreateComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
+    /// @overload
     /** @param typeId Identifies the component type to create by the id of the type instead of the name. */
     ComponentPtr GetOrCreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    /// @overload
     /** @param name name of the component */
     ComponentPtr GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
 
-    /// Returns a component with type 'type_name' or creates & adds it as local if not found. If could not create, returns empty pointer
-    ComponentPtr GetOrCreateLocalComponent(const QString &type_name);
-    /// Returns a component with type 'type_name' and name 'name' or creates & adds it as local if not found. If could not create, returns empty pointer
-    ComponentPtr GetOrCreateLocalComponent(const QString &type_name, const QString &name);
+    /// Returns a component with type 'typeName' or creates & adds it as local if not found. If could not create, returns empty pointer
+    ComponentPtr GetOrCreateLocalComponent(const QString &typeName);
+    /// Returns a component with type 'typeName' and name 'name' or creates & adds it as local if not found. If could not create, returns empty pointer
+    ComponentPtr GetOrCreateLocalComponent(const QString &typeName, const QString &name);
 
     /// Creates a new component and attaches it to this entity. 
-    /** @param type_name type of the component
+    /** @param typeName type of the component
         @param change Change signalling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
         @return Retuns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
         is that a component with the same (typename, name) pair exists, or that components of the given typename are not recognized by the system. */
-    ComponentPtr CreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    ComponentPtr CreateComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
+    /// @overload
     /** @param name name of the component */
-    ComponentPtr CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    ComponentPtr CreateComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
+    /// @overload
     /** @param typeId Unique type ID of the component. */
     ComponentPtr CreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
-    /// This is an overloaded function.
+    /// @overload
     /** @param typeId Unique type ID of the component.
         @param name name of the component */
     ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     
-    /// Creates a local component with type 'type_name' and adds it to the entity. If could not create, return empty pointer
-    ComponentPtr CreateLocalComponent(const QString &type_name);
-    /// Creates a local component with type 'type_name' and name 'name' and adds it to the entity. If could not create, return empty pointer
-    ComponentPtr CreateLocalComponent(const QString &type_name, const QString &name);
+    /// Creates a local component with type 'typeName' and adds it to the entity. If could not create, return empty pointer
+    ComponentPtr CreateLocalComponent(const QString &typeName);
+    /// Creates a local component with type 'typeName' and name 'name' and adds it to the entity. If could not create, return empty pointer
+    ComponentPtr CreateLocalComponent(const QString &typeName, const QString &name);
     
     /// Attachs an existing parentless component to this entity. A component ID will be allocated.
     /** Entities can contain any number of components of any type.
@@ -215,9 +217,9 @@ public slots:
         @param change Specifies how other parts of the system are notified of this removal. */
     void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
 
-    /// Returns list of components with type 'type_name' or empty list if no components were found.
-    /// @param type_name type of the component
-    ComponentVector GetComponents(const QString &type_name) const;
+    /// Returns list of components with type 'typeName' or empty list if no components were found.
+    /// @param typeName type of the component
+    ComponentVector GetComponents(const QString &typeName) const;
 
     /// Returns attribute interface pointer to attribute with specific name.
     /** @param name Name of the attribute.
@@ -244,13 +246,13 @@ public slots:
     QString SerializeToXMLString() const;
 //        bool DeserializeFromXMLString(const QString &src, AttributeChange::Type change);
 
-    void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name), change); }
-    void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name, name), change); }
+    void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName), change); }
+    void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName, name), change); }
     void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
 
-    /// Returns list of components with type @c type_name or if @c type_name is empty return all components
-    /// @param type_name type of the component
-    QObjectList GetComponentsRaw(const QString &type_name) const;
+    /// Returns list of components with type @c typeName or if @c typeName is empty return all components
+    /// @param typeName type of the component
+    QObjectList GetComponentsRaw(const QString &typeName) const;
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
     /** @param name Name. */
@@ -299,18 +301,12 @@ public slots:
         @param p2 2nd parameter for the action, if applicable.
         @param p3 3rd parameter for the action, if applicable. */
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QString &p1 = "", const QString &p2 = "", const QString &p3 = "");
-
-    /// This is an overloaded function.
-    /** @param type Execution type(s), i.e. where the actions is executed.
-        @param action Name of the action.
-        @param params List of parameters for the action. */
+    /// @overload
+    /** @param params List of parameters for the action. */
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QStringList &params);
-
-    /// This is an overloaded function. Experimental overload using QVariant. Converts the variants to strings.
-    /** @note If called from JavaScript, syntax '<targetEntity>["Exec(EntityAction::ExecTypeField,QString,QVariantList)"](2, "name", params);' must be used.
-        @param type Execution type(s), i.e. where the actions is executed.
-        @param action Name of the action.
-        @param params List of parameters for the action. */
+    /// @overload
+    /** Experimental overload using QVariant. Converts the variants to strings.
+        @note If called from JavaScript, syntax '<targetEntity>["Exec(EntityAction::ExecTypeField,QString,QVariantList)"](2, "name", params);' must be used. */
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QVariantList &params);
 
     /// Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
@@ -349,10 +345,7 @@ public slots:
     entity_id_t Id() const { return id_; }
 
     /// introspection for the entity, returns all components
-    const ComponentMap &Components() const { return components_; }
-
-    /// Returns entitys components as a QList<QObject*> for scripting purpouses.
-    QObjectList ComponentsList() const;
+    ComponentMap Components() /*non-const intentionally*/ { return components_; }
 
     /// Returns framework
     Framework *GetFramework() const { return framework_; }
@@ -362,6 +355,8 @@ public slots:
 
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
+
+    QObjectList ComponentsList() const; ///< @deprecated @todo Remove
 
 signals:
     /// A component has been added to the entity

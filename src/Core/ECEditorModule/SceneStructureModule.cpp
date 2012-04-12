@@ -315,6 +315,12 @@ void SceneStructureModule::CleanReference(QString &fileRef)
 
 void SceneStructureModule::ToggleSceneStructureWindow()
 {
+    if (!GetFramework()->Scene()->MainCameraScene())
+    {
+        LogError("SceneStructureModule::ToggleSceneStructureWindow: Main camera scene is null.");
+        return;
+    }
+
     if (sceneWindow)
     {
         sceneWindow->setVisible(!sceneWindow->isVisible());
@@ -627,7 +633,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
             if (!scene)
                 return;
 
-            foreach(const EntityPtr &cam, scene->GetEntitiesWithComponent(EC_Camera::TypeNameStatic()))
+            foreach(const EntityPtr &cam, scene->EntitiesWithComponent(EC_Camera::TypeNameStatic()))
                 if (cam->GetComponent<EC_Camera>()->IsActive())
                 {
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();
@@ -891,12 +897,17 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
 
 void SceneStructureModule::SyncSelectionWithEcEditor(ECEditorWindow *editor)
 {
-    if (sceneWindow && editor)
+    if (sceneWindow && editor && syncedECEditor != editor)
     {
+        // Store a ref to the active editor. We don't want to do this selection
+        // logic multiple times for the same editor as its quite expensive for
+        // large number of selected entities. This slot will be called upon show() and setFocus()
+        // of the editor when it is created, which the above syncedECEditor != editor protects against.
+        syncedECEditor = editor;
+
         sceneWindow->ClearSelectedEntites();
         foreach(const EntityPtr &entity, editor->SelectedEntities())
             sceneWindow->SetEntitySelected(entity, true);
-
         connect(editor, SIGNAL(EntitySelected(const EntityPtr &, bool)),
             sceneWindow, SLOT(SetEntitySelected(const EntityPtr &, bool)), Qt::UniqueConnection);
     }

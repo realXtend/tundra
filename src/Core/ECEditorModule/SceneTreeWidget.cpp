@@ -672,6 +672,8 @@ void SceneTreeWidget::EditInNew()
 
     editor->setParent(framework->Ui()->MainWindow());
     editor->setWindowFlags(Qt::Tool);
+
+    /// \note Calling show and activate here makes the editor emit FocusChanged(this) twice in a row.
     editor->show();
     editor->activateWindow();
     ecEditors.push_back(editor);
@@ -1140,8 +1142,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             // Invoke function.
             QString errorMsg;
             QVariant ret;
-            FunctionInvoker invoker;
-            invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
+            FunctionInvoker::Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
 
             QString retValStr;
             ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
@@ -1500,11 +1501,10 @@ void SceneTreeWidget::InvokeActionTriggered()
         }
         else
         {
-            FunctionInvoker invoker;
             foreach(QObject *obj, objects)
             {
                 QVariant retVal;
-                invoker.Invoke(obj, invokedItem->name, invokedItem->parameters, &retVal);
+                FunctionInvoker::Invoke(obj, invokedItem->name, invokedItem->parameters, &retVal);
                 LogInfo("Invoked function returned " + retVal.toString());
             }
             qSort(invokeHistory.begin(), invokeHistory.end(), qGreater<InvokeItem>());

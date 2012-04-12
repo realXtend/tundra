@@ -79,6 +79,3 @@ public:
     /// Convert texture to QImage, static version.
     static QImage ToQImage(Ogre::Texture* tex, size_t faceIndex = 0, size_t mipmapLevel = 0);
 };
-
-typedef boost::shared_ptr<TextureAsset> TextureAssetPtr;
-

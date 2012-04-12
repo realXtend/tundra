@@ -219,7 +219,7 @@ void EC_WebView::ServerCheckControllerValidity(int connectionID)
             if (connectionID == -2)
                 return;
 
-            UserConnection *user = tundraLogic->GetServer()->GetUserConnection(connectionID);
+            UserConnection *user = tundraLogic->GetServer()->GetUserConnection(connectionID).get();
             if (!user)
             {
                 // The ID is not a valid active connection, reset the control id to all clients.

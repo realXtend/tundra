@@ -271,8 +271,7 @@ public slots:
     /// Returns an asset type name of the given assetRef. e.g. "asset.png" -> "Texture".
     /** The Asset type name is a unique type identifier string each asset type has. */
     static QString GetResourceTypeFromAssetRef(QString assetRef);
-    /// This is an overloaded function.
-    static QString GetResourceTypeFromAssetRef(const AssetReference &ref);
+    static QString GetResourceTypeFromAssetRef(const AssetReference &ref); ///< @overload
 
     /// Parses a (relative) assetRef in the given context, and returns an assetRef pointing to the same asset as an absolute asset ref.
     /** For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".

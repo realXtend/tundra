@@ -4,6 +4,9 @@
 
 #include "UiGraphicsView.h"
 
+#include "CoreException.h"
+#include "Framework.h"
+
 #include <QRect>
 #include <QList>
 #include <QEvent>
@@ -14,8 +17,6 @@
 
 #include <utility>
 
-#include "CoreException.h"
-#include "Framework.h"
 #include "MemoryLeakCheck.h"
 
 using namespace std;
@@ -41,8 +42,8 @@ UiGraphicsView::~UiGraphicsView()
     delete backBuffer;
 }
 
-QImage *UiGraphicsView::BackBuffer()
-{ 
+QImage *UiGraphicsView::BackBuffer() const
+{
     return backBuffer;
 }
 
@@ -57,7 +58,7 @@ bool UiGraphicsView::IsViewDirty() const
 }
 
 QRectF UiGraphicsView::DirtyRectangle() const
-{ 
+{
     return dirtyRectangle;
 }
 
@@ -216,7 +217,7 @@ void UiGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
     dirtyRectangle.setBottom(min<int>(dirtyRectangle.bottom(), height()));
 }
 
-QGraphicsItem *UiGraphicsView::GetVisibleItemAtCoords(int x, int y) const
+QGraphicsItem *UiGraphicsView::VisibleItemAtCoords(int x, int y) const
 {
     // Silently just ignore any invalid coordinates we get. (and we do get them, it seems!)
     if (x < 0 || y < 0 || x >= width() || y >= height())
@@ -256,12 +257,12 @@ void UiGraphicsView::dropEvent(QDropEvent *e)
 }
 
 void UiGraphicsView::dragEnterEvent(QDragEnterEvent *e)
-{           
+{
     // There was no widget on top of the are where the event occurred. Pass the drop event on as a global "3D scene drag-n-drop event".
     // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
-    QGraphicsItem *underMouse = GetVisibleItemAtCoords(e->pos().x(), e->pos().y());
+    QGraphicsItem *underMouse = VisibleItemAtCoords(e->pos().x(), e->pos().y());
     emit DragEnterEvent(e, underMouse);
-}   
+}
 
 void UiGraphicsView::dragLeaveEvent(QDragLeaveEvent *e)
 {
@@ -272,6 +273,6 @@ void UiGraphicsView::dragMoveEvent(QDragMoveEvent *e)
 {
     // There was no widget on top of the are where the event occurred. Pass the drop event on as a global "3D scene drag-n-drop event".
     // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
-    QGraphicsItem *underMouse = GetVisibleItemAtCoords(e->pos().x(), e->pos().y());
+    QGraphicsItem *underMouse = VisibleItemAtCoords(e->pos().x(), e->pos().y());
     emit DragMoveEvent(e, underMouse);
 }

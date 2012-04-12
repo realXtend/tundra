@@ -50,7 +50,7 @@ public slots:
         @todo clearScene not used currently for anything. */
     void InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene);
 
-    /// This is an overloaded function
+    /// @overload
     /** @param filenames Content filename.
         @todo clearScene not used currently for anything. */
     void InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene);
@@ -100,6 +100,7 @@ private:
     QPointer<SceneStructureWindow> sceneWindow;
     QPointer<AssetsWindow> assetsWindow;
     QPointer<KeyBindingsConfigWindow> keyBindingsWindow;
+    QPointer<ECEditorWindow> syncedECEditor;
     boost::shared_ptr<InputContext> inputContext;
 
     SceneMaterialDropData materialDropData;

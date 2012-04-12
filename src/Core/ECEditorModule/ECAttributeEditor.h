@@ -129,7 +129,7 @@ protected:
     /** The attribute is searched by its name. */
     IAttribute *FindAttribute(const ComponentPtr &component) const;
 
-    /// This is an overloaded function.
+    /// @overload
     /** @return Pointer to attribute of @component by type @c T. */
     template<typename T>
     Attribute<T> *FindAttribute(const ComponentPtr &component) const
@@ -186,11 +186,10 @@ protected:
     /** @param value New value. */
     void SetValue(const T &value);
 
-    /// This is an overloaded function.
+    /// @overload
     /** Sets new value for single component.
         @param comp Component.
-        @param value New value.
-    */
+        @param value New value. */
     void SetValue(const ComponentPtr &comp, const T &value);
 
     /// ECAttributeEditorBase override.

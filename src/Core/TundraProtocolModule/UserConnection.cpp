@@ -4,29 +4,23 @@
 #include "DebugOperatorNew.h"
 
 #include "UserConnection.h"
+
 #include "Entity.h"
+#include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
 
-int UserConnection::GetConnectionID() const
+void UserConnection::Exec(Entity *entity, const QString &action, const QStringList &params)
 {
-    return userID;
+    if (entity)
+        emit ActionTriggered(this, entity, action, params);
+    else
+        LogWarning("UserConnection::Exec: null entity passed!");
 }
 
-void UserConnection::Exec(QObject* entity, const QString &action, const QString &p1, const QString &p2, const QString &p3)
+void UserConnection::Exec(Entity *entity, const QString &action, const QString &p1, const QString &p2, const QString &p3)
 {
-    Entity* entityptr = dynamic_cast<Entity*>(entity);
-    
-    if (entityptr)
-        emit ActionTriggered(this, entityptr, action, QStringList(QStringList() << p1 << p2 << p3));
-}
-
-void UserConnection::Exec(QObject* entity, const QString &action, const QStringList &params)
-{
-    Entity* entityptr = dynamic_cast<Entity*>(entity);
-    
-    if (entityptr)
-        emit ActionTriggered(this, entityptr, action, params);
+    Exec(entity, action, QStringList(QStringList() << p1 << p2 << p3));
 }
 
 void UserConnection::SetProperty(const QString& key, const QString& value)
@@ -34,16 +28,11 @@ void UserConnection::SetProperty(const QString& key, const QString& value)
     properties[key] = value;
 }
 
-QString UserConnection::GetLoginData() const
-{
-    return loginData;
-}
-
-QString UserConnection::GetProperty(const QString& key) const
+QString UserConnection::Property(const QString& key) const
 {
     static QString empty;
     
-    std::map<QString, QString>::const_iterator i = properties.find(key);
+    LoginPropertyMap::const_iterator i = properties.find(key);
     if (i != properties.end())
         return i->second;
     else

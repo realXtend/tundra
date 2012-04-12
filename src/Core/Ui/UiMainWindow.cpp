@@ -4,7 +4,6 @@
 
 #include "UiMainWindow.h"
 #include "Framework.h"
-#include "VersionInfo.h"
 #include "ConfigAPI.h"
 #include "LoggingFunctions.h"
 #include "Application.h"

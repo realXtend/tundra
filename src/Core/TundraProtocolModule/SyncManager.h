@@ -7,8 +7,9 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
-#include "kNetFwd.h"
-#include "kNet/Types.h"
+
+#include <kNetFwd.h>
+#include <kNet/Types.h>
 
 #include <QObject>
 
@@ -22,12 +23,9 @@ namespace TundraLogic
 class SyncManager : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    /// Constructor
     explicit SyncManager(TundraLogicModule* owner);
-    
-    /// Destructor
     ~SyncManager();
     
     /// Register to entity/component change signals from a specific scene and start syncing them
@@ -37,26 +35,20 @@ public:
     void Update(f64 frametime);
     
     /// Create new replication state for user and dirty it (server operation only)
-    void NewUserConnected(UserConnection* user);
-        
+    void NewUserConnected(const UserConnectionPtr &user);
+
 public slots:
     /// Set update period (seconds)
     void SetUpdatePeriod(float period);
-    
+
     /// Get update period
-    float GetUpdatePeriod() { return updatePeriod_; }
+    float GetUpdatePeriod() const { return updatePeriod_; }
 
     /// Returns SceneSyncState for a client connection.
-    /// @note This slot is only exposed on Server, other wise will return 0.
-    /// @param int connection ID of the client.
-    /// @return SceneSyncState* State.
-    SceneSyncState* SceneState(int connectionId);
-
-    /// Returns SceneSyncState for a client connection.
-    /// @note This slot is only exposed on Server, other wise will return 0.
-    /// @param UserConnection* Client connection ptr.
-    /// @return SceneSyncState* State.
-    SceneSyncState* SceneState(UserConnection *connection);
+    /** @note This slot is only exposed on Server, other wise will return null ptr.
+        @param int connection ID of the client. */
+    SceneSyncState* SceneState(int connectionId) const;
+    SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /**< @overload @param connection Client connection.*/
 
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.

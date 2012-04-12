@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   AssetsWindow.cpp
- *  @brief  The main UI for managing asset storages and assets.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   AssetsWindow.cpp
+    @brief  The main UI for managing asset storages and assets. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"

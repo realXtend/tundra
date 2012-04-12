@@ -79,6 +79,9 @@ void MumblePlugin::Initialize()
         LogWarning(LC + "JavascriptModule not present, MumblePlugin usage from scripts will be limited!");
 
     framework_->RegisterDynamicObject("mumble", this);
+    
+    framework_->Console()->RegisterCommand("mumblepackets", "Set MumbleVoip amount of frames per network packet, eg. mumblepackets(6).", 
+        this, SLOT(OnFramesPerPacketChanged(const QStringList&)));
 
     // Audio processing with ~60 fps. This is not tied to FrameAPI::Updated or IModule::Update
     // because we want to process audio at a steady and fast rate even if mainloop max fps is capped to eg. 30 fps.
@@ -507,7 +510,7 @@ void MumblePlugin::SetOutputAudioMuted(bool outputAudioMuted)
             return;
         }
 
-        if (audio_)
+        if (audio_ && state.outputAudioMuted != outputAudioMuted)
             audio_->SetOutputAudioMuted(outputAudioMuted);
 
         if (network_)
@@ -521,6 +524,15 @@ void MumblePlugin::SetOutputAudioMuted(bool outputAudioMuted)
                 message.set_self_mute(outputAudioMuted);
                 network_->SendTCP(UserState, message);
             }
+        }
+        
+        // Force emitting false speak state for own user.
+        // If output is not muted this will be changed to true
+        // on the first voice packets we send to the network.
+        if (outputAudioMuted)
+        {
+            me->isSpeaking = true;
+            me->SetAndEmitSpeaking(false);
         }
     }
 
@@ -543,7 +555,7 @@ void MumblePlugin::SetInputAudioMuted(bool inputAudioMuted)
             return;
         }
 
-        if (audio_)
+        if (audio_ && state.inputAudioMuted != inputAudioMuted)
             audio_->SetInputAudioMuted(inputAudioMuted);
         
         if (network_)
@@ -556,19 +568,33 @@ void MumblePlugin::SetInputAudioMuted(bool inputAudioMuted)
                 message.set_self_deaf(inputAudioMuted);
                 message.set_self_mute(state.outputAudioMuted);
                 network_->SendTCP(UserState, message);
-
-                // Reset everyone in out channel to not speaking state
-                // as the server is no longer sending us audio.
-                if (inputAudioMuted && me->Channel())
-                {
-                    foreach(MumbleUser *peerUser, me->Channel()->users)
-                        peerUser->SetAndEmitSpeaking(false);
-                }
+            }
+        }
+        
+        // Force everyone in our channel to not speaking state.
+        // If they are sending audio and we input is not muted, the speaking
+        // signal will be emitted next time we get audio packets from them.
+        if (inputAudioMuted && me->Channel())
+        {
+            foreach(MumbleUser *peerUser, me->Channel()->users)
+            {
+                peerUser->isSpeaking = true;
+                peerUser->SetAndEmitSpeaking(false);
             }
         }
     }
 
     state.inputAudioMuted = inputAudioMuted;
+}
+
+bool MumblePlugin::IsOutputAudioMuted()
+{
+    return state.outputAudioMuted;
+}
+
+bool MumblePlugin::IsInputAudioMuted()
+{
+    return state.inputAudioMuted;
 }
 
 void MumblePlugin::RunAudioWizard()
@@ -606,6 +632,8 @@ void MumblePlugin::AudioWizardDestroyed()
 {
     if (audio_ && state.serverSynced)
         audio_->ClearInputAudio(state.sessionId);
+        
+    emit AudioWizardClosed();
 }
 
 void MumblePlugin::OnConnected(QString address, int port, QString username)
@@ -622,7 +650,12 @@ void MumblePlugin::OnDisconnected(QString reason)
 
 void MumblePlugin::OnNetworkModeChange(MumbleNetwork::NetworkMode mode, QString reason)
 {
-    LogInfo(LC + "Network mode change: " + reason);
+    // Treat going back to TCP from UDP worth of a warning as it will make the connection poor.
+    if (mode == MumbleNetwork::MumbleUDPMode)
+        LogInfo(LC + "Network mode change: " + reason);
+    else
+        LogWarning(LC + "Network mode change: " + reason);
+        
     state.networkMode = mode;
     emit NetworkModeChange(state.networkMode, reason);
 }
@@ -1040,6 +1073,8 @@ void MumblePlugin::OnServerSynced(uint sessionId)
     // Send and setup audio state
     if (audio_)
     {
+        me->SetAndEmitSpeaking(false);
+        
         audio_->SetInputAudioMuted(state.inputAudioMuted);
         audio_->SetOutputAudioMuted(state.outputAudioMuted);
     }
@@ -1048,14 +1083,11 @@ void MumblePlugin::OnServerSynced(uint sessionId)
 
     if (network_)
     {
-        if (me->isSelfDeaf != state.inputAudioMuted || me->isSelfMuted != state.outputAudioMuted)
-        {
-            MumbleProto::UserState message;
-            message.set_session(state.sessionId);
-            message.set_self_deaf(state.inputAudioMuted);
-            message.set_self_mute(state.outputAudioMuted);
-            network_->SendTCP(UserState, message);
-        }
+        MumbleProto::UserState message;
+        message.set_session(state.sessionId);
+        message.set_self_deaf(state.inputAudioMuted);
+        message.set_self_mute(state.outputAudioMuted);
+        network_->SendTCP(UserState, message);
     }
     else
         LogError(LC + "Network thread null after connected!");
@@ -1143,6 +1175,26 @@ void MumblePlugin::OnAudioSettingChanged(MumbleAudio::AudioSettings settings, bo
     }
     else
         LogError(LC + "Audio wizard can't be shown, audio thread null!");
+}
+
+void MumblePlugin::OnFramesPerPacketChanged(const QStringList &params)
+{
+    if (!params.isEmpty())
+    {
+        bool ok = false;
+        int framesPerPacket = params.first().toInt(&ok);
+        if (ok)
+        {
+            if (audio_)
+                audio_->ApplyFramesPerPacket(framesPerPacket);
+            else
+                LogError(LC + "Cannot set frames per packet, no active VOIP connection.");
+        }
+        else
+            LogError(LC + "Cannot set frames per packet, failed to parse integer from " + params.first());
+    }
+    else
+        LogError(LC + "Cannot set frames per packet, given parameter list is empty, needs single integer.");   
 }
 
 MumbleAudio::AudioSettings MumblePlugin::LoadSettings()

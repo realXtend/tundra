@@ -26,6 +26,7 @@
 #include "Scene.h"
 #include "EC_Name.h"
 #include "EC_Placeable.h"
+#include "EC_Mesh.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
@@ -189,17 +190,15 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpa
 
 void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select_all)
 {
-    ClearEntities();
-
     // SetEntitySelected() will block entity list's signals, no need to do it here.
 
+    ClearEntities();
     foreach(entity_id_t id, entities)
     {
-        EntityListWidgetItem *item = AddEntity(id);
+        EntityListWidgetItem *item = AddEntity(id, false);
         if (select_all)
             SetEntitySelected(item, true);
     }
-
     RefreshPropertyBrowser();
 }
 
@@ -424,8 +423,7 @@ void ECEditorWindow::FunctionDialogFinished(int result)
 
             QString errorMsg;
             QVariant ret;
-            FunctionInvoker invoker;
-            invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
+            FunctionInvoker::Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
 
             QString retValStr;
             ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
@@ -694,7 +692,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
 
     if (!entitiesWithPlaceable.isEmpty())
     {
-        transformEditor->SetSelection(entities);
+        transformEditor->SetSelection(entitiesWithPlaceable);
         transformEditor->FocusGizmoPivotToAabbCenter();
         // Shows gizmo only if we have focus.
         bool enabled = framework->GetModule<ECEditorModule>()->IsGizmoEnabled();
@@ -891,6 +889,14 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
 #ifdef EC_Highlight_ENABLED
     if (entity)
     {
+        // Optimization when selecting large group of entities, and sensible logic otherwise too:
+        // Don't create EC_Highlight if there is no EC_Mesh in the entity. EC_Highlight does
+        // absolutely nothing if there is no mesh. Granted it listens when EC_Mesh is added, but if you
+        // are going to add meshes you might as well reselect your entities to get a highlight.
+        // Creating the EC_Highlight to the entity is a major time spender if we are talking of large amount of entities.
+        if (!entity->GetComponent(EC_Mesh::TypeNameStatic()).get())
+            return;
+
         // If component already has an EC_Highlight, that is not ours, do nothing, as the highlights would conflict
         ComponentPtr c = entity->GetComponent(EC_Highlight::TypeNameStatic());
         if (c && c->Name() != cEcEditorHighlight)

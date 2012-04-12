@@ -11,20 +11,48 @@ macro (configure_speex)
         COMPONENTS libspeex         # speex lib
                    libspeexdsp      # speex audio processing lib
                    speex            # speex.h to find include dir
-        PREFIXES ${SPEEX_ROOT})
+        PREFIXES ${SPEEX_ROOT}      # full prebuilt deps
+                 ${ENV_TUNDRA_DEP_PATH}
+                 ${SPEEX_ROOT}/lib/Release) # packaged prebuilt deps
         
     sagase_configure_report (SPEEX)
 endmacro (configure_speex)
 
-macro (configure_protobuf)   
-    if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
-        SET(PROTOBUF_SRC_ROOT_FOLDER $ENV{PROTOBUF_SRC_ROOT_FOLDER})
-    endif()
-    if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
-        SET(PROTOBUF_SRC_ROOT_FOLDER ${ENV_TUNDRA_DEP_PATH}/protobuf)
+macro (configure_protobuf)
+    if (APPLE)
+        sagase_configure_package(PROTOBUF
+        NAMES protobuf
+        COMPONENTS libprotobuf      # protobuf lib
+                   service          # service.h to find include dir
+        PREFIXES ${ENV_TUNDRA_DEP_PATH}                        # Finding the libs
+                 ${ENV_TUNDRA_DEP_PATH})                        # Finding the include
+
+        # Remove FindProtobuf.cmake generated not found item
+        list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
     endif()
 
-    find_package(Protobuf REQUIRED)
+    if (MSVC)
+        if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
+            SET(PROTOBUF_SRC_ROOT_FOLDER $ENV{PROTOBUF_SRC_ROOT_FOLDER})
+        endif()
+        if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
+            SET(PROTOBUF_SRC_ROOT_FOLDER ${ENV_TUNDRA_DEP_PATH}/protobuf)
+        endif()
+
+        find_package(Protobuf REQUIRED)
+    
+        # Stupid FindProtobuf.cmake does not find includes on windows for packaged deps, set manually.
+        # It is assuming include path is <protobuf>/vcprojects/include on windows, ARGH!
+        if ("${PROTOBUF_INCLUDE_DIR}" STREQUAL "PROTOBUF_INCLUDE_DIR-NOTFOUND")
+            if (IS_DIRECTORY ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+                set (PROTOBUF_INCLUDE_DIR ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+                set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+            else()
+                message(FATAL_ERROR "Could not detect include folder from ${PROTOBUF_SRC_ROOT_FOLDER}/include")
+            endif()
+        endif()
+    endif()
+    
     sagase_configure_report (PROTOBUF)
 endmacro (configure_protobuf)
 
@@ -54,7 +82,8 @@ macro (configure_celt)
         COMPONENTS libcelt  # for libcelt
                    celt0    # for old celt0 name (linux?)
                    celt     # for celt.h
-        PREFIXES ${CELT_ROOT})
+        PREFIXES ${CELT_ROOT}
+                 ${ENV_TUNDRA_DEP_PATH})
         
     sagase_configure_report (CELT)
 endmacro (configure_celt)

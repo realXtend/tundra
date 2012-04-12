@@ -1,26 +1,28 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   InvokeItem.cpp
- *  @brief  Struct used to storage information about invoked Entity Action or Function call.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   InvokeItem.cpp
+    @brief  Struct used to store information about invoked Entity Action or Function call. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "InvokeItem.h"
+
 #include "CoreException.h"
 
-InvokeItem::InvokeItem() : 
-    type(Unknown), 
-    execTypes(EntityAction::Invalid), 
+#include "MemoryLeakCheck.h"
+
+InvokeItem::InvokeItem() :
+    type(Unknown),
+    execTypes(EntityAction::Invalid),
     mruOrder(0)
 {
 }
 
-InvokeItem::InvokeItem(const QString &settingStr) : 
-    type(Unknown), 
-    execTypes(EntityAction::Invalid), 
+InvokeItem::InvokeItem(const QString &settingStr) :
+    type(Unknown),
+    execTypes(EntityAction::Invalid),
     mruOrder(0)
 {
     FromSetting(settingStr);
@@ -89,7 +91,7 @@ void InvokeItem::FromSetting(const QString &str)
         bool converted = value.convert((QVariant::Type)type.toInt());
         if (!converted)
         {
-            QString err("Failed to parse invoke history: could not convert" + value.toString() + "to QVariant::Type " + type);
+            QString err("Failed to parse invoke history: could not convert " + value.toString() + " to QVariant::Type " + type);
             throw Exception(err.toStdString().c_str());
         }
         parameters.push_back(value);

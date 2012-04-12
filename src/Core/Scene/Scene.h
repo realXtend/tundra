@@ -112,18 +112,16 @@ public:
     /// Inspects file and returns a scene description structure from the contents of XML file.
     /** @param filename File name. */
     SceneDesc CreateSceneDescFromXml(const QString &filename) const;
-
-    /// Inspects xml data and returns a scene description structure from the contents of XML data.
-    /** @param data Data to be processed.
-        @param sceneDesc Initialized SceneDesc with filename and enum type prepared. */
+    /// @overload
+    /** @param data XML data to be processed.
+        @param sceneDesc Initialized SceneDesc with filename prepared. */
     SceneDesc CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const;
 
     /// Inspects file and returns a scene description structure from the contents of binary file.
     /** @param filename File name. */
     SceneDesc CreateSceneDescFromBinary(const QString &filename) const;
-
-    /// Inspects binary data and returns a scene description structure from the contents of binary data.
-    /** @param data Data to be processed. */
+    /// @overload
+    /** @param data Binary data to be processed. */
     SceneDesc CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const;
 
     /// Inspects .js file content for dependencies and adds them to sceneDesc.assets
@@ -250,7 +248,6 @@ public slots:
         @note O(log n)
         @sa EntityByName*/
     EntityPtr EntityById(entity_id_t id) const;
-    EntityPtr GetEntity(entity_id_t id) const { return EntityById(id); }  ///< @deprecated Use EntityById.
 
     /// Returns entity with the specified name.
     /** @note The name of the entity is stored in a component EC_Name. If this component is not present in the entity, it has no name.
@@ -259,7 +256,6 @@ public slots:
         @note @note O(n)
         @sa EntityByName */
     EntityPtr EntityByName(const QString &name) const;
-    EntityPtr GetEntityByName(const QString& name) const { return EntityByName(name); } ///< @deprecated Use EntityByName.
 
     /// Returns whether name is unique within the scene, ie. is only encountered once, or not at all.
     /** @note O(n) */
@@ -292,11 +288,9 @@ public slots:
         @param name Name of the component, optional.
         @note O(n) */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
-    EntityList GetEntitiesWithComponent(const QString &typeName, const QString &name = "") const { return EntitiesWithComponent(typeName, name); } ///< @deprecated Use EntitiesWithComponent.
 
-    /// Returns all entities as a list for scripting
-    /// @todo Remove and expose EntityMap and Entities to script.
-    EntityList GetAllEntities() const;
+    /// Returns all entities in the scene.
+    EntityMap Entities() /*non-const intentionally*/ { return entities_; }
 
     /// Loads the scene from XML.
     /** @param filename File name
@@ -340,16 +334,13 @@ public slots:
 
     /// Creates scene content from XML.
     /** @param xml XML document as string.
-        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file. 
+        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file.
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities. */
     QList<Entity *> CreateContentFromXml(const QString &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
-
-    /// This is an overloaded function.
-    /** @param xml XML document. */
-    QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
+    QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change); /**< @overload @param xml XML document. */
 
     /// Creates scene content from binary file.
     /** @param filename File name.
@@ -359,11 +350,7 @@ public slots:
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities. */
     QList<Entity *> CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change);
-
-    /// This is an overloaded function.
-    /** @param data Data buffer.
-        @param numBytes Data size.*/
-    QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change);
+    QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change); /**< @overload @param data Data buffer @param numBytes Data size. */
 
     /// Checks whether editing an entity is allowed.
     /** Emits AboutToModifyEntity.
@@ -377,23 +364,15 @@ public slots:
         @param change Change signalling mode */
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
-    /// @todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
-/*
-    Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true) 
-        { return CreateEntity((entity_id_t)id, components, change, defaultNetworkSync).get(); }
-    Entity* CreateEntityLocalRaw(const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::LocalOnly, bool defaultNetworkSync = false)
-        { return CreateEntity(NextFreeIdLocal(), components, change, defaultNetworkSync).get(); } 
-*/
-    Entity* GetEntityRaw(uint id) const { return GetEntity(id).get(); }
-    bool DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity((entity_id_t)id, change); }
-    bool RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity(entityid, change); }
-  //  void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
-    /// @todo Script-hack function, remove.
-    /// @deprecated Use EntitiesWithComponent instead.
-    QVariantList GetEntityIdsWithComponent(const QString &typeName) const;
- //   QList<Entity*> GetEntitiesWithComponentRaw(const QString &typeName) const;
-    /// Returns IDs of loaded entities
-//    QVariantList LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
+    // DEPRECATED function signatures
+    EntityPtr GetEntity(entity_id_t id) const { return EntityById(id); } /**< @deprecated Use EntityById @todo Add warning print, remove in some distant future */
+    EntityPtr GetEntityByName(const QString& name) const { return EntityByName(name); } /**< @deprecated Use EntityByName  @todo Add warning print, remove in some distant future */
+    EntityList GetEntitiesWithComponent(const QString &typeName, const QString &name = "") const { return EntitiesWithComponent(typeName, name); } ///< @deprecated Use EntitiesWithComponent @todo Add warning print, remove in some distant future */
+    EntityList GetAllEntities() const; /**< @deprecated @todo Add warning print, remove in some distant future */
+    QVariantList GetEntityIdsWithComponent(const QString &typeName) const; /**< @deprecated Use EntitiesWithComponent instead @todo Remove. */
+    Entity* GetEntityRaw(uint id) const { return GetEntity(id).get(); } /**< @deprecated Use EntityById @todo Remove */
+    bool DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity((entity_id_t)id, change); } /**< @deprecated Use RemoveEntity @todo Remove */
+    bool RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity(entityid, change); } /**< @deprecated Use RemoveEntity @todo Remove */
 
 signals:
     /// Signal when an attribute of a component has changed

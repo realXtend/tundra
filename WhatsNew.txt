@@ -1,3 +1,19 @@
+v2.3.2
+------
+ - Fixed a shader-related Hydrax crash bug on Mac (possibly could occur on Windows as well).
+ - Closed some issues with lacking QtScript bindings (#432, #433)
+ - Fixed mouse raycast clicks not working against very thing objects (#435)
+ - Added --notextures debug command line option to enable debugging memory consumption caused by textures. If enabled, Tundra does not load any textures for any objects.
+ - Added --d3ddefaultpool debug command line option to force all textures to be loaded in D3DPOOL_DEFAULT instead of D3DPOOL_MANAGED, to allow profiling and testing Ogre behavior in these modes.
+ - Fixed an issue where uploading assets through the Add Content window would try to interpret URLs as paths to the local filesystem.
+ - Fixed a kNet protocol error where sending large messages (>256KB) would fail if using socket in TCP mode.
+ - Other closed issues: #438
+ - See full changes at https://github.com/LudoCraft/Tundra/compare/f19bd0a36c...82512e1aff
+ 
+Known issues:
+ - In the Mac release, MumblePlugin is not enabled: https://github.com/realXtend/naali/issues/447
+ - for other issues, see https://github.com/realXtend/naali/issues
+
 v2.3.1 - https://github.com/realXtend/naali/compare/tundra2.3.0...tundra2.3.1
 ------
 Note: The numbers with # signs refer to github issue tracker numbers, e.g. #314 -> https://github.com/realXtend/naali/issues/314 .

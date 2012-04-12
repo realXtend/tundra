@@ -189,6 +189,12 @@ public slots:
         This is how the mumble protocol operates, it saves bandwidth and processing on the server and client(s).
         @see SetOutputAudioMuted. */
     void SetInputAudioMuted(bool inputAudioMuted);
+    
+    /// Returns if output audio is muted, meaning your own voice to others.
+    bool IsOutputAudioMuted();
+    
+    /// Returns if input audio is muted, meaning voice from other users.
+    bool IsInputAudioMuted();
 
     /// Shows a audio wizard widget.
     /** Shows a audio wizard widget that lets user tweak voice settings for bitrate quality, 
@@ -308,7 +314,10 @@ signals:
 
     /** Own MumbleUser joined a channel. Provided for easier 
         hooking up to the channel signals. */
-    void JoinedChannel(MumbleChannel *channel);    
+    void JoinedChannel(MumbleChannel *channel);
+    
+    /// Emitted when Audio Wizard widget is close and destoyed.
+    void AudioWizardClosed();
 
 private slots:
     // Various private slots for processing data from the MumbleNetworkHandler thread.
@@ -326,6 +335,9 @@ private slots:
 
     // Stores to local user profile disk config if saveConfig is true. Receives this signal from AudioWizards OK, Cancel and Apply buttons.
     void OnAudioSettingChanged(MumbleAudio::AudioSettings settings, bool saveConfig);
+    
+    // Handler for console command to set frames per packet.
+    void OnFramesPerPacketChanged(const QStringList &params);
 
     // When server send synced message we have all server channels and users.
     void OnServerSynced(uint sessionId);

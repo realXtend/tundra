@@ -1302,17 +1302,17 @@ OgreMeshAssetPtr EC_Mesh::MeshAsset() const
     return boost::dynamic_pointer_cast<OgreMeshAsset>(meshAsset->Asset());
 }
 
-boost::shared_ptr<OgreMaterialAsset> EC_Mesh::MaterialAsset(int materialIndex) const
+OgreMaterialAssetPtr EC_Mesh::MaterialAsset(int materialIndex) const
 {
     if (materialIndex < 0 || materialIndex >= (int)materialAssets.size())
-        return boost::shared_ptr<OgreMaterialAsset>();
+        return OgreMaterialAssetPtr();
     return boost::dynamic_pointer_cast<OgreMaterialAsset>(materialAssets[materialIndex]->Asset());
 }
 
-boost::shared_ptr<OgreSkeletonAsset> EC_Mesh::SkeletonAsset() const
+OgreSkeletonAssetPtr EC_Mesh::SkeletonAsset() const
 {
     if (!skeletonAsset)
-        return boost::shared_ptr<OgreSkeletonAsset>();
+        return OgreSkeletonAssetPtr();
     return boost::dynamic_pointer_cast<OgreSkeletonAsset>(skeletonAsset->Asset());
 }
 

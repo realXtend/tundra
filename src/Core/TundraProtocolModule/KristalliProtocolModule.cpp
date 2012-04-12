@@ -390,20 +390,20 @@ u8 KristalliProtocolModule::AllocateNewConnectionID() const
     return newID;
 }
 
-UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* source)
+UserConnectionPtr KristalliProtocolModule::GetUserConnection(MessageConnection* source) const
 {
-    for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->connection == source)
-            return iter->get();
+            return *iter;
 
-    return 0;
+    return UserConnectionPtr();
 }
 
-UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
+UserConnectionPtr KristalliProtocolModule::GetUserConnection(u8 id) const
 {
-    for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->userID == id)
-            return iter->get();
+            return *iter;
 
-    return 0;
+    return UserConnectionPtr();
 }
