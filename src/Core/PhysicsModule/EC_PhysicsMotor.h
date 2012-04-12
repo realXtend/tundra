@@ -68,7 +68,7 @@ private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
 
-    /// Called when component has been added or removed from the parent entity. Checks the existence of the EC_Placeable component, and attaches this camera to it.
+    /// Called when component has been added or removed from the parent entity. Checks existence of EC_RigidBody & EC_Placeable components.
     void OnComponentStructureChanged();
     
     /// Apply forces during each physics update.
