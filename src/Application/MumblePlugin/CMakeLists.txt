@@ -162,6 +162,10 @@ link_package (OPENSSL)
 
 if (APPLE)
     link_ogre()
+
+    #TODO This line should not be needed, as these libraries should be picked up by above link_package. However,
+    # does not seem to be happening. Remove this line when the above link_packages have been fixed.
+    target_link_libraries(${TARGET_NAME} speex speexdsp protobuf)
 endif ()
 
 if (WIN32)
