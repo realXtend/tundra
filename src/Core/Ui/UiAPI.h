@@ -4,11 +4,26 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QWidget>
 
 #include "UiFwd.h"
 #include "UiApiExport.h"
 
 class QMenu;
+
+/// Used as a viewport for the main QGraphicsView.
+/** Its purpose is to disable all automatic drawing of the QGraphicsView to screen so that
+ we can composite an Ogre 3D render with the Qt widgets added to a QGraphicsScene. */
+class SuppressedPaintWidget : public QWidget
+{
+public:
+    SuppressedPaintWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    virtual ~SuppressedPaintWidget() {}
+    
+protected:
+    virtual bool event(QEvent *event);
+    virtual void paintEvent(QPaintEvent *event);
+};
 
 /// Provides functions for managing the currently opened windows in the application main window.
 /** @todo More detailed description.
