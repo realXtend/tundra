@@ -1,6 +1,12 @@
 // !ref: default_avatar.avatar
 // !ref: crosshair.js
 
+// Differences to the Avatar example
+// - Movement force applied with EC_PhysicsMotor component instead of applying force in script after each physics update
+// - No animation on server
+// - No flying/jumping
+// - No script collision response required
+
 if (!server.IsRunning() && !framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
@@ -9,7 +15,7 @@ if (!server.IsRunning() && !framework.IsHeadless())
 }
 
 // A simple walking avatar with physics & 1st/3rd person camera
-function SimpleAvatar(entity, comp)
+function SimpleAvatar(entity, comp)                                                                  
 {
     // Store the entity reference
     this.me = entity;
@@ -36,8 +42,6 @@ function SimpleAvatar(entity, comp)
     // Needed bools for logic
     this.isServer = server.IsRunning();
     this.ownAvatar = false;
-    this.flying = false;
-    this.falling = false;
     this.crosshair = null;
     this.isMouseLookLockedOnX = true;
 
@@ -63,7 +67,7 @@ SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
     if (this.isServer)
     {
         frame.Updated.disconnect(this, this.ServerUpdate);
-        scene.physics.Updated.disconnect(this, this.ServerUpdatePhysics);
+        //scene.physics.Updated.disconnect(this, this.ServerUpdatePhysics);
     }
     else
         frame.Updated.disconnect(this, this.ClientUpdate);
@@ -107,8 +111,12 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     rigidbody.size = sizeVec;
     rigidbody.angularFactor = float3.zero; // Set zero angular factor so that body stays upright
 
+    var physicsMotor = this.me.GetOrCreateComponent("EC_PhysicsMotor", 2, false);
+    physicsMotor.dampingForce = new float3(this.dampingForce, 0.0, this.dampingForce);
+
     // Create dynamic component attributes for disabling/enabling functionality, and for camera distance / 1st/3rd mode
     var attrs = this.me.dynamiccomponent;
+    this.attrs = attrs;
     attrs.CreateAttribute("bool", "enableWalk");
     attrs.CreateAttribute("bool", "enableJump");
     attrs.CreateAttribute("bool", "enableFly");
@@ -124,110 +132,30 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     attrs.SetAttribute("enableZoom", true);
     attrs.SetAttribute("cameraDistance", 7.0);
 
-    // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
-    // var proxtrigger = me.GetOrCreateComponent("EC_ProximityTrigger");
-    // proxtrigger.active = false;
-
-    // Hook to physics update
-    scene.physics.Updated.connect(this, this.ServerUpdatePhysics);
-
-    // Hook to tick update for animation update
+    // Hook to tick update for housekeeping
     frame.Updated.connect(this, this.ServerUpdate);
 
     // Connect actions. These come from the client side inputmapper
     this.me.Action("Move").Triggered.connect(this, this.ServerHandleMove);
     this.me.Action("Stop").Triggered.connect(this, this.ServerHandleStop);
-    this.me.Action("ToggleFly").Triggered.connect(this, this.ServerHandleToggleFly);
     this.me.Action("SetRotation").Triggered.connect(this, this.ServerHandleSetRotation);
-
-    rigidbody.PhysicsCollision.connect(this, this.ServerHandleCollision);
 }
 
 SimpleAvatar.prototype.ServerUpdate = function(frametime) {
-    var attrs = this.me.dynamiccomponent;
-
-    if (!this.animsDetected) {
-        this.CommonFindAnimations();
-    }
 
     // If walk enable was toggled off, make sure the motion state is cleared
-    if (!attrs.GetAttribute("enableWalk"))
+    if (!this.attrs.GetAttribute("enableWalk") && (this.motionX != 0 || this.motionZ != 0))
     {
         this.motionX = 0;
         this.motionZ = 0;
+        this.ServerUpdateMotionForce();
     }
-    
-    // If flying enable was toggled off, but we are still flying, disable now
-    if ((this.flying) && (!attrs.GetAttribute("enableFly")))
-        this.ServerSetFlying(false);
 
-    this.CommonUpdateAnimation(frametime);
-}
-
-SimpleAvatar.prototype.ServerHandleCollision = function(ent, pos, normal, distance, impulse, newCollision) {
-    if (this.falling && newCollision) {
-        this.falling = false;
-        this.ServerSetAnimationState();
-    }
-}
-
-SimpleAvatar.prototype.ServerUpdatePhysics = function(frametime) {
-    var placeable = this.me.placeable;
-    var rigidbody = this.me.rigidbody;
-    var attrs = this.me.dynamiccomponent;
-
-    if (!this.flying) {
-        // Apply motion force
-        // If diagonal motion, normalize
-        if (this.motionX != 0 || this.motionZ != 0) {
-            var impulse = new float3(this.motionX, 0, -this.motionZ).Normalized().Mul(this.moveForce);
-            var tm = placeable.LocalToWorld();
-            impulse = tm.MulDir(impulse);
-            rigidbody.ApplyImpulse(impulse);
-        }
-
-        // Apply jump
-        if (this.motionY == 1 && !this.falling) {
-            if (attrs.GetAttribute("enableJump")) {
-                var jumpVec = new float3(0, 75, 0);
-                this.motionY = 0;
-                this.falling = true;
-                rigidbody.ApplyImpulse(jumpVec);
-            }
-        }
-
-        // Apply damping. Only do this if the body is active, because otherwise applying forces
-        // to a resting object wakes it up
-        if (rigidbody.IsActive()) {
-            var dampingVec = rigidbody.GetLinearVelocity();
-            dampingVec.x = -this.dampingForce * dampingVec.x;
-            dampingVec.y = 0;
-            dampingVec.z = -this.dampingForce * dampingVec.z;
-            rigidbody.ApplyImpulse(dampingVec);
-        }
-    } else {
-        // Manually move the avatar placeable when flying
-        // this has the downside of no collisions.
-        // Feel free to reimplement properly with mass enabled.
-        var avTransform = placeable.transform;
-
-        // Make a vector where we have moved
-        var moveVec = new float3(this.motionX * this.flySpeedFactor, this.motionY * this.flySpeedFactor, -this.motionZ * this.flySpeedFactor);
-
-        // Apply that with av looking direction to the current position
-        var offsetVec = placeable.LocalToWorld().MulDir(moveVec);
-        avTransform.pos.x = avTransform.pos.x + offsetVec.x;
-        avTransform.pos.y = avTransform.pos.y + offsetVec.y;
-        avTransform.pos.z = avTransform.pos.z + offsetVec.z;
-
-        placeable.transform = avTransform;
-    }
 }
 
 SimpleAvatar.prototype.ServerHandleMove = function(param) {
-    var attrs = this.me.dynamiccomponent;
 
-    if (attrs.GetAttribute("enableWalk")) {
+    if (this.attrs.GetAttribute("enableWalk")) {
         if (param == "forward") {
             this.motionZ = 1;
         }
@@ -250,6 +178,7 @@ SimpleAvatar.prototype.ServerHandleMove = function(param) {
     }
 
     this.ServerSetAnimationState();
+    this.ServerUpdateMotionForce();
 }
 
 SimpleAvatar.prototype.ServerHandleStop = function(param) {
@@ -273,40 +202,19 @@ SimpleAvatar.prototype.ServerHandleStop = function(param) {
     }
 
     this.ServerSetAnimationState();
+    this.ServerUpdateMotionForce();
 }
 
-SimpleAvatar.prototype.ServerHandleToggleFly = function() {
-    this.ServerSetFlying(!this.flying);
-}
+SimpleAvatar.prototype.ServerUpdateMotionForce = function() {
+    var newMoveForce = new float3(this.motionX, 0, -this.motionZ);
+    if (newMoveForce.Length() > 0)
+        newMoveForce = newMoveForce.Normalized();
 
-SimpleAvatar.prototype.ServerSetFlying = function(newFlying) {
-    var attrs = this.me.dynamiccomponent;
-    if (!attrs.GetAttribute("enableFly"))
-        newFlying = false;
-
-    if (this.flying == newFlying)
-        return;
-
-    var rigidbody = this.me.rigidbody;
-    this.flying = newFlying;
-    if (this.flying) {
-        rigidbody.mass = 0;
-    } else {
-        var placeable = this.me.placeable;
-        // Set mass back for collisions
-        rigidbody.mass = this.avatarMass;
-        // Push avatar a bit to the fly direction
-        // so the motion does not just stop to a wall
-        var moveVec = new float3(this.motionX * 120, this.motionY * 120, -this.motionZ * 120);
-        var pushVec = placeable.LocalToWorld().MulDir(moveVec);
-        rigidbody.ApplyImpulse(pushVec);
-    }
-    this.ServerSetAnimationState();
+    this.me.physicsmotor.relativeMoveForce = newMoveForce.Mul(this.moveForce);
 }
 
 SimpleAvatar.prototype.ServerHandleSetRotation = function(param) {
-    var attrs = this.me.dynamiccomponent;
-    if (attrs.GetAttribute("enableRotate")) {
+    if (this.attrs.GetAttribute("enableRotate")) {
         var rot = new float3(0, parseFloat(param), 0);
         this.me.rigidbody.SetRotation(rot);
     }
@@ -317,13 +225,6 @@ SimpleAvatar.prototype.ServerSetAnimationState = function() {
     var animName = this.standAnimName;
     if ((this.motionX != 0) || (this.motionZ != 0)) {
         animName = this.walkAnimName;
-    }
-
-    // Flying: Fly if moving forward or back, otherwise hover
-    if (this.flying || this.falling) {
-        animName = this.flyAnimName;
-        if (this.motionZ == 0)
-            animName = this.hoverAnimName;
     }
 
     if (animName == "") {
@@ -444,9 +345,6 @@ SimpleAvatar.prototype.ClientCreateInputMapper = function() {
     inputmapper.RegisterMapping("D", "Move(right))", 1);
     inputmapper.RegisterMapping("Up", "Move(forward)", 1);
     inputmapper.RegisterMapping("Down", "Move(back)", 1);
-    inputmapper.RegisterMapping("F", "ToggleFly()", 1);
-    inputmapper.RegisterMapping("Space", "Move(up)", 1);
-    inputmapper.RegisterMapping("C", "Move(down)", 1);
 
     // Key released -actions
     inputmapper.RegisterMapping("W", "Stop(forward)", 3); // 3 = keyrelease
@@ -455,8 +353,6 @@ SimpleAvatar.prototype.ClientCreateInputMapper = function() {
     inputmapper.RegisterMapping("D", "Stop(right)", 3);
     inputmapper.RegisterMapping("Up", "Stop(forward)", 3);
     inputmapper.RegisterMapping("Down", "Stop(back)", 3);
-    inputmapper.RegisterMapping("Space", "Stop(up)", 3);
-    inputmapper.RegisterMapping("C", "Stop(down)", 3);
 
     // Connect mouse gestures
     var inputContext = inputmapper.GetInputContext();
