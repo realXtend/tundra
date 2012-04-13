@@ -713,15 +713,16 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
 IF NOT EXIST "%DEPS%\celt\.git" (
    cd "%DEPS%"
    cecho {0D}Cloning Celt 0.11.1 into "%DEPS%\celt".{# #}{\n}
-   git clone git://git.xiph.org/celt.git
+   call git clone git://git.xiph.org/celt.git celt
    :: Copy config.h from head to the 0.11.1 tag.
    cd celt
    copy /Y msvc\config.h config.h
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   git checkout -b v0.11.1 v0.11.1
+   call git checkout -b v0.11.1 v0.11.1
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    mkdir msvc
    copy /Y config.h msvc\config.h
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Celt already cloned. Skipping.{# #}{\n}
 )

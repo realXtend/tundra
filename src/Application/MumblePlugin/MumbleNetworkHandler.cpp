@@ -28,7 +28,7 @@ MumbleNetworkHandler::MumbleNetworkHandler(QString address, ushort port, QString
     requestedExit_(false),
     codecBitStreamVersion(0),
     frameOutSequenceNumber(0),
-    networkMode(MumbleNetwork::MumbleTCPMode)
+    networkMode(MumbleNetwork::MumbleUDPMode)
 {
     connectionInfo.address = address;
     connectionInfo.port = port;
@@ -257,7 +257,7 @@ void MumbleNetworkHandler::OnSslErrors(const QList<QSslError>& errors)
         The only difference is that it pops a "do you accept" dialog where you can inspect the
         certificate. This data is then stored to database so you are not bothered again for that particular server. 
         @todo Implement above procedures. */
-    LogWarning("[MumbleNetworkHandler]: SSL errors occurred during handshake. Ignoring for now...");
+    LogDebug("[MumbleNetworkHandler]: SSL errors occurred during handshake. Ignoring for now...");
     tcp->ignoreSslErrors();
 }
 
@@ -485,7 +485,7 @@ void MumbleNetworkHandler::SendVoicePacket(VoicePacketInfo &packetInfo)
         stream << packetInfo.pos.z;
     }
 
-    NetworkMode localNetworkMode = MumbleTCPMode;
+    NetworkMode localNetworkMode = MumbleUDPMode;
     {
         QMutexLocker modeLock(&mutexNetworkMode);
         localNetworkMode = networkMode;
@@ -656,7 +656,7 @@ void MumbleNetworkHandler::HandleMessage(const TCPMessageType id, QByteArray &bu
             crypt.uiRemoteLate = msg.late();
             crypt.uiRemoteLost = msg.lost();
             crypt.uiRemoteResync = msg.resync();
-
+            
             if (networkMode == MumbleNetwork::MumbleUDPMode && ((crypt.uiRemoteGood == 0) || (crypt.uiGood == 0)) && (timestamp.elapsed() > 20000000ULL)) 
             {
                 {
