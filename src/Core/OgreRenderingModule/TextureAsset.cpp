@@ -17,7 +17,10 @@
 #include <QFileInfo>
 
 #include <Ogre.h>
+
+#ifdef WIN32
 #include <squish.h>
+#endif
 
 #if defined(DIRECTX_ENABLED) && defined(WIN32)
 #ifdef SAFE_DELETE

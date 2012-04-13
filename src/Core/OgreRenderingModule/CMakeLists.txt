@@ -9,7 +9,11 @@ file(GLOB UI_FILES *.ui)
 file(GLOB XML_FILES *.xml)
 file(GLOB MOC_FILES RenderWindow.h EC_*.h Renderer.h TextureAsset.h OgreMeshAsset.h OgreParticleAsset.h
     OgreSkeletonAsset.h OgreMaterialAsset.h OgreRenderingModule.h OgreWorld.h UiPlane.h)
-set(SOURCE_FILES ${LIBSQUISH_CPP_FILES} ${CPP_FILES} ${H_FILES})
+if (WIN32)
+    set(SOURCE_FILES ${LIBSQUISH_CPP_FILES} ${CPP_FILES} ${H_FILES})
+else()
+    set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
+endif()
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder()
