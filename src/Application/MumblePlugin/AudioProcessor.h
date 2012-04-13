@@ -70,7 +70,9 @@ namespace MumbleAudio
         void PlayInputAudio(MumblePlugin *mumble);
         void SetInputAudioMuted(bool inputAudioMuted_);
         
+        void ApplyFramesPerPacket(int framesPerPacket);
         void ApplySettings(AudioSettings settings);
+        
         AudioSettings GetSettings();
 
         void ClearInputAudio();

@@ -76,7 +76,7 @@ void Client::Login(const QUrl& loginUrl)
     }
 
     // Parse values from url
-    QByteArray username = loginUrl.queryItemValue("username").toUtf8();
+    QString username = loginUrl.queryItemValue("username");
     QString password = loginUrl.queryItemValue("password");
     QString protocol = loginUrl.queryItemValue("protocol");
     QString address = loginUrl.host();
@@ -84,12 +84,19 @@ void Client::Login(const QUrl& loginUrl)
 
     // If the username is more exotic or has spaces, prefer 
     // decoding the percent encoding before it is sent to the server.
-    if (username.contains('%'))
-        username = QByteArray::fromPercentEncoding(username);
+    QByteArray utfUsername = loginUrl.queryItemValue("username").toUtf8();
+    if (utfUsername.contains('%'))
+    {
+        // Use QUrl to decode percent encoding instead of QByteArray.
+        username = QUrl::fromEncoded(utfUsername).toString();
+    }
 
     // Validation: Username and address is the minimal set that with we can login with
     if (username.isEmpty() || address.isEmpty())
+    {
+        ::LogError("Client::Login: Cannot log to server, no username defined in login url: " + loginUrl.toString());
         return;
+    }
     if (port < 0)
         port = 2345;
 

@@ -25,7 +25,8 @@ namespace MumbleAudio
         preProcessorReset(true),
         isSpeech(false),
         wasPreviousSpeech(false),
-        holdFrames(0)
+        holdFrames(0),
+        qualityFramesPerPacket(MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA)
     {
         ApplySettings(settings);
     }
@@ -39,13 +40,22 @@ namespace MumbleAudio
     {
         if (!preProcessorReset)
             return;
-
-        QMutexLocker lock(&mutexAudioSettings);
-
+        preProcessorReset = false;
+        
+        AudioSettings currentSettings;
+        
+        {
+            QMutexLocker lock(&mutexAudioSettings);
+            currentSettings = audioSettings;
+        }
+        
         outputPreProcessed = false;
-        if (audioSettings.suppression < 0 || audioSettings.amplification > 0)
+        if (currentSettings.suppression < 0 || currentSettings.amplification > 0)
             outputPreProcessed = true;
 
+        // Only usage of speexPreProcessor ptr in another thread is behind this lock.
+        QMutexLocker outputLock(&mutexOutputPCM);
+        
         if (speexPreProcessor)
             speex_preprocess_state_destroy(speexPreProcessor);
 
@@ -63,7 +73,7 @@ namespace MumbleAudio
         arg = 30000;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_AGC_TARGET, &arg);
 
-        float v = 30000.0f / static_cast<float>(audioSettings.amplification);
+        float v = 30000.0f / static_cast<float>(currentSettings.amplification);
         arg = static_cast<int>(floorf(20.0f * log10f(v)));
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_AGC_MAX_GAIN, &arg);
 
@@ -73,7 +83,7 @@ namespace MumbleAudio
         arg = -60;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_AGC_DECREMENT, &arg);
         
-        arg = audioSettings.suppression;
+        arg = currentSettings.suppression;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &arg);
 
         fArg = 0.0f;
@@ -132,6 +142,8 @@ namespace MumbleAudio
             VADmin = audioSettings.VADmin;
             VADmax = audioSettings.VADmax;
         }
+        
+        QMutexLocker lockEncoded(&mutexOutputEncoded);
 
         for (std::vector<SoundBuffer>::const_iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
         {
@@ -171,12 +183,12 @@ namespace MumbleAudio
                     else
                         isSpeech = false;
 
-                    // Hold certain amount of frames even if not speaking.
-                    // This allows end of sentences to get to the outgoing buffer safely.
                     if (isSpeech)
                         holdFrames = 0;
                     else
                     {
+                        // Hold certain amount of frames even if not speaking.
+                        // This allows end of sentences to get to the outgoing buffer safely.
                         holdFrames++;
                         if (holdFrames < 20)
                             isSpeech = true;
@@ -192,12 +204,11 @@ namespace MumbleAudio
                 QByteArray encodedFrame(reinterpret_cast<const char*>(compressedBuffer), bytesWritten);
 
                 // If speech, add to encoded frames. But first
-                // append any pre buffered frames so start of sentences
+                // append any 'prediction' buffered frames so start of sentences
                 // can get to the outgoing buffer safely.
                 if (isSpeech || wasPreviousSpeech)
                 {    
-                    QMutexLocker lockEncoded(&mutexOutputEncoded);
-                    if (pendingVADPreBuffer.size() > 0)
+                    if (detectVAD && pendingVADPreBuffer.size() > 0)
                     {
                         pendingEncodedFrames.append(pendingVADPreBuffer);
                         pendingVADPreBuffer.clear();
@@ -205,16 +216,16 @@ namespace MumbleAudio
                     pendingEncodedFrames.push_back(encodedFrame);
                 }
                 // If voice activity detection is enabled but this is 
-                // not speech, add the frame to the VAD pre buffer.
+                // not speech, add the frame to the VAD 'prediction' buffer.
                 else if (detectVAD && !isSpeech && !wasPreviousSpeech)
                 {
+                    while(pendingVADPreBuffer.size() >= 5)
                     {
-                        QMutexLocker lockEncoded(&mutexOutputEncoded);
-                        if (pendingEncodedFrames.size() > 0)                        
-                            pendingEncodedFrames.clear();
+                        if (!pendingVADPreBuffer.isEmpty())
+                            pendingVADPreBuffer.removeFirst();
+                        else
+                            break;
                     }
-                    while(pendingVADPreBuffer.size() >= (localFramesPerPacket*2))
-                        pendingVADPreBuffer.takeFirst();
                     pendingVADPreBuffer.push_back(encodedFrame);
                 }
             }
@@ -243,8 +254,6 @@ namespace MumbleAudio
 
         {
             QMutexLocker lock(&mutexAudioMute);
-            if (outputAudioMuted == outputAudioMuted_)
-                return;
             outputAudioMuted = outputAudioMuted_;
         }
 
@@ -252,6 +261,9 @@ namespace MumbleAudio
         {
             QMutexLocker lock(&mutexAudioSettings);
             {
+                // Reset back to ultra state, gets increased automatically if necessary.
+                qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA;
+                
                 // Recording buffer of 40 celt frames, 38400 bytes
                 int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
                 if (!framework->Audio()->StartRecording(audioSettings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize))
@@ -275,10 +287,25 @@ namespace MumbleAudio
 
         {
             QMutexLocker lock(&mutexAudioMute);
-            if (inputAudioMuted == inputAudioMuted_)
-                return;
             inputAudioMuted = inputAudioMuted_;
         }
+        
+        ClearInputAudio();
+    }
+    
+    void AudioProcessor::ApplyFramesPerPacket(int framesPerPacket)
+    {
+        if (framesPerPacket < 2)
+            framesPerPacket = 2;
+        if (framesPerPacket > 10)
+            framesPerPacket = 10;
+            
+        LogInfo(LC + "Changing frames per packet to " + QString::number(framesPerPacket));
+        {   
+            QMutexLocker lock(&mutexAudioSettings);
+            qualityFramesPerPacket = framesPerPacket;
+        }
+        ClearOutputAudio();
     }
 
     void AudioProcessor::ApplySettings(AudioSettings settings)
@@ -313,22 +340,22 @@ namespace MumbleAudio
                 case QualityLow:
                 {
                     qualityBitrate = MUMBLE_AUDIO_QUALITY_LOW;
-                    qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_LOW;
                     break;
                 }
                 case QualityBalanced:
                 {
                     qualityBitrate = MUMBLE_AUDIO_QUALITY_BALANCED;
-                    qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_BALANCED;
                     break;
                 }
                 case QualityHigh:
                 {
                     qualityBitrate = MUMBLE_AUDIO_QUALITY_ULTRA;
-                    qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA;
                     break;
                 }
             }
+            
+            // Reset back to ultra state, gets increased automatically if necessary.
+            qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA;
         }
 
         // Apply new positional ranges to existing positional sound channels.
@@ -348,7 +375,7 @@ namespace MumbleAudio
         
         // Start recording with the new device if changed.
         // If recording is not enabled, change to false,
-        // it will be applied on the when mute state is changed.
+        // it will be applied on the when output mute state is changed.
         {
             QMutexLocker lock(&mutexAudioMute);
             if (recondingDeviceChanged && outputAudioMuted)
@@ -383,7 +410,8 @@ namespace MumbleAudio
         PROFILE(Mumble_ProcessOutputAudio_OpenAL)
         std::vector<SoundBuffer> pcmFrames;
         uint celtFrameSize = MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8;
-        while (framework->Audio()->GetRecordedSoundSize() > celtFrameSize)
+        
+        while (framework->Audio()->GetRecordedSoundSize() >= celtFrameSize)
         {
             SoundBuffer outputPCM;
             outputPCM.data.resize(celtFrameSize);
@@ -393,45 +421,76 @@ namespace MumbleAudio
         }
         ELIFORP(Mumble_ProcessOutputAudio_OpenAL)
 
-        // Queue for speexdsp preprocessing and celt encoding for audio thread
-        ByteArrayVector encodedFrames;
-        if (pcmFrames.size() > 0)
+        int pendingPCMFrameCount = 0;
         {
-            PROFILE(Mumble_ProcessOutputAudio_Queue_Processing)
             QMutexLocker outputLock(&mutexOutputPCM);
-            pendingPCMFrames.insert(pendingPCMFrames.end(), pcmFrames.begin(), pcmFrames.end());
-            ELIFORP(Mumble_ProcessOutputAudio_Queue_Processing)
+            // Queue for speexdsp preprocessing and celt encoding for audio thread
+            if (pcmFrames.size() > 0)
+            {
+                PROFILE(Mumble_ProcessOutputAudio_Queue_Processing)
+                pendingPCMFrames.insert(pendingPCMFrames.end(), pcmFrames.begin(), pcmFrames.end());
+                ELIFORP(Mumble_ProcessOutputAudio_Queue_Processing)
+            }
+            pendingPCMFrameCount = pendingPCMFrames.size();
         }
 
         PROFILE(Mumble_ProcessOutputAudio_Get_Encoded)
 
         QMutexLocker lockEncoded(&mutexOutputEncoded);
 
-        // This ensures that when our local queue is getting too big
-        // (network cant send fast enough) we reset the situation.
-        /// @todo If this happens we should increase the frames per packet automatically?
-        /// @todo smarter logic, trim the list from the beginning instead only as much as is needed.
-        if (pendingEncodedFrames.size() > 20)
-        {
-            LogDebug(LC + "Output local buffer getting too large, reseting situation.");
-            pendingEncodedFrames.clear();
-        }
-        // No queued encoded frames
+        // No queued encoded frames for playback.
         if (pendingEncodedFrames.size() == 0)
             return ByteArrayVector();
 
+        // Get packet count per frame
         int framesPerPacket = 0;
         {
             QMutexLocker lock(&mutexAudioSettings);
             framesPerPacket = qualityFramesPerPacket;
         }
+        
+        // Ensure we are not buffing faster than what is sent to network. Automatically adjust how many frames are sent to network at at time to certain extent (<=10).
+        if (pendingEncodedFrames.size() > framesPerPacket * 10)
+        {
+            // Do some helpful info logs if we are auto incresing frames per packet count.
+            if (framesPerPacket <= 8)
+                LogInfo(LC + QString("Output buffer full with %1/%2 frames, auto increasing frames/packet to %3").arg(pendingEncodedFrames.size()).arg(framesPerPacket*10).arg(framesPerPacket+2));
+            else
+                LogInfo(LC + QString("Output buffer full with %1/%2 frames, frames/packet is %3").arg(pendingEncodedFrames.size()).arg(framesPerPacket*10).arg(framesPerPacket));
+                
+            // Remove oldest frames to get the buffer to a acceptable size.
+            while(pendingEncodedFrames.size() > framesPerPacket * 10)
+            {
+                if (!pendingEncodedFrames.isEmpty())
+                    pendingEncodedFrames.removeFirst();
+                else
+                    break;
+            }
+
+            {
+                QMutexLocker lock(&mutexAudioSettings);
+                if (qualityFramesPerPacket <= 8)
+                {
+                    qualityFramesPerPacket += 2;
+                    framesPerPacket = qualityFramesPerPacket;
+                }
+            }
+        }
+        
+        // If we are speaking send out full 'framesPerPacket' frames. If we are not speaking send whatever is left in the buffer but max is still 'framesPerPacket'.
+        int framesToPacket = (isSpeech || wasPreviousSpeech) ? framesPerPacket : qMin(framesPerPacket, pendingEncodedFrames.size());
 
         // Enough encoded frames in the ready queue
-        if (pendingEncodedFrames.size() >= framesPerPacket)
+        if (pendingEncodedFrames.size() >= framesToPacket)
         {
             ByteArrayVector sendOutNow;
-            while (sendOutNow.size() < (uint)framesPerPacket)
-                sendOutNow.push_back(pendingEncodedFrames.takeFirst());
+            for (int i=0; i<framesToPacket; ++i)
+            {
+                if (!pendingEncodedFrames.isEmpty())
+                    sendOutNow.push_back(pendingEncodedFrames.takeFirst());
+                else
+                    break;
+            }
             return sendOutNow;
         }
         else
@@ -615,9 +674,15 @@ namespace MumbleAudio
     void AudioProcessor::ClearOutputAudio()
     {
         // This function should be called in the main thread
-        QMutexLocker lockEncoded(&mutexOutputEncoded);
-        if (pendingEncodedFrames.size() > 0)
+        {
+            QMutexLocker lockEncoded(&mutexOutputEncoded);
             pendingEncodedFrames.clear();
+            pendingVADPreBuffer.clear();
+        }
+        {
+            QMutexLocker lockOutput(&mutexOutputPCM);
+            pendingPCMFrames.clear();
+        }
     }
 
     int AudioProcessor::CodecBitStreamVersion()
