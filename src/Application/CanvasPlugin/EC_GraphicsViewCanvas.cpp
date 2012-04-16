@@ -9,7 +9,7 @@
 #include "AssetAPI.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
-#include "UiApi.h"
+#include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "Scene.h"
 #include "Framework.h"
