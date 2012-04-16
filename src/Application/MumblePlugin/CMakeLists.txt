@@ -12,29 +12,55 @@ macro (configure_speex)
                    libspeexdsp      # speex audio processing lib
                    speex            # speex.h to find include dir
         PREFIXES ${SPEEX_ROOT}      # full prebuilt deps
+                 ${ENV_TUNDRA_DEP_PATH}
                  ${SPEEX_ROOT}/lib/Release) # packaged prebuilt deps
         
     sagase_configure_report (SPEEX)
 endmacro (configure_speex)
 
 macro (configure_protobuf)
-    if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
-        SET(PROTOBUF_SRC_ROOT_FOLDER $ENV{PROTOBUF_SRC_ROOT_FOLDER})
-    endif()
-    if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
-        SET(PROTOBUF_SRC_ROOT_FOLDER ${ENV_TUNDRA_DEP_PATH}/protobuf)
+    if (APPLE)
+        sagase_configure_package(PROTOBUF
+            NAMES protobuf
+            COMPONENTS libprotobuf      # protobuf lib
+                       service          # service.h to find include dir
+            PREFIXES ${ENV_TUNDRA_DEP_PATH}                      # Finding the libs
+                     ${ENV_TUNDRA_DEP_PATH}/bin                  # Protoc executable
+                     ${ENV_TUNDRA_DEP_PATH}/include/google)      # Finding the include
+
+        # Remove FindProtobuf.cmake generated not found item
+        list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
+        
+        if ("${PROTOBUF_PROTOC_EXECUTABLE}" STREQUAL "PROTOBUF_PROTOC_EXECUTABLE-NOTFOUND")
+            set (PROTOBUF_PROTOC_EXECUTABLE ${ENV_TUNDRA_DEP_PATH}/bin/protoc)
+            message (STATUS "Protoc executable not found automatically, guessing location to " ${PROTOBUF_PROTOC_EXECUTABLE})
+        else ()
+            message (STATUS "Protoc executable found from: " ${PROTOBUF_PROTOC_EXECUTABLE})
+        endif ()
+        
+        # Force the protobuf as found or Mumble.proto wont be processed.
+        set (PROTOBUF_FOUND 1)
     endif()
 
-    find_package(Protobuf REQUIRED)
+    if (MSVC)
+        if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
+            SET(PROTOBUF_SRC_ROOT_FOLDER $ENV{PROTOBUF_SRC_ROOT_FOLDER})
+        endif()
+        if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
+            SET(PROTOBUF_SRC_ROOT_FOLDER ${ENV_TUNDRA_DEP_PATH}/protobuf)
+        endif()
+
+        find_package(Protobuf REQUIRED)
     
-    # Stupid FindProtobuf.cmake does not find includes on windows for packaged deps, set manually.
-    # It is assuming include path is <protobuf>/vcprojects/include on windows, ARGH!
-    if ("${PROTOBUF_INCLUDE_DIR}" STREQUAL "PROTOBUF_INCLUDE_DIR-NOTFOUND")
-        if (IS_DIRECTORY ${PROTOBUF_SRC_ROOT_FOLDER}/include)
-            set (PROTOBUF_INCLUDE_DIR ${PROTOBUF_SRC_ROOT_FOLDER}/include)
-            set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_SRC_ROOT_FOLDER}/include)
-        else()
-            message(FATAL_ERROR "Could not detect include folder from ${PROTOBUF_SRC_ROOT_FOLDER}/include")
+        # Stupid FindProtobuf.cmake does not find includes on windows for packaged deps, set manually.
+        # It is assuming include path is <protobuf>/vcprojects/include on windows, ARGH!
+        if ("${PROTOBUF_INCLUDE_DIR}" STREQUAL "PROTOBUF_INCLUDE_DIR-NOTFOUND")
+            if (IS_DIRECTORY ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+                set (PROTOBUF_INCLUDE_DIR ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+                set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+            else()
+                message(FATAL_ERROR "Could not detect include folder from ${PROTOBUF_SRC_ROOT_FOLDER}/include")
+            endif()
         endif()
     endif()
     
@@ -67,7 +93,8 @@ macro (configure_celt)
         COMPONENTS libcelt  # for libcelt
                    celt0    # for old celt0 name (linux?)
                    celt     # for celt.h
-        PREFIXES ${CELT_ROOT})
+        PREFIXES ${CELT_ROOT}
+                 ${ENV_TUNDRA_DEP_PATH})
         
     sagase_configure_report (CELT)
 endmacro (configure_celt)
@@ -116,6 +143,8 @@ use_package (OPENSSL)
 if (PROTOBUF_FOUND)
     message (STATUS "Generating custom build step for Mumble.proto")
     PROTOBUF_GENERATE_CPP(PROTOBUF_CPP_FILES PROTOBUF_H_FILES Mumble.proto)
+else()
+    message(FATAL_ERROR "Protobuf was not found properly, cannot make custom build step for Mumble.proto")
 endif ()
 
 use_core_modules (Framework Math Scene Audio Console OgreRenderingModule TundraProtocolModule)
@@ -133,6 +162,10 @@ link_package (OPENSSL)
 
 if (APPLE)
     link_ogre()
+
+    #TODO This line should not be needed, as these libraries should be picked up by above link_package. However,
+    # does not seem to be happening. Remove this line when the above link_packages have been fixed.
+    target_link_libraries(${TARGET_NAME} speex speexdsp protobuf)
 endif ()
 
 if (WIN32)

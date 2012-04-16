@@ -46,7 +46,7 @@ struct MumblePluginState
         serverSynced = false;
         sessionId = 0;
         connectionState = MumbleNetwork::MumbleDisconnected;
-        networkMode = MumbleNetwork::MumbleTCPMode;
+        networkMode = MumbleNetwork::MumbleUDPMode;
         username = "";
         address = "";
         port = 0;
@@ -161,9 +161,9 @@ namespace MumbleAudio
     static int MUMBLE_AUDIO_QUALITY_LOW = 16000;
     static int MUMBLE_AUDIO_QUALITY_BALANCED = 40000;
     static int MUMBLE_AUDIO_QUALITY_ULTRA = 72000;
-    static int MUMBLE_AUDIO_FRAMES_PER_PACKET_LOW = 5; // mumble original 6
-    static int MUMBLE_AUDIO_FRAMES_PER_PACKET_BALANCED = 5; // mumble original 2
-    static int MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA = 5; // mumble original 1
+    static int MUMBLE_AUDIO_FRAMES_PER_PACKET_LOW = 6; // mumble original 6
+    static int MUMBLE_AUDIO_FRAMES_PER_PACKET_BALANCED = 4; // mumble original 2
+    static int MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA = 2; // mumble original 1
 }
 
 #ifdef Q_OS_WIN

@@ -86,8 +86,8 @@ signals:
     void Speaking(uint userId, bool speaking);
 
     /// This users local muted state was changed by us.
-    /// If muted is false we can no longer hear this user,
-    /// if true we can hear his oncoming voice if there is any.
+    /// If muted is true we can no longer hear this user,
+    /// if false we can hear his oncoming voice if there is any.
     void Muted(uint userId, bool muted);
     
     /// This users self muted state changed. Meaning this user

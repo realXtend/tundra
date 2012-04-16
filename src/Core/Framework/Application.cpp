@@ -45,6 +45,11 @@
 #pragma warning(pop)
 #endif
 
+#ifdef __APPLE__
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#endif
+
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
 #include <crtdbg.h>
@@ -139,6 +144,9 @@ void Application::InitializeSplash()
         splashScreen->setFont(QFont("Calibri", 9));
         splashScreen->show();
         splashScreen->activateWindow();
+#ifdef __APPLE__
+        splashScreen->raise();
+#endif
     }
 }
 
@@ -178,6 +186,14 @@ QStringList Application::FindQmFiles(const QDir& dir)
 void Application::Go()
 {
     SAFE_DELETE(splashScreen);
+
+#ifdef __APPLE__
+    if (framework->Ui()->MainWindow())
+    {
+        framework->Ui()->MainWindow()->activateWindow();
+        framework->Ui()->MainWindow()->raise();
+    }
+#endif
 
     installEventFilter(this);
 
@@ -521,10 +537,20 @@ void Application::ChangeLanguage(const QString& file)
     emit LanguageChanged();
 }
 
+#ifdef __APPLE__
+const int MAC_MIN_FONT_SIZE = 12;
+void MakeFontsLargerOnOSX(QWidget *w);
+#endif
+
 bool Application::notify(QObject *receiver, QEvent *event)
 {
     try
     {
+#ifdef __APPLE__
+        if (event->type() == QEvent::Polish && receiver && receiver->isWidgetType())
+            MakeFontsLargerOnOSX(static_cast<QWidget*>(receiver));
+#endif
+
         return QApplication::notify(receiver, event);
     }
     catch(const std::exception &e)
@@ -754,5 +780,37 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
         Application::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
 
     return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
+
+#ifdef __APPLE__
+void MakeFontsLargerOnOSX(QWidget *w)
+{
+    assert(w != 0);
+
+    if (w->styleSheet() != "")
+    {
+        QRegExp fontSection("(font|font-size):\\s*(\\d+)(px|pt).*;");
+        fontSection.setMinimal(true);
+        int pos = fontSection.indexIn(w->styleSheet());
+        int size = fontSection.capturedTexts()[2].toInt();
+        if (size != 0 && size < MAC_MIN_FONT_SIZE)
+        {
+            QString fontProperty = fontSection.capturedTexts()[0];
+            fontProperty.replace(fontSection.capturedTexts()[2] + fontSection.capturedTexts()[3],
+                                 QString::number(MAC_MIN_FONT_SIZE) + fontSection.capturedTexts()[3]);
+            QString stylesheet = w->styleSheet();
+            stylesheet.replace(fontSection.capturedTexts()[0], fontProperty);
+            w->setStyleSheet(stylesheet);
+        }
+    }
+    else
+    {
+        if (w->font().pixelSize() != -1 && w->font().pixelSize() < MAC_MIN_FONT_SIZE)
+            w->setStyleSheet("font-size: " + QString::number(MAC_MIN_FONT_SIZE) + "px;");
+        else if (w->font().pointSize() != -1 && w->font().pointSize() < MAC_MIN_FONT_SIZE)
+            w->setStyleSheet("font-size: " + QString::number(MAC_MIN_FONT_SIZE) + "pt;");
+    }
+
 }
 #endif
