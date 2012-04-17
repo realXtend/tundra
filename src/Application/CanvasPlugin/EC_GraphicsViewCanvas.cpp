@@ -61,7 +61,7 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
 
     inputContext = GetFramework()->Input()->RegisterInputContext("EC_GraphicsViewCanvas", 1000);
     connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent*)), this, SLOT(OnMouseEventReceived(MouseEvent*)));
-/*
+
     if (!framework->IsHeadless())
     {
         UiGraphicsView *gv = framework->Ui()->GraphicsView();
@@ -70,7 +70,6 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
         connect(gv, SIGNAL(DragMoveEvent(QDragMoveEvent *, QGraphicsItem *)), SLOT(OnDragMoveEvent(QDragMoveEvent *)), Qt::UniqueConnection);
         connect(gv, SIGNAL(DropEvent(QDropEvent *, QGraphicsItem *)), SLOT(OnDropEvent(QDropEvent *)), Qt::UniqueConnection);
     }
-*/
 }
 
 EC_GraphicsViewCanvas::~EC_GraphicsViewCanvas()
@@ -171,13 +170,13 @@ void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
     if (itemUnderMouse)
         inputContext->SetMouseCursorOverride(itemUnderMouse->cursor());
 }
-/*
+
 void EC_GraphicsViewCanvas::OnDragEnterEvent(QDragEnterEvent *e)
 {
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
-    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI || !isActivated)
+    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI/* || !isActivated*/)
         return;
 
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
@@ -213,7 +212,7 @@ void EC_GraphicsViewCanvas::OnDragLeaveEvent(QDragLeaveEvent *e)
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
-    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI || !isActivated)
+    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI/* || !isActivated*/)
         return;
 
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
@@ -241,7 +240,7 @@ void EC_GraphicsViewCanvas::OnDragMoveEvent(QDragMoveEvent *e)
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
-    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI || !isActivated)
+    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI/* || !isActivated*/)
         return;
 
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
@@ -277,7 +276,7 @@ void EC_GraphicsViewCanvas::OnDropEvent(QDropEvent *e)
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
-    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI || !isActivated)
+    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI/* || !isActivated*/)
         return;
 
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
@@ -307,7 +306,7 @@ void EC_GraphicsViewCanvas::OnDropEvent(QDropEvent *e)
     if (sceneEvent.isAccepted())
         e->setDropAction(sceneEvent.dropAction());
 }
-*/
+
 Ogre::MaterialPtr EC_GraphicsViewCanvas::OgreMaterial() const
 {
     EC_Mesh *mesh = ParentEntity() ? ParentEntity()->GetComponent<EC_Mesh>().get() : 0;

@@ -66,12 +66,12 @@ private slots:
     void OnAttributeUpdated(IAttribute *attribute);
     void OnGraphicsSceneChanged(const QList<QRectF> &);
     void OnMouseEventReceived(MouseEvent *e);
-/*
+
     void OnDragEnterEvent(QDragEnterEvent *e);
     void OnDragLeaveEvent(QDragLeaveEvent *e);
     void OnDragMoveEvent(QDragMoveEvent *e);
     void OnDropEvent(QDropEvent *e);
-*/
+
     void UpdateTexture();
 
 private:
