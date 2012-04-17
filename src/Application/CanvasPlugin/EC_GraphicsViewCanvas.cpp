@@ -22,14 +22,12 @@
 #include "EC_Camera.h"
 #include "EC_Mesh.h"
 #include "InputAPI.h"
+#include "OgreWorld.h"
 
 #include <Ogre.h>
 
 #include <QApplication>
-#include <QGraphicsScene>
-#include <QGraphicsItem>
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsView>
+#include <QtGui>
 
 EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
     IComponent(scene),
@@ -45,12 +43,14 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
     graphicsView = new QGraphicsView();
     graphicsScene = new QGraphicsScene();
     graphicsView->setScene(graphicsScene);
-    paintTarget = new RedirectedPaintWidget(); ///< @todo Never deleted - memory leak?
+    paintTarget = new RedirectedPaintWidget(); /**< @todo Never deleted - memory leak? */
+//    paintTarget->setAcceptDrops(true); /**< @todo Is this needed? */
     paintTarget->setAttribute(Qt::WA_DontShowOnScreen, true);
     graphicsView->setViewport(paintTarget);
     graphicsView->setAttribute(Qt::WA_DontShowOnScreen, true);
-
+//    graphicsView->setAcceptDrops(true); /**< @todo Is this needed? */
     graphicsView->show();
+
     connect(graphicsScene, SIGNAL(changed(const QList<QRectF> &)), this, SLOT(OnGraphicsSceneChanged(const QList<QRectF> &)), Qt::UniqueConnection);
 
     graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -61,12 +61,22 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
 
     inputContext = GetFramework()->Input()->RegisterInputContext("EC_GraphicsViewCanvas", 1000);
     connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent*)), this, SLOT(OnMouseEventReceived(MouseEvent*)));
+/*
+    if (!framework->IsHeadless())
+    {
+        UiGraphicsView *gv = framework->Ui()->GraphicsView();
+        connect(gv, SIGNAL(DragEnterEvent(QDragEnterEvent *, QGraphicsItem *)), SLOT(OnDragEnterEvent(QDragEnterEvent *)), Qt::UniqueConnection);
+        connect(gv, SIGNAL(DragLeaveEvent(QDragLeaveEvent *)), SLOT(OnDragLeaveEvent(QDragLeaveEvent *)), Qt::UniqueConnection);
+        connect(gv, SIGNAL(DragMoveEvent(QDragMoveEvent *, QGraphicsItem *)), SLOT(OnDragMoveEvent(QDragMoveEvent *)), Qt::UniqueConnection);
+        connect(gv, SIGNAL(DropEvent(QDropEvent *, QGraphicsItem *)), SLOT(OnDropEvent(QDropEvent *)), Qt::UniqueConnection);
+    }
+*/
 }
 
 EC_GraphicsViewCanvas::~EC_GraphicsViewCanvas()
 {
-    delete graphicsScene;
-    delete graphicsView;
+    SAFE_DELETE(graphicsScene)
+    SAFE_DELETE(graphicsView)
 }
 
 void EC_GraphicsViewCanvas::OnGraphicsSceneChanged(const QList<QRectF> &)
@@ -96,23 +106,25 @@ void EC_GraphicsViewCanvas::OnAttributeUpdated(IAttribute *attribute)
 
 void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
 {
-    OgreRenderer::RendererPtr renderer = framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer || !renderer->MainCamera())
+    OgreWorldPtr world = ParentScene()->GetWorld<OgreWorld>();
+    if (!world)
+        return;
+
+    EC_Camera *mainCamera = world->Renderer()->MainCameraComponent();
+    if (!mainCamera)
         return;
 
     // Test if mouse is on top of the 3D canvas
     QSize screenSize = framework->Ui()->GraphicsView()->size();
     float x = (float)mouseEvent->x / (float)screenSize.width();
     float y = (float)mouseEvent->y / (float)screenSize.height();
-    EC_Camera *mainCamera = renderer->MainCameraComponent();
-    if (!mainCamera)
-        return;
+
     Ray mouseRay = mainCamera->GetMouseRay(x, y);
 
     RaycastResult *result = 0;
     EC_Mesh *mesh = ParentEntity() ? ParentEntity()->GetComponent<EC_Mesh>().get() : 0;
     if (mesh && mouseRay.Intersects(mesh->WorldOBB(), 0, 0))
-        result = renderer->Raycast(mouseEvent->x, mouseEvent->y);
+        result = world->Renderer()->Raycast(mouseEvent->x, mouseEvent->y);
 
     const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() /*&& (int)result->submesh == submesh.Get())*/ && GetFramework()->Input()->IsMouseCursorVisible());
 
@@ -140,15 +152,15 @@ void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
     switch(mouseEvent->eventType)
     {
     case MouseEvent::MouseMove:
-        SendMouseEvent(QEvent::GraphicsSceneMouseMove, ptOnScene.x(), ptOnScene.y(), Qt::NoButton,
+        SendMouseEvent(QEvent::GraphicsSceneMouseMove, ptOnScene, Qt::NoButton,
             (Qt::MouseButtons)mouseEvent->otherButtons, (Qt::KeyboardModifiers)mouseEvent->modifiers);
         break;
     case MouseEvent::MousePressed:
-        SendMouseEvent(QEvent::GraphicsSceneMousePress, ptOnScene.x(), ptOnScene.y(), (Qt::MouseButton)mouseEvent->button,
+        SendMouseEvent(QEvent::GraphicsSceneMousePress, ptOnScene, (Qt::MouseButton)mouseEvent->button,
             (Qt::MouseButtons)mouseEvent->otherButtons, (Qt::KeyboardModifiers)mouseEvent->modifiers);
         break;
     case MouseEvent::MouseReleased:
-        SendMouseEvent(QEvent::GraphicsSceneMouseRelease, ptOnScene.x(), ptOnScene.y(), (Qt::MouseButton)mouseEvent->button,
+        SendMouseEvent(QEvent::GraphicsSceneMouseRelease, ptOnScene, (Qt::MouseButton)mouseEvent->button,
             (Qt::MouseButtons)mouseEvent->otherButtons, (Qt::KeyboardModifiers)mouseEvent->modifiers);
         break;
     default:
@@ -159,17 +171,149 @@ void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
     if (itemUnderMouse)
         inputContext->SetMouseCursorOverride(itemUnderMouse->cursor());
 }
+/*
+void EC_GraphicsViewCanvas::OnDragEnterEvent(QDragEnterEvent *e)
+{
+    QPoint mousePos = GetFramework()->Input()->MousePos();
+    QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
+    const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
+    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI || !isActivated)
+        return;
 
+    RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
+    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (int)result->submesh == submesh.Get());
+    if (!mouseOnTopOfThisCanvas)
+        return;
+
+    QPointF ptOnView = graphicsView->mapToScene(graphicsView->width()*result->u, graphicsView->height()*result->v);
+    LogDebug(QString("OnDragEnterEvent %1 %2").arg(ptOnView.x()).arg(ptOnView.y()));
+
+    QGraphicsSceneDragDropEvent sceneEvent(QEvent::GraphicsSceneDragEnter);
+    sceneEvent.setScenePos(ptOnView);
+    sceneEvent.setScreenPos(ptOnView.toPoint());
+    sceneEvent.setButtons(e->mouseButtons());
+    sceneEvent.setModifiers(e->keyboardModifiers());
+    sceneEvent.setPossibleActions(e->possibleActions());
+    sceneEvent.setProposedAction(e->proposedAction());
+    sceneEvent.setDropAction(e->dropAction());
+    sceneEvent.setMimeData(e->mimeData());
+    sceneEvent.setWidget(graphicsView);
+    sceneEvent.setSource(e->source());
+
+    QApplication::sendEvent(graphicsScene, &sceneEvent);
+    // NOTE: By accepting the event always I could get the event propagated somewhat ok to the widget in this canvas component
+//    sceneEvent.accept();
+    e->setAccepted(sceneEvent.isAccepted());
+    if (sceneEvent.isAccepted())
+        e->setDropAction(sceneEvent.dropAction());
+}
+
+void EC_GraphicsViewCanvas::OnDragLeaveEvent(QDragLeaveEvent *e)
+{
+    QPoint mousePos = GetFramework()->Input()->MousePos();
+    QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
+    const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
+    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI || !isActivated)
+        return;
+
+    RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
+    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (int)result->submesh == submesh.Get());
+    if (!mouseOnTopOfThisCanvas)
+        return;
+
+    QPointF ptOnView = graphicsView->mapToScene(graphicsView->width()*result->u, graphicsView->height()*result->v);
+    LogDebug(QString("OnDragLeaveEvent %1 %2").arg(ptOnView.x()).arg(ptOnView.y()));
+
+    ///\todo QGraphicsView uses a mechanism of 'lastDragDropEvent'. Evaluate whether it would be better to apply it here as well.
+    QGraphicsSceneDragDropEvent sceneEvent(QEvent::GraphicsSceneDragLeave);
+    sceneEvent.setScenePos(ptOnView);
+    sceneEvent.setScreenPos(ptOnView.toPoint());
+    sceneEvent.setWidget(graphicsView);
+
+    QApplication::sendEvent(graphicsScene, &sceneEvent);
+    // NOTE: By accepting the event always I could get the event propagated somewhat ok to the widget in this canvas component
+//    sceneEvent.accept();
+    e->setAccepted(sceneEvent.isAccepted());
+}
+
+void EC_GraphicsViewCanvas::OnDragMoveEvent(QDragMoveEvent *e)
+{
+    QPoint mousePos = GetFramework()->Input()->MousePos();
+    QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
+    const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
+    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI || !isActivated)
+        return;
+
+    RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
+    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (int)result->submesh == submesh.Get());
+    if (!mouseOnTopOfThisCanvas)
+        return;
+
+    QPointF ptOnView = graphicsView->mapToScene(graphicsView->width()*result->u, graphicsView->height()*result->v);
+    LogDebug(QString("OnDragMoveEvent %1 %2").arg(ptOnView.x()).arg(ptOnView.y()));
+
+    QGraphicsSceneDragDropEvent sceneEvent(QEvent::GraphicsSceneDragMove);
+    sceneEvent.setScenePos(ptOnView);
+    sceneEvent.setScreenPos(ptOnView.toPoint());
+    sceneEvent.setButtons(e->mouseButtons());
+    sceneEvent.setModifiers(e->keyboardModifiers());
+    sceneEvent.setPossibleActions(e->possibleActions());
+    sceneEvent.setProposedAction(e->proposedAction());
+    sceneEvent.setDropAction(e->dropAction());
+    sceneEvent.setMimeData(e->mimeData());
+    sceneEvent.setWidget(graphicsView);
+    sceneEvent.setSource(e->source());
+
+    QApplication::sendEvent(graphicsScene, &sceneEvent);
+    // NOTE: By accepting the event always I could get the event propagated somewhat ok to the widget in this canvas component
+//    sceneEvent.accept();
+    e->setAccepted(sceneEvent.isAccepted());
+    if (sceneEvent.isAccepted())
+        e->setDropAction(sceneEvent.dropAction());
+}
+
+void EC_GraphicsViewCanvas::OnDropEvent(QDropEvent *e)
+{
+    QPoint mousePos = GetFramework()->Input()->MousePos();
+    QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
+    const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
+    if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI || !isActivated)
+        return;
+
+    RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
+    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (int)result->submesh == submesh.Get());
+    if (!mouseOnTopOfThisCanvas)
+        return;
+
+    QPointF ptOnView = graphicsView->mapToScene(graphicsView->width()*result->u, graphicsView->height()*result->v);
+    LogInfo(QString("OnDropEvent %1 %2").arg(ptOnView.x()).arg(ptOnView.y()));
+
+    QGraphicsSceneDragDropEvent sceneEvent(QEvent::GraphicsSceneDrop);
+    sceneEvent.setScenePos(ptOnView);
+    sceneEvent.setScreenPos(ptOnView.toPoint());
+    sceneEvent.setButtons(e->mouseButtons());
+    sceneEvent.setModifiers(e->keyboardModifiers());
+    sceneEvent.setPossibleActions(e->possibleActions());
+    sceneEvent.setProposedAction(e->proposedAction());
+    sceneEvent.setDropAction(e->dropAction());
+    sceneEvent.setMimeData(e->mimeData());
+    sceneEvent.setWidget(graphicsView);
+    sceneEvent.setSource(e->source());
+
+    QApplication::sendEvent(graphicsScene, &sceneEvent);
+    // NOTE: By accepting the event always I could get the event propagated somewhat ok to the widget in this canvas component
+//    sceneEvent.accept();
+    e->setAccepted(sceneEvent.isAccepted());
+    if (sceneEvent.isAccepted())
+        e->setDropAction(sceneEvent.dropAction());
+}
+*/
 Ogre::MaterialPtr EC_GraphicsViewCanvas::OgreMaterial() const
 {
-    if (!ParentEntity())
-        return Ogre::MaterialPtr();
-
     EC_Mesh *mesh = ParentEntity() ? ParentEntity()->GetComponent<EC_Mesh>().get() : 0;
     if (!mesh)
         return Ogre::MaterialPtr();
 
-    // Check for submesh index validity
     int meshIndex = submesh.Get();
     if (meshIndex < 0 || meshIndex >= (int)mesh->GetNumMaterials())
         return Ogre::MaterialPtr();
@@ -177,9 +321,9 @@ Ogre::MaterialPtr EC_GraphicsViewCanvas::OgreMaterial() const
     return Ogre::MaterialManager::getSingleton().getByName(mesh->GetMaterialName(meshIndex));
 }
 
-void EC_GraphicsViewCanvas::SendMouseEvent(QEvent::Type type, float x, float y, Qt::MouseButton button, Qt::MouseButtons mouseButtons, Qt::KeyboardModifiers keyboardModifiers)
+void EC_GraphicsViewCanvas::SendMouseEvent(QEvent::Type type, const QPointF &point, Qt::MouseButton button,
+    Qt::MouseButtons mouseButtons, Qt::KeyboardModifiers keyboardModifiers)
 {
-    QPointF point(x, y);
     QGraphicsSceneMouseEvent mouseEvent(type);
     mouseEvent.setButtonDownScenePos(button, point);
     mouseEvent.setButtonDownScreenPos(button, point.toPoint());
@@ -218,8 +362,7 @@ void EC_GraphicsViewCanvas::UpdateTexture()
         QString textureName = renderer->GetUniqueObjectName("Tex_NoMipMaps").c_str();
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
             textureName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-            Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
-            Ogre::TU_STATIC_WRITE_ONLY);
+            Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, Ogre::TU_STATIC_WRITE_ONLY);
         if (texture.isNull())
             return;
         textureAsset->ogreTexture = texture;
