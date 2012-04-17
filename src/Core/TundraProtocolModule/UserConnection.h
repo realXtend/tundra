@@ -60,6 +60,9 @@ public slots:
     /// Deny connection. Call as a response to server.UserAboutToConnect() if necessary
     void DenyConnection(const QString& reason);
 
+    /// Indicate intent to call Server.FinishLogin() later when authentication status is known. Call as a response to server.UserAboutToConnect() if necessary
+    void FinishLoginLater();
+
     /// Starts a benign disconnect procedure (one which waits for the peer acknowledge procedure).
     void Disconnect();
 
