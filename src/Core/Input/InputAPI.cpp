@@ -809,6 +809,14 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         return mouseEvent.handled;
     }
 
+    case QEvent::DragMove:
+    {
+        QDragMoveEvent *e = static_cast<QDragMoveEvent*>(event);
+        lastMouseX = e->pos().x();
+        lastMouseY = e->pos().y();
+        break;
+    }
+
     case QEvent::Wheel:
     {
         // If this event did not originate from the QGraphicsView viewport, we are not interested in it.
