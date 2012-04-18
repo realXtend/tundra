@@ -57,9 +57,6 @@ public:
     /// Force immediate exit, with no possibility to cancel it
     void ForceExit();
 
-    /// Returns true if framework is in the process of exiting (will exit at next possible opportunity)
-    bool IsExiting() const { return exitSignal; }
-
 #ifdef PROFILING
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
     Profiler *GetProfiler() const;
@@ -135,6 +132,9 @@ public slots:
 
     /// Signals the framework to exit
     void Exit();
+
+    /// Returns true if framework is in the process of exiting (will exit at next possible opportunity)
+    bool IsExiting() const { return exitSignal; }
 
     /// Returns whether or not the command line arguments contain a specific value.
     /** @param value Key or value with possible prefixes, case-insensitive. */
