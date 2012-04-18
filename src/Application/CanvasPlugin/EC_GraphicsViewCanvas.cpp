@@ -34,7 +34,7 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
     outputTexture(this, "Output texture"),
     width(this, "Texture width"),
     height(this, "Texture height"),
-    submesh(this, 0),
+    submesh(this, "Submesh", 0),
     graphicsScene(0),
     graphicsView(0),
     paintTarget(0),
