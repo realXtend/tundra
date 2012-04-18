@@ -334,29 +334,26 @@ public:
     void MarkAttributeCreated(entity_id_t id, component_id_t compId, u8 attrIndex);
     void MarkAttributeRemoved(entity_id_t id, component_id_t compId, u8 attrIndex);
 
-    // Silently does the same as MarkEntityDirty without emitting signals.
+    // Silently does the same as MarkEntityDirty without emitting change request signal.
     EntitySyncState& MarkEntityDirtySilent(entity_id_t id);
 
     // Removes entity from pending lists.
     void RemovePendingEntity(entity_id_t id);
 
 private:
-    // Removes component from pending lists, removes entity from full pending list if there.
-    void RemovePendingComponent(entity_id_t id, component_id_t compId);
-
     // Returns if entity with id should be added to the sync state.
     bool ShouldMarkAsDirty(entity_id_t id);
 
     // Fills changeRequest_ with entity data, returns if request is valid. 
     bool FillRequest(entity_id_t id);
     
-    // Fills entitys pending components with all of its component ids.
-    void FillPendingComponents(entity_id_t id);
+    // Adds the entity id to the pending entity list.
+    void AddPendingEntity(entity_id_t id);
 
     /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     /// @todo This data structure needs to be removed. This is double book-keeping. Instead, track the dirty and pending entities
     ///       with the same dirty bit in EntitySyncState and ComponentSyncState.
-    std::map<entity_id_t, ComponentIdList > pendingComponents;
+    std::vector<entity_id_t> pendingEntities_;
 
     StateChangeRequest changeRequest_;
     bool isServer_;
