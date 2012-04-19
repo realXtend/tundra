@@ -23,6 +23,7 @@
 #include "EC_Mesh.h"
 #include "InputAPI.h"
 #include "OgreWorld.h"
+#include "Profiler.h"
 
 #include <Ogre.h>
 
@@ -43,9 +44,9 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
     graphicsView = new QGraphicsView();
     graphicsScene = new QGraphicsScene();
     graphicsView->setScene(graphicsScene);
-    paintTarget = new RedirectedPaintWidget(); /**< @todo Never deleted - memory leak? */
+    paintTarget = new RedirectedPaintWidget();
     paintTarget->setAttribute(Qt::WA_DontShowOnScreen, true);
-    graphicsView->setViewport(paintTarget);
+    graphicsView->setViewport(paintTarget); // graphicsView takes ownership of the paintTarget viewport widget.
     graphicsView->setAttribute(Qt::WA_DontShowOnScreen, true);
     graphicsView->show();
 
@@ -68,12 +69,32 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
         connect(gv, SIGNAL(DragMoveEvent(QDragMoveEvent *, QGraphicsItem *)), SLOT(OnDragMoveEvent(QDragMoveEvent *)), Qt::UniqueConnection);
         connect(gv, SIGNAL(DropEvent(QDropEvent *, QGraphicsItem *)), SLOT(OnDropEvent(QDropEvent *)), Qt::UniqueConnection);
     }
+    
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_GraphicsViewCanvas::~EC_GraphicsViewCanvas()
 {
-    SAFE_DELETE(graphicsScene)
-    SAFE_DELETE(graphicsView)
+    SAFE_DELETE(graphicsScene);
+    SAFE_DELETE(graphicsView);
+}
+
+void EC_GraphicsViewCanvas::UpdateSignals()
+{
+    Entity* parent = ParentEntity();
+    if (parent)
+    {
+        connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(UpdateTexture()), Qt::UniqueConnection);
+
+        EC_Mesh *mesh = ParentEntity()->GetComponent<EC_Mesh>().get();
+        if (mesh)
+        {
+            connect(mesh, SIGNAL(MeshChanged()), this, SLOT(UpdateTexture()), Qt::UniqueConnection);
+            connect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(UpdateTexture()), Qt::UniqueConnection);
+
+            UpdateTexture();
+        }
+    }
 }
 
 void EC_GraphicsViewCanvas::OnGraphicsSceneChanged(const QList<QRectF> &)
@@ -333,33 +354,42 @@ void EC_GraphicsViewCanvas::SendMouseEvent(QEvent::Type type, const QPointF &poi
 
 void EC_GraphicsViewCanvas::UpdateTexture()
 {
+    PROFILE(EC_GraphicsViewCanvas_UpdateTexture);
+
+    if (!paintTarget || (paintTarget->target.width() == 0 || paintTarget->target.height() == 0))
+        return;
+
     TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(framework->Asset()->GetAsset(outputTexture.Get()).get());
     if (!textureAsset)
     {
-        LogDebug("EC_GraphicsViewCanvas::UpdateTexture: textureAsset null.");
-        return;
-    }
-    if (textureAsset->ogreTexture.isNull())
-    {
-        LogDebug("EC_GraphicsViewCanvas::UpdateTexture: textureAsset->ogreTexture null.");
-        return;
+        // Create a new programmatic texture asset if one didn't exist.
+        OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+        textureAsset = dynamic_cast<TextureAsset*>(framework->Asset()->CreateNewAsset("Texture", renderer->GetUniqueObjectName("Tex_NoMipMaps").c_str()).get());
+        if (!textureAsset)
+        {
+            LogWarning("EC_GraphicsViewCanvas::UpdateTexture: Could not create a texture asset to store the GraphicsViewCanvas contents!");
+            return;
+        }
     }
 
-    if (!QString(textureAsset->ogreTexture->getName().c_str()).contains("Tex_NoMipMaps"))
+    // Allocate GPU memory for the texture if one didn't exist. Also make sure the texture is without mipmaps.
+    if (textureAsset->ogreTexture.isNull() || !QString(textureAsset->ogreTexture->getName().c_str()).contains("Tex_NoMipMaps"))
     {
         // Re-create texture without mipmaps.
         OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
         QString textureName = renderer->GetUniqueObjectName("Tex_NoMipMaps").c_str();
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
             textureName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-            Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, Ogre::TU_STATIC_WRITE_ONLY);
+            Ogre::TEX_TYPE_2D, paintTarget->target.width(), paintTarget->target.height(), 0, Ogre::PF_A8R8G8B8, Ogre::TU_STATIC_WRITE_ONLY);
         if (texture.isNull())
             return;
         textureAsset->ogreTexture = texture;
-        Ogre::MaterialPtr material = OgreMaterial();
-        if (material.get())
-            material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(textureName.toStdString());
     }
+
+    // Apply the texture onto the material. The material may change at runtime, so re-apply to retain the binding at all times.
+    Ogre::MaterialPtr material = OgreMaterial();
+    if (material.get() && !textureAsset->ogreTexture.isNull())
+        material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTexture(textureAsset->ogreTexture);
 
     textureAsset->SetContents(paintTarget->target.width(), paintTarget->target.height(), (const u8*)paintTarget->target.bits(),
         paintTarget->target.width() * paintTarget->target.height() * 4, Ogre::PF_A8R8G8B8, false, true, false);

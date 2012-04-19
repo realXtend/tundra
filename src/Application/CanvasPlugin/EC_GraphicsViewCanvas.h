@@ -62,6 +62,8 @@ public slots:
     /** @note Do not store the pointer, but access it through this each time you need it. */
     QGraphicsView *GraphicsView() const { return graphicsView; }
 
+    void UpdateSignals();
+
 private slots:
     void OnAttributeUpdated(IAttribute *attribute);
     void OnGraphicsSceneChanged(const QList<QRectF> &);
