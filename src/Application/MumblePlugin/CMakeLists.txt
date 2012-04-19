@@ -170,6 +170,10 @@ endif ()
 
 if (WIN32)
     target_link_libraries (${TARGET_NAME} ws2_32.lib)
+    # Delayed qwave.dll loading for QoS
+    target_link_libraries (${TARGET_NAME} delayimp.lib)
+    target_link_libraries (${TARGET_NAME} qwave.lib)
+    set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS "/DELAYLOAD:qwave.dll")
 endif()
 
 SetupCompileFlags()

@@ -11,8 +11,9 @@
 #include "LoggingFunctions.h"
 
 /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
-typedef std::map<entity_id_t, ComponentIdList >::const_iterator PendingConstIter;
-typedef std::map<entity_id_t, ComponentIdList >::iterator PendingIter;
+typedef std::vector<entity_id_t> EntityIdList;
+typedef EntityIdList::const_iterator PendingConstIter;
+typedef EntityIdList::iterator PendingIter;
 
 SceneSyncState::SceneSyncState(int userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
@@ -32,14 +33,11 @@ SceneSyncState::~SceneSyncState()
 QVariantList SceneSyncState::PendingEntityIDs() const
 {
     QVariantList list;
-    PendingConstIter iter = pendingComponents.begin();
-    PendingConstIter end = pendingComponents.end();
-    while (iter != end)
+    for(PendingConstIter iter = pendingEntities_.begin(); iter != pendingEntities_.end(); ++iter)
     {
-        entity_id_t id = iter->first;
+        entity_id_t id = (*iter);
         if (!list.contains(id))
             list << id;
-        ++iter;
     }
     return list;
 }
@@ -47,30 +45,29 @@ QVariantList SceneSyncState::PendingEntityIDs() const
 /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 entity_id_t SceneSyncState::NextPendingEntityID() const
 {
-    if (pendingComponents.empty())
+    if (pendingEntities_.empty())
         return 0;
-    PendingConstIter front = pendingComponents.begin();
-    if (front == pendingComponents.end())
+    PendingConstIter front = pendingEntities_.begin();
+    if (front == pendingEntities_.end())
         return 0;
-    return front->first;
+    return (*front);
 }
 
 /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 bool SceneSyncState::HasPendingEntities() const
 {
-    return !pendingComponents.empty();
+    return !pendingEntities_.empty();
 }
 
 /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 bool SceneSyncState::HasPendingEntity(entity_id_t id) const
 {
-    PendingConstIter iter = pendingComponents.find(id);
-    if (iter == pendingComponents.end())
-        return false;
-    // We should never have a empty list in the map for any entity!
-    if (iter->second.empty())
-        LogWarning("SceneSyncState::HasPendingComponents(): Pending map has entity with empty list of pending components!");
-    return !iter->second.empty();
+    for(PendingConstIter iter = pendingEntities_.begin(); iter != pendingEntities_.end(); ++iter)
+    {
+        if ((*iter) == id)
+            return true;
+    }
+    return false;
 }
 
 /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
@@ -85,8 +82,8 @@ void SceneSyncState::MarkEntityPending(entity_id_t id)
     if (i == entities.end())
         return;
 
-    MarkEntityRemoved(id);      // Remove from current sync state (removes entity from client)
-    FillPendingComponents(id);  // Mark all components from the entity as pending
+    MarkEntityRemoved(id);  // Remove from current sync state (removes entity from client)
+    AddPendingEntity(id);   // Mark entity as pending
 }
 
 /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
@@ -95,13 +92,13 @@ void SceneSyncState::MarkPendingEntitiesDirty()
     if (!isServer_)
         return;
 
+    // Get current entity ids to a separate list as MarkPendingEntityDirty modified pendingEntities_.
     QList<entity_id_t> entIds;
-    PendingIter iter = pendingComponents.begin();
-    PendingIter end = pendingComponents.end();
-    while (iter != end)
+    for(PendingConstIter iter = pendingEntities_.begin(); iter != pendingEntities_.end(); ++iter)
     {
-        entIds << iter->first;
-        ++iter;
+        entity_id_t id = (*iter);
+        if (!entIds.contains(id))
+            entIds << id;
     }
 
     foreach(entity_id_t entId, entIds)
@@ -120,14 +117,7 @@ void SceneSyncState::MarkPendingEntityDirty(entity_id_t id)
     if (!HasPendingEntity(id))
         return;
 
-    // Above ensures iter to be valid and list not being empty.
-    PendingConstIter iter = pendingComponents.find(id);
-    ComponentIdList compList = iter->second; 
-
     EntitySyncState& entityState = MarkEntityDirtySilent(id);
-    for (ComponentIdList::const_iterator compIter = compList.begin(); compIter != compList.end(); ++compIter)
-        entityState.MarkComponentDirty((*compIter));
-
     RemovePendingEntity(id);
 }
 
@@ -142,7 +132,7 @@ void SceneSyncState::Clear()
 {
     dirtyQueue.clear();
     entities.clear();
-    pendingComponents.clear();
+    pendingEntities_.clear();
     changeRequest_.Reset();
     scene_.reset();
 }
@@ -248,10 +238,6 @@ void SceneSyncState::MarkComponentDirty(entity_id_t id, component_id_t compId)
 
 void SceneSyncState::MarkComponentRemoved(entity_id_t id, component_id_t compId)
 {
-    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
-    if (isServer_)
-        RemovePendingComponent(id, compId);
-
     // If user did not have the entity or component in the first place, do nothing
     std::map<entity_id_t, EntitySyncState>::iterator i = entities.find(id);
     if (i == entities.end())
@@ -312,9 +298,9 @@ bool SceneSyncState::ShouldMarkAsDirty(entity_id_t id)
 
         emit AboutToDirtyEntity(&changeRequest_);
 
-        // Rejected, mark all components as pending.
+        // Rejected, mark entity as pending.
         if (changeRequest_.Rejected())
-            FillPendingComponents(id);
+            AddPendingEntity(id);
         return changeRequest_.Accepted();
     }
     return true;
@@ -322,19 +308,14 @@ bool SceneSyncState::ShouldMarkAsDirty(entity_id_t id)
 
 void SceneSyncState::RemovePendingEntity(entity_id_t id)
 {
-    PendingIter iter = pendingComponents.find(id);
-    if (iter != pendingComponents.end())
-        pendingComponents.erase(iter);
-}
-
-void SceneSyncState::RemovePendingComponent(entity_id_t id, component_id_t compId)
-{
-    PendingIter iter = pendingComponents.find(id);
-    if (iter != pendingComponents.end())
+    // This assumes that the id has not been added multiple times to our vector.
+    for(PendingIter iter = pendingEntities_.begin(); iter != pendingEntities_.end(); ++iter)
     {
-        iter->second.remove(compId);
-        if (iter->second.empty())
-            pendingComponents.erase(iter);
+        if ((*iter) == id)
+        {
+            pendingEntities_.erase(iter);
+            break;
+        }
     }
 }
 
@@ -364,7 +345,7 @@ bool SceneSyncState::FillRequest(entity_id_t id)
     return true;
 }
 
-void SceneSyncState::FillPendingComponents(entity_id_t id)
+void SceneSyncState::AddPendingEntity(entity_id_t id)
 {
     if (!isServer_)
         return;
@@ -386,18 +367,9 @@ void SceneSyncState::FillPendingComponents(entity_id_t id)
     }
     if (entityPtr->Components().empty())
         return;
-
-    ComponentIdList& pendingComps = pendingComponents[id]; // Creates new if did not exist
-    pendingComps.clear();
-
-    Entity::ComponentMap::const_iterator iter = entityPtr->Components().begin();
-    Entity::ComponentMap::const_iterator end = entityPtr->Components().end();
-    while (iter != end)
-    {
-        component_id_t compId = iter->second->Id();
-        pendingComps.push_back(compId);
-        ++iter;
-    }
+        
+    if (!HasPendingEntity(id))
+        pendingEntities_.push_back(id);
 }
 
 EntitySyncState& SceneSyncState::MarkEntityDirtySilent(entity_id_t id)
