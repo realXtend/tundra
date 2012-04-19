@@ -54,6 +54,9 @@ qrc_*.cxx
 ui_*.h
 *.qrc.depends
 
+# VLC generated plugin cache file
+bin/plugins/plugins.dat
+
 # Generated documentation
 doc/html/
 *.tmp

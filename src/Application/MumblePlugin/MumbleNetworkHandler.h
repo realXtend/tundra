@@ -9,6 +9,7 @@
 #include "mumble/Timer.h"
 #include "mumble/PacketDataStream.h"
 
+#include "Win.h"
 #include "Math/float3.h"
 
 #include <QObject>
@@ -125,4 +126,10 @@ private:
     int frameOutSequenceNumber;
 
     QString LC;
+    
+#ifdef Q_WS_WIN
+    HANDLE hQoS;
+    DWORD dwFlowUDP;
+    DWORD dwFlowTCP;
+#endif
 };
