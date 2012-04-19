@@ -14,5 +14,7 @@
     <file>vlc-cone.png</file>
     <file>audio.png</file>
     <file>buffering.png</file>
+    <file>play-video.png</file>
+    <file>play-audio.png</file>
   </qresource>
 </RCC>

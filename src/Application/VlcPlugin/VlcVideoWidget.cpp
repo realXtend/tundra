@@ -62,10 +62,12 @@ VlcVideoWidget::VlcVideoWidget(const QList<QByteArray> &args) :
         this);
 
     // Initialize rendering
-    idleLogo_ = QImage(":/images/vlc-cone.png");
+    //idleLogo_ = QImage(":/images/vlc-cone.png");
+    idleLogo_ = QImage(":/images/play-video.png");
     idleLogo_ = idleLogo_.convertToFormat(QImage::Format_ARGB32);
 
-    audioLogo_ = QImage(":/images/audio.png");
+    //audioLogo_ = QImage(":/images/audio.png");
+    audioLogo_ = QImage(":/images/play-audio.png");
     audioLogo_ = audioLogo_.convertToFormat(QImage::Format_ARGB32);
     
     pausePixmap_ = QPixmap(":/images/pause-big.png");
@@ -450,12 +452,12 @@ void VlcVideoWidget::InternalRender(void* picture)
         // Waiting to determine true size.
         else if (sourceSize.isNull())
         {
-            rgbaBuffer_.fill(Qt::black);
+            rgbaBuffer_.fill(QColor(242,242,242).rgb());
             QPoint centerPos = rgbaBuffer_.rect().center();
             QRect center(centerPos.x() - (bufferingPixmap_.width()/2), centerPos.y() - (bufferingPixmap_.height()/2),
                          bufferingPixmap_.width(), bufferingPixmap_.height());
             QPainter p(&rgbaBuffer_);
-            p.setPen(Qt::white);
+            p.setPen(Qt::black);
             p.drawPixmap(center, bufferingPixmap_, bufferingPixmap_.rect());
             p.drawText(5, 12, "Loading Media");
             p.end();
