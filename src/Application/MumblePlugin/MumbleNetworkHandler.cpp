@@ -17,6 +17,13 @@
 #include <QSslCipher>
 #include <QMutexLocker>
 
+#ifdef Q_OS_UNIX
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#endif
+
 #ifdef Q_OS_WIN
 
 #include "delayimp.h"
@@ -228,7 +235,7 @@ bool MumbleNetworkHandler::InitUDP()
     // Set TOS/QoS to describe the UDP socket it is for voice data!
     
 #if defined(Q_OS_UNIX)
-/* If you enable this code, also check out InitUDP() that has similar set of code commented out.
+// If you enable this code, also check out InitUDP() that has similar set of code commented out.
     int val = 0xe0;
     if (setsockopt(udp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val))) 
     {
@@ -247,7 +254,7 @@ bool MumbleNetworkHandler::InitUDP()
         }
     }
 #endif
-*/
+
 #elif defined(Q_OS_WIN)
     if (hQoS != NULL)
     {
@@ -277,24 +284,24 @@ void MumbleNetworkHandler::OnConnected()
     if (!QOSAddSocketToFlow(hQoS, tcp->socketDescriptor(), NULL, QOSTrafficTypeAudioVideo, QOS_NON_ADAPTIVE_FLOW, &dwFlowTCP))
         LogWarning(LC + "Failed to add TCP flow to QOS.");
 #elif defined(Q_OS_UNIX)
-/* If you enable this code, also check out InitUDP() that has similar set of code commented out.
+// If you enable this code, also check out InitUDP() that has similar set of code commented out.
     int val = 0xa0;
-    if (setsockopt(qtsSocket->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val))) {
+    if (setsockopt(tcp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val))) {
         val = 0x60;
-        if (setsockopt(qtsSocket->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val)))
+        if (setsockopt(tcp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val)))
             LogWarning(LC + "Failed to set TOS for TCP Socket");
     }
 #if defined(SO_PRIORITY)
     socklen_t optlen = sizeof(val);
-    if (getsockopt(qtsSocket->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, &optlen) == 0) {
+    if (getsockopt(tcp->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, &optlen) == 0) {
         if (val == 0) {
             val = 6;
-            setsockopt(qtsSocket->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, sizeof(val));
+            setsockopt(tcp->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, sizeof(val));
         }
     }
 
 #endif
-*/
+
 #endif
 
     MumbleProto::Version messageVersion;
