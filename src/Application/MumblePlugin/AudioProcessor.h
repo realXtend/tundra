@@ -13,6 +13,8 @@
 
 #include <QThread>
 #include <QMutex>
+#include <QReadWriteLock>
+#include <QTimer>
 
 /// @cond PRIVATE
 namespace MumbleAudio
@@ -85,6 +87,7 @@ namespace MumbleAudio
 
     private slots:
         void OnAudioReceived(uint userId, uint seq, ByteArrayVector frames, bool isPositional, float3 pos);
+        void OnResetFramesPerPacket();
         
     private:
         void ResetSpeexProcessor();
@@ -116,11 +119,6 @@ namespace MumbleAudio
         // Used in both main and audio thread with mutexOutputEncoded.
         QList<QByteArray> pendingEncodedFrames;
         
-        // Used in both main and audio thread with mutexAudioChannels.
-        // SoundChannels shared ptrs cannot be reseted in the audio thread
-        // so they are marked down for removal into this list with userId.
-        QList<uint> pendingSoundChannelRemoves;
-
         // Used in both main and audio thread with mutexOutputPCM.
         std::vector<SoundBuffer> pendingPCMFrames;
 
@@ -143,15 +141,18 @@ namespace MumbleAudio
         QMutex mutexInput;
         QMutex mutexOutputPCM;
         QMutex mutexOutputEncoded;
-        QMutex mutexAudioMute;
-        QMutex mutexAudioSettings;
-        QMutex mutexAudioChannels;
+        
+        QReadWriteLock mutexAudioMute;
+        QReadWriteLock mutexAudioSettings;
 
         int qualityBitrate;
         int qualityFramesPerPacket;
 
+        int bufferFullFrames;
         int holdFrames;
-        int qobjTimerId_;
+        int qobjTimerId;
+        
+        QTimer resetFramesPerPacket;
 
         QString LC;
     };
