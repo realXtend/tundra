@@ -13,6 +13,7 @@
 /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
 typedef std::vector<entity_id_t> EntityIdList;
 typedef EntityIdList::const_iterator PendingConstIter;
+typedef EntityIdList::iterator PendingIter;
 
 SceneSyncState::SceneSyncState(int userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
@@ -308,7 +309,7 @@ bool SceneSyncState::ShouldMarkAsDirty(entity_id_t id)
 void SceneSyncState::RemovePendingEntity(entity_id_t id)
 {
     // This assumes that the id has not been added multiple times to our vector.
-    for(PendingConstIter iter = pendingEntities_.begin(); iter != pendingEntities_.end(); ++iter)
+    for(PendingIter iter = pendingEntities_.begin(); iter != pendingEntities_.end(); ++iter)
     {
         if ((*iter) == id)
         {
