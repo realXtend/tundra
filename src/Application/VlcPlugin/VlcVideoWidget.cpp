@@ -375,8 +375,12 @@ void VlcVideoWidget::RestartPlayback()
 
     renderPixmap_ = QImage(status.sourceSize.width(), status.sourceSize.height(), QImage::Format_RGB32);
     libvlc_video_set_format(vlcPlayer_, "RV32", renderPixmap_.width(), renderPixmap_.height(), renderPixmap_.bytesPerLine());
-    
-    Play();
+
+    if (!status.doNotPlayAfterRestart)
+    {
+        Play();
+        status.doNotPlayAfterRestart = false;
+    }
 }
 
 void VlcVideoWidget::StatusPoller()
@@ -689,6 +693,19 @@ void VlcVideoWidget::VlcEventHandler(const libvlc_event_t *event, void *widget)
                 w->status.playing = false;
                 w->status.paused = false;
                 w->status.stopped = false;
+                w->status.change = PlayerStatus::MediaState;
+            }
+
+            if (event->u.media_state_changed.new_state == libvlc_Ended)
+            {
+                w->status.doStop = true;
+                w->status.doNotPlayAfterRestart = true;
+                w->status.doRestart = true;
+                w->status.buffering = false;
+                w->status.playing = false;
+                w->status.paused = false;
+                w->status.stopped = true;
+                w->status.time = 0.0;
                 w->status.change = PlayerStatus::MediaState;
             }
             break;
