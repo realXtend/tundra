@@ -859,7 +859,7 @@ QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAtt
     elem.appendChild(name_elem);
     
     QDomElement mesh_elem = dest.createElement("mesh");
-    mesh_elem.setAttribute("name", mesh);
+    mesh_elem.setAttribute("name", attachment.mesh_);
     int link = 0;
     if (attachment.link_skeleton_)
         link = 1;
