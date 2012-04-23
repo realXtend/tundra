@@ -237,7 +237,7 @@ var BrowserManager = Class.extend
         
         if (!framework.HasCommandLineParameter("--login"))
         {
-            QMessageBox.information(ui.MainWindow(), "Login parameters missing", "You seem to be missing login information on startup.\nGo to your login portal webpage and initiate the login there,\nTundra will start automatically.");
+            QMessageBox.information(ui.MainWindow(), "Login information missing", "You are reading this message because you started Tundra directly without login information. This usually works, but in the case of Tundra software please go back to the login web page to continue.");
         }
         
         this.classiclogin.focus();
