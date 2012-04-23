@@ -86,8 +86,8 @@ namespace
 */
 }
 
-static const int cInitialAttempts = 1;
-static const int cReconnectAttempts = 5;
+static const int cInitialAttempts = 0;
+static const int cReconnectAttempts = 0;
 
 KristalliProtocolModule::KristalliProtocolModule() :
     IModule("KristalliProtocol"),
