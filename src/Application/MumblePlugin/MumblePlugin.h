@@ -202,6 +202,10 @@ public slots:
         @note Automatically saves/loads settings to local user profile on disk. */
     void RunAudioWizard();
 
+    /// Set positional range. If this is called from a script it will override anything set in
+    /// the audio wizard. It will however not turn positional off/on for you, that is determined from the settings.
+    void SetPositionalRange(int innerRange, int outerRange);
+
 signals:
     /// Murmur server connection has been established, authenticated and both TCP and UDP connections are ready.
     /** After this signal you can expect the channel and user specific signals to be triggered.
