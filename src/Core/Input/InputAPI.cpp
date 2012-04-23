@@ -572,6 +572,19 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         //keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
+#ifdef Q_WS_MAC
+        /** @hack Recognize arrow keys for mac. Text and sequence will have garbage on mac arrow key
+            presses and keyCode is not safe to access (will crash on non-ascii key presses). */
+        if (keyEvent.keyCode == Qt::Key_Left)
+            keyEvent.text = "Left";
+        else if (keyEvent.keyCode == Qt::Key_Right)
+            keyEvent.text = "Right";
+        else if (keyEvent.keyCode == Qt::Key_Up)
+            keyEvent.text = "Up";
+        else if (keyEvent.keyCode == Qt::Key_Down)
+            keyEvent.text = "Down";
+#endif
+
         currentModifiers = e->modifiers(); // local tracking for mouse events
 
         // We only take key events from the main QGraphicsView.
@@ -635,6 +648,19 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         keyEvent.eventType = KeyEvent::KeyReleased;
         //keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
+
+#ifdef Q_WS_MAC
+        /** @hack Recognize arrow keys for mac. Text and sequence will have garbage on mac arrow key 
+            presses and keyCode is not safe to access (will crash on non-ascii key presses). */
+        if (keyEvent.keyCode == Qt::Key_Left)
+            keyEvent.text = "Left";
+        else if (keyEvent.keyCode == Qt::Key_Right)
+            keyEvent.text = "Right";
+        else if (keyEvent.keyCode == Qt::Key_Up)
+            keyEvent.text = "Up";
+        else if (keyEvent.keyCode == Qt::Key_Down)
+            keyEvent.text = "Down";
+#endif
 
         heldKeys.erase(existingKey);
         currentModifiers = e->modifiers(); // local tracking for mouse events
