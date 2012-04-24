@@ -79,7 +79,30 @@ else
     rm -rf $what
     git clone git://gitorious.org/qt-labs/$what.git
     cd $what
+    patch -l -p1 <<EOF
+Description: Include QtWebkit and Phonon unconditionally.
+ This is necessary as both aren't built by the Qt source.
+Author: Felix Geyer <debfx-pkg@fobos.de>
+Acked-By: Modestas Vainius <modax@debian.org>
+Last-Update: 2011-03-20
 
+--- a/generator/qtscript_masterinclude.h
++++ b/generator/qtscript_masterinclude.h
+@@ -53,13 +53,9 @@
+ #  include <QtXmlPatterns/QtXmlPatterns>
+ #endif
+ 
+-#ifndef QT_NO_WEBKIT
+ #  include <QtWebKit/QtWebKit>
+-#endif
+ 
+-#ifndef QT_NO_PHONON
+ #  include <phonon/phonon>
+-#endif
+ 
+ #include "../qtbindings/qtscript_core/qtscriptconcurrent.h"
+ 
+EOF
     cd generator
     qmake
     make -j $nprocs
@@ -87,8 +110,7 @@ else
     cd ..
 
     cd qtbindings
-    sed -i 's/qtscript_phonon //' qtbindings.pro 
-    sed -i 's/qtscript_webkit //' qtbindings.pro 
+    sed -i 's/qtscript_phonon //' qtbindings.pro
     qmake
     make -j $nprocs
     cd ..
