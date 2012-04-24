@@ -88,7 +88,6 @@ else
 
     cd qtbindings
     sed -i 's/qtscript_phonon //' qtbindings.pro 
-    sed -i 's/qtscript_webkit //' qtbindings.pro 
     qmake
     make -j $nprocs
     cd ..
