@@ -381,9 +381,10 @@ QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bo
     stream.setCodec("UTF-8");
     QDomDocument scene_doc("Scene");
     QString errorMsg;
-    if (!scene_doc.setContent(stream.readAll(), &errorMsg))
+    int errorLine, errorColumn;
+    if (!scene_doc.setContent(stream.readAll(), &errorMsg, &errorLine, &errorColumn))
     {
-        LogError("Parsing scene XML from "+ filename + " failed when loading scene xml: " + errorMsg);
+        LogError(QString("Parsing scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.").arg(filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
         file.close();
         return ret;
     }
@@ -530,9 +531,10 @@ QList<Entity *> Scene::CreateContentFromXml(const QString &xml,  bool useEntityI
     QList<Entity *> ret;
     QString errorMsg;
     QDomDocument scene_doc("Scene");
-    if (!scene_doc.setContent(xml, false, &errorMsg))
+    int errorLine, errorColumn;
+    if (!scene_doc.setContent(xml, false, &errorMsg, &errorLine, &errorColumn))
     {
-        LogError("Parsing scene XML from text failed: " + errorMsg);
+        LogError(QString("Parsing scene XML from text failed when loading Scene XML: %1 at line %2 column %3.").arg(errorMsg).arg(errorLine).arg(errorColumn));
         return ret;
     }
 
@@ -900,9 +902,11 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
     QTextStream stream(&data);
     stream.setCodec("UTF-8");
     QDomDocument scene_doc("Scene");
-    if (!scene_doc.setContent(stream.readAll()))
+    QString errorMsg;
+    int errorLine, errorColumn;
+    if (!scene_doc.setContent(stream.readAll(), &errorMsg, &errorLine, &errorColumn))
     {
-        LogError("Parsing scene XML from " + sceneDesc.filename + " failed when loading scene xml.");
+        LogError(QString("Parsing scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.").arg(sceneDesc.filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
         return sceneDesc;
     }
 
