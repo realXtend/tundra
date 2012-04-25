@@ -354,8 +354,8 @@ IF NOT EXIST kNet.sln. (
 )
 cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
 msbuild kNet.sln /p:configuration=Debug /nologo
+msbuild kNet.sln /p:configuration=Release /nologo
 msbuild kNet.sln /p:configuration=RelWithDebInfo /nologo
-IF %BUILD_RELEASE%==TRUE msbuild kNet.sln /p:configuration=Release /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
