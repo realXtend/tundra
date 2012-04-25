@@ -235,12 +235,13 @@ var BrowserManager = Class.extend
         }
         */
         
+        // HACK ALWAYS SET BIC EDITION TO TITLE!
+        var mainWindow = ui.MainWindow();
+        mainWindow.windowTitle = mainWindow.windowTitle + " Virtual Gallery Weekend Berlin Edition";
+        
         // HACK HACK BIC WEEKEND ADVERT TO BE REMOVED AFTER THE EVENT!
         if (!framework.HasCommandLineParameter("--login"))
-        {
-            var mainWindow = ui.MainWindow();
-            mainWindow.windowTitle = mainWindow.windowTitle + " Virtual Gallery Weekend Berlin Edition";
-            
+        {            
             this.bicDialog = new QDialog(ui.MainWindow());
             
             this.bicDialog.windowFlags = Qt.Tool;
