@@ -636,26 +636,32 @@ void MumblePlugin::AudioWizardDestroyed()
     emit AudioWizardClosed();
 }
 
-void MumblePlugin::SetPositionalRange(int innerRange, int outerRange)
+MumbleAudio::AudioSettings MumblePlugin::CurrentSettings()
 {
     if (audio_ && state.serverSynced)
-    {
-        if (innerRange < 0)
-        {
-            LogWarning(LC + "SetPositionalRange() innerRange < 0, reseting to 0.");
-            innerRange = 0;
-        }
-        if (outerRange < 1)
-        {
-            LogWarning(LC + "SetPositionalRange() outerRange < 1, reseting to 1.");
-            outerRange = 1;
-        }
+        return audio_->GetSettings();
+    else
+        return LoadSettings();
+}
 
-        AudioSettings settings = audio_->GetSettings();
-        settings.innerRange = innerRange;
-        settings.outerRange = outerRange;
+bool MumblePlugin::ApplySettings(MumbleAudio::AudioSettings settings, bool saveToConfig)
+{
+    bool appliedEither = false;
+    
+    // Apply to active audio processor
+    if (audio_ && state.serverSynced)
+    {
         audio_->ApplySettings(settings);
+        appliedEither = true;
     }
+    // Store to disk.    
+    if (saveToConfig)
+    {
+        SaveSettings(settings);
+        appliedEither = true;
+    }
+    
+    return appliedEither;
 }
 
 void MumblePlugin::OnConnected(QString address, int port, QString username)
