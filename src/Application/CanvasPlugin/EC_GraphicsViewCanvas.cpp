@@ -24,6 +24,7 @@
 #include "InputAPI.h"
 #include "OgreWorld.h"
 #include "Profiler.h"
+#include "OgreMaterialAsset.h"
 
 #include <Ogre.h>
 
@@ -90,7 +91,7 @@ void EC_GraphicsViewCanvas::UpdateSignals()
         if (mesh)
         {
             connect(mesh, SIGNAL(MeshChanged()), this, SLOT(UpdateTexture()), Qt::UniqueConnection);
-            connect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(UpdateTexture()), Qt::UniqueConnection);
+            connect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(OnMaterialChanged(uint, const QString &)), Qt::UniqueConnection);
 
             UpdateTexture();
         }
@@ -350,6 +351,27 @@ void EC_GraphicsViewCanvas::SendMouseEvent(QEvent::Type type, const QPointF &poi
     mouseEvent.setAccepted(false);
 
     QApplication::sendEvent(graphicsView->scene(), &mouseEvent);
+}
+
+void EC_GraphicsViewCanvas::OnMaterialChanged(uint materialIndex, const QString &materialName)
+{
+    EC_Mesh *mesh = ParentEntity()->GetComponent<EC_Mesh>().get();
+    if (mesh && materialIndex == submesh.Get())
+    {
+        OgreMaterialAssetPtr material = mesh->MaterialAsset(materialIndex);
+        QString newMaterialName = framework->Asset()->GenerateUniqueAssetName("OgreMaterial", "GraphicsViewCanvas");
+        OgreMaterialAssetPtr newMaterial = material ? boost::dynamic_pointer_cast<OgreMaterialAsset>(material->Clone(newMaterialName)) : OgreMaterialAssetPtr();
+        if (newMaterial)
+        {
+            newMaterial->SetTexture(0, 0, 0, outputTexture.Get());
+            // Prevent infinite loop
+            disconnect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(OnMaterialChanged(uint, const QString &)));
+            mesh->SetMaterial(materialIndex, newMaterial->Name());
+            connect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(OnMaterialChanged(uint, const QString &)));
+
+            UpdateTexture();
+        }
+    }
 }
 
 void EC_GraphicsViewCanvas::UpdateTexture()

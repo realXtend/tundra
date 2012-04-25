@@ -23,7 +23,11 @@ class RedirectedPaintWidget;
 
 /// Makes possible to to embed arbitrary Qt UI elements into a 3D model.
 /** The mouse input to the 3D object is passed to the actual UI element.
+
     @note The entity this component is used in needs to have EC_Mesh also.
+    The material at the EC_Mesh at index which @c submesh points to is cloned for the usage of this component.
+    Only material with single texture unit supported.
+
     @todo Keyboard input. */
 class EC_GraphicsViewCanvas : public IComponent
 {
@@ -42,16 +46,16 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(QString, outputTexture);
 
     /// Specifies the width of the graphics view.
-    Q_PROPERTY(int width READ getwidth WRITE setwidth);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, width);
+    Q_PROPERTY(uint width READ getwidth WRITE setwidth);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, width);
 
     /// Specifies the height of the graphics view.
-    Q_PROPERTY(int height READ getheight WRITE setheight);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, height);
+    Q_PROPERTY(uint height READ getheight WRITE setheight);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, height);
 
     /// Specifies the submesh of the mesh on which to show this content.
-    Q_PROPERTY(int submesh READ getsubmesh WRITE setsubmesh);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, submesh);
+    Q_PROPERTY(uint submesh READ getsubmesh WRITE setsubmesh);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, submesh);
 
 public slots:
     /// Returns the graphics scene in which content can be added.
@@ -68,12 +72,11 @@ private slots:
     void OnAttributeUpdated(IAttribute *attribute);
     void OnGraphicsSceneChanged(const QList<QRectF> &);
     void OnMouseEventReceived(MouseEvent *e);
-
     void OnDragEnterEvent(QDragEnterEvent *e);
     void OnDragLeaveEvent(QDragLeaveEvent *e);
     void OnDragMoveEvent(QDragMoveEvent *e);
     void OnDropEvent(QDropEvent *e);
-
+    void OnMaterialChanged(uint, const QString &);
     void UpdateTexture();
 
 private:
