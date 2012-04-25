@@ -235,12 +235,56 @@ var BrowserManager = Class.extend
         }
         */
         
+        // HACK HACK BIC WEEKEND ADVERT TO BE REMOVED AFTER THE EVENT!
         if (!framework.HasCommandLineParameter("--login"))
         {
-            QMessageBox.information(ui.MainWindow(), "Login information missing", "You are reading this message because you started Tundra directly without login information. This usually works, but in the case of Tundra software please go back to the login web page to continue.");
+            var mainWindow = ui.MainWindow();
+            mainWindow.windowTitle = mainWindow.windowTitle + " Virtual Gallery Weekend Berlin Edition";
+            
+            this.bicDialog = new QDialog(ui.MainWindow());
+            
+            this.bicDialog.windowFlags = Qt.Tool;
+            this.bicDialog.windowTitle = "Virtual Gallery Weekend Berlin this weekend";
+            this.bicDialog.styleSheet = "QWidget { font-family: Arial; font-size: 18pt; background-color: rgb(101,148,94); color: white; } QPushButton { background-color: none; }";
+            
+            var layout = new QVBoxLayout(this.bicDialog);
+            this.bicDialog.setLayout(layout);
+            
+            var label = new QLabel(this.bicDialog);
+            label.pixmap = new QPixmap(appInstallDir + "data/ui/images/adminotech_tundra_splash.png")
+            label.alignment = Qt.AlignCenter;
+                       
+            var buttonVisit = new QPushButton("Click here to visit Virtual Gallery Weekend Berlin login page", this.bicDialog);
+            buttonVisit.styleSheet = "QPushButton { padding-left: 10px; padding-right: 10px; min-height: 50px;  max-height: 50px; Border: 1px solid grey; color: rgb(34, 34, 34); background-color: qlineargradient(spread:repeat, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(230, 230, 230, 255), stop:1 rgba(241, 241, 241, 255)); border-radius: 3px; }" +
+                "QPushButton:hover { background-color: qlineargradient(spread:repeat, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(245, 245, 245, 255), stop:1 rgba(189, 189, 189, 255)); }" + 
+                "QPushButton:pressed { background-color: rgb(161, 161, 161); }";
+                
+            buttonVisit.clicked.connect(this, this.bicVisitButtonClicked);
+
+            layout.addWidget(label, 0, 0);
+            layout.addWidget(buttonVisit, 0, 0);
+                        
+            this.bicDialog.open();
         }
         
         this.classiclogin.focus();
+    },
+    
+    bicVisitButtonClicked: function()
+    {
+        try 
+        {
+            QDesktopServices.openUrl(new QUrl("http://bic.adminotech.com/Full.aspx", QUrl.TolerantMode));
+        } 
+        catch(e) {};
+        
+        frame.DelayedExecute(0.5).Triggered.connect(this, this.bicCloseClient);
+    },
+    
+    bicCloseClient: function()
+    {
+        this.bicDialog.close();
+        framework.Exit();
     },
     
     windowResized: function(rect)
