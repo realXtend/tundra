@@ -201,11 +201,18 @@ public slots:
         noise suppression, mic amplification, transmit mode and voice activity detection.
         @note Automatically saves/loads settings to local user profile on disk. */
     void RunAudioWizard();
-
-    /// Set positional range. If this is called from a script it will override anything set in
-    /// the audio wizard. It will however not turn positional off/on for you, that is determined from the settings.
-    void SetPositionalRange(int innerRange, int outerRange);
-
+    
+    /// Get current settings. If connected to a server, current active settings will be returned.
+    /// If not connected latest settings from config is returned.
+    MumbleAudio::AudioSettings CurrentSettings();
+    
+    /// Applies and stores new settings. 
+    /** If connected to a server applies new settings to active connection.
+        If not connected and saveToConfig is false this function will do nothing and return false.
+        Returns true if either apply to active connection or save to config was successful. 
+        @see CurrentSettings. */
+    bool ApplySettings(MumbleAudio::AudioSettings settings, bool saveToConfig = false);
+    
 signals:
     /// Murmur server connection has been established, authenticated and both TCP and UDP connections are ready.
     /** After this signal you can expect the channel and user specific signals to be triggered.
