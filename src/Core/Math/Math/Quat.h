@@ -283,6 +283,9 @@ public:
 
 	/// Returns "x y z w". This is the preferred format for the quaternion if it has to be serialized to a string for machine transfer.
 	std::string SerializeToString() const;
+
+    /// Returns "w x y z". Used for saving avatar attachments.
+    std::string SerializeToStringWXYZ() const;
 #endif
 	/// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" or "x y z w" to a new quaternion.
 	static Quat FromString(const char *str);

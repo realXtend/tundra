@@ -532,10 +532,17 @@ std::string Quat::ToString2() const
 }
 
 std::string Quat::SerializeToString() const
-{ 
+{
 	char str[256];
 	sprintf(str, "%f %f %f %f", x, y, z, w);
 	return std::string(str);
+}
+
+std::string Quat::SerializeToStringWXYZ() const
+{
+    char str[256];
+    sprintf(str, "%f %f %f %f", w, x, y, z);
+    return std::string(str);
 }
 #endif
 

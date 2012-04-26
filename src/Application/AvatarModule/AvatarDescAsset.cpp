@@ -888,7 +888,7 @@ QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAtt
         QDomElement bone_elem = dest.createElement("bone");
         bone_elem.setAttribute("name", boneName);
         bone_elem.setAttribute("offset", attachment.transform_.position_.SerializeToString().c_str());
-        bone_elem.setAttribute("rotation", attachment.transform_.orientation_.SerializeToString().c_str());
+        bone_elem.setAttribute("rotation", attachment.transform_.orientation_.SerializeToStringWXYZ().c_str());
         bone_elem.setAttribute("scale", attachment.transform_.scale_.SerializeToString().c_str());
 
         avatar_elem.appendChild(bone_elem);
