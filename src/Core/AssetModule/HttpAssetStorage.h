@@ -64,6 +64,9 @@ public slots:
     /// Returns the local directory of this storage. Empty if not local.
     const QString& LocalDir() const { return localDir; }
     
+    /// Get QNetworkAccessManager from the parent provider
+    virtual QNetworkAccessManager* GetNetworkAccessManager();
+
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
 
@@ -75,9 +78,6 @@ private:
 
     /// Perform a PROPFIND search on a path in the http storage
     void PerformSearch(QString path);
-
-    /// Get QNetworkAccessManager from the parent provider
-    QNetworkAccessManager* GetNetworkAccessManager();
 
     /// Ongoing network requests for querying asset refs
     std::vector<SearchRequest> searches;
