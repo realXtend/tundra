@@ -238,7 +238,7 @@ else
     # work around PythonQt vs Qt 4.8 incompatibility
     cd src
     make moc_PythonQtStdDecorators.cpp
-    ed moc_PythonQtStdDecorators.cpp <<EOF
+    ed moc_PythonQtStdDecorators.cpp || true <<EOF
 /qt_static_metacall
 -
 a
