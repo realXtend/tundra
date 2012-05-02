@@ -223,21 +223,12 @@ var BrowserManager = Class.extend
         
         this.onTabIndexChanged(this.tabs.currentIndex);
         
-        /* Disable startup web page. Mostly just uses memory in the background.
-           Additionally the tundra:// logins are afaik broken inside Tundra
-           so the browser has losen its functionality a bit.
         if (this.settings.startupLoadHomePage)
         {
             if (HasTundraScheme(this.settings.homepage))
                 if (!this.settings.startupConnectToHomePage)
                     return;
             this.openUrl(this.settings.homepage);
-        }
-        */
-        
-        if (!framework.HasCommandLineParameter("--login"))
-        {
-            QMessageBox.information(ui.MainWindow(), "Login parameters missing", "You seem to be missing login information on startup.\nGo to your login portal webpage and initiate the login there,\nTundra will start automatically.");
         }
         
         this.classiclogin.focus();
