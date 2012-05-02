@@ -223,6 +223,7 @@ var BrowserManager = Class.extend
         
         this.onTabIndexChanged(this.tabs.currentIndex);
         
+        /* Disable opening the home webpage tab. Is just confusing and takes mem/cpu in the startup.
         if (this.settings.startupLoadHomePage)
         {
             if (HasTundraScheme(this.settings.homepage))
@@ -230,6 +231,7 @@ var BrowserManager = Class.extend
                     return;
             this.openUrl(this.settings.homepage);
         }
+        */
         
         this.classiclogin.focus();
     },
