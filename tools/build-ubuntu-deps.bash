@@ -4,6 +4,10 @@
 set -e
 set -x
 
+# script to build naali and most deps.
+#
+# note: you need to enable the universe and multiverse software sources
+# as this script attempts to get part of the deps using apt-get
 
 viewer=$(dirname $(readlink -f $0))/..
 deps=$viewer/../naali-deps
@@ -36,22 +40,14 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
 
-private_ogre=true # build own ogre by default, since ubuntu shipped ogre is too old and/or built without thread support
-
-if [ x$private_ogre != xtrue ]; then
-    more="libogre-dev"
-else
-    more="nvidia-cg-toolkit" # ubuntu libogre-dev build-deps don't include cg
-    export OGRE_HOME=$prefix
-fi
-
 if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libboost-all-dev libois-dev \
 	 ccache libqt4-dev python-dev freeglut3-dev \
 	 libxml2-dev cmake libalut-dev libtheora-dev ed \
-	 liboil0.3-dev mercurial unzip xsltproc $more
+	 liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
+	 libspeex-dev nvidia-cg-toolkit subversion
 fi
 
 what=bullet-2.79-rev2440
@@ -139,27 +135,32 @@ else
     touch $tags/$what-done
 fi
 
-
-if [ x$private_ogre = xtrue ]; then
-    if tty >/dev/null; then
-	sudo apt-get build-dep libogre-dev
+what=ogre-safe-nocrashes
+if test -f $tags/$what-done; then 
+   echo "Testing whether there are new changes in $what"
+   cd $build/$what
+   res=`hg pull -u|grep "no changes found"`
+   if [ -z "$res" ]; then
+       echo "Changes detected in $what. Removing $what-done tag and forcing a rebuild."
+       rm -f $tags/$what-done
+   fi
+fi
+if test -f $tags/$what-done; then 
+   echo $what is done
+else
+    cd $build
+    if [ ! -e "$what" ]; then
+        echo "$what does not exist. Cloning a new copy..."
+        hg clone https://bitbucket.org/clb/ogre-safe-nocrashes
     fi
-    what=ogre
-    if test -f $tags/$what-done; then
-        echo $what is done
-    else
-        cd $build
-        rm -rf $what
-	test -f $tarballs/$what.tar.bz2 || wget -O $tarballs/$what.tar.bz2 'http://downloads.sourceforge.net/project/ogre/ogre/1.7/ogre_src_v1-7-3.tar.bz2?r=http%3A%2F%2Fwww.ogre3d.org%2Fdownload%2Fsource&ts=1319633319&use_mirror=switch'
-	tar jxf $tarballs/$what.tar.bz2
-        cd ${what}_src_v1-7-3/
-        mkdir -p $what-build
-        cd $what-build
-        cmake .. -DCMAKE_INSTALL_PREFIX=$prefix
-        make -j $nprocs VERBOSE=1
-        make install
-        touch $tags/$what-done
-    fi
+    cd $what
+    hg checkout v1-8 # Make sure we are in the right branch
+    mkdir -p $what-build
+    cd $what-build  
+    cmake .. -DCMAKE_INSTALL_PREFIX=$prefix
+    make -j $nprocs VERBOSE=1
+    make install
+    touch $tags/$what-done
 fi
 
 # HydraX, SkyX and PythonQT are build from the realxtend own dependencies.
