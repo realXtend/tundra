@@ -1,0 +1,83 @@
+fragment_program GlowA_fp cg
+{
+	source glow.cg
+	entry_point GlowA_fp
+ 
+		default_params
+		{
+			param_named_auto invTexSize inverse_texture_size 0
+		}
+
+	profiles ps_2_0 arbfp1
+}
+
+fragment_program GlowB_fp cg
+{
+	source glow.cg
+	entry_point GlowB_fp
+
+		default_params
+		{
+			param_named_auto invTexSize inverse_texture_size 0
+		}
+
+	profiles ps_2_0 arbfp1
+}
+
+material GlowCompositorMat/GlowA
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_func always_pass
+
+			fragment_program_ref GlowA_fp
+			{
+    			param_named GlowBlurSize float 1.0
+			}
+
+			texture_unit map
+			{
+					tex_coord_set 0
+					tex_address_mode clamp
+					filtering trilinear
+			}
+		}
+	}
+}
+
+material GlowCompositorMat/GlowB
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_func always_pass
+
+			fragment_program_ref GlowB_fp
+			{
+    			param_named GlowBlurSize float 1.0
+    			param_named GlowBrightness float 1.0
+			}
+
+			texture_unit scene
+			{
+					tex_coord_set 0
+					tex_address_mode clamp
+					filtering trilinear
+			}
+ 
+			texture_unit map
+			{
+					tex_coord_set 0
+					tex_address_mode clamp
+					filtering trilinear
+			}
+		}
+	}
+}
