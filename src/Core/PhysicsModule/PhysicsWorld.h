@@ -149,6 +149,13 @@ public slots:
         @note W.I.P - Do not rely on existence of this function in this exact form. */
     Entity *ObbCollisionQuery(const OBB &obb, const float3 &to);
 
+    /// Performs collision query for OBB.
+    /** @param obb Oriented bounding box to test
+        @param collisionGroup Collision layer of the OBB. Default has all bits set.
+        @param collisionMask Collision mask of the OBB. Default has all bits set.
+        @return List of entities with EC_RigidBody component intersecting the OBB */
+    EntityList ObbCollisionQuery(const OBB &obb, int collisionGroup = -1, int collisionMask = -1);
+
 signals:
     /// A physics collision has happened between two entities. 
     /** Note: both rigidbodies participating in the collision will also emit a signal separately. 

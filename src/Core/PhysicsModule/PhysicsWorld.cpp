@@ -298,6 +298,55 @@ Entity *PhysicsWorld::ObbCollisionQuery(const OBB &obb, const float3 &to)
         static_cast<EC_RigidBody *>(cb.m_hitCollisionObject->getUserPointer())->ParentEntity() : 0;
 }
 
+EntityList PhysicsWorld::ObbCollisionQuery(const OBB &obb, int collisionGroup, int collisionMask)
+{
+    class ObbCallback : public btCollisionWorld::ContactResultCallback
+    {
+    public:
+        ObbCallback(std::set<btCollisionObject*>& result) :
+            result_(result)
+        {
+        }
+        
+        virtual btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObject* colObj0,int partId0,int index0,const btCollisionObject* colObj1,int partId1,int index1)
+        {
+            result_.insert(const_cast<btCollisionObject*>(colObj1));
+            return 0.0f;
+        }
+        
+        std::set<btCollisionObject*>& result_;
+    };
+    
+    PROFILE(PhysicsWorld_ObbCollisionQuery);
+    
+    std::set<btCollisionObject*> objects;
+    EntityList entities;
+    
+    btBoxShape box(obb.HalfSize()); // Note: Bullet uses box halfsize
+    float3x3 m(obb.axis[0], obb.axis[1], obb.axis[2]);
+    btTransform t1(m.ToQuat(), obb.CenterPoint());
+    
+    btRigidBody* tempRigidBody = new btRigidBody(1.0f, 0, &box);
+    tempRigidBody->setWorldTransform(t1);
+    world_->addRigidBody(tempRigidBody, collisionGroup, collisionMask);
+    tempRigidBody->activate(); // To make sure we get collision results from static sleeping rigidbodies, activate the temp rigid body
+    
+    ObbCallback resultCallback(objects);
+    world_->contactTest(tempRigidBody, resultCallback);
+    
+    for (std::set<btCollisionObject*>::iterator i = objects.begin(); i != objects.end(); ++i)
+    {
+        EC_RigidBody* body = static_cast<EC_RigidBody*>((*i)->getUserPointer());
+        if (body && body->ParentEntity())
+            entities.push_back(body->ParentEntity()->shared_from_this());
+    }
+    
+    world_->removeRigidBody(tempRigidBody);
+    delete tempRigidBody;
+    
+    return entities;
+}
+
 void PhysicsWorld::SetDebugGeometryEnabled(bool enable)
 {
     if (scene_.expired() || !scene_.lock()->ViewEnabled() || IsDebugGeometryEnabled() == enable)
