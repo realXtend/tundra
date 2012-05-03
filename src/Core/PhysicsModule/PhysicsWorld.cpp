@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #define MATH_BULLET_INTEROP
 #include "DebugOperatorNew.h"
-#include "btBulletDynamicsCommon.h"
+
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
@@ -13,8 +13,15 @@
 #include "EC_RigidBody.h"
 #include "LoggingFunctions.h"
 #include "Geometry/LineSegment.h"
+#include "Geometry/OBB.h"
+#include "Math/float3x3.h"
+#include "Math/Quat.h"
+#include "Entity.h"
+
+#include <btBulletDynamicsCommon.h>
 
 #include <Ogre.h>
+
 #include "MemoryLeakCheck.h"
 
 namespace Physics
@@ -25,7 +32,7 @@ void TickCallback(btDynamicsWorld *world, btScalar timeStep)
     static_cast<Physics::PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
 }
 
-PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
+PhysicsWorld::PhysicsWorld(const ScenePtr &scene, bool isClient) :
     scene_(scene),
     collisionConfiguration_(0),
     collisionDispatcher_(0),
@@ -48,9 +55,8 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
     world_ = new btDiscreteDynamicsWorld(collisionDispatcher_, broadphase_, solver_, collisionConfiguration_);
     world_->setDebugDrawer(this);
     world_->setInternalTickCallback(TickCallback, (void*)this, false);
-    
-    Framework* fw = scene->GetFramework();
-    if (fw->HasCommandLineParameter("--variablephysicsstep"))
+
+    if (scene->GetFramework()->HasCommandLineParameter("--variablephysicsstep"))
         useVariableTimestep_ = true;
 }
 
@@ -120,9 +126,9 @@ void PhysicsWorld::Simulate(f64 frametime)
     // However, do not do this if user has used the physicsdebug console command
     if (!drawDebugManuallySet_)
     {
-        if ((!IsDebugGeometryEnabled()) && (!debugRigidBodies_.empty()))
+        if (!IsDebugGeometryEnabled() && !debugRigidBodies_.empty())
             SetDebugGeometryEnabled(true);
-        if ((IsDebugGeometryEnabled()) && (debugRigidBodies_.empty()))
+        if (IsDebugGeometryEnabled() && debugRigidBodies_.empty())
             SetDebugGeometryEnabled(false);
     }
     
@@ -270,6 +276,26 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
     }
     
     return &result;
+}
+
+Entity *PhysicsWorld::ObbCollisionQuery(const OBB &obb, const float3 &to)
+{
+    PROFILE(PhysicsWorld_ObbCollisionQuery);
+    btBoxShape box(obb.HalfSize()); // Note: Bullet uses box halfsize
+    float3x3 m(obb.axis[0], obb.axis[1], obb.axis[2]);
+
+    btTransform t1(m.ToQuat(), obb.CenterPoint());
+    btTransform t2 = t1;
+    t2.setOrigin(to);
+
+    btCollisionWorld::ClosestConvexResultCallback cb(t1.getOrigin(), t2.getOrigin());
+    cb.m_collisionFilterGroup = btBroadphaseProxy::AllFilter;
+    cb.m_collisionFilterMask = btBroadphaseProxy::AllFilter;
+    world_->convexSweepTest(&box, t1, t2, cb);
+
+    return cb.hasHit() && cb.m_hitCollisionObject != dynamic_cast<btCollisionObject *>(&box) &&
+        static_cast<EC_RigidBody *>(cb.m_hitCollisionObject->getUserPointer()) != 0 ?
+        static_cast<EC_RigidBody *>(cb.m_hitCollisionObject->getUserPointer())->ParentEntity() : 0;
 }
 
 void PhysicsWorld::SetDebugGeometryEnabled(bool enable)

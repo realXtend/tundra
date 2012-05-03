@@ -61,7 +61,7 @@ public:
     /// Constructor.
     /** @param scene Scene of which this PhysicsWorld is physical representation of.
         @param isClient Whether this physics world is for a client scene i.e. only simulates local entities' motion on their own.*/
-    PhysicsWorld(ScenePtr scene, bool isClient);
+    PhysicsWorld(const ScenePtr &scene, bool isClient);
     virtual ~PhysicsWorld();
     
     /// Step the physics world. May trigger several internal simulation substeps, according to the deltatime given.
@@ -138,11 +138,16 @@ public slots:
     /// Raycast to the world. Returns only a single (the closest) result.
     /** @param origin World origin position
         @param direction Direction to raycast to. Will be normalized automatically
-        @param maxdistance Length of ray
-        @param collisionlayer Collision layer. Default has all bits set.
-        @param collisionmask Collision mask. Default has all bits set.
+        @param maxDistance Length of ray
+        @param collisionGroup Collision layer. Default has all bits set.
+        @param collisionMask Collision mask. Default has all bits set.
         @return result PhysicsRaycastResult structure */
-    PhysicsRaycastResult* Raycast(const float3& origin, const float3& direction, float maxdistance, int collisiongroup = -1, int collisionmask = -1);
+    PhysicsRaycastResult* Raycast(const float3& origin, const float3& direction, float maxDistance, int collisionGroup = -1, int collisionMask = -1);
+
+    /// Performs collision query for OBB.
+    /** @todo Remove the need to pass @c to as parameter.
+        @note W.I.P - Do not rely on existence of this function in this exact form. */
+    Entity *ObbCollisionQuery(const OBB &obb, const float3 &to);
 
 signals:
     /// A physics collision has happened between two entities. 
