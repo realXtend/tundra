@@ -24,6 +24,35 @@
 
 #include "MemoryLeakCheck.h"
 
+namespace
+{
+
+struct CollisionSignal
+{
+    EC_RigidBody *bodyA;
+    EC_RigidBody *bodyB;
+    float3 position;
+    float3 normal;
+    float distance;
+    float impulse;
+    bool newCollision;
+};
+
+struct ObbCallback : public btCollisionWorld::ContactResultCallback
+{
+    ObbCallback(std::set<btCollisionObject*>& result) : result_(result) {}
+
+    virtual btScalar addSingleResult(btManifoldPoint &, const btCollisionObject *, int, int, const btCollisionObject *colObj1, int, int)
+    {
+        result_.insert(const_cast<btCollisionObject*>(colObj1));
+        return 0.0f;
+    }
+    
+    std::set<btCollisionObject*>& result_;
+};
+
+} // ~unnamed namespace
+
 namespace Physics
 {
 
@@ -135,17 +164,6 @@ void PhysicsWorld::Simulate(f64 frametime)
     if (IsDebugGeometryEnabled())
         DrawDebugGeometry();
 }
-
-struct CollisionSignal
-{
-    EC_RigidBody *bodyA;
-    EC_RigidBody *bodyB;
-    float3 position;
-    float3 normal;
-    float distance;
-    float impulse;
-    bool newCollision;
-};
 
 void PhysicsWorld::ProcessPostTick(float substeptime)
 {
@@ -278,45 +296,8 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
     return &result;
 }
 
-Entity *PhysicsWorld::ObbCollisionQuery(const OBB &obb, const float3 &to)
-{
-    PROFILE(PhysicsWorld_ObbCollisionQuery);
-    btBoxShape box(obb.HalfSize()); // Note: Bullet uses box halfsize
-    float3x3 m(obb.axis[0], obb.axis[1], obb.axis[2]);
-
-    btTransform t1(m.ToQuat(), obb.CenterPoint());
-    btTransform t2 = t1;
-    t2.setOrigin(to);
-
-    btCollisionWorld::ClosestConvexResultCallback cb(t1.getOrigin(), t2.getOrigin());
-    cb.m_collisionFilterGroup = btBroadphaseProxy::AllFilter;
-    cb.m_collisionFilterMask = btBroadphaseProxy::AllFilter;
-    world_->convexSweepTest(&box, t1, t2, cb);
-
-    return cb.hasHit() && cb.m_hitCollisionObject != dynamic_cast<btCollisionObject *>(&box) &&
-        static_cast<EC_RigidBody *>(cb.m_hitCollisionObject->getUserPointer()) != 0 ?
-        static_cast<EC_RigidBody *>(cb.m_hitCollisionObject->getUserPointer())->ParentEntity() : 0;
-}
-
 EntityList PhysicsWorld::ObbCollisionQuery(const OBB &obb, int collisionGroup, int collisionMask)
 {
-    class ObbCallback : public btCollisionWorld::ContactResultCallback
-    {
-    public:
-        ObbCallback(std::set<btCollisionObject*>& result) :
-            result_(result)
-        {
-        }
-        
-        virtual btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObject* colObj0,int partId0,int index0,const btCollisionObject* colObj1,int partId1,int index1)
-        {
-            result_.insert(const_cast<btCollisionObject*>(colObj1));
-            return 0.0f;
-        }
-        
-        std::set<btCollisionObject*>& result_;
-    };
-    
     PROFILE(PhysicsWorld_ObbCollisionQuery);
     
     std::set<btCollisionObject*> objects;
@@ -392,4 +373,3 @@ void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const bt
 }
 
 } // ~Physics
-

@@ -145,11 +145,6 @@ public slots:
     PhysicsRaycastResult* Raycast(const float3& origin, const float3& direction, float maxDistance, int collisionGroup = -1, int collisionMask = -1);
 
     /// Performs collision query for OBB.
-    /** @todo Remove the need to pass @c to as parameter.
-        @note W.I.P - Do not rely on existence of this function in this exact form. */
-    Entity *ObbCollisionQuery(const OBB &obb, const float3 &to);
-
-    /// Performs collision query for OBB.
     /** @param obb Oriented bounding box to test
         @param collisionGroup Collision layer of the OBB. Default has all bits set.
         @param collisionMask Collision mask of the OBB. Default has all bits set.
