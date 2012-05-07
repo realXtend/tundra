@@ -39,6 +39,7 @@ public:
         isPausable = status.isPausable;
         doRestart = status.doRestart;
         doStop = status.doStop;
+        doNotPlayAfterRestart = status.doNotPlayAfterRestart;
         time = status.time;
         lenght = status.lenght;
         position = status.position;
@@ -59,6 +60,7 @@ public:
         isPausable = false;
         doRestart = false;
         doStop = false;
+        doNotPlayAfterRestart = false;
         time = 0.0;
         lenght = 0.0;
         position = 0.0f;
@@ -77,6 +79,7 @@ public:
     bool isPausable;
     bool doRestart;
     bool doStop;
+    bool doNotPlayAfterRestart;
 
     s64 time;
     s64 lenght;
