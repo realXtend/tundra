@@ -42,8 +42,9 @@ struct ObbCallback : public btCollisionWorld::ContactResultCallback
 {
     ObbCallback(std::set<btCollisionObject*>& result) : result_(result) {}
 
-    virtual btScalar addSingleResult(btManifoldPoint &, const btCollisionObject *, int, int, const btCollisionObject *colObj1, int, int)
+    virtual btScalar addSingleResult(btManifoldPoint &, const btCollisionObject *colObj0, int, int, const btCollisionObject *colObj1, int, int)
     {
+        result_.insert(const_cast<btCollisionObject*>(colObj0));
         result_.insert(const_cast<btCollisionObject*>(colObj1));
         return 0.0f;
     }
