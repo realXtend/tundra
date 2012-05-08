@@ -28,6 +28,7 @@ nprocs=`grep -c "^processor" /proc/cpuinfo`
 
 mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 
+export OGRE_HOME=$prefix
 export PATH=$prefix/bin:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
 export NAALI_DEP_PATH=$prefix
