@@ -411,7 +411,11 @@ void EC_GraphicsViewCanvas::UpdateTexture()
     // Apply the texture onto the material. The material may change at runtime, so re-apply to retain the binding at all times.
     Ogre::MaterialPtr material = OgreMaterial();
     if (material.get() && !textureAsset->ogreTexture.isNull())
+    {
+        if (material->getTechnique(0)->getPass(0)->getNumTextureUnitStates() == 0) // No texture unit states - create one
+            material->getTechnique(0)->getPass(0)->createTextureUnitState();
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(textureAsset->ogreTexture->getName());
+    }
 
     textureAsset->SetContents(paintTarget->target.width(), paintTarget->target.height(), (const u8*)paintTarget->target.bits(),
         paintTarget->target.width() * paintTarget->target.height() * 4, Ogre::PF_A8R8G8B8, false, true, false);
