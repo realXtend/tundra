@@ -307,8 +307,9 @@ EntityList PhysicsWorld::ObbCollisionQuery(const OBB &obb, int collisionGroup, i
     btBoxShape box(obb.HalfSize()); // Note: Bullet uses box halfsize
     float3x3 m(obb.axis[0], obb.axis[1], obb.axis[2]);
     btTransform t1(m.ToQuat(), obb.CenterPoint());
-    
+#include "DisableMemoryLeakCheck.h"
     btRigidBody* tempRigidBody = new btRigidBody(1.0f, 0, &box);
+#include "EnableMemoryLeakCheck.h"
     tempRigidBody->setWorldTransform(t1);
     world_->addRigidBody(tempRigidBody, collisionGroup, collisionMask);
     tempRigidBody->activate(); // To make sure we get collision results from static sleeping rigidbodies, activate the temp rigid body
