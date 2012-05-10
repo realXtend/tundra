@@ -1,0 +1,181 @@
+fragment_program stencil_glow_ps_glsl glsl
+{
+	source ps_stencil_glow.glsl
+
+}
+
+material stencil_glow
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			depth_check on
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_glsl 
+			{
+				param_named_auto time time_0_x 100
+				param_named alpha_value float 1.0
+			}
+		}
+		
+	}
+}
+
+
+material stencil_alpha_glow
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			depth_check on
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_glsl 
+			{
+				param_named_auto time time_0_x 100
+				param_named alpha_value float 0.0
+			}
+		}
+
+		pass
+		{
+			scene_blend alpha_blend
+			depth_check on
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_glsl 
+			{
+				param_named_auto time time_0_x 100
+				param_named alpha_value float 0.0
+			}
+			
+		}
+		
+	}
+}
+
+material stencil_no_depth_check_glow
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			depth_check off
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_glsl 
+			{
+				param_named_auto time time_0_x 100
+				param_named alpha_value float 0.4
+			}
+		}
+	
+	}
+}
+
+
+fragment_program stencil_glow_ps_cg cg
+{
+	source ps_stencil_glow.cg
+	entry_point main
+	profiles ps_2_0 arbfp1	
+	
+
+
+}
+
+material cg/stencil_glow
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			depth_check on
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_cg 
+			{
+				param_named alpha_value float 0.4
+				param_named_auto time time_0_x 100
+			}
+		}
+		
+	}
+}
+
+
+
+material cg/stencil_alpha_glow
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			depth_check on
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_cg 
+			{
+				param_named_auto time time_0_x 100
+				param_named alpha_value float 0.0
+			}
+		}
+		
+	pass
+		{
+			scene_blend alpha_blend
+			depth_check on
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_cg 
+			{
+				param_named_auto time time_0_x 100
+				param_named alpha_value float 0.0
+			}
+		}		
+		
+	}
+}
+
+material cg/stencil_no_depth_check_glow
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			depth_check off
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_cg 
+			{
+				param_named_auto time time_0_x 100
+				param_named alpha_value float 0.4
+			}
+		}
+		
+		pass
+		{
+			scene_blend alpha_blend
+			depth_check off
+			lighting off
+			
+			fragment_program_ref stencil_glow_ps_cg 
+			{
+				param_named_auto time time_0_x 100
+				param_named alpha_value float 0.4
+			}
+		}
+	
+	}
+}
+
+
