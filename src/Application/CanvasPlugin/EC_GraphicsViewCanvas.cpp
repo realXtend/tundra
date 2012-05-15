@@ -355,7 +355,7 @@ void EC_GraphicsViewCanvas::SendMouseEvent(QEvent::Type type, const QPointF &poi
 
 void EC_GraphicsViewCanvas::OnMaterialChanged(uint materialIndex, const QString &materialName)
 {
-    EC_Mesh *mesh = ParentEntity()->GetComponent<EC_Mesh>().get();
+    EC_Mesh *mesh = ParentEntity() ? ParentEntity()->GetComponent<EC_Mesh>().get() : 0;
     if (mesh && materialIndex == submesh.Get())
     {
         OgreMaterialAssetPtr material = mesh->MaterialAsset(materialIndex);
@@ -367,7 +367,7 @@ void EC_GraphicsViewCanvas::OnMaterialChanged(uint materialIndex, const QString 
             // Prevent infinite loop
             disconnect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(OnMaterialChanged(uint, const QString &)));
             mesh->SetMaterial(materialIndex, newMaterial->Name());
-            connect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(OnMaterialChanged(uint, const QString &)));
+            connect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(OnMaterialChanged(uint, const QString &)), Qt::UniqueConnection);
 
             UpdateTexture();
         }
