@@ -20,6 +20,7 @@ del audiod.dll
 del OpenJPEGd.dll
 del xmlrpcepid.dll
 del QtSolutions_PropertyBrowser-2.5d.dll
+del QtSolutions_PropertyBrowser-headd.dll
 del QtPropertyBrowserd.dll
 del liboggd.dll
 del libvorbisd.dll

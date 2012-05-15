@@ -117,7 +117,7 @@ void SceneSyncState::MarkPendingEntityDirty(entity_id_t id)
     if (!HasPendingEntity(id))
         return;
 
-    EntitySyncState& entityState = MarkEntityDirtySilent(id);
+    MarkEntityDirtySilent(id);
     RemovePendingEntity(id);
 }
 

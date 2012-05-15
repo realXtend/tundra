@@ -232,18 +232,23 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
 
                 EC_Mesh *mesh = entity->GetComponent<EC_Mesh>().get();
                 boost::shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh ? mesh->MeshAsset() : boost::shared_ptr<OgreMeshAsset>();
-                if (!ogreMeshAsset)
-                    continue;
-
-                Ray localRay = worldToLocal * ray;
-                float oldLength = localRay.dir.Normalize();
-                if (oldLength == 0)
-                    continue;
-                r = ogreMeshAsset->Raycast(localRay);
-                hit = r.t < std::numeric_limits<float>::infinity();
-                r.pos = localToWorld.MulPos(r.pos);
-                r.normal = localToWorld.MulDir(r.normal);
-                r.t = r.pos.Distance(ray.pos); ///\todo Can optimize out a sqrt.
+                if (ogreMeshAsset)
+                {
+                    Ray localRay = worldToLocal * ray;
+                    float oldLength = localRay.dir.Normalize();
+                    if (oldLength == 0)
+                        continue;
+                    r = ogreMeshAsset->Raycast(localRay);
+                    hit = r.t < std::numeric_limits<float>::infinity();
+                    r.pos = localToWorld.MulPos(r.pos);
+                    r.normal = localToWorld.MulDir(r.normal);
+                    r.t = r.pos.Distance(ray.pos); ///\todo Can optimize out a sqrt.
+                }
+                else
+                {
+                    // No mesh asset available, probably hit terrain? EC_Mesh::Raycast still applicable.
+                    hit = EC_Mesh::Raycast(meshEntity, ray, &r.t, &r.submeshIndex, &r.triangleIndex, &r.pos, &r.normal, &r.uv);
+                }
             }
 
             if (hit && (closestDistance < 0.0f || r.t < closestDistance))

@@ -57,15 +57,32 @@ public:
     /// Force immediate exit, with no possibility to cancel it
     void ForceExit();
 
-    /// Returns true if framework is in the process of exiting (will exit at next possible opportunity)
-    bool IsExiting() const { return exitSignal; }
-
 #ifdef PROFILING
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
     Profiler *GetProfiler() const;
 #endif
+
     /// Returns the main QApplication
     Application *App() const;
+
+    /// Registers the system Renderer object.
+    /** @note Please don't use this function. Called only by the OgreRenderingModule which implements the rendering subsystem. */
+    void RegisterRenderer(IRenderer *renderer);
+
+    /// Returns the system Renderer object.
+    /** @note Please don't use this function. It exists for dependency inversion purposes only.
+        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
+        as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation. */
+    IRenderer *Renderer() const;
+
+    /// Stores the Framework instance. Call this inside each plugin DLL main function that will have a copy of the static instance pointer.
+    static void SetInstance(Framework *fw) { instance = fw; }
+
+    /// Returns the global Framework instance.
+    /** @note DO NOT CALL THIS FUNCTION. Every point where this function is called will cause a serious portability issue when we intend
+        to run multiple instances inside a single process (inside a browser memory space). This function is intended to serve only for 
+        carefully crafted re-entrant code (currently only logging and profiling). */
+    static Framework *Instance() { return instance; }
 
 public slots:
     /// Returns the core API UI object.
@@ -106,25 +123,6 @@ public slots:
         @todo Delete/simplify. */
     VersionInfo *ApplicationVersion() const;
 
-    /// Registers the system Renderer object.
-    /** @note Please don't use this function. Called only by the OgreRenderingModule which implements the rendering subsystem. */
-    void RegisterRenderer(IRenderer *renderer);
-
-    /// Returns the system Renderer object.
-    /** @note Please don't use this function. It exists for dependency inversion purposes only.
-        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
-        as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation. */
-    IRenderer *Renderer() const;
-
-    /// Stores the Framework instance. Call this inside each plugin DLL main function that will have a copy of the static instance pointer.
-    static void SetInstance(Framework *fw) { instance = fw; }
-
-    /// Returns the global Framework instance.
-    /** @note DO NOT CALL THIS FUNCTION. Every point where this function is called will cause a serious portability issue when we intend
-        to run multiple instances inside a single process (inside a browser memory space). This function is intended to serve only for 
-        carefully crafted re-entrant code (currently only logging and profiling). */
-    static Framework *Instance() { return instance; }
-
     /// Returns raw module pointer.
     /** @param name Name of the module.
         @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it. */
@@ -135,6 +133,9 @@ public slots:
 
     /// Signals the framework to exit
     void Exit();
+
+    /// Returns true if framework is in the process of exiting (will exit at next possible opportunity)
+    bool IsExiting() const { return exitSignal; }
 
     /// Returns whether or not the command line arguments contain a specific value.
     /** @param value Key or value with possible prefixes, case-insensitive. */

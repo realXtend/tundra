@@ -44,6 +44,9 @@ cp -R $qtlibdir/QtWebKit.framework $frameworksdir
 cp -R $qtlibdir/QtSvg.framework $frameworksdir
 cp -R $qtlibdir/QtSql.framework $frameworksdir
 
+#TODO Remove this.
+cp -R $qtlibdir/QtDeclarative.framework $frameworksdir
+
 echo "Deploying Qt plugins from $qtpluginsdir to app bundle."
 cp -R $qtpluginsdir/* $bundledir/Contents/Plugins
 
