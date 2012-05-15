@@ -31,9 +31,15 @@ void AvatarModule::Load()
 {
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Avatar>));
     if (!framework_->IsHeadless())
+    {
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("AvatarAttachment")));
+    }
     else
+    {
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Avatar")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("AvatarAttachment")));
+    }
 }
 
 void AvatarModule::Initialize()
@@ -52,11 +58,17 @@ void AvatarModule::EditAvatar(const QString &entityName)
 {
     Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
-        return;// ConsoleResultFailure("No scene");
+    {
+        LogError("AvatarModule::EditAvatar: No scene");
+        return;
+    }
     EntityPtr entity = scene->GetEntityByName(entityName);
     if (!entity)
-        return;// ConsoleResultFailure("No such entity " + entityName.toStdString());
-    
+    {
+        LogError("No such entity " + entityName.toStdString());
+        return;
+    }
+
     /// \todo Clone the avatar asset for editing
     /// \todo Allow avatar asset editing without an avatar entity in the scene
     avatarEditor->SetEntityToEdit(entity);

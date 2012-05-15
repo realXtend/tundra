@@ -80,11 +80,14 @@ public slots:
     /// Remove an attachment
     /** @param index The index of the attachment in attachments_ to be removed. */
     void RemoveAttachment(uint index);
+    /// Add an attachment
+    /** @param data The attachment to be added to the avatar, as a raw QString.*/
+    void AddAttachment(QString data);
     /// Return whether a property exists
     bool HasProperty(const QString &name) const;
     /// Return property value, or empty if does not exist
     const QString& GetProperty(const QString& value);
-    
+
 signals:
     /// Mesh, skeleton, mesh materials or attachment meshes have changed. The entity using this avatar desc should refresh its appearance completely
     void AppearanceChanged();

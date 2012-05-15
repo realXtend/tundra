@@ -1606,6 +1606,7 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
         QString assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef->Get());
         LogDebug("Creating AssetsWindow for asset type " + assetType);
         AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
+        connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
         connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
         connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
         assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -1865,6 +1866,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     LogDebug("OpenAssetsWindow, index " + ToString(currentIndex));
     LogDebug("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
+    connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
