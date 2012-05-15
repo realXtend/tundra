@@ -1,0 +1,40 @@
+uniform sampler2D scene: register(s0);
+uniform sampler2D blurX: register(s1);
+uniform float4 invTexSize;
+uniform float GlowBrightness;
+uniform float GlowBlurSize;
+
+float4 GlowA_fp(float2 uv: TEXCOORD0) : COLOR
+{
+	float4 colour = float4(0);
+	float blurSize = GlowBlurSize * invTexSize.x;
+
+	//X-blur.
+	colour += tex2D(scene, float2(uv.x - 3.0*blurSize, uv.y)) * 1.0/16.0;
+	colour += tex2D(scene, float2(uv.x - 2.0*blurSize, uv.y)) * 2.0/16.0;
+	colour += tex2D(scene, float2(uv.x - blurSize, uv.y)) * 3.0/16.0;
+	colour += tex2D(scene, float2(uv.x, uv.y)) * 4.0/16.0;
+	colour += tex2D(scene, float2(uv.x + blurSize, uv.y)) * 3.0/16.0;
+	colour += tex2D(scene, float2(uv.x + 2.0*blurSize, uv.y)) * 2.0/16.0;
+	colour += tex2D(scene, float2(uv.x - 3.0*blurSize, uv.y)) * 1.0/16.0;
+
+	return colour;
+}
+
+float4 GlowB_fp(float2 uv: TEXCOORD0) : COLOR
+{
+	float4 colour = float4(0);
+	float blurSize = GlowBlurSize * invTexSize.y;
+
+	//Y-blur.
+	colour += tex2D(blurX, float2(uv.x, uv.y - 3.0*blurSize)) * 1.0/16.0;
+	colour += tex2D(blurX, float2(uv.x, uv.y - 2.0*blurSize)) * 2.0/16.0;
+	colour += tex2D(blurX, float2(uv.x, uv.y - blurSize)) * 3.0/16.0;
+	colour += tex2D(blurX, float2(uv.x, uv.y)) * 4.0/16.0;
+	colour += tex2D(blurX, float2(uv.x, uv.y + blurSize)) * 3.0/16.0;
+	colour += tex2D(blurX, float2(uv.x, uv.y + 2.0*blurSize)) * 2.0/16.0;
+	colour += tex2D(blurX, float2(uv.x, uv.y + 3.0*blurSize)) * 1.0/16.0;
+
+	//Add this to original, return.
+	return tex2D(scene, uv) + colour * GlowBrightness;
+}

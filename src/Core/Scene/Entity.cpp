@@ -12,6 +12,7 @@
 #include "IComponent.h"
 #include "CoreStringUtils.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include <QDomDocument>
 
@@ -578,6 +579,8 @@ void Entity::Exec(EntityAction::ExecTypeField type, const QString &action, const
 
 void Entity::Exec(EntityAction::ExecTypeField type, const QString &action, const QStringList &params)
 {
+    PROFILE(Entity_ExecEntityAction);
+    
     EntityAction *act = Action(action);
     if ((type & EntityAction::Local) != 0)
     {

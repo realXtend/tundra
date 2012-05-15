@@ -431,6 +431,11 @@ void EC_RigidBody::getWorldTransform(btTransform &worldTrans) const
 
 void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
 {
+    /// \todo For a large scene, applying the changed transforms of rigid bodies is slow (slower than the physics simulation itself,
+    /// or handling collisions) due to the large number of Qt signals being fired.
+    
+    PROFILE(EC_RigidBody_SetWorldTransform);
+    
     // Cannot modify server-authoritative physics object, rather get the transform changes through placeable attributes
     const bool hasAuthority = HasAuthority();
     if (!hasAuthority && !clientExtrapolating)
@@ -474,8 +479,15 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     // Set linear & angular velocity
     if (body_)
     {
-        linearVelocity.Set(body_->getLinearVelocity(), changeType);
-        angularVelocity.Set(RadToDeg(body_->getAngularVelocity()), changeType);
+        // Performance optimization: because applying each attribute causes signals to be fired, which is slow in a large scene
+        // (and furthermore, on a server, causes each connection's sync state to be accessed), do not set the linear/angular
+        // velocities if they haven't changed
+        float3 linearVel = body_->getLinearVelocity();
+        float3 angularVel = RadToDeg(body_->getAngularVelocity());
+        if (!linearVel.Equals(linearVelocity.Get()))
+            linearVelocity.Set(linearVel, changeType);
+        if (!angularVel.Equals(angularVelocity.Get()))
+            angularVelocity.Set(angularVel, changeType);
     }
     
     disconnected_ = false;
@@ -773,6 +785,8 @@ void EC_RigidBody::RequestMesh()
 
 void EC_RigidBody::UpdateScale()
 {
+   PROFILE(EC_RigidBody_UpdateScale);
+    
    float3 sizeVec = size.Get();
     // Sanitize the size
     if (sizeVec.x < 0)

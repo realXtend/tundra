@@ -170,7 +170,11 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
     cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
     cmdLineDescs.commands["--hide_benign_ogre_messages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
-
+    cmdLineDescs.commands["--no_async_asset_load"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
+    cmdLineDescs.commands["--autodxtcompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
+    cmdLineDescs.commands["--maxtexturesize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
+    cmdLineDescs.commands["--variablephysicsstep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
+    
     apiVersionInfo = new VersionInfo(Application::Version());
     applicationVersionInfo = new VersionInfo(Application::Version());
 
@@ -589,6 +593,7 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
 
 bool Framework::HasCommandLineParameter(const QString &value) const
 {
+    ///\todo Convert startupOptions to a key-value map.
     for(int i = 0; i < startupOptions.size(); ++i)
         if (!startupOptions[i].compare(value, Qt::CaseInsensitive))
             return true;
@@ -597,6 +602,8 @@ bool Framework::HasCommandLineParameter(const QString &value) const
 
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
+    ///\todo Remove all this logic. This is Win32-specific command line parsing, and should be done only once for Win32,
+    /// and stored in an already processed format for faster retrieval.
     QStringList ret;
     for(int i = 0; i+1 < startupOptions.size(); ++i)
     {

@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneInteract.cpp
- *  @brief  Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneInteract.cpp
+    @brief  Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals. */
 
 #include "StableHeaders.h"
 #include "SceneInteract.h"

@@ -13,7 +13,7 @@ class KeyEvent : public QObject
 {
     Q_OBJECT
     Q_ENUMS(EventType)
-    Q_PROPERTY(EventType eventType READ GetEventType)
+    Q_PROPERTY(EventType eventType READ Type)
     Q_PROPERTY(QKeySequence sequence READ Sequence)
     Q_PROPERTY(QString text READ Text)
     Q_PROPERTY(unsigned long modifiers READ Modifiers)
@@ -85,11 +85,9 @@ public:
     unsigned long Modifiers() const { return modifiers; }
     int KeyPressCount() const { return keyPressCount; }
     Qt::Key KeyCode() const { return keyCode; }
+    EventType Type() const { return eventType; }
 
 public slots:
-    /// @todo Make non-slot; exposed as Q_PROPERTY
-    EventType GetEventType() const { return eventType; }
-
     /// Marks this event as having been handled already, which will suppress this event from
     /// going on to lower input context levels.
     void Suppress() { handled = true; }
@@ -112,6 +110,7 @@ public slots:
     /// Returns the pressed key with the modifier bits in it.
     int KeyWithModifier() const { return (int)keyCode | (int)modifiers; }
 
-    /// \todo Temp func: Python keyCode is broken, this is a temp getter to make inputcontext keyevent work again in python.
+    /// @todo Remove Temp func: Python keyCode is broken, this is a temp getter to make inputcontext keyevent work again in python.
     int keyCodeInt() const { return (int)keyCode; }
+    KeyEvent::EventType GetEventType() const { return Type(); } /**< @deprecated Use Type or 'eventType' instead. @todo Remove */
 };

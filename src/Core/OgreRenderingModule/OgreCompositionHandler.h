@@ -125,7 +125,7 @@ private:
 
     /// Framelistener for gaussian blur
     GaussianListener gaussian_listener_;
-
+    
     /// Stores priorities for compositors. Compositor name is used for the key to make sure each compositor only has one priority.
     std::map<std::string, int> priorities_;
 };

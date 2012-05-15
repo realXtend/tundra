@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #define MATH_BULLET_INTEROP
 #include "DebugOperatorNew.h"
-#include "btBulletDynamicsCommon.h"
+
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
@@ -13,9 +13,46 @@
 #include "EC_RigidBody.h"
 #include "LoggingFunctions.h"
 #include "Geometry/LineSegment.h"
+#include "Geometry/OBB.h"
+#include "Math/float3x3.h"
+#include "Math/Quat.h"
+#include "Entity.h"
+
+#include <btBulletDynamicsCommon.h>
 
 #include <Ogre.h>
+
 #include "MemoryLeakCheck.h"
+
+namespace
+{
+
+struct CollisionSignal
+{
+    EC_RigidBody *bodyA;
+    EC_RigidBody *bodyB;
+    float3 position;
+    float3 normal;
+    float distance;
+    float impulse;
+    bool newCollision;
+};
+
+struct ObbCallback : public btCollisionWorld::ContactResultCallback
+{
+    ObbCallback(std::set<btCollisionObject*>& result) : result_(result) {}
+
+    virtual btScalar addSingleResult(btManifoldPoint &, const btCollisionObject *colObj0, int, int, const btCollisionObject *colObj1, int, int)
+    {
+        result_.insert(const_cast<btCollisionObject*>(colObj0));
+        result_.insert(const_cast<btCollisionObject*>(colObj1));
+        return 0.0f;
+    }
+    
+    std::set<btCollisionObject*>& result_;
+};
+
+} // ~unnamed namespace
 
 namespace Physics
 {
@@ -25,7 +62,7 @@ void TickCallback(btDynamicsWorld *world, btScalar timeStep)
     static_cast<Physics::PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
 }
 
-PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
+PhysicsWorld::PhysicsWorld(const ScenePtr &scene, bool isClient) :
     scene_(scene),
     collisionConfiguration_(0),
     collisionDispatcher_(0),
@@ -37,6 +74,7 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
     isClient_(isClient),
     runPhysics_(true),
     drawDebugManuallySet_(false),
+    useVariableTimestep_(false),
     debugDrawMode_(0),
     cachedOgreWorld_(0)
 {
@@ -47,6 +85,9 @@ PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
     world_ = new btDiscreteDynamicsWorld(collisionDispatcher_, broadphase_, solver_, collisionConfiguration_);
     world_->setDebugDrawer(this);
     world_->setInternalTickCallback(TickCallback, (void*)this, false);
+
+    if (scene->GetFramework()->HasCommandLineParameter("--variablephysicsstep"))
+        useVariableTimestep_ = true;
 }
 
 PhysicsWorld::~PhysicsWorld()
@@ -98,33 +139,32 @@ void PhysicsWorld::Simulate(f64 frametime)
     
     {
         PROFILE(Bullet_stepSimulation); ///\note Do not delete or rename this PROFILE() block. The DebugStats profiler uses this string as a label to know where to inject the Bullet internal profiling data.
-        world_->stepSimulation((float)frametime, maxSubSteps_, physicsUpdatePeriod_);
+        
+        // Use variable timestep if enabled, and if frame timestep exceeds the single physics simulation substep
+        if (useVariableTimestep_ && frametime > physicsUpdatePeriod_)
+        {
+            float clampedTimeStep = (float)frametime;
+            if (clampedTimeStep > 0.1f)
+                clampedTimeStep = 0.1f; // Advance max. 1/10 sec. during one frame
+            world_->stepSimulation(clampedTimeStep, 0, clampedTimeStep);
+        }
+        else
+            world_->stepSimulation((float)frametime, maxSubSteps_, physicsUpdatePeriod_);
     }
     
     // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
     // However, do not do this if user has used the physicsdebug console command
     if (!drawDebugManuallySet_)
     {
-        if ((!IsDebugGeometryEnabled()) && (!debugRigidBodies_.empty()))
+        if (!IsDebugGeometryEnabled() && !debugRigidBodies_.empty())
             SetDebugGeometryEnabled(true);
-        if ((IsDebugGeometryEnabled()) && (debugRigidBodies_.empty()))
+        if (IsDebugGeometryEnabled() && debugRigidBodies_.empty())
             SetDebugGeometryEnabled(false);
     }
     
     if (IsDebugGeometryEnabled())
         DrawDebugGeometry();
 }
-
-struct CollisionSignal
-{
-    EC_RigidBody *bodyA;
-    EC_RigidBody *bodyB;
-    float3 position;
-    float3 normal;
-    float distance;
-    float impulse;
-    bool newCollision;
-};
 
 void PhysicsWorld::ProcessPostTick(float substeptime)
 {
@@ -257,6 +297,39 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
     return &result;
 }
 
+EntityList PhysicsWorld::ObbCollisionQuery(const OBB &obb, int collisionGroup, int collisionMask)
+{
+    PROFILE(PhysicsWorld_ObbCollisionQuery);
+    
+    std::set<btCollisionObject*> objects;
+    EntityList entities;
+    
+    btBoxShape box(obb.HalfSize()); // Note: Bullet uses box halfsize
+    float3x3 m(obb.axis[0], obb.axis[1], obb.axis[2]);
+    btTransform t1(m.ToQuat(), obb.CenterPoint());
+#include "DisableMemoryLeakCheck.h"
+    btRigidBody* tempRigidBody = new btRigidBody(1.0f, 0, &box);
+#include "EnableMemoryLeakCheck.h"
+    tempRigidBody->setWorldTransform(t1);
+    world_->addRigidBody(tempRigidBody, collisionGroup, collisionMask);
+    tempRigidBody->activate(); // To make sure we get collision results from static sleeping rigidbodies, activate the temp rigid body
+    
+    ObbCallback resultCallback(objects);
+    world_->contactTest(tempRigidBody, resultCallback);
+    
+    for (std::set<btCollisionObject*>::iterator i = objects.begin(); i != objects.end(); ++i)
+    {
+        EC_RigidBody* body = static_cast<EC_RigidBody*>((*i)->getUserPointer());
+        if (body && body->ParentEntity())
+            entities.push_back(body->ParentEntity()->shared_from_this());
+    }
+    
+    world_->removeRigidBody(tempRigidBody);
+    delete tempRigidBody;
+    
+    return entities;
+}
+
 void PhysicsWorld::SetDebugGeometryEnabled(bool enable)
 {
     if (scene_.expired() || !scene_.lock()->ViewEnabled() || IsDebugGeometryEnabled() == enable)
@@ -302,4 +375,3 @@ void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const bt
 }
 
 } // ~Physics
-
