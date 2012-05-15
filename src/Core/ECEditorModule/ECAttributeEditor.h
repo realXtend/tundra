@@ -310,6 +310,8 @@ private slots:
     void OpenEditor();
 
 private:
+    bool IsAssetEditorAvailable() const;
+
     Framework *fw;
     QMap<ComponentWeakPtr, AssetReference> originalValues;
 };
@@ -339,6 +341,8 @@ private slots:
     void OpenEditor();
 
 private:
+    bool IsAssetEditorAvailable() const;
+
     Framework *fw;
     int currentIndex;
     QMap<ComponentWeakPtr, AssetReferenceList> originalValues;
