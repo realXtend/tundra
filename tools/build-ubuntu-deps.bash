@@ -154,6 +154,9 @@ else
         echo "$what does not exist. Cloning a new copy..."
         hg clone https://bitbucket.org/clb/ogre-safe-nocrashes
     fi
+    if tty > /dev/null; then
+	sudo apt-get build-dep libogre-dev
+    fi
     cd $what
     hg checkout v1-8 # Make sure we are in the right branch
     mkdir -p $what-build
