@@ -17,6 +17,50 @@
 #include <QSslCipher>
 #include <QMutexLocker>
 
+#ifdef Q_OS_UNIX
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#endif
+
+#ifdef Q_OS_WIN
+
+#include "delayimp.h"
+#include "Qos2.h"
+
+static HANDLE TryLoadQoS() 
+{
+    HANDLE handle = NULL;
+    HRESULT hr = E_FAIL;
+
+    __try 
+    {
+        hr = __HrLoadAllImportsForDll("qwave.dll");
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER) 
+    {
+        hr = E_FAIL;
+    }
+
+    if (! SUCCEEDED(hr)) 
+        LogInfo("[MumbleNetworkHandler]: Failed to load qWave.dll, no QoS available.");
+    else 
+    {
+        QOS_VERSION qvVer;
+        qvVer.MajorVersion = 1;
+        qvVer.MinorVersion = 0;
+
+        if (!QOSCreateHandle(&qvVer, &handle)) 
+        {
+            LogWarning("[MumbleNetworkHandler]: Failed to create QOS2 handle.");
+            handle = NULL;
+        }
+    }
+    return handle;
+}
+#endif
+
 using namespace MumbleNetwork;
 
 MumbleNetworkHandler::MumbleNetworkHandler(QString address, ushort port, QString username, QString password) :
@@ -34,6 +78,12 @@ MumbleNetworkHandler::MumbleNetworkHandler(QString address, ushort port, QString
     connectionInfo.port = port;
     connectionInfo.username = username;
     connectionInfo.password = password;
+    
+#ifdef Q_OS_WIN
+    dwFlowTCP = 0;
+    dwFlowUDP = 0;
+    hQoS = TryLoadQoS();
+#endif
 }
 
 MumbleNetworkHandler::~MumbleNetworkHandler()
@@ -100,6 +150,19 @@ void MumbleNetworkHandler::run()
 
     if (tcp && tcp->isOpen())
         tcp->close();
+        
+    // Remove QoS
+#ifdef Q_OS_WIN
+    if (hQoS != NULL)
+    {
+        if (dwFlowUDP && !QOSRemoveSocketFromFlow(hQoS, 0, dwFlowUDP, 0))
+            LogWarning(LC + "Failed to remove UDP flow from QoS.");
+        dwFlowUDP = 0;
+        if (dwFlowTCP && !QOSRemoveSocketFromFlow(hQoS, 0, dwFlowTCP, 0))
+            LogWarning(LC + "Failed to remove TCP flow from QoS.");
+        dwFlowTCP = 0;
+    }
+#endif
 
     // Note that tcp and udp objects are freed by Qt parenting.
 }
@@ -169,50 +232,78 @@ bool MumbleNetworkHandler::InitUDP()
 
     connect(udp, SIGNAL(readyRead()), this, SLOT(OnUDPSocketRead()));
 
-    /// @todo Checkout TOS/QoS later to describe the UDP channel is for voice data!
-    /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa374027(v=vs.85).aspx
+    // Set TOS/QoS to describe the UDP socket it is for voice data!
     
 #if defined(Q_OS_UNIX)
-/*
+// If you enable this code, also check out InitUDP() that has similar set of code commented out.
     int val = 0xe0;
-    if (setsockopt(qusUdp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val))) 
+    if (setsockopt(udp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val))) 
     {
         val = 0x80;
-        if (setsockopt(qusUdp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val)))
-            qWarning("ServerHandler: Failed to set TOS for UDP Socket");
+        if (setsockopt(udp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val)))
+            LogWarning(LC + "Failed to set TOS for UDP Socket");
     }
-#if defined(SO_PRIORITY) // NOT DEFINED IN TUNDRA
+#if defined(SO_PRIORITY) // NOT DEFINED IN TUNDRA, http://linux.die.net/man/7/socket
     socklen_t optlen = sizeof(val);
-    if (getsockopt(qusUdp->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, &optlen) == 0) 
+    if (getsockopt(udp->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, &optlen) == 0) 
     {
         if (val == 0) 
         {
             val = 6;
-            setsockopt(qusUdp->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, sizeof(val));
+            setsockopt(udp->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, sizeof(val));
         }
     }
 #endif
-*/
+
 #elif defined(Q_OS_WIN)
-/*
-    if (hQoS != NULL) 
+    if (hQoS != NULL)
     {
         struct sockaddr_in addr;
         memset(&addr, 0, sizeof(addr));
         addr.sin_family = AF_INET;
-        addr.sin_port = htons(usPort);
-        addr.sin_addr.s_addr = htonl(qhaRemote.toIPv4Address());
+        addr.sin_port = htons(udpInfo.port);
+        addr.sin_addr.s_addr = htonl(udpInfo.host.toIPv4Address());
         dwFlowUDP = 0;
-        if (!QOSAddSocketToFlow(hQoS, qusUdp->socketDescriptor(), reinterpret_cast<sockaddr*>(&addr), QOSTrafficTypeVoice, QOS_NON_ADAPTIVE_FLOW, &dwFlowUDP))
-            qWarning("ServerHandler: Failed to add UDP to QOS");
+        if (!QOSAddSocketToFlow(hQoS, udp->socketDescriptor(), reinterpret_cast<sockaddr*>(&addr), QOSTrafficTypeVoice, QOS_NON_ADAPTIVE_FLOW, &dwFlowUDP))
+            LogWarning(LC + "Failed to add UDP flow to QOS.");
     }
-*/
 #endif
     return true;
 }
 
 void MumbleNetworkHandler::OnConnected()
 {
+    // Set TOS/QoS to describe the TCP socket it's priority!
+    
+#if defined(Q_OS_WIN)
+    // Already initialized or qos not available via qwave.dll delayed loading.
+    if (dwFlowTCP || hQoS == NULL)
+        return;
+
+    dwFlowTCP = 0;
+    if (!QOSAddSocketToFlow(hQoS, tcp->socketDescriptor(), NULL, QOSTrafficTypeAudioVideo, QOS_NON_ADAPTIVE_FLOW, &dwFlowTCP))
+        LogWarning(LC + "Failed to add TCP flow to QOS.");
+#elif defined(Q_OS_UNIX)
+// If you enable this code, also check out InitUDP() that has similar set of code commented out.
+    int val = 0xa0;
+    if (setsockopt(tcp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val))) {
+        val = 0x60;
+        if (setsockopt(tcp->socketDescriptor(), IPPROTO_IP, IP_TOS, &val, sizeof(val)))
+            LogWarning(LC + "Failed to set TOS for TCP Socket");
+    }
+#if defined(SO_PRIORITY)
+    socklen_t optlen = sizeof(val);
+    if (getsockopt(tcp->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, &optlen) == 0) {
+        if (val == 0) {
+            val = 6;
+            setsockopt(tcp->socketDescriptor(), SOL_SOCKET, SO_PRIORITY, &val, sizeof(val));
+        }
+    }
+
+#endif
+
+#endif
+
     MumbleProto::Version messageVersion;
     messageVersion.set_release(utf8(Application::FullIdentifier()));
     messageVersion.set_os(utf8(Application::Platform()));

@@ -62,10 +62,12 @@ VlcVideoWidget::VlcVideoWidget(const QList<QByteArray> &args) :
         this);
 
     // Initialize rendering
-    idleLogo_ = QImage(":/images/vlc-cone.png");
+    //idleLogo_ = QImage(":/images/vlc-cone.png");
+    idleLogo_ = QImage(":/images/play-video.png");
     idleLogo_ = idleLogo_.convertToFormat(QImage::Format_ARGB32);
 
-    audioLogo_ = QImage(":/images/audio.png");
+    //audioLogo_ = QImage(":/images/audio.png");
+    audioLogo_ = QImage(":/images/play-audio.png");
     audioLogo_ = audioLogo_.convertToFormat(QImage::Format_ARGB32);
     
     pausePixmap_ = QPixmap(":/images/pause-big.png");
@@ -375,8 +377,12 @@ void VlcVideoWidget::RestartPlayback()
 
     renderPixmap_ = QImage(status.sourceSize.width(), status.sourceSize.height(), QImage::Format_RGB32);
     libvlc_video_set_format(vlcPlayer_, "RV32", renderPixmap_.width(), renderPixmap_.height(), renderPixmap_.bytesPerLine());
-    
-    Play();
+
+    if (!status.doNotPlayAfterRestart)
+    {
+        Play();
+        status.doNotPlayAfterRestart = false;
+    }
 }
 
 void VlcVideoWidget::StatusPoller()
@@ -450,12 +456,12 @@ void VlcVideoWidget::InternalRender(void* picture)
         // Waiting to determine true size.
         else if (sourceSize.isNull())
         {
-            rgbaBuffer_.fill(Qt::black);
+            rgbaBuffer_.fill(QColor(242,242,242).rgb());
             QPoint centerPos = rgbaBuffer_.rect().center();
             QRect center(centerPos.x() - (bufferingPixmap_.width()/2), centerPos.y() - (bufferingPixmap_.height()/2),
                          bufferingPixmap_.width(), bufferingPixmap_.height());
             QPainter p(&rgbaBuffer_);
-            p.setPen(Qt::white);
+            p.setPen(Qt::black);
             p.drawPixmap(center, bufferingPixmap_, bufferingPixmap_.rect());
             p.drawText(5, 12, "Loading Media");
             p.end();
@@ -689,6 +695,19 @@ void VlcVideoWidget::VlcEventHandler(const libvlc_event_t *event, void *widget)
                 w->status.playing = false;
                 w->status.paused = false;
                 w->status.stopped = false;
+                w->status.change = PlayerStatus::MediaState;
+            }
+
+            if (event->u.media_state_changed.new_state == libvlc_Ended)
+            {
+                w->status.doStop = true;
+                w->status.doNotPlayAfterRestart = true;
+                w->status.doRestart = true;
+                w->status.buffering = false;
+                w->status.playing = false;
+                w->status.paused = false;
+                w->status.stopped = true;
+                w->status.time = 0.0;
                 w->status.change = PlayerStatus::MediaState;
             }
             break;

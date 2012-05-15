@@ -636,6 +636,34 @@ void MumblePlugin::AudioWizardDestroyed()
     emit AudioWizardClosed();
 }
 
+MumbleAudio::AudioSettings MumblePlugin::CurrentSettings()
+{
+    if (audio_ && state.serverSynced)
+        return audio_->GetSettings();
+    else
+        return LoadSettings();
+}
+
+bool MumblePlugin::ApplySettings(MumbleAudio::AudioSettings settings, bool saveToConfig)
+{
+    bool appliedEither = false;
+    
+    // Apply to active audio processor
+    if (audio_ && state.serverSynced)
+    {
+        audio_->ApplySettings(settings);
+        appliedEither = true;
+    }
+    // Store to disk.    
+    if (saveToConfig)
+    {
+        SaveSettings(settings);
+        appliedEither = true;
+    }
+    
+    return appliedEither;
+}
+
 void MumblePlugin::OnConnected(QString address, int port, QString username)
 {
     state.connectionState = MumbleConnected;
