@@ -546,6 +546,30 @@ void AvatarDescAsset::RemoveAttachment(uint index)
         LogError("Failed to remove attachment at index " + QString::number(index) + "! Only " + attachments_.size() + "  attachments exist on the avatar asset!");
 }
 
+void AvatarDescAsset::AddAttachment(QString data)
+{
+    QDomDocument attachDoc("Attachment");
+
+    if (!attachDoc.setContent(data))
+    {
+        LogError("AvatarDescAsset::AddAttachment: Could not parse attachment data");
+        return;
+    }
+
+    QDomElement elem = attachDoc.firstChildElement("attachment");
+
+    if (!elem.isNull())
+    {
+        ReadAttachment(elem);
+        AssetReferencesChanged();
+        emit AppearanceChanged();
+    }
+    else
+    {
+        LogError("AvatarDescAsset::AddAttachment: Null attachment");
+    }
+}
+
 bool AvatarDescAsset::HasProperty(const QString &name) const
 {
     QMap<QString, QString>::const_iterator i = properties_.find(name);
@@ -835,7 +859,7 @@ QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAtt
     elem.appendChild(name_elem);
     
     QDomElement mesh_elem = dest.createElement("mesh");
-    mesh_elem.setAttribute("name", mesh);
+    mesh_elem.setAttribute("name", attachment.mesh_);
     int link = 0;
     if (attachment.link_skeleton_)
         link = 1;
@@ -864,7 +888,7 @@ QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAtt
         QDomElement bone_elem = dest.createElement("bone");
         bone_elem.setAttribute("name", boneName);
         bone_elem.setAttribute("offset", attachment.transform_.position_.SerializeToString().c_str());
-        bone_elem.setAttribute("rotation", attachment.transform_.orientation_.SerializeToString().c_str());
+        bone_elem.setAttribute("rotation", attachment.transform_.orientation_.SerializeToStringWXYZ().c_str());
         bone_elem.setAttribute("scale", attachment.transform_.scale_.SerializeToString().c_str());
 
         avatar_elem.appendChild(bone_elem);
