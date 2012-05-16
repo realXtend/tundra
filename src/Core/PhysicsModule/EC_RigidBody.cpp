@@ -403,6 +403,7 @@ void EC_RigidBody::ReaddBody()
     body_->clearForces();
     body_->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
     body_->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
+    body_->updateInertiaTensor();
     body_->activate();
 }
 
