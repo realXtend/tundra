@@ -874,8 +874,8 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
         sceneDesc = scene->CreateSceneDescFromBinary(data_qt, sceneDesc);
     else
     {
-        LogError("SceneStructureModule::HandleSceneDescLoaded:Somehow other than " + cTundraXmlFileExtension + 
-            " or " + cTundraBinFileExtension + " file got drag and dropped to the scene? Cannot proceed with add content dialog.");
+        LogError("SceneStructureModule::HandleSceneDescLoaded: Somehow other than " + cTundraXmlFileExtension + 
+            " or " + cTundraBinFileExtension + " file got drag-and-dropped to the scene? Cannot proceed with add content dialog.");
         return;
     }
 
@@ -897,12 +897,14 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
 
 void SceneStructureModule::SyncSelectionWithEcEditor(ECEditorWindow *editor)
 {
-    if (sceneWindow && editor && syncedECEditor != editor)
+    if (sceneWindow && editor)
     {
+        if (qobject_cast<ECEditorModule *>(sender()) && syncedECEditor == editor)
+            return;
         // Store a ref to the active editor. We don't want to do this selection
         // logic multiple times for the same editor as its quite expensive for
         // large number of selected entities. This slot will be called upon show() and setFocus()
-        // of the editor when it is created, which the above syncedECEditor != editor protects against.
+        // of the editor when it is created, which the above check protects against.
         syncedECEditor = editor;
 
         sceneWindow->ClearSelectedEntites();
