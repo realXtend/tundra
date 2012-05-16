@@ -617,31 +617,28 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
             }
         }
 
-        // Handle other supported file types
-        QList<Entity *> importedEntities;
-
-        OgreRenderer::Renderer *renderer = framework_->Scene()->MainCameraScene()->GetWorld<OgreWorld>()->Renderer();
-        if (!renderer)
+        Scene *scene = GetFramework()->Scene()->MainCameraScene();
+        if (!scene)
+            return;
+        OgreWorldPtr world = scene->GetWorld<OgreWorld>();
+        if (!world)
             return;
 
+        // Handle other supported file types
+        QList<Entity *> importedEntities;
         float3 worldPos;
-        RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
+        RaycastResult* res = world->Raycast(e->pos().x(), e->pos().y());
         if (!res->entity)
         {
             // No entity hit, use camera's position with hard-coded offset.
-            Scene *scene = GetFramework()->Scene()->MainCameraScene();
-            if (!scene)
-                return;
-
             foreach(const EntityPtr &cam, scene->EntitiesWithComponent(EC_Camera::TypeNameStatic()))
                 if (cam->GetComponent<EC_Camera>()->IsActive())
                 {
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();
                     if (placeable)
                     {
-                        Quat q = placeable->WorldOrientation();
-                        float3 v = q * scene->ForwardVector();
-                        worldPos = placeable->Position() + v * 20;
+                        float3 dir = placeable->WorldOrientation() * scene->ForwardVector();
+                        worldPos = placeable->Position() + dir * 20;
                         break;
                     }
                 }
@@ -751,7 +748,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
 
                         // Add our material asset to scene description
                         AssetDesc ad;
-                        ad.typeName = "material";
+                        ad.typeName = "OgreMaterial";
                         ad.source = materialRef;
                         ad.destinationName = matName;
                         ad.data = materialFile.readAll();
@@ -771,7 +768,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                             foreach(const QString &textureName, textures)
                             {
                                 AssetDesc ad;
-                                ad.typeName = "texture";
+                                ad.typeName = "Texture";
                                 ad.source = dropFolder + textureName;
                                 ad.destinationName = textureName;
                                 ad.dataInMemory = false;
