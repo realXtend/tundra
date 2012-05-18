@@ -451,6 +451,7 @@ void JavascriptInstance::CreateEngine()
 //    debugger.attachTo(engine_);
 ////  debugger_->action(QScriptEngineDebugger::InterruptAction)->trigger();
 //#endif
+    engine_->installTranslatorFunctions();
 
     ExposeQtMetaTypes(engine_);
     ExposeCoreTypes(engine_);
