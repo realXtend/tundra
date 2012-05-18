@@ -1853,6 +1853,9 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
 
     if (file.endsWith(".ui", Qt::CaseInsensitive))
         return "QtUiFile";
+
+    if (file.endsWith(".qm", Qt::CaseInsensitive))
+        return "QtQmFile";
         
     if (file.endsWith(".avatar", Qt::CaseInsensitive))
         return "Avatar";
