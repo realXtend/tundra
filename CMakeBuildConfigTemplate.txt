@@ -85,6 +85,7 @@ if (NOT BUILD_SDK_ONLY)
     AddEntityComponent(EC_PlanarMirror)
     AddEntityComponent(EC_ProximityTrigger)
     AddEntityComponent(EC_LaserPointer)
+    AddEntityComponent(EC_StencilGlow)
 endif()
 
 ###### REQUIRED STATIC FRAMEWORK ######

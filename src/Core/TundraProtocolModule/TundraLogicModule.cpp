@@ -65,6 +65,10 @@
 #include "EC_LaserPointer.h"
 #endif
 
+#ifdef EC_StencilGlow_ENABLED
+#include "EC_StencilGlow.h"
+#endif
+
 #include "MemoryLeakCheck.h"
 
 namespace TundraLogic
@@ -119,6 +123,9 @@ void TundraLogicModule::Load()
 #endif
 #ifdef EC_LaserPointer_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_LaserPointer>));
+#endif
+#ifdef EC_StencilGlow_ENABLED
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_StencilGlow>));
 #endif
 }
 

@@ -32,8 +32,53 @@
 #include "Geometry/Sphere.h"
 
 #include <Ogre.h>
+#include <OgreRenderQueue.h>
+
+// render queue groups
+#define STENCIL_GLOW_ENTITY Ogre::RENDER_QUEUE_MAIN + 1
+#define STENCIL_GLOW_OUTLINE Ogre::RENDER_QUEUE_OVERLAY - 1
+
+#define STENCIL_VALUE_FOR_OUTLINE_GLOW 1
+#define STENCIL_FULL_MASK 0xFFFFFFFF
 
 #include "MemoryLeakCheck.h"
+
+// a Render queue listener to change the stencil mode
+class OgreStencilOpQueueListener : public Ogre::RenderQueueListener
+{
+public:
+	virtual void renderQueueStarted(Ogre::uint8 queueGroupId, const Ogre::String& invocation, bool& skipThisInvocation)
+	{
+		if (queueGroupId == STENCIL_GLOW_ENTITY) // outline glow object
+		{
+			Ogre::RenderSystem * rendersys = Ogre::Root::getSingleton().getRenderSystem();
+
+			rendersys->clearFrameBuffer(Ogre::FBT_STENCIL);
+			rendersys->setStencilCheckEnabled(true);
+			rendersys->setStencilBufferParams(Ogre::CMPF_ALWAYS_PASS,
+                                              STENCIL_VALUE_FOR_OUTLINE_GLOW, STENCIL_FULL_MASK,
+                                              Ogre::SOP_KEEP,Ogre::SOP_KEEP,Ogre::SOP_REPLACE,false);
+		}
+		if (queueGroupId == STENCIL_GLOW_OUTLINE)  // outline glow
+		{
+			Ogre::RenderSystem * rendersys = Ogre::Root::getSingleton().getRenderSystem();
+			rendersys->setStencilCheckEnabled(true);
+			rendersys->setStencilBufferParams(Ogre::CMPF_NOT_EQUAL,
+                                              STENCIL_VALUE_FOR_OUTLINE_GLOW, STENCIL_FULL_MASK,
+                                              Ogre::SOP_KEEP,Ogre::SOP_KEEP,Ogre::SOP_REPLACE,false);
+		}
+	}
+
+	virtual void renderQueueEnded(Ogre::uint8 queueGroupId, const Ogre::String& invocation, bool& repeatThisInvocation)
+	{
+		if (queueGroupId == STENCIL_GLOW_ENTITY || queueGroupId == STENCIL_GLOW_OUTLINE)
+		{
+			Ogre::RenderSystem * rendersys = Ogre::Root::getSingleton().getRenderSystem();
+			rendersys->setStencilCheckEnabled(false);
+			rendersys->setStencilBufferParams();
+		}
+	}
+};
 
 OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     framework_(scene->GetFramework()),
@@ -68,6 +113,9 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
         sceneManager_->getRootSceneNode()->attachObject(debugLinesNoDepth_);
         debugLinesNoDepth_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY);
     }
+
+    mStencilQueueListener = new OgreStencilOpQueueListener();
+    sceneManager_->addRenderQueueListener(mStencilQueueListener);
 
     connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
 }

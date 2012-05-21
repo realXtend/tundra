@@ -23,6 +23,8 @@ class Color;
 
 class QRect;
 
+class OgreStencilOpQueueListener;
+
 /// Contains the Ogre representation of a scene, ie. the Ogre Scene
 class OGRE_MODULE_API OgreWorld : public QObject, public boost::enable_shared_from_this<OgreWorld>
 {
@@ -190,4 +192,6 @@ private:
     DebugLines* debugLines_;
     /// Debug geometry object, no depth testing
     DebugLines* debugLinesNoDepth_;
+
+    OgreStencilOpQueueListener* mStencilQueueListener;
 };
