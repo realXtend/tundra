@@ -692,6 +692,18 @@ namespace OgreRenderer
                 if ((uint)dirty.bottom() > desc.Height) dirty.setBottom(desc.Height);
                 if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
                 if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
+                
+                // If graphics items are moved/animated outside the scene rect some dirty rect(s) can be outside the scene rect, check for it.
+                if (!viewrect.contains(dirty.topLeft()) || !viewrect.contains(dirty.bottomRight()))
+                {
+                    if (viewrect.intersects(dirty))
+                    {
+                        LogWarning(QString("Renderer::Render: Dirty rect %1,%2 %3x%4 not inside view %5,%6 %7x%8, correcting.")
+                            .arg(dirty.x()).arg(dirty.y()).arg(dirty.width()).arg(dirty.height())
+                            .arg(viewrect.x()).arg(viewrect.y()).arg(viewrect.width()).arg(viewrect.height()));
+                        dirty = viewrect.intersected(dirty);
+                    }
+                }
 
                 const int copyableHeight = min<int>(dirty.height(), min<int>(view->BackBuffer()->height() - dirty.top(), desc.Height - dirty.top()));
                 const int copyableWidthBytes = 4*min<int>(dirty.width(), min<int>(view->BackBuffer()->width() - dirty.left(), desc.Width - dirty.left()));
@@ -705,12 +717,14 @@ namespace OgreRenderer
 
                 {
                     PROFILE(LockRect);
-    //                HRESULT hr = surface->LockRect(&lock, 0, D3DLOCK_DISCARD); // for full UI redraw.
+                    //HRESULT hr = surface->LockRect(&lock, 0, D3DLOCK_DISCARD); // for full UI redraw.
                     RECT lockRect = { dirty.left(), dirty.top(), dirty.right(), dirty.bottom() };
                     HRESULT hr = surface->LockRect(&lock, &lockRect, 0);
                     if (FAILED(hr))
                     {
-                        LogError("Renderer::Render: D3D9SURFACE9::LockRect failed!");
+                        LogError(QString("Renderer::Render: D3D9SURFACE9::LockRect failed (view %1,%2 %3x%4 rect %5,%6 %7x%8)")
+                            .arg(viewrect.x()).arg(viewrect.y()).arg(viewrect.width()).arg(viewrect.height())
+                            .arg(dirty.x()).arg(dirty.y()).arg(dirty.width()).arg(dirty.height()));
                         return; // Instead of returning, could try doing a full surface lock. See commented line above.
                     }
                     assert((uint)lock.Pitch >= desc.Width*4);
