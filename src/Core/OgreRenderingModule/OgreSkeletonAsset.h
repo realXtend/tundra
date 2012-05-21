@@ -19,7 +19,7 @@ Q_OBJECT
 public:
     /// Constructor.
     OgreSkeletonAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
-        IAsset(owner, type_, name_)
+        IAsset(owner, type_, name_), loadTicket_(0)
     {
     }
 

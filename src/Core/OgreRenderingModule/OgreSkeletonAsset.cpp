@@ -99,6 +99,9 @@ void OgreSkeletonAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket,
     if (ticket != loadTicket_)
         return;
 
+    // Reset to 0 to mark the asynch request is not active anymore. Aborted in Unload() if it is.
+    loadTicket_ = 0;
+    
     const QString assetRef = Name();
     internal_name_ = AssetAPI::SanitateAssetRef(assetRef).toStdString();
     if (!result.error)
@@ -149,6 +152,14 @@ bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serial
 
 void OgreSkeletonAsset::DoUnload()
 {
+    // If a ongoing asynchronous asset load requested has been made to ogre, we need to abort it.
+    // Otherwise Ogre will crash to our raw pointer that was passed if we get deleted. A ongoing ticket id cannot be 0.
+    if (loadTicket_ != 0)
+    {
+        Ogre::ResourceBackgroundQueue::getSingleton().abortRequest(loadTicket_);
+        loadTicket_ = 0;
+    }
+        
     if (ogreSkeleton.isNull())
         return;
 
