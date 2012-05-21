@@ -53,7 +53,8 @@ public:
     void Run();
 
     /// Register new service to java script engine.
-    void RegisterService(QObject *serviceObject, const QString &name);
+    /** @return Returns if the registration was successful. */
+    bool RegisterService(QObject *serviceObject, const QString &name);
 
     //void SetPrototype(QScriptable *prototype, );
     QScriptEngine* Engine() const { return engine_; }
