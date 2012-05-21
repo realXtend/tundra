@@ -28,7 +28,8 @@ class RedirectedPaintWidget;
     The material at the EC_Mesh at index which @c submesh points to is cloned for the usage of this component.
     Only material with single texture unit supported.
 
-    @todo Keyboard input. */
+    @todo Implement mouse scroll input.
+    @todo Implement keyboard input. */
 class EC_GraphicsViewCanvas : public IComponent
 {
     Q_OBJECT
