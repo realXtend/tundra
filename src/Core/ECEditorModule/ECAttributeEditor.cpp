@@ -458,6 +458,140 @@ template<> void ECAttributeEditor<int>::Set(QtProperty *property)
     }
 }
 
+//-------------------------UINT ATTRIBUTE TYPE-------------------------
+template<> void ECAttributeEditor<unsigned int>::Initialize()
+{
+    ECAttributeEditorBase::PreInitialize();
+    if (useMultiEditor_)
+    {
+        InitializeMultiEditor();
+    }
+    else
+    {
+        ComponentPtr comp = components_[0].lock();
+        IAttribute *attribute = FindAttribute(comp);
+        if (!attribute)
+        {
+            LogError("Could not find attribute by " + name_);
+            return;
+        }
+
+        //Check if int need to have min and max value set and also enum types are presented as a int value.
+        AttributeMetadata *metaData = attribute->Metadata();
+        if (metaData)
+        {
+            if (!metaData->enums.empty())
+                metaDataFlag_ |= UsingEnums;
+            else
+            {
+                if (!metaData->minimum.isEmpty())
+                    metaDataFlag_ |= UsingMinValue;
+                if (!metaData->maximum.isEmpty())
+                    metaDataFlag_ |= UsingMaxValue;
+                if (!metaData->step.isEmpty())
+                    metaDataFlag_ |= UsingStepValue;
+            }
+            if (!metaData->description.isEmpty())
+                metaDataFlag_ |= UsingDescription;
+        }
+
+        QtVariantPropertyManager *uintPropertyManager = new QtVariantPropertyManager(this);
+        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+        // Check if attribute want to use enums.
+        if ((metaDataFlag_ & UsingEnums) != 0)
+        {
+            QtVariantProperty *prop = 0;
+            prop = uintPropertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), name_);
+            rootProperty_ = prop;
+            QStringList enumNames;
+            for(AttributeMetadata::EnumDescMap_t::iterator iter = metaData->enums.begin(); iter != metaData->enums.end(); ++iter)
+                enumNames << iter->second;
+
+            prop->setAttribute("enumNames", enumNames);
+        }
+        else
+        {
+            /// @todo Returns null if QVariant::UInt passed.
+            /// Use QVariant::Int and enforce minimum value of 0 always.
+            rootProperty_ = uintPropertyManager->addProperty(QVariant::Int, name_);
+            uintPropertyManager->setAttribute(rootProperty_, "minimum", 0);
+
+            if ((metaDataFlag_ & UsingMinValue) != 0)
+                uintPropertyManager->setAttribute(rootProperty_, "minimum", metaData->minimum.toUInt());
+            if ((metaDataFlag_ & UsingMaxValue) != 0)
+                uintPropertyManager->setAttribute(rootProperty_, "maximum", metaData->maximum.toUInt());
+            if ((metaDataFlag_ & UsingStepValue) != 0)
+                uintPropertyManager->setAttribute(rootProperty_, "singleStep", metaData->step.toUInt());
+        }
+
+        propertyMgr_ = uintPropertyManager;
+        factory_ = variantFactory;
+        if (rootProperty_)
+        {
+            Update();
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+        }
+
+        owner_->setFactoryForManager(uintPropertyManager, variantFactory);
+    }
+
+    emit EditorChanged(name_);
+}
+
+template<> void ECAttributeEditor<unsigned int>::Update(IAttribute *attr)
+{
+    if (useMultiEditor_)
+    {
+        UpdateMultiEditorValue(attr);
+    }
+    else
+    {
+        Attribute<unsigned int> *attribute = 0;
+        if (!attr)
+            attribute = FindAttribute<unsigned int>(components_[0].lock());
+        else
+            attribute = dynamic_cast<Attribute<unsigned int> *>(attr);
+        if (!attribute)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer into Attribute<unsigned int> format.");
+            return;
+        }
+
+        QtVariantPropertyManager *intPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        assert(intPropertyManager);
+        if (intPropertyManager && rootProperty_)
+            intPropertyManager->setValue(rootProperty_, attribute->Get());
+    }
+}
+
+template<> void ECAttributeEditor<unsigned int>::Set(QtProperty *property)
+{
+    if (listenEditorChangedSignal_)
+    {
+        unsigned int newValue = 0;
+        QString valueString = property->valueText();
+        if ((metaDataFlag_ & UsingEnums) != 0)
+        {
+            ComponentPtr comp = components_[0].lock();
+            IAttribute *attribute = FindAttribute(comp);
+            if (!attribute)
+            {
+                LogError("Could not find attribute by " + name_);
+                return;
+            }
+
+            AttributeMetadata *metaData = attribute->Metadata();
+            AttributeMetadata::EnumDescMap_t::iterator iter = metaData->enums.begin();
+            for(; iter != metaData->enums.end(); ++iter)
+                if (valueString == iter->second)
+                    newValue = iter->first;
+        }
+        else
+            newValue = valueString.toUInt();
+        SetValue(newValue);
+    }
+}
+
 //-------------------------BOOL ATTRIBUTE TYPE-------------------------
 
 template<> void ECAttributeEditor<bool>::Initialize()
@@ -1606,6 +1740,7 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
         QString assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef->Get());
         LogDebug("Creating AssetsWindow for asset type " + assetType);
         AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
+        connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
         connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
         connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
         assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -1865,6 +2000,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     LogDebug("OpenAssetsWindow, index " + ToString(currentIndex));
     LogDebug("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
+    connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);

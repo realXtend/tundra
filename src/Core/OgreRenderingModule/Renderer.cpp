@@ -80,7 +80,7 @@ namespace OgreRenderer
 {
     /// A DIRTY HACK to enable the Ogre logger to actually report to the user about which material parsing failed.
     QString lastLoadedOgreMaterial = "";
-
+    
     /// @cond PRIVATE
     class OgreLogListener : public Ogre::LogListener
     {

@@ -433,6 +433,44 @@ else
     touch $tags/$what-done
 fi
 
+# HydraX, SkyX and PythonQT are build from the realxtend own dependencies.
+# At least for the time being, until changes to those components flow into
+# upstream..
+
+cd $build
+depdir=realxtend-tundra-deps
+if [ ! -e $depdir ]
+then
+    echo "Cloning source of HydraX/SkyX/PythonQT/NullRenderer..."
+    git init $depdir
+    cd $depdir
+    git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    git remote add origin https://code.google.com/p/realxtend-tundra-deps/
+    git checkout sources
+else
+    cd $depdir
+    git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    if [ -z "`git merge sources origin/sources|grep "Already"`" ]; then
+        echo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
+        rm -f $tags/hydrax-done $tags/skyx-done $tags/pythonqt-done
+    else
+        echo "No changes in realxtend deps git."
+    fi
+fi
+
+# HydraX build:
+if test -f $tags/hydrax-done; then
+    echo "Hydrax-done"
+else
+    echo "Building Hydrax."
+    cd $build/$depdir/hydrax
+    #sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
+    #sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+    make -j $nprocs PREFIX=$prefix
+    make PREFIX=$prefix install
+    touch $tags/hydrax-done
+fi
+
 #cd $build
 #what=mumbleclient
 #if test -f $tags/$what-done; then

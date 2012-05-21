@@ -277,6 +277,8 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         attributeEditor = new ECAttributeEditor<float>(browser, component, name, type, editor);
     else if(type == "int")
         attributeEditor = new ECAttributeEditor<int>(browser, component, name, type, editor);
+    else if(type == "uint")
+        attributeEditor = new ECAttributeEditor<uint>(browser, component, name, type, editor);
     else if(type == "float2")
         attributeEditor = new ECAttributeEditor<float2>(browser, component, name, type, editor);
     else if(type == "float3")

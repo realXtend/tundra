@@ -167,7 +167,7 @@ macro (configure_skyx)
 endmacro (configure_skyx)
 
 macro (configure_hydrax)
-	if (NOT MSVC)
+	if (NOT MSVC AND NOT APPLE)
 		# Prioritize env variable HYDRAX_HOME to be searched first
 		# to allow custom hydrax builds agains a custom ogre (potentially from OGRE_HOME)
 		sagase_configure_package (HYDRAX
@@ -196,11 +196,13 @@ macro(use_package_hydrax)
 
     include_directories(${HYDRAX_HOME}/include)
     link_directories(${HYDRAX_HOME}/lib)
+	else()
+		include_directories(${ENV_TUNDRA_DEP_PATH}/include/Hydrax)
 	endif()
 endmacro()
 
 macro(link_package_hydrax)
-	if (MSVC) # TODO linkage settings for using Hydrax from deps for other platforms.
+	if (MSVC OR APPLE) # TODO linkage settings for using Hydrax from deps for other platforms.
 		target_link_libraries(${TARGET_NAME} optimized Hydrax debug Hydraxd)
 	endif()
 endmacro()

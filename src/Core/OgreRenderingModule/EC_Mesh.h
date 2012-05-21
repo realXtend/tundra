@@ -20,10 +20,6 @@ namespace Ogre
     class Bone;
 }
 
-class OgreMeshAsset;
-class OgreMaterialAsset;
-class OgreSkeletonAsset;
-
 /// Ogre mesh entity component
 /**
 <table class="header">
@@ -60,18 +56,18 @@ Registered by OgreRenderer::OgreRenderingModule.
         @param draw_distance New draw distance, 0.0 = draw always (default)
 <li>"SetMesh":sets mesh
         if mesh already sets, removes the old one
-        @param mesh_name mesh to use
+        @param meshName mesh to use
         @param clone whether mesh should be cloned for modifying geometry uniquely
         @return true if successful 
 <li>"SetMeshWithSkeleton": sets mesh with custom skeleton
         if mesh already sets, removes the old one
-        @param mesh_name mesh to use
-        @param skeleton_name skeleton to use
+        @param meshName mesh to use
+        @param skeletonName skeleton to use
         @param clone whether mesh should be cloned for modifying geometry uniquely
         @return true if successful
 <li>"SetMaterial": sets material in mesh
         @param index submesh index
-        @param material_name material name
+        @param materialName material name
         @return true if successful
 <li>"SetAdjustPosition": sets adjustment (offset) position
         @param position new position
@@ -83,9 +79,9 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"SetAttachmentMesh": sets an attachment mesh
       The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
       @param index attachment index starting from 0.
-      @param mesh_name mesh to use
-      @param attach_point bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
-      @param share_skeleton whether to link animation (for attachments that are also skeletally animated)
+      @param meshName mesh to use
+      @param attachPoint bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
+      @param shareSkeleton whether to link animation (for attachments that are also skeletally animated)
       @return true if successful 
 <li>"SetAttachmentPosition": sets position of attachment mesh, relative to attachment poiont
 <li>"SetAttachmentOrientation": sets orientation of attachment mesh, relative to attachment point
@@ -96,7 +92,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"SetAttachmentMaterial": sets material on an attachment mesh
      @param index attachment index starting from 0
     @param submesh_index submesh in attachment mesh
-     @param material_name material name
+     @param materialName material name
      @return true if successful 
 <li>"HasMesh": returns if mesh exists
 <li>"GetNumAttachments": returns number of attachments
@@ -182,8 +178,7 @@ public slots:
     /** Set a null placeable to detach the object, otherwise will attach
         @param placeable placeable component */
     void SetPlaceable(ComponentPtr placeable);
-    /// @todo override for pythonqt & qtscript, the shared_ptr issue strikes again; remove if/when possible.
-    void SetPlaceable(EC_Placeable* placeable);
+    void SetPlaceable(EC_Placeable* placeable); /**< @overload */
 
     /// Sets mesh
     /** if mesh already sets, removes the old one
@@ -195,18 +190,18 @@ public slots:
 
     /// Sets mesh with custom skeleton
     /** if mesh already sets, removes the old one
-        @param mesh_name mesh to use
-        @param skeleton_name skeleton to use
+        @param meshName mesh to use
+        @param skeletonName skeleton to use
         @param clone whether mesh should be cloned for modifying geometry uniquely
         @return true if successful */
-    bool SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone = false);
+    bool SetMeshWithSkeleton(const std::string& meshName, const std::string& skeletonNAme, bool clone = false);
 
     /// Sets material in mesh
     /** @param index submesh index
-        @param material_name material name. Note that the material name must only contain ASCII characters! Even though
+        @param materialName material name. Note that the material name must only contain ASCII characters! Even though
             this string is a QString, Unicode or other character encodings are not supported by Ogre.
         @return true if successful */
-    bool SetMaterial(uint index, const QString& material_name);
+    bool SetMaterial(uint index, const QString& materialName);
 
     /// (Re)applies the currently set material refs to the currently set mesh ref.
     /** Does not start any asset requests, but sets the data on the currently loaded assets. */
@@ -226,65 +221,6 @@ public slots:
 
     /// Removes mesh
     void RemoveMesh();
-
-    /// Sets an attachment mesh.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
-        The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
-        @param index attachment index starting from 0.
-        @param mesh_name mesh to use
-        @param attach_point bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
-        @param share_skeleton whether to link animation (for attachments that are also skeletally animated)
-        @return true if successful */
-    bool SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point = std::string(), bool share_skeleton = false);
-
-    /// Sets position of attachment mesh, relative to attachment point.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    void SetAttachmentPosition(uint index, const float3& position);
-
-    /// Sets orientation of attachment mesh, relative to attachment point.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    void SetAttachmentOrientation(uint index, const Quat &orientation);
-
-    /// Sets scale of attachment mesh, relative to attachment point.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    void SetAttachmentScale(uint index, const float3& scale);
-    
-    /// Removes an attachment mesh.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
-        @param index attachment index starting from 0 */
-    void RemoveAttachmentMesh(uint index);
-
-    /// Removes all attachments.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    void RemoveAllAttachments();
-
-    /// Sets material on an attachment mesh.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
-        @param index attachment index starting from 0
-        @param submesh_index submesh in attachment mesh
-        @param material_name material name
-        @return true if successful */
-    bool SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name);
-
-    /// Returns number of attachments.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
-        @note returns just the size of attachment vector, so check individually that attachments actually exist */
-    uint GetNumAttachments() const { return attachment_entities_.size(); }
-
-    /// Returns Ogre attachment mesh entity.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    Ogre::Entity* GetAttachmentEntity(uint index) const;
-
-    /// Returns number of materials (submeshes) in attachment mesh entity.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    uint GetAttachmentNumMaterials(uint index) const;
-
-    /// gets material name from attachment mesh.
-    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
-        @param index attachment index
-        @param submesh_index submesh index
-        @return name if successful, empty if no entity / illegal index */
-    const std::string& GetAttachmentMaterialName(uint index, uint submesh_index) const;
 
     /// Returns if mesh exists
     bool HasMesh() const { return entity_ != 0; }
@@ -355,12 +291,6 @@ public slots:
     /// 
 //    float3x4 IComponent::GetWorldTransform();
 
-    /// Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
-    ///\todo Remove when abovementioned problems are resolved.
-    void SetMeshRef(const AssetReference& newref) { setmeshRef(newref); }
-    ///\todo Remove when abovementioned problems are resolved.
-    void SetMeshRef(const QString& newref) { setmeshRef(AssetReference(newref)); }
-
     /// Return Ogre bone safely
     Ogre::Bone* GetBone(const QString& bone_name);
 
@@ -404,11 +334,81 @@ public slots:
     /// Returns the local space axis-aligned bounding box of this object.
     AABB LocalAABB() const;
 
+    /// Returns the mesh asset used by this component.
     OgreMeshAssetPtr MeshAsset() const;
 
+    /// Returns the material asset used for the submesh at @c materialIndex.
     OgreMaterialAssetPtr MaterialAsset(int materialIndex) const;
 
+    /// Returns the possible asset used by this component.
     OgreSkeletonAssetPtr SkeletonAsset() const;
+
+    /// Sets an attachment mesh.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
+        The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
+        @param index attachment index starting from 0.
+        @param meshName mesh to use
+        @param attachPoint bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
+        @param shareSkeleton whether to link animation (for attachments that are also skeletally animated)
+        @return true if successful */
+    bool SetAttachmentMesh(uint index, const std::string& meshName, const std::string& attachPoint = std::string(), bool shareSkeleton = false);
+
+    /// Sets position of attachment mesh, relative to attachment point.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
+    void SetAttachmentPosition(uint index, const float3& position);
+
+    /// Sets orientation of attachment mesh, relative to attachment point.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
+    void SetAttachmentOrientation(uint index, const Quat &orientation);
+
+    /// Sets scale of attachment mesh, relative to attachment point.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
+    void SetAttachmentScale(uint index, const float3& scale);
+    
+    /// Removes an attachment mesh.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
+        @param index attachment index starting from 0 */
+    void RemoveAttachmentMesh(uint index);
+
+    /// Removes all attachments.
+    /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
+    void RemoveAllAttachments();
+
+    /// Sets material on an attachment mesh.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
+        @param index attachment index starting from 0
+        @param submesh_index submesh in attachment mesh
+        @param materialName material name
+        @return true if successful */
+    bool SetAttachmentMaterial(uint index, uint submesh_index, const std::string& materialName);
+
+    /// Returns number of attachments.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
+        @note returns just the size of attachment vector, so check individually that attachments actually exist */
+    uint GetNumAttachments() const { return attachment_entities_.size(); }
+
+    /// Returns Ogre attachment mesh entity.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
+    Ogre::Entity* GetAttachmentEntity(uint index) const;
+
+    /// Returns number of materials (submeshes) in attachment mesh entity.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
+    uint GetAttachmentNumMaterials(uint index) const;
+
+    /// gets material name from attachment mesh.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
+        @param index attachment index
+        @param submesh_index submesh index
+        @return name if successful, empty if no entity / illegal index */
+    const std::string& GetAttachmentMaterialName(uint index, uint submesh_index) const;
+
+    /// Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
+    /// @todo Remove when abovementioned problems are resolved.
+    /// @deprecated Use meshRef attribute.
+    void SetMeshRef(const AssetReference& newref) { setmeshRef(newref); }
+    /// @todo Remove when abovementioned problems are resolved.
+    /// @deprecated Use meshRef attribute.
+    void SetMeshRef(const QString& newref) { setmeshRef(AssetReference(newref)); }
 
 public:
     /// Raycast into an Ogre mesh entity using a world-space ray. Returns true if a hit happens, in which case the fields (which are not null) are filled appropriately
@@ -422,10 +422,10 @@ signals:
     void MeshChanged();
 
     /// Signal is emitted when material has successfully applied to sub mesh.
-    void MaterialChanged(uint index, const QString &material_name);
+    void MaterialChanged(uint index, const QString &materialName);
 
     /// Signal is emitted when skeleton has successfully applied to entity.
-    void SkeletonChanged(QString skeleton_name);
+    void SkeletonChanged(QString skeletonName);
     
 private slots:
     /// Called when the parent entity has been set.
@@ -451,10 +451,10 @@ private slots:
 
 private:
     /// Prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
-    /** @param mesh_name Mesh to prepare
+    /** @param meshName Mesh to prepare
         @param clone Whether should return an uniquely named clone of the mesh, rather than the original
         @return pointer to mesh, or 0 if could not be safely prepared */
-    Ogre::Mesh* PrepareMesh(const std::string& mesh_name, bool clone = false);
+    Ogre::Mesh* PrepareMesh(const std::string& meshName, bool clone = false);
 
     /// attaches entity to placeable
     void AttachEntity();

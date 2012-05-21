@@ -626,6 +626,7 @@ void AssetAPI::ForgetAllAssets()
 {
     while(assets.size() > 0)
         ForgetAsset(assets.begin()->second, false); // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
+
     assets.clear();
     
     // We need to abort all current transfers, otherwise the transfers will call AssetTransferCompleted/Failed 
@@ -1857,9 +1858,12 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
 
     if (file.endsWith(".qm", Qt::CaseInsensitive))
         return "QtQmFile";
-        
+
     if (file.endsWith(".avatar", Qt::CaseInsensitive))
         return "Avatar";
+
+    if (file.endsWith(".attachment", Qt::CaseInsensitive))
+        return "AvatarAttachment";
 
     if (file.endsWith(".pdf", Qt::CaseInsensitive))
         return "PdfAsset";
