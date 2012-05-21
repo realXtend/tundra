@@ -36,8 +36,8 @@
 
 #include "MemoryLeakCheck.h"
 
-TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-:IAsset(owner, type_, name_)
+TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+    IAsset(owner, type_, name_), loadTicket_(0)
 {
     ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
 }
@@ -198,6 +198,9 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
 {
     if (ticket != loadTicket_)
         return;
+        
+    // Reset to 0 to mark the asynch request is not active anymore. Aborted in Unload() if it is.
+    loadTicket_ = 0;
 
     const QString assetRef = Name();
     ogreAssetName = AssetAPI::SanitateAssetRef(assetRef);
@@ -278,6 +281,14 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
 
 void TextureAsset::DoUnload()
 {
+    // If a ongoing asynchronous asset load requested has been made to ogre, we need to abort it.
+    // Otherwise Ogre will crash to our raw pointer that was passed if we get deleted. A ongoing ticket id cannot be 0.
+    if (loadTicket_ != 0)
+    {
+        Ogre::ResourceBackgroundQueue::getSingleton().abortRequest(loadTicket_);
+        loadTicket_ = 0;
+    }
+    
     if (!ogreTexture.isNull())
         ogreAssetName = ogreTexture->getName().c_str();
 
