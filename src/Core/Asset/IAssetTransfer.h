@@ -20,7 +20,7 @@ class IAssetTransfer : public QObject, public boost::enable_shared_from_this<IAs
 
 public:
     IAssetTransfer()
-    :cachingAllowed(true),diskSourceType(IAsset::Original)
+    : cachingAllowed(true), aborted(false), diskSourceType(IAsset::Original)
     {
     }
 
@@ -52,6 +52,15 @@ public:
     void EmitTransferSucceeded();
 
     void EmitAssetFailed(QString reason);
+    
+    /// Sets abort state to true, which means when the transfer finishes AssetAPI will ignore it.
+    /** This function is called eg. when AssetAPI forgets this asset while the request is still ongoing. 
+        The only safe way to do this is to let the transfer finish so that the provider does not have
+        interfere with the ongoing transfer. Not exposed to scripts on purpose. */
+    void Abort() { aborted = true; }
+    
+    /// Returns if this transfer has been aborted.
+    bool Aborted() { return aborted; }
 
     /// Stores the raw asset bytes for this asset.
     std::vector<u8> rawAssetData;
@@ -94,7 +103,8 @@ signals:
 
 private:
     bool cachingAllowed;
-
+    bool aborted;
+    
     QString diskSource;
 };
 
