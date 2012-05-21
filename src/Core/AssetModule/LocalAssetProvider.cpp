@@ -290,6 +290,11 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         AssetTransferPtr transfer = pendingDownloads.back();
         pendingDownloads.pop_back();
 
+        // Stop here if aborted, don't do caching or notify AssetAPI 
+        // of the completion as it is not interested in it if aborted.
+        if (transfer->Aborted())
+            continue;
+            
         QString ref = transfer->source.ref;
 
         QString path_filename;

@@ -626,8 +626,12 @@ void AssetAPI::ForgetAllAssets()
 {
     while(assets.size() > 0)
         ForgetAsset(assets.begin()->second, false); // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
-
     assets.clear();
+    
+    // We need to abort all current transfers, otherwise the transfers will call AssetTransferCompleted/Failed 
+    // that will in turn load the asset to memory even if no tracking transfer is found.
+    for(AssetTransferMap::const_iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
+        iter->second->Abort();
     currentTransfers.clear();
 }
 
@@ -1146,13 +1150,18 @@ AssetTransferMap::const_iterator AssetAPI::FindTransferIterator(IAssetTransfer *
 void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 {
     PROFILE(AssetAPI_AssetTransferCompleted);
-
+    
+    assert(transfer_);
+    
     // At this point, the transfer can originate from several different things:
     // 1) It could be a real AssetTransfer from a real AssetProvider.
     // 2) It could be an AssetTransfer to an Asset that was already downloaded before, in which case transfer_->asset is already filled and loaded at this point.
     // 3) It could be an AssetTransfer that was fulfilled from the disk cache, in which case no AssetProvider was invoked to get here. (we used the readyTransfers queue for this).
-
-    assert(transfer_);
+   
+    // If the transfer was aborted before getting here ignore it. This will happen on eg. ForgetAllAssets().
+    if (transfer_->Aborted())
+        return;
+        
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
     //LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
 
@@ -1224,6 +1233,10 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 {
     assert(transfer);
     if (!transfer)
+        return;
+        
+    // If the transfer has been aborted ignore it without logging errors for failure. Aborted means we are not tracking the transfer, eg. ForgetAllAssets() was called.
+    if (transfer->Aborted())
         return;
 
     LogError("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" failed! Reason: \"" + reason + "\"");
