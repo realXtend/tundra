@@ -118,6 +118,8 @@ public:
     /// Reads and applies target FPS limit from config file.
     void ReadTargetFpsLimitFromConfig();
 
+    QStringList FindQmFiles(const QDir &dir);
+
 public slots:
     void UpdateFrame();
     void ChangeLanguage(const QString& file);
@@ -135,7 +137,6 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 private:
-    QStringList FindQmFiles(const QDir &dir);
     void InitializeSplash();
 
     Framework *framework;

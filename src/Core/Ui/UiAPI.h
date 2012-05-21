@@ -5,9 +5,13 @@
 #include <QObject>
 #include <QPointer>
 #include <QWidget>
+#include <QTranslator>
+#include <QActionGroup>
 
 #include "UiFwd.h"
 #include "UiApiExport.h"
+
+typedef QPair<QString, QString> LanguagePair;
 
 class QMenu;
 
@@ -126,6 +130,14 @@ public slots:
         @return loaded widget's pointer (null if loading failed). */
     QWidget *LoadFromFile(const QString &filePath, bool addToScene = true, QWidget *parent = 0);
 
+    void LoadTranslatorFromFile(const QString &filePath);
+
+    void InitLanguageMenu();
+
+    void AddLanguageEntry(QString path);
+
+    LanguagePair LanguageName(QString qmFile);
+
     /// Emits a signal that can be used to attach context menu actions for specific object types.
     /** @param menu Menu to which possible functionality can be appended.
         @param targets List of target objects for which the context menu is about to open. */
@@ -150,6 +162,8 @@ private slots:
     /** The caller of this slot is retrieved by using QObject::sender(). */
     void DeleteCallingWidgetOnClose();
 
+    void OnLanguageSelected(QAction* action);
+
 private:
     Framework *owner; ///< Owner framework.
     QPointer<UiMainWindow> mainWindow; ///< The main window.
@@ -158,4 +172,9 @@ private:
     QPointer<QWidget> viewportWidget; ///< Viewport for the graphics scene.
     QList<QGraphicsProxyWidget *> widgets; ///< Internal list of proxy widgets in scene.
     QList<QGraphicsProxyWidget *> fullScreenWidgets; ///< List of full screen widgets.
+
+    QMenu *languageMenu;
+    QPair<QString, QList<QTranslator *> > currentInstalledTranslators;
+    QMultiMap<QString, QString> loadedTranslations;
+    QActionGroup *languageActions;
 };

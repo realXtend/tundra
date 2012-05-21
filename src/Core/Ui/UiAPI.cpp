@@ -15,6 +15,7 @@
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
 #include "LoggingFunctions.h"
+#include "SceneDesc.h"
 
 #include <QMenuBar>
 #include <QEvent>
@@ -24,6 +25,7 @@
 #include <QUiLoader>
 #include <QFile>
 #include <QDir>
+#include <QLocale>
 
 #include "MemoryLeakCheck.h"
 
@@ -63,10 +65,12 @@ UiAPI::UiAPI(Framework *owner_) :
     if (owner_->IsHeadless())
     {
         owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtUiFile")));
+        owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtQmFile")));
         return;
     }
 
     owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
+    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtQmFile")));
     
     mainWindow = new UiMainWindow(owner);
 
@@ -137,6 +141,9 @@ UiAPI::UiAPI(Framework *owner_) :
 
     graphicsView->setScene(graphicsScene);
     graphicsView->scene()->setSceneRect(graphicsView->rect());
+
+    languageActions = new QActionGroup(this);
+    connect(languageActions, SIGNAL(triggered(QAction *)), this, SLOT(OnLanguageSelected(QAction*)));
 
     connect(graphicsScene, SIGNAL(changed(const QList<QRectF> &)), graphicsView, SLOT(HandleSceneChanged(const QList<QRectF> &))); 
     connect(graphicsScene, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(OnSceneRectChanged(const QRectF &)));
@@ -387,6 +394,148 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
     }
 
     return widget;
+}
+
+void UiAPI::LoadTranslatorFromFile(const QString &filePath)
+{
+    QString resolvedRef;
+    if (!filePath.startsWith('.'))
+        resolvedRef = owner->Asset()->ResolveAssetRef("", filePath);
+    else
+        resolvedRef = filePath;
+
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(resolvedRef);
+
+    if (refType != AssetAPI::AssetRefLocalPath && refType != AssetAPI::AssetRefRelativePath)
+    {
+        AssetPtr asset = owner->Asset()->GetAsset(resolvedRef);
+        if (!asset)
+        {
+            LogError("UiAPI::LoadTranslation: Asset \"" + resolvedRef + "\" is not loaded to the asset system. Call RequestAsset prior to use!");
+            return;
+        }
+
+        loadedTranslations.insert(LanguageName(asset.get()->DiskSource()).first, asset.get()->DiskSource());
+    }
+    else
+    {
+        QString path = resolvedRef;
+        if (QDir::isRelativePath(path))
+        {
+            QString cwdPath = Application::CurrentWorkingDirectory() + resolvedRef;
+            if (QFile::exists(cwdPath))
+                path = cwdPath;
+            else
+                path = Application::InstallationDirectory() + resolvedRef;
+        }
+
+        loadedTranslations.insert(LanguageName(path).first, path);
+    }
+}
+
+void UiAPI::InitLanguageMenu()
+{
+    QMenuBar *mainMenu = MainWindow()->menuBar();
+    languageMenu = mainMenu->findChild<QMenu*>("Language");
+    if (!languageMenu)
+        languageMenu = mainMenu->addMenu("Language");
+
+    QStringList languages = owner->App()->FindQmFiles(QDir("data/translations"));
+
+    for (int i = 0; i < languages.size(); i++)
+        AddLanguageEntry(languages.at(i));
+}
+
+void UiAPI::AddLanguageEntry(QString path)
+{
+    LanguagePair languageName = LanguageName(path);
+    QAction* languageAction = languageActions->addAction(QIcon("data/ui/images/languages/" + languageName.first + ".gif"), languageName.second);
+    languageAction->setCheckable(true);
+    languageAction->setProperty("languageFile", path);
+    languageAction->setProperty("shortLangName", languageName.first);
+
+    languageMenu->addAction(languageAction);
+}
+
+
+void UiAPI::OnLanguageSelected(QAction* action)
+{
+    action->setChecked(true);
+
+    QString file = action->property("languageFile").toString();
+    QString shortName = action->property("shortLangName").toString();
+
+    if (!currentInstalledTranslators.second.isEmpty())
+    {
+        if (currentInstalledTranslators.first != shortName)
+        {
+            QList<QTranslator *> translators = currentInstalledTranslators.second;
+            for (int i = 0; i < translators.size(); i++)
+                owner->App()->removeTranslator(translators.at(i));
+
+            currentInstalledTranslators.first.clear();
+            currentInstalledTranslators.second.clear();
+        }
+        else
+            return;
+    }
+
+    if (loadedTranslations.contains(shortName))
+    {
+        QList<QString> files = loadedTranslations.values(shortName);
+        for (int i = 0; i < files.size(); i++)
+        {
+            QTranslator *translator = new QTranslator;
+            translator->load(files.at(i));
+
+            currentInstalledTranslators.first = shortName;
+            currentInstalledTranslators.second << translator;
+
+            owner->App()->installTranslator(translator);
+        }
+    }
+
+    owner->App()->ChangeLanguage(file);
+}
+
+LanguagePair UiAPI::LanguageName(QString qmFile)
+{
+    LanguagePair languagePair;
+
+    qmFile.chop(3);
+    QString str = qmFile.right(2);
+
+    QLocale loc(str);
+    QString name = loc.languageToString(loc.language());
+
+    languagePair.first = str;
+    languagePair.second = name;
+
+    switch (loc.language())
+    {
+        case QLocale::Finnish:
+        {
+            languagePair.second = "Suomi";
+            break;
+        }
+        case QLocale::Swedish:
+        {
+            languagePair.second = "Svenska";
+            break;
+        }
+        case QLocale::Macedonian:
+        {
+            languagePair.second = QString::fromUtf8("Македонски");
+            break;
+        }
+        case QLocale::German:
+        {
+            languagePair.second = "Deutsch";
+            break;
+        }
+    }
+
+    return languagePair;
 }
 
 void UiAPI::EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)

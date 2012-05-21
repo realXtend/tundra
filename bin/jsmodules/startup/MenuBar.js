@@ -99,6 +99,7 @@ if (!framework.IsHeadless())
             showHighlightAction.checked = ecEditor.highlightingEnabled;
             showHighlightAction.triggered.connect(HighlightSelectedEntities);
         }
+	ui.InitLanguageMenu();
     }
 
     // Help menu
