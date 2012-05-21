@@ -25,6 +25,7 @@
 #include <QUiLoader>
 #include <QFile>
 #include <QDir>
+#include <QLocale>
 
 #include "MemoryLeakCheck.h"
 
@@ -475,6 +476,8 @@ void UiAPI::OnLanguageSelected(QAction* action)
             currentInstalledTranslators.first.clear();
             currentInstalledTranslators.second.clear();
         }
+        else
+            return;
     }
 
     if (loadedTranslations.contains(shortName))
