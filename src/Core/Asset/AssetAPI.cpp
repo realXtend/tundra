@@ -1334,7 +1334,7 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
 
 void AssetAPI::AssetLoadFailed(const QString assetRef)
 {
-    AssetTransferMap::const_iterator iter = FindTransferIterator(assetRef);
+    AssetTransferMap::iterator iter = FindTransferIterator(assetRef);
     AssetMap::const_iterator iter2 = assets.find(assetRef);
 
     if (iter != currentTransfers.end())
