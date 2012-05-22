@@ -18,6 +18,9 @@
 
 #include "EC_Avatar.h"
 
+#include "../JavascriptModule/JavascriptModule.h"
+#include "AvatarModuleScriptTypeDefines.h"
+
 AvatarModule::AvatarModule() : IModule("Avatar")
 {
 }
@@ -47,6 +50,12 @@ void AvatarModule::Initialize()
     framework_->Console()->RegisterCommand("editavatar",
         "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
         this, SLOT(EditAvatarConsole(const QString &)));
+
+    JavascriptModule *javascriptModule = framework_->GetModule<JavascriptModule>();
+    if (javascriptModule)
+        connect(javascriptModule, SIGNAL(ScriptEngineCreated(QScriptEngine*)), SLOT(OnScriptEngineCreated(QScriptEngine*)));
+    else
+        LogWarning("AvatarModule: JavascriptModule not present, AvatarModule usage from scripts will be limited!");
 }
 
 AvatarEditor* AvatarModule::GetAvatarEditor() const
@@ -98,6 +107,11 @@ void AvatarModule::EditAvatarConsole(const QString &entityName)
 {
     ToggleAvatarEditorWindow();
     EditAvatar(entityName);
+}
+
+void AvatarModule::OnScriptEngineCreated(QScriptEngine *engine)
+{
+    RegisterAvatarModuleMetaTypes(engine);
 }
 
 extern "C"
