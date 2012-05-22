@@ -136,6 +136,8 @@ public slots:
 
     void AddLanguageEntry(QString path);
 
+    bool HasLanguageEntry(QString shortLangName);
+
     LanguagePair LanguageName(QString qmFile);
 
     /// Emits a signal that can be used to attach context menu actions for specific object types.
