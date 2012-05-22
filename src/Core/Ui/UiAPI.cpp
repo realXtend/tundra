@@ -12,6 +12,7 @@
 #include "Application.h"
 #include "Framework.h"
 #include "AssetAPI.h"
+#include "ConfigAPI.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
 #include "LoggingFunctions.h"
@@ -415,7 +416,11 @@ void UiAPI::LoadTranslatorFromFile(const QString &filePath)
             return;
         }
 
-        loadedTranslations.insert(LanguageName(asset.get()->DiskSource()).first, asset.get()->DiskSource());
+        LanguagePair lang = LanguageName(asset.get()->DiskSource());
+        loadedTranslations.insert(lang.first, asset.get()->DiskSource());
+
+        if (!HasLanguageEntry(lang.first))
+            AddLanguageEntry(asset.get()->DiskSource());
     }
     else
     {
@@ -429,7 +434,11 @@ void UiAPI::LoadTranslatorFromFile(const QString &filePath)
                 path = Application::InstallationDirectory() + resolvedRef;
         }
 
-        loadedTranslations.insert(LanguageName(path).first, path);
+        LanguagePair lang = LanguageName(path);
+        loadedTranslations.insert(lang.first, path);
+
+        if (!HasLanguageEntry(lang.first))
+            AddLanguageEntry(path);
     }
 }
 
@@ -441,9 +450,13 @@ void UiAPI::InitLanguageMenu()
         languageMenu = mainMenu->addMenu("Language");
 
     QStringList languages = owner->App()->FindQmFiles(QDir("data/translations"));
+    QString defaultLanguage = owner->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
+
+    languageMenu->setProperty("defaultLanguage", LanguageName(defaultLanguage).first);
 
     for (int i = 0; i < languages.size(); i++)
         AddLanguageEntry(languages.at(i));
+
 }
 
 void UiAPI::AddLanguageEntry(QString path)
@@ -455,6 +468,26 @@ void UiAPI::AddLanguageEntry(QString path)
     languageAction->setProperty("shortLangName", languageName.first);
 
     languageMenu->addAction(languageAction);
+
+    QString defaultLanguage = languageMenu->property("defaultLanguage").toString();
+    if (defaultLanguage == languageName.first)
+        languageAction->setChecked(true);
+}
+
+bool UiAPI::HasLanguageEntry(QString shortLangName)
+{
+    QList<QAction*> actions = languageActions->actions();
+    if (actions.isEmpty())
+        return false;
+
+    for (int i = 0; i < actions.size(); i++)
+    {
+        QString language = actions.at(i)->property("shortLangName").toString();
+        if (shortLangName == language)
+            return true;
+    }
+
+    return false;
 }
 
 
