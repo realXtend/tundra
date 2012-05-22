@@ -81,8 +81,8 @@ public slots:
     /** @param index The index of the attachment in attachments_ to be removed. */
     void RemoveAttachment(uint index);
     /// Add an attachment
-    /** @param data The attachment to be added to the avatar, as a raw QString.*/
-    void AddAttachment(QString data);
+    /** @param data The attachment to be added to the avatar.*/
+    void AddAttachment(AssetPtr assetPtr);
     /// Return whether a property exists
     bool HasProperty(const QString &name) const;
     /// Return property value, or empty if does not exist
