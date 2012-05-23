@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>370</width>
+    <height>200</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QRadioButton" name="radioApples">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>30</y>
+     <width>361</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">font: 75 26pt &quot;Comic Sans MS&quot;;</string>
+   </property>
+   <property name="text">
+    <string>Apples</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="radioOranges">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>100</y>
+     <width>171</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">font: 75 26pt &quot;Comic Sans MS&quot;;</string>
+   </property>
+   <property name="text">
+    <string>Oranges</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>27</x>
+     <y>70</y>
+     <width>131</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">font: 75 26pt &quot;Comic Sans MS&quot; red; background-color: red;
+</string>
+   </property>
+   <property name="text">
+    <string>Boom!</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
