@@ -80,6 +80,9 @@ public slots:
     /// Remove an attachment
     /** @param index The index of the attachment in attachments_ to be removed. */
     void RemoveAttachment(uint index);
+    /// Removes all attachments of given category.
+    /** @param category The name of the category of attachments to be removed. */
+    void RemoveAttachmentsByCategory(QString category);
     /// Add an attachment
     /** @param data The attachment to be added to the avatar.*/
     void AddAttachment(AssetPtr assetPtr);

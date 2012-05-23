@@ -546,6 +546,23 @@ void AvatarDescAsset::RemoveAttachment(uint index)
         LogError("Failed to remove attachment at index " + QString::number(index) + "! Only " + attachments_.size() + "  attachments exist on the avatar asset!");
 }
 
+void AvatarDescAsset::RemoveAttachmentsByCategory(QString category)
+{
+    std::vector<int> toRemove;
+
+    for (uint i = 0; i < attachments_.size(); i++)
+    {
+        if (attachments_[i].category_ == category)
+        {
+            toRemove.push_back(i);
+        }
+    }
+
+    // Remove the attachments, starting from the end of the vector.
+    for (int i = toRemove.size(); i > 0; i--)
+        RemoveAttachment(toRemove[i-1]);
+}
+
 void AvatarDescAsset::AddAttachment(AssetPtr assetPtr)
 {
     std::vector<u8> data;
