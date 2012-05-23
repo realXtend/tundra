@@ -9,9 +9,10 @@ if (!framework.IsHeadless())
 
     var label = new QLabel();
     label.indent = 10;
-    label.text = "This application This scene demonstrates the GraphicsViewCanvas component.\n" +
-        "GraphicsViewCanvas can be used to embed arbitrary Qt UI elements into 3D models with working mouse input." ;
-    label.resize(650, 100);
+    label.text = "This scene demonstrates the GraphicsViewCanvas component.\n" +
+        "GraphicsViewCanvas can be used to embed arbitrary Qt UI\n" +
+        "elements into 3D models with working mouse input." ;
+    label.resize(500, 100);
     label.setStyleSheet("QLabel {background-color: transparent; font-size: 16px; }");
 
     var proxy = new UiProxyWidget(label);
