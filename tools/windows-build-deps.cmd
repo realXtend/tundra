@@ -17,6 +17,9 @@ set TUNDRA_BIN=%CD%\bin
 set DEPS=%CD%\deps
 cd %TOOLS%
 
+:: Make sure deps folder exists.
+IF NOT EXIST "%DEPS%". mkdir "%DEPS%"
+
 :: Print user defined variables
 cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
 echo.
