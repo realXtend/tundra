@@ -31,7 +31,9 @@ EC_RttTarget::EC_RttTarget(Scene* scene) :
 
 EC_RttTarget::~EC_RttTarget()
 {
-    if (!ViewEnabled())
+    // Cannot use ViewEnabled() here, the parent entity is already null,
+    // which means it will return true. After that we will crash below calling Ogre.
+    if (framework->IsHeadless())
         return;
 
   //XXX didn't have a ref to renderer here yet. is this really required?
