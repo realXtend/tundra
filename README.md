@@ -44,8 +44,9 @@ _TODO: Prepare scripts in /tools to automatically fetch and setup prebuilt deped
 
 **Building Tundra**
 
-1. `cd tools` and run `windows-build-tundra.cmd`. This script will setup the needed build environment variables for cmake and run cmake to generate a tundra.sln solution file.
-2. Open the solution file with Visual Studio and build.
+`cd tools` and run `windows-build-tundra.cmd`. This script will setup the needed build environment variables for cmake. Next it will run cmake to generate a tundra.sln solution file and build it.
+
+If you want the script to build Tundra you need to run it in the Visual Studio Command Prompt as it needs msbuild. However you can hit Ctrl+C after the cmake step finishes and open the solution file with the Visual Studio IDE, if that is what you prefer.
 
 ### Linux
 
