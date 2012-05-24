@@ -46,12 +46,12 @@ IF %GENERATOR%==Visual Studio 9 2008 (
        cecho {0D}%DEPS%\vs2008-32bit already downloaded. Delete it and tundra-deps-vs2008-32bit.7z to refetch.{# #}{\n}
     )
     
-    :: Run cmake. Todo: make this a generic thing below once more GENERATORs are supported.
-    :: mind the @setlocal EnableDelayedExpansion thing, as without you cannot SET inside IF statements.
-    
     SET DEPS=%DEPS%\vs2008-32bit
     cecho {0D}Using %DEPS% as dependency path, running cmake.{# #}{\n}
+    call "%TOOLS%\utils-windows\copy-runtime-libraries.cmd"
     
+    :: Run cmake. Todo: make this a generic thing below once more GENERATORs are supported.
+    :: mind the @setlocal EnableDelayedExpansion thing, as without you cannot SET inside IF statements.    
     SET BOOST_ROOT=%DEPS%\boost
     SET QMAKESPEC=win32-msvc2008
     SET QTDIR=%DEPS%\qt
@@ -59,8 +59,8 @@ IF %GENERATOR%==Visual Studio 9 2008 (
     SET KNET_DIR=%DEPS%\kNet
     SET BULLET_DIR=%DEPS%\bullet
     SET OGRE_HOME=%DEPS%\ogre-safe-nocrashes
-    SET SKYX_HOME=%DEPS%\realxtend-tundra-deps\skyx
-    SET HYDRAX_HOME=%DEPS%\realxtend-tundra-deps\hydrax
+    SET SKYX_HOME=%DEPS%\skyx
+    SET HYDRAX_HOME=%DEPS%\hydrax
     SET PROTOBUF_SRC_ROOT_FOLDER=%DEPS%\protobuf
     SET OPENSSL_ROOT_DIR=%DEPS%\openssl
     SET CELT_ROOT=%DEPS%\celt
@@ -83,7 +83,6 @@ IF %GENERATOR%==Visual Studio 9 2008 (
         cecho {0A}Tundra.sln exists. Skipping CMake call for Tundra.{# #}{\n}
         cecho {0A}Delete %CD%\Tundra.sln to trigger a CMake rerun.{# #}{\n}
     )
-    echo.
 )
 
 echo.
