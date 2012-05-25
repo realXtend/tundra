@@ -546,11 +546,41 @@ void AvatarDescAsset::RemoveAttachment(uint index)
         LogError("Failed to remove attachment at index " + QString::number(index) + "! Only " + attachments_.size() + "  attachments exist on the avatar asset!");
 }
 
-void AvatarDescAsset::AddAttachment(QString data)
+void AvatarDescAsset::RemoveAttachmentsByCategory(QString category)
 {
+    std::vector<int> toRemove;
+
+    for (uint i = 0; i < attachments_.size(); i++)
+    {
+        if (attachments_[i].category_ == category)
+        {
+            toRemove.push_back(i);
+        }
+    }
+
+    // Remove the attachments, starting from the end of the vector.
+    for (int i = toRemove.size(); i > 0; i--)
+        RemoveAttachment(toRemove[i-1]);
+}
+
+void AvatarDescAsset::AddAttachment(AssetPtr assetPtr)
+{
+    std::vector<u8> data;
+    QString string;
+    if (assetPtr->SerializeTo(data))
+    {
+        data.push_back('\0');
+        string = (const char *)&data[0];
+    }
+    else
+    {
+        LogError("AvatarDescAssett::AddAttachment: Could not serialize attachment");
+        return;
+    }
+
     QDomDocument attachDoc("Attachment");
 
-    if (!attachDoc.setContent(data))
+    if (!attachDoc.setContent(string))
     {
         LogError("AvatarDescAsset::AddAttachment: Could not parse attachment data");
         return;

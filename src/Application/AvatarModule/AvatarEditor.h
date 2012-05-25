@@ -112,7 +112,7 @@ private slots:
     /** @param attachmentAsset The chosen attachment asset */
     void HandleAttachmentPicked(AssetPtr attachmentAsset);
 
-    /// Add the attachment to the avatar after checking its validity and serializing it to a string.
+    /// Add the attachment to the avatar after checking its validity.
     /** @param asset Succesfully loaded attachment asset to be added to the avatar.*/
     void AddAttachment(AssetPtr assetPtr);
 };

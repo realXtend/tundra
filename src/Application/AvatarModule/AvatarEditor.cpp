@@ -602,19 +602,10 @@ void AvatarEditor::AddAttachment(AssetPtr assetPtr)
         BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(assetPtr);
         if (assetData)
         {
-            std::vector<u8> data;
-            if (assetPtr->SerializeTo(data))
-            {
-                data.push_back('\0');
-                QString string((const char *)&data[0]);
-
-                if (avatarAsset_.lock())
-                    avatarAsset_.lock()->AddAttachment(string);
-                else
-                    LogError("AvatarEditor::AddAttachment: No avatar to attach to!");
-            }
+            if (avatarAsset_.lock())
+                avatarAsset_.lock()->AddAttachment(assetPtr);
             else
-                LogError("AvatarEditor::AddAttachment: Could not serialize data!");
+                LogError("AvatarEditor::AddAttachment: No avatar to attach to!");
         }
         else
             LogError("AvatarEditor::AddAttachment: null asset given.");
