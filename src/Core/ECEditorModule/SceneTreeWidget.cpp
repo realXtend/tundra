@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneTreeWidget.cpp
- *  @brief  Tree widget showing the scene structure.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneTreeWidget.cpp
+    @brief  Tree widget showing the scene structure. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -12,7 +11,6 @@
 #include "SceneTreeWidgetItems.h"
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
-#include "CoreException.h"
 #include "Scene.h"
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
@@ -265,8 +263,8 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     QAction *pasteAction = 0;
     bool pastePossible = false;
     {
-        QDomDocument scene_doc("Scene");
-        pastePossible = scene_doc.setContent(QApplication::clipboard()->text());
+        QDomDocument sceneDoc("Scene");
+        pastePossible = sceneDoc.setContent(QApplication::clipboard()->text());
         if (pastePossible)
         {
             pasteAction = new QAction(tr("Paste"), menu);
@@ -504,15 +502,15 @@ SceneTreeWidgetSelection SceneTreeWidget::SelectedItems() const
     return ret;
 }
 
-QString SceneTreeWidget::GetSelectionAsXml() const
+QString SceneTreeWidget::SelectionAsXml() const
 {
     SceneTreeWidgetSelection selection = SelectedItems();
     if (selection.IsEmpty())
         return QString();
 
     // Create root Scene element always for consistency, even if we only have one entity
-    QDomDocument scene_doc("Scene");
-    QDomElement scene_elem = scene_doc.createElement("scene");
+    QDomDocument sceneDoc("Scene");
+    QDomElement sceneElem = sceneDoc.createElement("scene");
 
     if (selection.HasEntities())
     {
@@ -521,19 +519,10 @@ QString SceneTreeWidget::GetSelectionAsXml() const
             EntityPtr entity = eItem->Entity();
             assert(entity);
             if (entity)
-            {
-                QDomElement entity_elem = scene_doc.createElement("entity");
-                entity_elem.setAttribute("id", QString::number((int)entity->Id()));
-
-                const Entity::ComponentMap &components = entity->Components();
-                for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-                    i->second->SerializeTo(scene_doc, entity_elem);
-
-                scene_elem.appendChild(entity_elem);
-            }
+                entity->SerializeToXML(sceneDoc, sceneElem);
         }
 
-        scene_doc.appendChild(scene_elem);
+        sceneDoc.appendChild(sceneElem);
     }
     else if (selection.HasComponents())
     {
@@ -541,13 +530,13 @@ QString SceneTreeWidget::GetSelectionAsXml() const
         {
             ComponentPtr component = cItem->Component();
             if (component)
-                component->SerializeTo(scene_doc, scene_elem);
+                component->SerializeTo(sceneDoc, sceneElem);
         }
 
-        scene_doc.appendChild(scene_elem);
+        sceneDoc.appendChild(sceneElem);
     }
 
-    return scene_doc.toString();
+    return sceneDoc.toString();
 }
 
 void SceneTreeWidget::LoadInvokeHistory()
@@ -555,29 +544,19 @@ void SceneTreeWidget::LoadInvokeHistory()
     invokeHistory.clear();
 
     // Load and parse invoke history from settings.
-    try
+    int idx = 0;
+    forever
     {
-        int idx = 0;
-        forever
-        {
-            QString setting = framework->Config()->Get("uimemory", "invoke history", QString("item%1").arg(idx), "").toString();
-            if (setting.isEmpty())
-                break;
-            invokeHistory.push_back(InvokeItem(setting));
-            ++idx;
-        }
+        QString setting = framework->Config()->Get("uimemory", "invoke history", QString("item%1").arg(idx), "").toString();
+        if (setting.isEmpty())
+            break;
+        invokeHistory.push_back(InvokeItem(setting));
+        ++idx;
+    }
 
-        // Set MRU order numbers.
-        for(int i = 0; i < invokeHistory.size(); ++i)
-            invokeHistory[i].mruOrder = invokeHistory.size() - i;
-    }
-    catch(const Exception &e)
-    {
-        LogError(std::string(e.what()));
-    }
-    catch(...)
-    {
-    }
+    // Set MRU order numbers.
+    for(int i = 0; i < invokeHistory.size(); ++i)
+        invokeHistory[i].mruOrder = invokeHistory.size() - i;
 }
 
 void SceneTreeWidget::SaveInvokeHistory()
@@ -611,8 +590,7 @@ void SceneTreeWidget::Edit()
 
     if (selection.HasComponents() || selection.HasEntities())
     {
-        // If we have an existing editor instance, use it.
-        if (ecEditors.size())
+        if (ecEditors.size()) // If we have an existing editor instance, use it.
         {
             ECEditorWindow *editor = ecEditors.back();
             if (editor)
@@ -631,11 +609,11 @@ void SceneTreeWidget::Edit()
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
         }
-        // If there isn't any active editors in ECEditorModule, create a new one.
-        else 
+        else // If there isn't any active editors in ECEditorModule, create a new one.
         {
-            editor = new ECEditorWindow(framework);
+            editor = new ECEditorWindow(framework, framework->Ui()->MainWindow());
             editor->setAttribute(Qt::WA_DeleteOnClose);
+            editor->setWindowFlags(Qt::Tool);
             ecEditors.push_back(editor);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
@@ -644,8 +622,6 @@ void SceneTreeWidget::Edit()
         //ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
         //ecEditor->hide();
 
-        editor->setParent(framework->Ui()->MainWindow());
-        editor->setWindowFlags(Qt::Tool);
         if (!editor->isVisible())
         {
             editor->show();
@@ -663,15 +639,13 @@ void SceneTreeWidget::EditInNew()
         return;
 
     // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
-    ECEditorWindow *editor = new ECEditorWindow(framework);
+    ECEditorWindow *editor = new ECEditorWindow(framework, framework->Ui()->MainWindow());
     editor->setAttribute(Qt::WA_DeleteOnClose);
+    editor->setWindowFlags(Qt::Tool);
     connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
     editor->AddEntities(selection.EntityIds(), true);
-
-    editor->setParent(framework->Ui()->MainWindow());
-    editor->setWindowFlags(Qt::Tool);
 
     /// \note Calling show and activate here makes the editor emit FocusChanged(this) twice in a row.
     editor->show();
@@ -871,7 +845,7 @@ void SceneTreeWidget::Delete()
 
 void SceneTreeWidget::Copy()
 {
-    QString sceneXml = GetSelectionAsXml();
+    QString sceneXml = SelectionAsXml();
     if (!sceneXml.isEmpty())
         QApplication::clipboard()->setText(sceneXml);
 }
@@ -883,15 +857,15 @@ void SceneTreeWidget::Paste()
 
     ScenePtr scenePtr = scene.lock();
     QString errorMsg;
-    QDomDocument scene_doc("Scene");
-    if (!scene_doc.setContent(QApplication::clipboard()->text(), false, &errorMsg))
+    QDomDocument sceneDoc("Scene");
+    if (!sceneDoc.setContent(QApplication::clipboard()->text(), false, &errorMsg))
     {
         LogError("Parsing scene XML from clipboard failed: " + errorMsg);
         return;
     }
 
     ///\todo Move all code below, except scene->CreateContentFromXml(), to Scene.
-    QDomElement sceneElem = scene_doc.firstChildElement("scene");
+    QDomElement sceneElem = sceneDoc.firstChildElement("scene");
     if (sceneElem.isNull())
         return;
 
@@ -939,7 +913,7 @@ void SceneTreeWidget::Paste()
         }
     }
 
-    scene.lock()->CreateContentFromXml(scene_doc, false, AttributeChange::Replicate);
+    scene.lock()->CreateContentFromXml(sceneDoc, false, AttributeChange::Replicate);
 }
 
 void SceneTreeWidget::SaveAs()
@@ -1222,11 +1196,10 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 
     if (fileExtension == cTundraXmlFileExtension)
     {
-        bytes = GetSelectionAsXml().toAscii();
+        bytes = SelectionAsXml().toAscii();
     }
-    else
+    else // Handle all other as binary.
     {
-        // Handle all other as binary.
         SceneTreeWidgetSelection sel = SelectedItems();
         if (!sel.IsEmpty())
         {
@@ -1291,9 +1264,9 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
     }
 
     if (binary)
-        scene.lock()->SaveSceneBinary(files[0], false, true);
+        scene.lock()->SaveSceneBinary(files[0], false, true); /**< @todo Possibility to choose whether or not save local and temporay */
     else
-        scene.lock()->SaveSceneXML(files[0], false, true);
+        scene.lock()->SaveSceneXML(files[0], false, true); /**< @todo Possibility to choose whether or not save local and temporay */
 }
 
 void SceneTreeWidget::ExportAllDialogClosed(int result)

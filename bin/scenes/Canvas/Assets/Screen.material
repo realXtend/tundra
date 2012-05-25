@@ -1,0 +1,21 @@
+material Screen
+{
+	receive_shadows off
+	technique
+	{
+		pass
+		{
+	        lighting off
+			ambient 1 1 1 1
+			diffuse 0 0 0 1
+			specular 0 0 0 1
+			emissive 0 0 0 1
+			texture_unit
+			{
+				texture LoadingScreen.png
+				tex_address_mode wrap
+				filtering trilinear
+			}
+		}
+	}
+}
