@@ -661,16 +661,17 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     {
         QString name = properties[i];
         QObject* serviceobject = framework_->property(name.toStdString().c_str()).value<QObject*>();
-        instance->RegisterService(serviceobject, name);
-        
-        if (checked.find(serviceobject) == checked.end())
+        if (instance->RegisterService(serviceobject, name))
         {
-            // Check if the service object has an OnScriptEngineCreated() slot, and give it a chance to perform further actions
-            const QMetaObject* meta = serviceobject->metaObject();
-            if (meta->indexOfSlot("OnScriptEngineCreated(QScriptEngine*)") != -1)
-                QObject::connect(this, SIGNAL(ScriptEngineCreated(QScriptEngine*)), serviceobject, SLOT(OnScriptEngineCreated(QScriptEngine*)));
-            
-            checked.insert(serviceobject);
+            if (checked.find(serviceobject) == checked.end())
+            {
+                // Check if the service object has an OnScriptEngineCreated() slot, and give it a chance to perform further actions
+                const QMetaObject* meta = serviceobject->metaObject();
+                if (meta->indexOfSlot("OnScriptEngineCreated(QScriptEngine*)") != -1)
+                    QObject::connect(this, SIGNAL(ScriptEngineCreated(QScriptEngine*)), serviceobject, SLOT(OnScriptEngineCreated(QScriptEngine*)));
+                
+                checked.insert(serviceobject);
+            }
         }
     }
 

@@ -29,8 +29,12 @@ public:
     /// Checks an asset id for validity
     /** @return true if this asset provider can handle the id */
     virtual bool IsValidRef(QString assetRef, QString assetType);
-            
+     
+    /// Requests a local asset, returns resulted transfer.
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
+    
+    /// Aborts the ongoing local transfer.
+    virtual bool AbortTransfer(IAssetTransfer *transfer);
 
     /// Performs time-based update 
     /** @param frametime Seconds since last frame */

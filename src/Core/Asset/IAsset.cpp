@@ -139,6 +139,12 @@ bool IAsset::LoadFromFile(QString filename)
 {
     PROFILE(IAsset_LoadFromFile);
     filename = filename.trimmed(); ///\todo Sanitate.
+    if (filename.isEmpty())   
+    {
+        LogDebug("LoadFromFile failed for asset \"" + Name() + "\", given file path is empty!");
+        return false;
+    }
+
     std::vector<u8> fileData;
     bool success = LoadFileToVector(filename, fileData);
     if (!success)
@@ -167,12 +173,8 @@ bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes, bool allowAsy
         LogDebug("LoadFromFileInMemory failed for asset \"" + ToString() + "\"! No data present!");
         return false;
     }
-    
-    bool success = DeserializeFromData(data, numBytes, allowAsynchronous);
-    /// Automatically call AssetAPI::AssetLoadFailed if load failed.
-    if (!success)
-        assetAPI->AssetLoadFailed(Name());
-    return success;
+
+    return DeserializeFromData(data, numBytes, allowAsynchronous);
 }
 
 void IAsset::DependencyLoaded(AssetPtr dependee)
