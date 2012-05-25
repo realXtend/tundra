@@ -21,6 +21,7 @@ v2.3.3 - https://github.com/realXtend/naali/compare/tundra2.3.2...tundra2.3.3
  - Recompute the rigid body inertia tensors when the body parameters have changed. (#469, #475)
  - Fixed certain security-related crashes in QtScript array handling.
  - Scene structure "Save as.." no longer writes components marked as 'temporary' to disk. (#482)
+ - Now immediately unloads all assets from memory and aborts all asset transfers when disconnecting from a server. (#472, #480)
  - Other closed issues: #320, #146, #12, #157, #160
 
 v2.3.2 - https://github.com/realXtend/naali/compare/tundra2.3.1...tundra2.3.2
