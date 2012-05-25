@@ -27,12 +27,18 @@ public:
                or if the provider in question does not need the type information, this can be left blank. */
     virtual bool IsValidRef(QString assetRef, QString assetType) = 0;
 
+    /// Request asset with assetRef and assetType from this provider.
+    /** @return Initiated asset transfer. Note that this can be null. */
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType) = 0;
+    
+    /// Aborts the ongoing transfer, returns true if successful and false otherwise.
+    /** Override this function in a provider implementation if it supports aborting. */
+    virtual bool AbortTransfer(IAssetTransfer *transfer) { return false; }
 
     /// Performs time-based update of asset provider, to for example handle timeouts.
-    /// The system will call this periodically for all registered asset providers, so
-    /// it does not need to be called manually.
-    /// @param frametime Seconds since last frame
+    /** The system will call this periodically for all registered asset providers, so
+        it does not need to be called manually.
+        @param frametime Seconds since last frame */
     virtual void Update(f64 frametime) {}
 
     /// Issues an asset deletion request to the asset storage and provider this asset resides in.

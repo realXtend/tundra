@@ -1157,10 +1157,6 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     // 1) It could be a real AssetTransfer from a real AssetProvider.
     // 2) It could be an AssetTransfer to an Asset that was already downloaded before, in which case transfer_->asset is already filled and loaded at this point.
     // 3) It could be an AssetTransfer that was fulfilled from the disk cache, in which case no AssetProvider was invoked to get here. (we used the readyTransfers queue for this).
-   
-    // If the transfer was aborted before getting here ignore it. This will happen on eg. ForgetAllAssets().
-    if (transfer_->Aborted())
-        return;
         
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
     //LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
@@ -1235,10 +1231,6 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
     if (!transfer)
         return;
         
-    // If the transfer has been aborted ignore it without logging errors for failure. Aborted means we are not tracking the transfer, eg. ForgetAllAssets() was called.
-    if (transfer->Aborted())
-        return;
-
     LogError("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" failed! Reason: \"" + reason + "\"");
 
     ///\todo In this function, there is a danger of reaching an infinite recursion. Remember recursion parents and avoid infinite loops. (A -> B -> C -> A)

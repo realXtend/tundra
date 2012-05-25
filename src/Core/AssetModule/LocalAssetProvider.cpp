@@ -88,6 +88,24 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
     return transfer;
 }
 
+bool LocalAssetProvider::AbortTransfer(IAssetTransfer *transfer)
+{
+    if (!transfer)
+        return false;
+
+    for (std::vector<AssetTransferPtr>::iterator iter = pendingDownloads.begin(); iter != pendingDownloads.end(); ++iter)
+    {
+        AssetTransferPtr ongoingTransfer = (*iter);
+        if (ongoingTransfer.get() == transfer)
+        {
+            transfer->EmitAssetFailed("Transfer aborted.");
+            pendingDownloads.erase(iter);
+            return true;
+        }
+    }
+    return false;
+}
+
 QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetStoragePtr *storage) const
 {
     QString path;
@@ -289,11 +307,6 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 
         AssetTransferPtr transfer = pendingDownloads.back();
         pendingDownloads.pop_back();
-
-        // Stop here if aborted, don't do caching or notify AssetAPI 
-        // of the completion as it is not interested in it if aborted.
-        if (transfer->Aborted())
-            continue;
             
         QString ref = transfer->source.ref;
 
