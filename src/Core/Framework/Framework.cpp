@@ -32,6 +32,8 @@
 
 #include "MemoryLeakCheck.h"
 
+namespace
+{
 /// Temporary utility structure for storing supported command line parameters and their descriptions.
 /** @cond PRIVATE */
 struct CommandLineParameterMap
@@ -91,6 +93,8 @@ struct CommandLineParameterMap
 };
 /** @endcond */
 
+} //~unnamed namespace
+
 Framework *Framework::instance = 0;
 
 Framework::Framework(int argc_, char** argv_) :
@@ -142,6 +146,8 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--console"] = "Shows a text-based console along with the main UI window.";
     cmdLineDescs.commands["--sharedConsole"] = "Same as '--console' but attaches the Tundra console to the parent process, without creating new command prompt for the console.";
     cmdLineDescs.commands["--perfHud"] = "Use Ogre with NVIDIA PerfHUD enabled, if applicable.";
+    cmdLineDescs.commands["--d3d9"] = "Use Ogre with \"Direct3D9 Rendering Subsystem\", overrides the option that was set in config.";
+    cmdLineDescs.commands["--direct3d9"] = "Same as --d3d9.";
 #endif
     cmdLineDescs.commands["--help"] = "Produces help message."; // Framework
     cmdLineDescs.commands["--version"] = "Produces version information."; // Framework
@@ -175,7 +181,15 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--autoDxtCompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
     cmdLineDescs.commands["--maxTextureSize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
     cmdLineDescs.commands["--variablePhysicsStep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
-    
+    cmdLineDescs.commands["--opengl"] = "Use Ogre with \"OpenGL Rendering Subsystem\" for rendering, overrides the option that was set in config.";
+    cmdLineDescs.commands["--nullRenderer"] = "Disables all Ogre rendering operations."; // OgreRenderingModule
+    cmdLineDescs.commands["--ogreCaptureTopWindow"] = "On some systems, the Ogre rendering output is overdrawn by the desktop compositing manager, "
+        "but the actual cause of this is uncertain. As a workaround, try this switch to make Ogre output directly on the main window handle of the UI chain. "
+        "However, this might introduce graphical issues."; // OgreRenderingModule
+    cmdLineDescs.commands["--noUiCompositing"] = "Disables the UI compositing, use for debugging purposes only."; // Framework & OgreRenderingModule
+    cmdLineDescs.commands["--noCentralWidget"] = "Disables the usage of QMainWindow's central widget."; // Framework
+    cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
+
     apiVersionInfo = new VersionInfo(Application::Version());
     applicationVersionInfo = new VersionInfo(Application::Version());
 
