@@ -1,6 +1,6 @@
 print("Loading ui example script.");
 
-// Widget that will get destoyed when the script instance is termited.
+// Widget that will get destoyed when the script instance is terminated.
 var widget = ui.LoadFromFile("./jsmodules/apitest/time_counter/time_counter.ui", false);
 var proxy = new UiProxyWidget(widget);
 ui.AddProxyWidgetToScene(proxy);
@@ -9,7 +9,7 @@ proxy.y = 50;
 proxy.visible = true;
 proxy.windowFlags = 0; //Qt::Widget
 
-// Same but the widget wont get destoyed when the script instance is termited.
+// Same but the widget wont get destoyed when the script instance is terminated.
 var widget2 = ui.LoadFromFile("./jsmodules/apitest/time_counter/time_counter.ui", false);
 var proxy2 = ui.AddWidgetToScene(widget2);
 proxy2.x = 600;

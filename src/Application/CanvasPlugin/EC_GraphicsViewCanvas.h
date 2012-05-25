@@ -28,7 +28,7 @@ class RedirectedPaintWidget;
     The material at the EC_Mesh at index which @c submesh points to is cloned for the usage of this component.
     Only material with single texture unit supported.
 
-    @todo Keyboard input. */
+    @todo Implement keyboard input. */
 class EC_GraphicsViewCanvas : public IComponent
 {
     Q_OBJECT
@@ -80,8 +80,8 @@ private slots:
     void UpdateTexture();
 
 private:
-    void SendMouseEvent(QEvent::Type type, const QPointF &point, Qt::MouseButton button,
-        Qt::MouseButtons mouseButtons, Qt::KeyboardModifiers keyboardModifiers);
+    void SendMouseEvent(QEvent::Type type, const QPointF &point, MouseEvent *e);
+    void SendMouseScrollEvent(MouseEvent *e, const QPointF &ptOnScene);
     Ogre::MaterialPtr OgreMaterial() const;
 
     QGraphicsScene *graphicsScene;

@@ -59,7 +59,7 @@ public slots:
         @param x Horizontal position for the origin of the ray
         @param y Vertical position for the origin of the ray
         @param layerMask Which selection layer(s) to use (bitmask)
-        @return Raycast result structure */
+        @return Raycast result structure, *never* a null pointer, use RaycastResult::entity to see if raycast hit something. */
     RaycastResult* Raycast(int x, int y, unsigned layerMask);
     /// @overload
     /** Does raycast into the world from viewport coordinates, using all selection layers
@@ -96,7 +96,7 @@ public slots:
     OgreRenderer::Renderer* Renderer() const { return renderer_; }
 
     /// Return the Ogre scene manager
-    Ogre::SceneManager* OgreSceneManager() { return sceneManager_; }
+    Ogre::SceneManager* OgreSceneManager() const { return sceneManager_; }
 
     /// Return the parent scene
     ScenePtr Scene() const { return scene_.lock(); }

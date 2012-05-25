@@ -238,6 +238,28 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     return transfer;
 }
 
+bool HttpAssetProvider::AbortTransfer(IAssetTransfer *transfer)
+{
+    if (!transfer)
+        return false;
+
+    for (TransferMap::iterator iter = transfers.begin(); iter != transfers.end(); ++iter)
+    {
+        AssetTransferPtr ongoingTransfer = iter->second;
+        if (ongoingTransfer.get() == transfer)
+        {
+            transfer->EmitAssetFailed("Transfer aborted.");
+            transfers.erase(iter);
+            
+            // Abort last as it will invoke a call to OnHttpTransferFinished.
+            if (iter->first)
+                iter->first->abort();
+            return true;
+        }
+    }
+    return false;
+}
+
 AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName)
 {
     if (!networkAccessManager)
@@ -356,12 +378,11 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     {
     case QNetworkAccessManager::GetOperation:
     {
+        // If the transfer is not in our transfers map it was aborted via AbortTransfer.
         TransferMap::iterator iter = transfers.find(reply);
         if (iter == transfers.end())
-        {
-            LogError("GetOperation: Received a finish signal of an unknown Http transfer!");
             return;
-        }
+
         HttpAssetTransferPtr transfer = iter->second;
         assert(transfer);
         transfer->rawAssetData.clear();

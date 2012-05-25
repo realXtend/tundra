@@ -107,11 +107,11 @@ void EC_GraphicsViewCanvas::OnAttributeUpdated(IAttribute *attribute)
 {
     if (attribute == &outputTexture)
     {
-        AssetPtr videoSurface = framework->Asset()->GetAsset(outputTexture.Get());
-        if (!videoSurface && !framework->IsHeadless())
+        AssetPtr canvasSurface = framework->Asset()->GetAsset(outputTexture.Get());
+        if (!canvasSurface && !framework->IsHeadless())
         {
-            videoSurface = framework->Asset()->CreateNewAsset("Texture", outputTexture.Get());
-            if (!videoSurface)
+            canvasSurface = framework->Asset()->CreateNewAsset("Texture", outputTexture.Get());
+            if (!canvasSurface)
                 ::LogError("Failed to create texture \"" + outputTexture.Get() + "\" for EC_GraphicsViewCanvas!");
         }
     }
@@ -172,16 +172,16 @@ void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
     switch(mouseEvent->eventType)
     {
     case MouseEvent::MouseMove:
-        SendMouseEvent(QEvent::GraphicsSceneMouseMove, ptOnScene, Qt::NoButton,
-            (Qt::MouseButtons)mouseEvent->otherButtons, (Qt::KeyboardModifiers)mouseEvent->modifiers);
+        SendMouseEvent(QEvent::GraphicsSceneMouseMove, ptOnScene, mouseEvent);
+        break;
+    case MouseEvent::MouseScroll:
+        SendMouseScrollEvent(mouseEvent, ptOnScene);
         break;
     case MouseEvent::MousePressed:
-        SendMouseEvent(QEvent::GraphicsSceneMousePress, ptOnScene, (Qt::MouseButton)mouseEvent->button,
-            (Qt::MouseButtons)mouseEvent->otherButtons, (Qt::KeyboardModifiers)mouseEvent->modifiers);
+        SendMouseEvent(QEvent::GraphicsSceneMousePress, ptOnScene, mouseEvent);
         break;
     case MouseEvent::MouseReleased:
-        SendMouseEvent(QEvent::GraphicsSceneMouseRelease, ptOnScene, (Qt::MouseButton)mouseEvent->button,
-            (Qt::MouseButtons)mouseEvent->otherButtons, (Qt::KeyboardModifiers)mouseEvent->modifiers);
+        SendMouseEvent(QEvent::GraphicsSceneMouseRelease, ptOnScene, mouseEvent);
         break;
     default:
         break;
@@ -326,16 +326,16 @@ Ogre::MaterialPtr EC_GraphicsViewCanvas::OgreMaterial() const
     if (!mesh)
         return Ogre::MaterialPtr();
 
-    int meshIndex = submesh.Get();
-    if (meshIndex < 0 || meshIndex >= (int)mesh->GetNumMaterials())
+    uint meshIndex = submesh.Get();
+    if (meshIndex >= mesh->GetNumMaterials())
         return Ogre::MaterialPtr();
 
     return Ogre::MaterialManager::getSingleton().getByName(mesh->GetMaterialName(meshIndex));
 }
 
-void EC_GraphicsViewCanvas::SendMouseEvent(QEvent::Type type, const QPointF &point, Qt::MouseButton button,
-    Qt::MouseButtons mouseButtons, Qt::KeyboardModifiers keyboardModifiers)
+void EC_GraphicsViewCanvas::SendMouseEvent(QEvent::Type type, const QPointF &point, MouseEvent *e)
 {
+    Qt::MouseButton button = (type == QEvent::GraphicsSceneMouseMove ? Qt::NoButton : (Qt::MouseButton)e->button);
     QGraphicsSceneMouseEvent mouseEvent(type);
     mouseEvent.setButtonDownScenePos(button, point);
     mouseEvent.setButtonDownScreenPos(button, point.toPoint());
@@ -345,9 +345,23 @@ void EC_GraphicsViewCanvas::SendMouseEvent(QEvent::Type type, const QPointF &poi
     mouseEvent.setLastScenePos(point);
     mouseEvent.setLastScreenPos(point.toPoint());
     mouseEvent.setButton(button);
-    mouseEvent.setButtons(mouseButtons);
+    mouseEvent.setButtons((Qt::MouseButtons)e->otherButtons);
 
-    mouseEvent.setModifiers(keyboardModifiers);
+    mouseEvent.setModifiers((Qt::KeyboardModifiers)e->modifiers);
+    mouseEvent.setAccepted(false);
+
+    QApplication::sendEvent(graphicsView->scene(), &mouseEvent);
+}
+
+void EC_GraphicsViewCanvas::SendMouseScrollEvent(MouseEvent *e, const QPointF &ptOnScene)
+{
+    QGraphicsSceneWheelEvent mouseEvent(QEvent::GraphicsSceneWheel);
+    mouseEvent.setScenePos(ptOnScene);
+    mouseEvent.setScreenPos(ptOnScene.toPoint());
+    mouseEvent.setButtons((Qt::MouseButtons)e->button);
+    mouseEvent.setDelta(e->relativeZ);
+    mouseEvent.setModifiers((Qt::KeyboardModifiers)e->modifiers);
+    mouseEvent.setOrientation(Qt::Vertical);
     mouseEvent.setAccepted(false);
 
     QApplication::sendEvent(graphicsView->scene(), &mouseEvent);

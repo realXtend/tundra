@@ -591,34 +591,28 @@ void AvatarEditor::AddAttachment(AssetPtr assetPtr)
         LogError("AvatarEditor::AddAttachment: null asset given.");
         return;
     }
-    else if (assetPtr->Type() != "AvatarAttachment")
+    if (assetPtr->Type() != "AvatarAttachment")
     {
         LogError("AvatarEditor::AddAttachment: not an attachment asset");
         return;
     }
-    else
-    {
-        // Check that the assetPtr is a BinaryAssetPtr
-        BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(assetPtr);
-        if (assetData)
-        {
-            std::vector<u8> data;
-            if (assetPtr->SerializeTo(data))
-            {
-                data.push_back('\0');
-                QString string((const char *)&data[0]);
 
-                if (avatarAsset_.lock())
-                    avatarAsset_.lock()->AddAttachment(string);
-                else
-                    LogError("AvatarEditor::AddAttachment: No avatar to attach to!");
-            }
-            else
-                LogError("AvatarEditor::AddAttachment: Could not serialize data!");
-        }
-        else
-            LogError("AvatarEditor::AddAttachment: null asset given.");
+    // Check that the assetPtr is a BinaryAssetPtr
+    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(assetPtr);
+    if (!assetData)
+    {
+        LogError("AvatarEditor::AddAttachment: Cannot add asset '" + assetPtr->Name() + "' as attachment, it is not a binary asset!");
+        return;
     }
+    
+    boost::shared_ptr<AvatarDescAsset> avatar = avatarAsset_.lock();
+    if (!avatar)
+    {
+        LogError("AvatarEditor::AddAttachment: Cannot add attachment '" + assetPtr->Name() + "' to avatar: no avatar to attach to!");
+        return;
+    }
+
+    avatar->AddAttachment(assetPtr);
 }
 
 QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name)

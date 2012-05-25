@@ -1,6 +1,7 @@
 # Disallow committing anything to deps
 deps
 deps/*
+deps-prebuilt/*
 
 # Visual studio -specific ignores.
 *.suo

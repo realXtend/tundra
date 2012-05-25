@@ -6,6 +6,7 @@
 #include "AvatarModuleApi.h"
 
 #include <QPointer>
+#include <QScriptEngine>
 
 class AvatarEditor;
 
@@ -35,4 +36,8 @@ public slots:
 
 private:
     QPointer<AvatarEditor> avatarEditor;
+
+private slots:
+    /// Registers avatar module variable types for QScript.
+    void OnScriptEngineCreated(QScriptEngine* engine);
 };
