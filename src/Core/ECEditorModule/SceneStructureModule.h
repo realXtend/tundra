@@ -144,6 +144,6 @@ private slots:
 
     void HandleSceneDescFailed(IAssetTransfer *transfer, QString reason);
 
-    /// Decorates entities in SceneStructureWindow's to reflect the selection of currently active ECEditorWindow.
+    /// Decorates entities in SceneStructureWindow to reflect the selection of currently active ECEditorWindow.
     void SyncSelectionWithEcEditor(ECEditorWindow *);
 };

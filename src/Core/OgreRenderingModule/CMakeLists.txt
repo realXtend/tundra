@@ -30,10 +30,6 @@ include_directories (libsquish)
 
 add_definitions(-DOGRE_MODULE_EXPORTS)
 
-if (ENABLE_NVIDIA_PERFHUD)
-    add_definitions(-DUSE_NVIDIA_PERFHUD)
-endif()
-
 use_package_assimp()
 use_core_modules(Framework Math Scene Ui Asset Console)
 
