@@ -378,7 +378,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     {
     case QNetworkAccessManager::GetOperation:
     {
-        // If the transfer is not in our transfers map it was aborted via AbortTrasnfer.
+        // If the transfer is not in our transfers map it was aborted via AbortTransfer.
         TransferMap::iterator iter = transfers.find(reply);
         if (iter == transfers.end())
             return;

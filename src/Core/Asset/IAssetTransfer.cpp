@@ -39,7 +39,7 @@ bool IAssetTransfer::Abort()
         return provider.lock()->AbortTransfer(this);
     else
     {    
-        LogWarning("IAssetTransfer::Abort() Provider is null, cannot call IAssetProvide::AbortTransfer()."); 
+        LogWarning("IAssetTransfer::Abort() Provider is null, cannot call IAssetProvider::AbortTransfer()."); 
         return false;
     }
 }
