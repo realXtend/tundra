@@ -387,23 +387,26 @@ void EC_RigidBody::ReaddBody()
 {
     if ((!world_) || (!ParentEntity()) || (!body_))
         return;
-    
+
     btVector3 localInertia;
     float m;
     int collisionFlags;
-    
     GetProperties(localInertia, m, collisionFlags);
-    
+
+    world_->BulletWorld()->removeRigidBody(body_);
+
     body_->setCollisionShape(shape_);
     body_->setMassProps(m, localInertia);
     body_->setCollisionFlags(collisionFlags);
-    
-    world_->BulletWorld()->removeRigidBody(body_);
+
+    // We have changed the inertia tensor properties of the object, so recompute it.
+    // http://www.bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=5194&hilit=inertia+tensor#p18820
+    body_->updateInertiaTensor();
+
     world_->BulletWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
     body_->clearForces();
     body_->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
     body_->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
-    body_->updateInertiaTensor();
     body_->activate();
 }
 
@@ -643,6 +646,10 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
         // in an unintended location
         UpdatePosRotFromPlaceable();
         UpdateScale();
+
+        // Since we programmatically changed the orientation of the object outside the simulation, we must recompute the 
+        // inertia tensor matrix of the object manually (it's dependent on the world space orientation of the object)
+        body_->updateInertiaTensor();
     }
 }
 
