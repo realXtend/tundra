@@ -559,27 +559,23 @@ void AvatarDescAsset::RemoveAttachmentsByCategory(QString category)
     }
 
     // Remove the attachments, starting from the end of the vector.
-    for (int i = toRemove.size(); i > 0; i--)
-        RemoveAttachment(toRemove[i-1]);
+    for (int i = toRemove.size()-1; i >= 0; --i)
+        RemoveAttachment(toRemove[i]);
 }
 
 void AvatarDescAsset::AddAttachment(AssetPtr assetPtr)
 {
     std::vector<u8> data;
-    QString string;
-    if (assetPtr->SerializeTo(data))
-    {
-        data.push_back('\0');
-        string = (const char *)&data[0];
-    }
-    else
+    bool success = assetPtr->SerializeTo(data);
+    if (!success || data.size() == 0)
     {
         LogError("AvatarDescAssett::AddAttachment: Could not serialize attachment");
         return;
     }
 
-    QDomDocument attachDoc("Attachment");
+    QString string = QString::fromUtf8((char*)&data[0], data.size());
 
+    QDomDocument attachDoc("Attachment");
     if (!attachDoc.setContent(string))
     {
         LogError("AvatarDescAsset::AddAttachment: Could not parse attachment data");

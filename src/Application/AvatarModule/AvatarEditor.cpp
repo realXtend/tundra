@@ -591,25 +591,28 @@ void AvatarEditor::AddAttachment(AssetPtr assetPtr)
         LogError("AvatarEditor::AddAttachment: null asset given.");
         return;
     }
-    else if (assetPtr->Type() != "AvatarAttachment")
+    if (assetPtr->Type() != "AvatarAttachment")
     {
         LogError("AvatarEditor::AddAttachment: not an attachment asset");
         return;
     }
-    else
+
+    // Check that the assetPtr is a BinaryAssetPtr
+    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(assetPtr);
+    if (!assetData)
     {
-        // Check that the assetPtr is a BinaryAssetPtr
-        BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(assetPtr);
-        if (assetData)
-        {
-            if (avatarAsset_.lock())
-                avatarAsset_.lock()->AddAttachment(assetPtr);
-            else
-                LogError("AvatarEditor::AddAttachment: No avatar to attach to!");
-        }
-        else
-            LogError("AvatarEditor::AddAttachment: null asset given.");
+        LogError("AvatarEditor::AddAttachment: Cannot add asset '" + assetPtr->Name() + "' as attachment, it is not a binary asset!");
+        return;
     }
+    
+    boost::shared_ptr<AvatarDescAsset> avatar = avatarAsset_.lock();
+    if (!avatar)
+    {
+        LogError("AvatarEditor::AddAttachment: Cannot add attachment '" + assetPtr->Name() + "' to avatar: no avatar to attach to!");
+        return;
+    }
+
+    avatar->AddAttachment(assetPtr);
 }
 
 QWidget* AvatarEditor::GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name)
