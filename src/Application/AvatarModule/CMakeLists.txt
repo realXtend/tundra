@@ -22,13 +22,14 @@ QT4_WRAP_UI (UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_core_modules(Framework Math Scene OgreRenderingModule Asset Console ECEditorModule)
+use_core_modules(Framework Math Scene OgreRenderingModule Asset Console JavascriptModule)
+use_app_modules(ECEditorModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Linking
 link_ogre ()
-link_modules(Framework Math Scene OgreRenderingModule Asset Console ECEditorModule)
+link_modules(Framework Math Scene OgreRenderingModule Asset Console JavascriptModule ECEditorModule)
 
 SetupCompileFlagsWithPCH()
 
