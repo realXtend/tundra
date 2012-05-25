@@ -18,6 +18,7 @@
 #include "CoreStringUtils.h"
 #include "SceneAPI.h"
 #include "Scene.h"
+#include "AssetAPI.h"
 #include "Application.h"
 
 #include <kNet.h>
@@ -190,6 +191,7 @@ void Client::DoLogout(bool fail)
         client_id_ = 0;
         
         framework_->Scene()->RemoveScene("TundraClient");
+        framework_->Asset()->ForgetAllAssets();
         
         emit Disconnected();
     }

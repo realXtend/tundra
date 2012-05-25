@@ -626,8 +626,12 @@ void AssetAPI::ForgetAllAssets()
 {
     while(assets.size() > 0)
         ForgetAsset(assets.begin()->second, false); // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
-
     assets.clear();
+    
+    // We need to abort all current transfers, otherwise the transfers will call AssetTransferCompleted/Failed 
+    // that will in turn load the asset to memory even if no tracking transfer is found.
+    for(AssetTransferMap::const_iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
+        iter->second->Abort();
     currentTransfers.clear();
 }
 
@@ -1146,13 +1150,14 @@ AssetTransferMap::const_iterator AssetAPI::FindTransferIterator(IAssetTransfer *
 void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 {
     PROFILE(AssetAPI_AssetTransferCompleted);
-
+    
+    assert(transfer_);
+    
     // At this point, the transfer can originate from several different things:
     // 1) It could be a real AssetTransfer from a real AssetProvider.
     // 2) It could be an AssetTransfer to an Asset that was already downloaded before, in which case transfer_->asset is already filled and loaded at this point.
     // 3) It could be an AssetTransfer that was fulfilled from the disk cache, in which case no AssetProvider was invoked to get here. (we used the readyTransfers queue for this).
-
-    assert(transfer_);
+        
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
     //LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
 
@@ -1205,29 +1210,19 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
     transfer->EmitAssetDownloaded();
 
+    bool success = false;
     const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
     if (data)
-        transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
+        success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
     else
-        transfer->asset->LoadFromFile(transfer->asset->DiskSource());
+        success = transfer->asset->LoadFromFile(transfer->asset->DiskSource());
 
-    //bool success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
-    //if (!success)
-    //{
-    //    QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
-    //    transfer->EmitAssetFailed(error);
-    //    return;
-    //}
-
-    //if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
-    //    diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
-
-    //// If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
-    //RequestAssetDependencies(transfer->asset);
-
-    //// If we don't have any outstanding dependencies, succeed and remove the transfer
-    //if (NumPendingDependencies(transfer->asset) == 0)
-    //    AssetDependenciesCompleted(transfer);
+    // If the load from either of in memory data or file data failed, update the internal state.
+    // Otherwise the transfer will be left dangling in currentTransfers. For successful loads
+    // we do no need to call AssetLoadCompleted because success can mean asynchronous loading,
+    // in which case the call will arrive once the asynchronous loading is completed.
+    if (!success)
+        AssetLoadFailed(transfer->asset->Name());
 }
 
 void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
@@ -1235,7 +1230,7 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
     assert(transfer);
     if (!transfer)
         return;
-
+        
     LogError("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" failed! Reason: \"" + reason + "\"");
 
     ///\todo In this function, there is a danger of reaching an infinite recursion. Remember recursion parents and avoid infinite loops. (A -> B -> C -> A)
@@ -1322,9 +1317,8 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
 
         // If we don't have any outstanding dependencies 
         // for the transfer, succeed and remove the transfer
-        if (iter != currentTransfers.end())
-            if (!HasPendingDependencies(asset))
-                AssetDependenciesCompleted(iter->second);
+        if (iter != currentTransfers.end() && !HasPendingDependencies(asset))
+            AssetDependenciesCompleted(iter->second);
     }
     else
         LogError("AssetAPI: Asset \"" + assetRef + "\" load completed, but no corresponding transfer or existing asset is being tracked!");
@@ -1332,15 +1326,14 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
 
 void AssetAPI::AssetLoadFailed(const QString assetRef)
 {
-    AssetTransferMap::const_iterator iter = FindTransferIterator(assetRef);
+    AssetTransferMap::iterator iter = FindTransferIterator(assetRef);
     AssetMap::const_iterator iter2 = assets.find(assetRef);
 
     if (iter != currentTransfers.end())
     {
         AssetTransferPtr transfer = iter->second;
-
-        QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
-        transfer->EmitAssetFailed(error);
+        transfer->EmitAssetFailed("Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
+        currentTransfers.erase(iter);
     }
     else if (iter2 != assets.end())
         LogError("AssetAPI: Failed to reload asset '" + iter2->second->Name());

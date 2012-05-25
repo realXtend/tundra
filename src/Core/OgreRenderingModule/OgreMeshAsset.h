@@ -20,8 +20,8 @@ class OGRE_MODULE_API OgreMeshAsset : public IAsset, Ogre::ResourceBackgroundQue
     Q_OBJECT
 
 public:
-    OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-    :IAsset(owner, type_, name_)
+    OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+        IAsset(owner, type_, name_), loadTicket_(0)
     {
     }
 

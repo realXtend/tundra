@@ -312,21 +312,22 @@ void JavascriptInstance::Run()
     emit ScriptEvaluated();
 }
 
-void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &name)
+bool JavascriptInstance::RegisterService(QObject *serviceObject, const QString &name)
 {
     if (!engine_)
     {
         LogError("JavascriptInstance::RegisterService: No Qt script engine created when trying to register service to js script instance.");
-        return;
+        return false;
     }
     if (!serviceObject)
     {
         LogError("JavascriptInstance::RegisterService: Trying to pass a null service object pointer to RegisterService!");
-        return;
+        return false;
     }
 
     QScriptValue scriptValue = engine_->newQObject(serviceObject);
     engine_->globalObject().setProperty(name, scriptValue);
+    return true;
 }
 
 void JavascriptInstance::IncludeFile(const QString &path)
