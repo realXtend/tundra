@@ -44,20 +44,22 @@ macro (configure_protobuf)
 
     if (MSVC)
         if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
-            SET(PROTOBUF_SRC_ROOT_FOLDER $ENV{PROTOBUF_SRC_ROOT_FOLDER})
+            file (TO_CMAKE_PATH "$ENV{PROTOBUF_SRC_ROOT_FOLDER}" PROTOBUF_SRC_ROOT_FOLDER)
         endif()
         if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
             SET(PROTOBUF_SRC_ROOT_FOLDER ${ENV_TUNDRA_DEP_PATH}/protobuf)
         endif()
 
         find_package(Protobuf REQUIRED)
-    
+
         # Stupid FindProtobuf.cmake does not find includes on windows for packaged deps, set manually.
         # It is assuming include path is <protobuf>/vcprojects/include on windows, ARGH!
         if ("${PROTOBUF_INCLUDE_DIR}" STREQUAL "PROTOBUF_INCLUDE_DIR-NOTFOUND")
+            # ~Hack for prebuilt deps. todo: change the structure in prebuilt deps so this goes away!
             if (IS_DIRECTORY ${PROTOBUF_SRC_ROOT_FOLDER}/include)
                 set (PROTOBUF_INCLUDE_DIR ${PROTOBUF_SRC_ROOT_FOLDER}/include)
                 set (PROTOBUF_INCLUDE_DIRS ${PROTOBUF_SRC_ROOT_FOLDER}/include)
+                set (PROTOBUF_FOUND 1)
             else()
                 message(FATAL_ERROR "Could not detect include folder from ${PROTOBUF_SRC_ROOT_FOLDER}/include")
             endif()

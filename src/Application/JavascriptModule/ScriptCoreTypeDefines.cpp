@@ -274,6 +274,7 @@ void fromScriptValueEntityStdList(const QScriptValue &obj, EntityList &ents)
 
 QScriptValue toScriptValueEntityStdList(QScriptEngine *engine, const EntityList &ents)
 {
+    // Expose the list of entities as a JavaScript _numeric_ array. (array[0]: first entity, array[1]: second entity, etc.)
     QScriptValue obj = engine->newArray();
     std::list<EntityPtr>::const_iterator iter = ents.begin();
     int i = 0;
@@ -292,7 +293,8 @@ QScriptValue toScriptValueEntityStdList(QScriptEngine *engine, const EntityList 
 
 QScriptValue toScriptValueEntityMap(QScriptEngine *engine, const Scene::EntityMap &entities)
 {
-    QScriptValue obj = engine->newArray();
+    // Expose the set of entities as a JavaScript _associative_ array. (array[entity1Id] = entity1, etc.)
+    QScriptValue obj = engine->newObject();
     Scene::EntityMap::const_iterator iter = entities.begin();
     while(iter != entities.end())
     {
@@ -313,7 +315,7 @@ void fromScriptValueEntityMap(const QScriptValue &obj, Scene::EntityMap &entitie
         QObject *o = it.value().toQObject();
         if (o)
         {
-            Entity *e= qobject_cast<Entity *>(o);
+            Entity *e = qobject_cast<Entity *>(o);
             if (e)
                 entities[e->Id()] = e->shared_from_this();
         }
@@ -322,7 +324,8 @@ void fromScriptValueEntityMap(const QScriptValue &obj, Scene::EntityMap &entitie
 
 QScriptValue toScriptValueComponentMap(QScriptEngine *engine, const Entity::ComponentMap &components)
 {
-    QScriptValue obj = engine->newArray();
+    // Expose the set of components as a JavaScript _associative_ array. (array[component1Id] = component11, etc.)
+    QScriptValue obj = engine->newObject();
     Entity::ComponentMap::const_iterator iter = components.begin();
     while(iter != components.end())
     {
@@ -343,7 +346,7 @@ void fromScriptValueComponentMap(const QScriptValue &obj, Entity::ComponentMap &
         QObject *o = it.value().toQObject();
         if (o)
         {
-            IComponent *c= qobject_cast<IComponent  *>(o);
+            IComponent *c = qobject_cast<IComponent  *>(o);
             if (c)
                 components[c->TypeId()] = c->shared_from_this();
         }

@@ -3,9 +3,8 @@
 frame.Updated.connect(Update);
 function Update(dt)
 {
-    var entities = scene.GetAllEntities();
-
-    for(i = 0; i < entities.length; i++)
+    var entities = scene.Entities();
+    for(i in entities)
     {
         var pos = entities[i].GetComponent("EC_Placeable");
         if (pos != null && pos.transform.pos.y < -200)

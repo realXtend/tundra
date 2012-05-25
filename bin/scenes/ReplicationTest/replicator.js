@@ -13,13 +13,30 @@ else
     frame.Updated.connect(PerformOperation);
 }
 
+function associativeArrayLength(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
+function getNthElement(associativeArray, n)
+{
+    for(i in associativeArray)
+        if (n-- == 0)
+            return associativeArray[i];
+            
+    return null;  
+}
+
 function PerformOperation()
 {
     var operation = Math.floor(Math.random() * 20);
     
     if (operation == 1)
     {
-        var entities = scene.GetAllEntities();
+        var entities = scene.Entities();
         if (entities.length >= 50)
             return;
         // Create entity
@@ -43,10 +60,10 @@ function PerformOperation()
     if (operation == 2)
     {
         // Delete entity
-        var entities = scene.GetAllEntities();
-        var index = Math.floor(Math.random() * (entities.length - 1));
-        var delEnt = entities[index];
-        if (delEnt.name == "Test")
+        var entities = scene.Entities();
+        var index = Math.floor(Math.random() * (associativeArrayLength(entities) - 1));
+        var delEnt = getNthElement(entities, index);
+        if (delEnt && delEnt.name == "Test")
         {
             print("Removing entity " + delEnt.id);
             scene.RemoveEntity(delEnt.id);
@@ -55,10 +72,10 @@ function PerformOperation()
     if (operation == 3)
     {
         // Remove the RigidBody component from the entity
-        var entities = scene.GetAllEntities();
-        var index = Math.floor(Math.random() * (entities.length - 1));
-        var delEnt = entities[index];
-        if (delEnt.name == "Test")
+        var entities = scene.Entities();
+        var index = Math.floor(Math.random() * (associativeArrayLength(entities) - 1));
+        var delEnt = getNthElement(entities, index);
+        if (delEnt && delEnt.name == "Test")
         {
             print("Removing rigidbody from entity " + delEnt.id);
             delEnt.RemoveComponent("EC_RigidBody");

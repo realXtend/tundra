@@ -11,11 +11,11 @@ Getting Started
 Tundra uses the traditional client-server architecture for networking. After installing you will find the `Tundra` executable from the install directory, run `Tundra --help` for available command line parameters.
 
 This executable can be configured to run a set of C++ and JavaScript plugins. You can create your own configuration file, or use the ones provided. Some examples:
-`Tundra --config viewer.xml` - Starts Tundra with "viewer" set of plugins which provides an user interface for connecting to Tundra servers
+`Tundra --config viewer.xml` - Starts Tundra with a client configuration which provides an user interface for connecting to Tundra servers.
 
-`Tundra --config plugins.xml --headless --server --port 6565 --protocol udp` - Starts Tundra with the default plugin set in server mode serving UDP connections at port 6565
+`Tundra --server --headless --port 6565 --protocol tcp` - Starts Tundra with the default plugin set in server mode serving TCP connections at port 6565. The Tundra server defaults are port 2345 and UDP protocol, for it you can simply run `Tundra --server --headless`. If no `--config` parameter is provided, the default plugins.xml is used.
 
-The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the --server and --headless command line parameters. The Tundra viewer mode is the client that is used to connect to a server.
+The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the `--server` and `--headless` command line parameters. The Tundra client mode is used to connect to a server.
 
 See the `scenes` folder for example demo scenes and applications. F.e.x. `Tundra --file scenes/Avatar/Scene.txml`
 
@@ -28,19 +28,35 @@ Tundra uses [CMake] as its build system and depends on various other open source
 
 ### Windows
 
-For Windows Visual Studio 2008 and 2010 build environments are supported. Here are the quick steps for VS2008 after you have cloned the git repo. Same steps apply to VS2010, just with different batch scripts.
+For Windows Visual Studio 2008 and 2010 build environments are supported, but at the moment Visual Studio 2008 is recommended. There are two ways of acquiring the dependencies **1)** Automated script to build them from sources **2)** Use prebuilt dependencies from a svn repository.
 
-1.  Install [CMake]. (>= 2.8 is recommended)
-2.  Run `win_update_deps_vs2008.bat` to acquire the prebuilt dependencies.
-3.  Run `win_cmake_vs2008.bat`, this will generate a .sln solution file.
-4.  If you want to customize the build, go through the `CMakeBuildConfig.txt` and run `win_cmake_vs2008.bat` again.
-5.  Open the solution file with Visual Studio 2008 and build.
+_TODO: Document VS2010 build path once one is available either with full build or prebuild deps!_
 
-See also `doc/build-windows.txt`
+**1) Building with full dependencies**
+
+1. `cd tools` and run `windows-build-deps.cmd`. You need to run this script in the Visual Studio Command Prompt for build tools and have several other utilities in your PATH. This script will print information what you need to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.
+2. Once you are done setting up your build environment hit any key to continue the script as it instructs. Full depedency build will take about 2-3 hours.
+3. After the script completes dependencies can be found from /deps. Needed runtime libraries are automatically copied to /bin.
+
+Now run `windows-build-tundra.cmd`. This script will setup the needed build environment variables for cmake. Next it will run cmake to generate a tundra.sln solution file and build it.
+
+If you want the script to build Tundra you need to run it in the Visual Studio Command Prompt as it needs msbuild. However you can hit Ctrl+C after the cmake step finishes and open the solution file with the Visual Studio IDE, if that is what you prefer.
+
+**2) Building with prebuild dependencies**
+
+Prebuilt dependencies are only available for Visual Studio 2008 at the moment.
+
+1. `cd tools` and run `windows-fetch-prebuilt-deps.cmd`.
+2. This will download a prebuilt package, extract it to /deps-prebuilt, copy needed runtime libraries to /bin and runs cmake against the prebuilt deps.
+3. Open tundra.sln and build.
 
 ### Linux
 
-See `doc/build-linux.txt` for more details. Also check out the distro-specific build scripts in `/tools`.
+See [tools] for distro-specific build scripts.
+
+### Mac OSX
+
+See [tools/build-mac-deps.bash] for automated dependency and Tundra build script.
 
 Documentation
 -------------
@@ -63,3 +79,5 @@ New releases are announced on the mailing lists and at the [realXtend blog]. The
 [CMake]:       http://www.cmake.org/                           "CMake homepage"
 [realXtend blog]: http://www.realxtend.org                     "realXtend blog"
 [realXtend github repository]: https://github.com/realXtend/naali/tree/tundra2 "realXtend Tundra repository"
+[tools/build-mac-deps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/build-mac-deps.bash "tools/build-mac-deps.bash"
+[tools]: https://github.com/realXtend/naali/tree/tundra2/tools "tools"

@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneTreeWidget.h
- *  @brief  Tree widget showing the scene structure.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneTreeWidget.h
+    @brief  Tree widget showing the scene structure. */
 
 #pragma once
 
@@ -99,7 +98,7 @@ private:
     SceneTreeWidgetSelection SelectedItems() const;
 
     /// Returns currently selected entities as XML string.
-    QString GetSelectionAsXml() const;
+    QString SelectionAsXml() const;
 
     /// Loads invoke history from config file.
     void LoadInvokeHistory();
