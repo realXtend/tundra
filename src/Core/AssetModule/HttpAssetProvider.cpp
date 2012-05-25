@@ -386,11 +386,6 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         HttpAssetTransferPtr transfer = iter->second;
         assert(transfer);
         transfer->rawAssetData.clear();
-        
-        // Stop here if aborted, don't do caching or notify AssetAPI 
-        // of the completion as it is not interested in it if aborted.
-        if (transfer->Aborted())
-            return;
 
         // Check for errors
         if (reply->error() == QNetworkReply::NoError)
