@@ -180,10 +180,15 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
     if (it != entities_.end())
     {
         EntityPtr del_entity = it->second;
+        if (!del_entity.get())
+        {
+            LogError("Scene::RemoveEntity: Found null EntityPtr from internal state with id " + QString::number(id));
+            return false;
+        }
         
         EmitEntityRemoved(del_entity.get(), change);
-
         entities_.erase(it);
+        
         // If entity somehow manages to live, at least it doesn't belong to the scene anymore
         del_entity->SetScene(0);
         del_entity.reset();
@@ -194,21 +199,28 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
 
 void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
 {
-    ///\todo Rewrite this function to call Scene::RemoveEntity and not duplicate the logic here.
-    EntityMap::iterator it = entities_.begin();
-    while(it != entities_.end())
-    {
-        // If entity somehow manages to live, at least it doesn't belong to the scene anymore
-        if (signal)
-            EmitEntityRemoved(it->second.get(), change);
+    // If we don't want to emit signals, make sure the change mode is disconnected.
+    if (!signal && change != AttributeChange::Disconnected)
+        change = AttributeChange::Disconnected;
 
-        it->second->SetScene(0);
-        ++it;
+    // Gather entity ids to call RemoveEntity, as it modifies 
+    // the entities_ map we should not call RemoveEntity while iterating it.
+    std::list<entity_id_t> entIds;
+    for (EntityMap::iterator it = entities_.begin(); it != entities_.end(); ++it)
+    {
+        if (it->second.get())
+            entIds.push_back(it->second->Id());
+    }
+    while(entIds.size() > 0)
+    {
+        RemoveEntity(entIds.back(), change);
+        entIds.pop_back();
     }
     entities_.clear();
+    
     if (signal)
         emit SceneCleared(this);
-    
+
     idGenerator_.Reset();
 }
 
