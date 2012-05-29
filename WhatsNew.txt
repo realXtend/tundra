@@ -1,4 +1,30 @@
-v2.3.2
+v2.3.3 - https://github.com/realXtend/naali/compare/tundra2.3.2...tundra2.3.3
+------
+ - Added new CanvasPlugin, which adds a new component EC_GraphicsViewCanvas. This component allows embedding and interacting with arbitrary Qt UI elements (dialogs, buttons, web browsers, etc.) in the surfaces of 3D objects.
+ - Added new demo scene 'Canvas' to demonstrate the EC_GraphicsViewCanvas features.
+ - Added libsquish library to allow runtime DXT compression of textures to reduce down memory usage for scenes that were authored in pngs, jpgs or other formats. Controlled by command line parameter now, but to appear as a renderer configuration option. (#450)
+ - Improved Qt UIs to be more consistent on Mac OS X to the ones on Windows and Linux. (#411)
+ - Fixed mouse interaction issues in EC_WidgetBillboard. (#441)
+ - Evolved rex Avatar and Avatar Attachment editors. (#477, #443, #437)
+ - Fixed crashes related to ec editor and profiler. (#446, #445)
+ - Fixed issues with exposing Qt input events to QtScript.
+ - Fixed a bug with resetting camera aspect ratio when switching between cameras. (#450)
+ - Added new EC_PhysicsMotor component, which is used to optimize issues with QtScript runtime performance. (#450)
+ - Fixed raycast to report results against the EC_Terrain component. (#450)
+ - Fixed InputAPI::MousePos() function to return correct results when mouse is being dragged. (#450)
+ - Fix issues with VLC video playback. (#468)
+ - Expose more Mumble VOIP parameters to QtScript. (#468)
+ - Enable QoS control on Mumble. (#463)
+ - Fixed issues with Mumble voip. (#453)
+ - Added support for doing OBB scene queries to bullet physics scene.
+ - Added glow postprocess option. This differs from generic bloom in that it's possible to apply glow to individual objects, and not only the whole scene.
+ - Recompute the rigid body inertia tensors when the body parameters have changed. (#469, #475)
+ - Fixed certain security-related crashes in QtScript array handling.
+ - Scene structure "Save as.." no longer writes components marked as 'temporary' to disk. (#482)
+ - Now immediately unloads all assets from memory and aborts all asset transfers when disconnecting from a server. (#472, #480)
+ - Other closed issues: #320, #146, #12, #157, #160
+
+v2.3.2 - https://github.com/realXtend/naali/compare/tundra2.3.1...tundra2.3.2
 ------
  - Fixed a shader-related Hydrax crash bug on Mac (possibly could occur on Windows as well).
  - Closed some issues with lacking QtScript bindings (#432, #433)
