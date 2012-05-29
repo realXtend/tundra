@@ -1,3 +1,93 @@
+macro(use_package_hydrax)
+    # TODO inclusion chains for using Hydrax from deps for other platforms.
+    
+    # Hydrax lookup rules:
+    # 1. If the environment variable HYDRAX_HOME is set, use that directory and cache it.
+    # 2. Otherwise, use the deps directory path.
+
+    # TODO Linux/mac still uses sagase. Try to get rid of it and unify the below.
+    if (MSVC)
+        message("** Configuring Hydrax")
+        if ("${HYDRAX_HOME}" STREQUAL "")
+            if (NOT "$ENV{HYDRAX_HOME}" STREQUAL "")
+                file (TO_CMAKE_PATH "$ENV{HYDRAX_HOME}" HYDRAX_HOME)
+                # Cache HYDRAX_HOME for runs that dont define $ENV{HYDRAX_HOME}.
+                set (HYDRAX_HOME ${HYDRAX_HOME} CACHE PATH "HYDRAX_HOME dependency path" FORCE)
+            else ()
+                message(STATUS "CMake cache or environment variable HYDRAX_HOME not set, assuming location to TUNDRA_DEP_PATH.")
+                set(HYDRAX_HOME ${ENV_TUNDRA_DEP_PATH}/Hydrax)
+            endif ()
+        endif()
+        message(STATUS "Using HYDRAX_HOME = ${HYDRAX_HOME}")
+    endif ()
+    
+    if (MSVC) 
+        include_directories(${HYDRAX_HOME}/include)
+        link_directories(${HYDRAX_HOME}/lib)
+    else()
+        sagase_configure_package (HYDRAX
+            NAMES Hydrax HYDRAX hydrax
+            COMPONENTS Hydrax HYDRAX hydrax
+            PREFIXES ${ENV_HYDRAX_HOME} ${ENV_TUNDRA_DEP_PATH})
+        set (HYDRAX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/Hydrax)
+        include_directories(${HYDRAX_INCLUDE_DIRS})
+        sagase_configure_report (HYDRAX)
+    endif()
+endmacro()
+
+macro(link_package_hydrax)
+    if (MSVC OR APPLE) 
+        target_link_libraries(${TARGET_NAME} optimized Hydrax debug Hydraxd)
+    else ()
+        # Linux: assume sagase found the libs. See use_package_hydrax todos.
+        target_link_libraries(${TARGET_NAME} ${HYDRAX_LIBRARIES})
+    endif()
+endmacro()
+
+macro(use_package_skyx)
+    # SkyX lookup rules:
+    # 1. If the environment variable SKYX_HOME is set, use that directory and cache it
+    # 2. Otherwise, use the deps directory path.
+    
+    # TODO Linux/mac still uses sagase. Try to get rid of it and unify the below.
+    if (MSVC)
+        message("** Configuring SkyX")
+        if ("${SKYX_HOME}" STREQUAL "")
+            if (NOT "$ENV{SKYX_HOME}" STREQUAL "")
+                file (TO_CMAKE_PATH "$ENV{SKYX_HOME}" SKYX_HOME)
+                # Cache SKYX_HOME for runs that dont define $ENV{SKYX_HOME}.
+                set (SKYX_HOME ${SKYX_HOME} CACHE PATH "SKYX_HOME dependency path" FORCE)
+            else ()
+                message(STATUS "CMake cache or environment variable SKYX_HOME not set, assuming location to TUNDRA_DEP_PATH.")
+                set(SKYX_HOME ${ENV_TUNDRA_DEP_PATH}/SkyX)
+            endif ()
+        endif()
+        message(STATUS "Using SKYX_HOME = ${SKYX_HOME}")
+    endif ()
+    
+    if (MSVC)
+        include_directories(${SKYX_HOME}/include) # For prebuilt VS2008/VS2010 deps.
+        include_directories(${SKYX_HOME}/SkyX/include) # For full-built deps.
+        link_directories(${SKYX_HOME}/lib)
+    else ()
+        sagase_configure_package (SKYX
+            NAMES SkyX SKYX skyx
+            COMPONENTS SkyX SKYX skyx
+            PREFIXES ${ENV_SKYX_HOME} ${ENV_TUNDRA_DEP_PATH})
+        set (SKYX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/SkyX)
+        sagase_configure_report (SKYX)
+    endif()
+endmacro()
+
+macro(link_package_skyx)
+    if (MSVC)
+        target_link_libraries(${TARGET_NAME} optimized SkyX debug SkyX_d)
+    else ()
+        # Linux: assume sagase found the libs. See use_package_hydrax todos.
+        target_link_libraries(${TARGET_NAME} ${SKYX_LIBRARIES})
+    endif()
+endmacro()
+
 # Only do something if one of the components are enabled
 if (ENABLE_SKYX OR ENABLE_HYDRAX)
 
@@ -35,7 +125,7 @@ endif()
 if (ENABLE_HYDRAX)
     add_definitions(-DHYDRAX_ENABLED)
     use_package(HYDRAX)  # Other OSes #TODO:REMOVE THIS!
-	use_package_hydrax() # Windows
+    use_package_hydrax() # Windows
 endif()
 
 use_core_modules(Framework Math Scene OgreRenderingModule)
@@ -52,7 +142,7 @@ if (ENABLE_SKYX)
 endif()
 if (ENABLE_HYDRAX)
     link_package(HYDRAX)  # Other OSes #TODO:REMOVE THIS!
-	link_package_hydrax() # Windows
+    link_package_hydrax() # Windows
 endif()
 
 SetupCompileFlags()
