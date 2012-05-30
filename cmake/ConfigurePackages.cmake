@@ -261,12 +261,6 @@ macro (configure_openal)
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
 
-macro (configure_sparkle)
-    FIND_LIBRARY (SPARKLE_LIBRARY NAMES Sparkle)
-    set (SPARKLE_INCLUDE_DIRS ${SPARKLE_LIBRARY}/Headers)
-    set (SPARKLE_LIBRARIES ${SPARKLE_LIBRARY})
-endmacro (configure_sparkle)
-
 macro(use_package_knet)
     set(KNET_DIR $ENV{KNET_DIR})
     
