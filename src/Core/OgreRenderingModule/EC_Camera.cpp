@@ -456,6 +456,28 @@ void EC_Camera::StopViewTracking(Entity* entity)
     }
 }
 
+float4x4 EC_Camera::ViewMatrix() const
+{
+    if (!ViewEnabled())
+        return float4x4::nan;
+
+    if (!camera_)
+        return float4x4::nan;
+
+    return float4x4(camera_->getViewMatrix());
+}
+
+float4x4 EC_Camera::ProjectionMatrix() const
+{
+    if (!ViewEnabled())
+        return float4x4::nan;
+
+    if (!camera_)
+        return float4x4::nan;
+
+    return float4x4(camera_->getProjectionMatrix());
+}
+
 void EC_Camera::OnUpdated(float timeStep)
 {
     // Do nothing if visibility not being tracked for any entities
