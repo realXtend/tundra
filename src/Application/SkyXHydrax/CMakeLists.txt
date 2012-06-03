@@ -151,7 +151,7 @@ final_target ()
 
 # Install windows deps
 if (ENABLE_SKYX)
-    setup_install_windows_deps ("SkyX.dll" Release|RelWithDebInfo "SkyXd.dll" Debug)
+    setup_install_windows_deps ("SkyX.dll" Release|RelWithDebInfo "SkyX_d.dll" Debug)
 endif ()
 if (ENABLE_HYDRAX)
     setup_install_windows_deps ("Hydrax.dll" Release|RelWithDebInfo "Hydraxd.dll" Debug)
