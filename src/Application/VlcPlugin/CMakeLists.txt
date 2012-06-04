@@ -75,8 +75,8 @@ if (SHOULD_RUN)
 
     # Install vlcplugins to install prefix for windows
     if (WIN32)
-        setup_install_directory (${TUNDRA_BIN}/vlcplugins)
-        setup_install_windows_deps ("libvlc.dll;libvlccore.dll" Release|RelWithDebInfo|Debug)
+        setup_install_directory (${TUNDRA_BIN}/plugins/vlcplugins plugins)
+        setup_install_windows_deps ("libvlc.dll;libvlccore.dll;axvlc.dll;npvlc.dll" Release|RelWithDebInfo|Debug)
     endif ()
 
 else ()

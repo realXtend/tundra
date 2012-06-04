@@ -54,6 +54,7 @@ final_target ()
 setup_install_directory (${TUNDRA_BIN}/pyplugins)
 
 # make install: Install windows deps
-setup_install_windows_deps ("python26.dll;PythonQt.dll;PythonQt_QtAll.dll" Release|RelWithDebInfo "python26_d.dll;PythonQt_d.dll;PythonQt_QtAll_d.dll" Debug)
-setup_install_windows_deps_regexp ("[/]pyplugins[/]python[/]DLLs[/].*[^d][.]pyd$" Release|RelWithDebInfo "[/]pyplugins[/]python[/]DLLs[/].*[d][.]pyd$" Debug)
-setup_install_windows_deps_regexp ("[/]pyplugins[/]python[/].*[.]zip$" Release|RelWithDebInfo|Debug)
+# todo: resurect the dep install steps when the windows deps are fixed. The macro signature has changed, look at how other working code is using it when porting!
+#setup_install_windows_deps ("python26.dll;PythonQt.dll;PythonQt_QtAll.dll" Release|RelWithDebInfo "python26_d.dll;PythonQt_d.dll;PythonQt_QtAll_d.dll" Debug)
+#setup_install_windows_deps_regexp ("[/]pyplugins[/]python[/]DLLs[/].*[^d][.]pyd$" Release|RelWithDebInfo "[/]pyplugins[/]python[/]DLLs[/].*[d][.]pyd$" Debug)
+#setup_install_windows_deps_regexp ("[/]pyplugins[/]python[/].*[.]zip$" Release|RelWithDebInfo|Debug)
