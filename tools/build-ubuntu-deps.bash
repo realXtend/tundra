@@ -117,6 +117,21 @@ fi
 mkdir -p $viewer/bin/qtplugins/script
 cp -lf $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
 
+what=Assimp
+if test -f $tags/$what-done; then
+	echo $what is done
+else
+	cd $build
+	rm -fr $what
+	git clone git://github.com/assimp/assimp.git $what
+	cd $what
+	sed -e "s/string_type::size_type/typename string_type::size_type/" < code/ObjTools.h > x
+	mv x code/ObjTools.h
+	cmake -DCMAKE_INSTALL_PREFIX=$prefix .
+	make -j $nprocs
+	make install
+	touch $tags/$what-done
+fi
 
 what=kNet
 if test -f $tags/$what-done; then 
