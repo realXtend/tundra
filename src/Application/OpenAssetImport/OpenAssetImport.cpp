@@ -1,5 +1,6 @@
 #include "OpenAssetImport.h"
-#include "assimp/DefaultLogger.h"
+#include "assimp/DefaultLogger.hpp"
+#include "assimp/Importer.hpp"
 #include "OgreDataStream.h"
 #include "OgreImage.h"
 #include "OgreTexture.h"
@@ -26,7 +27,7 @@
 #include <QString>
 #include <QStringList>
 #include <boost/tuple/tuple.hpp>
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 
 //#define SKELETON_ENABLED
 
@@ -351,8 +352,8 @@ bool OpenAssetImport::convert(const Ogre::String& filename, bool generateMateria
     if (index != -1)
         searchFromIndex = true;
 
-    std::string filu;
-    filu = boost::filesystem::path(addr.toStdString()).stem();
+    std::string filu=addr.toStdString();
+    //filu = boost::filesystem::path(addr.toStdString()).stem();
 
     unsigned int pFlags = 0
                           | aiProcess_SplitLargeMeshes

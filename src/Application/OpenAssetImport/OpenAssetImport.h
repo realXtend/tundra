@@ -5,9 +5,9 @@
 #include <OgreMesh.h>
 #include <OgreMeshSerializer.h>
 
-#include <assimp/assimp.hpp>
-#include <assimp/aiScene.h>
-#include <assimp/aiPostProcess.h>
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <map>
 #include <QString>
 
