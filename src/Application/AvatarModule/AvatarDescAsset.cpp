@@ -588,7 +588,10 @@ void AvatarDescAsset::AddAttachment(AssetPtr assetPtr)
     {
         ReadAttachment(elem);
         AssetReferencesChanged();
-        emit AppearanceChanged();
+        // If an attachment is added, removed, and added again,
+        // AssetReferencesChanged() doesn't seem to emit AppearanceChanged().
+        if (!assetAPI->HasPendingDependencies(this->shared_from_this()))
+            emit AppearanceChanged();
     }
     else
     {
