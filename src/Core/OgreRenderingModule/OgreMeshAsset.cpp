@@ -16,6 +16,7 @@
 
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
+#include "OpenAssetImport.h"
 
 OgreMeshAsset::~OgreMeshAsset()
 {
@@ -94,21 +95,30 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
         ogreMesh->setAutoBuildEdgeLists(false);
     }
 
-    try
+	// Convert file to Ogre mesh using assimp
+    if (IsAssimpFileType())
     {
-        std::vector<u8> tempData(data_, data_ + numBytes);
+		if (!ConvertDataToOgreMesh(data_, numBytes))
+            return false; 
+	}
+	else
+	{
+    	try
+    	{
+        	std::vector<u8> tempData(data_, data_ + numBytes);
 #include "DisableMemoryLeakCheck.h"
-        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&tempData[0], numBytes, false));
+        	Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&tempData[0], numBytes, false));
 #include "EnableMemoryLeakCheck.h"
-        Ogre::MeshSerializer serializer;
-        serializer.importMesh(stream, ogreMesh.getPointer()); // Note: importMesh *adds* submeshes to an existing mesh. It doesn't replace old ones.
+        	Ogre::MeshSerializer serializer;
+        	serializer.importMesh(stream, ogreMesh.getPointer()); // Note: importMesh *adds* submeshes to an existing mesh. It doesn't replace old ones.
+    	}
+    	catch (Ogre::Exception &e)
+    	{
+        	LogError(QString("OgreMeshAsset::DeserializeFromData: Ogre::MeshSerializer::importMesh failed when loading asset '" + Name() + "': ") + e.what());
+        	return false;
+    	}
     }
-    catch (Ogre::Exception &e)
-    {
-        LogError(QString("OgreMeshAsset::DeserializeFromData: Ogre::MeshSerializer::importMesh failed when loading asset '" + Name() + "': ") + e.what());
-        return false;
-    }
-    
+
     if (GenerateMeshdata())
     {        
         // We did a synchronous load, must call AssetLoadCompleted here.
@@ -484,4 +494,50 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
         return false;
     }
     return true;
+}
+
+bool OgreMeshAsset::ConvertDataToOgreMesh(const u8 *data_, size_t numBytes)
+{
+	OpenAssetImport import;
+	std::vector<QString> materials;
+	QString tmp=this->Name();
+	bool success = import.convert(data_, numBytes, tmp, ogreMesh, materials);
+	
+	if (!success)
+	{
+		LogError("OgreMeshAsset::DeserializeFromData: Assimp failed to convert " + this->Name() + " to Ogre mesh");
+    	return false;
+	}
+
+	try
+	{
+		//ogreMesh->load();
+	} 
+	catch(std::exception &e)
+    {
+        LogError("OgreMeshAsset::DeserializeFromData: Failed to load Assimp converted Ogre mesh " + this->Name() + ":");
+        if (e.what())
+            LogError(e.what());
+        return false;
+    }
+
+	return true;
+}
+
+bool OgreMeshAsset::IsAssimpFileType()
+{
+    const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".blend", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf",
+        ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
+        ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
+        ".ply", ".cob", ".scn" };
+
+    int numSuffixes = NUMELEMS(openAssImpFileTypes);
+
+    for(int i = 0;i < numSuffixes; ++i)
+	{
+        if (this->Name().endsWith(openAssImpFileTypes[i]))
+            return true;
+	}
+
+    return false;
 }

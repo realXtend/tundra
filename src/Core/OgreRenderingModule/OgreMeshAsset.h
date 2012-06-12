@@ -76,6 +76,10 @@ private:
     /// Process mesh data after loading to create tangents and such.
     bool GenerateMeshdata();
 
+    bool ConvertDataToOgreMesh(const u8 *data_, size_t numBytes);
+
+    bool IsAssimpFileType();
+
     /// Stores a CPU-side version of the mesh geometry data (positions), for raycasting purposes.
     KdTree<Triangle> meshData;
 
