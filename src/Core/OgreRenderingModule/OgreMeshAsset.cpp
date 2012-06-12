@@ -500,8 +500,7 @@ bool OgreMeshAsset::ConvertDataToOgreMesh(const u8 *data_, size_t numBytes)
 {
 	OpenAssetImport import;
 	std::vector<QString> materials;
-	QString tmp=this->Name();
-	bool success = import.convert(data_, numBytes, tmp, ogreMesh, materials);
+	bool success = import.convert(data_, numBytes, this->Name(), ogreMesh, materials);
 	
 	if (!success)
 	{
