@@ -41,7 +41,7 @@ public:
     void Initialize(Framework *framework);
 
 signals:
-    /// Emitted when scene was clicked and raycast hit an entity.
+    /// Emitted when mouse cursor moves an top of an entity.
     /** @param entity Hit entity.
         @param Possible mouse button held down during the move.
         @param result Raycast result data object. */

@@ -14,51 +14,75 @@
 namespace Ogre { class Bone; }
 
 /// Ogre placeable (scene node) component
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Placeable</h2>
-Ogre (scene node) component.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Placeable</h2>
+    Ogre (scene node) component.
 
-Registered by OgreRenderer::OgreRenderingModule.
+    Registered by OgreRenderer::OgreRenderingModule.
 
-<b>Attributes</b>:
-<ul>
-<li>Transform: transform
-<div>Sets the position, rotation and scale of the entity.</div>
-<li>bool: drawDebug
-<div>Shows the debug bounding box of geometry attached to the placeable.</div>
-<li>int: selectionLayer
-<div>Selection layer for raycasts.</div>
-<li>EntityReference: parentRef
-<div>The entity to attach to. The entity in question needs to have EC_Placeable as well to work correctly</div>
-<li>string: parentBone
-<div>The bone to attach to. The parent entity needs to have a skeletal EC_Mesh component</div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>Transform: transform
+    <div> @copydoc transform </div>
+    <li>bool: drawDebug
+    <div> @copydoc drawDebug </div>
+    <li>int: selectionLayer
+    <div> @copydoc selectionLayer </div>
+    <li>EntityReference: parentRef
+    <div> @copydoc parentRef </div>
+    <li>QString: parentBone
+    <div> @copydoc parentBone </div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>"Show": Shows the Entity
-<li>"Hide": Hides the Entity
-<li>"ToggleVisibility": Toggles visibility
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>"SetPosition": @copydoc SetPosition
+    <li>"SetOrientation": @copydoc SetOrientation
+    <li>"SetOrientationAndScale": @copydoc SetOrientationAndScale
+    <li>"SetScale": @copydoc SetScale
+    <li>"SetTransform": @copydoc SetTransform
+    <li>"SetTransform": @copydoc SetTransform
+    <li>"SetWorldTransform": @copydoc SetWorldTransform
+    <li>"WorldPosition": @copydoc WorldPosition
+    <li>"WorldOrientation": @copydoc WorldOrientation
+    <li>"WorldScale": @copydoc WorldScale
+    <li>"Position": @copydoc Position
+    <li>"Orientation": @copydoc Orientation
+    <li>"Scale": @copydoc Scale
+    <li>"LocalToWorld": @copydoc LocalToWorld
+    <li>"WorldToLocal": @copydoc WorldToLocal
+    <li>"LocalToParent": @copydoc LocalToParent
+    <li>"ParentToLocal": @copydoc ParentToLocal
+    <li>"Show": @copydoc Show
+    <li>"Hide": @copydoc Hide
+    <li>"ToggleVisibility": @copydoc ToggleVisibility
+    <li>"IsAttached": @copydoc IsAttached
+    <li>"SetParent": @copydoc SetParent
+    <li>"Children": @copydoc Children
+    <li>"DumpNodeHierarhy": @copydoc DumpNodeHierarhy
+    <li>"ParentPlaceableEntity": @copydoc ParentPlaceableEntity
+    <li>"ParentPlaceableComponent": @copydoc ParentPlaceableComponent
+    <li>"IsGrandparentOf": @copydoc IsGrandparentOf
+    <li>"IsGrandchildOf": @copydoc IsGrandchildOf
+    <li>"Grandchildren": @copydoc Grandchildren
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>"ShowEntity": Shows the Entity
-<li>"HideEntity": Hides the Entity
-<li>"ToggleEntity": Toggles visibility
-</ul>
-</td>
-</tr>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li>"ShowEntity": Shows the Entity
+    <li>"HideEntity": Hides the Entity
+    <li>"ToggleEntity": Toggles visibility
+    </ul>
+    </td>
+    </tr>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Doesn't depend on any components</b>.
+    <b>Doesn't depend on any components</b>.
 
-</table>
-*/
+    </table> */
 class OGRE_MODULE_API EC_Placeable : public IComponent
 {
     Q_OBJECT
@@ -90,8 +114,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(EntityReference, parentRef);
 
     /// Specifies the name of the bone on the parent entity.
-    /// Needs that the parent entity has a skeletal mesh. 
-    /// Set to empty for no parent bone assignment, in which case this scene node is attached to the root of the parent node.
+    /** Needs that the parent entity has a skeletal mesh.
+        Set to empty for no parent bone assignment, in which case this scene node is attached to the root of the parent node. */
     Q_PROPERTY(QString parentBone READ getparentBone WRITE setparentBone)
     DEFINE_QPROPERTY_ATTRIBUTE(QString, parentBone);
 
