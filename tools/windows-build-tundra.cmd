@@ -44,7 +44,7 @@ echo.
 IF NOT EXIST Tundra.sln. (
    del /Q CMakeCache.txt
    cecho {0D}Running CMake for Tundra.{# #}{\n}
-   cmake.exe -G %GENERATOR% -DBOOST_ROOT="%DEPS%\boost"
+   cmake.exe -G %GENERATOR%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0A}Tundra.sln exists. Skipping CMake call for Tundra.{# #}{\n}

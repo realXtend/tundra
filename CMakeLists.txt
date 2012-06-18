@@ -5,16 +5,19 @@ project(tundra)
 cmake_minimum_required(VERSION 2.4)
 
 macro (PrintUsedEnvVariables)
-    # Print out the resolved variables
+    # Print out the resolved variables. Note that this does not print the env variables
+    # in most cases as they should be resolved to our cmake variables and get cached.
+    # This way this printed list wont lie if ran without env variables and we are still
+    # succesfully finding all the deps from our cacher (or in bad cases assumed) dirs.
     message ("\n=========== Used Environment Variables ===========\n")
     message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
     message (STATUS "QTDIR            = " ${ENV_QT_DIR})
-    message (STATUS "BOOST_ROOT       = " ${ENV_BOOST_ROOT})
-    message (STATUS "OGRE_HOME        = " ${ENV_OGRE_HOME})
-    message (STATUS "SKYX_HOME        = " ${ENV_SKYX_HOME})
-    message (STATUS "HYDRAX_HOME      = " ${ENV_HYDRAX_HOME})
-    message (STATUS "KNET_DIR         = " ${ENV_KNET_DIR})
-    message (STATUS "BULLET_DIR       = " ${ENV_BULLET_DIR})
+    message (STATUS "BOOST_ROOT       = " ${BOOST_ROOT})
+    message (STATUS "OGRE_HOME        = " ${OGRE_DIR}) # OGRE_DIR is our internal OGRE_HOME
+    message (STATUS "SKYX_HOME        = " ${SKYX_HOME})
+    message (STATUS "HYDRAX_HOME      = " ${HYDRAX_HOME})
+    message (STATUS "KNET_DIR         = " ${KNET_DIR})
+    message (STATUS "BULLET_DIR       = " ${BULLET_DIR})
 endmacro ()
 
 macro (PrintUsedBuildConfig)
@@ -234,12 +237,6 @@ endif()
 # On all platforms, we enable PCH files by default.
 add_definitions (-DPCH_ENABLED)
 SET(PCH_ENABLED 1)
-
-# Set global hardcoded install prefix. User cannot change this at the moment, untill we figure how we want to use this!
-# Call the cleanup step that cleans the install prefix before every installations. This is important as module setups might change between builds.
-set (CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/build)
-set (TUNDRA_BIN ${PROJECT_BINARY_DIR}/bin)
-setup_clean_install_step()
 
 # This setting affects only windows. Possibility to opt out of linking agains DirecX spesific libs.
 # Enabled more efficient texture blitting to Ogre using DirectX. This makes RenderSystem_Direct3D9 mandatory.

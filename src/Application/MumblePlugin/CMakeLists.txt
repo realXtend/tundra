@@ -181,3 +181,5 @@ endif()
 SetupCompileFlags()
 
 final_target ()
+
+setup_install_files (mumble/MumbleLicence.txt)
