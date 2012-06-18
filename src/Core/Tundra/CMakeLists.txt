@@ -46,9 +46,11 @@ final_target ()
 
 # Install files
 setup_install_files (${TUNDRA_BIN}/plugins/TundraInstallationDirectory.txt "plugins")   # C++ plugins
-setup_install_files_find (${TUNDRA_BIN} "*.xml")    # Tundra executable config xml files
-setup_install_files (${TUNDRA_BIN}/../README.md)    # Readme
-setup_install_files (${TUNDRA_BIN}/../LICENSE)      # Licence
+setup_install_files (${TUNDRA_BIN}/../README.md)      # Readme
+setup_install_files (${TUNDRA_BIN}/../LICENSE)        # Licence
+setup_install_files (${TUNDRA_BIN}/../WhatsNew.txt)   # Whats new
+setup_install_files_find (${TUNDRA_BIN} "*.xml")      # Tundra executable config xml files
+setup_install_files_find (${TUNDRA_BIN}/dox "*.txt" Release|Debug|RelWithDebInfo "dox") # Doc files used in installer
 
 # Install certain things only in non BUILD_SDK_ONLY mode
 if (NOT BUILD_SDK_ONLY)
@@ -58,7 +60,6 @@ if (NOT BUILD_SDK_ONLY)
 endif ()
 
 # Install deps for windows
-setup_install_windows_deps_regexp ("[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)
-setup_install_windows_deps_regexp ("[/]qtplugins[/].*[/][q].*[^d][4][.]dll$" Release|RelWithDebInfo "[/]qtplugins[/].*[/][q].*[d][4][.]dll$" Debug)
-setup_install_windows_deps ("libeay32.dll;ssleay32.dll" Release|RelWithDebInfo|Debug)   # OpenSSL DLLs for SSL support in QNetwork
-setup_install_windows_deps ("phonon4.dll;ssleay32.dll" Release|RelWithDebInfo "phonond4.dll" Debug)   # OpenSSL DLLs for SSL support in QNetwork
+setup_install_windows_deps_regexp ("" qt/bin/ "[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo qt/bin/ "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)
+setup_install_windows_deps_regexp (qtplugins qt/plugins/ "[/]plugins[/].*[/][q].*[^d][4][.]dll$" Release|RelWithDebInfo qt/plugins/ "[/]plugins[/].*[/][q].*[d][4][.]dll$" Debug)
+setup_install_windows_deps ("libeay32.dll;ssleay32.dll" Release|RelWithDebInfo|Debug) # OpenSSL DLLs for SSL support in QNetwork

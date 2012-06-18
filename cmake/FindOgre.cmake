@@ -35,11 +35,13 @@ macro(configure_ogre)
 
     # Ogre lookup rules:
     # 1. Use the predefined OGRE_DIR CMake variable if it was set.
-    # 2. Otherwise, use the OGRE_HOME environment variable if it was set.
+    # 2. Otherwise, use the OGRE_HOME environment variable if it was set  and cache it as OGRE_DIR.
     # 3. Otherwise, use Ogre from Tundra deps directory.
 
     if ("${OGRE_DIR}" STREQUAL "")
-        set(OGRE_DIR $ENV{OGRE_HOME})
+        file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" OGRE_DIR)
+        # Cache OGRE_DIR for runs that dont define $ENV{OGRE_HOME}.
+        set (OGRE_DIR ${OGRE_DIR} CACHE PATH "OGRE_HOME dependency path" FORCE)
     endif()
 
     # On Apple, Ogre comes in the form of a Framework. The user has to have this manually installed.
@@ -48,7 +50,7 @@ macro(configure_ogre)
             find_library(OGRE_LIBRARY Ogre)
             set(OGRE_DIR ${OGRE_LIBRARY})
         else()
- #           set(OGRE_DIR ${OGRE_DIR}/lib/Ogre.framework) # User specified custom Ogre directory pointing to Ogre Hg trunk directory.
+            #set(OGRE_DIR ${OGRE_DIR}/lib/Ogre.framework) # User specified custom Ogre directory pointing to Ogre Hg trunk directory.
             set(OGRE_BUILD_CONFIG "relwithdebinfo") # TODO: We would like to link to debug in debug mode, release in release etc, not always fixed to this.
             set(OGRE_LIBRARY ${OGRE_DIR}/lib/relwithdebinfo/Ogre.framework)
         endif()
@@ -68,6 +70,8 @@ macro(configure_ogre)
     # 2. If you are using an installed Ogre SDK, OGRE_DIR can point to the SDK root directory.
     # We want to support both so that one can do active development on the Ogre Hg repository, without
     # having to always do the intermediate SDK installation/deployment step.
+    
+    message("** Configuring Ogre")
     
     if (APPLE)# AND IS_DIRECTORY ${OGRE_DIR}/Headers) # OGRE_DIR points to a manually installed Ogre.framework?
         if (IS_DIRECTORY ${OGRE_DIR}/lib)
@@ -99,6 +103,7 @@ macro(configure_ogre)
     else()
         message(FATAL_ERROR "When looking for Ogre, the path ${OGRE_DIR} does not point to a valid Ogre directory!")
     endif()
+    message("")
 endmacro()
 
 endif()

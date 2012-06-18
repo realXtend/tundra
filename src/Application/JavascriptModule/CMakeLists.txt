@@ -34,5 +34,11 @@ final_target ()
 # Install files
 setup_install_directory (${TUNDRA_BIN}/jsmodules)
 
-# Install deps for windows, qtscriptgenerator plugins
-setup_install_windows_deps_regexp ("[/]script[/]qtscript_+.*[^d][.]dll$" Release|RelWithDebInfo "qtscript_+.*[d][.]dll$" Debug)
+# Install deps for windows, qtscriptgenerator plugins.
+if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/qtscriptgenerator/plugins/script) # Full deps
+    setup_install_windows_deps_regexp (qtplugins/script qtscriptgenerator/plugins/script/ "[/]script[/]qtscript_+.*[^d][.]dll$" Release|RelWithDebInfo 
+        qtscriptgenerator/plugins/script/ "[/]script[/]qtscript_+.*[d][.]dll$" Debug)
+elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/qt/plugins/script) # Prebuilt from full deps
+    setup_install_windows_deps_regexp (qtplugins/script qt/plugins/script/ "[/]script[/]qtscript_+.*[^d][.]dll$" Release|RelWithDebInfo 
+        qt/plugins/script/ "[/]script[/]qtscript_+.*[d][.]dll$" Debug)
+endif ()

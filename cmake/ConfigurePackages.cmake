@@ -20,19 +20,19 @@ endif ()
 # 3. Otherwise, use Boost from the Tundra deps directory.
 
 if ("${BOOST_ROOT}" STREQUAL "")
-   SET(BOOST_ROOT $ENV{BOOST_ROOT})
+    file (TO_CMAKE_PATH "$ENV{BOOST_ROOT}" BOOST_ROOT)
 endif()
 
 if ("${BOOST_ROOT}" STREQUAL "")
-   if (NOT APPLE)
-      SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/Boost)
-   else()
-      SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/include)
-   endif()
+    if (NOT APPLE)
+        SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/boost)
+    else()
+        SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/include)
+    endif()
 endif()
 
-message("\n** Configuring Boost")
-message(STATUS "BOOST_ROOT = " ${BOOST_ROOT})
+message("** Configuring Boost")
+message(STATUS "Using BOOST_ROOT = " ${BOOST_ROOT})
 
 set(Boost_FIND_REQUIRED TRUE)
 set(Boost_FIND_QUIETLY TRUE)
@@ -71,7 +71,7 @@ macro (configure_qt4)
     sagase_configure_package (QT4 
         NAMES Qt4 4.6.1
         COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
-        PREFIXES ${ENV_TUNDRA_DEP_PATH} ${ENV_QT_DIR})
+        PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
@@ -149,89 +149,6 @@ macro (configure_python_qt)
     sagase_configure_report (PYTHON_QT)
 endmacro (configure_python_qt)
 
-macro (configure_skyx)
-	if (NOT MSVC)
-        # Prioritize env variable SKYX_HOME to be searched first
-        # to allow custom skyx builds agains a custom ogre (potentially from OGRE_HOME)
-        sagase_configure_package (SKYX
-          NAMES SkyX SKYX skyx
-          COMPONENTS SkyX SKYX skyx
-          PREFIXES ${ENV_SKYX_HOME} ${ENV_TUNDRA_DEP_PATH})
-
-        if (NOT WIN32)
-          set (SKYX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/SkyX)
-        endif ()
-        
-        sagase_configure_report (SKYX)
-    endif()
-endmacro (configure_skyx)
-
-macro (configure_hydrax)
-	if (NOT MSVC AND NOT APPLE)
-		# Prioritize env variable HYDRAX_HOME to be searched first
-		# to allow custom hydrax builds agains a custom ogre (potentially from OGRE_HOME)
-		sagase_configure_package (HYDRAX
-			NAMES Hydrax HYDRAX hydrax
-			COMPONENTS Hydrax HYDRAX hydrax
-			PREFIXES ${ENV_HYDRAX_HOME} ${ENV_TUNDRA_DEP_PATH})
-
-		set (HYDRAX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/Hydrax)
-
-		sagase_configure_report (HYDRAX)
-	endif()
-endmacro (configure_hydrax)
-
-macro(use_package_hydrax)
-    if (MSVC) # TODO inclusion chains for using Hydrax from deps for other platforms.
-	
-    # Hydrax lookup rules:
-    # 1. If the environment variable HYDRAX_HOME is set, use that directory.
-    # 2. Otherwise, use the deps directory path.
-
-	if (NOT "$ENV{HYDRAX_HOME}" STREQUAL "")
-		set(HYDRAX_HOME $ENV{HYDRAX_HOME})
-	else()
-		set(HYDRAX_HOME ${ENV_TUNDRA_DEP_PATH}/Hydrax)
-	endif()
-
-    include_directories(${HYDRAX_HOME}/include)
-    link_directories(${HYDRAX_HOME}/lib)
-	else()
-		include_directories(${ENV_TUNDRA_DEP_PATH}/include/Hydrax)
-	endif()
-endmacro()
-
-macro(link_package_hydrax)
-	if (MSVC OR APPLE) # TODO linkage settings for using Hydrax from deps for other platforms.
-		target_link_libraries(${TARGET_NAME} optimized Hydrax debug Hydraxd)
-	endif()
-endmacro()
-
-macro(use_package_skyx)
-    if (MSVC) # TODO inclusion chains for using SkyX from deps for other platforms.
-	
-    # SkyX lookup rules:
-    # 1. If the environment variable SKYX_HOME is set, use that directory.
-    # 2. Otherwise, use the deps directory path.
-
-	if (NOT "$ENV{SKYX_HOME}" STREQUAL "")
-		set(SKYX_HOME $ENV{SKYX_HOME})
-	else()
-		set(SKYX_HOME ${ENV_TUNDRA_DEP_PATH}/SkyX)
-	endif()
-
-    include_directories(${SKYX_HOME}/include) # For prebuilt VS2008/VS2010 deps.
-    include_directories(${SKYX_HOME}/SkyX/include) # For full-built deps.
-    link_directories(${SKYX_HOME}/lib)
-	endif()
-endmacro()
-
-macro(link_package_skyx)
-	if (MSVC) # TODO linkage settings for using Hydrax from deps for other platforms.
-		target_link_libraries(${TARGET_NAME} optimized SkyX debug SkyX_d)
-	endif()
-endmacro()
-
 macro (configure_qtpropertybrowser)
     if (NOT MSVC)
       sagase_configure_package (QT_PROPERTY_BROWSER
@@ -268,9 +185,17 @@ macro (configure_sparkle)
 endmacro (configure_sparkle)
 
 macro(use_package_knet)
-    set(KNET_DIR $ENV{KNET_DIR})
-    
-    # If KNET_DIR_QT47 was not specified, use kNet from TUNDRA_DEP_PATH.
+    # kNet look up rules:
+    # 1. Use cmake cached KNET_DIR.
+    # 2. Use env variable KNET_DIR and cache it.
+    # 3. Assume kNet from deps path.
+
+    message("** Configuring kNet")
+    if ("${KNET_DIR}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{KNET_DIR}" KNET_DIR)
+        # Cache KNET_DIR for runs that dont define $ENV{KNET_DIR}.
+        set (KNET_DIR ${KNET_DIR} CACHE PATH "KNET_DIR dependency path" FORCE)
+    endif ()
     if ("${KNET_DIR}" STREQUAL "")
         if (MSVC)
             set(KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
@@ -278,11 +203,10 @@ macro(use_package_knet)
             set(KNET_DIR ${ENV_TUNDRA_DEP_PATH})
         endif()
     endif()
-
+    message (STATUS "Using KNET_DIR = ${KNET_DIR}")
+    
     include_directories (${KNET_DIR}/include)
     link_directories (${KNET_DIR}/lib)
-
-    message (STATUS "Using kNet from ${KNET_DIR}")
 endmacro()
 
 macro(link_package_knet)
@@ -291,37 +215,45 @@ macro(link_package_knet)
 endmacro()
 
 macro(use_package_bullet)
-    if (WIN32)
-        if ("${ENV_BULLET_DIR}" STREQUAL "")
+    # Bullet look up rules:
+    # 1. Use cmake cached BULLET_DIR.
+    # 2. Use env variable BULLET_DIR and cache it.
+    # 3. Assume Bullet from deps path.
+
+    message("** Configuring Bullet")
+    if ("${BULLET_DIR}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{BULLET_DIR}" BULLET_DIR)
+        # Cache BULLET_DIR for runs that dont define $ENV{BULLET_DIR}.
+        set (BULLET_DIR ${BULLET_DIR} CACHE PATH "BULLET_DIR dependency path" FORCE)
+    endif ()
+    if ("${BULLET_DIR}" STREQUAL "")
+        if (MSVC)
             set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH}/Bullet)
-        else ()
-            message (STATUS "-- Using from env variable BULLET_DIR")
-            set(BULLET_DIR ${ENV_BULLET_DIR})
-        endif ()
+        else()
+            set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH})
+        endif()
+    endif()
+    message (STATUS "Using BULLET_DIR = ${BULLET_DIR}")
+
+    if (WIN32)
         include_directories(${BULLET_DIR}/include) # For prebuilt VS2008/VS2010 deps.
         include_directories(${BULLET_DIR}/src) # For full-built source deps.
         link_directories(${BULLET_DIR}/lib)
-    else() # Linux, note: mac will also come here..
-        if ("${ENV_BULLET_DIR}" STREQUAL "")
-            set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH})
-        else ()
-            message (STATUS "-- Using from env variable BULLET_DIR")
-            set(BULLET_DIR ${ENV_BULLET_DIR})
-        endif ()
+    else() # Linux and mac
         include_directories(${BULLET_DIR}/include/bullet)
         link_directories(${BULLET_DIR}/lib)
     endif()
 endmacro()
 
 macro(link_package_bullet)
-    if (IS_DIRECTORY ${ENV_BULLET_DIR}/msvc/2008) # full prebuilt deps
+    if (IS_DIRECTORY ${BULLET_DIR}/msvc/2008) # full prebuilt deps
         if (WIN32)
-            target_link_libraries(${TARGET_NAME} debug ${ENV_BULLET_DIR}/msvc/2008/lib/debug/LinearMath.lib)
-            target_link_libraries(${TARGET_NAME} debug ${ENV_BULLET_DIR}/msvc/2008/lib/debug/BulletDynamics.lib)
-            target_link_libraries(${TARGET_NAME} debug ${ENV_BULLET_DIR}/msvc/2008/lib/debug/BulletCollision.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${ENV_BULLET_DIR}/msvc/2008/lib/release/LinearMath.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${ENV_BULLET_DIR}/msvc/2008/lib/release/BulletDynamics.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${ENV_BULLET_DIR}/msvc/2008/lib/release/BulletCollision.lib)
+            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/LinearMath.lib)
+            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletDynamics.lib)
+            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletCollision.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/LinearMath.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletDynamics.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletCollision.lib)
         endif()
     elseif (IS_DIRECTORY ${BULLET_DIR}/lib/Release) # prebuilt deps package
         if (WIN32)
@@ -342,10 +274,14 @@ endmacro()
 
 macro(use_package_ogg)
     if (MSVC)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/libogg/include) # For prebuilt VS2008/VS2010 deps.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/libogg/lib) # For prebuilt VS2008/VS2010 deps.
-
-        include_directories($ENV{TUNDRA_DEP_PATH}/ogg/include) # For full-built deps.
+        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogg/include/ogg) 
+            # Using full-built or prebuilt deps made from fullbuild.
+            include_directories(${ENV_TUNDRA_DEP_PATH}/ogg/include)
+        else ()
+            # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove?
+            include_directories(${ENV_TUNDRA_DEP_PATH}/libogg/include)
+            link_directories(${ENV_TUNDRA_DEP_PATH}/libogg/lib)
+        endif ()
     elseif (APPLE)
         include_directories(${ENV_TUNDRA_DEP_PATH}/include/ogg)
         link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
@@ -354,13 +290,17 @@ endmacro()
 
 macro(link_package_ogg)
     if (MSVC)
-        if (IS_DIRECTORY $ENV{TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32) # Using full-built deps.
-            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32/Release/libogg_static.lib)
-            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32/Debug/libogg_static.lib)
-        elseif (IS_DIRECTORY $ENV{TUNDRA_DEP_PATH}/ogg/lib/Release) # Using pre-built deps mirrored from full-built deps.
-            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/ogg/lib/Release/libogg_static.lib)
-            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/ogg/lib/Debug/libogg_static.lib)
-        else() # Using pre-built VS2008/VS2010 deps.
+        # Always use ENV_TUNDRA_DEP_PATH as its read from cache. $ENV{TUNDRA_DEP_PATH} is not and can be empty/incorrect.
+        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32) 
+            # Using full-built deps.
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32/Release/libogg_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32/Debug/libogg_static.lib)
+        elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogg/lib/Release) 
+            # Using pre-built deps mirrored from full-built deps.
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/ogg/lib/Release/libogg_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/ogg/lib/Debug/libogg_static.lib)
+        else() 
+            # Using old pre-built VS2008/VS2010 deps. TODO: safe to remove?
             target_link_libraries(${TARGET_NAME} optimized libogg)
             target_link_libraries(${TARGET_NAME} debug liboggd)
         endif()
@@ -371,10 +311,14 @@ endmacro()
 
 macro(use_package_vorbis)
     if (MSVC)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/include) # For prebuilt VS2008/VS2010 deps.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/lib) # For prebuilt VS2008/VS2010 deps.
-
-        include_directories(${ENV_TUNDRA_DEP_PATH}/vorbis/include) # For full-built deps.
+        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/include/vorbis) 
+            # Using full-built or prebuilt deps made from fullbuild.
+            include_directories(${ENV_TUNDRA_DEP_PATH}/vorbis/include)
+        else ()
+            # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove?
+            include_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/include)
+            link_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/lib)
+        endif ()
     elseif (APPLE)
         include_directories(${ENV_TUNDRA_DEP_PATH}/include/vorbis)
         link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
@@ -383,17 +327,21 @@ endmacro()
 
 macro(link_package_vorbis)
     if (MSVC)
-        if (IS_DIRECTORY $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32) # Using full-built deps.
-            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Release/libvorbis_static.lib)
-            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Release/libvorbisfile_static.lib)
-            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Debug/libvorbis_static.lib)
-            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Debug/libvorbisfile_static.lib)
-        elseif (IS_DIRECTORY $ENV{TUNDRA_DEP_PATH}/vorbis/lib/Release) # Using pre-built deps mirrored from full-built deps.
-            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/vorbis/lib/Release/libvorbis_static.lib)
-            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/vorbis/lib/Release/libvorbisfile_static.lib)
-            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/vorbis/lib/Debug/libvorbis_static.lib)
-            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/vorbis/lib/Debug/libvorbisfile_static.lib)  
-        else() # Using pre-built VS2008/VS2010 deps.
+        # Always use ENV_TUNDRA_DEP_PATH as its read from cache. $ENV{TUNDRA_DEP_PATH} is not and can be empty/incorrect.
+        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32) 
+            # Using full-built deps.
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Release/libvorbis_static.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Release/libvorbisfile_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Debug/libvorbis_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Debug/libvorbisfile_static.lib)
+        elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Release) 
+            # Using pre-built deps mirrored from full-built deps.
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Release/libvorbis_static.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Release/libvorbisfile_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Debug/libvorbis_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Debug/libvorbisfile_static.lib)  
+        else() 
+            # Using old pre-built VS2008/VS2010 deps. TODO: safe to remove?
             target_link_libraries(${TARGET_NAME} optimized libvorbis optimized libvorbisfile)
             target_link_libraries(${TARGET_NAME} debug libvorbisd debug libvorbisfiled)
         endif()
@@ -404,10 +352,14 @@ endmacro()
 
 macro(use_package_theora)
     if (MSVC)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/include) # For prebuilt VS2008/VS2010 deps.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/lib) # For prebuilt VS2008/VS2010 deps.
-        
-        include_directories(${ENV_TUNDRA_DEP_PATH}/theora/include) # For full-built deps.        
+        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/theora/include/theora) 
+            # Using full-built or prebuilt deps made from fullbuild.
+            include_directories(${ENV_TUNDRA_DEP_PATH}/theora/include)
+        else ()
+            # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove?
+            include_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/include)
+            link_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/lib)
+        endif ()
     elseif (APPLE)
         include_directories(${ENV_TUNDRA_DEP_PATH}/include/theora)
         link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
@@ -416,13 +368,17 @@ endmacro()
 
 macro(link_package_theora)
     if (MSVC)
-        if (IS_DIRECTORY $ENV{TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32) # Using full-built deps.
-            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32/Release_SSE2/libtheora_static.lib)
-            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32/Debug/libtheora_static.lib)
-        elseif (IS_DIRECTORY $ENV{TUNDRA_DEP_PATH}/theora/lib/Release_SSE2) # Using pre-built deps mirrored from full-built deps.
-            target_link_libraries(${TARGET_NAME} optimized $ENV{TUNDRA_DEP_PATH}/theora/lib/Release_SSE2/libtheora_static.lib)
-            target_link_libraries(${TARGET_NAME} debug $ENV{TUNDRA_DEP_PATH}/theora/lib/Debug/libtheora_static.lib)
-        else() # Using pre-built VS2008/VS2010 deps.
+        # Always use ENV_TUNDRA_DEP_PATH as its read from cache. $ENV{TUNDRA_DEP_PATH} is not and can be empty/incorrect.
+        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32) 
+            # Using full-built deps.
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32/Release_SSE2/libtheora_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/theora/win32/VS2008/Win32/Debug/libtheora_static.lib)
+        elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/theora/lib/Release_SSE2) 
+            # Using pre-built deps mirrored from full-built deps.
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/theora/lib/Release_SSE2/libtheora_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/theora/lib/Debug/libtheora_static.lib)
+        else() 
+            # Using pre-built VS2008/VS2010 deps. TODO: safe to remove?
             target_link_libraries(${TARGET_NAME} optimized libtheora)
             target_link_libraries(${TARGET_NAME} debug libtheorad)
         endif()
