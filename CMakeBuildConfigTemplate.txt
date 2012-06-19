@@ -16,7 +16,7 @@
 ## Various flags/defines that configure your build
 
 set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
-set (BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
+set (BUILDING_INSTALLER 1)          # Enables additional resources to create icon for the main executable.
 set (ENABLE_BUILD_OPTIMIZATIONS 1)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
 if (NOT APPLE)
    set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
