@@ -8,6 +8,10 @@ if (!server.IsRunning() && !framework.IsHeadless())
     engine.IncludeFile("crosshair.js");
 }
 
+else {
+    engine.IncludeFile("stub_crosshair.js"); //stub CrossHair for headless tests to run
+}
+
 // A simple walking avatar with physics & 1st/3rd person camera
 function SimpleAvatar(entity, comp)
 {
@@ -139,6 +143,10 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     this.me.Action("Stop").Triggered.connect(this, this.ServerHandleStop);
     this.me.Action("ToggleFly").Triggered.connect(this, this.ServerHandleToggleFly);
     this.me.Action("SetRotation").Triggered.connect(this, this.ServerHandleSetRotation);
+    this.me.Action("Rotate").Triggered.connect(this, this.ServerHandleRotate);
+    this.me.Action("StopRotate").Triggered.connect(this, this.ServerHandleStopRotate);
+
+    this.serverrotate = 0;
 
     rigidbody.PhysicsCollision.connect(this, this.ServerHandleCollision);
 }
@@ -162,6 +170,14 @@ SimpleAvatar.prototype.ServerUpdate = function(frametime) {
         this.ServerSetFlying(false);
 
     this.CommonUpdateAnimation(frametime);
+
+    //old style rotation handling for webnaali
+    if (this.serverrotate != 0) {
+        var rotateVec = new float3(0, 0, 0);
+        var rotate_speed = 150.0;
+        rotateVec.y = -rotate_speed * this.serverrotate * frametime;
+        this.me.rigidbody.Rotate(rotateVec);
+    }
 }
 
 SimpleAvatar.prototype.ServerHandleCollision = function(ent, pos, normal, distance, impulse, newCollision) {
@@ -311,6 +327,32 @@ SimpleAvatar.prototype.ServerHandleSetRotation = function(param) {
         this.me.rigidbody.SetRotation(rot);
     }
 }
+
+//these server side Rotate handlers now for webnaali only, which was made against an older version that had these
+SimpleAvatar.prototype.ServerHandleRotate = function(param) {
+    if (param == "left") {
+        this.serverrotate = -1;
+    }
+    if (param == "right") {
+        this.serverrotate = 1;
+    }
+}
+
+SimpleAvatar.prototype.ServerHandleStopRotate = function(param) {
+    if ((param == "left") && (this.serverrotate == -1)) {
+        print("stoprot left");
+        this.serverrotate = 0;
+    }
+    if ((param == "right") && (this.serverrotate == 1)) {
+        print("stoprot right");
+        this.serverrotate = 0;
+    }
+    if (param == "all") {
+        print("stoprot all");
+        this.serverrotate = 0;
+    }
+}
+
 
 SimpleAvatar.prototype.ServerSetAnimationState = function() {
     // Not flying: Stand, Walk or Crouch
