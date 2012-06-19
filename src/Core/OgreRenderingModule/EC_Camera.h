@@ -6,6 +6,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Math/float3.h"
+#include "Math/float4x4.h"
 #include "Geometry/Ray.h"
 
 #include <QImage>
@@ -169,6 +170,11 @@ public slots:
 
     /// Stops tracking an entity's visibility
     void StopViewTracking(Entity* entity);
+
+    /// Returns the view matrix for this camera
+    float4x4 ViewMatrix() const;
+    /// Returns the projection matrix for this camera
+    float4x4 ProjectionMatrix() const;
 
     void SetNearClip(float nearclip); /**< @deprecated use attribute nearPlane @todo Remove */
     float NearClip() const; /**< @deprecated use attribute nearPlane @todo Remove */
