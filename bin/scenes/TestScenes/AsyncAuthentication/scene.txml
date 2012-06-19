@@ -1,0 +1,16 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="1">
+  <component type="EC_Name" sync="true">
+   <attribute value="LoginScript" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="true">
+   <attribute value="local://logintest.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+</scene>

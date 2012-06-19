@@ -287,6 +287,18 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     
     user->properties["authenticated"] = "true";
     emit UserAboutToConnect(user->userID, user.get());
+    if (user->properties["authenticated"] != "later")
+        FinishLogin(user);
+}
+
+void Server::FinishLogin(UserConnectionPtr user)
+{
+    if (!user)
+    {
+        ::LogWarning("Server::HandleLogin: Login message from an unknown user.");
+        return;
+    }
+
     if (user->properties["authenticated"] != "true")
     {
         ::LogInfo("User with connection ID " + QString::number(user->userID) + " was denied access.");

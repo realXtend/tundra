@@ -45,6 +45,11 @@ void UserConnection::DenyConnection(const QString &reason)
     properties["reason"] = reason;
 }
 
+void UserConnection::FinishLoginLater()
+{
+    properties["authenticated"] = "later";
+}
+
 void UserConnection::Disconnect()
 {
     if (connection)

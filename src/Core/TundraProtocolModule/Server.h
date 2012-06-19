@@ -86,6 +86,9 @@ public slots:
     QString GetProtocol() const; /**< @deprecated Use Protocol or 'protocol' property. */
     UserConnectionPtr GetActionSender() const; /**< @deprecated Use ActionSender. */
 
+    /// Called from authentication handler to finish login 
+    void FinishLogin(UserConnectionPtr user);
+
 signals:
     /// A user is connecting. This is your chance to deny access.
     /** Call user->Disconnect() to deny access and kick the user out.

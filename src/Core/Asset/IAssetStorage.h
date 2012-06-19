@@ -9,6 +9,8 @@
 #include "AssetFwd.h"
 #include <boost/enable_shared_from_this.hpp>
 
+class QNetworkAccessManager;
+
 /// A base class for a database or a collection of assets in a single source.
 class IAssetStorage : public QObject, public boost::enable_shared_from_this<IAssetStorage>
 {
@@ -84,6 +86,9 @@ public slots:
 
     /// Specifies whether data can be uploaded to this asset storage.
     virtual bool Writable() const { return writable; }
+
+    /// Get QNetworkAccessManager associated with this storage, if any
+    virtual QNetworkAccessManager* GetNetworkAccessManager() { return NULL; }
 
     /// Specifies whether the assets in the storage should be subject to live update, once loaded
     virtual bool HasLiveUpdate() const { return liveUpdate; }
