@@ -389,7 +389,8 @@ QScriptValue toScriptValueUserConnectionList(QScriptEngine *engine, const UserCo
 
 QScriptValue qScriptValueFromLoginPropertyMap(QScriptEngine *engine, const LoginPropertyMap &map)
 {
-    QScriptValue v = engine->newArray(map.size());
+    // Expose the login properties as a JavaScript _associative_ array.
+    QScriptValue v = engine->newObject();
     for(LoginPropertyMap::const_iterator iter = map.begin(); iter != map.end(); ++iter)
         v.setProperty((*iter).first, (*iter).second);
     return v;
