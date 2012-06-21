@@ -1,38 +1,34 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_Name.h
- *  @brief  EC_Name provides network-synchronizable means of identification for entities in addition
- *          to the plain ID number. This EC is not present by default for entities.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_Name.h
+    @brief  EC_Name provides network-synchronizable means of identification for entities in addition to the plain ID number. */
 
 #pragma once
 
 #include "IComponent.h"
 
 /// Allows identifying the Entity using a name string in addition to the Entity ID number.
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Name</h2>
-Provides network-synchronizable means of identification for entities in addition to the plain ID number.
-This EC is not present by default for entities.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Name</h2>
+    Provides network-synchronizable means of identification for entities in addition to the plain ID number.
+    This EC is not present by default for entities.
 
-Registered by TundraLogicModule.
+    Registered by TundraLogicModule.
 
-<b>Attributes</b>:
-<ul>
-<li> QString: Name
-<div>Name</div> 
-<li> QString: description
-<div>Description</div> 
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li> QString: name
+    <div> @copydoc name</div>
+    <li> QString: description
+    <div>@copydoc description </div>
+    </ul>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-</table>
-*/
+    </table> */
 class EC_Name : public IComponent
 {
     Q_OBJECT
@@ -49,10 +45,10 @@ public:
     ~EC_Name() {}
 
     /// Name
+    Q_PROPERTY(QString name READ getname WRITE setname);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, name);
-    Q_PROPERTY(QString name READ getname WRITE setname); 
 
     /// Description.
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, description);
     Q_PROPERTY(QString description READ getdescription WRITE setdescription); 
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, description);
 };

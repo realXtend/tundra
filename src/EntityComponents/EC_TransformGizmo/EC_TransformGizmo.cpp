@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_TransformGizmo.cpp
- *  @brief  Enables visual manipulators (gizmos) for Transform attributes.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_TransformGizmo.cpp
+    @brief  Enables visual manipulators (gizmos) for Transform attributes. */
 
 #define MATH_OGRE_INTEROP
 
