@@ -4,6 +4,8 @@
     @file   EC_GraphicsViewCanvas.cpp
     @brief  Makes possible to to embed arbitrary Qt UI elements into a 3D model. */
 
+#define MATH_OGRE_INTEROP
+
 #include "EC_GraphicsViewCanvas.h"
 
 #include "AssetAPI.h"
@@ -378,12 +380,24 @@ void EC_GraphicsViewCanvas::OnMaterialChanged(uint materialIndex, const QString 
         if (newMaterial)
         {
             newMaterial->SetTexture(0, 0, 0, outputTexture.Get());
+
             // Prevent infinite loop
             disconnect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(OnMaterialChanged(uint, const QString &)));
             mesh->SetMaterial(materialIndex, newMaterial->Name());
             connect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(OnMaterialChanged(uint, const QString &)), Qt::UniqueConnection);
 
             UpdateTexture();
+
+            // Work around the QGraphicsView/QGraphicsScene bug that leaves 1 pixel padding around the scene and the view.
+            Ogre::TextureUnitState *tu = newMaterial->ogreMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0);
+            float4x4 m = float4x4::identity;
+            float w = (float)width.Get();
+            float h = (float)height.Get();
+            m[0][0] = (w-8.f)/w; /**< @todo 2 pixels should be enough in theory, but doesn't seem to suffice. Going with 8 for now. */
+            m[1][1] = (h-8.f)/h;
+            m[0][3] = 4.f/w;
+            m[1][3] = 4.f/h;
+            tu->setTextureTransform(m);
         }
     }
 }
