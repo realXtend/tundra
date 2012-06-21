@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "EnvironmentModuleApi.h"
 #include "IComponent.h"
 #include "CoreTypes.h"
 #include "Color.h"
@@ -12,58 +11,60 @@
 #include "AssetReference.h"
 
 /// Makes the entity a water plane.
-/** <table class="header">
-    <tr>
-    <td>
-    <h2>Water plane</h2>
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Water plane</h2>
 
-    Water plane component creates a cubic water plane. Inside the water cube scene fog is overridden by underwater fog properties.
-    Despite the cubic nature, water plane is visible for the outside viewer only as a plane.
+Water plane component creates a cubic water plane. Inside the water cube scene fog is overridden by underwater fog properties.
+Despite the cubic nature, water plane is visible for the outside viewer only as a plane.
 
-    Registered by EnvironmentComponents plugin.
+Registered by EnvironmentComponents plugin.
 
-    <b>Attributes</b>:
-    <ul>
-    <li> int : xSize.
-    <div> Water plane size in x-axis. </div>
-    <li> int : ySize.
-    <div> Water plane size in y-axis. </div>
-    <li> int : depth.
-    <div> Depth value defines that how much below from surface water fog colour is used. Meaning this attribute defines how "deep" is our ocean/pond. </div>
-    <li> float3 : position.
-    <div> Defines position of water plane in world coordinate system. </div>
-    <li> Quaternion : rotation.
-    <div> Defines rotation of water plane in world coordinate system. </div>
-    <li> float : scaleUfactor.
-    <div> Water plane texture factor which defines how many times the texture should be repeated in the u direction. Note current default value 
-     is so small 0.002, so it does not show up correctly in EC editor. </div>
-    <li> float : scaleVfactor.
-    <div> Water plane texture factor which defines how many times the texture should be repeated in the v direction. Note current default value 
-     is so small 0.002, so it does not show up correctly in EC editor. </div>
-    <li> int : xSegments.
-    <div> The number of segments to the plane in the x direction.  </div>
-    <li> int : ySegments.
-    <div> The number of segments to the plane in the y direction.  </div>
-    <li> QString : materialName.
-    <div> Defines what material is used in creating plane. </div>
-    <li> AssetReference : materialRef
-    <div> Defines what material is used in creating plane. </div>
-    <li> Color : fogColor.
-    <div> Defines what is fog color when camera is inside of water cube which this plane defines. </div>
-    <li> float : fogStartDistance.
-    <div> Underwater fog start distance (meters) </div>
-    <li> float : fogEndDistance.
-    <div> Underwater fog end distance (meters) </div>
-    <li> enum :  fogMode.
-    <div> UnderWater fog mode, defines how Fog density increases. See EC_Fog::FogMode. </div>
-    </ul>
+<b>Attributes</b>:
+<ul>
+<li> int : xSize.
+<div> Water plane size in x-axis. </div>
+<li> int : ySize.
+<div> Water plane size in y-axis. </div>
+<li> int : depth.
+<div> Depth value defines that how much below from surface water fog colour is used. Meaning this attribute defines how "deep" is our ocean/pond. </div>
+<li> float3 : position.
+<div> Defines position of water plane in world coordinate system. </div>
+<li> Quaternion : rotation.
+<div> Defines rotation of water plane in world coordinate system. </div>
+<li> float : scaleUfactor.
+<div> Water plane texture factor which defines how many times the texture should be repeated in the u direction. Note current default value 
+ is so small 0.002, so it does not show up correctly in EC editor. </div>
+<li> float : scaleVfactor.
+<div> Water plane texture factor which defines how many times the texture should be repeated in the v direction. Note current default value 
+ is so small 0.002, so it does not show up correctly in EC editor. </div>
+<li> int : xSegments.
+<div> The number of segments to the plane in the x direction.  </div>
+<li> int : ySegments.
+<div> The number of segments to the plane in the y direction.  </div>
+<li> QString : materialName.
+<div> Defines what material is used in creating plane. </div>
+<li> AssetReference : materialRef
+<div> Defines what material is used in creating plane. </div>
+<li> Color : fogColor.
+<div> Defines what is fog color when camera is inside of water cube which this plane defines. </div>
+<li> float : fogStartDistance.
+<div> Underwater fog start distance (meters) </div>
+<li> float : fogEndDistance.
+<div> Underwater fog end distance (meters) </div>
+<li> enum :  fogMode.
+<div> UnderWater fog mode, defines how Fog density increases. See EC_Fog::FogMode. </div>
+</ul>
 
-    Does not emit any actions.
+Does not emit any actions.
 
-    <b>Can use component EC_Placeable</b>. If entity has the position defined by the EC_Placeable component then it also specifies the position
-    in the world space where this water plane is by default is placed at. Note component does not need Placeable component.
-    </table> */
-class ENVIRONMENT_MODULE_API EC_WaterPlane : public IComponent
+<b>Can use component EC_Placeable</b>. If entity has the position defined by the EC_Placeable component then it also specifies the position
+in the world space where this water plane is by default is placed at. Note component does not need Placeable component.
+</table>
+*/
+class EC_WaterPlane : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_WaterPlane", 12)
@@ -75,75 +76,75 @@ public:
     virtual ~EC_WaterPlane();
 
     /// Water plane x-size
-    Q_PROPERTY(int xSize READ getxSize WRITE setxSize);
     DEFINE_QPROPERTY_ATTRIBUTE(int, xSize);
+    Q_PROPERTY(int xSize READ getxSize WRITE setxSize);
 
     /// Water plane y-size
-    Q_PROPERTY(int ySize READ getySize WRITE setySize);
     DEFINE_QPROPERTY_ATTRIBUTE(int, ySize);
+    Q_PROPERTY(int ySize READ getySize WRITE setySize);
 
     /// Water plane "depth". This is used to define when we are below water and inside of water cube.
-    Q_PROPERTY(int depth READ getdepth WRITE setdepth);
     DEFINE_QPROPERTY_ATTRIBUTE(int, depth);
+    Q_PROPERTY(int depth READ getdepth WRITE setdepth);
 
     /// Water plane position (this is used if there is not EC_Placeable)
-    Q_PROPERTY(float3 position READ getposition WRITE setposition);
     DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
+    Q_PROPERTY(float3 position READ getposition WRITE setposition);
 
     /// Water plane rotation
-    Q_PROPERTY(Quat rotation READ getrotation WRITE setrotation);
     DEFINE_QPROPERTY_ATTRIBUTE(Quat, rotation);
+    Q_PROPERTY(Quat rotation READ getrotation WRITE setrotation);
 
     /// U Scale, factor which defines how many times the texture should be repeated in the u direction.
-    Q_PROPERTY(float scaleUfactor READ getscaleUfactor WRITE setscaleUfactor);
     DEFINE_QPROPERTY_ATTRIBUTE(float, scaleUfactor);
+    Q_PROPERTY(float scaleUfactor READ getscaleUfactor WRITE setscaleUfactor);
 
     /// V Scale, factor which defines how many times the texture should be repeated in the v direction.
-    Q_PROPERTY(float scaleVfactor READ getscaleVfactor WRITE setscaleVfactor);
     DEFINE_QPROPERTY_ATTRIBUTE(float, scaleVfactor);
+    Q_PROPERTY(float scaleVfactor READ getscaleVfactor WRITE setscaleVfactor);
 
     /// The number of segments to the plane in the x direction 
-    Q_PROPERTY(int xSegments READ getxSegments WRITE setxSegments);
     DEFINE_QPROPERTY_ATTRIBUTE(int, xSegments);
+    Q_PROPERTY(int xSegments READ getxSegments WRITE setxSegments);
 
     /// The number of segments to the plane in the y direction 
-    Q_PROPERTY(int ySegments READ getySegments WRITE setySegments);
     DEFINE_QPROPERTY_ATTRIBUTE(int, ySegments);
+    Q_PROPERTY(int ySegments READ getySegments WRITE setySegments);
 
     /// Material name
     /// @todo Remove! Use only materialRef.
-    Q_PROPERTY(QString materialName READ getmaterialName WRITE setmaterialName);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, materialName);
+    Q_PROPERTY(QString materialName READ getmaterialName WRITE setmaterialName);
 
     /// Material asset reference.
     /// @note Currently unused!
     /// @todo Use instead of materialName!
-    Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
+    Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
 
     // Material texture, currently commented out, working feature.
     //DEFINE_QPROPERTY_ATTRIBUTE(QString, textureNameAttr);
     //Q_PROPERTY(QString textureNameAttr READ gettextureNameAttr WRITE settextureNameAttr);
 
     /// Underwater fog color
-    Q_PROPERTY(Color fogColor READ getfogColor WRITE setfogColor);
     DEFINE_QPROPERTY_ATTRIBUTE(Color, fogColor);
+    Q_PROPERTY(Color fogColor READ getfogColor WRITE setfogColor);
 
     /// Underwater fog start distance (meters), Linear only.
-    Q_PROPERTY(float fogStartDistance READ getfogStartDistance WRITE setfogStartDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, fogStartDistance);
+    Q_PROPERTY(float fogStartDistance READ getfogStartDistance WRITE setfogStartDistance);
 
     /// Underwater fog end distance (meters)), Linear only.
-    Q_PROPERTY(float fogEndDistance READ getfogEndDistance WRITE setfogEndDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, fogEndDistance);
+    Q_PROPERTY(float fogEndDistance READ getfogEndDistance WRITE setfogEndDistance);
 
     /// Underwater fog mode, defines how fog density increases.
-    Q_PROPERTY(int fogMode READ getfogMode WRITE setfogMode);
     DEFINE_QPROPERTY_ATTRIBUTE(int, fogMode);
+    Q_PROPERTY(int fogMode READ getfogMode WRITE setfogMode);
 
     /// The density of the fog in Exponentially or ExponentiallySquare mode, as a value between 0 and 1. The default is 0.001.
-    Q_PROPERTY(float fogExpDensity READ getfogExpDensity WRITE setfogExpDensity);
     DEFINE_QPROPERTY_ATTRIBUTE(float, fogExpDensity);
+    Q_PROPERTY(float fogExpDensity READ getfogExpDensity WRITE setfogExpDensity);
 
 public slots:
     /// Returns true if camera is inside of water cube.

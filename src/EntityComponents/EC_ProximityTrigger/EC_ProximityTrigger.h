@@ -21,11 +21,11 @@ also need to have EC_Placeable component so that distance can be calculated.
 <b>Attributes</b>:
 <ul>
 <li>bool: active
-<div> @copydoc active </div>
+<div>If true (default), sends trigger signals with distance of other entities with EC_ProximityTrigger. The other entities' proximity triggers do not need to have 'active' set.</div>
 <li>float: thresholdDistance
-<div> @copydoc thresholdDistance </div>
+<div>If greater than 0, entities beyond the threshold distance do not trigger the signal. Default is 0. The other entities' threshold values do not matter.</div>
 <li>float: interval
-<div> @copydoc interval </div>
+<div>Interval of trigger signals in seconds. If 0, the signal is sent every frame. Default is 0.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -55,31 +55,28 @@ public:
     ~EC_ProximityTrigger();
 
     /// Active flag. Trigger signals are only generated when this is true. Is true by default
-    /** If true (default), sends trigger signals with distance of other entities with EC_ProximityTrigger.
-        The other entities' proximity triggers do not need to have 'active' set. */
     Q_PROPERTY(bool active READ getactive WRITE setactive);
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, active);
 
-    /// Threshold distance.
-    /** If greater than 0, entities beyond the threshold distance do not trigger the signal.
-        Default is 0. The other entities' threshold values do not matter. */
+    /// Threshold distance. If greater than 0, entities beyond the threshold distance do not trigger the signal. Default is 0, which means distance does not matter.
     Q_PROPERTY(float thresholdDistance READ getthresholdDistance WRITE setthresholdDistance);
-    DEFINE_QPROPERTY_ATTRIBUTE(float, thresholdDistance);
-
+    
     /// Interval between signals in seconds. If 0, the signal is sent every frame. Default is 0
     Q_PROPERTY(float interval READ getinterval WRITE setinterval)
-    DEFINE_QPROPERTY_ATTRIBUTE(float, interval);
 
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, active);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, thresholdDistance);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, interval);
+    
 signals:
-    /// Trigger signal.
-    /** When active flag is on, is sent each frame for every other entity that also has an EC_ProximityTrigger and is close enough.
-        @note needs to be lowercase for QML to accept connections to it.
-        @todo Make signature uppercase, QML support is deprecated. */
+    /// Trigger signal. When active flag is on, is sent each frame for every other entity that also has an EC_ProximityTrigger and is close enough.
+    /// Note: needs to be lowercase for QML to accept connections to it
     void triggered(Entity* otherEntity, float distance);
 
-private slots:
+public slots:
+    /// Attribute has been updated
     void OnAttributeUpdated(IAttribute* attr);
-
+    
+private slots:
     /// Check for other triggers and emit signals
     void Update(float timeStep);
 

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "EnvironmentModuleApi.h"
 #include "IComponent.h"
 #include "Color.h"
 #include "OgreModuleFwd.h"
@@ -19,19 +18,19 @@
 
     <b>Attributes</b>:
     <ul>
-    <li> int : mode
-    <div> @copydoc mode </div>
-    <li> Color : color
-    <div> @copydoc color </div>
-    <li> float : startDistance
-    <div> @copydoc startDistance </div>
-    <li> float : endDistance
-    <div> @copydoc endDistance </div>
+    <li> int : mode.
+    <div> Fog mode (see FogMode), defines how fast the fog density increases, Linear by default. </div>
+    <li> Color : color.
+    <div> The color of the fog.</div>
+    <li> float : startDistance.
+    <div> The start distance of the fog, measured from the currently active camera, Linear mode only.</div>
+    <li> float : endDistance.
+    <div> The end distance of the fog, measured from the currently active camera, Linear mode only</div>
     <li> float : expDensity
-    <div> @copydoc expDensity </div>
+    <div> The density of the fog in Exponentially or ExponentiallySquare mode, as a value between 0 and 1. The default is 0.001. </div>
     </ul>
     </table> */
-class ENVIRONMENT_MODULE_API EC_Fog : public IComponent
+class EC_Fog : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_Fog", 9)
@@ -52,24 +51,24 @@ public:
     };
 
     /// Fog mode (see FogMode), defines how fast the fog density increases, Linear by default.
-    Q_PROPERTY(int mode READ getmode WRITE setmode);
     DEFINE_QPROPERTY_ATTRIBUTE(int, mode);
+    Q_PROPERTY(int mode READ getmode WRITE setmode);
 
     /// Fog color
-    Q_PROPERTY(Color color READ getcolor WRITE setcolor);
     DEFINE_QPROPERTY_ATTRIBUTE(Color, color);
+    Q_PROPERTY(Color color READ getcolor WRITE setcolor);
 
     /// Fog start distance, Linear only.
-    Q_PROPERTY(float startDistance READ getstartDistance WRITE setstartDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, startDistance);
+    Q_PROPERTY(float startDistance READ getstartDistance WRITE setstartDistance);
 
     /// Fog end distance, Linear only.
-    Q_PROPERTY(float endDistance READ getendDistance WRITE setendDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, endDistance);
+    Q_PROPERTY(float endDistance READ getendDistance WRITE setendDistance);
 
     /// The density of the fog in Exponentially or ExponentiallySquare mode, as a value between 0 and 1. The default is 0.001.
-    Q_PROPERTY(float expDensity READ getexpDensity WRITE setexpDensity);
     DEFINE_QPROPERTY_ATTRIBUTE(float, expDensity);
+    Q_PROPERTY(float expDensity READ getexpDensity WRITE setexpDensity);
 
 private slots:
     void Update();

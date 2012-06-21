@@ -20,59 +20,58 @@ namespace Ogre
 }
 
 /// Ogre camera entity component
-/** <table class="header">
-    <tr>
-    <td>
-    <h2>Camera</h2>
-    Ogre camera entity component
-    Needs to be attached to a placeable (aka scene node) to be useful.
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Camera</h2>
+Ogre camera entity component
+Needs to be attached to a placeable (aka scene node) to be useful.
 
-    Registered by OgreRenderer::OgreRenderingModule.
+Registered by OgreRenderer::OgreRenderingModule.
 
-    \ingroup OgreRenderingModuleClient
+\ingroup OgreRenderingModuleClient
 
-    <b>Attributes</b>:
-    <ul>
-    <li>float3: upVector
-    <div> @copydoc .</div>
-    <li>float: nearPlane
-    <div> @copydoc </div>
-    <li>float: farPlane
-    <div> @copydoc </div>
-    <li>float3: verticalFov
-    <div> @copydoc </div>
-    <li>QString: aspectRatio
-    <div> @copydoc </div>
-    </ul>
+<b>Attributes</b>:
+<ul>
+<li>float3: upVector
+<div>Up vector that defines the yaw axis.</div>
+<li>float: nearPlane
+<div>Near clip distance.</div>
+<li>float: farPlane
+<div>Far clip distance.</div>
+<li>float3: verticalFov
+<div>Vertical field of view as degrees.</div>
+<li>QString: aspectRatio
+<div>Aspect ratio is a string of form "<widthProportion>:<heightProportion>", e.g. "4:3".</div>
+</ul>
 
-    <b>Exposes the following scriptable functions:</b>
-    <ul>
-    <li>"SetActive": @copydoc SetActive
-    <li>"IsActive": @copydoc IsActive
-    <li>"InitialRotation": @copydoc InitialRotation
-    <li>"AdjustedRotation": @copydoc AdjustedRotation
-    <li>"GetMouseRay": @copydoc GetMouseRay
-    <li>"AspectRatio": @copydoc AspectRatio
-    <li>"VisibleEntities": @copydoc VisibleEntities
-    <li>"VisibleEntityIDs": @copydoc VisibleEntityIDs
-    <li>"StartViewTracking": @copydoc StartViewTracking
-    <li>"StopViewTracking": @copydoc StopViewTracking
-    <li>"AspectRatio": @copydoc AspectRatio
-    <li>"ViewMatrix": @copydoc ViewMatrix
-    <li>"ProjectionMatrix": @copydoc ProjectionMatrix
-    </ul>
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"SetActive": sets as active camera in the viewport
+<li>"IsActive": returns whether camera is active in the viewport
+<li>"InitialRotation": returns initial Euler rotation according to the up vector.
+<li>"AdjustedRotation": returns an adjusted Euler rotation according to the up vector.
+<li>"GetMouseRay": Returns a world space ray as cast from the camera through a viewport position.
+<li>"AspectRatio": Returns the currently used view aspect ratio (width/height).
+<li>"VisibleEntities": Returns visible entities in the camera's frustum.
+<li>"VisibleEntityIDs": Returns entity IDs of visible entities in the camera's frustum.
+<li>"StartViewTracking": Starts tracking an entity's visibility within the scene using this camera.
+<li>"StopViewTracking": Stops tracking an entity's visibility.
+<li>"AspectRatio": Returns the currently used view aspect ratio (width/height).
+</ul>
 
-    <b>Reacts on the following actions:</b>
-    <ul>
-    <li>...
-    </ul>
-    </td>
-    </tr>
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
 
-    Does not emit any actions.
+Does not emit any actions.
 
-    <b>Depends on the component @ref EC_ Placeable "Placeable".</b>
-    </table> */
+<b>Depends on the component Placeable</b>.
+</table> */
 class OGRE_MODULE_API EC_Camera : public IComponent
 {
     Q_OBJECT

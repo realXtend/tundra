@@ -253,3 +253,4 @@ void EC_Billboard::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reaso
     if (billboardSet_)
         billboardSet_->setMaterialName("AssetLoadError");
 }
+

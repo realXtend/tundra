@@ -6,7 +6,9 @@
 #include "CoreDefines.h"
 #include "OgreModuleApi.h"
 #include "AssetRefListener.h"
-#include "OgreModuleFwd.h"
+
+class OgreMaterialAsset;
+class EC_Mesh;
 
 /// Ogre material modifier component
 /**
@@ -20,12 +22,12 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QVariantList : parameters
-<div> @copydoc parameters </div>
-<li>QString : inputMat
-<div> @copydoc inputMat </div>
-<li>QString : outputMat
-<div> @copydoc outputMat </div>
+<li>QVariantList parameters
+<div>The parameters to apply.
+<li>QString inputMat
+<div>Input material asset reference. Can also be a submesh number in the same entity's EC_Mesh, or empty to use submesh 0 material.
+<li>QString outputMat
+<div>Output material asset.
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -55,15 +57,12 @@ public:
 
     virtual ~EC_Material();
 
-    /// The parameters to apply.
     Q_PROPERTY(QVariantList parameters READ getparameters WRITE setparameters);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, parameters);
 
-    /// Input material asset reference. Can also be a submesh number in the same entity's EC_Mesh, or empty to use submesh 0 material.
     Q_PROPERTY(QString inputMat READ getinputMat WRITE setinputMat);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, inputMat);
 
-    /// Output material asset.
     Q_PROPERTY(QString outputMat READ getoutputMat WRITE setoutputMat);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, outputMat);
 

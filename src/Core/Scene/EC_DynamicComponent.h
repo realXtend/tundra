@@ -5,57 +5,63 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 
-#include <QVariant>
-
 namespace kNet
 {
     class DataSerializer;
     class DataDeserializer;
 }
 
+#include <QVariant>
+
 struct DeserializeData;
 
 class QScriptValue;
 
 /// A component that allows adding of dynamically structured attributes at runtime.
-/** <table class="header">
-    <tr>
-    <td>
-    <h2>DynamicComponent</h2>
-    Component for which user can add and delete attributes at runtime.
-    <b> Name of the attributes must be unique. </b>
-    It's recommend to use attribute names when you set or get your attribute values because
-    indices can change while the dynamic component's attributes are added or removed.
+/**
+<table class="header">
+<tr>
+<td>
+<h2>DynamicComponent</h2>
+Component for which user can add and delete attributes at runtime.
+<b> Name of the attributes must be unique. </b>
+It's recommend to use attribute names when you set or get your attribute values because
+indices can change while the dynamic component's attributes are added or removed.
 
-    Use CreateAttribute for creating new attributes.
+Use CreateAttribute for creating new attributes.
 
-    When component is deserialized it will compare old and a new attribute values and will get difference
-    between those two and use that information to remove attributes that are not in the new list and add those
-    that are only in new list and only update those values that are same in both lists.
+When component is deserialized it will compare old and a new attribute values and will get difference
+between those two and use that information to remove attributes that are not in the new list and add those
+that are only in new list and only update those values that are same in both lists.
 
-    Registered by TundraLogicModule.
+Registered by TundraLogicModule.
 
-    <b>No Static Attributes.</b>
+<b>No Static Attributes.</b>
 
-    <b>Exposes the following scriptable functions:</b>
-    <ul>
-    <li>"CreateAttribute": @copydoc CreateAttribute
-    <li>"GetAttribute": @copydoc GetAttribute
-    <li>"SetAttribute": @copydoc SetAttribute
-    <li>"GetAttributeName": @copydoc GetAttributeName
-    <li>"ContainSameAttributes": @copydoc ContainSameAttributes
-    <li>"RemoveAttribute": @copydoc RemoveAttribute
-    <li>"ContainsAttribute": @copydoc ContainsAttribute
-    <li>"RemoveAllAttributes": @copydoc RemoveAllAttributes
-    </ul>
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"GetAttribute":Get attribute value as QVariant. If attribute type isn't QVariant then attribute value is returned as in string format.
+        @param index Index to attribute list.
+        @return Return attribute value as QVariant if attribute has been found, else return null QVariant.
+        Use QVariant's isNull method to check if the variant value is initialized.
+<li>"SetAttribute": Insert new attribute value to attribute.
+<li>"GetNumAttributes": 
+<li>"GetAttributeName":
+<li>"ContainSameAttribute": Check if a given component is holding exactly same attributes as this component.
+    @return Return true if component is holding same attributes as this component else return false.
+<li>"RemoveAttribute": Remove attribute from the component.
+<li>"ContainAttribute": Check if component is holding attribute by that name.
+    @param name Name of attribute that we are looking for.
+</ul>
 
-    Does not react on entity actions.
+Does not react on entity actions.
 
-    Does not emit any actions.
+Does not emit any actions.
 
-    <b>Doesn't depend on any components</b>.
+<b>Doesn't depend on any components</b>.
 
-    </table> */
+</table>
+*/
 class EC_DynamicComponent : public IComponent
 {
     Q_OBJECT

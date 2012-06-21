@@ -8,46 +8,47 @@
 #include "AssetReference.h"
 #include "AssetRefListener.h"
 
+class IModule;
+
 /// Particle system.
-/** <table class="header">
-    <tr>
-    <td>
-    <h2>ParticleSystem</h2>
+/**
+<table class="header">
+<tr>
+<td>
+<h2>ParticleSystem</h2>
 
-    <b>Attributes</b>:
-    <ul>
-    <li>AssetReference: particleRef
-    <div> @copydoc particleRef </div>
-    <li>bool: castShadows
-    <div> @copydoc castShadows </div>
-    <li>bool: enabled
-    <div> @copydoc </div>
-    <li>float: renderingDistance
-    <div> @copydoc renderingDistance</div>
-    </ul>
+<b>Attributes</b>:
+<ul>
+<li>AssetReference: particleRef
+<div>Particle resource asset reference.</div> 
+<li>bool: castShadows
+<div>does particles cast shadows .</div> 
+<li>bool: enabled
+<div>Are the particle systems enabled. If true, will automatically create all particle systems from the asset.</div>
+<li>float: renderingDistance
+<div>Particles rendering distance.</div> 
+</ul>
 
-    <b>Exposes the following scriptable functions:</b>
-    <ul>
-    <li>"CreateParticleSystem": @copydoc CreateParticleSystem
-    <li>"DeleteParticleSystem": @copydoc DeleteParticleSystem
-    <li>"StopParticleSystem": @copydoc StopParticleSystem
-    </ul>
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"CreateParticleSystem": Create a new particle system by system name. If name is empty, create all from the asset.
+<li>"DeleteParticleSystem": Delete existing particle system by system name. If name is empty, delete all.
+<li>"StopParticleSystem": Stop existing particle system emitters by system name, letting the existing particles run. If name is empty, stop all.
+</ul>
 
-    <b>Reacts on the following actions:</b>
-    <ul>
-    <li>"StartParticleSystem": Starts a particle system. Usage: StartParticleSystem [systemName].
-    If systemName is empty, all the particle systems in the particle asset will be started.
-    <li>"HardStopParticleSystem": Hard-stops (deletes) a particle system. Usage: HardStopParticleSystem [systemName].
-    If systemName is empty, all the particle systems in the particle asset will be deleted.
-    <li>"SoftStopParticleSystem": Disables emitters on a particle system, but lets the existing particles run.
-    Usage: SoftStopParticleSystem [systemName]. If systemName is empty, all the particle emitters in the particle asset will be stopped.
-    </td>
-    </tr>
+<b>Reacts on the following actions:</b>
+<ul>
+<li>"StartParticleSystem": Starts a particle system. Usage: StartParticleSystem [systemName]. If systemName is empty, all the particle systems in the particle asset will be started.
+<li>"HardStopParticleSystem": Hard-stops (deletes) a particle system. Usage: HardStopParticleSystem [systemName]. If systemName is empty, all the particle systems in the particle asset will be deleted.
+<li>"SoftStopParticleSystem": Disables emitters on a particle system, but lets the existing particles run. Usage: SoftStopParticleSystem [systemName]. If systemName is empty, all the particle emitters in the particle asset will be stopped.
+</td>
+</tr>
 
-    Does not emit any actions.
+Does not emit any actions.
 
-    <b>Depends on the component @ref EC_Placeable "Placeable".</b>
-    </table> */
+<b>Depends on the component Placeable</b>.
+</table>
+*/
 class EC_ParticleSystem : public IComponent
 {
     Q_OBJECT
@@ -68,7 +69,6 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
     /// Are the particle systems enabled.
-    /** If true, will automatically create all particle systems from the asset.</div> */
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
 
@@ -103,3 +103,4 @@ private:
     /// Asset ref listener for the particle asset
     AssetRefListenerPtr particleAsset_;
 };
+

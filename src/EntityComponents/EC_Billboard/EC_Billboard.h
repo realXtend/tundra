@@ -1,8 +1,10 @@
 /**
-    For conditions of distribution and use, see copyright notice in LICENSE
-
-    @file   EC_Billboard.h
-    @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity. */
+ *  For conditions of distribution and use, see copyright notice in LICENSE
+ *
+ *  @file   EC_Billboard.h
+ *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
+ *  @note   The entity must have EC_Placeable component available in advance.
+ */
 
 #pragma once
 
@@ -12,48 +14,59 @@
 #include "AssetRefListener.h"
 #include "OgreModuleFwd.h"
 
+class EC_Placeable;
+
+namespace Ogre
+{
+    class BillboardSet;
+    class Billboard;
+}
+
 /// Shows a billboard (3D sprite) that is attached to an entity.
-/** <table class="header">
-    <tr>
-    <td>
-    <h2>Billboard</h2>
-    Shows a billboard (3D sprite) that is attached to an entity.
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Billboard</h2>
+Shows a billboard (3D sprite) that is attached to an entity.
 
-    Registered by TundraLogicModule.
 
-    <b>Attributes</b>:
-    <ul>
-    <li>AssetReference: materialRef
-    <div> @copydoc materialRef </div>
-    <li>float3: position
-    <div> @copydoc position </div>
-    <li>float: width
-    <div> @copydoc width </div>
-    <li>float: height
-    <div> @copydoc height </div>
-    <li>float: rotation
-    <div> @copydoc rotation </div>
-    <li>bool: show
-    <div> @copydoc show </div>
-    </ul>
+Registered by TundraLogicModule.
 
-    <b>Exposes the following scriptable functions:</b>
-    <ul>
-    <li>"Show": @copydoc Show
-    <li>"Hide: @copydoc Hide
-    </ul>
+<b>Attributes</b>:
+<ul>
+<li>AssetReference: materialRef
+<div>Material used by the billboard.</div>
+<li>float3: position
+<div>Position of billboard relative to the placeable component's position.</div> 
+<li>float: width
+<div>Billboard width.</div>
+<li>float: height
+<div>Billboard height.</div>
+<li>float: rotation
+<div>Billboard rotation in degrees.</div>
+<li>bool: show
+<div>Whether to show the billboard.</div>
+</ul>
 
-    <b>Reacts on the following actions:</b>
-    <ul>
-    <li>...
-    </ul>
-    </td>
-    </tr>
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Show": Shows billboard. Does not affect the "show" -attribute.
+<li>"Hide: Hides the billboard. Does not affect the "show" -attribute.
+</ul>
 
-    Does not emit any actions.
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
 
-    <b>Depends on components @ref EC_Placeable "Placeable".</b>
-    </table> */
+Does not emit any actions.
+
+<b>Depends on components Placeable</b>.  
+</table>
+*/
 class EC_Billboard : public IComponent
 {
     Q_OBJECT
@@ -62,6 +75,8 @@ class EC_Billboard : public IComponent
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Billboard(Scene* scene);
+
+    /// Destructor.
     ~EC_Billboard();
 
     /// Material asset reference for the billboard
@@ -89,10 +104,10 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, show);
 
 public slots:
-    /// Shows the billboard. Does not affect the @c show attribute.
+    /// Show billboard.
     void Show();
     
-    /// Hides the billboard. Does not affect the @c show attribute.
+    /// Hide billboard.
     void Hide();
 
 public:
@@ -155,3 +170,4 @@ private:
     /// Asset ref listener for the material
     AssetRefListenerPtr materialAsset_;
 };
+

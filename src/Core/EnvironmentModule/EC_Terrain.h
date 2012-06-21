@@ -28,19 +28,13 @@ Registered by EnvironmentComponents plugin.
 <b>Attributes:</b>
 <ul>
 <li>Transform: nodeTransformation
-<div> @copydoc nodeTransformation </div>
-<li> int : xPatches
-<div> @copydoc xPatches</div>
-<li> int: yPatches
-<div> @copydoc yPatches</div>
-<li> float : uScale
-<div> @copydoc uScale </div>
-<li> float : vScale
-<div> @copydoc vScale </div>
-<li>AssetReference : material
-<div> @copydoc material </div>
-<li>AssetReference : heightMap
-<div> @copydoc heightMap </div>
+<div>Specifies the transformation matrix of the terrain.</div>
+<li>int: xPatches
+<div>The number of patches to generate in the terrain in the horizontal direction, in the range [0, 256].</div>
+<li>int: yPatches
+<div>The number of patches to generate in the terrain in the vertical direction, in the range [0, 256].</div>
+<li>QString: material
+<div>Specifies the material to use when rendering the terrain.</div> 
 </ul>
 
 Note that the way the textures are used depends completely on the material. For example, the default height-based terrain material "Rex/TerrainPCF"
@@ -63,31 +57,24 @@ public:
     explicit EC_Terrain(Scene* scene);
     virtual ~EC_Terrain();
 
-    /// Specifies the transformation matrix of the terrain
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
-    /// The number of patches to generate in the terrain in the horizontal direction, in the range [0, 256].
     Q_PROPERTY(int xPatches READ getxPatches WRITE setxPatches);
     DEFINE_QPROPERTY_ATTRIBUTE(int, xPatches);
 
-    /// The number of patches to generate in the terrain in the vertical direction, in the range [0, 256].
     Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches);
     DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
 
-    /// 
     Q_PROPERTY(float uScale READ getuScale WRITE setuScale);
     DEFINE_QPROPERTY_ATTRIBUTE(float, uScale);
 
-    /// 
     Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
     DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
 
-    /// Specifies the material to use when rendering the terrain.
     Q_PROPERTY(AssetReference material READ getmaterial WRITE setmaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, material);
 
-    /// Specifies the height map used to generate the terrain.
     Q_PROPERTY(AssetReference heightMap READ getheightMap WRITE setheightMap);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, heightMap);
 

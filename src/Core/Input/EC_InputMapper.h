@@ -17,58 +17,56 @@
 #include <QVariant>
 
 /// Translates given set of key and mouse sequences to Entity Actions on the entity the component is part of.
-/** <table class="header">
-    <tr>
-    <td>
-    <h2>InputMapper</h2>
+/**
+<table class="header">
+<tr>
+<td>
+<h2>InputMapper</h2>
 
-    Registers an InputContext from the Input API and uses it to translate
-    given set of key and mouse sequences to Entity Actions on the entity the component is part of.
+Registers an InputContext from the Input API and uses it to translate
+given set of key and mouse sequences to Entity Actions on the entity the component is part of.
 
-    <b>Attributes</b>:
-    <ul>
-    <li>QString: contextName
-    <div> @copydoc contextName </div>
-    <li>int: contextPriority
-    <div> @copydoc contextPriority </div>
-    <li>bool: takeKeyboardEventsOverQt
-    <div @copydoc takeKeyboardEventsOverQt </div>
-    <li>bool: takeMouseEventsOverQt
-    <div> @copydoc takeMouseEventsOverQt </div>
-    <li>int: executionType
-    <div> @copydoc executionType </div>
-    <li>bool: modifiersEnabled
-    <div> @copydoc modifiersEnabled </div>
-    <li>bool: enabled
-    <div> @copydoc enabled </div>
-    <li>bool: keyrepeatTrigger
-    <div> @copydoc keyrepeatTrigger </div>
-    <li>bool: suppressKeyEvents
-    <div> @copydoc suppressKeyEvents </div>
-    <li>bool: suppressMouseEvents
-    <div> @copydoc suppressMouseEvents </div>
-    </ul>
+<b>Attributes</b>:
+<ul>
+<li>QString: contextName.
+<div>This input mapper's input context priority.</div> 
+<li>int: contextPriority.
+<div>This input mapper's input context priority.</div> 
+<li>bool: takeKeyboardEventsOverQt.
+<div>Does the mapper receive keyboard input events even when a Qt widget has focus.</div> 
+<li>bool: takeMouseEventsOverQt.
+<div>Does the mapper receive mouse input events even when a Qt widget has focus.</div>
+<li>int: executionType.
+<div>Action execution type that is used for the Entity Actions.</div>
+<li>bool: modifiersEnabled.
+<div>Whether modifiers are checked for in the key events. Default true.</div>
+<li>bool: enabled.
+<div>Whether the input mapper is active (ie. actions will be invoked.) Default true.</div>
+</ul>
 
-    <b>Exposes the following scriptable functions:</b>
-    <ul>
-    <li>"RegisterMapping": @copydoc RegisterMapping
-    <li>"RemoveMapping": @copydoc RemoveMapping
-    <li>"GetInputContext": @copydoc GetInputContext
-    </ul>
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"RegisterMapping": Register new key sequence - action mapping for this input mapper.
+        @param keySeq Key sequence.
+        @param action Name of the action. If you want to use parameters the string should look the following: 
+        "More(Forward)" or "Move(Forward,100)" etc.
+        @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
+</ul>
 
-    <b>Reacts on the following actions:</b>
-    <ul>
-    <li>...
-    </ul>
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
 
-    </td>
-    </tr>
+</td>
+</tr>
 
-    <b>Can emit anykind of user-defined/registered actions.</b>
+<b>Can emit anykind of user-defined/registered actions.</b>
 
-    <b>Doesn't depend on any components</b>
+<b>Doesn't depend on any components</b>
 
-    </table> */
+</table>
+*/
 class EC_InputMapper : public IComponent
 {
     Q_OBJECT
@@ -135,13 +133,17 @@ public slots:
         @param executionType Execution type override. If 0 (default), uses the InputMapper's executionType attribute
         @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead. */
     void RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType = 1, int executionType = 0);
-    /// @overload
-    /** @param keySeq Key sequence as in string. example Qt::CTRL+Qt::Key_O sequence eguals "Ctrl+O" string. */
+
+    /** Registers new key sequence - action mapping for this input mapper.
+        @param keySeq Key sequence as in string. example Qt::CTRL+Qt::Key_O sequence eguals "Ctrl+O" string.
+        @param action Name of the action. If you want to use parameters the string should look the following: 
+        @param executionType Execution type override. If 0 (default), uses the InputMapper's executionType attribute
+        "More(Forward)" or "Move(Forward,100)" etc. */
     void RegisterMapping(const QString &keySeqString, const QString &action, int eventType = 1, int executionType = 0);
 
     /// Removes a key mapping
     void RemoveMapping(const QKeySequence &keySeq, int eventType = 1);
-    void RemoveMapping(const QString &keySeqString, int eventType = 1); /**< @overload */
+    void RemoveMapping(const QString &keySeqString, int eventType = 1); ///< @overload
 
     /// Returns the input context of this input mapper.
     InputContext *GetInputContext() const { return inputContext.get(); }

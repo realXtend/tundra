@@ -169,7 +169,10 @@ public:
     /// Returns an Attribute of this component with the given @c name.
     /** This function iterates through the attribute vector and tries to find a member attribute with the given name.
         @param The name of the attribute to look for.
-        @return A pointer to the attribute, or null if no attribute with the given name exists. */
+        @return A pointer to the attribute, or null if no attribute with the given name exists.
+
+        \todo: was made a slot, but interfered with a slot with the same name in EC_DynamicComponent, and this version
+        doesn't work right for py&js 'cause doesn't return a QVariant .. so not a slot now as a temporary measure. */
     IAttribute* GetAttribute(const QString &name) const;
     
     /// Create an attribute with specifed index, type and name. Return it if successful or null if not. Called by SyncManager.

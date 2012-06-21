@@ -5,6 +5,7 @@
 #include "DebugOperatorNew.h"
 #include "EC_Avatar.h"
 #include "EC_Mesh.h"
+#include "EC_AnimationController.h"
 #include "EC_Placeable.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
