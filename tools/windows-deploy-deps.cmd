@@ -17,8 +17,8 @@ echo.
 
 :: User defined variables
 set DEPLOY_TARGET=vs2008-32bit
-set DEPLOY_PACKAGE=FALSE
-set DEPLOY_VERSION=
+set DEPLOY_PACKAGE=TRUE
+set DEPLOY_VERSION=2.3.3.1
 set PREFER_RELEASE=FALSE
 
 :: Populate path variables
