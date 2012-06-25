@@ -592,7 +592,7 @@ IF NOT EXIST "%DEPS%\qt-solutions". (
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    :: Force deployment
-   del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
+   del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head*.dll"
 ) ELSE (
    cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
 )

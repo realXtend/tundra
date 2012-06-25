@@ -17,13 +17,13 @@
 
 set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
 set (BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
-set (ENABLE_BUILD_OPTIMIZATIONS 0)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
+set (ENABLE_BUILD_OPTIMIZATIONS 1)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
 if (NOT APPLE)
    set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
 else() # TODO Apple build script does not build with Hydrax.
    set (ENABLE_HYDRAX 0)
 endif()
-if (APPLE) # TODO: Apple build script does not work with SkyX at the moment. See https://github.com/realXtend/naali/issues/320 
+if (APPLE) # TODO: Apple build script does not work with SkyX at the moment. See https://github.com/realXtend/naali/issues/320
    set (ENABLE_SKYX 0)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 else()
    set (ENABLE_SKYX 1)
@@ -47,7 +47,7 @@ if (MSVC AND ENABLE_MEMORY_LEAK_CHECKS)
     add_definitions(-DMEMORY_LEAK_CHECK)
 endif()
 if (MSVC AND ENABLE_BUILD_OPTIMIZATIONS)
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy /GF /Ox /Ob2 /Ot /fp:fast /MP")
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy /GF /Ox /Ob2 /Ot /MP")
     set (CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELEASE})
     set (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
     set (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
