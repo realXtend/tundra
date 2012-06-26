@@ -69,7 +69,10 @@ public:
     /// @note The media will only be directly downloaded from http/https sources, other wise passed to VLC to handle streaming.
     Q_PROPERTY(bool streamingAllowed READ getstreamingAllowed WRITE setstreamingAllowed);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, streamingAllowed);
-    
+
+    Q_PROPERTY(float spatialRadius READ getspatialRadius WRITE setspatialRadius);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, spatialRadius);
+
     COMPONENT_NAME("EC_MediaPlayer", 37)
 
 public slots:
@@ -165,6 +168,8 @@ private slots:
 
     /// Callback for mediaDownloader_
     void OnMediaFailed(IAssetTransfer *transfer, QString reason);
+
+    void OnUpdate(float frametime);
 
 private:
     /// Vlc media player widget.

@@ -86,6 +86,10 @@ public slots:
     /// Force to emit the idle image.
     void ForceUpdateImage();
 
+    int Volume();
+
+    void SetVolume(int newVolume);
+
 protected:
     /// Internal impl for providing memory
     void* InternalLock(void** pixelPlane);

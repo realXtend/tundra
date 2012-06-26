@@ -67,6 +67,7 @@ if (SHOULD_RUN)
     SetupCompileFlags()
 
     link_modules (Framework Asset Ui OgreRenderingModule SceneWidgetComponents)
+    link_entity_components(EC_Sound)
     link_package (VLC)
     if (APPLE)
         link_ogre()

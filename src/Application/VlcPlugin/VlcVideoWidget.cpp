@@ -305,6 +305,21 @@ void VlcVideoWidget::ForceUpdateImage()
     update();
 }
 
+int VlcVideoWidget::Volume()
+{
+    return libvlc_audio_get_volume(vlcPlayer_);
+}
+
+void VlcVideoWidget::SetVolume(int volume)
+{
+    if (volume > 50)
+        volume = 50;
+    if (volume < 0)
+        volume = 0;
+
+    libvlc_audio_set_volume(vlcPlayer_, volume);
+}
+
 void VlcVideoWidget::ShutDown()
 {
     if (vlcPlayer_ && vlcInstance_)
