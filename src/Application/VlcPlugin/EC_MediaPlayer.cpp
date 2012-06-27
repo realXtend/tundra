@@ -59,7 +59,7 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
         submeshMetaData.step = "1";
 
         spatialRadiusMetaData.minimum = "0.0";
-        spatialRadiusMetaData.step = "0.1";
+        spatialRadiusMetaData.step = "1.0";
 
         metadataInitialized = true;
     }
@@ -306,43 +306,40 @@ void EC_MediaPlayer::OnUpdate(float frametime)
         return;
     if (!componentPrepared_)
         return;
-    if (getspatialRadius() == 0.0)
-    {
-        if (mediaPlayer_->GetVideoWidget()->Volume() != 50)
-            mediaPlayer_->GetVideoWidget()->SetVolume(50);
-        return;
-    }
 
+    QAbstractAnimation::State state = GetMediaState();
+    if (state != QAbstractAnimation::Running)
+        return;
+
+    Entity *entityListener = 0;
     EntityList listeners = ParentScene()->EntitiesWithComponent(EC_SoundListener::TypeNameStatic());
+
     if (!listeners.empty())
     {
-        int volume = 0;
-        Entity *entity;
-
         for (EntityList::const_iterator i = listeners.begin(); i != listeners.end(); ++i)
         {
             EC_SoundListener *listener = (*i)->GetComponent<EC_SoundListener>().get();
             if (listener->getactive())
             {
-                entity = (*i).get();
+                entityListener = (*i).get();
                 break;
             }
         }
+    }
 
-        if (entity)
+    if (entityListener)
+    {
+        EC_Placeable *thisPlaceable = ParentEntity()->GetComponent<EC_Placeable>().get();
+        EC_Placeable *listenerPlaceable = entityListener->GetComponent<EC_Placeable>().get();
+
+        if (thisPlaceable && listenerPlaceable)
         {
-            EC_Placeable *thisPlaceable = ParentEntity()->GetComponent<EC_Placeable>().get();
-            EC_Placeable *listenerPlaceable = entity->GetComponent<EC_Placeable>().get();
-
-            if (thisPlaceable && listenerPlaceable)
+            float distance = thisPlaceable->WorldPosition().Distance(listenerPlaceable->WorldPosition());
+            if (distance != 0.0)
             {
-                float distance = thisPlaceable->WorldPosition().Distance(listenerPlaceable->WorldPosition());
-                if (distance != 0.0)
-                {
-                    volume = (int)(50.0 - distance / getspatialRadius() * 50.0);
-                    if (volume != mediaPlayer_->GetVideoWidget()->Volume())
-                        mediaPlayer_->GetVideoWidget()->SetVolume(volume);
-                }
+                int volume = (int)(50.0 - distance / getspatialRadius() * 50.0);
+                if (volume != mediaPlayer_->GetVideoWidget()->Volume())
+                    mediaPlayer_->GetVideoWidget()->SetVolume(volume);
             }
         }
     }
@@ -575,6 +572,12 @@ void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Ty
             else
                 sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
         }
+    }
+    else if (attribute == &spatialRadius)
+    {
+        if (getspatialRadius() == 0.0)
+            if (mediaPlayer_->GetVideoWidget()->Volume() != 50)
+                mediaPlayer_->GetVideoWidget()->SetVolume(50);
     }
 }
 
