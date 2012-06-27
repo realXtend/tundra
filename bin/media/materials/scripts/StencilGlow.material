@@ -86,8 +86,10 @@ fragment_program stencil_glow_ps_cg cg
 	entry_point main
 	profiles ps_2_0 arbfp1	
 	
-
-
+	default_params
+	{
+		param_named colorModulate float4 1.0 1.0 1.0 0.4
+	}
 }
 
 material cg/stencil_glow
@@ -102,8 +104,8 @@ material cg/stencil_glow
 			
 			fragment_program_ref stencil_glow_ps_cg 
 			{
-				param_named alpha_value float 0.4
 				param_named_auto time time_0_x 100
+				param_named_auto colorModulate custom 1
 			}
 		}
 		

@@ -8,14 +8,21 @@
 #include "EC_StencilGlow.h"
 #include "Scene.h"
 #include "Entity.h"
+#include "Framework.h"
 #include "LoggingFunctions.h"
+
+#define COLOR_CUSTOM_PARAM 1
 
 EC_StencilGlow::EC_StencilGlow(Scene *scene) :
     IComponent(scene),
     outlineEntity_(0),
     outlineSceneNode_(0),
-    enabled(this, "enabled", false)
+    enabled(this, "enabled", false),
+    color(this, "color", Color(1.f, 1.f, 1.f, 0.4))
 {
+    if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return;
+
     world_ = scene->GetWorld<OgreWorld>();
 
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(Initialize()));
@@ -70,7 +77,7 @@ void EC_StencilGlow::CreateStencilGlow()
         outlineEntity_ = entity->clone(entity->getName() + "_glow");
         outlineEntity_->setRenderQueueGroup(STENCIL_GLOW_OUTLINE);
         outlineEntity_->setMaterialName("cg/stencil_glow");
-        
+
         if (entity->hasSkeleton())
             outlineEntity_->shareSkeletonInstanceWith(entity);
         
@@ -136,6 +143,19 @@ void EC_StencilGlow::OnAttributeUpdated(IAttribute *attribute)
     {
         CreateStencilGlow();
         SetStencilGlowEnabled(enabled.Get());
+    }
+
+    else if (attribute == &color)
+    {
+        if (outlineEntity_ && outlineSceneNode_)
+        {
+            Ogre::SubEntity *subEnt = outlineEntity_->getSubEntity(0);
+            if (subEnt)
+            {
+                Color newColor = getcolor();
+                subEnt->setCustomParameter(COLOR_CUSTOM_PARAM, Ogre::Vector4(newColor.r, newColor.g, newColor.b, newColor.a));
+            }
+        }
     }
 }
 

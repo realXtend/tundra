@@ -10,6 +10,7 @@
 #include "IComponent.h"
 #include "EC_Mesh.h"
 #include "OgreWorld.h"
+#include "Color.h"
 
 #include <Ogre.h>
 #include <OgreRenderQueueListener.h>
@@ -29,6 +30,9 @@ public:
 
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
+
+    Q_PROPERTY(Color color READ getcolor WRITE setcolor)
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, color);
 
 private slots:
     /// Called upon parent entity set

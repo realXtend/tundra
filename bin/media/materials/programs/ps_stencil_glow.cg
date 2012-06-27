@@ -1,11 +1,12 @@
-float4 main(uniform float alpha_value,
-			uniform float time
+float4 main(
+		uniform float time,
+		uniform float4 colorModulate
 ) : COLOR
 {
    float4 color;
-   color.x = 1.0;
-   color.y = 1.0;
-   color.z = 1.0;
-   color.w = alpha_value * (sin(time * 8.0));
+   color.x = colorModulate.x;
+   color.y = colorModulate.y;
+   color.z = colorModulate.z;
+   color.w = colorModulate.w * (sin(time * 8.0));
    return color;
 }
