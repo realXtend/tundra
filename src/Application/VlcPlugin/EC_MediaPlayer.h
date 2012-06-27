@@ -202,4 +202,7 @@ private:
 
     /// Track if we have a pending download operation.
     bool pendingMediaDownload_;
+
+    // Spatial audio framerate
+    float spatialFramerate;
 };

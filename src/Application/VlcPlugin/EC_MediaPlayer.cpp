@@ -39,6 +39,7 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
     mediaPlayer_(0),
     componentPrepared_(false),
     pendingMediaDownload_(false),
+    spatialFramerate(0.f),
     sourceRef(this, "Media Source", AssetReference("", "")),
     renderSubmeshIndex(this, "Render Submesh", 0),
     interactive(this, "Interactive", false),
@@ -143,11 +144,15 @@ void EC_MediaPlayer::Play()
     if (!mediaPlayer_->GetVideoWidget())
         return;
 
-    mediaPlayer_->GetVideoWidget()->SetVolume(50);
-
     QAbstractAnimation::State state = GetMediaState();
     if (state != QAbstractAnimation::Running)
+    {
         mediaPlayer_->GetVideoWidget()->Play();
+        if (getspatialRadius() <= 0.0)
+            mediaPlayer_->GetVideoWidget()->SetVolume(50);
+        else
+            OnUpdate(1.0);
+    }
 }
 
 void EC_MediaPlayer::Pause()
@@ -302,6 +307,11 @@ void EC_MediaPlayer::OnFrameUpdate(QImage frame)
 
 void EC_MediaPlayer::OnUpdate(float frametime)
 {
+    spatialFramerate += frametime;
+
+    if (spatialFramerate < 30.f)
+        return;
+
     if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
         return;
     if (!ViewEnabled() || GetFramework()->IsHeadless())
@@ -349,6 +359,8 @@ void EC_MediaPlayer::OnUpdate(float frametime)
             }
         }
     }
+
+    spatialFramerate = 0.f;
 }
 
 void EC_MediaPlayer::RenderWindowResized()
