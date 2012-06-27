@@ -1,3 +1,9 @@
+v2.3.3.1 - https://github.com/realXtend/naali/compare/tundra2.3.3...tundra2.3.3.1
+------
+ - Updated ogre-safe-nocrashes (the Ogre branch Tundra builds against) to stable Ogre 1.8 release.
+ - Fixed build system related issues (#451, #493, #489)
+ - Fixed an issue with AvatarDescAsset::AddAttachment (#495)
+
 v2.3.3 - https://github.com/realXtend/naali/compare/tundra2.3.2...tundra2.3.3
 ------
  - Added new CanvasPlugin, which adds a new component EC_GraphicsViewCanvas. This component allows embedding and interacting with arbitrary Qt UI elements (dialogs, buttons, web browsers, etc.) in the surfaces of 3D objects.
