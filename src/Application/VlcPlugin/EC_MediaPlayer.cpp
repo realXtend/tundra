@@ -143,6 +143,8 @@ void EC_MediaPlayer::Play()
     if (!mediaPlayer_->GetVideoWidget())
         return;
 
+    mediaPlayer_->GetVideoWidget()->SetVolume(50);
+
     QAbstractAnimation::State state = GetMediaState();
     if (state != QAbstractAnimation::Running)
         mediaPlayer_->GetVideoWidget()->Play();
@@ -319,7 +321,7 @@ void EC_MediaPlayer::OnUpdate(float frametime)
         for (EntityList::const_iterator i = listeners.begin(); i != listeners.end(); ++i)
         {
             EC_SoundListener *listener = (*i)->GetComponent<EC_SoundListener>().get();
-            if (listener->getactive())
+            if (listener && listener->active.Get())
             {
                 entityListener = (*i).get();
                 break;
@@ -338,6 +340,10 @@ void EC_MediaPlayer::OnUpdate(float frametime)
             if (distance != 0.0)
             {
                 int volume = (int)(50.0 - distance / getspatialRadius() * 50.0);
+
+                if (volume < 0)
+                    volume = 0;
+
                 if (volume != mediaPlayer_->GetVideoWidget()->Volume())
                     mediaPlayer_->GetVideoWidget()->SetVolume(volume);
             }
@@ -575,7 +581,7 @@ void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Ty
     }
     else if (attribute == &spatialRadius)
     {
-        if (getspatialRadius() == 0.0)
+        if (mediaPlayer_ && mediaPlayer_->GetVideoWidget() && getspatialRadius() == 0.0)
             if (mediaPlayer_->GetVideoWidget()->Volume() != 50)
                 mediaPlayer_->GetVideoWidget()->SetVolume(50);
     }
