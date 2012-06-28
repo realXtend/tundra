@@ -458,7 +458,7 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
 {
     if (ogreMesh.isNull())
     {
-        ::LogWarning("OgreMeshAsset::SerializeTo: Tried to export non-existing Ogre mesh " + Name() + ".");
+        LogWarning("OgreMeshAsset::SerializeTo: Tried to export non-existing Ogre mesh " + Name() + ".");
         return false;
     }
     try
@@ -470,14 +470,11 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
         serializer.exportMesh(ogreMesh.get(), tempFilename.toStdString());
         bool success = LoadFileToVector(tempFilename.toStdString().c_str(), data);
         QFile::remove(tempFilename); // Delete the temporary file we used for serialization.
-        if (!success)
-            return false;
-    } catch(std::exception &e)
-    {
-        ::LogError("OgreMeshAsset::SerializeTo: Failed to export Ogre mesh " + Name() + ":");
-        if (e.what())
-            ::LogError(e.what());
-        return false;
+        return success;
     }
-    return true;
+    catch(const std::exception &e)
+    {
+        LogError("OgreMeshAsset::SerializeTo: Failed to export Ogre mesh " + Name() + ": " + (e.what() ? QString(e.what()) : ""));
+    }
+    return false;
 }
