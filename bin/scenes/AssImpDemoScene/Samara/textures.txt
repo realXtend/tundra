@@ -1,0 +1,8 @@
+<../images/texture0.jpg> <../images/texture0.jpg>
+<../images/texture0.PNG> <../images/texture0.PNG>
+<../images/texture1.jpg> <../images/texture1.jpg>
+<../images/texture2.jpg> <../images/texture2.jpg>
+<../images/texture3.JPG> <../images/texture3.JPG>
+<../images/texture4.JPG> <../images/texture4.JPG>
+<../images/texture5.JPG> <../images/texture5.JPG>
+<../images/texture6.JPG> <../images/texture6.JPG>
