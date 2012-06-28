@@ -50,18 +50,6 @@
   </component>
  </entity>
  <entity id="3">
-  <component type="EC_Name" sync="1">
-   <attribute value="Instructions" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Script" sync="1">
-   <attribute value="" name="Type"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="instructions.js" name="Script ref"/>
-  </component>
- </entity>
- <entity id="4">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,-90,0,0,0.015,0.015,0.015" name="Transform"/>
    <attribute value="gable/models/gable.dae" name="Mesh ref"/>
@@ -80,7 +68,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="5">
+ <entity id="4">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,90,0,0.01,0.01,0.01" name="Transform"/>
    <attribute value="cityhouse/models/cityhouse.dae" name="Mesh ref"/>
@@ -99,7 +87,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="6">
+ <entity id="5">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,-90,0,0,20,20,20" name="Transform"/>
    <attribute value="crowne/models/crowne.dae" name="Mesh ref"/>
@@ -118,7 +106,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="7">
+ <entity id="6">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,90,0,0.0025,0.0025,0.0025" name="Transform"/>
    <attribute value="house2/models/house2.dae" name="Mesh ref"/>
@@ -137,7 +125,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="8">
+ <entity id="7">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,0,0.01,0.01,0.01" name="Transform"/>
    <attribute value="bunga/models/bunga.dae" name="Mesh ref"/>
@@ -156,7 +144,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="9">
+ <entity id="8">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,-90,0,0,0.04,0.04,0.04" name="Transform"/>
    <attribute value="mustang/models/mustang.dae" name="Mesh ref"/>
@@ -175,7 +163,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="10">
+ <entity id="9">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,0,0.015,0.015,0.015" name="Transform"/>
    <attribute value="Samara/models/samara.dae" name="Mesh ref"/>
@@ -194,7 +182,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="11">
+ <entity id="10">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,-90,0,0.015,0.015,0.015" name="Transform"/>
    <attribute value="house3/models/house3.dae" name="Mesh ref"/>
@@ -213,7 +201,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="12">
+ <entity id="11">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,90,0,0.02,0.02,0.02" name="Transform"/>
    <attribute value="house4/models/house4.dae" name="Mesh ref"/>
@@ -232,7 +220,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="13">
+ <entity id="12">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,90,0,0.003,0.003,0.003" name="Transform"/>
    <attribute value="casatentativa2/models/casatentativa2.dae" name="Mesh ref"/>
@@ -251,7 +239,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="14">
+ <entity id="13">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,0,0.015,0.015,0.015" name="Transform"/>
    <attribute value="farmhouse/models/farmhouse.dae" name="Mesh ref"/>
@@ -270,7 +258,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="15">
+ <entity id="14">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,-90,180,0,3,3,3" name="Transform"/>
    <attribute value="rescape/models/rescape.dae" name="Mesh ref"/>
@@ -289,7 +277,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="16">
+ <entity id="15">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,0,1,1,1" name="Transform"/>
    <attribute value="jeep/models/jeep1.ms3d" name="Mesh ref"/>
@@ -308,7 +296,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="17">
+ <entity id="16">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,90,90,0.1,0.1,0.1" name="Transform"/>
    <attribute value="duck/duck.dae" name="Mesh ref"/>
@@ -327,7 +315,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="18">
+ <entity id="17">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,-90,0,0,0.3,0.3,0.3" name="Transform"/>
    <attribute value="tent_dome/models/TentDome.dae" name="Mesh ref"/>
@@ -346,7 +334,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
-<entity id="19" sync="1">
+<entity id="18" sync="1">
   <component type="EC_Name" sync="1">
    <attribute value="Environment" name="name"/>
    <attribute value="" name="description"/>
