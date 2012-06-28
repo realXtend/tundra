@@ -74,7 +74,7 @@ private:
     void CreateKdTree();
 
     /// Process mesh data after loading to create tangents and such.
-    bool GenerateMeshdata();
+    bool GenerateMeshData();
 
     /// Stores a CPU-side version of the mesh geometry data (positions), for raycasting purposes.
     KdTree<Triangle> meshData;
