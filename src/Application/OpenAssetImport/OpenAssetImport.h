@@ -1,6 +1,7 @@
 #ifndef incl_OpenAssetImport_h
 #define incl_OpenAssetImport_h
 
+#include "CoreTypes.h"
 #include <string>
 #include <OgreMesh.h>
 #include <OgreMeshSerializer.h>
@@ -21,31 +22,23 @@ struct boneNode
 class OpenAssetImport
 {
 public:
-    bool convert(const Ogre::String& filename, bool generateMaterials, QString addr = "", int index = -1);
-
-    Ogre::Mesh * GetMesh() { return mMesh.get(); }
-    std::map<QString, QString> matList;
-    std::vector<QString> matNameList;
-    const Ogre::String& getBasename(){ return mBasename; }
-    void FixLocalReference(QString &matRef, QString addRef);
-    void FixHttpReference(QString &matRef, QString addRef);
-    bool IsSupportedExtension(QString extension);
+	OpenAssetImport();
+	~OpenAssetImport();
+    bool convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh);
 
 private:
     const aiScene *scene;
-    QString addr;
-    Ogre::MeshPtr mMesh;
-    bool generateMaterials;
+	QString GetPathToTexture(const QString &meshFileDiskSource, QString &texturePath);
     void linearScaleMesh(Ogre::MeshPtr mesh, int targetSize);
-    bool createSubMesh(const Ogre::String& name, int index, const aiNode* pNode, const aiMesh *mesh, const aiMaterial* mat, Ogre::MeshPtr pMesh, Ogre::AxisAlignedBox& mAAB, const Ogre::String& mDir);
-    Ogre::MaterialPtr createMaterial(int index, const aiMaterial* mat, const Ogre::String& mDir);
+    bool createSubMesh(const Ogre::String& name, int index, const aiNode* pNode, const aiMesh *mesh, const aiMaterial* mat, Ogre::MeshPtr pMesh, Ogre::AxisAlignedBox& mAAB, const QString &meshFileDiskSource);
+    Ogre::MaterialPtr createMaterial(int index, const aiMaterial* mat, const QString &meshFileDiskSource);
     Ogre::MaterialPtr createMaterialByScript(int index, const aiMaterial* mat);
     void grabNodeNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
     void grabBoneNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
     void computeNodesDerivedTransform(const aiScene* mScene,  const aiNode *pNode, const aiMatrix4x4 accTransform);
     void createBonesFromNode(const aiScene* mScene,  const aiNode* pNode);
     void createBoneHiearchy(const aiScene* mScene,  const aiNode *pNode);
-    void loadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const Ogre::String& mDir);
+    void loadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const QString &meshFileDiskSource, Ogre::MeshPtr mesh);
     void markAllChildNodesAsNeeded(const aiNode *pNode);
     void flagNodeAsNeeded(const char* name);
     bool isNodeNeeded(const char* name);
@@ -53,8 +46,6 @@ private:
     typedef std::map<Ogre::String, boneNode> boneMapType;
     boneMapType boneMap;
     int mLoaderParams;
-    Ogre::String mBasename;
-    Ogre::String mPath;
     Ogre::String mMaterialCode;
     Ogre::String mCustomAnimationName;
 
