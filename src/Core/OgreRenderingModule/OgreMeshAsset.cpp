@@ -16,7 +16,10 @@
 
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
+
+#ifdef ASSIMP_ENABLED
 #include "OpenAssetImport.h"
+#endif
 
 OgreMeshAsset::~OgreMeshAsset()
 {
@@ -372,7 +375,8 @@ bool OgreMeshAsset::GenerateMeshdata()
     try
     {
         // Assign default materials that won't complain
-        SetDefaultMaterial();
+		if (!IsAssimpFileType())
+        	SetDefaultMaterial();
         // Set asset references the mesh has
         //ResetReferences();
     }
@@ -498,9 +502,13 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
 
 bool OgreMeshAsset::ConvertDataToOgreMesh(const u8 *data_, size_t numBytes)
 {
-	OpenAssetImport import;
-	std::vector<QString> materials;
-	bool success = import.convert(data_, numBytes, this->Name(), ogreMesh, materials);
+
+	bool success = false;
+
+#ifdef ASSIMP_ENABLED
+	OpenAssetImport importer;
+	success = importer.convert(data_, numBytes, this->Name(), this->DiskSource(), ogreMesh);
+#endif
 	
 	if (!success)
 	{
@@ -510,7 +518,7 @@ bool OgreMeshAsset::ConvertDataToOgreMesh(const u8 *data_, size_t numBytes)
 
 	try
 	{
-		//ogreMesh->load();
+		ogreMesh->load();
 	} 
 	catch(std::exception &e)
     {
