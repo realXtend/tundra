@@ -127,7 +127,7 @@ material cg/stencil_alpha_glow
 			fragment_program_ref stencil_glow_ps_cg 
 			{
 				param_named_auto time time_0_x 100
-				param_named alpha_value float 0.0
+				param_named_auto colorModulate custom 1
 			}
 		}
 		
@@ -140,7 +140,7 @@ material cg/stencil_alpha_glow
 			fragment_program_ref stencil_glow_ps_cg 
 			{
 				param_named_auto time time_0_x 100
-				param_named alpha_value float 0.0
+				param_named_auto colorModulate custom 1
 			}
 		}		
 		
@@ -160,7 +160,7 @@ material cg/stencil_no_depth_check_glow
 			fragment_program_ref stencil_glow_ps_cg 
 			{
 				param_named_auto time time_0_x 100
-				param_named alpha_value float 0.4
+				param_named_auto colorModulate custom 1
 			}
 		}
 		
@@ -173,7 +173,7 @@ material cg/stencil_no_depth_check_glow
 			fragment_program_ref stencil_glow_ps_cg 
 			{
 				param_named_auto time time_0_x 100
-				param_named alpha_value float 0.4
+				param_named_auto colorModulate custom 1
 			}
 		}
 	
