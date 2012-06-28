@@ -148,6 +148,4 @@ private slots:
     void HandleMouseEvent(MouseEvent *e);
 
     void OnFrameUpdate(float dt);
-
-//    void DrawDebug();
 };
