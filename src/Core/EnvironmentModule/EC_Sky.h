@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "EnvironmentModuleApi.h"
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "Math/Quat.h"
@@ -10,31 +11,28 @@
 #include "AssetRefListener.h"
 
 /// Makes the entity a sky.
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Makes the entity a sky.</h2>
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Makes the entity a sky.</h2>
 
-Registered by EnviromentComponents plugin.
+    Registered by EnviromentComponents plugin.
 
-<b>Attributes</b>:
-<ul>
-<li> AssetReference: materialRef.
-<div> Sky material reference.</div>
-<li> AssetReferenceList : textureRefs.
-<div>Sky texture references.</div>
-<li> Quaternion : orientation
-<div> Optional parameter to specify the orientation of the box. </div>
-<li> float : distance
-<div> Distance in world coordinates from the camera to each plane of the box. </div>
-<li> bool : drawFirst
-<div> If true, the box is drawn before all other geometry in the scene. </div>
-
-</ul>
-</table>
-*/
-class EC_Sky : public IComponent
+    <b>Attributes</b>:
+    <ul>
+    <li>AssetReference: materialRef.
+    <div> @copydoc materialRef </div>
+    <li>AssetReferenceList: textureRefs.
+    <div> @copydoc textureRefs </div>
+    <li>Quaternion: orientation
+    <div> @copydoc orientation </div>
+    <li>float: distance
+    <div> @copydoc distance </div>
+    <li>bool : drawFirst
+    <div> @copydoc drawFirst </div>
+    </ul>
+    </table> */
+class ENVIRONMENT_MODULE_API EC_Sky : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_Sky", 10)
@@ -45,47 +43,49 @@ public:
 
     virtual ~EC_Sky();
 
-    /// Sky material reference
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
+    /// Sky material reference.
+    /** Material defines how the sky looks. Dy default and typically a material with cubic texture is used,
+        but also f.ex. a simpler material can be used to paint the sky with solid color. */
     Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
 
     /// Sky texture references.
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, textureRefs);
+    /** @deprecated Use materialRef to set the appearance of the sky.
+        @todo Remove. */
     Q_PROPERTY(AssetReferenceList textureRefs READ gettextureRefs WRITE settextureRefs);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, textureRefs);
 
     /// Distance in world coordinates from the camera to each plane of the box.
-    DEFINE_QPROPERTY_ATTRIBUTE(float, distance);
     Q_PROPERTY(float distance READ getdistance WRITE setdistance);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, distance);
 
     /// Optional parameter to specify the orientation of the box.
-    DEFINE_QPROPERTY_ATTRIBUTE(Quat, orientation);
     Q_PROPERTY(Quat orientation READ getorientation WRITE setorientation);
+    DEFINE_QPROPERTY_ATTRIBUTE(Quat, orientation);
 
-     /// Defines that is sky drawn first
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirst);
+     /// Defines is sky drawn first.
     Q_PROPERTY(bool drawFirst READ getdrawFirst WRITE setdrawFirst);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirst);
 
-public slots:
-    /// Called If some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute* attribute);
-
-    /// Disables the sky box.
-    void DisableSky();
-
-    /// Called when texture asset has been downloaded.
-    void OnTextureAssetLoaded(AssetPtr tex);
+    /// Is the sky enabled.
+    /** @todo Will be an attribute in the near future. If you want to disable the sky, simply delete the component for now.
+        It would be best to take enabled attribute in use when the textureRefs attribute is removed
+        so that the number of attributes stays the same and hence would break the network sync. */
+    bool enabled;
+//    Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
+//    DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
 
 private:
-    void CreateSky();
-    void SetTextures();
+    void AttributesChanged();
+    void Update();
 
-    QString lastMaterial_;
-    float lastDistance_;
-    bool lastDrawFirst_;
-    Quat lastOrientation_;
-
-    /// Ogre scene
-    OgreWorldWeakPtr world_;
-
+    OgreWorldWeakPtr ogreWorld;
+    AssetRefListenerPtr materialAsset;
     std::vector<AssetRefListenerPtr> textureAssets;
+    QString currentMaterial; ///< Ogre resource name for the currently used material.
+
+private slots:
+    void OnMaterialAssetLoaded(AssetPtr mat);
+    /// @deprecated This will be removed when textureRefs attribute is removed.
+    void OnTextureAssetLoaded(AssetPtr tex);
 };
