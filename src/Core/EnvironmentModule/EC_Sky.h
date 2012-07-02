@@ -22,8 +22,6 @@
     <ul>
     <li>AssetReference: materialRef.
     <div> @copydoc materialRef </div>
-    <li>AssetReferenceList: textureRefs.
-    <div> @copydoc textureRefs </div>
     <li>Quaternion: orientation
     <div> @copydoc orientation </div>
     <li>float: distance
@@ -70,7 +68,7 @@ public:
     /// Is the sky enabled.
     /** @todo Will be an attribute in the near future. If you want to disable the sky, simply delete the component for now.
         It would be best to take enabled attribute in use when the textureRefs attribute is removed
-        so that the number of attributes stays the same and hence would break the network sync. */
+        so that the number of attributes stays the same and hence would not break the network sync. */
     bool enabled;
 //    Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
 //    DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);

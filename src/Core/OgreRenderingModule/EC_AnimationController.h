@@ -15,7 +15,7 @@
     <h2>AnimationController</h2>
     Ogre-specific mesh entity animation controller
 
-    Needs to be told of an OgreMesh component to be usable
+    Needs to be told of a @ref EC_Mesh "Mesh" component to be usable.
 
     Registered by OgreRenderer::OgreRenderingModule.
 
@@ -42,8 +42,6 @@
     <li>"SetAnimationNumLoops": @copydoc SetAnimationNumLoops
     <li>"GetAvailableAnimations": @copydoc GetAvailableAnimations
     <li>"GetActiveAnimations": @copydoc GetActiveAnimations
-    <li>"GetMeshEntity": @copydoc GetMeshEntity
-    <li>"SetMeshEntity": @copydoc SetMeshEntity
     </ul>
 
     <b>Reacts on the following actions:</b>

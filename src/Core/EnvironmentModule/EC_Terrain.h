@@ -14,45 +14,42 @@
 namespace Ogre { class Matrix4; }
 
 /// Adds a heightmap-based terrain to the scene.
-/**
-<table class="header">
+/** <table class="header">
 
-<tr>
-<td>
-<h2>Terrain</h2>
-Adds a heightmap-based terrain to the scene. A Terrain is composed of a rectangular grid of adjacent "patches".
-Each patch is a fixed-size 16x16 height map.
+    <tr>
+    <td>
+    <h2>Terrain</h2>
+    Adds a heightmap-based terrain to the scene. A Terrain is composed of a rectangular grid of adjacent "patches".
+    Each patch is a fixed-size 16x16 height map.
 
-Registered by EnvironmentComponents plugin.
+    Registered by EnvironmentComponents plugin.
 
-<b>Attributes:</b>
-<ul>
-<li>Transform: nodeTransformation
-<div> @copydoc nodeTransformation </div>
-<li> int : xPatches
-<div> @copydoc xPatches</div>
-<li> int: yPatches
-<div> @copydoc yPatches</div>
-<li> float : uScale
-<div> @copydoc uScale </div>
-<li> float : vScale
-<div> @copydoc vScale </div>
-<li>AssetReference : material
-<div> @copydoc material </div>
-<li>AssetReference : heightMap
-<div> @copydoc heightMap </div>
-</ul>
+    <b>Attributes:</b>
+    <ul>
+    <li>Transform: nodeTransformation
+    <div> @copydoc nodeTransformation </div>
+    <li>int: xPatches
+    <div> @copydoc xPatches</div>
+    <li>int: yPatches
+    <div> @copydoc yPatches</div>
+    <li>float: uScale
+    <div> @copydoc uScale </div>
+    <li>float : vScale
+    <div> @copydoc vScale </div>
+    <li>AssetReference: material
+    <div> @copydoc material </div>
+    <li>AssetReference: heightMap
+    <div> @copydoc heightMap </div>
+    </ul>
 
-Note that the way the textures are used depends completely on the material. For example, the default height-based terrain material "Rex/TerrainPCF"
-only uses the texture channels 0-3, and blends between those based on the terrain height values.
+    Note that the way the textures are used depends completely on the material. For example, the default height-based terrain material "Rex/TerrainPCF"
+    only uses the texture channels 0-3, and blends between those based on the terrain height values.
 
-Does not emit or react on any actions.
+    Does not emit or react on any actions.
 
-<b>Does not depend on any other components</b>. Currently Terrain stores its own transform matrix, so it does not depend on the Placeable component. It might be more consistent
-to create a dependency to Placeable, so that the position of the terrain is editable in the same way the position of other placeables is done.
-</table>
-
-*/
+    <b>Does not depend on any other components</b>. Currently Terrain stores its own transform matrix, so it does not depend on the Placeable component. It might be more consistent
+    to create a dependency to Placeable, so that the position of the terrain is editable in the same way the position of other placeables is done.
+    </table> */
 class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
 {
     Q_OBJECT
@@ -75,11 +72,11 @@ public:
     Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches);
     DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
 
-    /// 
+    /// Texture U coordinate scaling factor.
     Q_PROPERTY(float uScale READ getuScale WRITE setuScale);
     DEFINE_QPROPERTY_ATTRIBUTE(float, uScale);
 
-    /// 
+    /// Texture V coordinate scaling factor.
     Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
     DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
 
