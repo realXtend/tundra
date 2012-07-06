@@ -134,11 +134,11 @@ if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
     endif ()
 endif()
 AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
+AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
 
-# Remove the win32 check once the mumble and vlc deps are fetched in the linux build scripts. 
-# For MumblePlugin this is same as apt-get libspeex and protobuf ~2.4.1 and VlcPlugin apt-get libvlc-dev.
+# Remove the win32 check once vlc deps are fetched in the linux build scripts.
+# For VlcPlugin this is apt-get libvlc-dev.
 if (WIN32)
-    AddProject(Application MumblePlugin)        # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
     AddProject(Application VlcPlugin)           # Adds media playback capabilities with libVLC and entity components.
 endif ()
 
