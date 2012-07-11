@@ -1,50 +1,47 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_ProximityTrigger.h
- *  @brief  EC_ProximityTrigger reports distance, each frame, of other entities that also have EC_ProximityTrigger component
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_ProximityTrigger.h
+    @brief  Reports distance, each frame, of other entities that also have this same component. */
 
 #pragma once
 
 #include "IComponent.h"
 
-/// EntityComponent that reports distance of other entities that also have an EC_ProximityTrigger component
-/**
-<table class="header">
-<tr>
-<td>
-<h2>ProximityTrigger</h2>
-EntityComponent that reports distance to other entities that also have EC_ProximityTrigger component. The entities
-also need to have EC_Placeable component so that distance can be calculated.
+/// Reports distance, each frame, of other entities that also have this same component.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>ProximityTrigger</h2>
+    Reports distance, each frame, of other entities that also have this same component.
+    The entities also need to have EC_Placeable component so that distance can be calculated.
 
-<b>Attributes</b>:
-<ul>
-<li>bool: active
-<div> @copydoc active </div>
-<li>float: thresholdDistance
-<div> @copydoc thresholdDistance </div>
-<li>float: interval
-<div> @copydoc interval </div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>bool: active
+    <div> @copydoc active </div>
+    <li>float: thresholdDistance
+    <div> @copydoc thresholdDistance </div>
+    <li>float: interval
+    <div> @copydoc interval </div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>...
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>None.
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li>None.
+    </ul>
+    </td>
+    </tr>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Depends on EC_Placeable.</b>
-</table>
-*/
+    <b>Depends on @ref EC_Placeable "Placeable" component.</b>
+    </table> */
 class EC_ProximityTrigger : public IComponent
 {
     Q_OBJECT

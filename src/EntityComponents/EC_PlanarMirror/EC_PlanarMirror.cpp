@@ -1,10 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_PlanarMirror.cpp
- *  @brief  EC_PlanarMirror enables one to create planar mirrors.
- *  @note   The entity should have EC_Placeable available in advance.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+ 
+    @file   EC_PlanarMirror.cpp
+    @brief  Enables one to create planar mirrors. */
 
 #include "Math/MathFwd.h"
 #include "EC_PlanarMirror.h"
