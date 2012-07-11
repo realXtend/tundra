@@ -62,11 +62,11 @@ Developer Documentation
 -----------------------
 
 Tundra uses [Doxygen] as its main documentation tool. In order to generate and view the developer documentation, follow these steps:
-1. have Doxygen installed,
-2. `cd doc`,
-3. `doxygen tundra.Doxyfile`,
-4. `cd html`, and
-5. open up `index.html`
+1. have Doxygen installed,  
+2. `cd doc`,  
+3. `doxygen tundra.Doxyfile`,  
+4. `cd html`, and  
+5. open up `index.html`.
 
 Contact Information
 -------------------
