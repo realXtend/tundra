@@ -29,7 +29,7 @@ class EC_Terrain;
     <li>float: mass
     <div>@copydoc mass</div>
     <li>enum: shapeType
-    <div>@copydoc shateType</div>
+    <div>@copydoc shapeType</div>
     <li>float3: size
     <div>@copydoc size</div>
     <li>AssetReference: collisionMeshRef
@@ -51,9 +51,9 @@ class EC_Terrain;
     <li>bool: phantom
     <div>@copydoc phantom</div>
     <li>bool: drawDebug
-    <div>@copydoc linearVelocity</div>
+    <div>@copydoc drawDebug</div>
     <li>float3: linearVelocity
-    <div>@copydoc </div>
+    <div>@copydoc linearVelocity</div>
     <li>float3: angularVelocity
     <div>@copydoc angularVelocity</div>
     <li>int: collisionLayer
@@ -223,14 +223,22 @@ public slots:
 
     /// Set linear velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
-        @param velocity New linear velocity */
+        @param velocity New linear velocity
+        @todo Remove and use linearVelocity attribute? */
     void SetLinearVelocity(const float3& velocity);
-    
+    /// Return linear velocity. Should be same as accessing the attribute.
+    /** @todo Remove and use linearVelocity attribute? */
+    float3 GetLinearVelocity();
+
     /// Set angular velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
-        @param angularVelocity New angular velocity, specified in degrees / sec */
+        @param angularVelocity New angular velocity, specified in degrees / sec
+        @todo Remove and use angularVelocity attribute? */
     void SetAngularVelocity(const float3& angularVelocity);
-    
+    /// Return angular velocity. Should be same as accessing the attribute.
+    /** @todo Remove and use angularVelocity attribute? */
+    float3 GetAngularVelocity();
+
     /// Apply a force to the body
     /** @param force Force
         @param position Object space position, by default center */
@@ -272,15 +280,7 @@ public slots:
         to continue uninterrupted (with proper inter-step interpolation)
         @param rotation Delta rotation (eulers) */
     void Rotate(const float3& rotation);
-    
-    /// Return linear velocity. Should be same as accessing the attribute.
-    /** @todo Remove? */
-    float3 GetLinearVelocity();
-    
-    /// Return angular velocity. Should be same as accessing the attribute.
-    /** @todo Remove? */
-    float3 GetAngularVelocity();
-    
+
     /// Return physics world
     Physics::PhysicsWorld* GetPhysicsWorld() const { return world_; }
 
