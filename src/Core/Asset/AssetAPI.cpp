@@ -60,7 +60,7 @@ void AssetAPI::OpenAssetCache(QString directory)
     }
 }
 
-std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
+std::vector<AssetProviderPtr> AssetAPI::AssetProviders() const
 {
     return providers;
 }
@@ -78,7 +78,7 @@ void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
     providers.push_back(provider);
 }
 
-AssetStoragePtr AssetAPI::GetAssetStorageByName(const QString &name) const
+AssetStoragePtr AssetAPI::AssetStorageByName(const QString &name) const
 {
     foreach(AssetProviderPtr provider, GetAssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
@@ -87,7 +87,7 @@ AssetStoragePtr AssetAPI::GetAssetStorageByName(const QString &name) const
     return AssetStoragePtr();
 }
 
-AssetStoragePtr AssetAPI::GetStorageForAssetRef(const QString &ref) const
+AssetStoragePtr AssetAPI::StorageForAssetRef(const QString &ref) const
 {
     PROFILE(AssetAPI_GetStorageForAssetRef);
     foreach(AssetProviderPtr provider, GetAssetProviders())
@@ -128,7 +128,7 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
     return AssetStoragePtr();
 }
 
-AssetStoragePtr AssetAPI::GetDefaultAssetStorage() const
+AssetStoragePtr AssetAPI::DefaultAssetStorage() const
 {
     AssetStoragePtr defStorage = defaultStorage.lock();
     if (defStorage)
@@ -151,25 +151,20 @@ void AssetAPI::SetDefaultAssetStorage(const AssetStoragePtr &storage)
         LogInfo("Set (null) as the default asset storage.");
 }
 
-AssetMap AssetAPI::GetAllAssetsOfType(const QString& type)
+AssetMap AssetAPI::AssetsOfType(const QString& type) const
 {
     AssetMap ret;
-    
-    for (AssetMap::const_iterator i = assets.begin(); i != assets.end(); ++i)
-    {
+    for(AssetMap::const_iterator i = assets.begin(); i != assets.end(); ++i)
         if (!i->second->Type().compare(type, Qt::CaseInsensitive))
             ret[i->first] = i->second;
-    }
-    
     return ret;
 }
 
-std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
+std::vector<AssetStoragePtr> AssetAPI::AssetStorages() const
 {
     std::vector<AssetStoragePtr> storages;
 
     std::vector<AssetProviderPtr> providers = GetAssetProviders();
-
     for(size_t i = 0; i < providers.size(); ++i)
     {
         std::vector<AssetStoragePtr> stores = providers[i]->GetStorages();
@@ -792,7 +787,7 @@ AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref, bool forceTra
     return RequestAsset(ref.ref, ref.type, forceTransfer);
 }
 
-AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType) const
+AssetProviderPtr AssetAPI::ProviderForAssetRef(QString assetRef, QString assetType) const
 {
     PROFILE(AssetAPI_GetProviderForAssetRef);
 
@@ -894,12 +889,6 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef) const
     }
     assert(false);
     return assetRef;
-}
-
-bool AssetAPI::IsAssetTypeFactoryRegistered(const QString &typeName) const
-{
-    AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(typeName);
-    return (existingFactory.get() ? true : false);
 }
 
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
@@ -1024,7 +1013,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     return asset;
 }
 
-AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName) const
+AssetTypeFactoryPtr AssetAPI::AssetTypeFactory(QString typeName) const
 {
     PROFILE(AssetAPI_GetAssetTypeFactory);
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
