@@ -42,6 +42,10 @@
 
 #include <Win.h> // Tundra include
 
+#ifdef UNIX
+#include <arpa/inet.h>
+#endif
+
 #include <openssl/rand.h>
 
 namespace Mumble
