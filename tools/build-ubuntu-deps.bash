@@ -48,7 +48,8 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev
 	 ccache libqt4-dev python-dev freeglut3-dev \
 	 libxml2-dev cmake libalut-dev libtheora-dev ed \
 	 liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
-	 libspeex-dev nvidia-cg-toolkit subversion libspeexdsp-dev libprotobuf-dev
+	 libspeex-dev nvidia-cg-toolkit subversion libspeexdsp-dev libprotobuf-dev \
+     libvlc-dev
 fi
 
 what=bullet-2.79-rev2440
