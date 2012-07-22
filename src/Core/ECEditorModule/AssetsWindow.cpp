@@ -15,6 +15,7 @@
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+#include "IAssetBundle.h"
 #include "IAssetStorage.h"
 #include "UiAPI.h"
 
@@ -108,9 +109,18 @@ void AssetsWindow::PopulateTreeWidget()
             item->setFont(0, font);
         }
     }
+    std::pair<QString, AssetBundlePtr> bundlePair;
+    foreach(bundlePair, framework->Asset()->GetAllAssetBundles())
+    {
+        QString bundleFileName;
+        framework->Asset()->ParseAssetRef(bundlePair.second->Name(), 0, 0, 0, 0, &bundleFileName);
+        AssetBundleItem *item = new AssetBundleItem(bundlePair.second, bundleFileName);
+        treeWidget->addTopLevelItem(item);
+    }
 
     std::pair<QString, AssetPtr> pair;
     foreach(pair, framework->Asset()->GetAllAssets())
+    {
         if (alreadyAdded.find(pair.second) == alreadyAdded.end())
         {
             // If we're viewing only specific asset type, ignore non-matching assets.
@@ -118,6 +128,7 @@ void AssetsWindow::PopulateTreeWidget()
                 continue;
             AddAsset(pair.second);
         }
+    }
 
     treeWidget->addTopLevelItem(noProviderItem);
     noProviderItem->setHidden(noProviderItem->childCount() == 0);
@@ -138,21 +149,35 @@ void AssetsWindow::AddAsset(AssetPtr asset)
     connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
     connect(asset.get(), SIGNAL(PropertyStatusChanged(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
 
-    bool storageFound = false;
+    bool parentItemFound = false;
     AssetStoragePtr storage = asset->GetAssetStorage();
-    if (storage)
-        for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        // Inspect storage items only and find the right one.
+        if (storage)
         {
             AssetStorageItem *storageItem = dynamic_cast<AssetStorageItem *>(treeWidget->topLevelItem(i));
             if (storageItem && storageItem->Storage() == storage)
             {
                 storageItem->addChild(item);
-                storageFound = true;
+                parentItemFound = true;
                 break;
             }
         }
+        // Inspect asset bundles
+        else
+        {
+            AssetBundleItem *bundleItem = dynamic_cast<AssetBundleItem *>(treeWidget->topLevelItem(i));
+            if (bundleItem && bundleItem->Contains(asset->Name()))
+            {
+                bundleItem->addChild(item);
+                parentItemFound = true;
+                break;
+            }
+        }
+    }
 
-    if (!storageFound)
+    if (!parentItemFound)
         noProviderItem->addChild(item);
 
     noProviderItem->setHidden(noProviderItem->childCount() == 0);

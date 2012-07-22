@@ -34,7 +34,9 @@ std::map<QString, QString> ParseAssetRefArgs(const QString &url, QString *body);
 QString GuaranteeTrailingSlash(const QString &source);
 
 typedef std::map<QString, AssetPtr, QStringLessThanNoCase> AssetMap;
+typedef std::map<QString, AssetBundlePtr, QStringLessThanNoCase> AssetBundleMap;
 typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
+typedef std::map<QString, AssetBundleMonitorPtr, QStringLessThanNoCase> AssetBundleMonitorMap;
 
 typedef std::vector<AssetStoragePtr> AssetStorageVector;
 
@@ -54,6 +56,9 @@ public:
 
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
+
+    /// Registers a type factory for creating asset bundles of the type governed by the factory.
+    void RegisterAssetBundleTypeFactory(AssetBundleTypeFactoryPtr factory);
 
     /// Returns all registered asset type factories.
     /** You can use this list to query which asset types the system can handle. */
@@ -173,6 +178,9 @@ public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap GetAllAssets() const { return assets; }
 
+    /// Returns all asset bundles known to the asset system. AssetBundleMap maps asset bundle names to their AssetBundlePtrs.
+    AssetBundleMap GetAllAssetBundles() const { return assetBundles; }
+
     /// Returns all assets of a specific type.
     AssetMap GetAllAssetsOfType(const QString& type);
 
@@ -213,6 +221,9 @@ public slots:
                     to guarantee the creation of a unique asset name. */
     AssetPtr CreateNewAsset(QString type, QString name);
 
+    /// Creates a new empty unloaded asset bundle of the given type and name.
+    AssetBundlePtr CreateNewAssetBundle(QString type, QString name);
+
     /// Loads an asset from a local file.
     AssetPtr CreateAssetFromFile(QString assetType, QString assetFile);
 
@@ -229,6 +240,9 @@ public slots:
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName) const;
+
+    /// Return the asset bundle factory that can create asset bundles of the given type, or null, if no asset bundle type provider of the given type exists.
+    AssetBundleTypeFactoryPtr GetAssetBundleTypeFactory(QString typeName) const;
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     /// @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
@@ -425,10 +439,10 @@ signals:
     void AssetStorageAdded(AssetStoragePtr storage);
     
     /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
- //   void AssetDiskSourceChanged(AssetPtr asset);
+    //void AssetDiskSourceChanged(AssetPtr asset);
 
     /// Emitted when the asset has changed in the remote AssetStorage it is in. ///\todo Implement.
-//    void AssetStorageSourceChanged(AssetPtr asset);
+    //void AssetStorageSourceChanged(AssetPtr asset);
 
 private slots:
     /// The Asset API listens on each asset when they get loaded, to track the completion of the dependencies of other loaded assets.
@@ -439,10 +453,16 @@ private slots:
 
     /// An asset storage refreshed its references. Create empty assets from the new refs as necessary
     ///\todo Delete this whole function and logic when OnAssetChanged is implemented
-//    void OnAssetStorageRefsChanged(AssetStoragePtr storage);
+    //void OnAssetStorageRefsChanged(AssetStoragePtr storage);
 
     /// Contents of asset storage has been changed.
     void OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change);
+
+    /// Listens to the IAssetBundle Loaded signal.
+    void AssetBundleLoadCompleted(IAssetBundle *bundle);
+
+    /// Listens to the IAssetBundle Failed signal.
+    void AssetBundleLoadFailed(IAssetBundle *bundle);
 
 private:
     AssetTransferMap::iterator FindTransferIterator(QString assetRef);
@@ -460,10 +480,19 @@ private:
     /// Create new asset, when the storage is already known. This is used internally for optimization
     AssetPtr CreateNewAsset(QString type, QString name, AssetStoragePtr storage);
 
+    /// Load sub asset to transfer. Used internally for loading sub asset from bundle to virtual transfers.
+    bool LoadSubAssetToTransfer(AssetTransferPtr transfer, const QString &bundleRef, const QString &fullSubAssetRef);
+
+    /// Overload that takes in AssetBundlePtr instead of refs.
+    bool LoadSubAssetToTransfer(AssetTransferPtr transfer, IAssetBundle *bundle, const QString &fullSubAssetRef);
+
     bool isHeadless;
 
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
+
+    /// Stores all the currently ongoing asset bundle monitors.
+    AssetBundleMonitorMap bundleMonitors;
 
     typedef std::map<QString, AssetUploadTransferPtr, QStringLessThanNoCase> AssetUploadTransferMap;
     /// Stores all the currently ongoing asset uploads, maps full assetRefs to the asset upload transfer structures.
@@ -479,13 +508,16 @@ private:
     std::vector<AssetTransferPtr> readyTransfers;
 
     /// Contains all known asset storages in the system.
-//    std::vector<AssetStoragePtr> storages;
+    //std::vector<AssetStoragePtr> storages;
 
     /// Specifies the storage to use for asset requests with local name only.
     AssetStorageWeakPtr defaultStorage;
 
     /// Stores all the registered asset type factories in the system.
     std::vector<AssetTypeFactoryPtr> assetTypeFactories;
+
+    /// Stores all the registered asset bundle type factories in the system.
+    std::vector<AssetBundleTypeFactoryPtr> assetBundleTypeFactories;
 
     /// Stores a list of asset requests that the Asset API hasn't started at all but has put on hold, until other operations complete.
     /// This data structure is used to enforce that asset uploads are completed before any asset downloads to that asset.
@@ -501,15 +533,17 @@ private:
     /// Stores all the already loaded assets in the system.
     AssetMap assets;
 
+    /// Stores all the already loaded asset bundles in the system.
+    AssetBundleMap assetBundles;
+
     /// Tracks all loaded assets if their DiskSources change, and issues a reload of the assets.
     QFileSystemWatcher *diskSourceChangeWatcher;
 
     /// Specifies all the registered asset providers in the system.
     std::vector<AssetProviderPtr> providers;
 
-    AssetCache *assetCache;
-
     Framework *fw;
+    AssetCache *assetCache;
 };
 
 #include "AssetAPI.inl"
