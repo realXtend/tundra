@@ -118,8 +118,4 @@ public:
     /// Returns an unique string name for a new object. This function is intended to be used to generate unique names for Ogre resources.
     /// @todo Rename to GenerateUniqueObjectName
     virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
-
-    /// @deprecated Do not use this function. Instead use OgreWorld::Raycast or Physics::PhysicsWorld::Raycast. (In script code scene.ogre.Raycast or scene.physics.Raycast)
-    /// @todo This will be removed as soon as SceneInteract is out of core.
-    virtual RaycastResult *Raycast(int x, int y) = 0;
 };

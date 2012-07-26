@@ -6,9 +6,10 @@
 
 #pragma once
 
-#include "FrameworkFwd.h"
+#include "IModule.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"
+#include "OgreModuleFwd.h"
 
 #include <QObject>
 
@@ -28,7 +29,7 @@
     <li>"MouseRelease" - Executed when mouse button is released on an entity.
     <div>String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"</div>
     </ul> */
-class SceneInteract : public QObject
+class SceneInteract : public IModule
 {
     Q_OBJECT
 
@@ -36,9 +37,9 @@ public:
     SceneInteract();
     ~SceneInteract() {}
 
-    /// Called internally by the Framework. Do not call.
-    /** @param Framework Framework pointer. */
-    void Initialize(Framework *framework);
+    void Initialize();
+    /// Executes "MouseHover" action each frame if raycast has hit an entity.
+    void Update(f64 frameTime);
 
 signals:
     /// Emitted when mouse cursor moves on top of an entity.
@@ -66,26 +67,16 @@ signals:
     void EntityClickReleased(Entity *entity, Qt::MouseButton button, RaycastResult *result);
 
 private:
-    /// Performs raycast to last known mouse cursor position.
-    /** @return Result of the raycast. */
+    /// Performs raycast to last known mouse cursor position in the currently active scene.
     RaycastResult* Raycast();
 
-    Framework *framework; ///< Framework.
-    InputContextPtr input; ///< Input context.
+    InputContextPtr input;
     int lastX; ///< Last known mouse cursor's x position.
     int lastY; ///< Last known mouse cursor's y position.
     bool itemUnderMouse; ///< Was there widget under mouse in last known position.
     EntityWeakPtr lastHitEntity; ///< Last entity raycast has hit.
 
 private slots:
-    /// Executes "MouseHover" action each frame is raycast has hit and entity.
-    void Update();
-
-    /// Handles key events from the input API.
-    /** @param e Key event. */
     void HandleKeyEvent(KeyEvent *e);
-
-    /// Handles mouse events from the input API.
-    /** @param e Mouse event. */
     void HandleMouseEvent(MouseEvent *e);
 };

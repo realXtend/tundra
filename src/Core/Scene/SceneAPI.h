@@ -9,7 +9,6 @@
 #include <QObject>
 
 class Framework;
-class SceneInteract;
 
 /// Gives access to the scenes in the system.
 /** With this API you can create, remove, query scenes and listen to scene additions and removals.
@@ -33,13 +32,6 @@ public:
     }
 
 public slots:
-    /// Get Scene Interact weak pointer.
-    ///\todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
-    SceneInteract *GetSceneInteract() const;
-
-    /// Returns true if specified scene exists, false otherwise
-    bool HasScene(const QString &name) const;
-
     /// Returns a pointer to a scene
     /** Manage the pointer carefully, as scenes may not get deleted properly if
         references to the pointer are left alive.
@@ -117,6 +109,9 @@ public slots:
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
     QStringList ComponentTypes() const;
 
+    // DEPRECATED
+    bool HasScene(const QString &name) const { return scenes.find(name) != scenes.end(); } /**< @deprecated Use GetScene instead @todo Remove */
+
 signals:
     /// Emitted after new scene has been added to framework.
     /** @param name new scene name. */
@@ -145,6 +140,5 @@ private:
     ComponentFactoryWeakMap componentFactoriesByTypeid;
     Framework *framework;
     SceneMap scenes; ///< All currently created scenes.
-    SceneInteract *sceneInteract; ///< Scene interact. \todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
     static QStringList attributeTypeNames;
 };

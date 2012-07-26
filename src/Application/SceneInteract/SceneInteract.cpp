@@ -13,49 +13,49 @@
 #include "IRenderer.h"
 #include "Entity.h"
 #include "Profiler.h"
+#include "OgreRenderingModule.h"
+#include "Renderer.h"
+#include "OgreWorld.h"
 
 SceneInteract::SceneInteract() :
-    framework(0),
+    IModule("SceneInteract"),
     lastX(-1),
     lastY(-1),
     itemUnderMouse(false)
 {
 }
 
-void SceneInteract::Initialize(Framework *framework_)
+void SceneInteract::Initialize()
 {
-    framework = framework_;
-
-    input = framework->Input()->RegisterInputContext("SceneInteract", 100);
-    if (input)
+    if (!framework_->IsHeadless())
     {
+        input = framework_->Input()->RegisterInputContext("SceneInteract", 100);
         input->SetTakeMouseEventsOverQt(true);
-
         connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
         connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
-        connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()), Qt::UniqueConnection);
     }
+    framework_->RegisterDynamicObject("sceneinteract", this);
 }
 
-void SceneInteract::Update()
+void SceneInteract::Update(f64 /*frameTime*/)
 {
-    PROFILE(SceneInteract_Update);
-    Raycast();
+    if (!framework_->IsHeadless())
+    {
+        PROFILE(SceneInteract_Update);
+        Raycast();
 
-    if (lastHitEntity.lock())
-        lastHitEntity.lock()->Exec(EntityAction::Local, "MouseHover");
+        if (lastHitEntity.lock())
+            lastHitEntity.lock()->Exec(EntityAction::Local, "MouseHover");
+    }
 }
 
 RaycastResult* SceneInteract::Raycast()
 {
-    IRenderer *renderer = framework->Renderer();
-    if (!renderer)
+    OgreWorldPtr world = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer()->GetActiveOgreWorld();
+    if (!world)
         return 0;
 
-    RaycastResult *result = renderer->Raycast(lastX, lastY);
-    if (!result)
-        return 0;
-    
+    RaycastResult *result = world->Raycast(lastX, lastY); // Never returns null
     if (!result->entity || itemUnderMouse)
     {
         if (!lastHitEntity.expired())
@@ -142,4 +142,13 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
             break;
         }
     }
+}
+
+extern "C"
+{
+DLLEXPORT void TundraPluginMain(Framework *fw)
+{
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
+    fw->RegisterModule(new SceneInteract());
+}
 }
