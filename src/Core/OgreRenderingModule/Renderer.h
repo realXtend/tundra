@@ -12,10 +12,7 @@
 
 #include <boost/enable_shared_from_this.hpp>
 
-class UiPlane;
-class QRect;
 class QScriptEngine;
-class RenderWindow;
 class Framework;
 
 namespace OgreRenderer
@@ -141,14 +138,6 @@ namespace OgreRenderer
         /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
         void DoFullUIRedraw();
 
-        /// Do raycast into the currently active world from viewport coordinates, using all selection layers
-        /// \todo This function is deprecated. You should use the OgreWorld::Raycast function instead.
-        /** The coordinates are a position in the render window, not scaled to [0,1].
-            @param x Horizontal position for the origin of the ray
-            @param y Vertical position for the origin of the ray
-            @return Raycast result structure */
-        virtual RaycastResult* Raycast(int x, int y);
-
         /// Returns the Entity which contains the currently active camera that is used to render on the main window.
         /// The returned Entity is guaranteed to have an EC_Camera component, and it is guaranteed to be attached to a scene.
         Entity *MainCamera();
@@ -170,6 +159,16 @@ namespace OgreRenderer
         UiPlane *CreateUiPlane(const QString &name);
 
         void DeleteUiPlane(UiPlane *plane);
+
+        // DEPRECATED
+        /// Do raycast into the currently active world from viewport coordinates, using all selection layers
+        /** The coordinates are a position in the render window, not scaled to [0,1].
+            @deprecated This function is deprecated. You should use the OgreWorld::Raycast function instead.
+            @todo Remove.
+            @param x Horizontal position for the origin of the ray
+            @param y Vertical position for the origin of the ray
+            @return Raycast result structure */
+        RaycastResult* Raycast(int x, int y);
 
     signals:
         /// Emitted every time the main window active camera changes.
@@ -214,7 +213,7 @@ namespace OgreRenderer
         std::vector<UiPlane*> uiPlanes;
 
         /// Stores the camera that is active in the main window.
-        boost::weak_ptr<Entity> activeMainCamera;
+        EntityWeakPtr activeMainCamera;
 
         /// Dummy camera when we have no scene / no active camera.
         /// This is never shown outside to the client, but used as a placeholder

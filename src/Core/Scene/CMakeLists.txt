@@ -7,7 +7,7 @@ MocFolder ()
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB MOC_FILES Entity.h Scene.h EC_Name.h EntityAction.h EC_Name.h EC_DynamicComponent.h
-    IComponent.h AttributeChangeType.h SceneInteract.h SceneAPI.h ChangeRequest.h)
+    IComponent.h AttributeChangeType.h SceneAPI.h ChangeRequest.h)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

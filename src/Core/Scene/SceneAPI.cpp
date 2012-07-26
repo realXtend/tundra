@@ -10,7 +10,6 @@
 #include "IRenderer.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
-#include "SceneInteract.h"
 #include "LoggingFunctions.h"
 
 #include "Color.h"
@@ -28,8 +27,6 @@ SceneAPI::SceneAPI(Framework *owner) :
     QObject(owner),
     framework(owner)
 {
-    sceneInteract = new SceneInteract();
-    framework->RegisterDynamicObject("sceneinteract", sceneInteract);
 }
 
 SceneAPI::~SceneAPI()
@@ -39,20 +36,9 @@ SceneAPI::~SceneAPI()
 
 void SceneAPI::Reset()
 {
-    SAFE_DELETE(sceneInteract);
     scenes.clear();
     componentFactories.clear();
     componentFactoriesByTypeid.clear();
-}
-
-SceneInteract *SceneAPI::GetSceneInteract() const
-{
-    return sceneInteract;
-}
-
-bool SceneAPI::HasScene(const QString &name) const
-{
-    return scenes.find(name) != scenes.end();
 }
 
 ScenePtr SceneAPI::GetScene(const QString &name) const
@@ -113,8 +99,7 @@ SceneMap &SceneAPI::Scenes()
 
 bool SceneAPI::IsComponentFactoryRegistered(const QString &typeName) const
 {
-    ComponentFactoryMap::const_iterator existing = componentFactories.find(typeName);
-    return (existing != componentFactories.end() ? true : false);
+    return componentFactories.find(typeName) != componentFactories.end();
 }
 
 void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)

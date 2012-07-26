@@ -46,6 +46,8 @@ namespace OgreRenderer
 class OgreCompositionHandler;
 class GaussianListener;
 class OgreWorld;
+class UiPlane;
+class RenderWindow;
 
 class TextureAsset;
 class OgreMeshAsset;

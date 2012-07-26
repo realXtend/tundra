@@ -118,6 +118,7 @@ AddProject(Core EnvironmentModule)      # Optional in theory, if you drop Physic
 
 ###### OPTIONAL PLUGINS ######
 message("\n=========== Configuring Optional Plugins ===========\n")
+AddProject(Application SceneInteract)           # Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals. Depends on OgreRenderingModule.
 AddProject(Core ECEditorModule)                 # Provides tools for managing scenes, entities, entity-components and assets.
 AddProject(Application AvatarModule)            # Provides EC_Avatar. Depends on OgreRenderingModule.
 AddProject(Application DebugStatsModule)        # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule, and PhysicsModule.
