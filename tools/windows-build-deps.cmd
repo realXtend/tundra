@@ -794,6 +794,80 @@ IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
    cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
 )
 
+:: ZLIB
+IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". (
+  CD "%DEPS%"
+  rmdir /S /Q "%DEPS%\zlib"
+  cecho {0D}Downloading zlib 1.2.7{# #}{\n}
+  wget http://zlib.net/zlib-1.2.7.tar.gz
+  IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+) ELSE (
+   cecho {0D}zlib 1.2.7 already downloaded. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%DEPS%\zlib". (
+   CD "%DEPS%"
+   cecho {0D}Extracting zlib 1.2.7 package to "%DEPS%\zlib"{# #}{\n}
+   mkdir zlib
+   7za e -y zlib-1.2.7.tar.gz
+   7za x -y -ozlib zlib-1.2.7.tar
+   del /Q zlib-1.2.7.tar
+   cecho {0D}Building zlib 1.2.7{# #}{\n}
+   cd zlib
+   mkdir lib
+   mkdir include
+   cd zlib-1.2.7
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   cd contrib\masmx86
+   call bld_ml32.bat
+   cd ..\..
+   nmake -f win32/Makefile.msc LOC="-DASMV -DASMINF" OBJA="inffas32.obj match686.obj"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   copy /Y zlib.lib ..\lib\
+   copy /Y *.h ..\include\
+) ELSE (
+   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+)
+
+:: ZZIPLIB
+IF NOT EXIST "%DEPS%\zziplib-0.13.59.tar.bz2". (
+  CD "%DEPS%"
+  rmdir /S /Q "%DEPS%\zziplib"
+  cecho {0D}Downloading zziplib 0.13.59{# #}{\n}
+  wget http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/zziplib-0.13.59.tar.bz2/download
+  IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+) ELSE (
+   cecho {0D}zziplib 0.13.59 already downloaded. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%DEPS%\zziplib". (
+   CD "%DEPS%"
+   cecho {0D}Extracting zziplib 0.13.59 package to "%DEPS%\zziplib"{# #}{\n}
+   mkdir zziplib
+   7za e -y zziplib-0.13.59.tar.bz2
+   7za x -y -ozziplib zziplib-0.13.59.tar
+   del /Q zziplib-0.13.59.tar
+   cd zziplib
+   mkdir lib
+   mkdir include\zzip
+   cd zziplib-0.13.59\msvc8
+
+   :: Use a custom project file as zziblib does not ship with vs2008 project files.
+   :: Additionally its include/lib paths are not proper for it to find our zlib build and it has weird lib name postfixes.
+   :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
+   cecho {0D}Building zziplib from premade project %TOOLS%\utils-windows\vs2008-zziplib.vcproj{# #}{\n}
+   copy /Y "%TOOLS%\utils-windows\vs2008-zziplib.vcproj" zziplib.vcproj
+   msbuild zziplib.vcproj /p:configuration=Release /nologo
+   msbuild zziplib.vcproj /p:configuration=Debug /nologo
+   
+   :: Copy results to lib/include
+   copy /Y zziplib.lib ..\..\lib
+   copy /Y zziplibd.lib ..\..\lib
+   copy /Y ..\zzip\*.h ..\..\include\zzip
+) ELSE (
+   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+)
+
 echo.
 cecho {0A}Tundra dependencies built.{# #}{\n}
 set PATH=%ORIGINAL_PATH%

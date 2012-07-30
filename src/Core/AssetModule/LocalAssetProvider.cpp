@@ -28,8 +28,8 @@
 
 #include "MemoryLeakCheck.h"
 
-LocalAssetProvider::LocalAssetProvider(Framework* framework_)
-:framework(framework_)
+LocalAssetProvider::LocalAssetProvider(Framework* framework_) :
+    framework(framework_)
 {
     enableRequestsOutsideStorages = framework_->HasCommandLineParameter("--accept_unknown_local_sources");
 }
@@ -66,7 +66,7 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
         return AssetTransferPtr();
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
-        assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef);
+        assetType = framework->Asset()->GetResourceTypeFromAssetRef(assetRef);
 
     if (!enableRequestsOutsideStorages)
     {

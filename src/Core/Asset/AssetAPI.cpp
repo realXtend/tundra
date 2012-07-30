@@ -42,7 +42,7 @@ AssetAPI::AssetAPI(Framework *framework, bool headless) :
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
-    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
+    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary", "")));
 }
 
 AssetAPI::~AssetAPI()
@@ -2132,7 +2132,7 @@ namespace
     }
 }
 
-QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref)
+QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref) const
 {
     QString type = ref.type.trimmed();
     if (!type.isEmpty())
@@ -2140,80 +2140,52 @@ QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref)
     return GetResourceTypeFromAssetRef(ref.ref);
 }
 
-QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
+QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef) const
 {
-    QString filename;
+    QString filenameParsed;
     QString subAssetFilename;
-    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &filename, &subAssetFilename);
+    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &filenameParsed, &subAssetFilename);
     if (!subAssetFilename.isEmpty())
-        filename = subAssetFilename;
+        filenameParsed = subAssetFilename;
+    QString filename = filenameParsed.trimmed();
 
-    ///\todo This whole function is to be removed, and moved into the asset type providers for separate access. -jj.
+    // Query all registered asset factories if they provide this asset type.
+    for(size_t i=0; i<assetTypeFactories.size(); ++i)
+    {
+        // Note that we cannot ask endsWith from 'Binary' factory as the extension
+        // is an empty string. It will always return true and this factory should 
+        // only be defaulted to if nothing else can provide the queried file extension.
+        if (assetTypeFactories[i]->Type() == "Binary")
+            continue;
 
-    QString file = filename.trimmed().toLower();
-    if (file.endsWith(".qml", Qt::CaseInsensitive) || file.endsWith(".qmlzip", Qt::CaseInsensitive))
+        foreach (QString extension, assetTypeFactories[i]->TypeExtensions())
+            if (filename.endsWith(extension, Qt::CaseInsensitive))
+                return assetTypeFactories[i]->Type();
+    }
+
+    // Query all registered bundle factories if they provide this asset type.
+    for(size_t i=0; i<assetBundleTypeFactories.size(); ++i)
+        foreach (QString extension, assetBundleTypeFactories[i]->TypeExtensions())
+            if (filename.endsWith(extension, Qt::CaseInsensitive))
+                return assetBundleTypeFactories[i]->Type();
+                
+    /** @todo Make these hardcoded ones go away and move to the provider when provided (like above). 
+        Seems the resource types have leaked here without the providers being in the code base.
+        Where ever the code might be, remove these once the providers have been updated to return
+        the type extensions correctly. */
+    if (filename.endsWith(".qml", Qt::CaseInsensitive) || filename.endsWith(".qmlzip", Qt::CaseInsensitive))
         return "QML";
-    if (file.endsWith(".mesh", Qt::CaseInsensitive))
-        return "OgreMesh";
-    if (file.endsWith(".skeleton", Qt::CaseInsensitive))
-        return "OgreSkeleton";
-    if (file.endsWith(".material", Qt::CaseInsensitive))
-        return "OgreMaterial";
-    if (file.endsWith(".particle", Qt::CaseInsensitive))
-        return "OgreParticle";
-
-    // The following file types are from FreeImage's list of supported formats:
-    // http://freeimage.sourceforge.net/features.html
-    // The GIMP xcf is not in the list of known image formats, but detect it anyways.
-    const char *textureFileTypes[] = { ".bmp", ".cut", ".dds", ".exr", ".g3", ".gif", ".hdr", ".ico", ".iff", 
-        ".j2k", ".j2c", ".jp2", ".jif", ".jpg", ".jpeg", ".jpe", ".jng", ".koa",
-        ".lbm", ".mng", ".pbm", ".pcd", ".pcx", ".pfm", ".pict", ".psd", ".pgm", ".png", ".ppm", ".ras", ".raw", 
-        ".sgi", ".tga", ".targa", ".tif", ".tiff", ".wap", ".wbmp", ".wbm", ".xbm", ".xcf", ".xpm" };
-    if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
-        return "Texture";
-
-    // These file types are supported by the Open Asset Import library:
-    // http://assimp.sourceforge.net/main_features_formats.html
-    const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
-        ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
-        ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
-        ".ply", ".cob", ".scn" };
-
-    if (IsFileOfType(file, openAssImpFileTypes, NUMELEMS(openAssImpFileTypes)))
-        return "OgreMesh"; // We use the OgreMeshResource type for mesh files opened using the Open Asset Import Library.
-
-    if (file.endsWith(".js", Qt::CaseInsensitive) || file.endsWith(".py", Qt::CaseInsensitive))
-        return "Script";
-
-    if (file.endsWith(".ntf", Qt::CaseInsensitive))
-        return "Terrain";
-
-    if (file.endsWith(".wav", Qt::CaseInsensitive) || file.endsWith(".ogg", Qt::CaseInsensitive) || file.endsWith(".mp3", Qt::CaseInsensitive))
-        return "Audio";
-
-    if (file.endsWith(".ui", Qt::CaseInsensitive))
-        return "QtUiFile";
-
-    if (file.endsWith(".avatar", Qt::CaseInsensitive))
-        return "Avatar";
-
-    if (file.endsWith(".attachment", Qt::CaseInsensitive))
-        return "AvatarAttachment";
-
-    if (file.endsWith(".pdf", Qt::CaseInsensitive))
+    if (filename.endsWith(".pdf", Qt::CaseInsensitive))
         return "PdfAsset";
-
     const char *openDocFileTypes[] = { ".odt", ".doc", ".rtf", ".txt", ".docx", ".docm", ".ods", ".xls", ".odp", ".ppt", ".odg" };
-    if (IsFileOfType(file, openDocFileTypes, NUMELEMS(openDocFileTypes)))
+    if (IsFileOfType(filename, openDocFileTypes, NUMELEMS(openDocFileTypes)))
         return "DocAsset";
+        
+    // This is not needed as Binary will be defaulted below?
+    //if (file.endsWith(".xml", Qt::CaseInsensitive) || file.endsWith(".txml", Qt::CaseInsensitive) || file.endsWith(".tbin", Qt::CaseInsensitive)) 
+    //    return "Binary";
 
-    if (file.endsWith(".zip", Qt::CaseInsensitive))
-        return "Archive";
-
-    if (file.endsWith(".xml", Qt::CaseInsensitive) || file.endsWith(".txml", Qt::CaseInsensitive) || file.endsWith(".tbin", Qt::CaseInsensitive)) 
-        return "Binary";
-
-    // Unknown type, return Binary type.
+    // Could not resolve the asset extension to any registered asset factory. Return Binary type.
     return "Binary";
 }
 

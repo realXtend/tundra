@@ -56,7 +56,12 @@ namespace PythonScript
 
     AssetReference *TundraDecorator::new_AssetReference(const QString &assetRef)
     {
-        return new AssetReference(assetRef, AssetAPI::GetResourceTypeFromAssetRef(assetRef));
+        return new AssetReference(assetRef);
+    }
+    
+    AssetReference *TundraDecorator::new_AssetReference(const QString &assetRef, const QString &assetType)
+    {
+        return new AssetReference(assetRef, assetType);
     }
 
     void TundraDecorator::delete_AssetReference(AssetReference* obj)
