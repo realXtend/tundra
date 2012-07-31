@@ -74,7 +74,7 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
     }
 
     // Now that the file info has been read, continue in a worker thread.
-    LogInfo("ZipAssetBundle: File information read for " + Name() + ". File count: " + QString::number(files_.size()) + ". Starting worker thread.");
+    LogDebug("ZipAssetBundle: File information read for " + Name() + ". File count: " + QString::number(files_.size()) + ". Starting worker thread.");
     
     worker_ = new ZipWorker(DiskSource(), files_);
     worker_->moveToThread(worker_);
@@ -94,11 +94,11 @@ bool ZipAssetBundle::DeserializeFromData(const u8 *data, size_t numBytes)
 
 std::vector<u8> ZipAssetBundle::GetSubAssetData(const QString &subAssetName)
 {
-    /** Makes no sense to keep the whole zip file in cache at the moment.
-        We cant however make this function also open the zip file and uncompress the data,
-        but that is rather pointless, not to mention slower, as we already have 
-        the unpacked individual assets on disk. If the unpacking to disk changes we might
-        need to rethink this. */
+    /* Makes no sense to keep the whole zip file contents in memory as only
+       few files could be wanted from a 100mb bundle. Additionally all asset would take 2x the memory.
+       We could make this function also open the zip file and uncompress the data for every sub asset request. 
+       But that would be rather pointless, not to mention slower, as we already have the unpacked individual 
+       assets on disk. If the unpacking to disk changes we might need to rethink this. */
 
     QString filePath = GetSubAssetDiskSource(subAssetName);
     if (filePath.isEmpty())
@@ -125,7 +125,7 @@ bool ZipAssetBundle::IsLoaded() const
 
 void ZipAssetBundle::OnAsynchLoadCompleted(bool successful)
 {
-    LogInfo("ZipAssetBundle: Zip file extracted " + Name());
+    LogDebug("ZipAssetBundle: Zip file extracted " + Name());
     
     CloseWorker();
     if (successful)
