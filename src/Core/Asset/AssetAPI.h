@@ -131,22 +131,22 @@ public:
 
     /// Breaks the given assetRef into pieces, and returns the parsed type.
     /** @param assetRef The assetRef to parse.
-        @param outProtocolPart [out] Receives the protocol part of the ref, e.g. "http://server.com/asset.png" -> "http". If it doesn't exist, returns an empty string.
-        @param outNamedStorage [out] Receives the named storage specifier in the ref, e.g. "myStorage:asset.png" -> "myStorage". If it doesn't exist, returns an empty string.
+        @param outProtocolPart [out]  Receives the protocol part of the ref, e.g. "http://server.com/asset.png" -> "http". If it doesn't exist, returns an empty string.
+        @param outNamedStorage [out]  Receives the named storage specifier in the ref, e.g. "myStorage:asset.png" -> "myStorage". If it doesn't exist, returns an empty string.
         @param outProtocol_Path [out] Receives the "path name" identifying where the asset is stored in.
-                                        e.g. "http://server.com/path/folder2/asset.png" -> "http://server.com/path/folder2/". 
-                                            "myStorage:asset.png" -> "myStorage:". Always has a trailing slash if necessary.
+                                      e.g. "http://server.com/path/folder2/asset.png" -> "http://server.com/path/folder2/". 
+                                           "myStorage:asset.png" -> "myStorage:". Always has a trailing slash if necessary.
         @param outPath_Filename_SubAssetName [out] Gets the combined path name, asset filename and asset subname in the ref.
-                                       e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
-                                            "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
+                                      e.g. "local://path/folder/asset.zip#subAsset" -> "path/folder/asset.zip#subAsset".
+                                           "namedStorage:path/folder/asset.zip#subAsset" -> "path/folder/asset.zip, subAsset".
         @param outPath_Filename [out] Gets the combined path name and asset filename in the ref.
-                                       e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png".
-                                            "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png".
-        @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/". Has a trailing slash when necessary.
-        @param outFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
-        @param outSubAssetName [out] Returns the subasset name in the ref. e.g. "local://path/folder/asset.png, subAsset" -> "subAsset".
+                                      e.g. "local://path/folder/asset.zip#subAsset" -> "path/folder/asset.zip".
+                                           "namedStorage:path/folder/asset.zip#subAsset" -> "path/folder/asset.zip".
+        @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.zip#subAsset" -> "path/folder/". Has a trailing slash when necessary.
+        @param outFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.zip#subAsset" -> "asset.zip".
+        @param outSubAssetName [out] Returns the sub asset name in the ref. e.g. "local://path/folder/asset.zip#subAsset" -> "subAsset".
         @param outFullRef [out] Returns a cleaned or "canonicalized" version of the asset ref in full.
-        @param outFullRefNoSubAssetName [out] Returns a cleaned or "canonicalized" version of the asset ref in full without possible subasset. */
+        @param outFullRefNoSubAssetName [out] Returns a cleaned or "canonicalized" version of the asset ref in full without possible sub asset. */
     static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart = 0, QString *outNamedStorage = 0, QString *outProtocol_Path = 0, 
         QString *outPath_Filename_SubAssetName = 0, QString *outPath_Filename = 0, QString *outPath = 0, QString *outFilename = 0, QString *outSubAssetName = 0,
         QString *outFullRef = 0, QString *outFullRefNoSubAssetName = 0);
@@ -481,10 +481,10 @@ private:
     AssetPtr CreateNewAsset(QString type, QString name, AssetStoragePtr storage);
 
     /// Load sub asset to transfer. Used internally for loading sub asset from bundle to virtual transfers.
-    bool LoadSubAssetToTransfer(AssetTransferPtr transfer, const QString &bundleRef, const QString &fullSubAssetRef);
+    bool LoadSubAssetToTransfer(AssetTransferPtr transfer, const QString &bundleRef, const QString &fullSubAssetRef, QString subAssetType = QString());
 
     /// Overload that takes in AssetBundlePtr instead of refs.
-    bool LoadSubAssetToTransfer(AssetTransferPtr transfer, IAssetBundle *bundle, const QString &fullSubAssetRef);
+    bool LoadSubAssetToTransfer(AssetTransferPtr transfer, IAssetBundle *bundle, const QString &fullSubAssetRef, QString subAssetType = QString());
 
     bool isHeadless;
 

@@ -64,6 +64,14 @@ void AssetBundleMonitor::AddSubAssetTransfer(AssetTransferPtr transfer)
     childTransfers_.push_back(transfer);
 }
 
+AssetTransferPtr AssetBundleMonitor::SubAssetTransfer(const QString &fullSubAssetRef)
+{
+    for(std::vector<AssetTransferPtr>::iterator subTransferIter=childTransfers_.begin(); subTransferIter!=childTransfers_.end(); ++subTransferIter)
+        if ((*subTransferIter)->source.ref == fullSubAssetRef)
+            return (*subTransferIter);
+    return AssetTransferPtr();
+}
+
 std::vector<AssetTransferPtr> AssetBundleMonitor::SubAssetTransfers()
 {
     return childTransfers_;

@@ -116,6 +116,9 @@ public:
     /// Adds transfer as a child sub asset transfer for monitoring.
     void AddSubAssetTransfer(AssetTransferPtr transfer);
 
+    /// Returns existing transfer for a specific asset reference.
+    AssetTransferPtr SubAssetTransfer(const QString &fullSubAssetRef);
+    
     /// Return all tracked child sub asset transfers.
     std::vector<AssetTransferPtr> SubAssetTransfers();
 

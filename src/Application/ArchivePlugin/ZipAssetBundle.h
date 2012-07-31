@@ -4,23 +4,11 @@
 
 #include "AssetAPI.h"
 #include "IAssetBundle.h"
+#include "ZipWorker.h"
 
-#include <QDir>
-#include <QList>
 #include <boost/shared_ptr.hpp>
 
 struct zzip_dir;
-
-struct ArchiveFile
-{
-    QString relativePath;
-    bool isFile;
-    bool isDirectory;
-    uint compressedSize;
-    uint uncompressedSize;
-
-    QString toString() { return QString("%1 (%2/%3) isFile: %4 isDirectory: %5").arg(relativePath).arg(compressedSize).arg(uncompressedSize).arg(isFile).arg(isDirectory); }
-};
 
 class ZipAssetBundle : public IAssetBundle
 {
@@ -56,16 +44,21 @@ public:
 
     /// IAssetBundle override.
     virtual QString GetSubAssetDiskSource(const QString &subAssetName);
-
+    
+private slots:
+    /// Returns full asset reference for a sub asset.
+    QString GetFullAssetReference(const QString &subAssetName);
+    
+    /// Handler for asynch loading completion.
+    void OnAsynchLoadCompleted(bool successful);
+    
 private:
-    bool CheckError();
     void Close();
-
-    QString baseArchiveRef_;
-    QDir cacheDir_;
-    QList<ArchiveFile> files_;
+    void CloseWorker();
 
     zzip_dir *archive_;
+    ZipFileList files_;
+    ZipWorker *worker_;
 };
 
 typedef boost::shared_ptr<ZipAssetBundle> ArchiveAssetPtr;

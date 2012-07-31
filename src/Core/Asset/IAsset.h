@@ -31,7 +31,9 @@ public:
         /// The disk source is a cached copy of the asset
         Cached,
         /// The asset is programmatically created. This is the default for empty new assets.
-        Programmatic
+        Programmatic,
+        /// The asset is a sub asset from a bundle.
+        Bundle
     };
     
 public slots:

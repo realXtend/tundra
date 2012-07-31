@@ -156,4 +156,7 @@ endif ()
 
 #AddProject(Application AssetInterestPlugin)    # Options to only keep assets below certain distance threshold in memory. Can also unload all non used assets from memory. Exposed to scripts so scenes can set the behaviour.
 AddProject(Application CanvasPlugin)           # Component that draws a graphics scene with any number of widgets into a mesh and provides 3D mouse input.
-#AddProject(Application ArchivePlugin)          # Provides asset bundle capabilities. Enables for example sub asset referencing into eg. zip files.
+
+if (WIN32) # Enable on linux and mac once the needed zziplib dependency is satisfied in the build scripts.
+    AddProject(Application ArchivePlugin)          # Provides archived asset bundle capabilities. Enables example sub asset referencing into eg. zip files.
+endif ()
