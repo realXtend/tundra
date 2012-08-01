@@ -60,7 +60,7 @@ void ScriptAsset::ParseReferences()
         if ((*iter)[3].matched)
             ref.type = (*iter)[3].str().c_str();
         
-        if (ignoredAssetTypes.contains(AssetAPI::GetResourceTypeFromAssetRef(ref.ref)))
+        if (ignoredAssetTypes.contains(assetAPI->GetResourceTypeFromAssetRef(ref.ref)))
             continue;
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {

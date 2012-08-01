@@ -12,9 +12,17 @@ class IAsset;
 typedef boost::shared_ptr<IAsset> AssetPtr;
 typedef boost::weak_ptr<IAsset> AssetWeakPtr;
 
+class IAssetBundle;
+typedef boost::shared_ptr<IAssetBundle> AssetBundlePtr;
+typedef boost::weak_ptr<IAssetBundle> AssetBundleWeakPtr;
+
 class IAssetTransfer;
 typedef boost::shared_ptr<IAssetTransfer> AssetTransferPtr;
 typedef boost::weak_ptr<IAssetTransfer> AssetTransferWeakPtr;
+
+class AssetBundleMonitor;
+typedef boost::shared_ptr<AssetBundleMonitor> AssetBundleMonitorPtr;
+typedef boost::weak_ptr<AssetBundleMonitor> AssetBundleMonitorWeakPtr;
 
 class IAssetProvider;
 typedef boost::shared_ptr<IAssetProvider> AssetProviderPtr;
@@ -33,8 +41,10 @@ struct AssetReferenceList;
 class IAssetTypeFactory;
 typedef boost::shared_ptr<IAssetTypeFactory> AssetTypeFactoryPtr;
 
+class IAssetBundleTypeFactory;
+typedef boost::shared_ptr<IAssetBundleTypeFactory> AssetBundleTypeFactoryPtr;
+
 class AssetRefListener;
 typedef boost::shared_ptr<AssetRefListener> AssetRefListenerPtr;
 
 class Framework;
-
