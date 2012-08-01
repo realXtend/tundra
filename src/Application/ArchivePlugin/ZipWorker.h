@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QThread>
 #include <QString>
+#include <QDateTime>
 #include <QList>
 
 struct zzip_dir;
@@ -15,6 +16,8 @@ struct ZipArchiveFile
     QString cachePath;
     uint compressedSize;
     uint uncompressedSize;
+    QDateTime lastModified;
+    bool doExtract;
 };
 typedef QList<ZipArchiveFile> ZipFileList;
 

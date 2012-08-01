@@ -1722,10 +1722,7 @@ void AssetAPI::AssetBundleLoadCompleted(IAssetBundle *bundle)
         
         // Start the load process for all sub asset transfers now. From here on out the normal asset request flow should followed.
         for (std::vector<AssetTransferPtr>::iterator subIter = subTransfers.begin(); subIter != subTransfers.end(); ++subIter)
-        {
-            LogInfo("** Sub asset completed: " + (*subIter)->source.ref);
             LoadSubAssetToTransfer((*subIter), bundle, (*subIter)->source.ref);
-        }
     }
     else
         LogWarning("AssetAPI: Asset bundle load completed, but bundle monitor cannot be found: " + bundle->Name());

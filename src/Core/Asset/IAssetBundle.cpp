@@ -60,7 +60,6 @@ AssetBundleMonitor::~AssetBundleMonitor()
 
 void AssetBundleMonitor::AddSubAssetTransfer(AssetTransferPtr transfer)
 {
-    LogInfo("AssetBundleMonitor: Adding child sub asset " + transfer->source.ref);
     childTransfers_.push_back(transfer);
 }
 
@@ -94,7 +93,7 @@ void AssetBundleMonitor::BundleFailed()
         AssetTransferPtr transfer = (*subTransferIter);
         if (transfer.get())
         {
-            QString error = "Failed to load parent asset bundle '" + bundleRef_ + "' for sub asset '" + transfer->source.ref + "'.";
+            QString error = "Failed to load parent asset bundle \"" + bundleRef_ + "\" for sub asset \"" + transfer->source.ref + "\".";
             transfer->EmitAssetFailed(error);
             LogError("AssetBundleMonitor: " + error);
         }

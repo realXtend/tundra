@@ -49,6 +49,9 @@ void ZipWorker::run()
 
     foreach(ZipArchiveFile file, files_)
     {
+        if (!file.doExtract)
+            continue;
+        
         // Open file from zip
         ZZIP_FILE *zzipFile = zzip_file_open(archive_, file.relativePath.toStdString().c_str(), ZZIP_ONLYZIP | ZZIP_CASELESS);
         if (zzipFile && !CheckAndLogArchiveError(archive_))

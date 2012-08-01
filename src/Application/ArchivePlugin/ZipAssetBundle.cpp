@@ -9,6 +9,7 @@
 
 #include "zzip/zzip.h"
 #include <QDir>
+#include <QDateTime>
 
 ZipAssetBundle::ZipAssetBundle(AssetAPI *owner, const QString &type, const QString &name) :
     IAssetBundle(owner, type, name),
@@ -35,7 +36,16 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
         LogError("ZipAssetBundle::DeserializeFromDiskSource: Cannot process archive, no disk source for " + Name());
         return false;
     }
-    
+
+    /* We want to detect if the extracted files are already up to date, so save time.
+       If the last modified date for the sub asset is the same as the parent zip file, 
+       we don't extract it. If the zip is re-downloaded from source everything will get unpacked even
+       if only one file would have changed inside it. We could do uncompressed size comparisons
+       but that is not a absolute guarantee that the file has not changed. We'll be on the safe side
+       to unpack the whole zip file. Zip files are meant for deploying the scene and should be touched
+       rather rarely. The last modified query will fail if the file is open with zziplib, do it first. */
+    QDateTime zipLastModified = assetAPI_->GetAssetCache()->LastModified(Name());
+        
     zzip_error_t error = ZZIP_NO_ERROR;
     archive_ = zzip_dir_open(QDir::fromNativeSeparators(DiskSource()).toStdString().c_str(), &error);
     if (CheckAndLogZzipError(error) || CheckAndLogArchiveError(archive_) || !archive_)
@@ -47,13 +57,24 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
     ZZIP_DIRENT archiveEntry;
     while(zzip_dir_read(archive_, &archiveEntry))
     {
-        ZipArchiveFile file;
-        file.relativePath = QDir::fromNativeSeparators(archiveEntry.d_name);
-        if (!file.relativePath.endsWith("/"))
+        QString relativePath = QDir::fromNativeSeparators(archiveEntry.d_name);
+        if (!relativePath.endsWith("/"))
         {
-            file.cachePath = assetAPI_->GetAssetCache()->GetDiskSourceByRef(GetFullAssetReference(file.relativePath));
+            QString subAssetRef = GetFullAssetReference(relativePath);
+            
+            ZipArchiveFile file;
+            file.relativePath = relativePath;
+            file.cachePath = assetAPI_->GetAssetCache()->GetDiskSourceByRef(subAssetRef);
+            file.lastModified = assetAPI_->GetAssetCache()->LastModified(subAssetRef);
             file.compressedSize = archiveEntry.d_csize;
             file.uncompressedSize = archiveEntry.st_size;
+            
+            /* Mark this file for extraction. If both cache files have valid dates
+               and they differ extract. If they have the same date stamp skip extraction.
+               Note that file.lastModified will be non-valid for non cached files so we 
+               will cover also missing files. */
+            file.doExtract = (zipLastModified.isValid() && file.lastModified.isValid()) ? (zipLastModified != file.lastModified) : true;
+
             files_ << file;
         }
     }
@@ -76,6 +97,7 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
     // Now that the file info has been read, continue in a worker thread.
     LogDebug("ZipAssetBundle: File information read for " + Name() + ". File count: " + QString::number(files_.size()) + ". Starting worker thread.");
     
+    CloseWorker();
     worker_ = new ZipWorker(DiskSource(), files_);
     worker_->moveToThread(worker_);
     
@@ -125,9 +147,21 @@ bool ZipAssetBundle::IsLoaded() const
 
 void ZipAssetBundle::OnAsynchLoadCompleted(bool successful)
 {
+    CloseWorker();
+    
+    // Write new timestamps for extracted files. Cannot be done (?!) in the worker
+    // thread as it would need to access Framework, AssetAPI and AssetCache ptrs 
+    // and they might not be safe to access from outside the main thread.
+    QDateTime zipLastModified = assetAPI_->GetAssetCache()->LastModified(Name());
+    if (zipLastModified.isValid())
+    {
+        foreach(ZipArchiveFile file, files_)
+            if (file.doExtract)
+                assetAPI_->GetAssetCache()->SetLastModified(GetFullAssetReference(file.relativePath), zipLastModified);
+    }
+    
     LogDebug("ZipAssetBundle: Zip file extracted " + Name());
     
-    CloseWorker();
     if (successful)
         emit Loaded(this);
     else
