@@ -63,15 +63,18 @@ UiAPI::UiAPI(Framework *owner_) :
     graphicsView(0),
     graphicsScene(0)
 {
+    QStringList qmlExtensions; 
+    qmlExtensions << ".qml" << ".qmlzip";
+    
     if (owner_->IsHeadless())
     {
         owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtUiFile", ".ui")));
-        owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtQmFile")));
+        owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtQmFile", qmlExtensions)));
         return;
     }
 
     owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile", ".ui")));
-    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtQmFile")));
+    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtQmFile", qmlExtensions)));
     
     mainWindow = new UiMainWindow(owner);
 
