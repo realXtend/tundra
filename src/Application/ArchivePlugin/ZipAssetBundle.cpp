@@ -37,13 +37,18 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
         return false;
     }
 
-    /* We want to detect if the extracted files are already up to date, so save time.
+    /* We want to detect if the extracted files are already up to date to save time.
        If the last modified date for the sub asset is the same as the parent zip file, 
        we don't extract it. If the zip is re-downloaded from source everything will get unpacked even
        if only one file would have changed inside it. We could do uncompressed size comparisons
        but that is not a absolute guarantee that the file has not changed. We'll be on the safe side
        to unpack the whole zip file. Zip files are meant for deploying the scene and should be touched
-       rather rarely. The last modified query will fail if the file is open with zziplib, do it first. */
+       rather rarely. Note that local:// refs are unpacked to cache but the zips disk source is not in the
+       cache. Meaning that local:// zip files will always be extracted fully even if the disk source
+       was not changed, we don't have a mechanism to get the last modified date properly except from
+       the asset cache. For local scenes this should be fine as there is no real need to
+       zip the scene up as you already have the disk sources right there in the storage.
+       The last modified query will fail if the file is open with zziplib, do it first. */
     QDateTime zipLastModified = assetAPI_->GetAssetCache()->LastModified(Name());
         
     zzip_error_t error = ZZIP_NO_ERROR;

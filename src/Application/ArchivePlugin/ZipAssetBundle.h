@@ -10,6 +10,7 @@
 
 struct zzip_dir;
 
+/// Provides zip packed asset bundle support.
 class ZipAssetBundle : public IAssetBundle
 {
 Q_OBJECT
@@ -25,12 +26,13 @@ public:
     virtual void DoUnload();
 
     /// IAssetBundle override.
+    /** Our current zziplib implementation requires disk source for processing. */
     virtual bool RequiresDiskSource() { return true; }
 
     /// IAssetBundle override.
-    /** Our current zzip implementation seems to require disk source for processing.
+    /** Our current zziplib implementation requires disk source for processing.
         So we fail DeserializeFromData and try our best here to.
-        This function unpacks all the archive content to asset cache to its own bundle folder
+        This function unpacks the archive content to asset cache to normal cache files
         and provides the sub asset data via GetSubAssetData and GetSubAssetDiskSource. */
     virtual bool DeserializeFromDiskSource();
 
@@ -53,11 +55,19 @@ private slots:
     void OnAsynchLoadCompleted(bool successful);
     
 private:
+    /// Closes zip file.
     void Close();
+    
+    /// Closes and deletes our worker thread cleanly.
     void CloseWorker();
 
+    /// Zziplib ptr to the zip file.
     zzip_dir *archive_;
+    
+    /// Zip sub assets.
     ZipFileList files_;
+    
+    /// Worker thread to extract the zip contents to disk files.
     ZipWorker *worker_;
 };
 

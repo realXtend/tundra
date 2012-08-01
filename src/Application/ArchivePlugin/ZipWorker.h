@@ -21,6 +21,7 @@ struct ZipArchiveFile
 };
 typedef QList<ZipArchiveFile> ZipFileList;
 
+/// Worker thread that unpacks zip file contents.
 class ZipWorker : public QThread
 {
 Q_OBJECT
@@ -30,10 +31,13 @@ public:
     virtual ~ZipWorker();
 
 protected:
-    // QThread override.
+    /// QThread override.
     void run();
     
 signals:
+    /// Emitted when zip processing has been completed.
+    /** @note Connect your slot with Qt::QueuedConnection so
+        you will receive the callback in your thread. */
     void AsynchLoadCompleted(bool successfull);
     
 private:
