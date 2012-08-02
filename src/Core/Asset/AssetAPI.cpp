@@ -1701,7 +1701,7 @@ void AssetAPI::AssetLoadFailed(const QString assetRef)
 
 void AssetAPI::AssetBundleLoadCompleted(IAssetBundle *bundle)
 {
-    LogInfo("Asset Bundle load completed: " + bundle->Name());
+    LogDebug("Asset bundle load completed: " + bundle->Name());
     
     // First erase the transfer as the below sub asset loading can trigger new
     // dependency asset requests to the bundle. In this case we want to load them from the
