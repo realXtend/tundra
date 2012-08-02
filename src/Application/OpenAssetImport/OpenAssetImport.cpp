@@ -923,58 +923,7 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
 			//set texture info into the ogreMaterial
 			ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(filename.toStdString());
 		}
-        else
-        {
-			std::cout<<"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<<std::endl;
-			/*
-            // If data[0] is *, assume texture index is given
-            if (path.data[0] == '*')
-            {
-                Ogre::Image img;
 
-                int texIndex;
-                std::string parsedReference = path.data;
-                parsedReference.erase(0, 1);
-                std::stringstream str(parsedReference);
-
-                // Parse number after * char in path.data
-                str >> texIndex;
-
-                // Hint for compressed texture format (e.g. "jpg", "png" etc)
-                std::string format = scene->mTextures[texIndex]->achFormatHint;
-                parsedReference.append("." + format);
-
-                QString modelFile = addr.mid(addr.lastIndexOf('/') + 1, addr.length() - addr.lastIndexOf('/'));
-
-                modelFile = modelFile.left(modelFile.lastIndexOf('.'));
-                parsedReference.insert(0, modelFile.toStdString());
-
-                // Create datastream from scene->mTextures[texIndex] where texIndex points for each compressed texture data
-                // mWidth stores texture size in bytes
-                Ogre::DataStreamPtr altStrm(OGRE_NEW Ogre::MemoryDataStream((unsigned char*)scene->mTextures[texIndex]->pcData, scene->mTextures[texIndex]->mWidth, false));
-                // Load image to Ogre::Image
-                img.load(altStrm);
-                // Load image to Ogre Resourcemanager
-                Ogre::TextureManager::getSingleton().loadImage(parsedReference.c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, img, Ogre::TEX_TYPE_2D, 0);
-
-                // Png format might contain alpha data so allow alpha blending
-                if (format == "png")
-                {
-                    // Alpha blending needs fixing
-                    ogreMaterial->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-                    ogreMaterial->setDepthWriteEnabled(false);
-                    ogreMaterial->setDepthCheckEnabled(true);
-                    //ogreMaterial->setDepthBias(0.01f, 1.0f);
-                    ogreMaterial->setDepthFunction(Ogre::CMPF_LESS );
-                }
-
-                //Set loaded image as a texture reference. So Tundra knows name should be loaded from ResourceManager
-                ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(parsedReference.c_str());
-			}*/
-
-        }
-
-    }
     ogreMaterial->load();
     return ogreMaterial;
 }
