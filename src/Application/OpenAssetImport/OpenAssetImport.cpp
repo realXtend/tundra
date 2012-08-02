@@ -60,7 +60,6 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileDiskSource, QSt
 	texturePath.replace("\\", "/"); // Normalize all path separators to use forward slashes.
 	QString path;
 	QStringList parsedMeshPath = meshFileDiskSource.split("/");
-    int length = parsedMeshPath.length();
 	int index = texturePath.indexOf("/");
 	int dots=0;
 
@@ -73,9 +72,31 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileDiskSource, QSt
 		}
 	}
 
-	texturePath = texturePath.remove(0, dots);
-	path = parsedMeshPath.join("/");
-	path.append(texturePath);
+	if(dots!=0)
+	{
+		texturePath = texturePath.remove(0, dots);
+		path = parsedMeshPath.join("/");
+		path.append(texturePath);
+	}
+
+	//The texturePath is not always a path from the .dae file to the textures
+	//It might be just texture.jpg or /images/texture.jpg, etc.
+	//In that case the correct texture file is searched using a top-down search.   
+	else
+	{
+		int length = parsedMeshPath.length();
+		QString base;
+
+		for(int j=0; j<length; j++)
+		{
+			parsedMeshPath.removeLast();
+			base = parsedMeshPath.join("/");
+			path = AssetAPI::RecursiveFindFile(base,texturePath);
+			
+			if(!path.isEmpty())
+				break;
+		}
+	}
 
 	return path;
 }
@@ -832,10 +853,11 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
         return ogreMaterial;
 
     // ambient
-    aiColor4D clr(1.0f, 1.0f, 1.0f, 1.0);
+    aiColor4D clr(1.0f, 1.0f, 1.0f, 1.0f);
     //Ambient is usually way too low! FIX ME!
     if (mat->GetTexture(type, 0, &path) != AI_SUCCESS)
         aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT,  &clr);
+
     ogreMaterial->setAmbient(clr.r, clr.g, clr.b);
 
     // diffuse
