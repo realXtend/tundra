@@ -46,6 +46,13 @@ OpenAssetImport::~OpenAssetImport()
 
 int OpenAssetImport::msBoneCount = 0;
 
+double degreeToRadian(double degree)
+{
+    double radian = 0;
+    radian = degree * (Ogre::Math::PI/180);
+    return radian;
+}
+
 /**************************************************************************
 meshFileDiskSource is the absolute path to the mesh file.
 texturePath is the path from the mesh file to the textures.
@@ -87,7 +94,7 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileDiskSource, QSt
 		int length = parsedMeshPath.length();
 		QString base;
 
-		for(int j=0; j<length; j++)
+		for(int j=0; j<4/*length*/; j++)
 		{
 			parsedMeshPath.removeLast();
 			base = parsedMeshPath.join("/");
@@ -100,12 +107,31 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileDiskSource, QSt
 
 	return path;
 }
-
-double degreeToRadian(double degree)
+bool OpenAssetImport::loadTextureFile(QString &filename)
 {
-    double radian = 0;
-    radian = degree * (Ogre::Math::PI/180);
-    return radian;
+
+	//loads the texture data to vector
+	std::vector<u8> file;
+    bool success = LoadFileToVector(filename, file);
+
+    if (success)
+	{
+		// Convert the data into Ogre's own DataStream format.
+#include "DisableMemoryLeakCheck.h"
+    	Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&file[0], file.size(), false));
+#include "EnableMemoryLeakCheck.h"
+
+    	//creates Ogre image object fro stream.
+    	Ogre::Image image;
+    	image.load(stream);
+	
+		//creates texture from loaded image
+    	Ogre::TexturePtr texPtr = Ogre::TextureManager::getSingleton().loadImage(filename.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+		texPtr->load();
+		return true;
+	}
+	else
+		return false;
 }
 
 void OpenAssetImport::linearScaleMesh(Ogre::MeshPtr mesh, int targetSize)
@@ -898,30 +924,19 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
 		//If the assimp scene contains textures they are loaded into the Ogre resource system
         if (!scene->HasTextures())
 		{
-			//loads the texture data to vector
+			
 			QString tex = QString::fromStdString(szPath.data);
-			QString filename = GetPathToTexture(meshFileDiskSource, tex);
-    		std::vector<u8> file;
-    		bool success = LoadFileToVector(filename, file);
+			QString texPath = GetPathToTexture(meshFileDiskSource, tex);
 
-        	if (success)
+    		if(loadTextureFile(texPath))
 			{
-				// Convert the data into Ogre's own DataStream format.
-#include "DisableMemoryLeakCheck.h"
-    			Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&file[0], file.size(), false));
-#include "EnableMemoryLeakCheck.h"
-
-    			//creates Ogre image object fro stream.
-    			Ogre::Image image;
-    			image.load(stream);
-	
-				//creates texture from loaded image
-        		Ogre::TexturePtr texPtr = Ogre::TextureManager::getSingleton().loadImage(filename.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
-				texPtr->load();
+				//set texture info into the ogreMaterial
+				ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(texPath.toStdString());
 			}
-
-			//set texture info into the ogreMaterial
-			ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(filename.toStdString());
+			else
+			{
+				LogError("AssImp importer::createMaterial: Failed to load texture file " +tex.toStdString() + " from source " + texPath.toStdString());	
+			}
 		}
 	}
 
