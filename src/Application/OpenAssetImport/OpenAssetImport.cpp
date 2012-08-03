@@ -856,7 +856,7 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     aiColor4D clr(1.0f, 1.0f, 1.0f, 1.0f);
     //Ambient is usually way too low! FIX ME!
     if (mat->GetTexture(type, 0, &path) != AI_SUCCESS)
-        aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT,  &clr);
+        aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &clr);
 
     ogreMaterial->setAmbient(clr.r, clr.g, clr.b);
 
@@ -923,6 +923,7 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
 			//set texture info into the ogreMaterial
 			ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(filename.toStdString());
 		}
+	}
 
     ogreMaterial->load();
     return ogreMaterial;
