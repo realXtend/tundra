@@ -7,15 +7,21 @@ macro(configure_speex)
 endmacro()
 
 macro(configure_qxmpp)
-    if(NOT WIN32)
+    if ("${QXMPP_ROOT}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{QXMPP_ROOT}" QXMPP_ROOT)
+    endif()
+    if ("${QXMPP_ROOT}" STREQUAL "")
+        SET(QXMPP_ROOT ${ENV_TUNDRA_DEP_PATH}/qxmpp)
+    endif()
+
     sagase_configure_package(QXMPP
         NAMES qxmpp
-        COMPONENTS qxmpp
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
+        COMPONENTS qxmpp       # works on Ubuntu
+	           qxmpp_d     # find .lib on Windows
+		   QxmppClient # find QxmppClient.h on Windows
+	PREFIXES ${QXMPP_ROOT}
+                 ${ENV_TUNDRA_DEP_PATH})
     sagase_configure_report(QXMPP)
-    else ()
-        # Unimplemented
-    endif ()
 endmacro(configure_qxmpp)
 
 # Define target name and output directory
@@ -42,6 +48,8 @@ configure_qxmpp()
 configure_speex()
 use_package (QXMPP)
 use_package (SPEEX)
+
+add_definitions (-DXMPP_MODULE_EXPORTS)
 
 use_app_modules (XMPPModule)
 use_core_modules (Framework Audio Math)

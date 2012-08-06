@@ -5,9 +5,9 @@
 
 #if defined (_WINDOWS)
     #if defined(XMPP_MODULE_EXPORTS)
-        #define AV_MODULE_API __declspec(dllexport)
+        #define XMPP_MODULE_API __declspec(dllexport)
     #else
-        #define AV_MODULE_API __declspec(dllimport)
+        #define XMPP_MODULE_API __declspec(dllimport)
     #endif
 #else
     #define XMPP_MODULE_API

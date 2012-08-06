@@ -83,10 +83,6 @@ public slots:
     //! \return QObject pointer to the object if found, null otherwise
     QObject *GetExtension(QString extensionName);
 
-    //! Set own presence availability
-    //! \param QString
-    void SetAvailability(QString availability);
-
     //! Connect to a XMPP Server, script friendly overload
     //! \param userJid User's Jabber ID
     //! \param userPassword User's password
@@ -124,7 +120,6 @@ public slots:
 private slots:
     void HandlePresenceChanged(const QString& userJid, const QString& resource);
     void HandlePresenceReceived(const QXmppPresence& presence);
-    void HandleSetPresence(QXmppPresence::Type presenceType);
     void HandleMessageReceived(const QXmppMessage &message);
     void HandleRosterReceived();
     void HandleRosterChanged(const QString& userJid);
