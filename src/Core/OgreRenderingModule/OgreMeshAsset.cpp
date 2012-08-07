@@ -52,7 +52,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
     /// Force an unload of this data first.
     Unload();
 
-    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0) || IsAssimpFileType())
         allowAsynchronous = false;
     QString cacheDiskSource;
     if (allowAsynchronous)
@@ -506,7 +506,7 @@ bool OgreMeshAsset::ConvertDataToOgreMesh(const u8 *data_, size_t numBytes)
 	bool success = false;
 
 #ifdef ASSIMP_ENABLED
-	OpenAssetImport importer;
+	OpenAssetImport importer(assetAPI);
 	success = importer.convert(data_, numBytes, this->Name(), this->DiskSource(), ogreMesh);
 #endif
 	
