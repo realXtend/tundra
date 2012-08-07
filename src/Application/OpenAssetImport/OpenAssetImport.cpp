@@ -1,4 +1,7 @@
 #include "AssetAPI.h"
+#include "IAssetTransfer.h"
+#include "IAsset.h"
+#include "AssetFwd.h"
 #include "LoggingFunctions.h"
 #include "OpenAssetImport.h"
 #include "assimp/DefaultLogger.hpp"
@@ -28,14 +31,17 @@
 #include "OgreVector3.h"
 #include <QString>
 #include <QStringList>
+#include <QEventLoop>
 #include <boost/tuple/tuple.hpp>
+#include <unistd.h>
 //#include <boost/filesystem.hpp>
 
 //#define SKELETON_ENABLED
 
 static int meshNum = 0;
 
-OpenAssetImport::OpenAssetImport()
+OpenAssetImport::OpenAssetImport(AssetAPI *assetApi):
+assetAPI(assetApi)
 {
 }
 
@@ -62,76 +68,121 @@ and texturePath = ../images/texture.jpg
 return value is /home/username/.../object/images/texture.jpg
 ***************************************************************************/
 
-QString OpenAssetImport::GetPathToTexture(const QString &meshFileDiskSource, QString &texturePath)
+QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath)
 {
 	texturePath.replace("\\", "/"); // Normalize all path separators to use forward slashes.
 	QString path;
-	QStringList parsedMeshPath = meshFileDiskSource.split("/");
-	int index = texturePath.indexOf("/");
-	int dots=0;
 
-	for(int i=0; i<index; i++)
+	//When the texture path in .dae file is a http address there is no need to parse it.
+	if(texturePath.startsWith("http") || texturePath.startsWith("https"))
 	{
-		if(texturePath[i]=='.')
-		{
-			dots++;
-			parsedMeshPath.takeLast();
-		}
+		path = texturePath;
+		return path;
 	}
-
-	if(dots!=0)
-	{
-		texturePath = texturePath.remove(0, dots);
-		path = parsedMeshPath.join("/");
-		path.append(texturePath);
-	}
-
-	//The texturePath is not always a path from the .dae file to the textures
-	//It might be just texture.jpg or /images/texture.jpg, etc.
-	//In that case the correct texture file is searched using a top-down search.   
 	else
 	{
-		int length = parsedMeshPath.length();
-		QString base;
+		QStringList parsedMeshPath;
 
-		for(int j=0; j<4/*length*/; j++)
+		if(meshFileName.startsWith("http") || meshFileName.startsWith("https"))
 		{
-			parsedMeshPath.removeLast();
-			base = parsedMeshPath.join("/");
-			path = AssetAPI::RecursiveFindFile(base,texturePath);
-			
-			if(!path.isEmpty())
-				break;
+			parsedMeshPath = meshFileName.split("/");
 		}
-	}
+		else
+		{
+			parsedMeshPath = meshFileDiskSource.split("/");
+		}
+		
+		int index = texturePath.indexOf("/");
+		int dots=0;
 
-	return path;
+		for(int i=0; i<index; i++)
+		{
+			if(texturePath[i]=='.')
+			{
+				dots++;
+				parsedMeshPath.takeLast();
+			}
+		}
+
+		if(dots!=0)
+		{
+			texturePath = texturePath.remove(0, dots);
+			path = parsedMeshPath.join("/");
+			path.append(texturePath);
+		}
+
+		//The texturePath is not always a path from the .dae file to the textures
+		//It might be just texture.jpg or /images/texture.jpg, etc.
+		//In that case the correct texture file is searched using a top-down search.   
+		else
+		{
+			int length = parsedMeshPath.length();
+			QString base;
+
+			for(int j=0; j<4/*length*/; j++)
+			{
+				parsedMeshPath.removeLast();
+				base = parsedMeshPath.join("/");
+				path = AssetAPI::RecursiveFindFile(base,texturePath);
+			
+				if(!path.isEmpty())
+					break;
+			}
+		}
+
+		return path;
+	}
 }
 bool OpenAssetImport::loadTextureFile(QString &filename)
 {
 
-	//loads the texture data to vector
-	std::vector<u8> file;
-    bool success = LoadFileToVector(filename, file);
-
-    if (success)
+	//Loads the texture from http address
+	if(filename.startsWith("http") || filename.startsWith("https"))
 	{
-		// Convert the data into Ogre's own DataStream format.
-#include "DisableMemoryLeakCheck.h"
-    	Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&file[0], file.size(), false));
-#include "EnableMemoryLeakCheck.h"
-
-    	//creates Ogre image object fro stream.
-    	Ogre::Image image;
-    	image.load(stream);
+		assetAPI->ForgetAsset(filename, false);
+		AssetTransferPtr transPtr = assetAPI->RequestAsset(filename, "Texture", true);
 	
-		//creates texture from loaded image
-    	Ogre::TexturePtr texPtr = Ogre::TextureManager::getSingleton().loadImage(filename.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
-		texPtr->load();
+		if (!transPtr)
+			return false;
+
+		//Hack that force to wait until the textures are loaded from http address.
+		//usleep(10000);
+		QEventLoop loop;
+		//connect(transPtr.get(), SIGNAL(Succeeded(AssetPtr)), &loop, SLOT(quit()), Qt::UniqueConnection);
+		connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), &loop, SLOT(quit()), Qt::UniqueConnection);
+		connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)), &loop, SLOT(quit()), Qt::UniqueConnection);
+	 
+		loop.exec();
+
 		return true;
 	}
+
+	//loads the texture from file
 	else
-		return false;
+	{
+		//loads the texture data to vector
+		std::vector<u8> file;
+		bool success = LoadFileToVector(filename, file);
+
+		if (success)
+		{
+			// Convert the data into Ogre's own DataStream format.
+#include "DisableMemoryLeakCheck.h"
+			Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&file[0], file.size(), false));
+#include "EnableMemoryLeakCheck.h"
+
+			//creates Ogre image object fro stream.
+			Ogre::Image image;
+			image.load(stream);
+	
+			//creates texture from loaded image
+			Ogre::TexturePtr texPtr = Ogre::TextureManager::getSingleton().loadImage(AssetAPI::SanitateAssetRef(filename.toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+			texPtr->load();
+			return true;
+		}
+		else
+			return false;
+	}
 }
 
 void OpenAssetImport::linearScaleMesh(Ogre::MeshPtr mesh, int targetSize)
@@ -361,6 +412,7 @@ void getBasePose(const aiScene * sc, const aiNode * nd)
 
 bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
 {
+	LogInfo("AssImp importer::converting file:" +fileName.toStdString());
  	Assimp::DefaultLogger::create("asslogger.log",Assimp::Logger::VERBOSE);
     mAnimationSpeedModifier = 1.0f;
     Assimp::Importer importer;
@@ -461,7 +513,7 @@ bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
     }
 #endif
 
-    loadDataFromNode(scene, scene->mRootNode, diskSource, mesh);
+    loadDataFromNode(scene, scene->mRootNode, diskSource, fileName, mesh);
 
     Ogre::LogManager::getSingleton().logMessage("*** Finished loading ass file ***");
     Assimp::DefaultLogger::kill();
@@ -846,7 +898,7 @@ Ogre::String ReplaceSpaces(const Ogre::String& s)
     return res;
 }
 
-Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* mat, const QString &meshFileDiskSource)
+Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName)
 {
     static int generatedMatCount = 0;
     static int texCount = 0;
@@ -874,7 +926,7 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     generatedMatCount++;
 
     Ogre::ResourceManager::ResourceCreateOrRetrieveResult status = ogreMaterialMgr->createOrRetrieve(matName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
-    Ogre::MaterialPtr ogreMaterial = status.first;
+    ogreMaterial = status.first;
     if (!status.second)
         return ogreMaterial;
 
@@ -926,12 +978,12 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
 		{
 			
 			QString tex = QString::fromStdString(szPath.data);
-			QString texPath = GetPathToTexture(meshFileDiskSource, tex);
+			QString texPath = GetPathToTexture(meshFileName, meshFileDiskSource, tex);
 
     		if(loadTextureFile(texPath))
 			{
 				//set texture info into the ogreMaterial
-				ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(texPath.toStdString());
+				ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texPath.toStdString()));
 			}
 			else
 			{
@@ -944,7 +996,7 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     return ogreMaterial;
 }
 
-bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const aiNode* pNode, const aiMesh *mesh, const aiMaterial* mat, Ogre::MeshPtr mMesh, Ogre::AxisAlignedBox& mAAB, const QString &meshFileDiskSource)
+bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const aiNode* pNode, const aiMesh *mesh, const aiMaterial* mat, Ogre::MeshPtr mMesh, Ogre::AxisAlignedBox& mAAB, const QString &meshFileDiskSource, const QString &meshFileName)
 {
     // if animated all submeshes must have bone weights
     if(mBonesByName.size() && !mesh->HasBones())
@@ -955,7 +1007,7 @@ bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const a
 
     Ogre::MaterialPtr matptr;
 
-    matptr = createMaterial(mesh->mMaterialIndex, mat, meshFileDiskSource);
+    matptr = createMaterial(mesh->mMaterialIndex, mat, meshFileDiskSource, meshFileName);
 	
     // now begin the object definition
     // We create a submesh per material
@@ -1144,7 +1196,7 @@ bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const a
     return true;
 }
 
-void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const QString &meshFileDiskSource, Ogre::MeshPtr mesh)
+void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const QString &meshFileDiskSource, const QString &meshFileName,Ogre::MeshPtr mesh)
 {
     if(pNode->mNumMeshes > 0)
     {
@@ -1171,7 +1223,7 @@ void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNo
             // Create a material instance for the mesh.
 
             const aiMaterial *pAIMaterial = mScene->mMaterials[ pAIMesh->mMaterialIndex ];
-            createSubMesh(pNode->mName.data, idx, pNode, pAIMesh, pAIMaterial, mesh, mAAB, meshFileDiskSource);
+            createSubMesh(pNode->mName.data, idx, pNode, pAIMesh, pAIMaterial, mesh, mAAB, meshFileDiskSource, meshFileName);
         }
 
         // We must indicate the bounding box
@@ -1184,7 +1236,7 @@ void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNo
     for ( int childIdx=0; childIdx<pNode->mNumChildren; childIdx++ )
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
-        loadDataFromNode(mScene, pChildNode, meshFileDiskSource, mesh);
+        loadDataFromNode(mScene, pChildNode, meshFileDiskSource, meshFileName, mesh);
     }
 }
 
