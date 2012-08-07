@@ -307,9 +307,12 @@ void EC_MediaPlayer::OnFrameUpdate(QImage frame)
 
 void EC_MediaPlayer::OnUpdate(float frametime)
 {
+    if (getspatialRadius() <= 0.0)
+        return;
+
     spatialFramerate += frametime;
 
-    if (spatialFramerate < 30.f)
+    if (spatialFramerate < 0.25)
         return;
 
     if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
