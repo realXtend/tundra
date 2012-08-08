@@ -928,7 +928,7 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
 
     if(AI_SUCCESS == aiGetMaterialString(mat, AI_MATKEY_TEXTURE_DIFFUSE(0), &szPath))
     {
-        LogInfo("Using aiGetMaterialString : Found texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
+        LogInfo("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
     }
 
 	matName = Ogre::String("generatedMat" + Ogre::StringConverter::toString(generatedMatCount)+ ".material");
