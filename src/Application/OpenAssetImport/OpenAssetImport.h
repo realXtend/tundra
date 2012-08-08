@@ -34,7 +34,7 @@ public:
 
 private slots:
     void SetTexture(AssetPtr);
-	void Failed(IAssetTransfer*, QString reason);
+	void TextureSetFailed(IAssetTransfer*, QString reason);
 
 private:
     const aiScene *scene;

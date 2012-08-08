@@ -33,8 +33,6 @@
 #include <QStringList>
 #include <QEventLoop>
 #include <boost/tuple/tuple.hpp>
-#include <unistd.h>
-//#include <boost/filesystem.hpp>
 
 //#define SKELETON_ENABLED
 
@@ -60,12 +58,21 @@ double degreeToRadian(double degree)
 }
 
 /**************************************************************************
-meshFileDiskSource is the absolute path to the mesh file.
+meshFileDiskSource is the absolute path to the mesh file in disk.
 texturePath is the path from the mesh file to the textures.
+meshFileName is the http address where the mesh is loaded from.
 
 example: meshFileDiskSource = /home/username/.../object/models/collada.dae
 and texturePath = ../images/texture.jpg
 return value is /home/username/.../object/images/texture.jpg
+
+example: meshFileName = http://dl.dropbox.com/.../models/collada.dae
+and texturePath = ../images/texture.jpg
+return value is http://dl.dropbox.com/.../images/texture.jpg
+
+example: meshFileName = http://dl.dropbox.com/.../models/collada.dae
+and texturePath = http://.../texture.jpg
+return value is http://.../texture.jpg
 ***************************************************************************/
 
 QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath)
@@ -133,6 +140,8 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QSt
 		return path;
 	}
 }
+
+//Loads texture file from disk or from http asset server.
 bool OpenAssetImport::loadTextureFile(QString &filename)
 {
 
@@ -573,7 +582,7 @@ bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
 #endif
 
 /////////////////////////////////////////debug print////////////////////////////////////////////////////////////////
-    Ogre::MaterialSerializer ms;
+    /*Ogre::MaterialSerializer ms;
     for(MeshVector::iterator it = mMeshes.begin(); it != mMeshes.end(); ++it)
     {
         Ogre::MeshPtr mMesh = *it;
@@ -596,7 +605,7 @@ bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
 			std::cout<<"-------------------------------------materialInfo: "<<materialInfo.toStdString()<<std::endl;
 
         }
-    }
+    }*/
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //Scales mesh to fit the Tundra scene
