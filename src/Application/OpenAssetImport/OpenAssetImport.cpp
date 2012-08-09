@@ -32,6 +32,7 @@
 #include <QString>
 #include <QStringList>
 #include <QEventLoop>
+#include <QObject>
 #include <boost/tuple/tuple.hpp>
 
 //#define SKELETON_ENABLED
@@ -81,7 +82,7 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QSt
 	QString path;
 
 	//When the texture path in .dae file is a http address there is no need to parse it.
-	if(texturePath.startsWith("http") || texturePath.startsWith("https"))
+	if(texturePath.startsWith("http:") || texturePath.startsWith("https:"))
 	{
 		path = texturePath;
 		return path;
@@ -90,7 +91,7 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QSt
 	{
 		QStringList parsedMeshPath;
 
-		if(meshFileName.startsWith("http") || meshFileName.startsWith("https"))
+		if(meshFileName.startsWith("http:") || meshFileName.startsWith("https:"))
 		{
 			parsedMeshPath = meshFileName.split("/");
 		}
@@ -142,28 +143,26 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QSt
 }
 
 //Loads texture file from disk or from http asset server.
-bool OpenAssetImport::loadTextureFile(QString &filename)
+void OpenAssetImport::loadTextureFile(QString &filename)
 {
 
 	//Loads the texture from http address
-	if(filename.startsWith("http") || filename.startsWith("https"))
+	if(filename.startsWith("http:") || filename.startsWith("https:"))
 	{
 		assetAPI->ForgetAsset(filename, false);
 		AssetTransferPtr transPtr = assetAPI->RequestAsset(filename, "Texture", true);
 	
 		if (!transPtr)
-			return false;
+			return;
 
 		//Hack that force to wait until the textures are loaded from http address.
-		//usleep(10000);
 		QEventLoop loop;
-		//connect(transPtr.get(), SIGNAL(Succeeded(AssetPtr)), &loop, SLOT(quit()), Qt::UniqueConnection);
 		connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), &loop, SLOT(quit()), Qt::UniqueConnection);
 		connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)), &loop, SLOT(quit()), Qt::UniqueConnection);
-	 
-		loop.exec();
 
-		return true;
+		connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), this, SLOT(OnTextureLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+		connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)),this, SLOT(OnTextureLoadFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
+		loop.exec();
 	}
 
 	//loads the texture from file
@@ -187,11 +186,30 @@ bool OpenAssetImport::loadTextureFile(QString &filename)
 			//creates texture from loaded image
 			Ogre::TexturePtr texPtr = Ogre::TextureManager::getSingleton().loadImage(AssetAPI::SanitateAssetRef(filename.toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
 			texPtr->load();
-			return true;
+			SetTexture(filename);
+			//ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(filename.toStdString()));
 		}
 		else
-			return false;
+			LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
 	}
+}
+
+void OpenAssetImport::SetTexture(QString &texFile)
+{
+	ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texFile.toStdString()));
+	ogreMaterial->load();
+}
+
+void OpenAssetImport::OnTextureLoaded(IAssetTransfer* assetTransfer)
+{
+	QString texFile = assetTransfer->Asset()->Name();
+	SetTexture(texFile);
+}
+
+void OpenAssetImport::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason)
+{
+	QString texFile = assetTransfer->Asset()->Name();
+ 	LogError("AssImp importer::createMaterial: Failed to load texture file " +texFile.toStdString()+ " reason: " + reason.toStdString());
 }
 
 void OpenAssetImport::linearScaleMesh(Ogre::MeshPtr mesh, int targetSize)
@@ -581,40 +599,6 @@ bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
 
 #endif
 
-/////////////////////////////////////////debug print////////////////////////////////////////////////////////////////
-    /*Ogre::MaterialSerializer ms;
-    for(MeshVector::iterator it = mMeshes.begin(); it != mMeshes.end(); ++it)
-    {
-        Ogre::MeshPtr mMesh = *it;
-
-        // queue up the materials for serialise
-        Ogre::MaterialManager *mmptr = Ogre::MaterialManager::getSingletonPtr();
-        Ogre::Mesh::SubMeshIterator it = mMesh->getSubMeshIterator();
-
-        while(it.hasMoreElements())
-        {
-            Ogre::SubMesh* sm = it.getNext();
-
-            Ogre::String matName(sm->getMaterialName());
-            Ogre::MaterialPtr materialPtr = mmptr->getByName(matName);
-
-
-            ms.queueForExport(materialPtr, true);
-
-            QString materialInfo = ms.getQueuedAsString().c_str();
-			std::cout<<"-------------------------------------materialInfo: "<<materialInfo.toStdString()<<std::endl;
-
-        }
-    }*/
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //Scales mesh to fit the Tundra scene
-    /*if (!scene->HasAnimations())
-	{
-        linearScaleMesh(mesh, 10);
-		//linearScaleMesh(mesh, 100000);
-	}*/
-
     mMeshes.clear();
     mMaterialCode = "";
     mBonesByName.clear();
@@ -624,7 +608,6 @@ bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
     mCustomAnimationName = "";
     // etc...
 
-    // Ogre::MaterialManager::getSingleton().
     Ogre::MeshManager::getSingleton().removeUnreferencedResources();
     Ogre::SkeletonManager::getSingleton().removeUnreferencedResources();
     return true;
@@ -984,20 +967,10 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     {
 		//If the assimp scene contains textures they are loaded into the Ogre resource system
         if (!scene->HasTextures())
-		{
-			
+		{			
 			QString tex = QString::fromStdString(szPath.data);
 			QString texPath = GetPathToTexture(meshFileName, meshFileDiskSource, tex);
-
-    		if(loadTextureFile(texPath))
-			{
-				//set texture info into the ogreMaterial
-				ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texPath.toStdString()));
-			}
-			else
-			{
-				LogError("AssImp importer::createMaterial: Failed to load texture file " +tex.toStdString() + " from source " + texPath.toStdString());	
-			}
+			loadTextureFile(texPath);
 		}
 	}
 
@@ -1014,9 +987,6 @@ bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const a
         return false;
     }
 
-    Ogre::MaterialPtr matptr;
-
-    matptr = createMaterial(mesh->mMaterialIndex, mat, meshFileDiskSource, meshFileName);
 	
     // now begin the object definition
     // We create a submesh per material
@@ -1198,6 +1168,10 @@ bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const a
             }
         }
     } // if mesh has bones
+
+    Ogre::MaterialPtr matptr;
+
+    matptr = createMaterial(mesh->mMaterialIndex, mat, meshFileDiskSource, meshFileName);
 
     // Finally we set a material to the submesh
     submesh->setMaterialName(matptr->getName());

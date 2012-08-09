@@ -3,6 +3,7 @@
 
 #include "CoreTypes.h"
 #include "AssetAPI.h"
+#include "IAssetTransfer.h"
 #include "IAsset.h"
 #include "AssetFwd.h"
 #include <string>
@@ -14,7 +15,7 @@
 #include <assimp/postprocess.h>
 #include <map>
 #include <QString>
-//#include <QObject>
+#include <QObject>
 
 struct boneNode
 {
@@ -32,14 +33,18 @@ public:
 	~OpenAssetImport();
     bool convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh);
 
+signals:
+	void ConversionDone();
+
 private slots:
-    void SetTexture(AssetPtr);
-	void TextureSetFailed(IAssetTransfer*, QString reason);
+    void OnTextureLoaded(IAssetTransfer* assetTransfer);
+	void OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason);
 
 private:
     const aiScene *scene;
+	void SetTexture(QString &texFile);
 	QString GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath);
-	bool loadTextureFile(QString &filename);
+	void loadTextureFile(QString &filename);
     void linearScaleMesh(Ogre::MeshPtr mesh, int targetSize);
     bool createSubMesh(const Ogre::String& name, int index, const aiNode* pNode, const aiMesh *mesh, const aiMaterial* mat, Ogre::MeshPtr pMesh, Ogre::AxisAlignedBox& mAAB, const QString &meshFileDiskSource, const QString &meshFileName);
     Ogre::MaterialPtr createMaterial(int index, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName);
@@ -74,7 +79,7 @@ private:
 
     Ogre::SkeletonPtr mSkeleton;
 	Ogre::MaterialPtr ogreMaterial;
-
+	
     static int msBoneCount;
 
     Ogre::Real mTicksPerSecond;
