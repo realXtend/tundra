@@ -6,10 +6,20 @@
 
 #pragma once
 
+#if defined (_WINDOWS)
+#if defined(SCENEINTERACT_EXPORTS)
+#define SCENEINTERACT_API __declspec(dllexport)
+#else
+#define SCENEINTERACT_API __declspec(dllimport)
+#endif
+#else
+#define SCENEINTERACT_API
+#endif
+
 #include "IModule.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"
-#include "OgreModuleFwd.h"
+#include "CoreDefines.h"
 
 #include <QObject>
 
@@ -29,7 +39,7 @@
     <li>"MouseRelease" - Executed when mouse button is released on an entity.
     <div>String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"</div>
     </ul> */
-class SceneInteract : public IModule
+class SCENEINTERACT_API SceneInteract : public IModule
 {
     Q_OBJECT
 

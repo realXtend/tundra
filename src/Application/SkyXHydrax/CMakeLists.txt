@@ -35,14 +35,15 @@ endif()
 if (ENABLE_HYDRAX)
     add_definitions(-DHYDRAX_ENABLED)
     use_package(HYDRAX)  # Other OSes #TODO:REMOVE THIS!
-	use_package_hydrax() # Windows
+    use_package_hydrax() # Windows
 endif()
 
-use_core_modules(Framework Math Scene OgreRenderingModule)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules(Framework Math Scene OgreRenderingModule)
+link_modules(TundraCore Math OgreRenderingModule)
 
 link_ogre()
 
@@ -52,7 +53,7 @@ if (ENABLE_SKYX)
 endif()
 if (ENABLE_HYDRAX)
     link_package(HYDRAX)  # Other OSes #TODO:REMOVE THIS!
-	link_package_hydrax() # Windows
+    link_package_hydrax() # Windows
 endif()
 
 SetupCompileFlags()

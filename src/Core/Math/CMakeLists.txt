@@ -1,7 +1,7 @@
 # Define target name and output directory
 init_target(Math)
 
-MocFolder ()
+MocFolder()
 
 # Define source files
 file(GLOB CPP_FILES *.cpp)
@@ -22,13 +22,11 @@ set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 #QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_core_modules(Framework)
+UseTundraCore() ## Needed only for CoreTypes.h
 
 build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package(QT4)
-
-link_modules(Framework)
 
 SetupCompileFlags()
 

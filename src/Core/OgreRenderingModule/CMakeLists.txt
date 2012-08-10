@@ -17,7 +17,6 @@ endif()
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder()
-#UiFolder()
 
 # Build parameters required by Qt - define files for moc prepass, process resource and ui files.
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
@@ -31,14 +30,16 @@ include_directories (libsquish)
 add_definitions(-DOGRE_MODULE_EXPORTS)
 
 use_package_assimp()
-use_core_modules(Framework Math Scene Ui Asset Console)
+UseTundraCore()
+use_core_modules(TundraCore Math)
 
 build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 GetOpenAssetImport()
 
+link_package(QT4)
 link_ogre()
-link_modules(Framework Scene Ui Asset Console)
+link_modules(TundraCore Math)
 
 SetupCompileFlagsWithPCH()
 

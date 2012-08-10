@@ -19,6 +19,7 @@ endmacro ()
 
 macro (PrintUsedBuildConfig)
     message ("\n=========== Used Build Configuration =============\n")
+    message (STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message (STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
     message (STATUS "BUILDING_INSTALLER         = " ${BUILDING_INSTALLER})
     message (STATUS "ENABLE_BUILD_OPTIMIZATIONS = " ${ENABLE_BUILD_OPTIMIZATIONS})
@@ -317,16 +318,22 @@ use_package(OGRE)
 use_package(QT4)
 use_package(OPENAL)
 
-set (CORE_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/src/Core)
-include_directories (${CORE_MODULE_DIRECTORY}/Input)
-include_directories (${CORE_MODULE_DIRECTORY}/Ui)
-include_directories (${CORE_MODULE_DIRECTORY}/Asset)
-include_directories (${CORE_MODULE_DIRECTORY}/Scene)
+# Macro for including all TundraCore librarys folders
+macro(UseTundraCore)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Asset)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Audio)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Console)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Framework)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Input)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Scene)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Ui)
+endmacro()
 
-link_directories (${CORE_MODULE_DIRECTORY}/Input)
-link_directories (${CORE_MODULE_DIRECTORY}/Ui)
-link_directories (${CORE_MODULE_DIRECTORY}/Asset)
-link_directories (${CORE_MODULE_DIRECTORY}/Scene)
+# Macro for including all TundraCore librarys folders
+macro(LinkTundraCore)
+    target_link_libraries (${TARGET_NAME} TundraCore)
+endmacro()
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.

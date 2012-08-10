@@ -20,13 +20,16 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 add_definitions(-DDEBUGSTATS_MODULE_EXPORTS)
 
 use_package_bullet()
-use_core_modules(Framework Math Scene OgreRenderingModule AssetModule Input Ui Console EnvironmentModule PhysicsModule)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule AssetModule EnvironmentModule PhysicsModule)
 use_entity_components(EC_Script)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
+link_package(QT4)
+link_package_knet()
 link_ogre()
-link_modules(Framework Math Scene OgreRenderingModule EnvironmentModule AssetModule Input Ui Console PhysicsModule)
+link_modules(TundraCore OgreRenderingModule EnvironmentModule AssetModule PhysicsModule)
 link_entity_components(EC_Script)
 
 GetOpenAssetImport()
@@ -34,7 +37,7 @@ GetOpenAssetImport()
 SetupCompileFlagsWithPCH()
 
 if (MSVC)
-	target_link_libraries (${TARGET_NAME} pdh.lib ws2_32.lib)
+    target_link_libraries (${TARGET_NAME} pdh.lib ws2_32.lib)
 endif (MSVC)
 
 final_target()
