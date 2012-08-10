@@ -57,13 +57,14 @@ if (WIN32 AND VC100)
 
     add_definitions (-DKINECT_MODULE_EXPORTS)
 
-    use_core_modules (Framework OgreRenderingModule)
-    use_package (KINECT)
+    UseTundraCore()
+    use_core_modules(TundraCore Math OgreRenderingModule)
+    use_package(KINECT)
     
     build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-    link_modules (Framework OgreRenderingModule)
-    link_package (KINECT)
+    link_modules(TundraCore OgreRenderingModule)
+    link_package(KINECT)
     
     SetupCompileFlagsWithPCH()
 

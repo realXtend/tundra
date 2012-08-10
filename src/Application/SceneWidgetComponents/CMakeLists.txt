@@ -17,7 +17,9 @@ set (BROWSER_SHARED_DATA_ENABLED 1)
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_core_modules (Framework Math Ui Input Scene Asset OgreRenderingModule TundraProtocolModule)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule TundraProtocolModule)
+use_app_modules(SceneInteract)
 
 if (BROWSER_SHARED_DATA_ENABLED)
     use_app_modules(BrowserUiPlugin)
@@ -26,8 +28,8 @@ endif ()
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
-link_modules (Framework Math Ui Input Scene Asset OgreRenderingModule TundraProtocolModule)
-link_entity_components (EC_Billboard)
+link_modules(TundraCore Math OgreRenderingModule TundraProtocolModule SceneInteract)
+link_entity_components(EC_Billboard)
 
 if (BROWSER_SHARED_DATA_ENABLED)
     link_modules(BrowserUiPlugin)

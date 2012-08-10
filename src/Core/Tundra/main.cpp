@@ -1,31 +1,13 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "DebugOperatorNew.h"
-
-#include "Application.h"
 #include "Framework.h"
-#include "LoggingFunctions.h"
-#include "CoreDefines.h"
-
-#include <QDir>
-
+#include "TundraCoreApi.h"
 #include "Win.h"
 
-#include "MemoryLeakCheck.h"
+int TUNDRACORE_API run(int argc, char **argv);
 
-int run(int argc, char **argv);
-
-#if !defined(_MSC_VER)
-// Unix entry point
-int main(int argc, char **argv)
-{
-    return run(argc, argv);
-}
-#endif
-
-#if defined(_MSC_VER)
-// Windows application entry point.
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+#if defined(_MSC_VER) // Windows application entry point.
+int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nShowCmd*/)
 {
     std::string cmdLine(lpCmdLine);
 
@@ -75,5 +57,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return run(argv.size(), (char**)&argv[0]);
     else
         return run(0, 0);
+}
+#else // Unix entry point
+int main(int argc, char **argv)
+{
+    return run(argc, argv);
 }
 #endif
