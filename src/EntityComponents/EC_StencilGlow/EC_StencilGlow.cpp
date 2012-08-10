@@ -18,6 +18,7 @@ EC_StencilGlow::EC_StencilGlow(Scene *scene) :
     outlineEntity_(0),
     outlineSceneNode_(0),
     enabled(this, "enabled", false),
+    isEnabled(false),
     color(this, "color", Color(1.f, 1.f, 1.f, 0.4))
 {
     if (!ViewEnabled() || GetFramework()->IsHeadless())
@@ -125,15 +126,17 @@ void EC_StencilGlow::SetStencilGlowEnabled(bool enable)
     if (!outlineSceneNode_ && !outlineEntity_)
         return;
 
-    if (enable)
+    if (enable && !isEnabled)
     {
         entity->setRenderQueueGroup(STENCIL_GLOW_ENTITY);
         outlineSceneNode_->attachObject(outlineEntity_);
+        isEnabled = true;
     }
-    else
+    else if (!enable && isEnabled)
     {
         entity->setRenderQueueGroup(Ogre::RENDER_QUEUE_MAIN);
         outlineSceneNode_->detachObject(outlineEntity_);
+        isEnabled = false;
     }
 }
 

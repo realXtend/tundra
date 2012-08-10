@@ -61,4 +61,6 @@ private:
     Ogre::SceneNode* outlineSceneNode_;
 
     OgreWorldWeakPtr world_;
+
+    bool isEnabled;
 };
