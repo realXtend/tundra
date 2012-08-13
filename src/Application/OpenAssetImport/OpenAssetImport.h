@@ -17,6 +17,9 @@
 #include <QString>
 #include <QObject>
 
+typedef std::map<QString, Ogre::MaterialPtr> TextureMaterialPointerMap;
+typedef std::pair<QString, Ogre::MaterialPtr> TexMatPair;
+
 struct boneNode
 {
     aiNode* node;
@@ -31,10 +34,10 @@ class OpenAssetImport : public QObject
 public:
 	OpenAssetImport(AssetAPI *assetApi);
 	~OpenAssetImport();
-    bool convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh);
+    void convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh);
 
 signals:
-	void ConversionDone();
+	void ConversionDone(bool success);
 
 private slots:
     void OnTextureLoaded(IAssetTransfer* assetTransfer);
@@ -43,10 +46,11 @@ private slots:
 private:
     const aiScene *scene;
 	void SetTexture(QString &texFile);
+	bool PendingTextures();
 	QString GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath);
 	void loadTextureFile(QString &filename);
     void linearScaleMesh(Ogre::MeshPtr mesh, int targetSize);
-    bool createSubMesh(const Ogre::String& name, int index, const aiNode* pNode, const aiMesh *mesh, const aiMaterial* mat, Ogre::MeshPtr pMesh, Ogre::AxisAlignedBox& mAAB, const QString &meshFileDiskSource, const QString &meshFileName);
+    bool createVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB);
     Ogre::MaterialPtr createMaterial(int index, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName);
     Ogre::MaterialPtr createMaterialByScript(int index, const aiMaterial* mat);
     void grabNodeNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
@@ -78,7 +82,7 @@ private:
     MeshVector mMeshes;
 
     Ogre::SkeletonPtr mSkeleton;
-	Ogre::MaterialPtr ogreMaterial;
+	//Ogre::MaterialPtr ogreMaterial;
 	
     static int msBoneCount;
 
@@ -86,6 +90,9 @@ private:
     Ogre::Real mAnimationSpeedModifier;
 
 	AssetAPI *assetAPI;
+	bool meshCreated;
+	QStringList pendingTextures;
+	TextureMaterialPointerMap texMatMap;
 
 };
 
