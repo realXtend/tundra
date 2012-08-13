@@ -154,7 +154,6 @@ void OpenAssetImport::loadTextureFile(QString &filename)
 	
 		if (!transPtr)
 		{
-			pendingTextures.removeOne(filename);
 			texMatMap.erase(filename);
 			LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
 			return;
@@ -190,7 +189,6 @@ void OpenAssetImport::loadTextureFile(QString &filename)
 		}
 		else
 		{
-			pendingTextures.removeOne(filename);
 			texMatMap.erase(filename);
 			LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
 		}
@@ -203,7 +201,6 @@ void OpenAssetImport::SetTexture(QString &texFile)
 	ogreMat->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texFile.toStdString()));
 	ogreMat->load();
 
-	pendingTextures.removeOne(texFile);
 	texMatMap.erase(texFile);
 
 	if(meshCreated && PendingTextures())
@@ -220,7 +217,6 @@ void OpenAssetImport::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString
 {
 	QString texFile = assetTransfer->Asset()->Name();
  	LogError("AssImp importer::createMaterial: Failed to load texture file " +texFile.toStdString()+ " reason: " + reason.toStdString());
-	pendingTextures.removeOne(texFile);
 	texMatMap.erase(texFile);
 
 	if(meshCreated && PendingTextures())
@@ -229,7 +225,7 @@ void OpenAssetImport::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString
 
 bool OpenAssetImport::PendingTextures()
 {
-	if(pendingTextures.isEmpty())
+	if(texMatMap.empty())
 		return true;
 	else
 		return false;
@@ -998,7 +994,6 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
 			QString tex = QString::fromStdString(szPath.data);
 			QString texPath = GetPathToTexture(meshFileName, meshFileDiskSource, tex);
 			texMatMap.insert(TexMatPair(texPath, ogreMaterial));
-			pendingTextures.append(texPath);
 			loadTextureFile(texPath);
 		}
 	}
