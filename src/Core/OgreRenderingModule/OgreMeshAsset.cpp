@@ -101,8 +101,8 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
 	// Convert file to Ogre mesh using assimp
     if (IsAssimpFileType())
     {
-		if (!ConvertDataToOgreMesh(data_, numBytes))
-            return false; 
+		ConvertAssimpDataToOgreMesh(data_, numBytes);
+            return true; 
 	}
 	else
 	{
@@ -500,35 +500,14 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
     return true;
 }
 
-bool OgreMeshAsset::ConvertDataToOgreMesh(const u8 *data_, size_t numBytes)
+void OgreMeshAsset::ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes)
 {
 
-	bool success = false;
-
 #ifdef ASSIMP_ENABLED
-	OpenAssetImport importer(assetAPI);
-	success = importer.convert(data_, numBytes, this->Name(), this->DiskSource(), ogreMesh);
+	importer = new OpenAssetImport(assetAPI);
+	connect(importer, SIGNAL(ConversionDone(bool)), this, SLOT(AssimpConversionDone(bool)), Qt::UniqueConnection);
+	importer->convert(data_, numBytes, this->Name(), this->DiskSource(), ogreMesh);
 #endif
-	
-	if (!success)
-	{
-		LogError("OgreMeshAsset::DeserializeFromData: Assimp failed to convert " + this->Name() + " to Ogre mesh");
-    	return false;
-	}
-
-	try
-	{
-		ogreMesh->load();
-	} 
-	catch(std::exception &e)
-    {
-        LogError("OgreMeshAsset::DeserializeFromData: Failed to load Assimp converted Ogre mesh " + this->Name() + ":");
-        if (e.what())
-            LogError(e.what());
-        return false;
-    }
-
-	return true;
 }
 
 bool OgreMeshAsset::IsAssimpFileType()
@@ -548,3 +527,19 @@ bool OgreMeshAsset::IsAssimpFileType()
 
     return false;
 }
+
+#ifdef ASSIMP_ENABLED
+void OgreMeshAsset::AssimpConversionDone(bool success)
+{
+	if(success)
+	{
+		if (GenerateMeshdata())
+    	    assetAPI->AssetLoadCompleted(Name());
+	}
+	else
+		LogError("OgreMeshAsset::DeserializeFromData: Failed to to covert " + Name() +" to Ogre mesh.");
+
+	delete importer;
+	
+}
+#endif
