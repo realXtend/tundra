@@ -91,7 +91,6 @@ private:
 
 	AssetAPI *assetAPI;
 	bool meshCreated;
-	QStringList pendingTextures;
 	TextureMaterialPointerMap texMatMap;
 
 };
