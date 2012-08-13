@@ -458,7 +458,7 @@ void getBasePose(const aiScene * sc, const aiNode * nd)
 
 void OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
 {
-	LogInfo("AssImp importer::converting file:" +fileName.toStdString());
+	LogInfo("AssImp importer: Converting file:" +fileName.toStdString());
  	Assimp::DefaultLogger::create("asslogger.log",Assimp::Logger::VERBOSE);
     mAnimationSpeedModifier = 1.0f;
     Assimp::Importer importer;
@@ -519,7 +519,7 @@ void OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
 
 		if(!scene)
 		{
-			LogError("AssImp importer::convert: Failed to load data from file:" +fileName.toStdString());
+			LogError("AssImp importer::convert: conversion failed, importer unable to load data from file:" +fileName.toStdString());
 			emit ConversionDone(false);
         	return;
 		}
@@ -934,7 +934,8 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
 
     if(AI_SUCCESS == aiGetMaterialString(mat, AI_MATKEY_TEXTURE_DIFFUSE(0), &szPath))
     {
-        LogInfo("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
+		Ogre::LogManager::getSingleton().logMessage("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
+        //LogInfo("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
     }
 
 	matName = Ogre::String("generatedMat" + Ogre::StringConverter::toString(generatedMatCount)+ ".material");
