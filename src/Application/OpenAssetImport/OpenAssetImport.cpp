@@ -40,7 +40,7 @@
 static int meshNum = 0;
 
 OpenAssetImport::OpenAssetImport(AssetAPI *assetApi):
-assetAPI(assetApi)
+assetAPI(assetApi), meshCreated(false)
 {
 }
 
@@ -153,16 +153,15 @@ void OpenAssetImport::loadTextureFile(QString &filename)
 		AssetTransferPtr transPtr = assetAPI->RequestAsset(filename, "Texture", true);
 	
 		if (!transPtr)
+		{
+			pendingTextures.removeOne(filename);
+			texMatMap.erase(filename);
+			LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
 			return;
-
-		//Hack that force to wait until the textures are loaded from http address.
-		QEventLoop loop;
-		connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), &loop, SLOT(quit()), Qt::UniqueConnection);
-		connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)), &loop, SLOT(quit()), Qt::UniqueConnection);
+		}
 
 		connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), this, SLOT(OnTextureLoaded(IAssetTransfer*)), Qt::UniqueConnection);
 		connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)),this, SLOT(OnTextureLoadFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
-		loop.exec();
 	}
 
 	//loads the texture from file
@@ -190,14 +189,25 @@ void OpenAssetImport::loadTextureFile(QString &filename)
 			//ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(filename.toStdString()));
 		}
 		else
+		{
+			pendingTextures.removeOne(filename);
+			texMatMap.erase(filename);
 			LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
+		}
 	}
 }
 
 void OpenAssetImport::SetTexture(QString &texFile)
 {
-	ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texFile.toStdString()));
-	ogreMaterial->load();
+	Ogre::MaterialPtr ogreMat = texMatMap.find(texFile)->second;
+	ogreMat->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texFile.toStdString()));
+	ogreMat->load();
+
+	pendingTextures.removeOne(texFile);
+	texMatMap.erase(texFile);
+
+	if(meshCreated && PendingTextures())
+		emit ConversionDone(true);
 }
 
 void OpenAssetImport::OnTextureLoaded(IAssetTransfer* assetTransfer)
@@ -210,6 +220,19 @@ void OpenAssetImport::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString
 {
 	QString texFile = assetTransfer->Asset()->Name();
  	LogError("AssImp importer::createMaterial: Failed to load texture file " +texFile.toStdString()+ " reason: " + reason.toStdString());
+	pendingTextures.removeOne(texFile);
+	texMatMap.erase(texFile);
+
+	if(meshCreated && PendingTextures())
+		emit ConversionDone(true); //mesh created succesfully without textures
+}
+
+bool OpenAssetImport::PendingTextures()
+{
+	if(pendingTextures.isEmpty())
+		return true;
+	else
+		return false;
 }
 
 void OpenAssetImport::linearScaleMesh(Ogre::MeshPtr mesh, int targetSize)
@@ -437,7 +460,7 @@ void getBasePose(const aiScene * sc, const aiNode * nd)
     }
 }
 
-bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
+void OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
 {
 	LogInfo("AssImp importer::converting file:" +fileName.toStdString());
  	Assimp::DefaultLogger::create("asslogger.log",Assimp::Logger::VERBOSE);
@@ -501,7 +524,8 @@ bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
 		if(!scene)
 		{
 			LogError("AssImp importer::convert: Failed to load data from file:" +fileName.toStdString());
-        	return false;
+			emit ConversionDone(false);
+        	return;
 		}
     }
 
@@ -607,10 +631,13 @@ bool OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
     mSkeleton = Ogre::SkeletonPtr(NULL);
     mCustomAnimationName = "";
     // etc...
-
+	meshCreated = true;
     Ogre::MeshManager::getSingleton().removeUnreferencedResources();
     Ogre::SkeletonManager::getSingleton().removeUnreferencedResources();
-    return true;
+	
+	if(meshCreated && PendingTextures())
+		emit ConversionDone(true);
+
 }
 
 void OpenAssetImport::parseAnimation (const aiScene* mScene, int index, aiAnimation* anim)
@@ -918,7 +945,7 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     generatedMatCount++;
 
     Ogre::ResourceManager::ResourceCreateOrRetrieveResult status = ogreMaterialMgr->createOrRetrieve(matName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
-    ogreMaterial = status.first;
+    Ogre::MaterialPtr ogreMaterial = status.first;
     if (!status.second)
         return ogreMaterial;
 
@@ -967,18 +994,21 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     {
 		//If the assimp scene contains textures they are loaded into the Ogre resource system
         if (!scene->HasTextures())
-		{			
+		{
 			QString tex = QString::fromStdString(szPath.data);
 			QString texPath = GetPathToTexture(meshFileName, meshFileDiskSource, tex);
+			texMatMap.insert(TexMatPair(texPath, ogreMaterial));
+			pendingTextures.append(texPath);
 			loadTextureFile(texPath);
 		}
 	}
+	else
+    	ogreMaterial->load();
 
-    ogreMaterial->load();
     return ogreMaterial;
 }
 
-bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const aiNode* pNode, const aiMesh *mesh, const aiMaterial* mat, Ogre::MeshPtr mMesh, Ogre::AxisAlignedBox& mAAB, const QString &meshFileDiskSource, const QString &meshFileName)
+bool OpenAssetImport::createVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB)
 {
     // if animated all submeshes must have bone weights
     if(mBonesByName.size() && !mesh->HasBones())
@@ -986,12 +1016,7 @@ bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const a
         Ogre::LogManager::getSingleton().logMessage("Skipping Mesh " + Ogre::String(mesh->mName.data) + "with no bone weights");
         return false;
     }
-
-	
-    // now begin the object definition
-    // We create a submesh per material
-    Ogre::SubMesh* submesh = mMesh->createSubMesh(name + Ogre::StringConverter::toString(index));
-
+    
     // We must create the vertex data, indicating how many vertices there will be
     submesh->useSharedVertices = false;
 #include "DisableMemoryLeakCheck.h"
@@ -1169,13 +1194,6 @@ bool OpenAssetImport::createSubMesh(const Ogre::String& name, int index, const a
         }
     } // if mesh has bones
 
-    Ogre::MaterialPtr matptr;
-
-    matptr = createMaterial(mesh->mMaterialIndex, mat, meshFileDiskSource, meshFileName);
-
-    // Finally we set a material to the submesh
-    submesh->setMaterialName(matptr->getName());
-
     return true;
 }
 
@@ -1183,7 +1201,6 @@ void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNo
 {
     if(pNode->mNumMeshes > 0)
     {
-        //Ogre::MeshPtr mesh;
         Ogre::AxisAlignedBox mAAB;
 
         if(mMeshes.size() == 0)
@@ -1203,10 +1220,13 @@ void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNo
             Ogre::LogManager::getSingleton().logMessage("SubMesh " + Ogre::StringConverter::toString(idx) + " for mesh '" + Ogre::String(pNode->mName.data) + "'");
 
 
-            // Create a material instance for the mesh.
-
             const aiMaterial *pAIMaterial = mScene->mMaterials[ pAIMesh->mMaterialIndex ];
-            createSubMesh(pNode->mName.data, idx, pNode, pAIMesh, pAIMaterial, mesh, mAAB, meshFileDiskSource, meshFileName);
+			Ogre::MaterialPtr matptr;
+    		matptr = createMaterial(pAIMesh->mMaterialIndex, pAIMaterial, meshFileDiskSource, meshFileName);
+
+			Ogre::SubMesh* submesh = mesh->createSubMesh(pNode->mName.data + Ogre::StringConverter::toString(idx));
+            createVertexData(Ogre::StringConverter::toString(pNode->mName.data), pNode, pAIMesh, submesh, mAAB);
+			submesh->setMaterialName(matptr->getName());
         }
 
         // We must indicate the bounding box
