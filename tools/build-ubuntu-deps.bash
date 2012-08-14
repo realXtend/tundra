@@ -117,13 +117,15 @@ fi
 mkdir -p $viewer/bin/qtplugins/script
 cp -lf $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
 
-what=Assimp
+what=assimp--3.0.1270-source-only
 if test -f $tags/$what-done; then
 	echo $what is done
 else
 	cd $build
 	rm -rf $what
-	git clone git://github.com/assimp/assimp.git $what
+    test -f $tarballs/$what.zip || wget -P $tarballs http://downloads.sourceforge.net/project/assimp/assimp-3.0/assimp--3.0.1270-source-only.zip
+    unzip $tarballs/$what.zip
+	#git clone git://github.com/assimp/assimp.git $what
 	cd $what
 	#sed -e "s/string_type::size_type/typename string_type::size_type/" < code/ObjTools.h > x
 	#mv x code/ObjTools.h
