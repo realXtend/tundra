@@ -173,26 +173,11 @@ void OpenAssetImport::LoadTextureFile(QString &filename)
     //loads the texture from file
     else
     {
-        //loads the texture data to vector
-        std::vector<u8> file;
-        bool success = LoadFileToVector(filename, file);
+        AssetPtr assetPtr = assetAPI->CreateNewAsset("Texture", filename);
+        bool success = assetPtr->LoadFromFile(filename);
 
-        if (success)
-        {
-            // Convert the data into Ogre's own DataStream format.
-#include "DisableMemoryLeakCheck.h"
-            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&file[0], file.size(), false));
-#include "EnableMemoryLeakCheck.h"
-
-            //creates Ogre image object fro stream.
-            Ogre::Image image;
-            image.load(stream);
-
-            //creates texture from loaded image
-            Ogre::TexturePtr texPtr = Ogre::TextureManager::getSingleton().loadImage(AssetAPI::SanitateAssetRef(filename.toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
-            texPtr->load();
+        if(success)
             SetTexture(filename);
-        }
         else
         {
             texMatMap.erase(filename);
