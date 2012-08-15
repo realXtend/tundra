@@ -116,7 +116,7 @@
  <entity id="6">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,-90,0,0,0.3,0.3,0.3" name="Transform"/>
-   <attribute value="tent_dome/TentDome.dae" name="Mesh ref"/>
+   <attribute value="tent_dome/models/TentDome.dae" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
