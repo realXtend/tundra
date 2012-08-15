@@ -38,56 +38,6 @@
   </component>
  </entity>
  <entity id="2">
-  <component type="EC_Script" sync="1">
-   <attribute value="js" name="Type"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="avatarapplication.js" name="Script ref"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="AvatarScript" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
- </entity>
- <entity id="3">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,-90,0,0,0.015,0.015,0.015" name="Transform"/>
-   <attribute value="gable/models/gable.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Gable" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="-65,0,120,0,0,0,5,5,5" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="4">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,0,90,0,0.01,0.01,0.01" name="Transform"/>
-   <attribute value="cityhouse/models/cityhouse.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Cityhouse" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="115,0.01,-40,270,0,90,8,8,8" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="5">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,-90,0,0,20,20,20" name="Transform"/>
    <attribute value="crowne/models/crowne.dae" name="Mesh ref"/>
@@ -106,7 +56,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="6">
+ <entity id="3">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,90,0,0.0025,0.0025,0.0025" name="Transform"/>
    <attribute value="house2/models/house2.dae" name="Mesh ref"/>
@@ -125,159 +75,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="7">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,0,0.01,0.01,0.01" name="Transform"/>
-   <attribute value="bunga/models/bunga.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Bunga" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="-150,0.01,-50,0,0,180,8,8,8" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="8">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,-90,0,0,0.04,0.04,0.04" name="Transform"/>
-   <attribute value="mustang/models/mustang.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Mustang" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="-120,0,25,0,0,0,2,2,2" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="9">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,0,0.015,0.015,0.015" name="Transform"/>
-   <attribute value="Samara/models/samara.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Samara" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="-41,0,-12,0,0,180,3,3,3" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="10">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,0,-90,0,0.015,0.015,0.015" name="Transform"/>
-   <attribute value="house3/models/house3.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="House3" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="0,0,150,0,0,-90,6,6,6" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="11">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,0,90,0,0.02,0.02,0.02" name="Transform"/>
-   <attribute value="house4/models/house4.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="House4" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="30,0,-55,90,0,90,4,4,4" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="12">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,0,90,0,0.003,0.003,0.003" name="Transform"/>
-   <attribute value="casatentativa2/models/casatentativa2.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Casatentativa2" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="25,0,80,0,0,90,13,13,13" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="13">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,0,0.015,0.015,0.015" name="Transform"/>
-   <attribute value="farmhouse/models/farmhouse.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-    <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Farmhouse" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="-155,0,80,0,0,180,5,5,5" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="14">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,-90,180,0,3,3,3" name="Transform"/>
-   <attribute value="rescape/models/rescape.dae" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="rescape" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="15,0.1,-167,0,0,0,1,1,1" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
- <entity id="15">
+ <entity id="4">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,0,1,1,1" name="Transform"/>
    <attribute value="jeep/models/jeep1.ms3d" name="Mesh ref"/>
@@ -296,7 +94,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="16">
+ <entity id="5">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,90,90,0.1,0.1,0.1" name="Transform"/>
    <attribute value="duck/duck.dae" name="Mesh ref"/>
@@ -315,10 +113,10 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
- <entity id="17">
+ <entity id="6">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,-90,0,0,0.3,0.3,0.3" name="Transform"/>
-   <attribute value="tent_dome/models/TentDome.dae" name="Mesh ref"/>
+   <attribute value="tent_dome/TentDome.dae" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
@@ -334,7 +132,7 @@
    <attribute value="true" name="Visible"/>
   </component>
  </entity>
-<entity id="18" sync="1">
+<entity id="7" sync="1">
   <component type="EC_Name" sync="1">
    <attribute value="Environment" name="name"/>
    <attribute value="" name="description"/>
