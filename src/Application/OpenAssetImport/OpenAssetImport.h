@@ -24,6 +24,11 @@ Licensed under the MIT license:
 #include <QString>
 #include <QObject>
 
+typedef std::map<Ogre::String, boneNode> BoneMapType;
+typedef std::map<Ogre::String, const aiNode*> BoneNodeMap;
+typedef std::map<Ogre::String, const aiBone*> BoneMap;
+typedef std::map<Ogre::String, aiMatrix4x4> NodeTransformMap;
+typedef std::vector<Ogre::MeshPtr> MeshVector;
 typedef std::map<QString, Ogre::MaterialPtr> TextureMaterialPointerMap;
 typedef std::pair<QString, Ogre::MaterialPtr> TexMatPair;
 
@@ -79,19 +84,10 @@ private:
     bool meshCreated;
     TextureMaterialPointerMap texMatMap;
 
-    typedef std::map<Ogre::String, boneNode> BoneMapType;
     BoneMapType boneMap;
-
-    typedef std::map<Ogre::String, const aiNode*> BoneNodeMap;
     BoneNodeMap mBoneNodesByName;
-
-    typedef std::map<Ogre::String, const aiBone*> BoneMap;
     BoneMap mBonesByName;
-
-    typedef std::map<Ogre::String, aiMatrix4x4> NodeTransformMap;
     NodeTransformMap mNodeDerivedTransformByName;
-
-    typedef std::vector<Ogre::MeshPtr> MeshVector;
     MeshVector mMeshes;
 
 
