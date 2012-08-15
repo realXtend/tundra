@@ -1,3 +1,10 @@
+/*
+This code is based on OgreAssimp.
+For the latest info, see http://code.google.com/p/ogreassimp/
+Copyright (c) 2011 Jacob 'jacmoe' Moen
+Licensed under the MIT license:
+*/
+
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "IAsset.h"
@@ -78,204 +85,159 @@ return value is http://.../texture.jpg
 
 QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath)
 {
-	texturePath.replace("\\", "/"); // Normalize all path separators to use forward slashes.
-	QString path;
+    texturePath.replace("\\", "/"); // Normalize all path separators to use forward slashes.
+    QString path;
 
-	//When the texture path in .dae file is a http address there is no need to parse it.
-	if(texturePath.startsWith("http:") || texturePath.startsWith("https:"))
-	{
-		path = texturePath;
-		return path;
-	}
-	else
-	{
-		QStringList parsedMeshPath;
+    //When the texture path in .dae file is a http address there is no need to parse it.
+    if(texturePath.startsWith("http:") || texturePath.startsWith("https:"))
+    {
+        path = texturePath;
+        return path;
+    }
+    else
+    {
+        QStringList parsedMeshPath;
 
-		if(meshFileName.startsWith("http:") || meshFileName.startsWith("https:"))
-		{
-			parsedMeshPath = meshFileName.split("/");
-		}
-		else
-		{
-			parsedMeshPath = meshFileDiskSource.split("/");
-		}
+        if(meshFileName.startsWith("http:") || meshFileName.startsWith("https:"))
+        {
+            parsedMeshPath = meshFileName.split("/");
+        }
+        else
+        {
+            parsedMeshPath = meshFileDiskSource.split("/");
+        }
 		
-		int index = texturePath.indexOf("/");
-		int dots=0;
+        int index = texturePath.indexOf("/");
+        int dots=0;
 
-		for(int i=0; i<index; i++)
-		{
-			if(texturePath[i]=='.')
-			{
-				dots++;
-				parsedMeshPath.takeLast();
-			}
-		}
+        for(int i=0; i<index; i++)
+        {
+            if(texturePath[i]=='.')
+            {
+                dots++;
+                parsedMeshPath.takeLast();
+            }
+        }
 
-		if(dots!=0)
-		{
-			texturePath = texturePath.remove(0, dots);
-			path = parsedMeshPath.join("/");
-			path.append(texturePath);
-		}
+        if(dots!=0)
+        {
+            texturePath = texturePath.remove(0, dots);
+            path = parsedMeshPath.join("/");
+            path.append(texturePath);
+        }
 
-		//The texturePath is not always a path from the .dae file to the textures
-		//It might be just texture.jpg or /images/texture.jpg, etc.
-		//In that case the correct texture file is searched using a top-down search.   
-		else
-		{
-			int length = parsedMeshPath.length();
-			QString base;
+        //The texturePath is not always a path from the .dae file to the textures
+        //It might be just texture.jpg or /images/texture.jpg, etc.
+        //In that case the correct texture file is searched using a top-down search.   
+        else
+        {
+            int length = parsedMeshPath.length();
+            QString base;
 
-			for(int j=0; j<4/*length*/; j++)
-			{
-				parsedMeshPath.removeLast();
-				base = parsedMeshPath.join("/");
-				path = AssetAPI::RecursiveFindFile(base,texturePath);
+            for(int j=0; j<4/*length*/; j++)
+            {
+                parsedMeshPath.removeLast();
+                base = parsedMeshPath.join("/");
+                path = AssetAPI::RecursiveFindFile(base,texturePath);
 			
-				if(!path.isEmpty())
-					break;
-			}
-		}
+                if(!path.isEmpty())
+                    break;
+            }
+        }
 
-		return path;
-	}
+        return path;
+    }
 }
 
 //Loads texture file from disk or from http asset server.
-void OpenAssetImport::loadTextureFile(QString &filename)
+void OpenAssetImport::LoadTextureFile(QString &filename)
 {
 
-	//Loads the texture from http address
-	if(filename.startsWith("http:") || filename.startsWith("https:"))
-	{
-		assetAPI->ForgetAsset(filename, false);
-		AssetTransferPtr transPtr = assetAPI->RequestAsset(filename, "Texture", true);
+    //Loads the texture from http address
+    if(filename.startsWith("http:") || filename.startsWith("https:"))
+    {
+        assetAPI->ForgetAsset(filename, false);
+        AssetTransferPtr transPtr = assetAPI->RequestAsset(filename, "Texture", true);
 	
-		if (!transPtr)
-		{
-			texMatMap.erase(filename);
-			LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
-			return;
-		}
+        if (!transPtr)
+        {
+            texMatMap.erase(filename);
+            LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
+            return;
+        }
 
-		connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), this, SLOT(OnTextureLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-		connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)),this, SLOT(OnTextureLoadFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
-	}
+        connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), this, SLOT(OnTextureLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)),this, SLOT(OnTextureLoadFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
+    }
 
-	//loads the texture from file
-	else
-	{
-		//loads the texture data to vector
-		std::vector<u8> file;
-		bool success = LoadFileToVector(filename, file);
+    //loads the texture from file
+    else
+    {
+        //loads the texture data to vector
+        std::vector<u8> file;
+        bool success = LoadFileToVector(filename, file);
 
-		if (success)
-		{
-			// Convert the data into Ogre's own DataStream format.
+        if (success)
+        {
+            // Convert the data into Ogre's own DataStream format.
 #include "DisableMemoryLeakCheck.h"
-			Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&file[0], file.size(), false));
+            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&file[0], file.size(), false));
 #include "EnableMemoryLeakCheck.h"
 
-			//creates Ogre image object fro stream.
-			Ogre::Image image;
-			image.load(stream);
-	
-			//creates texture from loaded image
-			Ogre::TexturePtr texPtr = Ogre::TextureManager::getSingleton().loadImage(AssetAPI::SanitateAssetRef(filename.toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
-			texPtr->load();
-			SetTexture(filename);
-			//ogreMaterial->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(filename.toStdString()));
-		}
-		else
-		{
-			texMatMap.erase(filename);
-			LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
-		}
-	}
+            //creates Ogre image object fro stream.
+            Ogre::Image image;
+            image.load(stream);
+
+            //creates texture from loaded image
+            Ogre::TexturePtr texPtr = Ogre::TextureManager::getSingleton().loadImage(AssetAPI::SanitateAssetRef(filename.toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+            texPtr->load();
+            SetTexture(filename);
+        }
+        else
+        {
+            texMatMap.erase(filename);
+            LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
+        }
+    }
 }
 
 void OpenAssetImport::SetTexture(QString &texFile)
 {
-	Ogre::MaterialPtr ogreMat = texMatMap.find(texFile)->second;
-	ogreMat->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texFile.toStdString()));
-	ogreMat->load();
+    Ogre::MaterialPtr ogreMat = texMatMap.find(texFile)->second;
+    ogreMat->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texFile.toStdString()));
+    ogreMat->load();
 
-	texMatMap.erase(texFile);
+    texMatMap.erase(texFile);
 
-	if(meshCreated && PendingTextures())
-		emit ConversionDone(true);
+    if(meshCreated && PendingTextures())
+        emit ConversionDone(true);
 }
 
 void OpenAssetImport::OnTextureLoaded(IAssetTransfer* assetTransfer)
 {
-	QString texFile = assetTransfer->Asset()->Name();
-	SetTexture(texFile);
+    QString texFile = assetTransfer->Asset()->Name();
+    SetTexture(texFile);
 }
 
 void OpenAssetImport::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason)
 {
-	QString texFile = assetTransfer->Asset()->Name();
- 	LogError("AssImp importer::createMaterial: Failed to load texture file " +texFile.toStdString()+ " reason: " + reason.toStdString());
-	texMatMap.erase(texFile);
+    QString texFile = assetTransfer->Asset()->Name();
+    LogError("AssImp importer::createMaterial: Failed to load texture file " +texFile.toStdString()+ " reason: " + reason.toStdString());
+    texMatMap.erase(texFile);
 
-	if(meshCreated && PendingTextures())
-		emit ConversionDone(true); //mesh created succesfully without textures
+    if(meshCreated && PendingTextures())
+        emit ConversionDone(true); //mesh created succesfully without textures
 }
 
 bool OpenAssetImport::PendingTextures()
 {
-	if(texMatMap.empty())
-		return true;
-	else
-		return false;
+    if(texMatMap.empty())
+        return true;
+    else
+        return false;
 }
 
-void OpenAssetImport::linearScaleMesh(Ogre::MeshPtr mesh, int targetSize)
-{
-    Ogre::AxisAlignedBox mAAB = mesh->getBounds();
-    Ogre::Vector3 meshSize = mAAB.getSize();
-    Ogre::Vector3 origSize = meshSize;
-    while (meshSize.x >= targetSize || meshSize.y >= targetSize || meshSize.z >= targetSize)
-        meshSize /= 2;
-
-    Ogre::Real minCoefficient = meshSize.x / origSize.x;
-
-    // Iterate thru submeshes
-    Ogre::Mesh::SubMeshIterator smit = mesh->getSubMeshIterator();
-    while( smit.hasMoreElements() )
-    {
-        Ogre::SubMesh* submesh = smit.getNext();
-        if(submesh)
-        {
-            Ogre::VertexData* vertex_data = submesh->vertexData;
-            if(vertex_data)
-            {
-                const Ogre::VertexElement* posElem = vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-                Ogre::HardwareVertexBufferSharedPtr vbuf = vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
-                unsigned char* vertex = static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
-                Ogre::Real* points;
-
-                for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
-                {
-                    posElem->baseVertexPointerToElement(vertex, (void **)&points);
-                    points[0] *= minCoefficient;
-                    points[1] *= minCoefficient;
-                    points[2] *= minCoefficient;
-                }
-
-                vbuf->unlock();
-            }
-        }
-    }
-
-    Ogre::Vector3 scale(minCoefficient, minCoefficient, minCoefficient);
-    mAAB.scale(scale);
-
-    mesh->_setBounds(mAAB);
-}
-
-aiMatrix4x4 updateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Ogre::Real val, float & ticks, aiMatrix4x4 & mat)
+aiMatrix4x4 UpdateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Ogre::Real val, float & ticks, aiMatrix4x4 & mat)
 {
 
     // walking animation is found from element 0
@@ -291,14 +253,14 @@ aiMatrix4x4 updateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
 
     // ******** Position *****
     aiVector3D presentPosition( 0, 0, 0);
-    if( channel->mNumPositionKeys > 0)
+    if(channel->mNumPositionKeys > 0)
     {
         // Look for present frame number. Search from last position if time is after the last time, else from beginning
         // Should be much quicker than always looking from start for the average use case.
         unsigned int frame = 0;
-        while( frame < channel->mNumPositionKeys - 1)
+        while(frame < channel->mNumPositionKeys - 1)
         {
-            if( currentTime < channel->mPositionKeys[frame+1].mTime)
+            if(currentTime < channel->mPositionKeys[frame+1].mTime)
                 break;
             frame++;
         }
@@ -308,13 +270,14 @@ aiMatrix4x4 updateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
         const aiVectorKey& key = channel->mPositionKeys[frame];
         const aiVectorKey& nextKey = channel->mPositionKeys[nextFrame];
         double diffTime = nextKey.mTime - key.mTime;
-        if( diffTime < 0.0)
+        if(diffTime < 0.0)
             diffTime += mAnim->mDuration;
-        if( diffTime > 0)
+        if(diffTime > 0)
         {
             float factor = float( (currentTime - key.mTime) / diffTime);
             presentPosition = key.mValue + (nextKey.mValue - key.mValue) * factor;
-        } else
+        }
+        else
         {
             presentPosition = key.mValue;
         }
@@ -322,12 +285,12 @@ aiMatrix4x4 updateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
 
     // ******** Rotation *********
     aiQuaternion presentRotation( 1, 0, 0, 0);
-    if( channel->mNumRotationKeys > 0)
+    if(channel->mNumRotationKeys > 0)
     {
         unsigned int frame = 0;
-        while( frame < channel->mNumRotationKeys - 1)
+        while(frame < channel->mNumRotationKeys - 1)
         {
-            if( currentTime < channel->mRotationKeys[frame+1].mTime)
+            if(currentTime < channel->mRotationKeys[frame+1].mTime)
                 break;
             frame++;
         }
@@ -337,13 +300,14 @@ aiMatrix4x4 updateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
         const aiQuatKey& key = channel->mRotationKeys[frame];
         const aiQuatKey& nextKey = channel->mRotationKeys[nextFrame];
         double diffTime = nextKey.mTime - key.mTime;
-        if( diffTime < 0.0)
+        if(diffTime < 0.0)
             diffTime += mAnim->mDuration;
-        if( diffTime > 0)
+        if(diffTime > 0)
         {
             float factor = float( (currentTime - key.mTime) / diffTime);
             aiQuaternion::Interpolate( presentRotation, key.mValue, nextKey.mValue, factor);
-        } else
+        } 
+        else
         {
             presentRotation = key.mValue;
         }
@@ -351,12 +315,12 @@ aiMatrix4x4 updateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
 
     // ******** Scaling **********
     aiVector3D presentScaling( 1, 1, 1);
-    if( channel->mNumScalingKeys > 0)
+    if(channel->mNumScalingKeys > 0)
     {
         unsigned int frame = 0;
-        while( frame < channel->mNumScalingKeys - 1)
+        while(frame < channel->mNumScalingKeys - 1)
         {
-            if( currentTime < channel->mScalingKeys[frame+1].mTime)
+            if(currentTime < channel->mScalingKeys[frame+1].mTime)
                 break;
             frame++;
         }
@@ -365,7 +329,7 @@ aiMatrix4x4 updateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
     }
 
     // build a transformation matrix from it
-    mat = aiMatrix4x4( presentRotation.GetMatrix());
+    mat = aiMatrix4x4(presentRotation.GetMatrix());
 
     mat.a1 *= presentScaling.x; mat.b1 *= presentScaling.x; mat.c1 *= presentScaling.x;
     mat.a2 *= presentScaling.y; mat.b2 *= presentScaling.y; mat.c2 *= presentScaling.y;
@@ -373,17 +337,17 @@ aiMatrix4x4 updateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
     mat.a4 = presentPosition.x; mat.b4 = presentPosition.y; mat.c4 = presentPosition.z;
 }
 
-void getBasePose(const aiScene * sc, const aiNode * nd)
+void GetBasePose(const aiScene * sc, const aiNode * nd)
 {
     unsigned int i;
     unsigned int n=0, k = 0, t;
 
     //insert current mesh's bones into boneMatrices
-    for (n=0; n < nd->mNumMeshes; ++n)
+    for(n=0; n < nd->mNumMeshes; ++n)
     {
         const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[n]];
 
-        std::vector<aiMatrix4x4> boneMatrices( mesh->mNumBones);
+        std::vector<aiMatrix4x4> boneMatrices(mesh->mNumBones);
 
         // fill boneMatrices with current bone locations
         for( size_t a = 0; a < mesh->mNumBones; ++a)
@@ -399,7 +363,7 @@ void getBasePose(const aiScene * sc, const aiNode * nd)
             // and now append all node transformations down the parent chain until we're back at mesh coordinates again
             const aiNode* tempNode = node;
 
-            while( tempNode)
+            while(tempNode)
             {
                 // check your matrix multiplication order here!!!
                 boneMatrices[a] = tempNode->mTransformation * boneMatrices[a];
@@ -413,14 +377,14 @@ void getBasePose(const aiScene * sc, const aiNode * nd)
         std::vector<aiVector3D> resultNorm( mesh->mNumVertices);
 
         // loop through all vertex weights of all bones
-        for( size_t a = 0; a < mesh->mNumBones; ++a)
+        for(size_t a = 0; a < mesh->mNumBones; ++a)
         {
             const aiBone* bone = mesh->mBones[a];
             const aiMatrix4x4& posTrafo = boneMatrices[a];
 
             // 3x3 matrix, contains the bone matrix without the translation, only with rotation and possibly scaling
             aiMatrix3x3 normTrafo = aiMatrix3x3( posTrafo);
-            for( size_t b = 0; b < bone->mNumWeights; ++b)
+            for(size_t b = 0; b < bone->mNumWeights; ++b)
             {
                 const aiVertexWeight& weight = bone->mWeights[b];
 
@@ -450,16 +414,16 @@ void getBasePose(const aiScene * sc, const aiNode * nd)
     }
 
     // draw all children
-    for (n = 0; n < nd->mNumChildren; n++   )
+    for (n = 0; n < nd->mNumChildren; n++)
     {
-        getBasePose(sc, nd->mChildren[n]);
+        GetBasePose(sc, nd->mChildren[n]);
     }
 }
 
-void OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
+void OpenAssetImport::Convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
 {
-	LogInfo("AssImp importer: Converting file:" +fileName.toStdString());
- 	Assimp::DefaultLogger::create("asslogger.log",Assimp::Logger::VERBOSE);
+    LogInfo("AssImp importer: Converting file:" +fileName.toStdString());
+    Assimp::DefaultLogger::create("asslogger.log",Assimp::Logger::VERBOSE);
     mAnimationSpeedModifier = 1.0f;
     Assimp::Importer importer;
     bool searchFromIndex = false;
@@ -503,42 +467,42 @@ void OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
     pFlags = pFlags | aiProcess_PreTransformVertices;
 #endif
 
-	//assimp importer looks for a loader to support the file extension specified by hint 
-	QString hint = fileName.right(fileName.length() - fileName.lastIndexOf('.')-1);
+    //assimp importer looks for a loader to support the file extension specified by hint 
+    QString hint = fileName.right(fileName.length() - fileName.lastIndexOf('.')-1);
     scene = importer.ReadFileFromMemory(reinterpret_cast<const void*>(data_), numBytes, pFlags, hint.toStdString().c_str());
 
     if(!scene)
     {
         LogInfo("AssImp importer::convert: Failed to read file:" +fileName.toStdString()+ " from memory: ");
         LogInfo(importer.GetErrorString());
-		LogInfo("AssImp importer::convert: Trying to load data from file:" +fileName.toStdString());
+        LogInfo("AssImp importer::convert: Trying to load data from file:" +fileName.toStdString());
 		
-		// If the importer failed to read the file from memory,
-		// try to read the file again.
-		scene = importer.ReadFile(diskSource.toStdString(), pFlags);
+        // If the importer failed to read the file from memory,
+        // try to read the file again.
+        scene = importer.ReadFile(diskSource.toStdString(), pFlags);
 
-		if(!scene)
-		{
-			LogError("AssImp importer::convert: conversion failed, importer unable to load data from file:" +fileName.toStdString());
-			emit ConversionDone(false);
-        	return;
-		}
+        if(!scene)
+        {
+            LogError("AssImp importer::convert: conversion failed, importer unable to load data from file:" +fileName.toStdString());
+            emit ConversionDone(false);
+            return;
+        }
     }
 
     if (scene->HasAnimations())
-        getBasePose(scene, scene->mRootNode);
+        GetBasePose(scene, scene->mRootNode);
 
-    grabNodeNamesFromNode(scene, scene->mRootNode);
+    GrabNodeNamesFromNode(scene, scene->mRootNode);
 
 #ifdef SKELETON_ENABLED
-    grabBoneNamesFromNode(scene, scene->mRootNode);
+    GrabBoneNamesFromNode(scene, scene->mRootNode);
 #endif
 
     aiMatrix4x4 transform;
     transform.FromEulerAnglesXYZ(degreeToRadian(90), 0, degreeToRadian(180));
     scene->mRootNode->mTransformation = transform;
 
-    computeNodesDerivedTransform(scene, scene->mRootNode, transform);
+    ComputeNodesDerivedTransform(scene, scene->mRootNode, transform);
 
 #ifdef SKELETON_ENABLED
     if(mBonesByName.size())
@@ -546,21 +510,21 @@ void OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
         mSkeleton = Ogre::SkeletonManager::getSingleton().create("conversion", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
         msBoneCount = 0;
-        createBonesFromNode(scene, scene->mRootNode);
+        CreateBonesFromNode(scene, scene->mRootNode);
         msBoneCount = 0;
-        createBoneHiearchy(scene, scene->mRootNode);
+        CreateBoneHiearchy(scene, scene->mRootNode);
 
         if(scene->HasAnimations())
         {
             for(int i = 0; i < scene->mNumAnimations; ++i)
             {
-                parseAnimation(scene, i, scene->mAnimations[i]);
+                ParseAnimation(scene, i, scene->mAnimations[i]);
             }
         }
     }
 #endif
 
-    loadDataFromNode(scene, scene->mRootNode, diskSource, fileName, mesh);
+    LoadDataFromNode(scene, scene->mRootNode, diskSource, fileName, mesh);
 
     Ogre::LogManager::getSingleton().logMessage("*** Finished loading ass file ***");
     Assimp::DefaultLogger::kill();
@@ -627,16 +591,16 @@ void OpenAssetImport::convert(const u8 *data_, size_t numBytes, const QString &f
     mSkeleton = Ogre::SkeletonPtr(NULL);
     mCustomAnimationName = "";
     // etc...
-	meshCreated = true;
+    meshCreated = true;
     Ogre::MeshManager::getSingleton().removeUnreferencedResources();
     Ogre::SkeletonManager::getSingleton().removeUnreferencedResources();
 	
-	if(meshCreated && PendingTextures())
-		emit ConversionDone(true);
+    if(meshCreated && PendingTextures())
+        emit ConversionDone(true);
 
 }
 
-void OpenAssetImport::parseAnimation (const aiScene* mScene, int index, aiAnimation* anim)
+void OpenAssetImport::ParseAnimation (const aiScene* mScene, int index, aiAnimation* anim)
 {
     // DefBonePose a matrix that represents the local bone transform (can build from Ogre bone components)
     // PoseToKey a matrix representing the keyframe translation
@@ -671,7 +635,7 @@ void OpenAssetImport::parseAnimation (const aiScene* mScene, int index, aiAnimat
     mTicksPerSecond = 1;
     animation = mSkeleton->createAnimation(Ogre::String(animName), Ogre::Real(anim->mDuration/mTicksPerSecond));
 
-    for (int i = 0; i < (int)anim->mNumChannels; i++)
+    for(int i = 0; i < (int)anim->mNumChannels; i++)
     {
         Ogre::TransformKeyFrame* keyframe;
         aiNodeAnim* node_anim = anim->mChannels[i];
@@ -685,13 +649,13 @@ void OpenAssetImport::parseAnimation (const aiScene* mScene, int index, aiAnimat
             defBonePoseInv.makeInverseTransform(bone->getPosition(), bone->getScale(), bone->getOrientation());
             Ogre::NodeAnimationTrack* track = animation->createNodeTrack(i, bone);
 
-            for (int g = 0; g < 300; g++)
+            for(int g = 0; g < 300; g++)
             {
                 aiVector3D pos;
                 aiQuaternion rot;
                 aiMatrix4x4 mat;
                 float time;
-                updateAnimationFunc(scene, node_anim, g, time, mat);
+                UpdateAnimationFunc(scene, node_anim, g, time, mat);
                 mat.DecomposeNoScaling(rot, pos);
                 keyframe = track->createNodeKeyFrame(Ogre::Real(time));
 
@@ -718,18 +682,18 @@ void OpenAssetImport::parseAnimation (const aiScene* mScene, int index, aiAnimat
     mSkeleton->optimiseAllAnimations();
 }
 
-void OpenAssetImport::markAllChildNodesAsNeeded(const aiNode *pNode)
+void OpenAssetImport::MarkAllChildNodesAsNeeded(const aiNode *pNode)
 {
-    flagNodeAsNeeded(pNode->mName.data);
+    FlagNodeAsNeeded(pNode->mName.data);
     // Traverse all child nodes of the current node instance
-    for ( int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx )
+    for (int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx )
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
-        markAllChildNodesAsNeeded(pChildNode);
+        MarkAllChildNodesAsNeeded(pChildNode);
     }
 }
 
-void OpenAssetImport::grabNodeNamesFromNode(const aiScene* mScene, const aiNode* pNode)
+void OpenAssetImport::GrabNodeNamesFromNode(const aiScene* mScene, const aiNode* pNode)
 {
     boneNode bNode;
     bNode.node = const_cast<aiNode*>(pNode);
@@ -745,30 +709,30 @@ void OpenAssetImport::grabNodeNamesFromNode(const aiScene* mScene, const aiNode*
 
 
     // Traverse all child nodes of the current node instance
-    for ( int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx )
+    for (int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
     {
-        const aiNode *pChildNode = pNode->mChildren[ childIdx ];
-        grabNodeNamesFromNode(mScene, pChildNode);
+        const aiNode *pChildNode = pNode->mChildren[childIdx];
+        GrabNodeNamesFromNode(mScene, pChildNode);
     }
 }
 
 
-void OpenAssetImport::computeNodesDerivedTransform(const aiScene* mScene,  const aiNode *pNode, const aiMatrix4x4 accTransform)
+void OpenAssetImport::ComputeNodesDerivedTransform(const aiScene* mScene,  const aiNode *pNode, const aiMatrix4x4 accTransform)
 {
     if(mNodeDerivedTransformByName.find(pNode->mName.data) == mNodeDerivedTransformByName.end())
     {
         mNodeDerivedTransformByName[pNode->mName.data] = accTransform;
     }
-    for ( int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx )
+    for (int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
-        computeNodesDerivedTransform(mScene, pChildNode, accTransform * pChildNode->mTransformation);
+        ComputeNodesDerivedTransform(mScene, pChildNode, accTransform * pChildNode->mTransformation);
     }
 }
 
-void OpenAssetImport::createBonesFromNode(const aiScene* mScene,  const aiNode *pNode)
+void OpenAssetImport::CreateBonesFromNode(const aiScene* mScene,  const aiNode *pNode)
 {
-    if(isNodeNeeded(pNode->mName.data))
+    if(IsNodeNeeded(pNode->mName.data))
     {
         Ogre::Bone* bone = mSkeleton->createBone(Ogre::String(pNode->mName.data), msBoneCount);
 
@@ -790,16 +754,16 @@ void OpenAssetImport::createBonesFromNode(const aiScene* mScene,  const aiNode *
         msBoneCount++;
     }
     // Traverse all child nodes of the current node instance
-    for ( int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx )
+    for (int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
     {
-        const aiNode *pChildNode = pNode->mChildren[ childIdx ];
-        createBonesFromNode(mScene, pChildNode);
+        const aiNode *pChildNode = pNode->mChildren[childIdx];
+        CreateBonesFromNode(mScene, pChildNode);
     }
 }
 
-void OpenAssetImport::createBoneHiearchy(const aiScene* mScene,  const aiNode *pNode)
+void OpenAssetImport::CreateBoneHiearchy(const aiScene* mScene,  const aiNode *pNode)
 {
-    if(isNodeNeeded(pNode->mName.data))
+    if(IsNodeNeeded(pNode->mName.data))
     {
         Ogre::Bone* parent = 0;
         Ogre::Bone* child = 0;
@@ -820,47 +784,47 @@ void OpenAssetImport::createBoneHiearchy(const aiScene* mScene,  const aiNode *p
         }
     }
     // Traverse all child nodes of the current node instance
-    for ( int childIdx=0; childIdx<pNode->mNumChildren; childIdx++ )
+    for (int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
-        createBoneHiearchy(mScene, pChildNode);
+        CreateBoneHiearchy(mScene, pChildNode);
     }
 }
 
-void OpenAssetImport::flagNodeAsNeeded(const char* name)
+void OpenAssetImport::FlagNodeAsNeeded(const char* name)
 {
-    boneMapType::iterator iter = boneMap.find(Ogre::String(name));
-    if( iter != boneMap.end())
+    BoneMapType::iterator iter = boneMap.find(Ogre::String(name));
+    if(iter != boneMap.end())
     {
         iter->second.isNeeded = true;
     }
 }
 
-bool OpenAssetImport::isNodeNeeded(const char* name)
+bool OpenAssetImport::IsNodeNeeded(const char* name)
 {
-    boneMapType::iterator iter = boneMap.find(Ogre::String(name));
-    if( iter != boneMap.end())
+    BoneMapType::iterator iter = boneMap.find(Ogre::String(name));
+    if(iter != boneMap.end())
     {
         return iter->second.isNeeded;
     }
     return false;
 }
 
-void OpenAssetImport::grabBoneNamesFromNode(const aiScene* mScene,  const aiNode *pNode)
+void OpenAssetImport::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode *pNode)
 {
     meshNum++;
     if(pNode->mNumMeshes > 0)
     {
-        for ( int idx=0; idx<pNode->mNumMeshes; ++idx )
+        for(int idx=0; idx<pNode->mNumMeshes; ++idx)
         {
-            aiMesh *pAIMesh = mScene->mMeshes[ pNode->mMeshes[ idx ] ];
+            aiMesh *pAIMesh = mScene->mMeshes[pNode->mMeshes[idx]];
 
             if(pAIMesh->HasBones())
             {
-                for ( Ogre::uint32 i=0; i < pAIMesh->mNumBones; ++i )
+                for(Ogre::uint32 i=0; i < pAIMesh->mNumBones; ++i)
                 {
-                    aiBone *pAIBone = pAIMesh->mBones[ i ];
-                    if ( NULL != pAIBone )
+                    aiBone *pAIBone = pAIMesh->mBones[i];
+                    if (NULL != pAIBone)
                     {
                         mBonesByName[pAIBone->mName.data] = pAIBone;
 
@@ -872,23 +836,23 @@ void OpenAssetImport::grabBoneNamesFromNode(const aiScene* mScene,  const aiNode
                         {
                             if(node->mName.data == pNode->mName.data)
                             {
-                                flagNodeAsNeeded(node->mName.data);
+                                FlagNodeAsNeeded(node->mName.data);
                                 break;
                             }
                             if(node->mName.data == pNode->mParent->mName.data)
                             {
-                                flagNodeAsNeeded(node->mName.data);
+                                FlagNodeAsNeeded(node->mName.data);
                                 break;
                             }
 
                             // Not a root node, flag this as needed and continue to the parent
-                            flagNodeAsNeeded(node->mName.data);
+                            FlagNodeAsNeeded(node->mName.data);
                             node = node->mParent;
                         }
 
                         // Flag all children of this node as needed
                         node = mScene->mRootNode->FindNode(pAIBone->mName.data);
-                        markAllChildNodesAsNeeded(node);
+                        MarkAllChildNodesAsNeeded(node);
 
                     } // if we have a valid bone
                 } // loop over bones
@@ -897,30 +861,21 @@ void OpenAssetImport::grabBoneNamesFromNode(const aiScene* mScene,  const aiNode
     } // if this node has meshes
 
     // Traverse all child nodes of the current node instance
-    for ( int childIdx=0; childIdx<pNode->mNumChildren; childIdx++ )
+    for (int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
     {
-        const aiNode *pChildNode = pNode->mChildren[ childIdx ];
-        grabBoneNamesFromNode(mScene, pChildNode);
+        const aiNode *pChildNode = pNode->mChildren[childIdx];
+        GrabBoneNamesFromNode(mScene, pChildNode);
     }
 }
 
-
-Ogre::String ReplaceSpaces(const Ogre::String& s)
-{
-    Ogre::String res(s);
-    replace(res.begin(), res.end(), ' ', '_');
-
-    return res;
-}
-
-Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName)
+Ogre::MaterialPtr OpenAssetImport::CreateMaterial(int index, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName)
 {
     static int generatedMatCount = 0;
     static int texCount = 0;
 
     std::ostringstream matname;
     Ogre::MaterialManager* ogreMaterialMgr =  Ogre::MaterialManager::getSingletonPtr();
-    enum aiTextureType type = aiTextureType_DIFFUSE;
+    enum aiTextureType Type = aiTextureType_DIFFUSE;
     aiString path;
     aiTextureMapping mapping = aiTextureMapping_UV;       // the mapping (should be uv for now)
     unsigned int uvindex = 0;                             // the texture uv index channel
@@ -928,17 +883,17 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     aiTextureOp op = aiTextureOp_Multiply;                // op
     aiTextureMapMode mapmode[2] =  { aiTextureMapMode_Wrap, aiTextureMapMode_Wrap };    // mapmode
     std::ostringstream texname;
-	Ogre::String matName;
+    Ogre::String matName;
 
     aiString szPath;
 
     if(AI_SUCCESS == aiGetMaterialString(mat, AI_MATKEY_TEXTURE_DIFFUSE(0), &szPath))
     {
-		Ogre::LogManager::getSingleton().logMessage("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
+	    Ogre::LogManager::getSingleton().logMessage("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
         //LogInfo("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
     }
 
-	matName = Ogre::String("generatedMat" + Ogre::StringConverter::toString(generatedMatCount)+ ".material");
+    matName = Ogre::String("generatedMat" + Ogre::StringConverter::toString(generatedMatCount)+ ".material");
     generatedMatCount++;
 
     Ogre::ResourceManager::ResourceCreateOrRetrieveResult status = ogreMaterialMgr->createOrRetrieve(matName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
@@ -949,7 +904,7 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     // ambient
     aiColor4D clr(1.0f, 1.0f, 1.0f, 1.0f);
     //Ambient is usually way too low! FIX ME!
-    if (mat->GetTexture(type, 0, &path) != AI_SUCCESS)
+    if (mat->GetTexture(Type, 0, &path) != AI_SUCCESS)
         aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &clr);
 
     ogreMaterial->setAmbient(clr.r, clr.g, clr.b);
@@ -987,24 +942,24 @@ Ogre::MaterialPtr OpenAssetImport::createMaterial(int index, const aiMaterial* m
     if (two_sided != 0)
         ogreMaterial->setCullingMode(Ogre::CULL_NONE);
 
-    if (mat->GetTexture(type, 0, &path) == AI_SUCCESS)
+    if (mat->GetTexture(Type, 0, &path) == AI_SUCCESS)
     {
-		//If the assimp scene contains textures they are loaded into the Ogre resource system
+        //If the assimp scene contains textures they are loaded into the Ogre resource system
         if (!scene->HasTextures())
-		{
-			QString tex = QString::fromStdString(szPath.data);
-			QString texPath = GetPathToTexture(meshFileName, meshFileDiskSource, tex);
-			texMatMap.insert(TexMatPair(texPath, ogreMaterial));
-			loadTextureFile(texPath);
-		}
-	}
-	else
-    	ogreMaterial->load();
+        {
+            QString tex = QString::fromStdString(szPath.data);
+            QString texPath = GetPathToTexture(meshFileName, meshFileDiskSource, tex);
+            texMatMap.insert(TexMatPair(texPath, ogreMaterial));
+            LoadTextureFile(texPath);
+        }
+    }
+    else
+        ogreMaterial->load();
 
     return ogreMaterial;
 }
 
-bool OpenAssetImport::createVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB)
+bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB)
 {
     // if animated all submeshes must have bone weights
     if(mBonesByName.size() && !mesh->HasBones())
@@ -1029,15 +984,16 @@ bool OpenAssetImport::createVertexData(const Ogre::String& name, const aiNode* p
     offset += decl->addElement(0,offset,Ogre::VET_FLOAT3,Ogre::VES_NORMAL).getSize();
 
     offset = 0;
-    for (int tn=0 ; tn<AI_MAX_NUMBER_OF_TEXTURECOORDS ; ++tn)
+    for(int tn=0 ; tn<AI_MAX_NUMBER_OF_TEXTURECOORDS ; ++tn)
     {
-        if (mesh->mTextureCoords[tn])
+        if(mesh->mTextureCoords[tn])
         {
-            if (mesh->mNumUVComponents[tn] == 3)
+            if(mesh->mNumUVComponents[tn] == 3)
             {
                 decl->addElement(1, offset, Ogre::VET_FLOAT3, Ogre::VES_TEXTURE_COORDINATES, tn);
                 offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
-            } else
+            } 
+            else
             {
                 decl->addElement(1, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES, tn);
                 offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
@@ -1120,7 +1076,8 @@ bool OpenAssetImport::createVertexData(const Ogre::String& name, const aiNode* p
                         vbData[offset++] = mesh->mTextureCoords[tn][n].x;
                         vbData[offset++] = mesh->mTextureCoords[tn][n].y;
                         vbData[offset++] = mesh->mTextureCoords[tn][n].z;
-                    } else
+                    } 
+                    else
                     {
                         vbData[offset++] = mesh->mTextureCoords[tn][n].x;
                         vbData[offset++] = mesh->mTextureCoords[tn][n].y;
@@ -1169,15 +1126,15 @@ bool OpenAssetImport::createVertexData(const Ogre::String& name, const aiNode* p
     // set bone weigths
     if(mesh->HasBones())
     {
-        for ( Ogre::uint32 i=0; i < mesh->mNumBones; i++ )
+        for(Ogre::uint32 i=0; i < mesh->mNumBones; i++ )
         {
             aiBone *pAIBone = mesh->mBones[ i ];
-            if ( NULL != pAIBone )
+            if (NULL != pAIBone)
             {
                 Ogre::String bname = pAIBone->mName.data;
-                for ( Ogre::uint32 weightIdx = 0; weightIdx < pAIBone->mNumWeights; weightIdx++ )
+                for (Ogre::uint32 weightIdx = 0; weightIdx < pAIBone->mNumWeights; weightIdx++)
                 {
-                    aiVertexWeight aiWeight = pAIBone->mWeights[ weightIdx ];
+                    aiVertexWeight aiWeight = pAIBone->mWeights[weightIdx];
 
                     Ogre::VertexBoneAssignment vba;
                     vba.vertexIndex = aiWeight.mVertexId;
@@ -1193,7 +1150,7 @@ bool OpenAssetImport::createVertexData(const Ogre::String& name, const aiNode* p
     return true;
 }
 
-void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const QString &meshFileDiskSource, const QString &meshFileName,Ogre::MeshPtr mesh)
+void OpenAssetImport::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const QString &meshFileDiskSource, const QString &meshFileName,Ogre::MeshPtr mesh)
 {
     if(pNode->mNumMeshes > 0)
     {
@@ -1215,14 +1172,13 @@ void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNo
             //if pAIMesh->
             Ogre::LogManager::getSingleton().logMessage("SubMesh " + Ogre::StringConverter::toString(idx) + " for mesh '" + Ogre::String(pNode->mName.data) + "'");
 
-
             const aiMaterial *pAIMaterial = mScene->mMaterials[ pAIMesh->mMaterialIndex ];
-			Ogre::MaterialPtr matptr;
-    		matptr = createMaterial(pAIMesh->mMaterialIndex, pAIMaterial, meshFileDiskSource, meshFileName);
+            Ogre::MaterialPtr matptr;
+            matptr = CreateMaterial(pAIMesh->mMaterialIndex, pAIMaterial, meshFileDiskSource, meshFileName);
 
-			Ogre::SubMesh* submesh = mesh->createSubMesh(pNode->mName.data + Ogre::StringConverter::toString(idx));
-            createVertexData(Ogre::StringConverter::toString(pNode->mName.data), pNode, pAIMesh, submesh, mAAB);
-			submesh->setMaterialName(matptr->getName());
+            Ogre::SubMesh* submesh = mesh->createSubMesh(pNode->mName.data + Ogre::StringConverter::toString(idx));
+            CreateVertexData(Ogre::StringConverter::toString(pNode->mName.data), pNode, pAIMesh, submesh, mAAB);
+            submesh->setMaterialName(matptr->getName());
         }
 
         // We must indicate the bounding box
@@ -1232,10 +1188,10 @@ void OpenAssetImport::loadDataFromNode(const aiScene* mScene,  const aiNode *pNo
 
     // Traverse all child nodes of the current node instance
 
-    for ( int childIdx=0; childIdx<pNode->mNumChildren; childIdx++ )
+    for (int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
-        loadDataFromNode(mScene, pChildNode, meshFileDiskSource, meshFileName, mesh);
+        LoadDataFromNode(mScene, pChildNode, meshFileDiskSource, meshFileName, mesh);
     }
 }
 
