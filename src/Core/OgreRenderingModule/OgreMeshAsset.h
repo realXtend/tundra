@@ -74,7 +74,7 @@ public slots:
     int NumTris(int submeshIndex);
 
 private slots:
-	void AssimpConversionDone(bool);
+    void OnAssimpConversionDone(bool);
 
 private:
     /// Precomputes a kD-tree for the triangle data of this mesh.
@@ -95,7 +95,7 @@ private:
     std::vector<int> subMeshTriangleCounts;
 
 #ifdef ASSIMP_ENABLED
-	OpenAssetImport *importer;
+    OpenAssetImport *importer;
 #endif
 
 };

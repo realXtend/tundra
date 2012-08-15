@@ -102,30 +102,29 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
 #ifdef ASSIMP_ENABLED
     if (IsAssimpFileType())
     {
-		ConvertAssimpDataToOgreMesh(data_, numBytes);
+        ConvertAssimpDataToOgreMesh(data_, numBytes);
         return true; 
-	}
+    }
 #endif
 
-	try
-	{
-    	std::vector<u8> tempData(data_, data_ + numBytes);
+    try
+    {
+        std::vector<u8> tempData(data_, data_ + numBytes);
 #include "DisableMemoryLeakCheck.h"
-    	Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&tempData[0], numBytes, false));
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&tempData[0], numBytes, false));
 #include "EnableMemoryLeakCheck.h"
-    	Ogre::MeshSerializer serializer;
-    	serializer.importMesh(stream, ogreMesh.getPointer()); // Note: importMesh *adds* submeshes to an existing mesh. It doesn't replace old ones.
-	}
-	catch (Ogre::Exception &e)
-	{
-    	LogError(QString("OgreMeshAsset::DeserializeFromData: Ogre::MeshSerializer::importMesh failed when loading asset '" + Name() + "': ") + e.what());
+        Ogre::MeshSerializer serializer;
+        serializer.importMesh(stream, ogreMesh.getPointer()); // Note: importMesh *adds* submeshes to an existing mesh. It doesn't replace old ones.
+    }
+    catch (Ogre::Exception &e)
+    {
+        LogError(QString("OgreMeshAsset::DeserializeFromData: Ogre::MeshSerializer::importMesh failed when loading asset '" + Name() + "': ") + e.what());
 
-		if(IsAssimpFileType())
-			LogError(QString("OgreMeshAsset::DeserializeFromData: cannot convert " + Name() + " to Ogre mesh. OpenAssetImport is not enabled."));
+        if(IsAssimpFileType())
+            LogError(QString("OgreMeshAsset::DeserializeFromData: cannot convert " + Name() + " to Ogre mesh. OpenAssetImport is not enabled."));
 
-    	return false;
-	}
-
+        return false;
+    }
 
     if (GenerateMeshdata())
     {        
@@ -509,9 +508,9 @@ void OgreMeshAsset::ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes
 {
 
 #ifdef ASSIMP_ENABLED
-	importer = new OpenAssetImport(assetAPI);
-	connect(importer, SIGNAL(ConversionDone(bool)), this, SLOT(AssimpConversionDone(bool)), Qt::UniqueConnection);
-	importer->convert(data_, numBytes, this->Name(), this->DiskSource(), ogreMesh);
+    importer = new OpenAssetImport(assetAPI);
+    connect(importer, SIGNAL(ConversionDone(bool)), this, SLOT(OnAssimpConversionDone(bool)), Qt::UniqueConnection);
+    importer->Convert(data_, numBytes, this->Name(), this->DiskSource(), ogreMesh);
 #endif
 }
 
@@ -525,29 +524,29 @@ bool OgreMeshAsset::IsAssimpFileType()
     int numSuffixes = NUMELEMS(openAssImpFileTypes);
 
     for(int i = 0;i < numSuffixes; ++i)
-	{
+    {
         if (this->Name().endsWith(openAssImpFileTypes[i]))
             return true;
-	}
+    }
 
     return false;
 }
 
 #ifdef ASSIMP_ENABLED
-void OgreMeshAsset::AssimpConversionDone(bool success)
+void OgreMeshAsset::OnAssimpConversionDone(bool success)
 {
-	if(success)
-	{
-		if (GenerateMeshdata())
-    	    assetAPI->AssetLoadCompleted(Name());
+    if(success)
+    {
+        if (GenerateMeshdata())
+            assetAPI->AssetLoadCompleted(Name());
 	}
-	else
-	{
-		assetAPI->AssetLoadFailed(Name());
-		LogError("OgreMeshAsset::DeserializeFromData: Failed to to covert " + Name() +" to Ogre mesh.");
-	}
+    else
+    {
+        assetAPI->AssetLoadFailed(Name());
+        LogError("OgreMeshAsset::DeserializeFromData: Failed to to covert " + Name() +" to Ogre mesh.");
+    }
 
-	delete importer;
+    delete importer;
 	
 }
 #endif
