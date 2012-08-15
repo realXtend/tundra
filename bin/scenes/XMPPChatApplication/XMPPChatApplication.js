@@ -276,7 +276,7 @@ ConversationForm.prototype.RemoveParticipant = function(participant)
 // Initializes connection to the XMPP server.
 function Client(username)
 {
-    this.jid = this.name + "@chiru.cie.fi";
+    this.jid = this.name + "@" + serverUrl;
 
     var xmppModule = framework.GetModuleByName("XMPP");
     this.xmppClient = xmppModule.NewClient();
