@@ -24,20 +24,20 @@ Licensed under the MIT license:
 #include <QString>
 #include <QObject>
 
-typedef std::map<Ogre::String, boneNode> BoneMapType;
-typedef std::map<Ogre::String, const aiNode*> BoneNodeMap;
-typedef std::map<Ogre::String, const aiBone*> BoneMap;
-typedef std::map<Ogre::String, aiMatrix4x4> NodeTransformMap;
-typedef std::vector<Ogre::MeshPtr> MeshVector;
-typedef std::map<QString, Ogre::MaterialPtr> TextureMaterialPointerMap;
-typedef std::pair<QString, Ogre::MaterialPtr> TexMatPair;
-
 struct boneNode
 {
     aiNode* node;
     aiNode* parent;
     bool isNeeded;
 };
+
+typedef std::map<Ogre::String, const aiBone*> BoneMap;
+typedef std::map<Ogre::String, boneNode> BoneMapType;
+typedef std::map<Ogre::String, const aiNode*> BoneNodeMap;
+typedef std::map<Ogre::String, aiMatrix4x4> NodeTransformMap;
+typedef std::vector<Ogre::MeshPtr> MeshVector;
+typedef std::map<QString, Ogre::MaterialPtr> TextureMaterialPointerMap;
+typedef std::pair<QString, Ogre::MaterialPtr> TexMatPair;
 
 class OpenAssetImport : public QObject
 {
