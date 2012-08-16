@@ -9,6 +9,7 @@ Licensed under the MIT license:
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 #include "AssetFwd.h"
+#include "OgreMaterialAsset.h"
 #include "LoggingFunctions.h"
 #include "OpenAssetImport.h"
 #include "assimp/DefaultLogger.hpp"
@@ -38,7 +39,6 @@ Licensed under the MIT license:
 #include "OgreVector3.h"
 #include <QString>
 #include <QStringList>
-#include <QEventLoop>
 #include <QObject>
 #include <boost/tuple/tuple.hpp>
 
@@ -174,6 +174,7 @@ void OpenAssetImport::LoadTextureFile(QString &filename)
     else
     {
         AssetPtr assetPtr = assetAPI->CreateNewAsset("Texture", filename);
+		assetPtr->SetDiskSource(filename);
         bool success = assetPtr->LoadFromFile(filename);
 
         if(success)
@@ -878,7 +879,7 @@ Ogre::MaterialPtr OpenAssetImport::CreateMaterial(int index, const aiMaterial* m
         //LogInfo("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
     }
 
-    matName = Ogre::String("generatedMat" + Ogre::StringConverter::toString(generatedMatCount)+ ".material");
+    matName = Ogre::String(meshFileName.toStdString()+"_generatedMat" + Ogre::StringConverter::toString(generatedMatCount)+ ".material");
     generatedMatCount++;
 
     Ogre::ResourceManager::ResourceCreateOrRetrieveResult status = ogreMaterialMgr->createOrRetrieve(matName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
@@ -1160,6 +1161,15 @@ void OpenAssetImport::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNo
             const aiMaterial *pAIMaterial = mScene->mMaterials[ pAIMesh->mMaterialIndex ];
             Ogre::MaterialPtr matptr;
             matptr = CreateMaterial(pAIMesh->mMaterialIndex, pAIMaterial, meshFileDiskSource, meshFileName);
+
+            //we must create an OgreMaterialAsset through assetAPI and put the just created
+            //ogre material pointer to it
+            //GenerateTemporaryNonexistingAssetFilename() is used to prevent the "Asset Storage contains ambiguous assets in two different subdirectories!" warning 
+            QString matname = assetAPI->GenerateTemporaryNonexistingAssetFilename(QString::fromStdString(matptr->getName()));
+            AssetPtr assetPtr = assetAPI->CreateNewAsset("OgreMaterial", matname);
+            //AssetPtr assetPtr = assetAPI->CreateNewAsset("OgreMaterial", QString::fromStdString(matptr->getName()));
+            OgreMaterialAsset *mat = dynamic_cast<OgreMaterialAsset *>(assetPtr.get());
+            mat->ogreMaterial = matptr;
 
             Ogre::SubMesh* submesh = mesh->createSubMesh(pNode->mName.data + Ogre::StringConverter::toString(idx));
             CreateVertexData(Ogre::StringConverter::toString(pNode->mName.data), pNode, pAIMesh, submesh, mAAB);
