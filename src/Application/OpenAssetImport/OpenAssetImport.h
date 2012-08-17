@@ -57,7 +57,7 @@ private:
     QString GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath);
     void LoadTextureFile(QString &filename);
     bool CreateVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB);
-    Ogre::MaterialPtr CreateMaterial(int index, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName);
+    Ogre::MaterialPtr CreateMaterial(Ogre::String& matName, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName);
     Ogre::MaterialPtr CreateMaterialByScript(int index, const aiMaterial* mat);
     void GrabNodeNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
     void GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
@@ -72,6 +72,7 @@ private:
 
     const aiScene *scene;
     int mLoaderParams;
+    int texCount;
     Ogre::String mMaterialCode;
     Ogre::String mCustomAnimationName;
     Ogre::SkeletonPtr mSkeleton;
@@ -89,8 +90,6 @@ private:
     BoneMap mBonesByName;
     NodeTransformMap mNodeDerivedTransformByName;
     MeshVector mMeshes;
-
-
 
 private slots:
     void OnTextureLoaded(IAssetTransfer* assetTransfer);
