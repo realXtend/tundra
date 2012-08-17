@@ -71,6 +71,9 @@ class EC_Placeable;
 class EC_RttTarget;
 class EC_Billboard;
 class EC_ParticleSystem;
+class EC_Sky;
+class EC_EnvironmentLight;
+class EC_Fog;
 
 typedef boost::shared_ptr<OgreWorld> OgreWorldPtr;
 typedef boost::weak_ptr<OgreWorld> OgreWorldWeakPtr;

@@ -16,6 +16,9 @@
 #include "EC_Material.h"
 #include "EC_Billboard.h"
 #include "EC_ParticleSystem.h"
+#include "EC_Fog.h"
+#include "EC_EnvironmentLight.h"
+#include "EC_Sky.h"
 #include "OgreWorld.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
@@ -112,6 +115,9 @@ void OgreRenderingModule::Load()
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Material>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Billboard>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Fog>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sky>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_EnvironmentLight>));
 
     // Main ogre .mesh extension
     QStringList meshExtensions;

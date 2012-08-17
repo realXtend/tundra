@@ -2,20 +2,21 @@
 
 #pragma once
 
-#include "EnvironmentModuleApi.h"
+#include "OgreModuleApi.h"
 #include "IComponent.h"
 #include "Color.h"
 #include "OgreModuleFwd.h"
 
-/// Adds environment fog to the scene.
+/// Defines the overall fog settings for the whole scene.
 /** <table class="header">
     <tr>
     <td>
-    <h2>Environment fog</h2>
+    <h2>Fog</h2>
 
-    Registered by EnviromentComponents plugin.
     Defines the overall fog settings for the whole scene, hence only one component per scene is applicable.
     Sets also the background color of the viewport same as the fog color.
+
+    Registered by OgreRenderingModule.
 
     <b>Attributes</b>:
     <ul>
@@ -31,7 +32,7 @@
     <div> @copydoc expDensity </div>
     </ul>
     </table> */
-class ENVIRONMENT_MODULE_API EC_Fog : public IComponent
+class OGRE_MODULE_API EC_Fog : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_Fog", 9)
