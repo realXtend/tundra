@@ -90,11 +90,11 @@ void EC_EnvironmentLight::CreateSunlight()
     }
 }
 
-void EC_EnvironmentLight::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
+void EC_EnvironmentLight::AttributesChanged()
 {
-    if (attribute == &sunColor || attribute == &brightness || attribute == &sunDirection || attribute == &sunCastShadows)
+    if (sunColor.ValueChanged() || brightness.ValueChanged() || sunDirection.ValueChanged() || sunCastShadows.ValueChanged())
         UpdateSunlight();
-    else if (attribute == &ambientColor)
+    else if (ambientColor.ValueChanged())
         UpdateAmbientLight();
 }
 

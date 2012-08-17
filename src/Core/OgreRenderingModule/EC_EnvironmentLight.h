@@ -2,21 +2,22 @@
 
 #pragma once
 
+#include "OgreModuleApi.h"
 #include "IComponent.h"
 #include "CoreTypes.h"
 #include "Math/float3.h"
 #include "OgreModuleFwd.h"
 #include "Color.h"
 
-/// Makes the entity a enviroment light.
+/// Makes the entity a environment light.
 /** <table class="header">
     <tr>
     <td>
-    <h2>Environment Light</h2>
+    <h2>EnvironmentLight</h2>
 
     Gives an access to scene-related environment settings, such as sunlight and ambient light.
 
-    Enviroment light component is registered by EnviromentComponets plugin.
+    Enviroment light component is registered by OgreRenderingModule.
 
     <b>Attributes</b>:
     <ul>
@@ -31,7 +32,7 @@
     <li> float : brightness
     <div> @copydoc brightness </div>
     </table> */
-class EC_EnvironmentLight : public IComponent
+class OGRE_MODULE_API EC_EnvironmentLight : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_EnvironmentLight", 8)
@@ -62,9 +63,6 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, brightness);
 
 public slots:
-    /// Called If some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
-
     /// Update sun state
     void UpdateSunlight();
 
@@ -75,6 +73,7 @@ public slots:
     void UpdateAmbientLight();
 
 private:
+    void AttributesChanged();
     void CreateSunlight();
 
     OgreWorldWeakPtr ogreWorld;

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "EnvironmentModuleApi.h"
+#include "OgreModuleApi.h"
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "Math/Quat.h"
@@ -14,15 +14,17 @@
 /** <table class="header">
     <tr>
     <td>
-    <h2>Makes the entity a sky.</h2>
+    <h2>Sky</h2>
 
-    Registered by EnviromentComponents plugin.
+    Makes the entity a sky.
+
+    Registered by OgreRenderingModule.
 
     <b>Attributes</b>:
     <ul>
-    <li>AssetReference: materialRef.
+    <li>AssetReference: materialRef
     <div> @copydoc materialRef </div>
-    <li>Quaternion: orientation
+    <li>Quat: orientation
     <div> @copydoc orientation </div>
     <li>float: distance
     <div> @copydoc distance </div>
@@ -30,7 +32,7 @@
     <div> @copydoc drawFirst </div>
     </ul>
     </table> */
-class ENVIRONMENT_MODULE_API EC_Sky : public IComponent
+class OGRE_MODULE_API EC_Sky : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_Sky", 10)
