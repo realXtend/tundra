@@ -11,6 +11,7 @@
 #include "AssetReference.h"
 #include "AssetRefListener.h"
 #include "OgreModuleFwd.h"
+#include "OgreModuleApi.h"
 
 /// Shows a billboard (3D sprite) that is attached to an entity.
 /** <table class="header">
@@ -19,7 +20,7 @@
     <h2>Billboard</h2>
     Shows a billboard (3D sprite) that is attached to an entity.
 
-    Registered by TundraLogicModule.
+    Registered by OgrRenderingModule.
 
     <b>Attributes</b>:
     <ul>
@@ -54,7 +55,7 @@
 
     <b>Depends on components @ref EC_Placeable "Placeable".</b>
     </table> */
-class EC_Billboard : public IComponent
+class OGRE_MODULE_API EC_Billboard : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_Billboard", 2)
@@ -88,6 +89,16 @@ public:
     Q_PROPERTY(bool show READ getshow WRITE setshow);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, show);
 
+    /// Returns the Ogre Billboard.
+    Ogre::Billboard *OgreBillBoard() const { return billboard_; }
+
+    /// Returns the Ogre BillboardSet.
+    Ogre::BillboardSet *OgreBillBoardSet() const { return billboardSet_; }
+
+    // DEPRECATED
+    Ogre::Billboard *GetBillBoard() const { return OgreBillBoard(); } /**< @deprecated Use OgreBillBoard @todo Remove */
+    Ogre::BillboardSet *GetBillBoardSet() const { return OgreBillBoardSet(); } /**< @deprecated Use OgreBillBoardSet @todo Remove */
+
 public slots:
     /// Shows the billboard. Does not affect the @c show attribute.
     void Show();
@@ -95,13 +106,6 @@ public slots:
     /// Hides the billboard. Does not affect the @c show attribute.
     void Hide();
 
-public:
-    /// Returns the Ogre Billboard ptr.
-    Ogre::Billboard *GetBillBoard() const { return billboard_; }
-    
-    /// Returns the Ogre BillboardSet ptr.
-    Ogre::BillboardSet *GetBillBoardSet() const { return billboardSet_; }
-    
 private slots:
     /// Component has been assigned to an entity
     void OnParentEntitySet();

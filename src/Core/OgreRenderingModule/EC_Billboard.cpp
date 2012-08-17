@@ -1,21 +1,21 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_Billboard.cpp
- *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
- *  @note   The entity must have EC_Placeable component available in advance.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
 
+    @file   EC_Billboard.cpp
+    @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity. */
+
+#include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
+#include "DebugOperatorNew.h"
 
 #include "EC_Billboard.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
-#include "Entity.h"
 #include "OgreMaterialAsset.h"
 #include "OgreWorld.h"
+
+#include "Entity.h"
 #include "Framework.h"
-#include "OgreRenderingModule.h"
 #include "Scene.h"
 #include "LoggingFunctions.h"
 
@@ -28,6 +28,8 @@
 #include <OgreMaterialManager.h>
 
 #include <QTimer>
+
+#include "MemoryLeakCheck.h"
 
 EC_Billboard::EC_Billboard(Scene* scene) :
     IComponent(scene),
@@ -137,14 +139,14 @@ void EC_Billboard::DestroyBillboard()
     OgreWorldPtr world = world_.lock();
     if (!world)
     {
-        if ((billboard_) || (billboardSet_))
+        if (billboard_ || billboardSet_)
             LogError("EC_Billboard: World has expired, skipping uninitialization!");
         return;
     }
     
     DetachBillboard();
     
-    if ((billboard_) && (billboardSet_))
+    if (billboard_ && billboardSet_)
     {
         billboardSet_->removeBillboard(billboard_);
         billboard_ = 0;
@@ -169,7 +171,7 @@ void EC_Billboard::Hide()
 
 void EC_Billboard::AttachBillboard()
 {
-    if ((placeable_) && (!attached_) && (billboardSet_))
+    if (placeable_ && !attached_ && billboardSet_)
     {
         placeable_->GetSceneNode()->attachObject(billboardSet_);
         attached_ = true;
@@ -178,7 +180,7 @@ void EC_Billboard::AttachBillboard()
 
 void EC_Billboard::DetachBillboard()
 {
-    if ((placeable_) && (attached_) && (billboardSet_))
+    if (placeable_ && attached_ && billboardSet_)
     {
         placeable_->GetSceneNode()->detachObject(billboardSet_);
         attached_ = false;
@@ -190,15 +192,14 @@ void EC_Billboard::DetachBillboard()
 
 void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
 {
-    if ((attribute == &position) || (attribute == &width) || (attribute == &height) || (attribute == &rotation))
+    if (attribute == &position || attribute == &width || attribute == &height || attribute == &rotation)
     {
         if (billboard_)
             UpdateBillboardProperties();
         else
             CreateBillboard();
     }
-    
-    if (attribute == &materialRef)
+    else if (attribute == &materialRef)
     {
         if (!ViewEnabled())
             return;
@@ -220,10 +221,8 @@ void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
         {
             LogError("EC_Billboard: Failed to reset visuals after material was removed: " + std::string(e.what()));
         }
-
     }
-    
-    if (attribute == &show)
+    else if (attribute == &show)
     {
         if (show.Get())
             Show();

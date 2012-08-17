@@ -29,7 +29,6 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
 link_modules(TundraCore Math OgreRenderingModule TundraProtocolModule SceneInteract)
-link_entity_components(EC_Billboard)
 
 if (BROWSER_SHARED_DATA_ENABLED)
     link_modules(BrowserUiPlugin)

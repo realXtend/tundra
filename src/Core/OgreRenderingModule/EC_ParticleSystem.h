@@ -7,6 +7,7 @@
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
 #include "AssetRefListener.h"
+#include "OgreModuleApi.h"
 
 /// Particle system.
 /** <table class="header">
@@ -48,7 +49,7 @@
 
     <b>Depends on the component @ref EC_Placeable "Placeable".</b>
     </table> */
-class EC_ParticleSystem : public IComponent
+class OGRE_MODULE_API EC_ParticleSystem : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_ParticleSystem", 27)

@@ -69,6 +69,8 @@ class EC_Mesh;
 class EC_OgreCompositor;
 class EC_Placeable;
 class EC_RttTarget;
+class EC_Billboard;
+class EC_ParticleSystem;
 
 typedef boost::shared_ptr<OgreWorld> OgreWorldPtr;
 typedef boost::weak_ptr<OgreWorld> OgreWorldWeakPtr;
