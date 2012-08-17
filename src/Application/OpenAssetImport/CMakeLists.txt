@@ -1,7 +1,7 @@
 # Define target name
 init_target (OpenAssetImport)
 
-MocFolder ()
+MocFolder()
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -21,6 +21,6 @@ link_ogre()
 link_package_assimp()
 link_package(QT4)
 
-SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()
