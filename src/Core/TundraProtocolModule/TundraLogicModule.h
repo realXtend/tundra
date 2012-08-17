@@ -66,6 +66,8 @@ public slots:
         @return Was the operation successful.*/
     bool ImportScene(QString filename, bool clearScene = true, bool replaceExisting = true);
 
+    void InterestManagerSettingsUpdated(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, double updateint);
+
     /// Imports one mesh as a new entity.
     /** @param filename Source filename for the mesh.
         @param pos Position for created entity.
