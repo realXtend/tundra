@@ -7,6 +7,9 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
+#include "Profiler.h"
+#include "IMProperties.h"
+#include "EC_Placeable.h"
 
 #include <kNetFwd.h>
 #include <kNet/Types.h>
@@ -36,6 +39,9 @@ public:
     
     /// Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(const UserConnectionPtr &user);
+
+    /// Gets the IM properties
+    IMProperties* GetIMProperties();
 
 public slots:
     /// Set update period (seconds)
@@ -93,12 +99,25 @@ private:
     /// Craft a component full update, with all static and dynamic attributes.
     void WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp);
     
+    /// Function calls for relevance checking
+    bool CheckRelevance(UserConnectionPtr userconnection, Entity* entity);
+    bool EuclideanDistanceFilter(float distance);
+    bool RayVisibilityFilter(UserConnectionPtr conn, float distance, float3 client_location, float3 entity_location, Entity *changed_entity, ScenePtr scene);
+    bool RelevanceFilter(float distance, UserConnectionPtr userconnection, Entity *changed_entity);
+    void UpdateRelevance(UserConnectionPtr connection, entity_id_t id, double relevance);
+    void UpdateEntityVisibility(UserConnectionPtr connection, entity_id_t id, bool visible);
+    void UpdateLastUpdatedEntity(entity_id_t id);
+    void UpdateLastRaycastedEntity(entity_id_t id);
+    void UpdateEntityVisibility(entity_id_t id, bool visible);
+
     /// Handle entity action message.
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
     /// Handle create entity message.
     void HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes);
     /// Handle create components message.
     void HandleCreateComponents(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle a Camera Orientation Update message
+    void HandleCameraOrientation(kNet::MessageConnection* source, const char* data, size_t numBytes);
     /// Handle create attributes message.
     void HandleCreateAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes);
     /// Handle edit attributes message.
@@ -165,6 +184,10 @@ private:
     char removeEntityBuffer_[1024];
     char removeAttrsBuffer_[1024];
     std::vector<u8> changedAttributes_;
+
+    std::map<entity_id_t, tick_t> lastUpdatedEntitys_;
+    std::map<entity_id_t, tick_t> lastRaycastedEntitys_;
+    IMProperties *improperties_;
 };
 
 }
