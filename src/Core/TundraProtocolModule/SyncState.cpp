@@ -18,7 +18,8 @@ typedef EntityIdList::iterator PendingIter;
 SceneSyncState::SceneSyncState(int userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
     changeRequest_(userConnectionID),
-    isServer_(isServer)
+    isServer_(isServer),
+    orientationInitialized(false)
 {
     Clear();
 }
