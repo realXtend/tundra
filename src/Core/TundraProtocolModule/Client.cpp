@@ -12,7 +12,12 @@
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
+#include "MsgCameraOrientation.h"
 #include "UserConnectedResponseData.h"
+#include "EC_Placeable.h"
+#include "Entity.h"
+#include "Renderer.h"
+#include "OgreRenderingModule.h"
 
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
@@ -279,6 +284,70 @@ void Client::CheckLogin()
     }
 }
 
+void Client::GetCameraOrientation()
+{
+    if(framework_->IsHeadless())
+        return;
+
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+
+    if(!renderer)
+        return;
+
+    Entity *parentEntity = renderer->MainCamera();
+
+    if(!parentEntity)
+        return;
+
+    EC_Placeable *camera_placeable = parentEntity->GetComponent<EC_Placeable>().get();
+
+    if(!camera_placeable)
+        return;
+
+    Quat orientation = camera_placeable->WorldOrientation();
+    float3 location = camera_placeable->WorldPosition();
+
+#if 0
+    ::LogError("Orientation x: "  + QString::number(orientation.x) +
+             " y: "             + QString::number(orientation.y) +
+             " z: "             + QString::number(orientation.z) +
+             " w: "             + QString::number(orientation.w) +
+             " Location: x: "   + QString::number(location.x) +
+             " y: "             + QString::number(location.y) +
+             " z: "             + QString::number(location.z));
+#endif
+
+    if(orientation == currentcameraorientation_ && location == currentcameralocation_)
+        return;
+
+    else
+    {
+        currentcameraorientation_ = orientation;
+        currentcameralocation_ = location;
+        SendCameraOrientation(orientation, location);
+    }
+}
+
+void Client::SendCameraOrientation(Quat orientation, float3 location)
+{
+    MsgCameraOrientation msg;
+
+    msg.userID = ConnectionId();
+
+    msg.orientationx = orientation.x;
+    msg.orientationy = orientation.y;
+    msg.orientationz = orientation.z;
+    msg.orientationw = orientation.w;
+
+    msg.positionx = location.x;
+    msg.positiony = location.y;
+    msg.positionz = location.z;
+
+    Ptr(kNet::MessageConnection) connection = GetConnection();
+
+    connection.ptr()->Send(msg);
+}
+
 kNet::MessageConnection* Client::GetConnection()
 {
     return owner_->GetKristalliModule()->GetMessageConnection();
@@ -359,6 +428,13 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
                 responseData.responseData.setContent(QByteArray((const char *)&msg.loginReplyData[0], (int)msg.loginReplyData.size()));
 
             emit Connected(&responseData);
+
+            if(!framework_->IsHeadless())
+            {
+                cameraUpdateTimer = new QTimer(this);
+                connect(cameraUpdateTimer, SIGNAL(timeout()), this, SLOT(GetCameraOrientation()));
+                cameraUpdateTimer->start(500);
+            }
         }
         else
         {
