@@ -1,13 +1,14 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "EC_ParticleSystem.h"
-#include "Entity.h"
-#include "Renderer.h"
 #include "EC_Placeable.h"
 #include "OgreParticleAsset.h"
-#include "OgreRenderingModule.h"
 #include "OgreWorld.h"
+
+#include "Entity.h"
 #include "Scene.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"

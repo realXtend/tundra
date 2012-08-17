@@ -38,7 +38,7 @@ link_package_knet()
 link_ogre()
 link_modules(TundraCore Math OgreRenderingModule PhysicsModule)
 link_entity_components(EC_HoveringText EC_TransformGizmo EC_Highlight EC_LaserPointer
-    EC_Sound EC_ParticleSystem EC_PlanarMirror EC_ProximityTrigger EC_Billboard)
+    EC_Sound EC_PlanarMirror EC_ProximityTrigger)
 
 # This is only needed because this module bootstraps EC_Sound. If EC_Sound is removed to someplace else, this can be removed.
 #link_modules (Audio)

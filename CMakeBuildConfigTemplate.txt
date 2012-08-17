@@ -71,8 +71,6 @@ message("\n=========== Configuring Optional Entity-Components ===========\n")
 AddEntityComponent(EC_Highlight)
 AddEntityComponent(EC_Sound)
 AddEntityComponent(EC_HoveringText)
-AddEntityComponent(EC_ParticleSystem)
-AddEntityComponent(EC_Billboard)
 AddEntityComponent(EC_TransformGizmo)
 
 ## Here are the Application level ECs that wont be added if BUILD_SDK_ONLY is TRUE (default is FALSE)

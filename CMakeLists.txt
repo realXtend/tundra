@@ -307,7 +307,7 @@ use_package(OGRE)
 use_package(QT4)
 use_package(OPENAL)
 
-# Convenience macro for including all TundraCore subfolders.
+# Macro for including all TundraCore librarys folders
 macro(UseTundraCore)
     include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/)
     include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Asset)
@@ -317,6 +317,11 @@ macro(UseTundraCore)
     include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Input)
     include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Scene)
     include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Ui)
+endmacro()
+
+# Macro for including all TundraCore librarys folders
+macro(LinkTundraCore)
+    target_link_libraries (${TARGET_NAME} TundraCore)
 endmacro()
 
 # If the custom optional modules configuration file does not yet
