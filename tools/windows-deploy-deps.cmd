@@ -169,11 +169,11 @@ IF EXIST "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Bullet
-IF EXIST "%DEPS%\bullet\msvc\2008\lib\release\LinearMath.lib". (
+IF EXIST "%DEPS%\bullet\bullet-2.80-SP1\msvc\2008\lib\release\LinearMath.lib". (
     cecho {0D}Copying Bullet{# #}{\n}
-    xcopy /Y /S /Q /EXCLUDE:%DEPLOY_DIR%\nonheaders.exclude "%DEPS%\bullet\src" "%DEPLOY_DIR%\bullet\include\"
-    xcopy /Y /S /EXCLUDE:%DEPLOY_DIR%\nonlibs.exclude "%DEPS%\bullet\msvc\2008\lib" "%DEPLOY_DIR%\bullet\lib\"
-) ELSE (cecho {0E}Could not detect Bullet with %DEPS%\bullet\msvc\2008\lib\release\LinearMath.lib, skipping...{# #}{\n})
+    xcopy /Y /S /Q /EXCLUDE:%DEPLOY_DIR%\nonheaders.exclude "%DEPS%\bullet\bullet-2.80-SP1\src" "%DEPLOY_DIR%\bullet\include\"
+    xcopy /Y /S /EXCLUDE:%DEPLOY_DIR%\nonlibs.exclude "%DEPS%\bullet\bullet-2.80-SP1\msvc\2008\lib" "%DEPLOY_DIR%\bullet\lib\"
+) ELSE (cecho {0E}Could not detect Bullet with %DEPS%\bullet\bullet-2.80-SP1\msvc\2008\lib\release\LinearMath.lib, skipping...{# #}{\n})
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Boost

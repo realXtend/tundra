@@ -51,7 +51,7 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev
 	 libspeex-dev nvidia-cg-toolkit subversion
 fi
 
-what=bullet-2.79-rev2440
+what=bullet-2.80-rev2531
 if test -f $tags/$what-done; then
     echo $what is done
 else
