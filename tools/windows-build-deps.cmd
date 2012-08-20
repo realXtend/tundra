@@ -102,6 +102,7 @@ echo.
 set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 
 :: OpenSSL
+:: version 1.0.1c
 IF %BUILD_OPENSSL%==FALSE (
    cecho {0D}Building OpenSSL disabled. Skipping.{# #}{\n}
    GOTO :SKIP_OPENSSL
@@ -159,6 +160,8 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :SKIP_OPENSSL
 
 :: Qt
+:: version 4.8.2
+
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.8.2.zip. (
@@ -178,6 +181,8 @@ IF NOT EXIST "%DEPS%\qt". (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
 )
 
+:: jom
+:: version 1.0.11
 IF %USE_JOM%==FALSE GOTO :SKIP_JOM
 IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
@@ -229,7 +234,7 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
       configure -platform win32-msvc2008 -debug-and-release -opensource -prefix "%DEPS%\qt" -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ) ELSE (
-      cecho {0D}Qt already configured. Remove %DEPS%\qt\qt-src-4.8.2\configure.cache to trigger a reconfigure.{# #}{\n}
+      cecho {0D}Qt already configured. Remove %DEPS%\qt\qt-src-4.8.2\configure.cache to trigger a reconfigure.{# #}{\n}  
    )
    
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
@@ -295,34 +300,25 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
 )
 
+:: Bullet physics engine
+:: version 2.80 sp1, svn rev 2531
 
-:: Bullet
-IF NOT EXIST "%DEPS%\bullet". (
+IF NOT EXIST "%DEPS%\bullet\". (
+   cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
    cd "%DEPS%"
-   
-   IF NOT EXIST bullet-2.80-rev2531.zip. (
-        cecho {0D}Downloading Bullet 2.80 Rev 2531 (SP1). Please be patient, this will take a while.{# #}{\n}
-	    wget http://bullet.googlecode.com/files/bullet-2.80-rev2531.zip
-        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   )
-   cecho {0D}Extracting Bullet 2.80 Rev 2531 (SP1) sources to "%DEPS%\bullet".{# #}{\n}
-   mkdir bullet
-   7za x -y -obullet bullet-2.80-rev2531.zip
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cd bullet
-   ren bullet-2.80-rev2531 bullet-2.80-SP1
-   IF NOT EXIST "%DEPS%\bullet" GOTO :ERROR
-) ELSE (
-   cecho {0D}bullet 2.80 Rev 2531 (SP1) already downloaded. Skipping.{# #}{\n}
-)
-   IF NOT EXIST "%DEPS%\bullet\bullet-2.80-SP1\src\BulletCollison" GOTO :ERROR
+   :: check out bullet 2.80 sp1, which is revision 2531
+   svn checkout http://bullet.googlecode.com/svn/trunk@2531 bullet
+   IF NOT EXIST "%DEPS%\bullet\.svn" GOTO :ERROR
    cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
-   msbuild bullet\bullet-2.80-SP1\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
-   msbuild bullet\bullet-2.80-SP1\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo
+   msbuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
+   msbuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Bullet 2.80 SP1 already built. Skipping.{# #}{\n}
+   cecho {0D}Bullet already built. Skipping.{# #}{\n}
 )
+
+:: boost
+:: version 1.50
 
 set BOOST_ROOT=%DEPS%\boost
 set BOOST_INCLUDEDIR=%DEPS%\boost
