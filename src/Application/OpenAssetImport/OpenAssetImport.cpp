@@ -40,8 +40,6 @@ Licensed under the MIT license:
 
 //#define SKELETON_ENABLED
 
-static int meshNum = 0;
-
 OpenAssetImport::OpenAssetImport(AssetAPI *assetApi):
 assetAPI(assetApi), meshCreated(false), texCount(0)
 {
@@ -794,7 +792,7 @@ bool OpenAssetImport::IsNodeNeeded(const char* name)
 
 void OpenAssetImport::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode *pNode)
 {
-    meshNum++;
+
     if(pNode->mNumMeshes > 0)
     {
         for(int idx=0; idx<pNode->mNumMeshes; ++idx)
