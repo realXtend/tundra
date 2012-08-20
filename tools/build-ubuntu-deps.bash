@@ -41,7 +41,7 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev/null; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libboost-all-dev libois-dev \
