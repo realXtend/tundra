@@ -652,6 +652,7 @@ void AssetAPI::Reset()
     bundleMonitors.clear();
     pendingDownloadRequests.clear();
     assetTypeFactories.clear();
+    assetBundleTypeFactories.clear();
     defaultStorage.reset();
     readyTransfers.clear();
     assetDependencies.clear();
