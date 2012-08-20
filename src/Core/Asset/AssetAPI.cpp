@@ -652,6 +652,7 @@ void AssetAPI::Reset()
     bundleMonitors.clear();
     pendingDownloadRequests.clear();
     assetTypeFactories.clear();
+    assetBundleTypeFactories.clear();
     defaultStorage.reset();
     readyTransfers.clear();
     assetDependencies.clear();
@@ -1476,7 +1477,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     }
 
     // We should be tracking this transfer in an internal data structure.
-    AssetTransferMap::const_iterator iter = FindTransferIterator(transfer_);
+    AssetTransferMap::iterator iter = FindTransferIterator(transfer_);
     if (iter == currentTransfers.end())
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
