@@ -20,8 +20,6 @@ build=$deps/build
 tarballs=$deps/tarballs
 tags=$deps/tags
 
-bulletGpuSoftBodySolvers=FALSE
-
 
 
 # -j<n> param for make, for how many processes to run concurrently
