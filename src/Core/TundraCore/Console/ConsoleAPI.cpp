@@ -293,8 +293,7 @@ void ConsoleAPI::ToggleConsole()
 
 void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
 {
-    const QKeySequence &toggleConsole = framework->Input()->KeyBinding("ToggleConsole", QKeySequence(Qt::Key_F1));
-    if (e->sequence == toggleConsole)
+    if (e->sequence == framework->Input()->KeyBinding("ToggleConsole", QKeySequence(Qt::Key_F1)))
         ToggleConsole();
 }
 
@@ -315,17 +314,13 @@ void ConsoleAPI::LogError(const QString &message)
 
 void ConsoleAPI::LogDebug(const QString &message)
 {
-#ifdef _DEBUG
     ::LogDebug(message);
-#endif
 }
 
 void ConsoleAPI::Log(u32 logChannel, const QString &message)
 {
-    if (!IsLogChannelEnabled(logChannel))
-        return;
-
-    Print(message);
+    if (IsLogChannelEnabled(logChannel))
+        Print(message);
 }
 
 void ConsoleAPI::SetEnabledLogChannels(u32 newChannels)
