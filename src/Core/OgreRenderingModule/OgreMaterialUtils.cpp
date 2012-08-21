@@ -9,7 +9,7 @@
 #include "OgreMaterialUtils.h"
 #include "OgreRenderingModule.h"
 #include "AssetAPI.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 
 #include <Ogre.h>
 

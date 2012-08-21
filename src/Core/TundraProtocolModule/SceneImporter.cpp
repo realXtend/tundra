@@ -22,7 +22,7 @@
 #include "SceneAPI.h"
 #include "OgreRenderingModule.h"
 #include "CoreException.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 
 #include <Ogre.h>
 

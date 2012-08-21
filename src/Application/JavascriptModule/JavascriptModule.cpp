@@ -31,7 +31,7 @@
 #include "IComponentFactory.h"
 #include "TundraLogicModule.h"
 #include "LoggingFunctions.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 
 #include <QtScript>
 #include <QDomElement>

@@ -21,7 +21,7 @@
 #include "Application.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 
 #include <QDir>
 #include <QFileSystemWatcher>
