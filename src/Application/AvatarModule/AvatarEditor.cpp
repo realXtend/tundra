@@ -9,7 +9,7 @@
 #include "AssetAPI.h"
 #include "SceneAPI.h"
 #include "Scene.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "AssetFwd.h"
