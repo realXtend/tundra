@@ -48,7 +48,10 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
 	 ccache libqt4-dev python-dev freeglut3-dev \
 	 libxml2-dev cmake libalut-dev libtheora-dev ed \
 	 liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
-	 libspeex-dev nvidia-cg-toolkit subversion
+	 libspeex-dev nvidia-cg-toolkit subversion \
+	 libfreetype6-dev libfreeimage-dev libzzip-dev \
+	 libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev
+
 fi
  
 what=bullet-2.80-rev2531
@@ -153,9 +156,9 @@ else
         echo "$what does not exist. Cloning a new copy..."
         hg clone https://bitbucket.org/clb/ogre-safe-nocrashes
     fi
-    if tty > /dev/null; then
-	sudo apt-get build-dep libogre-dev
-    fi
+#    if tty > /dev/null; then
+#	sudo apt-get build-dep libogre-dev
+#    fi
     cd $what
     hg checkout v1-8 # Make sure we are in the right branch
     mkdir -p $what-build
@@ -281,4 +284,7 @@ exec ccache g++ -O -g \$@
 EOF
 chmod +x ccache-g++-wrapper
 TUNDRA_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" . -DCMAKE_MODULE_PATH=$prefix/lib/SKYX/cmake
+
+echo TUNDRA_DEP_PATH > deppath.txt
+echo CMAKE_MODULE_PATH > cmakemodulepath.txt
 make -j $nprocs VERBOSE=1
