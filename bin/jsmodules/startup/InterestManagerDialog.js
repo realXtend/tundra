@@ -27,6 +27,9 @@ var ModifiersBox = null;
 var cbRelEnabled = null;
 var spnRelRadius = null;
 
+var spnUpdateInt = null;
+var spnRaycastInt = null;
+
 var btnApply = null;
 var btnCancel = null;
 
@@ -145,6 +148,7 @@ function CreateIMSettingsWindow()
         cbRayEnabled.stateChanged.connect(RayCheckBoxToggled);
         spnRayRadius = findChild(IMWidget, "spnRayRadius");
         spnRayRadius["valueChanged(int)"].connect(RaySpinBoxChanged);
+        spnRaycastInt = findChild(IMWidget, "spnRaycastInt");
 
     ModifiersBox = findChild(IMWidget, "ModifiersBox");
         cbRelEnabled = findChild(IMWidget, "chkRelEnabled");
@@ -213,8 +217,9 @@ function ApplyButtonClicked(value)
     var rayrange = spnRayRadius.value;
     var relrange = spnRelRadius.value;
     var updateint = spnUpdateInt.value;
+    var raycastint = spnRaycastInt.value;
 
-    tundralogicmodule.InterestManagerSettingsUpdated(enabled, eucl_e, ray_e, rel_e, critrange, rayrange, relrange, updateint);
+    tundralogicmodule.InterestManagerSettingsUpdated(enabled, eucl_e, ray_e, rel_e, critrange, rayrange, relrange, updateint, raycastint);
 }
 
 // Handles the Cancel button click events
