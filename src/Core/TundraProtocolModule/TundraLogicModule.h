@@ -66,7 +66,17 @@ public slots:
         @return Was the operation successful.*/
     bool ImportScene(QString filename, bool clearScene = true, bool replaceExisting = true);
 
-    void InterestManagerSettingsUpdated(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, double updateint);
+    /// Upates Interest Manager settings.
+    /** @param enabled If true, the IM scheme is allowed to filter traffic.
+        @param bool eucl If true, the euclidean distance filter is active.
+        @param bool ray If true, the ray visibility filter is active.
+        @param bool rel If true, the relevance filter is active.
+        @param int critrange specifies the radius for the critical area.
+        @param int rayrange specifies the radius for the raycasting.
+        @param int relrange specifies the radius for the relevance filtering.
+        @param double updateint specifies the update interval for the relevance filtering.
+        @param double raycastint specifies the raycasting interval for the ray visibility filter. */
+    void InterestManagerSettingsUpdated(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, double updateint, double raycastint);
 
     /// Imports one mesh as a new entity.
     /** @param filename Source filename for the mesh.

@@ -223,7 +223,7 @@ void TundraLogicModule::Uninitialize()
     server_.reset();
 }
 
-void TundraLogicModule::InterestManagerSettingsUpdated(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, double updateint)
+void TundraLogicModule::InterestManagerSettingsUpdated(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, double updateint, double raycastint)
 {
     Scene *scene = framework_->Scene()->MainCameraScene();
 
@@ -234,20 +234,15 @@ void TundraLogicModule::InterestManagerSettingsUpdated(bool enabled, bool eucl, 
     {
         IMProperties *properties = GetSyncManager()->GetIMProperties();
 
-        if(updateint < 1)
-            updateint = 1;
-        else if(updateint > 4.5)
-            updateint = 4.5;
-
         properties->setEnabled(enabled);
-        properties->SetEuclideanMode(eucl);
-        properties->SetCriticalRange(critrange);
-        properties->SetRaycastMode(ray);
-        properties->SetRaycastRange(rayrange);
-        properties->SetRelevanceMode(rel);
-        properties->SetMaximumRange(relrange);
-        properties->SetUpdateInterval((u32)updateint * 1000000000);
-        LogError("IM Settings Updated");
+        properties->setEuclideanMode(eucl);
+        properties->setCriticalRange(critrange);
+        properties->setRaycastMode(ray);
+        properties->setRaycastRange(rayrange);
+        properties->setRelevanceMode(rel);
+        properties->setMaximumRange(relrange);
+        properties->setRaycastInterval((u32)raycastint * 1000000000);
+        properties->setUpdateInterval((u32)updateint * 1000000000);
     }
 }
 
