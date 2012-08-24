@@ -311,7 +311,7 @@ bool SyncManager::CheckRelevance(UserConnectionPtr userconnection, Entity* chang
     if (!scene)
         return true;
 
-    if(improperties_->GetEuclideanMode() || improperties_->GetRaycastMode()) //Either euclidean distance, raycast mode or both has to be enabled before we can proceed
+    if(improperties_->isEuclideanMode() || improperties_->isRaycastMode()) //Either euclidean distance, raycast mode or both has to be enabled before we can proceed
     {
         bool accepted = true;
         EC_Placeable *entity_location = changed_entity->GetComponent<EC_Placeable>().get();
@@ -333,21 +333,21 @@ bool SyncManager::CheckRelevance(UserConnectionPtr userconnection, Entity* chang
 
         float distance = (dx * dx) + (dy * dy) + (dz * dz);         //Calculates distance without sqrt. More cheaper method
 
-        if(improperties_->GetEuclideanMode() == true)
+        if(improperties_->isEuclideanMode() == true)
         {
             if((accepted = EuclideanDistanceFilter(distance))) return true;
         }
 
-        if(improperties_->GetRaycastMode() == true && dot >= 0)
+        if(improperties_->isRaycastMode() == true && dot >= 0)
         {
             accepted = RayVisibilityFilter(userconnection, distance, cpos, epos, changed_entity, scene);
         }
 
-        if(improperties_->GetRelevanceMode() == true && dot >= 0)
+        if(improperties_->isRelevanceMode() == true && dot >= 0)
         {
-            if((improperties_->GetRaycastMode() && !improperties_->GetEuclideanMode() && accepted) ||
-               (improperties_->GetRaycastMode() && improperties_->GetEuclideanMode() && accepted) ||
-               (improperties_->GetEuclideanMode() && !improperties_->GetRaycastMode() && !accepted))
+            if((improperties_->getRaycastMode() && !improperties_->getEuclideanMode() && accepted) ||
+               (improperties_->getRaycastMode() && improperties_->getEuclideanMode() && accepted) ||
+               (improperties_->GgtEuclideanMode() && !improperties_->getRaycastMode() && !accepted))
             {
                 accepted = RelevanceFilter(distance, userconnection, changed_entity);
             }
@@ -369,7 +369,7 @@ bool SyncManager::CheckRelevance(UserConnectionPtr userconnection, Entity* chang
 
 bool SyncManager::EuclideanDistanceFilter(float distance)
 {
-    double cutoffrange = improperties_->GetCriticalRange() * improperties_->GetCriticalRange();
+    double cutoffrange = improperties_->getCriticalRange() * improperties_->getCriticalRange();
 
     if(distance < cutoffrange) //If the entity is inside the critical area then always allow updates
         return true;
@@ -379,8 +379,8 @@ bool SyncManager::EuclideanDistanceFilter(float distance)
 
 bool SyncManager::RayVisibilityFilter(UserConnectionPtr conn, float distance, float3 client_location, float3 entity_location, Entity *changed_entity, ScenePtr scene)
 {
-    float cutoffrange = improperties_->GetRelevanceMode() ? improperties_->GetMaxRange()     * improperties_->GetMaxRange()
-                                                          : improperties_->GetRaycastRange() * improperties_->GetRaycastRange();
+    float cutoffrange = improperties_->isRelevanceMode() ? improperties_->getMaxRange()     * improperties_->getMaxRange()
+                                                          : improperties_->getRaycastRange() * improperties_->getRaycastRange();
 
     if(framework_->IsHeadless())    //We cannot use Ray Visibility filter in headless mode.
         return true;
@@ -388,6 +388,7 @@ bool SyncManager::RayVisibilityFilter(UserConnectionPtr conn, float distance, fl
     if(distance < cutoffrange)  //If the entity is close enough, only then do a raycast
     {
         tick_t lastRaycasted = 0;
+
         /*Check when was the last time we raycasted and dont do it if its not the time*/
         std::map<entity_id_t, tick_t>::iterator it = lastRaycastedEntitys_.find(changed_entity->Id());
 
@@ -414,7 +415,6 @@ bool SyncManager::RayVisibilityFilter(UserConnectionPtr conn, float distance, fl
 
         else
         {
-            //LogError("Raycasting entity " + QString::number(changed_entity->Id()));
             Ray ray(client_location, (entity_location - client_location).Normalized());
 
             RaycastResult *result = 0;
@@ -426,17 +426,11 @@ bool SyncManager::RayVisibilityFilter(UserConnectionPtr conn, float distance, fl
 
             if(result && result->entity && result->entity->Id() == changed_entity->Id())  //If the ray hit someone and its our target entity
             {
-                //if(changed_entity->Id() != 8)
-                //LogError("Entity " + QString::number(changed_entity->Id()) + " is visible.");
-
                 UpdateEntityVisibility(conn, changed_entity->Id(), true);
                 return true;
             }
             else
             {
-                //if(changed_entity->Id() != 8)
-                //LogError("Entity " + QString::number(changed_entity->Id()) + " is not visible.");
-
                 UpdateEntityVisibility(conn, changed_entity->Id(), false);
                 return false;
             }
@@ -452,16 +446,16 @@ bool SyncManager::RayVisibilityFilter(UserConnectionPtr conn, float distance, fl
     float critical_range;
     float relevance;
 
-    if(improperties_->GetEuclideanMode() && improperties_->GetRaycastMode())    //Euclidean & RayVisibility
-        critical_range = improperties_->GetCriticalRange();
+    if(improperties_->isEuclideanMode() && improperties_->isRaycastMode())    //Euclidean & RayVisibility
+        critical_range = improperties_->getCriticalRange();
 
-    else if(improperties_->GetRaycastMode())
-        critical_range = improperties_->GetRaycastRange();                      //Only RayVisibility
+    else if(improperties_->isRaycastMode())
+        critical_range = improperties_->getRaycastRange();                      //Only RayVisibility
 
     else                                                                        //Only Euclidean
-        critical_range = improperties_->GetCriticalRange();
+        critical_range = improperties_->getCriticalRange();
 
-    max_range = improperties_->GetMaxRange();
+    max_range = improperties_->getMaxRange();
 
     relevance = 1 - (distance - (critical_range * critical_range)) / ((max_range * max_range) - (critical_range * critical_range));
 
@@ -475,7 +469,7 @@ bool SyncManager::RayVisibilityFilter(UserConnectionPtr conn, float distance, fl
 
     else if(relevance < 1)
     {
-         double max_update_interval = improperties_->GetUpdateInterval();
+         double max_update_interval = improperties_->getUpdateInterval();
          std::map<entity_id_t, tick_t>::iterator it = lastUpdatedEntitys_.find(changed_entity->Id());
 
          tick_t lastUpdated = it->second;
@@ -1730,16 +1724,6 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
     user->syncState->clientLocation.z = ds.Read<float>();
 
     user->syncState->orientationInitialized = true;
-
-#if 0
-    LogError("Orientation x: "  + QString::number(user->syncState->clientOrientation.x) +
-             " y: "             + QString::number(user->syncState->clientOrientation.y) +
-             " z: "             + QString::number(user->syncState->clientOrientation.z) +
-             " w: "             + QString::number(user->syncState->clientOrientation.w) +
-             " Location: x: "   + QString::number(user->syncState->clientLocation.x) +
-             " y: "             + QString::number( user->syncState->clientLocation.y) +
-             " z: "             + QString::number(user->syncState->clientLocation.z));
-#endif
 }
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)
