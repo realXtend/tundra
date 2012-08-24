@@ -189,7 +189,9 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--noUiCompositing"] = "Disables the UI compositing, use for debugging purposes only."; // Framework & OgreRenderingModule
     cmdLineDescs.commands["--noCentralWidget"] = "Disables the usage of QMainWindow's central widget."; // Framework
     cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
-
+    cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigidbody extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
+    cmdLineDescs.commands["--noClientPhysics"] = "Disables rigidbody handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
+    
     apiVersionInfo = new VersionInfo(Application::Version());
     applicationVersionInfo = new VersionInfo(Application::Version());
 
