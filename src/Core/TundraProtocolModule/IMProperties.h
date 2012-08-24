@@ -3,7 +3,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  */
- 
+
 #pragma once
 
 #include "Types.h"
@@ -25,6 +25,7 @@ private:
     double critical_range_;
     double raycast_range_;
     u32 update_interval_;
+    u32 raycast_interval_;
 
 public:
 
@@ -64,6 +65,10 @@ public:
     /** @return u32 - time telling the maximum update interval in nanoseconds*/
     u32 getUpdateInterval();
 
+    /// Returns the maximum raycasting interval of the ray visibility filter.
+    /** @return u32 - time telling the maximum raycastig interval in nanoseconds*/
+    u32 getRaycastInterval();
+
     /// Enables or disables the euclidean distance filter
     /** @param bool mode that tells the new status for the filter. */
     void setEuclideanMode(bool mode);
@@ -77,22 +82,26 @@ public:
     void setRaycastMode(bool mode);
 
     /// Sets the cutoff range.
-    /** @param bool mode that tells the new status for the filter. */
+    /** @param double that tells the new cutoff range. */
     void setMaximumRange(double r);
 
     /// Sets the critical range.
-    /** @param bool mode that tells the new status for the filter. */
+    /** @param double that tells the new critical range. */
     void setCriticalRange(double r);
 
     /// Sets the update interval of the relevance filter.
-    /** @param bool mode that tells the new status for the filter. */
+    /** @param u32 that tells the new update interval. */
     void setUpdateInterval(u32 i);
+
+    /// Sets the raycasting interval.
+    /** @param u32 that tells the new raycasting intervals. */
+    void setRaycastInterval(u32 i);
 
     /// Sets the raycasting cutoff range.
     /** @param bool mode that tells the new status for the filter. */
     void setRaycastRange(double r);
 
     /// Enables or disables the IM scheme.
-    /** @param bool mode that tells the new status for the filter. */
+    /** @param bool mode that tells the new status for the IM scheme. */
     void setEnabled(bool mode);
 };
