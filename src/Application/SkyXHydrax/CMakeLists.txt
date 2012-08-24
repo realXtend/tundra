@@ -75,6 +75,7 @@ macro(use_package_skyx)
             COMPONENTS SkyX SKYX skyx
             PREFIXES ${ENV_SKYX_HOME} ${ENV_TUNDRA_DEP_PATH})
         set (SKYX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/SkyX)
+        include_directories(${SKYX_INCLUDE_DIRS})
         sagase_configure_report (SKYX)
     endif()
 endmacro()
@@ -119,7 +120,7 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 
 if (ENABLE_SKYX)
     add_definitions(-DSKYX_ENABLED)
-    use_package(SKYX) # Other OSes #TODO:REMOVE THIS!
+#    use_package(SKYX) # Other OSes #TODO:REMOVE THIS!
     use_package_skyx() # Windows 
 endif()
 if (ENABLE_HYDRAX)
@@ -137,7 +138,7 @@ link_modules(Framework Math Scene OgreRenderingModule)
 link_ogre()
 
 if (ENABLE_SKYX)
-    link_package (SKYX)  # Other OSes #TODO:REMOVE THIS!
+#    link_package (SKYX)  # Other OSes #TODO:REMOVE THIS!
     link_package_skyx() # Windows
 endif()
 if (ENABLE_HYDRAX)

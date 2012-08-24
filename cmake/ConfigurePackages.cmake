@@ -433,3 +433,41 @@ macro(link_package_assimp)
         target_link_libraries(${TARGET_NAME} debug assimpd)
     endif()
 endmacro()
+
+macro(use_package_skyx)
+    # SkyX look up rules:
+    # 1. Use cmake cached SKYX_DIR.
+    # 2. Use env variable SKYX_DIR and cache it.
+    # 3. Assume SkyX from deps path.
+
+    message("** Configuring SkyX")
+    if ("${SKYX_DIR}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{SKYX_DIR}" SKYX_DIR)
+        # Cache SKYX_DIR for runs that dont define $ENV{SKYX_DIR}.
+        set (SKYX_DIR ${SKYX_DIR} CACHE PATH "SKYX_DIR dependency path" FORCE)
+    endif ()
+    if ("${SKYX_DIR}" STREQUAL "")
+        if (MSVC)
+            set(SKYX_DIR ${ENV_TUNDRA_DEP_PATH}/SkyX)
+        else()
+            set(SKYX_DIR ${ENV_TUNDRA_DEP_PATH})
+        endif()
+    endif()
+    message (STATUS "Using SKYX_DIR = ${SKYX_DIR}")
+
+    if (WIN32)
+        include_directories(${SKYX_DIR}/include) # For prebuilt VS2008/VS2010 deps.
+        include_directories(${SKYX_DIR}/Include) # For full-built source deps.
+        link_directories(${SKYX_DIR}/lib)
+    else() # Linux and mac
+        include_directories(${SKYX_DIR}/include/SkyX)
+        link_directories(${SKYX_DIR}/lib)
+    endif()
+endmacro()
+
+macro(link_package_skyx)
+    target_link_libraries(${TARGET_NAME} optimized SkyX)
+    if (WIN32)
+        target_link_libraries(${TARGET_NAME} debug SkyX_d)
+    endif()
+endmacro()
