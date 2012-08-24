@@ -345,9 +345,9 @@ bool SyncManager::CheckRelevance(UserConnectionPtr userconnection, Entity* chang
 
         if(improperties_->isRelevanceMode() == true && dot >= 0)
         {
-            if((improperties_->getRaycastMode() && !improperties_->getEuclideanMode() && accepted) ||
-               (improperties_->getRaycastMode() && improperties_->getEuclideanMode() && accepted) ||
-               (improperties_->GgtEuclideanMode() && !improperties_->getRaycastMode() && !accepted))
+            if((improperties_->isRaycastMode() && !improperties_->isEuclideanMode() && accepted) ||
+               (improperties_->isRaycastMode() && improperties_->isEuclideanMode() && accepted) ||
+               (improperties_->isEuclideanMode() && !improperties_->isRaycastMode() && !accepted))
             {
                 accepted = RelevanceFilter(distance, userconnection, changed_entity);
             }
@@ -397,7 +397,7 @@ bool SyncManager::RayVisibilityFilter(UserConnectionPtr conn, float distance, fl
 
         tick_t currentTime = GetCurrentClockTime();
 
-        if(lastRaycasted + 250000000 > currentTime)
+        if(lastRaycasted + improperties_->getRaycastInterval() > currentTime)
         {
             std::map<entity_id_t, bool>::iterator it2;
 
