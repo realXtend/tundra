@@ -3,6 +3,8 @@
 #pragma once
 
 #include "TundraProtocolModuleFwd.h"
+#include "TundraProtocolModuleApi.h"
+
 #include "SyncState.h"
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
@@ -20,7 +22,7 @@ namespace TundraLogic
 /// Performs synchronization of the changes in a scene between the server and the client.
 /** SyncManager and SceneSyncState combined can be used to implement prioritization logic on how and when
     a sync state is filled per client connection. SyncManager object is only exposed to scripting on the server. */
-class SyncManager : public QObject
+class TUNDRAPROTOCOL_MODULE_API SyncManager : public QObject
 {
     Q_OBJECT
 
