@@ -33,6 +33,8 @@ Licensed under the MIT license:
 #include "OgreAnimationTrack.h"
 #include "OgreKeyFrame.h"
 #include "OgreVector3.h"
+#include "OgreRoot.h"
+#include "OgreRenderSystem.h"
 #include <QString>
 #include <QStringList>
 #include <QObject>
@@ -971,11 +973,23 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
             }
         }
     }
+
     if (mesh->HasTangentsAndBitangents())
     {
         decl->addElement(1, offset, Ogre::VET_FLOAT3, Ogre::VES_TANGENT);
         offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
         decl->addElement(1, offset, Ogre::VET_FLOAT3, Ogre::VES_BINORMAL);
+    }
+
+    offset = 0;
+    for(int vn=0 ; vn<AI_MAX_NUMBER_OF_COLOR_SETS; ++vn)
+    {
+        if (mesh->mColors[vn])
+        {
+            decl->addElement(1, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
+            offset += Ogre::VertexElement::getTypeSize(Ogre::VET_COLOUR);
+
+        }
     }
 
     // Write vertex data to buffer
@@ -1055,7 +1069,6 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
                     }
                 }
             }
-
             if (mesh->HasTangentsAndBitangents())
             {
                 vbData[offset++] = mesh->mTangents[n].x;
@@ -1069,6 +1082,38 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
         }
         vbuf->unlock();
         data->vertexBufferBinding->setBinding(1, vbuf);
+    }
+
+    if(mesh->HasVertexColors(0))
+    {
+        Ogre::HardwareVertexBufferSharedPtr vbufColor= Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+                decl->getVertexSize(1), // This value is the size of a vertex in memory
+                data->vertexCount, // The number of vertices you'll put into this buffer
+                Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, // Properties
+                false
+                );
+        Ogre::RGBA* pVertexColor = static_cast<Ogre::RGBA*>(vbufColor->lock(Ogre::HardwareBuffer::HBL_NORMAL));
+
+        for (unsigned int n=0; n<data->vertexCount; ++n)
+        {
+
+            for (int vn=0; vn<AI_MAX_NUMBER_OF_COLOR_SETS; ++vn)
+            {
+                if (mesh->mColors[vn])
+                {
+				    Ogre::RenderSystem* rs = Ogre::Root::getSingleton().getRenderSystem();
+				    if (rs)
+                    {
+					    rs->convertColourValue(Ogre::ColourValue(mesh->mColors[vn][n].r, mesh->mColors[vn][n].g, mesh->mColors[vn][n].b, 1), &pVertexColor[n]);
+                        std::cout<<"vertex color: "<<pVertexColor[n]<<std::endl;
+                    }
+                    //std::cout<<"n: "<<n<<"r: "<<mesh->mColors[vn][n].r<<" g: "<< mesh->mColors[vn][n].g<<" b: " <<mesh->mColors[vn][n].b<<" a: " <<mesh->mColors[vn][n].a<<std::endl;
+                }
+            }
+        }
+        vbufColor->unlock();
+        data->vertexBufferBinding->setBinding(1, vbufColor);
+        //data->closeGapsInBindings();
     }
 
     size_t numIndices = mesh->mNumFaces * 3;            // support only triangles, so 3 indices per face
