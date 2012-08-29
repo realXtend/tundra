@@ -318,7 +318,7 @@ IF NOT EXIST "%DEPS%\bullet\". (
 )
 
 :: boost
-:: version 1.50
+:: version 1.51
 
 set BOOST_ROOT=%DEPS%\boost
 set BOOST_INCLUDEDIR=%DEPS%\boost
@@ -327,7 +327,7 @@ set BOOST_LIBRARYDIR=%DEPS%\boost\stage\lib
 IF NOT EXIST "%DEPS%\boost". (
    cecho {0D}Cloning Boost into "%DEPS%\boost".{# #}{\n}
    cd "%DEPS%"
-   svn checkout http://svn.boost.org/svn/boost/tags/release/Boost_1_50_0 boost
+   svn checkout http://svn.boost.org/svn/boost/tags/release/Boost_1_51_0 boost
    IF NOT EXIST "%DEPS%\boost\.svn" GOTO :ERROR
    IF NOT EXIST "%DEPS%\boost\boost.css" GOTO :ERROR
    cd "%DEPS%\boost"
