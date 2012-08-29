@@ -102,6 +102,7 @@ echo.
 set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 
 :: OpenSSL
+:: version 1.0.1c
 IF %BUILD_OPENSSL%==FALSE (
    cecho {0D}Building OpenSSL disabled. Skipping.{# #}{\n}
    GOTO :SKIP_OPENSSL
@@ -109,25 +110,25 @@ IF %BUILD_OPENSSL%==FALSE (
 
 IF NOT EXIST "%DEPS%\openssl\src". (
    cd "%DEPS%"
-   IF NOT EXIST openssl-0.9.8u.tar.gz. (
-      cecho {0D}Downloading OpenSSL 0.9.8u.{# #}{\n}
-      wget http://www.openssl.org/source/openssl-0.9.8u.tar.gz
+   IF NOT EXIST openssl-1.0.1c.tar.gz. (
+      cecho {0D}Downloading OpenSSL 1.0.1c.{# #}{\n}
+      wget http://www.openssl.org/source/openssl-1.0.1c.tar.gz
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
    mkdir openssl
-   cecho {0D}Extracting OpenSSL 0.9.8u sources to "%DEPS%\openssl\src".{# #}{\n}
-   7za e -y openssl-0.9.8u.tar.gz
-   7za x -y -oopenssl openssl-0.9.8u.tar
+   cecho {0D}Extracting OpenSSL 1.0.1c sources to "%DEPS%\openssl\src".{# #}{\n}
+   7za e -y openssl-1.0.1c.tar.gz
+   7za x -y -oopenssl openssl-1.0.1c.tar
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd openssl
-   ren openssl-0.9.8u src
+   ren openssl-1.0.1c src
    cd ..
    IF NOT EXIST "%DEPS%\openssl\src". (
-      cecho {0E}Failed to rename %DEPS%\openssl\openssl-0.9.8u to %DEPS%\openssl\src. Permission denied for your account?{# #}{\n}
+      cecho {0E}Failed to rename %DEPS%\openssl\openssl-1.0.1c to %DEPS%\openssl\src. Permission denied for your account?{# #}{\n}
       GOTO :ERROR
    )
-   del openssl-0.9.8u.tar
+   del openssl-1.0.1c.tar
 ) ELSE (
    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
 )
@@ -138,7 +139,7 @@ IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
    perl Configure VC-WIN32 --prefix=%DEPS%\openssl
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
-   call ms\do_masm.bat
+   call %DEPS%\openssl\src\ms\do_nasm.bat
    cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}
    nmake -f ms\ntdll.mak
    nmake -f ms\ntdll.mak install
@@ -159,25 +160,29 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :SKIP_OPENSSL
 
 :: Qt
+:: version 4.8.2
+
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
-   IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
-      cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
+   IF NOT EXIST qt-everywhere-opensource-src-4.8.2.zip. (
+      cecho {0D}Downloading Qt 4.8.2. Please be patient, this will take a while.{# #}{\n}
+      wget http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4.8.2.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\qt".{# #}{\n}
+   cecho {0D}Extracting Qt 4.8.2 sources to "%DEPS%\qt".{# #}{\n}
    mkdir qt
-   7za x -y -oqt qt-everywhere-opensource-src-4.7.4.zip
+   7za x -y -oqt qt-everywhere-opensource-src-4.8.2.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd qt
-   ren qt-everywhere-opensource-src-4.7.4 qt-src-4.7.4
+   ren qt-everywhere-opensource-src-4.8.2 qt-src-4.8.2
    IF NOT EXIST "%DEPS%\qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
 )
 
+:: jom
+:: version 1.0.11
 IF %USE_JOM%==FALSE GOTO :SKIP_JOM
 IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
@@ -214,22 +219,22 @@ IF %BUILD_OPENSSL%==TRUE (
 :: a system set QMAKESPEC might take over the build in some bizarre fashion.
 :: Note 1: QTDIR is not used while build, neither should QMAKESPEC be used when -platform is given to configure.
 :: Note 2: We cannot do this inside the qt IF without @setlocal EnableDelayedExpansion.
-set QMAKESPEC=%DEPS%\qt\qt-src-4.7.4\mkspecs\win32-msvc2008
-set QTDIR=%DEPS%\qt\qt-src-4.7.4
+set QMAKESPEC=%DEPS%\qt\qt-src-4.8.2\mkspecs\win32-msvc2008
+set QTDIR=%DEPS%\qt\qt-src-4.8.2
 
 IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
-   IF NOT EXIST "%DEPS%\qt\qt-src-4.7.4". (
-      cecho {0E}Warning: %DEPS%\qt\qt-src-4.7.4 does not exist, extracting Qt failed?.{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\qt-src-4.8.2". (
+      cecho {0E}Warning: %DEPS%\qt\qt-src-4.8.2 does not exist, extracting Qt failed?.{# #}{\n}
       GOTO :ERROR
    )
-   cd "%DEPS%\qt\qt-src-4.7.4"
+   cd "%DEPS%\qt\qt-src-4.8.2"
 
    IF NOT EXIST "configure.cache". (
       cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
       configure -platform win32-msvc2008 -debug-and-release -opensource -prefix "%DEPS%\qt" -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ) ELSE (
-      cecho {0D}Qt already configured. Remove %DEPS%\qt\qt-src-4.7.4\configure.cache to trigger a reconfigure.{# #}{\n}
+      cecho {0D}Qt already configured. Remove %DEPS%\qt\qt-src-4.8.2\configure.cache to trigger a reconfigure.{# #}{\n}  
    )
    
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
@@ -249,8 +254,8 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
       nmake /nologo
    )
 
-   IF NOT EXIST "%DEPS%\qt\qt-src-4.7.4\lib\QtWebKit4.dll". (
-      cecho {0E}Warning: %DEPS%\qt\qt-src-4.7.4\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\qt-src-4.8.2\lib\QtWebKit4.dll". (
+      cecho {0E}Warning: %DEPS%\qt\qt-src-4.8.2\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
       GOTO :ERROR
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -295,10 +300,14 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
 )
 
+:: Bullet physics engine
+:: version 2.80 sp1, svn rev 2531
+
 IF NOT EXIST "%DEPS%\bullet\". (
    cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
    cd "%DEPS%"
-   svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
+   :: check out bullet 2.80 sp1, which is revision 2531
+   svn checkout http://bullet.googlecode.com/svn/trunk@2531 bullet
    IF NOT EXIST "%DEPS%\bullet\.svn" GOTO :ERROR
    cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
    msbuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
@@ -308,6 +317,9 @@ IF NOT EXIST "%DEPS%\bullet\". (
    cecho {0D}Bullet already built. Skipping.{# #}{\n}
 )
 
+:: boost
+:: version 1.51
+
 set BOOST_ROOT=%DEPS%\boost
 set BOOST_INCLUDEDIR=%DEPS%\boost
 set BOOST_LIBRARYDIR=%DEPS%\boost\stage\lib
@@ -315,7 +327,7 @@ set BOOST_LIBRARYDIR=%DEPS%\boost\stage\lib
 IF NOT EXIST "%DEPS%\boost". (
    cecho {0D}Cloning Boost into "%DEPS%\boost".{# #}{\n}
    cd "%DEPS%"
-   svn checkout http://svn.boost.org/svn/boost/tags/release/Boost_1_49_0 boost
+   svn checkout http://svn.boost.org/svn/boost/tags/release/Boost_1_51_0 boost
    IF NOT EXIST "%DEPS%\boost\.svn" GOTO :ERROR
    IF NOT EXIST "%DEPS%\boost\boost.css" GOTO :ERROR
    cd "%DEPS%\boost"
