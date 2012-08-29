@@ -1103,17 +1103,12 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
                 {
 				    Ogre::RenderSystem* rs = Ogre::Root::getSingleton().getRenderSystem();
 				    if (rs)
-                    {
 					    rs->convertColourValue(Ogre::ColourValue(mesh->mColors[vn][n].r, mesh->mColors[vn][n].g, mesh->mColors[vn][n].b, 1), &pVertexColor[n]);
-                        std::cout<<"vertex color: "<<pVertexColor[n]<<std::endl;
-                    }
-                    //std::cout<<"n: "<<n<<"r: "<<mesh->mColors[vn][n].r<<" g: "<< mesh->mColors[vn][n].g<<" b: " <<mesh->mColors[vn][n].b<<" a: " <<mesh->mColors[vn][n].a<<std::endl;
                 }
             }
         }
         vbufColor->unlock();
         data->vertexBufferBinding->setBinding(1, vbufColor);
-        //data->closeGapsInBindings();
     }
 
     size_t numIndices = mesh->mNumFaces * 3;            // support only triangles, so 3 indices per face
