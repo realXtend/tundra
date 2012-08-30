@@ -626,13 +626,30 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, siz
 
 void AssetAPI::ForgetAllAssets()
 {
+    // Note that this wont unload the individual sub asset, only the bundle. 
+    // Sub assets are unloaded from the assets map below.
     while(assetBundles.size() > 0)
-        assetBundles.begin()->second->Unload();
+    {
+        AssetBundleMap::iterator iter = assetBundles.begin();
+        if (iter != assetBundles.end())
+        {
+            AssetBundlePtr bundle = iter->second;
+            if (bundle.get())
+            {
+                bundle->Unload();
+                bundle.reset();
+            }
+            assetBundles.erase(iter);
+        }
+        else
+            break; 
+    }
     assetBundles.clear();
     bundleMonitors.clear();
 
+    // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
     while(assets.size() > 0)
-        ForgetAsset(assets.begin()->second, false); // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
+        ForgetAsset(assets.begin()->second, false);
     assets.clear();
     
     // We need to abort all current transfers, otherwise the transfers will call AssetTransferCompleted/Failed 
