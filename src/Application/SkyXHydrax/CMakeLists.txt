@@ -44,33 +44,38 @@ macro(link_package_hydrax)
     endif()
 endmacro()
 
-
 macro(use_package_skyx)
     # SkyX look up rules:
     # 1. Use cmake cached SKYX_DIR.
     # 2. Use env variable SKYX_DIR and cache it.
     # 3. Assume SkyX from deps path.
-
-    message("** Configuring SkyX")
-    if ("${SKYX_DIR}" STREQUAL "")
-        file (TO_CMAKE_PATH "$ENV{SKYX_DIR}" SKYX_DIR)
-        # Cache SKYX_DIR for runs that dont define $ENV{SKYX_DIR}.
-        set (SKYX_DIR ${SKYX_DIR} CACHE PATH "SKYX_DIR dependency path" FORCE)
-    endif ()
-    if ("${SKYX_DIR}" STREQUAL "")
-        if (MSVC)
-            set(SKYX_DIR ${ENV_TUNDRA_DEP_PATH}/SkyX)
-        else()
+	if (MSVC)
+        message("** Configuring SkyX")
+        if ("${SKYX_HOME}" STREQUAL "")
+            if (NOT "$ENV{SKYX_HOME}" STREQUAL "")
+                file (TO_CMAKE_PATH "$ENV{SKYX_HOME}" SKYX_HOME)
+                # Cache SKYX_HOME for runs that dont define $ENV{SKYX_HOME}.
+                set (SKYX_HOME ${SKYX_HOME} CACHE PATH "SKYX_HOME dependency path" FORCE)
+            else ()
+                message(STATUS "CMake cache or environment variable SKYX_HOME not set, assuming location to TUNDRA_DEP_PATH.")
+                set(SKYX_HOME ${ENV_TUNDRA_DEP_PATH}/SkyX)
+            endif ()
+        endif()
+        message(STATUS "Using SKYX_HOME = ${SKYX_HOME}")
+        include_directories(${SKYX_HOME}/include) # For prebuilt VS2008/VS2010 deps.
+        include_directories(${SKYX_HOME}/SkyX/include) # For full-built deps.
+        link_directories(${SKYX_HOME}/lib)
+    else() # Linux and mac
+    	message("** Configuring SkyX")
+        if ("${SKYX_DIR}" STREQUAL "")
+            file (TO_CMAKE_PATH "$ENV{SKYX_DIR}" SKYX_DIR)
+            # Cache SKYX_DIR for runs that dont define $ENV{SKYX_DIR}.
+            set (SKYX_DIR ${SKYX_DIR} CACHE PATH "SKYX_DIR dependency path" FORCE)
+        endif ()
+        if ("${SKYX_DIR}" STREQUAL "")
             set(SKYX_DIR ${ENV_TUNDRA_DEP_PATH})
         endif()
-    endif()
-    message (STATUS "Using SKYX_DIR = ${SKYX_DIR}")
-
-    if (MSVC) 
-        include_directories(${SKYX_DIR}/include) # For prebuilt VS2008/VS2010 deps.
-        include_directories(${SKYX_DIR}/Include) # For full-built source deps.
-        link_directories(${SKYX_DIR}/lib)
-    else() # Linux and mac
+        message (STATUS "Using SKYX_DIR = ${SKYX_DIR}")
         include_directories(${SKYX_DIR}/include/SkyX)
         link_directories(${SKYX_DIR}/lib)
     endif()
