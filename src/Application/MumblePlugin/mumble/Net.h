@@ -37,6 +37,10 @@
 #include <qendian.h>
 #include <Win.h> // Tundra include
 
+#ifdef __UNIX__
+#include <sys/socket.h>
+#endif
+
 #ifdef __APPLE__
 #include <netinet/in.h>
 #endif

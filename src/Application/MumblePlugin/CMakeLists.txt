@@ -42,7 +42,7 @@ macro (configure_protobuf)
         set (PROTOBUF_FOUND 1)
     endif()
 
-    if (MSVC)
+    if (NOT APPLE)
         if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
             file (TO_CMAKE_PATH "$ENV{PROTOBUF_SRC_ROOT_FOLDER}" PROTOBUF_SRC_ROOT_FOLDER)
         endif()
@@ -162,7 +162,7 @@ link_package (CELT)
 link_package (PROTOBUF)
 link_package (OPENSSL)
 
-if (APPLE)
+if (NOT WIN32)
     link_ogre()
 
     #TODO This line should not be needed, as these libraries should be picked up by above link_package. However,
