@@ -1,18 +1,44 @@
 
-macro(configure_vlc)
-    if ("${VLC_ROOT}" STREQUAL "")
-        file (TO_CMAKE_PATH "$ENV{VLC_ROOT}" VLC_ROOT)
+macro(use_package_vlc)
+    # VLC look up rules:
+    # 1. Use cmake cached VLC_DIR.
+    # 2. Use env variable VLC_DIR and cache it.
+    # 3. Assume VLC from deps path.
+	if (MSVC)
+        message("** Configuring VLC")
+        if ("${VLC_HOME}" STREQUAL "")
+            if (NOT "$ENV{VLC_HOME}" STREQUAL "")
+                file (TO_CMAKE_PATH "$ENV{VLC_HOME}" VLC_HOME)
+                # Cache VLC_HOME for runs that dont define $ENV{VLC_HOME}.
+                set (VLC_HOME ${VLC_HOME} CACHE PATH "VLC_HOME dependency path" FORCE)
+            else ()
+                message(STATUS "CMake cache or environment variable VLC_HOME not set, assuming location to TUNDRA_DEP_PATH.")
+                set(VLC_HOME ${ENV_TUNDRA_DEP_PATH}/vlc)
+            endif ()
+        endif()
+        message(STATUS "Using VLC_HOME = ${VLC_HOME}")
+        include_directories(${VLC_HOME}/include) 
+        link_directories(${VLC_HOME}/lib)
+    else() # Linux and mac
+    	message("** Configuring VLC")
+        if ("${VLC_DIR}" STREQUAL "")
+            file (TO_CMAKE_PATH "$ENV{VLC_DIR}" VLC_DIR)
+            # Cache VLC_DIR for runs that dont define $ENV{VLC_DIR}.
+            set (VLC_DIR ${VLC_DIR} CACHE PATH "VLC_DIR dependency path" FORCE)
+        endif ()
+        if ("${VLC_DIR}" STREQUAL "")
+            set(VLC_DIR ${ENV_TUNDRA_DEP_PATH})
+        endif()
+        message (STATUS "Using VLC_DIR = ${VLC_DIR}")
+        include_directories(${VLC_DIR}/include)
+        link_directories(${VLC_DIR}/lib)
     endif()
-    if ("${VLC_ROOT}" STREQUAL "")
-        SET(VLC_ROOT ${ENV_TUNDRA_DEP_PATH}/vlc)
-    endif()
-    
-    sagase_configure_package(VLC
-        NAMES vlc
-        COMPONENTS libvlc libvlccore
-        PREFIXES ${VLC_ROOT})
-    sagase_configure_report (VLC)
 endmacro()
+
+macro(link_package_vlc)
+    target_link_libraries(${TARGET_NAME} optimized libvlc optimized libvlccore)
+endmacro()
+
 
 # Do some checks, VC10 is out of the question as building from 
 # sources is impossible on with VC tools (said by the vlc project).
@@ -30,8 +56,8 @@ endif ()
 
 if (SHOULD_RUN)
 
-    configure_vlc()
-
+    use_package_vlc()
+	
     init_target (VlcPlugin OUTPUT plugins)
 
     MocFolder ()
@@ -39,9 +65,9 @@ if (SHOULD_RUN)
 
     file (GLOB CPP_FILES *.cpp)
     if (WIN32 AND VC90)
-        file(GLOB H_FILES *.h)
+        file(GLOB H_FILES *.h windows/*.h)
     else() # Omit stdint.h in other platforms.
-        file(GLOB H_FILES VlcPlugin.h VlcMediaPlayer.h VlcVideoWidget.h PlayerStatus.h EC_MediaPlayer.h)
+        file(GLOB H_FILES (*.h)
     endif()
     file(GLOB UI_FILES ui/*.ui)
     file(GLOB RESOURCE_FILES ui/*.qrc)
@@ -53,8 +79,9 @@ if (SHOULD_RUN)
 
     use_core_modules (Framework Math Asset Ui OgreRenderingModule)
     use_app_modules (SceneWidgetComponents)
-    use_package (VLC)
-
+    
+	link_package_vlc
+	
     build_library (${TARGET_NAME} SHARED ${CPP_FILES} ${H_FILES} ${MOC_FILES} ${UI_SRCS} ${RESOURCE_SRCS})
 
     SetupCompileFlags()
@@ -71,7 +98,7 @@ if (SHOULD_RUN)
         setup_install_directory (${TUNDRA_BIN}/plugins/vlcplugins plugins)
         setup_install_windows_deps ("libvlc.dll;libvlccore.dll;axvlc.dll;npvlc.dll" Release|RelWithDebInfo|Debug)
     endif ()
-
+)
 else ()
     message (WARNING "VlcPlugin can be built on linux, mac and Windows with Visual Studio 2008. Seems you are not meeting these requirements! See notes from src/Application/VlcPlugin/CMakeLists.txt")
 endif ()

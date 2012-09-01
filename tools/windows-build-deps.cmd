@@ -776,14 +776,28 @@ IF NOT EXIST "%DEPS%\vlc-2.0.3-win32.zip". (
   wget http://sourceforge.net/projects/vlc/files/2.0.3/win32/vlc-2.0.3-win32.zip/download
   IF NOT EXIST "%DEPS%\vlc-2.0.3-win32.zip". GOTO :ERROR
 ) ELSE (
-   cecho {0D}VLC 2.0.3 already downloaded. Skipping.{# #}{\n}
+   cecho {0D}VLC 2.0.3 binary package already downloaded. Skipping.{# #}{\n}
 )
+
+
+IF NOT EXIST "%DEPS%\vlc-2.0.3.tar.xz". (
+  CD "%DEPS%"
+  cecho {0D}Downloading VLC 2.0.3 sources{# #}{\n}
+  wget http://sourceforge.net/projects/vlc/files/2.0.3/vlc-2.0.3.tar.xz/download
+  IF NOT EXIST "%DEPS%\vlc-2.0.3.tar.xz". GOTO :ERROR
+) ELSE (
+   cecho {0D}VLC 2.0.3 source package already downloaded. Skipping.{# #}{\n}
+)
+
 
 IF NOT EXIST "%DEPS%\vlc". (
    CD "%DEPS%"
    mkdir vlc
-   cecho {0D}Extracting VLC 2.0.3 package to "%DEPS%\vlc\vlc-2.0.3"{# #}{\n}
+   cecho {0D}Extracting VLC 2.0.3 binary package to "%DEPS%\vlc\vlc-2.0.3"{# #}{\n}
    7za x -y -ovlc vlc-2.0.3-win32.zip
+   cecho {0D}Extracting VLC 2.0.3 source package to "%DEPS%\vlc\vlc-2.0.3"{# #}{\n}
+   7za x -y -ovlc vlc-2.0.3.tar.xz
+   7za x -y -ovlc vlc\vlc-2.0.3.tar
    cd vlc
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    mkdir defs
@@ -803,10 +817,12 @@ IF NOT EXIST "%DEPS%\vlc". (
    lib /def:defs\libvlc.def /out:lib\libvlc.lib /machine:x86
    lib /def:defs\libvlccore.def /out:lib\libvlccore.lib /machine:x86
    xcopy /E /I /C /H /R /Y vlc-2.0.3\plugins\*.* bin\plugins\vlcplugins
-   xcopy /E /I /C /H /R /Y vlc-2.0.3\sdk\include\*.* include
+   xcopy /E /I /C /H /R /Y vlc-2.0.3\include\*.* include
    copy /Y vlc-2.0.3\sdk\lib\*.lib lib\
    :: Remove extracted folder, not needed anymore
    rmdir /S /Q vlc-2.0.3
+   :: remove the extracted tar archive 
+   rm /S /Q vlc/vlc-2.0.3.tar
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    :: Force deployment and clean vlc plugins cache file
    del /Q "%TUNDRA_BIN%\libvlc.dll"
