@@ -777,6 +777,7 @@ IF NOT EXIST "%DEPS%\vlc". (
    7za x -y -ovlc vlc-2.0.3-win32.zip
    cd vlc
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   mkdir defs
    mkdir lib
    mkdir include
    mkdir bin\plugins\vlcplugins
@@ -784,6 +785,14 @@ IF NOT EXIST "%DEPS%\vlc". (
    :: Copy from extraced location to our subfolders
    cecho {0D}Copying needed VLC 2.0.3 files to \bin \lib and \include{# #}{\n}
    copy /Y vlc-2.0.3\*.dll bin\
+   dumpbin /exports vlc-2.0.3\axvlc.dll > defs\axvlc.def
+   dumpbin /exports vlc-2.0.3\npvlc.dll > defs\npvlc.def
+   dumpbin /exports vlc-2.0.3\libvlc.dll > defs\libvlc.def
+   dumpbin /exports vlc-2.0.3\libvlccore.dll > defs\libvlccore.def
+   lib /def:defs\axvlc.def /out:lib\axvlc.lib /machine:x86
+   lib /def:defs\npvlc.def /out:lib\npvlc.lib /machine:x86
+   lib /def:defs\libvlc.def /out:lib\libvlc.lib /machine:x86
+   lib /def:defs\libvlccore.def /out:lib\libvlccore.lib /machine:x86
    xcopy /E /I /C /H /R /Y vlc-2.0.3\plugins\*.* bin\plugins\vlcplugins
    xcopy /E /I /C /H /R /Y vlc-2.0.3\sdk\include\*.* include
    copy /Y vlc-2.0.3\sdk\lib\*.lib lib\
