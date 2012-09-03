@@ -487,10 +487,11 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
 
     QDomDocument dotscene;
     QString errorMsg;
-    if (!dotscene.setContent(&file, false, &errorMsg))
+    int errorLine, errorColumn;
+    if (!dotscene.setContent(&file, false, &errorMsg, &errorLine, &errorColumn))
     {
         file.close();
-        LogError("SceneImporter::CreateSceneDescFromScene: Failed to parse XML content: " + errorMsg);
+        LogError(QString("SceneImporter::CreateSceneDescFromScene: Parsing Ogre .scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.").arg(filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
         return sceneDesc;
     }
     
