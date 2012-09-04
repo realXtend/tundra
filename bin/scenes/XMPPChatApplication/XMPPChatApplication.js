@@ -164,7 +164,6 @@ ConversationForm.prototype.BuildDialog = function()
     this.chatAreaLayout = new QHBoxLayout(/*this.dialog*/);
     this.chatArea = new QListWidget();
     this.chatArea.wordWrap = true;
-    this.chatArea.isWrapping = true;
     this.chatArea.minimumWidth = 500;
     this.chatArea.minimumHeight = 200;
     this.chatArea.setStyleSheet("QListWidget {color: #FF9340; background-color: #0A64A4; border: 1px solid black;}")
