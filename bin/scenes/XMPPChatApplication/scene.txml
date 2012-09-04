@@ -6,7 +6,7 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Script" sync="1" name="XMPPChatApplication">
-   <attribute value="local://XMPPChatApplication.js" name="Script ref"/>
+   <attribute value="XMPPChatApplication.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="0" name="Run mode"/>
    <attribute value="" name="Script application name"/>
@@ -16,7 +16,7 @@
  <entity id="4" sync="1">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,0,0,0,0.14,0.2,0.14" name="Transform"/>
-   <attribute value="file://WoodPallet.mesh" name="Mesh ref"/>
+   <attribute value="WoodPallet.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
    <attribute value="" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
