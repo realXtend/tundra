@@ -166,30 +166,30 @@ ConversationForm.prototype.BuildDialog = function()
     this.chatArea.wordWrap = true;
     this.chatArea.minimumWidth = 500;
     this.chatArea.minimumHeight = 200;
-    this.chatArea.setStyleSheet("QListWidget {color: #FF9340; background-color: #0A64A4; border: 1px solid black;}")
+    this.chatArea.setStyleSheet("QListWidget {color: #FF9340; background-color: #0A64A4; border: 1px solid black;}");
     this.chatAreaLayout.addWidget(this.chatArea, 0, Qt.AlignLeft);
 
     this.participantArea = new QListWidget();
     this.participantArea.minimumWidth = 80;
     this.participantArea.maximumWidth = 80;
     this.participantArea.minimumHeight = 200;
-    this.participantArea.setStyleSheet("QListWidget {color: #FF9340; background-color: #0A64A4; border: 1px solid black;}")
+    this.participantArea.setStyleSheet("QListWidget {color: #FF9340; background-color: #0A64A4; border: 1px solid black;}");
     this.chatAreaLayout.addWidget(this.participantArea, 0, Qt.AlignRight);
 
     //this.layout.addLayout(this.chatAreaLayout);
 
-    this.messageEditLayout = new QHBoxLayout(/*this.dialog*/)
+    this.messageEditLayout = new QHBoxLayout(/*this.dialog*/);
 
     this.messageEdit = new QLineEdit();
     this.messageEdit.minimumWidth = 500;
     this.messageEdit.minimumHeight = 20;
-    this.messageEdit.setStyleSheet("QLineEdit {color: #FF9340; background-color: #0A64A4; border: 1px solid black;}")
+    this.messageEdit.setStyleSheet("QLineEdit {color: #FF9340; background-color: #0A64A4; border: 1px solid black;}");
     this.messageEditLayout.addWidget(this.messageEdit, 0, Qt.AlignLeft);
 
     this.messageButton = new QPushButton("Send");
     this.messageButton.minimumWidth = 80;
     this.messageButton.minimumHeight = 20;
-    this.messageButton.setStyleSheet("QPushButton {color: #FF6F00; background-color: #03406A; border: 1px solid black;}")
+    this.messageButton.setStyleSheet("QPushButton {color: #FF6F00; background-color: #03406A; border: 1px solid black;}");
     this.messageEditLayout.addWidget(this.messageButton, 0, Qt.AlignRight);
 
     //this.layout.addLayout(this.messageEditLayout);
