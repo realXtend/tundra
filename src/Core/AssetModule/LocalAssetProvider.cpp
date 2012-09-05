@@ -337,8 +337,8 @@ void LocalAssetProvider::CompletePendingFileDownloads()
                     QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
                     framework->Asset()->AssetTransferFailed(transfer.get(), reason);
                     // Also throttle asset loading here. This is needed in the case we have a lot of failed refs.
-                    if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
-                        break;
+                    //if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
+                    //    break;
                     continue;
                 }
             
