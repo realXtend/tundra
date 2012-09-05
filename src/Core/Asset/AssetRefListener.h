@@ -14,7 +14,7 @@ class AssetRefListener : public QObject
     Q_OBJECT
 
 public:
-    AssetRefListener() : myAssetAPI(0), requestedRef(""), /** \todo This needs to be removed. */ inspectCreated(false) {};
+    AssetRefListener();
 
     /// Issues a new asset request to the given AssetReference.
     /// @param assetRef A pointer to an attribute of type AssetReference.
@@ -40,17 +40,16 @@ signals:
     void TransferFailed(IAssetTransfer *transfer, QString reason);
 
 private slots:
-    void OnTransferSucceeded(AssetPtr asset);
-    void OnAssetLoaded(AssetPtr asset);
+    void OnTransferSucceeded(AssetPtr assetData);
+    void OnAssetLoaded(AssetPtr assetData);
     void OnTransferFailed(IAssetTransfer *transfer, QString reason);
-    void OnAssetCreated(AssetPtr asset);
+    void OnAssetCreated(AssetPtr assetData);
+    
+    void EmitLoaded();
 
 private:
     AssetAPI *myAssetAPI;
     AssetWeakPtr asset;
     AssetTransferWeakPtr currentTransfer;
-    AssetReference requestedRef;
-
-    ///\todo This needs to be removed.
-    bool inspectCreated;
+    QString currentWaitingRef;
 };

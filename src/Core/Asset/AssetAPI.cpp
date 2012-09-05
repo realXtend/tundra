@@ -1645,9 +1645,16 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
     // Check for new transfer: not in the assets map yet
     if (iter != currentTransfers.end())
         asset = iter->second->asset;
-    // Check for a reload: is in the known asset map
-    else if (iter2 != assets.end())
+    // Check for a reload: is in the known asset map.
+    if (!asset.get() && iter2 != assets.end())
+    {
+        /** The above transfer might have been found but its IAsset can be null
+            in the case that this is a IAsset created by cloning. The code that 
+            requested the clone/generated ref might have created the above valid transfer
+            but it might have failed, resulting in a null IAsset, if the clone was not made
+            before the request. */
         asset = iter2->second;
+    }
 
     if (asset.get())
     {

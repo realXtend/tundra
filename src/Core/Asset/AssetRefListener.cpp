@@ -14,6 +14,14 @@
 
 #include "MemoryLeakCheck.h"
 
+#include <QTimer>
+
+AssetRefListener::AssetRefListener() : 
+    myAssetAPI(0), 
+    currentWaitingRef("")
+{
+}
+
 AssetPtr AssetRefListener::Asset() const
 {
     return asset.lock();
@@ -44,30 +52,55 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
     
     assert(assetApi);
 
-    // Disconnect any existing hook to OnAssetCreated. This will be connected if the request fails.
+    // Store AssetAPI ptr for later signal hooking.
     if (!myAssetAPI)
         myAssetAPI = assetApi;
-    disconnect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)));
 
     // If the ref is empty, don't go any further as it will just trigger the LogWarning below.
     assetRef = assetRef.trimmed();
     if (assetRef.isEmpty())
         return;
+    currentWaitingRef = "";
 
-    ///\todo This needs to be removed.
-    requestedRef = AssetReference(assetRef, assetType);
-    inspectCreated = false;
-
-    AssetTransferPtr transfer = assetApi->RequestAsset(assetRef, assetType);
-    if (!transfer)
+    // Resolve the protocol for generated:// assets. These assets are never meant to be
+    // requested from AssetAPI, they cannot be fetched from anywhere. They can only be either
+    // loaded or we must wait for something to load/create them.
+    QString protocolPart = "";
+    assetApi->ParseAssetRef(assetRef, &protocolPart);
+    if (protocolPart.toLower() == "generated")
     {
-        LogWarning("AssetRefListener::HandleAssetRefChange: Asset request for asset \"" + assetRef + "\" failed.");
-        return;
+        AssetPtr loadedAsset = assetApi->GetAsset(assetRef);
+        if (loadedAsset.get() && loadedAsset->IsLoaded())
+        {
+            // Asset is loaded, emit Loaded with 1 msec delay to preserve the logic
+            // that HandleAssetRefChange won't emit anything itself as before.
+            // Otherwise existing connection can break/be too late after calling this function.
+            asset = loadedAsset;
+            QTimer::singleShot(1, this, SLOT(EmitLoaded()));
+            return;
+        }
+        else
+        {
+            // Wait for it to be created.
+            currentWaitingRef = assetRef;
+            connect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)), Qt::UniqueConnection);
+        }
     }
+    else
+    {
+        // This is not a generated asset, request normally from asset api.
+        AssetTransferPtr transfer = assetApi->RequestAsset(assetRef, assetType);
+        if (!transfer)
+        {
+            LogWarning("AssetRefListener::HandleAssetRefChange: Asset request for asset \"" + assetRef + "\" failed.");
+            return;
+        }
+        currentWaitingRef = assetRef;
 
-    connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnTransferSucceeded(AssetPtr)), Qt::UniqueConnection);
-    connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(OnTransferFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
-    currentTransfer = transfer;
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnTransferSucceeded(AssetPtr)), Qt::UniqueConnection);
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(OnTransferFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
+        currentTransfer = transfer;
+    }
     
     // Disconnect from the old asset's load signal
     AssetPtr assetData = asset.lock();
@@ -82,9 +115,8 @@ void AssetRefListener::OnTransferSucceeded(AssetPtr assetData)
     if (!assetData)
         return;
     
-    asset = assetData;
-    
     // Connect to further reloads of the asset to be able to notify of them.
+    asset = assetData;
     connect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     
     emit Loaded(assetData);
@@ -93,37 +125,39 @@ void AssetRefListener::OnTransferSucceeded(AssetPtr assetData)
 void AssetRefListener::OnAssetLoaded(AssetPtr assetData)
 {
     if (assetData == asset.lock())
-    {
-        ///\todo This needs to be removed.
-        inspectCreated = false;
         emit Loaded(assetData);
-    }
 }
 
 void AssetRefListener::OnTransferFailed(IAssetTransfer* transfer, QString reason)
 {
-    ///\todo This whole logic needs to be removed. Also clean disconnect() of the signal in HandleAssetRefChange().
-
-    // Transfer failed, hook to AssetCreated to monitor if our asset gets created at a later stage.
+    /// @todo Remove this logic once a EC_Material + EC_Mesh behaves correctly without failed requests, see generated:// logic in HandleAssetRefChange.
     if (myAssetAPI)
-        connect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)), Qt::QueuedConnection);
-
-    inspectCreated = true;
+        connect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)), Qt::UniqueConnection);       
     emit TransferFailed(transfer, reason);
 }
 
-void AssetRefListener::OnAssetCreated(AssetPtr asset)
+void AssetRefListener::OnAssetCreated(AssetPtr assetData)
 {
-    if (!asset.get() || !myAssetAPI || /** \todo This needs to be removed. */ !inspectCreated)
-        return;
-
-    // If out latest failed ref is the same as the created asset.
-    // Request it now so we can emit the Loaded signal.
-    if (requestedRef.ref == asset->Name())
+    if (assetData.get() && !currentWaitingRef.isEmpty() && currentWaitingRef == assetData->Name())
     {
-        disconnect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)));
+        /// @todo Remove this logic once a EC_Material + EC_Mesh behaves correctly without failed requests, see generated:// logic in HandleAssetRefChange.
+        /** Log the same message as before for non generated:// refs. This is good to do
+            because AssetAPI has now said the request failed, so user might be confused when it still works. */
+        if (!currentWaitingRef.toLower().startsWith("generated://"))
+            LogInfo("AssetRefListener: Asset \"" + assetData->Name() + "\" was created, applying after it loads.");
 
-        LogInfo("AssetRefListener: Asset \"" + asset->Name() + "\" was created, re-requesting asset.");
-        HandleAssetRefChange(myAssetAPI, requestedRef.ref, requestedRef.type);
+        // The asset we are waiting for has been created, hook to the IAsset::Loaded signal.
+        currentWaitingRef = "";
+        asset = assetData;
+        connect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+        if (myAssetAPI)
+            disconnect(myAssetAPI, SIGNAL(AssetCreated(AssetPtr)), this, SLOT(OnAssetCreated(AssetPtr)));
     }
+}
+
+void AssetRefListener::EmitLoaded()
+{
+    AssetPtr currentAsset = asset.lock();
+    if (currentAsset.get())
+        emit Loaded(currentAsset);
 }
