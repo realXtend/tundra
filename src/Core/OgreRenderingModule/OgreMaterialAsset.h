@@ -60,6 +60,12 @@ public slots:
     /// Copy content from another OgreMaterialAsset using Ogre internal functions, without having to serialize/deserialize
     void CopyContent(AssetPtr source);
     
+    /// Only call this after you have cloned a material and set all of its new attributes.
+    /** Calls AssetAPI::AssetLoadCompleted() for this asset that will trigger the proper
+        flow in AssetAPI to listen when all dependencies are completed and the emits the 
+        Loaded signals for this asset. */
+    void CloneCompleted();
+    
     /// Set a material attribute using a key-value format.
     /** Format: key is "t<x> p<y> tu<z> paramname", to access technique, pass and texture unit specific attributes.
         These can also be omitted to affect all techniques, passes or units as applicable. */

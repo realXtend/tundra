@@ -415,6 +415,11 @@ void OgreMaterialAsset::CopyContent(AssetPtr source)
     references_ = sourceMat->references_;
 }
 
+void OgreMaterialAsset::CloneCompleted()
+{
+    assetAPI->AssetLoadCompleted(Name());
+}
+
 bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreMaterial.isNull())

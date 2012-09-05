@@ -149,10 +149,15 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
             outputMatName.replace(questionMark, 1, QString::number(parentEntity->Id()));
     }
     
+    bool cloned = false;
     OgreMaterialAsset* destMatAsset = 0;
     if (!outputMatName.isEmpty())
     {
         // If dest. asset does not exist, create it now
+        /** @todo ResolveAssetRef should be removed! It will make our <generatedname> into a full url
+            via <sceneStorageBaseUrl> + <generatedname> as our generated name is usually a relative ref.
+            This line here is the reason why EC_Materil usage code is forced to use local:// + <generatedname>
+            so that it wont be resolved to a full URL and break! */
         AssetPtr destAsset = assetAPI->GetAsset(assetAPI->ResolveAssetRef("", outputMatName));
         if (!destAsset)
             destAsset = assetAPI->CreateNewAsset("OgreMaterial", outputMatName);
@@ -160,14 +165,16 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
         destMatAsset = dynamic_cast<OgreMaterialAsset*>(destAsset.get());
         // Copy source material to destination, however check that src & dest aren't same
         if ((destMatAsset) && (srcMatAsset != destMatAsset))
+        {
             destMatAsset->CopyContent(AssetPtr(srcMatAsset->shared_from_this()));
+            cloned = true;
+        }
     }
     else
     {
         // If dest. material is empty, apply in-place
         destMatAsset = srcMatAsset;
     }
-    
     if (!destMatAsset)
         return;
     
@@ -180,4 +187,13 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
         if (parts.size() == 2)
             destMatAsset->SetAttribute(parts[0], parts[1]);
     }
+    
+    /** SetAttribute above changes the dependency references. Let AssetAPI know that
+        the cloned material is now loaded. This will check if all dependencies are loaded
+        before emitting the final Loaded signal for this IAsset, otherwise wait for them.
+        We must signal Loaded here for the using code to know that the generated/cloned 
+        material is now ready. If this is not emitted the whole flow of AssetAPI->RequestAsset() 
+        is broken, as for this asset only AssetCreated has been emitted so far. */
+    if (cloned)
+        destMatAsset->CloneCompleted();
 }
