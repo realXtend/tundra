@@ -124,7 +124,7 @@ void TundraLogicModule::Load()
 
 void TundraLogicModule::Initialize()
 {
-    syncManager_ = boost::make_shared<SyncManager>(this);
+    //syncManager_ = boost::make_shared<SyncManager>(this);
     client_ = boost::make_shared<Client>(this);
     server_ = boost::make_shared<Server>(this);
     
@@ -134,36 +134,38 @@ void TundraLogicModule::Initialize()
 
     // Expose SyncManager only on the server side for scripting
     if (server_->IsAboutToStart())
-        framework_->RegisterDynamicObject("syncmanager", syncManager_.get());
-
+    {
+        LogInfo("Chiru fixme. Server does not export syncmanager by default!");
+        //framework_->RegisterDynamicObject("syncmanager", syncManagers_[0]);
+    }
     framework_->Console()->RegisterCommand("startserver", "Starts a server. Usage: startserver(port,protocol)",
-        server_.get(), SLOT(Start(unsigned short,QString)));
+                                           server_.get(), SLOT(Start(unsigned short,QString)));
 
     framework_->Console()->RegisterCommand("stopserver", "Stops the server", server_.get(), SLOT(Stop()));
 
     framework_->Console()->RegisterCommand("connect",
-        "Connects to a server. Usage: connect(address,port,username,password,protocol)",
-        client_.get(), SLOT(Login(const QString &, unsigned short, const QString &, const QString&, const QString &)));
+                                           "Connects to a server. Usage: connect(address,port,username,password,protocol)",
+                                           client_.get(), SLOT(Login(const QString &, unsigned short, const QString &, const QString&, const QString &)));
 
     framework_->Console()->RegisterCommand("disconnect", "Disconnects from a server.", client_.get(), SLOT(Logout()));
 
     framework_->Console()->RegisterCommand("savescene",
-        "Saves scene into XML or binary. Usage: savescene(filename,asBinary=false,saveTemporaryEntities=false,saveLocalEntities=true)",
-        this, SLOT(SaveScene(QString, bool, bool, bool)), SLOT(SaveScene(QString)));
+                                           "Saves scene into XML or binary. Usage: savescene(filename,asBinary=false,saveTemporaryEntities=false,saveLocalEntities=true)",
+                                           this, SLOT(SaveScene(QString, bool, bool, bool)), SLOT(SaveScene(QString)));
 
     framework_->Console()->RegisterCommand("loadscene",
-        "Loads scene from XML or binary. Usage: loadscene(filename,clearScene=true,useEntityIDsFromFile=true)",
-        this, SLOT(LoadScene(QString, bool, bool)));
+                                           "Loads scene from XML or binary. Usage: loadscene(filename,clearScene=true,useEntityIDsFromFile=true)",
+                                           this, SLOT(LoadScene(QString, bool, bool)));
 
     framework_->Console()->RegisterCommand("importscene",
-        "Loads scene from a dotscene file. Optionally clears the existing scene."
-        "Replace-mode can be optionally disabled. Usage: importscene(filename,clearScene=false,replace=true)",
-        this, SLOT(ImportScene(QString, bool, bool)), SLOT(ImportScene(QString)));
+                                           "Loads scene from a dotscene file. Optionally clears the existing scene."
+                                           "Replace-mode can be optionally disabled. Usage: importscene(filename,clearScene=false,replace=true)",
+                                           this, SLOT(ImportScene(QString, bool, bool)), SLOT(ImportScene(QString)));
 
     framework_->Console()->RegisterCommand("importmesh",
-        "Imports a single mesh as a new entity. Position, rotation, and scale can be specified optionally."
-        "Usage: importmesh(filename, pos = 0 0 0, rot = 0 0 0, scale = 1 1 1, inspectForMaterialsAndSkeleton=true)",
-        this, SLOT(ImportMesh(QString, const float3 &, const float3 &, const float3 &, bool)), SLOT(ImportMesh(QString)));
+                                           "Imports a single mesh as a new entity. Position, rotation, and scale can be specified optionally."
+                                           "Usage: importmesh(filename, pos = 0 0 0, rot = 0 0 0, scale = 1 1 1, inspectForMaterialsAndSkeleton=true)",
+                                           this, SLOT(ImportMesh(QString, const float3 &, const float3 &, const float3 &, bool)), SLOT(ImportMesh(QString)));
 
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModule<KristalliProtocolModule>();
@@ -199,7 +201,7 @@ void TundraLogicModule::Initialize()
             autoStartServerPort_ = GetFramework()->Config()->Get(configData).toInt();
     }
     
-    if (framework_->HasCommandLineParameter("--netrate"))
+    /*if (framework_->HasCommandLineParameter("--netrate"))
     {
         QStringList rateParam = framework_->CommandLineParameters("--netrate");
         if (rateParam.size() > 0)
@@ -211,13 +213,14 @@ void TundraLogicModule::Initialize()
             else
                 LogError("--netrate parameter is not a valid integer.");
         }
-    }
+    }*/
 }
 
 void TundraLogicModule::Uninitialize()
 {
     kristalliModule_ = 0;
-    syncManager_.reset();
+    foreach (SyncManager *sm, syncManagers_)
+        delete sm;
     client_.reset();
     server_.reset();
 }
@@ -230,7 +233,7 @@ void TundraLogicModule::Update(f64 frametime)
     if (checkDefaultServerStart)
     {
         if (autoStartServer_)
-            server_->Start(autoStartServerPort_); 
+            server_->Start(autoStartServerPort_);
         if (framework_->HasCommandLineParameter("--file")) // Load startup scene here (if we have one)
             LoadStartupScene();
         checkDefaultServerStart = false;
@@ -263,7 +266,7 @@ void TundraLogicModule::Update(f64 frametime)
             QStringList params = framework_->CommandLineParameters("--connect").first().split(';');
             if (params.size() >= 4)
                 client_->Login(/*addr*/params[0], /*port*/params[1].toInt(), /*username*/params[3],
-                    /*optional passwd*/ params.size() >= 5 ? params[4] : "", /*protocol*/params[2]);
+                        /*optional passwd*/ params.size() >= 5 ? params[4] : "", /*protocol*/params[2]);
             else
                 LogError("TundraLogicModule: Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
         }
@@ -276,12 +279,22 @@ void TundraLogicModule::Update(f64 frametime)
     if (server_)
         server_->Update(frametime);
     // Run scene sync
-    if (syncManager_)
-        syncManager_->Update(frametime);
+    if (!syncManagers_.empty())
+        foreach (SyncManager *sm, syncManagers_)
+            sm->Update(frametime);
     // Run scene interpolation
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (scene)
         scene->UpdateAttributeInterpolations(frametime);
+}
+
+void TundraLogicModule::registerSyncManager(const QString name)
+{
+    SyncManager *sm = new SyncManager(this);
+    ScenePtr newScene = framework_->Scene()->GetScene(name);
+    sm->RegisterToScene(newScene);
+    syncManagers_.append(sm);
+
 }
 
 void TundraLogicModule::LoadStartupScene()
@@ -290,7 +303,7 @@ void TundraLogicModule::LoadStartupScene()
     if (!scene)
     {
         scene = framework_->Scene()->CreateScene("TundraServer", true, true).get();
-//        framework_->Scene()->SetDefaultScene(scene);
+        //        framework_->Scene()->SetDefaultScene(scene);
     }
 
     bool hasFile = framework_->HasCommandLineParameter("--file");
@@ -414,7 +427,7 @@ bool TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
     kNet::PolledTimer timer;
     SceneImporter importer(scene->shared_from_this());
     QList<Entity *> entities = importer.Import(filename, QFileInfo(filename).dir().path(), Transform(),
-        "local://", AttributeChange::Default, clearScene, replace);
+                                               "local://", AttributeChange::Default, clearScene, replace);
 
     LogInfo(QString("Importing of Ogre .scene finished. %1 entities created in %2 msecs.").arg(entities.size()).arg(timer.MSecsElapsed()));
     return entities.size() > 0;
@@ -439,7 +452,7 @@ bool TundraLogicModule::ImportMesh(QString filename, const float3 &pos, const fl
 
     SceneImporter importer(scene->shared_from_this());
     EntityPtr entity = importer.ImportMesh(filename, QFileInfo(filename).dir().path(), Transform(pos, rot, scale),
-        "", "local://", AttributeChange::Default, inspect);
+                                           "", "local://", AttributeChange::Default, inspect);
     if (!entity)
         LogError("TundraLogicModule::ImportMesh: import failed for " + filename + ".");
     return entity != 0;

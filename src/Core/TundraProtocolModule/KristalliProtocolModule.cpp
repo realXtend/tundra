@@ -100,8 +100,13 @@ KristalliProtocolModule::KristalliProtocolModule() :
     ,networkDialog(0)
 #endif
 {
+    serverIp_map_.clear();
+    serverPort_map_.clear();
+    serverTransport_map_.clear();
+    reconnectAttempts_map_.clear();
+    reconnectTimer_map_.clear();
+    serverConnection_map_.clear();
 }
-
 KristalliProtocolModule::~KristalliProtocolModule()
 {
     Disconnect();
@@ -153,6 +158,10 @@ void KristalliProtocolModule::OpenKNetLogWindow()
 
 void KristalliProtocolModule::Update(f64 /*frametime*/)
 {
+    // Multiconnection update
+    if (!serverConnection_map_.isEmpty())
+        ProcessConnections();
+
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
     if (serverConnection)
@@ -212,7 +221,19 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
 
     // If connection was made, enable a larger number of reconnection attempts in case it gets lost
     if (serverConnection && serverConnection->GetConnectionState() == ConnectionOK)
-        reconnectAttempts = cReconnectAttempts;
+    {
+        serverConnection_map_.insert("NEW", serverConnection);
+        serverIp_map_.insert("NEW",serverIp);
+        serverPort_map_.insert("NEW",serverPort);
+        serverTransport_map_.insert("NEW", serverTransport);
+        reconnectAttempts_map_.insert("NEW", reconnectAttempts);
+        reconnectTimer.Reset();
+        reconnectTimer_map_.insert("NEW",reconnectTimer);
+        ::LogInfo("New connection saved!");
+        serverConnection = 0;
+        serverIp = "";
+        serverPort = 0;
+    }
 }
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
@@ -252,6 +273,37 @@ void KristalliProtocolModule::PerformConnection()
     // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
     if (serverConnection->GetSocket() && serverConnection->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
         serverConnection->GetSocket()->SetNaglesAlgorithmEnabled(false);
+}
+
+void KristalliProtocolModule::PerformReconnection(QMutableMapIterator<QString, Ptr(kNet::MessageConnection)> &conReference, QString key)
+{
+    if (conReference.value() != 0)
+    {
+        conReference.value()->Close();
+//        network.CloseMessageConnection(serverConnection);
+        conReference.value() = 0;
+    }
+
+    // Connect to the server.
+    conReference.value() = network.Connect(serverIp_map_.value(key).c_str(), serverPort_map_.value(key), serverTransport_map_.value(key), this);
+    if (!conReference.value())
+    {
+        ::LogError("Unable to connect to " + serverIp_map_.value(key) + ":" + ToString(serverPort_map_.value(key)));
+        return;
+    }
+
+    if (serverTransport_map_.value(key) == kNet::SocketOverUDP)
+        dynamic_cast<kNet::UDPMessageConnection*>(conReference.value().ptr())->SetDatagramSendRate(500);
+
+    // For TCP mode sockets, disable Nagle's option to improve latency for the messages we send.
+    if (conReference.value()->GetSocket() && conReference.value()->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
+        conReference.value()->GetSocket()->SetNaglesAlgorithmEnabled(false);
+
+#ifdef KNET_HAS_SCTP
+    // For SCTP mode sockets, disable Nagle's option to improve latency for the messages we send.
+    else if (conReference.value()->GetSocket() && conReference.value()->GetSocket()->TransportLayer() == kNet::SocketOverSCTP)
+        conReference.value()->GetSocket()->SetNaglesAlgorithmEnabled(false);
+#endif
 }
 
 void KristalliProtocolModule::Disconnect()
@@ -387,4 +439,73 @@ UserConnectionPtr KristalliProtocolModule::GetUserConnection(u8 id) const
             return *iter;
 
     return UserConnectionPtr();
+}
+
+void KristalliProtocolModule::ProcessConnections()
+{
+    QStringList list = serverConnection_map_.keys();
+
+    QMutableMapIterator<QString, std::string> serverIpIter_(serverIp_map_);
+    QMutableMapIterator<QString, unsigned short> serverPortIter_(serverPort_map_);
+    QMutableMapIterator<QString, kNet::SocketTransportLayer> serverTransportIter_(serverTransport_map_);
+    QMutableMapIterator<QString, int> reconnectAttemptsIter_(reconnectAttempts_map_);
+    QMutableMapIterator<QString, kNet::PolledTimer> reconnectTimerIter_(reconnectTimer_map_);
+    QMutableMapIterator<QString, Ptr(kNet::MessageConnection) > serverConnectionIter_(serverConnection_map_);
+
+    foreach (QString key, list)
+    {
+        serverIpIter_.next();
+        serverPortIter_.next();
+        serverTransportIter_.next();
+        reconnectAttemptsIter_.next();
+        reconnectTimerIter_.next();
+        serverConnectionIter_.next();
+
+        // Pulls all new inbound network messages and calls the message handler we've registered
+        // for each of them.
+        if (serverConnectionIter_.value())
+            serverConnectionIter_.value()->Process();
+
+        if (key == "NEW")
+            continue;
+        // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
+        // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
+
+        // Our client->server connection is never kept half-open.
+        // That is, at the moment the server write-closes the connection, we also write-close the connection.
+        // Check here if the server has write-closed, and also write-close our end if so.
+        if (serverConnectionIter_.value() && !serverConnectionIter_.value()->IsReadOpen() && serverConnectionIter_.value()->IsWriteOpen())
+            serverConnectionIter_.value()->Disconnect(0);
+
+        // ::LogInfo("serverConnection: " + ToString(!!serverConnection));
+        // if (serverConnection)
+        //   ::LogInfo("state: " + ToString(serverConnection->GetConnectionState()));
+        if ((!serverConnectionIter_.value() || serverConnectionIter_.value()->GetConnectionState() == ConnectionClosed ||
+             serverConnectionIter_.value()->GetConnectionState() == ConnectionPending) && serverIpIter_.value().length() != 0)
+        {
+            const int cReconnectTimeout = 5 * 1000.f;
+            if (reconnectTimerIter_.value().Test())
+            {
+                if (reconnectAttemptsIter_.value())
+                {
+                    PerformReconnection(serverConnectionIter_, key);
+                    --reconnectAttemptsIter_.value();
+                }
+                else
+                {
+                    ::LogInfo("Failed to connect to " + serverIpIter_.value() + ":" + ToString(serverPortIter_.value()));
+                    emit ConnectionAttemptFailed();
+
+                    reconnectTimerIter_.value().Stop();
+                    serverIpIter_.value() = "";
+                }
+            }
+            else if (!reconnectTimerIter_.value().Enabled())
+                reconnectTimerIter_.value().StartMSecs(cReconnectTimeout);
+        }
+
+        // If connection was made, enable a larger number of reconnection attempts in case it gets lost
+        if (serverConnectionIter_.value() && serverConnectionIter_.value()->GetConnectionState() == ConnectionOK)
+            reconnectAttemptsIter_.value() = cReconnectAttempts;
+    }
 }
