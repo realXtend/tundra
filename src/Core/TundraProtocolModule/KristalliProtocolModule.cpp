@@ -308,6 +308,16 @@ void KristalliProtocolModule::PerformReconnection(QMutableMapIterator<QString, P
 
 void KristalliProtocolModule::Disconnect()
 {
+    serverIp_map_.clear();
+    reconnectAttempts_map_.clear();
+    serverPort_map_.clear();
+    serverTransport_map_.clear();
+    reconnectTimer_map_.clear();
+    QMutableMapIterator<QString, Ptr(kNet::MessageConnection)> serverConnectionIter_(serverConnection_map_);
+    serverConnectionIter_.next();
+    serverConnectionIter_.value()->Disconnect();
+    serverConnectionIter_.value() = 0;
+    serverConnection_map_.clear();
     // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
     serverIp = "";
     reconnectTimer.Stop();
