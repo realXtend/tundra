@@ -10,6 +10,8 @@ var uploadStorageUrl = "";
 var uploadStorageName = "Asset Test Storage";
 var uploadTestFile = "./resources.cfg";
 
+engine.ImportExtension("qt.core");
+
 function Update(frametime)
 {
     if (run)
@@ -18,7 +20,7 @@ function Update(frametime)
 
         // Download tests
         // Please do add more download requests to the test if you want.
-        RequestAsset("http://www.google.com/index.html", "Binary");
+        RequestAsset("http://realxtend.files.wordpress.com/2011/07/cropped-rex-blog-header.jpg", "Binary");
         RequestAsset("http://dl.dropbox.com/u/3589544/building/meshes/cube.mesh");
         RequestAsset("http://dl.dropbox.com/u/3589544/building/scenes/tundra/test1.txml");
         print("");
@@ -47,8 +49,7 @@ function Update(frametime)
 
 function AddAssetStorage(url, name)
 {
-    var assetstorageptr = asset.AddAssetStorage(url, name);
-    var assetstorage = assetstorageptr.get();
+    var assetstorage = asset.DeserializeAssetStorageFromString("name=" + name + ";type=HttpAssetStorage;src=" + url, false);
     if (assetstorage != null)
     {
         print("Added asset storage");
@@ -77,25 +78,23 @@ function RequestAsset(ref, type)
     ForgetAsset(ref);
 
     print("Requesting:", ref);
-    var transferptr = asset.RequestAsset(ref, type);
-    var transfer = transferptr.get();
+    var transfer = asset.RequestAsset(ref, type);
     transfer.Downloaded.connect(DownloadReady);
-    transfer.Loaded.connect(AssetReady);
+    transfer.Succeeded.connect(AssetReady);
 }
 
 function DownloadReady(/* IAssetTransfer* */ transfer)
 {
     var data = transfer.RawData();
     print("Download ready");
-    print("  >> Source    :", transfer.GetSourceUrl());
-    print("  >> Type      :", transfer.GetAssetType());
+    print("  >> Source    :", transfer.SourceUrl());
+    print("  >> Type      :", transfer.AssetType());
     print("  >> Data len  :", data.size(), "\n");
 }
 
-function AssetReady(/* IAssetPtr* */ assetptr)
+function AssetReady(/* IAssetPtr* */ asset)
 {
-    var asset = assetptr.get();
-    var data = asset.RawData();
+    var data = asset.GetRawData();
     print("Asset ready");
     print("  >> Class ptr :", asset);
     print("  >> Type      :", asset.Type());
@@ -108,8 +107,7 @@ function AssetReady(/* IAssetPtr* */ assetptr)
 function UploadAsset(fileName, storageName, uploadName)
 {
     print("Uploading:", fileName, "with destination name", uploadName);
-    var uploadtransferptr = asset.UploadAssetFromFile(fileName, storageName, uploadName);
-    var uploadtransfer = uploadtransferptr.get();
+    var uploadtransfer = asset.UploadAssetFromFile(fileName, storageName, uploadName);
     if (uploadtransfer != null)
     {
         uploadtransfer.Completed.connect(UploadCompleted);
@@ -123,12 +121,12 @@ function UploadCompleted(/* IAssetUploadTransfer* */ transfer)
 {
     print("Upload completed");
     print("  >> New asset ref    :", transfer.AssetRef());
-    print("  >> Destination name :", transfer.GetDesticationName(), "\n");
+    print("  >> Destination name :", transfer.DestinationName(), "\n");
 }
 
 function UploadFailed(/* IAssetUploadTransfer* */ transfer)
 {
     print("Upload failed");
-    print("  >> File name   :", transfer.GetSourceFilename());
-    print("  >> Destination :", transfer.GetDesticationName(), "\n");
+    print("  >> File name   :", transfer.SourceFilename());
+    print("  >> Destination :", transfer.DestinationName(), "\n");
 }
