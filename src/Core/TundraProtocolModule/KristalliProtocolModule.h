@@ -115,14 +115,6 @@ private:
     /// for a transition to OK state. When this happens, the MsgLogin message is sent.
     bool connectionPending;
     
-    /// This variable stores the server ip address we are desiring to connect to.
-    /// This is used to remember where we need to reconnect in case the connection goes down.
-    std::string serverIp;
-    /// Store the port number we are desiring to connect to. Used for reconnecting
-    unsigned short serverPort;
-    /// Store the transport type. Used for reconnecting
-    kNet::SocketTransportLayer serverTransport;
-    
     kNet::Network network;
     Ptr(kNet::MessageConnection) serverConnection;
     kNet::NetworkServer *server;

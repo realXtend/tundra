@@ -214,6 +214,7 @@ void TundraLogicModule::Initialize()
                 LogError("--netrate parameter is not a valid integer.");
         }
     }*/
+    connect(framework_->Scene(), SIGNAL(SceneAdded(QString)), this, SLOT(registerSyncManager(QString)));
 }
 
 void TundraLogicModule::Uninitialize()
