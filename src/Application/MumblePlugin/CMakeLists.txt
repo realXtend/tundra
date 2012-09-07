@@ -5,7 +5,7 @@ macro (configure_speex)
     if ("${SPEEX_ROOT}" STREQUAL "")
         SET(SPEEX_ROOT ${ENV_TUNDRA_DEP_PATH}/speex)
     endif()
-    
+
     sagase_configure_package(SPEEX
         NAMES speex
         COMPONENTS libspeex         # speex lib
