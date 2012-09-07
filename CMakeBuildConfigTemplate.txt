@@ -134,13 +134,8 @@ if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
     endif ()
 endif()
 AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
-
-# Remove the win32 check once the mumble and vlc deps are fetched in the linux build scripts. 
-# For MumblePlugin this is same as apt-get libspeex and protobuf ~2.4.1 and VlcPlugin apt-get libvlc-dev.
-if (WIN32)
-    AddProject(Application MumblePlugin)        # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
-    AddProject(Application VlcPlugin)           # Adds media playback capabilities with libVLC and entity components.
-endif ()
+AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
+AddProject(Application VlcPlugin)              # Adds media playback capabilities with libVLC and entity components.
 
 #AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.
 AddProject(Application CAVEStereoModule)       # Provides multi windowed rendering views for CAVE setups and stereoscopy view modes.
