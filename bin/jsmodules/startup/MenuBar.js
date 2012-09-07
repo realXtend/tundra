@@ -118,6 +118,10 @@ if (!framework.IsHeadless())
 
     function Disconnect() {
         client.Logout();
+        var scene = framework.Scene().GetScene("TundraServer");
+        cameraentity = scene.GetEntityByName("FreeLookCamera");
+        var camera = cameraentity.camera;
+        camera.SetActive(camera);
     }
 
     function Connected() {
