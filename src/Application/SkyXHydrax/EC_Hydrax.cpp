@@ -174,6 +174,13 @@ void EC_Hydrax::OnActiveCameraChanged(Entity *newActiveCamera)
         SAFE_DELETE(impl);
         return;
     }
+
+    if (newActiveCamera)
+    {
+        if (newActiveCamera->ParentScene() != ParentScene())
+            return;
+    }
+
     // If we haven't yet initialized, do a full init.
     if (!impl)
         Create();
