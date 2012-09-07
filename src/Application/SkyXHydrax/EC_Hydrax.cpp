@@ -169,16 +169,13 @@ void EC_Hydrax::Create()
 void EC_Hydrax::OnActiveCameraChanged(Entity *newActiveCamera)
 {
     PROFILE(EC_Hydrax_OnActiveCameraChanged);
-    if (!newActiveCamera)
+
+    // If no active camera or the new active camera is observing another Ogre scene than the one this EC_Hydrax component is in, 
+    // don't initialize Hydrax to that scene.
+    if (!newActiveCamera || newActiveCamera->ParentScene() != ParentScene())
     {
         SAFE_DELETE(impl);
         return;
-    }
-
-    if (newActiveCamera)
-    {
-        if (newActiveCamera->ParentScene() != ParentScene())
-            return;
     }
 
     // If we haven't yet initialized, do a full init.
