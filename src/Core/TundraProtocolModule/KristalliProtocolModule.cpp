@@ -94,8 +94,7 @@ KristalliProtocolModule::KristalliProtocolModule() :
     serverConnection(0),
     server(0),
     reconnectAttempts(0),
-    connectionPending(false),
-    serverPort(0)
+    connectionPending(false)
   #ifdef KNET_USE_QT
   ,networkDialog(0)
   #endif
@@ -451,81 +450,29 @@ UserConnectionPtr KristalliProtocolModule::GetUserConnection(u8 id) const
     return UserConnectionPtr();
 }
 
-void KristalliProtocolModule::ProcessConnections()
-{
-    QStringList list = serverConnection_map_.keys();
-
-    QMutableMapIterator<QString, std::string> serverIpIter_(serverIp_map_);
-    QMutableMapIterator<QString, unsigned short> serverPortIter_(serverPort_map_);
-    QMutableMapIterator<QString, kNet::SocketTransportLayer> serverTransportIter_(serverTransport_map_);
-    QMutableMapIterator<QString, int> reconnectAttemptsIter_(reconnectAttempts_map_);
-    QMutableMapIterator<QString, kNet::PolledTimer> reconnectTimerIter_(reconnectTimer_map_);
-    QMutableMapIterator<QString, Ptr(kNet::MessageConnection) > serverConnectionIter_(serverConnection_map_);
-
-    foreach (QString key, list)
-    {
-        serverIpIter_.next();
-        serverPortIter_.next();
-        serverTransportIter_.next();
-        reconnectAttemptsIter_.next();
-        reconnectTimerIter_.next();
-        serverConnectionIter_.next();
-
-        // Pulls all new inbound network messages and calls the message handler we've registered
-        // for each of them.
-        if (serverConnectionIter_.value())
-            serverConnectionIter_.value()->Process();
-
-        if (key == "NEW")
-            continue;
-        // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
-        // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
-
-        // Our client->server connection is never kept half-open.
-        // That is, at the moment the server write-closes the connection, we also write-close the connection.
-        // Check here if the server has write-closed, and also write-close our end if so.
-        if (serverConnectionIter_.value() && !serverConnectionIter_.value()->IsReadOpen() && serverConnectionIter_.value()->IsWriteOpen())
-            serverConnectionIter_.value()->Disconnect(0);
-
-        // ::LogInfo("serverConnection: " + ToString(!!serverConnection));
-        // if (serverConnection)
-        //   ::LogInfo("state: " + ToString(serverConnection->GetConnectionState()));
-        if ((!serverConnectionIter_.value() || serverConnectionIter_.value()->GetConnectionState() == ConnectionClosed ||
-             serverConnectionIter_.value()->GetConnectionState() == ConnectionPending) && serverIpIter_.value().length() != 0)
-        {
-            const int cReconnectTimeout = 5 * 1000.f;
-            if (reconnectTimerIter_.value().Test())
-            {
-                if (reconnectAttemptsIter_.value())
-                {
-                    PerformReconnection(serverConnectionIter_, key);
-                    --reconnectAttemptsIter_.value();
-                }
-                else
-                {
-                    ::LogInfo("Failed to connect to " + serverIpIter_.value() + ":" + ToString(serverPortIter_.value()));
-                    emit ConnectionAttemptFailed();
-
-                    reconnectTimerIter_.value().Stop();
-                    serverIpIter_.value() = "";
-                }
-            }
-            else if (!reconnectTimerIter_.value().Enabled())
-                reconnectTimerIter_.value().StartMSecs(cReconnectTimeout);
-        }
-
-        // If connection was made, enable a larger number of reconnection attempts in case it gets lost
-        if (serverConnectionIter_.value() && serverConnectionIter_.value()->GetConnectionState() == ConnectionOK)
-            reconnectAttemptsIter_.value() = cReconnectAttempts;
-    }
-}
-
 void KristalliProtocolModule::SetIdentifier(const QString identifier)
 {
     assert(serverConnection_map_.contains("NEW"));
 
-    Ptr(kNet::MessageConnection) temp = serverConnection_map_.value("NEW");
-    serverConnection_map_.insert(identifier,temp);
+    Ptr(kNet::MessageConnection) con = serverConnection_map_.value("NEW");
+    std::string ip = serverIp_map_.value("NEW");
+    unsigned short port = serverPort_map_.value("NEW");
+    kNet::SocketTransportLayer transport = serverTransport_map_.value("NEW");
+    int attempts = reconnectAttempts_map_.value("NEW");
+    kNet::PolledTimer timer = reconnectTimer_map_.value("NEW");
+
+    serverConnection_map_.insert(identifier,con);
+    serverIp_map_.insert(identifier,ip);
+    serverPort_map_.insert(identifier,port);
+    serverTransport_map_.insert(identifier,transport);
+    reconnectAttempts_map_.insert(identifier,attempts);
+    reconnectTimer_map_.insert(identifier,timer);
+
+    serverIp_map_.remove("NEW");
+    serverPort_map_.remove("NEW");
+    serverTransport_map_.remove("NEW");
+    reconnectAttempts_map_.remove("NEW");
+    reconnectTimer_map_.remove("NEW");
     serverConnection_map_.remove("NEW");
 }
 
