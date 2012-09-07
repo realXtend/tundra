@@ -39,6 +39,7 @@ if (SHOULD_RUN)
 
     file (GLOB CPP_FILES *.cpp)
     if (WIN32 AND VC90)
+        include_directories(windows/)
         file(GLOB H_FILES *.h windows/*.h)
     else() # Omit stdint.h in other platforms.
         file(GLOB H_FILES *.h)
