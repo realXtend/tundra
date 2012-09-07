@@ -10,6 +10,7 @@
 #include <kNet/Socket.h>
 #include <map>
 #include <QObject>
+#include <QMap>
 
 class Framework;
 
@@ -65,7 +66,7 @@ public slots:
     /// Connects and logs in.
     /** loginUrl's query parameters will be evaluated for the login data.
         All query parameters that are not recognized will be added to the clients login properties as custom data.
-        Minimum information needed to try a connection in the url are host and username. For query parameters only username, protocol and password 
+        Minimum information needed to try a connection in the url are host and username. For query parameters only username, protocol and password
         get special treatment, other params are inserted to the login properties as is.
         URL syntax: {tundra|http|https}://host[:port]/?username=x[&password=y][&protocol={udp|tcp}][&XXX=YYY]
         URL examples: tundra://server.com/?username=John%20Doe tundra://server.com:5432/?username=John%20Doe&password=pWd123&protocol=udp&myCustomValue=YYY&myOtherValue=ZZZ
@@ -114,7 +115,7 @@ public slots:
 signals:
     /// This signal is emitted right before this client is starting to connect to a Tundra server.
     /** Any script or other piece of code can listen to this signal, and as at this point, fill in any internal
-        custom data (called "login properties") they need to add to the connection handshake. The server will get 
+        custom data (called "login properties") they need to add to the connection handshake. The server will get
         all the login properties and a server-side script can do validation and storage of whether the client
         can be authorized to log in or not. */
     void AboutToConnect();
@@ -142,6 +143,9 @@ private slots:
     void DelayedLogout();
 
 private:
+    /// Saves connection properties to Containers
+    void saveProperties(const QString name = "NEW");
+
     /// Handles pending login to server
     void CheckLogin();
 
@@ -161,6 +165,15 @@ private:
     TundraLogicModule* owner_; ///< Owning module
     Framework* framework_; ///< Framework pointer
     QString sceneName;
+
+    // Container for all the connections loginstates
+    QMap<QString,ClientLoginState> loginstate_list_;
+    // Container for all the connections properties
+    QMap< QString, std::map<QString, QString> > properties_list_;
+    // Container for all the connections reconnect bool value
+    QMap<QString, bool> reconnect_list_;
+    // Container for all the connections clientID values
+    QMap<QString, u8> client_id_list_;
 };
 
 }

@@ -215,6 +215,7 @@ void TundraLogicModule::Initialize()
         }
     }*/
     connect(framework_->Scene(), SIGNAL(SceneAdded(QString)), this, SLOT(registerSyncManager(QString)));
+    connect(framework_->Scene(), SIGNAL(SceneRemoved(QString)), this, SLOT(removeSyncManager(QString)));
 }
 
 void TundraLogicModule::Uninitialize()
@@ -291,10 +292,19 @@ void TundraLogicModule::Update(f64 frametime)
 
 void TundraLogicModule::registerSyncManager(const QString name)
 {
+    if (name == "TundraServer")
+        return;
     SyncManager *sm = new SyncManager(this);
     ScenePtr newScene = framework_->Scene()->GetScene(name);
     sm->RegisterToScene(newScene);
-    syncManagers_.append(sm);
+    syncManagers_.insert(name, sm);
+}
+
+void TundraLogicModule::removeSyncManager(const QString name)
+{
+    // Only works with 1 syncmanager for now.
+    delete syncManagers_[name];
+    syncManagers_.clear();
 
 }
 

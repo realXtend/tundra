@@ -10,6 +10,7 @@
 
 #include <kNetFwd.h>
 #include <kNet/Types.h>
+#include <QMap>
 
 namespace TundraLogic
 {
@@ -34,7 +35,7 @@ public:
     KristalliProtocolModule *GetKristalliModule() const { return kristalliModule_; }
 
     /// Returns syncmanager
-    SyncManager* GetSyncManager() const { return syncManagers_.first(); }
+    SyncManager* GetSyncManager() const;
 
     /// Returns client
     const boost::shared_ptr<Client>& GetClient() const { return client_; }
@@ -79,7 +80,9 @@ public slots:
 private slots:
     void StartupSceneTransfedSucceeded(AssetPtr asset);
     void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
-    void registerSyncManager(const QString name);
+    void registerSyncManager(const QString);
+    void removeSyncManager(const QString);
+
 
 private:
     /// Handles a Kristalli protocol message
@@ -88,7 +91,7 @@ private:
     /// Loads the startup scene(s) specified by --file command line parameter.
     void LoadStartupScene();
 
-    QList<SyncManager*> syncManagers_;
+    QMap<QString, SyncManager*> syncManagers_;
     boost::shared_ptr<Client> client_; ///< Client
     boost::shared_ptr<Server> server_; ///< Server
     KristalliProtocolModule *kristalliModule_; ///< KristalliProtocolModule pointer
