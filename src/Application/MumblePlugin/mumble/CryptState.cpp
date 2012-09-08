@@ -42,7 +42,7 @@
 
 #include <Win.h> // Tundra include
 
-#ifdef UNIX
+#ifdef __UNIX__
 #include <arpa/inet.h>
 #endif
 

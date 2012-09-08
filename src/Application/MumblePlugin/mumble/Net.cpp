@@ -33,7 +33,7 @@
 #include <QString>
 #include <QRegExp>
 
-#ifdef UNIX
+#ifdef __UNIX__
 #include <arpa/inet.h>
 #endif
 
