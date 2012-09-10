@@ -261,7 +261,6 @@ QString Client::LoginPropertiesAsXml() const
 }
 
 void Client::CheckLogin()
-void Client::CheckLogin()
 {
     // Using iterators to process through all properties for established connections
     QMutableMapIterator<QString, ClientLoginState> loginstateIterator(loginstate_list_);
