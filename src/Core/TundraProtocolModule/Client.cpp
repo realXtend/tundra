@@ -35,7 +35,8 @@ Client::Client(TundraLogicModule* owner) :
     framework_(owner->GetFramework()),
     loginstate_(NotConnected),
     reconnect_(false),
-    client_id_(0)
+    client_id_(0),
+    discScene("")
 {
 }
 
@@ -169,8 +170,9 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     saveProperties();
 }
 
-void Client::Logout()
+void Client::Logout(const QString &name)
 {
+    discScene = name;
     QTimer::singleShot(1, this, SLOT(DelayedLogout()));
 }
 
@@ -181,21 +183,18 @@ void Client::DelayedLogout()
 
 void Client::DoLogout(bool fail)
 {
-    if (loginstate_list_.begin().value() != NotConnected)
+    if (loginstate_list_[discScene]!= NotConnected)
     {
-        if (GetConnection())
+        if (GetConnection(discScene))
         {
-            owner_->GetKristalliModule()->Disconnect();
+            owner_->GetKristalliModule()->Disconnect(discScene);
             ::LogInfo("Disconnected");
         }
         
-        loginstate_ = NotConnected;
-        client_id_ = 0;
-
-        loginstate_list_.clear();
-        client_id_list_.clear();
-        reconnect_list_.clear();
-        properties_list_.clear();
+        loginstate_list_.remove(discScene);
+        client_id_list_.remove(discScene);
+        reconnect_list_.remove(discScene);
+        properties_list_.remove(discScene);
         
         emit Disconnected();
     }
@@ -207,17 +206,20 @@ void Client::DoLogout(bool fail)
     }
     else // An user deliberately disconnected from the world, and not due to a connection error.
     {
-        framework_->Scene()->RemoveScene(sceneName);
+        framework_->Scene()->RemoveScene(discScene);
         // Clear all the login properties we used for this session, so that the next login session will start from an
         // empty set of login properties (just-in-case).
-        properties.clear();
+        properties_list_.remove(discScene);
     }
 
-    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
-    disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)),
-               this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
+    if (loginstate_list_.isEmpty())
+    {
+        KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
+        disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)),
+                   this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
 
-    disconnect(kristalli, SIGNAL(ConnectionAttemptFailed()), this, SLOT(OnConnectionAttemptFailed()));
+        disconnect(kristalli, SIGNAL(ConnectionAttemptFailed()), this, SLOT(OnConnectionAttemptFailed()));
+    }
 
     ::LogInfo("Client logged out.");
 }
@@ -300,9 +302,9 @@ void Client::CheckLogin()
     }
 }
 
-kNet::MessageConnection* Client::GetConnection()
+kNet::MessageConnection* Client::GetConnection(const QString &name)
 {
-    return owner_->GetKristalliModule()->GetMessageConnection();
+    return owner_->GetKristalliModule()->GetMessageConnection(name);
 }
 
 void Client::OnConnectionAttemptFailed()
@@ -328,12 +330,24 @@ void Client::OnConnectionAttemptFailed()
 
 void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packetId, message_id_t messageId, const char* data, size_t numBytes)
 {
-    if (source != GetConnection())
+    QMapIterator<QString, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
+
+    // check if any of the client's messageConnections send the message
+    while (sourceIterator.hasNext())
     {
-        ::LogWarning("Client: dropping message " + QString::number(messageId) + " from unknown source");
-        return;
+        sourceIterator.next();
+
+        if (source == sourceIterator.value().ptr())
+            break;
+        else if (source != sourceIterator.value().ptr() && sourceIterator.hasNext())
+            continue;
+        else
+        {
+            ::LogWarning("Client: dropping message " + QString::number(messageId) + " from unknown source");
+            return;
+        }
     }
-    
+
     switch(messageId)
     {
     case MsgLoginReply::messageID:
@@ -369,6 +383,8 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
+            // This sets identifier in KristalliProtocolModule for this particular connection
+            owner_->GetKristalliModule()->SetIdentifier(sceneName);
             // Create a non-authoritative scene for the client
             ScenePtr scene = framework_->Scene()->CreateScene(sceneName, true, false);
 

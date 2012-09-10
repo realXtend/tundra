@@ -304,29 +304,36 @@ void KristalliProtocolModule::PerformReconnection(QMutableMapIterator<QString, P
 
 void KristalliProtocolModule::Disconnect()
 {
+    foreach (Ptr(kNet::MessageConnection) mc, serverConnection_map_)
+    {
+        mc->Disconnect();
+        mc = 0;
+    }
+    serverConnection_map_.clear();
     serverIp_map_.clear();
-    reconnectAttempts_map_.clear();
-    serverPort_map_.clear();
     serverTransport_map_.clear();
+    serverPort_map_.clear();
+    reconnectAttempts_map_.clear();
     reconnectTimer_map_.clear();
+
+}
+
+void KristalliProtocolModule::Disconnect(const QString &name)
+{
     if (!serverConnection_map_.isEmpty())
     {
-        QMutableMapIterator<QString, Ptr(kNet::MessageConnection)> serverConnectionIter_(serverConnection_map_);
-        serverConnectionIter_.next();
-        if (serverConnectionIter_.value())
+        serverIp_map_.remove(name);
+        reconnectAttempts_map_.remove(name);
+        serverPort_map_.remove(name);
+        serverTransport_map_.remove(name);
+        reconnectTimer_map_[name].Stop();
+        reconnectTimer_map_.remove(name);
+        if (serverConnection_map_[name])
         {
-            serverConnectionIter_.value()->Disconnect();
-            serverConnectionIter_.value() = 0;
+            serverConnection_map_[name]->Disconnect();
+            serverConnection_map_[name] = 0;
         }
-        serverConnection_map_.clear();
-    }
-    
-    if (serverConnection)
-    {
-        serverConnection->Disconnect();
-        //        network.CloseMessageConnection(serverConnection);
-        ///\todo Wait? This closes the connection.
-        serverConnection = 0;
+        serverConnection_map_.remove(name);
     }
 }
 
@@ -454,6 +461,8 @@ void KristalliProtocolModule::SetIdentifier(const QString identifier)
 {
     assert(serverConnection_map_.contains("NEW"));
 
+    // Client logged in. Get all properties from maps which are "NEW" and apply
+    // scenename to it. This allows us to call for correct connection to scene.
     Ptr(kNet::MessageConnection) con = serverConnection_map_.value("NEW");
     std::string ip = serverIp_map_.value("NEW");
     unsigned short port = serverPort_map_.value("NEW");
@@ -476,15 +485,11 @@ void KristalliProtocolModule::SetIdentifier(const QString identifier)
     serverConnection_map_.remove("NEW");
 }
 
-kNet::MessageConnection * KristalliProtocolModule::GetMessageConnection()
+kNet::MessageConnection * KristalliProtocolModule::GetMessageConnection(const QString &name)
 {
-    // Just wait for connection to be established and stored to connection map for now.
-    if (serverConnection_map_.isEmpty())
+    QMap<QString, Ptr(kNet::MessageConnection)>::iterator iter = serverConnection_map_.find(name);
+    if (iter == serverConnection_map_.end())
         return 0;
     else
-    {
-        QMap<QString, Ptr(kNet::MessageConnection)>::iterator iter = serverConnection_map_.begin();
-        Ptr(kNet::MessageConnection) temp = iter.value();
-        return temp.ptr();
-    }
+        return iter.value();
 }

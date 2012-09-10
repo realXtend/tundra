@@ -37,6 +37,7 @@ public:
     void Connect(const char *ip, unsigned short port, kNet::SocketTransportLayer transport);
 
     void Disconnect();
+    void Disconnect(const QString&);
 
     /// Starts a Kristalli server at the given port/transport.
     /// @return true if successful
@@ -59,7 +60,7 @@ public:
     void SubscribeToNetworkEvents();
 
     /// Return message connection, for use by other modules (null if no connection made)
-    kNet::MessageConnection *GetMessageConnection();
+    kNet::MessageConnection *GetMessageConnection(const QString&);
     
     /// Return server, for use by other modules (null if not running)
     kNet::NetworkServer* GetServer() const { return server; }
