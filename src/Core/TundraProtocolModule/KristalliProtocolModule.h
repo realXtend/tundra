@@ -100,7 +100,7 @@ signals:
     void ClientDisconnectedEvent(UserConnection *connection);
 
     /// Triggered on the client side when a server connection attempt has failed.
-    void ConnectionAttemptFailed();
+    void ConnectionAttemptFailed(QString &);
 
 private:
     /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
@@ -146,6 +146,8 @@ private:
 
     /// Multiconnection update method
     void ProcessConnections();
+
+    QStringList removeConnections;
 #ifdef KNET_USE_QT
     QPointer<kNet::NetworkDialog> networkDialog;
 #endif

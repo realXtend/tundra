@@ -211,10 +211,9 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
                     else
                     {
                         ::LogInfo("Failed to connect to " + serverIpIter_.value() + ":" + ToString(serverPortIter_.value()));
-                        emit ConnectionAttemptFailed();
+                        emit ConnectionAttemptFailed(key);
 
-                        reconnectTimerIter_.value().Stop();
-                        serverIpIter_.value() = "";
+                        removeConnections.append(key);
                     }
                 }
                 else if (!reconnectTimerIter_.value().Enabled())
@@ -225,6 +224,15 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
             if (serverConnectionIter_.value() && serverConnectionIter_.value()->GetConnectionState() == ConnectionOK)
                 reconnectAttemptsIter_.value() = cReconnectAttempts;
         }
+    }
+
+    if (!removeConnections.isEmpty())
+    {
+        foreach (QString key, removeConnections)
+        {
+            Disconnect(key);
+        }
+        removeConnections.clear();
     }
 
     if (server)
@@ -491,5 +499,8 @@ kNet::MessageConnection * KristalliProtocolModule::GetMessageConnection(const QS
     if (iter == serverConnection_map_.end())
         return 0;
     else
-        return iter.value();
+    {
+        Ptr(kNet::MessageConnection) temp = iter.value();
+        return temp.ptr();
+    }
 }

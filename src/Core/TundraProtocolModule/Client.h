@@ -89,6 +89,7 @@ public slots:
 
     /// See if connected & authenticated
     bool IsConnected() const;
+    bool IsConnected(const QString& , unsigned short , const QString &) const;
 
     /// Sets the given login property with the given value.
     /** Call this function prior connecting to a scene to specify data that should be carried to the server as initial login data.
@@ -108,6 +109,12 @@ public slots:
 
     /// Deletes all set login properties.
     void ClearLoginProperties() { properties.clear(); }
+
+    /// Prints scene names from loginstate_list_ keys
+    void printSceneNames();
+
+    /// Signal to javascript to switch main camera scene
+    void emitSceneSwitch(const QString name) { emit switchScene(name); }
 
     QString GetLoginProperty(QString key) const { return LoginProperty(key); } ///< @deprecated Use LoginProperty. @todo Add warning print
     int GetConnectionID() const { return ConnectionId(); } ///< @deprecated Use ConnectionId. @todo Add warning print.
@@ -133,11 +140,13 @@ signals:
     /// Emitted when a login attempt failed to a server.
     void LoginFailed(const QString &reason);
 
+    void switchScene(const QString name);
+
 private slots:
     /// Handles a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
-    void OnConnectionAttemptFailed();
+    void OnConnectionAttemptFailed(QString &key);
 
     /// Actually perform a delayed logout
     void DelayedLogout();

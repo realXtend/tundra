@@ -167,6 +167,12 @@ void TundraLogicModule::Initialize()
                                            "Usage: importmesh(filename, pos = 0 0 0, rot = 0 0 0, scale = 1 1 1, inspectForMaterialsAndSkeleton=true)",
                                            this, SLOT(ImportMesh(QString, const float3 &, const float3 &, const float3 &, bool)), SLOT(ImportMesh(QString)));
 
+    framework_->Console()->RegisterCommand("switchscene",
+           "Switches main camera to different scene."
+           "Give scene name as parameter."
+           "Type 'print' as parameter to get available scenes.",
+           this, SLOT(SwitchScene(QString)));
+
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModule<KristalliProtocolModule>();
     if (!kristalliModule_)
@@ -302,9 +308,9 @@ void TundraLogicModule::registerSyncManager(const QString name)
 
 void TundraLogicModule::removeSyncManager(const QString name)
 {
-    // Only works with 1 syncmanager for now.
+    QStringList names = syncManagers_.keys();
     delete syncManagers_[name];
-    syncManagers_.clear();
+    syncManagers_.remove(name);
 
 }
 
@@ -473,6 +479,14 @@ bool TundraLogicModule::ImportMesh(QString filename, const float3 &pos, const fl
     if (!entity)
         LogError("TundraLogicModule::ImportMesh: import failed for " + filename + ".");
     return entity != 0;
+}
+
+void TundraLogicModule::SwitchScene(QString name)
+{
+    if (name == "print")
+        client_->printSceneNames();
+    else
+        client_->emitSceneSwitch(name);
 }
 
 bool TundraLogicModule::IsServer() const
