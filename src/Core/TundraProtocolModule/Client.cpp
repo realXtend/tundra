@@ -183,6 +183,17 @@ void Client::DelayedLogout()
 
 void Client::DoLogout(bool fail)
 {
+
+    QStringList keys = loginstate_list_.keys();
+    if (!keys.contains(discScene))
+    {
+        ::LogInfo("Available scenes are...");
+        foreach (QString key, keys)
+            ::LogInfo("> " + key + "\n");
+        return;
+
+    }
+
     if (loginstate_list_[discScene]!= NotConnected)
     {
         if (GetConnection(discScene))
