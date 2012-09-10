@@ -308,6 +308,12 @@ void TundraLogicModule::removeSyncManager(const QString name)
 
 }
 
+SyncManager* TundraLogicModule::GetSyncManager() const
+{
+    QMap<QString, SyncManager*>::const_iterator iter = syncManagers_.begin();
+    return iter.value();
+}
+
 void TundraLogicModule::LoadStartupScene()
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
