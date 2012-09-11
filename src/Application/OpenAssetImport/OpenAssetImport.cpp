@@ -850,6 +850,26 @@ void OpenAssetImport::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode
     }
 }
 
+Ogre::MaterialPtr OpenAssetImport::CreateVertexColorMaterial()
+{
+    Ogre::MaterialManager* ogreMaterialMgr = Ogre::MaterialManager::getSingletonPtr();
+    Ogre::String materialName = "vertexcolor.material";
+
+    if(ogreMaterialMgr->resourceExists(materialName))
+    {
+        Ogre::MaterialPtr ogreMaterial = ogreMaterialMgr->getByName(materialName);
+        if(ogreMaterial->isLoaded())
+        {
+            return ogreMaterial;
+        }
+    }
+
+    Ogre::MaterialPtr ogreMaterial = ogreMaterialMgr->create(materialName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
+    ogreMaterial->setCullingMode(Ogre::CULL_NONE);
+    ogreMaterial->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_AMBIENT|Ogre::TVC_DIFFUSE|Ogre::TVC_SPECULAR);
+    return ogreMaterial;
+}
+
 Ogre::MaterialPtr OpenAssetImport::CreateMaterial(Ogre::String& matName, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName)
 {
 
@@ -986,7 +1006,7 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
     {
         if (mesh->mColors[vn])
         {
-            decl->addElement(1, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
+            decl->addElement(2, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
             offset += Ogre::VertexElement::getTypeSize(Ogre::VET_COLOUR);
 
         }
@@ -1087,7 +1107,7 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
     if(mesh->HasVertexColors(0))
     {
         Ogre::HardwareVertexBufferSharedPtr vbufColor= Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
-                decl->getVertexSize(1), // This value is the size of a vertex in memory
+                decl->getVertexSize(2), // This value is the size of a vertex in memory
                 data->vertexCount, // The number of vertices you'll put into this buffer
                 Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, // Properties
                 false
@@ -1096,19 +1116,19 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
 
         for (unsigned int n=0; n<data->vertexCount; ++n)
         {
-
             for (int vn=0; vn<AI_MAX_NUMBER_OF_COLOR_SETS; ++vn)
             {
                 if (mesh->mColors[vn])
                 {
 				    Ogre::RenderSystem* rs = Ogre::Root::getSingleton().getRenderSystem();
-				    if (rs)
-					    rs->convertColourValue(Ogre::ColourValue(mesh->mColors[vn][n].r, mesh->mColors[vn][n].g, mesh->mColors[vn][n].b, 1), &pVertexColor[n]);
+                    if (rs)
+                        rs->convertColourValue(Ogre::ColourValue(mesh->mColors[vn][n].r, mesh->mColors[vn][n].g, mesh->mColors[vn][n].b, mesh->mColors[vn][n].a), &pVertexColor[n]);
                 }
             }
         }
         vbufColor->unlock();
-        data->vertexBufferBinding->setBinding(1, vbufColor);
+        data->vertexBufferBinding->setBinding(2, vbufColor);
+        data->closeGapsInBindings();
     }
 
     size_t numIndices = mesh->mNumFaces * 3;            // support only triangles, so 3 indices per face
@@ -1193,7 +1213,10 @@ void OpenAssetImport::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNo
 
             if(matptr.isNull())
             {
-                matptr = CreateMaterial(matName, pAIMaterial, meshFileDiskSource, meshFileName);
+                if(pAIMesh->HasVertexColors(0))
+                    matptr = CreateVertexColorMaterial();
+                else
+                   matptr = CreateMaterial(matName, pAIMaterial, meshFileDiskSource, meshFileName);
 
                 //we must create an OgreMaterialAsset through assetAPI and put the just created
                 //ogre material pointer to it

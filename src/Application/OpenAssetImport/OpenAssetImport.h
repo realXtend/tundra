@@ -66,6 +66,7 @@ private:
     bool CreateVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB);
     /// Generates the ogre materials.
     Ogre::MaterialPtr CreateMaterial(Ogre::String& matName, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName);
+    Ogre::MaterialPtr CreateVertexColorMaterial();
     Ogre::MaterialPtr CreateMaterialByScript(int index, const aiMaterial* mat);
     void GrabNodeNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
     void GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode* pNode);
