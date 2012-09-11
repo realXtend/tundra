@@ -289,6 +289,11 @@ public slots:
         @note O(n) */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
+    /// Returns list of entities, whose names match the regular expression
+    /** @param pattern Pattern for the search*/
+    EntityList FindEntities(const QString &pattern);
+	EntityList FindEntities(const QRegExp &pattern);
+
     /// Returns all entities in the scene.
     EntityMap Entities() /*non-const intentionally*/ { return entities_; }
 

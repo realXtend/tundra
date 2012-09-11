@@ -22,6 +22,7 @@
 #include "LoggingFunctions.h"
 
 #include <QString>
+#include <QRegExp>
 #include <QDomDocument>
 #include <QFile>
 #include <QDir>
@@ -1362,4 +1363,52 @@ void Scene::OnUpdated(float frameTime)
     }
     
     entitiesCreatedThisFrame_.clear();
+}
+
+EntityList Scene::FindEntities(const QString &pattern)
+{
+    EntityList entities;
+    if (pattern.isEmpty())
+        return entities;
+    EntityMap::const_iterator it = entities_.begin();
+    QStringList patterns = pattern.split("*");
+
+    while(it != entities_.end())
+    {
+        EntityPtr entity = it->second;
+        if (patterns.length() < 2)
+        {
+            if (entity->Name().contains(pattern, Qt::CaseSensitive))
+                entities.push_back(entity);
+        }
+        else
+        {
+            if (entity->Name().startsWith(patterns.at(0)) && entity->Name().endsWith(patterns.at(1)))
+                entities.push_back(entity);
+        }
+
+        ++it;
+    }
+
+    return entities;
+}
+
+EntityList Scene::FindEntities(const QRegExp &pattern)
+{
+    EntityList entities;
+    if (pattern.isEmpty() || !pattern.isValid())
+        return entities;
+    EntityMap::const_iterator it = entities_.begin();
+
+    while(it != entities_.end())
+    {
+        EntityPtr entity = it->second;
+
+        if (pattern.exactMatch(entity->Name()))
+            entities.push_back(entity);
+
+        ++it;
+    }
+
+    return entities;
 }
