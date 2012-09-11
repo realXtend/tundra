@@ -53,7 +53,8 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
 	 libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
 	 libvlc-dev libspeexdsp-dev libprotobuf-dev \
 	 libprotobuf-c0 libprotobuf-c0-dev \
-	 protobuf-c-compiler protobuf-compiler
+	 protobuf-c-compiler protobuf-compiler \
+     libqt4-opengl-dev libqtwebkit-dev
 
 fi
  
