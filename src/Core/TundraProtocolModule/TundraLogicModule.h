@@ -85,7 +85,7 @@ private slots:
     void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
     void registerSyncManager(const QString);
     void removeSyncManager(const QString);
-
+    void switchscene(const QString);
 
 private:
     /// Handles a Kristalli protocol message

@@ -114,7 +114,7 @@ public slots:
     void printSceneNames();
 
     /// Signal to javascript to switch main camera scene
-    void emitSceneSwitch(const QString name) { emit switchScene(name); }
+    void emitSceneSwitch(const QString name);
 
     QString GetLoginProperty(QString key) const { return LoginProperty(key); } ///< @deprecated Use LoginProperty. @todo Add warning print
     int GetConnectionID() const { return ConnectionId(); } ///< @deprecated Use ConnectionId. @todo Add warning print.

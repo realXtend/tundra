@@ -321,6 +321,10 @@ void TundraLogicModule::removeSyncManager(const QString name)
     syncManagers_.remove(name);
 }
 
+void TundraLogicModule::switchscene(const QString name) {
+    client_->emitSceneSwitch(name);
+}
+
 SyncManager* TundraLogicModule::GetSyncManager() const
 {
     QMap<QString, SyncManager*>::const_iterator iter = syncManagers_.begin();

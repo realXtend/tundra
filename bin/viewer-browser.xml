@@ -32,6 +32,7 @@
   <jsplugin path="RendererSettings.js" />
   <jsplugin path="SoundSettings.js" />
   <jsplugin path="browserui/LoginBrowser.js" />
+  <jsplugin path="multiconnection.js" />
 
   <option name="--trustserverstorages" />
   <option name="--accept_unknown_http_sources" />
