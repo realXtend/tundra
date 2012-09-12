@@ -192,9 +192,7 @@ void Client::DoLogout(bool fail)
     if (!keys.contains(discScene))
     {
         discScene = "";
-        ::LogInfo("Available scenes are...");
-        foreach (QString key, keys)
-            ::LogInfo("> " + key + "\n");
+        printSceneNames();
         return;
     }
 
@@ -206,10 +204,7 @@ void Client::DoLogout(bool fail)
             ::LogInfo("Disconnected");
         }
         
-        loginstate_list_.remove(discScene);
-        client_id_list_.remove(discScene);
-        reconnect_list_.remove(discScene);
-        properties_list_.remove(discScene);
+        removeProperties(discScene);
         
         emit Disconnected();
     }
@@ -223,7 +218,8 @@ void Client::DoLogout(bool fail)
     {
         // Clear all the login properties we used for this session, so that the next login session will start from an
         // empty set of login properties (just-in-case).
-        properties_list_.remove(discScene);
+        if (client_id_list_.contains(discScene))
+            removeProperties(discScene);
     }
 
     if (loginstate_list_.isEmpty())
@@ -517,8 +513,18 @@ void Client::printSceneNames()
 
 QStringList Client::getSceneNames()
 {
+    // Used in javascript
     return loginstate_list_.keys();
 }
+
+void Client::removeProperties(const QString &name)
+{
+    loginstate_list_.remove(discScene);
+    client_id_list_.remove(discScene);
+    reconnect_list_.remove(discScene);
+    properties_list_.remove(discScene);
+}
+
 
 }
 

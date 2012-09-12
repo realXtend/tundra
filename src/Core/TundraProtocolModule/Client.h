@@ -158,6 +158,9 @@ private:
     /// Saves connection properties to Containers
     void saveProperties(const QString name = "NEW");
 
+    /// Removes connection properties from containers
+    void removeProperties(const QString &name);
+
     /// Handles pending login to server
     void CheckLogin();
 

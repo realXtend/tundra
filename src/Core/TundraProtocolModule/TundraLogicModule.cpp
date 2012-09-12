@@ -76,7 +76,9 @@ TundraLogicModule::TundraLogicModule() :
     IModule("TundraLogic"),
     autoStartServer_(false),
     autoStartServerPort_(cDefaultPort),
-    kristalliModule_(0)
+    kristalliModule_(0),
+    netrateBool(false),
+    netrateValue(0)
 {
 }
 
@@ -124,7 +126,6 @@ void TundraLogicModule::Load()
 
 void TundraLogicModule::Initialize()
 {
-    //syncManager_ = boost::make_shared<SyncManager>(this);
     client_ = boost::make_shared<Client>(this);
     server_ = boost::make_shared<Server>(this);
     
@@ -147,7 +148,7 @@ void TundraLogicModule::Initialize()
                                            "Connects to a server. Usage: connect(address,port,username,password,protocol)",
                                            client_.get(), SLOT(Login(const QString &, unsigned short, const QString &, const QString&, const QString &)));
 
-    framework_->Console()->RegisterCommand("disconnect", "Disconnects from a server.", client_.get(), SLOT(Logout()));
+    framework_->Console()->RegisterCommand("disconnect", "Disconnects from a server.", client_.get(), SLOT(Logout(QString)));
 
     framework_->Console()->RegisterCommand("savescene",
                                            "Saves scene into XML or binary. Usage: savescene(filename,asBinary=false,saveTemporaryEntities=false,saveLocalEntities=true)",
@@ -168,10 +169,10 @@ void TundraLogicModule::Initialize()
                                            this, SLOT(ImportMesh(QString, const float3 &, const float3 &, const float3 &, bool)), SLOT(ImportMesh(QString)));
 
     framework_->Console()->RegisterCommand("switchscene",
-           "Switches main camera to different scene."
-           "Give scene name as parameter."
-           "Type 'print' as parameter to get available scenes.",
-           this, SLOT(SwitchScene(QString)));
+                                           "Switches main camera to different scene."
+                                           "Give scene name as parameter."
+                                           "Type 'print' as parameter to get available scenes.",
+                                           this, SLOT(SwitchScene(QString)));
 
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModule<KristalliProtocolModule>();
@@ -207,7 +208,7 @@ void TundraLogicModule::Initialize()
             autoStartServerPort_ = GetFramework()->Config()->Get(configData).toInt();
     }
     
-    /*if (framework_->HasCommandLineParameter("--netrate"))
+    if (framework_->HasCommandLineParameter("--netrate"))
     {
         QStringList rateParam = framework_->CommandLineParameters("--netrate");
         if (rateParam.size() > 0)
@@ -215,11 +216,15 @@ void TundraLogicModule::Initialize()
             bool ok;
             int rate = rateParam.first().toInt(&ok);
             if (ok && rate > 0)
-                syncManager_->SetUpdatePeriod(1.f / (float)rate);
+            {
+                // Had to move some logic from here to registerSyncManager() because --netrate cmdLine option needs syncManager.
+                netrateBool = true;
+                netrateValue = rate;
+            }
             else
                 LogError("--netrate parameter is not a valid integer.");
         }
-    }*/
+    }
     connect(framework_->Scene(), SIGNAL(SceneAdded(QString)), this, SLOT(registerSyncManager(QString)));
     connect(framework_->Scene(), SIGNAL(SceneRemoved(QString)), this, SLOT(removeSyncManager(QString)));
 }
@@ -229,6 +234,7 @@ void TundraLogicModule::Uninitialize()
     kristalliModule_ = 0;
     foreach (SyncManager *sm, syncManagers_)
         delete sm;
+    syncManagers_.clear();
     client_.reset();
     server_.reset();
 }
@@ -301,6 +307,9 @@ void TundraLogicModule::registerSyncManager(const QString name)
     if (name == "TundraServer")
         return;
     SyncManager *sm = new SyncManager(this);
+    // Had to move some logic from Init to here because --netrate cmdLine option needs syncManager.
+    if (netrateBool)
+        sm->SetUpdatePeriod(1.f / (float)netrateValue);
     ScenePtr newScene = framework_->Scene()->GetScene(name);
     sm->RegisterToScene(newScene);
     syncManagers_.insert(name, sm);
@@ -308,10 +317,8 @@ void TundraLogicModule::registerSyncManager(const QString name)
 
 void TundraLogicModule::removeSyncManager(const QString name)
 {
-    QStringList names = syncManagers_.keys();
     delete syncManagers_[name];
     syncManagers_.remove(name);
-
 }
 
 SyncManager* TundraLogicModule::GetSyncManager() const

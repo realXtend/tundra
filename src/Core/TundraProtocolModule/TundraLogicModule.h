@@ -100,6 +100,8 @@ private:
     KristalliProtocolModule *kristalliModule_; ///< KristalliProtocolModule pointer
     bool autoStartServer_; ///< Whether to autostart the server
     unsigned short autoStartServerPort_; ///< Autostart server port
+    bool netrateBool;
+    int netrateValue;
 };
 
 }
