@@ -239,15 +239,24 @@ bool Client::IsConnected() const
     return loginstate_ == LoggedIn;
 }
 
-bool Client::IsConnected(const QString& address, unsigned short port, const QString &protocol) const
+bool Client::IsConnected(const QString& address, unsigned short port, const QString &protocol)
 {
     QMap< QString, std::map<QString, QString> >::const_iterator iter = properties_list_.begin();
+    QString tempProtocol = protocol;
     std::map<QString, QString> tempMap;
+    if (protocol == "")
+        tempProtocol = "udp";
     while (iter != properties_list_.end())
     {
         tempMap = iter.value();
-        if (tempMap["address"] == address && tempMap["port"] == QString::number(port) && tempMap["protocol"] == protocol)
+        if (tempMap["address"] == address && tempMap["port"] == QString::number(port) && tempMap["protocol"] == tempProtocol)
+        {
+            activescenename_ = iter.key();
+            emit switchScene(iter.key());
+            ::LogInfo("Switch scene to: " + address + ":" + QString::number(port));
             return true;
+        }
+        ::LogInfo("No match: " + tempMap["address"] + ":" + tempMap["port"] + ":" + tempMap["protocol"] + "\n");
         ++iter;
     }
     return false;
@@ -407,6 +416,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         loginstate_ = LoggedIn;
         client_id_ = msg.userID;
         sceneName = QString::fromStdString(BufferToString(msg.uuid));
+        activescenename_ = sceneName;
         
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_list_[sceneName])
@@ -457,8 +467,23 @@ void Client::HandleClientLeft(MessageConnection* /*source*/, const MsgClientLeft
 
 void Client::saveProperties(const QString name)
 {
-    if (name != "NEW")
+    // Login happened and replace NEW-marked properties with scenename.
+    if (name != "NEW" && loginstate_list_.contains(name))
     {
+        ::LogInfo("Reconnection saving properties " + name + "\n");
+        // Container for all the connections loginstates
+        loginstate_list_.insert(name, loginstate_);
+        // Container for all the connections reconnect bool value
+        reconnect_list_.insert(name, reconnect_);
+        // Container for all the connections clientID values
+        client_id_list_.insert(name, client_id_);
+        // Container for all the connections properties
+        //properties_list_.insert(name, properties_list_[name]);
+        // Container for all the connections loginstates
+    }
+    else if (name != "NEW" && !loginstate_list_.contains(name))
+    {
+        ::LogInfo("NEW connection ready. Switching identifier to " + name + ".\n");
         // Container for all the connections loginstates
         loginstate_list_.insert(name, loginstate_);
         // Container for all the connections reconnect bool value
@@ -481,6 +506,9 @@ void Client::saveProperties(const QString name)
     }
     else
     {
+        // Initial connection attempt.
+
+        ::LogInfo("New connection saving properties NEW.\n");
         // Container for all the connections loginstates
         loginstate_list_.insert(name, loginstate_);
         loginstate_ = NotConnected;
@@ -494,7 +522,6 @@ void Client::saveProperties(const QString name)
         properties_list_.insert(name, properties);
         properties.clear();
     }
-
 }
 
 void Client::printSceneNames()
@@ -531,7 +558,10 @@ void Client::emitSceneSwitch(const QString name)
     if (!loginstate_list_.contains(name))
         printSceneNames();
     else
+    {
+        activescenename_ = name;
         emit switchScene(name);
+    }
 }
 
 }

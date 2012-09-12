@@ -48,7 +48,7 @@ public:
     ClientLoginState LoginState() const { return loginstate_; }
 
     /// Returns client connection ID (from loginreply message), or zero if not connected.
-    int ConnectionId() const { return client_id_; }
+    int ConnectionId() const { return client_id_list_.empty() ? client_id_ : client_id_list_[activescenename_]; }
 
     /// Returns all the login properties that will be used to login to the server.
     LoginPropertyMap &LoginProperties() { return properties; }
@@ -89,7 +89,7 @@ public slots:
 
     /// See if connected & authenticated
     bool IsConnected() const;
-    bool IsConnected(const QString& , unsigned short , const QString &) const;
+    bool IsConnected(const QString& , unsigned short , const QString &);
 
     /// Sets the given login property with the given value.
     /** Call this function prior connecting to a scene to specify data that should be carried to the server as initial login data.
@@ -191,6 +191,8 @@ private:
     QMap<QString, u8> client_id_list_;
     // Scene to be disconnected
     QString discScene;
+    // Current active scenename
+    QString activescenename_;
 };
 
 }
