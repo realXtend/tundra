@@ -6,70 +6,70 @@
 /// Network message for login reply.
 struct MsgLoginReply
 {
-	MsgLoginReply()
-	{
-		InitToDefault();
-	}
+    MsgLoginReply()
+    {
+        InitToDefault();
+    }
 
-	MsgLoginReply(const char *data, size_t numBytes)
-	{
-		InitToDefault();
-		kNet::DataDeserializer dd(data, numBytes);
-		DeserializeFrom(dd);
-	}
+    MsgLoginReply(const char *data, size_t numBytes)
+    {
+        InitToDefault();
+        kNet::DataDeserializer dd(data, numBytes);
+        DeserializeFrom(dd);
+    }
 
-	void InitToDefault()
-	{
-		reliable = defaultReliable;
-		inOrder = defaultInOrder;
-		priority = defaultPriority;
-	}
+    void InitToDefault()
+    {
+        reliable = defaultReliable;
+        inOrder = defaultInOrder;
+        priority = defaultPriority;
+    }
 
-	enum { messageID = 101 };
-	static inline const char * const Name() { return "LoginReply"; }
+    enum { messageID = 101 };
+    static inline const char * const Name() { return "LoginReply"; }
 
-	static const bool defaultReliable = true;
-	static const bool defaultInOrder = true;
-	static const u32 defaultPriority = 100;
+    static const bool defaultReliable = true;
+    static const bool defaultInOrder = true;
+    static const u32 defaultPriority = 100;
 
-	bool reliable;
-	bool inOrder;
-	u32 priority;
+    bool reliable;
+    bool inOrder;
+    u32 priority;
 
-	u8 success;
-	u8 userID;
+    u8 success;
+    u8 userID;
 
-	std::vector<s8> loginReplyData;
-        std::vector<s8> uuid;
+    std::vector<s8> loginReplyData;
+    std::vector<s8> uuid;
 
-	inline size_t Size() const
-	{
-                return 1 + 1 + 2 + 2 + loginReplyData.size()*1 + uuid.size()*1;
-	}
+    inline size_t Size() const
+    {
+        return 1 + 1 + 2 + 2 + loginReplyData.size()*1 + uuid.size()*1;
+    }
 
-	inline void SerializeTo(kNet::DataSerializer &dst) const
-	{
-                dst.Add<u16>(uuid.size());
-                if (uuid.size() > 0)
-                        dst.AddArray<s8>(&uuid[0], uuid.size());
-		dst.Add<u8>(success);
-		dst.Add<u8>(userID);
-		dst.Add<u16>(loginReplyData.size());
-		if (loginReplyData.size() > 0)
-			dst.AddArray<s8>(&loginReplyData[0], loginReplyData.size());
-	}
+    inline void SerializeTo(kNet::DataSerializer &dst) const
+    {
+        dst.Add<u16>(uuid.size());
+        if (uuid.size() > 0)
+            dst.AddArray<s8>(&uuid[0], uuid.size());
+        dst.Add<u8>(success);
+        dst.Add<u8>(userID);
+        dst.Add<u16>(loginReplyData.size());
+        if (loginReplyData.size() > 0)
+            dst.AddArray<s8>(&loginReplyData[0], loginReplyData.size());
+    }
 
-	inline void DeserializeFrom(kNet::DataDeserializer &src)
-	{
-                uuid.resize(src.Read<u16>());
-                if (uuid.size() > 0)
-                        src.ReadArray<s8>(&uuid[0], uuid.size());
-		success = src.Read<u8>();
-		userID = src.Read<u8>();
-		loginReplyData.resize(src.Read<u16>());
-		if (loginReplyData.size() > 0)
-			src.ReadArray<s8>(&loginReplyData[0], loginReplyData.size());
-	}
+    inline void DeserializeFrom(kNet::DataDeserializer &src)
+    {
+        uuid.resize(src.Read<u16>());
+        if (uuid.size() > 0)
+            src.ReadArray<s8>(&uuid[0], uuid.size());
+        success = src.Read<u8>();
+        userID = src.Read<u8>();
+        loginReplyData.resize(src.Read<u16>());
+        if (loginReplyData.size() > 0)
+            src.ReadArray<s8>(&loginReplyData[0], loginReplyData.size());
+    }
 
 };
 
