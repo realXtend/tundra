@@ -60,7 +60,7 @@ void Client::Login(const QUrl& loginUrl)
     if (urlScheme != "tundra" && urlScheme != "http" && urlScheme != "https")
         return;
 
-    // Make sure to logout to empty the previous properties map.
+    // If connected, just do nothing for now.
     if (IsConnected(loginUrl.host(),loginUrl.port(),loginUrl.queryItemValue("protocol")))
         return;
 
@@ -172,8 +172,12 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
 
 void Client::Logout(const QString &name)
 {
-    discScene = name;
-    QTimer::singleShot(1, this, SLOT(DelayedLogout()));
+    // Handle console disconnect with parameter but allow user to disconnect main camera scene from JS using client.disconnect()
+        if (name != "")
+            discScene = name;
+        else
+            discScene = framework_->Scene()->MainCameraScene()->Name();
+        QTimer::singleShot(1, this, SLOT(DelayedLogout()));
 }
 
 void Client::DelayedLogout()
@@ -187,11 +191,11 @@ void Client::DoLogout(bool fail)
     QStringList keys = loginstate_list_.keys();
     if (!keys.contains(discScene))
     {
+        discScene = "";
         ::LogInfo("Available scenes are...");
         foreach (QString key, keys)
             ::LogInfo("> " + key + "\n");
         return;
-
     }
 
     if (loginstate_list_[discScene]!= NotConnected)
@@ -509,6 +513,11 @@ void Client::printSceneNames()
         if (iter != properties_list_.end())
             tempMap = iter.value();
     }
+}
+
+QStringList Client::getSceneNames()
+{
+    return loginstate_list_.keys();
 }
 
 }
