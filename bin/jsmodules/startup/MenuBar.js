@@ -59,8 +59,8 @@ if (!framework.IsHeadless())
         viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
 
     // TODO: Avatar Editor menu action disabled for now, as it's not fully ready for end-users
-//    if (framework.GetModuleByName("Avatar"))
-//        viewMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
+    //    if (framework.GetModuleByName("Avatar"))
+    //        viewMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
 
     if (framework.GetModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
@@ -117,7 +117,7 @@ if (!framework.IsHeadless())
     }
 
     function Disconnect() {
-        client.Logout();
+        client.Logout(client.getActiveScenename());
     }
 
     function Connected() {
@@ -146,6 +146,7 @@ if (!framework.IsHeadless())
         if (!cameraentity)
             cameraentity = scene.GetEntityByName("FreeLookCamera");
         var camera = cameraentity.camera;
+        client.setActiveScenename(sceneNames[0]);
         camera.SetActive(camera);
     }
 
@@ -269,8 +270,8 @@ if (!framework.IsHeadless())
     function OpenAvatarEditorWindow() {
         framework.GetModuleByName("Avatar").ToggleAvatarEditorWindow();
         if (client.IsConnected())
-           framework.GetModuleByName("Avatar").EditAvatar("Avatar" + client.GetConnectionID())
-   }
+            framework.GetModuleByName("Avatar").EditAvatar("Avatar" + client.GetConnectionID())
+    }
 
     function ShowEditingGizmo(show) {
         framework.GetModuleByName("ECEditor").gizmoEnabled = show;

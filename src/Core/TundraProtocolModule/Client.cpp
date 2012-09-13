@@ -251,12 +251,10 @@ bool Client::IsConnected(const QString& address, unsigned short port, const QStr
         tempMap = iter.value();
         if (tempMap["address"] == address && tempMap["port"] == QString::number(port) && tempMap["protocol"] == tempProtocol)
         {
-            activescenename_ = iter.key();
+            setActiveScenename(iter.key());
             emit switchScene(iter.key());
-            ::LogInfo("Switch scene to: " + address + ":" + QString::number(port));
             return true;
         }
-        ::LogInfo("No match: " + tempMap["address"] + ":" + tempMap["port"] + ":" + tempMap["protocol"] + "\n");
         ++iter;
     }
     return false;
@@ -273,9 +271,17 @@ void Client::SetLoginProperty(QString key, QString value)
 
 QString Client::LoginProperty(QString key) const
 {
+    LoginPropertyMap tempMap;
+
+    if (properties_list_.contains(activescenename_))
+        tempMap = properties_list_[activescenename_];
+    else
+        tempMap = properties_list_["NEW"];
+
     key = key.trimmed();
-    LoginPropertyMap::const_iterator i = properties.find(key);
-    if (i != properties.end())
+    LoginPropertyMap::const_iterator i = tempMap.find(key);
+
+    if (i != tempMap.end())
         return i->second;
     else
         return "";
