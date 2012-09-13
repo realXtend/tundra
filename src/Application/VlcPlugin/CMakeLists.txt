@@ -39,9 +39,10 @@ if (SHOULD_RUN)
 
     file (GLOB CPP_FILES *.cpp)
     if (WIN32 AND VC90)
-        file(GLOB H_FILES *.h)
+        include_directories(windows/)
+        file(GLOB H_FILES *.h windows/*.h)
     else() # Omit stdint.h in other platforms.
-        file(GLOB H_FILES VlcPlugin.h VlcMediaPlayer.h VlcVideoWidget.h PlayerStatus.h EC_MediaPlayer.h)
+        file(GLOB H_FILES *.h)
     endif()
     file(GLOB UI_FILES ui/*.ui)
     file(GLOB RESOURCE_FILES ui/*.qrc)
