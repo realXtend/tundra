@@ -48,7 +48,8 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev
 	 ccache libqt4-dev python-dev freeglut3-dev \
 	 libxml2-dev cmake libalut-dev libtheora-dev ed \
 	 liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
-	 libspeex-dev nvidia-cg-toolkit subversion
+	 libspeex-dev nvidia-cg-toolkit subversion libspeexdsp-dev libprotobuf-dev \
+     libvlc-dev
 fi
 
 what=bullet-2.79-rev2440
@@ -64,6 +65,25 @@ else
     sed -i s/OpenCL// src/BulletMultiThreaded/GpuSoftBodySolvers/CMakeLists.txt
     cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g -fPIC" .
     make -j $nprocs
+    make install
+    touch $tags/$what-done
+fi
+
+what=celt
+if test -f $tags/$what-done; then
+    echo $what id done
+else
+    urlbase=http://downloads.xiph.org/releases/celt
+    pkgbase=celt-0.11.1
+    dlurl=$urlbase/$pkgbase.tar.gz
+    cd $build
+    rm -rf $pkgbase
+    zip=$tarballs/$pkgbase.tar.gz
+    test -f $zip || wget -P $tarballs $dlurl
+    tar xzf $zip
+    cd $pkgbase
+    ./configure --prefix=$prefix
+    make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi

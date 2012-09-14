@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "TundraProtocolModuleApi.h"
+
 #include "CoreTypes.h"
 #include "SceneFwd.h"
 
@@ -196,7 +198,7 @@ struct RigidBodyInterpolationState
 };
 
 /// State change request to permit/deny changes.
-class StateChangeRequest : public QObject
+class TUNDRAPROTOCOL_MODULE_API StateChangeRequest : public QObject
 {
     Q_OBJECT
 
@@ -260,7 +262,7 @@ private:
 typedef std::list<component_id_t> ComponentIdList;
 
 /// Scene's per-user network sync state
-class SceneSyncState : public QObject
+class TUNDRAPROTOCOL_MODULE_API SceneSyncState : public QObject
 {
     Q_OBJECT
 
