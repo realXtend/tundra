@@ -34,9 +34,6 @@ public:
     /// Unload texture from ogre
     virtual void DoUnload();
 
-    /// Convert texture to QImage
-    QImage ToQImage(size_t faceIndex = 0, size_t mipmapLevel = 0) const;
-
     bool IsLoaded() const;
 
     /// Sets the contents of this texture asset from raw pixel data.
@@ -88,14 +85,13 @@ public:
     /// Convert texture to QImage, static version.
     static QImage ToQImage(Ogre::Texture* tex, size_t faceIndex = 0, size_t mipmapLevel = 0);
 
-private:
     /** This function is used internally to convert our name into Ogre form.
         Meaning we swap file suffixes that Ogre does not support to ones it supports
         and handle conversion before passing to Ogre in DeserializeFrom. */
-    QString NameInternal();
+    QString NameInternal() const;
 
-    /// Texture extension.
-    QString NameSuffix();
+    /// Same as NameInternal but static and takes the textureRef as a parameter.
+    static QString NameInternal(const QString &textureRef);
 
     /// Decompresses any CRN input data to DDS.
     /** @param crnData Ptr to compressed crn data.
@@ -104,4 +100,17 @@ private:
      ** @return void* to the uncompressed DDS data. It is the callers responsibility to free the 
      ** data with crn_free_block when done with it. */
     void *DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, size_t &outDdsNumBytes);
+
+public slots:
+    /// Convert texture to QImage
+    QImage ToQImage(size_t faceIndex = 0, size_t mipmapLevel = 0) const;
+
+    /// Get height of the texture. Return 0 if not loaded.
+    uint Height() const;
+
+    /// Get width of the texture. Return 0 if not loaded.
+    uint Width() const;
+
+    /// Texture extension.
+    QString NameSuffix() const;
 };

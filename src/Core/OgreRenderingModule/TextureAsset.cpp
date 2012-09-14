@@ -68,15 +68,20 @@ bool TextureAsset::LoadFromFile(QString filename)
         return IAsset::LoadFromFile(filename);
 }
 
-QString TextureAsset::NameInternal()
+QString TextureAsset::NameInternal() const
 {
-    // .crn -> .dds
-    if (name.endsWith(".crn", Qt::CaseInsensitive))
-        return name.left(name.lastIndexOf(".")+1) + "dds";
-    return name;
+    return NameInternal(name);
 }
 
-QString TextureAsset::NameSuffix()
+QString TextureAsset::NameInternal(const QString &textureRef)
+{
+    // .crn -> .dds
+    if (textureRef.endsWith(".crn", Qt::CaseInsensitive))
+        return textureRef.left(textureRef.lastIndexOf(".")+1) + "dds";
+    return textureRef;
+}
+
+QString TextureAsset::NameSuffix() const
 {
     QString checkName = name;
     if (checkName.contains("/"))
@@ -133,8 +138,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             This way below threaded loading can be done on the DDS disk source. If saving to disk fails, it is not
             fatal, we can still continue with async loading withe data ptr and len. Checking for allowAsynchronous
             also filters out any local:// etc. refs that are not meant to be loaded from asynch from asset cache.
-            
-            Optimizations
+
             - Do not rewrite dds to disk if the source type for this asset is cache and the dds already exists. 
               Otherwise we would save the potentially big dds disk file every time this .crn loads!
             - If async loading is allowed and we have a valid disk source, don't do in memory decompression.
@@ -150,10 +154,22 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             // Only decompress and store dds if the data is new or not in cache.
             if (diskSourceType == IAsset::Original || cacheDiskSource.isEmpty())
             {
+                // Input data ptr can be empty if it has been detected that we can load 
+                // asynchronously, meaning there was no need to load the file data.
+                std::vector<u8> fileData;
+                if (!data || numBytes == 0)
+                {
+                    bool success = LoadFileToVector(assetAPI->GetAssetCache()->FindInCache(Name()), fileData);
+                    if (!success)
+                        return false;
+                    data = &fileData[0];
+                    numBytes = fileData.size();
+                }
                 ddsData = DecompressCRNtoDDS(data, numBytes, ddsNumBytes);
                 if (!ddsData || ddsNumBytes == 0)
                     return false;
                 cacheDiskSource = assetAPI->GetAssetCache()->StoreAsset((const u8*)ddsData, ddsNumBytes, nameInternal);
+                fileData.clear();
             }
             allowAsynchronous = !cacheDiskSource.isEmpty();
             if (!allowAsynchronous)
@@ -444,6 +460,20 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     }
     
     return ToQImage(ogreTexture.get(), faceIndex, mipmapLevel);
+}
+
+uint TextureAsset::Height() const
+{
+    if (!ogreTexture.get())
+        return 0;
+    return ogreTexture->getHeight();
+}
+
+uint TextureAsset::Width() const
+{
+    if (!ogreTexture.get())
+        return 0;
+    return ogreTexture->getWidth();
 }
 
 void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic)

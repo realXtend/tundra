@@ -255,12 +255,8 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
                             QString absolute_tex_name = assetAPI->ResolveAssetRef(Name(), tex_name.c_str());
                             references_.push_back(AssetReference(absolute_tex_name));
 
-                            // Check for non-ogre supported texture types that get 
-                            // changed to something else, then sanitate the asset reference.
-                            // This ref gets injected to the material script in memory and ogre
-                            // will try to find a loaded texture with this name.
-                            if (absolute_tex_name.endsWith(".crn", Qt::CaseInsensitive))
-                                absolute_tex_name = absolute_tex_name.left(absolute_tex_name.lastIndexOf(".")+1) + "dds";
+                            // Ask the texture the internal name that should be used inside the material script.
+                            absolute_tex_name = TextureAsset::NameInternal(absolute_tex_name);
                             line = "texture " + AddDoubleQuotesIfNecessary(AssetAPI::SanitateAssetRef(absolute_tex_name).toStdString());
                         }
                         // Check for shadow_caster_material reference
