@@ -41,7 +41,7 @@
 TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_), loadTicket_(0)
 {
-    ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
+    ogreAssetName = AssetAPI::SanitateAssetRef(NameInternal());
 }
 
 TextureAsset::~TextureAsset()
@@ -305,7 +305,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     }
     catch(Ogre::Exception &e)
     {
-        LogError("TextureAsset::DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
+        LogError("TextureAsset::DeserializeFromData: Failed to create texture " + Name().toStdString() + ": " + std::string(e.what()));
         return false;
     }
 }
@@ -376,7 +376,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
         if (formatExtension.empty())
         {
             LogDebug("TextureAsset::SerializeTo: no serializationParameters given. Trying to guess format extension from the asset name.");
-            formatExtension = QFileInfo(Name()).suffix().toStdString();
+            formatExtension = QFileInfo(NameInternal()).suffix().toStdString();
         }
 
         Ogre::DataStreamPtr imageStream = newImage.encode(formatExtension);
@@ -508,7 +508,7 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
 
     if (!ogreTexture.get())
     {
-        ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+        ogreTexture = Ogre::TextureManager::getSingleton().createManual(NameInternal().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
             newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, usage);
         if (!ogreTexture.get())
         {
