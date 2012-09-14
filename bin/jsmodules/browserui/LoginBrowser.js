@@ -383,10 +383,6 @@ var BrowserManager = Class.extend
 
      onDisconnected: function(uuid)
      {
-         print("Calling tabclose onDisconnected!");
-         p_.tabs.currentIndex = this.clientTabOrderList.indexOf(uuid);
-         this.onTabCloseRequest(p_.tabs.currentIndex);
-         print("Tabclose onDisconnected finished!");
          this.refreshSqueezer(this.tabs.currentIndex);
          this.onTabIndexChanged(this.tabs.currentIndex);
          if (this.tabs.currentIndex != 0)
@@ -667,12 +663,8 @@ var BrowserManager = Class.extend
 
          onTabCloseRequest: function(index)
          {
-             print("OnTabCloseRequest!");
              if (index == 0)
-             {
-                 print("Index was 0.");
                  return;
-             }
              else
              {
                  p_.tabs.currentIndex = index;
@@ -682,24 +674,11 @@ var BrowserManager = Class.extend
                      p_.connected[index] = false;
                      client.Logout(this.clientTabOrderList[index]);
                  }
-                 else if (p_.connected[index] == undefined)
-                 {
 
-                     print("Derp");
-                     p_.connected.splice(index,1);
-                     print("tabOrder[]: " + this.clientTabOrderList + ", Removing index: " + index);
-                     p_.clientTabOrderList.splice(index,1);
-                     p_.tabs.removeTab(index);
-                 }
-                 else if(p_.connected[index] == false)
-                 {
-                     print("IsFalse!");
-                     p_.connected[index] = "";
-                 }
-                 else
-                 {
-                     print("Now here!");
-                 }
+                 p_.connected.splice(index,1);
+                 p_.clientTabOrderList.splice(index,1);
+                 p_.tabs.removeTab(index);
+                 return
              }
          },
 
