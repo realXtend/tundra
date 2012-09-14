@@ -1821,7 +1821,8 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
     const char *textureFileTypes[] = { ".bmp", ".cut", ".dds", ".exr", ".g3", ".gif", ".hdr", ".ico", ".iff", 
         ".j2k", ".j2c", ".jp2", ".jif", ".jpg", ".jpeg", ".jpe", ".jng", ".koa",
         ".lbm", ".mng", ".pbm", ".pcd", ".pcx", ".pfm", ".pict", ".psd", ".pgm", ".png", ".ppm", ".ras", ".raw", 
-        ".sgi", ".tga", ".targa", ".tif", ".tiff", ".wap", ".wbmp", ".wbm", ".xbm", ".xcf", ".xpm" };
+        ".sgi", ".tga", ".targa", ".tif", ".tiff", ".wap", ".wbmp", ".wbm", ".xbm", ".xcf", ".xpm",
+        ".crn" /* crunch library crn files, decompressed to DDS with the crunch library */ };
     if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
         return "Texture";
 

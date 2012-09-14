@@ -250,11 +250,17 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
                         // Check for textures
                         if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
                         {
+                            // Push the found texture reference to this materials dependencies.
                             std::string tex_name = QString(line.substr(8).c_str()).trimmed().toStdString();
                             QString absolute_tex_name = assetAPI->ResolveAssetRef(Name(), tex_name.c_str());
                             references_.push_back(AssetReference(absolute_tex_name));
-//                            original_textures_.push_back(tex_name);
-                            // Sanitate the asset reference
+
+                            // Check for non-ogre supported texture types that get 
+                            // changed to something else, then sanitate the asset reference.
+                            // This ref gets injected to the material script in memory and ogre
+                            // will try to find a loaded texture with this name.
+                            if (absolute_tex_name.endsWith(".crn", Qt::CaseInsensitive))
+                                absolute_tex_name = absolute_tex_name.left(absolute_tex_name.lastIndexOf(".")+1) + "dds";
                             line = "texture " + AddDoubleQuotesIfNecessary(AssetAPI::SanitateAssetRef(absolute_tex_name).toStdString());
                         }
                         // Check for shadow_caster_material reference

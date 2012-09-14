@@ -18,6 +18,8 @@
 
 #include <Ogre.h>
 
+#include <crn_decomp.h>
+
 #ifdef WIN32
 #include <squish.h>
 #endif
@@ -66,6 +68,40 @@ bool TextureAsset::LoadFromFile(QString filename)
         return IAsset::LoadFromFile(filename);
 }
 
+QString TextureAsset::NameInternal()
+{
+    // .crn -> .dds
+    if (name.endsWith(".crn", Qt::CaseInsensitive))
+        return name.left(name.lastIndexOf(".")+1) + "dds";
+    return name;
+}
+
+QString TextureAsset::NameSuffix()
+{
+    QString checkName = name;
+    if (checkName.contains("/"))
+        checkName = checkName.mid(checkName.lastIndexOf("/")+1);
+    return QFileInfo(checkName).suffix().toLower();
+}
+
+void *TextureAsset::DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, size_t &outDdsNumBytes)
+{
+    outDdsNumBytes = 0;
+
+    // numBytes must he the crn data size as input. crn_decompress_crn_to_dds
+    // will assign the decompressed dds size into it when its done.
+    crn_uint32 numBytes = crnNumBytes;
+    void *outDdsData = crn_decompress_crn_to_dds((void*)crnData, numBytes);
+    if (!outDdsData || numBytes == 0)
+    {
+        LogError("TextureAsset::DeserializeFromData failed: Could not decompress input CRN data!");
+        return 0;
+    }
+    outDdsNumBytes = (size_t)numBytes;
+
+    return outDdsData;
+}
+
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     if (assetAPI->GetFramework()->HasCommandLineParameter("--notextures"))
@@ -88,6 +124,56 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
+    }
+
+    // Check if this is a crunch library CRN file and we need to decompress to DDS.
+    if (NameSuffix() == "crn")
+    {
+        /** If asynchronous loading is allowed we want to store the decompressed DDS data to the asset cache.
+            This way below threaded loading can be done on the DDS disk source. If saving to disk fails, it is not
+            fatal, we can still continue with async loading withe data ptr and len. Checking for allowAsynchronous
+            also filters out any local:// etc. refs that are not meant to be loaded from asynch from asset cache.
+            
+            Optimizations
+            - Do not rewrite dds to disk if the source type for this asset is cache and the dds already exists. 
+              Otherwise we would save the potentially big dds disk file every time this .crn loads!
+            - If async loading is allowed and we have a valid disk source, don't do in memory decompression.
+              Its a waste of resources as our disk source is up to date and we are allowed to use it to load
+              into Ogre. 
+        */
+        void *ddsData = 0;
+        size_t ddsNumBytes = 0;
+        QString nameInternal = NameInternal();
+        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(nameInternal);
+        if (allowAsynchronous)
+        {
+            // Only decompress and store dds if the data is new or not in cache.
+            if (diskSourceType == IAsset::Original || cacheDiskSource.isEmpty())
+            {
+                ddsData = DecompressCRNtoDDS(data, numBytes, ddsNumBytes);
+                if (!ddsData || ddsNumBytes == 0)
+                    return false;
+                cacheDiskSource = assetAPI->GetAssetCache()->StoreAsset((const u8*)ddsData, ddsNumBytes, nameInternal);
+            }
+            allowAsynchronous = !cacheDiskSource.isEmpty();
+            if (!allowAsynchronous)
+                LogWarning("TextureAsset::DeserializeFromData: Could not store decompressed CRN to asset cache, threaded loading disabled.");
+        }
+        if (!allowAsynchronous)
+        {
+            // We are doing a async loading, ddsData memory is released once its loaded to ogre.
+            ddsData = DecompressCRNtoDDS(data, numBytes, ddsNumBytes);
+            if (!ddsData || ddsNumBytes == 0)
+                return false;
+            data = (const u8*)ddsData;
+            numBytes = ddsNumBytes;
+        }
+        else
+        {
+            // We are bound to do threaded loading from disk. Free crnlib allocated dds data.
+            if (ddsData != 0)
+                crn_free_block(ddsData);
+        }
     }
     
     // Asynchronous loading
@@ -129,6 +215,10 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         Ogre::Image image;
         image.load(stream);
 
+        // Internal name that will be passed to Ogre for creating and loading the texture.
+        // This differs from Name() only if the data was pre-processed above, eg. CRN files.
+        const QString nameInternal = NameInternal();
+
         // If we are submitting a .dds file which did not contain mip maps, don't have Ogre generating them either.
         // Reasons:
         // 1. Not all textures need mipmaps, i.e. if the texture is always shown with 1:1 texel-to-pixel ratio, then the mip levels are never needed.
@@ -136,12 +226,12 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         // 3. If the texture is updated dynamically, we might not afford to regenerate mips at each update.
         int numMipmapsInImage = image.getNumMipmaps(); // Note: This is actually numMipmaps - 1: Ogre doesn't think the first level is a mipmap.
         int numMipmapsToUseOnGPU = Ogre::MIP_DEFAULT;
-        if (numMipmapsInImage == 0 && this->Name().endsWith(".dds", Qt::CaseInsensitive))
+        if (numMipmapsInImage == 0 && nameInternal.endsWith(".dds", Qt::CaseInsensitive))
             numMipmapsToUseOnGPU = 0;
 
         if (ogreTexture.isNull()) // If we are creating this texture for the first time, create a new Ogre::Texture object.
         {
-            ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
+            ogreAssetName = AssetAPI::SanitateAssetRef(nameInternal);
             
             // Optionally load textures to default pool for memory use debugging. Do not use in production use due to possible crashes on device loss & missing mipmaps!
             // Note: this does not affect async loading path, so specify additionally --no_async_asset_load to be sure textures are loaded through this path
@@ -158,8 +248,10 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
                     numMipmapsToUseOnGPU);
             }
         }
-        else // If we're loading on top of an Ogre::Texture we've created before, don't lose the old Ogre::Texture object, but reuse the old.
-        {    // This will allow all existing materials to keep referring to this texture, and they'll get the updated texture image immediately.
+        else
+        {
+            // If we're loading on top of an Ogre::Texture we've created before, don't lose the old Ogre::Texture object, but reuse the old.
+            // This will allow all existing materials to keep referring to this texture, and they'll get the updated texture image immediately.
             ogreTexture->freeInternalResources(); 
 
             if (image.getWidth() != ogreTexture->getWidth() || image.getHeight() != ogreTexture->getHeight() || image.getFormat() != ogreTexture->getFormat())
@@ -180,10 +272,18 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
 
             ogreTexture->createInternalResources();
         }
+
+        // Free crnlib allocated dds data that was assigned 
+        // to 'data' for synchronous texture loading.
+        if (NameSuffix() == "crn")
+            crn_free_block((void*)data);
         
         PostProcessTexture();
         
         // We did a synchronous load, must call AssetLoadCompleted here.
+        // This is done withe Name() that is tracked by AssetAPI and is the ref
+        // we are showing outside this class, even if data was pre-processed before
+        // passing to Ogre with NameInternal().
         assetAPI->AssetLoadCompleted(Name());
         return true;
     }
@@ -202,8 +302,7 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
     // Reset to 0 to mark the asynch request is not active anymore. Aborted in Unload() if it is.
     loadTicket_ = 0;
 
-    const QString assetRef = Name();
-    ogreAssetName = AssetAPI::SanitateAssetRef(assetRef);
+    ogreAssetName = AssetAPI::SanitateAssetRef(Name().replace(".crn", ".dds", Qt::CaseInsensitive));
     if (!result.error)
     {
         ogreTexture = Ogre::TextureManager::getSingleton().getByName(ogreAssetName.toStdString(), OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
@@ -211,17 +310,17 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
         {
             PostProcessTexture();
             
-            assetAPI->AssetLoadCompleted(assetRef);
+            assetAPI->AssetLoadCompleted(Name());
             return;
         }
         else
-            LogError("TextureAsset asynch load: Ogre::Texture was null after threaded loading: " + assetRef);
+            LogError("TextureAsset asynch load: Ogre::Texture was null after threaded loading: " + Name());
     }
     else
         LogError("TextureAsset asynch load: Ogre failed to do threaded loading: " + result.message);
 
     DoUnload();
-    assetAPI->AssetLoadFailed(assetRef);
+    assetAPI->AssetLoadFailed(Name());
 }
 
 /*
@@ -243,6 +342,7 @@ void TextureAsset::RegenerateAllMipLevels()
         }
 }
 */
+
 bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     PROFILE(TextureAsset_SerializeTo);

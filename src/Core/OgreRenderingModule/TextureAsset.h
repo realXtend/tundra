@@ -7,6 +7,7 @@
 #include "AssetAPI.h"
 
 #include <QImage>
+#include <QTime>
 
 #include <OgreTexture.h>
 #include <OgreResourceBackgroundQueue.h>
@@ -87,4 +88,20 @@ public:
     
     /// Convert texture to QImage, static version.
     static QImage ToQImage(Ogre::Texture* tex, size_t faceIndex = 0, size_t mipmapLevel = 0);
+
+private:
+    /** This function is used internally to convert our name into Ogre form.
+        Meaning we swap file suffixes that Ogre does not support to ones it supports. */
+    QString NameInternal();
+
+    /// Texture source file extension.
+    QString NameSuffix();
+
+    /// Decompresses any CRN input data to DDS.
+    /** @param crnData Ptr to compressed crn data.
+     ** @param crnNumBytes Size of crn data in bytes.
+     ** @param outDdsNumByte Size of decompressed dds data in bytes is assigned to this parameter.
+     ** @return void* to the uncompressed DDS data. It is the callers responsibility to free the 
+     ** data with crn_free_block when done with it. */
+    void *DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, size_t &outDdsNumBytes);
 };
