@@ -130,7 +130,6 @@ if (!framework.IsHeadless())
         var sceneNames;
 
         sceneNames = client.getSceneNames();
-        print("\nScenes: " + sceneNames + "\n");
         if (sceneNames[0] == undefined)
         {
             disconnectAction.enabled = false;

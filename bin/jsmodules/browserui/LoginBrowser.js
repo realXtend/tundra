@@ -381,9 +381,12 @@ var BrowserManager = Class.extend
          this.onTabIndexChanged(this.tabs.currentIndex);
      },
 
-     onDisconnected: function()
+     onDisconnected: function(uuid)
      {
-         //this.onTabCloseRequest(p_.tabs.currentIndex);
+         print("Calling tabclose onDisconnected!");
+         p_.tabs.currentIndex = this.clientTabOrderList.indexOf(uuid);
+         this.onTabCloseRequest(p_.tabs.currentIndex);
+         print("Tabclose onDisconnected finished!");
          this.refreshSqueezer(this.tabs.currentIndex);
          this.onTabIndexChanged(this.tabs.currentIndex);
          if (this.tabs.currentIndex != 0)
@@ -662,28 +665,43 @@ var BrowserManager = Class.extend
 
      },
 
-     onTabCloseRequest: function(index)
-     {
-         if (index == 0)
-             return;
-         else
+         onTabCloseRequest: function(index)
          {
-             p_.tabs.currentIndex = index;
-             p_.onTabIndexChanged(p_.tabs.currentIndex);
-             //print("p_.connected: " + p_.connected[index]);
-             if (p_.connected[index] == true)
+             print("OnTabCloseRequest!");
+             if (index == 0)
              {
-                 p_.connected[index] = false;
-                 client.Logout(this.clientTabOrderList[index]);
+                 print("Index was 0.");
+                 return;
              }
-             //print("Connected[]: " + this.connected + ", Removing index: " + index);
-             p_.connected.splice(index,1);
-             //print("tabOrder[]: " + this.clientTabOrderList + ", Removing index: " + index);
-             p_.clientTabOrderList.splice(index,1);
-             p_.tabs.removeTab(index);
-             return;
-         }
-     },
+             else
+             {
+                 p_.tabs.currentIndex = index;
+                 p_.onTabIndexChanged(p_.tabs.currentIndex);
+                 if (p_.connected[index] == true)
+                 {
+                     p_.connected[index] = false;
+                     client.Logout(this.clientTabOrderList[index]);
+                 }
+                 else if (p_.connected[index] == undefined)
+                 {
+
+                     print("Derp");
+                     p_.connected.splice(index,1);
+                     print("tabOrder[]: " + this.clientTabOrderList + ", Removing index: " + index);
+                     p_.clientTabOrderList.splice(index,1);
+                     p_.tabs.removeTab(index);
+                 }
+                 else if(p_.connected[index] == false)
+                 {
+                     print("IsFalse!");
+                     p_.connected[index] = "";
+                 }
+                 else
+                 {
+                     print("Now here!");
+                 }
+             }
+         },
 
      onBack: function()
      {

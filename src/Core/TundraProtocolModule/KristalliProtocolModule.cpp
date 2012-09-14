@@ -171,6 +171,9 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
 
         foreach (QString key, list)
         {
+            if (!serverConnectionIter_.hasNext())
+                break;
+
             serverIpIter_.next();
             serverPortIter_.next();
             serverTransportIter_.next();
@@ -212,8 +215,7 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
                     {
                         ::LogInfo("Failed to connect to " + serverIpIter_.value() + ":" + ToString(serverPortIter_.value()));
                         emit ConnectionAttemptFailed(key);
-
-                        removeConnections.append(key);
+                        continue;
                     }
                 }
                 else if (!reconnectTimerIter_.value().Enabled())
@@ -224,15 +226,6 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
             if (serverConnectionIter_.value() && serverConnectionIter_.value()->GetConnectionState() == ConnectionOK)
                 reconnectAttemptsIter_.value() = cReconnectAttempts;
         }
-    }
-
-    if (!removeConnections.isEmpty())
-    {
-        foreach (QString key, removeConnections)
-        {
-            Disconnect(key);
-        }
-        removeConnections.clear();
     }
 
     if (server)
@@ -312,10 +305,13 @@ void KristalliProtocolModule::PerformReconnection(QMutableMapIterator<QString, P
 
 void KristalliProtocolModule::Disconnect()
 {
-    foreach (Ptr(kNet::MessageConnection) mc, serverConnection_map_)
+    if (!serverConnection_map_.isEmpty())
     {
-        mc->Disconnect();
-        mc = 0;
+        foreach ( Ptr(kNet::MessageConnection) mc, serverConnection_map_)
+        {
+            mc->Disconnect();
+            mc = 0;
+        }
     }
     serverConnection_map_.clear();
     serverIp_map_.clear();

@@ -206,7 +206,7 @@ void Client::DoLogout(bool fail)
         
         removeProperties(discScene);
         
-        emit Disconnected();
+        emit Disconnected(discScene);
     }
     
     if (fail)
@@ -349,6 +349,8 @@ kNet::MessageConnection* Client::GetConnection(const QString &name)
 void Client::OnConnectionAttemptFailed(QString &key)
 {
     QMap< QString, std::map<QString, QString> >::const_iterator iter = properties_list_.find(key);
+    if (iter == properties_list_.end())
+        return;
     properties = iter.value();
 
     // Provide a reason why the connection failed.
@@ -533,6 +535,9 @@ void Client::saveProperties(const QString name)
 void Client::printSceneNames()
 {
     QMap< QString, std::map<QString, QString> >::const_iterator iter = properties_list_.begin();
+    if (iter == properties_list_.end())
+        return;
+
     std::map<QString, QString> tempMap = iter.value();
 
     QStringList keys = properties_list_.keys();

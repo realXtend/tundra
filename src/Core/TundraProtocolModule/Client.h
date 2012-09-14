@@ -144,7 +144,7 @@ signals:
     void NetworkMessageReceived(kNet::packet_id_t, kNet::message_id_t id, const char *data, size_t numBytes);
 
     /// This signal is emitted when the client has disconnected from the server.
-    void Disconnected();
+    void Disconnected(const QString);
 
     /// Emitted when a login attempt failed to a server.
     void LoginFailed(const QString &reason);
