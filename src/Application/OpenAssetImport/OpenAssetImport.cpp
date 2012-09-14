@@ -225,8 +225,8 @@ aiMatrix4x4 UpdateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
     // walking animation is found from element 0
     const aiAnimation* mAnim = scene->mAnimations[0];
     double currentTime = val;
-    currentTime = fmod( val * 1, mAnim->mDuration);
-    ticks = fmod( val * 1, mAnim->mDuration);
+    currentTime = fmod( (float)val * 1.f, (float)mAnim->mDuration);
+    ticks = fmod( (float)val * 1.f, (float)mAnim->mDuration);
 
     // calculate the transformations for each animation channel
 
@@ -317,6 +317,8 @@ aiMatrix4x4 UpdateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
     mat.a2 *= presentScaling.y; mat.b2 *= presentScaling.y; mat.c2 *= presentScaling.y;
     mat.a3 *= presentScaling.z; mat.b3 *= presentScaling.z; mat.c3 *= presentScaling.z;
     mat.a4 = presentPosition.x; mat.b4 = presentPosition.y; mat.c4 = presentPosition.z;
+
+    return mat;
 }
 
 void GetBasePose(const aiScene * sc, const aiNode * nd)
