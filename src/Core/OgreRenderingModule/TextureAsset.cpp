@@ -161,7 +161,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         }
         if (!allowAsynchronous)
         {
-            // We are doing a async loading, ddsData memory is released once its loaded to ogre.
+            // We are doing a synchronous loading, ddsData memory is released once its loaded to ogre.
             ddsData = DecompressCRNtoDDS(data, numBytes, ddsNumBytes);
             if (!ddsData || ddsNumBytes == 0)
                 return false;
@@ -170,7 +170,8 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         }
         else
         {
-            // We are bound to do threaded loading from disk. Free crnlib allocated dds data.
+            // We are bound to do threaded loading from disk. Free crnlib 
+            // allocated dds memory now so we don't get a leak.
             if (ddsData != 0)
                 crn_free_block(ddsData);
         }
@@ -273,17 +274,16 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             ogreTexture->createInternalResources();
         }
 
-        // Free crnlib allocated dds data that was assigned 
-        // to 'data' for synchronous texture loading.
+        // Free crnlib allocated dds memory now that its loaded.
         if (NameSuffix() == "crn")
             crn_free_block((void*)data);
         
         PostProcessTexture();
         
-        // We did a synchronous load, must call AssetLoadCompleted here.
-        // This is done withe Name() that is tracked by AssetAPI and is the ref
-        // we are showing outside this class, even if data was pre-processed before
-        // passing to Ogre with NameInternal().
+        // We did a synchronous load and must call AssetLoadCompleted here.
+        // This is done with Name() that is tracked by AssetAPI and is the ref
+        // we are showing outside this object, even if the input data was pre-processed 
+        // before passed to Ogre with NameInternal().
         assetAPI->AssetLoadCompleted(Name());
         return true;
     }
@@ -302,7 +302,7 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
     // Reset to 0 to mark the asynch request is not active anymore. Aborted in Unload() if it is.
     loadTicket_ = 0;
 
-    ogreAssetName = AssetAPI::SanitateAssetRef(Name().replace(".crn", ".dds", Qt::CaseInsensitive));
+    ogreAssetName = AssetAPI::SanitateAssetRef(NameInternal());
     if (!result.error)
     {
         ogreTexture = Ogre::TextureManager::getSingleton().getByName(ogreAssetName.toStdString(), OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);

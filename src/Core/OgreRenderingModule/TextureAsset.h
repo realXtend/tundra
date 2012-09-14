@@ -7,7 +7,6 @@
 #include "AssetAPI.h"
 
 #include <QImage>
-#include <QTime>
 
 #include <OgreTexture.h>
 #include <OgreResourceBackgroundQueue.h>
@@ -91,10 +90,11 @@ public:
 
 private:
     /** This function is used internally to convert our name into Ogre form.
-        Meaning we swap file suffixes that Ogre does not support to ones it supports. */
+        Meaning we swap file suffixes that Ogre does not support to ones it supports
+        and handle conversion before passing to Ogre in DeserializeFrom. */
     QString NameInternal();
 
-    /// Texture source file extension.
+    /// Texture extension.
     QString NameSuffix();
 
     /// Decompresses any CRN input data to DDS.
