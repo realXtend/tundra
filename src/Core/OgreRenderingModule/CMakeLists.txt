@@ -1,3 +1,60 @@
+macro(configure_crunch)
+    # Hydrax lookup rules:
+    # 1. If the environment variable CRUNCH_ROOT is set, use that directory and cache it.
+    # 2. Otherwise, use the deps directory path.
+
+    message("** Configuring Crunch")
+    if ("${CRUNCH_ROOT}" STREQUAL "")
+        if (NOT "$ENV{CRUNCH_ROOT}" STREQUAL "")
+            file (TO_CMAKE_PATH "$ENV{CRUNCH_ROOT}" CRUNCH_ROOT)
+            # Cache CRUNCH_ROOT for runs that dont define $ENV{CRUNCH_ROOT}.
+            set (CRUNCH_ROOT ${CRUNCH_ROOT} CACHE PATH "CRUNCH_ROOT dependency path" FORCE)
+        else ()
+            message(STATUS "CMake cache or environment variable CRUNCH_ROOT not set, assuming location to TUNDRA_DEP_PATH.")
+            set(CRUNCH_ROOT ${ENV_TUNDRA_DEP_PATH})
+        endif ()
+    endif()
+    
+    find_path(CRUNCH_INCLUDE_DIR crn_decomp.h 
+        HINTS ${CRUNCH_ROOT}/include            # win
+              ${CRUNCH_ROOT}/include/crunch)    # linux/osx
+    
+    if (MSVC)
+        find_library(CRUNCH_RELEASE_LIBRARY crnlib_DLL_VC9
+            HINTS ${CRUNCH_ROOT}/lib/VC9/Release_DLL/Win32)
+        find_library(CRUNCH_DEBUG_LIBRARY crnlibD_DLL_VC9
+            HINTS ${CRUNCH_ROOT}/lib/VC9/Debug_DLL/Win32)
+    else ()
+        find_library(CRUNCH_RELEASE_LIBRARY libcrnlib
+            HINTS ${CRUNCH_ROOT}/lib)
+    endif()
+    
+    message (STATUS "-- Include Directories:")
+    message (STATUS "       " ${CRUNCH_INCLUDE_DIR})
+    message (STATUS "-- Libraries:")
+    message (STATUS "       " ${CRUNCH_RELEASE_LIBRARY})
+    if (MSVC)
+        message (STATUS "       " ${CRUNCH_DEBUG_LIBRARY})
+    endif()
+	message ("")
+endmacro()
+
+macro(use_package_crunch)
+    include_directories(${CRUNCH_INCLUDE_DIR})
+endmacro()
+
+macro(link_package_crunch)
+    if (MSVC) 
+        target_link_libraries(${TARGET_NAME} optimized ${CRUNCH_RELEASE_LIBRARY} debug ${CRUNCH_DEBUG_LIBRARY})
+    else ()
+        target_link_libraries(${TARGET_NAME} ${CRUNCH_RELEASE_LIBRARY})
+    endif()
+endmacro()
+
+configure_crunch ()
+
+#################################################################################
+
 # Define target name and output directory
 init_target(OgreRenderingModule OUTPUT plugins)
 
@@ -31,6 +88,7 @@ include_directories (libsquish)
 add_definitions(-DOGRE_MODULE_EXPORTS)
 
 use_package_assimp()
+use_package_crunch()
 use_core_modules(Framework Math Scene Ui Asset Console)
 
 build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
@@ -38,6 +96,7 @@ build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 GetOpenAssetImport()
 
 link_ogre()
+link_package_crunch()
 link_modules(Framework Scene Ui Asset Console)
 
 SetupCompileFlagsWithPCH()
