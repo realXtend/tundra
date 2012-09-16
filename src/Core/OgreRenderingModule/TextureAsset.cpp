@@ -18,7 +18,9 @@
 
 #include <Ogre.h>
 
+#ifdef TUNDRA_CRUNCH_ENABLED
 #include <crn_decomp.h>
+#endif
 
 #ifdef WIN32
 #include <squish.h>
@@ -91,6 +93,7 @@ QString TextureAsset::NameSuffix() const
 
 void *TextureAsset::DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, size_t &outDdsNumBytes)
 {
+#ifdef TUNDRA_CRUNCH_ENABLED
     outDdsNumBytes = 0;
 
     // numBytes must he the crn data size as input. crn_decompress_crn_to_dds
@@ -105,6 +108,9 @@ void *TextureAsset::DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, si
     outDdsNumBytes = (size_t)numBytes;
 
     return outDdsData;
+#else
+    return 0;
+#endif
 }
 
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
@@ -145,6 +151,10 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
               Its a waste of resources as our disk source is up to date and we are allowed to use it to load
               into Ogre. 
         */
+#ifndef TUNDRA_CRUNCH_ENABLED
+        LogError("TextureAsset::DeserializeFromData failed: CRN texture support disabled.");
+        return false;
+#else
         void *ddsData = 0;
         size_t ddsNumBytes = 0;
         QString nameInternal = NameInternal();
@@ -191,6 +201,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             if (ddsData != 0)
                 crn_free_block(ddsData);
         }
+#endif
     }
     
     // Asynchronous loading
@@ -290,10 +301,12 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             ogreTexture->createInternalResources();
         }
 
+#ifdef TUNDRA_CRUNCH_ENABLED
         // Free crnlib allocated dds memory now that its loaded.
         if (NameSuffix() == "crn")
             crn_free_block((void*)data);
-        
+#endif
+
         PostProcessTexture();
         
         // We did a synchronous load and must call AssetLoadCompleted here.
