@@ -1,0 +1,33 @@
+
+This is multiconnection supported version of RealXtend tundra2.
+This feature has been tested on Ubuntu Linux 12.04 - Mate desktop environment.
+To run and test multiple simultaneous connections launch Tundra with following parameters.
+
+client launch: ./Tundra --client --config viewer-browser.xml --storage scenes/ --nocentralwidget
+
+NOTE: nocentralwidget is used to get rid of 80 pixel height of ghost space on ubuntu. 
+
+Example servers used in testing:
+
+1) Canvas-scene: ./Tundra --server --file scenes/Canvas/scene.txml --port 2345 --protocol udp
+2) Avatar-scene: ./Tundra --server --file scenes/Avatar/scene.txml --port 2346 --protocol udp
+3) Physic-scene: ./Tundra --server --file scenes/Physics2/scene.txml --port 2347 --protocol udp
+
+First tab on viewer-browser is always Login-tab. Use this tab to connect to your chosen servers.
+Connections to servers can be closed by closing the tab. 
+
+Multiconnection can also be used without viewer-browser.xml. As long as jsmodules/startup/multiconnection.js 
+is ran, connections can be made using F1-console. Scene switch can be done using switchscene(<id>) and
+disconnection can be done using menubar or using console command disconnect(<id>). Server connections can be
+listed using command switchscene(print).
+
+Example with 4 connections made:
+
+switchscene(print)
+
+> 402e - localhost:2347/udp 
+> 70fb - localhost:2345/udp 
+> cadd - chiru.cie.fi:3456/udp 
+> db0 - localhost:2346/udp 
+
+Questions: jukka.vatjus-anttila@cie.fi
