@@ -383,14 +383,17 @@ var BrowserManager = Class.extend
 
      onDisconnected: function(uuid)
      {
+         this.connected[this.clientTabOrderList.indexOf(uuid)] = false;
+         this.onTabCloseRequest(this.clientTabOrderList.indexOf(uuid));
          this.refreshSqueezer(this.tabs.currentIndex);
+
          this.onTabIndexChanged(this.tabs.currentIndex);
+
          if (this.tabs.currentIndex != 0)
          {
              this.tabs.setTabToolTip(0, "Login");
-             this.tabs.setTabText(0, "Login")
+             this.tabs.setTabText(0, "Login");
          }
-
          // Clear toolbars
          for (var toolbarKey in this.toolBarGroups)
          {
@@ -667,16 +670,22 @@ var BrowserManager = Class.extend
                  return;
              else
              {
-                 p_.tabs.currentIndex = index;
-                 p_.onTabIndexChanged(p_.tabs.currentIndex);
+                 print("OnTabCloseRequest function index: " + index + " and current index is: " + p_.tabs.currentIndex);
+                 //p_.tabs.currentIndex = index;
+                 print("lalla1");
+                 //p_.onTabIndexChanged(p_.tabs.currentIndex);
+                 print("lalla2");
                  if (p_.connected[index] == true)
                  {
                      p_.connected[index] = false;
                      client.Logout(this.clientTabOrderList[index]);
+                     print("Returning!");
+                     return;
                  }
-
+                print("lalla3");
                  p_.connected.splice(index,1);
                  p_.clientTabOrderList.splice(index,1);
+                 print("Removing tab index: " + index);
                  p_.tabs.removeTab(index);
                  return
              }
