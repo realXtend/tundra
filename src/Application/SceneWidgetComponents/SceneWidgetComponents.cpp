@@ -53,7 +53,7 @@ void SceneWidgetComponents::Initialize()
 
     QObject *client = qvariant_cast<QObject*>(framework_->property("client"));
     if (client)
-        connect(client, SIGNAL(Disconnected()), this, SLOT(Reset()));
+        connect(client, SIGNAL(Disconnected(const QString)), this, SLOT(Reset()));
 }
 
 void SceneWidgetComponents::Uninitialize()
