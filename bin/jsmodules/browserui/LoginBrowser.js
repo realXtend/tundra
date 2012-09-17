@@ -670,22 +670,14 @@ var BrowserManager = Class.extend
                  return;
              else
              {
-                 print("OnTabCloseRequest function index: " + index + " and current index is: " + p_.tabs.currentIndex);
-                 //p_.tabs.currentIndex = index;
-                 print("lalla1");
-                 //p_.onTabIndexChanged(p_.tabs.currentIndex);
-                 print("lalla2");
                  if (p_.connected[index] == true)
                  {
                      p_.connected[index] = false;
                      client.Logout(this.clientTabOrderList[index]);
-                     print("Returning!");
                      return;
                  }
-                print("lalla3");
                  p_.connected.splice(index,1);
                  p_.clientTabOrderList.splice(index,1);
-                 print("Removing tab index: " + index);
                  p_.tabs.removeTab(index);
                  return
              }
