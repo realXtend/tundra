@@ -47,10 +47,15 @@ echo " "
 echo "=============================== realXtend Tundra 2 dependency building script ==============================="
 echo "= Script to build most dependencies. For now, the following dependencies are required to run this script:   ="
 echo "=                                                                                                           ="
-echo "= CMake                                                                                                     ="
-echo "= Git                                                                                                       ="
-echo "= Ogre SDK 1.7.3                                                                                            ="
-echo "= Qt 4.7.1 for Cocoa 64-bit                                                                                 ="
+echo "= Xcode     for Mac OS X 10.6.x:           available on Apple Developer website                             ="
+echo "=           for Mac OS X 10.7.x and newer: available on App Store. Command-line developer tools which       ="
+echo "=                                          are part of Xcode must be installed too                          =" 
+echo "= CMake     http://www.cmake.org/cmake/resources/software.html                                              ="
+echo "= Git       http://git-scm.com/download/mac                                                                 ="
+echo "= Mercurial http://mercurial.selenic.com/downloads                                                          ="
+echo "= Qt 4.8.0  http://qt.nokia.com/downloads/sdk-mac-os-cpp                                                    ="
+echo "= MacPorts  http://www.macports.org/install.php                                                             ="
+echo "= nVidia Cg http://developer.download.nvidia.com/cg/Cg_3.1/Cg-3.1_April2012.dmg                             ="
 echo "=                                                                                                           ="
 echo "============================================================================================================="
 
@@ -192,10 +197,10 @@ tags=$DEPS/tags
 mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 
 if [ "$RELWITHDEBINFO" == "1" ]; then
-    export CFLAGS="-gdwarf-2 -O0"
-    export CXXFLAGS="-gdwarf-2 -O0"
-    export CMAKE_C_FLAGS="-gdwarf-2 -O0"
-    export CMAKE_CXX_FLAGS="-gdwarf-2 -O0"
+    export CFLAGS="-gdwarf-2 -O2"
+    export CXXFLAGS="-gdwarf-2 -O2"
+    export CMAKE_C_FLAGS="-gdwarf-2 -O2"
+    export CMAKE_CXX_FLAGS="-gdwarf-2 -O2"
 else
     export CFLAGS="-03"
     export CXXFLAGS="-03"
@@ -433,6 +438,35 @@ else
     touch $tags/$what-done
 fi
 
+what=ogre-safe-nocrashes
+baseurl=https://bitbucket.org/clb
+ogredepszip=OgreDependencies_OSX_20120525.zip
+ogredepsurl=http://downloads.sourceforge.net/project/ogre/ogre-dependencies-mac/1.8/
+
+if test -f $tags/$what-done; then
+    echo $what is done
+    if [ ! -d $OGRE_HOME ]; then      # If OGRE_HOME points to invalid location, force it to deps/build/ogre-safe-nocrashes
+        export OGRE_HOME=$build/$what # If Ogre is built, then Hydrax and SkyX might be not and OGRE_HOME is needed still
+    fi
+else
+    cd $build
+    rm -rf $what
+    echo "Cloning $what repository, this may take a while..."
+    hg clone $baseurl/$what
+    cd $what
+    hg checkout v1-8
+    curl -L -o $ogredepszip $ogredepsurl$ogredepszip
+    tar xzf $ogredepszip
+    export OGRE_HOME=$build/$what
+    cmake -G Xcode -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+    xcodebuild -configuration RelWithDebInfo
+    
+    cp -R $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $HOME/Library/Frameworks
+    cp $OGRE_HOME/lib/relwithdebinfo/*.dylib $viewer/bin
+    export PKG_CONFIG_PATH=$build/$what/pkgconfig
+    touch $tags/$what-done
+fi
+
 # HydraX, SkyX and PythonQT are build from the realxtend own dependencies.
 # At least for the time being, until changes to those components flow into
 # upstream..
@@ -464,28 +498,53 @@ if test -f $tags/hydrax-done; then
 else
     echo "Building Hydrax."
     cd $build/$depdir/hydrax
-    #sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
-    #sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
-    make -j $nprocs PREFIX=$prefix
-    make PREFIX=$prefix install
+    #todo: Maybe it is better if we keep another makefile for Mac OS X inside realxtend-tundra-deps repo for Hydrax? Too much linux-specific stuff here
+    sed \
+    -e 's/^OGRE_CFLAGS.*$/OGRE_CFLAGS = -I$(OGRE_HOME)\/include -I$(OGRE_HOME)\/OgreMain\/include -I$(OGRE_HOME)\/Dependencies\/include/' \
+    -e 's/^OGRE_LDFLAGS.*/OGRE_LDFLAGS = -F$(OGRE_HOME)\/lib\/relwithdebinfo -framework Ogre/' \
+    -e 's/NAME=libhydrax.so.0.5.3/NAME=libhydrax.0.5.3.dylib/' \
+    -e 's/\$(CP) \$(OUTPUT) \$(DESTDIR)\$(PREFIX)\/lib\/\$(NAME)/$(CP) \.\/lib\/Release\/\* $(DESTDIR)$(PREFIX)\/lib/' \
+    -e 's/\$(RM) -f \$(DESTDIR)\$(PREFIX)\/lib\/libhydrax.so/$(RM) -f \$(DESTDIR)\$(PREFIX)\/lib\/\$(NAME)/' \
+    -e 's/\$(LN) -s -T \.\/\$(NAME) \$(DESTDIR)\$(PREFIX)\/lib\/libhydrax.so/$(LN) -s $(DESTDIR)$(PREFIX)\/lib\/$(NAME) $(DESTDIR)$(PREFIX)\/lib\/libhydrax.dylib/' \
+    -e 's/OUTPUTOBJPREFIX=lib\/Release\//OUTPUTOBJPREFIX=$(PWD)\/lib\/Release\//' < makefile > makefile.macosx
+
+    OSXMAKE="-f makefile.macosx"
+    make $OSXMAKE -j$NPROCS PREFIX=$prefix
+    make $OSXMAKE PREFIX=$prefix install
+    cp ./lib/Release/* $prefix/lib #for some reason, 'cp' that is invoked in the makefile does not copy the library. 
     touch $tags/hydrax-done
 fi
 
-#cd $build
-#what=mumbleclient
-#if test -f $tags/$what-done; then
-#    echo $what is done
-#else
-#    test -d $what || git clone https://github.com/Adminotech/libmumble.git $what
-#    cd $what
-#    cmake .
-#    make VERBOSE=1 -j$NPROCS
-#    cp libmumbleclient.dylib $prefix/lib
-#    cp Mumble.pb.h $prefix/include
-#    mkdir $prefix/include/$what
-#    cp ./src/*.h $prefix/include/$what
-#    touch $tags/$what-done
-#fi
+# SkyX build:
+if test -f $tags/skyx-done; then
+    echo "SkyX-done"
+else
+    echo "Building SkyX:"
+    cd $build/$depdir/skyx
+    if test -f CMakeCache.txt; then
+        rm CMakeCache.txt
+    fi
+    git checkout -- CMakeLists.txt
+    sed \
+    # The following lines will most likely cause CMake to fail if the contents of CMakeLists.txt before 34-th line are moved downwards,
+    # or if the contents of the lines themselves change.
+    # Line 30-34 of skyx/CMakeLists.txt:
+    # if (UNIX)
+    #   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${ENV_OGRE_HOME}/cmake" "/usr/local/lib/OGRE/cmake/" "/usr/lib/OGRE/cmake/")
+    # else (UNIX)
+    #   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ENV_OGRE_HOME}/CMake)
+    # endif ()
+    # The statement if (UNIX) ... else (UNIX) does not have sense. On Unix systems, it will always hit the first block
+    # todo: This should be patched in the official SkyX repo, or in our Google code realxtend-tundra-deps repo
+    -e '30,32'd \
+    -e '34'd \
+    -e "s/set(CMAKE_MODULE_PATH \${CMAKE_MODULE_PATH} \${ENV_OGRE_HOME}\/CMake)/set(CMAKE_MODULE_PATH \$\{CMAKE_MODULE_PATH\} \$\{ENV_OGRE_HOME\}\/CMake\/Packages \$\{ENV_OGRE_HOME\}\/CMake\/Utils)/" < CMakeLists.txt > x
+    mv x CMakeLists.txt
+    cmake . -DSKYX_DEPENDENCIES_DIR=$OGRE_HOME/Dependencies -DCMAKE_INSTALL_PREFIX=$prefix
+    make -j$NPROCS
+    make install
+    touch $tags/skyx-done
+fi
 
 # All deps are now fetched and built. Do the actual Tundra build.
 
