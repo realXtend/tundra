@@ -21,6 +21,8 @@ ZipWorker::ZipWorker(const QString &diskSource, ZipFileList files) :
     files_(files),
     archive_(0)
 {
+    // Make sure this worker object is deleted by QThreadPool once run() completes.
+    setAutoDelete(true);
 }
 
 ZipWorker::~ZipWorker()
@@ -29,7 +31,7 @@ ZipWorker::~ZipWorker()
 }
 
 void ZipWorker::run()
-{    
+{
     zzip_error_t error = ZZIP_NO_ERROR;
     archive_ = zzip_dir_open(QDir::fromNativeSeparators(diskSource_).toStdString().c_str(), &error);
     if (CheckAndLogZzipError(error) || CheckAndLogArchiveError(archive_) || !archive_)

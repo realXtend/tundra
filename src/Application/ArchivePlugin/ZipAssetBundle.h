@@ -58,17 +58,11 @@ private:
     /// Closes zip file.
     void Close();
     
-    /// Closes and deletes our worker thread cleanly.
-    void CloseWorker();
-
     /// Zziplib ptr to the zip file.
     zzip_dir *archive_;
     
     /// Zip sub assets.
     ZipFileList files_;
-    
-    /// Worker thread to extract the zip contents to disk files.
-    ZipWorker *worker_;
 };
 
 typedef boost::shared_ptr<ZipAssetBundle> ArchiveAssetPtr;
