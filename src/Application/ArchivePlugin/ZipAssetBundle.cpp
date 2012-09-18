@@ -10,11 +10,11 @@
 #include "zzip/zzip.h"
 #include <QDir>
 #include <QDateTime>
+#include <QThreadPool>
 
 ZipAssetBundle::ZipAssetBundle(AssetAPI *owner, const QString &type, const QString &name) :
     IAssetBundle(owner, type, name),
-    archive_(0),
-    worker_(0)
+    archive_(0)
 {
 }
 
@@ -26,7 +26,6 @@ ZipAssetBundle::~ZipAssetBundle()
 void ZipAssetBundle::DoUnload()
 {
     Close();
-    CloseWorker();
 }
 
 bool ZipAssetBundle::DeserializeFromDiskSource()
@@ -102,12 +101,10 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
     // Now that the file info has been read, continue in a worker thread.
     LogDebug("ZipAssetBundle: File information read for " + Name() + ". File count: " + QString::number(files_.size()) + ". Starting worker thread.");
     
-    CloseWorker();
-    worker_ = new ZipWorker(DiskSource(), files_);
-    worker_->moveToThread(worker_);
-    
-    connect(worker_, SIGNAL(AsynchLoadCompleted(bool)), this, SLOT(OnAsynchLoadCompleted(bool)), Qt::QueuedConnection);
-    worker_->start(QThread::HighPriority);
+    // ZipWorker is a QRunnable we can pass to QThreadPool, it will handle scheduling it and deletes it when done.
+    ZipWorker *worker = new ZipWorker(DiskSource(), files_);   
+    connect(worker, SIGNAL(AsynchLoadCompleted(bool)), this, SLOT(OnAsynchLoadCompleted(bool)), Qt::QueuedConnection);
+    QThreadPool::globalInstance()->start(worker);
     
     return true;
 }
@@ -151,9 +148,7 @@ bool ZipAssetBundle::IsLoaded() const
 }
 
 void ZipAssetBundle::OnAsynchLoadCompleted(bool successful)
-{
-    CloseWorker();
-    
+{   
     // Write new timestamps for extracted files. Cannot be done (?!) in the worker
     // thread as it would need to access Framework, AssetAPI and AssetCache ptrs 
     // and they might not be safe to access from outside the main thread.
@@ -180,14 +175,4 @@ void ZipAssetBundle::Close()
         zzip_dir_close(archive_);
         archive_ = 0;
     }
-}
-
-void ZipAssetBundle::CloseWorker()
-{
-    if (worker_ && worker_->isRunning())
-    {
-        worker_->exit();
-        worker_->wait();
-    }
-    SAFE_DELETE(worker_);
 }

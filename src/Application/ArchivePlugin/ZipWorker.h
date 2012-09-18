@@ -3,7 +3,7 @@
 #pragma once
 
 #include <QObject>
-#include <QThread>
+#include <QRunnable>
 #include <QString>
 #include <QDateTime>
 #include <QList>
@@ -22,17 +22,16 @@ struct ZipArchiveFile
 typedef QList<ZipArchiveFile> ZipFileList;
 
 /// Worker thread that unpacks zip file contents.
-class ZipWorker : public QThread
+class ZipWorker : public QObject, public QRunnable
 {
 Q_OBJECT
 
 public:
     ZipWorker(const QString &diskSource, ZipFileList files);
-    virtual ~ZipWorker();
+    ~ZipWorker();
 
-protected:
     /// QThread override.
-    void run();
+    virtual void run();
     
 signals:
     /// Emitted when zip processing has been completed.

@@ -214,9 +214,23 @@ void *AssetCache::OpenFileHandle(const QString &absolutePath)
 {
     QString nativePath = QDir::toNativeSeparators(absolutePath);
     QByteArray fileBA = nativePath.toLocal8Bit();
-    WCHAR szFilePath[MAX_PATH];
-    MultiByteToWideChar(CP_ACP, 0, fileBA.data(), -1, szFilePath, NUMELEMS(szFilePath));
-    return CreateFile(szFilePath, GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if (fileBA.size() < MAX_PATH)
+    {
+        WCHAR szFilePath[MAX_PATH];
+        MultiByteToWideChar(CP_ACP, 0, fileBA.data(), -1, szFilePath, NUMELEMS(szFilePath));
+        return CreateFile(szFilePath, GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    }
+    else
+    {
+        // Prefixing file path with \\?\ is windows magic, see more from
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
+        // This allows use to open >MAX_PATH length file paths which do happen in asset cache if the 
+        // source url is long! Assume 260*3 will be enough as it still very rarely goes over 260.
+        fileBA = "\\\\?\\" + fileBA;
+        WCHAR szFilePath[MAX_PATH*3];
+        MultiByteToWideChar(CP_ACP, 0, fileBA.data(), -1, szFilePath, NUMELEMS(szFilePath));
+        return CreateFileW(szFilePath, GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    }
 }
 #endif
 
