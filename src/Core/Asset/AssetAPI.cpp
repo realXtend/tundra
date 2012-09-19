@@ -1287,13 +1287,20 @@ bool AssetAPI::LoadSubAssetToTransfer(AssetTransferPtr transfer, IAssetBundle *b
     transfer->source.type = subAssetType;
     transfer->assetType = subAssetType;
 
-    std::vector<u8> subAssetData = bundle->GetSubAssetData(subAssetRef);
-    if (subAssetData.size() == 0)
+    // Avoid data shuffling if disk source is valid. IAsset loading can 
+    // manage with one of these, it does not need them both.
+    std::vector<u8> subAssetData;
+    QString subAssetDiskSource = bundle->GetSubAssetDiskSource(subAssetRef);
+    if (subAssetDiskSource.isEmpty()) 
     {
-        QString error("AssetAPI: Failed to load sub asset '" + fullSubAssetRef + " from bundle '" + bundle->Name() + "': Sub asset does not exist.");
-        LogError(error);
-        transfer->EmitAssetFailed(error);
-        return false;
+        subAssetData = bundle->GetSubAssetData(subAssetRef);
+        if (subAssetData.size() == 0)
+        {
+            QString error("AssetAPI: Failed to load sub asset '" + fullSubAssetRef + " from bundle '" + bundle->Name() + "': Sub asset does not exist.");
+            LogError(error);
+            transfer->EmitAssetFailed(error);
+            return false;
+        }
     }
 
     if (!transfer->asset)
@@ -1306,7 +1313,7 @@ bool AssetAPI::LoadSubAssetToTransfer(AssetTransferPtr transfer, IAssetBundle *b
         return false;
     }
     
-    transfer->asset->SetDiskSource(bundle->GetSubAssetDiskSource(subAssetRef));
+    transfer->asset->SetDiskSource(subAssetDiskSource);
     transfer->asset->SetDiskSourceType(IAsset::Bundle);
     transfer->asset->SetAssetStorage(transfer->storage.lock());
     transfer->asset->SetAssetProvider(transfer->provider.lock());
@@ -1327,7 +1334,7 @@ bool AssetAPI::LoadSubAssetToTransfer(AssetTransferPtr transfer, IAssetBundle *b
     if (subAssetData.size() > 0)
         success = transfer->asset->LoadFromFileInMemory(&subAssetData[0], subAssetData.size());
     else if (!transfer->asset->DiskSource().isEmpty())
-        success = transfer->asset->LoadFromFile(transfer->asset->DiskSource());
+        success = transfer->asset->LoadFromFile(subAssetDiskSource);
 
     // If the load from either of in memory data or file data failed, update the internal state.
     // Otherwise the transfer will be left dangling in currentTransfers. For successful loads
@@ -1505,7 +1512,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         AssetBundlePtr assetBundle = CreateNewAssetBundle(transfer->assetType, transfer->source.ref);
         if (assetBundle)
         {
-            // Hook to the success and fail signals. They can either be emited when we load the asset below or after asynch loading.
+            // Hook to the success and fail signals. They can either be emitted when we load the asset below or after asynch loading.
             connect(assetBundle.get(), SIGNAL(Loaded(IAssetBundle*)), this, SLOT(AssetBundleLoadCompleted(IAssetBundle*)), Qt::UniqueConnection);
             connect(assetBundle.get(), SIGNAL(Failed(IAssetBundle*)), this, SLOT(AssetBundleLoadFailed(IAssetBundle*)), Qt::UniqueConnection);
 
@@ -1521,6 +1528,8 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
             // Load the bundle assets from the transfer data or cache.
             // 1) Try to load from above disk source.
             // 2) If disk source deserialization fails, try in memory loading if bundle allows it with RequiresDiskSource.
+            // Note: Be careful not to use bundleIter after DeserializeFromDiskSource is called, as it can righ away emit
+            // Loaded and we end up to AssetBundleLoadCompleted that will remove this bundleIter from bundleMonitors map.
             bool success = assetBundle->DeserializeFromDiskSource();
             if (!success && !assetBundle->RequiresDiskSource())
             {
@@ -2251,10 +2260,6 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef) const
     const char *openDocFileTypes[] = { ".odt", ".doc", ".rtf", ".txt", ".docx", ".docm", ".ods", ".xls", ".odp", ".ppt", ".odg" };
     if (IsFileOfType(filename, openDocFileTypes, NUMELEMS(openDocFileTypes)))
         return "DocAsset";
-        
-    // This is not needed as Binary will be defaulted below?
-    //if (file.endsWith(".xml", Qt::CaseInsensitive) || file.endsWith(".txml", Qt::CaseInsensitive) || file.endsWith(".tbin", Qt::CaseInsensitive)) 
-    //    return "Binary";
 
     // Could not resolve the asset extension to any registered asset factory. Return Binary type.
     return "Binary";

@@ -58,6 +58,8 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
         return false;
     }
     
+    int uncompressing = 0;
+    
     ZZIP_DIRENT archiveEntry;
     while(zzip_dir_read(archive_, &archiveEntry))
     {
@@ -78,6 +80,8 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
                Note that file.lastModified will be non-valid for non cached files so we 
                will cover also missing files. */
             file.doExtract = (zipLastModified.isValid() && file.lastModified.isValid()) ? (zipLastModified != file.lastModified) : true;
+            if (file.doExtract)
+                uncompressing++;
 
             files_ << file;
         }
@@ -92,20 +96,24 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
     {
         LogWarning("ZipAssetBundle: Bundle loaded but does not contain any files " + Name());
         files_ << ZipArchiveFile();
-        
-        // In this case there is no need to spin up the worker.
         emit Loaded(this);
         return true;
     }
-
-    // Now that the file info has been read, continue in a worker thread.
-    LogDebug("ZipAssetBundle: File information read for " + Name() + ". File count: " + QString::number(files_.size()) + ". Starting worker thread.");
     
-    // ZipWorker is a QRunnable we can pass to QThreadPool, it will handle scheduling it and deletes it when done.
-    ZipWorker *worker = new ZipWorker(DiskSource(), files_);   
-    connect(worker, SIGNAL(AsynchLoadCompleted(bool)), this, SLOT(OnAsynchLoadCompleted(bool)), Qt::QueuedConnection);
-    QThreadPool::globalInstance()->start(worker);
-    
+    // Don't spin the worker if all sub assets are up to date in cache.
+    if (uncompressing > 0)
+    {   
+        // Now that the file info has been read, continue in a worker thread.
+        LogDebug("ZipAssetBundle: File information read for " + Name() + ". File count: " + QString::number(files_.size()) + ". Starting worker thread to uncompress " + QString::number(uncompressing) + " files.");
+        
+        // ZipWorker is a QRunnable we can pass to QThreadPool, it will handle scheduling it and deletes it when done.
+        ZipWorker *worker = new ZipWorker(DiskSource(), files_);   
+        connect(worker, SIGNAL(AsynchLoadCompleted(bool)), this, SLOT(OnAsynchLoadCompleted(bool)), Qt::QueuedConnection);
+        QThreadPool::globalInstance()->start(worker);
+    }
+    else
+        emit Loaded(this);
+        
     return true;
 }
 
