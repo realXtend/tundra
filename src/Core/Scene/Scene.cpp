@@ -581,12 +581,20 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
             id = replicated ? NextFreeId() : NextFreeIdLocal();
             if (originaId != 0 && !oldToNewIds.contains(originaId))
                 oldToNewIds[originaId] = id;
+
+            entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
+            ChangeEntityId(id, newID);
+        }
+        else if (useEntityIDsFromFile && HasEntity(id)) // If we use IDs from file and they conflict with some of the existing IDs, change the ID of the old entity
+        {
+            entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
+            ChangeEntityId(id, newID);
         }
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
         {
             LogDebug("Scene::CreateContentFromXml: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
-            LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +"might not replicate properly!");
+            LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +" might not replicate properly!");
             RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
         }
 
