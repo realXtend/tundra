@@ -24,11 +24,8 @@ if (!isServer)
             {
                 // This should be changed according to the scene. If no avatar present then this is void.
                 var avatar = scene.GetEntityByName("Avatar" + client.GetConnectionID());
-                var avatarPos = new float3();
-                var parentPos = new float3();
-
-                avatarPos = avatar.placeable.transform.pos;
-                parentPos = parentEntity.placeable.transform.pos;
+                var avatarPos = avatar.placeable.transform.pos;
+                var parentPos = parentEntity.placeable.transform.pos;
 
                 // Lets check if controlled avatar is inside arbitary range to initialize login procedure.
                 var distance = avatarPos.Distance(parentPos);
