@@ -92,9 +92,7 @@ public:
     bool operator <(const QTreeWidgetItem &rhs) const
     {
         int column = treeWidget()->sortColumn();
-        if (column == cColumnEntityCreate)
-            return checkState(column) < rhs.checkState(column);
-        else if (column == cColumnEntityId)
+        if (column == cColumnEntityId)
             return text(column).toInt() < rhs.text(column).toInt();
         else
             return text(column).toLower() < rhs.text(column).toLower();
@@ -120,10 +118,7 @@ public:
     bool operator <(const QTreeWidgetItem &rhs) const
     {
         int column = treeWidget()->sortColumn();
-        if (column == cColumnAssetUpload)
-            return checkState(column) < rhs.checkState(column);
-        else
-            return text(column).toLower() < rhs.text(column).toLower();
+        return text(column).toLower() < rhs.text(column).toLower();
     }
 
     /// Rewrites the items visible text accordingly to the asset description the item owns.
@@ -432,7 +427,6 @@ void AddContentWindow::AddAssets(const SceneDesc &sceneDesc, const SceneDesc::As
     foreach(const AssetDesc &a, assetDescs)
     {
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
-        assetTreeWidget->addTopLevelItem(aItem);
 
         QString basePath = QFileInfo(sceneDesc.filename).dir().path();
         QString outFilePath;
@@ -458,6 +452,9 @@ void AddContentWindow::AddAssets(const SceneDesc &sceneDesc, const SceneDesc::As
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);
+
+            //insert on top of the tree
+            assetTreeWidget->insertTopLevelItem(0, aItem);
         }
         else if (res == AssetAPI::FileQueryExternalFile)
         {
@@ -467,7 +464,12 @@ void AddContentWindow::AddAssets(const SceneDesc &sceneDesc, const SceneDesc::As
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);
+
+            //insert on top of the tree
+            assetTreeWidget->insertTopLevelItem(0, aItem);
         }
+
+        assetTreeWidget->addTopLevelItem(aItem);
     }
 
     RewriteDestinationNames();
