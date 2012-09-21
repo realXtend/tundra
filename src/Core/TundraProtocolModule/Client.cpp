@@ -425,6 +425,8 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         client_id_ = msg.userID;
         //sceneName = QString::fromStdString(BufferToString(msg.uuid));
         sceneName = QString::fromAscii(source->GetSocket()->DestinationAddress()) + ":" +QString::number(source->GetSocket()->DestinationPort());
+        source->GetSocket()->TransportLayer() == kNet::SocketOverUDP ? sceneName.append(":udp") : sceneName.append(":tcp");
+
         activescenename_ = sceneName;
         
         // Note: create scene & send info of login success only on first connection, not on reconnect
@@ -571,6 +573,7 @@ void Client::emitSceneSwitch(const QString name)
         printSceneNames();
     else
     {
+        ::LogInfo("Sceneswitch: " + name);
         activescenename_ = name;
         emit switchScene(name);
     }
