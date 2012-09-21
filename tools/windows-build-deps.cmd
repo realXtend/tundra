@@ -568,25 +568,6 @@ cecho {0D}Deploying Hydrax DLLs to Tundra bin\.{# #}{\n}
 copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\lib\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-:: Crunch texture compression library
-IF NOT EXIST "%DEPS%\crunch". (
-    cecho {0D}Cloning Crunch into "%DEPS%\crunch".{# #}{\n}
-    svn checkout http://crunch.googlecode.com/svn/trunk/ "%DEPS%\crunch"
-    IF NOT EXIST "%DEPS%\crunch" GOTO :ERROR
-    cd "%DEPS%\crunch"
-    
-    cecho {0D}Building Crunch library and command line tool.{# #}{\n}
-    msbuild crn.2008.sln /p:configuration=Debug_DLL /t:crnlib /nologo
-    msbuild crn.2008.sln /p:configuration=Release_DLL /t:crnlib /nologo
-    msbuild crn.2008.sln /p:configuration=Release /t:crunch /nologo
-    
-    :: copy /inc to /include to keep folder names consistent
-    mkdir include
-    xcopy /E /I /C /H /R /Y inc\*.* include\
-) ELSE (
-   cecho {0D}Crunch already built. Skipping.{# #}{\n}
-)
-
 IF NOT EXIST "%DEPS%\qt-solutions". (
    cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
    cd "%DEPS%"

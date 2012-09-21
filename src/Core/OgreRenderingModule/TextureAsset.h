@@ -99,7 +99,7 @@ public:
      ** @param outDdsNumByte Size of decompressed dds data in bytes is assigned to this parameter.
      ** @return void* to the uncompressed DDS data. It is the callers responsibility to free the 
      ** data with crn_free_block when done with it. */
-    void *DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, size_t &outDdsNumBytes);
+    bool DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, std::vector<u8> &ddsData);
 
 public slots:
     /// Convert texture to QImage
