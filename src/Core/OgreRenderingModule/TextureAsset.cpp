@@ -18,9 +18,8 @@
 
 #include <Ogre.h>
 
-#ifdef TUNDRA_CRUNCH_ENABLED
 #include <crn_decomp.h>
-#endif
+#include <dds_defs.h>
 
 #ifdef WIN32
 #include <squish.h>
@@ -91,26 +90,104 @@ QString TextureAsset::NameSuffix() const
     return QFileInfo(checkName).suffix().toLower();
 }
 
-void *TextureAsset::DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, size_t &outDdsNumBytes)
+bool TextureAsset::DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, std::vector<u8> &ddsData)
 {
-#ifdef TUNDRA_CRUNCH_ENABLED
-    outDdsNumBytes = 0;
-
-    // numBytes must he the crn data size as input. crn_decompress_crn_to_dds
-    // will assign the decompressed dds size into it when its done.
-    crn_uint32 numBytes = crnNumBytes;
-    void *outDdsData = crn_decompress_crn_to_dds((void*)crnData, numBytes);
-    if (!outDdsData || numBytes == 0)
+    PROFILE(TextureAsset_DeserializeFromData_CRN_Uncompress);
+    ddsData.clear();
+    
+    // Texture data
+    crnd::crn_texture_info textureInfo;
+    if (!crnd::crnd_get_texture_info((void*)crnData, crnNumBytes, &textureInfo))
     {
-        LogError("TextureAsset::DeserializeFromData failed: Could not decompress input CRN data!");
-        return 0;
+        LogError("CRN texture info parsing failed, invalid input data.");
+        return false;
     }
-    outDdsNumBytes = (size_t)numBytes;
+    // Begin unpack
+    crnd::crnd_unpack_context crnContext = crnd::crnd_unpack_begin((void*)crnData, crnNumBytes);
+    if (!crnContext)
+    {
+        LogError("CRN texture data unpacking failed, invalid input data.");
+        return false;
+    }
+    
+    // DDS header
+    crnlib::DDSURFACEDESC2 header;
+    memset(&header, 0, sizeof(header));
+    header.dwSize = sizeof(header);
+    // - Size and flags
+    header.dwFlags = crnlib::DDSD_CAPS | crnlib::DDSD_HEIGHT | crnlib::DDSD_WIDTH | crnlib::DDSD_PIXELFORMAT | ((textureInfo.m_levels > 1) ? crnlib::DDSD_MIPMAPCOUNT : 0);
+    header.ddsCaps.dwCaps = crnlib::DDSCAPS_TEXTURE;
+    header.dwWidth = textureInfo.m_width;
+    header.dwHeight = textureInfo.m_height;
+    // - Pixelformat
+    header.ddpfPixelFormat.dwSize = sizeof(crnlib::DDPIXELFORMAT);
+    header.ddpfPixelFormat.dwFlags = crnlib::DDPF_FOURCC;
+    crn_format fundamentalFormat = crnd::crnd_get_fundamental_dxt_format(textureInfo.m_format);
+    header.ddpfPixelFormat.dwFourCC = crnd::crnd_crn_format_to_fourcc(fundamentalFormat);
+    if (fundamentalFormat != textureInfo.m_format)
+        header.ddpfPixelFormat.dwRGBBitCount = crnd::crnd_crn_format_to_fourcc(textureInfo.m_format);
+    // - Mipmaps
+    header.dwMipMapCount = (textureInfo.m_levels > 1) ? textureInfo.m_levels : 0;
+    if (textureInfo.m_levels > 1)
+        header.ddsCaps.dwCaps |= (crnlib::DDSCAPS_COMPLEX | crnlib::DDSCAPS_MIPMAP);
+    // - Cubemap with 6 faces
+    if (textureInfo.m_faces == 6)
+    {
+        header.ddsCaps.dwCaps2 = crnlib::DDSCAPS2_CUBEMAP | 
+            crnlib::DDSCAPS2_CUBEMAP_POSITIVEX | crnlib::DDSCAPS2_CUBEMAP_NEGATIVEX | crnlib::DDSCAPS2_CUBEMAP_POSITIVEY | 
+            crnlib::DDSCAPS2_CUBEMAP_NEGATIVEY | crnlib::DDSCAPS2_CUBEMAP_POSITIVEZ | crnlib::DDSCAPS2_CUBEMAP_NEGATIVEZ;
+    }
+    
+    // Set pitch/linear size field (some DDS readers require this field to be non-zero).
+    int bits_per_pixel = crnd::crnd_get_crn_format_bits_per_texel(textureInfo.m_format);
+    header.lPitch = (((header.dwWidth + 3) & ~3) * ((header.dwHeight + 3) & ~3) * bits_per_pixel) >> 3;
+    header.dwFlags |= crnlib::DDSD_LINEARSIZE;
+          
+    // Prepare output data
+    uint totalSize = sizeof(crnlib::cDDSFileSignature) + header.dwSize;
+    uint writePos = 0;
+    ddsData.resize(totalSize);
 
-    return outDdsData;
-#else
-    return 0;
-#endif
+    // Write signature. Note: Not endian safe.
+    memcpy(&ddsData[0] + writePos, &crnlib::cDDSFileSignature, sizeof(crnlib::cDDSFileSignature));
+    writePos += sizeof(crnlib::cDDSFileSignature);
+
+    // Write header
+    memcpy(&ddsData[0] + writePos, &header, header.dwSize);
+    writePos += header.dwSize;
+    
+    // Now transcode all face and mipmap levels into memory, one mip level at a time.    
+    for (crn_uint32 iLevel = 0; iLevel < textureInfo.m_levels; iLevel++)
+    {
+        // Compute the face's width, height, number of DXT blocks per row/col, etc.
+        const crn_uint32 width = std::max(1U, textureInfo.m_width >> iLevel);
+        const crn_uint32 height = std::max(1U, textureInfo.m_height >> iLevel);
+        const crn_uint32 blocksX = std::max(1U, (width + 3) >> 2);
+        const crn_uint32 blocksY = std::max(1U, (height + 3) >> 2);
+        const crn_uint32 rowPitch = blocksX * crnd::crnd_get_bytes_per_dxt_block(textureInfo.m_format);
+        const crn_uint32 faceSize = rowPitch * blocksY;
+
+        totalSize += faceSize;
+        if (ddsData.size() < totalSize)
+            ddsData.resize(totalSize);
+    
+        // Now transcode the level to raw DXTn
+        void *dest = (void*)(&ddsData[0] + writePos);
+        if (!crnd::crnd_unpack_level(crnContext, &dest, faceSize, rowPitch, iLevel))
+        {
+            ddsData.clear();
+            break;
+        }
+        writePos += faceSize;
+    }
+    crnd::crnd_unpack_end(crnContext);
+    
+    if (ddsData.size() == 0)
+    {
+        LogError("CRN uncompression failed!");
+        return false;
+    }
+    return true;
 }
 
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
@@ -138,6 +215,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     }
 
     // Check if this is a crunch library CRN file and we need to decompress to DDS.
+    std::vector<u8> crnUncompressData;
     if (NameSuffix() == "crn")
     {
         /** If asynchronous loading is allowed we want to store the decompressed DDS data to the asset cache.
@@ -151,12 +229,6 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
               Its a waste of resources as our disk source is up to date and we are allowed to use it to load
               into Ogre. 
         */
-#ifndef TUNDRA_CRUNCH_ENABLED
-        LogError("TextureAsset::DeserializeFromData failed: CRN texture support disabled.");
-        return false;
-#else
-        void *ddsData = 0;
-        size_t ddsNumBytes = 0;
         QString nameInternal = NameInternal();
         cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(nameInternal);
         if (allowAsynchronous)
@@ -175,11 +247,14 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
                     data = &fileData[0];
                     numBytes = fileData.size();
                 }
-                ddsData = DecompressCRNtoDDS(data, numBytes, ddsNumBytes);
-                if (!ddsData || ddsNumBytes == 0)
+                if (!DecompressCRNtoDDS(data, numBytes, crnUncompressData))
                     return false;
-                cacheDiskSource = assetAPI->GetAssetCache()->StoreAsset((const u8*)ddsData, ddsNumBytes, nameInternal);
+                if (crnUncompressData.size() == 0)
+                    return false;
+                PROFILE(TextureAsset_DeserializeFromData_CRN_CacheStore);
+                cacheDiskSource = assetAPI->GetAssetCache()->StoreAsset(&crnUncompressData[0], crnUncompressData.size(), nameInternal);
                 fileData.clear();
+                ELIFORP(TextureAsset_DeserializeFromData_CRN_CacheStore);
             }
             allowAsynchronous = !cacheDiskSource.isEmpty();
             if (!allowAsynchronous)
@@ -188,20 +263,18 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         if (!allowAsynchronous)
         {
             // We are doing a synchronous loading, ddsData memory is released once its loaded to ogre.
-            ddsData = DecompressCRNtoDDS(data, numBytes, ddsNumBytes);
-            if (!ddsData || ddsNumBytes == 0)
+            if (!DecompressCRNtoDDS(data, numBytes, crnUncompressData))
                 return false;
-            data = (const u8*)ddsData;
-            numBytes = ddsNumBytes;
+            if (crnUncompressData.size() == 0)
+                return false;
+            data = (const u8*)crnUncompressData[0];
+            numBytes = crnUncompressData.size();
         }
         else
         {
-            // We are bound to do threaded loading from disk. Free crnlib 
-            // allocated dds memory now so we don't get a leak.
-            if (ddsData != 0)
-                crn_free_block(ddsData);
+            // We are bound to do threaded loading from disk.
+            crnUncompressData.clear();
         }
-#endif
     }
     
     // Asynchronous loading
@@ -301,11 +374,8 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             ogreTexture->createInternalResources();
         }
 
-#ifdef TUNDRA_CRUNCH_ENABLED
-        // Free crnlib allocated dds memory now that its loaded.
-        if (NameSuffix() == "crn")
-            crn_free_block((void*)data);
-#endif
+        if (NameSuffix() == "crn" && crnUncompressData.size() > 0)
+            crnUncompressData.clear();
 
         PostProcessTexture();
         
