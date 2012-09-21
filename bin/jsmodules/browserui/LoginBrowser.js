@@ -383,11 +383,14 @@ var BrowserManager = Class.extend
 
      onDisconnected: function(uuid)
      {
-         this.connected[this.clientTabOrderList.indexOf(uuid)] = false;
-         this.onTabCloseRequest(this.clientTabOrderList.indexOf(uuid));
-         this.refreshSqueezer(this.tabs.currentIndex);
+         if (!(this.clientTabOrderList.indexOf(uuid) == -1))
+         {
+             this.connected[this.clientTabOrderList.indexOf(uuid)] = false;
+             this.onTabCloseRequest(this.clientTabOrderList.indexOf(uuid));
+         }
+         this.refreshSqueezer(0);
 
-         this.onTabIndexChanged(this.tabs.currentIndex);
+         this.onTabIndexChanged(0);
 
          if (this.tabs.currentIndex != 0)
          {
@@ -603,6 +606,7 @@ var BrowserManager = Class.extend
 
      onTabIndexChanged: function(index)
      {
+         print("Connected: " + this.connected);
         if (index == 0)
         {
             p_.progressBar.visible = false;
