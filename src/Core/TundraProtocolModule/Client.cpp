@@ -423,7 +423,8 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     {
         loginstate_ = LoggedIn;
         client_id_ = msg.userID;
-        sceneName = QString::fromStdString(BufferToString(msg.uuid));
+        //sceneName = QString::fromStdString(BufferToString(msg.uuid));
+        sceneName = QString::fromAscii(source->GetSocket()->DestinationAddress()) + ":" +QString::number(source->GetSocket()->DestinationPort());
         activescenename_ = sceneName;
         
         // Note: create scene & send info of login success only on first connection, not on reconnect

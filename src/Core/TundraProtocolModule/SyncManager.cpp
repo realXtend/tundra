@@ -142,6 +142,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     scene_ = scene;
     Scene* sceneptr = scene.get();
     sceneUUID_ = sceneptr->Name().toStdString(); // This is scene identifier.
+    ::LogInfo("Setting syncmanager sceneUUID: " + QString::fromStdString(sceneUUID_));
 
     connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
@@ -163,6 +164,12 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
+    QString sourceName = QString::fromAscii(source->GetSocket()->DestinationAddress()) + ":" +QString::number(source->GetSocket()->DestinationPort());
+    if (!owner_->IsServer() && (sourceName != QString::fromStdString(sceneUUID_)))
+    {
+        ::LogInfo("HandleKristalliMessage: Wrong source! " + sourceName);
+        return;
+    }
     try
     {
         switch(messageId)
@@ -1477,8 +1484,9 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
-    if (ds.ReadString() != sceneUUID_)
-        return; // message from unidentified server.
+//    if (ds.ReadString() != sceneUUID_)
+//        return; // message from unidentified server.
+    std::string sceneID = ds.ReadString();
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     entity_id_t senderEntityID = entityID;
     
@@ -1639,8 +1647,9 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     try
     {
         kNet::DataDeserializer ds(data, numBytes);
-        if (ds.ReadString() != sceneUUID_)
-            return; // message from unidentified server.
+        std::string sceneID = ds.ReadString();
+//        if (ds.ReadString() != sceneUUID_)
+//            return; // message from unidentified server.
 
         entityID = ds.ReadVLE<kNet::VLE8_16_32>();
         
@@ -1763,8 +1772,9 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const char
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
-    if (ds.ReadString() != sceneUUID_)
-        return; // message from unidentified server.
+//    if (ds.ReadString() != sceneUUID_)
+//        return; // message from unidentified server.
+    std::string sceneID = ds.ReadString();
     //UNREFERENCED_PARAM(sceneUUID_)
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
@@ -1806,8 +1816,9 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
-    if (ds.ReadString() != sceneUUID_)
-        return; // message from unidentified server.
+//    if (ds.ReadString() != sceneUUID_)
+//        return; // message from unidentified server.
+    std::string sceneID = ds.ReadString();
     //UNREFERENCED_PARAM(sceneUUID_)
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
@@ -1862,8 +1873,9 @@ void SyncManager::HandleCreateAttributes(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
-    if (ds.ReadString() != sceneUUID_)
-        return; // message from unidentified server.
+//    if (ds.ReadString() != sceneUUID_)
+//        return; // message from unidentified server.
+    std::string sceneID = ds.ReadString();
     //UNREFERENCED_PARAM(sceneUUID_)
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
@@ -1957,8 +1969,9 @@ void SyncManager::HandleRemoveAttributes(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
-    if (ds.ReadString() != sceneUUID_)
-        return; // message from unidentified server.
+//    if (ds.ReadString() != sceneUUID_)
+//        return; // message from unidentified server.
+    std::string sceneID = ds.ReadString();
     //UNREFERENCED_PARAM(sceneUUID_)
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
@@ -2012,8 +2025,9 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     kNet::DataDeserializer ds(data, numBytes);
-    if (ds.ReadString() != sceneUUID_)
-        return; // message from unidentified server.
+//    if (ds.ReadString() != sceneUUID_)
+//        return; // message from unidentified server.
+    std::string sceneID = ds.ReadString();
     //UNREFERENCED_PARAM(sceneUUID_)
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
@@ -2155,8 +2169,9 @@ void SyncManager::HandleCreateEntityReply(kNet::MessageConnection* source, const
     }
     
     kNet::DataDeserializer ds(data, numBytes);
-    if (ds.ReadString() != sceneUUID_)
-        return; // message from unidentified server.
+//    if (ds.ReadString() != sceneUUID_)
+//        return; // message from unidentified server.
+    std::string sceneID = ds.ReadString();
     //UNREFERENCED_PARAM(sceneUUID_)
     entity_id_t senderEntityID = ds.ReadVLE<kNet::VLE8_16_32>() | UniqueIdGenerator::FIRST_UNACKED_ID;
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
@@ -2224,8 +2239,9 @@ void SyncManager::HandleCreateComponentsReply(kNet::MessageConnection* source, c
     }
     
     kNet::DataDeserializer ds(data, numBytes);
-    if (ds.ReadString() != sceneUUID_)
-        return; // message from unidentified server.
+//    if (ds.ReadString() != sceneUUID_)
+//        return; // message from unidentified server.
+    std::string sceneID = ds.ReadString();
     //UNREFERENCED_PARAM(sceneUUID_)
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     state->RemoveFromQueue(entityID); // Make sure we don't have stale pointers in the dirty queue
