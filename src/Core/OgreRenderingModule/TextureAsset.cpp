@@ -263,11 +263,12 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         if (!allowAsynchronous)
         {
             // We are doing a synchronous loading, ddsData memory is released once its loaded to ogre.
-            if (!DecompressCRNtoDDS(data, numBytes, crnUncompressData))
-                return false;
+            if (crnUncompressData.size() == 0)
+                if (!DecompressCRNtoDDS(data, numBytes, crnUncompressData))
+                    return false;
             if (crnUncompressData.size() == 0)
                 return false;
-            data = (const u8*)crnUncompressData[0];
+            data = (const u8*)&crnUncompressData[0];
             numBytes = crnUncompressData.size();
         }
         else
