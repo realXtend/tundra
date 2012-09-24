@@ -98,7 +98,9 @@ bool LocalAssetProvider::AbortTransfer(IAssetTransfer *transfer)
         AssetTransferPtr ongoingTransfer = (*iter);
         if (ongoingTransfer.get() == transfer)
         {
-            transfer->EmitAssetFailed("Transfer aborted.");
+            framework->Asset()->AssetTransferAborted(transfer);
+            
+            ongoingTransfer.reset();
             pendingDownloads.erase(iter);
             return true;
         }

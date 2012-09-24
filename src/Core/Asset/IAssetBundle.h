@@ -138,4 +138,16 @@ private slots:
     void BundleFailed();
 };
 
+struct SubAssetLoader
+{
+    QString parentBundleRef;
+    AssetTransferPtr subAssetTransfer;
+    
+    SubAssetLoader(const QString _parentBundleRef, AssetTransferPtr _subAssetTransfer)
+    {
+        parentBundleRef = _parentBundleRef;
+        subAssetTransfer = _subAssetTransfer;
+    }
+};
+
 /// @endcond

@@ -626,6 +626,9 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, siz
 
 void AssetAPI::ForgetAllAssets()
 {
+    readyTransfers.clear();
+    readySubTransfers.clear();
+
     // Note that this wont unload the individual sub asset, only the bundle. 
     // Sub assets are unloaded from the assets map below.
     while(assetBundles.size() > 0)
@@ -651,11 +654,25 @@ void AssetAPI::ForgetAllAssets()
     while(assets.size() > 0)
         ForgetAsset(assets.begin()->second, false);
     assets.clear();
-    
-    // We need to abort all current transfers, otherwise the transfers will call AssetTransferCompleted/Failed 
-    // that will in turn load the asset to memory even if no tracking transfer is found.
-    for(AssetTransferMap::const_iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
-        iter->second->Abort();
+   
+    // Abort all current transfers.
+    while (currentTransfers.size() > 0)
+    {
+        AssetTransferPtr abortTransfer = currentTransfers.begin()->second;
+        if (!abortTransfer.get())
+        {
+            currentTransfers.erase(currentTransfers.begin());
+            continue;
+        }
+        QString abortRef = abortTransfer->source.ref;
+        abortTransfer->Abort();
+        abortTransfer.reset();
+        
+        // Make sure the abort chain removed the transfer, otherwise we are in a infinite loop.
+        AssetTransferMap::iterator iter = currentTransfers.find(abortRef);
+        if (iter != currentTransfers.end())
+            currentTransfers.erase(iter);
+    }
     currentTransfers.clear();
 }
 
@@ -672,6 +689,7 @@ void AssetAPI::Reset()
     assetBundleTypeFactories.clear();
     defaultStorage.reset();
     readyTransfers.clear();
+    readySubTransfers.clear();
     assetDependencies.clear();
     currentUploadTransfers.clear();
     currentTransfers.clear();
@@ -846,16 +864,18 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         AssetBundleMap::iterator bundleIter = assetBundles.find(assetRef);
         if (bundleIter != assetBundles.end())
         {
-            // (Re)load from bundle. Keep existing ref so we don't have to create again.
-            // Note that if existingAsset is valid LoadSubAssetToTransfer will reload 
-            // the data and not recreate the whole asset.
+            // Return existing loader transfer
+            for(size_t i = 0; i < readySubTransfers.size(); ++i)
+            {
+                AssetTransferPtr subTransfer = readySubTransfers[i].subAssetTransfer;
+                if (subTransfer.get() && subTransfer->source.ref.compare(fullAssetRef, Qt::CaseSensitive) == 0)
+                    return subTransfer;
+            }
+            // Create a loader for this sub asset.
             AssetTransferPtr transfer = AssetTransferPtr(new VirtualAssetTransfer());
             transfer->asset = existingAsset;
-            if (!LoadSubAssetToTransfer(transfer, (*bundleIter).second.get(), fullAssetRef))
-            {
-                LogError("AssetAPI::RequestAsset: Failed to load sub asset \"" + fullAssetRef + "\", from loaded bundle \"" + (*bundleIter).second->Name());
-                return AssetTransferPtr();
-            }
+            transfer->source.ref = fullAssetRef;
+            readySubTransfers.push_back(SubAssetLoader(assetRef, transfer));
             return transfer;
         }
         else
@@ -1388,16 +1408,36 @@ void AssetAPI::Update(f64 frametime)
     for(size_t i = 0; i < providers.size(); ++i)
         providers[i]->Update(frametime);
 
-    // Normally it is the AssetProvider's responsibility to call AssetTransferCompleted when a download finishes.
-    // The 'readyTransfers' list contains all the asset transfers that don't have any AssetProvider serving them. These occur in two cases:
-    // 1) A client requested an asset that was already loaded. In that case the request is not given to any assetprovider, but delayed in readyTransfers
-    //    for one frame after which we just signal the asset to have been loaded.
-    // 2) We found the asset from disk cache. No need to ask an assetprovider
+    // Proceed with ready transfers.
+    if (readyTransfers.size() > 0)
+    {
+        // Normally it is the AssetProvider's responsibility to call AssetTransferCompleted when a download finishes.
+        // The 'readyTransfers' list contains all the asset transfers that don't have any AssetProvider serving them. These occur in two cases:
+        // 1) A client requested an asset that was already loaded. In that case the request is not given to any assetprovider, but delayed in readyTransfers
+        //    for one frame after which we just signal the asset to have been loaded.
+        // 2) We found the asset from disk cache. No need to ask an assetprovider
 
-    // Call AssetTransferCompleted manually for any asset that doesn't have an AssetProvider serving it. ("virtual transfers").
-    for(size_t i = 0; i < readyTransfers.size(); ++i)
-        AssetTransferCompleted(readyTransfers[i].get());
-    readyTransfers.clear();
+        // Call AssetTransferCompleted manually for any asset that doesn't have an AssetProvider serving it. ("virtual transfers").
+        for(size_t i = 0; i < readyTransfers.size(); ++i)
+            AssetTransferCompleted(readyTransfers[i].get());
+        readyTransfers.clear();
+    }
+    
+    // Proceed with ready sub asset transfers.
+    if (readySubTransfers.size() > 0)
+    {
+        // readySubTransfers contains sub asset transfers to loaded bundles. The sub asset loading cannot be completed in RequestAsset
+        // as it would trigger signals before the calling code can receive and hook to the AssetTransfer. We delay calling LoadSubAssetToTransfer
+        // into this function so that all is hooked and loading can be done normally. This is very similar to the above case for readyTransfers.
+        for(size_t i = 0; i < readySubTransfers.size(); ++i)
+        {
+            AssetTransferPtr subTransfer = readySubTransfers[i].subAssetTransfer;
+            LogInfo("Loading sub transfer: " + subTransfer->source.ref);
+            LoadSubAssetToTransfer(subTransfer, readySubTransfers[i].parentBundleRef, subTransfer->source.ref);
+            subTransfer.reset();
+        }
+        readySubTransfers.clear();
+    }
 }
 
 QString GuaranteeTrailingSlash(const QString &source)
@@ -1611,7 +1651,6 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
 void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 {
-    assert(transfer);
     if (!transfer)
         return;
         
@@ -1636,6 +1675,31 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
             QString failReason = "Transfer of dependency " + transfer->source.ref + " failed due to reason: \"" + reason + "\"";
             AssetTransferFailed(dependentTransfer.get(), failReason);
         }
+    }
+
+    pendingDownloadRequests.erase(transfer->source.ref);
+    if (iter != currentTransfers.end())
+        currentTransfers.erase(iter);
+}
+
+void AssetAPI::AssetTransferAborted(IAssetTransfer *transfer)
+{
+    if (!transfer)
+        return;
+        
+    // Don't log any errors for aborter transfers. This is unwanted spam when we disconnect 
+    // from a server and have x amount of pending transfers that get aborter.
+    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    
+    transfer->EmitAssetFailed("Transfer aborted.");   
+
+    // Propagate the failure of this asset transfer to all assets which depend on this asset.
+    std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
+    for(size_t i = 0; i < dependents.size(); ++i)
+    {
+        AssetTransferPtr dependentTransfer = GetPendingTransfer(dependents[i]->Name());
+        if (dependentTransfer)
+            AssetTransferAborted(dependentTransfer.get());
     }
 
     pendingDownloadRequests.erase(transfer->source.ref);

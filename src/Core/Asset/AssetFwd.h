@@ -23,6 +23,7 @@ typedef boost::weak_ptr<IAssetTransfer> AssetTransferWeakPtr;
 class AssetBundleMonitor;
 typedef boost::shared_ptr<AssetBundleMonitor> AssetBundleMonitorPtr;
 typedef boost::weak_ptr<AssetBundleMonitor> AssetBundleMonitorWeakPtr;
+struct SubAssetLoader;
 
 class IAssetProvider;
 typedef boost::shared_ptr<IAssetProvider> AssetProviderPtr;

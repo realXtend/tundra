@@ -51,7 +51,7 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
     QDateTime zipLastModified = assetAPI_->GetAssetCache()->LastModified(Name());
         
     zzip_error_t error = ZZIP_NO_ERROR;
-    archive_ = zzip_dir_open(QDir::fromNativeSeparators(DiskSource()).toStdString().c_str(), &error);
+    archive_ = zzip_dir_open(QDir::toNativeSeparators(DiskSource()).toStdString().c_str(), &error);
     if (CheckAndLogZzipError(error) || CheckAndLogArchiveError(archive_) || !archive_)
     {
         archive_ = 0;
