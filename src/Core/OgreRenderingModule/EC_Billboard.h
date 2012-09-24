@@ -90,14 +90,14 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, show);
 
     /// Returns the Ogre Billboard.
-    Ogre::Billboard *OgreBillBoard() const { return billboard_; }
+    Ogre::Billboard *OgreBillboard() const { return billboard_; }
 
     /// Returns the Ogre BillboardSet.
-    Ogre::BillboardSet *OgreBillBoardSet() const { return billboardSet_; }
+    Ogre::BillboardSet *OgreBillboardSet() const { return billboardSet_; }
 
     // DEPRECATED
-    Ogre::Billboard *GetBillBoard() const { return OgreBillBoard(); } /**< @deprecated Use OgreBillBoard @todo Remove */
-    Ogre::BillboardSet *GetBillBoardSet() const { return OgreBillBoardSet(); } /**< @deprecated Use OgreBillBoardSet @todo Remove */
+    Ogre::Billboard *GetBillBoard() const { return OgreBillboard(); } /**< @deprecated Use OgreBillBoard @todo Remove */
+    Ogre::BillboardSet *GetBillBoardSet() const { return OgreBillboardSet(); } /**< @deprecated Use OgreBillBoardSet @todo Remove */
 
 public slots:
     /// Shows the billboard. Does not affect the @c show attribute.
