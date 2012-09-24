@@ -1432,7 +1432,6 @@ void AssetAPI::Update(f64 frametime)
         for(size_t i = 0; i < readySubTransfers.size(); ++i)
         {
             AssetTransferPtr subTransfer = readySubTransfers[i].subAssetTransfer;
-            LogInfo("Loading sub transfer: " + subTransfer->source.ref);
             LoadSubAssetToTransfer(subTransfer, readySubTransfers[i].parentBundleRef, subTransfer->source.ref);
             subTransfer.reset();
         }
