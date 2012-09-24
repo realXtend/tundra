@@ -33,7 +33,7 @@ ZipWorker::~ZipWorker()
 void ZipWorker::run()
 {
     zzip_error_t error = ZZIP_NO_ERROR;
-    archive_ = zzip_dir_open(QDir::fromNativeSeparators(diskSource_).toStdString().c_str(), &error);
+    archive_ = zzip_dir_open(QDir::toNativeSeparators(diskSource_).toStdString().c_str(), &error);
     if (CheckAndLogZzipError(error) || CheckAndLogArchiveError(archive_) || !archive_)
     {
         archive_ = 0;

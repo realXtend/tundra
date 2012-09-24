@@ -232,8 +232,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
             request.setRawHeader("If-Modified-Since", ToHttpDate(cacheLastModified));
         
         QNetworkReply *reply = networkAccessManager->get(request);
-
-        transfers[reply] = transfer;
+        transfers[QPointer<QNetworkReply>(reply)] = transfer;
     }
     return transfer;
 }
@@ -250,9 +249,10 @@ bool HttpAssetProvider::AbortTransfer(IAssetTransfer *transfer)
         {
             // QNetworkReply::abort() will invoke a call to OnHttpTransferFinished. There we continue to 
             // call AssetAPI::AssetTransferAborted and remove the transfer from our map.
-            if (iter->first)
+            QPointer<QNetworkReply> reply = iter->first;
+            if (reply.data())
             {    
-                iter->first->abort();
+                reply->abort();
                 return true;
             }
         }
@@ -378,13 +378,10 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     {
     case QNetworkAccessManager::GetOperation:
     {
-        // If the transfer is not in our transfers map it was aborted via AbortTransfer.
         TransferMap::iterator iter = transfers.find(reply);
         if (iter == transfers.end())
             return;
-
         HttpAssetTransferPtr transfer = iter->second;
-        assert(transfer);
         transfer->rawAssetData.clear();
 
         // We have called abort() or close() on an ongoing transfer, for example in AbortTransfer.
