@@ -463,8 +463,6 @@ UserConnectionPtr KristalliProtocolModule::GetUserConnection(u8 id) const
 
 void KristalliProtocolModule::SetIdentifier(const QString identifier)
 {
-    assert(serverConnection_map_.contains("NEW"));
-
     // Client logged in. Get all properties from maps which are "NEW" and apply
     // scenename to it. This allows us to call for correct connection to scene.
     Ptr(kNet::MessageConnection) con = serverConnection_map_.value("NEW");

@@ -433,11 +433,9 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         {
             // This sets identifier in KristalliProtocolModule for this particular connection
             owner_->GetKristalliModule()->SetIdentifier(sceneName);
+
             // Create a non-authoritative scene for the client
             ScenePtr scene = framework_->Scene()->CreateScene(sceneName, true, false);
-
-            // framework_->Scene()->SetDefaultScene(scene);
-            // owner_->GetSyncManager()->RegisterToScene(scene);
             
             UserConnectedResponseData responseData;
             if (msg.loginReplyData.size() > 0)
