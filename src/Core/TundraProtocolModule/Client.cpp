@@ -432,6 +432,8 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         if (!reconnect_list_[sceneName])
         {
             // This sets identifier in KristalliProtocolModule for this particular connection
+            // This is kinda ugly way to do this because this requires us to signal data back the
+            // messaging chain in order to keep track of connection lists.
             owner_->GetKristalliModule()->SetIdentifier(sceneName);
 
             // Create a non-authoritative scene for the client
