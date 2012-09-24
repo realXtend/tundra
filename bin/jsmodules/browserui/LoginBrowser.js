@@ -381,16 +381,16 @@ var BrowserManager = Class.extend
          this.onTabIndexChanged(this.tabs.currentIndex);
      },
 
-     onDisconnected: function(uuid)
+     onDisconnected: function(sceneid)
      {
-         if (!(this.clientTabOrderList.indexOf(uuid) == -1))
+         if (!(this.clientTabOrderList.indexOf(sceneid) == -1))
          {
-             this.connected[this.clientTabOrderList.indexOf(uuid)] = false;
-             this.onTabCloseRequest(this.clientTabOrderList.indexOf(uuid));
+             this.connected[this.clientTabOrderList.indexOf(sceneid)] = false;
+             this.onTabCloseRequest(this.clientTabOrderList.indexOf(sceneid));
          }
-         this.refreshSqueezer(0);
+         this.refreshSqueezer(this.tabs.currentIndex);
 
-         this.onTabIndexChanged(0);
+         this.onTabIndexChanged(this.tabs.currentIndex);
 
          if (this.tabs.currentIndex != 0)
          {
@@ -598,9 +598,9 @@ var BrowserManager = Class.extend
          else
              p_.openUrl(p_.settings.newTabUrl);
      },
-     onSwitchScene: function(uuid)
+     onSwitchScene: function(sceneid)
      {
-         p_.tabs.currentIndex = this.clientTabOrderList.indexOf(uuid);
+         p_.tabs.currentIndex = this.clientTabOrderList.indexOf(sceneid);
          //p_.onTabIndexChanged(p_.tabs.currentIndex);
      },
 
