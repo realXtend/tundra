@@ -606,7 +606,6 @@ var BrowserManager = Class.extend
 
      onTabIndexChanged: function(index)
      {
-         print("Connected: " + this.connected);
         if (index == 0)
         {
             p_.progressBar.visible = false;

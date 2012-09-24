@@ -138,7 +138,6 @@ if (!framework.IsHeadless())
         }
         else
         {
-            print("sceneNames[0] = " + sceneNames[0]);
             scene = framework.Scene().GetScene(sceneNames[0]);
         }
         cameraentity = scene.GetEntityByName("AvatarCamera");
