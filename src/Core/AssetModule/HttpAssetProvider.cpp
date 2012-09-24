@@ -248,13 +248,13 @@ bool HttpAssetProvider::AbortTransfer(IAssetTransfer *transfer)
         AssetTransferPtr ongoingTransfer = iter->second;
         if (ongoingTransfer.get() == transfer)
         {
-            transfer->EmitAssetFailed("Transfer aborted.");
-            transfers.erase(iter);
-            
-            // Abort last as it will invoke a call to OnHttpTransferFinished.
+            // QNetworkReply::abort() will invoke a call to OnHttpTransferFinished. There we continue to 
+            // call AssetAPI::AssetTransferAborted and remove the transfer from our map.
             if (iter->first)
+            {    
                 iter->first->abort();
-            return true;
+                return true;
+            }
         }
     }
     return false;
@@ -387,8 +387,13 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         assert(transfer);
         transfer->rawAssetData.clear();
 
-        // Check for errors
-        if (reply->error() == QNetworkReply::NoError)
+        // We have called abort() or close() on an ongoing transfer, for example in AbortTransfer.
+        if (reply->error() == QNetworkReply::OperationCanceledError)
+        {
+            framework->Asset()->AssetTransferAborted(transfer.get());
+        }
+        // No error, proceed
+        else if (reply->error() == QNetworkReply::NoError)
         {            
             AssetCache *cache = framework->Asset()->GetAssetCache();
             QString sourceRef = transfer->source.ref;

@@ -651,11 +651,25 @@ void AssetAPI::ForgetAllAssets()
     while(assets.size() > 0)
         ForgetAsset(assets.begin()->second, false);
     assets.clear();
-    
-    // We need to abort all current transfers, otherwise the transfers will call AssetTransferCompleted/Failed 
-    // that will in turn load the asset to memory even if no tracking transfer is found.
-    for(AssetTransferMap::const_iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
-        iter->second->Abort();
+   
+    // Abort all current transfers.
+    while (currentTransfers.size() > 0)
+    {
+        AssetTransferPtr abortTransfer = currentTransfers.begin()->second;
+        if (!abortTransfer.get())
+        {
+            currentTransfers.erase(currentTransfers.begin());
+            continue;
+        }
+        QString abortRef = abortTransfer->source.ref;
+        abortTransfer->Abort();
+        abortTransfer.reset();
+        
+        // Make sure the abort chain removed the transfer, otherwise we are in a infinite loop.
+        AssetTransferMap::iterator iter = currentTransfers.find(abortRef);
+        if (iter != currentTransfers.end())
+            currentTransfers.erase(iter);
+    }
     currentTransfers.clear();
 }
 
@@ -1611,7 +1625,6 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
 void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 {
-    assert(transfer);
     if (!transfer)
         return;
         
@@ -1636,6 +1649,31 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
             QString failReason = "Transfer of dependency " + transfer->source.ref + " failed due to reason: \"" + reason + "\"";
             AssetTransferFailed(dependentTransfer.get(), failReason);
         }
+    }
+
+    pendingDownloadRequests.erase(transfer->source.ref);
+    if (iter != currentTransfers.end())
+        currentTransfers.erase(iter);
+}
+
+void AssetAPI::AssetTransferAborted(IAssetTransfer *transfer)
+{
+    if (!transfer)
+        return;
+        
+    // Don't log any errors for aborter transfers. This is unwanted spam when we disconnect 
+    // from a server and have x amount of pending transfers that get aborter.
+    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    
+    transfer->EmitAssetFailed("Transfer aborted.");   
+
+    // Propagate the failure of this asset transfer to all assets which depend on this asset.
+    std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
+    for(size_t i = 0; i < dependents.size(); ++i)
+    {
+        AssetTransferPtr dependentTransfer = GetPendingTransfer(dependents[i]->Name());
+        if (dependentTransfer)
+            AssetTransferAborted(dependentTransfer.get());
     }
 
     pendingDownloadRequests.erase(transfer->source.ref);
