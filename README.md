@@ -68,6 +68,14 @@ Tundra uses [Doxygen] as its main documentation tool. In order to generate and v
 4. `cd html`, and  
 5. open up `index.html`.
 
+Contributing
+------------
+0. Preferably interact with the developers already in advance before starting your work.
+1. Fork Tundra.
+2. Preferably create a feature branch for your work.
+3. Make sure to follow the coding conventions (doc/dox/CodingConventions.dox).
+4. Make a pull request
+
 Contact Information
 -------------------
 
