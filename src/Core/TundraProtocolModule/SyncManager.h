@@ -167,7 +167,7 @@ private:
     char removeEntityBuffer_[1024];
     char removeAttrsBuffer_[1024];
     std::vector<u8> changedAttributes_;
-    std::string sceneUUID_;
+    std::string sceneID_;
 };
 
 }
