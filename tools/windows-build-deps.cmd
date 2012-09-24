@@ -812,10 +812,10 @@ IF NOT EXIST "%DEPS%\qxmpp\". (
   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building qxmpp with jom{# #}{\n}
-      "%DEPS%\qt\jom\jom.exe"
+      "%DEPS%\qt\jom\jom.exe" sub-src-all-ordered
    ) ELSE (
       cecho {0D}- Building qxmpp with nmake{# #}{\n}
-      nmake /nologo
+      nmake /nologo sub-src-all-ordered
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    IF NOT EXIST "%DEPS%\qxmpp\include\qxmpp". mkdir %DEPS%\qxmpp\include\qxmpp
