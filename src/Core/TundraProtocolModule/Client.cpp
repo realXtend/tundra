@@ -423,6 +423,8 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     {
         loginstate_ = LoggedIn;
         client_id_ = msg.userID;
+
+        // Build scenename which is used as identifier for syncmanager/ogre/ScenePtr and scene specific data. Example sceneName: 127.0.0.1:2345:udp
         sceneName = QString::fromAscii(source->GetSocket()->DestinationAddress()) + ":" +QString::number(source->GetSocket()->DestinationPort());
         source->GetSocket()->TransportLayer() == kNet::SocketOverUDP ? sceneName.append(":udp") : sceneName.append(":tcp");
 
