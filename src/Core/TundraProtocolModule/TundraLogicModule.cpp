@@ -304,8 +304,8 @@ void TundraLogicModule::Update(f64 frametime)
 
 void TundraLogicModule::registerSyncManager(const QString name)
 {
-    if (name == "TundraServer")
-        return;
+//    if (name == "TundraServer")
+//        return;
     SyncManager *sm = new SyncManager(this);
     // Had to move some logic from Init to here because --netrate cmdLine option needs syncManager.
     if (netrateBool)
