@@ -163,8 +163,8 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
-    QString sourceName = QString::fromAscii(source->GetSocket()->DestinationAddress()) + ":" +QString::number(source->GetSocket()->DestinationPort());
-    source->GetSocket()->TransportLayer() == kNet::SocketOverUDP ? sourceName.append(":udp") : sourceName.append(":tcp");
+    QString sourceName = QString::fromAscii(source->GetSocket()->DestinationAddress()) + "-" +QString::number(source->GetSocket()->DestinationPort());
+    source->GetSocket()->TransportLayer() == kNet::SocketOverUDP ? sourceName.append("-udp") : sourceName.append("-tcp");
     if (!owner_->IsServer() && (sourceName != QString::fromStdString(sceneID_)))
     {
         //::LogInfo("HandleKristalliMessage: Wrong source! " + sourceName);
