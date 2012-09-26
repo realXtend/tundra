@@ -394,6 +394,27 @@ else
     touch $tags/$what-done
 fi
 
+what=qxmpp
+urlbase=http://qxmpp.googlecode.com/svn/trunk@r1671
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    cd $build
+    rm -rf $what
+    svn checkout $urlbase $what
+    cd $what
+    echo "DEFINES += QXMPP_USE_SPEEX" >> src/src.pro
+    echo "INCLUDEPATH += $prefix/include" >> src/src.pro
+    echo "LIBS += -L$prefix/lib -lspeex" >> src/src.pro
+    echo "CONFIG += debug_and_release" >> src/src.pro
+    qmake
+    make sub-src-all-ordered -j$NPROCS
+    mkdir -p $prefix/include/qxmpp
+    cp src/*.h $prefix/include/qxmpp
+    cp lib/lib$what*.a $prefix/lib
+    touch $tags/$what-done
+fi
+
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
    echo $what is done
