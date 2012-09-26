@@ -519,15 +519,6 @@ if test -f $tags/hydrax-done; then
 else
     echo "Building Hydrax."
     cd $build/$depdir/hydrax
-    #todo: Maybe it is better if we keep another makefile for Mac OS X inside realxtend-tundra-deps repo for Hydrax? Too much linux-specific stuff here
-    sed \
-    -e 's/^OGRE_CFLAGS.*$/OGRE_CFLAGS = -I$(OGRE_HOME)\/include -I$(OGRE_HOME)\/OgreMain\/include -I$(OGRE_HOME)\/Dependencies\/include/' \
-    -e 's/^OGRE_LDFLAGS.*/OGRE_LDFLAGS = -F$(OGRE_HOME)\/lib\/relwithdebinfo -framework Ogre/' \
-    -e 's/NAME=libhydrax.so.0.5.3/NAME=libhydrax.0.5.3.dylib/' \
-    -e 's/\$(CP) \$(OUTPUT) \$(DESTDIR)\$(PREFIX)\/lib\/\$(NAME)/$(CP) \.\/lib\/Release\/\* $(DESTDIR)$(PREFIX)\/lib/' \
-    -e 's/\$(RM) -f \$(DESTDIR)\$(PREFIX)\/lib\/libhydrax.so/$(RM) -f \$(DESTDIR)\$(PREFIX)\/lib\/\$(NAME)/' \
-    -e 's/\$(LN) -s -T \.\/\$(NAME) \$(DESTDIR)\$(PREFIX)\/lib\/libhydrax.so/$(LN) -s $(DESTDIR)$(PREFIX)\/lib\/$(NAME) $(DESTDIR)$(PREFIX)\/lib\/libhydrax.dylib/' \
-    -e 's/OUTPUTOBJPREFIX=lib\/Release\//OUTPUTOBJPREFIX=$(PWD)\/lib\/Release\//' < makefile > makefile.macosx
 
     OSXMAKE="-f makefile.macosx"
     make $OSXMAKE -j$NPROCS PREFIX=$prefix
@@ -545,22 +536,6 @@ else
     if test -f CMakeCache.txt; then
         rm CMakeCache.txt
     fi
-    git checkout -- CMakeLists.txt
-    sed \
-    # The following lines will most likely cause CMake to fail if the contents of CMakeLists.txt before 34-th line are moved downwards,
-    # or if the contents of the lines themselves change.
-    # Line 30-34 of skyx/CMakeLists.txt:
-    # if (UNIX)
-    #   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${ENV_OGRE_HOME}/cmake" "/usr/local/lib/OGRE/cmake/" "/usr/lib/OGRE/cmake/")
-    # else (UNIX)
-    #   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ENV_OGRE_HOME}/CMake)
-    # endif ()
-    # The statement if (UNIX) ... else (UNIX) does not have sense. On Unix systems, it will always hit the first block
-    # todo: This should be patched in the official SkyX repo, or in our Google code realxtend-tundra-deps repo
-    -e '30,32'd \
-    -e '34'd \
-    -e "s/set(CMAKE_MODULE_PATH \${CMAKE_MODULE_PATH} \${ENV_OGRE_HOME}\/CMake)/set(CMAKE_MODULE_PATH \$\{CMAKE_MODULE_PATH\} \$\{ENV_OGRE_HOME\}\/CMake\/Packages \$\{ENV_OGRE_HOME\}\/CMake\/Utils)/" < CMakeLists.txt > x
-    mv x CMakeLists.txt
     cmake . -DSKYX_DEPENDENCIES_DIR=$OGRE_HOME/Dependencies -DCMAKE_INSTALL_PREFIX=$prefix
     make -j$NPROCS
     make install
