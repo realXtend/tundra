@@ -50,6 +50,12 @@
 
 #include "MemoryLeakCheck.h"
 
+#ifdef Q_WS_MAC
+#define KEY_DELETE_SHORTCUT QKeySequence(Qt::CTRL + Qt::Key_Backspace)
+#else
+#define KEY_DELETE_SHORTCUT QKeySequence::Delete
+#endif
+
 // Menu
 
 Menu::Menu(QWidget *parent) : QMenu(parent), shiftDown(false)
@@ -97,7 +103,7 @@ SceneTreeWidget::SceneTreeWidget(Framework *fw, QWidget *parent) :
 
     // Create keyboard shortcuts.
     QShortcut *renameShortcut = new QShortcut(QKeySequence(Qt::Key_F2), this);
-    QShortcut *deleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    QShortcut *deleteShortcut = new QShortcut(KEY_DELETE_SHORTCUT, this);
     QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), this);
     QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), this);
 
