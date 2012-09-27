@@ -581,9 +581,6 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
             id = replicated ? NextFreeId() : NextFreeIdLocal();
             if (originaId != 0 && !oldToNewIds.contains(originaId))
                 oldToNewIds[originaId] = id;
-
-            entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
-            ChangeEntityId(id, newID);
         }
         else if (useEntityIDsFromFile && HasEntity(id)) // If we use IDs from file and they conflict with some of the existing IDs, change the ID of the old entity
         {
@@ -678,6 +675,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
 
 QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
+
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -806,13 +804,20 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
         return ret;
     }
 
+    QHash<entity_id_t, entity_id_t> oldToNewIds;
+
     foreach(const EntityDesc &e, desc.entities)
     {
         entity_id_t id;
+        id =  static_cast<entity_id_t>(e.id.toInt());
+
         if (e.id.isEmpty() || !useEntityIDsFromFile)
+        {
+            entity_id_t originaId = id;
             id = e.local ? NextFreeIdLocal() : NextFreeId();
-        else
-            id =  static_cast<entity_id_t>(e.id.toInt());
+            if (originaId != 0 && !oldToNewIds.contains(originaId))
+                oldToNewIds[originaId] = id;
+        }
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
         {
@@ -863,6 +868,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                 }
             }
 
+            entity->SetTemporary(e.temporary);
             ret.append(entity.get());
         }
     }
@@ -873,7 +879,25 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
         EmitEntityCreated(entity, change);
         const Entity::ComponentMap &components = entity->Components();
         for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+        {
+            if (!useEntityIDsFromFile && i->second->TypeName() == "EC_Placeable")
+            {
+                // Go and fix parent ref of EC_Placeable if new entity IDs were generated
+                IAttribute *iAttr = i->second->GetAttribute("Parent entity ref");
+                Attribute<EntityReference> *parenRef = iAttr != 0 ? dynamic_cast<Attribute<EntityReference> *>(iAttr) : 0;
+                if (parenRef && !parenRef->Get().IsEmpty())
+                {
+                    QString ref = parenRef->Get().ref;
+                    // We only need to fix the id parent refs.
+                    // Ones with entity names should work as expected.
+                    bool isNumber = false;
+                    entity_id_t refId = ref.toUInt(&isNumber);
+                    if (isNumber && refId > 0 && oldToNewIds.contains(refId))
+                        parenRef->Set(EntityReference(oldToNewIds[refId]), change);
+                }
+            }
             i->second->ComponentChanged(change);
+        }
     }
 
     return ret;
