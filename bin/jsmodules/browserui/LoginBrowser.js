@@ -679,8 +679,15 @@ var BrowserManager = Class.extend
                      client.Logout(this.clientTabOrderList[index]);
                      return;
                  }
+                 if (p_.connected[index] == undefined)
+                 {
+                     p_.tabs.widget(index).stop();
+                     p_.tabs.widget(index).close();
+                     p_.tabs.widget(index).deleteLater();
+                 }
                  p_.connected.splice(index,1);
                  p_.clientTabOrderList.splice(index,1);
+
                  p_.tabs.removeTab(index);
                  return
              }
