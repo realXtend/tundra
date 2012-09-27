@@ -641,9 +641,9 @@ var BrowserManager = Class.extend
             var scenename = this.clientTabOrderList[index];
             if (scenename != client.getActiveScenename())
                 client.emitSceneSwitch(scenename);
-            var loginPropAddress = client.GetLoginProperty("address");
+            var loginPropAddress = "Server: " + client.GetLoginProperty("port");
             if (loginPropAddress.charAt(loginPropAddress.length-1) == "/")
-                loginPropAddress = loginPropAddress.substring(0, loginPropAddress.length-1);
+                loginPropAddress = ServerloginPropAddress.substring(0, loginPropAddress.length-1);
             p_.tabs.setTabText(index, loginPropAddress);
         }
         else
