@@ -157,7 +157,7 @@ private:
     ClientLoginState loginstate_; ///< Client's connection/login state
     LoginPropertyMap properties; ///< Specifies all the login properties.
     bool reconnect_; ///< Whether the connect attempt is a reconnect because of dropped connection
-    u8 client_id_; ///< User ID, once known
+    u32 client_id_; ///< User ID, once known
     TundraLogicModule* owner_; ///< Owning module
     Framework* framework_; ///< Framework pointer
 };
