@@ -45,7 +45,7 @@ public slots:
     void RefreshHttpStorages();
     
     /// If we are the server, this function gets called whenever a new connection is received. Populates the response data with the known asset storages in this server.
-    void ServerNewUserConnected(int connectionID, UserConnection *connection, UserConnectedResponseData *responseData);
+    void ServerNewUserConnected(unsigned int connectionID, UserConnection *connection, UserConnectedResponseData *responseData);
     /// If we are the client, this function gets called when we connect to a server. Adds all storages received from the server to our storage list.
     void ClientConnectedToServer(UserConnectedResponseData *responseData);
     /// If we are the client, this function gets called when we disconnected. Removes all storages received from the server from our storage list.
