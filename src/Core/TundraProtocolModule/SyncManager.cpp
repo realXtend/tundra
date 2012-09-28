@@ -959,9 +959,6 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
         EntityPtr e = scene->GetEntity(entityID);
         boost::shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : boost::shared_ptr<EC_Placeable>();
         boost::shared_ptr<EC_RigidBody> rigidBody = e ? e->GetComponent<EC_RigidBody>() : boost::shared_ptr<EC_RigidBody>();
-//        if (!placeable)
-//            return;
-        // With multiple scenes next line might cause crash occasionally. Therefore previous return statement. Investigate why!
         Transform t = e ? placeable->transform.Get() : Transform();
 
         float3 newLinearVel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
