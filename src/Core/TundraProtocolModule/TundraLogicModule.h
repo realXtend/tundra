@@ -77,16 +77,14 @@ public slots:
     bool ImportMesh(QString filename, const float3 &pos = float3(0.f,0.f,0.f), const float3 &rot = float3(0.f,0.f,0.f),
         const float3 &scale = float3(1.f,1.f,1.f), bool inspectForMaterialsAndSkeleton = true);
 
-    /// Switches main camera scene.
-    void SwitchScene(QString name);
-
 private slots:
     void StartupSceneTransfedSucceeded(AssetPtr asset);
     void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
     void registerSyncManager(const QString);
     void removeSyncManager(const QString);
     void switchscene(const QString);
-
+    /// List established connections
+    void listConnections();
 private:
     /// Handles a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);

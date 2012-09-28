@@ -547,7 +547,7 @@ void Client::printSceneNames()
     QStringList keys = properties_list_.keys();
     foreach (QString key, keys)
     {
-        ::LogInfo("> " + key + " - " + tempMap["address"] + ":" + tempMap["port"] + "/" + tempMap["protocol"] + "\n");
+        ::LogInfo("> " + key);//" - " + tempMap["address"] + ":" + tempMap["port"] + "/" + tempMap["protocol"] + "\n");
         ++iter;
         if (iter != properties_list_.end())
             tempMap = iter.value();

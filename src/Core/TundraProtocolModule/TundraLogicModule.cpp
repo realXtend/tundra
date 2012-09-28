@@ -170,9 +170,12 @@ void TundraLogicModule::Initialize()
 
     framework_->Console()->RegisterCommand("switchscene",
                                            "Switches main camera to different scene."
-                                           "Give scene name as parameter."
-                                           "Type 'print' as parameter to get available scenes.",
-                                           this, SLOT(SwitchScene(QString)));
+                                           "Give scene name as parameter.",
+                                           this, SLOT(switchscene(QString)));
+
+    framework_->Console()->RegisterCommand("listconnections",
+                                           "List established connections.",
+                                           this, SLOT(listConnections()));
 
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModule<KristalliProtocolModule>();
@@ -492,12 +495,9 @@ bool TundraLogicModule::ImportMesh(QString filename, const float3 &pos, const fl
     return entity != 0;
 }
 
-void TundraLogicModule::SwitchScene(QString name)
+void TundraLogicModule::listConnections()
 {
-    if (name == "print")
-        client_->printSceneNames();
-    else
-        client_->emitSceneSwitch(name);
+    client_->printSceneNames();
 }
 
 bool TundraLogicModule::IsServer() const
