@@ -1,13 +1,13 @@
 #!/bin/bash
 export QTBUILDDIR=$HOME/qt
-export QTTARGETDIR=/usr/local/qt-releases/v4.8.2
+export QTTARGETDIR=/usr/local/qt-releases/v4.8.3
 export QTINSTALLDIR=/usr/local/qt-releases/qt
 mkdir -p $QTBUILDDIR
 cd $QTBUILDDIR
 #---- Build QT
 git clone git://gitorious.org/qt/qt.git
 cd qt
-git checkout v4.8.2
+git checkout v4.8.3
 ./configure --prefix=$QTTARGETDIR --disable-qt3support -dbus -phonon-backend | tee configure.log
 make -j 8
 sudo make install
