@@ -54,7 +54,9 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
 	 libvlc-dev libspeexdsp-dev libprotobuf-dev \
 	 libprotobuf-c0 libprotobuf-c0-dev \
 	 protobuf-c-compiler protobuf-compiler \
-     libqt4-opengl-dev libqtwebkit-dev
+     libqt4-opengl-dev libqtwebkit-dev \
+     libspeexdsp-dev libprotobuf-dev \
+     libvlc-dev
 
 fi
  
@@ -76,9 +78,9 @@ fi
 
 what=celt
 if test -f $tags/$what-done; then
-echo $what id done
+    echo $what id done
 else
-urlbase=http://downloads.xiph.org/releases/celt
+    urlbase=http://downloads.xiph.org/releases/celt
     pkgbase=celt-0.11.1
     dlurl=$urlbase/$pkgbase.tar.gz
     cd $build
