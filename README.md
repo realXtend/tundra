@@ -28,9 +28,7 @@ Tundra uses [CMake] as its build system and depends on various other open source
 
 ### Windows
 
-For Windows, Visual Studio 2008 and 2010 build environments are supported, but at the moment Visual Studio 2008 is recommended. There are two ways of acquiring the dependencies **1)** Automated script to build them from sources **2)** Use prebuilt dependencies from an SVN repository.
-
-_TODO: Document VS2010 build path once one is available either with full build or prebuild deps!_
+Currently only Visual Studio 2008 build environment is supported. There are two ways of acquiring the dependencies **1)** Automated script to build them from sources **2)** Use prebuilt dependencies from an SVN repository.
 
 **1) Building with Full Dependencies**
 
