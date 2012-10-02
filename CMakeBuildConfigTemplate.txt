@@ -152,7 +152,8 @@ if (ENABLE_OPEN_ASSET_IMPORT)
 endif ()
 
 #AddProject(Application AssetInterestPlugin)    # Options to only keep assets below certain distance threshold in memory. Can also unload all non used assets from memory. Exposed to scripts so scenes can set the behaviour.
-AddProject(Application CanvasPlugin)           # Component that draws a graphics scene with any number of widgets into a mesh and provides 3D mouse input.
+AddProject(Application CanvasPlugin)            # Component that draws a graphics scene with any number of widgets into a mesh and provides 3D mouse input.
+#AddProject(Application XMPPModule)              # A module that implements XMPP-based chat.
 
 if (WIN32 OR APPLE) # Enable on linux once the needed zziplib dependency is satisfied in the build scripts.
     AddProject(Application ArchivePlugin)          # Provides archived asset bundle capabilities. Enables example sub asset referencing into eg. zip files.
