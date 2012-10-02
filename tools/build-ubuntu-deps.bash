@@ -54,7 +54,9 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
 	 libvlc-dev libspeexdsp-dev libprotobuf-dev \
 	 libprotobuf-c0 libprotobuf-c0-dev \
 	 protobuf-c-compiler protobuf-compiler \
-     libqt4-opengl-dev libqtwebkit-dev
+     libqt4-opengl-dev libqtwebkit-dev \
+     libspeexdsp-dev libprotobuf-dev \
+     libvlc-dev
 
 fi
  
@@ -76,9 +78,9 @@ fi
 
 what=celt
 if test -f $tags/$what-done; then
-echo $what id done
+    echo $what id done
 else
-urlbase=http://downloads.xiph.org/releases/celt
+    urlbase=http://downloads.xiph.org/releases/celt
     pkgbase=celt-0.11.1
     dlurl=$urlbase/$pkgbase.tar.gz
     cd $build
@@ -99,7 +101,7 @@ if test -f $tags/$what-done; then
 else
     cd $build
     rm -rf $what
-    git clone git://gitorious.org/qt-labs/$what.git
+    git clone https://git.gitorious.org/qt-labs/$what.git
     cd $what
     patch -l -p1 <<EOF
 Description: Include QtWebkit and Phonon unconditionally.
@@ -293,6 +295,27 @@ else
     cp lib/lib* $prefix/lib/
     # luckily only extensionless headers under src match Qt*:
     cp src/qt*.h src/Qt* $prefix/include/
+    touch $tags/$what-done
+fi
+
+cd $build
+what=qxmpp
+rev=r1671
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    rm -rf $what
+    svn checkout http://qxmpp.googlecode.com/svn/trunk@$rev $what
+    cd $what
+    sed 's/# DEFINES += QXMPP_USE_SPEEX/DEFINES += QXMPP_USE_SPEEX/g' src/src.pro > src/temp
+    sed 's/# LIBS += -lspeex/LIBS += -lspeex/g' src/temp > src/src.pro
+    sed 's/LIBS += $$QXMPP_LIBS/LIBS += $$QXMPP_LIBS -lspeex/g' tests/tests.pro > tests/temp && mv tests/temp tests/tests.pro
+    rm src/temp
+    qmake
+    make -j $nprocs
+    mkdir -p $prefix/include/$what
+    cp src/*.h $prefix/include/$what
+    cp lib/libqxmpp.a $prefix/lib/
     touch $tags/$what-done
 fi
 

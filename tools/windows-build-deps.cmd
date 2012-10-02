@@ -160,22 +160,22 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :SKIP_OPENSSL
 
 :: Qt
-:: version 4.8.2
+:: version 4.8.3
 
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
-   IF NOT EXIST qt-everywhere-opensource-src-4.8.2.zip. (
-      cecho {0D}Downloading Qt 4.8.2. Please be patient, this will take a while.{# #}{\n}
-      wget http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4.8.2.zip
+   IF NOT EXIST qt-everywhere-opensource-src-4.8.3.zip. (
+      cecho {0D}Downloading Qt 4.8.3. Please be patient, this will take a while.{# #}{\n}
+      wget http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4.8.3.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.8.2 sources to "%DEPS%\qt".{# #}{\n}
+   cecho {0D}Extracting Qt 4.8.3 sources to "%DEPS%\qt".{# #}{\n}
    mkdir qt
-   7za x -y -oqt qt-everywhere-opensource-src-4.8.2.zip
+   7za x -y -oqt qt-everywhere-opensource-src-4.8.3.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd qt
-   ren qt-everywhere-opensource-src-4.8.2 qt-src-4.8.2
+   ren qt-everywhere-opensource-src-4.8.3 qt-src-4.8.3
    IF NOT EXIST "%DEPS%\qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
@@ -219,22 +219,22 @@ IF %BUILD_OPENSSL%==TRUE (
 :: a system set QMAKESPEC might take over the build in some bizarre fashion.
 :: Note 1: QTDIR is not used while build, neither should QMAKESPEC be used when -platform is given to configure.
 :: Note 2: We cannot do this inside the qt IF without @setlocal EnableDelayedExpansion.
-set QMAKESPEC=%DEPS%\qt\qt-src-4.8.2\mkspecs\win32-msvc2008
-set QTDIR=%DEPS%\qt\qt-src-4.8.2
+set QMAKESPEC=%DEPS%\qt\qt-src-4.8.3\mkspecs\win32-msvc2008
+set QTDIR=%DEPS%\qt\qt-src-4.8.3
 
 IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
-   IF NOT EXIST "%DEPS%\qt\qt-src-4.8.2". (
-      cecho {0E}Warning: %DEPS%\qt\qt-src-4.8.2 does not exist, extracting Qt failed?.{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\qt-src-4.8.3". (
+      cecho {0E}Warning: %DEPS%\qt\qt-src-4.8.3 does not exist, extracting Qt failed?.{# #}{\n}
       GOTO :ERROR
    )
-   cd "%DEPS%\qt\qt-src-4.8.2"
+   cd "%DEPS%\qt\qt-src-4.8.3"
 
    IF NOT EXIST "configure.cache". (
       cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
       configure -platform win32-msvc2008 -debug-and-release -opensource -prefix "%DEPS%\qt" -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ) ELSE (
-      cecho {0D}Qt already configured. Remove %DEPS%\qt\qt-src-4.8.2\configure.cache to trigger a reconfigure.{# #}{\n}  
+      cecho {0D}Qt already configured. Remove %DEPS%\qt\qt-src-4.8.3\configure.cache to trigger a reconfigure.{# #}{\n}  
    )
    
    cecho {0D}Building Qt. Please be patient, this will take a while.{# #}{\n}
@@ -254,8 +254,8 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
       nmake /nologo
    )
 
-   IF NOT EXIST "%DEPS%\qt\qt-src-4.8.2\lib\QtWebKit4.dll". (
-      cecho {0E}Warning: %DEPS%\qt\qt-src-4.8.2\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
+   IF NOT EXIST "%DEPS%\qt\qt-src-4.8.3\lib\QtWebKit4.dll". (
+      cecho {0E}Warning: %DEPS%\qt\qt-src-4.8.3\lib\QtWebKit4.dll not present, Qt build failed?.{# #}{\n}
       GOTO :ERROR
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -386,7 +386,7 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}Cloning QtScriptGenerator into "%DEPS%\qtscriptgenerator".{# #}{\n}
    cd "%DEPS%"
-   call git clone git://gitorious.org/qt-labs/qtscriptgenerator
+   call git clone https://git.gitorious.org/qt-labs/qtscriptgenerator
    IF NOT EXIST "%DEPS%\qtscriptgenerator\.git" GOTO :ERROR
 ) ELSE (
    cecho {0D}QtScriptGenerator already cloned. Skipping.{# #}{\n}
@@ -593,7 +593,7 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 IF NOT EXIST "%DEPS%\qt-solutions". (
    cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
    cd "%DEPS%"
-   call git clone git://gitorious.org/qt-solutions/qt-solutions.git
+   call git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
    IF NOT EXIST "%DEPS%\qt-solutions\.git" GOTO :ERROR
    cd qt-solutions\qtpropertybrowser
 
@@ -738,7 +738,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
 IF NOT EXIST "%DEPS%\celt\.git" (
    cd "%DEPS%"
    cecho {0D}Cloning Celt 0.11.1 into "%DEPS%\celt".{# #}{\n}
-   call git clone git://git.xiph.org/celt.git celt
+   call git clone http://git.xiph.org/celt.git celt
    :: Copy config.h from head to the 0.11.1 tag.
    cd celt
    copy /Y msvc\config.h config.h
@@ -769,60 +769,35 @@ IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
 )
 
 :: VLC
-IF NOT EXIST "%DEPS%\vlc-2.0.3-win32.zip". (
+IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". (
   CD "%DEPS%"
   rmdir /S /Q "%DEPS%\vlc"
-  cecho {0D}Downloading VLC 2.0.3{# #}{\n}
-  wget http://sourceforge.net/projects/vlc/files/2.0.3/win32/vlc-2.0.3-win32.zip/download
-  IF NOT EXIST "%DEPS%\vlc-2.0.3-win32.zip". GOTO :ERROR
+  cecho {0D}Downloading VLC 2.0.1{# #}{\n}
+  wget http://sourceforge.net/projects/vlc/files/2.0.1/win32/vlc-2.0.1-win32.zip/download
+  IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". GOTO :ERROR
 ) ELSE (
-   cecho {0D}VLC 2.0.3 binary package already downloaded. Skipping.{# #}{\n}
+   cecho {0D}VLC 2.0.1 already downloaded. Skipping.{# #}{\n}
 )
-
-
-IF NOT EXIST "%DEPS%\vlc-2.0.3.tar.xz". (
-  CD "%DEPS%"
-  cecho {0D}Downloading VLC 2.0.3 sources{# #}{\n}
-  wget http://sourceforge.net/projects/vlc/files/2.0.3/vlc-2.0.3.tar.xz/download
-  IF NOT EXIST "%DEPS%\vlc-2.0.3.tar.xz". GOTO :ERROR
-) ELSE (
-   cecho {0D}VLC 2.0.3 source package already downloaded. Skipping.{# #}{\n}
-)
-
 
 IF NOT EXIST "%DEPS%\vlc". (
    CD "%DEPS%"
    mkdir vlc
-   cecho {0D}Extracting VLC 2.0.3 binary package to "%DEPS%\vlc\vlc-2.0.3"{# #}{\n}
-   7za x -y -ovlc vlc-2.0.3-win32.zip
-   cecho {0D}Extracting VLC 2.0.3 source package to "%DEPS%\vlc\vlc-2.0.3"{# #}{\n}
-   7za x -y -ovlc vlc-2.0.3.tar.xz
-   7za x -y -ovlc vlc\vlc-2.0.3.tar
+   cecho {0D}Extracting VLC 2.0.1 package to "%DEPS%\vlc\vlc-2.0.1"{# #}{\n}
+   7za x -y -ovlc vlc-2.0.1-win32.zip
    cd vlc
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   mkdir defs
    mkdir lib
    mkdir include
    mkdir bin\plugins\vlcplugins
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    :: Copy from extraced location to our subfolders
-   cecho {0D}Copying needed VLC 2.0.3 files to \bin \lib and \include{# #}{\n}
-   copy /Y vlc-2.0.3\*.dll bin\
-   dumpbin /exports vlc-2.0.3\axvlc.dll > defs\axvlc.def
-   dumpbin /exports vlc-2.0.3\npvlc.dll > defs\npvlc.def
-   dumpbin /exports vlc-2.0.3\libvlc.dll > defs\libvlc.def
-   dumpbin /exports vlc-2.0.3\libvlccore.dll > defs\libvlccore.def
-   lib /def:defs\axvlc.def /out:lib\axvlc.lib /machine:x86
-   lib /def:defs\npvlc.def /out:lib\npvlc.lib /machine:x86
-   lib /def:defs\libvlc.def /out:lib\libvlc.lib /machine:x86
-   lib /def:defs\libvlccore.def /out:lib\libvlccore.lib /machine:x86
-   xcopy /E /I /C /H /R /Y vlc-2.0.3\plugins\*.* bin\plugins\vlcplugins
-   xcopy /E /I /C /H /R /Y vlc-2.0.3\include\*.* include
-   copy /Y vlc-2.0.3\sdk\lib\*.lib lib\
+   cecho {0D}Copying needed VLC 2.0.1 files to \bin \lib and \include{# #}{\n}
+   copy /Y vlc-2.0.1\*.dll bin\
+   xcopy /E /I /C /H /R /Y vlc-2.0.1\plugins\*.* bin\plugins\vlcplugins
+   xcopy /E /I /C /H /R /Y vlc-2.0.1\sdk\include\*.* include
+   copy /Y vlc-2.0.1\sdk\lib\*.lib lib\
    :: Remove extracted folder, not needed anymore
-   rmdir /S /Q vlc-2.0.3
-   :: remove the extracted tar archive 
-   rm /S /Q vlc/vlc-2.0.3.tar
+   rmdir /S /Q vlc-2.0.1
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    :: Force deployment and clean vlc plugins cache file
    del /Q "%TUNDRA_BIN%\libvlc.dll"
@@ -830,15 +805,45 @@ IF NOT EXIST "%DEPS%\vlc". (
    del /Q "%TUNDRA_BIN%\plugins\plugins*.dat"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}VLC 2.0.3 already extracted. Skipping.{# #}{\n}
+   cecho {0D}VLC 2.0.1 already extracted. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
-   cecho {0D}Deploying VLC 2.0.3 DLLs to Tundra bin\{# #}{\n}
+   cecho {0D}Deploying VLC 2.0.1 DLLs to Tundra bin\{# #}{\n}
    xcopy /E /I /C /H /R /Y "%DEPS%\vlc\bin\*.*" "%TUNDRA_BIN%"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}VLC 2.0.3 already deployed. Skipping.{# #}{\n}
+   cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
+)
+
+::qxmpp
+IF NOT EXIST "%DEPS%\qxmpp\". (
+   cecho {0D}Cloning qxmpp into "%DEPS%\qxmpp".{# #}{\n}
+   cd "%DEPS%"
+   svn checkout http://qxmpp.googlecode.com/svn/trunk@r1671 qxmpp
+   IF NOT EXIST "%DEPS%\qxmpp\.svn" GOTO :ERROR
+   cecho {0D}Building qxmpp.{# #}{\n}
+   cd qxmpp
+   sed 's/# DEFINES += QXMPP_USE_SPEEX/DEFINES += QXMPP_USE_SPEEX/g' < src\src.pro > src\temp
+   sed 's/# LIBS += -lspeex/LIBS += -L"..\\\..\\\speex\\\lib\\\libspeex.lib -L"..\\\.\\\speex\\\lib\\\libspeexdsp.lib"/g' < src\temp > src\src.pro
+   sed 's/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES ..\\\..\\\speex\\\include\nDEPENDPATH += ..\\\..\\\speex/g' < src\src.pro > src\temp
+   mv src\temp src\src.pro
+   sed 's/LIBS += $$QXMPP_LIBS/LIBS += $$QXMPP_LIBS -L"..\\\..\\\speex\\\lib\\\libspeex.lib" -L"..\\\..\\\speex\\\lib\\\libspeexdsp.lib"/g' < tests\tests.pro > tests\temp
+   mv tests\temp tests\tests.pro
+   qmake
+  IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   IF %USE_JOM%==TRUE (
+      cecho {0D}- Building qxmpp with jom{# #}{\n}
+      "%DEPS%\qt\jom\jom.exe" sub-src-all-ordered
+   ) ELSE (
+      cecho {0D}- Building qxmpp with nmake{# #}{\n}
+      nmake /nologo sub-src-all-ordered
+   )
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   IF NOT EXIST "%DEPS%\qxmpp\include\qxmpp". mkdir %DEPS%\qxmpp\include\qxmpp
+   copy /Y "src\*.h" "%DEPS%\qxmpp\include\qxmpp\"
+) ELSE (
+   cecho {0D}qxmpp already built. Skipping.{# #}{\n}
 )
 
 echo.
