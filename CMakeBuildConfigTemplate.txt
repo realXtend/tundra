@@ -33,7 +33,6 @@ set (ENABLE_OPEN_ASSET_IMPORT 0)    # Enables Open Asset Import Library, which c
 set (ENABLE_PROFILING 1)            # Enable the following flag to add compile with support for a built-in execution time profiler.
 set (ENABLE_JS_PROFILING 0)         # Enable js profiling?
 set (ENABLE_MEMORY_LEAK_CHECKS 0)   # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
-set (ENABLE_NVIDIA_PERFHUD 0)       # Enable Ogre's support for NVIDIA PerfHUD, http://developer.nvidia.com/nvidia-perfhud
 
 message ("\n")
 

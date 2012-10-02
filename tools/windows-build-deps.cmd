@@ -826,11 +826,11 @@ IF NOT EXIST "%DEPS%\qxmpp\". (
 
 :: ZLIB
 IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". (
-  CD "%DEPS%"
-  rmdir /S /Q "%DEPS%\zlib"
-  cecho {0D}Downloading zlib 1.2.7{# #}{\n}
-  wget http://zlib.net/zlib-1.2.7.tar.gz
-  IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+   CD "%DEPS%"
+   rmdir /S /Q "%DEPS%\zlib"
+   cecho {0D}Downloading zlib 1.2.7{# #}{\n}
+   wget http://zlib.net/zlib-1.2.7.tar.gz
+   IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
 ) ELSE (
    cecho {0D}zlib 1.2.7 already downloaded. Skipping.{# #}{\n}
 )
