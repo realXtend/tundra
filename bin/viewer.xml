@@ -21,6 +21,7 @@
   <plugin path="VlcPlugin" />                   <!-- Depends on SceneWidgetComponents -->
   <plugin path="CAVEStereoModule" />            <!-- Depends on OgreRenderingModule -->
   <plugin path="CanvasPlugin" />                <!-- Depends on OgreRenderingModule -->
+  <plugin path="XMPPModule" />                  <!-- This manly module doesn't depend on anyone -->
 
   <!-- TODO: Currently the above <plugin> items are loaded in the order they are specified, but below, the jsplugin items are loaded in an undefined order. Use the order specified here as the load order. -->
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
