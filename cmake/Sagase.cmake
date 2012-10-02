@@ -77,7 +77,7 @@ endfunction (sagase_generate_paths)
 # results are in ${PREFIX}_INCLUDE_DIRS, ${PREFIX}_LIBRARY_DIRS, 
 # ${PREFIX}_LIBRARIES, ${PREFIX}_DEFINITIONS, or fatal error.
 
-# Tryies the following methods to find a package, in order of decreasing
+# Tries the following methods to find a package, in order of decreasing
 # specialization or detail:
 # 1. find_package
 # 2. OS-dependent (pkg-config, framework, etc.)

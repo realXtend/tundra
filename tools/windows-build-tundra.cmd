@@ -35,6 +35,7 @@ SET OPENSSL_ROOT_DIR=%DEPS%\openssl
 SET CELT_ROOT=%DEPS%\celt
 SET SPEEX_ROOT=%DEPS%\speex
 SET VLC_ROOT=%DEPS%\vlc
+SET QXMPP_ROOT=%DEPS%\qxmpp
 SET CRUNCH_ROOT=%DEPS%\crunch
 
 :: Disable python untill it has been fixed to windows-build-deps.cmd!

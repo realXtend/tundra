@@ -794,6 +794,36 @@ IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
    cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
 )
 
+::qxmpp
+IF NOT EXIST "%DEPS%\qxmpp\". (
+   cecho {0D}Cloning qxmpp into "%DEPS%\qxmpp".{# #}{\n}
+   cd "%DEPS%"
+   svn checkout http://qxmpp.googlecode.com/svn/trunk@r1671 qxmpp
+   IF NOT EXIST "%DEPS%\qxmpp\.svn" GOTO :ERROR
+   cecho {0D}Building qxmpp.{# #}{\n}
+   cd qxmpp
+   sed 's/# DEFINES += QXMPP_USE_SPEEX/DEFINES += QXMPP_USE_SPEEX/g' < src\src.pro > src\temp
+   sed 's/# LIBS += -lspeex/LIBS += -L"..\\\..\\\speex\\\lib\\\libspeex.lib -L"..\\\.\\\speex\\\lib\\\libspeexdsp.lib"/g' < src\temp > src\src.pro
+   sed 's/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES ..\\\..\\\speex\\\include\nDEPENDPATH += ..\\\..\\\speex/g' < src\src.pro > src\temp
+   mv src\temp src\src.pro
+   sed 's/LIBS += $$QXMPP_LIBS/LIBS += $$QXMPP_LIBS -L"..\\\..\\\speex\\\lib\\\libspeex.lib" -L"..\\\..\\\speex\\\lib\\\libspeexdsp.lib"/g' < tests\tests.pro > tests\temp
+   mv tests\temp tests\tests.pro
+   qmake
+  IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   IF %USE_JOM%==TRUE (
+      cecho {0D}- Building qxmpp with jom{# #}{\n}
+      "%DEPS%\qt\jom\jom.exe" sub-src-all-ordered
+   ) ELSE (
+      cecho {0D}- Building qxmpp with nmake{# #}{\n}
+      nmake /nologo sub-src-all-ordered
+   )
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   IF NOT EXIST "%DEPS%\qxmpp\include\qxmpp". mkdir %DEPS%\qxmpp\include\qxmpp
+   copy /Y "src\*.h" "%DEPS%\qxmpp\include\qxmpp\"
+) ELSE (
+   cecho {0D}qxmpp already built. Skipping.{# #}{\n}
+)
+
 echo.
 cecho {0A}Tundra dependencies built.{# #}{\n}
 set PATH=%ORIGINAL_PATH%
