@@ -101,18 +101,15 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool 
     return true;
 }
 
-bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
+bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString & /*serializationParameters*/) const
 {
     QDomDocument avatarDoc("Avatar");
     WriteAvatarAppearance(avatarDoc);
     QByteArray bytes = avatarDoc.toByteArray();
     
-    if (!bytes.length())
-        return false;
-    
-    dst.resize(bytes.size());
-    memcpy(&dst[0], bytes.data(), bytes.size());
-    return true;
+    dst.clear();
+    dst.insert(dst.end(), bytes.data(), bytes.data() + bytes.size());
+    return dst.size() > 0;
 }
 
 bool AvatarDescAsset::IsLoaded() const
