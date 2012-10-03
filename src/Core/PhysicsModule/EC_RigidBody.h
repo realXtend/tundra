@@ -303,9 +303,6 @@ private slots:
     /// Called when the simulation is about to be stepped
     void OnAboutToUpdate();
     
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
-    
     /// Called when attributes of the placeable have changed
     void PlaceableUpdated(IAttribute *attribute);
     
@@ -322,6 +319,9 @@ private slots:
     void OnCollisionMeshAssetLoaded(AssetPtr asset);
 
 private:
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
+
     /// (Re)create the collisionshape
     void CreateCollisionShape();
     

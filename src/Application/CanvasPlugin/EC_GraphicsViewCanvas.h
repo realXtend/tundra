@@ -69,7 +69,6 @@ public slots:
     void UpdateSignals();
 
 private slots:
-    void OnAttributeUpdated(IAttribute *attribute);
     void OnGraphicsSceneChanged(const QList<QRectF> &);
     void OnMouseEventReceived(MouseEvent *e);
     void OnDragEnterEvent(QDragEnterEvent *e);
@@ -80,6 +79,7 @@ private slots:
     void UpdateTexture();
 
 private:
+    void AttributesChanged();
     void SendMouseEvent(QEvent::Type type, const QPointF &point, MouseEvent *e);
     void SendMouseScrollEvent(MouseEvent *e, const QPointF &ptOnScene);
     Ogre::MaterialPtr OgreMaterial() const;

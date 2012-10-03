@@ -67,6 +67,9 @@ private:
     OgreWorldWeakPtr world_;
     bool tracking;
 
+    /// Handles start and end point changes
+    void AttributesChanged();
+
 private slots:
     /// Creates laser object.
     void CreateLaser();
@@ -76,9 +79,6 @@ private slots:
 
     /// (If it is allowed) updates start and end points on mousemove
     void Update(MouseEvent *e);
-
-    /// Handles start and end point changes
-    void HandleAttributeChange(IAttribute *attribute, AttributeChange::Type change);
 
     /// Handle placeable changes
     void HandlePlaceableAttributeChange(IAttribute *attribute, AttributeChange::Type change);

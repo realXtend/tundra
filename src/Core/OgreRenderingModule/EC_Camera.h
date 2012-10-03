@@ -191,12 +191,13 @@ private slots:
     /// Called when component has been added or removed from the parent entity. Checks the existence of the EC_Placeable component, and attaches this camera to it.
     void OnComponentStructureChanged();
 
-    void OnAttributeUpdated(IAttribute *attribute);
-
     /// Handle frame update. Used for entity visibility tracking
     void OnUpdated(float timeStep);
 
 private:
+
+    void AttributesChanged();
+
     /// Sets placeable component
     /** set a null placeable to detach the camera, otherwise will attach
         @param placeable placeable component */

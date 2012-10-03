@@ -29,7 +29,6 @@ EC_SoundListener::EC_SoundListener(Scene* scene):
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
@@ -56,7 +55,7 @@ void EC_SoundListener::Update()
     }
 }
 
-void EC_SoundListener::OnActiveChanged()
+void EC_SoundListener::AttributesChanged()
 {
     if (active.Get())
     {
@@ -86,7 +85,7 @@ void EC_SoundListener::RegisterActions()
     assert(entity);
     if (entity)
     {
-        entity->ConnectAction("Active", this, SLOT(OnActiveChanged()));
+        entity->ConnectAction("Active", this, SLOT(AttributesChanged()));
     }
     else
     {

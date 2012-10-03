@@ -44,7 +44,6 @@ EC_Highlight::EC_Highlight(Scene* scene) :
         world_ = scene->GetWorld<OgreWorld>();
     
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Highlight::~EC_Highlight()
@@ -154,9 +153,9 @@ void EC_Highlight::AcquireMesh()
     }
 }
 
-void EC_Highlight::OnAttributeUpdated(IAttribute *attribute)
+void EC_Highlight::AttributesChanged()
 {
-    if (attribute == &visible)
+    if (visible.ValueChanged())
     {
         if (visible.Get())
             Show();
@@ -164,7 +163,7 @@ void EC_Highlight::OnAttributeUpdated(IAttribute *attribute)
             Hide();
     }
     
-    if ((attribute == &solidColor) || (attribute == &outlineColor))
+    if (solidColor.ValueChanged() || outlineColor.ValueChanged())
         ApplyHighlightColors();
 }
 

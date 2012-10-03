@@ -72,9 +72,9 @@ signals:
     /// Note: needs to be lowercase for QML to accept connections to it
     void triggered(Entity* otherEntity, float distance);
 
-public slots:
+private:
     /// Attribute has been updated
-    void OnAttributeUpdated(IAttribute* attr);
+    void AttributesChanged();
     
 private slots:
     /// Check for other triggers and emit signals

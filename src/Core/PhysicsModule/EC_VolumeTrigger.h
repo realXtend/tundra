@@ -144,8 +144,6 @@ public slots:
     bool IsInsideVolume(const float3& point) const;
 
 private slots:
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
 
     void UpdateSignals();
 
@@ -162,6 +160,9 @@ private slots:
     void OnEntityRemoved(Entity* entity);
 
 private:
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
+
     /// Rigid body component that is needed for collision signals
     boost::weak_ptr<EC_RigidBody> rigidbody_;
 

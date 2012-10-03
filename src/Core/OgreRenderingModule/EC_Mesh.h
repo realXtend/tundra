@@ -431,9 +431,6 @@ private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
 
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
-
     /// Called when component has been removed from the parent entity. Checks if the component removed was the placeable, and autodissociates it.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
 
@@ -450,6 +447,10 @@ private slots:
     void OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason);
 
 private:
+
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
+
     /// Prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
     /** @param meshName Mesh to prepare
         @param clone Whether should return an uniquely named clone of the mesh, rather than the original

@@ -65,14 +65,14 @@ public slots:
     QString AvatarProperty(const QString& name) const;
 
 private slots:
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
     /// Avatar asset loaded.
     void OnAvatarAppearanceLoaded(AssetPtr asset);
     /// Avatar asset failed to load.
     void OnAvatarAppearanceFailed(IAssetTransfer* transfer, QString reason);
 
 private:
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
     /// Adjust avatar's height offset dynamically
     void AdjustHeightOffset();
     /// Rebuild mesh and set materials

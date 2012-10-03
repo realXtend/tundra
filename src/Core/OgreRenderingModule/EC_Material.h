@@ -67,7 +67,6 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(QString, outputMat);
 
 private slots:
-    void OnAttributeUpdated(IAttribute* attribute);
     
     /// Parent entity has been set. Check for existence of EC_Mesh
     void OnParentEntitySet();
@@ -85,6 +84,8 @@ signals:
     void AppliedOutputMaterial(Entity *entity, const QString &meshCompName, const int index, const QString &material);
     
 private:
+    void AttributesChanged();
+
     /// Return the submesh number to use from EC_Mesh, or -1 if not using the EC_Mesh's material
     int GetSubmeshNumber() const;
 

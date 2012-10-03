@@ -124,9 +124,6 @@ private slots:
     /// Update signals to parents signals.
     void UpdateSignals();
 
-    /// Monitors own attribute changes.
-    void OnAttributeUpdated(IAttribute *attribute);
-
     /// Handles asset loaded signal.
     void AudioAssetLoaded(AssetPtr asset);
 
@@ -140,6 +137,8 @@ private slots:
     void ConstantPositionUpdate();
     
 private:
+    /// Monitors own attribute changes.
+    void AttributesChanged();
     ComponentPtr FindPlaceable() const;
     SoundChannelPtr soundChannel;
 };
