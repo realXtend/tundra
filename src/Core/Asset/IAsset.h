@@ -116,8 +116,8 @@ public slots:
     /// Returns a textual human-readable representation of this asset in the form "<name> (<type>)".
     QString ToString() const;
 
-    // Raw data getter for scripts
-    QByteArray GetRawData(const QString serializationParameters = "") const { std::vector<u8> data; if (SerializeTo(data, serializationParameters)) return QByteArray::fromRawData((const char*)&data[0], data.size()); else return QByteArray();}
+    // Returns a copy of the raw data in this asset.
+    QByteArray GetRawData(const QString serializationParameters = "") const;
 
 signals:
     /// This signal is emitted when the contents of this asset is unloaded. It might be due to an explicit call by client code
