@@ -43,6 +43,9 @@ public:
     typedef EntityMap::iterator iterator; ///< entity iterator, see begin() and end()
     typedef EntityMap::const_iterator const_iterator;///< const entity iterator. see begin() and end()
 
+    /// Returns name of the scene.
+    const QString &Name() const { return name_; }
+
     /// Returns iterator to the beginning of the entities.
     iterator begin() { return iterator(entities_.begin()); }
 
@@ -238,10 +241,6 @@ public slots:
     /// Is scene authoritative ie. a server or standalone scene
     /** @todo Exposed as Q_PROPERTY, doesn't need to be a slot. */
     bool IsAuthority() const { return authority_; }
-
-    /// Returns name of the scene.
-    /** @todo Exposed as Q_PROPERTY, doesn't need to be a slot. */
-    const QString &Name() const { return name_; }
 
     /// Returns entity with the specified id
     /** @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
