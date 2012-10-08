@@ -34,7 +34,7 @@ inline Dst checked_static_cast(Src src)
 #define SAFE_DELETE_LATER(p) { if ((p)) (p)->deleteLater(); (p) = 0; }
 
 #ifdef _MSC_VER
-/// Raises C4996 warning if deprecated function signature is used.
+/// Raises C4996 warning if a deprecated symbol is used.
 #define DEPRECATED __declspec(deprecated)
 #else
 #define DEPRECATED // N/a, GCC's equivalent is not usable in same convenient way
