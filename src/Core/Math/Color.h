@@ -16,8 +16,10 @@
 #include <OgreColourValue.h>
 #endif
 
+class float4;
+
 /// A 4-component color value, component values are floating-points [0.0, 1.0].
-/** @todo Expose to QtScript by using QtScriptGenerator instead of manual exposing. */
+/** @todo Expose to QtScript by using QScriptBindings instead of manual exposing. */
 class Color
 {
 public:
@@ -41,7 +43,7 @@ public:
 
     bool operator == (const Color& rhs) const
     {
-        return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a;
+        return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a; /**< @todo Use epsilon! */
     }
 
     bool operator != (const Color& rhs) const
@@ -53,6 +55,12 @@ public:
     /** Accepted formats are: "r,g,b,a" or "(r,g,b,a)" or "(r;g;b;a)" or "r g b" or "r,g,b" or "(r,g,b)" or "(r;g;b)" or "r g b" .
         @sa SerializeToString */
     static Color FromString(const char *str);
+
+    /// Implicit conversion to float4.
+    operator float4() const;
+
+    /// Returns Color as a float4.
+    float4 ToFloat4() const;
 
 #ifdef MATH_QT_INTEROP
     /// Constucts Color from QColor

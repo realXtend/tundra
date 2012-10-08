@@ -8,6 +8,8 @@
 //#include "DebugOperatorNew.h"
 #include "Color.h"
 #include "Math/MathFunc.h"
+#include "Math/float4.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 //#include "MemoryLeakCheck.h"
@@ -53,4 +55,15 @@ Color Color::FromString(const char *str)
     if (str && *str != '\0') // alpha optional
         c.a = (float)strtod(str, const_cast<char**>(&str));
     return c;
+
+}
+
+Color::operator float4() const
+{
+    return float4(r, g, b, a);
+}
+
+float4 Color::ToFloat4() const
+{
+    return (float4)*this;
 }
