@@ -32,7 +32,6 @@ EC_ParticleSystem::EC_ParticleSystem(Scene* scene):
         world_ = scene->GetWorld<OgreWorld>();
 
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(OnAttributeUpdated(IAttribute*)));
 
     particleAsset_ = AssetRefListenerPtr(new AssetRefListener());
     connect(particleAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnParticleAssetLoaded(AssetPtr)), Qt::UniqueConnection);
@@ -210,32 +209,29 @@ void EC_ParticleSystem::SoftStopParticleSystem(const QString& systemName)
     system->setEmitting(false);
 }
 
-void EC_ParticleSystem::OnAttributeUpdated(IAttribute *attribute)
+void EC_ParticleSystem::AttibutesChanged()
 {
-    if(attribute == &castShadows)
-    {
-        for (std::map<QString, Ogre::ParticleSystem*>::const_iterator i = particleSystems_.begin(); i != particleSystems_.end(); ++i)
+    if (!ViewEnabled())
+        return;
+
+    if (castShadows.ValueChanged())
+        for(std::map<QString, Ogre::ParticleSystem*>::const_iterator i = particleSystems_.begin(); i != particleSystems_.end(); ++i)
             i->second->setCastShadows(castShadows.Get());
-    }
-    else if (attribute == &renderingDistance)
-    {
-        for (std::map<QString, Ogre::ParticleSystem*>::const_iterator i = particleSystems_.begin(); i != particleSystems_.end(); ++i)
+
+    if (renderingDistance.ValueChanged())
+        for(std::map<QString, Ogre::ParticleSystem*>::const_iterator i = particleSystems_.begin(); i != particleSystems_.end(); ++i)
             i->second->setRenderingDistance(renderingDistance.Get());
-    }
-    else if (attribute == &particleRef)
+
+    if (particleRef.ValueChanged())
     {
-        if (!ViewEnabled())
-            return;
         if (!particleRef.Get().ref.trimmed().isEmpty())
             particleAsset_->HandleAssetRefChange(&particleRef);
-        else
-            // If the ref is cleared, delete any existing particle systems.
+        else // If the ref is cleared, delete any existing particle systems.
             DeleteParticleSystem();
     }
-    else if (attribute == &enabled)
+
+    if (enabled.ValueChanged())
     {
-        if (!ViewEnabled())
-            return;
         if (enabled.Get() && particleAsset_->Asset())
             CreateParticleSystem(); // True: create/start all systems
         else if (!enabled.Get())

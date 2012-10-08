@@ -116,9 +116,6 @@ private slots:
     /// Component removed; check if it was the placeable
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
     
-    /// Called when some of the attributes has been changed
-    void OnAttributeUpdated(IAttribute *attribute);
-    
     /// Called when material asset has been downloaded.
     void OnMaterialAssetLoaded(AssetPtr material);
     
@@ -140,6 +137,8 @@ private:
     
     /// Detach billboardset from the placeable's scene node
     void DetachBillboard();
+
+    void AttributesChanged();
 
     /// Ogre world ptr
     OgreWorldWeakPtr world_;

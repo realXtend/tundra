@@ -88,13 +88,13 @@ public slots:
     void SoftStopParticleSystem(const QString& systemName = QString());
     
 private slots:
-    void OnAttributeUpdated(IAttribute *attribute);
     void OnParticleAssetLoaded(AssetPtr asset);
     void OnParticleAssetFailed(IAssetTransfer* transfer, QString reason);
     void EntitySet();
     void OnComponentRemoved(IComponent *component, AttributeChange::Type change);
 
 private:
+    void AttibutesChanged();
     ComponentPtr FindPlaceable() const;
 
     std::map<QString, Ogre::ParticleSystem*> particleSystems_;
