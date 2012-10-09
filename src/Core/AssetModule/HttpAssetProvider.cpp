@@ -389,6 +389,30 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         {
             framework->Asset()->AssetTransferAborted(transfer.get());
         }
+        // Handle 307 Temporary Redirect
+        else if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 307)
+        {           
+            // Handle "Location" header that will have the URL where the resource can be found.
+            // Note that the original reply to asset transfer mapping will be removed after this block exists.
+            QByteArray redirectUrl = reply->rawHeader("Location");
+            if (!redirectUrl.isEmpty())
+            {
+                LogDebug("HttpAssetProvider: Handling \"307 Temporary Redirect\" from " + reply->url().toString() + " to " + redirectUrl);
+
+                // Add new mapping to the asset transfer for the new redirect URL.
+                QNetworkRequest redirectRequest;
+                redirectRequest.setUrl(QUrl(redirectUrl));
+                redirectRequest.setRawHeader("User-Agent", "realXtend Tundra");
+
+                QNetworkReply *redirectReply = networkAccessManager->get(redirectRequest);
+                transfers[QPointer<QNetworkReply>(redirectReply)] = transfer;
+            }
+            else
+            {
+                QString error = "Http GET for address \"" + reply->url().toString() + "\" returned 307 Temporary Redirect but the \"Location\" header is empty, cannot request asset from temporary redirect URL.";
+                framework->Asset()->AssetTransferFailed(transfer.get(), error);
+            }
+        }
         // No error, proceed
         else if (reply->error() == QNetworkReply::NoError)
         {            
