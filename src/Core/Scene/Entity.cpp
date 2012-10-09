@@ -499,6 +499,7 @@ EntityPtr Entity::Clone(bool local, bool temporary) const
     entityElem.setAttribute("id", local ? scene_->NextFreeIdLocal() : scene_->NextFreeId());
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         i->second->SerializeTo(doc, entityElem);
+
     sceneElem.appendChild(entityElem);
     doc.appendChild(sceneElem);
 
@@ -628,6 +629,8 @@ void Entity::EmitLeaveView(IComponent* camera)
 void Entity::SetTemporary(bool enable)
 {
     temporary_ = enable;
+    if (scene_)
+        scene_->EmitEntityTemporaryStateToggled(this);
 }
 
 QString Entity::ToString() const
