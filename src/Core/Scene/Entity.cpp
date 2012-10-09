@@ -34,6 +34,7 @@ Entity::Entity(Framework* framework, entity_id_t id, Scene* scene) :
     scene_(scene),
     temporary_(false)
 {
+    connect(this, SIGNAL(TemporaryStateToggled(Entity *)), scene_, SIGNAL(EntityTemporaryStateToggled(Entity *)));
 }
 
 Entity::~Entity()
@@ -628,9 +629,11 @@ void Entity::EmitLeaveView(IComponent* camera)
 
 void Entity::SetTemporary(bool enable)
 {
-    temporary_ = enable;
-    if (scene_)
-        scene_->EmitEntityTemporaryStateToggled(this);
+    if (enable != temporary_)
+    {
+        temporary_ = enable;
+        emit TemporaryStateToggled(this);
+    }
 }
 
 QString Entity::ToString() const

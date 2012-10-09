@@ -370,6 +370,9 @@ signals:
     /// Signal when this entity is deleted
     void EntityRemoved(Entity* entity, AttributeChange::Type change);
 
+    /// Signal when this entity's temporary state has been toggled
+    void TemporaryStateToggled(Entity *);
+
     /// The entity has entered a camera's view. Triggered by the rendering subsystem.
     void EnterView(IComponent* camera);
 

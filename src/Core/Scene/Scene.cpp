@@ -358,12 +358,6 @@ void Scene::EmitComponentAcked(IComponent* comp, component_id_t oldId)
         emit ComponentAcked(comp, oldId);
 }
 
-void Scene::EmitEntityTemporaryStateToggled(Entity* entity)
-{
-    if (entity)
-        emit EntityTemporaryStateToggled(entity);
-}
-
 QVariantList Scene::GetEntityIdsWithComponent(const QString &typeName) const
 {
     LogWarning("Scene::GetEntityIdsWithComponent is deprecated and will be removed. Migrate to using EntitiesWithComponent instead.");

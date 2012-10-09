@@ -191,9 +191,6 @@ public:
     /// Emits a notification of a component creation acked by the server, and the component ID changing as a result. Called by SyncManager
     void EmitComponentAcked(IComponent* component, component_id_t oldId);
 
-    /// Emits a notification of an entity's temporary state toggled
-    void EmitEntityTemporaryStateToggled(Entity* entity);
-
 public slots:
     /// Creates new entity that contains the specified components.
     /** Entities should never be created directly, but instead created with this function.
