@@ -1397,39 +1397,18 @@ void Scene::OnUpdated(float frameTime)
     entitiesCreatedThisFrame_.clear();
 }
 
-EntityList Scene::FindEntities(const QString &pattern)
+EntityList Scene::FindEntities(const QString &pattern) const
 {
-    EntityList entities;
-    if (pattern.isEmpty())
-        return entities;
-    EntityMap::const_iterator it = entities_.begin();
-    QStringList patterns = pattern.split("*");
-
-    while(it != entities_.end())
-    {
-        EntityPtr entity = it->second;
-        if (patterns.length() < 2)
-        {
-            if (entity->Name().contains(pattern, Qt::CaseSensitive))
-                entities.push_back(entity);
-        }
-        else
-        {
-            if (entity->Name().startsWith(patterns.at(0)) && entity->Name().endsWith(patterns.at(1)))
-                entities.push_back(entity);
-        }
-
-        ++it;
-    }
-
-    return entities;
+    QRegExp regex = QRegExp(pattern, Qt::CaseSensitive, QRegExp::WildcardUnix);
+    return FindEntities(regex);
 }
 
-EntityList Scene::FindEntities(const QRegExp &pattern)
+EntityList Scene::FindEntities(const QRegExp &pattern) const
 {
     EntityList entities;
     if (pattern.isEmpty() || !pattern.isValid())
         return entities;
+
     EntityMap::const_iterator it = entities_.begin();
 
     while(it != entities_.end())
@@ -1437,6 +1416,26 @@ EntityList Scene::FindEntities(const QRegExp &pattern)
         EntityPtr entity = it->second;
 
         if (pattern.exactMatch(entity->Name()))
+            entities.push_back(entity);
+
+        ++it;
+    }
+
+    return entities;
+}
+
+EntityList Scene::FindEntitiesContaining(const QString &substring) const
+{
+    EntityList entities;
+    if (substring.isEmpty())
+        return entities;
+
+    EntityMap::const_iterator it = entities_.begin();
+
+    while(it != entities_.end())
+    {
+        EntityPtr entity = it->second;
+        if (entity->Name().contains(substring, Qt::CaseSensitive))
             entities.push_back(entity);
 
         ++it;

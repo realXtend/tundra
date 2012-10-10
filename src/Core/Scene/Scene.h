@@ -289,10 +289,15 @@ public slots:
         @note O(n) */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
-    /// Returns list of entities, whose names match the regular expression
-    /** @param pattern Pattern for the search*/
-    EntityList FindEntities(const QString &pattern);
-	EntityList FindEntities(const QRegExp &pattern);
+    /// Performs a regular expression matching through the entities, and returns a list of the matched entities
+    /** @param pattern Regular expression to be matched
+        @note Wildcards can be escaped with '\' character*/
+    EntityList FindEntities(const QRegExp &pattern) const;
+    EntityList FindEntities(const QString &pattern) const; /**< @overload @param pattern String pattern with wildcards*/
+
+    /// Performs a search through the entities, and returns a list of all the entities that contain 'substring' in their names
+    /** @param substring String to be searched*/
+    EntityList FindEntitiesContaining(const QString &substring) const;
 
     /// Returns all entities in the scene.
     EntityMap Entities() /*non-const intentionally*/ { return entities_; }
