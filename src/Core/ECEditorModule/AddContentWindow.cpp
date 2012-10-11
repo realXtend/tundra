@@ -145,6 +145,24 @@ const char *cAddContentDialogSetting = "AddContentDialog";
 
 } // ~unnamed namespace
 
+EntityAndAssetTreeWidget::EntityAndAssetTreeWidget(QWidget *parent) :
+    QTreeWidget(parent)
+{
+    setSelectionMode(QAbstractItemView::ExtendedSelection);
+}
+
+void EntityAndAssetTreeWidget::keyPressEvent(QKeyEvent *event)
+{
+    QTreeWidget::keyPressEvent(event);
+    switch (event->key())
+    {
+        case Qt::Key_Space:
+            QList<QTreeWidgetItem *> selected = selectedItems();
+            for (QList<QTreeWidgetItem *>::const_iterator i = selected.constBegin(); i != selected.constEnd(); ++i)
+                (*i)->setCheckState(0, (Qt::CheckState)(Qt::Checked - (*i)->checkState(0)));
+                }
+}
+
 AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
     framework(dest->GetFramework()),
@@ -189,7 +207,7 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     entityLabel->setFont(titleFont);
     entityLabel->setStyleSheet("color: rgb(63, 63, 63);");
 
-    entityTreeWidget = new QTreeWidget(this);
+    entityTreeWidget = new EntityAndAssetTreeWidget(this);
     entityTreeWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
     entityTreeWidget->setColumnCount(3);
     entityTreeWidget->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
@@ -229,7 +247,7 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     assetLabel->setFont(titleFont);
     assetLabel->setStyleSheet("color: rgb(63, 63, 63);");
 
-    assetTreeWidget = new QTreeWidget(this);
+    assetTreeWidget = new EntityAndAssetTreeWidget(this);
     assetTreeWidget->setColumnCount(5);
     QStringList labels;
     labels << tr("Upload") << tr("Type") << tr("Source name") << tr("Source subname") << tr("Destination name");
