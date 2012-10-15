@@ -47,7 +47,10 @@ EC_Camera::EC_Camera(Scene* scene) :
     static AttributeMetadata minZero;
     static bool metadataInitialized = false;
     if (!metadataInitialized)
+    {
         minZero.minimum = "0.0";
+        metadataInitialized = true;
+    }
     nearPlane.SetMetadata(&minZero);
 
     if (scene)
