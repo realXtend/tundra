@@ -307,17 +307,7 @@ void Client::GetCameraOrientation()
     Quat orientation = camera_placeable->WorldOrientation();
     float3 location = camera_placeable->WorldPosition();
 
-#if 0
-    ::LogError("Orientation x: "  + QString::number(orientation.x) +
-             " y: "             + QString::number(orientation.y) +
-             " z: "             + QString::number(orientation.z) +
-             " w: "             + QString::number(orientation.w) +
-             " Location: x: "   + QString::number(location.x) +
-             " y: "             + QString::number(location.y) +
-             " z: "             + QString::number(location.z));
-#endif
-
-    if(orientation == currentcameraorientation_ && location == currentcameralocation_)
+    if(orientation == currentcameraorientation_ && location.Equals(currentcameralocation_))
         return;
 
     else
@@ -331,8 +321,6 @@ void Client::GetCameraOrientation()
 void Client::SendCameraOrientation(Quat orientation, float3 location)
 {
     MsgCameraOrientation msg;
-
-    msg.userID = ConnectionId();
 
     msg.orientationx = orientation.x;
     msg.orientationy = orientation.y;
