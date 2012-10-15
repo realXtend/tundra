@@ -19,7 +19,7 @@ SceneSyncState::SceneSyncState(int userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
     changeRequest_(userConnectionID),
     isServer_(isServer),
-    orientationInitialized(false)
+    clientLocation(float3::nan)
 {
     Clear();
 }
