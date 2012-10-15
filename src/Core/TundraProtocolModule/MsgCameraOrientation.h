@@ -37,8 +37,6 @@ struct MsgCameraOrientation
         bool inOrder;
         u32 priority;
 
-        u8 userID;
-
         float orientationx;
         float orientationy;
         float orientationz;
@@ -51,12 +49,11 @@ struct MsgCameraOrientation
 
         inline size_t Size() const
         {
-            return 1 + 4 + 4 + 4 + 4 + 4 + 4 + 4;
+            return 4 + 4 + 4 + 4 + 4 + 4 + 4;
         }
 
         inline void SerializeTo(kNet::DataSerializer &dst) const
         {
-            dst.Add<u8>(userID);
             dst.Add<float>(orientationx);
             dst.Add<float>(orientationy);
             dst.Add<float>(orientationz);
@@ -68,7 +65,6 @@ struct MsgCameraOrientation
 
         inline void DeserializeFrom(kNet::DataDeserializer &src)
         {
-            userID = src.Read<u8>();
             orientationx = src.Read<float>();
             orientationy = src.Read<float>();
             orientationz = src.Read<float>();
