@@ -23,7 +23,7 @@
 #include "AssetAPI.h"
 #include "CoreException.h"
 #include "LoggingFunctions.h"
-#include "IMProperties.h"
+#include "InterestManager.h"
 
 #include "EC_Name.h"
 #include "EC_DynamicComponent.h"
@@ -221,29 +221,6 @@ void TundraLogicModule::Uninitialize()
     syncManager_.reset();
     client_.reset();
     server_.reset();
-}
-
-void TundraLogicModule::InterestManagerSettingsUpdated(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, double updateint, double raycastint)
-{
-    Scene *scene = framework_->Scene()->MainCameraScene();
-
-    if(scene == NULL)
-        return;
-
-    if(IsServer())
-    {
-        IMProperties *properties = GetSyncManager()->GetIMProperties();
-
-        properties->setEnabled(enabled);
-        properties->setEuclideanMode(eucl);
-        properties->setCriticalRange(critrange);
-        properties->setRaycastMode(ray);
-        properties->setRaycastRange(rayrange);
-        properties->setRelevanceMode(rel);
-        properties->setMaximumRange(relrange);
-        properties->setRaycastInterval((u32)raycastint * 1000000000);
-        properties->setUpdateInterval((u32)updateint * 1000000000);
-    }
 }
 
 void TundraLogicModule::Update(f64 frametime)
