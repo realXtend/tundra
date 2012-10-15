@@ -232,8 +232,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
             request.setRawHeader("If-Modified-Since", ToHttpDate(cacheLastModified));
         
         QNetworkReply *reply = networkAccessManager->get(request);
-
-        transfers[reply] = transfer;
+        transfers[QPointer<QNetworkReply>(reply)] = transfer;
     }
     return transfer;
 }
@@ -248,13 +247,14 @@ bool HttpAssetProvider::AbortTransfer(IAssetTransfer *transfer)
         AssetTransferPtr ongoingTransfer = iter->second;
         if (ongoingTransfer.get() == transfer)
         {
-            transfer->EmitAssetFailed("Transfer aborted.");
-            transfers.erase(iter);
-            
-            // Abort last as it will invoke a call to OnHttpTransferFinished.
-            if (iter->first)
-                iter->first->abort();
-            return true;
+            // QNetworkReply::abort() will invoke a call to OnHttpTransferFinished. There we continue to 
+            // call AssetAPI::AssetTransferAborted and remove the transfer from our map.
+            QPointer<QNetworkReply> reply = iter->first;
+            if (reply.data())
+            {    
+                reply->abort();
+                return true;
+            }
         }
     }
     return false;
@@ -378,17 +378,19 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     {
     case QNetworkAccessManager::GetOperation:
     {
-        // If the transfer is not in our transfers map it was aborted via AbortTransfer.
         TransferMap::iterator iter = transfers.find(reply);
         if (iter == transfers.end())
             return;
-
         HttpAssetTransferPtr transfer = iter->second;
-        assert(transfer);
         transfer->rawAssetData.clear();
 
-        // Check for errors
-        if (reply->error() == QNetworkReply::NoError)
+        // We have called abort() or close() on an ongoing transfer, for example in AbortTransfer.
+        if (reply->error() == QNetworkReply::OperationCanceledError)
+        {
+            framework->Asset()->AssetTransferAborted(transfer.get());
+        }
+        // No error, proceed
+        else if (reply->error() == QNetworkReply::NoError)
         {            
             AssetCache *cache = framework->Asset()->GetAssetCache();
             QString sourceRef = transfer->source.ref;

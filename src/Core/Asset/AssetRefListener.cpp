@@ -78,7 +78,6 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
 
 void AssetRefListener::OnTransferSucceeded(AssetPtr assetData)
 {
-    assert(assetData);
     if (!assetData)
         return;
     

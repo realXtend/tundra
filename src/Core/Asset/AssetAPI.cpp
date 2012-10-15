@@ -6,9 +6,11 @@
 #include "CoreDefines.h"
 #include "IAssetTransfer.h"
 #include "IAsset.h"
+#include "IAssetBundle.h"
 #include "IAssetStorage.h"
 #include "IAssetProvider.h"
 #include "IAssetTypeFactory.h"
+#include "IAssetBundleTypeFactory.h"
 #include "IAssetUploadTransfer.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
@@ -40,7 +42,7 @@ AssetAPI::AssetAPI(Framework *framework, bool headless) :
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
-    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
+    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary", "")));
 }
 
 AssetAPI::~AssetAPI()
@@ -356,7 +358,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
     // Parse subAssetName if it exists.
     QString subAssetName = "";
-    wregex expression4(L"(.*?)\\s*,\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
+    wregex expression4(L"(.*?)\\s*#\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
     if (regex_match(fullPath, what, expression4))
     {
         wstring assetRef = what[1].str();
@@ -391,9 +393,9 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
         if (!subAssetName.isEmpty())
         {
             if (subAssetName.contains(' '))
-                *outFullRef += ", \"" + subAssetName + "\"";
+                *outFullRef += "#\"" + subAssetName + "\"";
             else
-                *outFullRef += ", " + subAssetName;
+                *outFullRef += "#" + subAssetName;
         }
     }
 
@@ -624,14 +626,53 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, siz
 
 void AssetAPI::ForgetAllAssets()
 {
+    readyTransfers.clear();
+    readySubTransfers.clear();
+
+    // Note that this wont unload the individual sub asset, only the bundle. 
+    // Sub assets are unloaded from the assets map below.
+    while(assetBundles.size() > 0)
+    {
+        AssetBundleMap::iterator iter = assetBundles.begin();
+        if (iter != assetBundles.end())
+        {
+            AssetBundlePtr bundle = iter->second;
+            if (bundle.get())
+            {
+                bundle->Unload();
+                bundle.reset();
+            }
+            assetBundles.erase(iter);
+        }
+        else
+            break; 
+    }
+    assetBundles.clear();
+    bundleMonitors.clear();
+
+    // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
     while(assets.size() > 0)
-        ForgetAsset(assets.begin()->second, false); // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
+        ForgetAsset(assets.begin()->second, false);
     assets.clear();
-    
-    // We need to abort all current transfers, otherwise the transfers will call AssetTransferCompleted/Failed 
-    // that will in turn load the asset to memory even if no tracking transfer is found.
-    for(AssetTransferMap::const_iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
-        iter->second->Abort();
+   
+    // Abort all current transfers.
+    while (currentTransfers.size() > 0)
+    {
+        AssetTransferPtr abortTransfer = currentTransfers.begin()->second;
+        if (!abortTransfer.get())
+        {
+            currentTransfers.erase(currentTransfers.begin());
+            continue;
+        }
+        QString abortRef = abortTransfer->source.ref;
+        abortTransfer->Abort();
+        abortTransfer.reset();
+        
+        // Make sure the abort chain removed the transfer, otherwise we are in a infinite loop.
+        AssetTransferMap::iterator iter = currentTransfers.find(abortRef);
+        if (iter != currentTransfers.end())
+            currentTransfers.erase(iter);
+    }
     currentTransfers.clear();
 }
 
@@ -641,10 +682,14 @@ void AssetAPI::Reset()
     SAFE_DELETE(assetCache);
     SAFE_DELETE(diskSourceChangeWatcher);
     assets.clear();
+    assetBundles.clear();
+    bundleMonitors.clear();
     pendingDownloadRequests.clear();
     assetTypeFactories.clear();
+    assetBundleTypeFactories.clear();
     defaultStorage.reset();
     readyTransfers.clear();
+    readySubTransfers.clear();
     assetDependencies.clear();
     currentUploadTransfers.clear();
     currentTransfers.clear();
@@ -675,84 +720,174 @@ AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef) const
 
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, bool forceTransfer)
 {
+    // This is a function that handles all asset requests made to the Tundra asset system.
+    // Note that touching this function has many implications all around the complex asset load routines
+    // and its multiple steps. It is quite easy to introduce bugs and break subtle things by modifying this function.
+    // * You can request both direct asset references <ref> or asset references into bundles <ref>#subref.
+    // * This single function handles requests to not yet loaded assets and already loaded assets.
+    //   Here we also handle forced reloads from the source via the forceTransfer parameter if
+    //   the asset is already loaded to the system. This function also handles reloading existing
+    //   but at the moment unloaded assets.
+
     PROFILE(AssetAPI_RequestAsset);
-    // Turn named storage (and default storage) specifiers to absolute specifiers.
+
+    // Turn named storage and default storage specifiers to absolute specifiers.
     assetRef = ResolveAssetRef("", assetRef);
+    assetType = assetType.trimmed();
     if (assetRef.isEmpty())
         return AssetTransferPtr();
 
-    QString assetRefWithoutSubAsset;
-    assetType = assetType.trimmed();
-    QString assetFilename;
-    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &assetFilename, 0, 0, &assetRefWithoutSubAsset);
+    // Parse out full reference, main asset ref and sub asset ref.
+    QString fullAssetRef, subAssetPart, mainAssetPart;
+    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, &subAssetPart, &fullAssetRef, &mainAssetPart);
+    
+    // Detect if the requested asset is a sub asset. Replace the lookup ref with the parent bundle reference.
+    // Note that bundle handling has its own code paths as we need to load the bundle first before
+    // querying the sub asset(s) from it. Bundles cannot be implemented via IAsset, or could but
+    // the required hacks would be much worse than a bit more internal AssetAPI code.
+    //   1) If we have the sub asset already loaded we return a virtual transfer for it as normal.
+    //   2) If we don't have the sub asset but we have the bundle we request the data from the bundle.
+    //   3) If we don't have the bundle we request it. If that succeeds we go to 2), if not we fail the sub asset transfer.
+    /// @todo Live reloading on disk source changes is not implemented for bundles. Implement if there seems to be need for it. 
+    bool isSubAsset = !subAssetPart.isEmpty();
+    if (isSubAsset) 
+        assetRef = mainAssetPart;
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
-    // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
-    // an asset will be stored in the AssetMap when it has been downloaded, but it might not yet have all its dependencies loaded).
-    AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
-    if (iter != currentTransfers.end())
+    // have multiple transfers running to the same asset. Important: This must occur before checking the assets map for whether we already have the asset in memory, since
+    // an asset will be stored in the AssetMap when it has been downloaded, but it might not yet have all its dependencies loaded.
+    AssetTransferMap::iterator ongoingTransferIter = currentTransfers.find(assetRef);
+    if (ongoingTransferIter != currentTransfers.end())
     {
-        AssetTransferPtr transfer = iter->second;
-
-        // If forceTransfer is on, but the transfer is virtual, log error. This case can not be currently handled properly
+        AssetTransferPtr transfer = ongoingTransferIter->second;
         if (forceTransfer && dynamic_cast<VirtualAssetTransfer*>(transfer.get()))
         {
+            // If forceTransfer is on, but the transfer is virtual, log error. This case can not be currently handled properly.
             LogError("AssetAPI::RequestAsset: Received forceTransfer for asset " + assetRef + " while a virtual transfer is already going on");
             return transfer;
         }
 
+        // If this is a sub asset ref to a bundle, we just found the bundle transfer with assetRef. 
+        // We need to add this sub asset transfer to the bundles monitor. We return the virtual transfer that
+        // will get loaded once the bundle is loaded.
+        AssetBundleMonitorMap::iterator bundleMonitorIter = bundleMonitors.find(assetRef);
+        if (bundleMonitorIter != bundleMonitors.end())
+        {
+            AssetBundleMonitorPtr assetBundleMonitor = (*bundleMonitorIter).second;
+            if (assetBundleMonitor)
+            {
+                AssetTransferPtr subTransfer = assetBundleMonitor->SubAssetTransfer(fullAssetRef);
+                if (!subTransfer.get())
+                {
+                    subTransfer = AssetTransferPtr(new VirtualAssetTransfer());
+                    subTransfer->source.ref = fullAssetRef;
+                    subTransfer->assetType = GetResourceTypeFromAssetRef(subTransfer->source.ref);
+                    subTransfer->provider = transfer->provider;
+                    subTransfer->storage = transfer->storage;
+
+                    assetBundleMonitor->AddSubAssetTransfer(subTransfer);
+                }
+                return subTransfer;
+            }
+        }
+
         if (assetType.isEmpty())
-            assetType = GetResourceTypeFromAssetRef(assetRefWithoutSubAsset);
-
-        // Check that the requested types were the same. Don't know what to do if they differ, so only print a warning if so.
+            assetType = GetResourceTypeFromAssetRef(mainAssetPart);
         if (!assetType.isEmpty() && !transfer->assetType.isEmpty() && assetType != transfer->assetType)
-            LogWarning("AssetAPI::RequestAsset: Asset \"" + assetRef + "\" first requested by type " + transfer->assetType + 
-            ", but now requested by type " + assetType + ".");
-
+        {
+            // Check that the requested types were the same. Don't know what to do if they differ, so only print a warning if so.
+            LogWarning("AssetAPI::RequestAsset: Asset \"" + assetRef + "\" first requested by type " + 
+                transfer->assetType + ", but now requested by type " + assetType + ".");
+        }
+        
         return transfer;
     }
 
     // Check if we've already downloaded this asset before and it already is loaded in the system. We never reload an asset we've downloaded before, 
     // unless the client explicitly forces so, or if we get a change notification signal from the source asset provider telling the asset was changed.
-    AssetMap::iterator iter2 = assets.find(assetRef);
-    AssetPtr existing;
-    if (iter2 != assets.end())
+    // Note that we are using fullRef here as it has the complete sub asset ref also in it. If this is a sub asset request the assetRef has already been modified.
+    AssetPtr existingAsset;
+    AssetMap::iterator existingAssetIter = assets.find(fullAssetRef);
+    if (existingAssetIter != assets.end())
     {
-        existing = iter2->second;
-        if (!assetType.isEmpty() && assetType != existing->Type())
-            LogWarning("AssetAPI::RequestAsset: Tried to request asset \"" + assetRef + "\" by type \"" + assetType + "\". Asset by that name exists, but it is of type \"" + existing->Type() + "\"!");
-        assetType = existing->Type();
+        existingAsset = existingAssetIter->second;
+        if (!assetType.isEmpty() && assetType != existingAsset->Type())
+            LogWarning("AssetAPI::RequestAsset: Tried to request asset \"" + assetRef + "\" by type \"" + assetType + "\". Asset by that name exists, but it is of type \"" + existingAsset->Type() + "\"!");
+        assetType = existingAsset->Type();
     }
     else
     {
+        // If this is a sub asset we must set the type from the parent bundle.
         if (assetType.isEmpty())
-            assetType = GetResourceTypeFromAssetRef(assetRefWithoutSubAsset);
+            assetType = GetResourceTypeFromAssetRef(mainAssetPart);
+
+        // Null factories are used for not loading particular assets.
+        // Having this option we can return a null transfer here to not
+        // get lots of error logging eg. on a headless Tundra for UI assets.
         if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(assetType).get()))
             return AssetTransferPtr();
     }
     
-    ///\todo Evaluate whether existing->IsLoaded() should rather be existing->IsEmpty().
-    if (existing && existing->IsLoaded() && !forceTransfer)
+    // Whenever the client requests an asset that was loaded before, we create a request for that asset nevertheless.
+    // The idea is to have the code path run the same independent of whether the asset existed or had to be downloaded, i.e.
+    // a request is always made, and the receiver writes only a single asynchronous code path for handling the asset.
+    /// @todo Evaluate whether existing->IsLoaded() should rather be existing->IsEmpty().
+    if (existingAsset && existingAsset->IsLoaded() && !forceTransfer)
     {
-        // Whenever the client requests an asset that was loaded before, we create a request for that asset nevertheless.
-        // The idea is to have the code path run the same independent of whether the asset existed or had to be downloaded, i.e.
-        // a request is always made, and the receiver writes only a single asynchronous code path for handling the asset.
-
-        // The asset was already downloaded. Generate a 'virtual asset transfer' and return it to the client.
+        // The asset was already downloaded. Generate a 'virtual asset transfer' 
+        // and return it to the client. Fill in the valid existing asset ptr to the transfer.
         AssetTransferPtr transfer = AssetTransferPtr(new VirtualAssetTransfer());
-        transfer->asset = existing; // For 'normal' requests, the asset ptr is zero, but for these virtual requests, we can already fill the asset here.
+        transfer->asset = existingAsset;
         transfer->source.ref = assetRef;
         transfer->assetType = assetType;
         transfer->provider = transfer->asset->GetAssetProvider();
         transfer->storage = transfer->asset->GetAssetStorage();
         transfer->diskSourceType = transfer->asset->DiskSourceType();
         
-        readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
+        // There is no asset provider processing this 'transfer' that would "push" the AssetTransferCompleted call. 
+        // We have to remember to do it ourselves via readyTransfers list in Update().
+        readyTransfers.push_back(transfer); 
         return transfer;
+    }    
+
+    // If this is a sub asset request check if its parent bundle is already available.
+    // If it is load/reload the asset data to the transfer and use the readyTransfers
+    // list to do the AssetTransferCompleted callback on the next frame.
+    if (isSubAsset)
+    {
+        // Check if sub asset transfer is ongoing, meaning we already have been below and its still being processed.
+        AssetTransferMap::iterator ongoingSubAssetTransferIter = currentTransfers.find(fullAssetRef);
+        if (ongoingSubAssetTransferIter != currentTransfers.end())
+            return ongoingSubAssetTransferIter->second;
+        
+        // Create a new transfer and load the asset from the bundle to it
+        AssetBundleMap::iterator bundleIter = assetBundles.find(assetRef);
+        if (bundleIter != assetBundles.end())
+        {
+            // Return existing loader transfer
+            for(size_t i = 0; i < readySubTransfers.size(); ++i)
+            {
+                AssetTransferPtr subTransfer = readySubTransfers[i].subAssetTransfer;
+                if (subTransfer.get() && subTransfer->source.ref.compare(fullAssetRef, Qt::CaseSensitive) == 0)
+                    return subTransfer;
+            }
+            // Create a loader for this sub asset.
+            AssetTransferPtr transfer = AssetTransferPtr(new VirtualAssetTransfer());
+            transfer->asset = existingAsset;
+            transfer->source.ref = fullAssetRef;
+            readySubTransfers.push_back(SubAssetLoader(assetRef, transfer));
+            return transfer;
+        }
+        else
+        {
+            // For a sub asset the parent bundle needs to 
+            // be requested by its proper asset type.
+            assetType = GetResourceTypeFromAssetRef(mainAssetPart);
+        }
     }
 
-    // See if there is an asset upload that should block this download. If the same asset is being uploaded and downloaded simultaneously, make the download
-    // wait until the upload completes.
+    // See if there is an asset upload that should block this download. If the same asset is being
+    // uploaded and downloaded simultaneously, make the download wait until the upload completes.
     if (currentUploadTransfers.find(assetRef) != currentUploadTransfers.end())
     {
         LogDebug("The download of asset \"" + assetRef + "\" needs to wait, since the same asset is being uploaded at the moment.");
@@ -762,10 +897,12 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         pendingRequest.transfer = AssetTransferPtr(new IAssetTransfer);
 
         pendingDownloadRequests[assetRef] = pendingRequest;
-        return pendingRequest.transfer; ///\bug Problem. When we return this structure, the client will connect to this.
+
+        /// @bug Problem. When we return this structure, the client will connect to this.
+        return pendingRequest.transfer; 
     }
 
-    // Find the AssetProvider that will fulfill this request.
+    // Find the asset provider that will fulfill this request.
     AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
     if (!provider)
     {
@@ -773,22 +910,67 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         return AssetTransferPtr();
     }
 
-    // Perform the actual request.
+    // Perform the actual request from the provider.
     AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
-
     if (!transfer)
     {
         LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef + "\", type: \"" + assetType + "\"");
         return AssetTransferPtr();
     }
-    transfer->provider = provider;
-    transfer->asset = existing; // Fill the asset if it exists in the system
 
-    // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
-    // so we'll avoid multiple downloads to the exact same asset.
-    assert(currentTransfers.find(assetRef) == currentTransfers.end());
+    // Note that existingAsset can be a valid loaded asset at this point. In this case
+    // we can only be this far in this function if forceTransfer is true. This makes the 
+    // upcoming download and load process will reload the asset data instead of creating a new asset.
+    transfer->asset = existingAsset;
+    transfer->provider = provider;
+
+    // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset 
+    // will return the same request pointer, so we'll avoid multiple downloads to the exact same asset.
     currentTransfers[assetRef] = transfer;
-    return transfer;
+
+    // Request for a direct asset reference.
+    if (!isSubAsset)
+        return transfer;
+    // Request for a sub asset in a bundle. 
+    else
+    {       
+        // AssetBundleMonitor is for tracking object for this bundle and all pending sub asset transfers.
+        // It will connect to the asset transfer and create the bundle on download succeeded or handle it failing
+        // by notifying all the child transfer failed.
+        AssetBundleMonitorPtr bundleMonitor;
+        AssetBundleMonitorMap::iterator bundleMonitorIter = bundleMonitors.find(assetRef);
+        if (bundleMonitorIter != bundleMonitors.end())
+        {
+            // Add the sub asset to an existing bundle monitor.
+            bundleMonitor = (*bundleMonitorIter).second;
+        }
+        else
+        {
+            // Create new bundle monitor.
+            bundleMonitor = AssetBundleMonitorPtr(new AssetBundleMonitor(this, transfer));
+            bundleMonitors[assetRef] = bundleMonitor;
+        }
+        if (!bundleMonitor.get())
+        {
+            LogError("AssetAPI::RequestAsset: Failed to get or create asset bundle: " + assetRef);
+            return AssetTransferPtr();
+        }
+        
+        AssetTransferPtr subTransfer = bundleMonitor->SubAssetTransfer(fullAssetRef);
+        if (!subTransfer.get())
+        {
+            // In this case we return a virtual transfer for the sub asset.
+            // This transfer will be loaded once the bundle can provide the content.
+            subTransfer = AssetTransferPtr(new VirtualAssetTransfer());
+            subTransfer->source.ref = fullAssetRef;
+            subTransfer->assetType = GetResourceTypeFromAssetRef(subTransfer->source.ref);
+            subTransfer->provider = transfer->provider;
+            subTransfer->storage = transfer->storage;
+            
+            bundleMonitor->AddSubAssetTransfer(subTransfer);
+        }
+        return subTransfer;
+    }
 }
 
 AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref, bool forceTransfer)
@@ -850,6 +1032,7 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef) const
     QString fullRef;
     AssetRefType assetRefType = ParseAssetRef(assetRef, 0, &namedStorage, 0, &assetPath, 0, 0, 0, 0, &fullRef);
     assetRef = fullRef; // The first thing we do is normalize the form of the ref. This means e.g. adding 'http://' in front of refs that look like 'www.server.com/'.
+    
     switch(assetRefType)
     {
     case AssetRefLocalPath: // Absolute path like "C:\myassets\texture.png".
@@ -871,17 +1054,31 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef) const
                 QString contextPath;
                 QString contextNamedStorage;
                 QString contextProtocolSpecifier;
-                AssetRefType contextRefType = ParseAssetRef(context, &contextProtocolSpecifier, &contextNamedStorage, 0, 0, 0, &contextPath);
+                QString contextSubAssetPart;
+                QString contextMainPart;
+                AssetRefType contextRefType = ParseAssetRef(context, &contextProtocolSpecifier, &contextNamedStorage, 0, 0, 0, &contextPath, 0, &contextSubAssetPart, 0, &contextMainPart);
                 if (contextRefType == AssetRefRelativePath || contextRefType == AssetRefInvalid)
                 {
                     LogError("Asset ref context \"" + contextPath + "\" is a relative path and cannot be used as a context for lookup for ref \"" + assetRef + "\"!");
                     return assetRef; // Return at least something.
                 }
+                
+                // Context is a asset bundle sub asset
+                if (!contextSubAssetPart.isEmpty())
+                {
+                    // Context: bundle#subfolder/subasset -> bundle#subfolder/<assetPath>
+                    if (contextSubAssetPart.contains("/"))
+                        return contextMainPart + "#" + contextSubAssetPart.left(contextSubAssetPart.lastIndexOf("/")+1) + assetPath;
+                    // Context: bundle#subasset -> bundle#<assetPath>
+                    else
+                        return contextMainPart + "#" + assetPath;
+                }
+                
                 QString newAssetRef;
                 if (!contextNamedStorage.isEmpty())
-                    newAssetRef += contextNamedStorage + ":";
+                    newAssetRef = contextNamedStorage + ":";
                 else if (!contextProtocolSpecifier.isEmpty())
-                    newAssetRef += contextProtocolSpecifier + "://";
+                    newAssetRef = contextProtocolSpecifier + "://";
                 newAssetRef += QDir::cleanPath(contextPath + assetPath);
                 return newAssetRef;
             }
@@ -916,8 +1113,20 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
     }
 
     assert(factory->Type() == factory->Type().trimmed());
-
     assetTypeFactories.push_back(factory);
+}
+
+void AssetAPI::RegisterAssetBundleTypeFactory(AssetBundleTypeFactoryPtr factory)
+{
+    AssetBundleTypeFactoryPtr existingFactory = GetAssetBundleTypeFactory(factory->Type());
+    if (existingFactory)
+    {
+        LogWarning("AssetAPI::RegisterAssetBundleTypeFactory: Factory with type '" + factory->Type() + "' already registered.");
+        return;
+    }
+
+    assert(factory->Type() == factory->Type().trimmed());
+    assetBundleTypeFactories.push_back(factory);
 }
 
 QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix) const
@@ -1028,6 +1237,134 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     return asset;
 }
 
+AssetBundlePtr AssetAPI::CreateNewAssetBundle(QString type, QString name)
+{
+    PROFILE(AssetAPI_CreateNewAssetBundle);
+    type = type.trimmed();
+    name = name.trimmed();
+    if (name.length() == 0)
+    {
+        LogError("AssetAPI:CreateNewAssetBundle: Trying to create an asset with name=\"\"!");
+        return AssetBundlePtr();
+    }
+
+    AssetBundleTypeFactoryPtr factory = GetAssetBundleTypeFactory(type);
+    if (!factory)
+    {
+        // This spams too much with the server giving us storages, debug should be fine for things we don't have a factory.
+        LogError("AssetAPI:CreateNewAssetBundle: Cannot create asset of type \"" + type + "\", name: \"" + name + "\". No type factory registered for the type!");
+        return AssetBundlePtr();
+    }
+    AssetBundlePtr assetBundle = factory->CreateEmptyAssetBundle(this, name);
+    if (!assetBundle)
+    {
+        LogError("AssetAPI:CreateNewAssetBundle: IAssetTypeFactory::CreateEmptyAsset(type \"" + type + "\", name: \"" + name + "\") failed to create asset!");
+        return AssetBundlePtr();
+    }
+
+    // Remember this asset bundle in the global AssetAPI storage.
+    assetBundles[name] = assetBundle;
+    return assetBundle;
+}
+
+bool AssetAPI::LoadSubAssetToTransfer(AssetTransferPtr transfer, const QString &bundleRef, const QString &fullSubAssetRef, QString subAssetType)
+{
+    if (!transfer)
+    {
+        LogError("LoadSubAssetToTransfer: Transfer is null, cannot continue to load '" + fullSubAssetRef + "'.");
+        return false;
+    }
+
+    AssetBundleMap::iterator bundleIter = assetBundles.find(bundleRef);
+    if (bundleIter != assetBundles.end())
+        return LoadSubAssetToTransfer(transfer, (*bundleIter).second.get(), fullSubAssetRef, subAssetType);
+    else
+    {
+        LogError("LoadSubAssetToTransfer: Asset bundle '" + bundleRef + "' not loaded, cannot continue to load '" + fullSubAssetRef + "'.");
+        return false;
+    }
+}
+
+bool AssetAPI::LoadSubAssetToTransfer(AssetTransferPtr transfer, IAssetBundle *bundle, const QString &fullSubAssetRef, QString subAssetType)
+{
+    if (!transfer)
+    {
+        LogError("LoadSubAssetToTransfer: Transfer is null, cannot continue to load '" + fullSubAssetRef + "'.");
+        return false;
+    }
+    if (!bundle)
+    {
+        LogError("LoadSubAssetToTransfer: Source AssetBundle is null, cannot continue to load '" + fullSubAssetRef + "'.");
+        return false;
+    }
+
+    QString subAssetRef;
+    if (subAssetType.isEmpty())
+        subAssetType = GetResourceTypeFromAssetRef(fullSubAssetRef);
+    ParseAssetRef(fullSubAssetRef, 0, 0, 0, 0, 0, 0, 0, &subAssetRef);
+    
+    transfer->source.ref = fullSubAssetRef;
+    transfer->source.type = subAssetType;
+    transfer->assetType = subAssetType;
+
+    // Avoid data shuffling if disk source is valid. IAsset loading can 
+    // manage with one of these, it does not need them both.
+    std::vector<u8> subAssetData;
+    QString subAssetDiskSource = bundle->GetSubAssetDiskSource(subAssetRef);
+    if (subAssetDiskSource.isEmpty()) 
+    {
+        subAssetData = bundle->GetSubAssetData(subAssetRef);
+        if (subAssetData.size() == 0)
+        {
+            QString error("AssetAPI: Failed to load sub asset '" + fullSubAssetRef + " from bundle '" + bundle->Name() + "': Sub asset does not exist.");
+            LogError(error);
+            transfer->EmitAssetFailed(error);
+            return false;
+        }
+    }
+
+    if (!transfer->asset)
+        transfer->asset = CreateNewAsset(subAssetType, fullSubAssetRef);
+    if (!transfer->asset)
+    {
+        QString error("AssetAPI: Failed to create new sub asset of type \"" + subAssetType + "\" and name \"" + fullSubAssetRef + "\"");
+        LogError(error);
+        transfer->EmitAssetFailed(error);
+        return false;
+    }
+    
+    transfer->asset->SetDiskSource(subAssetDiskSource);
+    transfer->asset->SetDiskSourceType(IAsset::Bundle);
+    transfer->asset->SetAssetStorage(transfer->storage.lock());
+    transfer->asset->SetAssetProvider(transfer->provider.lock());
+
+    // Add the sub asset transfer to the current transfers map now.
+    // This will ensure that the rest of the loading procedure will continue
+    // like it normally does in AssetAPI and the requesting parties don't have to
+    // know about how asset bundles are packed or request them before the sub asset in any way.
+    currentTransfers[fullSubAssetRef] = transfer;
+
+    // Connect to Loaded() signal of the asset to be able to notify any dependent assets
+    connect(transfer->asset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+
+    // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
+    transfer->EmitAssetDownloaded();
+
+    bool success = false;
+    if (subAssetData.size() > 0)
+        success = transfer->asset->LoadFromFileInMemory(&subAssetData[0], subAssetData.size());
+    else if (!transfer->asset->DiskSource().isEmpty())
+        success = transfer->asset->LoadFromFile(subAssetDiskSource);
+
+    // If the load from either of in memory data or file data failed, update the internal state.
+    // Otherwise the transfer will be left dangling in currentTransfers. For successful loads
+    // we do no need to call AssetLoadCompleted because success can mean asynchronous loading,
+    // in which case the call will arrive once the asynchronous loading is completed.
+    if (!success)
+        AssetLoadFailed(fullSubAssetRef);
+    return success;
+}
+
 AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName) const
 {
     PROFILE(AssetAPI_GetAssetTypeFactory);
@@ -1036,6 +1373,16 @@ AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName) const
             return assetTypeFactories[i];
 
     return AssetTypeFactoryPtr();
+}
+
+AssetBundleTypeFactoryPtr AssetAPI::GetAssetBundleTypeFactory(QString typeName) const
+{
+    PROFILE(AssetAPI_GetAssetBundleTypeFactory);
+    for(size_t i = 0; i < assetBundleTypeFactories.size(); ++i)
+        if (assetBundleTypeFactories[i]->Type().toLower() == typeName.toLower())
+            return assetBundleTypeFactories[i];
+
+    return AssetBundleTypeFactoryPtr();
 }
 
 AssetPtr AssetAPI::GetAsset(QString assetRef) const
@@ -1061,16 +1408,35 @@ void AssetAPI::Update(f64 frametime)
     for(size_t i = 0; i < providers.size(); ++i)
         providers[i]->Update(frametime);
 
-    // Normally it is the AssetProvider's responsibility to call AssetTransferCompleted when a download finishes.
-    // The 'readyTransfers' list contains all the asset transfers that don't have any AssetProvider serving them. These occur in two cases:
-    // 1) A client requested an asset that was already loaded. In that case the request is not given to any assetprovider, but delayed in readyTransfers
-    //    for one frame after which we just signal the asset to have been loaded.
-    // 2) We found the asset from disk cache. No need to ask an assetprovider
+    // Proceed with ready transfers.
+    if (readyTransfers.size() > 0)
+    {
+        // Normally it is the AssetProvider's responsibility to call AssetTransferCompleted when a download finishes.
+        // The 'readyTransfers' list contains all the asset transfers that don't have any AssetProvider serving them. These occur in two cases:
+        // 1) A client requested an asset that was already loaded. In that case the request is not given to any assetprovider, but delayed in readyTransfers
+        //    for one frame after which we just signal the asset to have been loaded.
+        // 2) We found the asset from disk cache. No need to ask an assetprovider
 
-    // Call AssetTransferCompleted manually for any asset that doesn't have an AssetProvider serving it. ("virtual transfers").
-    for(size_t i = 0; i < readyTransfers.size(); ++i)
-        AssetTransferCompleted(readyTransfers[i].get());
-    readyTransfers.clear();
+        // Call AssetTransferCompleted manually for any asset that doesn't have an AssetProvider serving it. ("virtual transfers").
+        for(size_t i = 0; i < readyTransfers.size(); ++i)
+            AssetTransferCompleted(readyTransfers[i].get());
+        readyTransfers.clear();
+    }
+    
+    // Proceed with ready sub asset transfers.
+    if (readySubTransfers.size() > 0)
+    {
+        // readySubTransfers contains sub asset transfers to loaded bundles. The sub asset loading cannot be completed in RequestAsset
+        // as it would trigger signals before the calling code can receive and hook to the AssetTransfer. We delay calling LoadSubAssetToTransfer
+        // into this function so that all is hooked and loading can be done normally. This is very similar to the above case for readyTransfers.
+        for(size_t i = 0; i < readySubTransfers.size(); ++i)
+        {
+            AssetTransferPtr subTransfer = readySubTransfers[i].subAssetTransfer;
+            LoadSubAssetToTransfer(subTransfer, readySubTransfers[i].parentBundleRef, subTransfer->source.ref);
+            subTransfer.reset();
+        }
+        readySubTransfers.clear();
+    }
 }
 
 QString GuaranteeTrailingSlash(const QString &source)
@@ -1174,60 +1540,116 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     }
 
     // We should be tracking this transfer in an internal data structure.
-    AssetTransferMap::const_iterator iter = FindTransferIterator(transfer_);
+    AssetTransferMap::iterator iter = FindTransferIterator(transfer_);
     if (iter == currentTransfers.end())
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
-    // We've finished an asset data download, now create an actual instance of an asset of that type if it did not exist already
-    if (!transfer->asset)
-        transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
-    if (!transfer->asset)
+    // Transfer is for an asset bundle.
+    AssetBundleMonitorMap::iterator bundleIter = bundleMonitors.find(transfer->source.ref);
+    if (bundleIter != bundleMonitors.end())
     {
-        QString error("AssetAPI: Failed to create new asset of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\"");
-        LogError(error);
-        transfer->EmitAssetFailed(error);
-        return;
+        AssetBundlePtr assetBundle = CreateNewAssetBundle(transfer->assetType, transfer->source.ref);
+        if (assetBundle)
+        {
+            // Hook to the success and fail signals. They can either be emitted when we load the asset below or after asynch loading.
+            connect(assetBundle.get(), SIGNAL(Loaded(IAssetBundle*)), this, SLOT(AssetBundleLoadCompleted(IAssetBundle*)), Qt::UniqueConnection);
+            connect(assetBundle.get(), SIGNAL(Failed(IAssetBundle*)), this, SLOT(AssetBundleLoadFailed(IAssetBundle*)), Qt::UniqueConnection);
+
+            // Cache the bundle.
+            QString bundleDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
+            if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0 && assetCache)
+                bundleDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
+            assetBundle->SetDiskSource(bundleDiskSource);
+
+            // The bundle has now been downloaded and cached (if allowed by policy).
+            transfer->EmitAssetDownloaded();
+
+            // Load the bundle assets from the transfer data or cache.
+            // 1) Try to load from above disk source.
+            // 2) If disk source deserialization fails, try in memory loading if bundle allows it with RequiresDiskSource.
+            // Note: Be careful not to use bundleIter after DeserializeFromDiskSource is called, as it can righ away emit
+            // Loaded and we end up to AssetBundleLoadCompleted that will remove this bundleIter from bundleMonitors map.
+            bool success = assetBundle->DeserializeFromDiskSource();
+            if (!success && !assetBundle->RequiresDiskSource())
+            {
+                const u8 *bundleData = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
+                if (bundleData)
+                    success = assetBundle->DeserializeFromData(bundleData, transfer->rawAssetData.size());
+            }
+
+            // If all of the above returned false, this means asset could not be loaded.
+            // Call AssetLoadFailed for the bundle to propagate this information to the waiting sub asset transfers. 
+            // Propagating will be done automatically in the AssetBundleMonitor when the bundle fails.
+            if (!success)
+                AssetLoadFailed(transfer->asset->Name());
+        }
+        else
+        {
+            // Note that this is monitored by the AssetBundleMonitor and it fail all sub asset transfers at that point.
+            // These child transfers are not in the currentTransfers map so we don't have to do cleanup there.
+            QString error("AssetAPI: Failed to create new asset bundle of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\"");
+            LogError(error);
+            transfer->EmitAssetFailed(error);
+            
+            // Cleanup
+            currentTransfers.erase(iter);
+            bundleMonitors.erase(bundleIter);
+            return;
+        }
     }
-
-    // Connect to Loaded() signal of the asset to be able to notify any dependent assets
-    connect(transfer->asset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)), Qt::UniqueConnection);
-
-    // Save this asset to cache, and find out which file will represent a cached version of this asset.
-    QString assetDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
-    if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0 && assetCache)
-        assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
-
-    // If disksource is still empty, forcibly look up if the asset exists in the cache now.
-    if (assetDiskSource.isEmpty() && assetCache)
-        assetDiskSource = assetCache->FindInCache(transfer->source.ref);
-    
-    // Save for the asset the storage and provider it came from.
-    transfer->asset->SetDiskSource(assetDiskSource.trimmed());
-    transfer->asset->SetDiskSourceType(transfer->diskSourceType);
-    transfer->asset->SetAssetStorage(transfer->storage.lock());
-    transfer->asset->SetAssetProvider(transfer->provider.lock());
-
-    // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
-    transfer->EmitAssetDownloaded();
-
-    bool success = false;
-    const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
-    if (data)
-        success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
+    // Transfer is for a normal asset.
     else
-        success = transfer->asset->LoadFromFile(transfer->asset->DiskSource());
+    {
+        // We've finished an asset data download, now create an actual instance of an asset of that type if it did not exist already
+        if (!transfer->asset)
+            transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
+        if (!transfer->asset)
+        {
+            QString error("AssetAPI: Failed to create new asset of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\"");
+            LogError(error);
+            transfer->EmitAssetFailed(error);
+            return;
+        }
 
-    // If the load from either of in memory data or file data failed, update the internal state.
-    // Otherwise the transfer will be left dangling in currentTransfers. For successful loads
-    // we do no need to call AssetLoadCompleted because success can mean asynchronous loading,
-    // in which case the call will arrive once the asynchronous loading is completed.
-    if (!success)
-        AssetLoadFailed(transfer->asset->Name());
+        // Connect to Loaded() signal of the asset to be able to notify any dependent assets
+        connect(transfer->asset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+
+        // Save this asset to cache, and find out which file will represent a cached version of this asset.
+        QString assetDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
+        if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0 && assetCache)
+            assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
+
+        // If disksource is still empty, forcibly look up if the asset exists in the cache now.
+        if (assetDiskSource.isEmpty() && assetCache)
+            assetDiskSource = assetCache->FindInCache(transfer->source.ref);
+        
+        // Save for the asset the storage and provider it came from.
+        transfer->asset->SetDiskSource(assetDiskSource.trimmed());
+        transfer->asset->SetDiskSourceType(transfer->diskSourceType);
+        transfer->asset->SetAssetStorage(transfer->storage.lock());
+        transfer->asset->SetAssetProvider(transfer->provider.lock());
+
+        // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
+        transfer->EmitAssetDownloaded();
+
+        bool success = false;
+        const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
+        if (data)
+            success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
+        else
+            success = transfer->asset->LoadFromFile(transfer->asset->DiskSource());
+
+        // If the load from either of in memory data or file data failed, update the internal state.
+        // Otherwise the transfer will be left dangling in currentTransfers. For successful loads
+        // we do no need to call AssetLoadCompleted because success can mean asynchronous loading,
+        // in which case the call will arrive once the asynchronous loading is completed.
+        if (!success)
+            AssetLoadFailed(transfer->asset->Name());
+    }
 }
 
 void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 {
-    assert(transfer);
     if (!transfer)
         return;
         
@@ -1252,6 +1674,31 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
             QString failReason = "Transfer of dependency " + transfer->source.ref + " failed due to reason: \"" + reason + "\"";
             AssetTransferFailed(dependentTransfer.get(), failReason);
         }
+    }
+
+    pendingDownloadRequests.erase(transfer->source.ref);
+    if (iter != currentTransfers.end())
+        currentTransfers.erase(iter);
+}
+
+void AssetAPI::AssetTransferAborted(IAssetTransfer *transfer)
+{
+    if (!transfer)
+        return;
+        
+    // Don't log any errors for aborter transfers. This is unwanted spam when we disconnect 
+    // from a server and have x amount of pending transfers that get aborter.
+    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    
+    transfer->EmitAssetFailed("Transfer aborted.");   
+
+    // Propagate the failure of this asset transfer to all assets which depend on this asset.
+    std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
+    for(size_t i = 0; i < dependents.size(); ++i)
+    {
+        AssetTransferPtr dependentTransfer = GetPendingTransfer(dependents[i]->Name());
+        if (dependentTransfer)
+            AssetTransferAborted(dependentTransfer.get());
     }
 
     pendingDownloadRequests.erase(transfer->source.ref);
@@ -1315,8 +1762,9 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
         // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
         RequestAssetDependencies(asset);
 
-        // If we don't have any outstanding dependencies 
-        // for the transfer, succeed and remove the transfer
+        // If we don't have any outstanding dependencies for the transfer, succeed and remove the transfer.
+        // Find the iter again as AssetDependenciesCompleted can be called from OnAssetLoaded for synchronous (eg. local://) loads.
+        iter = FindTransferIterator(assetRef);
         if (iter != currentTransfers.end() && !HasPendingDependencies(asset))
             AssetDependenciesCompleted(iter->second);
     }
@@ -1336,9 +1784,48 @@ void AssetAPI::AssetLoadFailed(const QString assetRef)
         currentTransfers.erase(iter);
     }
     else if (iter2 != assets.end())
-        LogError("AssetAPI: Failed to reload asset '" + iter2->second->Name());
+        LogError("AssetAPI: Failed to reload asset '" + iter2->second->Name() + "'");
     else
-        LogError("AssetAPI: Asset \"" + assetRef + "\" load failed, but no corresponding transfer or existing asset is being tracked!");
+        LogError("AssetAPI: Asset '" + assetRef + "' load failed, but no corresponding transfer or existing asset is being tracked!");
+}
+
+void AssetAPI::AssetBundleLoadCompleted(IAssetBundle *bundle)
+{
+    LogDebug("Asset bundle load completed: " + bundle->Name());
+    
+    // First erase the transfer as the below sub asset loading can trigger new
+    // dependency asset requests to the bundle. In this case we want to load them from the
+    // completed asset bundle not add them to the monitors queue.
+    AssetTransferMap::iterator bundleTransferIter = FindTransferIterator(bundle->Name());
+    if (bundleTransferIter != currentTransfers.end())
+        currentTransfers.erase(bundleTransferIter);
+    else
+        LogWarning("AssetAPI: Asset bundle load completed, but transfer was not tracked: " + bundle->Name());
+    
+    AssetBundleMonitorMap::iterator monitorIter = bundleMonitors.find(bundle->Name());
+    if (monitorIter != bundleMonitors.end())
+    {
+        // We have no need for the monitor anymore as the AssetBundle has been added to the assetBundles map earlier for reuse.
+        AssetBundleMonitorPtr bundleMonitor = (*monitorIter).second;
+        std::vector<AssetTransferPtr> subTransfers = bundleMonitor->SubAssetTransfers();
+        bundleMonitors.erase(monitorIter);
+        
+        // Start the load process for all sub asset transfers now. From here on out the normal asset request flow should followed.
+        for (std::vector<AssetTransferPtr>::iterator subIter = subTransfers.begin(); subIter != subTransfers.end(); ++subIter)
+            LoadSubAssetToTransfer((*subIter), bundle, (*subIter)->source.ref);
+    }
+    else
+        LogWarning("AssetAPI: Asset bundle load completed, but bundle monitor cannot be found: " + bundle->Name());
+}
+
+void AssetAPI::AssetBundleLoadFailed(IAssetBundle *bundle)
+{
+    AssetLoadFailed(bundle->Name());
+    
+    // We have no need for the monitor anymore as the AssetBundle has been added to the assetBundles map earlier for reuse.
+    AssetBundleMonitorMap::iterator monitorIter = bundleMonitors.find(bundle->Name());
+    if (monitorIter != bundleMonitors.end())
+        bundleMonitors.erase(monitorIter);
 }
 
 void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)
@@ -1381,7 +1868,7 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
 }
 
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
-{
+{    
     PROFILE(AssetAPI_AssetDependenciesCompleted);
     // Emit success for this transfer
     transfer->EmitTransferSucceeded();
@@ -1788,7 +2275,7 @@ namespace
     }
 }
 
-QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref)
+QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref) const
 {
     QString type = ref.type.trimmed();
     if (!type.isEmpty())
@@ -1796,74 +2283,48 @@ QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref)
     return GetResourceTypeFromAssetRef(ref.ref);
 }
 
-QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
+QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef) const
 {
-    QString filename;
-    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &filename);
+    QString filenameParsed;
+    QString subAssetFilename;
+    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &filenameParsed, &subAssetFilename);
+    if (!subAssetFilename.isEmpty())
+        filenameParsed = subAssetFilename;
+    QString filename = filenameParsed.trimmed();
 
-    ///\todo This whole function is to be removed, and moved into the asset type providers for separate access. -jj.
+    // Query all registered asset factories if they provide this asset type.
+    for(size_t i=0; i<assetTypeFactories.size(); ++i)
+    {
+        // Note that we cannot ask endsWith from 'Binary' factory as the extension
+        // is an empty string. It will always return true and this factory should 
+        // only be defaulted to if nothing else can provide the queried file extension.
+        if (assetTypeFactories[i]->Type() == "Binary")
+            continue;
 
-    QString file = filename.trimmed().toLower();
-    if (file.endsWith(".qml", Qt::CaseInsensitive) || file.endsWith(".qmlzip", Qt::CaseInsensitive))
+        foreach (QString extension, assetTypeFactories[i]->TypeExtensions())
+            if (filename.endsWith(extension, Qt::CaseInsensitive))
+                return assetTypeFactories[i]->Type();
+    }
+
+    // Query all registered bundle factories if they provide this asset type.
+    for(size_t i=0; i<assetBundleTypeFactories.size(); ++i)
+        foreach (QString extension, assetBundleTypeFactories[i]->TypeExtensions())
+            if (filename.endsWith(extension, Qt::CaseInsensitive))
+                return assetBundleTypeFactories[i]->Type();
+                
+    /** @todo Make these hardcoded ones go away and move to the provider when provided (like above). 
+        Seems the resource types have leaked here without the providers being in the code base.
+        Where ever the code might be, remove these once the providers have been updated to return
+        the type extensions correctly. */
+    if (filename.endsWith(".qml", Qt::CaseInsensitive) || filename.endsWith(".qmlzip", Qt::CaseInsensitive))
         return "QML";
-    if (file.endsWith(".mesh", Qt::CaseInsensitive))
-        return "OgreMesh";
-    if (file.endsWith(".skeleton", Qt::CaseInsensitive))
-        return "OgreSkeleton";
-    if (file.endsWith(".material", Qt::CaseInsensitive))
-        return "OgreMaterial";
-    if (file.endsWith(".particle", Qt::CaseInsensitive))
-        return "OgreParticle";
-
-    // The following file types are from FreeImage's list of supported formats:
-    // http://freeimage.sourceforge.net/features.html
-    // The GIMP xcf is not in the list of known image formats, but detect it anyways.
-    const char *textureFileTypes[] = { ".bmp", ".cut", ".dds", ".exr", ".g3", ".gif", ".hdr", ".ico", ".iff", 
-        ".j2k", ".j2c", ".jp2", ".jif", ".jpg", ".jpeg", ".jpe", ".jng", ".koa",
-        ".lbm", ".mng", ".pbm", ".pcd", ".pcx", ".pfm", ".pict", ".psd", ".pgm", ".png", ".ppm", ".ras", ".raw", 
-        ".sgi", ".tga", ".targa", ".tif", ".tiff", ".wap", ".wbmp", ".wbm", ".xbm", ".xcf", ".xpm" };
-    if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
-        return "Texture";
-
-    // These file types are supported by the Open Asset Import library:
-    // http://assimp.sourceforge.net/main_features_formats.html
-    const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
-        ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
-        ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
-        ".ply", ".cob", ".scn" };
-
-    if (IsFileOfType(file, openAssImpFileTypes, NUMELEMS(openAssImpFileTypes)))
-        return "OgreMesh"; // We use the OgreMeshResource type for mesh files opened using the Open Asset Import Library.
-
-    if (file.endsWith(".js", Qt::CaseInsensitive) || file.endsWith(".py", Qt::CaseInsensitive))
-        return "Script";
-
-    if (file.endsWith(".ntf", Qt::CaseInsensitive))
-        return "Terrain";
-
-    if (file.endsWith(".wav", Qt::CaseInsensitive) || file.endsWith(".ogg", Qt::CaseInsensitive) || file.endsWith(".mp3", Qt::CaseInsensitive))
-        return "Audio";
-
-    if (file.endsWith(".ui", Qt::CaseInsensitive))
-        return "QtUiFile";
-
-    if (file.endsWith(".avatar", Qt::CaseInsensitive))
-        return "Avatar";
-
-    if (file.endsWith(".attachment", Qt::CaseInsensitive))
-        return "AvatarAttachment";
-
-    if (file.endsWith(".pdf", Qt::CaseInsensitive))
+    if (filename.endsWith(".pdf", Qt::CaseInsensitive))
         return "PdfAsset";
-
     const char *openDocFileTypes[] = { ".odt", ".doc", ".rtf", ".txt", ".docx", ".docm", ".ods", ".xls", ".odp", ".ppt", ".odg" };
-    if (IsFileOfType(file, openDocFileTypes, NUMELEMS(openDocFileTypes)))
+    if (IsFileOfType(filename, openDocFileTypes, NUMELEMS(openDocFileTypes)))
         return "DocAsset";
 
-    if (file.endsWith(".xml", Qt::CaseInsensitive) || file.endsWith(".txml", Qt::CaseInsensitive) || file.endsWith(".tbin", Qt::CaseInsensitive)) 
-        return "Binary";
-
-    // Unknown type, return Binary type.
+    // Could not resolve the asset extension to any registered asset factory. Return Binary type.
     return "Binary";
 }
 
