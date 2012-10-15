@@ -13,7 +13,7 @@ var PresetsBox = null;
 
 var radA3 = null;
 var radEA3 = null;
-var radManual = null;
+var radEuclidean = null;
 
 var EuclBox = null;
 var cbEuclEnabled 
@@ -22,13 +22,11 @@ var spnEuclRadius
 var RayBox = null;
 var cbRayEnabled = null;
 var spnRayRadius = null;
+var spnRayInt = null;
 
 var ModifiersBox = null;
 var cbRelEnabled = null;
 var spnRelRadius = null;
-
-var spnUpdateInt = null;
-var spnRaycastInt = null;
 
 var btnApply = null;
 var btnCancel = null;
@@ -58,33 +56,21 @@ if (!framework.IsHeadless())
 
     var configWinPos = "im settings windows pos"
     var IMWidget = null;
-
-    if (framework.GetModuleByName("TundraLogic"))
-        tundralogicmodule = framework.GetModuleByName("TundraLogic");
-    else
-        print("TundraLogicModule not in use, cannot use interest manager dialog.");
 }
 
-Initialize();
+CreateMenu();
 // Add menu entry to Settings menu
-function Initialize()
+function CreateMenu()
 {    
     var IMMenu = findChild(ui.MainWindow().menuBar(), "SettingsMenu");
 
     if (IMMenu == null)
     {
-        print("Settings not yet created. Waiting");
-        frame.DelayedExecute(1.0).Triggered.connect(Initialize);
+        print("Settings not yet created by MenuBar. Waiting");
+        frame.DelayedExecute(1.0).Triggered.connect(CreateMenu);
         return;
     }
-    
-/*
-    if (!IMMenu)
-    {
-        IMMenu = ui.MainWindow().menuBar().addMenu("&Settings");
-        IMMenu.objectName = "SettingsMenu";
-    }
-*/    
+       
     var IMSettings = IMMenu.addAction("Interest Management");
     IMSettings.triggered.connect(ShowIMSettings);
 }
@@ -134,8 +120,8 @@ function CreateIMSettingsWindow()
         radA3.toggled.connect(A3RadioButtonToggled);
         radEA3    = findChild(IMWidget, "radEA3");
         radEA3.toggled.connect(EA3RadioButtonToggled);
-        radManual = findChild(IMWidget, "radManual");
-        radManual.toggled.connect(ManualRadioButtonToggled);
+        radEuclidean = findChild(IMWidget, "radEuclidean");
+        radEuclidean.toggled.connect(EuclideanRadioButtonToggled);
 
     EuclBox = findChild(IMWidget, "EuclDistBox");
         cbEuclEnabled = findChild(IMWidget, "chkEuclEnabled");
@@ -148,7 +134,7 @@ function CreateIMSettingsWindow()
         cbRayEnabled.stateChanged.connect(RayCheckBoxToggled);
         spnRayRadius = findChild(IMWidget, "spnRayRadius");
         spnRayRadius["valueChanged(int)"].connect(RaySpinBoxChanged);
-        spnRaycastInt = findChild(IMWidget, "spnRaycastInt");
+        spnRayInt = findChild(IMWidget, "spnRayInt");
 
     ModifiersBox = findChild(IMWidget, "ModifiersBox");
         cbRelEnabled = findChild(IMWidget, "chkRelEnabled");
@@ -197,8 +183,8 @@ function FilteringChanged(value)
                 A3RadioButtonToggled(2);
             if(radEA3.checked)
                 EA3RadioButtonToggled(2);
-            if(radManual.checked)
-                ManualRadioButtonToggled(2);
+            if(radEuclidean.checked)
+                EuclideanRadioButtonToggled(2);
         break;
 
         default:
@@ -217,9 +203,9 @@ function ApplyButtonClicked(value)
     var rayrange = spnRayRadius.value;
     var relrange = spnRelRadius.value;
     var updateint = spnUpdateInt.value;
-    var raycastint = spnRaycastInt.value;
+    var raycastint = spnRayInt.value;
 
-    tundralogicmodule.InterestManagerSettingsUpdated(enabled, eucl_e, ray_e, rel_e, critrange, rayrange, relrange, updateint, raycastint);
+    syncmanager.UpdateInterestManagerSettings(enabled, eucl_e, ray_e, rel_e, critrange, rayrange, relrange, updateint, raycastint);
 }
 
 // Handles the Cancel button click events
@@ -257,8 +243,10 @@ function MoveButtonClicked(value)
 function A3RadioButtonToggled(value)
 {
     cbEuclEnabled.setChecked(true);
+    cbEuclEnabled.setEnabled(false);
     cbRayEnabled.setChecked(false);
     cbRelEnabled.setChecked(true);
+    cbRelEnabled.setEnabled(false);
     EuclBox.setEnabled(true);
     RayBox.setEnabled(false);
     ModifiersBox.setEnabled(true);
@@ -268,31 +256,46 @@ function A3RadioButtonToggled(value)
 function EA3RadioButtonToggled(value)
 {
     cbEuclEnabled.setChecked(true);
+    cbEuclEnabled.setEnabled(false);
     cbRayEnabled.setChecked(true);
+    cbRayEnabled.setEnabled(false);
     cbRelEnabled.setChecked(true);
-    EuclBox.setEnabled(true);
-    RayBox.setEnabled(false);
-    ModifiersBox.setEnabled(true);
-}
-
-// Handles the Manual Radiobutton events
-function ManualRadioButtonToggled(value)
-{
-    cbEuclEnabled.setChecked(false);
-    cbRayEnabled.setChecked(false);
-    cbRelEnabled.setChecked(false);
+    cbRelEnabled.setEnabled(false);
     EuclBox.setEnabled(true);
     RayBox.setEnabled(true);
     ModifiersBox.setEnabled(true);
+}
+
+// Handles the Euclidean Radiobutton events
+function EuclideanRadioButtonToggled(value)
+{
+    cbEuclEnabled.setChecked(true);
+    cbEuclEnabled.setEnabled(false);
+    cbRayEnabled.setChecked(false);
+    cbRelEnabled.setChecked(false);
+    EuclBox.setEnabled(true);
+    RayBox.setEnabled(false);
+    ModifiersBox.setEnabled(false);
 }
 
 
 function EuclideanCheckBoxToggled(value)
 {
     if(value == 2)
+    {
         spnEuclRadius.setEnabled(true);
+        ModifiersBox.setEnabled(true);
+    }
     else
+    {
         spnEuclRadius.setEnabled(false);
+
+        if(!cbRayEnabled.checked)
+        {
+            cbRelEnabled.setChecked(false);
+            ModifiersBox.setEnabled(false);
+        }
+    }
 }
 
 function EuclideanSpinBoxChanged(value)
@@ -304,9 +307,20 @@ function EuclideanSpinBoxChanged(value)
 function RayCheckBoxToggled(value)
 {
     if(value == 2)
+    {
         spnRayRadius.setEnabled(true);
+        ModifiersBox.setEnabled(true);
+    }
     else
+    {
         spnRayRadius.setEnabled(false);
+
+        if(!cbEuclEnabled.checked)
+        {
+            cbRelEnabled.setChecked(false);
+            ModifiersBox.setEnabled(false);
+        }
+    }
 }
 
 function RaySpinBoxChanged(value)
