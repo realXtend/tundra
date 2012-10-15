@@ -101,10 +101,13 @@ assetAPI(assetAPI_)
     if (fw->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND, "master_gain"))
         LoadSoundSettingsFromConfig();
 
+    QStringList audioTypeExtensions;
+    audioTypeExtensions << ".wav" << ".ogg" << ".mp3";
+    
     if (!fw->IsHeadless())
-        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio")));
+        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio", audioTypeExtensions)));
     else
-        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Audio")));
+        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Audio", audioTypeExtensions)));
 }
 
 AudioAPI::~AudioAPI()

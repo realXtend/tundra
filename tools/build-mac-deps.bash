@@ -471,6 +471,25 @@ else
     touch $tags/hydrax-done
 fi
 
+what=zziplib
+pkgbase=zziplib-0.13.59
+dlurl=http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/$pkgbase.tar.bz2/download
+if test -f $tags/$what-done; then
+    echo "$what done"
+else
+    echo "Building $what"
+    rm -rf $pkgbase
+    zip=$tarballs/$pkgbase.tar.bz2
+    test -f $zip || curl -L -o $zip $dlurl
+    tar xzf $zip
+
+    cd $pkgbase
+    ./configure --prefix=$prefix
+    make VERBOSE=1 -j$NPROCS
+    make install
+    touch $tags/$what-done
+fi
+
 #cd $build
 #what=mumbleclient
 #if test -f $tags/$what-done; then
