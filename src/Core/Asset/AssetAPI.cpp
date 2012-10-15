@@ -1827,7 +1827,7 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
 
     // These file types are supported by the Open Asset Import library:
     // http://assimp.sourceforge.net/main_features_formats.html
-    const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
+     const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".blend", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf",
         ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
         ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
         ".ply", ".cob", ".scn" };
