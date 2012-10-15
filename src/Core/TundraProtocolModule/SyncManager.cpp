@@ -87,10 +87,9 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
     updatePeriod_(1.0f / 20.0f),
+    interestManager(0),
     updateAcc_(0.0)
 {
-    improperties_ = new IMProperties();
-
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
@@ -98,6 +97,66 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
 
 SyncManager::~SyncManager()
 {
+}
+
+void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint)
+{
+    Scene *scene = framework_->Scene()->MainCameraScene();
+
+    if(scene == NULL)
+        return;
+
+    if(owner_->IsServer())
+    {
+        InterestManager *IM = 0;
+        MessageFilter *filter = 0;
+
+        if(enabled == false)    //If IM is not enabled, delete the IM altogether
+        {
+            SetInterestManager(0);
+            return;
+        }
+
+        IM = GetInterestManager();
+
+        if(eucl && ray && rel)          //In other words the EA3 algorithm
+            filter = new EA3Filter(IM, critrange, relrange, raycastint, updateint, true);
+
+        else if(eucl && rel && !ray)    //Combination that the A3 uses
+            filter = new A3Filter(IM, critrange, relrange, updateint, true);
+
+        else                            //In other case enable Euclidean Distance Filter
+            filter = new EuclideanDistanceFilter(IM, critrange, true);
+
+        IM->AssignFilter(filter);
+
+        SetInterestManager(IM);
+
+        LogInfo("InterestManager Settings Updated");
+    }
+}
+
+InterestManager* SyncManager::GetInterestManager()
+{
+    if(!interestManager)
+        interestManager = InterestManager::getInstance();
+
+    return interestManager;
+}
+
+void SyncManager::SetInterestManager(InterestManager *im)
+{
+    if(!im && !interestManager)
+        return;
+
+    else if(!im && interestManager)
+    {
+        delete interestManager;
+        interestManager = 0;
+    }
+
+    else
+        interestManager = im;
 }
 
 void SyncManager::SetUpdatePeriod(float period)
@@ -258,7 +317,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
 
     bool isServer = owner_->IsServer();
     
-    // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
+    // Client: r for stopping interpolation, if we change a currently interpolating variable ourselves
     if (!isServer) // Since the server never interpolates attributes, we don't need to do this check on the server at all.
     {
         ScenePtr scene = scene_.lock();
@@ -287,8 +346,12 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         {
             if ((*i)->syncState)
             {
-                ///Check here if the attribute should be updated to which client?
-                if(CheckRelevance((*i), entity))
+                /// Check here if the attribute should be updated to which client?
+                /// @remarks InterestManager functionality
+                if(interestManager && !interestManager->CheckRelevance((*i), entity, scene_, framework_->IsHeadless()))
+                        return;
+
+                else    //If IM is not available, accept the update
                     (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
             }
         }
@@ -299,243 +362,6 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         // network sync iteration.
         server_syncstate_.MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
     }
-}
-
-bool SyncManager::CheckRelevance(UserConnectionPtr userconnection, Entity* changed_entity)
-{
-    if(!improperties_->isEnabled())
-        return true;
-
-    ScenePtr scene = scene_.lock();
-
-    if (!scene)
-        return true;
-
-    if(improperties_->isEuclideanMode() || improperties_->isRaycastMode()) //Either euclidean distance, raycast mode or both has to be enabled before we can proceed
-    {
-        bool accepted = true;
-        EC_Placeable *entity_location = changed_entity->GetComponent<EC_Placeable>().get();
-
-        if(userconnection->syncState->orientationInitialized == false || !entity_location) //If the client hasn't informed the server about the orientation yet, do not proceed
-            return true;
-
-        Quat client_orientation = userconnection->syncState->clientOrientation;
-
-        float3 cpos = userconnection->syncState->clientLocation;    //Client location vector
-        float3 epos = entity_location->transform.Get().pos;         //Entitys location vector
-        float3 v = epos - cpos;                                     //Calculate the vector between the player and the changed entity by substracting their location vectors
-        float3 f = client_orientation.Mul(scene->ForwardVector());  //Calculate the forward vector of the client
-        float dot = v.Dot(f);                                       //Finally the dot product is calculated so we know if the entity is in front of the player or not
-
-        float dx = cpos.x - epos.x;
-        float dy = cpos.y - epos.y;
-        float dz = cpos.z - epos.z;
-
-        float distance = (dx * dx) + (dy * dy) + (dz * dz);         //Calculates distance without sqrt. More cheaper method
-
-        if(improperties_->isEuclideanMode() == true)
-        {
-            if((accepted = EuclideanDistanceFilter(distance))) return true;
-        }
-
-        if(improperties_->isRaycastMode() == true && dot >= 0)
-        {
-            accepted = RayVisibilityFilter(userconnection, distance, cpos, epos, changed_entity, scene);
-        }
-
-        if(improperties_->isRelevanceMode() == true && dot >= 0)
-        {
-            if((improperties_->isRaycastMode() && !improperties_->isEuclideanMode() && accepted) ||
-               (improperties_->isRaycastMode() && improperties_->isEuclideanMode() && accepted) ||
-               (improperties_->isEuclideanMode() && !improperties_->isRaycastMode() && !accepted))
-            {
-                accepted = RelevanceFilter(distance, userconnection, changed_entity);
-            }
-        }
-
-        if(accepted)
-        {
-            UpdateLastUpdatedEntity(changed_entity->Id());
-            return true;
-        }
-
-        else
-            return false;
-    }
-
-    else
-        return true;
-}
-
-bool SyncManager::EuclideanDistanceFilter(float distance)
-{
-    double cutoffrange = improperties_->getCriticalRange() * improperties_->getCriticalRange();
-
-    if(distance < cutoffrange) //If the entity is inside the critical area then always allow updates
-        return true;
-    else
-        return false;
-}
-
-bool SyncManager::RayVisibilityFilter(UserConnectionPtr conn, float distance, float3 client_location, float3 entity_location, Entity *changed_entity, ScenePtr scene)
-{
-    float cutoffrange = improperties_->isRelevanceMode() ? improperties_->getMaxRange()     * improperties_->getMaxRange()
-                                                          : improperties_->getRaycastRange() * improperties_->getRaycastRange();
-
-    if(framework_->IsHeadless())    //We cannot use Ray Visibility filter in headless mode.
-        return true;
-
-    if(distance < cutoffrange)  //If the entity is close enough, only then do a raycast
-    {
-        tick_t lastRaycasted = 0;
-
-        /*Check when was the last time we raycasted and dont do it if its not the time*/
-        std::map<entity_id_t, tick_t>::iterator it = lastRaycastedEntitys_.find(changed_entity->Id());
-
-        if(it != lastRaycastedEntitys_.end())
-            lastRaycasted = it->second;
-
-        tick_t currentTime = GetCurrentClockTime();
-
-        if(lastRaycasted + improperties_->getRaycastInterval() > currentTime)
-        {
-            std::map<entity_id_t, bool>::iterator it2;
-
-            it2 = conn->syncState->visibleEntities.find(changed_entity->Id());
-
-            if(it2 == conn->syncState->visibleEntities.end())
-                return false;
-
-            if(it2->second == true) //bool which contains a value determining if the entity was visible to the user last time it was raycasted
-                return true;
-
-            else
-                return false;
-        }
-
-        else
-        {
-            Ray ray(client_location, (entity_location - client_location).Normalized());
-
-            RaycastResult *result = 0;
-            OgreWorldPtr w = scene->GetWorld<OgreWorld>();
-
-            result = w->Raycast(ray, 0xFFFFFFFF);
-
-            UpdateLastRaycastedEntity(changed_entity->Id());
-
-            if(result && result->entity && result->entity->Id() == changed_entity->Id())  //If the ray hit someone and its our target entity
-            {
-                UpdateEntityVisibility(conn, changed_entity->Id(), true);
-                return true;
-            }
-            else
-            {
-                UpdateEntityVisibility(conn, changed_entity->Id(), false);
-                return false;
-            }
-        }
-    }
-
-    return false;
-}
-
- bool SyncManager::RelevanceFilter(float distance, UserConnectionPtr userconnection, Entity *changed_entity)
- {
-    float max_range;
-    float critical_range;
-    float relevance;
-
-    if(improperties_->isEuclideanMode() && improperties_->isRaycastMode())    //Euclidean & RayVisibility
-        critical_range = improperties_->getCriticalRange();
-
-    else if(improperties_->isRaycastMode())
-        critical_range = improperties_->getRaycastRange();                      //Only RayVisibility
-
-    else                                                                        //Only Euclidean
-        critical_range = improperties_->getCriticalRange();
-
-    max_range = improperties_->getMaxRange();
-
-    relevance = 1 - (distance - (critical_range * critical_range)) / ((max_range * max_range) - (critical_range * critical_range));
-
-    if(relevance < 0)
-        relevance = 0;
-
-    UpdateRelevance(userconnection, changed_entity->Id(), relevance);
-
-    if(relevance == 0) //If the entity is not relevant
-        return false;
-
-    else if(relevance < 1)
-    {
-         double max_update_interval = improperties_->getUpdateInterval();
-         std::map<entity_id_t, tick_t>::iterator it = lastUpdatedEntitys_.find(changed_entity->Id());
-
-         tick_t lastUpdated = it->second;
-         tick_t currentTime = GetCurrentClockTime();
-
-         if(lastUpdated + (max_update_interval * (1 - relevance)) > currentTime)
-             return false;
-    }
-
-    return true;
- }
-
-
-void SyncManager::UpdateRelevance(UserConnectionPtr connection, entity_id_t id, double relevance)
-{
-    std::map<entity_id_t, double>::iterator it;
-
-    it = connection->syncState->entityRelevances.find(id);
-
-    if(it == connection->syncState->entityRelevances.end()) //Theres no entry with this entity_id
-        connection->syncState->entityRelevances.insert(std::make_pair(id, relevance));
-    else
-        it->second = relevance;
-}
-
-void SyncManager::UpdateEntityVisibility(UserConnectionPtr conn, entity_id_t id, bool visible)
-{
-    std::map<entity_id_t, bool>::iterator it;
-
-    it = conn->syncState->visibleEntities.find(id);
-
-    if(it == conn->syncState->visibleEntities.end()) //Theres no entry with this entity_id
-        conn->syncState->visibleEntities.insert(std::make_pair(id, visible));
-    else
-        it->second = visible;
-}
-
-void SyncManager::UpdateLastUpdatedEntity(entity_id_t id)
-{
-    std::map<entity_id_t, tick_t>::iterator it;
-    tick_t time = GetCurrentClockTime();
-
-    it = lastUpdatedEntitys_.find(id);
-
-    if(it == lastUpdatedEntitys_.end())
-        lastUpdatedEntitys_.insert(std::make_pair(id, time));
-    else
-        it->second = time;
-}
-
-void SyncManager::UpdateLastRaycastedEntity(entity_id_t id)
-{
-    std::map<entity_id_t, tick_t>::iterator it;
-    tick_t time = GetCurrentClockTime();
-
-    it = lastRaycastedEntitys_.find(id);
-
-    if(it == lastRaycastedEntitys_.end())
-        lastRaycastedEntitys_.insert(std::make_pair(id, time));
-    else
-        it->second = time;
-}
-
-IMProperties* SyncManager::GetIMProperties()
-{
-    return improperties_;
 }
 
 void SyncManager::OnAttributeAdded(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
@@ -1708,12 +1534,6 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
 
     kNet::DataDeserializer ds(data, numBytes);
 
-    if (ds.Read<u8>() != user->ConnectionId())
-    {
-        LogError("Camera orientation does not belong to user: " + QString::number(user->ConnectionId()));
-        return;
-    }
-
     user->syncState->clientOrientation.x = ds.Read<float>();
     user->syncState->clientOrientation.y = ds.Read<float>();
     user->syncState->clientOrientation.z = ds.Read<float>();
@@ -1722,8 +1542,6 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
     user->syncState->clientLocation.x = ds.Read<float>();
     user->syncState->clientLocation.y = ds.Read<float>();
     user->syncState->clientLocation.z = ds.Read<float>();
-
-    user->syncState->orientationInitialized = true;
 }
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)

@@ -7,9 +7,8 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
-#include "Profiler.h"
-#include "IMProperties.h"
-#include "EC_Placeable.h"
+#include "InterestManager.h"
+#include "HighPerfClock.h"
 
 #include <kNetFwd.h>
 #include <kNet/Types.h>
@@ -40,8 +39,10 @@ public:
     /// Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(const UserConnectionPtr &user);
 
-    /// Gets the IM properties
-    IMProperties* GetIMProperties();
+    /// Get and Set the IM
+    InterestManager* GetInterestManager();
+
+    void SetInterestManager(InterestManager* im);
 
 public slots:
     /// Set update period (seconds)
@@ -55,6 +56,18 @@ public slots:
         @param int connection ID of the client. */
     SceneSyncState* SceneState(int connectionId) const;
     SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /**< @overload @param connection Client connection.*/
+
+    /// Upates Interest Manager settings.
+    /** @param enabled If true, the IM scheme is allowed to filter traffic.
+        @param bool eucl If true, the euclidean distance filter is active.
+        @param bool ray If true, the ray visibility filter is active.
+        @param bool rel If true, the relevance filter is active.
+        @param int critrange specifies the radius for the critical area.
+        @param int rayrange specifies the radius for the raycasting.
+        @param int relrange specifies the radius for the relevance filtering.
+        @param int updateint specifies the update interval for the relevance filtering.
+        @param int raycastint specifies the raycasting interval for the ray visibility filter. */
+    void UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint);
 
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.
@@ -95,21 +108,8 @@ private slots:
 private:
     /// Queue a message to the receiver from a given DataSerializer.
     void QueueMessage(kNet::MessageConnection* connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds);
-    
     /// Craft a component full update, with all static and dynamic attributes.
     void WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp);
-    
-    /// Function calls for relevance checking
-    bool CheckRelevance(UserConnectionPtr userconnection, Entity* entity);
-    bool EuclideanDistanceFilter(float distance);
-    bool RayVisibilityFilter(UserConnectionPtr conn, float distance, float3 client_location, float3 entity_location, Entity *changed_entity, ScenePtr scene);
-    bool RelevanceFilter(float distance, UserConnectionPtr userconnection, Entity *changed_entity);
-    void UpdateRelevance(UserConnectionPtr connection, entity_id_t id, double relevance);
-    void UpdateEntityVisibility(UserConnectionPtr connection, entity_id_t id, bool visible);
-    void UpdateLastUpdatedEntity(entity_id_t id);
-    void UpdateLastRaycastedEntity(entity_id_t id);
-    void UpdateEntityVisibility(entity_id_t id, bool visible);
-
     /// Handle entity action message.
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
     /// Handle create entity message.
@@ -185,9 +185,7 @@ private:
     char removeAttrsBuffer_[1024];
     std::vector<u8> changedAttributes_;
 
-    std::map<entity_id_t, tick_t> lastUpdatedEntitys_;
-    std::map<entity_id_t, tick_t> lastRaycastedEntitys_;
-    IMProperties *improperties_;
+    InterestManager *interestManager;
 };
 
 }
