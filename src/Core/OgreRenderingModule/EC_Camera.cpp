@@ -21,6 +21,7 @@
 #include "Application.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "AttributeMetadata.h"
 
 #include <Ogre.h>
 
@@ -43,6 +44,12 @@ EC_Camera::EC_Camera(Scene* scene) :
     query_(0),
     queryFrameNumber_(-1)
 {
+    static AttributeMetadata minZero;
+    static bool metadataInitialized = false;
+    if (!metadataInitialized)
+        minZero.minimum = "0.0";
+    nearPlane.SetMetadata(&minZero);
+
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
@@ -584,11 +591,8 @@ void EC_Camera::QueryVisibleEntities()
 
 void EC_Camera::SetNearClipDistance(float distance)
 {
-    if (!camera_)
-        return;
-    if (world_.expired())
-        return;
-    camera_->setNearClipDistance(distance);
+    if (camera_ && !world_.expired())
+        camera_->setNearClipDistance(Clamp(distance, 0.0f, floatMax)); // Ogre throws an exception if negative value given.
 }
 
 QString EC_Camera::SaveScreenshot(bool renderUi)
