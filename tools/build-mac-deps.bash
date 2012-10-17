@@ -488,6 +488,27 @@ else
     touch $tags/$what-done
 fi
 
+what=assimp
+baseurl=https://assimp.svn.sourceforge.net/svnroot/assimp/trunk
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    cd $build
+    rm -rf $what
+    echo "Clonign $what repository, this may take a while..."
+    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk $what
+    cd $what
+    # First sed statement: Apple's ld does not allow this version number, so override that
+    # Second sed statement: Force add boost include path (the same as Ogre's dependencies include path)
+    sed -e 's/(ASSIMP_SV_REVISION 1264)/(ASSIMP_SV_REVISION 1)/' -e 's/INCLUDE_DIRECTORIES( include )/INCLUDE_DIRECTORIES( include )\
+    set (BOOST_INCLUDEDIR "${ENV_OGRE_HOME}\/Dependencies\/include")/' < CMakeLists.txt > temp
+    mv temp CMakeLists.txt
+    cmake . -DCMAKE_INSTALL_PREFIX=$prefix
+    make -j4
+    make install
+    touch $tags/$what-done
+fi
+
 # HydraX, SkyX and PythonQT are build from the realxtend own dependencies.
 # At least for the time being, until changes to those components flow into
 # upstream..
