@@ -39,7 +39,6 @@ EC_Camera::EC_Camera(Scene* scene) :
     farPlane(this, "Far plane", 2000.f),
     verticalFov(this, "Vertical FOV", 45.f),
     aspectRatio(this, "Aspect ratio", ""),
-    attached_(false),
     camera_(0),
     query_(0),
     queryFrameNumber_(-1)
@@ -262,26 +261,14 @@ bool EC_Camera::IsActive() const
 
 void EC_Camera::DetachCamera()
 {
-    if (!attached_ || !camera_ || !placeable_)
-        return;
-
-    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
-    Ogre::SceneNode* node = placeable->GetSceneNode();
-    node->detachObject(camera_);
-
-    attached_ = false;
+    if (IsAttached() && camera_ && placeable_)
+        boost::static_pointer_cast<EC_Placeable>(placeable_)->GetSceneNode()->detachObject(camera_);
 }
 
 void EC_Camera::AttachCamera()
 {
-    if (attached_ || !camera_ || !placeable_)
-        return;
-
-    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
-    Ogre::SceneNode* node = placeable->GetSceneNode();
-    node->attachObject(camera_);
-
-    attached_ = true;
+    if (!IsAttached() && camera_ && placeable_)
+        boost::static_pointer_cast<EC_Placeable>(placeable_)->GetSceneNode()->attachObject(camera_);
 }
 
 void EC_Camera::DestroyOgreCamera()
@@ -734,4 +721,11 @@ void EC_Camera::SetFovY(float fov)
 {
     if (camera_ && !world_.expired())
         camera_->setFOVy(Ogre::Radian(Ogre::Math::DegreesToRadians(fov)));
+}
+
+bool EC_Camera::IsAttached() const
+{
+    return (camera_ && placeable_
+        ? boost::static_pointer_cast<EC_Placeable>(placeable_)->GetSceneNode()->getAttachedObject(camera_->getName()) != 0
+        : false);
 }
