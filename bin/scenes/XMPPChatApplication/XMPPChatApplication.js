@@ -212,7 +212,7 @@ ConversationForm.prototype.SendMessage = function()
     this.messageEdit.text = "";
 }
 
-ConversationForm.prototype.MessageReceived = function(roomJid, senderJid, message)
+ConversationForm.prototype.MessageReceived = function(roomJid, senderJid, message, type)
 {
     if(roomJid != this.jid)
         return;
