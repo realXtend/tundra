@@ -3,9 +3,9 @@
  *  Contains some semi ugly hacks to get around QtScript's shortcomings.
  *  Depends on Tundra XMPPModule.
  *
- *  How to use: Fill in your XMPP information into the script at the bottom to test
- *  the script. You can call Client constructor with your XMPP infromation from
- *  another script similarly.
+ *  How to use: Fill in your XMPP information into the script at the bottom to
+ *  test the script. You can call Client constructor and Client.Connect with
+ *  your XMPP infromation from another script similarly.
  *
  *  Copyright (c) 2012 CIE / University of Oulu, All Rights Reserved
  *  For conditions of distribution and use, see copyright notice in license.txt
@@ -264,14 +264,9 @@ ConversationForm.prototype.RemoveParticipant = function(participant)
     }
 }
 
-// Initializes connection to the XMPP server. The rooms parameter is an array
-// of arrays of room name + password combination.
-function Client(username, serverUrl, password, rooms)
+// Initializes the client. Connecting is done separately with Client.Connect.
+function Client()
 {
-    this.username = username;
-	this.rooms = rooms;
-    this.jid = this.username + "@" + serverUrl;
-
     var xmppModule = framework.GetModuleByName("XMPP");
     this.xmppClient = xmppModule.NewClient();
 
@@ -279,7 +274,15 @@ function Client(username, serverUrl, password, rooms)
     this.xmppClient.Connected.connect(this, this.JoinWebchat);
 
     this.dialog = new ChatDialog(this.muc);
+}
 
+// Attempts to connect to the XMPP server. The rooms parameter is an array
+// of arrays of room name + password combination.
+Client.prototype.Connect = function(username, serverUrl, password, rooms)
+{
+    this.username = username;
+    this.rooms = rooms;
+    this.jid = this.username + "@" + serverUrl;
     this.xmppClient.ConnectToServer(serverUrl, this.jid, password);
 }
 
@@ -287,7 +290,7 @@ Client.prototype.JoinWebchat = function()
 {
     this.muc.RoomAdded.connect(this, this.RoomJoined);
     for (var i = 0; i < this.rooms.length; i++)
-        this.muc.JoinRoom(rooms[i][0], this.username, this.rooms[i][1]);
+        this.muc.JoinRoom(this.rooms[i][0], this.username, this.rooms[i][1]);
 }
 
 Client.prototype.RoomJoined = function(roomJid, nickname)
@@ -302,14 +305,15 @@ Client.prototype.RoomJoined = function(roomJid, nickname)
 
 if(!server.IsRunning())
 {
-	// The Client constructor takes an array of room name & password combination.
-	// Fill these with your room information to test.
-	var room1 = "";
-	var room2 = "";
-	var room1pass = "";
-	var room2pass = "";
-	var rooms = new Array([room1, room1pass], [room2, room2pass]);
+    var client = new Client();
+    // Client.Connect takes an array of room name & password combination.
+    // Fill these with your room information to test.
+    var room1 = "";
+    var room2 = "";
+    var room1pass = "";
+    var room2pass = "";
+    var rooms = new Array([room1, room1pass], [room2, room2pass]);
     // Fill with credentials (username, server url, password and room info array)
     // to test.
-    var client = new Client("", "", "", rooms);
+    client.Connect("", "", "", rooms);
 }
