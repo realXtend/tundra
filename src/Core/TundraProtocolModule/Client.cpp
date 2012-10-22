@@ -12,7 +12,7 @@
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
-#include "MsgCameraOrientation.h"
+#include "MsgCameraOrientationRequest.h"
 #include "UserConnectedResponseData.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
@@ -40,6 +40,7 @@ Client::Client(TundraLogicModule* owner) :
     framework_(owner->GetFramework()),
     loginstate_(NotConnected),
     reconnect_(false),
+    sendCameraUpdates_(0),
     client_id_(0)
 {
 }
@@ -286,6 +287,9 @@ void Client::CheckLogin()
 
 void Client::GetCameraOrientation()
 {
+    if(!sendCameraUpdates_)
+        return;
+
     if(framework_->IsHeadless())
         return;
 
@@ -390,6 +394,12 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
     
     switch(messageId)
     {
+    case MsgCameraOrientationRequest::messageID:
+        {
+            MsgCameraOrientationRequest msg(data, numBytes);
+            HandleCameraOrientationRequest(source, msg);
+        }
+        break;
     case MsgLoginReply::messageID:
         {
             MsgLoginReply msg(data, numBytes);
@@ -410,6 +420,11 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
         break;
     }
     emit NetworkMessageReceived(packetId, messageId, data, numBytes);
+}
+
+void Client::HandleCameraOrientationRequest(MessageConnection* source, const MsgCameraOrientationRequest& msg)
+{
+    sendCameraUpdates_ = msg.enableCameraUpdates;
 }
 
 void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& msg)

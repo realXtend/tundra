@@ -157,6 +157,9 @@ private:
     /// Handles pending login to server
     void CheckLogin();
 
+    /// Handles a camera orientation request message
+    void HandleCameraOrientationRequest(kNet::MessageConnection* source, const MsgCameraOrientationRequest& msg);
+
     /// Handles a loginreply message
     void HandleLoginReply(kNet::MessageConnection* source, const MsgLoginReply& msg);
 
@@ -179,6 +182,8 @@ private:
     Quat currentcameraorientation_;
     // Current camera location
     float3 currentcameralocation_;
+    // Variable controlling whether or not to send camera orientation updates
+    bool sendCameraUpdates_;
 };
 
 }

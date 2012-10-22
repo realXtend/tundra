@@ -108,6 +108,27 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
 
     if(owner_->IsServer())
     {
+        // Loop through all connections and send the CameraOrientationRequest messages to the clients.
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+            if ((*i)->syncState)
+            {
+                const int maxMessageSizeBytes = 1400;
+
+                kNet::NetworkMessage *msg = (*i)->connection->StartNewMessage(cCameraOrientationRequest, maxMessageSizeBytes);
+
+                msg->contentID = 0;
+                msg->inOrder = true;
+                msg->reliable = true;
+
+                kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
+
+                ds.Add<u8>(enabled);
+
+                QueueMessage((*i)->connection, cCameraOrientationRequest, true, true, ds);
+            }
+
         InterestManager *IM = 0;
         MessageFilter *filter = 0;
 

@@ -29,6 +29,7 @@ const unsigned long cAssetDeletedMessage = 122;
 
 // Camera
 const unsigned long cCameraOrientationUpdate = 104;
+const unsigned long cCameraOrientationRequest = 105;
 
 // In case of network message structs are regenerated and descriptions get deleted., saving their descriptions here.
 // MsgAssetDeleted: Network message informing that asset has been deleted from storage.
