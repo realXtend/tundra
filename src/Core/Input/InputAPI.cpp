@@ -571,12 +571,8 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         keyEvent.eventType = KeyEvent::KeyPressed;
 
         // Assign the keys from the heldKeys map to the keyEvent.otherHeldKeys vector
-        for ( std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin();
-            current != heldKeys.end();
-            ++ current )
-        {
+        for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
             keyEvent.otherHeldKeys.push_back((*current).first);
-        }
 
         keyEvent.handled = false;
 
