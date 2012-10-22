@@ -307,33 +307,51 @@ void Client::GetCameraOrientation()
     Quat orientation = camera_placeable->WorldOrientation();
     float3 location = camera_placeable->WorldPosition();
 
-    if(orientation == currentcameraorientation_ && location.Equals(currentcameralocation_))
+    if(orientation == currentcameraorientation_ && location.Equals(currentcameralocation_)) //If the position and orientation of the client has not changed. Do not send anything
         return;
 
-    else
-    {
-        currentcameraorientation_ = orientation;
-        currentcameralocation_ = location;
-        SendCameraOrientation(orientation, location);
-    }
-}
-
-void Client::SendCameraOrientation(Quat orientation, float3 location)
-{
-    MsgCameraOrientation msg;
-
-    msg.orientationx = orientation.x;
-    msg.orientationy = orientation.y;
-    msg.orientationz = orientation.z;
-    msg.orientationw = orientation.w;
-
-    msg.positionx = location.x;
-    msg.positiony = location.y;
-    msg.positionz = location.z;
+    const int maxMessageSizeBytes = 1400;
 
     Ptr(kNet::MessageConnection) connection = GetConnection();
 
-    connection.ptr()->Send(msg);
+    kNet::NetworkMessage *msg = connection->StartNewMessage(cCameraOrientationUpdate, maxMessageSizeBytes);
+
+    msg->contentID = 0;
+    msg->inOrder = true;
+    msg->reliable = true;
+
+    kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
+
+    const Transform &t = camera_placeable->transform.Get();
+
+    //Serialize the position of the client inside the message. Sends 57 bits.
+    ds.AddSignedFixedPoint(11, 8, t.pos.x);
+    ds.AddSignedFixedPoint(11, 8, t.pos.y);
+    ds.AddSignedFixedPoint(11, 8, t.pos.z);
+
+    //Serialize the orientation of the client. Sends 17 bits.
+    float3x3 rot = t.Orientation3x3();
+    float3 forward = rot.Col(2);
+    forward.Normalize();
+    ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8);
+
+    //Update the current location and orientation of the client.
+    currentcameraorientation_ = orientation;
+    currentcameralocation_ = location;
+
+    // Finally send the message
+    SendCameraOrientation(ds, msg);
+}
+
+void Client::SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg)
+{
+    Ptr(kNet::MessageConnection) connection = GetConnection();
+
+    if (ds.BytesFilled() > 0)
+        connection->EndAndQueueMessage(msg, ds.BytesFilled());
+
+    else
+        connection->FreeMessage(msg);
 }
 
 kNet::MessageConnection* Client::GetConnection()

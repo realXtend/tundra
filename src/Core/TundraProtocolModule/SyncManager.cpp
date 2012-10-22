@@ -1530,18 +1530,28 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
 {
     assert(source);
 
+    ScenePtr scene = scene_.lock();
+    if (!scene)
+        return;
+
+    kNet::DataDeserializer dd(data, numBytes);
     UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
 
-    kNet::DataDeserializer ds(data, numBytes);
+    float3 clientpos;
 
-    user->syncState->clientOrientation.x = ds.Read<float>();
-    user->syncState->clientOrientation.y = ds.Read<float>();
-    user->syncState->clientOrientation.z = ds.Read<float>();
-    user->syncState->clientOrientation.w = ds.Read<float>();
+    //Read the position of the client from the message
+    clientpos.x = dd.ReadSignedFixedPoint(11, 8);
+    clientpos.y = dd.ReadSignedFixedPoint(11, 8);
+    clientpos.z = dd.ReadSignedFixedPoint(11, 8);
 
-    user->syncState->clientLocation.x = ds.Read<float>();
-    user->syncState->clientLocation.y = ds.Read<float>();
-    user->syncState->clientLocation.z = ds.Read<float>();
+    //Read the orientation of the client
+    float3 forward;
+    dd.ReadNormalizedVector3D(9, 8, forward.x, forward.y, forward.z);
+    float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
+
+    //Finally update the orientation and location
+    user->syncState->clientOrientation = Quat(orientation);
+    user->syncState->clientLocation = clientpos;
 }
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)

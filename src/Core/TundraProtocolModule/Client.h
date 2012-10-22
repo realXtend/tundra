@@ -152,7 +152,7 @@ private slots:
 private:
 
     /// Send camera orientation to the server
-    void SendCameraOrientation(Quat orientation, float3 location);
+    void SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg);
 
     /// Handles pending login to server
     void CheckLogin();
