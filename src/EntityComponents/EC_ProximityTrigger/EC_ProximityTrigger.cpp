@@ -34,7 +34,7 @@ void EC_ProximityTrigger::OnAttributeUpdated(IAttribute* attr)
         SetUpdateMode();
 }
 
-void EC_ProximityTrigger::Update(float timeStep)
+void EC_ProximityTrigger::Update(float /*timeStep*/)
 {
     if (!active.Get())
         return;

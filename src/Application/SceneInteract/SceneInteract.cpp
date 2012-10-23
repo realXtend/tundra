@@ -80,7 +80,7 @@ RaycastResult* SceneInteract::Raycast()
     return result;
 }
 
-void SceneInteract::HandleKeyEvent(KeyEvent *e)
+void SceneInteract::HandleKeyEvent(KeyEvent * /*e*/)
 {
     /// @todo Evaluate if this is needed at all.
 }

@@ -220,7 +220,7 @@ std::vector<AssetReference> IAsset::FindReferencesRecursive() const
     return finalRefs;
 }
 
-bool IAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
+bool IAsset::SerializeTo(std::vector<u8> &/*data*/, const QString &/*serializationParameters*/) const
 {
     LogError("IAsset::SerializeTo: Asset serialization not implemented for asset \"" + ToString() + "\"!");
     return false;

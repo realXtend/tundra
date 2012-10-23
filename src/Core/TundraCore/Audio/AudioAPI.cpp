@@ -222,8 +222,8 @@ std::vector<SoundChannelPtr> AudioAPI::GetActiveSounds() const
     return ret;
 }
 
-void AudioAPI::Update(f64 frametime)
-{   
+void AudioAPI::Update(f64 /*frametime*/)
+{
     if (!impl || !impl->initialized)
         return;
     

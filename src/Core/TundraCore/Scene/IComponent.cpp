@@ -62,7 +62,7 @@ bool IComponent::IsUnacked() const
     return id >= UniqueIdGenerator::FIRST_UNACKED_ID && id < UniqueIdGenerator::FIRST_LOCAL_ID;
 }
 
-void IComponent::SetNetworkSyncEnabled(bool enable)
+void IComponent::SetNetworkSyncEnabled(bool /*enable*/)
 {
     LogWarning("SetNetworkSyncEnabled called. This function is deprecated and does not do anything.");
 }
