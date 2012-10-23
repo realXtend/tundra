@@ -358,7 +358,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
     // Parse subAssetName if it exists.
     QString subAssetName = "";
-    wregex expression4(L"(.*?)\\s*#\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
+    wregex expression4(L"(.*?)\\s*[#,]\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
     if (regex_match(fullPath, what, expression4))
     {
         wstring assetRef = what[1].str();
