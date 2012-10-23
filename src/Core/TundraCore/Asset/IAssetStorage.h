@@ -3,6 +3,7 @@
 #pragma once
 
 #include "TundraCoreApi.h"
+#include "CoreDefines.h"
 #include "AssetFwd.h"
 
 #include <QObject>
@@ -109,7 +110,7 @@ public slots:
     virtual TrustState GetTrustState() const { return trustState; }
 
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
-    virtual QString GetFullAssetURL(const QString &localName) { return ""; }
+    virtual QString GetFullAssetURL(const QString &localName) { UNREFERENCED_PARAM(localName) return ""; }
 
     /// Returns the type identifier for this storage type, e.g. "LocalAssetStorage" or "HttpAssetStorage".
     virtual QString Type() const = 0;

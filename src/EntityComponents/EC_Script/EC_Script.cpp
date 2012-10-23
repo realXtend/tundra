@@ -143,7 +143,7 @@ EC_Script::EC_Script(Scene* scene):
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
-void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
+void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type /*change*/)
 {
     AssetAPI* assetAPI = framework->Asset();
     

@@ -907,7 +907,7 @@ void InputAPI::ClearFocus()
         mainView->scene()->clearFocus();
 }
 
-void InputAPI::Update(float frametime)
+void InputAPI::Update(float /*frametime*/)
 {
     PROFILE(InputAPI_Update);
 

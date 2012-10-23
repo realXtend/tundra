@@ -75,7 +75,7 @@ void Profiler::EndBlock(const std::string &name)
     if (!treeNode)
         return;
     assert (treeNode->Name() == name && "New profiling block started before old one ended!");
-
+    UNREFERENCED_PARAM(name)
     ProfilerNode* node = checked_static_cast<ProfilerNode*>(treeNode);
     node->block_.Stop();
     node->num_called_total_++;

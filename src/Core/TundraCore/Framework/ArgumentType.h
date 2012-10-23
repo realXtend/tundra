@@ -125,7 +125,7 @@ public:
     VoidArgumentType() : IArgumentType("void") {}
 
     /// IArgumentType override. Returns 0.
-    QWidget *CreateEditor(QWidget *parent = 0) { return 0; }
+    QWidget *CreateEditor(QWidget * /*parent*/ = 0) { return 0; }
 
     /// IArgumentType override. Does nothing.
     void UpdateValueFromEditor() {}
@@ -134,7 +134,7 @@ public:
     void UpdateValueToEditor() {}
 
     /// IArgumentType override. Does nothing.
-    void SetValue(void *val) {}
+    void SetValue(void * /*val*/) {}
 
     /// IArgumentType override. Returns empty QGenericArgument.
     QGenericArgument Value() { return QGenericArgument(); }

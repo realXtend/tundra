@@ -28,7 +28,7 @@ QtUiAsset::~QtUiAsset()
 {
 }
 
-bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
+bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool /*allowAsynchronous*/)
 {
     refs.clear();
     originalData.clear();
@@ -133,7 +133,7 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowA
     return true;
 }
 
-bool QtUiAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
+bool QtUiAsset::SerializeTo(std::vector<u8> &data, const QString &/*serializationParameters*/) const
 {
     data = originalData;
     return data.size() > 0;

@@ -282,7 +282,7 @@ private:
 namespace
 {
     /// For boost::thread_specific_ptr, we don't want it doing automatic deletion
-    void EmptyDeletor(ProfilerNodeTree *node) { }
+    void EmptyDeletor(ProfilerNodeTree * /*node*/) { }
 }
 
 /// Provides profiling access for scripts.

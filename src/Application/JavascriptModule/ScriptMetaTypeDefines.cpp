@@ -120,7 +120,7 @@ QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &ass
 }
 
 /// Deliberately a null function. Currently we don't need setting asset maps from the script side.
-void qScriptValueToAssetMap(const QScriptValue &value, AssetMap &assetMap)
+void qScriptValueToAssetMap(const QScriptValue &/*value*/, AssetMap &/*assetMap*/)
 {
 }
 
@@ -138,7 +138,7 @@ QScriptValue qScriptValueFromAssetTransferMap(QScriptEngine *engine, const Asset
 }
 
 /// Deliberately a null function. Currently we don't need setting asset maps from the script side.
-void qScriptValueToAssetTransferMap(const QScriptValue &value, AssetTransferMap &assetMap)
+void qScriptValueToAssetTransferMap(const QScriptValue &/*value*/, AssetTransferMap &/*assetMap*/)
 {
 }
 
@@ -175,7 +175,7 @@ QScriptValue qScriptValueFromAssetStoragePtrVector(QScriptEngine *engine, const 
 }
 
 /// Deliberately a null function. Currently we don't need setting asset storage vectors from the script side.
-void qScriptValueToAssetStoragePtrVector(const QScriptValue &value, AssetStorageVector& vec)
+void qScriptValueToAssetStoragePtrVector(const QScriptValue & /*value*/, AssetStorageVector& /*vec*/)
 {
 }
 
@@ -195,7 +195,7 @@ QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
     return QScriptValue();
 }
 
-QScriptValue addApplicationFont(QScriptContext *ctx, QScriptEngine *eng)
+QScriptValue addApplicationFont(QScriptContext *ctx, QScriptEngine * /*eng*/)
 {
     if(ctx->argumentCount() == 1)
     {
@@ -207,7 +207,7 @@ QScriptValue addApplicationFont(QScriptContext *ctx, QScriptEngine *eng)
 
 
 // Helper function. Added because new'ing a QPixmap in script seems to lead into growing memory use
-QScriptValue setPixmapToLabel(QScriptContext *ctx, QScriptEngine *eng)
+QScriptValue setPixmapToLabel(QScriptContext *ctx, QScriptEngine * /*eng*/)
 {
     if(ctx->argumentCount() == 2)
     {
@@ -257,13 +257,13 @@ QScriptValue register_TranslateOp_prototype(QScriptEngine *engine);
 QScriptValue register_Transform_prototype(QScriptEngine *engine);
 QScriptValue register_Triangle_prototype(QScriptEngine *engine);
 
-static QScriptValue math_SetMathBreakOnAssume(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue math_SetMathBreakOnAssume(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     SetMathBreakOnAssume(qscriptvalue_cast<bool>(context->argument(0)));
     return QScriptValue();
 }
 
-static QScriptValue math_MathBreakOnAssume(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue math_MathBreakOnAssume(QScriptContext * /*context*/, QScriptEngine *engine)
 {
     return qScriptValueFromValue(engine, MathBreakOnAssume());
 }
