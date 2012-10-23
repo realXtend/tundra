@@ -923,37 +923,37 @@ template<> void TUNDRACORE_API Attribute<QPoint>::FromBinary(kNet::DataDeseriali
 
 // INTERPOLATE TEMPLATE IMPLEMENTATIONS
 
-template<> void TUNDRACORE_API Attribute<QString>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<QString>::Interpolate(IAttribute* /*start*/, IAttribute* /*end*/, float t, AttributeChange::Type /*change*/)
 {
     ::LogError("Attribute<QString>::Interpolate invoked! QString attributes cannot be animated!");
 }
 
-template<> void TUNDRACORE_API Attribute<bool>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<bool>::Interpolate(IAttribute* /*start*/, IAttribute* /*end*/, float t, AttributeChange::Type /*change*/)
 {
     ::LogError("Attribute<bool>::Interpolate invoked! bool attributes cannot be animated!");
 }
 
-template<> void TUNDRACORE_API Attribute<AssetReference>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<AssetReference>::Interpolate(IAttribute* /*start*/, IAttribute* /*end*/, float t, AttributeChange::Type /*change*/)
 {
     ::LogError("Attribute<AssetReference>::Interpolate invoked! AssetReference attributes cannot be animated!");
 }
 
-template<> void TUNDRACORE_API Attribute<AssetReferenceList>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<AssetReferenceList>::Interpolate(IAttribute* /*start*/, IAttribute* /*end*/, float t, AttributeChange::Type /*change*/)
 {
     ::LogError("Attribute<AssetReferenceList>::Interpolate invoked! AssetReferenceList attributes cannot be animated!");
 }
 
-template<> void TUNDRACORE_API Attribute<EntityReference>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<EntityReference>::Interpolate(IAttribute* /*start*/, IAttribute* /*end*/, float t, AttributeChange::Type /*change*/)
 {
     ::LogError("Attribute<EntityReference>::Interpolate invoked! EntityReference attributes cannot be animated!");
 }
 
-template<> void TUNDRACORE_API Attribute<QVariant>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<QVariant>::Interpolate(IAttribute* /*start*/, IAttribute* /*end*/, float t, AttributeChange::Type /*change*/)
 {
     ::LogError("Attribute<QVariant>::Interpolate invoked! QVariant attributes cannot be animated!");
 }
 
-template<> void TUNDRACORE_API Attribute<QVariantList>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<QVariantList>::Interpolate(IAttribute* /*start*/, IAttribute* /*end*/, float t, AttributeChange::Type /*change*/)
 {
     ::LogError("Attribute<QVariantList>::Interpolate invoked! QVariantList attributes cannot be animated!");
 }

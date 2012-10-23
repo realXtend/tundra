@@ -5,6 +5,7 @@
 #include "TundraCoreApi.h"
 #include "AssetFwd.h"
 #include "CoreTypes.h"
+#include "CoreDefines.h"
 
 #include <QString>
 
@@ -36,10 +37,17 @@ public:
     virtual bool AbortTransfer(IAssetTransfer *transfer) { return false; }
 
     /// Performs time-based update of asset provider, to for example handle timeouts.
+<<<<<<< HEAD
     /** The system will call this periodically for all registered asset providers, so
         it does not need to be called manually.
         @param frametime Seconds since last frame */
     virtual void Update(f64 frametime) {}
+=======
+    /// The system will call this periodically for all registered asset providers, so
+    /// it does not need to be called manually.
+    /// @param frametime Seconds since last frame
+    virtual void Update(f64 frametime) { UNREFERENCED_PARAM(frametime) }
+>>>>>>> /bad-path/
 
     /// Issues an asset deletion request to the asset storage and provider this asset resides in.
     /** If the asset provider supports this feature, it will delete the asset from the source. */
@@ -57,7 +65,14 @@ public:
 
     /// Starts an asset upload from the given file in memory to the given storage.
     /** The default implementation fails all upload attempts and returns 0 immediately. */
-    virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName) { return AssetUploadTransferPtr(); }
+    virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName)
+    {
+        UNREFERENCED_PARAM(data)
+        UNREFERENCED_PARAM(numBytes)
+        UNREFERENCED_PARAM(destination)
+        UNREFERENCED_PARAM(assetName)
+        return AssetUploadTransferPtr();
+    }
 
     /// Reads the given storage string and tries to deserialize it to an asset storage in this provider.
     /** Returns a pointer to the newly created storage, or 0 if the storage string is not of the type of this asset provider. */

@@ -27,7 +27,7 @@ public:
         data.clear();
     }
 
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool /*allowAsynchronous*/)
     {
         data.clear();
         data.insert(data.end(), data_, data_ + numBytes);
@@ -35,7 +35,7 @@ public:
         return true;
     }
 
-    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &/*serializationParameters*/) const
     {
         dst = data;
         return true;

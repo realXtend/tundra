@@ -93,7 +93,7 @@ void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
         actionInvokationMappings.erase(it);
 }
 
-void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
+void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChange::Type /*change*/)
 {
     if (attribute == &contextName)
         inputContext->SetName(contextName.Get());

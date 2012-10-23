@@ -79,11 +79,11 @@ public:
     /// IDebugDraw override
     virtual void reportErrorWarning(const char* warningString);
     
-    /// IDebugDraw override
-    virtual void drawContactPoint(const btVector3& pointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color) {}
+    /// IDebugDraw override, does nothing.
+    virtual void drawContactPoint(const btVector3& /*pointOnB*/, const btVector3& /*normalOnB*/, btScalar /*distance*/, int /*lifeTime*/, const btVector3& /*color*/) {}
     
-    /// IDebugDraw override
-    virtual void draw3dText(const btVector3& location,const char* textString) {}
+    /// IDebugDraw override, does nothing.
+    virtual void draw3dText(const btVector3& /*location*/, const char* /*textString*/) {}
     
     /// IDebugDraw override
     virtual void setDebugMode(int debugMode) { debugDrawMode_ = debugMode; }

@@ -331,7 +331,7 @@ void AssetsWindow::ExpandOrCollapseAll()
     expandAndCollapseButton->setText(treeExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
-void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
+void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem * /*item*/)
 {
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
@@ -354,7 +354,7 @@ void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
     expandAndCollapseButton->setText(anyExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
-void AssetsWindow::AssetDoubleClicked(QTreeWidgetItem *item, int column)
+void AssetsWindow::AssetDoubleClicked(QTreeWidgetItem *item, int /*column*/)
 {
     AssetItem* assItem = dynamic_cast<AssetItem*>(item);
     if (!assItem || !assItem->Asset())
