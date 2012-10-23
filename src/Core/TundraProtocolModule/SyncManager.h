@@ -9,6 +9,8 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
+#include "InterestManager.h"
+#include "HighPerfClock.h"
 
 #include <kNetFwd.h>
 #include <kNet/Types.h>
@@ -39,6 +41,11 @@ public:
     /// Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(const UserConnectionPtr &user);
 
+    /// Get and Set the IM
+    InterestManager* GetInterestManager();
+
+    void SetInterestManager(InterestManager* im);
+
 public slots:
     /// Set update period (seconds)
     void SetUpdatePeriod(float period);
@@ -51,6 +58,18 @@ public slots:
         @param int connection ID of the client. */
     SceneSyncState* SceneState(int connectionId) const;
     SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /**< @overload @param connection Client connection.*/
+
+    /// Upates Interest Manager settings.
+    /** @param enabled If true, the IM scheme is allowed to filter traffic.
+        @param bool eucl If true, the euclidean distance filter is active.
+        @param bool ray If true, the ray visibility filter is active.
+        @param bool rel If true, the relevance filter is active.
+        @param int critrange specifies the radius for the critical area.
+        @param int rayrange specifies the radius for the raycasting.
+        @param int relrange specifies the radius for the relevance filtering.
+        @param int updateint specifies the update interval for the relevance filtering.
+        @param int raycastint specifies the raycasting interval for the ray visibility filter. */
+    void UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint);
 
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.
@@ -91,16 +110,16 @@ private slots:
 private:
     /// Queue a message to the receiver from a given DataSerializer.
     void QueueMessage(kNet::MessageConnection* connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds);
-    
     /// Craft a component full update, with all static and dynamic attributes.
     void WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp);
-    
     /// Handle entity action message.
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
     /// Handle create entity message.
     void HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes);
     /// Handle create components message.
     void HandleCreateComponents(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle a Camera Orientation Update message
+    void HandleCameraOrientation(kNet::MessageConnection* source, const char* data, size_t numBytes);
     /// Handle create attributes message.
     void HandleCreateAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes);
     /// Handle edit attributes message.
@@ -167,6 +186,8 @@ private:
     char removeEntityBuffer_[1024];
     char removeAttrsBuffer_[1024];
     std::vector<u8> changedAttributes_;
+
+    InterestManager *interestManager;
 };
 
 }

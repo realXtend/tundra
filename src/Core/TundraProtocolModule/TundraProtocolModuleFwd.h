@@ -43,3 +43,4 @@ struct MsgClientLeft;
 struct MsgAssetDiscovery;
 struct MsgAssetDeleted;
 struct MsgEntityAction;
+struct MsgCameraOrientationRequest;

@@ -10,6 +10,11 @@
 #include <kNet/Socket.h>
 #include <map>
 #include <QObject>
+#include <QUrl>
+#include <QMap>
+#include "Math/Quat.h"
+#include "Math/float3.h"
+#include <QTimer>
 
 class Framework;
 
@@ -108,6 +113,9 @@ public slots:
     /// Deletes all set login properties.
     void ClearLoginProperties() { properties.clear(); }
 
+    /// Get the current camera orientation
+    void GetCameraOrientation();
+
     QString GetLoginProperty(QString key) const { return LoginProperty(key); } ///< @deprecated Use LoginProperty. @todo Add warning print
     int GetConnectionID() const { return ConnectionId(); } ///< @deprecated Use ConnectionId. @todo Add warning print.
 
@@ -142,8 +150,15 @@ private slots:
     void DelayedLogout();
 
 private:
+
+    /// Send camera orientation to the server
+    void SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg);
+
     /// Handles pending login to server
     void CheckLogin();
+
+    /// Handles a camera orientation request message
+    void HandleCameraOrientationRequest(kNet::MessageConnection* source, const MsgCameraOrientationRequest& msg);
 
     /// Handles a loginreply message
     void HandleLoginReply(kNet::MessageConnection* source, const MsgLoginReply& msg);
@@ -160,6 +175,15 @@ private:
     u8 client_id_; ///< User ID, once known
     TundraLogicModule* owner_; ///< Owning module
     Framework* framework_; ///< Framework pointer
+
+    QTimer *cameraUpdateTimer;
+
+    // Current camera orientation
+    Quat currentcameraorientation_;
+    // Current camera location
+    float3 currentcameralocation_;
+    // Variable controlling whether or not to send camera orientation updates
+    bool sendCameraUpdates_;
 };
 
 }

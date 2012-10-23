@@ -12,7 +12,12 @@
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
+#include "MsgCameraOrientationRequest.h"
 #include "UserConnectedResponseData.h"
+#include "EC_Placeable.h"
+#include "Entity.h"
+#include "Renderer.h"
+#include "OgreRenderingModule.h"
 
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
@@ -35,6 +40,7 @@ Client::Client(TundraLogicModule* owner) :
     framework_(owner->GetFramework()),
     loginstate_(NotConnected),
     reconnect_(false),
+    sendCameraUpdates_(0),
     client_id_(0)
 {
 }
@@ -279,6 +285,79 @@ void Client::CheckLogin()
     }
 }
 
+void Client::GetCameraOrientation()
+{
+    if(!sendCameraUpdates_)
+        return;
+
+    if(framework_->IsHeadless())
+        return;
+
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+
+    if(!renderer)
+        return;
+
+    Entity *parentEntity = renderer->MainCamera();
+
+    if(!parentEntity)
+        return;
+
+    EC_Placeable *camera_placeable = parentEntity->GetComponent<EC_Placeable>().get();
+
+    if(!camera_placeable)
+        return;
+
+    Quat orientation = camera_placeable->WorldOrientation();
+    float3 location = camera_placeable->WorldPosition();
+
+    if(orientation == currentcameraorientation_ && location.Equals(currentcameralocation_)) //If the position and orientation of the client has not changed. Do not send anything
+        return;
+
+    const int maxMessageSizeBytes = 1400;
+
+    Ptr(kNet::MessageConnection) connection = GetConnection();
+
+    kNet::NetworkMessage *msg = connection->StartNewMessage(cCameraOrientationUpdate, maxMessageSizeBytes);
+
+    msg->contentID = 0;
+    msg->inOrder = true;
+    msg->reliable = true;
+
+    kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
+
+    const Transform &t = camera_placeable->transform.Get();
+
+    //Serialize the position of the client inside the message. Sends 57 bits.
+    ds.AddSignedFixedPoint(11, 8, t.pos.x);
+    ds.AddSignedFixedPoint(11, 8, t.pos.y);
+    ds.AddSignedFixedPoint(11, 8, t.pos.z);
+
+    //Serialize the orientation of the client. Sends 17 bits.
+    float3x3 rot = t.Orientation3x3();
+    float3 forward = rot.Col(2);
+    forward.Normalize();
+    ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8);
+
+    //Update the current location and orientation of the client.
+    currentcameraorientation_ = orientation;
+    currentcameralocation_ = location;
+
+    // Finally send the message
+    SendCameraOrientation(ds, msg);
+}
+
+void Client::SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg)
+{
+    Ptr(kNet::MessageConnection) connection = GetConnection();
+
+    if (ds.BytesFilled() > 0)
+        connection->EndAndQueueMessage(msg, ds.BytesFilled());
+
+    else
+        connection->FreeMessage(msg);
+}
+
 kNet::MessageConnection* Client::GetConnection()
 {
     return owner_->GetKristalliModule()->GetMessageConnection();
@@ -315,6 +394,12 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
     
     switch(messageId)
     {
+    case MsgCameraOrientationRequest::messageID:
+        {
+            MsgCameraOrientationRequest msg(data, numBytes);
+            HandleCameraOrientationRequest(source, msg);
+        }
+        break;
     case MsgLoginReply::messageID:
         {
             MsgLoginReply msg(data, numBytes);
@@ -335,6 +420,11 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
         break;
     }
     emit NetworkMessageReceived(packetId, messageId, data, numBytes);
+}
+
+void Client::HandleCameraOrientationRequest(MessageConnection* source, const MsgCameraOrientationRequest& msg)
+{
+    sendCameraUpdates_ = msg.enableCameraUpdates;
 }
 
 void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& msg)
@@ -359,6 +449,13 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
                 responseData.responseData.setContent(QByteArray((const char *)&msg.loginReplyData[0], (int)msg.loginReplyData.size()));
 
             emit Connected(&responseData);
+
+            if(!framework_->IsHeadless())
+            {
+                cameraUpdateTimer = new QTimer(this);
+                connect(cameraUpdateTimer, SIGNAL(timeout()), this, SLOT(GetCameraOrientation()));
+                cameraUpdateTimer->start(500);
+            }
         }
         else
         {

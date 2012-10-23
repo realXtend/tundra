@@ -10,11 +10,13 @@
 #include "Server.h"
 #include "TundraMessages.h"
 #include "MsgEntityAction.h"
+#include "OgreWorld.h"
 
 #include "Scene.h"
 #include "Entity.h"
 #include "CoreStringUtils.h"
 #include "EC_DynamicComponent.h"
+#include "EC_Camera.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
 #include "AttributeMetadata.h"
@@ -85,6 +87,7 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
     updatePeriod_(1.0f / 20.0f),
+    interestManager(0),
     updateAcc_(0.0)
 {
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
@@ -94,6 +97,87 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
 
 SyncManager::~SyncManager()
 {
+}
+
+void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint)
+{
+    Scene *scene = framework_->Scene()->MainCameraScene();
+
+    if(scene == NULL)
+        return;
+
+    if(owner_->IsServer())
+    {
+        // Loop through all connections and send the CameraOrientationRequest messages to the clients.
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+            if ((*i)->syncState)
+            {
+                const int maxMessageSizeBytes = 1400;
+
+                kNet::NetworkMessage *msg = (*i)->connection->StartNewMessage(cCameraOrientationRequest, maxMessageSizeBytes);
+
+                msg->contentID = 0;
+                msg->inOrder = true;
+                msg->reliable = true;
+
+                kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
+
+                ds.Add<u8>(enabled);
+
+                QueueMessage((*i)->connection, cCameraOrientationRequest, true, true, ds);
+            }
+
+        InterestManager *IM = 0;
+        MessageFilter *filter = 0;
+
+        if(enabled == false)    //If IM is not enabled, delete the IM altogether
+        {
+            SetInterestManager(0);
+            return;
+        }
+
+        IM = GetInterestManager();
+
+        if(eucl && ray && rel)          //In other words the EA3 algorithm
+            filter = new EA3Filter(IM, critrange, relrange, raycastint, updateint, true);
+
+        else if(eucl && rel && !ray)    //Combination that the A3 uses
+            filter = new A3Filter(IM, critrange, relrange, updateint, true);
+
+        else                            //In other case enable Euclidean Distance Filter
+            filter = new EuclideanDistanceFilter(IM, critrange, true);
+
+        IM->AssignFilter(filter);
+
+        SetInterestManager(IM);
+
+        LogInfo("InterestManager Settings Updated");
+    }
+}
+
+InterestManager* SyncManager::GetInterestManager()
+{
+    if(!interestManager)
+        interestManager = InterestManager::getInstance();
+
+    return interestManager;
+}
+
+void SyncManager::SetInterestManager(InterestManager *im)
+{
+    if(!im && !interestManager)
+        return;
+
+    else if(!im && interestManager)
+    {
+        delete interestManager;
+        interestManager = 0;
+    }
+
+    else
+        interestManager = im;
 }
 
 void SyncManager::SetUpdatePeriod(float period)
@@ -165,6 +249,9 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
     {
         switch(messageId)
         {
+        case cCameraOrientationUpdate:
+            HandleCameraOrientation(source, data, numBytes);
+            break;
         case cCreateEntityMessage:
             HandleCreateEntity(source, data, numBytes);
             break;
@@ -251,7 +338,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
 
     bool isServer = owner_->IsServer();
     
-    // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
+    // Client: r for stopping interpolation, if we change a currently interpolating variable ourselves
     if (!isServer) // Since the server never interpolates attributes, we don't need to do this check on the server at all.
     {
         ScenePtr scene = scene_.lock();
@@ -277,8 +364,18 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         // clients on the next network sync iteration.
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
             if ((*i)->syncState)
-                (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
+            {
+                /// Check here if the attribute should be updated to which client?
+                /// @remarks InterestManager functionality
+                if(interestManager && !interestManager->CheckRelevance((*i), entity, scene_, framework_->IsHeadless()))
+                        return;
+
+                else    //If IM is not available, accept the update
+                    (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
+            }
+        }
     }
     else
     {
@@ -1448,6 +1545,34 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
         return false;
     
     return true;
+}
+
+void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+
+    ScenePtr scene = scene_.lock();
+    if (!scene)
+        return;
+
+    kNet::DataDeserializer dd(data, numBytes);
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
+
+    float3 clientpos;
+
+    //Read the position of the client from the message
+    clientpos.x = dd.ReadSignedFixedPoint(11, 8);
+    clientpos.y = dd.ReadSignedFixedPoint(11, 8);
+    clientpos.z = dd.ReadSignedFixedPoint(11, 8);
+
+    //Read the orientation of the client
+    float3 forward;
+    dd.ReadNormalizedVector3D(9, 8, forward.x, forward.y, forward.z);
+    float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
+
+    //Finally update the orientation and location
+    user->syncState->clientOrientation = Quat(orientation);
+    user->syncState->clientLocation = clientpos;
 }
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)
