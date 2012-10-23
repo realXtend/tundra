@@ -1343,7 +1343,7 @@ void Scene::UpdateAttributeInterpolations(float frametime)
     interpolating_ = false;
 }
 
-void Scene::OnUpdated(float frameTime)
+void Scene::OnUpdated(float /*frameTime*/)
 {
     // Signal queued entity creations now
     for (unsigned i = 0; i < entitiesCreatedThisFrame_.size(); ++i)

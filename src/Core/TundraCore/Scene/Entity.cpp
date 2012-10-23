@@ -206,7 +206,7 @@ ComponentPtr Entity::GetOrCreateComponent(u32 typeId, AttributeChange::Type chan
     if (new_comp)
         return new_comp;
 
-    return CreateComponent(typeId, change);
+    return CreateComponent(typeId, change, replicated);
 }
 
 ComponentPtr Entity::GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change, bool replicated)

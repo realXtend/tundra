@@ -116,7 +116,7 @@ void UiMainWindow::closeEvent(QCloseEvent *e)
     e->ignore();
 }
 
-void UiMainWindow::resizeEvent(QResizeEvent *e)
+void UiMainWindow::resizeEvent(QResizeEvent * /*e*/)
 {
     emit WindowResizeEvent(width(), height());
 }

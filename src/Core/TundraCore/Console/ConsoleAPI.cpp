@@ -276,7 +276,7 @@ void ConsoleAPI::SetLogFile(const QString &wildCardFilename)
     }
 }
 
-void ConsoleAPI::Update(f64 frametime)
+void ConsoleAPI::Update(f64 /*frametime*/)
 {
     PROFILE(ConsoleAPI_Update);
 
