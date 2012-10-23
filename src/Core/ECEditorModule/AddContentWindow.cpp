@@ -853,21 +853,7 @@ bool AddContentWindow::CreateEntities()
     if (!filteredDesc.entities.empty())
     {
         QList<Entity *> entities;
-        /// @todo When SceneImporter is fixed, use Scene::CreateContentFromSceneDesc for all file types.
-        // <CanBeRemoved>
-        if (filteredDesc.filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
-        {
-            if (!CheckForStorageValidity())
-                return false;
-            QString path = QFileInfo(filteredDesc.filename).dir().path();
-            TundraLogic::SceneImporter importer(destScene);
-            entities = importer.Import(filteredDesc.filename, path, Transform(), CurrentStorage()->BaseURL(),
-                AttributeChange::Default, false/*clearScene*/, false);
-        }
-        else // </CanBeRemoved>
-        {
-            entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
-        }
+        entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
 
         if (!entities.empty())
         {
