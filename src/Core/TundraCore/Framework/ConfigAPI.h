@@ -11,6 +11,7 @@
 class Framework;
 
 /// Convenience structure for dealing constantly with same config file/sections.
+/** @todo Make a simple struct and expose to QtScript by using the QScriptBindings tool. */
 class TUNDRACORE_API ConfigData : public QObject
 {
     Q_OBJECT
@@ -50,7 +51,7 @@ public:
     QVariant defaultValue;
 };
 
-/// Configuration API for getting and setting config values.
+/// Configuration API for accessing config files.
 /** The Configuration API utilizes QVariants extensively for script-compatibility.
     In C++ code use the QVariant::to*() functions to convert the values to the correct type.
     The Config API supports ini sections but you may also write to the root of the ini document without a section.
@@ -89,66 +90,46 @@ public:
     static QString SECTION_SOUND;
 
 public slots:
-    /// Returns if a key is available in the config.
-    /** @param data Filled ConfigData object.
-        @param key Key to look for in the file under section.
-        @return if key exists in section of file. */
-    bool HasValue(const ConfigData &data) const;
-
-    /// Returns if a key is available in the config.
-    /** @param data ConfigData. Filled ConfigData object.
-        @return If key exists in section of file under section. */
-    bool HasValue(const ConfigData &data, QString key) const;
-
-    /// Returns if a key is available in the config.
+    /// Returns if a key exists in the config.
     /** @param file Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
         @param section The section in the config where key is. For example: "login".
-        @param key  Key to look for in the file under section.
-        @return If key exists in section of file. */
-    bool HasValue(QString file, QString section, QString key) const;
+        @param key  Key to look for in the file under section. */
+    bool HasKey(QString file, QString section, QString key) const;
+    bool HasKey(const ConfigData &data) const; /**< @overload @param data Filled ConfigData object */
+    bool HasKey(const ConfigData &data, QString key) const; /**< @overload */
 
-    /// Gets a value of key from a config file
-    /** @param data Filled ConfigData object.
-        @return The value of key/section in file. */
-    QVariant Get(const ConfigData &data) const;
+    /// @todo Add DeleteKey
 
-    /// Gets a value of key from a config file
-    /** @param data ConfigData object that has file and section filled, also may have defaultValue and it will be used if input defaultValue is null.
-        @param key Key that value gets returned. For example: "username".
-        @param defaultValue What you expect to get back if the file/section/key combination was not found.
-        @return The value of key/section in file. */
-    QVariant Get(const ConfigData &data, QString key, const QVariant &defaultValue = QVariant()) const;
-
-    /// Gets a value of key from a config file
+    /// Returns value for a key in a config file
     /** @param file Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
         @param section The section in the config where key is. For example: "login".
         @param key Key that value gets returned. For example: "username".
         @param defaultValue What you expect to get back if the file/section/key combination was not found.
         @return The value of key/section in file. */
     QVariant Get(QString file, QString section, QString key, const QVariant &defaultValue = QVariant()) const;
+    QVariant Get(const ConfigData &data) const; /**< @overload @param data Filled ConfigData object. */
+    /// @overload
+    /** @param data ConfigData object that has file and section filled, also may have defaultValue and it will be used if input defaultValue is null. */
+    QVariant Get(const ConfigData &data, QString key, const QVariant &defaultValue = QVariant()) const;
 
-    /// Sets the value of key in a config file.
-    /** @param data Filled ConfigData object. */
-    void Set(const ConfigData &data);
-
-    /// Sets the value of key in a config file.
-    /** @param data ConfigData object that has file and section filled.
-        @param key Key that value gets set. For example: "username".
-        @param value New value of key in file.
-        @note If setting value of type float, convert to double if you want the value to be human-readable in the file. */
-    void Set(const ConfigData &data, QString key, const QVariant &value);
-
-    /// Sets the value of key in a config file.
-    /** @param file Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
+    /** Sets the value of key in a config file.
+        @param file Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
         @param section The section in the config where key is. For example: "login".
         @param key Key that value gets set. For example: "username".
-        @param value New Value of key in file.
+        @param value New value for the key.
         @note If setting value of type float, convert to double if you want the value to be human-readable in the file. */
-    void Set(QString file, QString section, QString key, const QVariant &value);
+    void Set(QString file, QString section, QString key, const QVariant &value); /**< @overload */
+    void Set(const ConfigData &data); /**< @overload @param data Filled ConfigData object.*/
+    void Set(const ConfigData &data, QString key, const QVariant &value); /**< @overload @param data ConfigData object that has file and section filled. */
 
-    /// Gets the absolute path to the config folder where configs are stored. Guaranteed to have a trailing forward slash '/'.
-    /** @return Absolute path to config storage folder. */
-    QString GetConfigFolder() const { return configFolder_; }
+    /// Returns the absolute path to the config folder where configs are stored. Guaranteed to have a trailing forward slash '/'.
+    QString ConfigFolder() const { return configFolder_; }
+
+    // DEPRECATED
+    bool HasValue(QString file, QString section, QString key) const { return HasKey(file, section, key); } /**< @deprecated Use HasKey. @todo Add warning print @todo Remove */
+    bool HasValue(const ConfigData &data) const { return HasKey(data); } /**< @deprecated Use HasKey. @todo Add warning print @todo Remove */
+    bool HasValue(const ConfigData &data, QString key) const { return HasKey(data, key); } /**< @deprecated Use HasKey. @todo Add warning print @todo Remove */
+    QString GetConfigFolder() const { return ConfigFolder(); } /**< @deprecated Use ConfigFolder. @todo Add warning print @todo Remove */
 
 private:
     /// Get absolute file path for file. Guarantees that it ends with .ini.
@@ -167,17 +148,13 @@ private:
     Q_DISABLE_COPY(ConfigAPI)
     friend class Framework;
 
-    /// Constructs the Config API.
-    /** @param framework Framework. Takes ownership of the object. */
+    /// @note Framework takes ownership of the object.
     explicit ConfigAPI(Framework *framework);
 
     /// Opens up the Config API to the given data folder. This call will make sure that the required folders exist.
     /** @param configFolderName The name of the folder to store Tundra Config API data to. */
     void PrepareDataFolder(QString configFolderName);
 
-    /// Framework ptr.
     Framework *framework_;
-
-    /// Absolute path to the folder where to store the config files.
-    QString configFolder_;
+    QString configFolder_; ///< Absolute path to the folder where to store the config files.
 };

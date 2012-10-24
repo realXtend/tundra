@@ -58,7 +58,7 @@ bool ConfigAPI::IsFilePathSecure(const QString &file) const
 {
     if (file.trimmed().isEmpty())
     {
-        LogError("ConfigAPI: File path to perform read/write operations is not permitted as it's and empty string.");
+        LogError("ConfigAPI: File path to perform read/write operations is not permitted as it's an empty string.");
         return false;
     }
 
@@ -83,31 +83,31 @@ void ConfigAPI::PrepareString(QString &str) const
     }
 }
 
-bool ConfigAPI::HasValue(const ConfigData &data) const
+bool ConfigAPI::HasKey(const ConfigData &data) const
 {
     if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty())
     {
-        LogWarning("ConfigAPI::HasValue: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::HasKey: ConfigData does not have enough information.");
         return false;
     }
-    return HasValue(data.file, data.section, data.key);
+    return HasKey(data.file, data.section, data.key);
 }
 
-bool ConfigAPI::HasValue(const ConfigData &data, QString key) const
+bool ConfigAPI::HasKey(const ConfigData &data, QString key) const
 {
     if (data.file.isEmpty() || data.section.isEmpty())
     {
-        LogWarning("ConfigAPI::HasValue: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::HasKey: ConfigData does not have enough information.");
         return false;
     }
-    return HasValue(data.file, data.section, key);
+    return HasKey(data.file, data.section, key);
 }
 
-bool ConfigAPI::HasValue(QString file, QString section, QString key) const
+bool ConfigAPI::HasKey(QString file, QString section, QString key) const
 {
     if (configFolder_.isEmpty())
     {
-        LogError("ConfigAPI::Get: Config folder has not been prepared, returning empty string.");
+        LogError("ConfigAPI::HasKey: Config folder has not been prepared, returning empty string.");
         return false;
     }
 
@@ -121,7 +121,7 @@ bool ConfigAPI::HasValue(QString file, QString section, QString key) const
     QSettings config(GetFilePath(file), QSettings::IniFormat);
     if (!section.isEmpty())
         key = section + "/" + key;
-    return config.allKeys().contains(key) == true;
+    return config.allKeys().contains(key);
 }
 
 QVariant ConfigAPI::Get(const ConfigData &data) const
