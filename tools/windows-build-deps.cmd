@@ -337,6 +337,28 @@ IF NOT EXIST "%DEPS%\boost". (
    cecho {0D}Boost already built. Skipping.{# #}{\n}
 )
 
+IF NOT EXIST "%DEPS%\assimp\". (
+   cecho {0D}Checking out OpenAssetImport library from kNet from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
+   cd "%DEPS%"
+:: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
+   svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+   cd assimp
+   cmake -G %GENERATOR%
+   
+   :: Debug build.
+   devenv Assimp.sln /Build Debug
+   copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
+      
+   :: Release or RelWithDebInfo build, depending on which type of release was preferred.
+   IF %BUILD_RELEASE% == TRUE (
+      devenv Assimp.sln /Build Release
+      copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
+   ) ELSE (
+      devenv Assimp.sln /Build RelWithDebInfo
+      copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
+   )
+)
+
 IF NOT EXIST "%DEPS%\kNet\". (
    cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
    cd "%DEPS%"
