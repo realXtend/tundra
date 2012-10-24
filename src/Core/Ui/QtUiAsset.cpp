@@ -76,7 +76,7 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowA
             ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
             ref.parsedRef = assetAPI->ResolveAssetRef(Name(), ref.parsedRef);
             ref.encloseInQuotes = true;
-            ref.type = AssetAPI::GetResourceTypeFromAssetRef(ref.parsedRef);
+            ref.type = assetAPI->GetResourceTypeFromAssetRef(ref.parsedRef);
 
             // Check if AssetAPI has previous knowledge of this ref (eg via storage auto discovery),
             // if not we enforce "Texture" type to "Binary" so its not unnecessarily loaded to Ogre
@@ -113,7 +113,7 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowA
             ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
             ref.parsedRef = assetAPI->ResolveAssetRef(Name(), ref.parsedRef);
             ref.encloseInQuotes = false;
-            ref.type = AssetAPI::GetResourceTypeFromAssetRef(ref.parsedRef);
+            ref.type = assetAPI->GetResourceTypeFromAssetRef(ref.parsedRef);
 
             // Check if AssetAPI has previous knowledge of this ref (eg via storage auto discovery),
             // if not we enforce "Texture" type to "Binary" so its not unnecessarily loaded to Ogre

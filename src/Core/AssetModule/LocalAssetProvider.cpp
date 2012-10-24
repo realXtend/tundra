@@ -28,8 +28,8 @@
 
 #include "MemoryLeakCheck.h"
 
-LocalAssetProvider::LocalAssetProvider(Framework* framework_)
-:framework(framework_)
+LocalAssetProvider::LocalAssetProvider(Framework* framework_) :
+    framework(framework_)
 {
     enableRequestsOutsideStorages = framework_->HasCommandLineParameter("--accept_unknown_local_sources");
 }
@@ -66,7 +66,7 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
         return AssetTransferPtr();
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
-        assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef);
+        assetType = framework->Asset()->GetResourceTypeFromAssetRef(assetRef);
 
     if (!enableRequestsOutsideStorages)
     {
@@ -98,7 +98,9 @@ bool LocalAssetProvider::AbortTransfer(IAssetTransfer *transfer)
         AssetTransferPtr ongoingTransfer = (*iter);
         if (ongoingTransfer.get() == transfer)
         {
-            transfer->EmitAssetFailed("Transfer aborted.");
+            framework->Asset()->AssetTransferAborted(transfer);
+            
+            ongoingTransfer.reset();
             pendingDownloads.erase(iter);
             return true;
         }
@@ -299,6 +301,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
     if (pendingUploads.size() > 0)
         return;
 
+    const int maxLoadMSecs = 16;
     tick_t startTime = GetCurrentClockTime();
 
     while(pendingDownloads.size() > 0)
@@ -332,8 +335,10 @@ void LocalAssetProvider::CompletePendingFileDownloads()
                 if (path.isEmpty())
                 {
                     QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
-        //            AssetModule::LogWarning(reason);
                     framework->Asset()->AssetTransferFailed(transfer.get(), reason);
+                    // Also throttle asset loading here. This is needed in the case we have a lot of failed refs.
+                    //if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
+                    //    break;
                     continue;
                 }
             
@@ -346,22 +351,22 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         if (!success)
         {
             QString reason = "Failed to read asset data for asset \"" + ref + "\" from file \"" + absoluteFilename + "\"";
-//            AssetModule::LogError(reason);
             framework->Asset()->AssetTransferFailed(transfer.get(), reason);
+            // Also throttle asset loading here. This is needed in the case we have a lot of failed refs.
+            if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
+                break;
             continue;
         }
         
         // Tell the Asset API that this asset should not be cached into the asset cache, and instead the original filename should be used
         // as a disk source, rather than generating a cache file for it.
         transfer->SetCachingBehavior(false, absoluteFilename);
-
         transfer->storage = storage;
 
         // Signal the Asset API that this asset is now successfully downloaded.
         framework->Asset()->AssetTransferCompleted(transfer.get());
 
         // Throttle asset loading to at most 16 msecs/frame.
-        const int maxLoadMSecs = 16;
         if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
             break;
     }

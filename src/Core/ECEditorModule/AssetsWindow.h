@@ -34,7 +34,7 @@ public:
     AssetsWindow(Framework *fw, QWidget *parent = 0);
 
     /// Constructs the window to view only assets of specific type.
-    /** @param assetType Asset type identifier, see AssetAPI::GetResourceTypeFromAssetRef() and AssetAPI::GetResourceTypeFromAssetRef()
+    /** @param assetType Asset type identifier, see AssetAPI::GetResourceTypeFromAssetRef().
         @param fw Framework.
         @parent parent Parent widget. */
     AssetsWindow(const QString &assetType, Framework *fw, QWidget *parent = 0);

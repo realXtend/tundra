@@ -51,7 +51,15 @@ public slots:
         return storage->GetFullAssetURL(destinationName);
     }
 
-    QByteArray RawData() const { return QByteArray::fromRawData((const char*)&assetData[0], assetData.size()); }
+    /// Returns a copy of the raw asset data in this upload.
+    QByteArray RawData() const
+    { 
+        if (assetData.size() == 0)
+            return QByteArray();
+        else
+            return QByteArray((const char*)&assetData[0], assetData.size());
+    }
+
     QByteArray RawReplyData() const { return replyData; }
 
     QString SourceFilename() const { return sourceFilename; }
