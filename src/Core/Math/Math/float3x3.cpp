@@ -1139,7 +1139,7 @@ bool float3x3::IsUpperTriangular(float epsilon) const
 	    && EqualAbs(v[3][2], 0.f, epsilon);
 }
 
-bool float3x3::IsInvertible(float epsilon) const
+bool float3x3::IsInvertible(float /*epsilon*/) const
 {
 	///@todo Optimize.
 	float3x3 copy = *this;

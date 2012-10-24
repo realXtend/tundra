@@ -297,7 +297,7 @@ Sphere Sphere::FastEnclosingSphere(const float3 *pts, int numPoints)
 	return s;
 }
 
-Sphere Sphere::OptimalEnclosingSphere(const float3 *pointArray, int numPoints)
+Sphere Sphere::OptimalEnclosingSphere(const float3 * /*pointArray*/, int /*numPoints*/)
 {
 	assume(false && "Not implemented!");
 	return Sphere();

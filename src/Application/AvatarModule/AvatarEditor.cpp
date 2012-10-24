@@ -472,7 +472,7 @@ void AvatarEditor::OnAssetTransferSucceeded(AssetPtr asset)
         LogError("AvatarEditor::OnAssetTransferSucceeded: not an avatar asset");
 }
 
-void AvatarEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
+void AvatarEditor::OnAssetTransferFailed(IAssetTransfer * /*transfer*/, QString reason)
 {
     LogError("AvatarEditor::OnAssetTransferFailed: " + reason);
 }
