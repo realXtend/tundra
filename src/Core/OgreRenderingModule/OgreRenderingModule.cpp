@@ -115,12 +115,13 @@ void OgreRenderingModule::Load()
     
     // These file types are supported by the Open Asset Import library:
     // http://assimp.sourceforge.net/main_features_formats.html
-    /// @todo Detect during runtime if assimp module is loaded and only then add these types?
+#ifdef ASSIMP_ENABLED
     meshExtensions << ".3d" << ".b3d" << ".dae" << ".bvh" << ".3ds" << ".ase" << ".obj" << ".ply" << ".dxf" 
         << ".nff" << ".smd" << ".vta" << ".mdl" << ".md2" << ".md3" << ".mdc" << ".md5mesh" << ".x" << ".q3o" 
         << ".q3s" << ".raw" << ".ac" << ".stl" << ".irrmesh" << ".irr" << ".off" << ".ter" << ".mdl" << ".hmp"
         << ".ms3d" << ".lwo" << ".lws" << ".lxo" << ".csm" << ".ply" << ".cob" << ".scn";
-        
+#endif
+
     // The following file types are from FreeImage's list of supported formats:
     // http://freeimage.sourceforge.net/features.html
     // The GIMP xcf is not in the list of known image formats, but detect it anyways.
