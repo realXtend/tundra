@@ -69,10 +69,16 @@ void Client::Login(const QUrl& loginUrl)
     QList<QPair<QString, QString> > queryItems = loginUrl.queryItems();
     for (int i=0; i<queryItems.size(); i++)
     {
-        QPair<QString, QString> queryItem = queryItems.at(i);
         // Skip the ones that are handled by below logic
+        QPair<QString, QString> queryItem = queryItems.at(i);
         if (queryItem.first == "username" || queryItem.first == "password" || queryItem.first == "protocol")
             continue;
+        QByteArray utfQueryValue = queryItem.second.toUtf8();
+        if (utfQueryValue.contains('%'))
+        {
+            // Use QUrl to decode percent encoding instead of QByteArray.
+            queryItem.second = QUrl::fromEncoded(utfQueryValue).toString();
+        }
         SetLoginProperty(queryItem.first, queryItem.second);
     }
 
