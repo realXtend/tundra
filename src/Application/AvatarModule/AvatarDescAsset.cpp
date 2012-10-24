@@ -79,7 +79,7 @@ void AvatarDescAsset::DoUnload()
     properties_.clear();
 }
 
-bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
+bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool /*allowAsynchronous*/)
 {
     // Store the raw XML as a string
     QByteArray bytes((const char *)data, numBytes);
@@ -101,7 +101,7 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool 
     return true;
 }
 
-bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
+bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &/*serializationParameters*/) const
 {
     QDomDocument avatarDoc("Avatar");
     WriteAvatarAppearance(avatarDoc);
