@@ -1735,10 +1735,17 @@ void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *f
 
 void AssetReferenceAttributeEditor::OpenAssetsWindow()
 {
+    if (!components_[0].lock().get())
+    {
+        LogWarning("Cannot create AssetsWindow, no component.");
+        return;
+    }
+    
     Attribute<AssetReference> *assetRef= FindAttribute<AssetReference>(components_[0].lock());
     if (assetRef)
     {
-        QString assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef->Get());
+    
+        QString assetType = components_[0].lock()->GetFramework()->Asset()->GetResourceTypeFromAssetRef(assetRef->Get());
         LogDebug("Creating AssetsWindow for asset type " + assetType);
         AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
         connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
@@ -1997,6 +2004,12 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     if (!button)
         return;
 
+    if (!components_[0].lock().get())
+    {
+        LogWarning("Cannot open AssetsWindow, no component.");
+        return;
+    }
+    
     Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (!refList)
         return;
@@ -2013,7 +2026,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
         assetType = refList->Get()[0].type;
         // As the last resort, try to figure it out using AssetAPI.
         if (assetType.isEmpty())
-            assetType = AssetAPI::GetResourceTypeFromAssetRef(refList->Get()[0]);
+            assetType = components_[0].lock()->GetFramework()->Asset()->GetResourceTypeFromAssetRef(refList->Get()[0]);
     }
 
     LogDebug("OpenAssetsWindow, index " + ToString(currentIndex));

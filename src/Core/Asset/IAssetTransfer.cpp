@@ -70,7 +70,7 @@ QByteArray IAssetTransfer::RawData() const
     if (rawAssetData.size() == 0) 
         return QByteArray(); 
     else 
-        return QByteArray::fromRawData((const char*)&rawAssetData[0], rawAssetData.size());
+        return QByteArray((const char*)&rawAssetData[0], rawAssetData.size());
 }
 
 QString IAssetTransfer::SourceUrl() const

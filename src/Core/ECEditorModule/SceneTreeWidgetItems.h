@@ -151,6 +151,21 @@ private:
     AssetStorageWeakPtr assetStorage; ///< Weak pointer to the asset storage.
 };
 
+/// Item representing asset bundle in the tree widget.
+class AssetBundleItem : public QTreeWidgetItem
+{
+public:
+    /// Constructor.
+    /** @param storage Asset storage pointer.
+        @param parent Parent tree widget item. */
+    AssetBundleItem(const AssetBundlePtr &bundle, const QString &bundleName, QTreeWidgetItem *parent = 0);
+
+    bool Contains(const QString &assetRef);
+
+private:
+    QString bundleName_;
+};
+
 /// Represents selection of AssetTreeWidget items.
 struct AssetTreeWidgetSelection
 {
