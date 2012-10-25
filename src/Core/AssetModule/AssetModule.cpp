@@ -95,7 +95,7 @@ void AssetModule::Initialize()
 
     TundraLogic::Client *client = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get();
     connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(ClientConnectedToServer(UserConnectedResponseData *)));
-    connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
+    connect(client, SIGNAL(Disconnected(const QString)), this, SLOT(ClientDisconnectedFromServer()));
 
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
@@ -368,7 +368,8 @@ void AssetModule::OnAssetUploaded(const QString& assetRef)
     // If we are client, send to server
     else
     {
-        kNet::MessageConnection* connection = tundra->GetClient()->GetConnection();
+        ::LogInfo("onAssetUploaded fail FIX IT: " + assetRef);
+        kNet::MessageConnection* connection = tundra->GetClient()->GetConnection("temp");
         if (connection)
             connection->Send(msg);
     }
@@ -395,7 +396,8 @@ void AssetModule::OnAssetDeleted(const QString& assetRef)
     // If we are client, send to server
     else
     {
-        kNet::MessageConnection* connection = tundra->GetClient()->GetConnection();
+        ::LogInfo("onAssetUploaded fail FIX IT: " + assetRef);
+        kNet::MessageConnection* connection = tundra->GetClient()->GetConnection("temp");
         if (connection)
             connection->Send(msg);
     }

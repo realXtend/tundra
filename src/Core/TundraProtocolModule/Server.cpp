@@ -96,7 +96,6 @@ bool Server::Start(unsigned short port, QString protocol)
     current_protocol_ = (transportLayer == kNet::SocketOverUDP) ? "udp" : "tcp";
 
     // Create the default server scene
-    /// \todo Should be not hard coded like this. Give some unique id (uuid perhaps) that could be returned to the client to make the corresponding named scene in client?
     ScenePtr scene = framework_->Scene()->CreateScene("TundraServer", true, true);
 //    framework_->Scene()->SetDefaultScene(scene);
     owner_->GetSyncManager()->RegisterToScene(scene);

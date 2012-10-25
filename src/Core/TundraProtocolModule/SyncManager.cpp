@@ -85,7 +85,8 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
     updatePeriod_(1.0f / 20.0f),
-    updateAcc_(0.0)
+    updateAcc_(0.0),
+    sceneID_("")
 {
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
@@ -140,7 +141,8 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     
     scene_ = scene;
     Scene* sceneptr = scene.get();
-    
+    sceneID_ = sceneptr->Name().toStdString(); // This is scene identifier.
+
     connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( AttributeAdded(IComponent*, IAttribute*, AttributeChange::Type) ),
@@ -161,6 +163,13 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
+    QString sourceName = QString::fromAscii(source->GetSocket()->DestinationAddress()) + "-" +QString::number(source->GetSocket()->DestinationPort());
+    source->GetSocket()->TransportLayer() == kNet::SocketOverUDP ? sourceName.append("-udp") : sourceName.append("-tcp");
+    if (!owner_->IsServer() && (sourceName != QString::fromStdString(sceneID_)))
+    {
+        //::LogInfo("HandleKristalliMessage: Wrong source! " + sourceName);
+        return;
+    }
     try
     {
         switch(messageId)
@@ -462,11 +471,11 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
         msg.parameters.push_back(p);
     }
 
-    if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0) && owner_->GetClient()->GetConnection())
+    if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0) && owner_->GetClient()->GetConnection(QString::fromStdString(sceneID_)))
     {
         // send without Local flag
         msg.executionType = (u8)(type & ~EntityAction::Local);
-        owner_->GetClient()->GetConnection()->Send(msg);
+        owner_->GetClient()->GetConnection(QString::fromStdString(sceneID_))->Send(msg);
     }
 
     if (isServer && (type & EntityAction::Peers) != 0)
@@ -679,7 +688,7 @@ void SyncManager::Update(f64 frametime)
     else
     {
         // If we are client, process just the server sync state
-        kNet::MessageConnection* connection = owner_->GetKristalliModule()->GetMessageConnection();
+        kNet::MessageConnection* connection = owner_->GetKristalliModule()->GetMessageConnection(QString::fromStdString(sceneID_));
         if (connection)
             ProcessSyncState(connection, &server_syncstate_);
     }
@@ -1117,14 +1126,14 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
 void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state)
 {
     PROFILE(SyncManager_ProcessSyncState);
-    
+
     unsigned sceneId = 0; ///\todo Replace with proper scene ID once multiscene support is in place.
-    
+
     ScenePtr scene = scene_.lock();
     int numMessagesSent = 0;
     bool isServer = owner_->IsServer();
     UNREFERENCED_PARAM(isServer)
-    
+
     // Process the state's dirty entity queue.
     /// \todo Limit and prioritize the data sent. For now the whole queue is processed, regardless of whether the connection is being saturated.
     while (!state->dirtyQueue.empty())
@@ -1132,7 +1141,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         EntitySyncState& entityState = *state->dirtyQueue.front();
         state->dirtyQueue.pop_front();
         entityState.isInQueue = false;
-        
+
         EntityPtr entity = scene->GetEntity(entityState.id);
         bool removeState = false;
         if (!entity)
@@ -1148,7 +1157,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             if (entity->IsLocal() || (!entityState.isNew && entity->IsUnacked()))
                 continue;
         }
-        
+
         // Remove entity
         if (entityState.removed)
         {
@@ -1164,7 +1173,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             }
             else
                 removeState = true;
-            
+
             kNet::DataSerializer ds(removeEntityBuffer_, 1024);
             ds.AddVLE<kNet::VLE8_16_32>(sceneId);
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
@@ -1175,13 +1184,13 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         else if (entityState.isNew)
         {
             kNet::DataSerializer ds(createEntityBuffer_, 64 * 1024);
-            
+
             // Entity identification and temporary flag
             ds.AddVLE<kNet::VLE8_16_32>(sceneId);
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             // Do not write the temporary flag as a bit to not desync the byte alignment at this point, as a lot of data potentially follows
             ds.Add<u8>(entity->IsTemporary() ? 1 : 0);
-            
+
             const Entity::ComponentMap& components = entity->Components();
             // Count the amount of replicated components
             uint numReplicatedComponents = 0;
@@ -1191,7 +1200,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     ++numReplicatedComponents;
             }
             ds.AddVLE<kNet::VLE8_16_32>(numReplicatedComponents);
-            
+
             // Serialize each replicated component
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             {
@@ -1202,10 +1211,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 // Mark the component undirty in the receiver's syncstate
                 state->MarkComponentProcessed(entity->Id(), comp->Id());
             }
-            
+
             QueueMessage(destination, cCreateEntityMessage, true, true, ds);
             ++numMessagesSent;
-            
+
             // The create has been processed fully. Clear dirty flags.
             state->MarkEntityProcessed(entity->Id());
         }
@@ -1217,13 +1226,13 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             kNet::DataSerializer createCompsDs(createCompsBuffer_, 64 * 1024);
             kNet::DataSerializer createAttrsDs(createAttrsBuffer_, 16 * 1024);
             kNet::DataSerializer editAttrsDs(editAttrsBuffer_, 64 * 1024);
-            
+
             while (!entityState.dirtyQueue.empty())
             {
                 ComponentSyncState& compState = *entityState.dirtyQueue.front();
                 entityState.dirtyQueue.pop_front();
                 compState.isInQueue = false;
-                
+
                 ComponentPtr comp = entity->GetComponentById(compState.id);
                 bool removeCompState = false;
                 if (!comp)
@@ -1239,12 +1248,12 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     if (comp->IsLocal() || (!compState.isNew && comp->IsUnacked()))
                         continue;
                 }
-                
+
                 // Remove component
                 if (compState.removed)
                 {
                     removeCompState = true;
-                    
+
                     // If first component, write the entity ID first
                     if (!removeCompsDs.BytesFilled())
                     {
@@ -1272,13 +1281,13 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 else if (comp)
                 {
                     const AttributeVector& attrs = comp->Attributes();
-                    
+
                     for (std::map<u8, bool>::iterator i = compState.newAndRemovedAttributes.begin(); i != compState.newAndRemovedAttributes.end(); ++i)
                     {
                         u8 attrIndex = i->first;
                         // Clear the corresponding dirty flags, so that we don't redundantly send attribute edited data.
                         compState.dirtyAttributes[attrIndex >> 3] &= ~(1 << (attrIndex & 7));
-                        
+
                         if (i->second)
                         {
                             // Create attribute. Make sure it exists and is dynamic.
@@ -1294,7 +1303,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                     createAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
                                     createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                                 }
-                                
+
                                 IAttribute* attr = attrs[attrIndex];
                                 createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                                 createAttrsDs.Add<u8>(attrIndex); // Index
@@ -1317,7 +1326,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                         }
                     }
                     compState.newAndRemovedAttributes.clear();
-                    
+
                     // Now, if remaining dirty bits exist, they must be sent in the edit attributes message. These are the majority of our network data.
                     changedAttributes_.clear();
                     unsigned numBytes = (attrs.size() + 7) >> 3;
@@ -1348,10 +1357,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                         }
                         editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                        
+
                         // Create a nested dataserializer for the actual attribute data, so we can skip components
                         kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
-                        
+
                         // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
                         unsigned bitsMethod1 = changedAttributes_.size() * 8 + 8;
                         unsigned bitsMethod2 = attrs.size();
@@ -1381,21 +1390,21 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                     attrDataDs.Add<kNet::bit>(0);
                             }
                         }
-                        
+
                         // Add the attribute data array to the main serializer
                         editAttrsDs.AddVLE<kNet::VLE8_16_32>(attrDataDs.BytesFilled());
                         editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDataDs.BytesFilled());
-                        
+
                         // Now zero out all remaining dirty bits
                         for (unsigned i = 0; i < numBytes; ++i)
                             compState.dirtyAttributes[i] = 0;
                     }
                 }
-                
+
                 if (removeCompState)
                     entityState.components.erase(compState.id);
             }
-            
+
             // Send the messages which have data
             if (removeCompsDs.BytesFilled())
             {
@@ -1422,11 +1431,11 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 QueueMessage(destination, cEditAttributesMessage, true, true, editAttrsDs);
                 ++numMessagesSent;
             }
-            
+
             // The entity has been processed fully. Clear dirty flags.
             state->MarkEntityProcessed(entity->Id());
         }
-        
+
         if (removeState)
             state->entities.erase(entityState.id);
     }

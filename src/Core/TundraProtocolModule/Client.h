@@ -10,6 +10,7 @@
 #include <kNet/Socket.h>
 #include <map>
 #include <QObject>
+#include <QMap>
 
 class Framework;
 
@@ -47,7 +48,7 @@ public:
     ClientLoginState LoginState() const { return loginstate_; }
 
     /// Returns client connection ID (from loginreply message), or zero if not connected.
-    int ConnectionId() const { return client_id_; }
+    int ConnectionId() const { return client_id_list_.empty() ? client_id_ : client_id_list_[activescenename_]; }
 
     /// Returns all the login properties that will be used to login to the server.
     LoginPropertyMap &LoginProperties() { return properties; }
@@ -55,7 +56,7 @@ public:
     /// Returns the underlying kNet MessageConnection object that represents this connection.
     /** This function may return null in the case the connection is not active.
         @todo Rename to Connection */
-    kNet::MessageConnection* GetConnection();
+    kNet::MessageConnection* GetConnection(const QString&);
 
     /// Logout immediately and delete the client scene content
     /** @param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client. */
@@ -65,7 +66,7 @@ public slots:
     /// Connects and logs in.
     /** loginUrl's query parameters will be evaluated for the login data.
         All query parameters that are not recognized will be added to the clients login properties as custom data.
-        Minimum information needed to try a connection in the url are host and username. For query parameters only username, protocol and password 
+        Minimum information needed to try a connection in the url are host and username. For query parameters only username, protocol and password
         get special treatment, other params are inserted to the login properties as is.
         URL syntax: {tundra|http|https}://host[:port]/?username=x[&password=y][&protocol={udp|tcp}][&XXX=YYY]
         URL examples: tundra://server.com/?username=John%20Doe tundra://server.com:5432/?username=John%20Doe&password=pWd123&protocol=udp&myCustomValue=YYY&myOtherValue=ZZZ
@@ -84,10 +85,11 @@ public slots:
 
     /// Disconnects the client from the current server, and also deletes all contents from the client scene.
     /** Delays the logout by one frame, so it is safe to call from scripts. */
-    void Logout();
+    void Logout(const QString&);
 
     /// See if connected & authenticated
     bool IsConnected() const;
+    bool IsConnected(const QString& , unsigned short , const QString &);
 
     /// Sets the given login property with the given value.
     /** Call this function prior connecting to a scene to specify data that should be carried to the server as initial login data.
@@ -108,13 +110,28 @@ public slots:
     /// Deletes all set login properties.
     void ClearLoginProperties() { properties.clear(); }
 
+    /// Prints scene names from loginstate_list_ keys
+    void printSceneNames();
+
+    /// Signal to javascript to switch main camera scene
+    void emitSceneSwitch(const QString name);
+
     QString GetLoginProperty(QString key) const { return LoginProperty(key); } ///< @deprecated Use LoginProperty. @todo Add warning print
     int GetConnectionID() const { return ConnectionId(); } ///< @deprecated Use ConnectionId. @todo Add warning print.
+
+    /// Get connected scene names
+    QStringList getSceneNames();
+
+    /// Set active scenename for multiconnection
+    void setActiveScenename(const QString &name) { activescenename_ = name; }
+
+    /// Get active scenename for multiconnection
+    QString getActiveScenename() { return activescenename_; }
 
 signals:
     /// This signal is emitted right before this client is starting to connect to a Tundra server.
     /** Any script or other piece of code can listen to this signal, and as at this point, fill in any internal
-        custom data (called "login properties") they need to add to the connection handshake. The server will get 
+        custom data (called "login properties") they need to add to the connection handshake. The server will get
         all the login properties and a server-side script can do validation and storage of whether the client
         can be authorized to log in or not. */
     void AboutToConnect();
@@ -127,21 +144,29 @@ signals:
     void NetworkMessageReceived(kNet::packet_id_t, kNet::message_id_t id, const char *data, size_t numBytes);
 
     /// This signal is emitted when the client has disconnected from the server.
-    void Disconnected();
+    void Disconnected(const QString);
 
     /// Emitted when a login attempt failed to a server.
     void LoginFailed(const QString &reason);
+
+    void switchScene(const QString name);
 
 private slots:
     /// Handles a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
-    void OnConnectionAttemptFailed();
+    void OnConnectionAttemptFailed(QString &key);
 
     /// Actually perform a delayed logout
     void DelayedLogout();
 
 private:
+    /// Saves connection properties to Containers
+    void saveProperties(const QString name = "NEW");
+
+    /// Removes connection properties from containers
+    void removeProperties(const QString &name);
+
     /// Handles pending login to server
     void CheckLogin();
 
@@ -160,6 +185,20 @@ private:
     u8 client_id_; ///< User ID, once known
     TundraLogicModule* owner_; ///< Owning module
     Framework* framework_; ///< Framework pointer
+    QString sceneName;
+
+    // Container for all the connections loginstates
+    QMap<QString,ClientLoginState> loginstate_list_;
+    // Container for all the connections properties
+    QMap< QString, std::map<QString, QString> > properties_list_;
+    // Container for all the connections reconnect bool value
+    QMap<QString, bool> reconnect_list_;
+    // Container for all the connections clientID values
+    QMap<QString, u8> client_id_list_;
+    // Scene to be disconnected
+    QString discScene;
+    // Current active scenename
+    QString activescenename_;
 };
 
 }

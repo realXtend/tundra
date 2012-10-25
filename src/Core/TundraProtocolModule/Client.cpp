@@ -35,7 +35,8 @@ Client::Client(TundraLogicModule* owner) :
     framework_(owner->GetFramework()),
     loginstate_(NotConnected),
     reconnect_(false),
-    client_id_(0)
+    client_id_(0),
+    discScene("")
 {
 }
 
@@ -59,9 +60,9 @@ void Client::Login(const QUrl& loginUrl)
     if (urlScheme != "tundra" && urlScheme != "http" && urlScheme != "https")
         return;
 
-    // Make sure to logout to empty the previous properties map.
-    if (IsConnected())
-        DoLogout();
+    // If connected, just do nothing for now.
+    if (IsConnected(loginUrl.host(),loginUrl.port(),loginUrl.queryItemValue("protocol")))
+        return;
 
     // Set properties that the "lower" overload wont be adding:
     // Iterate all query items and parse them to go into the login properties.
@@ -83,7 +84,7 @@ void Client::Login(const QUrl& loginUrl)
     QString address = loginUrl.host();
     int port = loginUrl.port();
 
-    // If the username is more exotic or has spaces, prefer 
+    // If the username is more exotic or has spaces, prefer
     // decoding the percent encoding before it is sent to the server.
     QByteArray utfUsername = loginUrl.queryItemValue("username").toUtf8();
     if (utfUsername.contains('%'))
@@ -106,8 +107,8 @@ void Client::Login(const QUrl& loginUrl)
 
 void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password, const QString &protocol)
 {
-    if (IsConnected())
-        DoLogout();
+    if (IsConnected(address, port, protocol))
+        return;
 
     // Set properties that the "lower" overload wont be adding.
     SetLoginProperty("username", username);
@@ -147,8 +148,8 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         p = "tcp";
     else if (protocol == kNet::SocketOverUDP)
         p = "udp";
-        
-    // Set all login properties we have knowledge of. 
+
+    // Set all login properties we have knowledge of.
     // Others may have been added before calling this function.
     SetLoginProperty("protocol", p);
     SetLoginProperty("address", address);
@@ -158,18 +159,25 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     SetLoginProperty("client-organization", Application::OrganizationName());
 
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
-    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)),
             this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
-    connect(kristalli, SIGNAL(ConnectionAttemptFailed()), this, SLOT(OnConnectionAttemptFailed()), Qt::UniqueConnection);
+    connect(kristalli, SIGNAL(ConnectionAttemptFailed(QString&)), this, SLOT(OnConnectionAttemptFailed(QString&)), Qt::UniqueConnection);
 
     owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
+    // Save clientId, reconnect, loginstate etc
+    saveProperties();
 }
 
-void Client::Logout()
+void Client::Logout(const QString &name)
 {
-    QTimer::singleShot(1, this, SLOT(DelayedLogout()));
+    // Handle console disconnect with parameter but allow user to disconnect main camera scene from JS using client.disconnect()
+        if (name != "")
+            discScene = name;
+        else
+            discScene = framework_->Scene()->MainCameraScene()->Name();
+        QTimer::singleShot(1, this, SLOT(DelayedLogout()));
 }
 
 void Client::DelayedLogout()
@@ -179,21 +187,26 @@ void Client::DelayedLogout()
 
 void Client::DoLogout(bool fail)
 {
-    if (loginstate_ != NotConnected)
+
+    QStringList keys = loginstate_list_.keys();
+    if (!keys.contains(discScene))
     {
-        if (GetConnection())
+        discScene = "";
+        printSceneNames();
+        return;
+    }
+
+    if (loginstate_list_[discScene]!= NotConnected)
+    {
+        if (GetConnection(discScene))
         {
-            owner_->GetKristalliModule()->Disconnect();
+            owner_->GetKristalliModule()->Disconnect(discScene);
             ::LogInfo("Disconnected");
         }
         
-        loginstate_ = NotConnected;
-        client_id_ = 0;
+        removeProperties(discScene);
         
-        framework_->Scene()->RemoveScene("TundraClient");
-        framework_->Asset()->ForgetAllAssets();
-        
-        emit Disconnected();
+        emit Disconnected(discScene);
     }
     
     if (fail)
@@ -205,21 +218,46 @@ void Client::DoLogout(bool fail)
     {
         // Clear all the login properties we used for this session, so that the next login session will start from an
         // empty set of login properties (just-in-case).
-        properties.clear();
+        if (client_id_list_.contains(discScene))
+            removeProperties(discScene);
     }
 
-    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
-    disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
-        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
+    if (loginstate_list_.isEmpty())
+    {
+        KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
+        disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)),
+                   this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
 
-    disconnect(kristalli, SIGNAL(ConnectionAttemptFailed()), this, SLOT(OnConnectionAttemptFailed()));
-
+        disconnect(kristalli, SIGNAL(ConnectionAttemptFailed(QString&)), this, SLOT(OnConnectionAttemptFailed(QString&)));
+    }
+    framework_->Scene()->RemoveScene(discScene);
     ::LogInfo("Client logged out.");
 }
 
 bool Client::IsConnected() const
 {
     return loginstate_ == LoggedIn;
+}
+
+bool Client::IsConnected(const QString& address, unsigned short port, const QString &protocol)
+{
+    QMap< QString, std::map<QString, QString> >::const_iterator iter = properties_list_.begin();
+    QString tempProtocol = protocol;
+    std::map<QString, QString> tempMap;
+    if (protocol == "")
+        tempProtocol = "udp";
+    while (iter != properties_list_.end())
+    {
+        tempMap = iter.value();
+        if (tempMap["address"] == address && tempMap["port"] == QString::number(port) && tempMap["protocol"] == tempProtocol)
+        {
+            setActiveScenename(iter.key());
+            emit switchScene(iter.key());
+            return true;
+        }
+        ++iter;
+    }
+    return false;
 }
 
 void Client::SetLoginProperty(QString key, QString value)
@@ -233,9 +271,17 @@ void Client::SetLoginProperty(QString key, QString value)
 
 QString Client::LoginProperty(QString key) const
 {
+    LoginPropertyMap tempMap;
+
+    if (properties_list_.contains(activescenename_))
+        tempMap = properties_list_[activescenename_];
+    else
+        tempMap = properties_list_["NEW"];
+
     key = key.trimmed();
-    LoginPropertyMap::const_iterator i = properties.find(key);
-    if (i != properties.end())
+    LoginPropertyMap::const_iterator i = tempMap.find(key);
+
+    if (i != tempMap.end())
         return i->second;
     else
         return "";
@@ -257,35 +303,56 @@ QString Client::LoginPropertiesAsXml() const
 
 void Client::CheckLogin()
 {
-    kNet::MessageConnection* connection = GetConnection();
-    switch(loginstate_)
+    // Using iterators to process through all properties for established connections
+    QMutableMapIterator<QString, ClientLoginState> loginstateIterator(loginstate_list_);
+    QMapIterator<QString, std::map<QString, QString> > propertiesIterator(properties_list_);
+    QMapIterator<QString, Ptr(kNet::MessageConnection)> connectionIterator = owner_->GetKristalliModule()->GetConnectionArray();
+
+    // Checklogin only happens if atleast one connection is made in KristalliProtocolModule and set to ConnectionOK state.
+    while (connectionIterator.hasNext() && loginstateIterator.hasNext())
     {
-    case ConnectionPending:
-        if (connection && connection->GetConnectionState() == kNet::ConnectionOK)
+        connectionIterator.next();
+        propertiesIterator.next();
+        loginstateIterator.next();
+        //::LogInfo("Processing connection: " + connectionIterator.key() + " and loginstate: " + loginstateIterator.key());
+
+        switch (loginstateIterator.value())
         {
-            loginstate_ = ConnectionEstablished;
-            MsgLogin msg;
-            emit AboutToConnect(); // This signal is used as a 'function call'. Any interested party can fill in
-            // new content to the login properties of the client object, which will then be sent out on the line below.
-            msg.loginData = StringToBuffer(LoginPropertiesAsXml().toStdString());
-            connection->Send(msg);
+        case ConnectionPending:
+            if ((connectionIterator.value().ptr()) && (connectionIterator.value().ptr()->GetConnectionState() == kNet::ConnectionOK))
+            {
+                Ptr(kNet::MessageConnection) messageSender = connectionIterator.value();
+                loginstateIterator.value() = ConnectionEstablished;
+                MsgLogin msg;
+                emit AboutToConnect(); // This signal is used as a 'function call'. Any interested party can fill in
+                // new content to the login properties of the client object, which will then be sent out on the line below.
+                properties = propertiesIterator.value();
+                msg.loginData = StringToBuffer(LoginPropertiesAsXml().toStdString());
+                messageSender.ptr()->Send(msg);
+            }
+            break;
+        case LoggedIn:
+            // If we have logged in, but connection dropped, prepare to resend login
+            if ((!connectionIterator.value().ptr()) || (connectionIterator.value().ptr()->GetConnectionState() != kNet::ConnectionOK))
+                loginstateIterator.value() = ConnectionPending;
+            break;
+
         }
-        break;
-    case LoggedIn:
-        // If we have logged in, but connection dropped, prepare to resend login
-        if (!connection || connection->GetConnectionState() != kNet::ConnectionOK)
-            loginstate_ = ConnectionPending;
-        break;
     }
 }
 
-kNet::MessageConnection* Client::GetConnection()
+kNet::MessageConnection* Client::GetConnection(const QString &name)
 {
-    return owner_->GetKristalliModule()->GetMessageConnection();
+    return owner_->GetKristalliModule()->GetMessageConnection(name);
 }
 
-void Client::OnConnectionAttemptFailed()
+void Client::OnConnectionAttemptFailed(QString &key)
 {
+    QMap< QString, std::map<QString, QString> >::const_iterator iter = properties_list_.find(key);
+    if (iter == properties_list_.end())
+        return;
+    properties = iter.value();
+
     // Provide a reason why the connection failed.
     QString address = LoginProperty("address");
     QString port = LoginProperty("port");
@@ -302,36 +369,49 @@ void Client::OnConnectionAttemptFailed()
     }
 
     SetLoginProperty("LoginFailed", failReason);
+    discScene = key;
     DoLogout(true);
 }
 
 void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packetId, message_id_t messageId, const char* data, size_t numBytes)
 {
-    if (source != GetConnection())
+    QMapIterator<QString, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
+
+    // check if any of the client's messageConnections send the message
+    while (sourceIterator.hasNext())
     {
-        ::LogWarning("Client: dropping message " + QString::number(messageId) + " from unknown source");
-        return;
+        sourceIterator.next();
+
+        if (source == sourceIterator.value().ptr())
+            break;
+        else if (source != sourceIterator.value().ptr() && sourceIterator.hasNext())
+            continue;
+        else
+        {
+            ::LogWarning("Client: dropping message " + QString::number(messageId) + " from unknown source");
+            return;
+        }
     }
-    
+
     switch(messageId)
     {
     case MsgLoginReply::messageID:
-        {
-            MsgLoginReply msg(data, numBytes);
-            HandleLoginReply(source, msg);
-        }
+    {
+        MsgLoginReply msg(data, numBytes);
+        HandleLoginReply(source, msg);
+    }
         break;
     case MsgClientJoined::messageID:
-        {
-            MsgClientJoined msg(data, numBytes);
-            HandleClientJoined(source, msg);
-        }
+    {
+        MsgClientJoined msg(data, numBytes);
+        HandleClientJoined(source, msg);
+    }
         break;
     case MsgClientLeft::messageID:
-        {
-            MsgClientLeft msg(data, numBytes);
-            HandleClientLeft(source, msg);
-        }
+    {
+        MsgClientLeft msg(data, numBytes);
+        HandleClientLeft(source, msg);
+    }
         break;
     }
     emit NetworkMessageReceived(packetId, messageId, data, numBytes);
@@ -343,16 +423,23 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     {
         loginstate_ = LoggedIn;
         client_id_ = msg.userID;
-        ::LogInfo("Logged in successfully");
+
+        // Build scenename which is used as identifier for syncmanager/ogre/ScenePtr and scene specific data. Example sceneName: 127.0.0.1:2345:udp
+        sceneName = QString::fromAscii(source->GetSocket()->DestinationAddress()) + "-" +QString::number(source->GetSocket()->DestinationPort());
+        source->GetSocket()->TransportLayer() == kNet::SocketOverUDP ? sceneName.append("-udp") : sceneName.append("-tcp");
+
+        activescenename_ = sceneName;
         
         // Note: create scene & send info of login success only on first connection, not on reconnect
-        if (!reconnect_)
+        if (!reconnect_list_[sceneName])
         {
-            // Create a non-authoritative scene for the client
-            ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true, false);
+            // This sets identifier in KristalliProtocolModule for this particular connection
+            // This is kinda ugly way to do this because this requires us to signal data back the
+            // messaging chain in order to keep track of connection lists.
+            owner_->GetKristalliModule()->SetIdentifier(sceneName);
 
-//            framework_->Scene()->SetDefaultScene(scene);
-            owner_->GetSyncManager()->RegisterToScene(scene);
+            // Create a non-authoritative scene for the client
+            ScenePtr scene = framework_->Scene()->CreateScene(sceneName, true, false);
             
             UserConnectedResponseData responseData;
             if (msg.loginReplyData.size() > 0)
@@ -366,11 +453,12 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             // Note: when we move to unordered communication, we must guarantee that the server does not send
             // any scene data before the login reply
 
-            ScenePtr scene = framework_->Scene()->GetScene("TundraClient");
+            ScenePtr scene = framework_->Scene()->GetScene(sceneName);
             if (scene)
                 scene->RemoveAllEntities(true, AttributeChange::LocalOnly);
         }
         reconnect_ = true;
+        saveProperties(sceneName);
     }
     else
     {
@@ -387,6 +475,109 @@ void Client::HandleClientJoined(MessageConnection* /*source*/, const MsgClientJo
 
 void Client::HandleClientLeft(MessageConnection* /*source*/, const MsgClientLeft& /*msg*/)
 {
+}
+
+void Client::saveProperties(const QString name)
+{
+    // Login happened and replace NEW-marked properties with scenename.
+    if (name != "NEW" && loginstate_list_.contains(name))
+    {
+        ::LogInfo("Reconnection saving properties " + name + "\n");
+        // Container for all the connections loginstates
+        loginstate_list_.insert(name, loginstate_);
+        // Container for all the connections reconnect bool value
+        reconnect_list_.insert(name, reconnect_);
+        // Container for all the connections clientID values
+        client_id_list_.insert(name, client_id_);
+        // Container for all the connections properties
+        //properties_list_.insert(name, properties_list_[name]);
+        // Container for all the connections loginstates
+    }
+    else if (name != "NEW" && !loginstate_list_.contains(name))
+    {
+        ::LogInfo("NEW connection ready. Switching identifier to " + name + ".\n");
+        // Container for all the connections loginstates
+        loginstate_list_.insert(name, loginstate_);
+        // Container for all the connections reconnect bool value
+        reconnect_list_.insert(name, reconnect_);
+        // Container for all the connections clientID values
+        client_id_list_.insert(name, client_id_);
+        // Container for all the connections properties
+        properties_list_.insert(name, properties_list_["NEW"]);
+        // Container for all the connections loginstates
+        loginstate_list_.remove("NEW");
+        loginstate_ = NotConnected;
+        // Container for all the connections reconnect bool value
+        reconnect_list_.remove("NEW");
+        reconnect_ = false;
+        // Container for all the connections clientID values
+        client_id_list_.remove("NEW");
+        // Container for all the connections properties
+        properties_list_.remove("NEW");
+        properties.clear();
+    }
+    else
+    {
+        // Initial connection attempt.
+
+        ::LogInfo("New connection saving properties NEW.\n");
+        // Container for all the connections loginstates
+        loginstate_list_.insert(name, loginstate_);
+        loginstate_ = NotConnected;
+        // Container for all the connections reconnect bool value
+        reconnect_list_.insert(name, reconnect_);
+        reconnect_ = false;
+        // Container for all the connections clientID values
+        client_id_list_.insert(name, client_id_);
+        client_id_ = 0;
+        // Container for all the connections properties
+        properties_list_.insert(name, properties);
+        properties.clear();
+    }
+}
+
+void Client::printSceneNames()
+{
+    QMap< QString, std::map<QString, QString> >::const_iterator iter = properties_list_.begin();
+    if (iter == properties_list_.end())
+        return;
+
+    std::map<QString, QString> tempMap = iter.value();
+
+    QStringList keys = properties_list_.keys();
+    foreach (QString key, keys)
+    {
+        ::LogInfo("> " + key);//" - " + tempMap["address"] + ":" + tempMap["port"] + "/" + tempMap["protocol"] + "\n");
+        ++iter;
+        if (iter != properties_list_.end())
+            tempMap = iter.value();
+    }
+}
+
+QStringList Client::getSceneNames()
+{
+    // Used in javascript
+    return loginstate_list_.keys();
+}
+
+void Client::removeProperties(const QString &name)
+{
+    loginstate_list_.remove(discScene);
+    client_id_list_.remove(discScene);
+    reconnect_list_.remove(discScene);
+    properties_list_.remove(discScene);
+}
+
+void Client::emitSceneSwitch(const QString name)
+{
+    if (!loginstate_list_.contains(name))
+        printSceneNames();
+    else
+    {
+        ::LogInfo("Sceneswitch: " + name);
+        activescenename_ = name;
+        emit switchScene(name);
+    }
 }
 
 }
