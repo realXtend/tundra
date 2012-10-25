@@ -73,8 +73,10 @@ public slots:
 
     int NumTris(int submeshIndex);
 
+#ifdef ASSIMP_ENABLED
 private slots:
     void OnAssimpConversionDone(bool);
+#endif
 
 private:
     /// Precomputes a kD-tree for the triangle data of this mesh.
