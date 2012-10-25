@@ -99,13 +99,16 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
     }
 
 	// Convert file to Ogre mesh using assimp
-#ifdef ASSIMP_ENABLED
     if (IsAssimpFileType())
     {
+#ifdef ASSIMP_ENABLED
         ConvertAssimpDataToOgreMesh(data_, numBytes);
-        return true; 
-    }
+        return true;
+#else
+        LogError(QString("OgreMeshAsset::DeserializeFromData: cannot convert " + Name() + " to Ogre mesh. OpenAssetImport is not enabled."));
+        return false;
 #endif
+    }
 
     try
     {
