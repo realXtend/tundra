@@ -13,6 +13,8 @@ Licensed under the MIT license:
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 #include "AssetFwd.h"
+#include "OpenAssetImportApi.h"
+
 #include <string>
 #include <OgreMesh.h>
 #include <OgreMeshSerializer.h>
@@ -39,7 +41,7 @@ typedef std::vector<Ogre::MeshPtr> MeshVector;
 typedef std::map<QString, Ogre::MaterialPtr> TextureMaterialPointerMap;
 typedef std::pair<QString, Ogre::MaterialPtr> TexMatPair;
 
-class OpenAssetImport : public QObject
+class OPENASSETIMPORT_API OpenAssetImport : public QObject
 {
     Q_OBJECT
 

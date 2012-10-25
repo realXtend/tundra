@@ -1,5 +1,5 @@
 # Define target name
-init_target (OpenAssetImport)
+init_target (OpenAssetImport OUTPUT plugins)
 
 MocFolder()
 
@@ -14,7 +14,9 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 use_core_modules (Framework Asset OgreRenderingModule)
 use_package_assimp()
 
-build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
+add_definitions(-DOPENASSETIMPORT_EXPORTS)
+
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules (Framework Asset)
 link_ogre()

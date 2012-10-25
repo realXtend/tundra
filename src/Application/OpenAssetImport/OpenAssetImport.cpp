@@ -5,6 +5,8 @@ Copyright (c) 2011 Jacob 'jacmoe' Moen
 Licensed under the MIT license:
 */
 
+#include "CoreDefines.h"
+#include "Framework.h"
 #include "OgreMaterialAsset.h"
 #include "LoggingFunctions.h"
 #include "OpenAssetImport.h"
@@ -1248,3 +1250,10 @@ void OpenAssetImport::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNo
     }
 }
 
+extern "C"
+{
+DLLEXPORT void TundraPluginMain(Framework *fw)
+{
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
+}
+}
