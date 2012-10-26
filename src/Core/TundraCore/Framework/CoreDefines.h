@@ -33,9 +33,12 @@ inline Dst checked_static_cast(Src src)
 /// Use for QObjects
 #define SAFE_DELETE_LATER(p) { if ((p)) (p)->deleteLater(); (p) = 0; }
 
-#ifdef _MSC_VER
-/// Raises C4996 warning if a deprecated symbol is used.
-#define DEPRECATED __declspec(deprecated)
+/** @def DEPRECATED(func)
+    Raises compiler warning for a deprecated function. */
+#ifdef __GNUC__
+#define DEPRECATED(func) func __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED(func) __declspec(deprecated) func
 #else
-#define DEPRECATED // N/a, GCC's equivalent is not usable in same convenient way
+#define DEPRECATED(func) func
 #endif
