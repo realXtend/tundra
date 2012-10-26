@@ -72,17 +72,13 @@ bool Server::Start(unsigned short port, QString protocol)
         else
             ::LogError("--protocol specified without a parameter! Using UDP protocol as default.");
     }
-    if (protocol.isEmpty())
-        protocol = "udp";
 
-    kNet::SocketTransportLayer transportLayer = kNet::SocketOverUDP; // By default operate over UDP.
-
-    if (protocol.compare("tcp", Qt::CaseInsensitive) == 0)
-        transportLayer = kNet::SocketOverTCP;
-    else if (protocol.compare("udp", Qt::CaseInsensitive) == 0)
-        transportLayer = kNet::SocketOverUDP;
-    else
+    kNet::SocketTransportLayer transportLayer = StringToSocketTransportLayer(protocol.trimmed().toStdString().c_str());
+    if (transportLayer == kNet::InvalidTransportLayer)
+    {
         ::LogError("Invalid server protocol '" + protocol + "' specified! Using UDP protocol as default.");
+        transportLayer = kNet::SocketOverUDP; // By default operate over UDP.
+    }
 
     // Start server
     if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))

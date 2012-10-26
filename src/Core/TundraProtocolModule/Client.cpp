@@ -112,13 +112,9 @@ void Client::Login(const QString& address, unsigned short port, const QString& u
     SetLoginProperty("username", username);
     SetLoginProperty("password", password);
 
-    QString p = protocol.trimmed().toLower();
-    kNet::SocketTransportLayer transportLayer = kNet::SocketOverUDP;
-    if (p.compare("tcp", Qt::CaseInsensitive) == 0)
-        transportLayer = kNet::SocketOverTCP;
-    else if (p.compare("udp", Qt::CaseInsensitive) == 0)
-        transportLayer = kNet::SocketOverUDP;
-    else if (!p.trimmed().isEmpty())
+    std::string p = protocol.trimmed().toLower().toStdString();
+    kNet::SocketTransportLayer transportLayer = StringToSocketTransportLayer(p.c_str());
+    if (transportLayer == InvalidTransportLayer && !p.empty())
     {
         ::LogError("Client::Login: Cannot log to server using unrecognized protocol: " + p);
         return;
@@ -141,15 +137,9 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         ::LogInfo("Client::Login: No protocol specified, using the default value.");
         protocol = owner_->GetKristalliModule()->defaultTransport;
     }
-    QString p = "";
-    if (protocol == kNet::SocketOverTCP)
-        p = "tcp";
-    else if (protocol == kNet::SocketOverUDP)
-        p = "udp";
-        
     // Set all login properties we have knowledge of. 
     // Others may have been added before calling this function.
-    SetLoginProperty("protocol", p);
+    SetLoginProperty("protocol", QString(SocketTransportLayerToString(protocol).c_str()).toLower());
     SetLoginProperty("address", address);
     SetLoginProperty("port", QString::number(port));
     SetLoginProperty("client-version", Application::Version());
