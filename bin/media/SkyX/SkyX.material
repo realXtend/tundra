@@ -165,8 +165,7 @@ fragment_program SkyX_VolClouds_FP unified
 material SkyX_VolClouds
 {
 	receive_shadows off
-	fog_override true none
-
+	
 	technique
 	{
 		pass
@@ -362,8 +361,7 @@ fragment_program SkyX_Skydome_HDR_FP unified
 material SkyX_Skydome_STARFIELD_LDR
 {
     receive_shadows off
-    fog_override true none
-
+    
 	technique
 	{
 		pass
@@ -428,8 +426,7 @@ material SkyX_Skydome_STARFIELD_LDR
 material SkyX_Skydome_STARFIELD_HDR
 {
 	receive_shadows off
-	fog_override true none
-
+	
 	technique
 	{
 		pass
@@ -493,8 +490,7 @@ material SkyX_Skydome_STARFIELD_HDR
 material SkyX_Skydome_LDR
 {
 	receive_shadows off
-	fog_override true none
-
+	
 	technique
 	{
 		pass
@@ -550,8 +546,7 @@ material SkyX_Skydome_LDR
 material SkyX_Skydome_HDR
 {
 	receive_shadows off
-	fog_override true none
-
+	
 	technique
 	{
 		pass
@@ -663,8 +658,7 @@ fragment_program SkyX_Moon_FP unified
 material SkyX_Moon
 {
 	receive_shadows off
-	fog_override true none
-
+	
 	technique
 	{
 		pass

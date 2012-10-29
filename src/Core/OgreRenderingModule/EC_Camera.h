@@ -254,8 +254,8 @@ private:
     /// placeable component 
     ComponentPtr placeable_;
 
-    /// Is the camera attached to a Placeable i.e. Ogre scene node.
-    bool IsAttached() const;
+    /// Attached to placeable -flag. Not ideal but needed due to Ogre crappiness (Ogre::SceneNode::getAttachedObject throws an expection if no object found)...
+    bool attached_;
 
     /// Ogre world ptr
     OgreWorldWeakPtr world_;
