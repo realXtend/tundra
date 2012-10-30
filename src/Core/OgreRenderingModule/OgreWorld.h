@@ -39,7 +39,7 @@ public:
 
     /// Returns an unique name to create Ogre objects that require a mandatory name. Calls the parent Renderer
     /** @param prefix Prefix for the name. */
-    std::string GetUniqueObjectName(const std::string &prefix);
+    std::string GenerateUniqueObjectName(const std::string &prefix);
 
     /// Dump the debug geometry drawn this frame to the debug geometry vertex buffer. Called by Renderer before rendering.
     void FlushDebugGeometry();
@@ -50,6 +50,8 @@ public:
     /// Sets scene fog to default ineffective settings, which plays nice with the SuperShader.
     /** Use this if you have altered the Ogre SceneManager's fog and want to reset it. */
     void SetDefaultSceneFog();
+
+    std::string GetUniqueObjectName(const std::string &prefix) { return GenerateUniqueObjectName(prefix); } /**< @deprecated Use GenerateUniqueObjectName @todo Add warning print */
 
 public slots:
     /// Does raycast into the world from viewport coordinates, using specific selection layer(s)
@@ -73,13 +75,13 @@ public slots:
         @return List of entities within the frustrum. */
     QList<Entity*> FrustumQuery(QRect &viewRect) const;
 
-    /// Return whether a single entity is visible in the currently active camera
+    /// Returns whether a single entity is visible in the currently active camera
     bool IsEntityVisible(Entity* entity) const;
     
-    /// Get visible entities in the currently active camera
+    /// Returns visible entities in the currently active camera
     QList<Entity*> VisibleEntities() const;
     
-    /// Return whether the currently active camera is in this scene
+    /// Returns  whether the currently active camera is in this scene
     bool IsActive() const;
     
     /// Start tracking an entity's visibility within this scene, using any camera(s)
@@ -90,20 +92,20 @@ public slots:
     /// Stop tracking an entity's visibility
     void StopViewTracking(Entity* entity);
     
-    /// Return the Renderer instance
+    /// Returns the Renderer instance
     OgreRenderer::Renderer* Renderer() const { return renderer_; }
 
-    /// Return the Ogre scene manager
+    /// Returns the Ogre scene manager
     Ogre::SceneManager* OgreSceneManager() const { return sceneManager_; }
 
-    /// Return the parent scene
+    /// Returns the parent scene
     ScenePtr Scene() const { return scene_.lock(); }
 
-    // Renders an axis-aligned bounding box.
+    /// Renders an axis-aligned bounding box.
     void DebugDrawAABB(const AABB &aabb, float r, float g, float b, bool depthTest = true);
-    // Renders an arbitrarily oriented bounding box.
+    /// Renders an arbitrarily oriented bounding box.
     void DebugDrawOBB(const OBB &obb, float r, float g, float b, bool depthTest = true);
-    // Renders a line.
+    /// Renders a line.
     void DebugDrawLine(const float3 &start, const float3 &end, float r, float g, float b, bool depthTest = true);
     /// Renders a plane.
     void DebugDrawPlane(const Plane &plane, float r, float g, float b, const float3 &refPoint = float3(0,0,0), float uSpacing = 1.f, float vSpacing = 1.f, 
@@ -150,10 +152,10 @@ private:
     /// Setup shadows
     void SetupShadows();
     
-    /// Return the currently active camera component, if it belongs to this scene. Else return null
+    /// Returns the currently active camera component, if it belongs to this scene. Else return null
     EC_Camera* VerifyCurrentSceneCameraComponent() const;
     
-    /// Verify that the currently active camera belongs to this scene. Return its OgreCamera, or null if mismatch
+    /// Verify that the currently active camera belongs to this scene. Returns its OgreCamera, or null if mismatch
     Ogre::Camera* VerifyCurrentSceneCamera() const;
     
     /// Framework

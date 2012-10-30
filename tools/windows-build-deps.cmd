@@ -94,7 +94,7 @@ cecho {0E}Warning: This script is not fully unattended once you continue.{# #}{\
 cecho {0E}         When building Qt, you must press 'y' once for the script to proceed.{# #}{\n}
 echo.
 
-echo If you are not ready with the above, press Ctrl-C to abort!\n
+echo If you are not ready with the above, press Ctrl-C to abort!
 pause
 echo.
 

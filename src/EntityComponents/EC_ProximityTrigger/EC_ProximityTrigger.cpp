@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_ProximityTrigger.cpp
- *  @brief  EC_ProximityTrigger reports distance, each frame, of other entities that also have EC_ProximityTrigger component
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_ProximityTrigger.cpp
+    @brief  Reports distance, each frame, of other entities that also have this same component. */
 
 #include "EC_ProximityTrigger.h"
 

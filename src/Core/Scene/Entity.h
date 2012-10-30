@@ -44,13 +44,13 @@ class QDomElement;
 class Entity : public QObject, public boost::enable_shared_from_this<Entity>
 {
     Q_OBJECT
-    Q_PROPERTY(uint id READ Id)
-    Q_PROPERTY(QString name READ Name WRITE SetName)
-    Q_PROPERTY(QString description READ Description WRITE SetDescription)
-    Q_PROPERTY(bool replicated READ IsReplicated)
-    Q_PROPERTY(bool local READ IsLocal)
-    Q_PROPERTY(bool unacked READ IsUnacked)
-    Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary)
+    Q_PROPERTY(entity_id_t id READ Id) /**< @copydoc Id */
+    Q_PROPERTY(QString name READ Name WRITE SetName) /**< @copydoc Name */
+    Q_PROPERTY(QString description READ Description WRITE SetDescription) /**< @copydoc Description */
+    Q_PROPERTY(bool replicated READ IsReplicated) /**< @copydoc IsReplicated */
+    Q_PROPERTY(bool local READ IsLocal) /**< @copydoc IsLocal */
+    Q_PROPERTY(bool unacked READ IsUnacked) /**< @copydoc IsUnacked */
+    Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary) /**< @copydoc IsTemporary */
 
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
@@ -128,6 +128,17 @@ public:
     /// introspection for the entity, returns all components
     const ComponentMap &Components() const { return components_; }
 
+    /// Returns attribute interface pointer to attribute with specific name.
+    /** @param name Name of the attribute.
+        @return IAttribute pointer to the attribute.
+        @note Always remember to check for null pointer. */
+    IAttribute *GetAttribute(const QString  &name) const;
+
+    /// Returns list of attributes with specific name.
+    /** @param name Name of the attribute.
+        @return List of attribute interface pointers, or empty list if no attributes are found. */
+    AttributeVector GetAttributes(const QString &name) const;
+
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
     ComponentPtr GetComponentById(component_id_t id) const;
@@ -164,7 +175,8 @@ public slots:
 
     /// Returns a component with type 'typeName' or creates & adds it as local if not found. If could not create, returns empty pointer
     ComponentPtr GetOrCreateLocalComponent(const QString &typeName);
-    /// Returns a component with type 'typeName' and name 'name' or creates & adds it as local if not found. If could not create, returns empty pointer
+    /// @overload
+    /** Returns a component with type 'typeName' and name 'name' or creates & adds it as local if not found. If could not create, returns empty pointer */
     ComponentPtr GetOrCreateLocalComponent(const QString &typeName, const QString &name);
 
     /// Creates a new component and attaches it to this entity. 
@@ -190,8 +202,9 @@ public slots:
     /// Creates a local component with type 'typeName' and name 'name' and adds it to the entity. If could not create, return empty pointer
     ComponentPtr CreateLocalComponent(const QString &typeName, const QString &name);
     
-    /// Attachs an existing parentless component to this entity. A component ID will be allocated.
-    /** Entities can contain any number of components of any type.
+    /// Attachs an existing parentless component to this entity.
+    /** A component ID will be allocated.
+        Entities can contain any number of components of any type.
         It is also possible to have several components of the same type,
         although in most cases it is probably not sensible.
 
@@ -204,35 +217,28 @@ public slots:
                       previously created using SceneAPI::CreateComponent.
         @param change Change signalling mode */
     void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
-
-    /// Attaches an existing parentless component to this entity, using the specific ID. This variant is used by SyncManager.
+    /// @overload
+    /** Attaches an existing parentless component to this entity, using the specific ID. This variant is used by SyncManager. */
     void AddComponent(component_id_t id, const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
-    
-    /// Remove the component from this entity.
+
+    /// Removes component from this entity.
     /** When component is removed from the entity a Q_PROPERTY connection is destroyed from
         the component. In case where there are several components with the same typename, there is 
         a name check that ensures that both components names are same before Q_PROPERTY destroyed.
         
         @param component Pointer to the component to remove
-        @param change Specifies how other parts of the system are notified of this removal. */
-    void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
+        @param change Specifies how other parts of the system are notified of this removal.
+        @sa RemoveComponentById */
+    void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default); /**< @overload */
+    void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName), change); }  /**< @overload */
+    void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName, name), change); }  /**< @overload */
+    /// Removes component by ID.
+    /** @sa RemoveComponent */
+    void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
 
     /// Returns list of components with type 'typeName' or empty list if no components were found.
-    /// @param typeName type of the component
+    /** @param typeName type of the component */
     ComponentVector GetComponents(const QString &typeName) const;
-
-    /// Returns attribute interface pointer to attribute with specific name.
-    /** @param name Name of the attribute.
-        @return IAttribute pointer to the attribute.
-        @note Always remember to check for null pointer. */
-    ///\todo Doesn't need to be slot, scripts can't access IAttribute class
-    IAttribute *GetAttribute(const QString  &name) const;
-
-    /// Returns list of attributes with specific name.
-    /** @param name Name of the attribute.
-        @return List of attribute interface pointers, or empty list if no attributes are found. */
-    ///\todo Doesn't need to be slot, scripts can't access IAttribute class
-    AttributeVector GetAttributes(const QString &name) const;
 
     /// Creates clone of the entity.
     /** @param local If true, the new entity will be local entity. If false, the entity will be replicated.
@@ -245,14 +251,6 @@ public slots:
 
     QString SerializeToXMLString() const;
 //        bool DeserializeFromXMLString(const QString &src, AttributeChange::Type change);
-
-    void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName), change); }
-    void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName, name), change); }
-    void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
-
-    /// Returns list of components with type @c typeName or if @c typeName is empty return all components
-    /// @param typeName type of the component
-    QObjectList GetComponentsRaw(const QString &typeName) const;
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
     /** @param name Name. */
@@ -271,9 +269,6 @@ public slots:
     /// Returns description of this entity if EC_Name is available, empty string otherwise.
     ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     QString Description() const;
-
-    /// Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
-    void RemoveComponentRaw(QObject* comp);
 
     /// Creates and registers new action for this entity, or returns an existing action.
     /** Use this function from scripting languages.
@@ -356,7 +351,10 @@ public slots:
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
 
-    QObjectList ComponentsList() const; ///< @deprecated @todo Remove
+    // DEPRECATED:
+    QObjectList ComponentsList() const; /**< @deprecated Use Components @todo Remove */
+    QObjectList GetComponentsRaw(const QString &typeName) const; /**< @deprecated Use GetComponents or Components instead @todo Add warning print */
+    void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById @todo Add warning print*/
 
 signals:
     /// A component has been added to the entity
