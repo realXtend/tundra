@@ -129,7 +129,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
         return false;
     }
 
-    if (GenerateMeshdata())
+    if (GenerateMeshData())
     {        
         // We did a synchronous load, must call AssetLoadCompleted here.
         assetAPI->AssetLoadCompleted(Name());
@@ -344,7 +344,7 @@ void OgreMeshAsset::CreateKdTree()
     }
 }
 
-bool OgreMeshAsset::GenerateMeshdata()
+bool OgreMeshAsset::GenerateMeshData()
 {
     /* NOTE: only the last error handler here returns false - first are ignored.
        This is to keep the behaviour identical to the original version which had these checks inside 
@@ -359,11 +359,15 @@ bool OgreMeshAsset::GenerateMeshdata()
         if (!ogreMesh->suggestTangentVectorBuildParams(Ogre::VES_TANGENT, src, dest))
             ogreMesh->buildTangentVectors(Ogre::VES_TANGENT, src, dest);
     }
-    catch(Ogre::Exception &e) 
+    catch(const Ogre::Exception &e)
     {
-        LogError("Failed to build tangents for mesh " + this->Name() + ": " + QString(e.what()));
+        QString what(e.what());
+        // "Cannot locate an appropriate 2D texture coordinate set" is benign, see OgreLogListener::messageLogged
+        bool hideBenignOgreMessages = assetAPI->GetFramework()->HasCommandLineParameter("--hide_benign_ogre_messages");
+        if (!hideBenignOgreMessages || (hideBenignOgreMessages && !what.contains("Cannot locate an appropriate 2D texture coordinate set")))
+            LogError("OgreMeshAsset::GenerateMeshData: Failed to build tangents for mesh " + this->Name() + ": " + what);
     }
-    
+
     // Generate extremity points to submeshes, 1 should be enough
     try
     {
@@ -374,9 +378,9 @@ bool OgreMeshAsset::GenerateMeshdata()
                 smesh->generateExtremes(1);
         }
     }
-    catch(Ogre::Exception &e) 
+    catch(const Ogre::Exception &e)
     {
-        LogError("Failed to generate extremity points to submeshes for mesh " + this->Name() + ": " + QString(e.what()));
+        LogError("OgreMeshAsset::GenerateMeshData: Failed to generate extremity points to submeshes for mesh " + this->Name() + ": " + QString(e.what()));
     }
 
     try
@@ -387,9 +391,9 @@ bool OgreMeshAsset::GenerateMeshdata()
         // Set asset references the mesh has
         //ResetReferences();
     }
-    catch(Ogre::Exception &e)
+    catch(const Ogre::Exception &e)
     {
-        LogError("OgreMeshAsset load: Failed to set default materials to " + this->Name() + ": " + QString(e.what()));
+        LogError("OgreMeshAsset::GenerateMeshData: Failed to set default materials to " + this->Name() + ": " + QString(e.what()));
         Unload();
         return false;
     }
@@ -414,22 +418,22 @@ void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, con
         ogreMesh = Ogre::MeshManager::getSingleton().getByName(AssetAPI::SanitateAssetRef(assetRef).toStdString(), 
                                                                OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
         if (!ogreMesh.isNull())
-        {        
-            if (GenerateMeshdata())
+        {
+            if (GenerateMeshData())
             {
                 assetAPI->AssetLoadCompleted(assetRef);
                 return;
             }
             else
             {
-                LogError("OgreMeshAsset asynch load: Failed in GenerateMeshdata - see log above for details.");
+                LogError("OgreMeshAsset::operationCompleted: asynch load failed in GenerateMeshData - see log above for details.");
             }
         }
         else
-            LogError("OgreMeshAsset asynch load: Ogre::Mesh was null after threaded loading: " + assetRef);
+            LogError("OgreMeshAsset::operationCompleted: Ogre::Mesh was null after threaded loading: " + assetRef);
     }
     else
-        LogError("OgreMeshAsset asynch load: Ogre failed to do threaded loading: " + result.message);
+        LogError("OgreMeshAsset::operationCompleted: Ogre failed to do threaded loading: " + result.message);
 
     DoUnload();
     assetAPI->AssetLoadFailed(assetRef);
@@ -483,7 +487,7 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
 {
     if (ogreMesh.isNull())
     {
-        ::LogWarning("Tried to export non-existing Ogre mesh " + Name() + ".");
+        LogWarning("OgreMeshAsset::SerializeTo: Tried to export non-existing Ogre mesh " + Name() + ".");
         return false;
     }
     try
@@ -495,16 +499,13 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
         serializer.exportMesh(ogreMesh.get(), tempFilename.toStdString());
         bool success = LoadFileToVector(tempFilename.toStdString().c_str(), data);
         QFile::remove(tempFilename); // Delete the temporary file we used for serialization.
-        if (!success)
-            return false;
-    } catch(std::exception &e)
-    {
-        ::LogError("Failed to export Ogre mesh " + Name() + ":");
-        if (e.what())
-            ::LogError(e.what());
-        return false;
+        return success;
     }
-    return true;
+    catch(const std::exception &e)
+    {
+        LogError("OgreMeshAsset::SerializeTo: Failed to export Ogre mesh " + Name() + ": " + (e.what() ? QString(e.what()) : ""));
+    }
+    return false;
 }
 
 void OgreMeshAsset::ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes)

@@ -18,7 +18,7 @@ IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
     assert(assetAPI);
 }
 
-void IAsset::SetDiskSource(QString diskSource_)
+void IAsset::SetDiskSource(const QString &diskSource_)
 {
     diskSource = diskSource_.trimmed();
     emit PropertyStatusChanged(this);
@@ -60,7 +60,7 @@ bool IAsset::IsEmpty() const
     return !IsLoaded() && diskSource.isEmpty();
 }
 
-bool IAsset::IsTrusted()
+bool IAsset::IsTrusted() const
 {
     AssetStoragePtr storage = GetAssetStorage();
     if (!storage)
@@ -248,17 +248,17 @@ void IAsset::SetAssetProvider(AssetProviderPtr provider_)
     provider = provider_;
 }
 
-void IAsset::SetAssetStorage(AssetStoragePtr storage_)
+void IAsset::SetAssetStorage(AssetStoragePtr storage_) 
 {
     storage = storage_;
 }
 
-AssetStoragePtr IAsset::GetAssetStorage()
+AssetStoragePtr IAsset::AssetStorage() const
 {
     return storage.lock();
 }
 
-AssetProviderPtr IAsset::GetAssetProvider()
+AssetProviderPtr IAsset::AssetProvider() const
 {
     return provider.lock();
 }

@@ -1,53 +1,27 @@
 <!DOCTYPE Scene>
 <scene>
  <entity id="1" sync="1">
-  <component type="EC_Script" sync="1">
-   <attribute value="avatarmenu.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="AvatarMenu" name="name"/>
-   <attribute value="" name="description"/>
-  </component>
- </entity>
- <entity id="2" sync="1">
-  <component type="EC_Script" sync="1">
-   <attribute value="avatarapplication.js;simpleavatar.js;exampleavataraddon.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="AvatarApp" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="AvatarApp" name="name"/>
-   <attribute value="" name="description"/>
-  </component>
- </entity>
- <entity id="3" sync="1">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+  <component type="EC_Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
    <attribute value="fish.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="" name="Mesh materials"/>
+   <attribute value="glow.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
-  <component type="EC_Name" sync="1">
+  <component type="EC_Name" sync="true">
    <attribute value="Fish" name="name"/>
    <attribute value="" name="description"/>
   </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="1.45201,-4.65185,5.40487,-47.8323,42.1262,-145.378,1,1,1" name="Transform"/>
+  <component type="EC_Placeable" sync="true">
+   <attribute value="1.454390,-4.653054,5.408104,-47.866192,42.091312,-145.416443,1.000000,1.000000,1.000000" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
    <attribute value="" name="Parent entity ref"/>
    <attribute value="" name="Parent bone name"/>
   </component>
-  <component type="EC_RigidBody" sync="1">
+  <component type="EC_RigidBody" sync="true">
    <attribute value="10" name="Mass"/>
    <attribute value="6" name="Shape type"/>
    <attribute value="1.000000 1.000000 1.000000" name="Size"/>
@@ -61,34 +35,34 @@
    <attribute value="false" name="Kinematic"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="-0.001488 0.007011 -0.005740" name="Linear velocity"/>
-   <attribute value="-0.981553 -0.320282 -0.493557" name="Angular velocity"/>
+   <attribute value="-0.000136 0.000203 -0.000056" name="Linear velocity"/>
+   <attribute value="0.000334 -0.002817 0.001533" name="Angular velocity"/>
    <attribute value="-1" name="Collision Layer"/>
    <attribute value="-1" name="Collision Mask"/>
   </component>
  </entity>
- <entity id="4" sync="1">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,0,0,0,0.14,0.2,0.14" name="Transform"/>
+ <entity id="2" sync="1">
+  <component type="EC_Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.140000,0.200000,0.140000" name="Transform"/>
    <attribute value="WoodPallet.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
    <attribute value="" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
-  <component type="EC_Name" sync="1">
+  <component type="EC_Name" sync="true">
    <attribute value="Floor" name="name"/>
    <attribute value="" name="description"/>
   </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="0,-5,0,0,0,0,100,1,100" name="Transform"/>
+  <component type="EC_Placeable" sync="true">
+   <attribute value="0.000000,-5.000000,0.000000,0.000000,0.000000,0.000000,100.000000,1.000000,100.000000" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
    <attribute value="" name="Parent entity ref"/>
    <attribute value="" name="Parent bone name"/>
   </component>
-  <component type="EC_RigidBody" sync="1">
+  <component type="EC_RigidBody" sync="true">
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="1.000000 0.200000 1.000000" name="Size"/>
@@ -108,12 +82,12 @@
    <attribute value="-1" name="Collision Mask"/>
   </component>
  </entity>
- <entity id="5" sync="1">
-  <component type="EC_Name" sync="1">
+ <entity id="3" sync="1">
+  <component type="EC_Name" sync="true">
    <attribute value="Instructions" name="name"/>
    <attribute value="" name="description"/>
   </component>
-  <component type="EC_Script" sync="1">
+  <component type="EC_Script" sync="true">
    <attribute value="instructions.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="0" name="Run mode"/>
@@ -121,19 +95,19 @@
    <attribute value="" name="Script class name"/>
   </component>
  </entity>
- <entity id="6" sync="1">
-  <component type="EC_Name" sync="1">
+ <entity id="4" sync="1">
+  <component type="EC_Name" sync="true">
    <attribute value="Environment" name="name"/>
    <attribute value="" name="description"/>
   </component>
-  <component type="EC_EnvironmentLight" sync="1">
-   <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sunlight color"/>
-   <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient light color"/>
-   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sunlight diffuse color"/>
+  <component type="EC_EnvironmentLight" sync="true">
+   <attribute value="0.639000 0.639000 0.639000 1.000000" name="Sunlight color"/>
+   <attribute value="0.364000 0.364000 0.364000 1.000000" name="Ambient light color"/>
    <attribute value="-1.000000 -1.000000 -1.000000" name="Sunlight direction vector"/>
    <attribute value="true" name="Sunlight cast shadows"/>
+   <attribute value="1" name="Brightness"/>
   </component>
-  <component type="EC_Sky" sync="1">
+  <component type="EC_Sky" sync="true">
    <attribute value="local://RexSkyBox.material" name="Material"/>
    <attribute value="" name="Texture"/>
    <attribute value="50" name="Distance"/>
@@ -141,18 +115,30 @@
    <attribute value="true" name="Draw first"/>
   </component>
  </entity>
- <entity id="7" sync="1">
-  <component type="EC_Placeable" sync="1">
-   <attribute value="1.07871,16.6713,35.9556,-33.9,-0.60001,0,1,1,1" name="Transform"/>
+ <entity id="5" sync="1">
+  <component type="EC_Placeable" sync="true">
+   <attribute value="1.078710,16.671301,35.955601,-33.900002,-0.600010,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
    <attribute value="" name="Parent entity ref"/>
    <attribute value="" name="Parent bone name"/>
   </component>
-  <component type="EC_Name" sync="1">
+  <component type="EC_Name" sync="true">
    <attribute value="FreeLookCameraSpawnPos" name="name"/>
    <attribute value="" name="description"/>
+  </component>
+ </entity>
+ <entity id="6" sync="1">
+  <component type="EC_Name" sync="true">
+   <attribute value="Glow PostProcess" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_OgreCompositor" sync="true">
+   <attribute value="true" name="Enabled"/>
+   <attribute value="Glow" name="Compositor ref"/>
+   <attribute value="-1" name="Priority"/>
+   <attribute value="" name="Parameters"/>
   </component>
  </entity>
 </scene>

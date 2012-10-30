@@ -28,7 +28,6 @@ if (APPLE) # TODO: Apple build script does not work with SkyX at the moment. See
 else()
    set (ENABLE_SKYX 1)
 endif()
-set (ENABLE_OGRE_ASSET_EDITOR 1)    # Enables Ogre asset editor module.
 if (NOT APPLE) # TODO: Enable OpenAssetImport plugin on Mac OS X.
    set (ENABLE_OPEN_ASSET_IMPORT 1)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
 else()
@@ -59,9 +58,8 @@ if (MSVC AND ENABLE_BUILD_OPTIMIZATIONS)
     set (CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
 endif ()
 
-###### ENTITY COMPONENTS ######
-
-message ("\n=========== Configuring Entity-Components ===========\n")
+###### ENTITY-COMPONENTS ######
+message("\n=========== Configuring Optional Entity-Components ===========\n")
 
 ## The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 ## they will not be able to conditionally compile the EC.
@@ -77,7 +75,6 @@ AddEntityComponent(EC_Billboard)
 AddEntityComponent(EC_TransformGizmo)
 
 ## Here are the Application level ECs that wont be added if BUILD_SDK_ONLY is TRUE (default is FALSE)
-
 if (NOT BUILD_SDK_ONLY)
     AddEntityComponent(EC_Script)                   # Optional but used by both PythonScriptModule and JavascriptModule.
     AddEntityComponent(EC_PlanarMirror)
@@ -85,9 +82,8 @@ if (NOT BUILD_SDK_ONLY)
     AddEntityComponent(EC_LaserPointer)
 endif()
 
-###### REQUIRED STATIC FRAMEWORK ######
-
-message ("\n=========== Configuring Static Framework ===========\n")
+###### TUNDRA FRAMEWORK ######
+message("\n=========== Configuring Tundra Framework ===========\n")
 
 ## The following are the core modules/libs that are required 
 ## for the project to build. None of these can be omitted.
@@ -95,6 +91,11 @@ message ("\n=========== Configuring Static Framework ===========\n")
 AddProject(Core Math)
 AddProject(Core Framework)
 AddProject(Core Scene)
+AddProject(Core Asset)
+AddProject(Core Audio)
+AddProject(Core Console)
+AddProject(Core Input)
+AddProject(Core Ui)
 
 # The Tundra project builds the main exe as a WINDOWS subsystem (or as a unix executable).
 AddProject(Core Tundra)
@@ -102,55 +103,42 @@ AddProject(Core Tundra)
 # For Windows, also add a version of the project which builds using CONSOLE subsystem.
 # This is otherwise equivalent to the Tundra executable, but this one always shows the console window.
 if (MSVC)
-AddProject(Core TundraConsole)
+    AddProject(Core TundraConsole)
 endif()
 
-AddProject(Core Asset)
-AddProject(Core Audio)
-AddProject(Core Console)
-AddProject(Core Input)
-AddProject(Core Ui)
-
-###### REQUIRED MODULES ######
-
-message ("\n=========== Configuring Required Modules ===========\n")
-
-## Here we should have module that are required to build the SDK at minimum
-
+###### MANDATORY PLUGINS ######
+message("\n=========== Configuring Mandatory Plugins ===========\n")
+## Here we have plugins that cannot be omitted from the build.
 AddProject(Core OgreRenderingModule)
 AddProject(Core TundraProtocolModule)
 AddProject(Core AssetModule)
-AddProject(Core EnvironmentModule)      # Optional in theory, if you drop PhysicsModule. Depends on OgreRenderingModule.
-AddProject(Core PhysicsModule)          # Optional in theory, if your application doesn't need physics. Depends on OgreRenderingModule and EnvironmentModule.
+AddProject(Core PhysicsModule)          # Optional in theory, if your application doesn't need physics, but currently TundraProtocolModule depends on this. Depends on OgreRenderingModule and EnvironmentModule.
+AddProject(Core EnvironmentModule)      # Optional in theory, if you drop PhysicsModule and DebugStatsModule. Depends on OgreRenderingModule.
 
-###### OPTIONAL MODULES ######
-
-message ("\n=========== Configuring Optional Modules ===========\n")
-
+###### OPTIONAL PLUGINS ######
+message("\n=========== Configuring Optional Plugins ===========\n")
 AddProject(Core ECEditorModule)                 # Provides tools for managing scenes, entities, entity-components and assets.
 AddProject(Application AvatarModule)            # Provides EC_Avatar. Depends on OgreRenderingModule.
-AddProject(Application DebugStatsModule)        # Enables a developer window for debugging. Depends on OgreRenderingModule and EnvironmentModule.
+AddProject(Application DebugStatsModule)        # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule, and PhysicsModule.
 AddProject(Application SkyXHydrax)              # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
-AddProject(Application SceneWidgetComponents)   # Provide ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application JavascriptModule)        # Allows QtScript-created scene script instances.
 if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
     if ("$ENV{TUNDRA_PYTHON_ENABLED}" STREQUAL "TRUE") 
         AddProject(Application PythonScriptModule)      # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
     endif ()
 endif()
-AddProject(Application BrowserUiPlugin)         # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
+# Note: SceneWidgetComponents depends on BrowserUiPlugin, if SceneWidgetComponents's BROWSER_SHARED_DATA_ENABLED set to 1
+# See /src/Application/SceneWidgetComponents/CMakeLists.txt
+AddProject(Application SceneWidgetComponents)   # Provides ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
+AddProject(Application BrowserUiPlugin)         # Provides a browser UI for the client. Features multi-tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 if (NOT APPLE)
    AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
    AddProject(Application VlcPlugin)              # Adds media playback capabilities with libVLC and entity components.
 endif()
 
 #AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.
-AddProject(Application CAVEStereoModule)       # Provides multi windowed rendering views for CAVE setups and stereoscopy view modes.
-#AddProject(Application UpdateModule)           # Windows msi installer only. Adds 'Check For Updates' functionality.
-
-if (ENABLE_OGRE_ASSET_EDITOR)
-    AddProject(Application OgreAssetEditorModule)   # Enables various asset editors. Depends on OgreRenderingModule.
-endif ()
+AddProject(Application CAVEStereoModule)        # Provides multi-windowed rendering views for CAVE setups and stereoscopy view modes.
+AddProject(Application OgreAssetEditorModule)   # Enables various asset editors. Depends on OgreRenderingModule.
 
 if (ENABLE_OPEN_ASSET_IMPORT)
     AddProject(Application OpenAssetImport)         # Allows import of various mesh file formats

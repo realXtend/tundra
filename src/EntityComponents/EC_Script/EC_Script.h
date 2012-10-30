@@ -7,68 +7,68 @@
 #include "AssetFwd.h"
 
 class IScriptInstance;
-
 class ScriptAsset;
 typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 
 /// Provides mechanism for adding scripts to entities.
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Script</h2>
-Provides mechanism for adding scripts to entities.
-Registered by JavascriptModule and/or PythonScript::PythonScriptModule.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Script</h2>
+    Provides mechanism for adding scripts to entities.
+    Registered by JavascriptModule and/or PythonScript::PythonScriptModule.
 
-When EC_Script has scriptRef(s) set, it will load and run the script assets in an own script engine. Optionally,
-it can define the name of the script application.
+    When EC_Script has scriptRef(s) set, it will load and run the script assets in an own script engine. Optionally,
+    it can define the name of the script application.
 
-EC_Script's can also create script objects within an existing script application. In this case, the scriptRef
-is left empty, and instead the className attribute tells from which script application to instantiate a specific class.
-The syntax for className attribute is ApplicationName.ClassName . The EC_Script with the matching application will be
-looked up, and the constructor function ClassName will be called, with the entity and component as parameters.
-If the classname changes, the previously created script object will be automatically destroyed. Script objects
-may optionally define a destructor called OnScriptObjectDestroyed
+    EC_Script's can also create script objects within an existing script application. In this case, the scriptRef
+    is left empty, and instead the className attribute tells from which script application to instantiate a specific class.
+    The syntax for className attribute is ApplicationName.ClassName . The EC_Script with the matching application will be
+    looked up, and the constructor function ClassName will be called, with the entity and component as parameters.
+    If the classname changes, the previously created script object will be automatically destroyed. Script objects
+    may optionally define a destructor called OnScriptObjectDestroyed
 
-<b>Attributes</b>:
-<ul>
-<li>AssetReferenceList: scriptRef
-<div>The script assets that will be loaded. If empty, no script engine will be created</div> 
-<li>bool: runOnLoad
-<div>Is the script engine run as soon as the script asset(s) are set/loaded.</div>
-<li>int: runMode
-<div>Whether to run on client, server or both.</div>
-<li>QString: applicationName
-<div>Name for the script application.</div>
-<li>QString: className
-<div>The script class to instantiate from within an existing application. Syntax: ApplicationName.ClassName</div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>AssetReferenceList: scriptRef
+    <div> @copydoc scriptRef </div>
+    <li>bool: runOnLoad
+    <div> @copydoc runOnLoad </div>
+    <li>enum: runMode
+    <div> @copydoc runMode </div>
+    <li>QString: applicationName
+    <div>@copydoc applicationName </div>
+    <li>QString: className
+    <div>@copydoc className </div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>...
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>"Run": @copydoc Run
+    <li>"Unload": @copydoc Unload
+    <li>"ScriptObjectKey": @copydoc ScriptObjectKey
+    <li>"ShouldRun": @copydoc ShouldRun
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li> "RunScript": Runs the script. Usage: RunScript [componentname]
-<li> "UnloadScript": Stops and unloads the script. Usage: UnloadScript [componentname]
-</ul>
-</td>
-</tr>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li> "RunScript": Runs the script. Usage: RunScript [componentname]
+    <li> "UnloadScript": Stops and unloads the script. Usage: UnloadScript [componentname]
+    </ul>
+    </td>
+    </tr>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Doesn't depend on any other entity-component</b>.
-</table>
-*/
+    <b>Doesn't depend on any other entity-component</b>.
+    </table> */
 class EC_Script: public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_Script", 5)
 
 public:
-    /// Runmode enumeration
+    /// Run mode enumeration
     enum RunMode
     {
         RM_Both = 0,
@@ -81,7 +81,7 @@ public:
 
     ~EC_Script();
 
-    /// Script asset reference
+    /// The script assets that will be loaded. If empty, no script engine will be created
     Q_PROPERTY(AssetReferenceList scriptRef READ getscriptRef WRITE setscriptRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, scriptRef);
 
@@ -158,7 +158,7 @@ private slots:
 
 private:
     /// Handles the downloading of script assets.
-    std::vector<boost::shared_ptr<AssetRefListener> > scriptAssets;
+    std::vector<AssetRefListenerPtr> scriptAssets;
 
     /// Script instance.
     IScriptInstance *scriptInstance_;

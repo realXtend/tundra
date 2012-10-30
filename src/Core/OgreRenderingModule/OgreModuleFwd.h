@@ -28,6 +28,9 @@ namespace Ogre
     class Skeleton;
     class TagPoint;
     class MaterialPtr;
+    class BillboardSet;
+    class Billboard;
+    class Bone;
 }
 
 typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;

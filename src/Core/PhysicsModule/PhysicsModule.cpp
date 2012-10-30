@@ -146,13 +146,13 @@ void PhysicsModule::AutoCollisionMesh()
     {
         EntityPtr entity = iter->second;
         // Only assign to entities that don't have a rigidbody yet, but have a mesh and a placeable
-        if ((!entity->GetComponent<EC_RigidBody>()) && (entity->GetComponent<EC_Placeable>()) && (entity->GetComponent<EC_Mesh>()))
+        if (!entity->GetComponent<EC_RigidBody>() && entity->GetComponent<EC_Placeable>() && entity->GetComponent<EC_Mesh>())
         {
             EC_RigidBody* body = checked_static_cast<EC_RigidBody*>(entity->GetOrCreateComponent(EC_RigidBody::TypeNameStatic(), "", AttributeChange::Default).get());
             body->SetShapeFromVisibleMesh();
         }
         // Terrain mode: assign if no rigid body, but there is a terrain component
-        if ((!entity->GetComponent<EC_RigidBody>()) && (entity->GetComponent<EC_Terrain>()))
+        if (!entity->GetComponent<EC_RigidBody>() && entity->GetComponent<EC_Terrain>())
         {
             EC_RigidBody* body = checked_static_cast<EC_RigidBody*>(entity->GetOrCreateComponent(EC_RigidBody::TypeNameStatic(), "", AttributeChange::Default).get());
             body->shapeType.Set(EC_RigidBody::Shape_HeightField, AttributeChange::Default);
@@ -181,7 +181,7 @@ void PhysicsModule::OnSceneAdded(const QString& name)
         return;
     }
     
-    boost::shared_ptr<PhysicsWorld> newWorld(new PhysicsWorld(scene, !scene->IsAuthority()));
+    boost::shared_ptr<PhysicsWorld> newWorld = boost::make_shared<PhysicsWorld>(scene, !scene->IsAuthority());
     newWorld->SetGravity(scene->UpVector() * -9.81f);
     newWorld->SetPhysicsUpdatePeriod(defaultPhysicsUpdatePeriod_);
     newWorld->SetMaxSubSteps(defaultMaxSubSteps_);
@@ -233,7 +233,7 @@ boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogr
     
     // Create new, then interrogate the Ogre mesh
 #include "DisableMemoryLeakCheck.h"
-    ptr = boost::shared_ptr<btTriangleMesh>(new btTriangleMesh());
+    ptr = boost::make_shared<btTriangleMesh>();
 #include "EnableMemoryLeakCheck.h"
     GenerateTriangleMesh(mesh, ptr.get());
     
@@ -254,7 +254,7 @@ boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogr
         return iter->second;
     
     // Create new, then interrogate the Ogre mesh
-    ptr = boost::shared_ptr<ConvexHullSet>(new ConvexHullSet());
+    ptr = boost::make_shared<ConvexHullSet>();
     GenerateConvexHullSet(mesh, ptr.get());
 
     convexHullSets_[mesh->getName()] = ptr;

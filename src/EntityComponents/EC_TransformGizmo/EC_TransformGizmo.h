@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_TransformGizmo.h
- *  @brief  Enables visual manipulators (gizmos) for Transform attributes.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_TransformGizmo.h
+    @brief  Enables visual manipulators (gizmos) for Transform attributes. */
 
 #pragma once
 
@@ -20,20 +19,20 @@
 /** <table class="header">
     <tr>
     <td>
-    <h2>EC_TransformGizmo</h2>
+    <h2>TransformGizmo</h2>
     Enables visual manipulators (gizmos) for Transform attributes.
 
     Doesn't have any attributes.
 
     <b>Exposes the following scriptable functions:</b>
     <ul>
-    <li>"SetPosition": Sets position of the gizmo.
-    <li>"CurrentGizmoType":  Returns current type of the gizmo.
-    <li>"SetCurrentGizmoType": Sets the type of the gizmo.
-    <li>"Show": Shows the gizmo.
-    <li>"Hide": Hides the gizmo.
-    <li>"SetVisible": Sets visiblity of the gizmo.
-    <li>"IsVisible": Returns visiblity of the gizmo.
+    <li>"SetPosition": @copydoc SetPosition
+    <li>"CurrentGizmoType": @copydoc CurrentGizmoType
+    <li>"SetCurrentGizmoType": @copydoc SetCurrentGizmoType
+    <li>"Show": @copydoc Show
+    <li>"Hide": @copydoc Hide
+    <li>"SetVisible": @copydoc SetVisible
+    <li>"IsVisible":  @copydoc IsVisible
     </ul>
 
     Doesn't react on any actions.
@@ -42,8 +41,7 @@
 
     <b>Depends on EC_Placeable and EC_Mesh</b>.
 
-    </table>
-*/
+    </table> */
 class EC_TransformGizmo : public IComponent
 {
     Q_OBJECT
@@ -150,6 +148,4 @@ private slots:
     void HandleMouseEvent(MouseEvent *e);
 
     void OnFrameUpdate(float dt);
-
-//    void DrawDebug();
 };

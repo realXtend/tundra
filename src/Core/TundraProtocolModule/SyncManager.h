@@ -122,6 +122,9 @@ private:
 
     void InterpolateRigidBodies(f64 frametime, SceneSyncState* state);
 
+    /// Read client extrapolation time parameter from command line and match it to the current sync period.
+    void GetClientExtrapolationTime();
+
     /// Process one sync state for changes in the scene
     /** \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management
         @param destination MessageConnection where to send the messages
@@ -153,6 +156,11 @@ private:
     float updatePeriod_;
     /// Time accumulator for update
     float updateAcc_;
+    
+    /// Physics client interpolation/extrapolation period length as number of network update intervals (default 3)
+    float maxLinExtrapTime_;
+    /// Disable client physics handoff -flag
+    bool noClientPhysicsHandoff_;
     
     /// Server sync state (client only)
     SceneSyncState server_syncstate_;

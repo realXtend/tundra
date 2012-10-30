@@ -83,7 +83,7 @@ private:
     void CreateKdTree();
 
     /// Process mesh data after loading to create tangents and such.
-    bool GenerateMeshdata();
+    bool GenerateMeshData();
 
     void ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes);
 
