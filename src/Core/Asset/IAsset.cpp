@@ -268,7 +268,7 @@ QString IAsset::ToString() const
     return (Name().isEmpty() ? "(noname)" : Name()) + " (" + (Type().isEmpty() ? "notype" : Type()) + ")";
 }
 
-QByteArray IAsset::GetRawData(const QString serializationParameters) const
+QByteArray IAsset::RawData(const QString serializationParameters) const
 { 
     std::vector<u8> data; 
     if (SerializeTo(data, serializationParameters) && data.size() > 0) 

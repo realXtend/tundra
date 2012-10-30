@@ -541,7 +541,7 @@ void OgreMeshAsset::OnAssimpConversionDone(bool success)
 {
     if(success)
     {
-        if (GenerateMeshdata())
+        if (GenerateMeshData())
             assetAPI->AssetLoadCompleted(Name());
 	}
     else
