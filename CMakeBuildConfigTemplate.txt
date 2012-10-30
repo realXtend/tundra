@@ -41,6 +41,9 @@ set (ENABLE_MEMORY_LEAK_CHECKS 0)   # If the following flag is defined, memory l
 
 message("\n")
 
+if (TUNDRACORE_SHARED)
+    add_definitions(-DTUNDRACORE_SHARED)
+endif()
 if (ENABLE_PROFILING)
     add_definitions (-DPROFILING)
 endif ()

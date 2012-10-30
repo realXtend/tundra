@@ -13,6 +13,7 @@ file(GLOB H_FILES *.h)
 file(GLOB MOC_FILES
     Asset/AssetAPI.h Asset/IAsset.h Asset/IAssetTransfer.h Asset/IAssetUploadTransfer.h
     Asset/IAssetStorage.h Asset/AssetRefListener.h Asset/BinaryAsset.h Asset/AssetCache.h
+    Asset/IAssetBundle.h Asset/IAssetBundleTypeFactory.h
     Audio/AudioAPI.h Audio/AudioAsset.h Audio/SoundChannel.h Audio/SoundSettings.h
     Console/ConsoleAPI.h Console/ConsoleWidget.h
     Framework/Framework.h Framework/Application.h Framework/FrameAPI.h Framework/ConsoleAPI.h

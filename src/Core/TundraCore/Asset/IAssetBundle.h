@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include <boost/enable_shared_from_this.hpp>
-#include <QObject>
-#include <vector>
-
+#include "TundraCoreApi.h"
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 #include "AssetReference.h"
 
+#include <QObject>
+#include <vector>
+
 /// Base class for all asset bundles that provide sub assets.
-class IAssetBundle : public QObject
+class TUNDRACORE_API IAssetBundle : public QObject
 {
     Q_OBJECT
 

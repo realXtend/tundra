@@ -34,15 +34,16 @@ QT4_WRAP_CPP (MOC_SRCS ${H_FILES})
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES} ${MOC_SRCS})
 
-use_package (ZZIPLIB)
-use_core_modules (Framework Asset)
+use_package(ZZIPLIB)
+UseTundraCore()
+use_core_modules(TundraCore)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
+build_library(${TARGET_NAME} SHARED ${SOURCE_FILES})
 
-link_modules (Framework Asset)
-link_package (ZZIPLIB)
+link_modules(TundraCore)
+link_package(ZZIPLIB)
+link_package(QT4)
 
 SetupCompileFlags()
 
 final_target ()
-

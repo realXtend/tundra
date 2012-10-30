@@ -8,6 +8,7 @@
 #include "AssetAPI.h"
 #include "FileUtils.h"
 #include "Profiler.h"
+#include "LoggingFunctions.h"
 
 #include <QFileSystemWatcher>
 #include <QDir>

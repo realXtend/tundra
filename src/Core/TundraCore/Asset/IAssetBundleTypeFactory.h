@@ -2,13 +2,17 @@
 
 #pragma once
 
-#include <QObject>
-#include <QStringList>
+#include "TundraCoreApi.h"
 #include "AssetFwd.h"
 
+#include <QObject>
+#include <QStringList>
+
 /// A common interface for factories which instantiate asset bundles of different types.
-class IAssetBundleTypeFactory : public QObject
+class TUNDRACORE_API IAssetBundleTypeFactory : public QObject
 {
+    Q_OBJECT
+
 public:
     virtual ~IAssetBundleTypeFactory() {}
 

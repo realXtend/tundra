@@ -12,7 +12,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 UseTundraCore()
-use_core_modules(TundraCore OgreRenderingModule)
+use_core_modules(TundraCore Math OgreRenderingModule)
 use_package_assimp()
 
 add_definitions(-DOPENASSETIMPORT_EXPORTS)
