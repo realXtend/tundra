@@ -97,7 +97,7 @@ protected:
     QXmppMucRoom *GetRoom(const QString &roomJid);
 
 signals:
-    void MessageReceived(QString room, QString sender, QString message);
+    void MessageReceived(QString room, QString sender, QString message, QString type);
     void InvitationReceived(QString room, QString from, QString reason);
     void RoomAdded(QString room, QString nickname);
     void RoomRemoved(QString room, QString reason);
