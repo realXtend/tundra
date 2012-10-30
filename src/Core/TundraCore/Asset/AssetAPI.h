@@ -34,8 +34,8 @@ std::map<QString, QString> TUNDRACORE_API ParseAssetRefArgs(const QString &url, 
 /// If an empty string is submitted, and empty string will be output, so that an empty string won't suddenly point to the filesystem root.
 QString TUNDRACORE_API GuaranteeTrailingSlash(const QString &source);
 
-typedef std::map<QString, AssetPtr, QStringLessThanNoCase> AssetMap;
-typedef std::map<QString, AssetBundlePtr, QStringLessThanNoCase> AssetBundleMap;
+typedef std::map<QString, AssetPtr, QStringLessThanNoCase> AssetMap; ///<  Maps asset names to their AssetPtrs.
+typedef std::map<QString, AssetBundlePtr, QStringLessThanNoCase> AssetBundleMap; ///<  Maps asset bundle names to their AssetBundlePtrs.
 typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
 typedef std::map<QString, AssetBundleMonitorPtr, QStringLessThanNoCase> AssetBundleMonitorMap;
 
@@ -179,11 +179,11 @@ public:
     template<typename T> boost::shared_ptr<T> GetAssetProvider() const { return AssetProvider<T>(); } /**< @deprecated Use AssetProvider instead @todo Add warning print in some distant future */
 
 public slots:
-    /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
+    /// Returns all assets known to the asset system.
     AssetMap Assets() const { return assets; }
 
-    /// Returns all asset bundles known to the asset system. AssetBundleMap maps asset bundle names to their AssetBundlePtrs.
-    AssetBundleMap GetAllAssetBundles() const { return assetBundles; }
+    /// Returns all asset bundles known to the asset system.
+    AssetBundleMap AssetBundles() const { return assetBundles; }
 
     /// Returns all assets of a specific type.
     AssetMap AssetsOfType(const QString& type) const;
@@ -424,6 +424,7 @@ public slots:
     AssetStoragePtr GetStorageForAssetRef(const QString& ref) const { return StorageForAssetRef(ref); } /**< @deprecated Use Cache instead @todo Add warning print in some distant future */
     AssetStoragePtr GetDefaultAssetStorage() const { return DefaultAssetStorage(); } /**< @deprecated Use DefaultAssetStorage instead @todo Add warning print in some distant future */
     AssetTransferMap GetCurrentTransfers() const { return CurrentTransfers(); } /**< @deprecated Use CurrentTransfers instead @todo Add warning print in some distant future */
+    AssetBundleMap GetAllAssetBundles() const { return AssetBundles(); } /**< @deprecated Use AssetBundles instead @todo Add warning print in some distant future */
 
 signals:
     /// Emitted for each new asset that was created and added to the system.

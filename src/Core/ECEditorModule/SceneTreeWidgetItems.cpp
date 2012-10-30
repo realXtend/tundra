@@ -342,19 +342,20 @@ AssetStoragePtr AssetStorageItem::Storage() const
 
 // AssetBundleItem
 
-AssetBundleItem::AssetBundleItem(const AssetBundlePtr &bundle, const QString &bundleName, QTreeWidgetItem *parent) :
+AssetBundleItem::AssetBundleItem(const AssetBundlePtr &bundle, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
-    bundleName_(bundle->Name())
+    assetBundle(bundle)
+
 {
-    setText(0, "Asset Bundle (" + bundleName_ + ")");
+    setText(0, QApplication::translate("AssetBundleItem", "Asset Bundle (") + bundle->Name() + ")");
 }
 
-bool AssetBundleItem::Contains(const QString &assetRef)
+bool AssetBundleItem::Contains(const QString &assetRef) const
 {
     // We could also query the bundle for this, but for some bundle types this might take a lot
     // of time. So lets do a starts with string check. This should not produce misses if AssetAPI has
     // parsed the asset ref correctly to the bundle and the asset itself.
-    return assetRef.startsWith(bundleName_, Qt::CaseInsensitive);
+    return (!assetBundle.expired() && assetRef.startsWith(assetBundle.lock()->Name(), Qt::CaseInsensitive));
 }
 
 // AssetSelection

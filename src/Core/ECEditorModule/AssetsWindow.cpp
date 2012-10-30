@@ -92,9 +92,9 @@ void AssetsWindow::PopulateTreeWidget()
     noProviderItem = new QTreeWidgetItem;
     noProviderItem->setText(0, tr("No provider"));
 
-    AssetStoragePtr defaultStorage = framework->Asset()->GetDefaultAssetStorage();
+    AssetStoragePtr defaultStorage = framework->Asset()->DefaultAssetStorage();
 
-    foreach(const AssetStoragePtr &storage, framework->Asset()->GetAssetStorages())
+    foreach(const AssetStoragePtr &storage, framework->Asset()->AssetStorages())
     {
         AssetStorageItem *item = new AssetStorageItem(storage);
         //item->setText(0, storage->ToString());
@@ -110,16 +110,14 @@ void AssetsWindow::PopulateTreeWidget()
         }
     }
     std::pair<QString, AssetBundlePtr> bundlePair;
-    foreach(bundlePair, framework->Asset()->GetAllAssetBundles())
+    foreach(bundlePair, framework->Asset()->AssetBundles())
     {
-        QString bundleFileName;
-        framework->Asset()->ParseAssetRef(bundlePair.second->Name(), 0, 0, 0, 0, &bundleFileName);
-        AssetBundleItem *item = new AssetBundleItem(bundlePair.second, bundleFileName);
+        AssetBundleItem *item = new AssetBundleItem(bundlePair.second);
         treeWidget->addTopLevelItem(item);
     }
 
     std::pair<QString, AssetPtr> pair;
-    foreach(pair, framework->Asset()->GetAllAssets())
+    foreach(pair, framework->Asset()->Assets())
     {
         if (alreadyAdded.find(pair.second) == alreadyAdded.end())
         {
@@ -150,22 +148,19 @@ void AssetsWindow::AddAsset(AssetPtr asset)
     connect(asset.get(), SIGNAL(PropertyStatusChanged(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
 
     bool parentItemFound = false;
-    AssetStoragePtr storage = asset->GetAssetStorage();
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        // Inspect storage items only and find the right one.
-        if (storage)
+        if (asset->AssetStorage()) // Inspect storage items only and find the right one.
         {
             AssetStorageItem *storageItem = dynamic_cast<AssetStorageItem *>(treeWidget->topLevelItem(i));
-            if (storageItem && storageItem->Storage() == storage)
+            if (storageItem && storageItem->Storage() == asset->AssetStorage())
             {
                 storageItem->addChild(item);
                 parentItemFound = true;
                 break;
             }
         }
-        // Inspect asset bundles
-        else
+        else // Inspect asset bundles
         {
             AssetBundleItem *bundleItem = dynamic_cast<AssetBundleItem *>(treeWidget->topLevelItem(i));
             if (bundleItem && bundleItem->Contains(asset->Name()))
