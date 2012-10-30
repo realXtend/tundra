@@ -45,7 +45,7 @@ public:
     /// Synchronized update for the module
     /** Override in your own module if you want to perform synchronized update. Do not call.
         @param frametime elapsed time in seconds since last frame */
-    virtual void Update(f64 frametime) { UNREFERENCED_PARAM(frametime) }
+    virtual void Update(f64 UNUSED_PARAM(frametime)) {}
 
     /// Returns the name of the module.
     const QString &Name() const { return name; }

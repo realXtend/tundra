@@ -34,20 +34,20 @@ public:
     
     /// Aborts the ongoing transfer, returns true if successful and false otherwise.
     /** Override this function in a provider implementation if it supports aborting. */
-    virtual bool AbortTransfer(IAssetTransfer *transfer) { return false; }
+    virtual bool AbortTransfer(IAssetTransfer * UNUSED_PARAM(transfer)) { return false; }
 
     /// Performs time-based update of asset provider, to for example handle timeouts.
     /** The system will call this periodically for all registered asset providers, so
         it does not need to be called manually.
         @param frametime Seconds since last frame */
-    virtual void Update(f64 frametime) { UNREFERENCED_PARAM(frametime) }
+    virtual void Update(f64 UNUSED_PARAM(frametime)) {}
 
     /// Issues an asset deletion request to the asset storage and provider this asset resides in.
     /** If the asset provider supports this feature, it will delete the asset from the source. */
     virtual void DeleteAssetFromStorage(QString assetRef) = 0;
 
     /// Removes the storage with the given name from this provider, or returns false if it doesn't exist.
-    virtual bool RemoveAssetStorage(QString storageName) { return false; }
+    virtual bool RemoveAssetStorage(QString UNUSED_PARAM(storageName)) { return false; }
 
     /// Returns the list of all asset storages registered into this asset provider.
     virtual std::vector<AssetStoragePtr> GetStorages() const = 0;
@@ -58,12 +58,9 @@ public:
 
     /// Starts an asset upload from the given file in memory to the given storage.
     /** The default implementation fails all upload attempts and returns 0 immediately. */
-    virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName)
+    virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 * UNUSED_PARAM(data), size_t UNUSED_PARAM(numBytes),
+        AssetStoragePtr UNUSED_PARAM(destination), const QString & UNUSED_PARAM(assetName))
     {
-        UNREFERENCED_PARAM(data)
-        UNREFERENCED_PARAM(numBytes)
-        UNREFERENCED_PARAM(destination)
-        UNREFERENCED_PARAM(assetName)
         return AssetUploadTransferPtr();
     }
 

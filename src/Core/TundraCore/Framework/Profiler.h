@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "CoreDefines.h"
 #ifdef _WINDOWS
 #include "Win.h"
 #endif
@@ -282,7 +283,7 @@ private:
 namespace
 {
     /// For boost::thread_specific_ptr, we don't want it doing automatic deletion
-    void EmptyDeletor(ProfilerNodeTree * /*node*/) { }
+    void EmptyDeletor(ProfilerNodeTree * UNUSED_PARAM(node)) {}
 }
 
 /// Provides profiling access for scripts.

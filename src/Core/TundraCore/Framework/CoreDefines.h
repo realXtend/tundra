@@ -27,6 +27,14 @@ inline Dst checked_static_cast(Src src)
     return static_cast<Dst>(src);
 }
 
+/** @def UNUSED_PARAM(func)
+    Preprocessor macro for suppressing unused formal parameter warnings while still showing the variable name in Doxygen documentation.  */
+#if defined(DOXYGEN) // DOXYGEN is a special define used when Doxygen is run.
+#define UNUSED_PARAM(x) x
+#else
+#define UNUSED_PARAM(x)
+#endif
+
 /// Use to suppress warning C4101 (unreferenced local variable)
 #define UNREFERENCED_PARAM(P) (void)(P);
 
