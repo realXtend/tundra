@@ -13,30 +13,30 @@
 class TUNDRACORE_API NullAssetFactory : public IAssetTypeFactory
 {
 public:
-    explicit NullAssetFactory(const QString &assetType_, const QString &assetTypeExtension)
+    explicit NullAssetFactory(const QString &assetType_, const QString &assetTypeExtension) :
+        assetType(assetType_.trimmed()),
+        assetTypeExtensions(assetTypeExtension)
     {
-        assetType = assetType_.trimmed();
         assert(!assetType.isEmpty() && "Must specify an asset type for null asset factory!");
         assert(!assetTypeExtension.trimmed().isEmpty() && "Asset type extension cannot be empty for null asset factory!");
-        assetTypeExtensions << assetTypeExtension;
     }
     
-    explicit NullAssetFactory(const QString &assetType_, const QStringList &assetTypeExtensions_)
+    explicit NullAssetFactory(const QString &assetType_, const QStringList &assetTypeExtensions_) :
+        assetType(assetType_.trimmed()),
+        assetTypeExtensions(assetTypeExtensions_)
     {
-        assetType = assetType_.trimmed();
         assert(!assetType.isEmpty() && "Must specify an asset type for null asset factory!");
-        assetTypeExtensions = assetTypeExtensions_;
         assert(!assetTypeExtensions.isEmpty() && "Must specify at least one asset type extension for null asset factory!");
     }
 
-    virtual QString Type() const { return assetType; }
+    virtual const QString &Type() const { return assetType; }
     
-    virtual QStringList TypeExtensions() const { return assetTypeExtensions; }
+    virtual const QStringList &TypeExtensions() const { return assetTypeExtensions; }
 
     virtual AssetPtr CreateEmptyAsset(AssetAPI *, const QString &) { return AssetPtr(); }
 
 private:
-    QString assetType;
-    QStringList assetTypeExtensions;
+    const QString assetType;
+    const QStringList assetTypeExtensions;
 };
 
