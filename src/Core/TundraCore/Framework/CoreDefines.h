@@ -27,7 +27,7 @@ inline Dst checked_static_cast(Src src)
     return static_cast<Dst>(src);
 }
 
-/** @def UNUSED_PARAM(func)
+/** @def UNUSED_PARAM(x)
     Preprocessor macro for suppressing unused formal parameter warnings while still showing the variable name in Doxygen documentation.  */
 #if defined(DOXYGEN) // DOXYGEN is a special define used when Doxygen is run.
 #define UNUSED_PARAM(x) x

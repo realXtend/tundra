@@ -13,16 +13,16 @@ struct zzip_dir;
 /// Provides zip packed asset bundle support.
 class ZipAssetBundle : public IAssetBundle
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     ZipAssetBundle(AssetAPI *owner, const QString &type, const QString &name);
     ~ZipAssetBundle();
 
-    /// IAsset override.
+    /// IAssetBundle override.
     virtual bool IsLoaded() const;
 
-    /// IAsset override.
+    /// IAssetBundle override.
     virtual void DoUnload();
 
     /// IAssetBundle override.
