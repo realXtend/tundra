@@ -24,6 +24,7 @@ IF NOT EXIST "%DEPS%\bullet\". (
 IF NOT EXIST "%DEPS%\bullet\libs\armeabi-v7a\libBulletCollision.a". (
    cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
    cd "%DEPS%\bullet"
+   del CMakeCache.txt
    cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake
    nmake
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -60,6 +61,8 @@ IF NOT EXIST "%DEPS%\boost\lib\libboost_date_time.a". (
     copy "%ANDROID%\user-config.jam" tools\build\v2
     copy "%ANDROID%\project-config.jam" .
     b2 --with-date_time --with-filesystem --with-program_options --with-regex --with-signals --with-system --with-thread --with-iostreams toolset=gcc-android4.4.3 link=static runtime-link=static target-os=linux --stagedir=. --layout=system
+) ELSE (
+   cecho {0D}Boost already built. Skipping.{# #}{\n}
 )
 
 :: kNet
@@ -68,27 +71,27 @@ IF NOT EXIST "%DEPS%\kNet\". (
    cd "%DEPS%"
    call git clone https://github.com/juj/kNet
    IF NOT EXIST "%DEPS%\kNet\.git" GOTO :ERROR
-) ELSE (
-   cecho {0D}Updating kNet to newest version from https://github.com/juj/kNet.{# #}{\n}
-   cd "%DEPS%\kNet"
-   call git pull
 )
-cd "%DEPS%\kNet"
-cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake
-nmake
-IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-
-
+IF NOT EXIST "%DEPS%\kNet\lib\libkNet.a". (
+    cecho {0D}Building kNet.{# #}{\n}
+    cd "%DEPS%\kNet"
+    del CMakeCache.txt
+    cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBOOST_ROOT=%DEPS%/boost
+    nmake
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+) ELSE (
+   cecho {0D}kNet already built. Skipping.{# #}{\n}
+)
 
 echo.
 cecho {0A}Tundra dependencies built.{# #}{\n}
 set PATH=%ORIGINAL_PATH%
-cd %TOOLS%
+cd %ANDROID%
 GOTO :EOF
 
 :ERROR
 echo.
 cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
-cd %TOOLS%
+cd %ANDROID%
 pause
