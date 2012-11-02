@@ -1,5 +1,7 @@
+# Adapted from https://github.com/mcxiaoke/boost-ndk
+
 import os ;
-import path ;    
+import path ;
 import regex ;
 
 if [ os.name ] = CYGWIN || [ os.name ] = NT
@@ -29,13 +31,15 @@ using gcc : android4.4.3 :
     <ranlib>$(ANDROID_NDK)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(androidPlatform)/bin/arm-linux-androideabi-ranlib
     <compileflags>--sysroot=$(ANDROID_NDK)/platforms/android-9/arch-arm
     <compileflags>-I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/include
-    <compileflags>-I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/armeabi/include
+    <compileflags>-I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/include
     <compileflags>-DNDEBUG
     <compileflags>-D__GLIBC__
     <compileflags>-DBOOST_NO_INTRINSIC_WCHAR_T
 	<compileflags>-DPAGE_SIZE=2048
     <compileflags>-lstdc++
     <compileflags>-mthumb
+    <compileflags>-march=armv7-a 
+    <compileflags>-mfloat-abi=softfp
     <compileflags>-fno-strict-aliasing
     <compileflags>-O2
         ;

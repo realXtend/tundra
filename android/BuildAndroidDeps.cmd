@@ -54,11 +54,13 @@ IF NOT EXIST "%DEPS%\boost\boost-1_49_0.patch". (
    cd "%DEPS%\boost"
    call bootstrap.bat
 )
-cd "%DEPS%\boost"
-cecho {0D}Building Boost.{# #}{\n}
-copy "%ANDROID%\user-config.jam" tools\build\v2
-copy "%ANDROID%\project-config.jam" .
-b2 --with-date_time --with-filesystem --with-program_options --with-regex --with-signals --with-system --with-thread --with-iostreams toolset=gcc-android4.4.3 link=static runtime-link=static target-os=linux threadapi=pthread --stagedir=. --layout=system
+IF NOT EXIST "%DEPS%\boost\lib\libboost_date_time.a". (
+    cd "%DEPS%\boost"
+    cecho {0D}Building Boost.{# #}{\n}
+    copy "%ANDROID%\user-config.jam" tools\build\v2
+    copy "%ANDROID%\project-config.jam" .
+    b2 --with-date_time --with-filesystem --with-program_options --with-regex --with-signals --with-system --with-thread --with-iostreams toolset=gcc-android4.4.3 link=static runtime-link=static target-os=linux --stagedir=. --layout=system
+)
 
 :: kNet
 IF NOT EXIST "%DEPS%\kNet\". (
