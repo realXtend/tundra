@@ -25,7 +25,7 @@ IF NOT EXIST "%DEPS%\bullet\libs\armeabi-v7a\libBulletCollision.a". (
    cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
    cd "%DEPS%\bullet"
    del CMakeCache.txt
-   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake
+   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release
    nmake
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
@@ -66,7 +66,7 @@ IF NOT EXIST "%DEPS%\boost\lib\libboost_date_time.a". (
 )
 
 :: kNet
-IF NOT EXIST "%DEPS%\kNet\". (
+IF NOT EXIST "%DEPS%\kNet". (
    cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
    cd "%DEPS%"
    call git clone https://github.com/juj/kNet
@@ -76,12 +76,36 @@ IF NOT EXIST "%DEPS%\kNet\lib\libkNet.a". (
     cecho {0D}Building kNet.{# #}{\n}
     cd "%DEPS%\kNet"
     del CMakeCache.txt
-    cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBOOST_ROOT=%DEPS%/boost
+    cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBOOST_ROOT=%DEPS%/boost -DCMAKE_BUILD_TYPE=Release
     nmake
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}kNet already built. Skipping.{# #}{\n}
 )
+
+:: OGRE
+IF NOT EXIST "%DEPS%\ogre". (
+   cd "%DEPS%"
+   cecho {0D}Cloning OGRE from https://bitbucket.org/sinbad/ogre into "%DEPS%\ogre".{# #}{\n}
+   hg clone -r v1-9 https://bitbucket.org/sinbad/ogre ogre
+)
+IF NOT EXIST "%DEPS%\ogre\AndroidDependencies". (
+   cecho {0D}Downloading OGRE prebuilt Android dependencies.{# #}{\n}
+   cd "%DEPS%"
+   wget http://downloads.sourceforge.net/project/ogre/ogre-dependencies-android/1.9/AndroidDependencies.zip
+   7za x -y -oogre AndroidDependencies.zip
+   del AndroidDependencies.zip
+)
+IF NOT EXIST "%DEPS%\ogre\lib\libOgreMainStatic.a". (
+   cecho {0D}Building OGRE.{# #}{\n}
+   cd "%DEPS%\ogre"
+   del CMakeCache.txt
+   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=CMake/toolchain/android.toolchain.cmake -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies -DANDROID_NATIVE_API_LEVEL=9 -DCMAKE_BUILD_TYPE=Release
+   nmake
+) ELSE (
+   cecho {0D}OGRE already built. Skipping.{# #}{\n}
+)
+
 
 echo.
 cecho {0A}Tundra dependencies built.{# #}{\n}
