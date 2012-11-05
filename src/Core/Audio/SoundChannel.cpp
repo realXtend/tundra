@@ -5,12 +5,14 @@
 #include "LoggingFunctions.h"
 #include "Math/MathFunc.h"
 
+#ifndef TUNDRA_NO_AUDIO
 #ifndef Q_WS_MAC
 #include <AL/al.h>
 #include <AL/alc.h>
 #else
 #include <al.h>
 #include <alc.h>
+#endif
 #endif
 
 #include "MemoryLeakCheck.h"
@@ -46,6 +48,7 @@ SoundChannel::~SoundChannel()
 
 void SoundChannel::Update(const float3& listener_pos)
 {
+#ifndef TUNDRA_NO_AUDIO
     CalculateAttenuation(listener_pos);
     SetAttenuatedGain();
     QueueBuffers();
@@ -70,71 +73,83 @@ void SoundChannel::Update(const float3& listener_pos)
             }
         }
     }
+#endif
 }
 
 void SoundChannel::Play(AudioAssetPtr audioAsset)
 {
+#ifndef TUNDRA_NO_AUDIO
     // Stop any previously buffered sound
     Stop();
-    
+
     if (!audioAsset)
         return;
-    
+
     pending_sounds_.push_back(audioAsset);
-    
+
     // Start actual playback on next update
     state_ = Pending;
     buffered_mode_ = false;
+#endif
 }
 
 void SoundChannel::AddBuffer(AudioAssetPtr buffer)
 {
+#ifndef TUNDRA_NO_AUDIO
     pending_sounds_.push_back(buffer);
-    
+
     // Buffered mode should not loop
     SetLooped(false);
-    
+
     // Start actual playback on next update
     if (state_ == Stopped)
         state_ = Pending;
     buffered_mode_ = true;
+#endif
 }
 
 bool SoundChannel::CreateSource()
 {
+#ifndef TUNDRA_NO_AUDIO
     if (!handle_)
         alGenSources(1, &handle_);
-    
+
     if (!handle_)
     {
         LogError("Could not create OpenAL sound source");
         return false;
-    }   
-    
+    }
+
     alSourcef(handle_, AL_PITCH, pitch_);
     alSourcei(handle_, AL_LOOPING, looped_ ? AL_TRUE : AL_FALSE);
     // No matter whether sound is positional or not, we use own attenuation, so OpenAL rolloff is 0
     alSourcef(handle_, AL_ROLLOFF_FACTOR, 0.0);
-    
+
     SetPositionAndMode();
     SetAttenuatedGain();
-    
+
     return true;
+#else
+    return false;
+#endif
 }
 
 void SoundChannel::DeleteSource()
 {
+#ifndef TUNDRA_NO_AUDIO
     Stop();
-    
+
     if (handle_)
     {
         alDeleteSources(1, &handle_);
         handle_ = 0;
     }
+#endif
 }
 
 void SoundChannel::Stop()
 {
+#ifndef TUNDRA_NO_AUDIO
     if (handle_)
     {
         alSourceStop(handle_);
@@ -146,6 +161,7 @@ void SoundChannel::Stop()
     playing_sounds_.clear();
     
     state_ = Stopped;
+#endif
 }
 
 QString SoundChannel::SoundName() const
@@ -176,20 +192,24 @@ void SoundChannel::SetPositional(bool enable)
 
 void SoundChannel::SetLooped(bool enable)
 {
+#ifndef TUNDRA_NO_AUDIO
     // Can not set looping in buffered mode
     if (buffered_mode_)
         enable = false;
-    
+
     looped_ = enable;
     if (handle_)
         alSourcei(handle_, AL_LOOPING, looped_ ? AL_TRUE : AL_FALSE);
+#endif
 }
 
 void SoundChannel::SetPitch(float pitch)
 {
+#ifndef TUNDRA_NO_AUDIO
     pitch_ = pitch;
     if (handle_)
         alSourcef(handle_, AL_PITCH, pitch_);
+#endif
 }
 
 void SoundChannel::SetGain(float gain)
@@ -211,6 +231,7 @@ void SoundChannel::SetRange(float inner_radius, float outer_radius, float rollof
 
 void SoundChannel::SetPositionAndMode()
 {
+#ifndef TUNDRA_NO_AUDIO
     if (handle_)
     {
         if (positional_)
@@ -227,6 +248,7 @@ void SoundChannel::SetPositionAndMode()
             alSourcefv(handle_, AL_POSITION, sound_pos);
         }
     }
+#endif
 }
 
 void SoundChannel::CalculateAttenuation(const float3& listener_pos)
@@ -254,17 +276,20 @@ void SoundChannel::CalculateAttenuation(const float3& listener_pos)
 
 void SoundChannel::SetAttenuatedGain()
 {
+#ifndef TUNDRA_NO_AUDIO
     if (handle_)
     {
         if (positional_)
             alSourcef(handle_, AL_GAIN, master_gain_ * gain_ * attenuation_);
-        else  
+        else
             alSourcef(handle_, AL_GAIN, master_gain_ * gain_);
     }
+#endif
 }
 
 void SoundChannel::QueueBuffers()
 {
+#ifndef TUNDRA_NO_AUDIO
     // See that we do have waiting sounds and they're ready to play
     AudioAssetPtr pending = pending_sounds_.size() > 0 ? pending_sounds_.front() : AudioAssetPtr();
 
@@ -332,10 +357,12 @@ void SoundChannel::QueueBuffers()
             alSourcePlay(handle_);
         state_ = Playing;
     }
+#endif
 }
 
 void SoundChannel::UnqueueBuffers()
 {
+#ifndef TUNDRA_NO_AUDIO
     if (handle_)
     {
         int processed = 0;
@@ -359,4 +386,5 @@ void SoundChannel::UnqueueBuffers()
             }
         }
     }
+#endif
 }

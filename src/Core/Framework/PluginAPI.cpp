@@ -64,7 +64,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
   #else
     const QString pluginSuffix = ".dll";
   #endif
-#elif defined(_POSIX_C_SOURCE)
+#elif defined(_POSIX_C_SOURCE) || defined(ANDROID)
     const QString pluginSuffix = ".so";
 #elif defined(__APPLE__)
     const QString pluginSuffix = ".dylib";
@@ -92,7 +92,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
         return;
     }
 #else
-    char *dlerrstr;
+    const char *dlerrstr;
     dlerror();
     PluginHandle module = dlopen(path.toStdString().c_str(), RTLD_GLOBAL|RTLD_LAZY);
     if ((dlerrstr=dlerror()) != 0)

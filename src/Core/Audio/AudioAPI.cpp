@@ -18,12 +18,17 @@
 #include "Math/float3.h"
 #include "ConfigAPI.h"
 
+#ifndef TUNDRA_NO_AUDIO
 #ifndef Q_WS_MAC
 #include <AL/al.h>
 #include <AL/alc.h>
 #else
 #include <al.h>
 #include <alc.h>
+#endif
+#else
+struct ALCcontext;
+struct ALCdevice;
 #endif
 
 #include "MemoryLeakCheck.h"
@@ -125,37 +130,42 @@ bool AudioAPI::Initialize(const QString &playbackDeviceName)
     if (impl && impl->initialized)
         Uninitialize();
     
+#ifndef TUNDRA_NO_AUDIO
     if (playbackDeviceName.isEmpty())
-        impl->device = alcOpenDevice(NULL); 
+        impl->device = alcOpenDevice(NULL);
     else
         impl->device = alcOpenDevice(playbackDeviceName.toStdString().c_str());
-    
+
     if (!impl->device)
     {
         LogWarning("Could not open OpenAL playback device " + playbackDeviceName);
         return false;
-    } 
-      
+    }
+
     impl->context = alcCreateContext(impl->device, NULL);
     if (!impl->context)
     {
         LogWarning("Could not create OpenAL playback context");
         return false;
     }
-       
+
     alcMakeContextCurrent(impl->context);
     if (playbackDeviceName.isEmpty())
         LogInfo("Opened default OpenAL playback device.");
     else
         LogInfo("Opened OpenAL playback device '" + playbackDeviceName + "'.");
+
     impl->initialized = true;
+    
+#endif
     return true;
 }
 
 QStringList AudioAPI::GetPlaybackDevices() const
 {
     QStringList names;
-    
+
+#ifndef TUNDRA_NO_AUDIO
     const char *deviceNames = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
     if (deviceNames)
     {
@@ -165,6 +175,7 @@ QStringList AudioAPI::GetPlaybackDevices() const
             deviceNames += strlen(deviceNames) + 1;
         }
     }
+#endif
     
     return names;
 }
@@ -188,9 +199,10 @@ void AudioAPI::Uninitialize()
         return;
 
     StopRecording();
-    
+
     impl->channels.clear();
-    
+
+#ifndef TUNDRA_NO_AUDIO
     if (impl->context)
     {
         alcMakeContextCurrent(0);
@@ -202,6 +214,7 @@ void AudioAPI::Uninitialize()
         alcCloseDevice(impl->device);
         impl->device = 0;
     }
+#endif    
     
     impl->initialized = false;
 }
@@ -222,10 +235,11 @@ std::vector<SoundChannelPtr> AudioAPI::GetActiveSounds() const
 }
 
 void AudioAPI::Update(f64 frametime)
-{   
+{
     if (!impl || !impl->initialized)
         return;
     
+#ifndef TUNDRA_NO_AUDIO
     PROFILE(AudioAPI_Update);
 
 //        mutex.lock();
@@ -235,10 +249,10 @@ void AudioAPI::Update(f64 frametime)
     ALfloat pos[] = {impl->listenerPosition.x, impl->listenerPosition.y, impl->listenerPosition.z};
     alListenerfv(AL_POSITION, pos);
     float3 front = impl->listenerOrientation * float3(0.0f, -1.0f, 0.0f);
-    float3 up = impl->listenerOrientation * float3(0.0f, 0.0f, -1.0f); 
+    float3 up = impl->listenerOrientation * float3(0.0f, 0.0f, -1.0f);
     ALfloat orient[] = {front.x, front.y, front.z, up.x, up.y, up.z};
     alListenerfv(AL_ORIENTATION, orient);
-    
+
     // Update channel attenuations, check which have stopped
     SoundChannelMap::iterator i = impl->channels.begin();
     while(i != impl->channels.end())
@@ -250,12 +264,13 @@ void AudioAPI::Update(f64 frametime)
         }
         ++i;
     }
-    
+
     // Remove stopped channels
     for(uint j = 0; j < channelsToDelete.size(); ++j)
-        impl->channels.erase(channelsToDelete[j]);   
-    
+        impl->channels.erase(channelsToDelete[j]);
+
  //   mutex.unlock();
+#endif
 }
 
 bool AudioAPI::IsInitialized() const
@@ -449,7 +464,8 @@ void AudioAPI::ApplyMasterGain()
 QStringList AudioAPI::GetRecordingDevices() const
 {
     QStringList names;
-    
+
+#ifndef TUNDRA_NO_AUDIO
     const char *capture_device_names = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
     if (capture_device_names)
     {
@@ -459,6 +475,7 @@ QStringList AudioAPI::GetRecordingDevices() const
             capture_device_names += strlen(capture_device_names) + 1;
         }
     }
+#endif
     
     return names;
 }
@@ -468,16 +485,17 @@ bool AudioAPI::StartRecording(const QString &name, uint frequency, bool sixteenb
     if (!impl || !impl->initialized)
         return false;
     
+#ifndef TUNDRA_NO_AUDIO
     // Stop old recording if any
     StopRecording();
-    
+
     ALenum openal_format;
     impl->captureSampleSize = 1;
-    if (stereo) 
+    if (stereo)
         impl->captureSampleSize <<= 1;
-    if (sixteenbit) 
+    if (sixteenbit)
         impl->captureSampleSize <<= 1;
-    
+
     if (!stereo)
     {
         if (!sixteenbit)
@@ -492,42 +510,47 @@ bool AudioAPI::StartRecording(const QString &name, uint frequency, bool sixteenb
         else
             openal_format = AL_FORMAT_STEREO16;
     }
-    
+
     if (name.isEmpty())
         impl->captureDevice = alcCaptureOpenDevice(NULL, frequency, openal_format, buffer_size / impl->captureSampleSize);
     else
         impl->captureDevice = alcCaptureOpenDevice(name.toStdString().c_str(), frequency, openal_format, buffer_size / impl->captureSampleSize);
-    
+
     if (!impl->captureDevice)
     {
         LogError("Could not open OpenAL recording device " + name);
         return false;
     }
-    
+
     alcCaptureStart(impl->captureDevice);
-    
+
     LogInfo("Opened OpenAL recording device " + name);
     return true;
+#endif
 }
 
 void AudioAPI::StopRecording()
 {
+#ifndef TUNDRA_NO_AUDIO
     if (impl && impl->captureDevice)
     {
         alcCaptureStop(impl->captureDevice);
         alcCaptureCloseDevice(impl->captureDevice);
         impl->captureDevice = 0;
     }
+#endif
 }
 
 uint AudioAPI::GetRecordedSoundSize() const
 {
     if (!impl || !impl->captureDevice)
         return 0;
-    
+
+#ifndef TUNDRA_NO_AUDIO
     ALCint samples;
     alcGetIntegerv(impl->captureDevice, ALC_CAPTURE_SAMPLES, 1, &samples);
     return samples * impl->captureSampleSize;
+#endif
 }
 
 uint AudioAPI::GetRecordedSoundData(void* buffer, uint size)
@@ -535,6 +558,7 @@ uint AudioAPI::GetRecordedSoundData(void* buffer, uint size)
     if (!impl || !impl->captureDevice)
         return 0;
     
+#ifndef TUNDRA_NO_AUDIO
     ALCint samples = size / impl->captureSampleSize;
     ALCint max_samples = 0;
     alcGetIntegerv(impl->captureDevice, ALC_CAPTURE_SAMPLES, 1, &max_samples);
@@ -543,4 +567,5 @@ uint AudioAPI::GetRecordedSoundData(void* buffer, uint size)
     
     alcCaptureSamples(impl->captureDevice, buffer, samples);
     return samples * impl->captureSampleSize;
+#endif
 }

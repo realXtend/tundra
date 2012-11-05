@@ -1,0 +1,32 @@
+Tundra-Android port, build instructions
+---------------------------------------
+
+Some dependencies will be automatically built, others need to be manually installed. See below for detail.
+
+
+Windows
+-------
+
+- You will need the Android SDK & NDK, download and install them from http://developer.android.com/sdk/index.html.
+  Install API platform 10 (2.3.3) for the Native Activity support that OGRE library needs.
+
+- Set the environment variables ANDROID_SDK & ANDROID_NDK to point to them, for example
+  ANDROID_NDK=C:\android-ndk-r8
+  ANDROID_SDK=C:\Program Files (x86)\Android\android-sdk
+
+- Using a Visual Studio command prompt, run BuildAndroidDps.cmd from the "android" subdirectory of Tundra checkout.
+  This downloads and builds the automatically buildable dependencies (Bullet, Boost, kNet, OGRE.) This may take some time,
+  so be patient.
+
+- For Qt, the Necessitas SDK is used. Download and install it from http://necessitas.kde.org/necessitas/necessitas_sdk_installer.php,
+  then manually copy the contents of its "Android\Qt\482\armeabi-v7a" subdirectory (which includes bin, include 
+  and lib subdirectories) into the the subdirectory "deps-android\Qt" of the Tundra checkout.
+
+- To build Tundra, run BuildTundra.cmd from the "android" subdirectory of Tundra checkout, using a Visual Studio command prompt.
+
+
+
+
+
+
+

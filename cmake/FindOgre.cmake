@@ -6,15 +6,22 @@
 if (NOT WIN32 AND NOT APPLE)
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()
 macro(configure_ogre)
-  find_path(OGRE_LIBRARY_DIR NAMES lib/libOgreMain.so
-    HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
-
   find_path(OGRE_INCLUDE_DIR Ogre.h
-    HINTS ${ENV_OGRE_HOME}/include ${ENV_NAALI_DEP_PATH}/include
+    HINTS ${ENV_OGRE_HOME}/include ${ENV_OGRE_HOME}/OgreMain/include ${ENV_NAALI_DEP_PATH}/include
     PATH_SUFFIXES OGRE)
 
-  find_library(OGRE_LIBRARY OgreMain
-    HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+  # Android uses static Ogre
+  if (NOT ANDROID)
+      find_path(OGRE_LIBRARY_DIR NAMES libOgreMain.so
+        HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+      find_library(OGRE_LIBRARY OgreMain
+        HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+  else()
+      find_path(OGRE_LIBRARY_DIR NAMES libOgreMainStatic.a
+        HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+      find_library(OGRE_LIBRARY OgreMainStatic
+        HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+  endif()
 
   include_directories(${OGRE_INCLUDE_DIR})
   link_directories(${OGRE_LIBRARY_DIR})

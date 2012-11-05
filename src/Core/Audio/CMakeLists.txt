@@ -20,7 +20,9 @@ add_definitions(-DAUDIO_API_EXPORTS)
 # Define AUDIO_API_DLL if we are building the Audio project as a shared library.
 #add_definitions(-DAUDIO_API_DLL)
 
-use_package(OPENAL)
+if (NOT ANDROID)
+    use_package(OPENAL)
+endif()
 use_package_ogg()
 use_package_vorbis()
 
@@ -29,9 +31,11 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 #build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package(QT4)
-link_package(OPENAL)
-link_package_ogg()
-link_package_vorbis()
+if (NOT ANDROID)
+    link_package(OPENAL)
+    link_package_ogg()
+    link_package_vorbis()
+endif()
 link_modules(Framework Math Asset)
 
 SetupCompileFlags()

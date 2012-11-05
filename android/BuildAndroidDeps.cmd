@@ -14,6 +14,9 @@ cd %ANDROID%
 :: Make sure deps folder exists.
 IF NOT EXIST "%DEPS%". mkdir "%DEPS%"
 
+:: Qt, needs manually copied Necessitas for now
+IF NOT EXIST "%DEPS%\qt". mkdir "%DEPS%\Qt"
+
 :: Bullet
 IF NOT EXIST "%DEPS%\bullet\". (
    cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}

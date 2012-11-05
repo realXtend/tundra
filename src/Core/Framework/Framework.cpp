@@ -26,6 +26,9 @@
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
 #endif
+#ifdef ANDROID
+#include <termios.h>
+#endif
 #include <iostream>
 #include <QDir>
 #include <QDomDocument>
