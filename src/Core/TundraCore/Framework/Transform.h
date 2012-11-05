@@ -32,9 +32,10 @@ public:
     /// rot.z stores the rotation angle (in degrees) of the matrix Rz.
     /// (Instead of having rot[0] store the rotation about Rz, rot[1] about Ry, rot[2] about Rx, as
     ///  the math libraries do).
-    float3 rot; 
-    float3 scale;
+    float3 rot;
+    float3 scale; ///< @note scale cannot contain zero value.
 
+    /// The default ctor initializes pos to float3::zero, rot to float3::zero, and scale to float3::one
     Transform()
     :pos(0,0,0),
     rot(0,0,0),
@@ -42,10 +43,10 @@ public:
     {
     }
 
-    Transform(const float3 &pos_, const float3 &rot_, const float3 &scale)
+    Transform(const float3 &pos_, const float3 &rot_, const float3 &scale_)
     :pos(pos_),
     rot(rot_),
-    scale(scale)
+    scale(scale_)
     {
     }
 
