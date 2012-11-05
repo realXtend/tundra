@@ -351,7 +351,8 @@ SimpleAvatar.prototype.ClientInitialize = function() {
         this.ownAvatar = true;
         this.ClientCreateInputMapper();
         this.ClientCreateAvatarCamera();
-        this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
+        if (!framework.IsHeadless())
+            this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
         var soundlistener = this.me.GetOrCreateComponent("EC_SoundListener", 2, false);
         soundlistener.active = true;
 
