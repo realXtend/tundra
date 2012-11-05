@@ -80,8 +80,6 @@ echo "= Git       http://git-scm.com/download/mac                               
 echo "= Mercurial http://mercurial.selenic.com/downloads                                                          ="
 echo "= Qt 4.8.0  http://qt.nokia.com/downloads/sdk-mac-os-cpp                                                    ="
 echo "= MacPorts  http://www.macports.org/install.php                                                             ="
-echo "= nVidia Cg http://developer.download.nvidia.com/cg/Cg_3.1/Cg-3.1_April2012.dmg                             ="
-echo "=                                                                                                           ="
 echo "============================================================================================================="
 
 # Some helper variables
@@ -500,6 +498,39 @@ else
     make -j$NPROCS
     cp lib/libkNet.dylib $prefix/lib/
     rsync -r include/* $prefix/include/
+    touch $tags/$what-done
+fi
+
+what=NVIDIA_Cg
+baseurl=http://developer.download.nvidia.com/cg/Cg_3.1
+dmgname=Cg-3.1_April2012.dmg
+if test -f $tags/$what-done; then
+    echoInfo "$what is done"
+else
+    dmg=$tarballs/$dmgname
+    if [ -f $dmg ]; then
+        rm $dmg
+    fi
+
+    echoInfo "Fetching $what, this may take a while... "
+    curl -L -o $dmg $baseurl/$dmgname
+    hdiutil attach $dmg
+
+    mountpoint=/Volumes/Cg-3.1.0013
+    tarballname=$what.tgz
+    tarball="$mountpoint/Cg-3.1.0013.app/Contents/Resources/Installer\ Items/$tarballname"
+    installdir=~/Library/Frameworks
+
+    eval cp $tarball $tarballs
+    cd $build
+    hdiutil detach $mountpoint
+    mkdir $what
+    cd $what
+    tar --gzip --extract --verbose -f $tarballs/$tarballname
+
+    cd $build
+    echoInfo "Installing $what into $installdir:"
+    cp -R $what/Library/Frameworks/Cg.framework $installdir
     touch $tags/$what-done
 fi
 
