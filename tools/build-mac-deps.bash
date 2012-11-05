@@ -43,6 +43,31 @@ fnDisplayHelpAndExit()
     exit 1
 }
 
+echoInfo()
+{
+    COLOR="\033[32;1m"
+    ENDCOLOR="\033[0m"
+    echo -e $COLOR INFO: $@ $ENDCOLOR | $logAndPrintThis
+}
+
+echoWarn()
+{
+    COLOR="\033[33;1m"
+    ENDCOLOR="\033[0m"
+    echo -e $COLOR WARNING: $@ $ENDCOLOR | $logAndPrintThis
+}
+
+echoError()
+{
+    COLOR="\033[31;1m"
+    ENDCOLOR="\033[0m"
+    echo -e $COLOR ERROR: $@ $ENDCOLOR | $logAndPrintThis
+}
+
+logFile=build-mac.log
+logAndPrintThis="tee -a $logFile"
+echo "" | tee $logFile
+
 echo " "
 echo "=============================== realXtend Tundra 2 dependency building script ==============================="
 echo "= Script to build most dependencies. For now, the following dependencies are required to run this script:   ="
@@ -73,12 +98,12 @@ NPROCS=`sysctl -n hw.ncpu`
 viewer=
 
 if [ $# -eq "$NO_ARGS" ]; then
-    echo " ERROR: No options selected"
+    echoError "No options selected"
     echo " "
     fnDisplayHelpAndExit
 fi
 
-echo "= Chosen options: $@"
+echoInfo "Chosen options: $@"
 echo " "
 while [ "$1" != "" ]; do
     case $1 in
@@ -90,7 +115,7 @@ while [ "$1" != "" ]; do
 
         -d | --deps-path )                  shift
                                             if [ ! -d $1 ]; then
-                                                echo "ERROR: Bad directory for --deps-path: $1"
+                                                echoError "Bad directory for --deps-path: $1"
                                                 ERRORS_OCCURED="1"
                                                 shift
                                                 continue
@@ -101,7 +126,7 @@ while [ "$1" != "" ]; do
 
         -c | --client-path )                shift
                                             if [ ! -d $1 ]; then
-                                                echo "ERROR: Bad directory for --client-path: $1"
+                                                echoError "Bad directory for --client-path: $1"
                                                 ERRORS_OCCURED="1"
                                                 shift
                                                 continue
@@ -111,7 +136,7 @@ while [ "$1" != "" ]; do
 
         -q | --qt-path )                    shift
                                             if [ ! -d $1 ]; then
-                                                echo "ERROR: Bad directory for --qt-path: $1"
+                                                echoError "Bad directory for --qt-path: $1"
                                                 ERRORS_OCCURED="1"
                                                 shift
                                                 continue
@@ -121,7 +146,7 @@ while [ "$1" != "" ]; do
 
         -o | --ogre-path )                  shift
                                             if [ ! -d $1 ]; then
-                                                echo "ERROR: Bad directory for --ogre-path: $1"
+                                                echoError "Bad directory for --ogre-path: $1"
                                                 ERRORS_OCCURED="1"
                                                 shift
                                                 continue
@@ -138,20 +163,20 @@ while [ "$1" != "" ]; do
         -np | --number-of-processes )       shift
                                             check=`echo $1 | awk '$0 ~/[^0-9]/ { print "NaN" }'`
                                             if [ "$check" == "NaN" ]; then
-                                                echo "ERROR: Invalid value for --number-of-processes \"$1\""
+                                                echoError "Invalid value for --number-of-processes \"$1\""
                                                 ERRORS_OCCURED="1"
                                                 shift
                                                 continue
                                             fi
 
                                             if [ $1 -gt $NPROCS ]; then
-                                                echo "WARNING: The number of processes that you specified ($1) is larger than the number of cores reported by the operating system ($NPROCS). This may cause slow performance during the compile process"
+                                                echoWarn "The number of processes that you specified ($1) is larger than the number of cores reported by the operating system ($NPROCS). This may cause slow performance during the compile process"
                                             fi
 
                                             NPROCS=$1
                                             ;;
 
-        * )                                 echo "ERROR: Invalid option $1"
+        * )                                 echoError "Invalid option: $1"
                                             ERRORS_OCCURED="1"
                                             shift
                                             continue
@@ -164,7 +189,7 @@ if [ "$ERRORS_OCCURED" == "1" ]; then
 fi
 
 if [ $REQUIRED_ARGS_COUNT -ne $REQUIRED_ARGS ]; then
-    echo "ERROR: One on more required options were omitted. Please try again."
+    echoError "One on more required options were omitted. Please try again."
     fnDisplayHelpAndExit
 fi
 
@@ -185,7 +210,7 @@ if [ -z $QTDIR ] || [ ! -d $QTDIR ]; then
     elif [ -d ~/QtSDK/Desktop/Qt/4.8.0/gcc ]; then
         export QTDIR=~/QtSDK/Desktop/Qt/4.8.0/gcc
     else
-       echo "ERROR! Cannot find Qt. Please specify Qt directory with the --qt-path parameter."
+       echoError "Cannot find Qt. Please specify Qt directory with the --qt-path parameter."
     fi
 fi
 
@@ -221,14 +246,15 @@ urlbase=http://downloads.sourceforge.net/project/boost/boost/1.46.1
 pkgbase=boost_1_46_1
 dlurl=$urlbase/$pkgbase.tar.gz    
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     rm -rf $pkgbase
     zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || curl -L -o $zip $dlurl
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl >> $logFile
     tar xzf $zip
 
     cd $pkgbase
+    echoInfo "Building $what"
     ./bootstrap.sh --prefix=$prefix
     ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex install
     touch $tags/$what-done
@@ -241,14 +267,15 @@ unzipped=bullet-2.78
 pkgbase=bullet-2.78-r2387
 dlurl=$urlbase/$pkgbase.tgz
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     rm -rf $unzipped
     zip=$tarballs/$pkgbase.tgz
-    test -f $zip || curl -L -o $zip $dlurl
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
     tar xzf $zip
 
     cd $unzipped
+    echoInfo "Building $what:"
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix
     make VERBOSE=1 -j$NPROCS
     make install
@@ -261,14 +288,15 @@ urlbase=http://downloads.xiph.org/releases/ogg
 pkgbase=libogg-1.3.0
 dlurl=$urlbase/$pkgbase.tar.gz
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     rm -rf $pkgbase
     zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || curl -L -o $zip $dlurl
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
     tar xzf $zip
 
     cd $pkgbase
+    echoInfo "Building $what:"
     ./configure --prefix=$prefix
     make VERBOSE=1 -j$NPROCS
     make install
@@ -281,14 +309,15 @@ urlbase=http://downloads.xiph.org/releases/vorbis
 pkgbase=libvorbis-1.3.2
 dlurl=$urlbase/$pkgbase.tar.gz
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     rm -rf $pkgbase
     zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || curl -L -o $zip $dlurl
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
     tar xzf $zip
 
     cd $pkgbase
+    echoInfo "Building $what:"
     ./configure --prefix=$prefix --with-ogg=$prefix --build=x86_64
     make VERBOSE=1 -j$NPROCS
     make install
@@ -301,14 +330,15 @@ urlbase=http://downloads.xiph.org/releases/theora
 pkgbase=libtheora-1.1.1
 dlurl=$urlbase/$pkgbase.tar.bz2
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     rm -rf $pkgbase
     zip=$tarballs/$pkgbase.tar.bz2
-    test -f $zip || curl -L -o $zip $dlurl
-    bzip2 -d $zip
+    tarball=$tarballs/$pkgbase.tar
+    test -f $tarball || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl && bzip2 -d $zip
     tar xzf $tarballs/$pkgbase.tar
 
+    echoInfo "Building $what:"
     cd $pkgbase
     ./configure --prefix=$prefix --with-ogg=$prefix --with-vorbis=$prefix
     make VERBOSE=1 -j$NPROCS
@@ -319,12 +349,15 @@ fi
 cd $build
 what=qtpropertybrowser
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
-    test -d qt-solutions || git clone git://gitorious.org/qt-solutions/qt-solutions.git
+    rm -rf qt-solutions
+    echoInfo "Fetching $what, this may take a while... " && git clone git://gitorious.org/qt-solutions/qt-solutions.git
     cd qt-solutions/$what
     echo "CONFIG += release" >> qtpropertybrowser.pro
     echo "CONFIG -= debug" >> qtpropertybrowser.pro
+
+    echoInfo "Building $what"
     ./configure -library
     qmake
     make VERBOSE=1 -j$NPROCS
@@ -340,14 +373,15 @@ urlbase=http://protobuf.googlecode.com/files
 pkgbase=protobuf-2.4.1
 dlurl=$urlbase/$pkgbase.tar.gz
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     rm -rf $pkgbase
     zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || curl -L -o $zip $dlurl
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
     tar xzf $zip
 
     cd $pkgbase
+    echoInfo "Building $what:"
     ./configure --prefix=$prefix
     make VERBOSE=1 -j$NPROCS
     make install
@@ -360,14 +394,15 @@ urlbase=http://downloads.xiph.org/releases/celt
 pkgbase=celt-0.11.1
 dlurl=$urlbase/$pkgbase.tar.gz
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     rm -rf $pkgbase
     zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || curl -L -o $zip $dlurl
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
     tar xzf $zip
 
     cd $pkgbase
+    echoInfo "Building $what:"
     ./configure --prefix=$prefix
     make VERBOSE=1 -j$NPROCS
     make install
@@ -380,14 +415,15 @@ urlbase=http://downloads.xiph.org/releases/speex
 pkgbase=speex-1.2rc1
 dlurl=$urlbase/$pkgbase.tar.gz
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     rm -rf $pkgbase
     zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || curl -L -o $zip $dlurl
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
     tar xzf $zip
 
     cd $pkgbase
+    echoInfo "Building $what:"
     ./configure --prefix=$prefix --enable-shared=NO
     make VERBOSE=1 -j$NPROCS
     make install
@@ -397,16 +433,19 @@ fi
 what=qxmpp
 urlbase=http://qxmpp.googlecode.com/svn/trunk@r1671
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     cd $build
     rm -rf $what
+    echoInfo "Fetching $what, this may take a while... "
     svn checkout $urlbase $what
     cd $what
     echo "DEFINES += QXMPP_USE_SPEEX" >> src/src.pro
     echo "INCLUDEPATH += $prefix/include" >> src/src.pro
     echo "LIBS += -L$prefix/lib -lspeex" >> src/src.pro
     echo "CONFIG += debug_and_release" >> src/src.pro
+
+    echoInfo "Building $what:"
     qmake
     make sub-src-all-ordered -j$NPROCS
     mkdir -p $prefix/include/qxmpp
@@ -417,24 +456,27 @@ fi
 
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
-   echo $what is done
+   echoInfo "$what is done"
 else
     cd $build
     rm -rf $what
+    echoInfo "Fetching $what, this may take a while... "
     git clone git://gitorious.org/qt-labs/$what.git
     cd $what
 
+    echoInfo "Building generator:"
     cd generator
     qmake
-    make all
+    make all -j$NPROCS
     ./generator --include-paths=$QTDIR/include/
     cd ..
 
+    echoInfo "Building Qt bindings:"
     cd qtbindings
     sed -e "s/qtscript_phonon //" < qtbindings.pro > x
     mv x qtbindings.pro  
     qmake
-    make all
+    make all -j$NPROCS
     cd ..
     cd ..
     mkdir -p $viewer/bin/qtplugins/script
@@ -444,14 +486,16 @@ fi
 
 what=kNet
 if test -f $tags/$what-done; then 
-   echo $what is done
+   echoInfo "$what is done"
 else
     cd $build
     rm -rf kNet
+    echoInfo "Cloning $what repository, this may take a while... "
     git clone https://github.com/juj/kNet
     cd kNet
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
     mv x CMakeLists.txt
+    echoInfo "Building $what:"
     cmake . -DCMAKE_BUILD_TYPE=Debug
     make -j$NPROCS
     cp lib/libkNet.dylib $prefix/lib/
@@ -465,20 +509,21 @@ ogredepszip=OgreDependencies_OSX_20120525.zip
 ogredepsurl=http://downloads.sourceforge.net/project/ogre/ogre-dependencies-mac/1.8/
 
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
     if [ ! -d $OGRE_HOME ]; then      # If OGRE_HOME points to invalid location, force it to deps/build/ogre-safe-nocrashes
         export OGRE_HOME=$build/$what # If Ogre is built, then Hydrax and SkyX might be not and OGRE_HOME is needed still
     fi
 else
     cd $build
     rm -rf $what
-    echo "Cloning $what repository, this may take a while..."
+    echoInfo "Cloning $what repository, this may take a while..."
     hg clone $baseurl/$what
     cd $what
     hg checkout v1-8
     curl -L -o $ogredepszip $ogredepsurl$ogredepszip
     tar xzf $ogredepszip
     export OGRE_HOME=$build/$what
+    echoInfo "Building $what:"
     cmake -G Xcode -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
     xcodebuild -configuration RelWithDebInfo
     
@@ -491,11 +536,11 @@ fi
 what=assimp
 baseurl=https://assimp.svn.sourceforge.net/svnroot/assimp/trunk
 if test -f $tags/$what-done; then
-    echo $what is done
+    echoInfo "$what is done"
 else
     cd $build
     rm -rf $what
-    echo "Clonign $what repository, this may take a while..."
+    echoInfo "Cloning $what repository, this may take a while..."
     svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk $what
     cd $what
     # First sed statement: Apple's ld does not allow this version number, so override that
@@ -517,7 +562,7 @@ cd $build
 depdir=realxtend-tundra-deps
 if [ ! -e $depdir ]
 then
-    echo "Cloning source of HydraX/SkyX/PythonQT/NullRenderer..."
+    echoInfo "Cloning source of HydraX/SkyX/PythonQT/NullRenderer..."
     git init $depdir
     cd $depdir
     git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
@@ -527,18 +572,18 @@ else
     cd $depdir
     git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
     if [ -z "`git merge sources origin/sources|grep "Already"`" ]; then
-        echo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
+        echoInfo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
         rm -f $tags/hydrax-done $tags/skyx-done $tags/pythonqt-done
     else
-        echo "No changes in realxtend deps git."
+        echoInfo "No changes in realxtend deps git."
     fi
 fi
 
 # HydraX build:
 if test -f $tags/hydrax-done; then
-    echo "Hydrax-done"
+    echoInfo "Hydrax is done"
 else
-    echo "Building Hydrax."
+    echoInfo "Building Hydrax:"
     cd $build/$depdir/hydrax
 
     OSXMAKE="-f makefile.macosx"
@@ -550,9 +595,9 @@ fi
 
 # SkyX build:
 if test -f $tags/skyx-done; then
-    echo "SkyX-done"
+    echoInfo "SkyX is done"
 else
-    echo "Building SkyX:"
+    echoInfo "Building SkyX:"
     cd $build/$depdir/skyx
     if test -f CMakeCache.txt; then
         rm CMakeCache.txt
@@ -567,15 +612,15 @@ what=zziplib
 pkgbase=zziplib-0.13.59
 dlurl=http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/$pkgbase.tar.bz2/download
 if test -f $tags/$what-done; then
-    echo "$what done"
+    echoInfo "$what is done"
 else
-    echo "Building $what"
     rm -rf $pkgbase
     zip=$tarballs/$pkgbase.tar.bz2
-    test -f $zip || curl -L -o $zip $dlurl
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
     tar xzf $zip
 
     cd $pkgbase
+    echoInfo "Building $what:"
     ./configure --prefix=$prefix
     make VERBOSE=1 -j$NPROCS
     make install
