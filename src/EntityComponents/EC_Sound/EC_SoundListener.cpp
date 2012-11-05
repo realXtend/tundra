@@ -1,11 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_SoundListener.cpp
- *  @brief  Entity-component which provides sound listener position for in-world 3D audio.
- *          Updates parent entity's placeable component's position to the sound system each frame.
- *  @note   Only one entity can have active sound listener at a time.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_SoundListener.cpp
+    @brief  Entity-component which provides sound listener position for in-world 3D audio. */
 
 #include "DebugOperatorNew.h"
 #include "EC_SoundListener.h"
@@ -40,11 +37,11 @@ EC_SoundListener::~EC_SoundListener()
 void EC_SoundListener::RetrievePlaceable()
 {
     if (!ParentEntity())
-        LogError("Couldn't find an parent entity for EC_SoundListener. Cannot retrieve placeable component.");
+        LogError("EC_SoundListener::RetrievePlaceable: Couldn't find an parent entity for EC_SoundListener. Cannot retrieve placeable component.");
 
     placeable_ = ParentEntity()->GetComponent<EC_Placeable>();
-    if (!placeable_.lock())
-        LogError("Couldn't find an EC_Placeable component from the parent entity.");
+    if (placeable_.expired())
+        LogError("EC_SoundListener::RetrievePlaceable: Couldn't find an EC_Placeable component from the parent entity.");
 }
 
 void EC_SoundListener::Update()
@@ -60,22 +57,15 @@ void EC_SoundListener::OnActiveChanged()
 {
     if (active.Get())
     {
-        Entity* entity = ParentEntity();
-        if (!entity)
-            return;
-        Scene* scene = entity->ParentScene();
+        Scene* scene = ParentScene();
         if (!scene)
             return;
-        
         // Disable all the other listeners, only one can be active at a time.
-        EntityList listeners = scene->GetEntitiesWithComponent("EC_SoundListener");
-        foreach(EntityPtr listener, listeners)
+        foreach(const EntityPtr &listener, scene->EntitiesWithComponent(TypeName()))
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)
-            {
                 ec->active.Set(false, AttributeChange::Default);
-            }
         }
     }
 }
@@ -85,11 +75,7 @@ void EC_SoundListener::RegisterActions()
     Entity *entity = ParentEntity();
     assert(entity);
     if (entity)
-    {
         entity->ConnectAction("Active", this, SLOT(OnActiveChanged()));
-    }
     else
-    {
-        LogError("Fail to register actions cause component's parent entity is null.");
-    }
+        LogError("EC_SoundListener::RegisterActions: Failed to register actions because component's parent entity is null.");
 }

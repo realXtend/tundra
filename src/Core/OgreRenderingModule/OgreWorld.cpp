@@ -97,7 +97,7 @@ OgreWorld::~OgreWorld()
     Ogre::Root::getSingleton().destroySceneManager(sceneManager_);
 }
 
-std::string OgreWorld::GetUniqueObjectName(const std::string &prefix)
+std::string OgreWorld::GenerateUniqueObjectName(const std::string &prefix)
 {
     return renderer_->GetUniqueObjectName(prefix);
 }

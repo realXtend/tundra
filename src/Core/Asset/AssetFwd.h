@@ -5,6 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
+class Framework;
 class AssetAPI;
 class AssetCache;
 
@@ -49,3 +50,5 @@ class AssetRefListener;
 typedef boost::shared_ptr<AssetRefListener> AssetRefListenerPtr;
 
 class Framework;
+class BinaryAsset;
+typedef boost::shared_ptr<BinaryAsset> BinaryAssetPtr;

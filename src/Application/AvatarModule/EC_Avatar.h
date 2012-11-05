@@ -16,16 +16,18 @@ typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
     <tr>
     <td>
     <h2>Avatar</h2>
-    Note: this component no longer generates the required EC_Mesh, EC_Placeable and EC_AnimationController
-    components to an entity to display an avatar.
-    ///\todo Write better description!
 
-    Registered by Avatar::AvatarModule.
+    @note This component no longer generates the required EC_Mesh, EC_Placeable and EC_AnimationController
+    components to an entity to display an avatar.
+
+    @todo Write better description!
+
+    Registered by AvatarModule.
 
     <b>Attributes</b>:
     <ul>
-    <li>QString: appearanceRef
-    <div>Asset id for the avatar appearance file that will be used to generate the visible avatar.</div>
+    <li>AssetReference: appearanceRef
+    <div> @copydoc appearanceRef</div>
     </ul>
 
     <b>Exposes the following scriptable functions:</b>
@@ -38,7 +40,7 @@ typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
     Does not emit any actions.
 
-    <b>Depends on the components EC_Mesh, EC_Placeable and EC_AnimationController</b>.
+    <b>Depends on the components @ref EC_Mesh "Mesh" and @ref EC_Placeable "Placeable".</b>
     </table> */
 class AV_MODULE_API EC_Avatar : public IComponent
 {
@@ -50,7 +52,7 @@ public:
     explicit EC_Avatar(Scene* scene);
     virtual ~EC_Avatar();
 
-    /// Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
+    /// Asset id for the avatar appearance file that will be used to generate the visible avatar.
     Q_PROPERTY(AssetReference appearanceRef READ getappearanceRef WRITE setappearanceRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceRef);
 
