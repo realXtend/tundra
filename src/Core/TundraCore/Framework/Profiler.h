@@ -178,7 +178,7 @@ public:
 private:
     friend class Profiler;
 //        ProfilerNodeTree(); // N/I
-    ProfilerNodeTree(const ProfilerNodeTree &rhs); // N/I
+    Q_DISABLE_COPY(ProfilerNodeTree) // N/I
 
     /// list of all children for this node
     NodeList children_;
@@ -270,7 +270,7 @@ public:
 private:
     friend class Profiler;
     ProfilerNode(); // N/I
-    ProfilerNode(const ProfilerNode &rhs); // N/I
+    Q_DISABLE_COPY(ProfilerNode) // N/I
 
     unsigned long num_called_current_;
     double elapsed_current_;
@@ -441,7 +441,7 @@ public:
 
 private:
     ProfilerSection(); // N/I
-    ProfilerSection(const ProfilerSection &rhs);
+    Q_DISABLE_COPY(ProfilerSection)
 
     /// Name of this profiling section
     const std::string name_;
