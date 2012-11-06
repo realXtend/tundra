@@ -80,8 +80,8 @@ endmacro (final_target)
 # build a library from internal sources
 macro (build_library TARGET_NAME LIB_TYPE)
 
-    # On Android force all libs to be static
-    if (ANDROID AND ${LIB_TYPE} STREQUAL "SHARED")
+    # On Android force all libs to be static, except the main lib (Tundra)
+    if (ANDROID AND ${LIB_TYPE} STREQUAL "SHARED" AND NOT (${TARGET_NAME} STREQUAL "Tundra"))
         message("- Forcing lib to static for Android")
         set (TARGET_LIB_TYPE "STATIC")
     else ()
@@ -108,23 +108,25 @@ macro (build_library TARGET_NAME LIB_TYPE)
         endif ()
     endif ()
 
-    # build static libraries to /lib if
-    # - Is part of the SDK (/src/Core/)
-    # - Is a static EC declared by SDK on the build (/src/EntityComponents/)
-    if (${TARGET_LIB_TYPE} STREQUAL "STATIC" AND NOT TARGET_DIR)
-        string (REGEX MATCH  ".*/src/Core/?.*" TARGET_IS_CORE ${CMAKE_CURRENT_SOURCE_DIR})
-        string (REGEX MATCH  ".*/src/EntityComponents/?.*" TARGET_IS_EC ${CMAKE_CURRENT_SOURCE_DIR})
-        if (TARGET_IS_CORE)
-            message (STATUS "-- SDK lib output path:")
-        elseif (TARGET_IS_EC)
-            message (STATUS "-- SDK EC lib output path:")
-        endif ()
-        if (TARGET_IS_CORE OR TARGET_IS_EC)
-            message (STATUS "       " ${PROJECT_BINARY_DIR}/lib)
-            set_target_properties (${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+    if (NOT ANDROID)
+        # build static libraries to /lib if
+        # - Is part of the SDK (/src/Core/)
+        # - Is a static EC declared by SDK on the build (/src/EntityComponents/)
+        if (${TARGET_LIB_TYPE} STREQUAL "STATIC" AND NOT TARGET_DIR)
+            string (REGEX MATCH  ".*/src/Core/?.*" TARGET_IS_CORE ${CMAKE_CURRENT_SOURCE_DIR})
+            string (REGEX MATCH  ".*/src/EntityComponents/?.*" TARGET_IS_EC ${CMAKE_CURRENT_SOURCE_DIR})
+            if (TARGET_IS_CORE)
+                message (STATUS "-- SDK lib output path:")
+            elseif (TARGET_IS_EC)
+                message (STATUS "-- SDK EC lib output path:")
+            endif ()
+            if (TARGET_IS_CORE OR TARGET_IS_EC)
+                message (STATUS "       " ${PROJECT_BINARY_DIR}/lib)
+                set_target_properties (${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+            endif ()
         endif ()
     endif ()
-    
+
     # internal library naming convention
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
     set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
@@ -137,7 +139,7 @@ macro (build_executable TARGET_NAME)
 
     set (TARGET_LIB_TYPE "EXECUTABLE")
     message (STATUS "building executable: " ${TARGET_NAME})
-    
+
     if (MSVC)
         add_executable (${TARGET_NAME} ${ARGN})
         target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)

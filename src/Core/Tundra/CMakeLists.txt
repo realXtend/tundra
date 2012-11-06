@@ -34,7 +34,10 @@ endif (MSVC)
 
 use_core_modules(Framework Math Scene Console)
 
-if (MSVC)
+# On Android build the main program as a shared object
+if (ANDROID)
+   build_library(${TARGET_NAME} SHARED ${SOURCE_FILES})
+elseif (MSVC)
    build_executable(${TARGET_NAME} WIN32 ${SOURCE_FILES} ${RESOURCE_FILES})
 else()
    build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
