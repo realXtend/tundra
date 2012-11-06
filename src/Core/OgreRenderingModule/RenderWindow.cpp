@@ -16,6 +16,9 @@
 #include <QX11Info>
 #endif
 
+#include <OgreOverlayManager.h>
+#include <OgrePanelOverlayElement.h>
+
 #include "MemoryLeakCheck.h"
 
 using namespace std;

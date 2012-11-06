@@ -6,26 +6,28 @@
 if (NOT WIN32 AND NOT APPLE)
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()
 macro(configure_ogre)
-  find_path(OGRE_INCLUDE_DIR Ogre.h
-    HINTS ${ENV_OGRE_HOME}/include ${ENV_OGRE_HOME}/OgreMain/include ${ENV_NAALI_DEP_PATH}/include
-    PATH_SUFFIXES OGRE)
 
-  # Android uses static Ogre
+  # Android uses static Ogre, and its install step for copying includes does not work, so configure differently
   if (NOT ANDROID)
+      find_path(OGRE_INCLUDE_DIR Ogre.h
+        HINTS ${ENV_OGRE_HOME}/include ${ENV_NAALI_DEP_PATH}/include
+        PATH_SUFFIXES OGRE)
+
       find_path(OGRE_LIBRARY_DIR NAMES libOgreMain.so
         HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
       find_library(OGRE_LIBRARY OgreMain
         HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+
+      include_directories(${OGRE_INCLUDE_DIR})
+      link_directories(${OGRE_LIBRARY_DIR})
   else()
-      find_path(OGRE_LIBRARY_DIR NAMES libOgreMainStatic.a
-        HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+      set (OGRE_LIBRARY_DIR ${ENV_OGRE_HOME}/lib)
       find_library(OGRE_LIBRARY OgreMainStatic
         HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+
+      include_directories(${ENV_OGRE_HOME}/include ${ENV_OGRE_HOME}/OgreMain/include ${ENV_OGRE_HOME}/Components/Overlay/include)
+      link_directories(${OGRE_LIBRARY_DIR})
   endif()
-
-  include_directories(${OGRE_INCLUDE_DIR})
-  link_directories(${OGRE_LIBRARY_DIR})
-
 endmacro()
     
 else() # Windows Ogre lookup.

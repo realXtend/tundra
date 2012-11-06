@@ -25,8 +25,11 @@ link_modules(Math Scene Ui Input Asset Audio Console)
 if (UNIX AND NOT APPLE)
   # for dlopen() etc used in PluginAPI
   target_link_libraries (${TARGET_NAME} dl)
-  target_link_libraries (${TARGET_NAME} rt)
-endif () 
+  # rt library is not separate on Android
+  if (NOT ANDROID)
+      target_link_libraries (${TARGET_NAME} rt)
+  endif ()      
+endif ()
 
 # Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propapage from here to each library.
 if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.

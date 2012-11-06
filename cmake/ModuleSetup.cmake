@@ -80,20 +80,26 @@ endmacro (final_target)
 # build a library from internal sources
 macro (build_library TARGET_NAME LIB_TYPE)
 
-    # save for later use in other macros
-    set (TARGET_LIB_TYPE ${LIB_TYPE})
+    # On Android force all libs to be static
+    if (ANDROID AND ${LIB_TYPE} STREQUAL "SHARED")
+        message("- Forcing lib to static for Android")
+        set (TARGET_LIB_TYPE "STATIC")
+    else ()
+        set (TARGET_LIB_TYPE ${LIB_TYPE})
+    endif ()
+
     message (STATUS "-- build type:")
-    message (STATUS "       " ${LIB_TYPE} " library")
+    message (STATUS "       " ${TARGET_LIB_TYPE} " library")
    
     # *unix add -fPIC for static libraries
-    if (UNIX AND ${LIB_TYPE} STREQUAL "STATIC")
+    if (UNIX AND ${TARGET_LIB_TYPE} STREQUAL "STATIC")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     endif ()
 
-    add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
+    add_library (${TARGET_NAME} ${TARGET_LIB_TYPE} ${ARGN})
 
     if (MSVC AND ENABLE_BUILD_OPTIMIZATIONS)
-        if (${LIB_TYPE} STREQUAL "SHARED")
+        if (${TARGET_LIB_TYPE} STREQUAL "SHARED")
             set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
             set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
         else ()
@@ -101,11 +107,11 @@ macro (build_library TARGET_NAME LIB_TYPE)
             set_target_properties (${TARGET_NAME} PROPERTIES STATIC_LIBRARY_FLAGS_RELWITHDEBINFO "/LTCG")
         endif ()
     endif ()
-    
+
     # build static libraries to /lib if
     # - Is part of the SDK (/src/Core/)
     # - Is a static EC declared by SDK on the build (/src/EntityComponents/)
-    if (${LIB_TYPE} STREQUAL "STATIC" AND NOT TARGET_DIR)
+    if (${TARGET_LIB_TYPE} STREQUAL "STATIC" AND NOT TARGET_DIR)
         string (REGEX MATCH  ".*/src/Core/?.*" TARGET_IS_CORE ${CMAKE_CURRENT_SOURCE_DIR})
         string (REGEX MATCH  ".*/src/EntityComponents/?.*" TARGET_IS_EC ${CMAKE_CURRENT_SOURCE_DIR})
         if (TARGET_IS_CORE)

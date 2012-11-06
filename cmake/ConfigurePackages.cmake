@@ -229,14 +229,14 @@ macro(use_package_bullet)
     endif()
     message (STATUS "Using BULLET_DIR = ${BULLET_DIR}")
 
-    if (WIN32)
+    if (WIN32 OR ANDROID)
         include_directories(${BULLET_DIR}/include) # For prebuilt VS2008/VS2010 deps.
         include_directories(${BULLET_DIR}/src) # For full-built source deps.
         link_directories(${BULLET_DIR}/lib)
-    else() # Linux and mac
+    else () # Linux and mac
         include_directories(${BULLET_DIR}/include/bullet)
         link_directories(${BULLET_DIR}/lib)
-    endif()
+    endif ()
 endmacro()
 
 macro(link_package_bullet)

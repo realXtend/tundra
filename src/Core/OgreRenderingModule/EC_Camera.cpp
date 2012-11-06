@@ -312,7 +312,7 @@ Ray EC_Camera::ViewportPointToRay(float x, float y) const
     // Do a bit of sanity checking that the user didn't go and input absolute window coordinates.
     if (fabs(x) >= 10.f || fabs(y) >= 10.f || !isfinite(x) || !isfinite(y))
         LogError(QString("EC_Camera::ViewportPointToRay takes input (x,y) coordinates normalized in the range [0,1]! (You inputted x=%1, y=%2").arg(x).arg(y));
-    return (camera_ ? camera_->getCameraToViewportRay(Clamp(x, 0.f, 1.f), Clamp(y, 0.f, 1.f)) : Ray());
+    return (camera_ ? Ray(camera_->getCameraToViewportRay(Clamp(x, 0.f, 1.f), Clamp(y, 0.f, 1.f))) : Ray());
 }
 
 Ray EC_Camera::ScreenPointToRay(uint x, uint y) const
