@@ -148,7 +148,7 @@ void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
         result = world->Renderer()->Raycast(mouseEvent->x, mouseEvent->y);
 
     const bool mouseOnTopOfThisCanvas = result && result->entity == ParentEntity() &&
-        (int)result->submesh == submesh.Get() && GetFramework()->Input()->IsMouseCursorVisible();
+        (Ogre::uint)result->submesh == submesh.Get() && GetFramework()->Input()->IsMouseCursorVisible();
 
     if (!mouseOnTopOfThisCanvas)
     {
@@ -203,7 +203,7 @@ void EC_GraphicsViewCanvas::OnDragEnterEvent(QDragEnterEvent *e)
         return;
 
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
-    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (int)result->submesh == submesh.Get());
+    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (Ogre::uint)result->submesh == submesh.Get());
     if (!mouseOnTopOfThisCanvas)
         return;
 
@@ -237,7 +237,7 @@ void EC_GraphicsViewCanvas::OnDragLeaveEvent(QDragLeaveEvent *e)
         return;
 
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
-    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (int)result->submesh == submesh.Get());
+    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (Ogre::uint)result->submesh == submesh.Get());
     if (!mouseOnTopOfThisCanvas)
         return;
 
@@ -263,7 +263,7 @@ void EC_GraphicsViewCanvas::OnDragMoveEvent(QDragMoveEvent *e)
         return;
 
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
-    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (int)result->submesh == submesh.Get());
+    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (Ogre::uint)result->submesh == submesh.Get());
     if (!mouseOnTopOfThisCanvas)
         return;
 
@@ -297,7 +297,7 @@ void EC_GraphicsViewCanvas::OnDropEvent(QDropEvent *e)
         return;
 
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
-    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (int)result->submesh == submesh.Get());
+    const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (Ogre::uint)result->submesh == submesh.Get());
     if (!mouseOnTopOfThisCanvas)
         return;
 

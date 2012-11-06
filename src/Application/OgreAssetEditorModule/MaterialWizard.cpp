@@ -147,7 +147,7 @@ void MaterialWizard::RefreshWidgets()
         DISABLE(checkBoxAnimParam)
         DISABLE(checkBoxReflParam)
     }
-/*
+
     if (currentOptions_ == Material_DiffNormal)
     {
         ENABLE(checkBoxLightParam)
@@ -221,8 +221,8 @@ void MaterialWizard::RefreshWidgets()
     QLabel *labelCurrent = mainWidget_->findChild<QLabel *>("labelCurrent");
     labelCurrent->setText(GetCurrentMaterialFilename());
 
-
-    /* OLD SHIT STARTS HERE
+#if 0
+    // OLD SHIT STARTS HERE
 
     // Diffuse
     if (radioDiffRgbTexParam->isChecked())
@@ -418,9 +418,9 @@ void MaterialWizard::RefreshWidgets()
 
     QLabel *labelCurrent = mainWidget_->findChild<QLabel *>("labelCurrent");
     labelCurrent->setText(GetCurrentMaterialFilename());
-    
-    OLD SHIT ENDS HERE
     */
+    // OLD SHIT ENDS HERE
+#endif
 }
 
 void MaterialWizard::ClearSelections()
