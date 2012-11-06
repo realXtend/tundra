@@ -62,7 +62,7 @@ float SlaveModifier::GetMappedValue(float master_value)
         master_value = max_value;
     
     // Find beginning pos. of interpolation
-    for (i = mapping_.size()-1; i >= 0; --i)
+    for (i = mapping_.size()-1; (int)i >= 0; --i)
     {
         if (mapping_[i].master_ <= master_value)
             break;
