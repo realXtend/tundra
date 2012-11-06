@@ -403,6 +403,7 @@ void MaterialWizard::RefreshWidgets()
         currentOptions_ |= MWO_ReceivesShadows;
         std::cout << "MWO_ReceivesShadows" << std::endl;
     }
+*/
 /*
     // available only with DiffAlphamask
     QCheckBox *alphaMasking = mainWidget_->findChild<QCheckBox *>("checkBoxAlphaMasking");
