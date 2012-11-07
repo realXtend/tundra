@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Tundra>
-  <!-- TODO For most parts this file is unnecessary duplicate of plugins.xml and only adds one new line (LoginScreen.js)!
+  <!-- TODO For most parts this file is unnecessary duplicate of plugins.xml and only adds one new line (LoginScreen.js)! -->
   <plugin path="OpenAssetImport" />             <!-- Does not depend on any other module -->
   <plugin path="OgreRenderingModule" />         <!-- Depends on OpenAssetImport -->
   <plugin path="EnvironmentModule" />           <!-- Depends on OgreRenderingModule -->
