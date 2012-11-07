@@ -51,34 +51,34 @@ namespace Mumble
     template<class T> class QTypeInfo;
 
     struct HostAddress {
-	    union {
-		    Q_IPV6ADDR qip6;
-		    quint16 shorts[8];
-		    quint32 hash[4];
-		    quint64 addr[2];
-	    };
+      union {
+        Q_IPV6ADDR qip6;
+        quint16 shorts[8];
+        quint32 hash[4];
+        quint64 addr[2];
+      };
 
-	    HostAddress();
-	    HostAddress(const Q_IPV6ADDR &);
-	    HostAddress(const std::string &);
-	    HostAddress(const QHostAddress &);
-	    HostAddress(const QByteArray &);
+      HostAddress();
+      HostAddress(const Q_IPV6ADDR &);
+      HostAddress(const std::string &);
+      HostAddress(const QHostAddress &);
+      HostAddress(const QByteArray &);
         HostAddress(const struct ::sockaddr_storage &);
 
-	    bool isV6() const;
-	    bool isValid() const;
+      bool isV6() const;
+      bool isValid() const;
 
-	    bool operator < (const HostAddress &) const;
-	    bool operator == (const HostAddress &) const;
+      bool operator < (const HostAddress &) const;
+      bool operator == (const HostAddress &) const;
 
-	    bool match(const HostAddress &, int) const;
+      bool match(const HostAddress &, int) const;
 
-	    QString toString() const;
+      QString toString() const;
 
-	    std::string toStdString() const;
-	    QHostAddress toAddress() const;
-	    QByteArray toByteArray() const;
-	    void toSockaddr(struct sockaddr_storage *dst) const;
+      std::string toStdString() const;
+      QHostAddress toAddress() const;
+      QByteArray toByteArray() const;
+      void toSockaddr(struct sockaddr_storage *dst) const;
     };
 
     Q_DECLARE_TYPEINFO(HostAddress, Q_MOVABLE_TYPE);
@@ -86,17 +86,17 @@ namespace Mumble
     quint32 qHash(const HostAddress &);
 
     struct Ban {
-	    HostAddress haAddress;
-	    int iMask;
-	    QString qsUsername;
-	    QString qsHash;
-	    QString qsReason;
-	    QDateTime qdtStart;
-	    unsigned int iDuration;
-	    bool isExpired() const;
-	    bool isValid() const;
-	    bool operator < (const Ban &) const;
-	    bool operator == (const Ban &) const;
+      HostAddress haAddress;
+      int iMask;
+      QString qsUsername;
+      QString qsHash;
+      QString qsReason;
+      QDateTime qdtStart;
+      unsigned int iDuration;
+      bool isExpired() const;
+      bool isValid() const;
+      bool operator < (const Ban &) const;
+      bool operator == (const Ban &) const;
     };
 
     #if Q_BYTE_ORDER == Q_BIG_ENDIAN
