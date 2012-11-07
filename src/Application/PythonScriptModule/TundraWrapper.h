@@ -48,7 +48,7 @@ namespace PythonScript
         // AssetReference: Construct and destruct
         AssetReference *new_AssetReference();
         AssetReference *new_AssetReference(const QString &reference);
-	AssetReference *new_AssetReference(const QString &assetRef, const QString &assetType);
+        AssetReference *new_AssetReference(const QString &assetRef, const QString &assetType);
         void delete_AssetReference(AssetReference *obj);
 
         // AssetReference: Functions

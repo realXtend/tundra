@@ -49,8 +49,9 @@ macro(use_package_skyx)
     # 1. Use cmake cached SKYX_DIR.
     # 2. Use env variable SKYX_DIR and cache it.
     # 3. Assume SkyX from deps path.
-	if (MSVC)
-        message("** Configuring SkyX")
+
+    message("** Configuring SkyX")
+    if (MSVC)
         if ("${SKYX_HOME}" STREQUAL "")
             if (NOT "$ENV{SKYX_HOME}" STREQUAL "")
                 file (TO_CMAKE_PATH "$ENV{SKYX_HOME}" SKYX_HOME)
@@ -66,7 +67,6 @@ macro(use_package_skyx)
         include_directories(${SKYX_HOME}/SkyX/include) # For full-built deps.
         link_directories(${SKYX_HOME}/lib)
     else() # Linux and mac
-    	message("** Configuring SkyX")
         if ("${SKYX_DIR}" STREQUAL "")
             file (TO_CMAKE_PATH "$ENV{SKYX_DIR}" SKYX_DIR)
             # Cache SKYX_DIR for runs that dont define $ENV{SKYX_DIR}.
@@ -82,9 +82,11 @@ macro(use_package_skyx)
 endmacro()
 
 macro(link_package_skyx)
-    target_link_libraries(${TARGET_NAME} optimized SkyX)
-    if (MSVC) 
-        target_link_libraries(${TARGET_NAME} debug SkyX_d)
+    if (MSVC)
+        target_link_libraries(${TARGET_NAME} optimized SkyX debug SkyX_d)
+    else()
+        # TODO: Add support for building against debug/release versions of SkyX on OSX and Linux.
+        target_link_libraries(${TARGET_NAME} SkyX)
     endif()
 endmacro()
 
