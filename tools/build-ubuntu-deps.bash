@@ -41,28 +41,34 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev/null; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libboost-all-dev libois-dev \
 	 ccache libqt4-dev python-dev freeglut3-dev \
 	 libxml2-dev cmake libalut-dev libtheora-dev ed \
 	 liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
-	 libspeex-dev nvidia-cg-toolkit subversion libspeexdsp-dev libprotobuf-dev \
+	 libspeex-dev nvidia-cg-toolkit subversion \
+	 libfreetype6-dev libfreeimage-dev libzzip-dev \
+	 libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
+	 libvlc-dev libspeexdsp-dev libprotobuf-dev \
+	 libprotobuf-c0 libprotobuf-c0-dev \
+	 protobuf-c-compiler protobuf-compiler \
+     libqt4-opengl-dev libqtwebkit-dev \
+     libspeexdsp-dev libprotobuf-dev \
      libvlc-dev
 fi
 
 what=bullet-2.79-rev2440
+whatdir=bullet-2.79
 if test -f $tags/$what-done; then
     echo $what is done
 else
     cd $build
-    whatdir=${what%%-rev*}
     rm -rf $whatdir
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
     cd $whatdir
-    sed -i s/OpenCL// src/BulletMultiThreaded/GpuSoftBodySolvers/CMakeLists.txt
     cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g -fPIC" .
     make -j $nprocs
     make install
@@ -94,7 +100,7 @@ if test -f $tags/$what-done; then
 else
     cd $build
     rm -rf $what
-    git clone git://gitorious.org/qt-labs/$what.git
+    git clone https://git.gitorious.org/qt-labs/$what.git
     cd $what
     patch -l -p1 <<EOF
 Description: Include QtWebkit and Phonon unconditionally.
@@ -191,8 +197,10 @@ else
         echo "$what does not exist. Cloning a new copy..."
         hg clone https://bitbucket.org/clb/ogre-safe-nocrashes
     fi
-    if tty > /dev/null; then
-	sudo apt-get build-dep libogre-dev
+
+
+    if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev/null; then
+    sudo apt-get build-dep libogre-dev
     fi
     cd $what
     hg checkout v1-8 # Make sure we are in the right branch
