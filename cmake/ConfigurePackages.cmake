@@ -178,12 +178,6 @@ macro (configure_openal)
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
 
-macro (configure_sparkle)
-    FIND_LIBRARY (SPARKLE_LIBRARY NAMES Sparkle)
-    set (SPARKLE_INCLUDE_DIRS ${SPARKLE_LIBRARY}/Headers)
-    set (SPARKLE_LIBRARIES ${SPARKLE_LIBRARY})
-endmacro (configure_sparkle)
-
 macro(use_package_knet)
     # kNet look up rules:
     # 1. Use cmake cached KNET_DIR.
@@ -413,8 +407,7 @@ macro(use_package_assimp)
             set(ASSIMP_DIR ${ENV_ASSIMP_DIR})
         endif()
         include_directories(${ASSIMP_DIR}/include)
-        link_directories(${ASSIMP_DIR}/lib/assimp_debug_Win32)
-        link_directories(${ASSIMP_DIR}/lib/assimp_release_Win32)
+        link_directories(${ASSIMP_DIR}/lib)
     else() # Linux, note: mac will also come here..
         if ("${ENV_ASSIMP_DIR}" STREQUAL "")
             set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH})

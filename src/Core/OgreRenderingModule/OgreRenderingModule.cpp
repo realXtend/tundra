@@ -109,23 +109,45 @@ void OgreRenderingModule::Load()
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RttTarget>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Material>));
 
+    // Main ogre .mesh extension
+    QStringList meshExtensions;
+    meshExtensions << ".mesh";
+    
+    // These file types are supported by the Open Asset Import library:
+    // http://assimp.sourceforge.net/main_features_formats.html
+    /// @todo Detect during runtime if assimp module is loaded and only then add these types?
+    meshExtensions << ".3d" << ".b3d" << ".dae" << ".bvh" << ".3ds" << ".ase" << ".obj" << ".ply" << ".dxf" 
+        << ".nff" << ".smd" << ".vta" << ".mdl" << ".md2" << ".md3" << ".mdc" << ".md5mesh" << ".x" << ".q3o" 
+        << ".q3s" << ".raw" << ".ac" << ".stl" << ".irrmesh" << ".irr" << ".off" << ".ter" << ".mdl" << ".hmp"
+        << ".ms3d" << ".lwo" << ".lws" << ".lxo" << ".csm" << ".ply" << ".cob" << ".scn";
+        
+    // The following file types are from FreeImage's list of supported formats:
+    // http://freeimage.sourceforge.net/features.html
+    // The GIMP xcf is not in the list of known image formats, but detect it anyways.
+    // Put the most common formats to the front as this list will be iterated to find asset types.
+    QStringList textureExtensions;
+    textureExtensions << ".dds" << ".png" << ".jpeg" << ".jpg" << ".gif" << ".bmp" << ".tga" << ".targa" << ".tiff" << ".tif"
+        << ".cut" << ".exr" << ".g3"  << ".hdr" << ".ico" << ".iff" << ".j2k" << ".j2c" << ".jp2" << ".jif" << ".jpe" << ".jng" 
+        << ".koa" << ".lbm" << ".mng" << ".pbm" << ".pcd" << ".pcx" << ".pfm" << ".pict" << ".psd" << ".pgm" <<  ".ppm" << ".ras" 
+        << ".raw" << ".sgi" << ".wap" << ".wbmp" << ".wbm" << ".xbm" << ".xcf" << ".xpm";
+
     // Create asset type factories for each asset OgreRenderingModule provides to the system.
-    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));
+    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh", meshExtensions)));
 
     // Loading materials crashes Ogre in headless mode because we don't have Ogre Renderer running, so only register the Ogre material asset type if not in headless mode.
     if (!framework_->IsHeadless())
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial", ".material")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture", textureExtensions)));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle", ".particle")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton", ".skeleton")));
     }
     else
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreMaterial")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Texture")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreParticle")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreSkeleton")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreMaterial", ".material")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Texture", textureExtensions)));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreParticle", ".particle")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreSkeleton", ".skeleton")));
     }
 }
 

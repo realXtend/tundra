@@ -14,8 +14,8 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Sky" sync="1">
-   <attribute value="RexSkyBox" name="Material"/>
-   <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
+   <attribute value="local://RexSkyBox.material" name="Material"/>
+   <attribute value="" name="Texture"/>
    <attribute value="50" name="Distance"/>
    <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
    <attribute value="true" name="Draw first"/>

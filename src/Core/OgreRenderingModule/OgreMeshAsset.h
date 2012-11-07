@@ -14,6 +14,10 @@
 #include "Geometry/Triangle.h"
 #include "IRenderer.h"
 
+#ifdef ASSIMP_ENABLED
+#include "OpenAssetImport.h"
+#endif
+
 /// Represents an Ogre .mesh loaded to the GPU.
 class OGRE_MODULE_API OgreMeshAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
@@ -69,12 +73,21 @@ public slots:
 
     int NumTris(int submeshIndex);
 
+#ifdef ASSIMP_ENABLED
+private slots:
+    void OnAssimpConversionDone(bool);
+#endif
+
 private:
     /// Precomputes a kD-tree for the triangle data of this mesh.
     void CreateKdTree();
 
     /// Process mesh data after loading to create tangents and such.
-    bool GenerateMeshdata();
+    bool GenerateMeshData();
+
+    void ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes);
+
+    bool IsAssimpFileType();
 
     /// Stores a CPU-side version of the mesh geometry data (positions), for raycasting purposes.
     KdTree<Triangle> meshData;
@@ -82,4 +95,9 @@ private:
     std::vector<float3> normals; ///< Triangle normals. One per triangle (not per-vertex normals).
     std::vector<float2> uvs; 
     std::vector<int> subMeshTriangleCounts;
+
+#ifdef ASSIMP_ENABLED
+    OpenAssetImport *importer;
+#endif
+
 };

@@ -686,12 +686,13 @@ EXCLUDE_PATTERNS       = *.git* \
 # wildcard * is used, a substring. Examples: ANamespace, AClass, 
 # AClass::ANamespace, ANamespace::*Test
 
-EXCLUDE_SYMBOLS        =    StanHull \
+EXCLUDE_SYMBOLS        =    DEFINE_QPROPERTY_ATTRIBUTE* \
+                            StanHull \
                             kNet \
                             TiXml*\
                             json \
                             boost \
-                            Ogre
+                            Ogre \
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 

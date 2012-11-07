@@ -53,11 +53,36 @@ void MucExtension::HandleMessageReceived(const QXmppMessage &message)
     if(!room)
         return;
 
+    QString message_type;
+
+    // Parse message type into string.
+    switch(message.type())
+    {
+        case QXmppMessage::Error:
+            message_type = "error";
+            break;
+        case QXmppMessage::Normal:
+            message_type = "normal";
+            break;
+        case QXmppMessage::Chat:
+            message_type = "chat";
+            break;
+        case QXmppMessage::GroupChat:
+            message_type = "groupchat";
+            break;
+        case QXmppMessage::Headline:
+            message_type = "headline";
+            break;
+        default:
+            message_type = "invalid type";
+    }
+
     LogInfo("XMPPModule: Received message. From: " + message.from().toStdString()
             + " Room: " + room->jid().toStdString()
-            + " Body: " + message.body().toStdString());
+            + " Body: " + message.body().toStdString()
+            + " Type: " + message_type.toStdString());
 
-    emit MessageReceived(room->jid(), message.from(), message.body());
+    emit MessageReceived(room->jid(), message.from(), message.body(), message_type);
 }
 
 void MucExtension::HandleInvitationReceived(const QString &room, const QString &inviter, const QString &reason)

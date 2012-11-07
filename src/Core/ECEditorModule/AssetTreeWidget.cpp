@@ -67,7 +67,7 @@ void AssetTreeWidget::dragEnterEvent(QDragEnterEvent *e)
     if (data->hasUrls())
     {
         foreach(QUrl url, data->urls())
-            if (!AssetAPI::GetResourceTypeFromAssetRef(url.path()).isEmpty())
+            if (!framework->Asset()->GetResourceTypeFromAssetRef(url.path()).isEmpty())
                 e->acceptProposedAction();
     }
     else
@@ -80,7 +80,7 @@ void AssetTreeWidget::dragMoveEvent(QDragMoveEvent *e)
     if (data->hasUrls())
     {
         foreach(QUrl url, data->urls())
-            if (!AssetAPI::GetResourceTypeFromAssetRef(url.path()).isEmpty())
+            if (!framework->Asset()->GetResourceTypeFromAssetRef(url.path()).isEmpty())
                 e->acceptProposedAction();
     }
     else
@@ -94,7 +94,7 @@ void AssetTreeWidget::dropEvent(QDropEvent *e)
     {
         QStringList filenames;
         foreach(QUrl url, data->urls())
-            if (!AssetAPI::GetResourceTypeFromAssetRef(url.path()).isEmpty())
+            if (!framework->Asset()->GetResourceTypeFromAssetRef(url.path()).isEmpty())
             {
                 QString filename = url.path();
 #ifdef _WINDOWS
