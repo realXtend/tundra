@@ -327,7 +327,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     }
 
     // "Rename" action is possible only if have one entity selected.
-    bool renamePossible = (selectionModel()->selection().size() == 1);
+    bool renamePossible = (selectionModel()->selectedIndexes().size() == 1);
     if (renamePossible)
     {
         renameAction = new QAction(tr("Rename"), menu);
@@ -699,6 +699,7 @@ void SceneTreeWidget::Rename()
 //            openPersistentEditor(eItem);
 //            setCurrentIndex(index);
             edit(index);
+            connect(this->itemDelegate(), SIGNAL(commitData(QWidget*)), SLOT(OnCommitData(QWidget*)), Qt::UniqueConnection);
             connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *, int)), Qt::UniqueConnection);
 //            connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *)));
         }
@@ -713,6 +714,32 @@ void SceneTreeWidget::Rename()
 //        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
     }
 */
+}
+
+void SceneTreeWidget::OnCommitData(QWidget * editor)
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+    SceneTreeWidgetSelection selection = SelectedItems();
+    if (selection.entities.size() == 1)
+    {
+        EntityItem *entityItem = selection.entities[0];
+        EntityPtr entity = entityItem->Entity();
+        if (entity)
+        {
+            QLineEdit *edit = dynamic_cast<QLineEdit*>(editor);
+            if (edit)
+                // If there are no changes, restore back the previous stripped entity ID from the item, and restore sorting
+                if (edit->text() == entity->Name())
+                {
+                    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
+                    entityItem->SetText(entity.get());
+                    setSortingEnabled(true);
+                }
+        }
+    }
 }
 
 void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
