@@ -67,9 +67,13 @@ SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
     }
     else
     {
-        var avatar = scene.EntityByName("Avatar" + client.connectionId);
-        if (avatar)
-            scene.RemoveEntity(avatar.id);
+        try
+        {
+            var avatar = scene.EntityByName("Avatar" + client.connectionId);
+            if (avatar)
+                scene.RemoveEntity(avatar.id);
+        }
+        catch(e){}
 
         frame.Updated.disconnect(this, this.ClientUpdate);
     }
