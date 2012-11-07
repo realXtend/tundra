@@ -131,6 +131,9 @@ void OgreRenderingModule::Load()
         << ".koa" << ".lbm" << ".mng" << ".pbm" << ".pcd" << ".pcx" << ".pfm" << ".pict" << ".psd" << ".pgm" <<  ".ppm" << ".ras" 
         << ".raw" << ".sgi" << ".wap" << ".wbmp" << ".wbm" << ".xbm" << ".xcf" << ".xpm";
 
+    // Add CRN format that we handle in Tundra, decompressing it to DDS before passing the data to Ogre.
+    textureExtensions << ".crn";
+
     // Create asset type factories for each asset OgreRenderingModule provides to the system.
     framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh", meshExtensions)));
 
