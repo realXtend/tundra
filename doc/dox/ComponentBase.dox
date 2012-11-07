@@ -17,6 +17,7 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_DynamicComponent "DynamicComponent"
 - \ref EC_EnvironmentLight "EnvironmentLight"
 - \ref EC_Fog "Fog"
+- \ref EC_GraphicsViewCanvas "GraphicsViewCanvas"
 - \ref EC_Highlight "Highlight"
 - \ref EC_HoveringText "HoveringText"
 - \ref EC_Hydrax "Hydrax"

@@ -23113,9 +23113,9 @@
   <component type="EC_Sky" sync="1">
    <attribute value="true" name="Draw first"/>
    <attribute value="50" name="Distance"/>
-   <attribute value="RexSkyBox" name="Material"/>
+   <attribute value="local://RexSkyBox.material" name="Material"/>
    <attribute value="0.0 0.0 0.0 1.0" name="Orientation"/>
-   <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
+   <attribute value="" name="Texture"/>
   </component>
  </entity>
 </scene>

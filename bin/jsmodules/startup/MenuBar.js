@@ -20,8 +20,6 @@ if (!framework.IsHeadless())
 
     // File menu
     var fileMenu = menu.addMenu("&File");
-    if (framework.GetModuleByName("UpdateModule"))
-        fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
 
     var screenshotAct = fileMenu.addAction("Take Screenshot");
     screenshotAct.triggered.connect(TakeScreenshot);
@@ -188,11 +186,6 @@ if (!framework.IsHeadless())
             if (ui.MainWindow() != null)
                 QMessageBox.information(ui.MainWindow(), "Cache Cleared", msg);
         }
-    }
-
-    function CheckForUpdates() {
-        if (framework.GetModuleByName("UpdateModule"))
-            framework.GetModuleByName("UpdateModule").RunUpdater("/checknow");
     }
 
     function OpenMailingListUrl() {
