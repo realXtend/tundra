@@ -34,9 +34,6 @@ EC_EnvironmentLight::EC_EnvironmentLight(Scene* scene) :
     if (scene)
         ogreWorld = scene->GetWorld<OgreWorld>();
 
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-        SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
-
     UpdateSunlight();
     UpdateAmbientLight();
 }
