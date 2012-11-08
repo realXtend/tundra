@@ -84,6 +84,9 @@ public:
         carefully crafted re-entrant code (currently only logging and profiling). */
     static Framework *Instance() { return instance; }
 
+    /// Returns the static plugin registry for systems where plugins are not loaded as dynamic libraries. Used by StaticPluginRegistry.
+    static StaticPluginRegistry *StaticPluginRegistryInstance();
+
 public slots:
     /// Returns the core API UI object.
     /** @note Never returns a null pointer. Use IsHeadless() to check out if we're running the headless mode or not. */

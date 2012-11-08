@@ -43,7 +43,13 @@ else()
    build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
 endif()
 
-link_modules (Framework Scene Console)
+# On Android all modules are linked as static.
+if (ANDROID)
+    link_modules (Framework Scene Console TundraProtocolModule OgreRenderingModule PhysicsModule EnvironmentModule AssetModule JavascriptModule AvatarModule DebugStatsModule)
+else ()
+    link_modules (Framework Scene Console)
+endif ()
+
 
 final_target ()
 

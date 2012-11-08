@@ -7,6 +7,7 @@
 #pragma once
 
 class Framework;
+class StaticPluginRegistry;
 class Application;
 class RaycastResult;
 class IRenderer;

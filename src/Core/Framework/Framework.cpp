@@ -23,6 +23,8 @@
 #include "SceneInteract.h"
 #include "UiAPI.h"
 
+#include "StaticPluginRegistry.h"
+
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
 #endif
@@ -379,6 +381,9 @@ void Framework::Go()
     
     srand(time(0));
 
+    // Run any statically registered plugin main functions first
+    StaticPluginRegistryInstance()->RunPluginMainFunctions(this);
+
     foreach(const QString &config, plugin->ConfigurationFiles())
     {
         LogDebug("Loading plugins from config XML " + config);
@@ -709,4 +714,10 @@ void Framework::PrintDynamicObjects()
     LogInfo("Dynamic objects:");
     foreach(const QByteArray &obj, dynamicPropertyNames())
         LogInfo(QString(obj));
+}
+
+StaticPluginRegistry* Framework::StaticPluginRegistryInstance()
+{
+    static StaticPluginRegistry* instance = new StaticPluginRegistry();
+    return instance;
 }

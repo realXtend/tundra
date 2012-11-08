@@ -30,6 +30,8 @@
 
 #include <QCryptographicHash>
 
+#include "StaticPluginRegistry.h"
+
 #include "MemoryLeakCheck.h"
 
 using namespace std;
@@ -173,7 +175,11 @@ void DebugStatsModule::Exec(const QStringList &params)
 
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(DebugStatsModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new DebugStatsModule();

@@ -18,11 +18,18 @@
 #include "Scene.h"
 #include "IComponentFactory.h"
 
+#include "StaticPluginRegistry.h"
+
 #include "MemoryLeakCheck.h"
 
 extern "C"
 {
+
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(EnvironmentModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Terrain>));

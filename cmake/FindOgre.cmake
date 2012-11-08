@@ -21,15 +21,14 @@ macro(configure_ogre)
       include_directories(${OGRE_INCLUDE_DIR})
       link_directories(${OGRE_LIBRARY_DIR})
   else()
-      set (OGRE_LIBRARY_DIR ${ENV_OGRE_HOME}/lib)
-      find_library(OGRE_LIBRARY OgreMainStatic
-        HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+      set (OGRE_LIBRARY_DIR ${ENV_OGRE_HOME}/lib ${ENV_OGRE_HOME}/AndroidDependencies/lib/armeabi-v7a)
+      set (OGRE_LIBRARY OgreOverlayStatic Plugin_OctreeSceneManagerStatic Plugin_ParticleFXStatic RenderSystem_GLES2Static OgreMainStatic FreeImage freetype stdc++ supc++ z zzip)
 
       include_directories(${ENV_OGRE_HOME}/include ${ENV_OGRE_HOME}/OgreMain/include ${ENV_OGRE_HOME}/Components/Overlay/include)
       link_directories(${OGRE_LIBRARY_DIR})
   endif()
 endmacro()
-    
+
 else() # Windows Ogre lookup.
 
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()
