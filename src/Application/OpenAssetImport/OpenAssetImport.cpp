@@ -672,7 +672,7 @@ void OpenAssetImport::MarkAllChildNodesAsNeeded(const aiNode *pNode)
 {
     FlagNodeAsNeeded(pNode->mName.data);
     // Traverse all child nodes of the current node instance
-    for (int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx )
+    for (unsigned int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx )
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
         MarkAllChildNodesAsNeeded(pChildNode);
@@ -695,7 +695,7 @@ void OpenAssetImport::GrabNodeNamesFromNode(const aiScene* mScene, const aiNode*
 
 
     // Traverse all child nodes of the current node instance
-    for (int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
+    for (unsigned int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
     {
         const aiNode *pChildNode = pNode->mChildren[childIdx];
         GrabNodeNamesFromNode(mScene, pChildNode);
@@ -709,7 +709,7 @@ void OpenAssetImport::ComputeNodesDerivedTransform(const aiScene* mScene,  const
     {
         mNodeDerivedTransformByName[pNode->mName.data] = accTransform;
     }
-    for (int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
+    for (unsigned int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
         ComputeNodesDerivedTransform(mScene, pChildNode, accTransform * pChildNode->mTransformation);
@@ -740,7 +740,7 @@ void OpenAssetImport::CreateBonesFromNode(const aiScene* mScene,  const aiNode *
         msBoneCount++;
     }
     // Traverse all child nodes of the current node instance
-    for (int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
+    for (unsigned int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
     {
         const aiNode *pChildNode = pNode->mChildren[childIdx];
         CreateBonesFromNode(mScene, pChildNode);
@@ -770,7 +770,7 @@ void OpenAssetImport::CreateBoneHiearchy(const aiScene* mScene,  const aiNode *p
         }
     }
     // Traverse all child nodes of the current node instance
-    for (int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
+    for (unsigned int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
         CreateBoneHiearchy(mScene, pChildNode);
@@ -801,7 +801,7 @@ void OpenAssetImport::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode
 
     if(pNode->mNumMeshes > 0)
     {
-        for(int idx=0; idx<pNode->mNumMeshes; ++idx)
+        for(unsigned int idx=0; idx<pNode->mNumMeshes; ++idx)
         {
             aiMesh *pAIMesh = mScene->mMeshes[pNode->mMeshes[idx]];
 
@@ -847,7 +847,7 @@ void OpenAssetImport::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode
     } // if this node has meshes
 
     // Traverse all child nodes of the current node instance
-    for (int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
+    for (unsigned int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
     {
         const aiNode *pChildNode = pNode->mChildren[childIdx];
         GrabBoneNamesFromNode(mScene, pChildNode);
@@ -1145,7 +1145,7 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
 
     Ogre::uint16 *idxData = static_cast<Ogre::uint16*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
     offset = 0;
-    for (int n=0 ; n<mesh->mNumFaces ; ++n)
+    for (unsigned int n=0 ; n<mesh->mNumFaces ; ++n)
     {
         idxData[offset++] = mesh->mFaces[n].mIndices[0];
         idxData[offset++] = mesh->mFaces[n].mIndices[1];
@@ -1201,7 +1201,7 @@ void OpenAssetImport::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNo
             mAAB = mesh->getBounds();
         }
 
-        for ( int idx=0; idx<pNode->mNumMeshes; ++idx )
+        for (unsigned int idx=0; idx<pNode->mNumMeshes; ++idx )
         {
             aiMesh *pAIMesh = mScene->mMeshes[ pNode->mMeshes[ idx ] ];
             //if pAIMesh->
@@ -1243,7 +1243,7 @@ void OpenAssetImport::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNo
 
     // Traverse all child nodes of the current node instance
 
-    for (int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
+    for (unsigned int childIdx=0; childIdx<pNode->mNumChildren; childIdx++)
     {
         const aiNode *pChildNode = pNode->mChildren[ childIdx ];
         LoadDataFromNode(mScene, pChildNode, meshFileDiskSource, meshFileName, mesh);
