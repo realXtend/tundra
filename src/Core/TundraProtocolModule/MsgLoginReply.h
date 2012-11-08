@@ -26,7 +26,7 @@ struct MsgLoginReply
 	}
 
 	enum { messageID = 101 };
-	static inline const char * const Name() { return "LoginReply"; }
+	static inline const char * Name() { return "LoginReply"; }
 
 	static const bool defaultReliable = true;
 	static const bool defaultInOrder = true;
