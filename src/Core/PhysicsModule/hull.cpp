@@ -1872,7 +1872,7 @@ ConvexH *ConvexHCrop(ConvexH &convex,const Plane &slice)
 
 	for(int currentplane=0; currentplane<convex.facets.count; currentplane++) {
 		int estart =e0;
-		int enextface;
+		int enextface = (int)-1; // Explicitly mark as an invalid index, to assert() fail if unused below due to a programming error.
 		int planeside = 0;
 		int e1 = e0+1;
 		int eus=-1;
@@ -2599,7 +2599,7 @@ int overhull(Plane *planes,int planes_count,float3 *verts, int verts_count,int m
 			 float3 *&verts_out, int &verts_count_out,  int *&faces_out, int &faces_count_out ,float inflate)
 {
 	int i,j;
-	if(verts_count <4) return NULL;
+	if(verts_count <4) return 0;
 	maxplanes = Min(maxplanes,planes_count);
 	float3 bmin(verts[0]),bmax(verts[0]);
 	for(i=0;i<verts_count;i++) 
@@ -3196,7 +3196,7 @@ void HullLibrary::BringOutYourDead(const float *verts,unsigned int vcount, float
 	{
 		unsigned int v = indices[i]; // original array index
 
-		assert( v >= 0 && v < vcount );
+		assert(v < vcount );
 
 		if ( used[v] ) // if already remapped
 		{
@@ -3213,7 +3213,7 @@ void HullLibrary::BringOutYourDead(const float *verts,unsigned int vcount, float
 
 			ocount++; // increment output vert count
 
-			assert( ocount >=0 && ocount <= vcount );
+			assert(ocount <= vcount );
 
 			used[v] = ocount; // assign new index remapping
 		}
