@@ -50,6 +50,12 @@
 
 #include "MemoryLeakCheck.h"
 
+#ifdef Q_WS_MAC
+#define KEY_DELETE_SHORTCUT QKeySequence(Qt::CTRL + Qt::Key_Backspace)
+#else
+#define KEY_DELETE_SHORTCUT QKeySequence::Delete
+#endif
+
 // Menu
 
 Menu::Menu(QWidget *parent) : QMenu(parent), shiftDown(false)
@@ -97,7 +103,7 @@ SceneTreeWidget::SceneTreeWidget(Framework *fw, QWidget *parent) :
 
     // Create keyboard shortcuts.
     QShortcut *renameShortcut = new QShortcut(QKeySequence(Qt::Key_F2), this);
-    QShortcut *deleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    QShortcut *deleteShortcut = new QShortcut(KEY_DELETE_SHORTCUT, this);
     QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), this);
     QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), this);
 
@@ -321,7 +327,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     }
 
     // "Rename" action is possible only if have one entity selected.
-    bool renamePossible = (selectionModel()->selection().size() == 1);
+    bool renamePossible = (selectionModel()->selectedIndexes().size() == 1);
     if (renamePossible)
     {
         renameAction = new QAction(tr("Rename"), menu);
@@ -519,7 +525,27 @@ QString SceneTreeWidget::SelectionAsXml() const
             EntityPtr entity = eItem->Entity();
             assert(entity);
             if (entity)
-                entity->SerializeToXML(sceneDoc, sceneElem);
+            {
+                if (!entity->IsTemporary())
+                    entity->SerializeToXML(sceneDoc, sceneElem);
+                else  //Cannot use Entity::SerializeToXML as it wont return temporary entities, which we want to include in the copy/paste feature.
+                {
+                    QDomElement entity_elem = sceneDoc.createElement("entity");
+
+                    QString id_str;
+                    id_str.setNum((int)entity->Id());
+                    entity_elem.setAttribute("id", id_str);
+                    entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(entity->IsReplicated())));
+                    // Set a non-standard "temporary" property as we need to know in the paste step if the entity/component was temporary
+                    entity_elem.setAttribute("temporary", QString::fromStdString(::ToString<bool>(entity->IsTemporary())));
+
+                    const Entity::ComponentMap &components = entity->Components();
+                    for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                        i->second->SerializeTo(sceneDoc, entity_elem);
+
+                    sceneElem.appendChild(entity_elem);
+                }
+            }
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -673,6 +699,7 @@ void SceneTreeWidget::Rename()
 //            openPersistentEditor(eItem);
 //            setCurrentIndex(index);
             edit(index);
+            connect(this->itemDelegate(), SIGNAL(commitData(QWidget*)), SLOT(OnCommitData(QWidget*)), Qt::UniqueConnection);
             connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *, int)), Qt::UniqueConnection);
 //            connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *)));
         }
@@ -687,6 +714,32 @@ void SceneTreeWidget::Rename()
 //        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
     }
 */
+}
+
+void SceneTreeWidget::OnCommitData(QWidget * editor)
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+    SceneTreeWidgetSelection selection = SelectedItems();
+    if (selection.entities.size() == 1)
+    {
+        EntityItem *entityItem = selection.entities[0];
+        EntityPtr entity = entityItem->Entity();
+        if (entity)
+        {
+            QLineEdit *edit = dynamic_cast<QLineEdit*>(editor);
+            if (edit)
+                // If there are no changes, restore back the previous stripped entity ID from the item, and restore sorting
+                if (edit->text() == entity->Name())
+                {
+                    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
+                    entityItem->SetText(entity.get());
+                    setSortingEnabled(true);
+                }
+        }
+    }
 }
 
 void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
@@ -913,6 +966,81 @@ void SceneTreeWidget::Paste()
         }
     }
 
+    // Check sceneDoc for temporary entities and create them here.
+    std::vector<EntityWeakPtr> entities;
+    while(!entityElem.isNull())
+    {
+        QString temporaryStr = entityElem.attribute("temporary");
+        bool temporary = false;
+        if (!temporaryStr.isEmpty())
+            temporary = ParseBool(temporaryStr);
+
+        if (temporary)
+        {
+            QString replicatedStr = entityElem.attribute("sync");
+            bool replicated = true;
+            if (!replicatedStr.isEmpty())
+                replicated = ParseBool(replicatedStr);
+
+            entity_id_t id = replicated ? scene.lock()->NextFreeId() : scene.lock()->NextFreeIdLocal();
+
+            if (scene.lock()->HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
+            {
+                LogDebug("SceneTreeWidget::Paste: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
+                LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +" might not replicate properly!");
+                scene.lock()->RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+            }
+
+            EntityPtr entity = scene.lock()->CreateEntity(id);
+            if (entity)
+            {
+                QDomElement compElem = entityElem.firstChildElement("component");
+                entity->SetTemporary(true);
+
+                while(!compElem.isNull())
+                {
+                    QString type_name = compElem.attribute("type");
+                    QString name = compElem.attribute("name");
+                    QString compReplicatedStr = compElem.attribute("sync");
+                    bool compReplicated = true;
+                    if (!compReplicatedStr.isEmpty())
+                        compReplicated = ParseBool(compReplicatedStr);
+
+                    ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name, AttributeChange::Default, compReplicated);
+                    if (new_comp)
+                    {
+                        // Trigger no signal yet when scene is in incoherent state
+                        new_comp->DeserializeFrom(compElem, AttributeChange::Disconnected);
+                    }
+
+                    compElem = compElem.nextSiblingElement("component");
+                }
+                entities.push_back(entity);
+            }
+
+            QDomElement nextElem = entityElem.nextSiblingElement("entity");
+            // Remove the temporary entities from sceneDoc.
+            sceneElem.removeChild(entityElem);
+            entityElem = nextElem;
+        }
+        else
+            entityElem = entityElem.nextSiblingElement("entity");
+
+        for(unsigned i = 0; i < entities.size(); ++i)
+        {
+            if (!entities[i].expired())
+                scene.lock()->EmitEntityCreated(entities[i].lock().get(), AttributeChange::Default);
+            if (!entities[i].expired())
+            {
+                EntityPtr entityShared = entities[i].lock();
+                const Entity::ComponentMap &components = entityShared->Components();
+                for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                    i->second->ComponentChanged(AttributeChange::Default);
+            }
+        }
+    }
+
+    // Create content that is not temporary
     scene.lock()->CreateContentFromXml(sceneDoc, false, AttributeChange::Replicate);
 }
 

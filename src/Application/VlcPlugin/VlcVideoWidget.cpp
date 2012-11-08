@@ -228,6 +228,8 @@ void VlcVideoWidget::Stop()
         libvlc_state_t state = GetMediaState();
         if (state == libvlc_Playing || state == libvlc_Paused || state == libvlc_Ended)
         {
+            /** @bug @todo These should not be here and is not actually doing anything. 
+                Take a fresh look at the threading in this object and remove these hacks. */
             if (onScreenPixmapMutex_.tryLock(50))
                 onScreenPixmapMutex_.unlock();
             if (renderPixmapMutex_.tryLock(50))
@@ -309,10 +311,14 @@ void VlcVideoWidget::ShutDown()
 {
     if (vlcPlayer_ && vlcInstance_)
     {
-        // Unlock everything so we wont get deadlocks when stopping playback
-        onScreenPixmapMutex_.unlock();
-        renderPixmapMutex_.unlock();
-        statusAccess.unlock();
+        /** @bug @todo These should not be here and is not actually doing anything. 
+            Take a fresh look at the threading in this object and remove these hacks. */
+        if (onScreenPixmapMutex_.tryLock(50))
+            onScreenPixmapMutex_.unlock();
+        if (renderPixmapMutex_.tryLock(50))
+            renderPixmapMutex_.unlock();
+        if (statusAccess.tryLock(50))
+            statusAccess.unlock();
 
         libvlc_media_release(vlcMedia_);
         libvlc_media_player_stop(vlcPlayer_);

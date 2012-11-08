@@ -68,7 +68,7 @@ framework(framework_)
 
     if (framework_->IsHeadless())
         return;
-    
+
     mainView = framework_->Ui()->GraphicsView();
     assert(mainView);
     assert(mainView->viewport());
@@ -569,7 +569,11 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         keyEvent.text = e->text();
         keyEvent.sequence = QKeySequence(e->key() | e->modifiers()); ///\todo Track multi-key sequences.
         keyEvent.eventType = KeyEvent::KeyPressed;
-        //keyEvent.otherHeldKeys = heldKeys; ///\todo
+
+        // Assign the keys from the heldKeys map to the keyEvent.otherHeldKeys vector
+        for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
+            keyEvent.otherHeldKeys.push_back((*current).first);
+
         keyEvent.handled = false;
 
         currentModifiers = e->modifiers(); // local tracking for mouse events
