@@ -92,9 +92,7 @@ public:
     bool operator <(const QTreeWidgetItem &rhs) const
     {
         int column = treeWidget()->sortColumn();
-        if (column == cColumnEntityCreate)
-            return checkState(column) < rhs.checkState(column);
-        else if (column == cColumnEntityId)
+        if (column == cColumnEntityId)
             return text(column).toInt() < rhs.text(column).toInt();
         else
             return text(column).toLower() < rhs.text(column).toLower();
@@ -120,10 +118,7 @@ public:
     bool operator <(const QTreeWidgetItem &rhs) const
     {
         int column = treeWidget()->sortColumn();
-        if (column == cColumnAssetUpload)
-            return checkState(column) < rhs.checkState(column);
-        else
-            return text(column).toLower() < rhs.text(column).toLower();
+        return text(column).toLower() < rhs.text(column).toLower();
     }
 
     /// Rewrites the items visible text accordingly to the asset description the item owns.
@@ -149,6 +144,24 @@ const char *cRecentStorageSetting = "recent strorage";
 const char *cAddContentDialogSetting = "AddContentDialog";
 
 } // ~unnamed namespace
+
+EntityAndAssetTreeWidget::EntityAndAssetTreeWidget(QWidget *parent) :
+    QTreeWidget(parent)
+{
+    setSelectionMode(QAbstractItemView::ExtendedSelection);
+}
+
+void EntityAndAssetTreeWidget::keyPressEvent(QKeyEvent *event)
+{
+    QTreeWidget::keyPressEvent(event);
+    switch (event->key())
+    {
+        case Qt::Key_Space:
+            QList<QTreeWidgetItem *> selected = selectedItems();
+            for (QList<QTreeWidgetItem *>::const_iterator i = selected.constBegin(); i != selected.constEnd(); ++i)
+                (*i)->setCheckState(0, (Qt::CheckState)(Qt::Checked - (*i)->checkState(0)));
+                }
+}
 
 AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
@@ -194,7 +207,7 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     entityLabel->setFont(titleFont);
     entityLabel->setStyleSheet("color: rgb(63, 63, 63);");
 
-    entityTreeWidget = new QTreeWidget(this);
+    entityTreeWidget = new EntityAndAssetTreeWidget(this);
     entityTreeWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
     entityTreeWidget->setColumnCount(3);
     entityTreeWidget->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
@@ -234,7 +247,7 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     assetLabel->setFont(titleFont);
     assetLabel->setStyleSheet("color: rgb(63, 63, 63);");
 
-    assetTreeWidget = new QTreeWidget(this);
+    assetTreeWidget = new EntityAndAssetTreeWidget(this);
     assetTreeWidget->setColumnCount(5);
     QStringList labels;
     labels << tr("Upload") << tr("Type") << tr("Source name") << tr("Source subname") << tr("Destination name");
@@ -432,7 +445,6 @@ void AddContentWindow::AddAssets(const SceneDesc &sceneDesc, const SceneDesc::As
     foreach(const AssetDesc &a, assetDescs)
     {
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
-        assetTreeWidget->addTopLevelItem(aItem);
 
         QString basePath = QFileInfo(sceneDesc.filename).dir().path();
         QString outFilePath;
@@ -458,6 +470,9 @@ void AddContentWindow::AddAssets(const SceneDesc &sceneDesc, const SceneDesc::As
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);
+
+            //insert on top of the tree
+            assetTreeWidget->insertTopLevelItem(0, aItem);
         }
         else if (res == AssetAPI::FileQueryExternalFile)
         {
@@ -467,7 +482,12 @@ void AddContentWindow::AddAssets(const SceneDesc &sceneDesc, const SceneDesc::As
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);
+
+            //insert on top of the tree
+            assetTreeWidget->insertTopLevelItem(0, aItem);
         }
+
+        assetTreeWidget->addTopLevelItem(aItem);
     }
 
     RewriteDestinationNames();
@@ -833,21 +853,7 @@ bool AddContentWindow::CreateEntities()
     if (!filteredDesc.entities.empty())
     {
         QList<Entity *> entities;
-        /// @todo When SceneImporter is fixed, use Scene::CreateContentFromSceneDesc for all file types.
-        // <CanBeRemoved>
-        if (filteredDesc.filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
-        {
-            if (!CheckForStorageValidity())
-                return false;
-            QString path = QFileInfo(filteredDesc.filename).dir().path();
-            TundraLogic::SceneImporter importer(destScene);
-            entities = importer.Import(filteredDesc.filename, path, Transform(), CurrentStorage()->BaseURL(),
-                AttributeChange::Default, false/*clearScene*/, false);
-        }
-        else // </CanBeRemoved>
-        {
-            entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
-        }
+        entities = destScene->CreateContentFromSceneDesc(filteredDesc, false, AttributeChange::Default);
 
         if (!entities.empty())
         {

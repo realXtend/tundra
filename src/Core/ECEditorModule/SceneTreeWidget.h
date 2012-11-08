@@ -145,6 +145,9 @@ private slots:
     /** @item The item which was renamed. */
     void OnItemEdited(QTreeWidgetItem *item, int);
 
+    /// Used to restore the entity ID in case the rename action does not make changes to the editing
+    /** @editor The editor widget (QLineEdit). */
+    void OnCommitData(QWidget * editor);
 //    void CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *);
 
     /// Creates a new entity.
