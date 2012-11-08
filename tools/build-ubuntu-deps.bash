@@ -24,7 +24,7 @@ tags=$deps/tags
 
 # -j<n> param for make, for how many processes to run concurrently
 
-nprocs=`grep -c "^processor" /proc/cpuinfo` 
+nprocs=`grep -c "^processor" /proc/cpuinfo`
 
 mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 
@@ -189,7 +189,7 @@ if test -f $tags/$what-done; then
        rm -f $tags/$what-done
    fi
 fi
-if test -f $tags/$what-done; then 
+if test -f $tags/$what-done; then
    echo $what is done
 else
     cd $build
@@ -206,7 +206,7 @@ else
     hg checkout v1-8 # Make sure we are in the right branch
     mkdir -p $what-build
     cd $what-build  
-    cmake .. -DCMAKE_INSTALL_PREFIX=$prefix
+    cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
     make -j $nprocs VERBOSE=1
     make install
     touch $tags/$what-done
