@@ -14,7 +14,7 @@ Windows
   ANDROID_NDK=C:\android-ndk-r8
   ANDROID_SDK=C:\Program Files (x86)\Android\android-sdk
 
-- Using a Visual Studio command prompt, run BuildAndroidDps.cmd from the "android" subdirectory of Tundra checkout.
+- Using a Visual Studio command prompt, run BuildAndroidDeps.cmd from the "android" subdirectory of Tundra checkout.
   This downloads and builds the automatically buildable dependencies (Bullet, Boost, kNet, OGRE.) This may take some time,
   so be patient.
 
