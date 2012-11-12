@@ -18,10 +18,13 @@
 
 /// \todo Eliminate the need to list static plugins explicitly here
 REGISTER_STATIC_PLUGIN(OgreRenderingModule)
-//REGISTER_STATIC_PLUGIN(PhysicsModule)
-//REGISTER_STATIC_PLUGIN(EnvironmentModule)
-//REGISTER_STATIC_PLUGIN(TundraProtocolModule)
-//REGISTER_STATIC_PLUGIN(AssetModule)
+REGISTER_STATIC_PLUGIN(PhysicsModule)
+REGISTER_STATIC_PLUGIN(EnvironmentModule)
+REGISTER_STATIC_PLUGIN(TundraLogicModule)
+REGISTER_STATIC_PLUGIN(AssetModule)
+REGISTER_STATIC_PLUGIN(JavascriptModule)
+REGISTER_STATIC_PLUGIN(AvatarModule)
+REGISTER_STATIC_PLUGIN(DebugStatsModule)
 
 #endif
 

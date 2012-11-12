@@ -36,6 +36,8 @@ use_core_modules(Framework Math Scene Console)
 
 # On Android build the main program as a shared object
 if (ANDROID)
+   # Nasty CMake hack: the linker directories needed by the static modules have to be redeclared here. \todo Better solution
+   use_package_bullet()
    build_library(${TARGET_NAME} SHARED ${SOURCE_FILES})
 elseif (MSVC)
    build_executable(${TARGET_NAME} WIN32 ${SOURCE_FILES} ${RESOURCE_FILES})
