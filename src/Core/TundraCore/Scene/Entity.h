@@ -354,8 +354,8 @@ public slots:
 
     // DEPRECATED:
     QObjectList ComponentsList() const; /**< @deprecated Use Components @todo Remove */
-    QObjectList GetComponentsRaw(const QString &typeName) const; /**< @deprecated Use GetComponents or Components instead @todo Add warning print */
-    void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById @todo Add warning print*/
+    QObjectList GetComponentsRaw(const QString &typeName) const; /**< @deprecated Use GetComponents or Components instead */
+    void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById. */
 
 signals:
     /// A component has been added to the entity

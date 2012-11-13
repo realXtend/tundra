@@ -174,6 +174,7 @@ void Entity::RemoveComponentById(component_id_t id, AttributeChange::Type change
 
 void Entity::RemoveComponentRaw(QObject* comp)
 {
+    LogWarning("Entity::RemoveComponentRaw: This function is deprecated and will be removed. Use RemoveComponent or RemoveComponentById instead.");
     IComponent* compPtr = dynamic_cast<IComponent*>(comp);
     if (compPtr)
     {
@@ -184,27 +185,27 @@ void Entity::RemoveComponentRaw(QObject* comp)
 
 ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool replicated)
 {
-    ComponentPtr new_comp = GetComponent(type_name);
-    if (new_comp)
-        return new_comp;
+    ComponentPtr existing = GetComponent(type_name);
+    if (existing)
+        return existing;
 
     return CreateComponent(type_name, change, replicated);
 }
 
 ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool replicated)
 {
-    ComponentPtr new_comp = GetComponent(type_name, name);
-    if (new_comp)
-        return new_comp;
+    ComponentPtr existing = GetComponent(type_name, name);
+    if (existing)
+        return existing;
 
     return CreateComponent(type_name, name, change, replicated);
 }
 
 ComponentPtr Entity::GetOrCreateComponent(u32 typeId, AttributeChange::Type change, bool replicated)
 {
-    ComponentPtr new_comp = GetComponent(typeId);
-    if (new_comp)
-        return new_comp;
+    ComponentPtr existing = GetComponent(typeId);
+    if (existing)
+        return existing;
 
     return CreateComponent(typeId, change, replicated);
 }
@@ -323,7 +324,7 @@ ComponentPtr Entity::CreateLocalComponent(const QString &type_name, const QStrin
     return CreateComponent(type_name, name, AttributeChange::LocalOnly, false);
 }
 
-ComponentPtr Entity::GetComponentById(entity_id_t id) const
+ComponentPtr Entity::GetComponentById(component_id_t id) const
 {
     ComponentMap::const_iterator i = components_.find(id);
     if (i != components_.end())
@@ -379,6 +380,7 @@ ComponentPtr Entity::GetComponent(u32 typeId, const QString& name) const
 
 QObjectList Entity::GetComponentsRaw(const QString &type_name) const
 {
+    LogWarning("Entity::GetComponentsRaw: This function is deprecated and will be removed. Use GetComponents or Components instead.");
     QObjectList ret;
     if (type_name.isNull())
         for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
