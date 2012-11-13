@@ -59,16 +59,16 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
      libvlc-dev
 fi
 
-what=bullet-2.79-rev2440
-whatdir=bullet-2.79
+what=bullet-2.81-rev2613
 if test -f $tags/$what-done; then
     echo $what is done
 else
     cd $build
+    whatdir=${what%%-rev*}
     rm -rf $whatdir
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
-    cd $whatdir
+    cd $what
     cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g -fPIC" .
     make -j $nprocs
     make install
