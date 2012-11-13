@@ -301,6 +301,7 @@ else
     echoInfo "Workaround an ogg configure bug: replacing -O4 with -O2"
     sed -e "s/-O4/-O2/" < configure > configure_replaced
     mv configure_replaced configure
+    chmod +x configure
 
     echoInfo "Building $what:"
     ./configure --prefix=$prefix
