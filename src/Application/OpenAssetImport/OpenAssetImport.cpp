@@ -1227,7 +1227,7 @@ void OpenAssetImport::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNo
                 //GenerateTemporaryNonexistingAssetFilename() is used to prevent the "Asset Storage contains ambiguous assets in two different subdirectories!" warning 
                 QString matname = assetAPI->GenerateTemporaryNonexistingAssetFilename(QString::fromStdString(matptr->getName()));
                 AssetPtr assetPtr = assetAPI->CreateNewAsset("OgreMaterial", matname);
-                OgreMaterialAsset *mat = dynamic_cast<OgreMaterialAsset *>(assetPtr.get());
+                OgreMaterialAsset *mat = static_cast<OgreMaterialAsset *>(assetPtr.get());
                 mat->ogreMaterial = matptr;
             }
 
