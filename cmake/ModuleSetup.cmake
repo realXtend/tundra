@@ -21,13 +21,13 @@ macro (init_target NAME)
     # Define target name and output directory.
     # Skip ARGV1 that is the keyword OUTPUT.
     set (TARGET_NAME ${NAME})
-    set (TARGET_OUTPUT ${ARGV2}) 
+    set (TARGET_OUTPUT ${ARGV2})
     
     message ("** " ${TARGET_NAME})
 
     # Headers or libraries are found here will just work
     # Removed from windows due we dont have anything here directly.
-    # On linux this might have useful things but still ConfigurePackages should 
+    # On linux this might have useful things but still ConfigurePackages should
     # find them properly so essentially this is not needed.
     if (NOT WIN32)
         include_directories (${ENV_TUNDRA_DEP_PATH}/include)
@@ -129,7 +129,9 @@ macro (build_library TARGET_NAME LIB_TYPE)
 
     # internal library naming convention
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-    set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
+    if (NOT ANDROID OR NOT (${TARGET_NAME} STREQUAL "Tundra"))
+        set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
+    endif ()
     set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
 
 endmacro (build_library)

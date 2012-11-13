@@ -1,5 +1,11 @@
 # Define target name and output directory
-init_target (Tundra OUTPUT ./)
+if (NOT ANDROID)
+    init_target (Tundra OUTPUT ./)
+else ()
+    file(MAKE_DIRECTORY ${TUNDRA_BIN}/../android/libs)
+    file(MAKE_DIRECTORY ${TUNDRA_BIN}/../android/libs/${ANDROID_ABI})
+    init_target (Tundra OUTPUT ../android/libs/${ANDROID_ABI})
+endif ()
 
 # Define source files
 file (GLOB CPP_FILES main.cpp)
@@ -51,7 +57,6 @@ if (ANDROID)
 else ()
     link_modules (Framework Scene Console)
 endif ()
-
 
 final_target ()
 

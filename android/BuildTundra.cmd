@@ -20,6 +20,14 @@ SET KNET_DIR=%DEPS%\kNet
 SET BULLET_DIR=%DEPS%\bullet
 SET OGRE_HOME=%DEPS%\ogre
 
+IF NOT EXIST "%ANDROID%\local.properties". (
+    cecho {0D}Configuring Tundra Android project.{# #}{\n}
+    cd %ANDROID%
+    call android update project -p . -t android-10
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+)
+
+cd %TUNDRA_DIR%
 cecho {0D}Configuring Tundra build.{# #}{\n}
 del CMakeCache.txt
 cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBOOST_ROOT=%DEPS%/boost -DANDROID=1 -DCMAKE_BUILD_TYPE=Release
@@ -27,6 +35,10 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Building Tundra.{# #}{\n}
 nmake
+
+cecho {0D}Building and signing Tundra APK.{# #}{\n}
+cd %ANDROID%
+call ant release
 
 GOTO :EOF
 
@@ -36,5 +48,3 @@ cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %ANDROID%
 pause
-
-
