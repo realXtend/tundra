@@ -10,6 +10,7 @@
 #include "SoundChannel.h"
 
 #include "speex/speex_preprocess.h"
+#include "speex/speex_echo.h"
 
 #include <QThread>
 #include <QMutex>
@@ -109,8 +110,11 @@ namespace MumbleAudio
 
         // Used in audio thread without locks.
         SpeexPreprocessState *speexPreProcessor;
-        
-        // Used in both main and audio thread with mutexAudioSettings. 
+
+        // Used in audio thread for echo cancellation
+        SpeexEchoState *speexEcho;
+
+        // Used in both main and audio thread with mutexAudioSettings.
         AudioSettings audioSettings;
 
         // Used in both main and audio thread with mutexInput.

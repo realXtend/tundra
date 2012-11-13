@@ -87,19 +87,35 @@ namespace MumbleAudio
 
         arg = -60;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_AGC_DECREMENT, &arg);
-        
+
         arg = currentSettings.suppression;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &arg);
 
         fArg = 0.0f;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_DEREVERB_DECAY, &fArg);
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_DEREVERB_LEVEL, &fArg);
+
+
+        // Echo-cancellation
+        // FIXME: make this tunable
+        if (speexEcho)
+            speex_echo_state_destroy(speexEcho);
+        // Use *multi-channel* cancellation [init_mc]
+        // We can safely assume there is only one microphone
+        // And we go with the hope that there is just one echo
+        // channel...
+        speexEcho = speex_echo_state_init_mc(MUMBLE_AUDIO_SAMPLES_IN_FRAME, MUMBLE_AUDIO_SAMPLE_RATE, 1, 1);
+
+        // Use fixed sample rate
+        arg = MUMBLE_AUDIO_SAMPLE_RATE;
+        speex_echo_ctl(speexEcho, SPEEX_ECHO_SET_SAMPLING_RATE, &arg);
+        speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_ECHO_STATE, speexEcho);
     }
 
     void AudioProcessor::run()
     {
         qobjTimerId = startTimer(15); // Audio processing with ~60 fps.
-        
+
         exec(); // Blocks untill quit()
 
         killTimer(qobjTimerId);
@@ -114,6 +130,8 @@ namespace MumbleAudio
 
         if (speexPreProcessor)
             speex_preprocess_state_destroy(speexPreProcessor);
+        if (speexEcho)
+            speex_echo_state_destroy(speexEcho);
     }
 
     void AudioProcessor::timerEvent(QTimerEvent *event)
