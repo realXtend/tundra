@@ -35,6 +35,13 @@
 #include <Ogre.h>
 #include <OgreDefaultHardwareBufferManager.h>
 
+#ifdef ANDROID
+#define OGRE_STATIC_GLES2
+#define OGRE_STATIC_ParticleFX
+#define OGRE_STATIC_OctreeSceneManager
+#include "OgreStaticPluginLoader.h"
+#endif
+
 Q_DECLARE_METATYPE(EC_Placeable*)
 Q_DECLARE_METATYPE(EC_Camera*)
 Q_DECLARE_METATYPE(UiPlane*)
@@ -188,7 +195,7 @@ namespace OgreRenderer
             ogreRoot->destroySceneManager(defaultScene);
             defaultScene = 0;
         }
-        
+
         ogreRoot.reset();
         SAFE_DELETE(compositionHandler);
         SAFE_DELETE(logListener);
@@ -416,6 +423,7 @@ namespace OgreRenderer
     {
         QStringList loadedPlugins;
 
+        #ifndef ANDROID
         Ogre::ConfigFile file;
         try
         {
@@ -447,8 +455,14 @@ namespace OgreRenderer
                 LogError("Plugin " + plugins[i] + " failed to load");
             }
         }
+        #else
+            // On Android, load Ogre plugins statically
+            staticPluginLoader = new Ogre::StaticPluginLoader();
+            staticPluginLoader->load();
+        #endif
 
         return loadedPlugins;
+
     }
 
     void Renderer::SetupResources()

@@ -58,6 +58,11 @@ PluginAPI::PluginAPI(Framework *owner_)
 
 void PluginAPI::LoadPlugin(const QString &filename)
 {
+#ifdef ANDROID
+    // On Android plugins are currently static
+    return;
+#endif
+
 #ifdef WIN32
   #ifdef _DEBUG
     const QString pluginSuffix = "d.dll";

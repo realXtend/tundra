@@ -348,6 +348,9 @@ QString Application::InstallationDirectory()
         LogError("Application::InstallationDirectory: _NSGetExecutablePath failed! Returning './'");
         return "./";
     }
+#elif defined(ANDROID)
+    /// \todo Implement a proper file access mechanism. Hardcoded internal storage access is used for now
+    return "/sdcard/Download/Tundra/";
 #else
     LogError("Application::InstallationDirectory not implemented for this platform. Returning './'");
     return "./";

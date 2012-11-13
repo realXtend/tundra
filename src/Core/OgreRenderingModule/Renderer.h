@@ -18,6 +18,13 @@ class QScriptEngine;
 class RenderWindow;
 class Framework;
 
+#ifdef ANDROID
+namespace Ogre
+{
+    class StaticPluginLoader;
+}
+#endif
+
 namespace OgreRenderer
 {
     class OgreLogListener;
@@ -232,6 +239,10 @@ namespace OgreRenderer
 
         RenderWindow *renderWindow;
 
+        #ifdef ANDROID
+        Ogre::StaticPluginLoader* staticPluginLoader;
+        #endif
+        
         /// Framework we belong to
         Framework* framework;
 
