@@ -6,6 +6,10 @@
 
 #include "Win.h"
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 void PrintLogMessage(u32 logChannel, const char *str)
 {
     if (!IsLogChannelEnabled(logChannel))
@@ -23,7 +27,13 @@ void PrintLogMessage(u32 logChannel, const char *str)
     if (console)
         console->Print(str);
     else // The Console API is already dead for some reason, print directly to stdout to guarantee we don't lose any logging messags.
-        printf("%s", str);
+    {
+        #ifndef ANDROID
+            printf("%s", str);
+        #else
+            __android_log_print(ANDROID_LOG_INFO, "Tundra", "%s", str);
+        #endif
+    }
 
     // Restore the text color to normal.
 #ifdef WIN32

@@ -26,6 +26,10 @@
 #include <QFile>
 #include <QTextStream>
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 #include "MemoryLeakCheck.h"
 
 ConsoleAPI::ConsoleAPI(Framework *fw) :
@@ -195,6 +199,11 @@ void ConsoleAPI::Print(const QString &message)
     ///\todo Temporary hack which appends line ending in case it's not there (output of console commands in headless mode)
     if (!message.endsWith("\n"))
     {
+        #ifndef ANDROID
+            printf("%s\n", message.toStdString().c_str());
+        #else
+            __android_log_print(ANDROID_LOG_INFO, "Tundra", "%s\n", message.toStdString().c_str());
+        #endif
         printf("%s\n", message.toStdString().c_str());
         if (logFileText)
         {
@@ -203,14 +212,18 @@ void ConsoleAPI::Print(const QString &message)
             /// after each write. Tested that on Windows 7, if you kill the process using Ctrl-C on command line, or from 
             /// task manager, the log will not contain all the text, so this is required for correctness.
             /// But this flush() after each message also causes a *serious* performance drawback.
-            /// One way to try avoiding this issue is to move to using C API for file writing, and at atexit() and other crash 
+            /// One way to try avoiding this issue is to move to using C API for file writing, and at atexit() and other crash
             /// handlers, close the file handle gracefully.
             logFileText->flush(); 
         }
     }
     else
     {
-        printf("%s", message.toStdString().c_str());
+        #ifndef ANDROID
+            printf("%s", message.toStdString().c_str());
+        #else
+            __android_log_print(ANDROID_LOG_INFO, "Tundra", "%s", message.toStdString().c_str());
+        #endif
         if (logFileText)
         {
             (*logFileText) << message;
