@@ -74,6 +74,8 @@ IF NOT EXIST "%DEPS%\kNet". (
    cd "%DEPS%"
    call git clone https://github.com/juj/kNet
    IF NOT EXIST "%DEPS%\kNet\.git" GOTO :ERROR
+   cd "%DEPS%\kNet"
+   call git checkout master
 )
 IF NOT EXIST "%DEPS%\kNet\lib\libkNet.a". (
     cecho {0D}Building kNet.{# #}{\n}
