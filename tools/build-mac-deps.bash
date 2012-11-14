@@ -555,7 +555,7 @@ else
     tar xzf $ogredepszip
     export OGRE_HOME=$build/$what
     echoInfo "Building $what:"
-    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF
     xcodebuild -configuration RelWithDebInfo
     
     cp -R $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $HOME/Library/Frameworks
