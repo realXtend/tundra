@@ -128,10 +128,14 @@ Framework::Framework(int argc_, char** argv_) :
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
 
+    #ifdef ANDROID
+    LoadCommandLineFromFile();
+    #else
     // Remember all startup command line options.
     // Skip argv[0], since it is the program name.
     for(int i = 1; i < argc; ++i)
         startupOptions << argv[i];
+    #endif
 
     //  Load additional command line options from each config XML file.
     QStringList cmdLineParams = CommandLineParameters("--config");
@@ -721,3 +725,50 @@ StaticPluginRegistry* Framework::StaticPluginRegistryInstance()
     static StaticPluginRegistry* instance = new StaticPluginRegistry();
     return instance;
 }
+
+#ifdef ANDROID
+void Framework::LoadCommandLineFromFile()
+{
+    QFile file(Application::InstallationDirectory() + "commandline.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    QTextStream in(&file);
+    QString line = in.readLine();
+    while (!line.isNull())
+    {
+        int i;
+        unsigned cmdStart = 0;
+        unsigned cmdEnd = 0;
+        bool cmd = false;
+        bool quote = false;
+
+        for(i = 0; i < line.length(); ++i)
+        {
+            if (line[i] == '\"')
+                quote = !quote;
+            if ((line[i] == ' ') && (!quote))
+            {
+                if (cmd)
+                {
+                    cmd = false;
+                    cmdEnd = i;
+                    startupOptions << line.mid(cmdStart, cmdEnd-cmdStart);
+                }
+            }
+            else
+            {
+                if (!cmd)
+                {
+                   cmd = true;
+                   cmdStart = i;
+                }
+            }
+        }
+        if (cmd)
+            startupOptions << line.mid(cmdStart, i-cmdStart);
+
+        line = in.readLine();
+    }
+}
+#endif

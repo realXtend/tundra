@@ -162,6 +162,11 @@ private:
     /// Appends all found startup options from the given file to the startupOptions member.
     void LoadStartupOptionsFromXML(QString configurationFile);
 
+    /// Appends startup options from a commandline file, Android only
+    #ifdef ANDROID
+    void LoadCommandLineFromFile();
+    #endif
+
     bool exitSignal; ///< If true, exit application.
 #ifdef PROFILING
     Profiler *profiler;

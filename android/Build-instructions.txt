@@ -25,3 +25,13 @@ Windows
 - To build and package Tundra, run BuildTundra.cmd from the "android" subdirectory of Tundra checkout, using a Visual Studio command prompt.
   Tundra is compiled as a monolithic library "android\libs\armeabi-v7a\libTundra.so" after which it is packaged together
   with the Ministro/Necessitas activity shell into "android\bin\Tundra-release.apk". This can be installed on a device and run.
+
+Running Tundra
+--------------
+
+- Tundra on Android will currently use the fixed directory Download/Tundra on the Android device's internal memory (/sdcard/Download/Tundra) as
+  its "Bin" folder. Copy the contents of your Tundra Bin directory there as applicable.
+
+- If it exists, Tundra will use the file commandline.txt in the Download/Tundra folder for its command line parameters. Use this to configure eg. the scene
+  to load.
+
