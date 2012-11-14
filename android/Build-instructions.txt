@@ -22,6 +22,9 @@ Windows
   then manually copy the contents of its "Android\Qt\482\armeabi-v7a" subdirectory (which includes bin, include
   and lib subdirectories) into the the subdirectory "deps-android\Qt" of the Tundra checkout.
 
+- Before running BuildTundra.cmd, make sure to add the path to the Android SDK tool 'android' to the system PATH. By default, this is 
+  located in the folder C:\Program Files (x86)\Android\android-sdk\tools
+
 - To build and package Tundra, run BuildTundra.cmd from the "android" subdirectory of Tundra checkout, using a Visual Studio command prompt.
   Tundra is compiled as a monolithic library "android\libs\armeabi-v7a\libTundra.so" after which it is packaged together
   with the Ministro/Necessitas activity shell into "android\bin\Tundra-release.apk". This can be installed on a device and run.
