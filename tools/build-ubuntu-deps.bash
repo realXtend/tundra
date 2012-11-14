@@ -41,19 +41,35 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal" && tty >/dev/null; then
+if lsb_release -c | egrep -q "precise|maya|quantal|nadia" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
-	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
-	 build-essential g++ libboost-all-dev libois-dev \
-	 ccache libqt4-dev python-dev freeglut3-dev \
-	 libxml2-dev cmake libalut-dev libtheora-dev ed \
-	 liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
-	 libspeex-dev nvidia-cg-toolkit subversion \
-	 libfreetype6-dev libfreeimage-dev libzzip-dev \
-	 libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
-	 libvlc-dev libspeexdsp-dev libprotobuf-dev \
-	 libprotobuf-c0 libprotobuf-c0-dev \
-	 protobuf-c-compiler protobuf-compiler \
+    sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
+     build-essential g++ libboost1.48-all-dev libois-dev \
+     ccache libqt4-dev python-dev freeglut3-dev \
+     libxml2-dev cmake libalut-dev libtheora-dev ed \
+     liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
+     libspeex-dev nvidia-cg-toolkit subversion \
+     libfreetype6-dev libfreeimage-dev libzzip-dev \
+     libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
+     libvlc-dev libspeexdsp-dev libprotobuf-dev \
+     libprotobuf-c0 libprotobuf-c0-dev \
+     protobuf-c-compiler protobuf-compiler \
+     libqt4-opengl-dev libqtwebkit-dev \
+     libspeexdsp-dev libprotobuf-dev \
+     libvlc-dev
+elif lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|lisa|katya|julia|isadora" && tty >/dev/null; then
+        which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
+    sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
+     build-essential g++ libboost-all-dev libois-dev \
+     ccache libqt4-dev python-dev freeglut3-dev \
+     libxml2-dev cmake libalut-dev libtheora-dev ed \
+     liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
+     libspeex-dev nvidia-cg-toolkit subversion \
+     libfreetype6-dev libfreeimage-dev libzzip-dev \
+     libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
+     libvlc-dev libspeexdsp-dev libprotobuf-dev \
+     libprotobuf-c0 libprotobuf-c0-dev \
+     protobuf-c-compiler protobuf-compiler \
      libqt4-opengl-dev libqtwebkit-dev \
      libspeexdsp-dev libprotobuf-dev \
      libvlc-dev
@@ -104,7 +120,7 @@ else
     cd $what
     patch -l -p1 <<EOF
 Description: Include QtWebkit and Phonon unconditionally.
- This is necessary as both aren't built by the Qt source.
+This is necessary as both aren't built by the Qt source.
 Author: Felix Geyer <debfx-pkg@fobos.de>
 Acked-By: Modestas Vainius <modax@debian.org>
 Last-Update: 2011-03-20
@@ -112,19 +128,15 @@ Last-Update: 2011-03-20
 --- a/generator/qtscript_masterinclude.h
 +++ b/generator/qtscript_masterinclude.h
 @@ -53,13 +53,9 @@
- #  include <QtXmlPatterns/QtXmlPatterns>
- #endif
- 
+# include <QtXmlPatterns/QtXmlPatterns>
+#endif
 -#ifndef QT_NO_WEBKIT
- #  include <QtWebKit/QtWebKit>
+# include <QtWebKit/QtWebKit>
 -#endif
- 
 -#ifndef QT_NO_PHONON
- #  include <phonon/phonon>
+# include <phonon/phonon>
 -#endif
- 
- #include "../qtbindings/qtscript_core/qtscriptconcurrent.h"
- 
+#include "../qtbindings/qtscript_core/qtscriptconcurrent.h"
 EOF
     cd generator
     qmake
@@ -206,7 +218,7 @@ else
     hg checkout v1-8 # Make sure we are in the right branch
     mkdir -p $what-build
     cd $what-build  
-    cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+    cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF
     make -j $nprocs VERBOSE=1
     make install
     touch $tags/$what-done
