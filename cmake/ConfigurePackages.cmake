@@ -41,7 +41,7 @@ set(Boost_USE_MULTITHREADED TRUE)
 set(Boost_DETAILED_FAILURE_MSG FALSE)
 set(Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1")
 
-find_package(Boost 1.39.0 COMPONENTS thread regex)
+find_package(Boost 1.39.0 COMPONENTS system thread regex)
 
 if (Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
