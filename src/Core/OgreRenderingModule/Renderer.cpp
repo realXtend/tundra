@@ -249,13 +249,15 @@ namespace OgreRenderer
 
         logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString(); ///<\todo Unicode support
 #include "DisableMemoryLeakCheck.h"
+// On Android instantiating our own LogManager results in a crash during Ogre initialization. Ogre has its own Android logging hook, so this can be skipped for now
+#ifndef ANDROID
         static Ogre::LogManager *overriddenLogManager = 0;
         overriddenLogManager = new Ogre::LogManager; ///\bug This pointer is never freed. We leak memory here, but cannot free due to Ogre singletons being accessed.
         overriddenLogManager->createLog("", true, false, true);
         Ogre::LogManager::getSingleton().getDefaultLog()->setDebugOutputEnabled(false); // Disable Ogre from outputting to std::cerr by itself.
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(logListener); // Make all Ogre log output to come to our log listener.
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_NORMAL); // This is probably the default level anyway, but be explicit.
-
+#endif
         ogreRoot = OgreRootPtr(new Ogre::Root("", configFilename, logfilepath));
 
 #include "EnableMemoryLeakCheck.h"
@@ -296,6 +298,12 @@ namespace OgreRenderer
         // If windows did not have OpenGL fallback to Direct3D.
         if (!rendersystem)
             rendersystem = ogreRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
+#endif
+
+#ifdef ANDROID
+        // Android: use the first available rendersystem, should be GLES2
+        if (!rendersystem)
+            rendersystem = ogreRoot->getAvailableRenderers().at(0);
 #endif
 
         if (!rendersystem)
