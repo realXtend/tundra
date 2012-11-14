@@ -18,9 +18,9 @@
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "AssetAPI.h"
+#include "GenericAssetFactory.h"
 #include "EC_Script.h"
 #include "ScriptAsset.h"
-#include "ScriptAssetFactory.h"
 #include "EC_DynamicComponent.h"
 #include "Scene.h"
 #include "InputAPI.h"
@@ -53,8 +53,16 @@ void JavascriptModule::Load()
 {
     if (!framework_->Scene()->IsComponentFactoryRegistered(EC_Script::TypeNameStatic()))
         framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Script>));
+
+    // This check is done as both js and py modules can register this factory. 
+    // They both need to register .js and .py extensions to play nice.
+    // @todo Refactor to separate the .js and .py assets to be in separate factories.
     if (!framework_->Asset()->IsAssetTypeFactoryRegistered("Script"))
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory));
+    {
+        QStringList scriptExtensions;
+        scriptExtensions << ".js" << ".py";
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<ScriptAsset>("Script", scriptExtensions)));
+    }
 }
 
 void JavascriptModule::Initialize()

@@ -19,49 +19,60 @@ The Tundra server mode is used for standalone-mode editing and viewing Tundra do
 
 See the `scenes` folder for example demo scenes and applications. F.e.x. `Tundra --file scenes/Avatar/Scene.txml`
 
-Compiling from sources
+Compiling from Sources
 ----------------------
 
-Tundra source code is available at the [realXtend github repository]. This repository hosts various branches for new and old viewers from the realXtend team, so be sure to checkout `tundra2` branch after cloning.
+Tundra source code is available at the [realXtend github repository]. This repository hosts various branches for current and deprecated developmnet lines from the realXtend team, so be sure to checkout `tundra2` branch after cloning.
 
 Tundra uses [CMake] as its build system and depends on various other open source projects. See more from `doc/dependencies.txt`.
 
 ### Windows
 
-For Windows Visual Studio 2008 and 2010 build environments are supported, but at the moment Visual Studio 2008 is recommended. There are two ways of acquiring the dependencies **1)** Automated script to build them from sources **2)** Use prebuilt dependencies from a svn repository.
+Currently only Visual Studio 2008 build environment is supported. There are two ways of acquiring the dependencies **1)** Automated script to build them from sources **2)** Use prebuilt dependencies from an SVN repository.
 
-_TODO: Document VS2010 build path once one is available either with full build or prebuild deps!_
-
-**1) Building with full dependencies**
+**1) Building with Full Dependencies**
 
 1. `cd tools` and run `windows-build-deps.cmd`. You need to run this script in the Visual Studio Command Prompt for build tools and have several other utilities in your PATH. This script will print information what you need to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.
 2. Once you are done setting up your build environment hit any key to continue the script as it instructs. Full depedency build will take about 2-3 hours.
 3. After the script completes dependencies can be found from /deps. Needed runtime libraries are automatically copied to /bin.
 
-Now run `windows-build-tundra.cmd`. This script will setup the needed build environment variables for cmake. Next it will run cmake to generate a tundra.sln solution file and build it.
+Now run `windows-build-tundra.cmd`. This script will setup the needed build environment variables for CMake. Next it will run CMake to generate a tundra.sln solution file and build it.
 
-If you want the script to build Tundra you need to run it in the Visual Studio Command Prompt as it needs msbuild. However you can hit Ctrl+C after the cmake step finishes and open the solution file with the Visual Studio IDE, if that is what you prefer.
+If you want the script to build Tundra you need to run it in the Visual Studio Command Prompt as it needs MSBuild. However you can hit Ctrl+C after the CMake step finishes and open the solution file with the Visual Studio IDE, if that is what you prefer.
 
-**2) Building with prebuild dependencies**
+**2) Building with Prebuilt Dependencies**
 
 Prebuilt dependencies are only available for Visual Studio 2008 at the moment.
 
 1. `cd tools` and run `windows-fetch-prebuilt-deps.cmd`.
-2. This will download a prebuilt package, extract it to /deps-prebuilt, copy needed runtime libraries to /bin and runs cmake against the prebuilt deps.
+2. This will download the prebuilt dependency package, extract it to /deps-prebuilt, copies the needed runtime libraries to /bin and runs CMake against the prebuilt dependencies.
 3. Open tundra.sln and build.
 
 ### Linux
 
 See [tools] for distro-specific build scripts.
 
-### Mac OSX
+### Mac OS X
 
 See [tools/build-mac-deps.bash] for automated dependency and Tundra build script.
 
-Documentation
--------------
+Developer Documentation
+-----------------------
 
-More information about Tundra can be found online at http://www.realxtend.org/doxygen/.
+Tundra uses [Doxygen] as its main documentation tool. In order to generate and view the developer documentation, follow these steps:
+1. have Doxygen installed,  
+2. `cd doc`,  
+3. `doxygen tundra.Doxyfile`,  
+4. `cd html`, and  
+5. open up `index.html`.
+
+Contributing
+------------
+0. Preferably interact with the developers already in advance before starting your work.
+1. Fork Tundra.
+2. Preferably create a feature branch for your work.
+3. Make sure to follow the coding conventions (doc/dox/CodingConventions.dox).
+4. Make a pull request
 
 Contact Information
 -------------------
@@ -81,3 +92,5 @@ New releases are announced on the mailing lists and at the [realXtend blog]. The
 [realXtend github repository]: https://github.com/realXtend/naali/tree/tundra2 "realXtend Tundra repository"
 [tools/build-mac-deps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/build-mac-deps.bash "tools/build-mac-deps.bash"
 [tools]: https://github.com/realXtend/naali/tree/tundra2/tools "tools"
+[Doxygen]:  http://www.stack.nl/~dimitri/doxygen/ "doxygen homepage"
+

@@ -26,7 +26,7 @@ struct MsgClientJoined
 	}
 
 	enum { messageID = 102 };
-	static inline const char * const Name() { return "ClientJoined"; }
+	static inline const char * Name() { return "ClientJoined"; }
 
 	static const bool defaultReliable = true;
 	static const bool defaultInOrder = true;

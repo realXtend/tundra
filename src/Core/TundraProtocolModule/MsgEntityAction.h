@@ -26,7 +26,7 @@ struct MsgEntityAction
 	}
 
 	enum { messageID = 120 };
-	static inline const char * const Name() { return "EntityAction"; }
+	static inline const char * Name() { return "EntityAction"; }
 
 	static const bool defaultReliable = true;
 	static const bool defaultInOrder = true;

@@ -1,7 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#pragma once
+
 template<typename T>
-boost::shared_ptr<T> AssetAPI::GetAssetProvider() const
+boost::shared_ptr<T> AssetAPI::AssetProvider() const
 {
     std::vector<AssetProviderPtr> providers = GetAssetProviders();
     for(size_t i = 0; i < providers.size(); ++i)

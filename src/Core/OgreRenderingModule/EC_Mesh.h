@@ -13,128 +13,77 @@
 #include "AssetReference.h"
 #include "AssetRefListener.h"
 
-#include <QVector3D>
-
-namespace Ogre
-{
-    class Bone;
-}
-
 /// Ogre mesh entity component
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Mesh</h2>
-Ogre mesh entity component
-Needs to be attached to a placeable (aka scene node) to be visible. 
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Mesh</h2>
+    Ogre mesh entity component
+    Needs to be attached to a placeable (aka scene node) to be visible. 
 
-Registered by OgreRenderer::OgreRenderingModule.
+    Registered by OgreRenderer::OgreRenderingModule.
 
-<b>Attributes</b>:
-<ul>
-<li>Transform: nodePosition
-<div>Transformation attribute is used to do some position, rotation and scale adjustments.</div>
-<li>AssetReference: meshRef
-<div>Mesh asset reference (handles resource request automatically).</div>
-<li>AssetReference: skeletonRef
-<div>Skeleton asset reference (handles resource request automatically).</div>
-<li>AssetReferenceList: meshMaterial
-<div>Mesh material asset reference list, material requests are handled automatically.</div> 
-<li>float: drawDistance
-<div>Distance where the mesh is shown from the camera, 0.0 = draw always (default).</div> 
-<li>bool: castShadows
-<div>Will the mesh cast shadows.</div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>Transform: nodeTransformation
+    <div>@copydoc nodeTransformation</div>
+    <li>AssetReference: meshRef
+    <div>@copydoc meshRef</div>
+    <li>AssetReference: skeletonRef
+    <div>@copydoc skeletonRef</div>
+    <li>AssetReferenceList: meshMaterial
+    <div>@copydoc meshMaterial</div>
+    <li>float: drawDistance
+    <div>@copydoc drawDistance</div>
+    <li>bool: castShadows
+    <div>@copydoc castShadows</div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>"SetPlaceable": sets placeable component
-        set a null placeable to detach the object, otherwise will attach
-        @param placeable placeable component
-<li>"SetDrawDistance": sets draw distance
-        @param draw_distance New draw distance, 0.0 = draw always (default)
-<li>"SetMesh":sets mesh
-        if mesh already sets, removes the old one
-        @param meshName mesh to use
-        @param clone whether mesh should be cloned for modifying geometry uniquely
-        @return true if successful 
-<li>"SetMeshWithSkeleton": sets mesh with custom skeleton
-        if mesh already sets, removes the old one
-        @param meshName mesh to use
-        @param skeletonName skeleton to use
-        @param clone whether mesh should be cloned for modifying geometry uniquely
-        @return true if successful
-<li>"SetMaterial": sets material in mesh
-        @param index submesh index
-        @param materialName material name
-        @return true if successful
-<li>"SetAdjustPosition": sets adjustment (offset) position
-        @param position new position
-<li>"SetAdjustOrientation": sets adjustment orientation
-        @param orientation new orientation
-<li>"SetAdjustScale": sets adjustment scale
-        @param position new scale
-<li>"RemoveMesh": removes mesh
-<li>"SetAttachmentMesh": sets an attachment mesh
-      The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
-      @param index attachment index starting from 0.
-      @param meshName mesh to use
-      @param attachPoint bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
-      @param shareSkeleton whether to link animation (for attachments that are also skeletally animated)
-      @return true if successful 
-<li>"SetAttachmentPosition": sets position of attachment mesh, relative to attachment poiont
-<li>"SetAttachmentOrientation": sets orientation of attachment mesh, relative to attachment point
-<li>"SetAttachmentScale": sets scale of attachment mesh, relative to attachment point
-<li>"RemoveAttachmentMesh": removes an attachment mesh
-      @param index attachment index starting from 0
-<li>"RemoveAllAttachments": removes all attachments
-<li>"SetAttachmentMaterial": sets material on an attachment mesh
-     @param index attachment index starting from 0
-    @param submesh_index submesh in attachment mesh
-     @param materialName material name
-     @return true if successful 
-<li>"HasMesh": returns if mesh exists
-<li>"GetNumAttachments": returns number of attachments
-        note: returns just the size of attachment vector, so check individually that attachments actually exist
-<li>"HasAttachmentMesh": returns if attachment mesh exists
-<li>"GetPlaceable": gets placeable component
-<li>"GetMeshName": returns mesh name
-<li>"GetSkeletonName": returns mesh skeleton name
-<li>"GetEntity": returns Ogre mesh entity 
-<li>"GetAttachmentEntity": returns Ogre attachment mesh entity
-<li>"GetNumMaterials": gets number of materials (submeshes) in mesh entity
-<li>"GetAttachmentNumMaterials": gets number of materials (submeshes) in attachment mesh entity
-<li>"GetMatName": gets material name from mesh
-    @param index submesh index
-    @return name if successful, empty if no entity / illegal index
-<li>"GetAttachmentMaterialNam": gets material name from attachment mesh
-     @param index attachment index
-     @param submesh_index submesh index
-     @return name if successful, empty if no entity / illegal index
-<li>"GetBoundingBox": returns bounding box of Ogre mesh entity
-        /// returns zero box if no entity
-<li>"GetAdjustPosition": returns adjustment position
-<li>"GetAdjustOrientation": returns adjustment orientation
-<li>"GetAdjustScale": returns adjustment scale
-<li>"GetAttachmentPosition": returns offset position of attachment
-<li>"GetAttachmentOrientation": returns offset orientation of attachment
-<li>"GetAttachmentScale": returns offset scale of attachment
-<li>"GetAdjustmentSceneNode": Returns adjustment scene node (used for scaling/offset/orientation modifications)
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>"SetPlaceable": @copydoc SetPlaceable
+    <li>"SetDrawDistance": @copydoc SetDrawDistance
+    <li>"SetMesh": @copydoc SetMesh
+    <li>"SetMeshWithSkeleton": @copydoc SetMeshWithSkeleton
+    <li>"SetMaterial": @copydoc SetMaterial
+    <li>"SetAdjustPosition": @copydoc SetAdjustPosition
+    <li>"SetAdjustOrientation": @copydoc SetAdjustOrientation
+    <li>"SetAdjustScale": @copydoc SetAdjustScale
+    <li>"RemoveMesh": @copydoc RemoveMesh
+    <li>"HasMesh": @copydoc HasMesh
+    <li>"GetPlaceable": @copydoc GetPlaceable
+    <li>"GetMeshName": @copydoc GetMeshName
+    <li>"GetSkeletonName": @copydoc GetSkeletonName
+    <li>"GetEntity": @copydoc GetEntity
+    <li>"GetNumMaterials": @copydoc GetNumMaterials
+    <li>"GetMatName": @copydoc GetMatName
+    <li>"WorldOBB": @copydoc WorldOBB
+    <li>"LocalOBB": @copydoc LocalOBB
+    <li>"WorldAABB": @copydoc WorldAABB
+    <li>"LocalAABB": @copydoc LocalAABB
+    <li>"MeshAsset": @copydoc MeshAsset
+    <li>"MaterialAsset": @copydoc MaterialAsset
+    <li>"SkeletonAsset": @copydoc SkeletonAsset
+    <li>"GetAdjustPosition": @copydoc GetAdjustPosition
+    <li>"GetAdjustOrientation": @copydoc GetAdjustOrientation
+    <li>"GetAdjustScale": @copydoc GetAdjustScale
+    <li>"GetAttachmentPosition": @copydoc GetAttachmentPosition
+    <li>"GetAttachmentOrientation": @copydoc GetAttachmentOrientation
+    <li>"GetAttachmentScale": @copydoc GetAttachmentScale
+    <li>"GetAdjustmentSceneNode": @copydoc GetAdjustmentSceneNode
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li>...
+    </ul>
+    </td>
+    </tr>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Depends on the component Placeable</b>.
-</table>
-*/
+    <b>Depends on the component Placeable</b>.
+    </table> */
 class OGRE_MODULE_API EC_Mesh : public IComponent
 {
     Q_OBJECT
@@ -150,15 +99,15 @@ public:
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
-    /// Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automatically).
+    /// Mesh resource id is a asset id for a mesh resource that user wants to apply.
     Q_PROPERTY(AssetReference meshRef READ getmeshRef WRITE setmeshRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, meshRef);
 
-    /// Skeleton asset reference (handles resource request automatically).
+    /// Skeleton asset reference.
     Q_PROPERTY(AssetReference skeletonRef READ getskeletonRef WRITE setskeletonRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, skeletonRef);
 
-    /// Mesh material asset reference list, material requests are handled automatically.
+    /// Mesh material asset reference list.
     Q_PROPERTY(AssetReferenceList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, meshMaterial);
 
@@ -292,7 +241,7 @@ public slots:
 //    float3x4 IComponent::GetWorldTransform();
 
     /// Return Ogre bone safely
-    Ogre::Bone* GetBone(const QString& bone_name);
+    Ogre::Bone* GetBone(const QString& boneName);
 
     /// Return names of all bones. If no entity or skeleton, returns empty list
     QStringList GetAvailableBones() const;
@@ -300,17 +249,17 @@ public slots:
     /// Force a skeleton update. Call this before GetBonePosition()... to make sure bones have updated positions, even if the mesh is currently invisible
     void ForceSkeletonUpdate();
     /// Return bone's local position
-    float3 GetBonePosition(const QString& bone_name);
+    float3 GetBonePosition(const QString& boneName);
     /// Return bone's root-derived position. Note: these are not world coordinates, but relative to the mesh root
-    float3 GetBoneDerivedPosition(const QString& bone_name);
+    float3 GetBoneDerivedPosition(const QString& boneName);
     /// Return bone's local orientation
-    Quat GetBoneOrientation(const QString& bone_name);
+    Quat GetBoneOrientation(const QString& boneName);
     /// Return bone's root-derived orientation
-    Quat GetBoneDerivedOrientation(const QString& bone_name);
+    Quat GetBoneDerivedOrientation(const QString& boneName);
     /// Return bone's local orientation as Euler degrees
-//    float3 GetBoneOrientationEuler(const QString& bone_name);
+//    float3 GetBoneOrientationEuler(const QString& boneName);
     /// Return bone's root-derived orientation as Euler degrees
-//    float3 GetBoneDerivedOrientationEuler(const QString& bone_name);
+//    float3 GetBoneDerivedOrientationEuler(const QString& boneName);
     
     /// Set the weight (0.0 - 1.0) of a morph on the mesh
     void SetMorphWeight(const QString& morphName, float weight);

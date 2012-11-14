@@ -167,8 +167,7 @@ public slots:
         If the action does not exist, null sequence is returned. */
     QKeySequence KeyBinding(const QString &actionName) const;
     /// @overload
-    /** This is the same function as KeyBinding(const QString &actionName), but in this form,
-        if the action does not exist, the default key sequence is registered for it and returned. */
+    /** @param defaultKey If the action does not exist, the default key sequence is registered for it and returned. */
     QKeySequence KeyBinding(const QString &actionName, QKeySequence defaultKey);
 
     /// Finds the InputContext that has the highest mouse priority, and applies the mouse cursor in it as the currently shown mouse cursor.

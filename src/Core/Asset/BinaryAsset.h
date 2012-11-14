@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-
 #include "AssetAPI.h"
 #include "IAsset.h"
 
@@ -18,14 +16,14 @@ public:
     {
     }
 
-    ~BinaryAsset() 
-    { 
-        Unload(); 
+    ~BinaryAsset()
+    {
+        Unload();
     }
 
-    virtual void DoUnload() 
-    { 
-        data.clear(); 
+    virtual void DoUnload()
+    {
+        data.clear();
     }
 
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
@@ -47,13 +45,10 @@ public:
         return std::vector<AssetReference>();
     }
 
-    bool IsLoaded() const 
+    bool IsLoaded() const
     {
         return data.size() > 0;
     }
 
     std::vector<u8> data;
 };
-
-typedef boost::shared_ptr<BinaryAsset> BinaryAssetPtr;
-
