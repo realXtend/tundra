@@ -11,6 +11,7 @@ material AxisGreenHi
             emissive 0.000000 1.000000 0.000000 1.000000
             scene_blend alpha_blend
             depth_check off
+            fog_override true
         }
     }
 }

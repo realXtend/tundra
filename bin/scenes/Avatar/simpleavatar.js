@@ -59,6 +59,9 @@ function SimpleAvatar(entity, comp)
 }
 
 SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
+    if (framework.IsExiting())
+        return;
+
     // Must remember to manually disconnect subsystem signals, otherwise they'll continue to get signalled
     if (this.isServer)
     {
@@ -67,13 +70,9 @@ SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
     }
     else
     {
-        try
-        {
-            var avatar = scene.EntityByName("Avatar" + client.connectionId);
-            if (avatar)
-                scene.RemoveEntity(avatar.id);
-        }
-        catch(e){}
+        var avatar = scene.EntityByName("Avatar" + client.connectionId);
+        if (avatar)
+            scene.RemoveEntity(avatar.id);
 
         frame.Updated.disconnect(this, this.ClientUpdate);
     }

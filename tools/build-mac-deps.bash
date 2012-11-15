@@ -216,8 +216,9 @@ prefix=$DEPS
 build=$DEPS/build
 tarballs=$DEPS/tarballs
 tags=$DEPS/tags
+frameworkpath=$DEPS/Frameworks
 
-mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
+mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags $frameworkpath
 
 if [ "$RELWITHDEBINFO" == "1" ]; then
     export CFLAGS="-gdwarf-2 -O2"
@@ -513,22 +514,21 @@ fi
 what=NVIDIA_Cg
 baseurl=http://developer.download.nvidia.com/cg/Cg_3.1
 dmgname=Cg-3.1_April2012.dmg
-if test -f $tags/$what-done; then
+if test -d $frameworkpath/Cg.framework; then
     echoInfo "$what is done"
 else
     dmg=$tarballs/$dmgname
-    if [ -f $dmg ]; then
-        rm $dmg
-    fi
+    tarballname=$what.tgz
+    rm -f $dmg
+    rm -f $tarballs/$tarballname
+    rm -rf $build/$what
 
     echoInfo "Fetching $what, this may take a while... "
     curl -L -o $dmg $baseurl/$dmgname
     hdiutil attach $dmg
 
     mountpoint=/Volumes/Cg-3.1.0013
-    tarballname=$what.tgz
     tarball="$mountpoint/Cg-3.1.0013.app/Contents/Resources/Installer\ Items/$tarballname"
-    installdir=~/Library/Frameworks
 
     eval cp $tarball $tarballs
     cd $build
@@ -538,9 +538,9 @@ else
     tar --gzip --extract --verbose -f $tarballs/$tarballname
 
     cd $build
-    echoInfo "Installing $what into $installdir:"
-    cp -R $what/Library/Frameworks/Cg.framework $installdir
-    touch $tags/$what-done
+    chmod -R +w $what
+    echoInfo "Installing $what into $frameworkpath:"
+    mv $what/Library/Frameworks/Cg.framework $frameworkpath
 fi
 
 what=ogre-safe-nocrashes
@@ -564,7 +564,7 @@ else
     tar xzf $ogredepszip
     export OGRE_HOME=$build/$what
     echoInfo "Building $what:"
-    cmake -G Xcode -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF
     xcodebuild -configuration RelWithDebInfo
     
     cp -R $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $HOME/Library/Frameworks
