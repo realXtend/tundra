@@ -1201,6 +1201,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
 
 QByteArray Scene::GetEntityXml(Entity *entity) const
 {
+    LogWarning("Scene::GetEntityXml: this function is deprecated and will be removed. Use Entity::SerializeToXMLString instead.");
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
     if (entity)

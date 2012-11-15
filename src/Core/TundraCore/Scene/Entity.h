@@ -52,6 +52,7 @@ class TUNDRACORE_API Entity : public QObject, public boost::enable_shared_from_t
     Q_PROPERTY(bool local READ IsLocal) /**< @copydoc IsLocal */
     Q_PROPERTY(bool unacked READ IsUnacked) /**< @copydoc IsUnacked */
     Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary) /**< @copydoc IsTemporary */
+    Q_PROPERTY(ComponentMap components READ Components) /**< @copydoc Components */
 
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
@@ -139,6 +140,9 @@ public:
     /** @param name Name of the attribute.
         @return List of attribute interface pointers, or empty list if no attributes are found. */
     AttributeVector GetAttributes(const QString &name) const;
+
+    /// Returns actions map for introspection/reflection.
+    const ActionMap &Actions() const { return actions_; }
 
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
@@ -340,22 +344,17 @@ public slots:
     ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
     entity_id_t Id() const { return id_; }
 
-    /// introspection for the entity, returns all components
-    ComponentMap Components() /*non-const intentionally*/ { return components_; }
-
     /// Returns framework
     Framework *GetFramework() const { return framework_; }
 
     /// Returns parent scene of this entity.
     Scene* ParentScene() const { return scene_; }
 
-    /// Returns actions map for introspection/reflection.
-    const ActionMap &Actions() const { return actions_; }
-
     // DEPRECATED:
     QObjectList ComponentsList() const; /**< @deprecated Use Components @todo Remove */
     QObjectList GetComponentsRaw(const QString &typeName) const; /**< @deprecated Use GetComponents or Components instead */
     void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById. */
+    ComponentMap Components() /*non-const intentionally*/ { return components_; } /**< @deprecated use const version Components or 'components' instead. @todo Add deprecation print. @todo Remove. */
 
 signals:
     /// A component has been added to the entity

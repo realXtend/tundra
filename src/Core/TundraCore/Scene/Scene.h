@@ -35,6 +35,7 @@ class TUNDRACORE_API Scene : public QObject, public boost::enable_shared_from_th
     Q_PROPERTY(QString name READ Name)
     Q_PROPERTY(bool viewEnabled READ ViewEnabled)
     Q_PROPERTY(bool authority READ IsAuthority)
+    Q_PROPERTY(EntityMap entities READ Entities)
 
 public:
     ~Scene();
@@ -229,11 +230,6 @@ public slots:
     /// Returns scene forward vector. For now it is a compile-time constant
     float3 ForwardVector() const;
 
-    /// Returns a scene document with just the desired entity
-    /** @deprecated Use Entity::SerializeToXMLString.
-        @todo Remove */
-    QByteArray GetEntityXml(Entity *entity) const;
-
     /// Is scene view enabled (i.e. rendering-related components actually create stuff).
     /** @todo Exposed as Q_PROPERTY, doesn't need to be a slot. */
     bool ViewEnabled() const { return viewEnabled_; }
@@ -288,9 +284,6 @@ public slots:
         @param name Name of the component, optional.
         @note O(n) */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
-
-    /// Returns all entities in the scene.
-    EntityMap Entities() /*non-const intentionally*/ { return entities_; }
 
     /// Loads the scene from XML.
     /** @param filename File name
@@ -373,6 +366,8 @@ public slots:
     Entity* GetEntityRaw(uint id) const { return GetEntity(id).get(); } /**< @deprecated Use EntityById @todo Remove */
     bool DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity((entity_id_t)id, change); } /**< @deprecated Use RemoveEntity @todo Remove */
     bool RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity(entityid, change); } /**< @deprecated Use RemoveEntity @todo Remove */
+    EntityMap Entities() /*non-const intentionally*/ { return entities_; } /**< @deprecated use const version Entities or 'entities' instead. @todo Add deprecation print. @todo Remove. */
+    QByteArray GetEntityXml(Entity *entity) const; /**< @deprecated Use Entity::SerializeToXMLString. @todo Remove */
 
 signals:
     /// Signal when an attribute of a component has changed
