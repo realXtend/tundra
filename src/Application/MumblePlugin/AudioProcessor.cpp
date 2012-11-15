@@ -107,6 +107,7 @@ namespace MumbleAudio
         // We can safely assume there is only one microphone
         // And we go with the hope that there is just one echo
         // channel...
+        qDebug("Initializing echo cancellation...");
         speexEcho = speex_echo_state_init_mc(MUMBLE_AUDIO_SAMPLES_IN_FRAME, MUMBLE_AUDIO_SAMPLE_RATE, 1, 1);
 
         // Use fixed sample rate
@@ -193,6 +194,7 @@ namespace MumbleAudio
                 //
                 // Our own private MumbleUser 'me' can be NULL, and we
                 // can only do echo-cancellation when it's ready.
+                qDebug("SpeexEchoState = %p", speexEcho);
                 if (speexEcho && me) {
                     SoundBuffer outBuf;
                     // Input audio buffers are held in
@@ -200,10 +202,14 @@ namespace MumbleAudio
                     // Let's (ab)use the internal helpers/wrappers to
                     // get our own user ID from the MumbleUser
                     // associated with our local identity:
+                    qDebug("Echo cancellation for local user ID = %d", me->Id());
                     UserAudioState &micAudioState = inputAudioStates[me->Id()];
 
                     // Output buffer size must match the smaller input buffer
+                    qDebug("pcmFrame.data.size = %lu, micAudioState.frames.size = %lu",
+                        pcmFrame.data.size(), micAudioState.frames.size());
                     int bufsize = qMin(pcmFrame.data.size(), micAudioState.frames.size());
+                    qDebug("Resizing echo-cancelled audio buffer to %d", bufsize);
                     outBuf.data.resize(bufsize);
 
 
