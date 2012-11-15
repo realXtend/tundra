@@ -41,7 +41,7 @@ namespace MumbleAudio
         AudioFrameDeque frames;
         SoundChannelPtr soundChannel;
     };
-    
+
     typedef std::map<uint, UserAudioState > AudioStateMap;
 
     //////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ namespace MumbleAudio
 
     protected:
         // QThread override.
-        void run(); 
+        void run();
 
         // QObject override.
         void timerEvent(QTimerEvent *event);
@@ -67,15 +67,15 @@ namespace MumbleAudio
         ByteArrayVector ProcessOutputAudio();
         void SetOutputAudioMuted(bool outputAudioMuted_);
 
-        /// Plays all input audio frames from other users. 
+        /// Plays all input audio frames from other users.
         /// Updates MumbleUser::isPositional and emits MumbleUser::PositionalChanged
         /// and MumblePlugin::UserPositionalChanged
         void PlayInputAudio(MumblePlugin *mumble);
         void SetInputAudioMuted(bool inputAudioMuted_);
-        
+
         void ApplyFramesPerPacket(int framesPerPacket);
         void ApplySettings(AudioSettings settings);
-        
+
         AudioSettings GetSettings();
 
         void ClearInputAudio();
@@ -89,7 +89,7 @@ namespace MumbleAudio
     private slots:
         void OnAudioReceived(uint userId, uint seq, ByteArrayVector frames, bool isPositional, float3 pos);
         void OnResetFramesPerPacket();
-        
+
     private:
         void ResetSpeexProcessor();
         void ClearPendingChannels();
@@ -122,7 +122,7 @@ namespace MumbleAudio
 
         // Used in both main and audio thread with mutexOutputEncoded.
         QList<QByteArray> pendingEncodedFrames;
-        
+
         // Used in both main and audio thread with mutexOutputPCM.
         std::vector<SoundBuffer> pendingPCMFrames;
 
@@ -145,7 +145,7 @@ namespace MumbleAudio
         QMutex mutexInput;
         QMutex mutexOutputPCM;
         QMutex mutexOutputEncoded;
-        
+
         QReadWriteLock mutexAudioMute;
         QReadWriteLock mutexAudioSettings;
 
@@ -155,10 +155,15 @@ namespace MumbleAudio
         int bufferFullFrames;
         int holdFrames;
         int qobjTimerId;
-        
+
         QTimer resetFramesPerPacket;
 
         QString LC;
+
+        // This is here to get a reference to our own user id; that is
+        // required for echo cancellation.
+        MumbleUser *me;
+
     };
 }
 /// @endcond
