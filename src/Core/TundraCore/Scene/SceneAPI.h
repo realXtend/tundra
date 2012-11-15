@@ -17,6 +17,8 @@ class Framework;
 class TUNDRACORE_API SceneAPI : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QStringList attributeTypes READ AttributeTypes) /**< @copydoc AttributeTypes */
+    Q_PROPERTY(SceneMap scenes READ Scenes) /**< @copydoc Scenes */
 
 public:
     ~SceneAPI();
@@ -28,6 +30,13 @@ public:
     {
         return boost::dynamic_pointer_cast<T>(CreateComponentById(parentScene, T::TypeIdStatic(), newComponentName));
     }
+
+    /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
+    static const QStringList &AttributeTypes();
+
+    /// Returns the scene map for self reflection / introspection.
+    SceneMap &Scenes();
+    const SceneMap &Scenes() const;
 
 public slots:
     /// Returns a pointer to a scene
@@ -63,10 +72,6 @@ public slots:
         @param name name of the scene to delete */
     void RemoveScene(const QString &name);
 
-    /// Returns the scene map for self reflection / introspection.
-    SceneMap &Scenes();
-    const SceneMap &Scenes() const;
-
     /// Return if a component factory has been registered for a type name.
     bool IsComponentFactoryRegistered(const QString &typeName) const;
 
@@ -89,7 +94,8 @@ public slots:
     static QString GetAttributeTypeName(u32 attributeTypeid);
 
     /// Looks up the type id for an attribute type name, or zero if not found
-    static u32 GetAttributeTypeId(const QString &attributeTypename);
+    /** @param attributeTypeName Attribute type name, handled as case-insensitive. */
+    static u32 GetAttributeTypeId(const QString &attributeTypeName);
 
     /// Creates a clone of the specified component. The new component will be detached, i.e. it has no parent entity.
     ///\todo Implement this.
@@ -102,9 +108,6 @@ public slots:
     /** @param attributeTypeName Attribute type name, handled as case-insensitive.
         @param newAttributeName Arbitrary user-defined name which identifies the attribute. */
     static IAttribute* CreateAttribute(const QString &attributeTypeName, const QString& newAttributeName);
-
-    /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
-    static const QStringList &AttributeTypes();
 
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
     QStringList ComponentTypes() const;
