@@ -35,11 +35,9 @@ using gcc : android4.4.3 :
     <compileflags>-DNDEBUG
     <compileflags>-D__GLIBC__
     <compileflags>-DBOOST_NO_INTRINSIC_WCHAR_T
-	<compileflags>-DPAGE_SIZE=2048
+    <compileflags>-DPAGE_SIZE=2048
     <compileflags>-lstdc++
-    <compileflags>-mthumb
-    <compileflags>-march=armv7-a 
     <compileflags>-mfloat-abi=softfp
     <compileflags>-fno-strict-aliasing
     <compileflags>-O2
-        ;
+    ;

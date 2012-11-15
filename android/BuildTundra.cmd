@@ -30,7 +30,7 @@ IF NOT EXIST "%ANDROID%\local.properties". (
 cd %TUNDRA_DIR%
 cecho {0D}Configuring Tundra build.{# #}{\n}
 del CMakeCache.txt
-cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBOOST_ROOT=%DEPS%/boost -DANDROID=1 -DANDROID_NATIVE_API_LEVEL=9 -DCMAKE_BUILD_TYPE=Release
+cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBOOST_ROOT=%DEPS%/boost -DANDROID=1 -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=%TUNDRA_ANDROID_ABI% -DCMAKE_BUILD_TYPE=Release
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Building Tundra.{# #}{\n}

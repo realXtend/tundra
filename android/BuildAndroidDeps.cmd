@@ -44,11 +44,11 @@ IF NOT EXIST "%DEPS%\bullet\". (
    svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
    IF NOT EXIST "%DEPS%\bullet\.svn". GOTO :ERROR
 )
-IF NOT EXIST "%DEPS%\bullet\libs\armeabi-v7a\libBulletCollision.a". (
+IF NOT EXIST "%DEPS%\bullet\libs\%TUNDRA_ANDROID_ABI%\libBulletCollision.a". (
    cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
    cd "%DEPS%\bullet"
    del CMakeCache.txt
-   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=%TUNDRA_ANDROID_ABI%
    IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
    nmake
    IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
@@ -92,7 +92,7 @@ IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
 IF NOT EXIST "%DEPS%\boost\lib\libboost_date_time.a". (
     cd "%DEPS%\boost"
     cecho {0D}Building Boost.{# #}{\n}
-    copy "%ANDROID%\user-config.jam" tools\build\v2
+    copy "%ANDROID%\user-config_%TUNDRA_ANDROID_ABI%.jam" tools\build\v2\user-config.jam
     copy "%ANDROID%\project-config.jam" .
     b2 --with-date_time --with-filesystem --with-program_options --with-regex --with-signals --with-system --with-thread --with-iostreams toolset=gcc-android4.4.3 link=static runtime-link=static target-os=linux --stagedir=. --layout=system
 ) ELSE (
@@ -112,7 +112,7 @@ IF NOT EXIST "%DEPS%\kNet\lib\libkNet.a". (
    cecho {0D}Building kNet.{# #}{\n}
    cd "%DEPS%\kNet"
    del CMakeCache.txt
-   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBOOST_ROOT=%DEPS%/boost -DCMAKE_BUILD_TYPE=Release
+   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBOOST_ROOT=%DEPS%/boost -DCMAKE_BUILD_TYPE=Release -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=%TUNDRA_ANDROID_ABI%
    nmake
    IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
 ) ELSE (
@@ -125,19 +125,28 @@ IF NOT EXIST "%DEPS%\ogre". (
    cecho {0D}Cloning OGRE from https://bitbucket.org/sinbad/ogre into "%DEPS%\ogre".{# #}{\n}
    hg clone -r v1-9 https://bitbucket.org/sinbad/ogre ogre
 )
-IF NOT EXIST "%DEPS%\ogre\AndroidDependencies". (
-   cecho {0D}Downloading OGRE prebuilt Android dependencies.{# #}{\n}
-   cd "%DEPS%"
-   wget http://downloads.sourceforge.net/project/ogre/ogre-dependencies-android/1.9/AndroidDependencies.zip
-   7za x -y -oogre AndroidDependencies.zip
-   del AndroidDependencies.zip
+IF NOT EXIST "%DEPS%\ogre\AndroidDependenciesBuild". (
+   cecho {0D}Cloning OGRE Android dependencies from https://bitbucket.org/cabalistic/ogredeps{# #}{\n}
+   cd "%DEPS%\ogre"
+   hg clone https://bitbucket.org/cabalistic/ogredeps AndroidDependenciesBuild
+)
+IF NOT EXIST "%DEPS%\ogre\AndroidDependencies\lib\libFreeImage.a". (
+   cecho {0D}Building OGRE Android dependencies{# #}{\n}
+   cd "%DEPS%\ogre\AndroidDependenciesBuild"
+   del CMakeCache.txt
+   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=cmake/android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=x86 -DCMAKE_INSTALL_PREFIX="%DEPS%\ogre\AndroidDependencies"
+   nmake
+   IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
+   nmake install
+   IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
 )
 IF NOT EXIST "%DEPS%\ogre\lib\libOgreMainStatic.a". (
    cecho {0D}Building OGRE.{# #}{\n}
    cd "%DEPS%\ogre"
    del CMakeCache.txt
-   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=CMake/toolchain/android.toolchain.cmake -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies -DANDROID_NATIVE_API_LEVEL=9 -DCMAKE_BUILD_TYPE=Release
+   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=CMake/toolchain/android.toolchain.cmake -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies -DCMAKE_BUILD_TYPE=Release -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=%TUNDRA_ANDROID_ABI%
    nmake
+   IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
 ) ELSE (
    cecho {0D}OGRE already built. Skipping.{# #}{\n}
 )
