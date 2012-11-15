@@ -21,7 +21,7 @@
 #include "MemoryLeakCheck.h"
 
 QStringList SceneAPI::attributeTypeNames(QStringList() << "string" << "int" << "real" << "color" << "float2" << "float3" << "float4" << "bool" << "uint" << "quat" <<
-        "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform");
+        "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform" << "qpoint");
 
 SceneAPI::SceneAPI(Framework *owner) :
     QObject(owner),
