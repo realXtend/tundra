@@ -203,89 +203,89 @@ template<> std::string TUNDRACORE_API Attribute<QPoint>::ToString() const
 
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
 
-template<> QString TUNDRACORE_API Attribute<int>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<int>::TypeName() const
 {
-    return "int";
+    return cAttributeIntTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<uint>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<uint>::TypeName() const
 {
-    return "uint";
+    return cAttributeUIntTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<float>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<float>::TypeName() const
 {
-    return "real";
+    return cAttributeRealTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<QString>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<QString>::TypeName() const
 {
-    return "string";
+    return cAttributeStringTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<bool>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<bool>::TypeName() const
 {
-    return "bool";
+    return cAttributeBoolTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<Quat>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<Quat>::TypeName() const
 {
-    return "quat";
+    return cAttributeQuatTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<float2>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<float2>::TypeName() const
 {
-    return "float2";
+    return cAttributeFloat2TypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<float3>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<float3>::TypeName() const
 {
-    return "float3";
+    return cAttributeFloat4TypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<float4>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<float4>::TypeName() const
 {
-    return "float4";
+    return cAttributeFloat4TypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<Color>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<Color>::TypeName() const
 {
-    return "color";
+    return cAttributeColorTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<AssetReference>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<AssetReference>::TypeName() const
 {
-    return "assetreference";
+    return cAttributeAssetReferenceTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<AssetReferenceList>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<AssetReferenceList>::TypeName() const
 {
-    return "assetreferencelist";
+    return cAttributeAssetReferenceListTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<EntityReference>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<EntityReference>::TypeName() const
 {
-    return "entityreference";
+    return cAttributeEntityReferenceTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<QVariant>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<QVariant>::TypeName() const
 {
-    return "qvariant";
+    return cAttributeQVariantTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<QVariantList >::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<QVariantList >::TypeName() const
 {
-    return "qvariantlist";
+    return cAttributeQVariantListTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<Transform>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<Transform>::TypeName() const
 {
-    return "transform";
+    return cAttributeTransformTypeName;
 }
 
-template<> QString TUNDRACORE_API Attribute<QPoint>::TypeName() const
+template<> const QString TUNDRACORE_API & Attribute<QPoint>::TypeName() const
 {
-    return "qpoint";
+    return cAttributeQPointTypeName;
 }
 
 // FROMSTRING TEMPLATE IMPLEMENTATIONS.
@@ -506,7 +506,7 @@ template<> QVariant TUNDRACORE_API Attribute<float>::ToQVariant() const
 {
     return QVariant(Get());
 }
-    
+
 template<> QVariant TUNDRACORE_API Attribute<Quat>::ToQVariant() const
 {
     return QVariant::fromValue<Quat>(Get());
@@ -593,7 +593,7 @@ template<> void TUNDRACORE_API Attribute<float>::FromScriptValue(const QScriptVa
 {
     Set(qScriptValueToValue<float>(value), change);
 }
-    
+
 template<> void TUNDRACORE_API Attribute<Quat>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
     Set(value.data().toVariant().value<Quat>(), change);

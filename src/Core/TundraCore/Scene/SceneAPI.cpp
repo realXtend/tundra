@@ -20,8 +20,12 @@
 #include "Transform.h"
 #include "MemoryLeakCheck.h"
 
-QStringList SceneAPI::attributeTypeNames(QStringList() << "string" << "int" << "real" << "color" << "float2" << "float3" << "float4" << "bool" << "uint" << "quat" <<
-        "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform" << "qpoint");
+const QStringList SceneAPI::attributeTypeNames(
+    QStringList() << cAttributeStringTypeName << cAttributeIntTypeName << cAttributeRealTypeName <<
+    cAttributeColorTypeName << cAttributeFloat2TypeName << cAttributeFloat3TypeName << cAttributeFloat4TypeName <<
+    cAttributeBoolTypeName << cAttributeUIntTypeName << cAttributeQuatTypeName << cAttributeAssetReferenceTypeName <<
+    cAttributeAssetReferenceListTypeName << cAttributeEntityReferenceTypeName << cAttributeQVariantTypeName <<
+    cAttributeQVariantListTypeName << cAttributeTransformTypeName << cAttributeQPointTypeName);
 
 SceneAPI::SceneAPI(Framework *owner) :
     QObject(owner),
@@ -252,7 +256,7 @@ IAttribute* SceneAPI::CreateAttribute(u32 attributeTypeid, const QString& newAtt
     return attribute;
 }
 
-QStringList SceneAPI::AttributeTypes()
+const QStringList &SceneAPI::AttributeTypes()
 {
     return attributeTypeNames;
 }

@@ -33,7 +33,6 @@ public:
         @param name Name of the attribute. */
     IAttribute(IComponent* owner, const char* name);
 
-    /// Destructor.
     virtual ~IAttribute() {}
 
     /// Returns attribute's owner component.
@@ -49,7 +48,7 @@ public:
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
 
     /// Returns the type name of the data stored in this attribute.
-    virtual QString TypeName() const = 0;
+    virtual const QString &TypeName() const = 0;
     
     /// Returns the type ID of this attribute.
     virtual u32 TypeId() const = 0;
@@ -67,7 +66,8 @@ public:
     virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change) = 0;
 
     /// Convert QScriptValue to attribute value (QtScript Spesific).
-    /// /todo Remove when if possible.
+    /// @deprecated FromQVariant should be used instead.
+    /// @todo Remove when if possible.
     virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change) = 0;
 
     /// Sets attribute's metadata.
@@ -109,7 +109,7 @@ public:
             in the component, in order to optimize its loading.
         @return If true, an external source (scene load event, UI attribute edit event, a script, received sync message from sync manager, etc.)
             has modified the value of this attribute, but the *implementation* of the component this attribute is part of has not
-            yet reacted to this change.            
+            yet reacted to this change.
         @note This flag is NOT to be used except by the code that is implementing a new component. Do not read this flag from client code
             that is trying to detect if an attribute has changed, use the attribute changed signal in the component instead. */
     bool ValueChanged() const { return valueChanged; }
@@ -140,13 +140,13 @@ class Attribute : public IAttribute
 {
 public:
     /** Constructor.
-        value is set to DefaultValue.
+        value is initialiazed to DefaultValue.
         @param owner Owner component.
         @param name Name. */
     Attribute(IComponent* owner, const char* name) :
-        IAttribute(owner, name)
+        IAttribute(owner, name),
+        value(DefaultValue())
     {
-        value = DefaultValue();
     }
 
     /** Constructor taking also value.
@@ -189,45 +189,24 @@ public:
         if (source_attr)
             Set(source_attr->Get(), change);
     }
-    
-    /// IAttribute override.
-    virtual std::string ToString() const;
 
-    /// IAttribute override.
-    virtual void FromString(const std::string& str, AttributeChange::Type change);
-
-    /// IAttribute override.
-    virtual void ToBinary(kNet::DataSerializer& dest) const;
-
-    /// IAttribute override.
-    virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
-
-    /// IAttribute override
-    virtual void Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change);
-    
-    /// Returns the type of the data stored in this attribute.
-    virtual QString TypeName() const;
-
-    /// Returns the typeid of this attribute.
-    virtual u32 TypeId() const;
-    
-    /// Returns the value as QVariant (For scripts).
-    virtual QVariant ToQVariant() const;
-
-    /// Convert QVariant to attribute value.
-    virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change);
-
-    /// Convert QScriptValue to attribute value (QtScript Spesific).
-    /// /todo Remove this when possible.
-    virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change);
+    virtual std::string ToString() const; ///< IAttribute override
+    virtual void FromString(const std::string& str, AttributeChange::Type change); ///< IAttribute override
+    virtual void ToBinary(kNet::DataSerializer& dest) const; ///< IAttribute override
+    virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change); ///< IAttribute override
+    virtual void Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change); ///< IAttribute override
+    virtual const QString &TypeName() const; ///< IAttribute override
+    virtual u32 TypeId() const; ///< IAttribute override
+    virtual QVariant ToQVariant() const; ///< IAttribute override
+    virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change); ///< IAttribute override
+    virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change); ///< IAttribute override
 
     /// Returns pre-defined default value for the attribute.
     /** Usually zero for primitive data types and for classes/structs that are collections of primitive data types (e.g. float3::zero), or the default consturctor. */
     T DefaultValue() const;
 
 private:
-    /// The value of this Attribute.
-    T value; 
+    T value; ///< The value of this Attribute.
 };
 
 static const u32 cAttributeNone = 0;
@@ -250,3 +229,21 @@ static const u32 cAttributeTransform = 16;
 static const u32 cAttributeQPoint = 17;
 static const u32 cNumAttributeTypes = 18;
 
+static const QString cAttributeNoneTypeName = "";
+static const QString cAttributeStringTypeName = "string";
+static const QString cAttributeIntTypeName = "int";
+static const QString cAttributeRealTypeName = "real";
+static const QString cAttributeColorTypeName = "color"; /**< @todo "Color" */
+static const QString cAttributeFloat2TypeName = "float2";
+static const QString cAttributeFloat3TypeName = "float3";
+static const QString cAttributeFloat4TypeName = "float4";
+static const QString cAttributeBoolTypeName = "bool";
+static const QString cAttributeUIntTypeName = "uint";
+static const QString cAttributeQuatTypeName = "quat"; /**< @todo "Quat" */
+static const QString cAttributeAssetReferenceTypeName = "assetreference"; /**< @todo "AssetReference" */
+static const QString cAttributeAssetReferenceListTypeName = "assetreferencelist"; /**< @todo "AssetReferenceList" */
+static const QString cAttributeEntityReferenceTypeName = "entityreference"; /**< @todo "EntityReference" */
+static const QString cAttributeQVariantTypeName = "qvariant"; /**< @todo "QVariant" */
+static const QString cAttributeQVariantListTypeName = "qvariantlist"; /**< @todo "QVariantList" */
+static const QString cAttributeTransformTypeName = "transform"; /**< @todo "Transform" */
+static const QString cAttributeQPointTypeName = "qpoint"; /**< @todo "QPoint" */

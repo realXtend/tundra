@@ -18,10 +18,7 @@ class TUNDRACORE_API SceneAPI : public QObject
 {
     Q_OBJECT
 
-    friend class Framework;
-
 public:
-    /// Destructor.
     ~SceneAPI();
 
     /// Creates new component of the type @c T.
@@ -98,14 +95,16 @@ public slots:
     ///\todo Implement this.
 //    ComponentPtr CloneComponent(const ComponentPtr &component, const QString &newComponentName);
 
-    /// Create a new dynamic attribute without attaching it to a component and return it. Return null if illegal typeid.
+    /// Creates a new dynamic attribute without attaching it to a component and returns it. Returns null if illegal type ID.
     static IAttribute* CreateAttribute(u32 attributeTypeid, const QString& newAttributeName);
 
-    /// Create a new dynamic attribute without attaching it to a component and return it. Return null if illegal type.
-    static IAttribute* CreateAttribute(const QString &attributeTypename, const QString& newAttributeName);
+    /// Creates a new dynamic attribute without attaching it to a component and returns it. Returns null if illegal type.
+    /** @param attributeTypeName Attribute type name, handled as case-insensitive.
+        @param newAttributeName Arbitrary user-defined name which identifies the attribute. */
+    static IAttribute* CreateAttribute(const QString &attributeTypeName, const QString& newAttributeName);
 
     /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
-    static QStringList AttributeTypes();
+    static const QStringList &AttributeTypes();
 
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
     QStringList ComponentTypes() const;
@@ -123,6 +122,8 @@ signals:
     void SceneRemoved(const QString &name);
 
 private:
+    friend class Framework;
+
     /// Constructor. Framework takes ownership of this object.
     /** @param owner Owner Framework. */
     explicit SceneAPI(Framework *owner);
@@ -141,5 +142,5 @@ private:
     ComponentFactoryWeakMap componentFactoriesByTypeid;
     Framework *framework;
     SceneMap scenes; ///< All currently created scenes.
-    static QStringList attributeTypeNames;
+    static const QStringList attributeTypeNames;
 };
