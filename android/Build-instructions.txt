@@ -17,6 +17,9 @@ Windows
   ANDROID_NDK=C:\android-ndk-r8
   ANDROID_SDK=C:\Program Files (x86)\Android\android-sdk
 
+- Download and install Java SE Development Kit 7 from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  Set up JAVA_HOME to point to the installation directory, e.g. JAVA_HOME=C:\Program Files\Java\jdk1.7.0
+
 - Using a Visual Studio command prompt, run BuildAndroidDeps.cmd from the "android" subdirectory of Tundra checkout.
   This downloads and builds the automatically buildable dependencies (Bullet, Boost, kNet, OGRE.) This may take some time,
   so be patient.
