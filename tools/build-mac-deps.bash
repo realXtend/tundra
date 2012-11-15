@@ -567,7 +567,7 @@ else
     cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF
     xcodebuild -configuration RelWithDebInfo
     
-    cp -R $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $HOME/Library/Frameworks
+    cp -R -H $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $HOME/Library/Frameworks
     cp $OGRE_HOME/lib/relwithdebinfo/*.dylib $viewer/bin
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
     touch $tags/$what-done
