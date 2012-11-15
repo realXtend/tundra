@@ -134,7 +134,7 @@ IF NOT EXIST "%DEPS%\ogre\AndroidDependencies\lib\libFreeImage.a". (
    cecho {0D}Building OGRE Android dependencies{# #}{\n}
    cd "%DEPS%\ogre\AndroidDependenciesBuild"
    del CMakeCache.txt
-   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=cmake/android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=x86 -DCMAKE_INSTALL_PREFIX="%DEPS%\ogre\AndroidDependencies"
+   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=cmake/android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=%TUNDRA_ANDROID_ABI% -DCMAKE_INSTALL_PREFIX="%DEPS%\ogre\AndroidDependencies"
    nmake
    IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
    nmake install
