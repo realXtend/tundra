@@ -65,7 +65,8 @@ if [ ! -d boost ]; then
 	./bootstrap.sh
     	cp $tundra_android/user-config_$TUNDRA_ANDROID_ABI.jam tools/build/v2/user-config.jam
     	cp $tundra_android/project-config.jam .
-    	./b2 --with-date_time --with-filesystem --with-program_options --with-regex --with-signals --with-system --with-thread --with-iostreams toolset=gcc-android4.4.3 link=static runtime-link=static target-os=linux --stagedir=. --layout=system	
+    	./b2 --with-date_time --with-filesystem --with-program_options --with-regex --with-signals --with-system --with-thread --with-iostreams toolset=gcc-android4.4.3 link=static runtime-link=static target-os=linux --stagedir=. --layout=system
+        cd $deps	
 else
 	echo "Boost already checked out. Skipping.."
 fi
