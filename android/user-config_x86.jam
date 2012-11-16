@@ -4,9 +4,12 @@ import os ;
 import path ;
 import regex ;
 
+local ANDROID_NDK = [ os.environ ANDROID_NDK ] ;
+
 if [ os.name ] = CYGWIN || [ os.name ] = NT
 {
         androidPlatform = windows ;
+	ANDROID_NDK = [ path.join [ regex.split $(ANDROID_NDK) "[/\\]" ] ] ;
 }
 
 else if [ os.name ] = LINUX
@@ -17,19 +20,15 @@ else if [ os.name ] = LINUX
 else if [ os.name ] = MACOSX
 {
         androidPlatform = darwin-x86 ;
-
 }
 
 modules.poke : NO_BZIP2 : 1 ;
 
-local ANDROID_NDK = [ os.environ ANDROID_NDK ] ;
-ANDROID_NDK = [ path.join [ regex.split $(ANDROID_NDK) "[/\\]" ] ] ;
-
 using gcc : android4.4.3 :
-    $(ANDROID_NDK)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(androidPlatform)/bin/arm-linux-androideabi-g++ :
-    <archiver>$(ANDROID_NDK)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(androidPlatform)/bin/arm-linux-androideabi-ar
-    <ranlib>$(ANDROID_NDK)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(androidPlatform)/bin/arm-linux-androideabi-ranlib
-    <compileflags>--sysroot=$(ANDROID_NDK)/platforms/android-9/arch-arm
+    $(ANDROID_NDK)/toolchains/x86-4.4.3/prebuilt/$(androidPlatform)/bin/i686-android-linux-g++ :
+    <archiver>$(ANDROID_NDK)/toolchains/x86-4.4.3/prebuilt/$(androidPlatform)/bin/i686-android-linux-ar
+    <ranlib>$(ANDROID_NDK)/toolchains/x86-4.4.3/prebuilt/$(androidPlatform)/bin/i686-android-linux-ranlib
+    <compileflags>--sysroot=$(ANDROID_NDK)/platforms/android-9/arch-x86
     <compileflags>-I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/include
     <compileflags>-I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/include
     <compileflags>-DNDEBUG
@@ -37,7 +36,6 @@ using gcc : android4.4.3 :
     <compileflags>-DBOOST_NO_INTRINSIC_WCHAR_T
     <compileflags>-DPAGE_SIZE=2048
     <compileflags>-lstdc++
-    <compileflags>-mfloat-abi=softfp
     <compileflags>-fno-strict-aliasing
     <compileflags>-O2
     ;

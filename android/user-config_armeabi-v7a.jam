@@ -4,9 +4,12 @@ import os ;
 import path ;
 import regex ;
 
+local ANDROID_NDK = [ os.environ ANDROID_NDK ] ;
+
 if [ os.name ] = CYGWIN || [ os.name ] = NT
 {
         androidPlatform = windows ;
+	ANDROID_NDK = [ path.join [ regex.split $(ANDROID_NDK) "[/\\]" ] ] ;
 }
 
 else if [ os.name ] = LINUX
@@ -17,13 +20,9 @@ else if [ os.name ] = LINUX
 else if [ os.name ] = MACOSX
 {
         androidPlatform = darwin-x86 ;
-
 }
 
 modules.poke : NO_BZIP2 : 1 ;
-
-local ANDROID_NDK = [ os.environ ANDROID_NDK ] ;
-ANDROID_NDK = [ path.join [ regex.split $(ANDROID_NDK) "[/\\]" ] ] ;
 
 using gcc : android4.4.3 :
     $(ANDROID_NDK)/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$(androidPlatform)/bin/arm-linux-androideabi-g++ :

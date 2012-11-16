@@ -90,3 +90,24 @@ else
 	echo "OGRE already cloned. Skipping.."
 fi
 
+if [ ! -d boost ]; then
+	echo "Downloading Boost.."
+	cd $deps
+	wget http://downloads.sourceforge.net/project/boost/boost/1.49.0/boost_1_49_0.tar.gz
+	tar xvf boost_1_49_0.tar.gz
+	mv boost_1_49_0 boost
+	rm boost_1_49_0.tar.gz
+	echo "Patching Boost.."
+        cd $deps/boost
+	cp $tundra_android/boost-1_49_0.patch .
+	patch -l -p1 -i boost-1_49_0.patch
+	echo "Building the Boost build engine.."
+	chmod a+x bootstrap.sh
+	./bootstrap.sh
+    	cp $tundra_android/user-config_$TUNDRA_ANDROID_ABI.jam tools/build/v2/user-config.jam
+    	cp $tundra_android/project-config.jam .
+    	./b2 --with-date_time --with-filesystem --with-program_options --with-regex --with-signals --with-system --with-thread --with-iostreams toolset=gcc-android4.4.3 link=static runtime-link=static target-os=linux --stagedir=. --layout=system	
+else
+	echo "Boost already checked out. Skipping.."
+fi
+
