@@ -20,8 +20,8 @@ fi
 
 tundra_android_native_api_level=9 # This is the minimum API level we can possibly support, we require NativeActivity and AAssetManager.
 echo "Targeting Android Native API level $tundra_android_native_api_level"
-tundra_android_abi=x86 # Possible options 'armeabi', 'armeabi-v7a', 'x86'
-echo "Targeting Android ABI '$tundra_android_abi'"
+export TUNDRA_ANDROID_ABI=x86 # Possible options 'armeabi', 'armeabi-v7a', 'x86'
+echo "Targeting Android ABI '$TUNDRA_ANDROID_ABI'"
  
 cmake_build_type=Release
 
@@ -41,7 +41,7 @@ if [ ! -d bullet ]; then
 	svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
 	echo "Running cmake for Bullet.."
 	cd bullet
-	cmake -G "Unix Makefiles" -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$tundra_android_abi .
+	cmake -G "Unix Makefiles" -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI .
 	echo "Building Bullet.."
 	make
 	cd $deps
@@ -56,7 +56,7 @@ if [ ! -d kNet ]; then
 	echo "Switching to master branch, stable doesn't yet work on Android. (TODO: Remove this after merge)"
 	git checkout master
 	echo "Running cmake for kNet.."
-	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -ANDROID_ABI=$tundra_android_abi -DBOOST_ROOT=$deps/boost  .
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -ANDROID_ABI=$TUNDRA_ANDROID_ABI -DBOOST_ROOT=$deps/boost  .
 	echo "Building kNet.."
 	make
 	cd $deps
@@ -73,7 +73,7 @@ if [ ! -d ogre ]; then
 	hg clone https://bitbucket.org/cabalistic/ogredeps AndroidDependenciesBuild
 	cd AndroidDependenciesBuild
 	echo "Running cmake of OGRE Android dependencies.."
-	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$tundra_android_abi -DCMAKE_INSTALL_PREFIX="$deps/ogre/AndroidDependencies" .
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DCMAKE_INSTALL_PREFIX="$deps/ogre/AndroidDependencies" .
 	echo "Building OGRE Android dependencies.."
 	make
 	echo "Installing OGRE Android dependencies.."
@@ -81,7 +81,7 @@ if [ ! -d ogre ]; then
 
 	cd $deps/ogre
 	echo "Running cmake for OGRE.."
-	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$tundra_android_abi -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies .
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies .
 	echo "Building OGRE.."
 	make
 
