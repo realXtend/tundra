@@ -56,10 +56,37 @@ if [ ! -d kNet ]; then
 	echo "Switching to master branch, stable doesn't yet work on Android. (TODO: Remove this after merge)"
 	git checkout master
 	echo "Running cmake for kNet.."
-	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DBOODT_ROOT=$deps/boost -DCMAKE_BUILD_TYPE=$cmake_build_type .
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DBOOST_ROOT=$deps/boost -DCMAKE_BUILD_TYPE=$cmake_build_type .
 	echo "Building kNet.."
 	make
+	cd $deps
 else
 	echo "kNet already cloned. Skipping.."
+fi
+
+if [ ! -d ogre ]; then
+	echo "Cloning OGRE.."
+	hg clone -r v1-9 https://bitbucket.org/sinbad/ogre ogre
+	cd ogre
+	
+	echo "Cloning OGRE Android dependencies.."
+	hg clone https://bitbucket.org/cabalistic/ogredeps AndroidDependenciesBuild
+	cd AndroidDependenciesBuild
+	echo "Running cmake of OGRE Android dependencies.."
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$tundra_android_abi -DCMAKE_INSTALL_PREFIX="$deps/ogre/AndroidDependencies" .
+	echo "Building OGRE Android dependencies.."
+	make
+	echo "Installing OGRE Android dependencies.."
+	make install
+
+	cd $deps/ogre
+	echo "Running cmake for OGRE.."
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$tundra_android_abi -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies .
+	echo "Building OGRE.."
+	make
+
+	cd $deps	
+else
+	echo "OGRE already cloned. Skipping.."
 fi
 
