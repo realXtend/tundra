@@ -48,7 +48,7 @@ IF NOT EXIST "%DEPS%\bullet\libs\%TUNDRA_ANDROID_ABI%\libBulletCollision.a". (
    cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
    cd "%DEPS%\bullet"
    del CMakeCache.txt
-   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=%TUNDRA_ANDROID_ABI%
+   cmake -G"NMake Makefiles" -DCMAKE_TOOLCHAIN_FILE=%ANDROID%/android.toolchain.cmake -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DCMAKE_BUILD_TYPE=Release -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=%TUNDRA_ANDROID_ABI%
    IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
    nmake
    IF %ERRORLEVEL% NEQ 0 GOTO :ERROR
