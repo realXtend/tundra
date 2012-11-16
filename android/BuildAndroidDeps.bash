@@ -36,7 +36,7 @@ tundra_android=$tundra/android
 
 cd $deps
 
-if [ ! -d bullet ]; then
+if [ ! -d bullet/.svn ]; then
 	echo "Checking out Bullet.."
 	svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
 	echo "Running cmake for Bullet.."
@@ -85,30 +85,45 @@ else
 	echo "kNet already cloned. Skipping.."
 fi
 
-if [ ! -d ogre ]; then
+if [ ! -d ogre/.hg ]; then
 	echo "Cloning OGRE.."
 	hg clone -r v1-9 https://bitbucket.org/sinbad/ogre ogre
+else
+	echo "OGRE already cloned. Skipping.."
+fi
+
+if [ ! -d ogre/AndroidDependenciesBuild/.hg ]; then
 	cd ogre
-	
 	echo "Cloning OGRE Android dependencies.."
 	hg clone https://bitbucket.org/cabalistic/ogredeps AndroidDependenciesBuild
-	cd AndroidDependenciesBuild
+	cd $deps
+else
+	echo "OGRE Android dependencies already cloned. Skipping.."
+fi
+
+if [ ! -f $deps/ogre/AndroidDependenciesBuild/lib/libFreeImage.a ]; then
+	cd $deps/ogre/AndroidDependenciesBuild
 	echo "Running cmake of OGRE Android dependencies.."
 	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DCMAKE_INSTALL_PREFIX="$deps/ogre/AndroidDependencies" .
 	echo "Building OGRE Android dependencies.."
 	make
 	echo "Installing OGRE Android dependencies.."
 	make install
+	cd $deps
+else
+	echo "Ogre Android dependencies already built. Skipping.."
+fi
 
+if [ ! -f $deps/ogre/lib/libOgreMainStatic.a ]; then
 	cd $deps/ogre
 	echo "Running cmake for OGRE.."
 	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies .
 	echo "Building OGRE.."
-	make
+	make VERBOSE=1
 
 	cd $deps	
 else
-	echo "OGRE already cloned. Skipping.."
+	echo "OGRE already built. Skipping.."
 fi
 
 
