@@ -567,7 +567,11 @@ else
     cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF
     xcodebuild -configuration RelWithDebInfo
     
-    cp -R -H $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $HOME/Library/Frameworks
+    if [ ! -d $HOME/Library/Frameworks/Ogre.framework ]; then
+        cp -R -H $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $HOME/Library/Frameworks
+    else
+        echoInfo "$HOME/Library/Frameworks/Ogre.framework already exists. Skipping deployment."
+    fi    
     cp $OGRE_HOME/lib/relwithdebinfo/*.dylib $viewer/bin
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
     touch $tags/$what-done
