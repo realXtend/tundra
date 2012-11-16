@@ -56,7 +56,7 @@ if [ ! -d kNet ]; then
 	echo "Switching to master branch, stable doesn't yet work on Android. (TODO: Remove this after merge)"
 	git checkout master
 	echo "Running cmake for kNet.."
-	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DBOOST_ROOT=$deps/boost -DCMAKE_BUILD_TYPE=$cmake_build_type .
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -ANDROID_ABI=$tundra_android_abi -DBOOST_ROOT=$deps/boost  .
 	echo "Building kNet.."
 	make
 	cd $deps
