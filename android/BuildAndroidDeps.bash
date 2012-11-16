@@ -12,6 +12,12 @@ cmake --version > /dev/null
 make --version > /dev/null
 echo "OK."
 
+echo "ANDROID_NDK is at '$ANDROID_NDK'"
+if [ -z "$ANDROID_NDK" ]; then
+	echo "ERROR: Please export environment variable ANDROID_NDK to point to where you installed the Android NDK (r8)! Note that NDK r8b or newer are not (yet) supported!"
+	exit 1
+fi
+ 
 cmake_build_type=Release
 
 tundra=$(dirname $(readlink -f $0))/..
