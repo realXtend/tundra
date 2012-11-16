@@ -18,7 +18,7 @@ if [ -z "$ANDROID_NDK" ]; then
 	exit 1
 fi
 
-tundra_android_native_api_level=9
+tundra_android_native_api_level=9 # This is the minimum API level we can possibly support, we require NativeActivity and AAssetManager.
 echo "Targeting Android Native API level $tundra_android_native_api_level"
 tundra_android_abi=x86 # Possible options 'armeabi', 'armeabi-v7a', 'x86'
 echo "Targeting Android ABI '$tundra_android_abi'"
@@ -41,7 +41,7 @@ if [ ! -d bullet ]; then
 	svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
 	echo "Running cmake for Bullet.."
 	cd bullet
-	cmake -G "Unix Makefiles" -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=tundra_android_native_api_level -DANDROID_ABI=$tundra_android_abi .
+	cmake -G "Unix Makefiles" -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$tundra_android_abi .
 	echo "Building Bullet.."
 	make
 	cd $deps
