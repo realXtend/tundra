@@ -104,7 +104,9 @@ fi
 if [ ! -f $deps/ogre/AndroidDependenciesBuild/lib/libFreeImage.a ]; then
 	cd $deps/ogre/AndroidDependenciesBuild
 	echo "Running cmake of OGRE Android dependencies.."
-	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DCMAKE_INSTALL_PREFIX="$deps/ogre/AndroidDependencies" .
+	# IMPORTANT! Use OGRE's modded version of Android-OpenCV toolchain instead of the 'stock'
+	# version used in Tundra.
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=cmake/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DCMAKE_INSTALL_PREFIX="$deps/ogre/AndroidDependencies" .
 	echo "Building OGRE Android dependencies.."
 	make
 	echo "Installing OGRE Android dependencies.."
@@ -117,7 +119,9 @@ fi
 if [ ! -f $deps/ogre/lib/libOgreMainStatic.a ]; then
 	cd $deps/ogre
 	echo "Running cmake for OGRE.."
-	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies .
+	# IMPORTANT! Use OGRE's modded version of Android-OpenCV toolchain instead of the 'stock'
+	# version used in Tundra.
+	cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=CMake/toolchain/android.toolchain.cmake -DCMAKE_BUILD_TYPE=$cmake_build_type -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DOGRE_BUILD_SAMPLES=FALSE -DOGRE_BUILD_TOOLS=FALSE -DOGRE_DEPENDENCIES_DIR=./AndroidDependencies .
 	echo "Building OGRE.."
 	make VERBOSE=1
 
