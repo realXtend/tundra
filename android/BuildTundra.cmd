@@ -10,15 +10,17 @@ set TUNDRA_DIR="%CD%"
 set TUNDRA_BIN=%CD%\bin
 set DEPS=%CD%\deps-android
 
-:: Add qmake from our downloaded Qt to PATH.
-set PATH=%DEPS%\Qt\bin;%PATH%
-
 SET BOOST_ROOT=%DEPS%\boost
-SET QTDIR=%DEPS%\qt
 SET TUNDRA_DEP_PATH=%DEPS%
 SET KNET_DIR=%DEPS%\kNet
 SET BULLET_DIR=%DEPS%\bullet
 SET OGRE_HOME=%DEPS%\ogre
+
+IF NOT EXIST "%QTDIR%\include\QtCore". (
+    cecho {0D}QTDIR is undefined or does not point to a valid Necessitas-Qt build! Set it before invoking BuildTundra.cmd.{# #}{\n}
+    GOTO :EOF
+)
+cecho {0D}Using Necessitas-Qt from directory %QTDIR%{# #}{\n}
 
 IF NOT EXIST "%ANDROID%\local.properties". (
     cecho {0D}Configuring Tundra Android project.{# #}{\n}
@@ -26,6 +28,9 @@ IF NOT EXIST "%ANDROID%\local.properties". (
     call android update project -p . -t android-10
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
+
+:: Add qmake from Necessitas-Qt to PATH.
+set PATH=%QTDIR%\bin;%PATH%
 
 cd %TUNDRA_DIR%
 cecho {0D}Configuring Tundra build.{# #}{\n}

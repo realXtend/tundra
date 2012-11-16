@@ -21,17 +21,20 @@ Windows
   Set up JAVA_HOME to point to the installation directory, e.g. JAVA_HOME=C:\Program Files\Java\jdk1.7.0
 
 - Set the environment variable TUNDRA_ANDROID_ABI to either 
-  armeabi-v7a  OR  x86 
-  depending on whether you want an arm or x86 Android build. Alternatively use the helper batch files BuildDepsArm.bat, BuildDepsX86.bat, 
+  armeabi-v7a OR x86
+  depending on whether you want an arm or x86 Android build. Alternatively use the helper batch files BuildDepsArm.bat, BuildDepsX86.bat,
   BuildTundraArm.bat, BuildTundraX86.bat which set it before invoking the corresponding build script.
+
+- Set the environment variable QTDIR to point to your Necessitas-Qt build.
+  The helper batch files BuildTundraArm.bat & BuildTundraX86.bat automatically set this to point to subdirectory "deps-android\Qt" of the Tundra checkout.
+
+  (To use a prebuilt Necessitas for arm, download and install Necessitas-SDK from http://necessitas.kde.org/necessitas/necessitas_sdk_installer.php,
+   and set QTDIR to point to its "Android\Qt\482\armeabi-v7a" subdirectory, which contains bin, include and lib subdirectories.
+   Alternatively, copy that directory's contents to "deps-android\Qt" of the Tundra checkout to use the helper scripts without modification.) 
 
 - Using a Visual Studio command prompt, run BuildAndroidDeps.cmd from the "android" subdirectory of Tundra checkout.
   This downloads and builds the automatically buildable dependencies (Bullet, Boost, kNet, OGRE.) This may take some time,
   so be patient.
-
-- For Qt, the Necessitas SDK is used. Download and install it from http://necessitas.kde.org/necessitas/necessitas_sdk_installer.php,
-  then manually copy the contents of its "Android\Qt\482\armeabi-v7a" subdirectory (which includes bin, include
-  and lib subdirectories) into the the subdirectory "deps-android\Qt" of the Tundra checkout.
 
 - Install the 'ant' tool on your system from http://ant.apache.org/bindownload.cgi. The installation step consists of simply
   unzipping a single archive. After unzipping, add the ant bin\ folder to system PATH, e.g. "C:\apache-ant-1.8.4\bin"
