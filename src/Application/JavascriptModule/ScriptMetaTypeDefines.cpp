@@ -270,6 +270,17 @@ static QScriptValue math_MathBreakOnAssume(QScriptContext * /*context*/, QScript
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
+    // Core type defines
+    qRegisterMetaType<u8>("u8");
+    qRegisterMetaType<u16>("u16");
+    qRegisterMetaType<u32>("u32");
+    qRegisterMetaType<u64>("u64");
+    /// @todo For some reason simply using qRegisterMetaType for s8 doesn't make it work properly.
+//    qRegisterMetaType<s8>("s8");
+    qRegisterMetaType<s16>("s16");
+    qRegisterMetaType<s32>("s32");
+    qRegisterMetaType<s64>("s64");
+
     // Math
     register_float2_prototype(engine);
     register_float3_prototype(engine);
