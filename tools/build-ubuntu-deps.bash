@@ -216,6 +216,8 @@ else
     fi
     cd $what
     hg checkout v1-8 # Make sure we are in the right branch
+    # Fix linking with recent boost libs
+    sed -i -s 's/OGRE_BOOST_COMPONENTS thread/OGRE_BOOST_COMPONENTS system thread/' CMake/Dependencies.cmake
     mkdir -p $what-build
     cd $what-build  
     cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF
@@ -254,8 +256,8 @@ if test -f $tags/hydrax-done; then
     echo "Hydrax-done"
 else
     cd $build/$depdir/hydrax
-    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
-    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+    sed -i 's!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(shell pkg-config OGRE --cflags)!' makefile
+    sed -i 's!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(shell pkg-config OGRE --libs)!' makefile
     make -j $nprocs PREFIX=$prefix
     make PREFIX=$prefix install
     touch $tags/hydrax-done

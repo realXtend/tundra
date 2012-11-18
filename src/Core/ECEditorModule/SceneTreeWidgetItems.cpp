@@ -33,7 +33,8 @@ void EntityItem::SetText(::Entity *entity)
     if (ptr.lock().get() != entity)
         LogWarning("EntityItem::SetText: the entity given is different than the entity this item represents.");
 
-    QString name = QString("%1 %2").arg(entity->Id()).arg(entity->Name());
+    QString name = QString("%1 %2").arg(entity->Id()).arg(entity->Name().isEmpty() ? "(no name)" : entity->Name());
+
     setTextColor(0, QColor(Qt::black));
     
     bool local = entity->IsLocal();

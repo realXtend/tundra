@@ -34,6 +34,7 @@ Entity::Entity(Framework* framework, entity_id_t id, Scene* scene) :
     scene_(scene),
     temporary_(false)
 {
+    connect(this, SIGNAL(TemporaryStateToggled(Entity *)), scene_, SIGNAL(EntityTemporaryStateToggled(Entity *)));
 }
 
 Entity::~Entity()
@@ -499,6 +500,7 @@ EntityPtr Entity::Clone(bool local, bool temporary) const
     entityElem.setAttribute("id", local ? scene_->NextFreeIdLocal() : scene_->NextFreeId());
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         i->second->SerializeTo(doc, entityElem);
+
     sceneElem.appendChild(entityElem);
     doc.appendChild(sceneElem);
 
@@ -627,7 +629,11 @@ void Entity::EmitLeaveView(IComponent* camera)
 
 void Entity::SetTemporary(bool enable)
 {
-    temporary_ = enable;
+    if (enable != temporary_)
+    {
+        temporary_ = enable;
+        emit TemporaryStateToggled(this);
+    }
 }
 
 QString Entity::ToString() const

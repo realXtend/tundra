@@ -8,6 +8,25 @@
 	<string>2.3.0</string>
 	<key>CFBundleName</key>
 	<string>Tundra</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>txml</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>TXML.icns</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>application/xml</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Tundra scene XML</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+	</array>
 	<key>LSMultipleInstancesProhibited</key>
 	<false/>
 	<key>CFBundleIconFile</key>

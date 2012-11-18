@@ -30,6 +30,7 @@ else()
 endif()
 if (NOT APPLE) # TODO: Enable OpenAssetImport plugin on Mac OS X.
    set (ENABLE_OPEN_ASSET_IMPORT 1)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
+   add_definitions(-DASSIMP_ENABLED)
 else()
    set (ENABLE_OPEN_ASSET_IMPORT 0)
 endif()
