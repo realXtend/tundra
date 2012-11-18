@@ -295,17 +295,32 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
 )
 
+
+
+:: Bullet physics engine
+:: version 2.81 sp1, svn rev 2613
+
 IF NOT EXIST "%DEPS%\bullet\". (
    cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
    cd "%DEPS%"
-   svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
-   IF NOT EXIST "%DEPS%\bullet\.svn" GOTO :ERROR
-   cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
-   msbuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
-   msbuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo
+   :: check out bullet 2.81 sp1, which is revision 2613
+   svn checkout http://bullet.googlecode.com/svn/trunk@2613 bullet
+   ) ELSE (
+   :: make sure bullet is updated to revision 2613 (2.81 SP1)
+   cecho {0D}Updating Bullet to 2.80 SP1.{# #}{\n}
+   cd %DEPS%\bullet
+   svn update -r 2613
+   :: configure bullet with CMake
+   cecho {0D}Configuring Bullet.{# #}{\n}
+   REM   cmake -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF -DBUILD_MINICL_OPENCL_DEMOS:BOOL=OFF -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF -DBUILD_CPU_DEMOS:BOOL=OFF -DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF
+   cmake -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF -DBUILD_MINICL_OPENCL_DEMOS:BOOL=OFF -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF -DBUILD_CPU_DEMOS:BOOL=OFF -DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-) ELSE (
-   cecho {0D}Bullet already built. Skipping.{# #}{\n}
+   cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
+   :: Build for debug and release
+   msbuild BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo
+   msbuild BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   cd %DEPS%
 )
 
 set BOOST_ROOT=%DEPS%\boost
