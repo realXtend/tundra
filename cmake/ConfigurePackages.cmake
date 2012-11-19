@@ -68,14 +68,19 @@ endif()
 endmacro (configure_boost)
 
 macro (configure_qt4)
-    sagase_configure_package (QT4 
-        NAMES Qt4 4.6.1
-        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
-        PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
+    if (NOT ANDROID)
+        sagase_configure_package (QT4 
+            NAMES Qt4 4.6.1
+            COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
+	    PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
+    else()
+        find_package(Qt4 REQUIRED)
+    endif()
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
     
+	message ("QT found, include dir " ${QT_INCLUDE_DIR})
         include (${QT_USE_FILE})
         
         set (QT4_INCLUDE_DIRS 

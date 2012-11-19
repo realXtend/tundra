@@ -17,13 +17,13 @@ echo "Targeting Android Native API level $tundra_android_native_api_level"
 export TUNDRA_ANDROID_ABI=x86 # Possible options 'armeabi', 'armeabi-v7a', 'x86'
 echo "Targeting Android ABI '$TUNDRA_ANDROID_ABI'"
 
+cmake_build_type=Release
+
 tundra=$(dirname $(readlink -f $0))/..
 echo "Tundra root directory is '$tundra'"
 deps=$tundra/deps-android
 echo "Tundra deps root directory is '$deps'"
 tundra_android=$tundra/android
-
-cmake_build_type=Release
 
 export BOOST_ROOT=$deps/boost
 export TUNDRA_DEP_PATH=$deps
@@ -36,7 +36,7 @@ export PATH=$PATH:$QTDIR/bin
 
 echo "Preparing Tundra build.."
 cd $tundra
-cmake -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DBOOST_ROOT=$deps/boost -DANDROID=1 -DANDROID_NATIVE_API_LEVEL=9 -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DCMAKE_BUILD_TYPE=$cmake_build_type
+cmake -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DBOOST_ROOT=$deps/boost -DANDROID=1 -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DCMAKE_BUILD_TYPE=$cmake_build_type
 
 echo "Building Tundra.."
 make
