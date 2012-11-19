@@ -1,9 +1,8 @@
-print("Loading frame example script.");
+print("Loading DelayedExecute.js");
 
-function delayedMessage(time)
+function DelayedMessage(time)
 {
     print(time + " seconds has passed.");
 }
 
-var delayed = frame.DelayedExecute(1.0);
-delayed.Triggered.connect(delayedMessage);
+frame.DelayedExecute(1.0).Triggered.connect(DelayedMessage);
