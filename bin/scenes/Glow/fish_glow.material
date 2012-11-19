@@ -23,7 +23,7 @@ material fish
 			}
 			texture_unit shadowMap1
 			{
-				content_type shadow
+				content_type shadow                           
 				tex_address_mode clamp
 			}
 			texture_unit shadowMap2
@@ -37,7 +37,7 @@ material fish
      technique
      {
          scheme glow
- 
+
          pass
          {
              ambient 0 0 0
