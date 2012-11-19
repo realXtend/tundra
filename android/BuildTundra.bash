@@ -32,7 +32,7 @@ export BULLET_DIR=$deps/bullet
 export OGRE_HOME=$deps/ogre
 
 # Add Necessitas QT bin directory for moc
-export PATH=$PATH:$QTDIR/bin
+export PATH=$QTDIR/bin:$PATH
 
 echo "Preparing Tundra build.."
 cd $tundra

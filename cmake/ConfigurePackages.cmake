@@ -80,7 +80,6 @@ macro (configure_qt4)
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
     
-	message ("QT found, include dir " ${QT_INCLUDE_DIR})
         include (${QT_USE_FILE})
         
         set (QT4_INCLUDE_DIRS 

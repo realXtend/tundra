@@ -19,7 +19,9 @@
 #include <QTranslator>
 #include <QLocale>
 #include <QIcon>
+#ifndef ANDROID
 #include <QWebSettings>
+#endif
 #include <QSplashScreen>
 
 #if defined(_WINDOWS)
@@ -120,7 +122,9 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     QString default_language = framework->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
     ChangeLanguage(default_language);
 
+#ifndef ANDROID
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enable flash
+#endif
 
     ReadTargetFpsLimitFromConfig();
 }
