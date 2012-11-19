@@ -12,6 +12,7 @@ if [ -z "$QTDIR" ]; then
 	exit 1
 fi
 
+
 tundra_android_native_api_level=9 # This is the minimum API level we can possibly support, we require NativeActivity and AAssetManager.
 echo "Targeting Android Native API level $tundra_android_native_api_level"
 export TUNDRA_ANDROID_ABI=x86 # Possible options 'armeabi', 'armeabi-v7a', 'x86'
@@ -34,12 +35,22 @@ export OGRE_HOME=$deps/ogre
 # Add Necessitas QT bin directory for moc
 export PATH=$QTDIR/bin:$PATH
 
+if [ ! -f $tundra_android\local.properties ]; then
+    echo "Configuring Tundra Android project.."
+    cd $tundra_android
+    android update project -p . -t android-10
+fi
+
 echo "Preparing Tundra build.."
 cd $tundra
 cmake -DCMAKE_TOOLCHAIN_FILE=$tundra_android/android.toolchain.cmake -DBOOST_ROOT=$deps/boost -DANDROID=1 -DANDROID_NATIVE_API_LEVEL=$tundra_android_native_api_level -DANDROID_ABI=$TUNDRA_ANDROID_ABI -DCMAKE_BUILD_TYPE=$cmake_build_type
 
 echo "Building Tundra.."
 make
+
+echo "Building and signing Tundra APK.."
+cd $tundra_android
+ant release
 
 
 
