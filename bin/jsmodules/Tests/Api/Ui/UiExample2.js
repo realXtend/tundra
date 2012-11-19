@@ -28,7 +28,7 @@ MyWidget.prototype.keyPressEvent = function(event)
 // Widget that will get destroyed after the script instance is termited.
 var main = new MyWidget("Testing");
 var loader = new QUiLoader();
-var file = new QFile(".\\jsmodules\\apitest\\time_counter\\time_counter.ui");
+var file = new QFile("./jsmodules/Tests/Api/Ui/TimeCounter.ui");
 file.open(QIODevice.ReadOnly);
 var widget = loader.load(file, main);
 file.close();
