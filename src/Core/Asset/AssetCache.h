@@ -39,7 +39,7 @@ public slots:
     QString StoreAsset(const u8 *data, size_t numBytes, const QString &assetName);
 
     /// Return the last modified date and time for assetRefs cache file.
-    /// If cache file does not exist for assetRef return invalid QDateTime. You can check return valud with QDateTime::isValid().
+    /// If cache file does not exist for assetRef return invalid QDateTime. You can check return value with QDateTime::isValid().
     /// @param QString assetRef Asset reference thats cache file last modified date and time will be returned.
     /// @return QDateTime Last modified date and time of the cache file.
     QDateTime LastModified(const QString &assetRef);

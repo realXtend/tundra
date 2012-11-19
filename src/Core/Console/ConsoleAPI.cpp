@@ -231,9 +231,9 @@ void ConsoleAPI::ClearLog()
     if (consoleWidget)
         consoleWidget->ClearLog();
 #ifdef _WINDOWS
-    system("cls");
+    (void)system("cls");
 #else
-    system("clear");
+    (void)system("clear");
 #endif
 }
 

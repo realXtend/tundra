@@ -24,7 +24,7 @@ tags=$deps/tags
 
 # -j<n> param for make, for how many processes to run concurrently
 
-nprocs=`grep -c "^processor" /proc/cpuinfo` 
+nprocs=`grep -c "^processor" /proc/cpuinfo`
 
 mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 
@@ -41,29 +41,55 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise" && tty >/dev/null; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libboost-all-dev libois-dev \
 	 ccache libqt4-dev python-dev freeglut3-dev \
 	 libxml2-dev cmake libalut-dev libtheora-dev ed \
 	 liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
-	 libspeex-dev nvidia-cg-toolkit subversion
+	 libspeex-dev nvidia-cg-toolkit subversion \
+	 libfreetype6-dev libfreeimage-dev libzzip-dev \
+	 libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
+	 libvlc-dev libspeexdsp-dev libprotobuf-dev \
+	 libprotobuf-c0 libprotobuf-c0-dev \
+	 protobuf-c-compiler protobuf-compiler \
+     libqt4-opengl-dev libqtwebkit-dev \
+     libspeexdsp-dev libprotobuf-dev \
+     libvlc-dev
 fi
 
 what=bullet-2.79-rev2440
+whatdir=bullet-2.79
 if test -f $tags/$what-done; then
     echo $what is done
 else
     cd $build
-    whatdir=${what%%-rev*}
     rm -rf $whatdir
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
     cd $whatdir
-    sed -i s/OpenCL// src/BulletMultiThreaded/GpuSoftBodySolvers/CMakeLists.txt
     cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g -fPIC" .
     make -j $nprocs
+    make install
+    touch $tags/$what-done
+fi
+
+what=celt
+if test -f $tags/$what-done; then
+    echo $what id done
+else
+    urlbase=http://downloads.xiph.org/releases/celt
+    pkgbase=celt-0.11.1
+    dlurl=$urlbase/$pkgbase.tar.gz
+    cd $build
+    rm -rf $pkgbase
+    zip=$tarballs/$pkgbase.tar.gz
+    test -f $zip || wget -P $tarballs $dlurl
+    tar xzf $zip
+    cd $pkgbase
+    ./configure --prefix=$prefix
+    make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi
@@ -74,7 +100,7 @@ if test -f $tags/$what-done; then
 else
     cd $build
     rm -rf $what
-    git clone git://gitorious.org/qt-labs/$what.git
+    git clone https://git.gitorious.org/qt-labs/$what.git
     cd $what
     patch -l -p1 <<EOF
 Description: Include QtWebkit and Phonon unconditionally.
@@ -117,6 +143,23 @@ fi
 mkdir -p $viewer/bin/qtplugins/script
 cp -lf $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
 
+what=assimp--3.0.1270-source-only
+if test -f $tags/$what-done; then
+	echo $what is done
+else
+	cd $build
+	rm -rf $what
+    test -f $tarballs/$what.zip || wget -P $tarballs http://downloads.sourceforge.net/project/assimp/assimp-3.0/assimp--3.0.1270-source-only.zip
+    unzip $tarballs/$what.zip
+	#git clone git://github.com/assimp/assimp.git $what
+	cd $what
+	#sed -e "s/string_type::size_type/typename string_type::size_type/" < code/ObjTools.h > x
+	#mv x code/ObjTools.h
+	cmake -DCMAKE_INSTALL_PREFIX=$prefix .
+	make -j $nprocs
+	make install
+	touch $tags/$what-done
+fi
 
 what=kNet
 if test -f $tags/$what-done; then 
@@ -146,7 +189,7 @@ if test -f $tags/$what-done; then
        rm -f $tags/$what-done
    fi
 fi
-if test -f $tags/$what-done; then 
+if test -f $tags/$what-done; then
    echo $what is done
 else
     cd $build
@@ -154,14 +197,18 @@ else
         echo "$what does not exist. Cloning a new copy..."
         hg clone https://bitbucket.org/clb/ogre-safe-nocrashes
     fi
-    if tty > /dev/null; then
-	sudo apt-get build-dep libogre-dev
+
+
+    if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|quantal" && tty >/dev/null; then
+    sudo apt-get build-dep libogre-dev
     fi
     cd $what
     hg checkout v1-8 # Make sure we are in the right branch
+    # Fix linking with recent boost libs
+    sed -i -s 's/OGRE_BOOST_COMPONENTS thread/OGRE_BOOST_COMPONENTS system thread/' CMake/Dependencies.cmake
     mkdir -p $what-build
     cd $what-build  
-    cmake .. -DCMAKE_INSTALL_PREFIX=$prefix
+    cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF
     make -j $nprocs VERBOSE=1
     make install
     touch $tags/$what-done
@@ -197,8 +244,8 @@ if test -f $tags/hydrax-done; then
     echo "Hydrax-done"
 else
     cd $build/$depdir/hydrax
-    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
-    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+    sed -i 's!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(shell pkg-config OGRE --cflags)!' makefile
+    sed -i 's!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(shell pkg-config OGRE --libs)!' makefile
     make -j $nprocs PREFIX=$prefix
     make PREFIX=$prefix install
     touch $tags/hydrax-done
@@ -268,6 +315,27 @@ else
     cp lib/lib* $prefix/lib/
     # luckily only extensionless headers under src match Qt*:
     cp src/qt*.h src/Qt* $prefix/include/
+    touch $tags/$what-done
+fi
+
+cd $build
+what=qxmpp
+rev=r1671
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    rm -rf $what
+    svn checkout http://qxmpp.googlecode.com/svn/trunk@$rev $what
+    cd $what
+    sed 's/# DEFINES += QXMPP_USE_SPEEX/DEFINES += QXMPP_USE_SPEEX/g' src/src.pro > src/temp
+    sed 's/# LIBS += -lspeex/LIBS += -lspeex/g' src/temp > src/src.pro
+    sed 's/LIBS += $$QXMPP_LIBS/LIBS += $$QXMPP_LIBS -lspeex/g' tests/tests.pro > tests/temp && mv tests/temp tests/tests.pro
+    rm src/temp
+    qmake
+    make -j $nprocs
+    mkdir -p $prefix/include/$what
+    cp src/*.h $prefix/include/$what
+    cp lib/libqxmpp.a $prefix/lib/
     touch $tags/$what-done
 fi
 

@@ -487,10 +487,11 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
 
     QDomDocument dotscene;
     QString errorMsg;
-    if (!dotscene.setContent(&file, false, &errorMsg))
+    int errorLine, errorColumn;
+    if (!dotscene.setContent(&file, false, &errorMsg, &errorLine, &errorColumn))
     {
         file.close();
-        LogError("SceneImporter::CreateSceneDescFromScene: Failed to parse XML content: " + errorMsg);
+        LogError(QString("SceneImporter::CreateSceneDescFromScene: Parsing Ogre .scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.").arg(filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
         return sceneDesc;
     }
     
@@ -512,7 +513,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
 
     QString path = QFileInfo(filename).dir().path();
 
-    /// @todo Do we want to read environment settings from the .scene?
+    /// @todo Do we want to read environment settings from the .scene? Implement!
 
     // By default, assume the material file is scenename.material if scene is scenename.scene.
     // However, if an external reference exists, use that.
@@ -549,85 +550,9 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     Quat rot = f.Orientation();
 
     QDomElement node_elem = nodes_elem.firstChildElement("node");
-//    ProcessNodeForDesc(sceneDesc, node_elem, f.pos, rot, f.scale, path + "/"/*prefix*/, true/*flipyz*/);
     while(!node_elem.isNull())
     {
-        // Process entity node, if any
-        QDomElement entity_elem = node_elem.firstChildElement("entity");
-        if (!entity_elem.isNull())
-        {
-            // Entity desc
-            EntityDesc entityDesc;
-            entityDesc.name = entity_elem.attribute("name");
-
-            // Store the original name. Later we fix duplicates.
-            QString mesh_name = entity_elem.attribute("meshFile");
-            ComponentDesc compDesc;
-            compDesc.typeName = EC_Mesh::TypeNameStatic();
-
-            meshFiles << path + "/" + mesh_name; ///< @todo This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
-            //AssetAPI::ResolveLocalAssetPath();
-
-            /// Create dummy placeable desc.
-            ComponentPtr placeable = scene_->GetFramework()->Scene()->CreateComponent<EC_Placeable>(0);
-            if (placeable)
-            {
-                ComponentDesc placeableDesc;
-                placeableDesc.typeName = EC_Placeable::TypeNameStatic();
-
-                foreach(IAttribute *a, placeable->Attributes())
-                {
-                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str() };
-                    placeableDesc.attributes.append(attrDesc);
-                }
-            }
-
-            // Attribute desc for mesh asset reference.
-            AttributeDesc meshAttrDesc = { "assetreference", "mesh", mesh_name };
-            compDesc.attributes.append(meshAttrDesc);
-
-            //mesh_names_[mesh_name] = mesh_name;
-            QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
-            if (!subentities_elem.isNull())
-            {
-                QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
-                while(!subentity_elem.isNull())
-                {
-                    QString material_name = subentity_elem.attribute("materialName");
-                    usedMaterials.insert(material_name);
-
-                    // Attribute desc for material asset reference.
-                    AttributeDesc matAttrDesc = { "assetreference", "material", material_name };
-                    compDesc.attributes.append(matAttrDesc);
-                    //material_names_.insert(material_name);
-
-                    subentity_elem = subentity_elem.nextSiblingElement("subentity");
-                }
-            }
-            else
-            {
-                // If no subentity element, have to interrogate the mesh.
-                QStringList material_names;
-//                QSet<QString> material_names_set;
-                QString skeleton_name;
-                /// @todo This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
-                //AssetAPI::ResolveLocalAssetPath();
-                ParseMeshForMaterialsAndSkeleton(path + "/" + mesh_name, material_names, skeleton_name);
-                for(uint i = 0; i < (uint)material_names.size(); ++i)
-                {
-                    usedMaterials.insert(material_names[i]);
-                    material_names_.insert(material_names[i]);
-                }
-
-                mesh_default_materials_[mesh_name] = material_names;
-
-                if (!skeleton_name.isEmpty())
-                    skeletons << skeleton_name;
-            }
-
-            entityDesc.components.append(compDesc);
-            sceneDesc.entities.append(entityDesc);
-        }
+        ProcessNodeForDesc(sceneDesc, node_elem, f.pos, rot, f.scale, path + "/"/*prefix*/, false/*flipyz*/, meshFiles, skeletons, usedMaterials);
 
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
@@ -665,7 +590,13 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& i
                 // If no subentity element, have to interrogate the mesh.
                 QStringList material_names;
                 QString skeleton_name;
-                ParseMeshForMaterialsAndSkeleton(in_asset_dir + "/" + mesh_name, material_names, skeleton_name);
+                QString meshRef;
+
+                AssetAPI::FileQueryResult result = scene_->GetFramework()->Asset()->ResolveLocalAssetPath(mesh_name, in_asset_dir, meshRef);
+                if (result == AssetAPI::FileQueryLocalFileMissing)
+                    LogWarning("Mesh file \"" + mesh_name + "\" cannot be found from path \"" + in_asset_dir + "\"!");
+
+                ParseMeshForMaterialsAndSkeleton(meshRef, material_names, skeleton_name);
                 for(uint i = 0; i < (uint)material_names.size(); ++i)
                     material_names_.insert(material_names[i]);
                 mesh_default_materials_[mesh_name] = material_names;
@@ -863,162 +794,167 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
     }
 }
 
-/*
-void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipyz)
+
+void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipyz, 
+    QStringList &meshFiles, QStringList &skeletonFiles, QSet<QString> &usedMaterials, const QString &parentRef)
 {
     AttributeChange::Type change = AttributeChange::Disconnected;
-    while(!node_elem.isNull())
+    if (!nodeElement.isNull())
     {
-        QDomElement pos_elem = node_elem.firstChildElement("position");
-        QDomElement rot_elem = node_elem.firstChildElement("rotation");
-        QDomElement quat_elem = node_elem.firstChildElement("quaternion");
-        QDomElement scale_elem = node_elem.firstChildElement("scale");
-        float posx, posy, posz, rotx = 0.0f, roty = 0.0f, rotz = 0.0f, rotw = 1.0f, scalex, scaley, scalez;
+        QDomElement posElement = nodeElement.firstChildElement("position");
+        QDomElement rotElement = nodeElement.firstChildElement("rotation");
+        QDomElement quatElement = nodeElement.firstChildElement("quaternion");
+        QDomElement scaleElement = nodeElement.firstChildElement("scale");
+        float posX, posY, posZ, rotX = 0.0f, rotY = 0.0f, rotZ = 0.0f, rotW = 1.0f, scaleX, scaleY, scaleZ;
 
-        posx = ParseString<float>(pos_elem.attribute("x").toStdString(), 0.0f);
-        posy = ParseString<float>(pos_elem.attribute("y").toStdString(), 0.0f);
-        posz = ParseString<float>(pos_elem.attribute("z").toStdString(), 0.0f);
+        posX = ParseString<float>(posElement.attribute("x").toStdString(), 0.0f);
+        posY = ParseString<float>(posElement.attribute("y").toStdString(), 0.0f);
+        posZ = ParseString<float>(posElement.attribute("z").toStdString(), 0.0f);
 
-        if (!rot_elem.isNull())
+        if (!rotElement.isNull())
         {
-            rotx = ParseString<float>(rot_elem.attribute("qx").toStdString(), 0.0f);
-            roty = ParseString<float>(rot_elem.attribute("qy").toStdString(), 0.0f);
-            rotz = ParseString<float>(rot_elem.attribute("qz").toStdString(), 0.0f);
-            rotw = ParseString<float>(rot_elem.attribute("qw").toStdString(), 1.0f);
+            rotX = ParseString<float>(rotElement.attribute("qx").toStdString(), 0.0f);
+            rotY = ParseString<float>(rotElement.attribute("qy").toStdString(), 0.0f);
+            rotZ = ParseString<float>(rotElement.attribute("qz").toStdString(), 0.0f);
+            rotW = ParseString<float>(rotElement.attribute("qw").toStdString(), 1.0f);
         }
-        if (!quat_elem.isNull())
+        if (!quatElement.isNull())
         {
-            rotx = ParseString<float>(quat_elem.attribute("x").toStdString(), 0.0f);
-            roty = ParseString<float>(quat_elem.attribute("y").toStdString(), 0.0f);
-            rotz = ParseString<float>(quat_elem.attribute("z").toStdString(), 0.0f);
-            rotw = ParseString<float>(quat_elem.attribute("w").toStdString(), 1.0f);
+            rotX = ParseString<float>(quatElement.attribute("x").toStdString(), 0.0f);
+            rotY = ParseString<float>(quatElement.attribute("y").toStdString(), 0.0f);
+            rotZ = ParseString<float>(quatElement.attribute("z").toStdString(), 0.0f);
+            rotW = ParseString<float>(quatElement.attribute("w").toStdString(), 1.0f);
         }
 
-        scalex = ParseString<float>(scale_elem.attribute("x").toStdString(), 1.0f);
-        scaley = ParseString<float>(scale_elem.attribute("y").toStdString(), 1.0f);
-        scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
+        scaleX = ParseString<float>(scaleElement.attribute("x").toStdString(), 1.0f);
+        scaleY = ParseString<float>(scaleElement.attribute("y").toStdString(), 1.0f);
+        scaleZ = ParseString<float>(scaleElement.attribute("z").toStdString(), 1.0f);
 
-        float3 newpos(posx, posy, posz);
-        Quat newrot(rotx, roty, rotz, rotw);
-        float3 newscale(fabsf(scalex), fabsf(scaley), fabsf(scalez));
+        float3 newPos(posX, posY, posZ);
+        Quat newRot(rotX, rotY, rotZ, rotW);
+        float3 newScale(fabsf(scaleX), fabsf(scaleY), fabsf(scaleZ));
 
         // Transform by the parent transform
-        newrot = rot * newrot;
-        newscale = scale * newscale;
-        newpos = rot * (scale * newpos);
-        newpos += pos;
+        newRot = rot * newRot;
+        newScale = scale * newScale;
+        newPos = rot * (scale * newPos);
+        newPos += pos;
 
         // Process entity node, if any
-        QDomElement entity_elem = node_elem.firstChildElement("entity");
-        if (!entity_elem.isNull())
+        QDomElement entityElement = nodeElement.firstChildElement("entity");
+        if (!entityElement.isNull())
         {
-            EntityDesc ed;
-            ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
-            ComponentDesc placeableDesc = { EC_Placeable::TypeNameStatic() };
-            ComponentDesc nameDesc = { EC_Name::TypeNameStatic() };
+            EntityDesc entityDesc;
+            ComponentDesc nameDesc;
+            ComponentDesc placeableDesc;
+            ComponentDesc meshDesc;
+
+            nameDesc.typeName = EC_Name::TypeNameStatic();
+            placeableDesc.typeName = EC_Placeable::TypeNameStatic();
+            meshDesc.typeName = EC_Mesh::TypeNameStatic();
 
             // Enforce uniqueness for node names, which may not be guaranteed by artists
-            QString base_node_name = node_elem.attribute("name");
-            if (base_node_name.isEmpty())
-                base_node_name = "object";
-            QString node_name = base_node_name;
-            int append_num = 1;
-            while(node_names_.contains(node_name))
+            QString baseNodeName = nodeElement.attribute("name");
+            if (baseNodeName.isEmpty())
+                baseNodeName = "object";
+            QString nodeName = baseNodeName;
+            int appendNum = 1;
+            while(node_names_.contains(nodeName))
             {
-                node_name = base_node_name + "_" + QString::number(append_num);
-                ++append_num;
+                nodeName = baseNodeName + "_" + QString::number(appendNum);
+                ++appendNum;
             }
-            node_names_.insert(node_name);
+            node_names_.insert(nodeName);
             
             // Get mesh name from map
-            QString orig_mesh_name = entity_elem.attribute("meshFile");
-            QString mesh_name = mesh_names_[orig_mesh_name];
-            
-            bool cast_shadows = ::ParseBool(entity_elem.attribute("castShadows"));
+            QString meshName = entityElement.attribute("meshFile");
+            QString meshRef, skeletonRef;
+            AssetAPI::FileQueryResult result = scene_->GetFramework()->Asset()->ResolveLocalAssetPath(meshName, prefix, meshRef);
+            if (result == AssetAPI::FileQueryLocalFileMissing)
+                LogWarning("Mesh file \"" + meshName + "\" cannot be found from path \"" + prefix + "\"!");
 
-            mesh_name = prefix + mesh_name;
+            meshFiles << meshRef;
 
-            QString node_name_qstr = node_name;
-
-            ed.name = node_name_qstr;
-            // Try to find existing entity by name
-            //if (replace)
-                //entity = scene_->GetEntity(node_name_qstr);
-            //if (!entity)
-            //{
-            //    entity = scene_->CreateEntity(scene_->NextFreeId());
-            //    new_entity = true;
-            //}
-            //else
-            //{
-            //    LogInfo("Updating existing entity " + node_name);
-            //}
+            bool cast_shadows = ::ParseBool(entityElement.attribute("castShadows"));
+            entityDesc.name = nodeName;
 
             SceneAPI &sceneAPI = *scene_->GetFramework()->Scene();
-            EC_Mesh* meshPtr = sceneAPI.CreateComponent<EC_Mesh>(0).get();
-            EC_Name* namePtr = sceneAPI.CreateComponent<EC_Name>(0).get();
-            EC_Placeable* placeablePtr = sceneAPI.CreateComponent<EC_Placeable>(0).get();
-            assert(meshPtr && namePtr && placeablePtr);
-            if (meshPtr && namePtr && placeablePtr)
+            boost::shared_ptr<EC_Mesh> meshPtr = sceneAPI.CreateComponent<EC_Mesh>(0);
+            boost::shared_ptr<EC_Name> namePtr = sceneAPI.CreateComponent<EC_Name>(0);
+            boost::shared_ptr<EC_Placeable> placeablePtr = sceneAPI.CreateComponent<EC_Placeable>(0);
+
+            if (meshPtr.get() && namePtr.get() && placeablePtr.get())
             {
-                namePtr->name.Set(node_name_qstr, change);
-                
+                namePtr->name.Set(nodeName, change);
+                if (!parentRef.isEmpty())
+                    placeablePtr->parentRef.Set(EntityReference(parentRef), change);
+
                 QVector<QString> materials;
-                QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
-                if (!subentities_elem.isNull())
+                QDomElement subentitiesElement = entityElement.firstChildElement("subentities");
+                if (!subentitiesElement.isNull())
                 {
-                    QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
-                    while(!subentity_elem.isNull())
+                    QDomElement subentityElement = subentitiesElement.firstChildElement("subentity");
+                    while(!subentityElement.isNull())
                     {
-                        QString material_name = subentity_elem.attribute("materialName") + ".material";
-                        material_name.replace('/', '_');
-                        
-                        int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
-                        
-                        material_name = prefix + material_name;
+                        QString materialName = subentityElement.attribute("materialName");
+                        usedMaterials.insert(materialName);
+                        materialName += ".material";
+                        materialName.replace('/', '_');
+
+                        int index = ParseString<int>(subentityElement.attribute("index").toStdString(), 0);
+
+                        materialName = prefix + materialName;
                         if (index >= materials.size())
                             materials.resize(index + 1);
-                        materials[index] = material_name;
+                        materials[index] = materialName;
 
-                        subentity_elem = subentity_elem.nextSiblingElement("subentity");
+                        subentityElement = subentityElement.nextSiblingElement("subentity");
                     }
                 }
                 else // If no subentity element, use the inspected material names we stored earlier
                 {
-                    const QStringList& default_materials = mesh_default_materials_[orig_mesh_name];
-                    materials.resize(default_materials.size());
-                    for(int i = 0; i < default_materials.size(); ++i)
-                        materials[i] =  prefix + default_materials[i] + ".material";
+                    QStringList materialNames;
+                    
+                    ParseMeshForMaterialsAndSkeleton(meshRef, materialNames, skeletonRef);
+                    materials.resize(materialNames.size());
+                    for (uint i = 0; i < (uint)materialNames.size(); ++i)
+                    {
+                        usedMaterials.insert(materialNames[i]);
+                        materials[i] = prefix + materialNames[i] + ".material";
+                    }
+
+                    if (!skeletonRef.isEmpty())
+                        skeletonFiles << skeletonRef;
                 }
                 
-                Transform entity_transform;
+                Transform entityTransform;
                 
                 if (flipyz)
                 {
-                    float3 rot_euler;
-                    Quat adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
-//                    adjustedrot.toEuler(rot_euler);
-                    entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
-                    entity_transform.SetRotation(RadToDeg(rot_euler.x), RadToDeg(rot_euler.y), RadToDeg(rot_euler.z));
-                    entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
+                    float3 eulerRot;
+                    Quat adjustedRot(-newRot.x, newRot.y, newRot.z, newRot.w);
+                    eulerRot = adjustedRot.ToEulerXZY();
+                    entityTransform.SetPos(-newPos.x, newPos.z, newPos.y);
+                    entityTransform.SetRotation(RadToDeg(eulerRot.x), RadToDeg(eulerRot.y), RadToDeg(eulerRot.z));
+                    entityTransform.SetScale(newScale.x, newScale.z, newScale.y);
                 }
                 else
                 {
-                    float3 rot_euler;
-//                    newrot.toEuler(rot_euler);
-                    entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
-                    entity_transform.SetRotation(RadToDeg(rot_euler.x), RadToDeg(rot_euler.y), RadToDeg(rot_euler.z));
-                    entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                    float3 eulerRot = newRot.ToEulerXYZ();
+                    entityTransform.SetPos(newPos.x, newPos.y, newPos.z);
+                    entityTransform.SetRotation(RadToDeg(eulerRot.x), RadToDeg(eulerRot.y), RadToDeg(eulerRot.z));
+                    entityTransform.SetScale(newScale.x, newScale.y, newScale.z);
                 }
-                
-                placeablePtr->transform.Set(entity_transform, change);
-                meshPtr->meshRef.Set(AssetReference(mesh_name), change);
+
+                placeablePtr->transform.Set(entityTransform, change);
+                meshPtr->meshRef.Set(AssetReference(meshRef), change);
 
                 AssetReferenceList materialRefs;
                 foreach(QString material, materials)
                     materialRefs.Append(AssetReference(material));
 
                 meshPtr->meshMaterial.Set(materialRefs, change);
+                meshPtr->skeletonRef.Set(AssetReference(skeletonRef), change);
                 meshPtr->castShadows.Set(cast_shadows, change);
 
                 // Create attribute descriptions for each component
@@ -1038,23 +974,20 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
                     placeableDesc.attributes.append(attrDesc);
                 }
 
-                ed.components << nameDesc << meshDesc << placeableDesc;
-                desc.entities << ed;
+                entityDesc.components << nameDesc << meshDesc << placeableDesc;
+                desc.entities << entityDesc;
             }
             else
                 LogError("SceneImporter::ProcessNodeForDesc: Could not create mesh, placeable, name components");
         }
 
         // Process child nodes
-        QDomElement childnode_elem = node_elem.firstChildElement("node");
-        if (!childnode_elem.isNull())
-            ProcessNodeForDesc(desc, childnode_elem, newpos, newrot, newscale, prefix, flipyz);
-
-        // Process siblings
-        node_elem = node_elem.nextSiblingElement("node");
+        QDomElement childNodeElement = nodeElement.firstChildElement("node");
+        if (!childNodeElement.isNull())
+            ProcessNodeForDesc(desc, childNodeElement, newPos, newRot, newScale, prefix, flipyz, meshFiles, skeletonFiles, usedMaterials, nodeElement.attribute("name"));
     }
 }
-*/
+
 
 void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,
     const QStringList &materialFiles, const QSet<QString> &usedMaterials, SceneDesc &desc) const

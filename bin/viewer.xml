@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <Tundra>
   <!-- plugins.xml is hardcoded to be the default configuration file to load if another file is not specified on the command line with the "config filename.xml" parameter. -->
-  <plugin path="OgreRenderingModule" />
+  <plugin path="OpenAssetImport" />             <!-- Does not depend on any other module -->
+  <plugin path="OgreRenderingModule" />         <!-- OgreRenderingModule depends on OpenAssetImport -->
   <plugin path="EnvironmentModule" />           <!-- EnvironmentModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on OgreRenderingModule -->
@@ -10,6 +11,7 @@
         dynamic objects (Framework::RegisterDynamicObject) in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
   <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraProtocolModule --> 
   <plugin path="AssetModule" />                 <!-- AssetModule depends on TundraProtocolModule -->
+  <plugin path="ArchivePlugin" />               <!-- Does not depend on any other module -->
   <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
   <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
@@ -20,6 +22,7 @@
   <plugin path="VlcPlugin" />                   <!-- Depends on SceneWidgetComponents -->
   <plugin path="CAVEStereoModule" />            <!-- Depends on OgreRenderingModule -->
   <plugin path="CanvasPlugin" />                <!-- Depends on OgreRenderingModule -->
+  <plugin path="XMPPModule" />                  <!-- Does not depend on any other module -->
     <plugin path="SpeexVoipModule" />
     <plugin path="OpenDocuments" />
     <plugin path="StreamsModule" />

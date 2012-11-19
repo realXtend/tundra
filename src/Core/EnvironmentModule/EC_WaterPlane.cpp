@@ -28,7 +28,7 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     IComponent(scene),
     xSize(this, "x-size", 5000),
     ySize(this, "y-size", 5000),
-    depth(this, "Depth", 20),
+    depth(this, "Depth", 10000),
     position(this, "Position", float3::zero),
     rotation(this, "Rotation", Quat::identity),
     scaleUfactor(this, "U factor", 0.0002f),

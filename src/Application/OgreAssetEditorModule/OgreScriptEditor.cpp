@@ -167,7 +167,7 @@ void OgreScriptEditor::Open()
 void OgreScriptEditor::Save()
 {
     AssetPtr assetPtr = asset.lock();
-    if (assetPtr && assetPtr->Type() == "OgreMaterial" || assetPtr->Type() == "OgreParticle")
+    if (assetPtr && (assetPtr->Type() == "OgreMaterial" || assetPtr->Type() == "OgreParticle"))
     {
         QByteArray bytes = textEdit->toPlainText().toAscii().data();
         const char *data = bytes.data();

@@ -95,7 +95,8 @@ private:
 
     /// Process node and its child nodes for creation of scene description.
     /// @todo Implement and use in CreateSceneDescFromScene
-//    void ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElem, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipYz);
+    void ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement, float3 pos, Quat rot, float3 scale, const QString &prefix, 
+        bool flipYz, QStringList &meshFile, QStringList &skeletonFile, QSet<QString> &usedMaterials, const QString &parentRef = "");
 
     /// Creates asset descriptions from the provided lists of OGRE resource filenames.
     void CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,

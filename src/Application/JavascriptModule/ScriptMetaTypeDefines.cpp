@@ -144,7 +144,7 @@ void qScriptValueToAssetTransferMap(const QScriptValue &value, AssetTransferMap 
 
 QScriptValue qScriptValueFromKeyBindingMap(QScriptEngine *engine, const InputAPI::KeyBindingMap &map)
 {
-    QScriptValue v = engine->newArray(map.size());
+    QScriptValue v = engine->newObject();
     for(InputAPI::KeyBindingMap::const_iterator iter = map.begin(); iter != map.end(); ++iter)
         v.setProperty(iter.key(), iter.value().toString());
     return v;

@@ -33,6 +33,10 @@
 #include <QString>
 #include <QRegExp>
 
+#ifdef UNIX
+#include <arpa/inet.h>
+#endif
+
 namespace Mumble
 {
     HostAddress::HostAddress() {

@@ -23,8 +23,7 @@ template<typename T> void fromScriptValueEnum(const QScriptValue &obj, T &s)
 template<typename T>
 QScriptValue toScriptUInt(QScriptEngine *engine, const T &num)
 {
-    QScriptValue ret = engine->newVariant(num);
-    return ret;
+    return engine->newVariant(num);
 }
 
 template<typename T> 
@@ -39,4 +38,3 @@ void ExposeQtMetaTypes(QScriptEngine *engine);
 
 /// Will register all meta data types that are needed to use the Core API objects.
 void ExposeCoreApiMetaTypes(QScriptEngine *engine);
-

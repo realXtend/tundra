@@ -41,7 +41,11 @@ set(Boost_USE_MULTITHREADED TRUE)
 set(Boost_DETAILED_FAILURE_MSG FALSE)
 set(Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1")
 
-find_package(Boost 1.39.0 COMPONENTS thread regex)
+if (APPLE OR MSVC)
+   find_package(Boost 1.39.0 COMPONENTS thread regex)
+else()
+   find_package(Boost 1.39.0 COMPONENTS system thread regex) # Some Ubuntu 12.10 installs require system, others do not. OSX fails with system. Not needed on MSVC
+endif()
 
 if (Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
@@ -177,12 +181,6 @@ macro (configure_openal)
         endif ()
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
-
-macro (configure_sparkle)
-    FIND_LIBRARY (SPARKLE_LIBRARY NAMES Sparkle)
-    set (SPARKLE_INCLUDE_DIRS ${SPARKLE_LIBRARY}/Headers)
-    set (SPARKLE_LIBRARIES ${SPARKLE_LIBRARY})
-endmacro (configure_sparkle)
 
 macro(use_package_knet)
     # kNet look up rules:
@@ -413,8 +411,7 @@ macro(use_package_assimp)
             set(ASSIMP_DIR ${ENV_ASSIMP_DIR})
         endif()
         include_directories(${ASSIMP_DIR}/include)
-        link_directories(${ASSIMP_DIR}/lib/assimp_debug_Win32)
-        link_directories(${ASSIMP_DIR}/lib/assimp_release_Win32)
+        link_directories(${ASSIMP_DIR}/lib)
     else() # Linux, note: mac will also come here..
         if ("${ENV_ASSIMP_DIR}" STREQUAL "")
             set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH})
