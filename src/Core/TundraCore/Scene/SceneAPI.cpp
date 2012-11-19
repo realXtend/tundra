@@ -106,7 +106,7 @@ bool SceneAPI::IsComponentFactoryRegistered(const QString &typeName) const
     return componentFactories.find(typeName) != componentFactories.end();
 }
 
-void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
+void SceneAPI::RegisterComponentFactory(const ComponentFactoryPtr &factory)
 {
     if (factory->TypeName().trimmed() != factory->TypeName() || factory->TypeName().isEmpty() || factory->TypeId() == 0)
     {

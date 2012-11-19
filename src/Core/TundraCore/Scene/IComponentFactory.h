@@ -6,7 +6,6 @@
 #include "CoreTypes.h"
 #include "IComponent.h"
 
-#include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 
 #include <QString>
@@ -18,10 +17,10 @@ public:
     IComponentFactory() {}
     virtual ~IComponentFactory() {}
 
-    virtual QString TypeName() = 0;
-    virtual u32 TypeId() = 0;
-    virtual boost::shared_ptr<IComponent> Create(Scene* scene, const QString &newComponentName) = 0;
-//    virtual boost::shared_ptr<IComponent> Clone(IComponent *existingComponent, const QString &newComponentName) = 0;
+    virtual const QString &TypeName() const = 0;
+    virtual u32 TypeId() const = 0;
+    virtual ComponentPtr Create(Scene* scene, const QString &newComponentName) const = 0;
+//    virtual ComponentPtr Clone(IComponent *existingComponent, const QString &newComponentName) const = 0;
 };
 
 /// A factory for instantiating components of a templated type T.
@@ -29,36 +28,35 @@ template<typename T>
 class GenericComponentFactory : public IComponentFactory
 {
 public:
-    QString TypeName() { return T::TypeNameStatic(); }
-    u32 TypeId() { return T::TypeIdStatic(); }
+    const QString &TypeName() const { return T::TypeNameStatic(); }
+    u32 TypeId() const { return T::TypeIdStatic(); }
 
-    boost::shared_ptr<IComponent> Create(Scene* scene, const QString &newComponentName)
+    ComponentPtr Create(Scene* scene, const QString &newComponentName) const
     {
-        boost::shared_ptr<IComponent> component = boost::make_shared<T>(scene);
+        ComponentPtr component = boost::make_shared<T>(scene);
         component->SetName(newComponentName);
         return component;
     }
 /*     ///\todo Implement this.
 
-    boost::shared_ptr<IComponent> Clone(IComponent *existingComponent, const QString &newComponentName)
+    ComponentPtr Clone(IComponent *existingComponent, const QString &newComponentName) const
     {
         if (!existingComponent)
         {
             LogError("Cannot clone component from a null pointer!");
-            return boost::shared_ptr<IComponent>();
+            return ComponentPtr();
         }
 
         T *existing = dynamic_cast<T*>(existingComponent);
         if (!existing)
         {
             LogError("Cannot clone component of type \"" + TypeName() + " from a component of type \"" + existingComponent->TypeName() + "\"!");
-            return boost::shared_ptr<IComponent>();
+            return ComponentPtr();
         }
-//        boost::shared_ptr<T> component = boost::make_shared<T>(*existingComponent);
-        boost::shared_ptr<T> component = boost::shared_ptr<T>(new T(*existingComponent));
+//        ComponentPtr component = boost::make_shared<T>(*existingComponent);
+        ComponentPtr component = boost::shared_ptr<T>(new T(*existingComponent));
         component->SetName(newComponentName);
         return component;
     }
     */
 };
-

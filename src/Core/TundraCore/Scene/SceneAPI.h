@@ -76,7 +76,7 @@ public slots:
     bool IsComponentFactoryRegistered(const QString &typeName) const;
 
     /// Registers a new factory to create new components of type 'componentTypename' and id 'componentTypeid'.
-    void RegisterComponentFactory(ComponentFactoryPtr factory);
+    void RegisterComponentFactory(const ComponentFactoryPtr &factory);
 
     /// Creates a new component instance by specifying the typename of the new component to create, and the scene where to create.
     ComponentPtr CreateComponentByName(Scene* scene, const QString &componentTypename, const QString &newComponentName = "") const;
