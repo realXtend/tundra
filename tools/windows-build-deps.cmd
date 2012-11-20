@@ -3,7 +3,7 @@ echo.
 
 :: User defined variables
 set GENERATOR="Visual Studio 9 2008"
-set BUILD_RELEASE=FALSE
+set BUILD_RELEASE=TRUE
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
 
@@ -340,23 +340,23 @@ IF NOT EXIST "%DEPS%\boost". (
 IF NOT EXIST "%DEPS%\assimp\". (
    cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
    cd "%DEPS%"
-:: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
+    :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
    cd assimp
    cmake -G %GENERATOR%
-   
-   :: Debug build.
+
+   :: Build Debug and both Release and RelWithDebInfo so we can swap the 
+   :: runtime binaries without coming into this build block later
    devenv Assimp.sln /Build Debug
-   copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
-      
-   :: Release or RelWithDebInfo build, depending on which type of release was preferred.
-   IF %BUILD_RELEASE% == TRUE (
-      devenv Assimp.sln /Build Release
-      copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
-   ) ELSE (
-      devenv Assimp.sln /Build RelWithDebInfo
-      copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
-   )
+   devenv Assimp.sln /Build Release
+   devenv Assimp.sln /Build RelWithDebInfo
+)
+
+copy /Y "%DEPS%\assimp\bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
+IF %BUILD_RELEASE% == TRUE (
+  copy /Y "%DEPS%\assimp\bin\Release\assimp.dll" "%TUNDRA_BIN%"
+) ELSE (
+  copy /Y "%DEPS%\assimp\bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
 )
 
 IF NOT EXIST "%DEPS%\kNet\". (
