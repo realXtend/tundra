@@ -309,21 +309,23 @@ public class QtActivity extends Activity
                 int resourceId = ai.metaData.getInt("android.app.qt_libs_resource_id");
                 m_qtLibs=getResources().getStringArray(resourceId);
             }
-            if (getIntent().getExtras()!= null && getIntent().getExtras().containsKey("use_local_qt_libs")
-                    && getIntent().getExtras().getString("use_local_qt_libs").equals("true"))
+            
+            //if (getIntent().getExtras()!= null && getIntent().getExtras().containsKey("use_local_qt_libs")
+            //        && getIntent().getExtras().getString("use_local_qt_libs").equals("true"))
             {
                 ArrayList<String> libraryList= new ArrayList<String>();
 
-                String localPrefix="/data/local/qt/";
-                if (getIntent().getExtras().containsKey("libs_prefix"))
-                    localPrefix=getIntent().getExtras().getString("libs_prefix");
+                String localPrefix="/sdcard/Download/Tundra/";
+                //if (getIntent().getExtras().containsKey("libs_prefix"))
+                //    localPrefix=getIntent().getExtras().getString("libs_prefix");
 
                 if (m_qtLibs != null)
                     for(int i=0;i<m_qtLibs.length;i++)
                     {
-                        libraryList.add(localPrefix+"lib/lib"+m_qtLibs[i]+".so");
+                        libraryList.add(localPrefix+"lib"+m_qtLibs[i]+".so");
                     }
 
+		/*
                 if (getIntent().getExtras().containsKey("load_local_libs"))
                 {
                     String []extraLibs=getIntent().getExtras().getString("load_local_libs").split(":");
@@ -331,9 +333,11 @@ public class QtActivity extends Activity
                         if (lib.length()>0)
                             libraryList.add(localPrefix+lib);
                 }
+		*/
 
                 String dexPaths = new String();
                 String pathSeparator = System.getProperty("path.separator", ":");
+		/*
                 if (getIntent().getExtras().containsKey("load_local_jars"))
                 {
                     String []jarFiles=getIntent().getExtras().getString("load_local_jars").split(":");
@@ -345,13 +349,15 @@ public class QtActivity extends Activity
                             dexPaths+=localPrefix+jar;
                         }
                 }
+		*/
+                dexPaths += localPrefix+"QtIndustrius-8.jar";
 
                 Bundle loaderParams = new Bundle();
                 loaderParams.putInt(ERROR_CODE_KEY, 0);
                 loaderParams.putString(DEX_PATH_KEY, dexPaths);
-                loaderParams.putString(LOADER_CLASS_NAME_KEY, getIntent().getExtras().containsKey("loader_class_name")
+                loaderParams.putString(LOADER_CLASS_NAME_KEY, /*getIntent().getExtras().containsKey("loader_class_name")
                                                             ?getIntent().getExtras().getString("loader_class_name")
-                                                            :"org.kde.necessitas.industrius.QtActivityDelegate");
+                                                            :*/ "org.kde.necessitas.industrius.QtActivityDelegate");
                 loaderParams.putStringArrayList(NATIVE_LIBRARIES_KEY, libraryList);
                 loaderParams.putString(ENVIRONMENT_VARIABLES_KEY,"QML_IMPORT_PATH="+localPrefix+"/imports\tQT_PLUGIN_PATH="+localPrefix+"/plugins");
                 loaderParams.putString(APPLICATION_PARAMETERS_KEY,"-platform\tandroid");
@@ -359,6 +365,7 @@ public class QtActivity extends Activity
                 return;
             }
 
+            /*
             try {
                 if (!bindService(new Intent(org.kde.necessitas.ministro.IMinistro.class.getCanonicalName()), m_ministroConnection, Context.BIND_AUTO_CREATE))
                     throw new SecurityException("");
@@ -375,6 +382,7 @@ public class QtActivity extends Activity
                     ministroNotFound();
                 }
             }
+            */
         }
         catch (Exception e)
         {
