@@ -22,7 +22,7 @@ public:
         // assetTypeExtension can be empty in the case of BinaryAsset, don't assert it.
     }
 
-        explicit GenericAssetFactory(const QString &assetType_, const QStringList &assetTypeExtensions_) :
+    explicit GenericAssetFactory(const QString &assetType_, const QStringList &assetTypeExtensions_) :
         assetType(assetType_.trimmed()),
         assetTypeExtensions(assetTypeExtensions_)
     {
