@@ -525,7 +525,7 @@ QString SceneTreeWidget::SelectionAsXml() const
             EntityPtr entity = eItem->Entity();
             assert(entity);
             if (entity)
-                entity->SerializeToXML(sceneDoc, sceneElem);
+                entity->SerializeToXML(sceneDoc, sceneElem, true);
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -536,7 +536,7 @@ QString SceneTreeWidget::SelectionAsXml() const
         {
             ComponentPtr component = cItem->Component();
             if (component)
-                component->SerializeTo(sceneDoc, sceneElem);
+                component->SerializeTo(sceneDoc, sceneElem, true);
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -923,15 +923,26 @@ void SceneTreeWidget::Paste()
                 {
                     QString type = componentElem.attribute("type");
                     QString name = componentElem.attribute("name");
+                    QString sync = componentElem.attribute("sync");
+                    QString temp = componentElem.attribute("temporary");
+
                     if (!type.isNull())
                     {
                         // If we already have component with the same type name and name, add suffix to the new component's name.
-                        if (entity->GetComponent(type, name))
-                            name.append("_copy");
+                        int copy = 2;
+                        QString newName = name;
+                        while(entity->GetComponent(type, newName))
+                            newName = QString(name + " (%1)").arg(copy++);
 
-                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, name);
+                        componentElem.setAttribute("name", newName);
+                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, newName);
                         if (component)
                         {
+                            if (!temp.isEmpty())
+                                component->SetTemporary(ParseBool(temp));
+                            if (!sync.isEmpty())
+                                component->SetReplicated(ParseBool(sync));
+
                             entity->AddComponent(component);
                             component->DeserializeFrom(componentElem, AttributeChange::Default);
                         }
