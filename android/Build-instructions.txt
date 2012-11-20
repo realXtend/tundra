@@ -46,6 +46,35 @@ Windows
   Tundra is compiled as a monolithic library "libTundra.so" after which it is packaged together with the Ministro/Necessitas activity shell 
   into "android\bin\Tundra-release.apk". This can be installed on a device and run.
 
+Linux
+-----
+
+- Install packages build-essential, OpenJDK, git and ant using the package manager of your distribution, or by some other means.
+
+- Download Necessitas SDK from https://sourceforge.net/projects/necessitas/files/ . Install it by first making it executable (chmod +x) and then running it.
+
+- Download and install Android NDK version r8 (not r8b or newer!) from http://developer.android.com/tools/sdk/ndk/index.html .
+
+- Build Necessitas SDK manually:
+
+  1. Clone the Necessitas source tree with 'git clone git://anongit.kde.org/android-qt.git'
+  2. cd android-qt
+  3. edit the file androidconfigbuild.sh and add the command line parameters '-stl -continue' to the invocation of the command '$SRC_DIR_QT/configure'. This is because Tundra requires Qt to be built with STL support enabled.
+  4. Run the build script by calling './android/androidconfigbuild.sh -n /path/to/android-ndk-r8 -q 1 -d 1 -a x86'.
+      - NOTE the flag '-a x86'! This should be only passed if compiling for the Intel x86 Android ABI. If you are building for ARM, omit this part.
+
+- Clone Tundra-Android:
+  1. git clone 'https://github.com/LudoCraft/Tundra.git'
+  2. git checkout android  
+
+- Build Tundra dependencies:
+  1. cd Tundra/android
+  2. Edit the script BuildAndroidDeps.bash to configure the target ABI and Android API level. These are located in the variables 'tundra_android_native_api_level' and 'TUNDRA_ANDROID_ABI'.
+  3. Run ./BuildAndroidDeps.bash
+
+- Build Tundra:
+  1. Run ./BuildTundra.bash
+
 Running Tundra
 --------------
 
