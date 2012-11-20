@@ -45,7 +45,7 @@ if (!framework.IsHeadless())
     fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
     // View menu
-    var viewMenu = menu.addMenu("&View");
+    var viewMenu = menu.addMenu("&Tools");
 
     if (framework.GetModuleByName("SceneStructure"))
     {
