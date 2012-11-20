@@ -80,6 +80,8 @@ echo "= Git       http://git-scm.com/download/mac                               
 echo "= Mercurial http://mercurial.selenic.com/downloads                                                          ="
 echo "= Qt 4.8.0  http://qt.nokia.com/downloads/sdk-mac-os-cpp                                                    ="
 echo "= MacPorts  http://www.macports.org/install.php                                                             ="
+echo "= XQuartz   for Mac OS X 10.6.x-10.7.x:    NOT required                                                     ="
+echo "=           for Mac OS X 10.8.x and newer: http://xquartz.macosforge.org/landing/                           ="
 echo "============================================================================================================="
 
 # Some helper variables
