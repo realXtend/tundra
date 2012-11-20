@@ -289,6 +289,16 @@ public slots:
         @note O(n) */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
+    /// Performs a regular expression matching through the entities, and returns a list of the matched entities
+    /** @param pattern Regular expression to be matched
+        @note Wildcards can be escaped with '\' character*/
+    EntityList FindEntities(const QRegExp &pattern) const;
+    EntityList FindEntities(const QString &pattern) const; /**< @overload @param pattern String pattern with wildcards*/
+
+    /// Performs a search through the entities, and returns a list of all the entities that contain 'substring' in their names
+    /** @param substring String to be searched*/
+    EntityList FindEntitiesContaining(const QString &substring) const;
+
     /// Returns all entities in the scene.
     EntityMap Entities() /*non-const intentionally*/ { return entities_; }
 
@@ -404,6 +414,9 @@ signals:
 
     /// A entity creation has been acked by the server and assigned a proper replicated ID
     void EntityAcked(Entity* entity, entity_id_t oldId);
+
+    /// An entity's temporary state has been toggled
+    void EntityTemporaryStateToggled(Entity* entity);
 
     /// A component creation into an entity has been acked by the server and assigned a proper replicated ID
     void ComponentAcked(IComponent* comp, component_id_t oldId);

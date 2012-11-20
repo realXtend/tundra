@@ -37,7 +37,10 @@ use_core_modules(Framework Math Scene Ui Asset Console)
 
 build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-GetOpenAssetImport()
+if (ENABLE_OPEN_ASSET_IMPORT)
+    use_app_modules(OpenAssetImport)
+    link_modules(OpenAssetImport)
+endif()
 
 link_ogre()
 link_modules(Framework Scene Ui Asset Console)

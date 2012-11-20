@@ -70,22 +70,22 @@ private: // Return the class visibility specifier to the strictest form so that 
     A Component consists of a list of Attributes, which are automatically replicatable instances of scene data.
     See IAttribute for more details.
 
-    Every Component has a state variable 'UpdateMode' that specifies a default setting for managing which objects
+    Every Component has a state variable updateMode that specifies a default setting for managing which objects
     get notified whenever an Attribute change event occurs. This is used to create "Local Only"-objects as well
     as when doing batch updates of Attributes (for performance or correctness). */
 class IComponent : public QObject, public boost::enable_shared_from_this<IComponent>
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ Name WRITE SetName)
-    Q_PROPERTY(QString typeName READ TypeName)
-    Q_PROPERTY(bool replicated READ IsReplicated)
-    Q_PROPERTY(bool local READ IsLocal)
+    Q_PROPERTY(QString name READ Name WRITE SetName) /**< @copybrief Name */
+    Q_PROPERTY(QString typeName READ TypeName) /**< @copybrief TypeName */
+    Q_PROPERTY(bool replicated READ IsReplicated)  /**< @copybrief IsReplicated */
+    Q_PROPERTY(bool local READ IsLocal) /**< @copybrief IsLocal */
     /// @note Use "component.updateMode = { value : <AttributeChange::Type value as int> };" syntax when settings updateMode from QtScript.
-    Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode)
-    Q_PROPERTY (uint id READ Id)
-    Q_PROPERTY (bool unacked READ IsUnacked)
-    Q_PROPERTY (bool temporary READ IsTemporary WRITE SetTemporary)
-    /// \todo Deprecated. Remove when all scripts have been converted to not refer to this
+    Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode) /**< @copybrief UpdateMode */
+    Q_PROPERTY (uint id READ Id) /**< @copybrief Id */
+    Q_PROPERTY (bool unacked READ IsUnacked) /**< @copybrief IsUnacked */
+    Q_PROPERTY (bool temporary READ IsTemporary WRITE SetTemporary) /**< @copybrief IsTemporary */
+    /// @deprecated. Remove when all scripts have been converted to not refer to this
     Q_PROPERTY(bool networkSyncEnabled READ IsReplicated)
 
 public:
@@ -146,8 +146,9 @@ public:
     /// Serializes this component and all its Attributes to the given XML document.
     /** @param doc The XML document to serialize this component to.
         @param baseElement Points to the <entity> element of the document doc. This element is the Entity that
-                owns this component. This component will be serialized as a child tree of this element. */
-    virtual void SerializeTo(QDomDocument& doc, QDomElement& baseElement) const;
+                owns this component. This component will be serialized as a child tree of this element. 
+        @param serializeTemporary Serialize temporary components for application-specific purposes. The default value is false */
+    virtual void SerializeTo(QDomDocument& doc, QDomElement& baseElement, bool serializeTemporary = false) const;
 
     /// Deserializes this component from the given XML document.
     /** @param element Points to the <component> element that is the root of the serialized form of this Component.
@@ -169,10 +170,7 @@ public:
     /// Returns an Attribute of this component with the given @c name.
     /** This function iterates through the attribute vector and tries to find a member attribute with the given name.
         @param The name of the attribute to look for.
-        @return A pointer to the attribute, or null if no attribute with the given name exists.
-
-        \todo: was made a slot, but interfered with a slot with the same name in EC_DynamicComponent, and this version
-        doesn't work right for py&js 'cause doesn't return a QVariant .. so not a slot now as a temporary measure. */
+        @return A pointer to the attribute, or null if no attribute with the given name exists. */
     IAttribute* GetAttribute(const QString &name) const;
     
     /// Create an attribute with specifed index, type and name. Return it if successful or null if not. Called by SyncManager.
@@ -202,10 +200,6 @@ public slots:
     /// Returns true if this component is pending a replicated ID assignment from the server.
     /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     bool IsUnacked() const;
-
-    /// Deprecated function to set network replication mode. Currently a no-op, as replication mode can not be changed after adding to an entity.
-    ///\todo Removed once scripts converted to not call this
-    void SetNetworkSyncEnabled(bool enable);
 
     /// Sets the default mode for attribute change operations
     /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
@@ -280,6 +274,10 @@ public slots:
     /// Returns list of attribute names of the component
     QStringList GetAttributeNames() const;
 
+    /** @deprecated Currently a no-op, as replication mode can not be changed after adding to an entity.
+        @todo Removed once scripts converted to not call this */
+    void SetNetworkSyncEnabled(bool enable);
+
 signals:
     /// This signal is emitted when an Attribute of this Component has changed. 
     void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
@@ -308,8 +306,9 @@ signals:
     
 protected:
     /// Helper function for starting component serialization.
-    /** This function creates an XML element <component> with the name of this component, adds it to the document, and returns it. */
-    QDomElement BeginSerialization(QDomDocument& doc, QDomElement& baseElement) const;
+    /** This function creates an XML element <component> with the name of this component, adds it to the document, and returns it. 
+        If serializeTemporary is true, the attribute 'temporary' is added to the XML element. Default is false. */
+    QDomElement BeginSerialization(QDomDocument& doc, QDomElement& baseElement, bool serializeTemporary = false) const;
 
     /// Helper function for adding an attribute to the component xml serialization.
     void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& value) const;

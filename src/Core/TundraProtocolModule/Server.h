@@ -59,7 +59,7 @@ public slots:
     /// Create server scene & start server
     /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
         @return True if successful, false otherwise. No scene will be created if starting the server fails. */
-    bool Start(unsigned short port, QString protocol = "");
+    bool Start(unsigned short port, QString protocol = "udp");
 
     /// Stop server & delete server scene
     void Stop();
@@ -75,7 +75,7 @@ public slots:
 
     /// Returns connection corresponding to a connection ID.
     /** @todo Rename to UserConnection or UserConnectionById. */
-    UserConnectionPtr GetUserConnection(int connectionID) const;
+    UserConnectionPtr GetUserConnection(unsigned int connectionID) const;
 
     /// Returns current sender of an action.
     /** Valid (non-null) only while an action packet is being handled. Null if it was invoked by server */
@@ -90,19 +90,19 @@ signals:
     /// A user is connecting. This is your chance to deny access.
     /** Call user->Disconnect() to deny access and kick the user out.
         @todo the connectionID parameter is unnecessary as it can be retrieved from connection. */
-    void UserAboutToConnect(int connectionID, UserConnection* connection);
+    void UserAboutToConnect(unsigned int connectionID, UserConnection* connection);
 
     /// A user has connected (and authenticated)
     /** @param responseData The handler of this signal can add his own application-specific data to this structure.
         This data is sent to the client and the applications on the client computer can read them as needed.
         @todo the connectionID parameter is unnecessary as it can be retrieved from connection. */
-    void UserConnected(int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
+    void UserConnected(unsigned int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
 
     void MessageReceived(UserConnection *connection, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
     /// A user has disconnected
     /** @todo the connectionID parameter is unnecessary as it can be retrieved from connection. */
-    void UserDisconnected(int connectionID, UserConnection* connection);
+    void UserDisconnected(unsigned int connectionID, UserConnection* connection);
 
     /// The server has been started
     void ServerStarted();

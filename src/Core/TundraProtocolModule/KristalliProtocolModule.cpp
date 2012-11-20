@@ -140,9 +140,12 @@ void KristalliProtocolModule::Initialize()
 {
     defaultTransport = kNet::SocketOverUDP;
     QStringList cmdLineParams = framework_->CommandLineParameters("--protocol");
-    if (cmdLineParams.size() > 0 && cmdLineParams.first().trimmed().toLower() == "tcp")
-        defaultTransport = kNet::SocketOverTCP;
-
+    if (cmdLineParams.size() > 0)
+    {
+        kNet::SocketTransportLayer transportLayer = StringToSocketTransportLayer(cmdLineParams.first().trimmed().toStdString().c_str());
+        if (transportLayer != InvalidTransportLayer)
+            defaultTransport = transportLayer;
+    }
 #ifdef KNET_USE_QT
     framework_->Console()->RegisterCommand("kNet", "Shows the kNet statistics window.", this, SLOT(OpenKNetLogWindow()));
 #endif
@@ -299,10 +302,9 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
     
     std::cout << std::endl;
     ::LogInfo("Server started");
-    ::LogInfo(QString("* Port     : ") + QString::number(port));
-    ::LogInfo(QString("* Protocol : ") + (transport == kNet::SocketOverUDP ? "UDP" : "TCP"));
-    ::LogInfo(QString("* Headless : ") + BoolToString(framework_->IsHeadless()));
-    std::cout << std::endl;
+    ::LogInfo("* Port     : " + QString::number(port));
+    ::LogInfo("* Protocol : " + SocketTransportLayerToString(transport));
+    ::LogInfo("* Headless : " + BoolToString(framework_->IsHeadless()));
     return true;
 }
 
@@ -381,11 +383,11 @@ void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNe
     }
 }
 
-u8 KristalliProtocolModule::AllocateNewConnectionID() const
+u32 KristalliProtocolModule::AllocateNewConnectionID() const
 {
-    u8 newID = 1;
+    u32 newID = 1;
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        newID = std::max((int)newID, (int)((*iter)->userID+1));
+        newID = std::max((u32)newID, (u32)((*iter)->userID+1));
     
     return newID;
 }
@@ -399,7 +401,7 @@ UserConnectionPtr KristalliProtocolModule::GetUserConnection(MessageConnection* 
     return UserConnectionPtr();
 }
 
-UserConnectionPtr KristalliProtocolModule::GetUserConnection(u8 id) const
+UserConnectionPtr KristalliProtocolModule::GetUserConnection(u32 id) const
 {
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->userID == id)

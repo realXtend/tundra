@@ -119,6 +119,8 @@ public slots:
     /// Returns the bitset of currently enabled log channels.
     u32 EnabledLogChannels() const;
 
+	void ToggleConsole();
+
 private:
     Framework *framework;
     CommandMap commands; ///< Stores all the registered console commands.
@@ -131,7 +133,6 @@ private:
 
 private slots:
     void HandleKeyEvent(KeyEvent *e);
-    void ToggleConsole();
 };
 
 /// Represents a registered console command.

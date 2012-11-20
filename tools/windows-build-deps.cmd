@@ -94,7 +94,7 @@ cecho {0E}Warning: This script is not fully unattended once you continue.{# #}{\
 cecho {0E}         When building Qt, you must press 'y' once for the script to proceed.{# #}{\n}
 echo.
 
-echo If you are not ready with the above, press Ctrl-C to abort!\n
+echo If you are not ready with the above, press Ctrl-C to abort!
 pause
 echo.
 
@@ -338,7 +338,7 @@ IF NOT EXIST "%DEPS%\boost". (
 )
 
 IF NOT EXIST "%DEPS%\assimp\". (
-   cecho {0D}Checking out OpenAssetImport library from kNet from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
+   cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
    cd "%DEPS%"
 :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
@@ -386,7 +386,7 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}Cloning QtScriptGenerator into "%DEPS%\qtscriptgenerator".{# #}{\n}
    cd "%DEPS%"
-   call git clone git://gitorious.org/qt-labs/qtscriptgenerator
+   call git clone https://git.gitorious.org/qt-labs/qtscriptgenerator
    IF NOT EXIST "%DEPS%\qtscriptgenerator\.git" GOTO :ERROR
 ) ELSE (
    cecho {0D}QtScriptGenerator already cloned. Skipping.{# #}{\n}
@@ -593,7 +593,7 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 IF NOT EXIST "%DEPS%\qt-solutions". (
    cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
    cd "%DEPS%"
-   call git clone git://gitorious.org/qt-solutions/qt-solutions.git
+   call git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
    IF NOT EXIST "%DEPS%\qt-solutions\.git" GOTO :ERROR
    cd qt-solutions\qtpropertybrowser
 
@@ -738,7 +738,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
 IF NOT EXIST "%DEPS%\celt\.git" (
    cd "%DEPS%"
    cecho {0D}Cloning Celt 0.11.1 into "%DEPS%\celt".{# #}{\n}
-   call git clone git://git.xiph.org/celt.git celt
+   call git clone http://git.xiph.org/celt.git celt
    :: Copy config.h from head to the 0.11.1 tag.
    cd celt
    copy /Y msvc\config.h config.h

@@ -26,7 +26,7 @@ struct MsgClientLeft
 	}
 
 	enum { messageID = 103 };
-	static inline const char * const Name() { return "ClientLeft"; }
+	static inline const char * Name() { return "ClientLeft"; }
 
 	static const bool defaultReliable = true;
 	static const bool defaultInOrder = true;
@@ -36,7 +36,7 @@ struct MsgClientLeft
 	bool inOrder;
 	u32 priority;
 
-	u8 userID;
+	u32 userID;
 
 	inline size_t Size() const
 	{
@@ -45,12 +45,12 @@ struct MsgClientLeft
 
 	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
-		dst.Add<u8>(userID);
+		dst.AddVLE<kNet::VLE8_16_32>(userID);
 	}
 
 	inline void DeserializeFrom(kNet::DataDeserializer &src)
 	{
-		userID = src.Read<u8>();
+		userID = src.ReadVLE<kNet::VLE8_16_32>();
 	}
 
 };
