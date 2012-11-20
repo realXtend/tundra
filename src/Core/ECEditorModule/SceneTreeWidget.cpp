@@ -1357,13 +1357,13 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                     if (!attr)
                         continue;
                     
-                    if (attr->TypeName() == "assetreference")
+                    if (attr->TypeId() == cAttributeAssetReference)
                     {
                         Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
                         if (assetRef)
                             assets.insert(assetRef->Get().ref);
                     }
-                    else if (attr->TypeName() == "assetreferencelist")
+                    else if (attr->TypeId() == cAttributeAssetReferenceList)
                     {
                         Attribute<AssetReferenceList> *assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
                         if (assetRefs)
