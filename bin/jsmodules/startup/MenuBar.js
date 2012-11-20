@@ -68,6 +68,9 @@ if (!framework.IsHeadless())
     if (framework.GetModuleByName("PythonScript"))
         toolsMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
+    if (console)
+        toolsMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
+
     // Settings menu
     if (framework.GetModuleByName("MumbleVoip") || framework.GetModuleByName("CAVEStereo") || ecEditor)
     {
@@ -241,7 +244,7 @@ if (!framework.IsHeadless())
     }
 
     function OpenConsoleWindow() {
-        framework.GetModuleByName("Console").ToggleConsole();
+        console.ToggleConsole();
     }
 
     function OpenEcEditorWindow() {
