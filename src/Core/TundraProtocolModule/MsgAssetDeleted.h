@@ -26,7 +26,7 @@ struct MsgAssetDeleted
 	}
 
 	enum { messageID = 122 };
-	static inline const char * const Name() { return "AssetDeleted"; }
+	static inline const char * Name() { return "AssetDeleted"; }
 
 	static const bool defaultReliable = true;
 	static const bool defaultInOrder = true;

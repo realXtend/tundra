@@ -295,6 +295,15 @@ else
     tar xzf $zip
 
     cd $pkgbase
+
+    # Fix a bug in libogg with Xcode 4.5.2 and GCC 4.2.1 that causes the overly aggressive -O4 compilation flag
+    # that is used to fail build with a "configure: error: No 16 bit type found on this platform!"
+    # config.log will show an error "ld: lto: could not merge in /var/folders/sc/grqjwkcn75qf1z0fjz5b9mnm0000gn/T//ccYcUZbs.o because Unknown instruction for architecture x86_64"
+    echoInfo "Workaround an ogg configure bug: replacing -O4 with -O2"
+    sed -e "s/-O4/-O2/" < configure > configure_replaced
+    mv configure_replaced configure
+    chmod +x configure
+
     echoInfo "Building $what:"
     ./configure --prefix=$prefix
     make VERBOSE=1 -j$NPROCS
@@ -484,7 +493,7 @@ else
 fi
 
 what=kNet
-if test -f $tags/$what-done; then 
+if test -f $tags/$what-done; then
    echoInfo "$what is done"
 else
     cd $build
