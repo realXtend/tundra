@@ -55,12 +55,6 @@ IF NOT EXIST Tundra.sln. (
 )
 echo.
 
-cecho {0D}Building Tundra.{# #}{\n}
-msbuild tundra.sln /p:Configuration=RelWithDebInfo
-IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-echo.
-
-cecho {0A}Tundra build finished.{# #}{\n}
 :: Finish in same directory we started in.
 cd TOOLS
 set PATH=%ORIGINAL_PATH%

@@ -15,7 +15,7 @@ typedef std::vector<entity_id_t> EntityIdList;
 typedef EntityIdList::const_iterator PendingConstIter;
 typedef EntityIdList::iterator PendingIter;
 
-SceneSyncState::SceneSyncState(int userConnectionID, bool isServer) :
+SceneSyncState::SceneSyncState(u32 userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
     changeRequest_(userConnectionID),
     isServer_(isServer)

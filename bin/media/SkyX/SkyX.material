@@ -171,6 +171,7 @@ material SkyX_VolClouds
 		pass
 		{
 			lighting off
+            fog_override true none
 
 			depth_write off
 			depth_check on
@@ -366,7 +367,8 @@ material SkyX_Skydome_STARFIELD_LDR
 	{
 		pass
 		{
-			lighting off 
+			lighting off
+            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -432,6 +434,7 @@ material SkyX_Skydome_STARFIELD_HDR
 		pass
 		{
 			lighting off 
+            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -496,6 +499,7 @@ material SkyX_Skydome_LDR
 		pass
 		{
 			lighting off 
+            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -552,6 +556,7 @@ material SkyX_Skydome_HDR
 		pass
 		{
 			lighting off 
+            fog_override true none
 
 			depth_write off
 			depth_check off
@@ -664,6 +669,7 @@ material SkyX_Moon
 		pass
 		{
 			lighting off
+            fog_override true none
 
 			depth_write off
 			depth_check off

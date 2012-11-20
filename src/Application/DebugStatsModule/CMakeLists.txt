@@ -29,8 +29,6 @@ link_ogre()
 link_modules(Framework Math Scene OgreRenderingModule EnvironmentModule AssetModule Input Ui Console PhysicsModule)
 link_entity_components(EC_Script)
 
-GetOpenAssetImport()
-
 SetupCompileFlagsWithPCH()
 
 if (MSVC)

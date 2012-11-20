@@ -1,10 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_Highlight.cpp
- *  @brief  EC_Highlight enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_Mesh component available to be useful
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_Highlight.cpp
+    @brief  EC_Highlight enables visual highlighting effect for of scene entity. */
 
 #include "DebugOperatorNew.h"
 #include "EC_Highlight.h"

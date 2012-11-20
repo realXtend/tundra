@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <Tundra>
   <!-- plugins.xml is hardcoded to be the default configuration file to load if another file is not specified on the command line with the "config filename.xml" parameter. -->
-  <plugin path="OgreRenderingModule" />
+  <plugin path="OpenAssetImport" />             <!-- Does not depend on any other module -->
+  <plugin path="OgreRenderingModule" />         <!-- OgreRenderingModule depends on OpenAssetImport -->
   <plugin path="EnvironmentModule" />           <!-- EnvironmentModule depends on OgreRenderingModule -->
   <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->

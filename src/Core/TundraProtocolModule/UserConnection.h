@@ -32,7 +32,7 @@ public:
     /// Message connection
     Ptr(kNet::MessageConnection) connection;
     /// Connection ID
-    u8 userID;
+    u32 userID;
     /// Raw xml login data
     QString loginData;
     /// Property map

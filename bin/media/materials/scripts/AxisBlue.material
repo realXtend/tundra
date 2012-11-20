@@ -12,6 +12,7 @@ material AxisBlue
             scene_blend alpha_blend
             depth_check off
             depth_write off
+            fog_override true
         }
     }
 }

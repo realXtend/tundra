@@ -145,7 +145,7 @@ OgreWorld::~OgreWorld()
     Ogre::Root::getSingleton().destroySceneManager(sceneManager_);
 }
 
-std::string OgreWorld::GetUniqueObjectName(const std::string &prefix)
+std::string OgreWorld::GenerateUniqueObjectName(const std::string &prefix)
 {
     return renderer_->GetUniqueObjectName(prefix);
 }
@@ -270,7 +270,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 if (!node)
                 {
                     LogError("EC_Mesh::Raycast called for a mesh entity that is not attached to a scene node. Returning no result.");
-                    return false;
+                    return 0;
                 }
 
                 assume(!float3(node->_getDerivedScale()).IsZero());

@@ -92,13 +92,13 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     print("  >> Data len  :", data.size(), "\n");
 }
 
-function AssetReady(/* IAssetPtr* */ asset)
+function AssetReady(/* IAssetPtr* */ assetvar)
 {
-    var data = asset.GetRawData();
+    var data = assetvar.GetRawData();
     print("Asset ready");
-    print("  >> Class ptr :", asset);
-    print("  >> Type      :", asset.Type());
-    print("  >> Name      :", asset.Name());
+    print("  >> Class ptr :", assetvar);
+    print("  >> Type      :", assetvar.Type());
+    print("  >> Name      :", assetvar.Name());
     print("  >> Data len  :", data.size(), "\n");
 }
 
