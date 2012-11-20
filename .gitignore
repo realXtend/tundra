@@ -17,6 +17,9 @@ deps-prebuilt/*
 src/Core/Tundra/resource*.h
 src/Core/Tundra/*.aps
 src/Core/Tundra/*.rc
+src/Core/TundraConsole/resource*.h
+src/Core/TundraConsole/*.aps
+src/Core/TundraConsole/*.rc
 
 # Windows -specific data - data is stored in our deps repository.
 *.dll
@@ -113,3 +116,13 @@ bin/data/translations/*.ts
 *.xcodeproj
 CMakeScripts/
 tundra.build/
+
+# Meshmoon
+src/Application/Adminotech*
+bin/7za.exe
+bin/crunch.exe
+bin/viewer-admino.xml
+bin/asmo.xml
+bin/*client.bat
+bin/*server.bat
+doc/doxygen
