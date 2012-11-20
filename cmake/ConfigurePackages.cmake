@@ -74,7 +74,7 @@ macro (configure_qt4)
             COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
 	    PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
     else()
-        find_package(Qt4 REQUIRED)
+        find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork QtScript QtUiTools)
     endif()
 
     # FindQt4.cmake
@@ -95,25 +95,30 @@ macro (configure_qt4)
             
 #            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
 #            ${QT_PHONON_INCLUDE_DIR}
-
         
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
         
-        set (QT4_LIBRARIES 
-            ${QT_LIBRARIES}
-            ${QT_QTCORE_LIBRARY}
-            ${QT_QTGUI_LIBRARY}
-            ${QT_QTUITOOLS_LIBRARY}
-            ${QT_QTNETWORK_LIBRARY}
-            ${QT_QTXML_LIBRARY}
-            ${QT_QTSCRIPT_LIBRARY}
-            ${QT_DECLARATIVE_LIBRARY}
-            ${QT_QTWEBKIT_LIBRARY})
-            
+	if (ANDROID)
+            set (QT4_LIBRARIES 
+                ${QT_LIBRARIES})
+        else ()
+            set (QT4_LIBRARIES 
+                ${QT_LIBRARIES}
+                ${QT_QTCORE_LIBRARY}
+                ${QT_QTGUI_LIBRARY}
+                ${QT_QTUITOOLS_LIBRARY}
+                ${QT_QTNETWORK_LIBRARY}
+                ${QT_QTXML_LIBRARY}
+                ${QT_QTSCRIPT_LIBRARY}
+                ${QT_DECLARATIVE_LIBRARY}
+                ${QT_QTWEBKIT_LIBRARY})            
+
 #            ${QT_QTSCRIPTTOOLS_LIBRARY}
-#            ${QT_PHONON_LIBRARY}
-        
+#            ${QT_PHONON_LIBRARY}       
+
+	endif()
+
     endif ()
     
     sagase_configure_report (QT4)
