@@ -58,7 +58,7 @@ v2.3.3 - https://github.com/realXtend/naali/compare/tundra2.3.2...tundra2.3.3
  - Enable QoS control on Mumble. (#463)
  - Fixed issues with Mumble voip. (#453)
  - Added support for doing OBB scene queries to bullet physics scene.
- - Added glow postprocess option. This differs from generic bloom in that it's possible to apply glow to individual objects, and not only twhole scene.
+ - Added glow postprocess option. This differs from generic bloom in that it's possible to apply glow to individual objects, and not only the whole scene.
  - Recompute the rigid body inertia tensors when the body parameters have changed. (#469, #475)
  - Fixed certain security-related crashes in QtScript array handling.
  - Scene structure "Save as.." no longer writes components marked as 'temporary' to disk. (#482)
