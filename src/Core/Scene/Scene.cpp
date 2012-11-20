@@ -585,6 +585,11 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         if (!replicatedStr.isEmpty())
             replicated = ParseBool(replicatedStr);
 
+        QString temporaryStr = ent_elem.attribute("temporary");
+        bool temporary = false;
+        if (!temporaryStr.isEmpty())
+            temporary = ParseBool(temporaryStr);
+
         QString id_str = ent_elem.attribute("id");
         entity_id_t id = !id_str.isEmpty() ? static_cast<entity_id_t>(id_str.toInt()) : 0;
         if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
@@ -610,6 +615,8 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         EntityPtr entity = CreateEntity(id);
         if (entity)
         {
+            entity->SetTemporary(temporary);
+
             QDomElement comp_elem = ent_elem.firstChildElement("component");
             while(!comp_elem.isNull())
             {
@@ -618,13 +625,20 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
                 QString type_name = comp_elem.attribute("type");
                 QString name = comp_elem.attribute("name");
                 QString compReplicatedStr = comp_elem.attribute("sync");
+                QString temp = comp_elem.attribute("temporary");
+
                 bool compReplicated = true;
                 if (!compReplicatedStr.isEmpty())
                     compReplicated = ParseBool(compReplicatedStr);
+
+                bool temporary = false;
+                if (!temp.isEmpty())
+                    temporary = ParseBool(temp);
                 
                 ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name, AttributeChange::Default, compReplicated);
                 if (new_comp)
                 {
+                    new_comp->SetTemporary(temporary);
                     // Trigger no signal yet when scene is in incoherent state
                     new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                 }

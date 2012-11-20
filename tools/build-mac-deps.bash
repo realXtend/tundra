@@ -80,6 +80,8 @@ echo "= Git       http://git-scm.com/download/mac                               
 echo "= Mercurial http://mercurial.selenic.com/downloads                                                          ="
 echo "= Qt 4.8.0  http://qt.nokia.com/downloads/sdk-mac-os-cpp                                                    ="
 echo "= MacPorts  http://www.macports.org/install.php                                                             ="
+echo "= XQuartz   for Mac OS X 10.6.x-10.7.x:    NOT required                                                     ="
+echo "=           for Mac OS X 10.8.x and newer: http://xquartz.macosforge.org/landing/                           ="
 echo "============================================================================================================="
 
 # Some helper variables
@@ -548,7 +550,7 @@ baseurl=https://bitbucket.org/clb
 ogredepszip=OgreDependencies_OSX_20120525.zip
 ogredepsurl=http://downloads.sourceforge.net/project/ogre/ogre-dependencies-mac/1.8/
 
-if test -f $tags/$what-done; then
+if test -d $frameworkpath/Ogre.framework; then
     echoInfo "$what is done"
     if [ ! -d $OGRE_HOME ]; then      # If OGRE_HOME points to invalid location, force it to deps/build/ogre-safe-nocrashes
         export OGRE_HOME=$build/$what # If Ogre is built, then Hydrax and SkyX might be not and OGRE_HOME is needed still
@@ -556,6 +558,7 @@ if test -f $tags/$what-done; then
 else
     cd $build
     rm -rf $what
+
     echoInfo "Cloning $what repository, this may take a while..."
     hg clone $baseurl/$what
     cd $what
@@ -566,15 +569,10 @@ else
     echoInfo "Building $what:"
     cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF
     xcodebuild -configuration RelWithDebInfo
-    
-    if [ ! -d $HOME/Library/Frameworks/Ogre.framework ]; then
-        cp -R -H $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $HOME/Library/Frameworks
-    else
-        echoInfo "$HOME/Library/Frameworks/Ogre.framework already exists. Skipping deployment."
-    fi    
+
+    cp -R $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $frameworkpath
     cp $OGRE_HOME/lib/relwithdebinfo/*.dylib $viewer/bin
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
-    touch $tags/$what-done
 fi
 
 what=assimp
@@ -646,7 +644,7 @@ else
     if test -f CMakeCache.txt; then
         rm CMakeCache.txt
     fi
-    cmake . -DSKYX_DEPENDENCIES_DIR=$OGRE_HOME/Dependencies -DCMAKE_INSTALL_PREFIX=$prefix
+    cmake . -DSKYX_DEPENDENCIES_DIR=$OGRE_HOME/Dependencies -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DCMAKE_INSTALL_PREFIX=$prefix
     make -j$NPROCS
     make install
     touch $tags/skyx-done
