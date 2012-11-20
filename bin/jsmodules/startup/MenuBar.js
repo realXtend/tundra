@@ -44,29 +44,29 @@ if (!framework.IsHeadless())
     }
     fileMenu.addAction(new QIcon(installDir + "data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
-    // View menu
-    var viewMenu = menu.addMenu("&Tools");
+    // Tools menu
+    var toolsMenu = menu.addMenu("&Tools");
 
     if (framework.GetModuleByName("SceneStructure"))
     {
-        viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
-        viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
-        viewMenu.addAction("Key Bindings").triggered.connect(OpenKeyBindingsWindow);
+        toolsMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
+        toolsMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
+        toolsMenu.addAction("Key Bindings").triggered.connect(OpenKeyBindingsWindow);
     }
 
     var ecEditor = framework.GetModuleByName("ECEditor");
     if (ecEditor)
-        viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
+        toolsMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
 
     // TODO: Avatar Editor menu action disabled for now, as it's not fully ready for end-users
 //    if (framework.GetModuleByName("Avatar"))
-//        viewMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
+//        toolsMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
 
     if (framework.GetModuleByName("DebugStats"))
-        viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
+        toolsMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
     if (framework.GetModuleByName("PythonScript"))
-        viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
+        toolsMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
     // Settings menu
     if (framework.GetModuleByName("MumbleVoip") || framework.GetModuleByName("CAVEStereo") || ecEditor)
