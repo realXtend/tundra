@@ -11,11 +11,6 @@ endif ()
 file (GLOB CPP_FILES main.cpp)
 file (GLOB H_FILES "") # Dont do *.h it will pickup windows spesific resource.h
 
-if (ANDROID)
-    # Add Qt main from necessitas
-    set (CPP_FILES ${CPP_FILES} ${ENV_QT_DIR}/src/android/cpp/qtmain_android.cpp)
-endif ()
-
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 set (RESOURCE_FILES "")
 
