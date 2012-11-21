@@ -166,7 +166,7 @@ protected:
 
 private slots:
     /// Server side handler for user disconnects.
-    void ServerHandleDisconnect(int connectionID, UserConnection *connection);
+    void ServerHandleDisconnect(uint connectionID, UserConnection *connection);
 
     /// Server side handler for attribute changes. Only interested in 'controllerId'.
     void ServerHandleAttributeChange(IAttribute *attribute, AttributeChange::Type changeType);

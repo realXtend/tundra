@@ -182,17 +182,17 @@ void EC_WebView::ServerInitialize(TundraLogic::Server *server)
 {
     if (!server || !server->IsRunning())
         return;
-    connect(server, SIGNAL(UserDisconnected(int, UserConnection*)), SLOT(ServerHandleDisconnect(int, UserConnection*)), Qt::UniqueConnection);
+    connect(server, SIGNAL(UserDisconnected(uint, UserConnection*)), SLOT(ServerHandleDisconnect(uint, UserConnection*)), Qt::UniqueConnection);
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(ServerHandleAttributeChange(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
-void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connection)
+void EC_WebView::ServerHandleDisconnect(uint connectionID, UserConnection* connection)
 {
     // Server will release the control of a EC_Webview if the controlling user disconnects.
     // This will ensure that a webview wont be left in a state that no one can take control of it.
     if (getcontrollerId() != NoneControlID)
     {
-        if (getcontrollerId() == connectionID)
+        if (getcontrollerId() == (int)connectionID)
         {
             setcontrollerId(NoneControlID);
             ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
