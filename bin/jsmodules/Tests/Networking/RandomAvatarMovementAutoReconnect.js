@@ -19,20 +19,23 @@ function RandomReconnectionTime()
     return Math.random() * 5;
 }
 
-// QStringList not exposed to QtScript yet.
-/*
-var args = framework.CommandLineParameters("--connect").split(";");
-if (args.length > 1)
-    address = args[0];
-if (args.length > 2)
-    port = args[1];
-if (args.length > 3)
-    address = args[2];
-if (args.length > 4)
-    username = args[3];
-if (args.length > 4)
-    password = args[5];
-*/
+var connectArg = framework.CommandLineParameters("--connect");
+if (connectArg.length > 0)
+{
+    var args = connectArg[0].split(";");
+    if (args.length > 0)
+        address = args[0];
+    if (args.length > 1)
+        port = args[1];
+    if (args.length > 2)
+        protocol = args[2];
+    if (args.length > 3)
+        username = args[3];
+    if (args.length > 4)
+        password = args[4];
+    console.LogInfo("User '" + username + "' connecting to " + address + ":" + port + " using " + protocol);
+}
+
 framework.Scene().SceneAdded.connect(OnSceneAdded);
 
 var scene;
