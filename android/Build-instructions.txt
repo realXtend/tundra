@@ -102,6 +102,11 @@ Linux
 - Build Tundra:
   1. Run ./BuildTundra.bash
 
+- Deploy built Necessitas Qt libraries to the Android device. This needs to be done only once, or whenever you rebuild Necessitas Qt. (not if you rebuild Tundra or its dependencies)
+  1. Connect your Android device.
+  2. Make sure that the ADB drivers are installed correctly: call 'adb devices' and observe that the ID of the device is printed properly.
+  3. In the tundra/android/ directory, run ./DeployQtLibs.bash
+
 Running Tundra
 --------------
 
