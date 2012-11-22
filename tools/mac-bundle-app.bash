@@ -1,10 +1,16 @@
 #!/bin/bash
 
 # To use this script, first configure these paths!
-qtdir=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc
-ogredir=/Users/lc/ogre-safe-nocrashes/lib/relwithdebinfo
+qtdir=~/QtSDK/Desktop/Qt/4.8.0/gcc
+startdir=$(pwd)
+cd ../../naali-deps/build/ogre-safe-nocrashes
+ogredir=$(pwd)
+cd $startdir
 
 echo "Assuming Qt is found at $qtdir."
+if [ ! -d $qtdir ]; then
+	echo "ERROR: qtdir=$qtdir does not seem to exist! Please configure this script by hand to point to where you installed QtSDK."
+fi
 echo "Assuming Ogre is found at $ogredir."
 
 qtlibdir=$qtdir/lib
