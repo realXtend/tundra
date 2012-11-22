@@ -51,21 +51,48 @@ Linux
 
 - Install packages build-essential, OpenJDK, git and ant using the package manager of your distribution, or by some other means.
 
-- Download Necessitas SDK from https://sourceforge.net/projects/necessitas/files/ . Install it by first making it executable (chmod +x) and then running it.
+- Download Necessitas SDK 4.1 alpha from https://sourceforge.net/projects/necessitas/files/ . Install it by first making it executable (chmod +x) and then running it.
 
 - Download and install Android NDK version r8 (not r8b or newer!) from http://developer.android.com/tools/sdk/ndk/index.html .
+
+- Ensure that the Android SDK's 'platform-tools' and 'tools' subdirectories are added to path, so that commands such as android and dx are runnable from shell
 
 - Build Necessitas SDK manually:
 
   1. Clone the Necessitas source tree with 'git clone git://anongit.kde.org/android-qt.git'
   2. cd android-qt
-  3. edit the file androidconfigbuild.sh and add the command line parameters '-stl -continue' to the invocation of the command '$SRC_DIR_QT/configure'. This is because Tundra requires Qt to be built with STL support enabled.
-  4. Run the build script by calling './android/androidconfigbuild.sh -n /path/to/android-ndk-r8 -q 1 -d 1 -a x86'.
+  3. Check out the 0.41 tag of Necessitas
+     git checkout n0.41
+  4. If building for x86, modify Necessitas for it to compile:
+  4.1 Edit the file androidconfigbuild.sh and replace the line
+      NDK_TOOLS_PREFIX="i686-android-linux"
+      with
+      NDK_TOOLS_PREFIX="i686-linux-android"
+  4.2 Edit Qt's include file src/corelib/arch/qatomic_arch.h
+      Remove the whole section of #ifdefs for including the proper atomics based on platform, eg. the part that begins with
+	#if defined(Q_OS_ANDROID)
+	#  include "QtCore/qatomic_android.h"
+	#elif defined(QT_ARCH_INTEGRITY)
+	#  include "QtCore/qatomic_integrity.h"
+	#elif defined(QT_ARCH_VXWORKS)
+	#  include "QtCore/qatomic_vxworks.h"
+	..
+      and insert the unconditional line
+ 	#include "QtCore/qatomic_generic.h"
+  5. Necessitas needs to be built using the Android NDK (r8b) supplied by the Necessitas 4.1 SDK package, while Tundra and rest of dependencies will be built using r8.
+     Run the build script by calling './android/androidconfigbuild.sh -n /path/to/necessitas-sdk-android-ndk -q 1 -a x86'.
       - NOTE the flag '-a x86'! This should be only passed if compiling for the Intel x86 Android ABI. If you are building for ARM, omit this part.
+  5.1 When building for x86, the Necessitas build will halt due to errors in compiling the OpenGL-based Android platform plugin. QtUiTools library needs to be built separately:
+	cd tools/designer/src/uitools
+	make
 
 - Clone Tundra-Android:
   1. git clone 'https://github.com/LudoCraft/Tundra.git'
   2. git checkout android  
+
+- Setup permanent environment variables
+  QTDIR to point at the android-qt checkout
+  ANDROID_NDK to point at the r8 NDK that you donwloaded and installed
 
 - Build Tundra dependencies:
   1. cd Tundra/android
@@ -78,8 +105,8 @@ Linux
 Running Tundra
 --------------
 
-- Tundra on Android will currently use the fixed directory Download/Tundra on the Android device's internal memory (/sdcard/Download/Tundra) as
-  its "Bin" folder. Copy the contents of your Tundra Bin directory there as applicable.
+- Tundra on Android will currently use the fixed directory Download/Tundra on the Android device's internal memory (/sdcard/Download/Tundra) as its "Bin" folder. Copy the contents of your Tundra Bin directory there as applicable.
 
-- If it exists, Tundra will use the file commandline.txt in the Download/Tundra folder for its command line parameters. Use this to configure eg. the scene
-  to load.
+- Qt's .so files (in the Necessitas build's 'lib' directory, as well as in 'plugins/platforms/android' directory) and .jar files (in Necessitas build's 'jar' directory) need also to be placed in Download/Tundra.
+
+- If it exists, Tundra will use the file commandline.txt in the Download/Tundra folder for its command line parameters. Use this to configure eg. the scene to load.
