@@ -34,6 +34,7 @@ import java.util.Arrays;
 
 import org.kde.necessitas.ministro.IMinistro;
 import org.kde.necessitas.ministro.IMinistroCallback;
+//import org.kde.necessitas.industrius.QtActivityDelegate;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -350,7 +351,7 @@ public class QtActivity extends Activity
                         }
                 }
 		*/
-                dexPaths += localPrefix+"QtIndustrius-8.jar";
+                //dexPaths += localPrefix+"QtIndustrius-8.jar";
 
                 Bundle loaderParams = new Bundle();
                 loaderParams.putInt(ERROR_CODE_KEY, 0);
