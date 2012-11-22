@@ -112,7 +112,7 @@ while [ "$1" != "" ]; do
                                             ;;
 
         -d | --deps-path )                  shift
-                                            if [ ! -d $1 ]; then
+                                            if [ ! -d "$1" ]; then
                                                 echoError "Bad directory for --deps-path: $1"
                                                 ERRORS_OCCURED="1"
                                                 shift
@@ -123,7 +123,7 @@ while [ "$1" != "" ]; do
                                             ;;
 
         -c | --client-path )                shift
-                                            if [ ! -d $1 ]; then
+                                            if [ ! -d "$1" ]; then
                                                 echoError "Bad directory for --client-path: $1"
                                                 ERRORS_OCCURED="1"
                                                 shift
@@ -133,7 +133,7 @@ while [ "$1" != "" ]; do
                                             ;;
 
         -q | --qt-path )                    shift
-                                            if [ ! -d $1 ]; then
+                                            if [ ! -d "$1" ]; then
                                                 echoError "Bad directory for --qt-path: $1"
                                                 ERRORS_OCCURED="1"
                                                 shift
@@ -143,7 +143,7 @@ while [ "$1" != "" ]; do
                                             ;;
 
         -o | --ogre-path )                  shift
-                                            if [ ! -d $1 ]; then
+                                            if [ ! -d "$1" ]; then
                                                 echoError "Bad directory for --ogre-path: $1"
                                                 ERRORS_OCCURED="1"
                                                 shift
@@ -193,7 +193,7 @@ fi
 
 # If the path to the Tundra root directory was not specified, assume the script
 # is being run from (gittrunk)/tools, so viewer=(gittrunk).
-if [ -z $viewer ] || [ ! -d $viewer ]; then
+if [ ! -d "$viewer" ]; then
     cwd=$(pwd)       # Temporarily save this path to the build script.
     viewer=$(pwd)/.. # Assume the build script lies at gittrunk/tools.
     cd $viewer
@@ -201,7 +201,7 @@ if [ -z $viewer ] || [ ! -d $viewer ]; then
     cd $cwd        # Go back to not alter cwd.
 fi
 
-if [ -z $QTDIR ] || [ ! -d $QTDIR ]; then
+if [ ! -d "$QTDIR" ]; then
     #TODO This is very very prone to fail on anyone's system. (but at least we will correctly instruct to use --qt-path)
     if [ -d /usr/local/Trolltech/Qt-4.7.1 ]; then
         export QTDIR=/usr/local/Trolltech/Qt-4.7.1
@@ -550,8 +550,9 @@ ogredepsurl=http://downloads.sourceforge.net/project/ogre/ogre-dependencies-mac/
 
 if test -f $tags/$what-done; then
     echoInfo "$what is done"
-    if [ ! -d $OGRE_HOME ]; then      # If OGRE_HOME points to invalid location, force it to deps/build/ogre-safe-nocrashes
+    if [ ! -d "$OGRE_HOME" ]; then      # If OGRE_HOME points to invalid location, force it to deps/build/ogre-safe-nocrashes
         export OGRE_HOME=$build/$what # If Ogre is built, then Hydrax and SkyX might be not and OGRE_HOME is needed still
+        echoInfo "Setting up OGRE_HOME='$OGRE_HOME'"
     fi
 else
     cd $build
@@ -576,6 +577,8 @@ else
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
     touch $tags/$what-done
 fi
+
+echoInfo "Building SkyX and Hydrax with OGRE_HOME='$OGRE_HOME'"
 
 what=assimp
 baseurl=https://assimp.svn.sourceforge.net/svnroot/assimp/trunk
