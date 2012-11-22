@@ -349,6 +349,7 @@ public class QtActivityDelegate
                                                                 , m_environmentVariables
                                                                 , m_mainLib
                                                                 , nativeLibraryDir));
+
             m_started = true;
             return true;
         } catch (Exception e) {

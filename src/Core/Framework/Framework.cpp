@@ -37,6 +37,11 @@
 
 #include "MemoryLeakCheck.h"
 
+#ifdef ANDROID
+JavaVM* Framework::javaVM = 0;
+JNIEnv* Framework::jniEnv = 0;
+#endif
+
 namespace
 {
 /// Temporary utility structure for storing supported command line parameters and their descriptions.

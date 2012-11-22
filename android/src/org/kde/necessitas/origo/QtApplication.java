@@ -33,6 +33,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Application;
+import android.util.Log;
+import android.graphics.Bitmap;
+import org.kde.necessitas.industrius.QtActivityDelegate;
+import org.kde.necessitas.industrius.QtSurface;
 
 public class QtApplication extends Application
 {
@@ -109,6 +113,24 @@ public class QtApplication extends Application
     public static Method onCreateView11 = null;
     public static Method onWindowStartingActionMode = null;
 */
+
+    // Added for Tundra
+    public static Bitmap getBitmap()
+    {
+	if (QtApplication.m_delegateObject == null)
+	{
+	    Log.e("Qt","Can not return bitmap, delegate object null"); 
+            return null;
+	}
+	QtActivityDelegate del = (QtActivityDelegate)QtApplication.m_delegateObject;
+	QtSurface surf = del.getQtSurface();
+	if (surf == null)
+        {
+	    Log.e("Qt","Can not return bitmap, QtSurface null"); 
+	    return null;
+        }
+	return surf.getBitmap();
+    }
 
     public static void setQtActivityDelegate(Object listener)
     {

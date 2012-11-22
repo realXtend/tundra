@@ -11,6 +11,10 @@
 
 #include <vector>
 
+#ifdef ANDROID
+#include <jni.h>
+#endif
+
 /// The system root access object.
 class Framework : public QObject
 {
@@ -86,6 +90,17 @@ public:
 
     /// Returns the static plugin registry for systems where plugins are not loaded as dynamic libraries. Used by StaticPluginRegistry.
     static StaticPluginRegistry *StaticPluginRegistryInstance();
+
+#ifdef ANDROID
+    /// Returns the Java virtual machine instance on Android.
+    static JavaVM* JavaVMInstance() { return javaVM; }
+    /// Returns the Java environment instance on Android.
+    static JNIEnv* JniEnvInstance() { return jniEnv; }
+    /// Sets the Java virtual machine instance on Android. Called by main.cpp
+    static void SetJavaVMInstance(JavaVM* instance) { javaVM = instance; }
+    /// Sets the Java environment instance on Android.
+    static void SetJniEnvInstance(JNIEnv* instance) { jniEnv = instance; }
+#endif
 
 public slots:
     /// Returns the core API UI object.
@@ -197,6 +212,11 @@ private:
     static Framework *instance;
     int argc; ///< Command line argument count as supplied by the operating system.
     char **argv; ///< Command line arguments as supplied by the operating system.
+
+#ifdef ANDROID
+    static JavaVM* javaVM;
+    static JNIEnv* jniEnv;
+#endif 
 };
 
 template <class T>

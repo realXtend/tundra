@@ -53,6 +53,12 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
         setId(id);
     }
 
+    // Added for Tundra
+    public Bitmap getBitmap()
+    {
+        return m_bitmap;
+    }
+
     public void applicationStarted(boolean usesGL)
     {
         m_started = true;

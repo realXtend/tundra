@@ -34,7 +34,6 @@ import java.util.Arrays;
 
 import org.kde.necessitas.ministro.IMinistro;
 import org.kde.necessitas.ministro.IMinistroCallback;
-//import org.kde.necessitas.industrius.QtActivityDelegate;
 
 import android.app.Activity;
 import android.app.AlertDialog;
