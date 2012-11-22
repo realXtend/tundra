@@ -38,6 +38,7 @@ endif ()
 
 # Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propapage from here to each library.
 if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
+    message(STATUS "Linking Tundra to Boost libraries: '${Boost_LIBRARIES}'")
     target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
 
