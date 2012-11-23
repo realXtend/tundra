@@ -63,9 +63,9 @@ EC_DynamicComponent::~EC_DynamicComponent()
 {
 }
 
-void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
+void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary) const
 {
-    QDomElement comp_element = BeginSerialization(doc, base_element);
+    QDomElement comp_element = BeginSerialization(doc, base_element, serializeTemporary);
 
     AttributeVector::const_iterator iter = attributes.begin();
     while(iter != attributes.end())
