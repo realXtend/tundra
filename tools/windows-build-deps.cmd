@@ -3,7 +3,7 @@ echo.
 
 :: User defined variables
 set GENERATOR="Visual Studio 9 2008"
-set BUILD_RELEASE=TRUE
+set BUILD_RELEASE=FALSE
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
 
