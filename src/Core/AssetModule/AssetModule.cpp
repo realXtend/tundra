@@ -192,7 +192,7 @@ void AssetModule::RefreshHttpStorages()
     }
 }
 
-void AssetModule::ServerNewUserConnected(int connectionID, UserConnection *connection, UserConnectedResponseData *responseData)
+void AssetModule::ServerNewUserConnected(int /*connectionID*/, UserConnection *connection, UserConnectedResponseData *responseData)
 {
     QDomDocument &doc = responseData->responseData;
     QDomElement assetRoot = doc.createElement("asset");
