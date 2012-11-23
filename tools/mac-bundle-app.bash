@@ -67,8 +67,12 @@ rm $ogresamples
 
 echo "Deploying Ogre framework $ogredir to app bundle."
 cp -R $ogredir/lib/relwithdebinfo/Ogre.framework $frameworksdir
+
 # When running in an app bundle, Ogre plugins are loaded from the Plugins/ folder of the app bundle.
 mv $bundledir/Contents/MacOS/*.dylib $bundledir/Contents/Plugins
+
+# Deploy Tundra deps dylibs to Plugins
+cp $depsdir/lib/*.dylib $bundledir/Contents/Plugins
 
 echo "Deploying system Cg.framework to app bundle."
 cp -R $depsdir/Frameworks/Cg.framework $frameworksdir
