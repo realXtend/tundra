@@ -3,7 +3,9 @@
 # To use this script, first configure these paths!
 qtdir=~/QtSDK/Desktop/Qt/4.8.0/gcc
 startdir=$(pwd)
-cd ../../naali-deps/build/ogre-safe-nocrashes
+cd ../../naali-deps
+depsdir=$(pwd)
+cd build/ogre-safe-nocrashes
 ogredir=$(pwd)
 cd $startdir
 
@@ -64,9 +66,13 @@ ogresamples=`find $bundledir/Contents/Plugins -name "Sample_*.dylib"`
 rm $ogresamples
 
 echo "Deploying Ogre framework $ogredir to app bundle."
-cp -R $ogredir/Ogre.framework $frameworksdir
+cp -R $ogredir/lib/relwithdebinfo/Ogre.framework $frameworksdir
+# When running in an app bundle, Ogre plugins are loaded from the Plugins/ folder of the app bundle.
+mv $bundledir/Contents/MacOS/*.dylib $bundledir/Contents/Plugins
+
 echo "Deploying system Cg.framework to app bundle."
-cp -R /Library/Frameworks/Cg.framework $frameworksdir
+cp -R $depsdir/Frameworks/Cg.framework $frameworksdir
+
 chmod -R u+w $frameworksdir/Cg.framework
 
 echo "Cleaning redundant files from bundle (*_debug*.dylib etc.)"
