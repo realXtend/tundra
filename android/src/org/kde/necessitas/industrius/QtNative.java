@@ -190,6 +190,7 @@ public class QtNative
             startQtApplication(f.getAbsolutePath()+"\t"+params, environment);
             m_started=true;
         }
+
         return res;
     }
 

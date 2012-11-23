@@ -54,9 +54,12 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
     }
 
     // Added for Tundra
-    public Bitmap getBitmap()
+    public Object getSurface()
     {
-        return m_bitmap;
+        if (getHolder() != null)
+	    return getHolder().getSurface();
+        else
+            return null;
     }
 
     public void applicationStarted(boolean usesGL)
@@ -150,6 +153,8 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 
     public void drawBitmap(Rect rect)
     {
+	// Tundra: disabled, as we use Ogre to render
+        /*
         if (!m_started)
             return;
         QtNative.lockSurface();
@@ -167,6 +172,7 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
             }
         }
         QtNative.unlockSurface();
+        */
     }
 
     @Override

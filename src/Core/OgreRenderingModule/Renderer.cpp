@@ -543,6 +543,9 @@ namespace OgreRenderer
         if (framework->IsHeadless())
             return;
 
+	if (!renderWindow->OgreOverlay())
+	    return;
+
         PROFILE(Renderer_DoFullUIRedraw);
 
         UiGraphicsView *view = framework->Ui()->GraphicsView();
@@ -798,10 +801,14 @@ namespace OgreRenderer
 #ifdef PROFILING
         // Performance debugging: Toggle the UI overlay visibility based on a debug key.
         // Allows testing whether the GPU is majorly fill rate bound.
-        if (framework->Input()->IsKeyDown(Qt::Key_F8))
-            renderWindow->OgreOverlay()->hide();
-        else
-            renderWindow->OgreOverlay()->show();
+        Ogre::Overlay* overlay = renderWindow->OgreOverlay();
+        if (overlay)
+        {
+	    if (framework->Input()->IsKeyDown(Qt::Key_F8))
+	        renderWindow->OgreOverlay()->hide();
+            else
+                renderWindow->OgreOverlay()->show();
+        }
 #endif
 
         // Flush debug geometry into vertex buffer now

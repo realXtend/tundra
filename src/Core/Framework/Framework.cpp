@@ -776,4 +776,5 @@ void Framework::LoadCommandLineFromFile()
         line = in.readLine();
     }
 }
+
 #endif

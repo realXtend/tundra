@@ -115,7 +115,7 @@ public class QtApplication extends Application
 */
 
     // Added for Tundra
-    public static Bitmap getBitmap()
+    public static Object getSurface()
     {
 	if (QtApplication.m_delegateObject == null)
 	{
@@ -126,10 +126,10 @@ public class QtApplication extends Application
 	QtSurface surf = del.getQtSurface();
 	if (surf == null)
         {
-	    Log.e("Qt","Can not return bitmap, QtSurface null"); 
+	    Log.e("Qt","Can not return surface, QtSurface null"); 
 	    return null;
         }
-	return surf.getBitmap();
+	return surf.getSurface();
     }
 
     public static void setQtActivityDelegate(Object listener)

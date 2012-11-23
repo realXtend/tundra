@@ -14,9 +14,6 @@
 #include "MemoryLeakCheck.h"
 
 #ifdef ANDROID
-#include <android/log.h>
-#include <jni.h>
-
 #include "StaticPluginRegistry.h"
 
 /// \todo Eliminate the need to list static plugins explicitly here
@@ -96,24 +93,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 #endif
 
-#ifdef ANDROID
-extern "C" {
-
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
-{
-    __android_log_print(ANDROID_LOG_INFO,"Tundra", "Tundra JNI_OnLoad");
-    JNIEnv* env;
-    if (vm->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK)
-    {
-        __android_log_print(ANDROID_LOG_FATAL,"Tundra","GetEnv failed");
-        return -1;
-    }
-
-    Framework::SetJavaVMInstance(vm);
-    Framework::SetJniEnvInstance(env);
-
-    return JNI_VERSION_1_4;
-}
-
-}
-#endif

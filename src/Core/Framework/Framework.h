@@ -96,9 +96,9 @@ public:
     static JavaVM* JavaVMInstance() { return javaVM; }
     /// Returns the Java environment instance on Android.
     static JNIEnv* JniEnvInstance() { return jniEnv; }
-    /// Sets the Java virtual machine instance on Android. Called by main.cpp
+    /// Sets the Java virtual machine instance on Android. Called by JNIOnLoad in main.cpp.
     static void SetJavaVMInstance(JavaVM* instance) { javaVM = instance; }
-    /// Sets the Java environment instance on Android.
+    /// Sets the Java environment instance on Android. Called by main in main.cpp.
     static void SetJniEnvInstance(JNIEnv* instance) { jniEnv = instance; }
 #endif
 
