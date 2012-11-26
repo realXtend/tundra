@@ -113,6 +113,8 @@ if [ ! -f $deps/ogre/AndroidDependenciesBuild/lib/libFreeImage.a ]; then
 	echo "Installing OGRE Android dependencies.."
 	make install
 	cd $deps
+        # Rename libFreeImage to libfreeimage, otherwise OGRE build will not find it properly
+        mv $deps/ogre/AndroidDependencies/lib/libFreeImage.a $deps/ogre/AndroidDependencies/lib/libfreeimage.a
 else
 	echo "Ogre Android dependencies already built. Skipping.."
 fi

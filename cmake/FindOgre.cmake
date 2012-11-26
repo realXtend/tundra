@@ -22,7 +22,7 @@ macro(configure_ogre)
       link_directories(${OGRE_LIBRARY_DIR})
   else()
       set (OGRE_LIBRARY_DIR ${ENV_OGRE_HOME}/lib ${ENV_OGRE_HOME}/AndroidDependencies/lib)
-      set (OGRE_LIBRARY OgreOverlayStatic Plugin_OctreeSceneManagerStatic Plugin_ParticleFXStatic RenderSystem_GLES2Static OgreMainStatic FreeImage freetype stdc++ supc++ z zziplib cpu-features EGL GLESv1_CM GLESv2 android)
+      set (OGRE_LIBRARY OgreOverlayStatic Plugin_OctreeSceneManagerStatic Plugin_ParticleFXStatic RenderSystem_GLES2Static OgreMainStatic freeimage freetype stdc++ supc++ z zziplib cpu-features EGL GLESv1_CM GLESv2 android)
       include_directories(${ENV_OGRE_HOME}/include ${ENV_OGRE_HOME}/OgreMain/include ${ENV_OGRE_HOME}/Components/Overlay/include 
         ${ENV_OGRE_HOME}/RenderSystems/GLES2/include ${ENV_OGRE_HOME}/PlugIns/OctreeSceneManager/include ${ENV_OGRE_HOME}/PlugIns/ParticleFX/include)
       link_directories(${OGRE_LIBRARY_DIR})
