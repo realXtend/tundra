@@ -133,5 +133,8 @@ else
 	echo "OGRE already built. Skipping.."
 fi
 
-
+if [ ! -d $tundra/bin/media/RTShaderLib ]; then 
+    echo "Copying OGRE RTShader media to Tundra's media directory.."
+    cp -r $deps/ogre/Samples/Media/RTShaderLib $tundra/bin/media
+fi
 

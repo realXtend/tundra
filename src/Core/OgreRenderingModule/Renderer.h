@@ -22,6 +22,10 @@ class Framework;
 namespace Ogre
 {
     class StaticPluginLoader;
+    namespace RTShader
+    {
+        class ShaderGenerator;
+    }
 }
 #endif
 
@@ -137,6 +141,11 @@ namespace OgreRenderer
         /// Returns texture quality.
         TextureQualitySetting TextureQuality() const { return textureQuality; }
 
+#ifdef ANDROID
+        /// Returns the shader generator for converting fixed-function materials (Android only)
+        Ogre::RTShader::ShaderGenerator* GetShaderGenerator() { return shaderGenerator; }
+#endif
+
     public slots:
         /// Renders the screen. Advances Ogre's time internally by the frameTime specified
         virtual void Render(float frameTime);
@@ -241,6 +250,7 @@ namespace OgreRenderer
 
         #ifdef ANDROID
         Ogre::StaticPluginLoader* staticPluginLoader;
+	Ogre::RTShader::ShaderGenerator* shaderGenerator;
         #endif
         
         /// Framework we belong to

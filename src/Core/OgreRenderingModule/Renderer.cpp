@@ -40,6 +40,8 @@
 #define OGRE_STATIC_ParticleFX
 #define OGRE_STATIC_OctreeSceneManager
 #include "OgreStaticPluginLoader.h"
+#include <OgreRTShaderSystem.h>
+#include <OgreShaderGenerator.h>
 #endif
 
 Q_DECLARE_METATYPE(EC_Placeable*)
@@ -82,6 +84,95 @@ static const float MAX_FRAME_TIME = 0.1f;
 #endif
 
 #include "MemoryLeakCheck.h"
+
+#ifdef ANDROID
+/*
+ -----------------------------------------------------------------------------
+ This source file is part of OGRE
+ (Object-oriented Graphics Rendering Engine)
+ For the latest info, see http://www.ogre3d.org/
+ 
+ Copyright (c) 2000-2012 Torus Knot Software Ltd
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ -----------------------------------------------------------------------------
+ */
+class ShaderGeneratorTechniqueResolverListener : public Ogre::MaterialManager::Listener
+{
+public:
+
+	ShaderGeneratorTechniqueResolverListener(Ogre::RTShader::ShaderGenerator* pShaderGenerator)
+	{
+		mShaderGenerator = pShaderGenerator;			
+	}
+
+	/** This is the hook point where shader based technique will be created.
+	It will be called whenever the material manager won't find appropriate technique
+	that satisfy the target scheme name. If the scheme name is out target RT Shader System
+	scheme name we will try to create shader generated technique for it. 
+	*/
+	virtual Ogre::Technique* handleSchemeNotFound(unsigned short schemeIndex, 
+		const Ogre::String& schemeName, Ogre::Material* originalMaterial, unsigned short lodIndex, 
+		const Ogre::Renderable* rend)
+	{	
+		Ogre::Technique* generatedTech = NULL;
+
+		// Case this is the default shader generator scheme.
+		if (schemeName == Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME)
+		{
+			bool techniqueCreated;
+
+			// Create shader generated technique for this material.
+			techniqueCreated = mShaderGenerator->createShaderBasedTechnique(
+				originalMaterial->getName(), 
+				Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+				schemeName);	
+
+			// Case technique registration succeeded.
+			if (techniqueCreated)
+			{
+				// Force creating the shaders for the generated technique.
+				mShaderGenerator->validateMaterial(schemeName, originalMaterial->getName());
+				
+				// Grab the generated technique.
+				Ogre::Material::TechniqueIterator itTech = originalMaterial->getTechniqueIterator();
+
+				while (itTech.hasMoreElements())
+				{
+					Ogre::Technique* curTech = itTech.getNext();
+
+					if (curTech->getSchemeName() == schemeName)
+					{
+						generatedTech = curTech;
+						break;
+					}
+				}				
+			}
+		}
+
+		return generatedTech;
+	}
+
+protected:	
+	Ogre::RTShader::ShaderGenerator*	mShaderGenerator;			// The shader generator instance.		
+};
+#endif
 
 namespace OgreRenderer
 {
@@ -155,6 +246,9 @@ namespace OgreRenderer
         defaultScene(0),
         dummyDefaultCamera(0),
         mainViewport(0),
+#ifdef ANDROID
+	shaderGenerator(0),
+#endif
         uniqueObjectId(0),
         uniqueGroupId(0),
         configFilename(config),
@@ -192,6 +286,10 @@ namespace OgreRenderer
         {
             defaultScene->destroyCamera(dummyDefaultCamera);
             dummyDefaultCamera = 0;
+#ifdef ANDROID
+	    if (shaderGenerator)
+                shaderGenerator->removeSceneManager(defaultScene);
+#endif
             ogreRoot->destroySceneManager(defaultScene);
             defaultScene = 0;
         }
@@ -384,8 +482,19 @@ namespace OgreRenderer
             LogInfo("Renderer: Loading Ogre resources");
             SetupResources();
 
+#ifdef ANDROID
+            // Android: initialize RT shader system
+            Ogre::RTShader::ShaderGenerator::initialize();
+            shaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+            Ogre::MaterialManager::getSingleton().addListener(new ShaderGeneratorTechniqueResolverListener(shaderGenerator));
+#endif
+
             /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
             defaultScene = ogreRoot->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
+#ifdef ANDROID
+	    if (shaderGenerator)
+                shaderGenerator->addSceneManager(defaultScene);
+#endif
             dummyDefaultCamera = defaultScene->createCamera("DefaultCamera");
         
             mainViewport = renderWindow->OgreRenderWindow()->addViewport(dummyDefaultCamera);
@@ -513,6 +622,13 @@ namespace OgreRenderer
         }
 
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(shadowPath, "FileSystem", "General");
+
+#if ANDROID
+	// Initialize RTShader resources
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/RTShaderLib", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/RTShaderLib/materials", "FileSystem", "General");
+#endif
+
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
 

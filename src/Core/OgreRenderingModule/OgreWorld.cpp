@@ -33,6 +33,11 @@
 
 #include <Ogre.h>
 
+#ifdef ANDROID
+#include <OgreRTShaderSystem.h>
+#include <OgreShaderGenerator.h>
+#endif
+
 #include "MemoryLeakCheck.h"
 
 OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
@@ -46,6 +51,12 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
 {
     assert(renderer_->IsInitialized());
     sceneManager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, scene->Name().toStdString());
+#ifdef ANDROID
+    Ogre::RTShader::ShaderGenerator* shaderGenerator = renderer_->GetShaderGenerator();
+    if (shaderGenerator)
+        shaderGenerator->addSceneManager(sceneManager_);
+#endif
+
     if (!framework_->IsHeadless())
     {
         rayQuery_ = sceneManager_->createRayQuery(Ogre::Ray());
@@ -94,6 +105,11 @@ OgreWorld::~OgreWorld()
     if (comp)
         comp->RemoveAllCompositors();
     
+#ifdef ANDROID
+    Ogre::RTShader::ShaderGenerator* shaderGenerator = renderer_->GetShaderGenerator();
+    if (shaderGenerator)
+        shaderGenerator->removeSceneManager(sceneManager_);
+#endif
     Ogre::Root::getSingleton().destroySceneManager(sceneManager_);
 }
 
