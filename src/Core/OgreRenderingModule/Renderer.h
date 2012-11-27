@@ -22,6 +22,8 @@ class Framework;
 namespace Ogre
 {
     class StaticPluginLoader;
+    class OverlaySystem;
+
     namespace RTShader
     {
         class ShaderGenerator;
@@ -251,6 +253,7 @@ namespace OgreRenderer
         #ifdef ANDROID
         Ogre::StaticPluginLoader* staticPluginLoader;
 	Ogre::RTShader::ShaderGenerator* shaderGenerator;
+	Ogre::OverlaySystem* overlaySystem;
         #endif
         
         /// Framework we belong to

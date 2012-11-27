@@ -175,6 +175,7 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
     renderWindow = Ogre::Root::getSingletonPtr()->createRenderWindow(name.toStdString().c_str(), width, height, fullscreen, &params);
     renderWindow->setDeactivateOnFocusChange(false);
 
+    // Currently do not create UI overlay on Android to save fillrate
 #ifndef ANDROID
     CreateRenderTargetOverlay(width, height);
 #endif
