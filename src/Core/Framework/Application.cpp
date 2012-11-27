@@ -640,7 +640,9 @@ void Application::AboutToExit()
 
 QString Application::Platform()
 {
-#ifdef Q_WS_WIN
+#ifdef ANDROID
+    return QString("android");
+#elif defined(Q_WS_WIN)
     return QString("win");
 #elif defined(Q_WS_MAC)
     return QString("mac");
