@@ -759,7 +759,6 @@ EXCLUDE                = ../.git \
                          ..\src\Core\OgreRenderingModule\libsquish \
                          ..\src\Application\AdminotechPlugin\updater \
                          ..\src\Application\AdminotechPlugin\ui \
-                         ..\src\Application\AdminotechPlugin\tools \
                          ..\src\Application\AdminotechPlugin\deps \
                          ..\src\Application\AdminotechPlugin\assets \
                          ..\src\Application\AdminotechPlugin\AdminotechBackend.h \
@@ -779,7 +778,8 @@ EXCLUDE                = ../.git \
                          ..\src\Application\AdminotechPlugin\updater\CocoaInitializer.mm \
                          ..\src\Application\AdminotechPlugin\updater\AutoUpdater.h \
                          ..\src\Application\AdminotechPlugin\updater\AdminotechUpdater.h \
-                         ..\src\Application\AdminotechPlugin\avatar\AdminotechAvatarEditor.h
+                         ..\src\Application\AdminotechPlugin\avatar\AdminotechAvatarEditor.h \
+                         ..\src\Application\AdminotechPlugin\AdminotechCommon.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or 
 # directories that are symbolic links (a Unix file system feature) are excluded 
