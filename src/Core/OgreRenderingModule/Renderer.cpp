@@ -625,8 +625,8 @@ namespace OgreRenderer
 
 #if ANDROID
 	// Initialize RTShader resources
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/RTShaderLib", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/RTShaderLib/materials", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib/materials", "FileSystem", "General");
 #endif
 
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
