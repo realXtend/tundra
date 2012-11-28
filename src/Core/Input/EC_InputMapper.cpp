@@ -171,8 +171,12 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     if (!ParentEntity())
         return;
     
-    /// \todo this hard coding of look button logic is not nice!
+    /// \todo this hard coding of look button logic is not nice! Android implements left mouse move (touch drag) as mouselook currently.
+#ifdef ANDROID
+    if (e->IsButtonDown(MouseEvent::LeftButton))
+#else
     if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
+#endif
     {
         if (e->relativeX != 0)
         {
