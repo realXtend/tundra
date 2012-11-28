@@ -106,6 +106,34 @@ SyncManager::~SyncManager()
 {
 }
 
+void SyncManager::ResetAvatarPositions()
+{
+    Scene *scene = framework_->Scene()->MainCameraScene();
+
+    if(scene == NULL)
+        return;
+
+    UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+
+    for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+    {
+        EntityPtr entity = scene->EntityByName("Avatar" + QString::number((*i)->ConnectionId()));
+
+        EC_Placeable *location = entity->GetComponent<EC_Placeable>().get();
+
+        float3 pos = location->transform.Get().pos;
+
+        LogError("Old X: " + QString::number(pos.x) + "Old Y: " + QString::number(pos.y) + "Old Z: " + QString::number(pos.z));
+
+        if((*i)->syncState)
+        {
+            pos = (*i)->syncState->clientLocation;
+            LogError("New X: " + QString::number(pos.x) + "New Y: " + QString::number(pos.y) + "New Z: " + QString::number(pos.z));
+            location->SetPosition(pos);
+        }
+    }
+}
+
 void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint)
 {
     Scene *scene = framework_->Scene()->MainCameraScene();
@@ -388,8 +416,18 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         // clients on the next network sync iteration.
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
             if ((*i)->syncState)
-                (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
+            {
+                /// Check here if the attribute should be updated to which client?
+                /// @remarks InterestManager functionality
+                if(interestManager && !interestManager->CheckRelevance((*i), entity, scene_, framework_->IsHeadless()))
+                    continue;
+
+                else    //If IM is not available, accept the update
+                    (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
+            }
+        }
     }
     else
     {
@@ -687,7 +725,7 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
         }
         else // Linear extrapolation if server has not sent an update.
         {
-            if (isNewtonian && maxLinExtrapTime_ > 1.0f)
+            if (isNewtonian)
                 pos = r.interpEnd.pos + r.interpEnd.vel * (r.interpTime-1.f) * interpPeriod;
             else
                 pos = r.interpEnd.pos;
@@ -704,23 +742,21 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
 
         // Local simulation steps:
         // One fixed update interval: interpolate
-        // Two subsequent update intervals: linear extrapolation
+        // Four subsequent update intervals: linear extrapolation
         // All subsequente update intervals: local physics extrapolation.
-        if (r.interpTime >= maxLinExtrapTime_) // Hand-off to client-side physics?
+        const float maxLinExtrapTime = 15.f; // For one second of extrapolation set to 1.f / interpPeriod;
+        if (r.interpTime >= maxLinExtrapTime) // Hand-off to client-side physics?
         {
             if (rigidBody)
             {
-                if (!noClientPhysicsHandoff_)
-                {
-                    bool objectIsInRest = (r.interpEnd.vel.LengthSq() < 1e-4f && r.interpEnd.angVel.LengthSq() < 1e-4f);
-                    // Now the local client-side physics will take over the simulation of this rigid body, but only if the object
-                    // is moving. This is because the client shouldn't wake up the object (locally) if it's stationary, but wait for the
-                    // server-side signal for that event.
-                    rigidBody->SetClientExtrapolating(objectIsInRest == false);
-                    // Give starting parameters for the simulation.
-                    rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
-                    rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
-                }
+                bool objectIsInRest = (r.interpEnd.vel.LengthSq() < 1e-4f && r.interpEnd.angVel.LengthSq() < 1e-4f);
+                // Now the local client-side physics will take over the simulation of this rigid body, but only if the object
+                // is moving. This is because the client shouldn't wake up the object (locally) if it's stationary, but wait for the
+                // server-side signal for that event.
+                rigidBody->SetClientExtrapolating(objectIsInRest == false);
+                // Give starting parameters for the simulation.
+                rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
+                rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
                 r.interpolatorActive = false;
             }
             ++iter;
@@ -1589,6 +1625,7 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
     //Finally update the orientation and location
     user->syncState->clientOrientation = Quat(orientation);
     user->syncState->clientLocation = clientpos;
+            LogError("X: " + QString::number(clientpos.x) + "Y: " + QString::number(clientpos.y) + "Z: " + QString::number(clientpos.z));
 }
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)
