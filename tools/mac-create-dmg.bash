@@ -13,7 +13,7 @@ title=Tundra
 
 rm -f pack.temp.dmg
 echo "Creating temporary disk image."
-hdiutil create -srcfolder "build/" -volname "${title}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 600000k pack.temp.dmg
+hdiutil create -srcfolder "build/" -volname "${title}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 1000000k pack.temp.dmg
 device=$(hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | egrep '^/dev/' | sed 1q | awk '{print $1}')
 echo "Mounted temp disk image to $device"
 
