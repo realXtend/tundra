@@ -1,4 +1,12 @@
-v2.4-RC1
+v2.4 - https://github.com/realXtend/naali/compare/tundra2.4rc1...tundra2.4
+------
+ - Fixed Glow example scene to not conflict with Tundra built-in asset names.
+ - Added Glow and AssImpDemoScene to Windows startup menu entries.
+ - Fixed OSX build script to not fail in SkyX.
+ - Fixed OSX app bundling script to properly bundle up Cg and Ogre frameworks.
+ - Enabled default build of SkyX, Hydrax and OpenAssetImport on OSX.
+
+v2.4-RC1 - https://github.com/realXtend/naali/compare/tundra2.3.3.1...tundra2.4rc1
 ------
  - Fixed KeyBindingMap not being accessible from QtScript. (related to #485)
  - Added support for individual objects to glow, and added a new Glow example scene.
