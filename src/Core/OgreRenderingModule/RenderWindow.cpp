@@ -31,8 +31,10 @@
 
 #include "MemoryLeakCheck.h"
 
+#ifdef ANDROID
 jclass qtApplicationClass;
 jmethodID getSurfaceMethod;
+#endif
 
 using namespace std;
 
