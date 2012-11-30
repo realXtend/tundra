@@ -38,6 +38,7 @@
 #include "OgreWorld.h"
 #include "ConfigAPI.h"
 #include "OgreMaterialUtils.h"
+#include "AssetItemMenuHandler.h"
 
 #include <QToolTip>
 #include <QCursor>
@@ -106,6 +107,8 @@ void SceneStructureModule::Initialize()
         toolTip = new QLabel(toolTipWidget);
         toolTip->setTextFormat(Qt::RichText);
         toolTipWidget->layout()->addWidget(toolTip);
+
+        assetItemMenuHandler = new AssetItemMenuHandler(framework_);
     }
 }
 
