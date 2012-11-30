@@ -205,6 +205,7 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
     cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigidbody extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
     cmdLineDescs.commands["--noClientPhysics"] = "Disables rigidbody handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
+    cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
     
     apiVersionInfo = new VersionInfo(Application::Version());
     applicationVersionInfo = new VersionInfo(Application::Version());

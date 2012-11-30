@@ -18,7 +18,7 @@ bool ProfilerBlock::QueryCapability()
     LARGE_INTEGER frequency;
     BOOL result = QueryPerformanceFrequency(&frequency);
     return result != 0;
-#elif defined(_POSIX_C_SOURCE)
+#elif defined(ANDROID) || defined(_POSIX_C_SOURCE)
     return true;
 #endif
 }
