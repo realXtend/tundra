@@ -30,19 +30,19 @@ void TUNDRACORE_API PrintLogMessage(u32 logChannel, const char *str);
 /// Returns true if the given log channel is enabled.
 bool TUNDRACORE_API IsLogChannelEnabled(u32 logChannel);
 
-static void LogError(const std::string &msg)    { if (IsLogChannelEnabled(LogChannelError)) PrintLogMessage(LogChannelError, ("Error: " + msg + "\n").c_str());                 }
-static void LogWarning(const std::string &msg)  { if (IsLogChannelEnabled(LogChannelWarning)) PrintLogMessage(LogChannelWarning, ("Warning: " + msg + "\n").c_str());               }
-static void LogInfo(const std::string &msg)     { if (IsLogChannelEnabled(LogChannelInfo)) PrintLogMessage(LogChannelInfo, (msg + "\n").c_str());                             }
-static void LogDebug(const std::string &msg)    { if (IsLogChannelEnabled(LogChannelDebug)) PrintLogMessage(LogChannelDebug, ("Debug: " + msg + "\n").c_str());                 }
+static inline void LogError(const std::string &msg)    { if (IsLogChannelEnabled(LogChannelError)) PrintLogMessage(LogChannelError, ("Error: " + msg + "\n").c_str());                 }
+static inline void LogWarning(const std::string &msg)  { if (IsLogChannelEnabled(LogChannelWarning)) PrintLogMessage(LogChannelWarning, ("Warning: " + msg + "\n").c_str());               }
+static inline void LogInfo(const std::string &msg)     { if (IsLogChannelEnabled(LogChannelInfo)) PrintLogMessage(LogChannelInfo, (msg + "\n").c_str());                             }
+static inline void LogDebug(const std::string &msg)    { if (IsLogChannelEnabled(LogChannelDebug)) PrintLogMessage(LogChannelDebug, ("Debug: " + msg + "\n").c_str());                 }
 
-static void LogError(const char *msg)    { if (IsLogChannelEnabled(LogChannelError)) PrintLogMessage(LogChannelError, (std::string("Error: ") + msg + "\n").c_str());           }
-static void LogWarning(const char *msg)  { if (IsLogChannelEnabled(LogChannelWarning)) PrintLogMessage(LogChannelWarning, (std::string("Warning: ") + msg + "\n").c_str());         }
-static void LogInfo(const char *msg)     { if (IsLogChannelEnabled(LogChannelInfo)) PrintLogMessage(LogChannelInfo, (std::string(msg) + "\n").c_str());                       }
-static void LogDebug(const char *msg)    { if (IsLogChannelEnabled(LogChannelDebug)) PrintLogMessage(LogChannelDebug, (std::string("Debug: ") + msg + "\n").c_str());           }
+static inline void LogError(const char *msg)    { if (IsLogChannelEnabled(LogChannelError)) PrintLogMessage(LogChannelError, (std::string("Error: ") + msg + "\n").c_str());           }
+static inline void LogWarning(const char *msg)  { if (IsLogChannelEnabled(LogChannelWarning)) PrintLogMessage(LogChannelWarning, (std::string("Warning: ") + msg + "\n").c_str());         }
+static inline void LogInfo(const char *msg)     { if (IsLogChannelEnabled(LogChannelInfo)) PrintLogMessage(LogChannelInfo, (std::string(msg) + "\n").c_str());                       }
+static inline void LogDebug(const char *msg)    { if (IsLogChannelEnabled(LogChannelDebug)) PrintLogMessage(LogChannelDebug, (std::string("Debug: ") + msg + "\n").c_str());           }
 
 ///\todo UTF-8 -enable the following.
 
-static void LogError(const QString &msg)    { if (IsLogChannelEnabled(LogChannelError)) PrintLogMessage(LogChannelError, ("Error: " + msg + "\n").toStdString().c_str());       }
-static void LogWarning(const QString &msg)  { if (IsLogChannelEnabled(LogChannelWarning)) PrintLogMessage(LogChannelWarning, ("Warning: " + msg + "\n").toStdString().c_str());     }
-static void LogInfo(const QString &msg)     { if (IsLogChannelEnabled(LogChannelInfo)) PrintLogMessage(LogChannelInfo, (msg + "\n").toStdString().c_str());                   }
-static void LogDebug(const QString &msg)    { if (IsLogChannelEnabled(LogChannelDebug)) PrintLogMessage(LogChannelDebug, ("Debug: " + msg + "\n").toStdString().c_str());       }
+static inline void LogError(const QString &msg)    { if (IsLogChannelEnabled(LogChannelError)) PrintLogMessage(LogChannelError, ("Error: " + msg + "\n").toStdString().c_str());       }
+static inline void LogWarning(const QString &msg)  { if (IsLogChannelEnabled(LogChannelWarning)) PrintLogMessage(LogChannelWarning, ("Warning: " + msg + "\n").toStdString().c_str());     }
+static inline void LogInfo(const QString &msg)     { if (IsLogChannelEnabled(LogChannelInfo)) PrintLogMessage(LogChannelInfo, (msg + "\n").toStdString().c_str());                   }
+static inline void LogDebug(const QString &msg)    { if (IsLogChannelEnabled(LogChannelDebug)) PrintLogMessage(LogChannelDebug, ("Debug: " + msg + "\n").toStdString().c_str());       }
