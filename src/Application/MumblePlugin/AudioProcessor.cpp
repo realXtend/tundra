@@ -224,6 +224,9 @@ namespace MumbleAudio
 
                     // Echo-cancelled output should be copied over
                     // existing output in PCM frames
+                    // XXX: Apparently we can swap data between two
+                    // vectors, which should make this *REALLY* fast(!)
+                    pcmFrame.data.swap(outBuf.data);
                 }
 
                 if (detectVAD)
