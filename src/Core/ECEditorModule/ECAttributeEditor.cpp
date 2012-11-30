@@ -1728,9 +1728,15 @@ void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *f
     }
 
     if (pickButton)
+    {
+        pickButton->setAttribute(Qt::WA_LayoutUsesWidgetRect, true);
         connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
+    }
     if (editButton)
+    {
+        editButton->setAttribute(Qt::WA_LayoutUsesWidgetRect, true);
         connect(editButton, SIGNAL(clicked(bool)), SLOT(OpenEditor()));
+    }
 }
 
 void AssetReferenceAttributeEditor::OpenAssetsWindow()
