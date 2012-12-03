@@ -3,6 +3,7 @@
   <!-- TODO For most parts this file is unnecessary duplicate of plugins.xml and only adds one new line (LoginScreen.js)! -->
   <plugin path="OpenAssetImport" />             <!-- Does not depend on any other module -->
   <plugin path="OgreRenderingModule" />         <!-- Depends on OpenAssetImport -->
+  <plugin path="SceneInteract" />               <!-- Depends on OgreRenderingModule -->
   <plugin path="EnvironmentModule" />           <!-- Depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" />               <!-- Depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" />        <!-- Depends on OgreRenderingModule -->

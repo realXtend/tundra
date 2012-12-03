@@ -4,6 +4,7 @@
        Refactor so that this file has only BrowserUiPlugin and browserui/LoginBrowser.js -->
   <plugin path="OpenAssetImport" />             <!-- Does not depend on any other module -->
   <plugin path="OgreRenderingModule" />         <!-- Depends on OpenAssetImport -->
+  <plugin path="SceneInteract" />               <!-- Depends on OgreRenderingModule -->
   <plugin path="EnvironmentModule" />           <!-- Depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" />               <!-- Depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" />        <!-- Depends on OgreRenderingModule -->
