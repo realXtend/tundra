@@ -6,7 +6,7 @@ MocFolder ()
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_FILES ${H_FILES})
+file (GLOB MOC_FILES EC_SlideShow.h EC_WebView.h EC_WidgetBillboard.h EC_WidgetCanvas.h SceneWidgetComponents.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # This controls if we link against BrowserUiPlugin
