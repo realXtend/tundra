@@ -222,7 +222,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 if (!node)
                 {
                     LogError("EC_Mesh::Raycast called for a mesh entity that is not attached to a scene node. Returning no result.");
-                    return false;
+                    return 0;
                 }
 
                 assume(!float3(node->_getDerivedScale()).IsZero());

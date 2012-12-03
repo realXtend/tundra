@@ -69,7 +69,7 @@ public:
     ~EC_DynamicComponent();
 
     /// IComponent override.
-    void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
+    void SerializeTo(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary = false) const;
 
     /// IComponent override.
     void DeserializeFrom(QDomElement& element, AttributeChange::Type change);

@@ -10,17 +10,17 @@
         <!-- zero = failure, nonzero = success -->
         <u8 name="success" />
         <!-- Note: in case of failure, userID is undefined -->
-        <u8 name="userID" />
+        <u32 name="userID" />
         <!-- Stores custom data the server tells back to the client immediately on connect. -->
         <s8 name="loginReplyData" dynamicCount="16" />
     </message>
     <!-- Server to other clients when a client joins -->
     <message id="102" name="ClientJoined" reliable="true" inOrder="true" priority="100">
-        <u8 name="userID" />
+        <u32 name="userID" />
     </message>
     <!-- Server to other clients when a client left or timed out -->
     <message id="103" name="ClientLeft" reliable="true" inOrder="true" priority="100">
-        <u8 name="userID" />
+        <u32 name="userID" />
     </message>
 
     <!-- SCENE REPLICATION, messages 110 - 119, use immediate mode serialization and are defined in code -->

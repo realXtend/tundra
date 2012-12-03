@@ -5,7 +5,7 @@
    <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
    <attribute value="fish.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="glow.material" name="Mesh materials"/>
+   <attribute value="fish_glow.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>

@@ -200,6 +200,11 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
             if (scriptAssets.empty())
                 HandleAttributeChanged(&scriptRef, AttributeChange::Default);
         }
+        else // If runmode is changed and shouldn't run, unload script assets and script instance 
+        {
+            scriptAssets.clear();
+            SetScriptInstance(0);
+        }
     }
     else if (attribute == &runOnLoad)
     {

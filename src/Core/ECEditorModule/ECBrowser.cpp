@@ -35,6 +35,12 @@
 
 #include "MemoryLeakCheck.h"
 
+#ifdef Q_WS_MAC
+#define KEY_DELETE_SHORTCUT QKeySequence(Qt::CTRL + Qt::Key_Backspace)
+#else
+#define KEY_DELETE_SHORTCUT QKeySequence::Delete
+#endif
+
 ECBrowser::ECBrowser(Framework *framework, QWidget *parent):
     QtTreePropertyBrowser(parent),
     menu_(0),
@@ -60,7 +66,7 @@ ECBrowser::ECBrowser(Framework *framework, QWidget *parent):
     connect(treeWidget_, SIGNAL(itemExpanded(QTreeWidgetItem *)), SLOT(ResizeHeaderToContents()));
     connect(treeWidget_, SIGNAL(itemCollapsed(QTreeWidgetItem *)), SLOT(ResizeHeaderToContents()));
 
-    QShortcut *delete_shortcut = new QShortcut(QKeySequence::Delete, this);
+    QShortcut *delete_shortcut = new QShortcut(KEY_DELETE_SHORTCUT, this);
     QShortcut *copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
     QShortcut *paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
     connect(delete_shortcut, SIGNAL(activated()), SLOT(OnDeleteAction()), Qt::UniqueConnection);
@@ -413,7 +419,7 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
         //Add shortcuts for actions
         copyComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_C));
         pasteComponent->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_V));
-        deleteAction->setShortcut(QKeySequence::Delete);
+        deleteAction->setShortcut(KEY_DELETE_SHORTCUT);
 
         QTreeWidgetItem *parentItem = treeWidgetItem;
         while(parentItem->parent())
@@ -603,7 +609,7 @@ void ECBrowser::CopyComponent()
         ComponentWeakPtr pointer = (*iter)->components_[0];
         if (!pointer.expired())
         {
-            pointer.lock()->SerializeTo(temp_doc, sceneElem);
+            pointer.lock()->SerializeTo(temp_doc, sceneElem, true);
             temp_doc.appendChild(sceneElem);
             clipboard->setText(temp_doc.toString());
         }
@@ -635,15 +641,24 @@ void ECBrowser::PasteComponent()
             ComponentPtr component;
             QString type = comp_elem.attribute("type");
             QString name = comp_elem.attribute("name");
-            if (!entity_ptr->GetComponent(type, name))
-            {
-                component = framework_->Scene()->CreateComponentByName(entity_ptr->ParentScene(), type, name);
-                entity_ptr->AddComponent(component, AttributeChange::Default);
-            }
-            else
-                component = entity_ptr->GetComponent(type, name);
-            if (component)
-                component->DeserializeFrom(comp_elem, AttributeChange::Default);
+            QString sync = comp_elem.attribute("sync");
+            QString temp = comp_elem.attribute("temporary");
+
+            int copy = 2;
+            QString newName = name;
+            while(entity_ptr->GetComponent(type, newName))
+                newName = QString(name + " (%1)").arg(copy++);
+
+            comp_elem.setAttribute("name", newName);
+            component = framework_->Scene()->CreateComponentByName(entity_ptr->ParentScene(), type, newName);
+
+            if (!sync.isEmpty())
+                component->SetReplicated(ParseBool(sync));
+            if (!temp.isEmpty())
+                component->SetTemporary(ParseBool(temp));
+
+            entity_ptr->AddComponent(component, AttributeChange::Default);
+            component->DeserializeFrom(comp_elem, AttributeChange::Default);
         }
     }
 }

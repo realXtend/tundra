@@ -45,9 +45,9 @@ float SlaveModifier::GetMappedValue(float master_value)
     // Find out the minimum/maximum range of supported master positions
     float min_value = 1.0f;
     float max_value = 0.0f;
-    uint i;
+    int i;
     
-    for (i = 0; i < mapping_.size(); ++i)
+    for (i = 0; i < (int)mapping_.size(); ++i)
     {
         if (mapping_[i].master_ < min_value)
             min_value = mapping_[i].master_;
@@ -62,14 +62,14 @@ float SlaveModifier::GetMappedValue(float master_value)
         master_value = max_value;
     
     // Find beginning pos. of interpolation
-    for (i = mapping_.size()-1; i >= 0; --i)
+    for (i = (int)mapping_.size()-1; i >= 0; --i)
     {
         if (mapping_[i].master_ <= master_value)
             break;
     }
 
     // If at the endpoint, simply return the value at end
-    if (i == mapping_.size()-1)
+    if (i == (int)mapping_.size()-1)
     {
         return mapping_[i].slave_;
     }

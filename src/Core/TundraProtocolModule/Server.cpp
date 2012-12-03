@@ -184,7 +184,7 @@ QVariantList Server::GetConnectionIDs() const
     return ret;
 }
 
-UserConnectionPtr Server::GetUserConnection(int connectionID) const
+UserConnectionPtr Server::GetUserConnection(unsigned int connectionID) const
 {
     foreach(const UserConnectionPtr &user, AuthenticatedUsers())
         if (user->userID == connectionID)

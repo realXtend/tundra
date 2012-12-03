@@ -14,9 +14,7 @@
 #include "Geometry/Triangle.h"
 #include "IRenderer.h"
 
-#ifdef ASSIMP_ENABLED
-#include "OpenAssetImport.h"
-#endif
+class OpenAssetImport;
 
 /// Represents an Ogre .mesh loaded to the GPU.
 class OGRE_MODULE_API OgreMeshAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
