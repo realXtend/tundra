@@ -281,8 +281,12 @@ public:
 
     std::map<entity_id_t, bool> visibleEntities;
 
+    std::map<entity_id_t, float> relevanceFactors;
+
     Quat clientOrientation;
-    float3 clientLocation;
+    Quat initialOrientation;
+    float3 clientLocation;  //Clients current pos
+    float3 initialLocation; //Clients initial pos
 
 signals:
     /// This signal is emitted when a entity is being added to the client sync state.
