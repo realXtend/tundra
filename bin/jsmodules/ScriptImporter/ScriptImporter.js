@@ -4,7 +4,7 @@ engine.IncludeFile("lib/class.js");
 engine.ImportExtension("qt.core");
 
 var appInstallDir = QDir.fromNativeSeparators(application.installationDirectory);
-var uiBase = appInstallDir + "jsmodules/scriptimport/ui/";
+var uiBase = appInstallDir + "jsmodules/ScriptImporter/ui/";
 
 var _doNotAlterAssetRefItemText = "<Do not alter asset reference>";
 var _scriptToBeImportedText = "Script to be imported: ";
@@ -39,7 +39,7 @@ var ScriptImporter = Class.extend
         this.ui.optionsGroup.addButton(this.ui.addToExistingOption, 1);
         
         this.ui.clearButton = new QToolButton(this.ui.searchEdit);
-        var iconClear = new QIcon(uiBase + "clear.png");
+        var iconClear = new QIcon(uiBase + "Clear.png");
         this.ui.clearButton.icon = iconClear;
         this.ui.clearButton.cursor = Qt.ArrowCursor;
         this.ui.clearButton.hide();
