@@ -168,9 +168,9 @@ namespace MumbleAudio
         }
 
         QList<QByteArray> encodedFrames;
-        for (std::vector<SoundBuffer>::const_iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
+        for (std::vector<SoundBuffer>::iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
         {
-            const SoundBuffer &pcmFrame = (*pcmIter);
+            SoundBuffer &pcmFrame = (*pcmIter);
             if (pcmFrame.data.size() == 0)
                 continue;
 
