@@ -5,6 +5,7 @@
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "InterestManager.h"
+#include "LoggingFunctions.h"
 
 InterestManager* InterestManager::thisPointer_ = NULL;
 
@@ -63,6 +64,7 @@ bool InterestManager::CheckRelevance(UserConnectionPtr conn, Entity* changed_ent
     float3 f = client_orientation.Mul(scene->ForwardVector());     //Calculate the forward vector of the client
 
     params.dot = v.Dot(f);                                         //Finally the dot product is calculated so we know if the entity is in front of the player or not
+
     params.distance = d.LengthSq();
     params.connection = conn;
     params.changed_entity = changed_entity;
@@ -76,6 +78,18 @@ bool InterestManager::CheckRelevance(UserConnectionPtr conn, Entity* changed_ent
         UpdateLastUpdatedEntity(changed_entity->Id());
 
     return accepted;
+}
+
+void InterestManager::UpdateRelevance(UserConnectionPtr conn, entity_id_t id, float relevance)
+{
+    std::map<entity_id_t, float>::iterator it;
+
+    it = conn->syncState->relevanceFactors.find(id);
+
+    if(it == conn->syncState->relevanceFactors.end()) //Theres no entry with this entity_id
+        conn->syncState->relevanceFactors.insert(std::make_pair(id, relevance));
+    else
+        it->second = relevance;
 }
 
 void InterestManager::UpdateEntityVisibility(UserConnectionPtr conn, entity_id_t id, bool visible)

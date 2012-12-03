@@ -31,6 +31,9 @@ public:
     /// Returns the current active filtering time in milliseconds
     int ElapsedTime();
 
+    /// Update the relevance factor of a specific entity for future inspection
+    void UpdateRelevance(UserConnectionPtr conn, entity_id_t id, float relevance);
+
     /// Updates a specific map which contains a list of entities and their visibilities. (client specific map)
     void UpdateEntityVisibility(UserConnectionPtr connection, entity_id_t id, bool visible);
 
