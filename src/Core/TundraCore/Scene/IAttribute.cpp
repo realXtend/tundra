@@ -240,7 +240,7 @@ template<> const QString TUNDRACORE_API & Attribute<float2>::TypeName() const
 
 template<> const QString TUNDRACORE_API & Attribute<float3>::TypeName() const
 {
-    return cAttributeFloat4TypeName;
+    return cAttributeFloat3TypeName;
 }
 
 template<> const QString TUNDRACORE_API & Attribute<float4>::TypeName() const
