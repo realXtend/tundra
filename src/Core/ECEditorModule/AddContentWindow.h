@@ -21,6 +21,8 @@ class QTreeWidgetItem;
 class QProgressBar;
 class QLabel;
 
+typedef QList<QTreeWidgetItem *> SelectedItemsList;
+
 /// Tree widget that allows multiselection and handles 'space' key press for checking/unchecking checkboxes
 /// @cond PRIVATE
 class EntityAndAssetTreeWidget : public QTreeWidget
@@ -30,6 +32,8 @@ public:
     EntityAndAssetTreeWidget(QWidget *parent = 0);
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
+private:
+    void ToggleCheckedState(bool checkAllInsteadOfToggle);
 };
 /// @endcond
 

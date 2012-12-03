@@ -146,8 +146,9 @@ public:
     /// Serializes this component and all its Attributes to the given XML document.
     /** @param doc The XML document to serialize this component to.
         @param baseElement Points to the <entity> element of the document doc. This element is the Entity that
-                owns this component. This component will be serialized as a child tree of this element. */
-    virtual void SerializeTo(QDomDocument& doc, QDomElement& baseElement) const;
+                owns this component. This component will be serialized as a child tree of this element. 
+        @param serializeTemporary Serialize temporary components for application-specific purposes. The default value is false */
+    virtual void SerializeTo(QDomDocument& doc, QDomElement& baseElement, bool serializeTemporary = false) const;
 
     /// Deserializes this component from the given XML document.
     /** @param element Points to the <component> element that is the root of the serialized form of this Component.
@@ -305,8 +306,9 @@ signals:
     
 protected:
     /// Helper function for starting component serialization.
-    /** This function creates an XML element <component> with the name of this component, adds it to the document, and returns it. */
-    QDomElement BeginSerialization(QDomDocument& doc, QDomElement& baseElement) const;
+    /** This function creates an XML element <component> with the name of this component, adds it to the document, and returns it. 
+        If serializeTemporary is true, the attribute 'temporary' is added to the XML element. Default is false. */
+    QDomElement BeginSerialization(QDomDocument& doc, QDomElement& baseElement, bool serializeTemporary = false) const;
 
     /// Helper function for adding an attribute to the component xml serialization.
     void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& value) const;
