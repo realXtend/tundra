@@ -134,8 +134,10 @@ namespace MumbleAudio
 
         if (speexPreProcessor)
             speex_preprocess_state_destroy(speexPreProcessor);
-        if (speexEcho)
+        if (speexEcho) {
             speex_echo_state_destroy(speexEcho);
+            speexEcho = 0;
+        }
     }
 
     void AudioProcessor::timerEvent(QTimerEvent *event)
@@ -209,24 +211,25 @@ namespace MumbleAudio
                     qDebug("pcmFrame.data.size = %lu, micAudioState.frames.size = %lu",
                         pcmFrame.data.size(), micAudioState.frames.size());
                     int bufsize = qMin(pcmFrame.data.size(), micAudioState.frames.size());
-                    qDebug("Resizing echo-cancelled audio buffer to %d", bufsize);
-                    outBuf.data.resize(bufsize);
+                    if (bufsize > 0) {
+                        qDebug("Resizing echo-cancelled audio buffer to %d", bufsize);
+                        outBuf.data.resize(bufsize);
 
+                        // Input (mic) data is from per-user UserAudioState
+                        // Output (speaker) data is from PCM frame
+                        // Echo-cancelled data is put to outBuf
+                        speex_echo_cancellation(speexEcho,
+                            (spx_int16_t*)&micAudioState.frames[0],
+                            (spx_int16_t*)&pcmFrame.data[0],
+                            (spx_int16_t*)&outBuf.data[0] );
+                        speex_preprocess_run(speexPreProcessor, (spx_int16_t*)&outBuf.data[0]);
 
-                    // Input (mic) data is from per-user UserAudioState
-                    // Output (speaker) data is from PCM frame
-                    // Echo-cancelled data is put to outBuf
-                    speex_echo_cancellation(speexEcho,
-                        (spx_int16_t*)&micAudioState.frames[0],
-                        (spx_int16_t*)&pcmFrame.data[0],
-                        (spx_int16_t*)&outBuf.data[0] );
-                    speex_preprocess_run(speexPreProcessor, (spx_int16_t*)&outBuf.data[0]);
-
-                    // Echo-cancelled output should be copied over
-                    // existing output in PCM frames
-                    // XXX: Apparently we can swap data between two
-                    // vectors, which should make this *REALLY* fast(!)
-                    pcmFrame.data.swap(outBuf.data);
+                        // Echo-cancelled output should be copied over
+                        // existing output in PCM frames
+                        // XXX: Apparently we can swap data between two
+                        // vectors, which should make this *REALLY* fast(!)
+                        pcmFrame.data.swap(outBuf.data);
+                    }
                 }
 
                 if (detectVAD)
