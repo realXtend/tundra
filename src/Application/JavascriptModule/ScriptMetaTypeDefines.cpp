@@ -263,6 +263,7 @@ static QScriptValue math_SetMathBreakOnAssume(QScriptContext *context, QScriptEn
     return QScriptValue();
 }
 
+/// @todo Dead code, evalue if this function is needed
 static QScriptValue math_MathBreakOnAssume(QScriptContext * /*context*/, QScriptEngine *engine)
 {
     return qScriptValueFromValue(engine, MathBreakOnAssume());
