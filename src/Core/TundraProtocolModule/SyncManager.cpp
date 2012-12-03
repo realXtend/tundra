@@ -106,32 +106,21 @@ SyncManager::~SyncManager()
 {
 }
 
-void SyncManager::ResetAvatarPositions()
+void SyncManager::SendCameraUpdateRequest(UserConnectionPtr conn, bool enabled)
 {
-    Scene *scene = framework_->Scene()->MainCameraScene();
+    const int maxMessageSizeBytes = 1400;
 
-    if(scene == NULL)
-        return;
+    kNet::NetworkMessage *msg = conn->connection->StartNewMessage(cCameraOrientationRequest, maxMessageSizeBytes);
 
-    UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+    msg->contentID = 0;
+    msg->inOrder = true;
+    msg->reliable = true;
 
-    for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-    {
-        EntityPtr entity = scene->EntityByName("Avatar" + QString::number((*i)->ConnectionId()));
+    kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
 
-        EC_Placeable *location = entity->GetComponent<EC_Placeable>().get();
+    ds.Add<u8>(enabled);
 
-        float3 pos = location->transform.Get().pos;
-
-        LogError("Old X: " + QString::number(pos.x) + "Old Y: " + QString::number(pos.y) + "Old Z: " + QString::number(pos.z));
-
-        if((*i)->syncState)
-        {
-            pos = (*i)->syncState->clientLocation;
-            LogError("New X: " + QString::number(pos.x) + "New Y: " + QString::number(pos.y) + "New Z: " + QString::number(pos.z));
-            location->SetPosition(pos);
-        }
-    }
+    QueueMessage(conn->connection, cCameraOrientationRequest, true, true, ds);
 }
 
 void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint)
@@ -148,21 +137,7 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
 
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
             if ((*i)->syncState)
-            {
-                const int maxMessageSizeBytes = 1400;
-
-                kNet::NetworkMessage *msg = (*i)->connection->StartNewMessage(cCameraOrientationRequest, maxMessageSizeBytes);
-
-                msg->contentID = 0;
-                msg->inOrder = true;
-                msg->reliable = true;
-
-                kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
-
-                ds.Add<u8>(enabled);
-
-                QueueMessage((*i)->connection, cCameraOrientationRequest, true, true, ds);
-            }
+                SendCameraUpdateRequest((*i), enabled);
 
         InterestManager *IM = 0;
         MessageFilter *filter = 0;
@@ -352,7 +327,7 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
 
 void SyncManager::NewUserConnected(const UserConnectionPtr &user)
 {
-    PROFILE(SyncManager_NewUserConnected);
+    PROFILE(SyncManager_NewUserConnected);   
 
     ScenePtr scene = scene_.lock();
     if (!scene)
@@ -368,6 +343,9 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
     // Mark all entities in the sync state as new so we will send them
     user->syncState = boost::make_shared<SceneSyncState>(user->ConnectionId(), owner_->IsServer());
     user->syncState->SetParentScene(scene_);
+
+    if(interestManager) //If the server is running InterestManager, inform the connected user that the server wants camera updates
+        SendCameraUpdateRequest(user, true);
 
     if (owner_->IsServer())
         emit SceneStateCreated(user.get(), user->syncState.get());
@@ -1604,6 +1582,7 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
     assert(source);
 
     ScenePtr scene = scene_.lock();
+
     if (!scene)
         return;
 
@@ -1612,20 +1591,42 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
 
     float3 clientpos;
 
+    Quat orientation;
+
     //Read the position of the client from the message
+    orientation.x = dd.ReadSignedFixedPoint(11, 8);
+    orientation.y = dd.ReadSignedFixedPoint(11, 8);
+    orientation.z = dd.ReadSignedFixedPoint(11, 8);
+    orientation.w = dd.ReadSignedFixedPoint(11, 8);
+
     clientpos.x = dd.ReadSignedFixedPoint(11, 8);
     clientpos.y = dd.ReadSignedFixedPoint(11, 8);
     clientpos.z = dd.ReadSignedFixedPoint(11, 8);
 
     //Read the orientation of the client
+    /*
     float3 forward;
     dd.ReadNormalizedVector3D(9, 8, forward.x, forward.y, forward.z);
     float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
-
+*/
     //Finally update the orientation and location
-    user->syncState->clientOrientation = Quat(orientation);
+
+    if(user->syncState->initialLocation.IsFinite()) //If this is the first camera update, save it to the initialPosition variable
+    {
+        user->syncState->initialLocation = clientpos;
+        user->syncState->initialOrientation = orientation;
+    }
+
+    user->syncState->clientOrientation = orientation;
     user->syncState->clientLocation = clientpos;
-            LogError("X: " + QString::number(clientpos.x) + "Y: " + QString::number(clientpos.y) + "Z: " + QString::number(clientpos.z));
+
+#if 0
+    ::LogError(
+                " Location: x: "   + QString::number(clientpos.x) +
+                " y: "             + QString::number(clientpos.y) +
+                " z: "             + QString::number(clientpos.z)
+              );
+#endif
 }
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)

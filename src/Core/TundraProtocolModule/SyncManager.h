@@ -71,6 +71,8 @@ public slots:
         @param int raycastint specifies the raycasting interval for the ray visibility filter. */
     void UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint);
 
+    void SendCameraUpdateRequest(UserConnectionPtr conn, bool enabled);
+
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.
     /// @note See signals of the SceneSyncState object to build prioritization logic how the sync state is filled.
