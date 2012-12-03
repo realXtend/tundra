@@ -41,6 +41,7 @@ Client::Client(TundraLogicModule* owner) :
     loginstate_(NotConnected),
     reconnect_(false),
     sendCameraUpdates_(0),
+    sendInitialCameraUpdate_(1),
     client_id_(0)
 {
 }
@@ -75,8 +76,8 @@ void Client::Login(const QUrl& loginUrl)
     QList<QPair<QString, QString> > queryItems = loginUrl.queryItems();
     for (int i=0; i<queryItems.size(); i++)
     {
-        // Skip the ones that are handled by below logic
         QPair<QString, QString> queryItem = queryItems.at(i);
+        // Skip the ones that are handled by below logic
         if (queryItem.first == "username" || queryItem.first == "password" || queryItem.first == "protocol")
             continue;
         QByteArray utfQueryValue = queryItem.second.toUtf8();
@@ -150,6 +151,12 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         ::LogInfo("Client::Login: No protocol specified, using the default value.");
         protocol = owner_->GetKristalliModule()->defaultTransport;
     }
+    QString p = "";
+    if (protocol == kNet::SocketOverTCP)
+        p = "tcp";
+    else if (protocol == kNet::SocketOverUDP)
+        p = "udp";
+        
     // Set all login properties we have knowledge of. 
     // Others may have been added before calling this function.
     SetLoginProperty("protocol", QString(SocketTransportLayerToString(protocol).c_str()).toLower());
@@ -283,6 +290,9 @@ void Client::CheckLogin()
 
 void Client::GetCameraOrientation()
 {
+    if(sendInitialCameraUpdate_)
+        sendCameraUpdates_ = true;
+
     if(!sendCameraUpdates_)
         return;
 
@@ -324,23 +334,45 @@ void Client::GetCameraOrientation()
 
     const Transform &t = camera_placeable->transform.Get();
 
+    ::LogError("X: " + QString::number(location.x) + "Y: " + QString::number(location.y) + "Z: " + QString::number(location.z));
+
     //Serialize the position of the client inside the message. Sends 57 bits.
-    ds.AddSignedFixedPoint(11, 8, t.pos.x);
-    ds.AddSignedFixedPoint(11, 8, t.pos.y);
-    ds.AddSignedFixedPoint(11, 8, t.pos.z);
+    ds.AddSignedFixedPoint(11, 8, orientation.x);
+    ds.AddSignedFixedPoint(11, 8, orientation.y);
+    ds.AddSignedFixedPoint(11, 8, orientation.z);
+    ds.AddSignedFixedPoint(11, 8, orientation.w);
+
+    ds.AddSignedFixedPoint(11, 8, location.x);
+    ds.AddSignedFixedPoint(11, 8, location.y);
+    ds.AddSignedFixedPoint(11, 8, location.z);
 
     //Serialize the orientation of the client. Sends 17 bits.
+    /*
     float3x3 rot = t.Orientation3x3();
     float3 forward = rot.Col(2);
     forward.Normalize();
     ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8);
-
+*/
     //Update the current location and orientation of the client.
     currentcameraorientation_ = orientation;
     currentcameralocation_ = location;
 
+#if 0
+    ::LogError(
+                " Location: x: "   + QString::number(location.x) +
+                " y: "             + QString::number(location.y) +
+                " z: "             + QString::number(location.z)
+              );
+#endif
+
     // Finally send the message
     SendCameraOrientation(ds, msg);
+
+    if(sendInitialCameraUpdate_)
+    {
+        sendInitialCameraUpdate_ = false;
+        sendCameraUpdates_ = false;
+    }
 }
 
 void Client::SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg)
@@ -418,7 +450,7 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
     emit NetworkMessageReceived(packetId, messageId, data, numBytes);
 }
 
-void Client::HandleCameraOrientationRequest(MessageConnection* source, const MsgCameraOrientationRequest& msg)
+void Client:: HandleCameraOrientationRequest(MessageConnection* source, const MsgCameraOrientationRequest& msg)
 {
     sendCameraUpdates_ = msg.enableCameraUpdates;
 }
