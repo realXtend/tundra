@@ -196,7 +196,6 @@ namespace MumbleAudio
                 //
                 // Our own private MumbleUser 'me' can be NULL, and we
                 // can only do echo-cancellation when it's ready.
-                qDebug("SpeexEchoState = %p", speexEcho);
                 if (speexEcho && me) {
                     SoundBuffer outBuf;
                     // Input audio buffers are held in
@@ -204,7 +203,6 @@ namespace MumbleAudio
                     // Let's (ab)use the internal helpers/wrappers to
                     // get our own user ID from the MumbleUser
                     // associated with our local identity:
-                    qDebug("Echo cancellation for local user ID = %d", me->Id());
                     UserAudioState &micAudioState = inputAudioStates[me->Id()];
 
                     // Output buffer size must match the smaller input buffer
