@@ -101,8 +101,10 @@ namespace MumbleAudio
 
         // Echo-cancellation
         // FIXME: make this tunable
-        if (speexEcho)
+        if (speexEcho) {
             speex_echo_state_destroy(speexEcho);
+            speexEcho = 0;
+        }
         // Use *multi-channel* cancellation [init_mc]
         // We can safely assume there is only one microphone
         // And we go with the hope that there is just one echo
@@ -170,9 +172,9 @@ namespace MumbleAudio
         }
 
         QList<QByteArray> encodedFrames;
-        for (std::vector<SoundBuffer>::iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
+        for (std::vector<SoundBuffer>::const_iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
         {
-            SoundBuffer &pcmFrame = (*pcmIter);
+            const SoundBuffer &pcmFrame = (*pcmIter);
             if (pcmFrame.data.size() == 0)
                 continue;
 
@@ -185,50 +187,6 @@ namespace MumbleAudio
                     suppression = 0;
                 speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &suppression);
                 speex_preprocess_run(speexPreProcessor, (spx_int16_t*)&pcmFrame.data[0]);
-
-                // Echo cancellation
-                // This can only work when echo cancellation state is
-                // set up, and we have data still remaining in the
-                // speaker buffer.
-                //
-                // Outgoing "clean" data is by design empty:
-                // cancellation fills that element in.
-                //
-                // Our own private MumbleUser 'me' can be NULL, and we
-                // can only do echo-cancellation when it's ready.
-                if (speexEcho && me) {
-                    SoundBuffer outBuf;
-                    // Input audio buffers are held in
-                    // AudioStateMap[userid] (provides AudioStateMap).
-                    // Let's (ab)use the internal helpers/wrappers to
-                    // get our own user ID from the MumbleUser
-                    // associated with our local identity:
-                    UserAudioState &micAudioState = inputAudioStates[me->Id()];
-
-                    // Output buffer size must match the smaller input buffer
-                    qDebug("pcmFrame.data.size = %lu, micAudioState.frames.size = %lu",
-                        pcmFrame.data.size(), micAudioState.frames.size());
-                    int bufsize = qMin(pcmFrame.data.size(), micAudioState.frames.size());
-                    if (bufsize > 0) {
-                        qDebug("Resizing echo-cancelled audio buffer to %d", bufsize);
-                        outBuf.data.resize(bufsize);
-
-                        // Input (mic) data is from per-user UserAudioState
-                        // Output (speaker) data is from PCM frame
-                        // Echo-cancelled data is put to outBuf
-                        speex_echo_cancellation(speexEcho,
-                            (spx_int16_t*)&micAudioState.frames[0],
-                            (spx_int16_t*)&pcmFrame.data[0],
-                            (spx_int16_t*)&outBuf.data[0] );
-                        speex_preprocess_run(speexPreProcessor, (spx_int16_t*)&outBuf.data[0]);
-
-                        // Echo-cancelled output should be copied over
-                        // existing output in PCM frames
-                        // XXX: Apparently we can swap data between two
-                        // vectors, which should make this *REALLY* fast(!)
-                        pcmFrame.data.swap(outBuf.data);
-                    }
-                }
 
                 if (detectVAD)
                 {
@@ -325,6 +283,68 @@ namespace MumbleAudio
             peakMic = 0.f;
             speaking = false;
         }
+    }
+
+    // Echo cancellation
+    // This can only work when echo cancellation state is
+    // set up, and we have data still remaining in the
+    // speaker buffer.
+    //
+    // Outgoing "clean" data is by design empty:
+    // cancellation fills that element in.
+    void AudioProcessor::DoEchoCancellation()
+    {
+        mutexOutputPCM.lock();
+        if (pendingPCMFrames.size() == 0)
+        {
+            mutexOutputPCM.unlock();
+            return;
+        }
+
+        // Iterator copied 1:1 from AudioProcessor::timerEvent
+        for (std::vector<SoundBuffer>::iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
+        {
+            SoundBuffer &pcmFrame = (*pcmIter);
+            if (pcmFrame.data.size() == 0)
+                continue;
+
+            // Our own private MumbleUser 'me' can be NULL, and we
+            // can only do echo-cancellation when it's ready.
+            if (speexEcho && me) {
+                SoundBuffer outBuf;
+                // Input audio buffers are held in
+                // AudioStateMap[userid] (provides AudioStateMap).
+                // Let's (ab)use the internal helpers/wrappers to
+                // get our own user ID from the MumbleUser
+                // associated with our local identity:
+                UserAudioState &micAudioState = inputAudioStates[me->Id()];
+
+                // Output buffer size must match the smaller input buffer
+                qDebug("pcmFrame.data.size = %lu, micAudioState.frames.size = %lu",
+                    pcmFrame.data.size(), micAudioState.frames.size());
+                int bufsize = qMin(pcmFrame.data.size(), micAudioState.frames.size());
+                if (bufsize > 0) {
+                    qDebug("Resizing echo-cancelled audio buffer to %d", bufsize);
+                    outBuf.data.resize(bufsize);
+
+                    // Input (mic) data is from per-user UserAudioState
+                    // Output (speaker) data is from PCM frame
+                    // Echo-cancelled data is put to outBuf
+                    speex_echo_cancellation(speexEcho,
+                        (spx_int16_t*)&micAudioState.frames[0],
+                        (spx_int16_t*)&pcmFrame.data[0],
+                        (spx_int16_t*)&outBuf.data[0] );
+                    speex_preprocess_run(speexPreProcessor, (spx_int16_t*)&outBuf.data[0]);
+
+                    // Echo-cancelled output should be copied over
+                    // existing output in PCM frames
+                    // XXX: Apparently we can swap data between two
+                    // vectors, which should make this *REALLY* fast(!)
+                    pcmFrame.data.swap(outBuf.data);
+                }
+            }
+        }
+        mutexOutputPCM.unlock();
     }
 
     void AudioProcessor::SetOutputAudioMuted(bool outputAudioMuted_)

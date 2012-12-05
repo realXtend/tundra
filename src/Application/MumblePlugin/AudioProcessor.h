@@ -55,6 +55,7 @@ namespace MumbleAudio
         ~AudioProcessor();
 
         void GetLevels(float &peakMic, bool &speaking);
+        void DoEchoCancellation();
 
     protected:
         // QThread override.
