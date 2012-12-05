@@ -153,10 +153,11 @@ EntityAndAssetTreeWidget::EntityAndAssetTreeWidget(QWidget *parent) :
 
 void EntityAndAssetTreeWidget::keyPressEvent(QKeyEvent *event)
 {
-    QTreeWidget::keyPressEvent(event);
     switch (event->key())
     {
         case Qt::Key_Space:
+        {
+            event->accept();
             SelectedItemsList selected = selectedItems();
             if (selected.isEmpty())
                 return;
@@ -165,10 +166,7 @@ void EntityAndAssetTreeWidget::keyPressEvent(QKeyEvent *event)
             bool isMixedSelection = false;
 
             if (selected.size() == 1)
-            {
                 selected.at(0)->setCheckState(0, (Qt::CheckState)(Qt::Checked - selected.at(0)->checkState(0)));
-                return;
-            }
             else
             {
                 checkedState = selected.at(0)->checkState(0);
@@ -181,6 +179,14 @@ void EntityAndAssetTreeWidget::keyPressEvent(QKeyEvent *event)
 
                 ToggleCheckedState(isMixedSelection);
             }
+
+            break;
+        }
+        default:
+        {
+            QTreeWidget::keyPressEvent(event);
+            break;
+        }
     }
 }
 
