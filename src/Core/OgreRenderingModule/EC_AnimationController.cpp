@@ -1,5 +1,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#define MATH_OGRE_INTEROP
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Mesh.h"
@@ -9,6 +11,8 @@
 #include "OgreRenderingModule.h"
 #include "CoreStringUtils.h"
 #include "Profiler.h"
+#include "Scene.h"
+#include "OgreWorld.h"
 
 #include <Ogre.h>
 
@@ -16,11 +20,13 @@
 
 #include "MemoryLeakCheck.h"
 
+
 using namespace OgreRenderer;
 
 EC_AnimationController::EC_AnimationController(Scene* scene) :
     IComponent(scene),
     animationState(this, "Animation state", ""),
+    drawSkeleton(this, "Draw skeleton", false),
     mesh(0)
 {
     ResetState();
@@ -274,6 +280,48 @@ void EC_AnimationController::Update(float frametime)
                 continue;    
             if (i->second.high_priority_ == false)
                 animstate->_setBlendMaskData(&lowpriority_mask_[0]);
+        }
+    }
+    if (getdrawSkeleton())
+        DrawSkeleton(frametime);
+}
+
+void EC_AnimationController::DrawSkeleton(float frametime)
+{
+    Ogre::Entity *oEnt = GetEntity();
+    if (oEnt && oEnt->hasSkeleton())
+    {
+        Scene *scene = ParentScene();
+        if (!scene)
+            return;
+
+        OgreWorldPtr world = scene->GetWorld<OgreWorld>();
+        if (!world)
+            return;
+
+        Ogre::Vector3 parentPos = Ogre::Vector3::ZERO;
+        Ogre::Quaternion parentOrt = Ogre::Quaternion::IDENTITY;
+        if (oEnt->getParentNode())
+        {
+            parentPos = oEnt->getParentNode()->_getDerivedPosition();
+            parentOrt = oEnt->getParentNode()->_getDerivedOrientation();
+        }
+
+        Ogre::SkeletonInstance *skeleton = oEnt->getSkeleton();
+        bool red = true;
+        for(ushort i = 0; i < skeleton->getNumBones(); ++i)
+        {
+            Ogre::Bone *bone = skeleton->getBone(i);
+            Ogre::Vector3 pos = parentPos + (parentOrt * bone->_getDerivedPosition());
+            for(ushort ci = 0; ci < bone->numChildren(); ++ci)
+            {
+                Ogre::Vector3 childPos = parentPos + (parentOrt * bone->getChild(ci)->_getDerivedPosition());
+                if (red)
+                    world->DebugDrawLine(pos, childPos, 1.f, 0.f, 0.f, false);
+                else
+                    world->DebugDrawLine(pos, childPos, 0.f, 1.f, 0.f, false);
+            }
+            red = !red;
         }
     }
 }
