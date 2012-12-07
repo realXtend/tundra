@@ -93,6 +93,7 @@ private:
     EC_HydraxImpl *impl;
     AssetRefListener configRefListener;
 
+    void AttributesChanged();
     void RequestConfigAsset();
 
 private slots:
@@ -100,7 +101,6 @@ private slots:
 
     /// Called when the main view active camera has changed.
     void OnActiveCameraChanged(Entity *newActiveCamera);
-    void UpdateAttribute(IAttribute *attr);
 //    void UpdateNoiseModule();
     void Update(float frameTime);
 

@@ -158,12 +158,12 @@ private:
     ActionInvocationMap actionInvokationMappings; ///< List of registered key sequence - action mappings.
     boost::shared_ptr<InputContext> inputContext; ///< Input context for this EC.
 
-private slots:
     /// Alters input context's parameters when attributes are changed.
     /** @param attribute Changed attribute.
-        @param change Change type. */
-    void HandleAttributeUpdated(IAttribute *, AttributeChange::Type change);
+     @param change Change type. */
+    void AttributesChanged();
 
+private slots:
     /// Handles key events from the input system.
     /** Performs entity action for for the parent entity if action mapping is registered for the key event.
         @param e Key event. */

@@ -59,8 +59,6 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
     graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     graphicsView->setLineWidth(0);
 
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
-
     inputContext = GetFramework()->Input()->RegisterInputContext("EC_GraphicsViewCanvas", 1000);
     connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent*)), this, SLOT(OnMouseEventReceived(MouseEvent*)));
 
@@ -105,9 +103,9 @@ void EC_GraphicsViewCanvas::OnGraphicsSceneChanged(const QList<QRectF> &)
     UpdateTexture();
 }
 
-void EC_GraphicsViewCanvas::OnAttributeUpdated(IAttribute *attribute)
+void EC_GraphicsViewCanvas::AttributesChanged()
 {
-    if (attribute == &outputTexture)
+    if (outputTexture.ValueChanged())
     {
         AssetPtr canvasSurface = framework->Asset()->GetAsset(outputTexture.Get());
         if (!canvasSurface && !framework->IsHeadless())
@@ -117,7 +115,7 @@ void EC_GraphicsViewCanvas::OnAttributeUpdated(IAttribute *attribute)
                 ::LogError("Failed to create texture \"" + outputTexture.Get() + "\" for EC_GraphicsViewCanvas!");
         }
     }
-    else if (attribute == &width || attribute == &height)
+    if (width.ValueChanged() || height.ValueChanged())
     {
         graphicsView->resize(width.Get(), height.Get());
         paintTarget->target = QImage(width.Get(), height.Get(), QImage::Format_ARGB32);

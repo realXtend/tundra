@@ -108,7 +108,6 @@ EC_WebView::EC_WebView(Scene *scene) :
 
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
     
     // Prepare render timer
     renderTimer_ = new QTimer(this);
@@ -183,7 +182,6 @@ void EC_WebView::ServerInitialize(TundraLogic::Server *server)
     if (!server || !server->IsRunning())
         return;
     connect(server, SIGNAL(UserDisconnected(int, UserConnection*)), SLOT(ServerHandleDisconnect(int, UserConnection*)), Qt::UniqueConnection);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(ServerHandleAttributeChange(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
 void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connection)
@@ -198,12 +196,6 @@ void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connec
             ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
         }
     }
-}
-
-void EC_WebView::ServerHandleAttributeChange(IAttribute *attribute, AttributeChange::Type changeType)
-{
-    if (attribute == &controllerId)
-        ServerCheckControllerValidity(getcontrollerId());
 }
 
 void EC_WebView::ServerCheckControllerValidity(int connectionID)
@@ -867,8 +859,19 @@ void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type c
     }
 }
 
-void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType)
+void EC_WebView::AttributesChanged()
 {
+    TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+    if (tundraLogic)
+    {
+        if (tundraLogic->IsServer())
+        {
+            if (controllerId.ValueChanged())
+                ServerCheckControllerValidity(getcontrollerId());
+            return;
+        }
+    }
+
     if (webviewUrl.ValueChanged())
     {
         webviewUrl.ClearChangedFlag();
