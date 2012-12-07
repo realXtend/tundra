@@ -21,16 +21,15 @@ EC_ProximityTrigger::EC_ProximityTrigger(Scene *scene) :
     interval(this, "Trigger signal interval", 0.0f)
 {
     SetUpdateMode();
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_ProximityTrigger::~EC_ProximityTrigger()
 {
 }
 
-void EC_ProximityTrigger::OnAttributeUpdated(IAttribute* attr)
+void EC_ProximityTrigger::AttributesChanged()
 {
-    if (attr == &interval)
+    if (interval.ValueChanged())
         SetUpdateMode();
 }
 

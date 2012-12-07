@@ -60,7 +60,6 @@ EC_Mesh::EC_Mesh(Scene* scene) :
         adjustment_node_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Mesh_adjustment_node"));
 
         connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
         connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
         connect(skeletonAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
@@ -841,14 +840,14 @@ void EC_Mesh::UpdateSignals()
     }
 }
 
-void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
+void EC_Mesh::AttributesChanged()
 {
-    if (attribute == &drawDistance)
+    if (drawDistance.ValueChanged())
     {
         if(entity_)
             entity_->setRenderingDistance(drawDistance.Get());
     }
-    else if (attribute == &castShadows)
+    if (castShadows.ValueChanged())
     {
         if(entity_)
         {
@@ -862,7 +861,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             }
         }
     }
-    else if (attribute == &nodeTransformation)
+    if (nodeTransformation.ValueChanged())
     {
         Transform newTransform = nodeTransformation.Get();
         adjustment_node_->setPosition(newTransform.pos);
@@ -878,16 +877,16 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         
         adjustment_node_->setScale(newTransform.scale);
     }
-    else if (attribute == &meshRef)
+    if (meshRef.ValueChanged())
     {
         if (!ViewEnabled())
             return;
-            
+
         if (meshRef.Get().ref.trimmed().isEmpty())
             LogDebug("Warning: Mesh \"" + this->parentEntity->Name() + "\" mesh ref was set to an empty reference!");
         meshAsset->HandleAssetRefChange(&meshRef);
     }
-    else if (attribute == &meshMaterial)
+    if (meshMaterial.ValueChanged())
     {
         if (!ViewEnabled())
             return;
@@ -912,11 +911,11 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             materialAssets[i]->HandleAssetRefChange(framework->Asset(), materials[i].ref);
         }
     }
-    else if(attribute == &skeletonRef)
+    if (skeletonRef.ValueChanged())
     {
         if (!ViewEnabled())
             return;
-        
+
         if (!skeletonRef.Get().ref.isEmpty())
             skeletonAsset->HandleAssetRefChange(&skeletonRef);
     }

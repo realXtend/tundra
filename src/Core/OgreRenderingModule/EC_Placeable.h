@@ -286,11 +286,6 @@ signals:
     void AboutToBeDestroyed();
 
 private slots:
-    /// Handle attributechange
-    /** @param attribute Attribute that changed.
-        @param change Change type. */
-    void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
-
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
     
@@ -310,6 +305,9 @@ private slots:
     void OnComponentAdded(IComponent* component, AttributeChange::Type change);
 
 private:
+    /// Handle attributechange
+    void AttributesChanged();
+
     /// attaches scenenode to parent
     void AttachNode();
     

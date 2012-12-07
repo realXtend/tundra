@@ -62,7 +62,6 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
 
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 
     // Connect window size changes to update rendering as the ogre textures go black.
     if (GetFramework()->Ui()->MainWindow())
@@ -451,9 +450,9 @@ void EC_MediaPlayer::ComponentRemoved(IComponent *component, AttributeChange::Ty
     }
 }
 
-void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType)
+void EC_MediaPlayer::AttributesChanged()
 {
-    if (attribute == &sourceRef)
+    if (sourceRef.ValueChanged())
     {
         if (!mediaPlayer_)
             return;
@@ -497,13 +496,13 @@ void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Ty
             mediaDownloader_->HandleAssetRefChange(framework->Asset(), source, "Binary");
         }
     }
-    else if (attribute == &illuminating)
+    if (illuminating.ValueChanged())
     {
         EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
         if (canvas)
             canvas->SetSelfIllumination(getilluminating());
     }
-    else if (attribute == &enabled)
+    if (enabled.ValueChanged())
     {
         EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
         if (componentPrepared_ && sceneCanvas)
