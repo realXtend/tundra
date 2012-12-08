@@ -293,7 +293,7 @@ bool IComponent::AddAttribute(IAttribute* attr, u8 index)
     return true;
 }
 
-QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const
+QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary) const
 {
     QDomElement comp_element = doc.createElement("component");
     comp_element.setAttribute("type", TypeName());
@@ -301,7 +301,9 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
         comp_element.setAttribute("name", Name());
     // Components with no network sync are never network-serialized. However we might be serializing to a file
     comp_element.setAttribute("sync", BoolToString(replicated));
-    
+    if (serializeTemporary)
+        comp_element.setAttribute("temporary", BoolToString(temporary));
+
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
     else
@@ -414,9 +416,9 @@ void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeCha
         }
 }
 
-void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
+void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary) const
 {
-    QDomElement comp_element = BeginSerialization(doc, base_element);
+    QDomElement comp_element = BeginSerialization(doc, base_element, serializeTemporary);
 
     for(uint i = 0; i < attributes.size(); ++i)
         if (attributes[i])

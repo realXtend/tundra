@@ -157,10 +157,38 @@ void EntityAndAssetTreeWidget::keyPressEvent(QKeyEvent *event)
     switch (event->key())
     {
         case Qt::Key_Space:
-            QList<QTreeWidgetItem *> selected = selectedItems();
-            for (QList<QTreeWidgetItem *>::const_iterator i = selected.constBegin(); i != selected.constEnd(); ++i)
-                (*i)->setCheckState(0, (Qt::CheckState)(Qt::Checked - (*i)->checkState(0)));
-                }
+            SelectedItemsList selected = selectedItems();
+            if (selected.isEmpty())
+                return;
+
+            Qt::CheckState checkedState;
+            bool isMixedSelection = false;
+
+            if (selected.size() == 1)
+            {
+                selected.at(0)->setCheckState(0, (Qt::CheckState)(Qt::Checked - selected.at(0)->checkState(0)));
+                return;
+            }
+            else
+            {
+                checkedState = selected.at(0)->checkState(0);
+                for (SelectedItemsList::const_iterator i = selected.constBegin() + 1; i != selected.constEnd(); ++i)
+                    if ((*i)->checkState(0) != checkedState)
+                    {
+                        isMixedSelection = true;
+                        break;
+                    }
+
+                ToggleCheckedState(isMixedSelection);
+            }
+    }
+}
+
+void EntityAndAssetTreeWidget::ToggleCheckedState(bool checkAllInsteadOfToggle)
+{
+    SelectedItemsList selected = selectedItems();
+    for (SelectedItemsList::const_iterator i = selected.constBegin(); i != selected.constEnd(); ++i)
+        (*i)->setCheckState(0, (checkAllInsteadOfToggle ? Qt::Checked : (Qt::CheckState)(Qt::Checked - (*i)->checkState(0))));
 }
 
 AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :

@@ -71,7 +71,7 @@ public:
     
     /// Gets user by message connection. Returns null if no such connection
     UserConnectionPtr GetUserConnection(kNet::MessageConnection* source) const;
-    UserConnectionPtr GetUserConnection(u8 id) const; ///< @overload @param id Connection ID.
+    UserConnectionPtr GetUserConnection(u32 id) const; ///< @overload @param id Connection ID.
 
     /// What trasport layer to use. Read on startup from "--protocol <udp|tcp>". Defaults to UDP if no start param was given.
     kNet::SocketTransportLayer defaultTransport;
@@ -102,7 +102,7 @@ private:
     void PerformConnection();
 
     /// Allocate a  connection ID for new connection
-    u8 AllocateNewConnectionID() const;
+    u32 AllocateNewConnectionID() const;
     
     /// If true, the connection attempt we've started has not yet been established, but is waiting
     /// for a transition to OK state. When this happens, the MsgLogin message is sent.

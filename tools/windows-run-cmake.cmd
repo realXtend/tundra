@@ -37,6 +37,7 @@ SET SPEEX_ROOT=%DEPS%\speex
 SET VLC_ROOT=%DEPS%\vlc
 SET QXMPP_ROOT=%DEPS%\qxmpp
 SET ZZIPLIB_ROOT=%DEPS%\zziplib
+SET CRUNCH_ROOT=%DEPS%\crunch
 
 :: Disable python untill it has been fixed to windows-build-deps.cmd!
 SET TUNDRA_PYTHON_ENABLED=FALSE
