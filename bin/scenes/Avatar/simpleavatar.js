@@ -1,7 +1,9 @@
 // !ref: default_avatar.avatar
 // !ref: crosshair.js
 
-if (!server.IsRunning() && !framework.IsHeadless())
+var isAndroid = (application.platform == "android");
+
+if (!server.IsRunning() && !framework.IsHeadless() && !isAndroid)
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
@@ -50,6 +52,9 @@ function SimpleAvatar(entity, comp)
 
     this.animsDetected = false;
     this.listenGesture = false;
+
+    // Android finger gestures
+    this.fingersDown = 0;
 
     // Create avatar on server, and camera & inputmapper on client
     if (this.isServer)
@@ -351,11 +356,15 @@ SimpleAvatar.prototype.ClientInitialize = function() {
         this.ownAvatar = true;
         this.ClientCreateInputMapper();
         this.ClientCreateAvatarCamera();
-        this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
+        if (!isAndroid)
+            this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
         var soundlistener = this.me.GetOrCreateComponent("EC_SoundListener", 2, false);
         soundlistener.active = true;
 
         this.me.Action("MouseScroll").Triggered.connect(this, this.ClientHandleMouseScroll);
+        // Use mouselook action on Android for simple panning, as Qt touch events can not be yet accessed
+        if (isAndroid)
+            this.me.Action("MouseLookX").Triggered.connect(this, this.ClientHandleMouseLookX);
         this.me.Action("Zoom").Triggered.connect(this, this.ClientHandleKeyboardZoom);
         this.me.Action("Rotate").Triggered.connect(this, this.ClientHandleRotate);
         this.me.Action("StopRotate").Triggered.connect(this, this.ClientHandleStopRotate);
@@ -461,8 +470,10 @@ SimpleAvatar.prototype.ClientCreateInputMapper = function() {
     // Connect mouse gestures
     var inputContext = inputmapper.GetInputContext();
     inputContext.GestureStarted.connect(this, this.GestureStarted);
+    inputContext.GestureFinished.connect(this, this.GestureFinished);
     inputContext.GestureUpdated.connect(this, this.GestureUpdated);
-    inputContext.MouseMove.connect(this, this.ClientHandleMouseMove);
+    if (!isAndroid)
+        inputContext.MouseMove.connect(this, this.ClientHandleMouseMove);
 
     // Local mapper for mouse scroll and rotate
     var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
@@ -501,67 +512,93 @@ SimpleAvatar.prototype.ClientCreateAvatarCamera = function() {
 }
 
 SimpleAvatar.prototype.GestureStarted = function(gestureEvent) {
-    if (!this.IsCameraActive())
-        return;
-    if (gestureEvent.GestureType() == Qt.PanGesture)
+    if (!isAndroid)
     {
-        this.listenGesture = true;
+        if (!this.IsCameraActive())
+            return;
+        if (gestureEvent.GestureType() == Qt.PanGesture)
+        {
+            this.listenGesture = true;
 
-        var attrs = this.me.dynamiccomponent;
-        if (attrs.GetAttribute("enableRotate")) {
-            var x = new Number(gestureEvent.Gesture().offset.toPoint().x());
-            this.yaw += x;
-            this.me.Exec(2, "SetRotation", this.yaw.toString());
+            var attrs = this.me.dynamiccomponent;
+            if (attrs.GetAttribute("enableRotate")) {
+                var x = new Number(gestureEvent.Gesture().offset.toPoint().x());
+                this.yaw += x;
+                this.me.Exec(2, "SetRotation", this.yaw.toString());
+            }
+
+            gestureEvent.Accept();
         }
-
+        else if (gestureEvent.GestureType() == Qt.PinchGesture)
+            gestureEvent.Accept();
+    }
+    else
+    {
+        this.fingersDown++;
+        if (this.fingersDown >= 2)
+	    this.me.Exec(2, "Move", "forward");
         gestureEvent.Accept();
     }
-    else if (gestureEvent.GestureType() == Qt.PinchGesture)
-        gestureEvent.Accept();
 }
 
-SimpleAvatar.prototype.GestureUpdated = function(gestureEvent) {
-    if (!IsCameraActive())
-        return;
-
-    if (gestureEvent.GestureType() == Qt.PanGesture && this.listenGesture == true)
+SimpleAvatar.prototype.GestureFinished = function(gestureEvent) {
+    if (isAndroid)
     {
-        // Rotate avatar with X pan gesture
-        delta = gestureEvent.Gesture().delta.toPoint();
-        this.yaw += delta.x;
-        this.me.Exec(2, "SetRotation", this.yaw.toString());
-
-        // Start walking or stop if total Y len of pan gesture is 100
-        var walking = false;
-        if (this.me.animationcontroller.animationState == this.walkAnimName)
-            walking = true;
-        var totalOffset = gestureEvent.Gesture().offset.toPoint();
-        if (totalOffset.y() < -100)
-        {
-            if (walking) {
-                this.me.Exec(2, "Stop", "forward");
-                this.me.Exec(2, "Stop", "back");
-            } else
-                this.me.Exec(2, "Move", "forward");
-            listenGesture = false;
-        }
-        else if (totalOffset.y() > 100)
-        {
-            if (walking) {
-                this.me.Exec(2, "Stop", "forward");
-                this.me.Exec(2, "Stop", "back");
-            } else
-                this.me.Exec(2, "Move", "back");
-            this.listenGesture = false;
-        }
+        this.fingersDown--;
+        if (this.fingersDown < 0)
+            this.fingersDown = 0;
+        if (this.fingersDown < 2)
+	    this.me.Exec(2, "Stop", "forward");
         gestureEvent.Accept();
     }
-    else if (gestureEvent.GestureType() == Qt.PinchGesture)
+}
+
+
+SimpleAvatar.prototype.GestureUpdated = function(gestureEvent) {
+    if (!isAndroid)
     {
-        var scaleChange = gestureEvent.Gesture().scaleFactor - gestureEvent.Gesture().lastScaleFactor;
-        if (scaleChange > 0.1 || scaleChange < -0.1)
-            this.ClientHandleMouseScroll(scaleChange * 100);
-        gestureEvent.Accept();
+        if (!IsCameraActive())
+            return;
+
+        if (gestureEvent.GestureType() == Qt.PanGesture && this.listenGesture == true)
+        {
+            // Rotate avatar with X pan gesture
+            delta = gestureEvent.Gesture().delta.toPoint();
+            this.yaw += delta.x;
+            this.me.Exec(2, "SetRotation", this.yaw.toString());
+
+            // Start walking or stop if total Y len of pan gesture is 100
+            var walking = false;
+            if (this.me.animationcontroller.animationState == this.walkAnimName)
+                walking = true;
+            var totalOffset = gestureEvent.Gesture().offset.toPoint();
+            if (totalOffset.y() < -100)
+            {
+                if (walking) {
+                    this.me.Exec(2, "Stop", "forward");
+                    this.me.Exec(2, "Stop", "back");
+                } else
+                    this.me.Exec(2, "Move", "forward");
+                listenGesture = false;
+            }
+            else if (totalOffset.y() > 100)
+            {
+                if (walking) {
+                    this.me.Exec(2, "Stop", "forward");
+                    this.me.Exec(2, "Stop", "back");
+                } else
+                    this.me.Exec(2, "Move", "back");
+                this.listenGesture = false;
+            }
+            gestureEvent.Accept();
+        }
+        else if (gestureEvent.GestureType() == Qt.PinchGesture)
+        {
+            var scaleChange = gestureEvent.Gesture().scaleFactor - gestureEvent.Gesture().lastScaleFactor;
+            if (scaleChange > 0.1 || scaleChange < -0.1)
+                this.ClientHandleMouseScroll(scaleChange * 100);
+            gestureEvent.Accept();
+        }
     }
 }
 
@@ -712,6 +749,25 @@ SimpleAvatar.prototype.ClientCheckState = function() {
                 this.crosshair.show();
             }
         }
+    }
+}
+
+// Android only, simplified touch rotate code
+SimpleAvatar.prototype.ClientHandleMouseLookX = function(param) {
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
+    if (cameraentity == null)
+        return;
+
+    // Dont move av rotation if we are not the active cam
+    if (!cameraentity.camera.IsActive())
+        return;
+
+    var move = parseInt(param);
+    if (move != 0)
+    {
+        // Rotate avatar or camera
+        this.yaw -= this.mouseRotateSensitivity * move;
+        this.me.Exec(2, "SetRotation", this.yaw.toString());
     }
 }
 

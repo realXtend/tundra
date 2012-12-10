@@ -55,11 +55,14 @@ void AssetAPI::OpenAssetCache(QString directory)
     SAFE_DELETE(assetCache);
     SAFE_DELETE(diskSourceChangeWatcher);
     assetCache = new AssetCache(this, directory);
+// On Android, we get spurious file change notifications. Disable watcher for now.
+#ifndef ANDROID
     if (!fw->HasCommandLineParameter("--nofilewatcher"))
     {
         diskSourceChangeWatcher = new QFileSystemWatcher();
         connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)), Qt::UniqueConnection);
     }
+#endif
 }
 
 std::vector<AssetProviderPtr> AssetAPI::AssetProviders() const
