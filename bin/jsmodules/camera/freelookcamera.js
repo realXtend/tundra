@@ -14,7 +14,10 @@ var _g =
         sensitivity : 30.0,
         amount : new float3(0,0,0)
     },
-    motion : new float3(0,0,0)
+    motion : new float3(0,0,0),
+
+    // Android specific
+    isAndroid : application.platform == "android"
 };
 
 function Initialize()
@@ -73,10 +76,13 @@ function Initialize()
 
     // Connect gestures
     var inputContext = inputmapper.GetInputContext();
-    if (inputContext.GestureStarted && inputContext.GestureUpdated)
+    if (!_g.isAndroid)
     {
-        inputContext.GestureStarted.connect(GestureStarted);
-        inputContext.GestureUpdated.connect(GestureUpdated);
+        if (inputContext.GestureStarted && inputContext.GestureUpdated)
+        {
+            inputContext.GestureStarted.connect(GestureStarted);
+            inputContext.GestureUpdated.connect(GestureUpdated);
+        }
     }
 }
 
@@ -93,6 +99,10 @@ function Update(frametime)
         profiler.EndBlock();
         return;
     }
+
+    // Android movement logic: move forward if more than 1 finger on screen
+    if (_g.isAndroid)
+        _g.move.amount.z = input.NumTouchPoints() > 1 ? -1 : 0; 
 
     if (_g.move.amount.x == 0 && _g.move.amount.y == 0 && _g.move.amount.z == 0)
     {
@@ -174,38 +184,38 @@ function HandleMouseLookY(param)
 
 function GestureStarted(gestureEvent)
 {
-    if (!IsCameraActive())
-        return;
-
-    if (gestureEvent.GestureType() == Qt.TapAndHoldGesture)
-    {
-        if (motion_z == 0)
-            HandleMove("forward");
-        else
-            HandleStop("forward");
-        gestureEvent.Accept();
-    }
-    else if (gestureEvent.GestureType() == Qt.PanGesture)
-    {
-        var offset = gestureEvent.Gesture().offset.toPoint();
-        HandleMouseLookX(offset.x());
-        HandleMouseLookY(offset.y());
-        gestureEvent.Accept();
-    }
+        if (!IsCameraActive())
+            return;
+    
+        if (gestureEvent.GestureType() == Qt.TapAndHoldGesture)
+        {
+            if (motion_z == 0)
+                HandleMove("forward");
+            else
+                HandleStop("forward");
+            gestureEvent.Accept();
+        }
+        else if (gestureEvent.GestureType() == Qt.PanGesture)
+        {
+            var offset = gestureEvent.Gesture().offset.toPoint();
+            HandleMouseLookX(offset.x());
+            HandleMouseLookY(offset.y());
+            gestureEvent.Accept();
+        }
 }
 
 function GestureUpdated(gestureEvent)
 {
-    if (!IsCameraActive())
-        return;
+        if (!IsCameraActive())
+            return;
 
-    if (gestureEvent.GestureType() == Qt.PanGesture)
-    {
-        var delta = gestureEvent.Gesture().delta.toPoint();
-        HandleMouseLookX(delta.x());
-        HandleMouseLookY(delta.y());
-        gestureEvent.Accept();
-    }
+        if (gestureEvent.GestureType() == Qt.PanGesture)
+        {
+            var delta = gestureEvent.Gesture().delta.toPoint();
+            HandleMouseLookX(delta.x());
+            HandleMouseLookY(delta.y());
+            gestureEvent.Accept();
+        }
 }
 
 function OnScriptDestroyed() 

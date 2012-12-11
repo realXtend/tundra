@@ -45,6 +45,7 @@ newMouseButtonsReleasedQueue(0),
 currentModifiers(0),
 mainView(0),
 mainWindow(0),
+numTouchPoints(0),
 framework(framework_)
 {
     assert(framework_);
@@ -367,6 +368,14 @@ void InputAPI::RecenterMouse()
     QPoint mousePos = view->mapFromGlobal(QCursor::pos());
     lastMouseX = mousePos.x();
     lastMouseY = mousePos.y();
+}
+
+void InputAPI::UpdateTouchPoints(QTouchEvent* touchEvent)
+{
+    if (touchEvent)
+        numTouchPoints = touchEvent->touchPoints().size();
+    else
+        numTouchPoints = 0;
 }
 
 void InputAPI::PruneDeadInputContexts()
@@ -875,16 +884,28 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         return true;
     }
     case QEvent::TouchBegin:
-        emit TouchBegin(static_cast<QTouchEvent *>(event));
-        event->accept();
+        {
+            QTouchEvent* touchEvent = static_cast<QTouchEvent *>(event);
+            UpdateTouchPoints(touchEvent);
+            emit TouchBegin(touchEvent);
+            event->accept();
+        }
         return true;
     case QEvent::TouchUpdate:
-        emit TouchUpdate(static_cast<QTouchEvent *>(event));
-        event->accept();
+        {
+            QTouchEvent* touchEvent = static_cast<QTouchEvent *>(event);
+            UpdateTouchPoints(touchEvent);
+            emit TouchUpdate(touchEvent);
+            event->accept();
+        }
         return true;
     case QEvent::TouchEnd:
-        emit TouchEnd(static_cast<QTouchEvent *>(event));
-        event->accept();
+        {
+            QTouchEvent* touchEvent = static_cast<QTouchEvent *>(event);
+            UpdateTouchPoints(0);
+            emit TouchEnd(touchEvent);
+            event->accept();
+        }
         return true;
     } // ~switch
 
