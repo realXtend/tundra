@@ -143,14 +143,18 @@ public slots:
         @param skeletonName skeleton to use
         @param clone whether mesh should be cloned for modifying geometry uniquely
         @return true if successful */
-    bool SetMeshWithSkeleton(const std::string& meshName, const std::string& skeletonNAme, bool clone = false);
+    bool SetMeshWithSkeleton(const std::string& meshName, const std::string& skeletonName, bool clone = false);
 
     /// Sets material in mesh
     /** @param index submesh index
         @param materialName material name. Note that the material name must only contain ASCII characters! Even though
             this string is a QString, Unicode or other character encodings are not supported by Ogre.
+        @param change The signalling type to use for this change. Important! In order to preserve compatibility and old behavior,
+                      the default changetype is Disconnected. When changing a material from script code, you will want to set this to
+                      Default almost _always_.
+        @note This function causes the signal MaterialChanged() to be fired, independent what the value of change is.
         @return true if successful */
-    bool SetMaterial(uint index, const QString& materialName);
+    bool SetMaterial(uint index, const QString& materialName, AttributeChange::Type change = AttributeChange::Disconnected);
 
     /// (Re)applies the currently set material refs to the currently set mesh ref.
     /** Does not start any asset requests, but sets the data on the currently loaded assets. */
