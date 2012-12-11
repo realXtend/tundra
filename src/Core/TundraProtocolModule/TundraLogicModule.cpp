@@ -49,14 +49,6 @@
 #include "EC_ProximityTrigger.h"
 #endif
 
-#ifdef EC_Billboard_ENABLED
-#include "EC_Billboard.h"
-#endif
-
-#ifdef EC_ParticleSystem_ENABLED
-#include "EC_ParticleSystem.h"
-#endif
-
 #ifdef EC_TransformGizmo_ENABLED
 #include "EC_TransformGizmo.h"
 #endif
@@ -86,7 +78,7 @@ TundraLogicModule::~TundraLogicModule()
 
 void TundraLogicModule::Load()
 {
-    // Name, DynamicComponent (from Scene) and InputMapper (from Input) are present always.
+    // Name, DynamicComponent and InputMapper from TundraCore are present always.
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Name>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_DynamicComponent>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_InputMapper>));
@@ -98,18 +90,12 @@ void TundraLogicModule::Load()
 #ifdef EC_HoveringText_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_HoveringText>));
 #endif
-#ifdef EC_ParticleSystem_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
-#endif
 #ifdef EC_Sound_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sound>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundListener>));
 #endif
 #ifdef EC_PlanarMirror_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PlanarMirror>));
-#endif
-#ifdef EC_Billboard_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Billboard>));
 #endif
 #ifdef EC_ProximityTrigger_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ProximityTrigger>));

@@ -15,9 +15,10 @@
 
 ## Various flags/defines that configure your build
 
-set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
-set (BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
-set (ENABLE_BUILD_OPTIMIZATIONS 1)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
+set(TUNDRACORE_SHARED 1)           # Do we want to build TundraCore as a shared or static library.
+set(BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
+set(BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
+set(ENABLE_BUILD_OPTIMIZATIONS 0)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
 set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
 set (ENABLE_SKYX 1)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 set (ENABLE_OPEN_ASSET_IMPORT 1)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
@@ -27,8 +28,11 @@ set (ENABLE_PROFILING 1)            # Enable the following flag to add compile w
 set (ENABLE_JS_PROFILING 0)         # Enable js profiling?
 set (ENABLE_MEMORY_LEAK_CHECKS 0)   # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
 
-message ("\n")
+message("\n")
 
+if (TUNDRACORE_SHARED)
+    add_definitions(-DTUNDRACORE_SHARED)
+endif()
 if (ENABLE_PROFILING)
     add_definitions (-DPROFILING)
 endif ()
@@ -59,8 +63,6 @@ message("\n=========== Configuring Optional Entity-Components ===========\n")
 AddEntityComponent(EC_Highlight)
 AddEntityComponent(EC_Sound)
 AddEntityComponent(EC_HoveringText)
-AddEntityComponent(EC_ParticleSystem)
-AddEntityComponent(EC_Billboard)
 AddEntityComponent(EC_TransformGizmo)
 
 ## Here are the Application level ECs that wont be added if BUILD_SDK_ONLY is TRUE (default is FALSE)
@@ -77,14 +79,8 @@ message("\n=========== Configuring Tundra Framework ===========\n")
 ## The following are the core modules/libs that are required 
 ## for the project to build. None of these can be omitted.
 
+AddProject(Core TundraCore)
 AddProject(Core Math)
-AddProject(Core Framework)
-AddProject(Core Scene)
-AddProject(Core Asset)
-AddProject(Core Audio)
-AddProject(Core Console)
-AddProject(Core Input)
-AddProject(Core Ui)
 
 # The Tundra project builds the main exe as a WINDOWS subsystem (or as a unix executable).
 AddProject(Core Tundra)
@@ -106,6 +102,7 @@ AddProject(Core EnvironmentModule)      # Optional in theory, if you drop Physic
 
 ###### OPTIONAL PLUGINS ######
 message("\n=========== Configuring Optional Plugins ===========\n")
+AddProject(Application SceneInteract)           # Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals. Depends on OgreRenderingModule.
 AddProject(Core ECEditorModule)                 # Provides tools for managing scenes, entities, entity-components and assets.
 AddProject(Application AvatarModule)            # Provides EC_Avatar. Depends on OgreRenderingModule.
 AddProject(Application DebugStatsModule)        # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule, and PhysicsModule.

@@ -403,7 +403,7 @@ float4x4 float4x4::Mirror(const Plane &p)
 	return v;
 }
 
-float4x4 float4x4::PerspectiveProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalFov, float verticalFov)
+float4x4 float4x4::PerspectiveProjection(float /*nearPlaneDistance*/, float /*farPlaneDistance*/, float /*horizontalFov*/, float /*verticalFov*/)
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return float4x4(); ///@todo
@@ -1620,7 +1620,7 @@ bool float4x4::IsUpperTriangular(float epsilon) const
 		&& EqualAbs(v[3][2], 0.f, epsilon);
 }
 
-bool float4x4::IsInvertible(float epsilon) const
+bool float4x4::IsInvertible(float /*epsilon*/) const
 {
 	///@todo Optimize.
 	float4x4 copy = *this;

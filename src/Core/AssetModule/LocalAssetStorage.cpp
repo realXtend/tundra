@@ -6,8 +6,9 @@
 #include "LocalAssetStorage.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "Profiler.h"
+#include "LoggingFunctions.h"
 
 #include <QFileSystemWatcher>
 #include <QDir>

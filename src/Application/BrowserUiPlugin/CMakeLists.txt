@@ -5,17 +5,19 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 QT4_WRAP_CPP(MOC_FILES ${H_FILES})
 
-use_core_modules (Framework Ui)
-use_app_modules (JavascriptModule)
+UseTundraCore()
+use_core_modules(TundraCore Math)
+use_app_modules(JavascriptModule)
 
 build_library (${TARGET_NAME} SHARED ${CPP_FILES} ${H_FILES} ${MOC_FILES})
 
 SetupCompileFlags()
 
-link_modules(Framework Ui JavascriptModule)
+link_modules(TundraCore JavascriptModule)
 
+link_package(QT4)
 if (APPLE)
-link_ogre()
+    link_ogre()
 endif ()
 
 final_target ()

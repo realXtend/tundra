@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
+
 #include "EC_MediaPlayer.h"
 #include "VlcMediaPlayer.h"
 #include "VlcVideoWidget.h"
@@ -12,9 +13,8 @@
 #include "AttributeMetadata.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-#include "IRenderer.h"
 #include "LoggingFunctions.h"
-
+#include "IRenderer.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
@@ -72,7 +72,7 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
     connect(resizeRenderTimer_, SIGNAL(timeout()), mediaPlayer_, SLOT(ForceUpdateImage()), Qt::UniqueConnection);
 
     // Prepare scene interactions
-    SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
+    SceneInteract *sceneInteract = GetFramework()->GetModule<SceneInteract>();
     if (sceneInteract)
     {
         connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 

@@ -66,6 +66,8 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
 
     // Connect signals both for headless and non-headless
     connect(&changeTimer_, SIGNAL(timeout()), SLOT(NextSlide()));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+        SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 
     // Server controls the slide change timer, so detect if we are on one.
     TundraLogic::TundraLogicModule *tundraLogic = framework->GetModule<TundraLogic::TundraLogicModule>();
@@ -82,7 +84,7 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
     
     // Prepare scene interactions
-    SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
+    SceneInteract *sceneInteract = GetFramework()->GetModule<SceneInteract>();
     if (sceneInteract)
         connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
     

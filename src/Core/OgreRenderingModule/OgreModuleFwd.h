@@ -46,6 +46,8 @@ namespace OgreRenderer
 class OgreCompositionHandler;
 class GaussianListener;
 class OgreWorld;
+class UiPlane;
+class RenderWindow;
 
 class TextureAsset;
 class OgreMeshAsset;
@@ -67,6 +69,11 @@ class EC_Mesh;
 class EC_OgreCompositor;
 class EC_Placeable;
 class EC_RttTarget;
+class EC_Billboard;
+class EC_ParticleSystem;
+class EC_Sky;
+class EC_EnvironmentLight;
+class EC_Fog;
 
 typedef boost::shared_ptr<OgreWorld> OgreWorldPtr;
 typedef boost::weak_ptr<OgreWorld> OgreWorldWeakPtr;

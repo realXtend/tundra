@@ -25,7 +25,15 @@
 #include "QScriptEngineHelpers.h"
 #include "LoggingFunctions.h"
 
+// Disable unreferenced formal parameter coming from Bullet
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#endif
 #include <btBulletDynamicsCommon.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <QtScript>
 #include <QTreeWidgetItem>

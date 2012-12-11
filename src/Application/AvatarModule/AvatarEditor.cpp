@@ -9,7 +9,7 @@
 #include "AssetAPI.h"
 #include "SceneAPI.h"
 #include "Scene.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "AssetFwd.h"
@@ -472,7 +472,7 @@ void AvatarEditor::OnAssetTransferSucceeded(AssetPtr asset)
         LogError("AvatarEditor::OnAssetTransferSucceeded: not an avatar asset");
 }
 
-void AvatarEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
+void AvatarEditor::OnAssetTransferFailed(IAssetTransfer * /*transfer*/, QString reason)
 {
     LogError("AvatarEditor::OnAssetTransferFailed: " + reason);
 }

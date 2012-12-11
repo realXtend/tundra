@@ -1,4 +1,4 @@
-# Naali build macros
+# Tundra build macros
 #
 # Generally used as follows:
 # 1. call configure_${PACKAGE}() once from the main CMakeLists.txt
