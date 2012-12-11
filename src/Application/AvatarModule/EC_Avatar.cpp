@@ -240,8 +240,13 @@ void EC_Avatar::SetupMeshAndMaterials()
     if (need_mesh_clone)
         HideVertices(mesh->GetEntity(), vertices_to_hide);
     
+    AssetReferenceList mats("OgreMaterial");
     for (uint i = 0; i < desc->materials_.size(); ++i)
-        mesh->SetMaterial(i, LookupAsset(desc->materials_[i]));
+    {
+        //mesh->SetMaterial(i, LookupAsset(desc->materials_[i]));
+        mats.Append(AssetReference(LookupAsset(desc->materials_[i])));
+    }
+    mesh->meshMaterial.Set(mats, AttributeChange::Default);
     
     // Position approximately within the bounding box
     // Will be overridden by bone-based height adjust, if available
