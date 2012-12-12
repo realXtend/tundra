@@ -32,7 +32,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 
 # Linking
 link_ogre ()
-link_modules(TundraCore Math OgreRenderingModule JavascriptModule ECEditorModule)
+link_modules(TundraCore Math OgreRenderingModule JavascriptModule)
 if (NOT ANDROID)
     link_modules(ECEditorModule)
 endif ()
