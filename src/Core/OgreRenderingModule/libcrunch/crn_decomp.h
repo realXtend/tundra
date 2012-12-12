@@ -314,10 +314,8 @@ namespace crnd
 
 #include <stdlib.h>
 #include <stdio.h>
-#ifdef WIN32
+#if defined(WIN32) || defined(__APPLE__)
 #include <memory.h>
-#elif defined(__APPLE__)
-#include <malloc/malloc.h>
 #else
 #include <malloc.h>
 #endif
@@ -375,7 +373,7 @@ namespace crnd
 
    const uint32 cIntBits = 32U;
 
-#if defined(_WIN64) || defined(__LP64__)
+#ifdef _WIN64
    typedef uint64 ptr_bits;
 #else
    typedef uint32 ptr_bits;
@@ -577,11 +575,7 @@ namespace crnd
       enum { value = true };
    };
 
-#ifdef __APPLE__
-#define CRND_IS_POD(T) std::__is_pod<T>::__value
-#else
 #define CRND_IS_POD(T) __is_pod(T)
-#endif
 
 } // namespace crnd
 
@@ -755,6 +749,13 @@ namespace crnd
 }
 
 // File: crnd_utils.h
+#ifdef swap16
+#undef swap16
+#endif
+#ifdef swap32
+#undef swap32
+#endif
+
 namespace crnd
 {
    namespace utils
@@ -1124,9 +1125,13 @@ namespace crnd
 
       inline bool increase_capacity(uint32 min_new_capacity, bool grow_hint)
       {
-         if (!reinterpret_cast<elemental_vector*>(this)->increase_capacity(
+#ifdef __APPLE__
+          if (!reinterpret_cast<elemental_vector*>(this)->increase_capacity(min_new_capacity, grow_hint, sizeof(T), NULL))
+#else              
+          if (!reinterpret_cast<elemental_vector*>(this)->increase_capacity(
             min_new_capacity, grow_hint, sizeof(T),
             ((scalar_type<T>::cFlag) || (is_vector<T>::cFlag) || (bitwise_movable<T>::cFlag) || CRND_IS_POD(T)) ? NULL : object_mover))
+#endif
          {
             m_alloc_failed = true;
             return false;
@@ -2409,11 +2414,6 @@ namespace crnd
 } // namespace crnd
 
 // File: crnd_mem.cpp
-
-#ifdef __APPLE__
-#define malloc_usable_size(x) malloc_size(x)
-#endif
-
 namespace crnd
 {
    const uint32 MAX_POSSIBLE_BLOCK_SIZE = 0x7FFF0000U;
@@ -2432,6 +2432,8 @@ namespace crnd
          {
 #ifdef WIN32
             *pActual_size = p_new ? ::_msize(p_new) : 0;
+#elif defined(ANDROID)
+            *pActual_size = size;
 #else
             *pActual_size = p_new ? malloc_usable_size(p_new) : 0;
 #endif
@@ -2468,6 +2470,8 @@ namespace crnd
          {
 #ifdef WIN32
             *pActual_size = ::_msize(p_final_block);
+#elif defined(ANDROID)
+            *pActual_size = p_new ? size : 0;
 #else
             *pActual_size = ::malloc_usable_size(p_final_block);
 #endif
@@ -2482,6 +2486,8 @@ namespace crnd
       pUser_data;
 #ifdef WIN32
       return p ? _msize(p) : 0;
+#elif defined(ANDROID)
+      return 0;
 #else
       return p ? malloc_usable_size(p) : 0;
 #endif
@@ -2536,14 +2542,20 @@ namespace crnd
          return NULL;
       }
 
-      CRND_ASSERT(((ptr_bits)p_new & (CRND_MIN_ALLOC_ALIGNMENT - 1)) == 0);
+#ifndef __APPLE__
+      CRND_ASSERT(((uint32)p_new & (CRND_MIN_ALLOC_ALIGNMENT - 1)) == 0);
+#endif
 
       return p_new;
    }
 
    void* crnd_realloc(void* p, size_t size, size_t* pActual_size, bool movable)
    {
+#ifdef __APPLE__
+       if ((uintptr_t)reinterpret_cast<uintptr_t>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+#else
       if ((uint32)reinterpret_cast<ptr_bits>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+#endif
       {
          crnd_mem_error("crnd_realloc: bad ptr");
          return NULL;
@@ -2561,7 +2573,9 @@ namespace crnd
       if (pActual_size)
          *pActual_size = actual_size;
 
-      CRND_ASSERT(((ptr_bits)p_new & (CRND_MIN_ALLOC_ALIGNMENT - 1)) == 0);
+#ifndef __APPLE__
+      CRND_ASSERT(((uint32)p_new & (CRND_MIN_ALLOC_ALIGNMENT - 1)) == 0);
+#endif
 
       return p_new;
    }
@@ -2571,7 +2585,12 @@ namespace crnd
       if (!p)
          return;
 
+#ifdef __APPLE__
+       if ((uintptr_t)reinterpret_cast<uintptr_t>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+#else
       if ((uint32)reinterpret_cast<ptr_bits>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+#endif
+
       {
          crnd_mem_error("crnd_free: bad ptr");
          return;
@@ -2585,7 +2604,11 @@ namespace crnd
       if (!p)
          return 0;
 
+#ifdef __APPLE__
+       if ((uintptr_t)reinterpret_cast<uintptr_t>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+#else
       if ((uint32)reinterpret_cast<ptr_bits>(p) & (CRND_MIN_ALLOC_ALIGNMENT - 1))
+#endif
       {
          crnd_mem_error("crnd_msize: bad ptr");
          return 0;
@@ -4841,3 +4864,4 @@ namespace crnd
 // 3. This notice may not be removed or altered from any source distribution.
 //
 //------------------------------------------------------------------------------
+
