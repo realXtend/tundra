@@ -48,12 +48,19 @@ else()
     build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 endif()
 
+# Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propagate from here to each library.
+if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
+   target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+endif()
+
 link_package(QT4)
 link_package_knet()     # Scene
 link_package(OPENAL)    # Audio
 link_package_ogg()      # Audio
 link_package_vorbis()   # Audio
 link_modules(Math)
+
+target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 
 SetupCompileFlagsWithPCH()
 
