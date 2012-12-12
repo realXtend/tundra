@@ -22,12 +22,12 @@
 #include "SceneAPI.h"
 #include "UiAPI.h"
 
-#include "StaticPluginRegistry.h"
 
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
 #endif
 #ifdef ANDROID
+#include "StaticPluginRegistry.h"
 #include <termios.h>
 #endif
 #include <iostream>
@@ -387,8 +387,10 @@ void Framework::Go()
     
     srand(time(0));
 
+#ifdef ANDROID
     // Run any statically registered plugin main functions first
     StaticPluginRegistryInstance()->RunPluginMainFunctions(this);
+#endif
 
     foreach(const QString &config, plugin->ConfigurationFiles())
     {
@@ -722,13 +724,13 @@ void Framework::PrintDynamicObjects()
         LogInfo(QString(obj));
 }
 
+#ifdef ANDROID
 StaticPluginRegistry* Framework::StaticPluginRegistryInstance()
 {
     static StaticPluginRegistry* instance = new StaticPluginRegistry();
     return instance;
 }
 
-#ifdef ANDROID
 void Framework::LoadCommandLineFromFile()
 {
     QFile file(Application::InstallationDirectory() + "commandline.txt");

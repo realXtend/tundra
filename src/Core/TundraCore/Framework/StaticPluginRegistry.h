@@ -2,6 +2,8 @@
 
 #pragma once
 
+#ifdef ANDROID
+
 #include "Framework.h"
 
 #include <vector>
@@ -43,3 +45,5 @@ extern "C" \
 extern void module ## Main(Framework* fw);\
 StaticPluginHelper module ## Helper(&module ## Main); \
 }
+
+#endif
