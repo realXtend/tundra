@@ -3,7 +3,7 @@ init_target (TundraConsole OUTPUT ./)
 
 # Define source files
 file (GLOB CPP_FILES main.cpp)
-file (GLOB H_FILES "") # Dont do *.h it will pickup windows spesific resource.h
+file (GLOB H_FILES "") # Dont do *.h it will pickup Windows-spesific resource.h
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 set (RESOURCE_FILES "")
 
@@ -32,10 +32,11 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_core_modules(Framework Math Scene Console)
+UseTundraCore()
+use_core_modules(TundraCore Math)
 
 build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
 
-link_modules (Framework Scene Console)
+link_modules(TundraCore)
 
 final_target ()

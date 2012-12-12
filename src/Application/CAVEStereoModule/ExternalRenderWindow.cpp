@@ -12,8 +12,9 @@
 #endif
 
 #ifdef Q_WS_WIN
-#include <windows.h>
+#include "Win.h"
 #endif
+
 namespace CAVEStereo
 {
 

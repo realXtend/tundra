@@ -16,7 +16,7 @@
 #include "Framework.h"
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "Profiler.h"
 
 #include <QDir>

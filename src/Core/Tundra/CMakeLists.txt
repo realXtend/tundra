@@ -32,7 +32,8 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_core_modules(Framework Math Scene Console)
+UseTundraCore()
+use_core_modules(TundraCore Math)
 
 if (MSVC)
    build_executable(${TARGET_NAME} WIN32 ${SOURCE_FILES} ${RESOURCE_FILES})
@@ -40,7 +41,7 @@ else()
    build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
 endif()
 
-link_modules (Framework Scene Console)
+link_modules(TundraCore)
 
 final_target ()
 

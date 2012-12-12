@@ -3,6 +3,7 @@
 \page progconv Programming Conventions
 
 This page describes the different conventions for producing code and documentation for the RealXtend Tundra project.
+<b>Note:</b> Even though this page documents mainly the C/C++ convetions, please try to apply the same coding conventions for all languages (JavaScript, CMake, etc.) as applicable.
 
 \section nameconv Naming Conventions
 
@@ -22,9 +23,14 @@ Very small bodies of template and inline code may be placed inside the class hea
 should be placed in an .inl file that matches the classes name, for example for a class Entity introduced in Entity.h, the file Entity.inl defines the template and inline code that is associated to that class.
 
 \subsection filenameconv Filenames and Directories
-Filenames and directories are written in title case with a lower case file extension. F.ex.:
+Filenames and directories are written in title case with a lower case file extension, f.ex.:
 \verbatim
 /SomeDirectory/SomeFile.ext
+\endverbatim
+
+Name the entry point of a demo scene as "scene.txml" (analogous to index.html), f.ex.:
+\verbatim
+bin/scenes/MyNewDemo/scene.txml
 \endverbatim
 
 \subsection nameconvh Header Files
@@ -93,6 +99,8 @@ Preprocessor macros are written in upper case with underscores:
 \verbatim
 #define SAFE_DELETE(p) { delete p; p=0; }
 \endverbatim
+
+Do not indent preprocessor code blocks.
 
 Prepend variable names of (global) static constants with "c"-prefix:
 \verbatim

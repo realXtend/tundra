@@ -326,7 +326,7 @@ float Frustum::Volume() const
 	return ToPolyhedron().Volume();
 }
 
-float3 Frustum::RandomPointInside(LCG &rng) const
+float3 Frustum::RandomPointInside(LCG & /*rng*/) const
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return float3();

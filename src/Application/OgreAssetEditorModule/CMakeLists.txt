@@ -4,7 +4,6 @@ init_target (OgreAssetEditorModule OUTPUT plugins)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB XML_FILES *.xml)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 file (GLOB MOC_FILES OgreAssetEditorModule.h OgreScriptEditor.h PropertyTableWidget.h MaterialWizard.h
     TexturePreviewEditor.h AudioPreviewEditor.h AudioSignalLabel.h MeshPreviewEditor.h OgreScriptHighlighter.h
@@ -24,13 +23,14 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-use_core_modules (Framework Math OgreRenderingModule Asset Audio)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
+build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Framework OgreRenderingModule Asset Audio)
-
+link_package(QT4)
 link_ogre()
+link_modules(TundraCore Math OgreRenderingModule)
 
 SetupCompileFlagsWithPCH()
 

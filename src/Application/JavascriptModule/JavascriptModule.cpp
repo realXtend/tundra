@@ -31,7 +31,7 @@
 #include "IComponentFactory.h"
 #include "TundraLogicModule.h"
 #include "LoggingFunctions.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 
 #include <QtScript>
 #include <QDomElement>
@@ -233,13 +233,14 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
     }
 }
 
-void JavascriptModule::ScriptAppNameChanged(const QString& newAppName)
+void JavascriptModule::ScriptAppNameChanged(const QString& /*newAppName*/)
 {
     /// \todo Currently we do not react to changing the script app name on the fly.
 }
 
 void JavascriptModule::ScriptClassNameChanged(const QString& newClassName)
 {
+    UNREFERENCED_PARAM(newClassName) /**< @todo Do we want to do something with this? */
     EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
     assert(sender && "JavascriptModule::ScriptClassNameChanged needs to be invoked from EC_Script!");
     if (!sender)
@@ -279,7 +280,7 @@ void JavascriptModule::ScriptUnloading()
     RemoveScriptObjects(sender);
 }
 
-void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
+void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type /*change*/)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
     {
@@ -302,7 +303,7 @@ void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, Attribut
     }
 }
 
-void JavascriptModule::ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
+void JavascriptModule::ComponentRemoved(Entity* /*entity*/, IComponent* comp, AttributeChange::Type /*change*/)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
     {

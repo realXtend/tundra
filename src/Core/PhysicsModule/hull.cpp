@@ -897,7 +897,7 @@ float3 operator*( const Quaternion& q, const float3& v )
 		(2*(qxqz-qyqw))*v.x + (2*(qyqz+qxqw))*v.y + (1-2*(qx2+qy2))*v.z  );
 }
 
-float3 operator*( const float3& v, const Quaternion& q )
+float3 operator*( const float3& /*v*/, const Quaternion& /*q*/ )
 {
 	assert(0);  // must multiply with the quat on the left
 	return float3(0.0f,0.0f,0.0f);
@@ -2062,7 +2062,7 @@ ConvexH *ConvexHCrop(ConvexH &convex,const Plane &slice)
 			e1++; // do the modulo at the beginning of the loop
 
 		} while(e0!=estart) ;
-		e0 = enextface;
+		e0 = enextface; /**< @todo potentially uninitialized local variable used */
 		if(planeside&UNDER) {
 			planeflag[currentplane].undermap = underplanescount;
 			tmpunderplanes[underplanescount] = convex.facets[currentplane];
