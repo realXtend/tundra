@@ -50,6 +50,12 @@
 
 #include "MemoryLeakCheck.h"
 
+#ifdef Q_WS_MAC
+#define KEY_DELETE_SHORTCUT QKeySequence(Qt::CTRL + Qt::Key_Backspace)
+#else
+#define KEY_DELETE_SHORTCUT QKeySequence::Delete
+#endif
+
 // Menu
 
 Menu::Menu(QWidget *parent) : QMenu(parent), shiftDown(false)
@@ -97,7 +103,7 @@ SceneTreeWidget::SceneTreeWidget(Framework *fw, QWidget *parent) :
 
     // Create keyboard shortcuts.
     QShortcut *renameShortcut = new QShortcut(QKeySequence(Qt::Key_F2), this);
-    QShortcut *deleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    QShortcut *deleteShortcut = new QShortcut(KEY_DELETE_SHORTCUT, this);
     QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), this);
     QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), this);
 
@@ -321,7 +327,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     }
 
     // "Rename" action is possible only if have one entity selected.
-    bool renamePossible = (selectionModel()->selection().size() == 1);
+    bool renamePossible = (selectionModel()->selectedIndexes().size() == 1);
     if (renamePossible)
     {
         renameAction = new QAction(tr("Rename"), menu);
@@ -519,7 +525,7 @@ QString SceneTreeWidget::SelectionAsXml() const
             EntityPtr entity = eItem->Entity();
             assert(entity);
             if (entity)
-                entity->SerializeToXML(sceneDoc, sceneElem);
+                entity->SerializeToXML(sceneDoc, sceneElem, true);
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -530,7 +536,7 @@ QString SceneTreeWidget::SelectionAsXml() const
         {
             ComponentPtr component = cItem->Component();
             if (component)
-                component->SerializeTo(sceneDoc, sceneElem);
+                component->SerializeTo(sceneDoc, sceneElem, true);
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -673,6 +679,7 @@ void SceneTreeWidget::Rename()
 //            openPersistentEditor(eItem);
 //            setCurrentIndex(index);
             edit(index);
+            connect(this->itemDelegate(), SIGNAL(commitData(QWidget*)), SLOT(OnCommitData(QWidget*)), Qt::UniqueConnection);
             connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *, int)), Qt::UniqueConnection);
 //            connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *)));
         }
@@ -687,6 +694,32 @@ void SceneTreeWidget::Rename()
 //        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
     }
 */
+}
+
+void SceneTreeWidget::OnCommitData(QWidget * editor)
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+    SceneTreeWidgetSelection selection = SelectedItems();
+    if (selection.entities.size() == 1)
+    {
+        EntityItem *entityItem = selection.entities[0];
+        EntityPtr entity = entityItem->Entity();
+        if (entity)
+        {
+            QLineEdit *edit = dynamic_cast<QLineEdit*>(editor);
+            if (edit)
+                // If there are no changes, restore back the previous stripped entity ID from the item, and restore sorting
+                if (edit->text() == entity->Name())
+                {
+                    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
+                    entityItem->SetText(entity.get());
+                    setSortingEnabled(true);
+                }
+        }
+    }
 }
 
 void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
@@ -890,15 +923,26 @@ void SceneTreeWidget::Paste()
                 {
                     QString type = componentElem.attribute("type");
                     QString name = componentElem.attribute("name");
+                    QString sync = componentElem.attribute("sync");
+                    QString temp = componentElem.attribute("temporary");
+
                     if (!type.isNull())
                     {
                         // If we already have component with the same type name and name, add suffix to the new component's name.
-                        if (entity->GetComponent(type, name))
-                            name.append("_copy");
+                        int copy = 2;
+                        QString newName = name;
+                        while(entity->GetComponent(type, newName))
+                            newName = QString(name + " (%1)").arg(copy++);
 
-                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, name);
+                        componentElem.setAttribute("name", newName);
+                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, newName);
                         if (component)
                         {
+                            if (!temp.isEmpty())
+                                component->SetTemporary(ParseBool(temp));
+                            if (!sync.isEmpty())
+                                component->SetReplicated(ParseBool(sync));
+
                             entity->AddComponent(component);
                             component->DeserializeFrom(componentElem, AttributeChange::Default);
                         }

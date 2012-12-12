@@ -177,12 +177,16 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
 {
     if (!assetRef.isEmpty())
     {
-        ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
-        // Find full path
-        //FindStorageForPath(fullPath);
-        // (!storage) { LogError(""); return; }
-        QString fullFilename;
-        bool success = QFile::remove(assetRef);
+        LocalAssetStoragePtr storage;
+        QString path = GetPathForAsset(assetRef, &storage);
+        if (!storage)
+        {
+            LogError("LocalAssetProvider::DeleteAssetFromStorage: Could not verify the asset storage pointed by \"" + assetRef + "\"!");
+            return;
+        }
+
+        QString fullFilename = path + QDir::separator() + AssetAPI::ExtractFilenameFromAssetRef(assetRef);
+        bool success = QFile::remove(fullFilename);
         if (success)
         {
             LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset \"" + assetRef + "\", file " + fullFilename + " from disk.");

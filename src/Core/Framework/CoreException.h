@@ -27,7 +27,7 @@ public:
     }
 
     /// copy constructor
-    Exception(const Exception &other)
+    Exception(const Exception &other) : std::exception(other)
     {
         do_free_ = other.do_free_;
 

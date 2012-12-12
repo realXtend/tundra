@@ -457,7 +457,14 @@ namespace OgreRenderer
                 int window_top = 0;
                 renderWindow = new RenderWindow();
                 bool fullscreen = framework->HasCommandLineParameter("--fullscreen");
-
+#ifdef Q_WS_MAC
+                // Fullscreen causes crash on Mac OS X. See https://github.com/realXtend/naali/issues/522
+                if (fullscreen)
+                {
+                    LogWarning("Fullscreen is not currently supported on Mac OS X. The application will run in windowed-mode");
+                    fullscreen = false;
+                }
+#endif
                 // On some systems, the Ogre rendering output is overdrawn by the Windows desktop compositing manager, but the actual cause of this
                 // is uncertain.
                 // As a workaround, it is possible to have Ogre output directly on the main window HWND of the ui chain. On other systems, this gives
@@ -522,9 +529,12 @@ namespace OgreRenderer
         if (framework->IsHeadless())
             return;
 
+#ifndef Q_WS_MAC
+        // Fullscreen causes crash on Mac OS X. See https://github.com/realXtend/naali/issues/522
         if (value)
             framework->Ui()->MainWindow()->showFullScreen();
         else
+#endif
             framework->Ui()->MainWindow()->showNormal();
     }
 

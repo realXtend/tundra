@@ -59,7 +59,6 @@ EC_Light::EC_Light(Scene* scene) :
             light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
             
             connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-            connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateOgreLight()));
         }
     }
 }
@@ -160,7 +159,7 @@ void EC_Light::DetachLight()
     }
 }
 
-void EC_Light::UpdateOgreLight()
+void EC_Light::AttributesChanged()
 {
     if (!light_)
         return;

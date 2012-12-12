@@ -22,6 +22,7 @@
 #include "LoggingFunctions.h"
 
 #include <QString>
+#include <QRegExp>
 #include <QDomDocument>
 #include <QFile>
 #include <QDir>
@@ -572,6 +573,11 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         if (!replicatedStr.isEmpty())
             replicated = ParseBool(replicatedStr);
 
+        QString temporaryStr = ent_elem.attribute("temporary");
+        bool temporary = false;
+        if (!temporaryStr.isEmpty())
+            temporary = ParseBool(temporaryStr);
+
         QString id_str = ent_elem.attribute("id");
         entity_id_t id = !id_str.isEmpty() ? static_cast<entity_id_t>(id_str.toInt()) : 0;
         if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
@@ -581,17 +587,24 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
             if (originaId != 0 && !oldToNewIds.contains(originaId))
                 oldToNewIds[originaId] = id;
         }
+        else if (useEntityIDsFromFile && HasEntity(id)) // If we use IDs from file and they conflict with some of the existing IDs, change the ID of the old entity
+        {
+            entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
+            ChangeEntityId(id, newID);
+        }
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
         {
             LogDebug("Scene::CreateContentFromXml: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
-            LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +"might not replicate properly!");
+            LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +" might not replicate properly!");
             RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
         }
 
         EntityPtr entity = CreateEntity(id);
         if (entity)
         {
+            entity->SetTemporary(temporary);
+
             QDomElement comp_elem = ent_elem.firstChildElement("component");
             while(!comp_elem.isNull())
             {
@@ -600,13 +613,20 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
                 QString type_name = comp_elem.attribute("type");
                 QString name = comp_elem.attribute("name");
                 QString compReplicatedStr = comp_elem.attribute("sync");
+                QString temp = comp_elem.attribute("temporary");
+
                 bool compReplicated = true;
                 if (!compReplicatedStr.isEmpty())
                     compReplicated = ParseBool(compReplicatedStr);
+
+                bool temporary = false;
+                if (!temp.isEmpty())
+                    temporary = ParseBool(temp);
                 
                 ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name, AttributeChange::Default, compReplicated);
                 if (new_comp)
                 {
+                    new_comp->SetTemporary(temporary);
                     // Trigger no signal yet when scene is in incoherent state
                     new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                 }
@@ -669,6 +689,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
 
 QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
+
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -797,13 +818,20 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
         return ret;
     }
 
+    QHash<entity_id_t, entity_id_t> oldToNewIds;
+
     foreach(const EntityDesc &e, desc.entities)
     {
         entity_id_t id;
+        id =  static_cast<entity_id_t>(e.id.toInt());
+
         if (e.id.isEmpty() || !useEntityIDsFromFile)
+        {
+            entity_id_t originaId = id;
             id = e.local ? NextFreeIdLocal() : NextFreeId();
-        else
-            id =  static_cast<entity_id_t>(e.id.toInt());
+            if (originaId != 0 && !oldToNewIds.contains(originaId))
+                oldToNewIds[originaId] = id;
+        }
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
         {
@@ -854,6 +882,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                 }
             }
 
+            entity->SetTemporary(e.temporary);
             ret.append(entity.get());
         }
     }
@@ -864,7 +893,25 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
         EmitEntityCreated(entity, change);
         const Entity::ComponentMap &components = entity->Components();
         for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+        {
+            if (!useEntityIDsFromFile && i->second->TypeName() == "EC_Placeable")
+            {
+                // Go and fix parent ref of EC_Placeable if new entity IDs were generated
+                IAttribute *iAttr = i->second->GetAttribute("Parent entity ref");
+                Attribute<EntityReference> *parenRef = iAttr != 0 ? dynamic_cast<Attribute<EntityReference> *>(iAttr) : 0;
+                if (parenRef && !parenRef->Get().IsEmpty())
+                {
+                    QString ref = parenRef->Get().ref;
+                    // We only need to fix the id parent refs.
+                    // Ones with entity names should work as expected.
+                    bool isNumber = false;
+                    entity_id_t refId = ref.toUInt(&isNumber);
+                    if (isNumber && refId > 0 && oldToNewIds.contains(refId))
+                        parenRef->Set(EntityReference(oldToNewIds[refId]), change);
+                }
+            }
             i->second->ComponentChanged(change);
+        }
     }
 
     return ret;
@@ -1362,4 +1409,51 @@ void Scene::OnUpdated(float frameTime)
     }
     
     entitiesCreatedThisFrame_.clear();
+}
+
+EntityList Scene::FindEntities(const QString &pattern) const
+{
+    QRegExp regex = QRegExp(pattern, Qt::CaseSensitive, QRegExp::WildcardUnix);
+    return FindEntities(regex);
+}
+
+EntityList Scene::FindEntities(const QRegExp &pattern) const
+{
+    EntityList entities;
+    if (pattern.isEmpty() || !pattern.isValid())
+        return entities;
+
+    EntityMap::const_iterator it = entities_.begin();
+
+    while(it != entities_.end())
+    {
+        EntityPtr entity = it->second;
+
+        if (pattern.exactMatch(entity->Name()))
+            entities.push_back(entity);
+
+        ++it;
+    }
+
+    return entities;
+}
+
+EntityList Scene::FindEntitiesContaining(const QString &substring) const
+{
+    EntityList entities;
+    if (substring.isEmpty())
+        return entities;
+
+    EntityMap::const_iterator it = entities_.begin();
+
+    while(it != entities_.end())
+    {
+        EntityPtr entity = it->second;
+        if (entity->Name().contains(substring, Qt::CaseSensitive))
+            entities.push_back(entity);
+
+        ++it;
+    }
+
+    return entities;
 }

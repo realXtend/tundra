@@ -182,8 +182,6 @@ public slots:
     void RemoveWaterPlane();
 
 private slots:
-    /// Called If some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
 
     /// Called if parent entity has set.
     void Create();
@@ -197,6 +195,9 @@ private slots:
     void Update();
 
 private:
+    /// Called If some of the attributes has been changed.
+    void AttributesChanged();
+
     /// Attach a new entity to scene node that world scene owns.
     void AttachEntity();
 

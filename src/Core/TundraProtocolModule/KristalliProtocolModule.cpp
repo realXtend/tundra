@@ -365,11 +365,11 @@ void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNe
     }
 }
 
-u8 KristalliProtocolModule::AllocateNewConnectionID() const
+u32 KristalliProtocolModule::AllocateNewConnectionID() const
 {
-    u8 newID = 1;
+    u32 newID = 1;
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        newID = std::max((int)newID, (int)((*iter)->userID+1));
+        newID = std::max((u32)newID, (u32)((*iter)->userID+1));
     
     return newID;
 }
@@ -383,7 +383,7 @@ UserConnectionPtr KristalliProtocolModule::GetUserConnection(MessageConnection* 
     return UserConnectionPtr();
 }
 
-UserConnectionPtr KristalliProtocolModule::GetUserConnection(u8 id) const
+UserConnectionPtr KristalliProtocolModule::GetUserConnection(u32 id) const
 {
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->userID == id)

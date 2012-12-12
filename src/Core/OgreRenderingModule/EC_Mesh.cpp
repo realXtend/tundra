@@ -60,7 +60,6 @@ EC_Mesh::EC_Mesh(Scene* scene) :
         adjustment_node_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Mesh_adjustment_node"));
 
         connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
         connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
         connect(skeletonAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
@@ -593,7 +592,7 @@ void EC_Mesh::RemoveAllAttachments()
     attachment_nodes_.clear();
 }
 
-bool EC_Mesh::SetMaterial(uint index, const QString& material_name)
+bool EC_Mesh::SetMaterial(uint index, const QString& material_name, AttributeChange::Type change)
 {
     if (!entity_)
     {
@@ -613,6 +612,16 @@ bool EC_Mesh::SetMaterial(uint index, const QString& material_name)
     try
     {
         entity_->getSubEntity(index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name.toStdString()));
+
+        // Update the EC_Mesh material attribute list so that users can call EC_Mesh::SetMaterial as a replacement for setting
+        // meshMaterial attribute.
+        AssetReferenceList materials = meshMaterial.Get();
+        while(materials.Size() <= index)
+            materials.Append(AssetReference());
+        materials.Set(index, AssetReference(material_name));
+        meshMaterial.Set(materials, change); // Potentially signal the change of attribute, if requested so.
+
+        // To retain compatibility with old behavior, always fire the EC_Mesh -specific change signal independent of the value of 'change'.
         emit MaterialChanged(index, material_name);
     }
     catch(Ogre::Exception& e)
@@ -841,14 +850,14 @@ void EC_Mesh::UpdateSignals()
     }
 }
 
-void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
+void EC_Mesh::AttributesChanged()
 {
-    if (attribute == &drawDistance)
+    if (drawDistance.ValueChanged())
     {
         if(entity_)
             entity_->setRenderingDistance(drawDistance.Get());
     }
-    else if (attribute == &castShadows)
+    if (castShadows.ValueChanged())
     {
         if(entity_)
         {
@@ -862,32 +871,27 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             }
         }
     }
-    else if (attribute == &nodeTransformation)
+    if (nodeTransformation.ValueChanged())
     {
         Transform newTransform = nodeTransformation.Get();
         adjustment_node_->setPosition(newTransform.pos);
         adjustment_node_->setOrientation(newTransform.Orientation());
         
         // Prevent Ogre exception from zero scale
-        if (newTransform.scale.x < 0.0000001f)
-            newTransform.scale.x = 0.0000001f;
-        if (newTransform.scale.y < 0.0000001f)
-            newTransform.scale.y = 0.0000001f;
-        if (newTransform.scale.z < 0.0000001f)
-            newTransform.scale.z = 0.0000001f;
+        newTransform.scale = Max(newTransform.scale, float3::FromScalar(0.0000001f));
         
         adjustment_node_->setScale(newTransform.scale);
     }
-    else if (attribute == &meshRef)
+    if (meshRef.ValueChanged())
     {
         if (!ViewEnabled())
             return;
-            
+
         if (meshRef.Get().ref.trimmed().isEmpty())
             LogDebug("Warning: Mesh \"" + this->parentEntity->Name() + "\" mesh ref was set to an empty reference!");
         meshAsset->HandleAssetRefChange(&meshRef);
     }
-    else if (attribute == &meshMaterial)
+    if (meshMaterial.ValueChanged())
     {
         if (!ViewEnabled())
             return;
@@ -897,7 +901,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         // Reset all the materials from the submeshes which now have an empty material asset reference set.
         for(uint i = 0; i < GetNumMaterials(); ++i)
             if ((int)i >= materials.Size() || materials[i].ref.trimmed().isEmpty())
-                SetMaterial(i, "");
+                SetMaterial(i, "", AttributeChange::Disconnected);
 
         // Reallocate the number of material asset reflisteners.
         while(materialAssets.size() > (size_t)materials.Size())
@@ -912,11 +916,11 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             materialAssets[i]->HandleAssetRefChange(framework->Asset(), materials[i].ref);
         }
     }
-    else if(attribute == &skeletonRef)
+    if (skeletonRef.ValueChanged())
     {
         if (!ViewEnabled())
             return;
-        
+
         if (!skeletonRef.Get().ref.isEmpty())
             skeletonAsset->HandleAssetRefChange(&skeletonRef);
     }

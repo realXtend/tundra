@@ -105,6 +105,10 @@ private slots:
         @param oldId Old entity id */
     void AckEntity(Entity *entity, entity_id_t oldId);
 
+    /// Updates temporary state of an entity and its components in the tree widget
+    /** @param entity The entity which temporary state was toggled */
+    void UpdateEntityTemporaryState(Entity *entity);
+
     /// Adds the entity to the tree widget.
     /** @param entity Altered entity.
         @param comp Component which was added. */

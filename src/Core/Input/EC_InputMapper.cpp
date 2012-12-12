@@ -46,9 +46,6 @@ EC_InputMapper::EC_InputMapper(Scene* scene):
         metadataInitialized = true;
     }
     executionType.SetMetadata(&executionAttrData);
-    
-    connect(this, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
-        SLOT(HandleAttributeUpdated(IAttribute *, AttributeChange::Type)));
 
     inputContext = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
     inputContext->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
@@ -94,15 +91,15 @@ void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
         actionInvokationMappings.erase(it);
 }
 
-void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
+void EC_InputMapper::AttributesChanged()
 {
-    if (attribute == &contextName)
+    if (contextName.ValueChanged())
         inputContext->SetName(contextName.Get());
-    else if (attribute == &contextPriority)
+    if (contextPriority.ValueChanged())
         inputContext->SetPriority(contextPriority.Get());
-    else if(attribute == &takeKeyboardEventsOverQt)
+    if(takeKeyboardEventsOverQt.ValueChanged())
         inputContext->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
-    else if(attribute == &takeMouseEventsOverQt)
+    if(takeMouseEventsOverQt.ValueChanged())
         inputContext->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
 }
 

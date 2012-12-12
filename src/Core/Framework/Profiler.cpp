@@ -20,6 +20,9 @@ bool ProfilerBlock::QueryCapability()
     return result != 0;
 #elif defined(ANDROID) || defined(_POSIX_C_SOURCE)
     return true;
+#else
+#warning "ProfilerBlock::QueryCapability not implemented for current platform!"
+    return false;
 #endif
 }
 

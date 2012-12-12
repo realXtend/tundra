@@ -37,6 +37,7 @@ SET SPEEX_ROOT=%DEPS%\speex
 SET VLC_ROOT=%DEPS%\vlc
 SET QXMPP_ROOT=%DEPS%\qxmpp
 SET ZZIPLIB_ROOT=%DEPS%\zziplib
+SET CRUNCH_ROOT=%DEPS%\crunch
 
 :: Disable python untill it has been fixed to windows-build-deps.cmd!
 SET TUNDRA_PYTHON_ENABLED=FALSE
@@ -54,12 +55,6 @@ IF NOT EXIST Tundra.sln. (
 )
 echo.
 
-cecho {0D}Building Tundra.{# #}{\n}
-msbuild tundra.sln /p:Configuration=RelWithDebInfo
-IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-echo.
-
-cecho {0A}Tundra build finished.{# #}{\n}
 :: Finish in same directory we started in.
 cd TOOLS
 set PATH=%ORIGINAL_PATH%

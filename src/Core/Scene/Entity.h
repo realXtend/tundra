@@ -246,10 +246,17 @@ public slots:
         @return Pointer to the new entity, or null pointer if the cloning fails. */
     EntityPtr Clone(bool local, bool temporary) const;
 
-    void SerializeToXML(QDomDocument& doc, QDomElement& base_element) const;
+    /// Serializes this entity and its' components to the given XML document
+    /** @param doc The XML document to serialize this entity to.
+        @param base_element Points to the <scene> element of this XML document. This entity will be serialized as a child to base_element.
+        @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false. */
+    void SerializeToXML(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary = false) const;
 //        void DeserializeFromXML(QDomElement& element, AttributeChange::Type change);
 
-    QString SerializeToXMLString() const;
+    /// Serializes this entity, and returns the generated XML as a string
+    /** @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false.
+        @sa SerializeToXML */
+    QString SerializeToXMLString(bool serializeTemporary = false) const;
 //        bool DeserializeFromXMLString(const QString &src, AttributeChange::Type change);
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
@@ -367,6 +374,9 @@ signals:
 
     /// Signal when this entity is deleted
     void EntityRemoved(Entity* entity, AttributeChange::Type change);
+
+    /// Signal when this entity's temporary state has been toggled
+    void TemporaryStateToggled(Entity *);
 
     /// The entity has entered a camera's view. Triggered by the rendering subsystem.
     void EnterView(IComponent* camera);

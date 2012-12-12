@@ -44,8 +44,12 @@ if (!framework.IsHeadless())
     rendererSettings.triggered.connect(ShowRendererSettings);
 
     // Register input context for listening fullscreen shortcut key
-    var inputContext = input.RegisterInputContextRaw("RendererSettings", 90);
-    inputContext.KeyPressed.connect(HandleKeyPressed);
+    // todo: Revert this when Mac OS X fullscreen issue is solved
+    if (framework.application.platform != "mac")
+    { 
+        var inputContext = input.RegisterInputContextRaw("RendererSettings", 90);
+        inputContext.KeyPressed.connect(HandleKeyPressed);
+    }
 
     // Shows renderer settings or hides it if it's already visible.
     function ShowRendererSettings()
@@ -90,7 +94,11 @@ if (!framework.IsHeadless())
 
         var fullscreen = findChild(settingsWidget, "fullscreen_toggle");
         fullscreen.setChecked(renderer.fullScreen);
-        fullscreen.toggled.connect(SetFullScreenMode);
+
+        if (framework.application.platform == "mac")
+            fullscreen.setEnabled(false);
+        else
+            fullscreen.toggled.connect(SetFullScreenMode);
 
         var shadowQuality = findChild(settingsWidget, "combo_shadows");
         shadowQuality.setCurrentIndex(renderer.shadowQuality);

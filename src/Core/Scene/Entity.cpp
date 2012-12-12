@@ -34,6 +34,7 @@ Entity::Entity(Framework* framework, entity_id_t id, Scene* scene) :
     scene_(scene),
     temporary_(false)
 {
+    connect(this, SIGNAL(TemporaryStateToggled(Entity *)), scene_, SIGNAL(EntityTemporaryStateToggled(Entity *)));
 }
 
 Entity::~Entity()
@@ -435,7 +436,7 @@ void Entity::DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange:
 {
 }*/
 
-void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element) const
+void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool serializeTemporary) const
 {
     QDomElement entity_elem = doc.createElement("entity");
     
@@ -443,10 +444,11 @@ void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element) const
     id_str.setNum((int)Id());
     entity_elem.setAttribute("id", id_str);
     entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(IsReplicated())));
+    if (serializeTemporary)
+        entity_elem.setAttribute("temporary", QString::fromStdString(::ToString<bool>(IsTemporary())));
 
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (!i->second->IsTemporary())
-            i->second->SerializeTo(doc, entity_elem);
+            i->second->SerializeTo(doc, entity_elem, serializeTemporary);
 
     base_element.appendChild(entity_elem);
 }
@@ -456,12 +458,12 @@ void Entity::DeserializeFromXML(QDomElement& element, AttributeChange::Type chan
 {
 }*/
 
-QString Entity::SerializeToXMLString() const
+QString Entity::SerializeToXMLString(bool serializeTemporary) const
 {
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
 
-    SerializeToXML(scene_doc, scene_elem);
+    SerializeToXML(scene_doc, scene_elem, serializeTemporary);
     return scene_doc.toString();
 }
 
@@ -499,6 +501,7 @@ EntityPtr Entity::Clone(bool local, bool temporary) const
     entityElem.setAttribute("id", local ? scene_->NextFreeIdLocal() : scene_->NextFreeId());
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         i->second->SerializeTo(doc, entityElem);
+
     sceneElem.appendChild(entityElem);
     doc.appendChild(sceneElem);
 
@@ -627,7 +630,11 @@ void Entity::EmitLeaveView(IComponent* camera)
 
 void Entity::SetTemporary(bool enable)
 {
-    temporary_ = enable;
+    if (enable != temporary_)
+    {
+        temporary_ = enable;
+        emit TemporaryStateToggled(this);
+    }
 }
 
 QString Entity::ToString() const

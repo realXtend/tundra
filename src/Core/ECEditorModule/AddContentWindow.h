@@ -7,6 +7,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QTreeWidget>
 
 #include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
@@ -14,12 +15,27 @@
 #include "SceneDesc.h"
 #include "Math/float3.h"
 
-class QTreeWidget;
 class QPushButton;
 class QComboBox;
 class QTreeWidgetItem;
 class QProgressBar;
 class QLabel;
+
+typedef QList<QTreeWidgetItem *> SelectedItemsList;
+
+/// Tree widget that allows multiselection and handles 'space' key press for checking/unchecking checkboxes
+/// @cond PRIVATE
+class EntityAndAssetTreeWidget : public QTreeWidget
+{
+    Q_OBJECT
+public:
+    EntityAndAssetTreeWidget(QWidget *parent = 0);
+protected:
+    virtual void keyPressEvent(QKeyEvent* event);
+private:
+    void ToggleCheckedState(bool checkAllInsteadOfToggle);
+};
+/// @endcond
 
 /// Window for adding new content and uploading assets.
 /** The window is modal and is deleted when it's closed. */

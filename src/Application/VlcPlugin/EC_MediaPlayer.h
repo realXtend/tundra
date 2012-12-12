@@ -148,9 +148,6 @@ private slots:
     /// Monitors this entitys removed components.
     void ComponentRemoved(IComponent *component, AttributeChange::Type change);
 
-    /// Monitors this components Attribute changes.
-    void AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType);
-
     /// Get parent entitys EC_Mesh. Return 0 if not present.
     EC_Mesh *GetMeshComponent();
 
@@ -167,6 +164,9 @@ private slots:
     void OnMediaFailed(IAssetTransfer *transfer, QString reason);
 
 private:
+    /// Monitors this components Attribute changes.
+    void AttributesChanged();
+
     /// Vlc media player widget.
     VlcMediaPlayer *mediaPlayer_;
 

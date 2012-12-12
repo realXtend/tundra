@@ -18,21 +18,20 @@
 set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
 set (BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
 set (ENABLE_BUILD_OPTIMIZATIONS 1)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
-if (NOT APPLE AND NOT ANDROID)
-   set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
-else() # TODO Apple build script does not build with Hydrax.
-   set (ENABLE_HYDRAX 0)
-endif()
-if (APPLE OR ANDROID) # TODO: Apple build script does not work with SkyX at the moment. See https://github.com/realXtend/naali/issues/320
-   set (ENABLE_SKYX 0)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
+if (NOT ANDROID)
+    set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
+    set (ENABLE_SKYX 1)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
+    set (ENABLE_OPEN_ASSET_IMPORT 1)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
 else()
-   set (ENABLE_SKYX 1)
+    set (ENABLE_HYDRAX 0)
+    set (ENABLE_SKYX 0)
+    set (ENABLE_OPEN_ASSET_IMPORT 0)
 endif()
-if (NOT APPLE AND NOT ANDROID) # TODO: Enable OpenAssetImport plugin on Mac OS X.
-   set (ENABLE_OPEN_ASSET_IMPORT 1)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
-else()
-   set (ENABLE_OPEN_ASSET_IMPORT 0)
+
+if (ENABLE_OPEN_ASSET_IMPORT)
+    add_definitions(-DASSIMP_ENABLED)
 endif()
+
 # For now, disable audio on Android
 if (ANDROID)
     add_definitions (-DANDROID)

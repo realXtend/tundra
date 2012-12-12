@@ -26,7 +26,6 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     assert(owner && "No OgrerenderingModule.");
     compositionHandler = owner->GetRenderer()->CompositionHandler();
     assert(compositionHandler && "No CompositionHandler.");
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
     // Ogre sucks. Enable a timed one-time refresh to overcome issue with black screen.
     framework->Frame()->DelayedExecute(0.01f, this, SLOT(OneTimeRefresh()));
@@ -54,19 +53,17 @@ QStringList EC_OgreCompositor::ApplicableParameters() const
         return QStringList();
 }
 
-void EC_OgreCompositor::OnAttributeUpdated(IAttribute* attribute)
+void EC_OgreCompositor::AttributesChanged()
 {
-    if (attribute == &enabled)
+    if (enabled.ValueChanged())
     {
-        UpdateCompositor(compositorName.Get());
-        UpdateCompositorParams(compositorName.Get());
-        compositionHandler->SetCompositorEnabled(compositorName.Get().toStdString(), enabled.Get());
+        OneTimeRefresh();
     }
-    else if (attribute == &compositorName || attribute == &priority)
+    if (compositorName.ValueChanged() || priority.ValueChanged())
     {
         UpdateCompositor(compositorName.Get());
     }
-    else if (attribute == &parameters)
+    if (parameters.ValueChanged())
     {
         UpdateCompositorParams(compositorName.Get());
     }
@@ -129,5 +126,9 @@ void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
 void EC_OgreCompositor::OneTimeRefresh()
 {
     if (!compositorName.Get().isEmpty())
-        OnAttributeUpdated(&enabled);
+    {
+        UpdateCompositor(compositorName.Get());
+        UpdateCompositorParams(compositorName.Get());
+        compositionHandler->SetCompositorEnabled(compositorName.Get().toStdString(), enabled.Get());
+    }
 }

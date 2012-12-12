@@ -32,6 +32,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 set(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
+include_directories (libcrunch)
 include_directories (libsquish)
 
 add_definitions(-DOGRE_MODULE_EXPORTS)
@@ -44,7 +45,6 @@ build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 if (ENABLE_OPEN_ASSET_IMPORT)
     use_app_modules(OpenAssetImport)
     link_modules(OpenAssetImport)
-    add_definitions(-DASSIMP_ENABLED)
 endif()
 
 link_ogre()
