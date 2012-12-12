@@ -60,8 +60,6 @@ link_package_ogg()      # Audio
 link_package_vorbis()   # Audio
 link_modules(Math)
 
-target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
-
 SetupCompileFlagsWithPCH()
 
 final_target()
