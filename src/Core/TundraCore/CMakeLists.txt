@@ -37,7 +37,7 @@ AddSourceFolder(Ui)
 set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-UseTundraCore() # Inlude all subfolders within the project
+UseTundraCore() # Include all subfolders within the project
 use_core_modules(Math)
 
 add_definitions(-DTUNDRACORE_EXPORTS)
@@ -55,10 +55,18 @@ endif()
 
 link_package(QT4)
 link_package_knet()     # Scene
-link_package(OPENAL)    # Audio
-link_package_ogg()      # Audio
-link_package_vorbis()   # Audio
+if (NOT ANDROID)
+    link_package(OPENAL)    # Audio
+    link_package_ogg()      # Audio
+    link_package_vorbis()   # Audio
+endif()
 link_modules(Math)
+
+# Add log library on Android
+if (ANDROID)
+    target_link_libraries (${TARGET_NAME} log)
+endif ()
+
 
 SetupCompileFlagsWithPCH()
 
