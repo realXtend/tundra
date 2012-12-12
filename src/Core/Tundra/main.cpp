@@ -21,7 +21,8 @@ REGISTER_STATIC_PLUGIN(DebugStatsModule)
 
 #endif
 
-#if defined(_MSC_VER) // Windows application entry point.int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nShowCmd*/){
+#if defined(_MSC_VER) // Windows application entry point.
+int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nShowCmd*/){
     std::string cmdLine(lpCmdLine);
 
     // Parse the Windows command line.
