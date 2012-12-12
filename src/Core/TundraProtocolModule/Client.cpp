@@ -17,7 +17,7 @@
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
 #include "SceneAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AssetAPI.h"
 #include "Application.h"
 

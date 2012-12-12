@@ -7,7 +7,7 @@
 #include "OgreWorld.h"
 #include "Renderer.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "OgreSkeletonAsset.h"

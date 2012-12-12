@@ -218,7 +218,7 @@ bool Triangle::IsFinite() const
 	return a.IsFinite() && b.IsFinite() && c.IsFinite();
 }
 
-bool Triangle::IsDegenerate(float epsilon) const
+bool Triangle::IsDegenerate(float /*epsilon*/) const
 {
 	return IsDegenerate(a, b, c);
 }

@@ -20,7 +20,7 @@
 #include "IAssetStorage.h"
 #include "IAssetUploadTransfer.h"
 #include "SceneDesc.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "SceneImporter.h"
 #include "Transform.h"
 #include "LoggingFunctions.h"

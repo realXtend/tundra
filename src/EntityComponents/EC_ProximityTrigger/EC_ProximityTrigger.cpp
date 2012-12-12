@@ -7,7 +7,7 @@
 #include "EC_ProximityTrigger.h"
 
 #include "Framework.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 
 #include "EC_Placeable.h"
@@ -33,7 +33,7 @@ void EC_ProximityTrigger::AttributesChanged()
         SetUpdateMode();
 }
 
-void EC_ProximityTrigger::Update(float timeStep)
+void EC_ProximityTrigger::Update(float /*timeStep*/)
 {
     if (!active.Get())
         return;

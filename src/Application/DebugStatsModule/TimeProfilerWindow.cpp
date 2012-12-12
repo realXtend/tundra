@@ -10,7 +10,7 @@
 #include "Framework.h"
 #include "FrameAPI.h"
 #include "Application.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "OgreRenderingModule.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"

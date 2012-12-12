@@ -27,13 +27,14 @@ use_package (PYTHON)
 use_package (PYTHON_QT)
 
 # Use core and app modules we need. Notice separate macros due to source locations separation.
-use_core_modules (Framework Math Scene Input Ui Audio Console OgreRenderingModule TundraProtocolModule)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule TundraProtocolModule)
 
 # Build PythonScriptModule
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 # Link to all: this include core and app (as the linking is just done by name not absolute path)
-link_modules (Framework Math Scene Input Ui Audio Console OgreRenderingModule TundraProtocolModule)
+link_modules(TundraCore OgreRenderingModule TundraProtocolModule)
 
 # Link to ECs. This macro will smartly opt out ECs that are not included in the build, info for this provided by GetEntityComponents() on top.
 link_entity_components (EC_Script EC_Highlight EC_HoveringText EC_Sound EC_TransformGizmo

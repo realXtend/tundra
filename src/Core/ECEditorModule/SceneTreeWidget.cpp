@@ -11,8 +11,8 @@
 #include "SceneTreeWidgetItems.h"
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
-#include "Scene.h"
-#include "QtUtils.h"
+#include "Scene/Scene.h"
+#include "FileUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
 
@@ -964,7 +964,7 @@ void SceneTreeWidget::SaveAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+    fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
         tr("Save SceneTreeWidgetSelection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
 }
 
@@ -972,7 +972,7 @@ void SceneTreeWidget::SaveSceneAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+    fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
         tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
@@ -984,13 +984,13 @@ void SceneTreeWidget::ExportAll()
     if (SelectedItems().HasEntities())
     {
         // Save only selected entities
-        fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+        fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
             tr("Export scene"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
     }
     else
     {
         // Save all entities in the scene
-        fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+        fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
             tr("Export scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
     }
 
@@ -1002,7 +1002,7 @@ void SceneTreeWidget::Import()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    fileDialog = OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + 
 #ifdef ASSIMP_ENABLED
         cMeshFileFilter + ";;" + 
@@ -1015,7 +1015,7 @@ void SceneTreeWidget::OpenNewScene()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    fileDialog = OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;" + cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter + ";;" +
         cAllTypesFileFilter, tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
@@ -1401,13 +1401,13 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                     if (!attr)
                         continue;
                     
-                    if (attr->TypeName() == "assetreference")
+                    if (attr->TypeId() == cAttributeAssetReference)
                     {
                         Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
                         if (assetRef)
                             assets.insert(assetRef->Get().ref);
                     }
-                    else if (attr->TypeName() == "assetreferencelist")
+                    else if (attr->TypeId() == cAttributeAssetReferenceList)
                     {
                         Attribute<AssetReferenceList> *assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
                         if (assetRefs)
@@ -1540,11 +1540,11 @@ void SceneTreeWidget::SaveAssetAs()
     if (sel.assets.size() == 1)
     {
         assetName = AssetAPI::ExtractFilenameFromAssetRef(sel.assets[0]->id);
-        fileDialog = QtUtils::SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+        fileDialog = SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
     else
     {
-        QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+        DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
 }
 

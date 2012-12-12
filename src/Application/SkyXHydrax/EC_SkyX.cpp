@@ -10,7 +10,7 @@
 
 #include "EC_SkyX.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "FrameAPI.h"
 #include "OgreWorld.h"

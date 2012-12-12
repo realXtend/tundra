@@ -5,7 +5,7 @@
 #include "AvatarModule.h"
 #include "AvatarEditor.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
@@ -20,6 +20,8 @@
 
 #include "../JavascriptModule/JavascriptModule.h"
 #include "AvatarModuleScriptTypeDefines.h"
+
+#include "StaticPluginRegistry.h"
 
 AvatarModule::AvatarModule() : IModule("Avatar")
 {
@@ -116,7 +118,11 @@ void AvatarModule::OnScriptEngineCreated(QScriptEngine *engine)
 
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(AvatarModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new AvatarModule();

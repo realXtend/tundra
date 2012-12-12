@@ -8,7 +8,7 @@
 #include "EC_SoundListener.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "LoggingFunctions.h"
 #include "AudioAPI.h"
 #include "SceneAPI.h"

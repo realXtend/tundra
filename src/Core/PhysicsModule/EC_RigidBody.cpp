@@ -14,7 +14,7 @@
 #include "Profiler.h"
 #include "OgreMeshAsset.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"

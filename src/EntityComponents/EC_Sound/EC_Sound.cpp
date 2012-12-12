@@ -6,7 +6,7 @@
 
 #include "Framework.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AttributeMetadata.h"
 #include "AudioAPI.h"
 #include "AudioAsset.h"

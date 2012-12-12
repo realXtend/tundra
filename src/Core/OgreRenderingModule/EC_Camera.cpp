@@ -15,7 +15,7 @@
 
 #include "Entity.h"
 #include "FrameAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Profiler.h"
 #include "LoggingFunctions.h"
 #include "Application.h"

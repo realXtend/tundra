@@ -13,7 +13,7 @@
 #include "AttributeMetadata.h"
 #include "EC_Mesh.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Math/Quat.h"
 #include "Math/float3x3.h"
 #include "Math/float3x4.h"

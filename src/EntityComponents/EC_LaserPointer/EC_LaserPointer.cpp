@@ -15,7 +15,7 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "InputAPI.h"
 #include "InputContext.h"
 #include "MouseEvent.h"

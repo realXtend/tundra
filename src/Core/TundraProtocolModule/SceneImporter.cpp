@@ -6,7 +6,7 @@
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "SceneDesc.h"
 #include "OgreMaterialUtils.h"
@@ -22,7 +22,7 @@
 #include "SceneAPI.h"
 #include "OgreRenderingModule.h"
 #include "CoreException.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 
 #include <Ogre.h>
 

@@ -8,16 +8,20 @@
 #include "EC_Avatar.h"
 #include "AssetAPI.h"
 #include "SceneAPI.h"
-#include "Scene.h"
-#include "QtUtils.h"
+#include "Scene/Scene.h"
+#include "FileUtils.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "AssetFwd.h"
 #include "IAssetTransfer.h"
 #include "AssetReference.h"
 #include "BinaryAsset.h"
+
+// Avatar editor is currently not fully functional on Android due to needing ECEditorModule and in turn QtPropertyBrowser
+#ifndef ANDROID
 #include "../../Core/ECEditorModule/SupportedFileTypes.h"
 #include "../../Core/ECEditorModule/AssetsWindow.h"
+#endif
 
 #include "Entity.h"
 
@@ -441,6 +445,7 @@ void AvatarEditor::OpenAvatarAsset()
 {
     previousAvatar_ = avatarAsset_;
 
+    #ifndef ANDROID
     AssetsWindow *assetsWindow = new AssetsWindow("Avatar", framework, framework->Ui()->MainWindow());
     connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
@@ -448,6 +453,7 @@ void AvatarEditor::OpenAvatarAsset()
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
+    #endif
 }
 
 void AvatarEditor::HandleAssetPicked(AssetPtr avatarAsset)
@@ -472,7 +478,7 @@ void AvatarEditor::OnAssetTransferSucceeded(AssetPtr asset)
         LogError("AvatarEditor::OnAssetTransferSucceeded: not an avatar asset");
 }
 
-void AvatarEditor::OnAssetTransferFailed(IAssetTransfer *transfer, QString reason)
+void AvatarEditor::OnAssetTransferFailed(IAssetTransfer * /*transfer*/, QString reason)
 {
     LogError("AvatarEditor::OnAssetTransferFailed: " + reason);
 }
@@ -565,11 +571,13 @@ void AvatarEditor::RemoveAttachment()
 
 void AvatarEditor::OpenAttachmentAsset()
 {
+    #ifndef ANDROID
     AssetsWindow *assetsWindow = new AssetsWindow("AvatarAttachment", framework, framework->Ui()->MainWindow());
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAttachmentPicked(AssetPtr)));
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
+    #endif
 }
 
 void AvatarEditor::HandleAttachmentPicked(AssetPtr attachmentAsset)

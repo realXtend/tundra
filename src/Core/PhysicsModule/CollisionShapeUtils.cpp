@@ -6,11 +6,22 @@
 #include "CollisionShapeUtils.h"
 #include "ConvexHull.h"
 #include "PhysicsUtils.h"
-#include "btBulletDynamicsCommon.h"
 #include "LoggingFunctions.h"
 #include "hull.h"
 
 #include <Ogre.h>
+
+// Disable unreferenced formal parameter coming from Bullet
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#endif
+#include <btBulletDynamicsCommon.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+#include "MemoryLeakCheck.h"
 
 namespace Physics
 {
