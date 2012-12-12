@@ -11,6 +11,7 @@ if (MSVC)
     set(Boost_USE_MULTITHREADED TRUE)
     set(Boost_USE_STATIC_LIBS TRUE)
 else ()
+    set(Boost_USE_MULTITHREADED FALSE)
     set(Boost_USE_STATIC_LIBS FALSE)
 endif ()
 
@@ -83,7 +84,7 @@ macro (configure_qt4)
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
-    
+
         include (${QT_USE_FILE})
         
         set (QT4_INCLUDE_DIRS 
