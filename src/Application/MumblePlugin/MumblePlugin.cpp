@@ -19,7 +19,7 @@
 #include "LoggingFunctions.h"
 
 #include "IRenderer.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "EC_SoundListener.h"

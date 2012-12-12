@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "SyncState.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "IComponent.h"
 #include "Profiler.h"

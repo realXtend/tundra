@@ -8,7 +8,7 @@
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include "Profiler.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "OgreWorld.h"
 #include "EC_RigidBody.h"
 #include "LoggingFunctions.h"

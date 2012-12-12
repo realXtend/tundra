@@ -7,7 +7,7 @@
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"

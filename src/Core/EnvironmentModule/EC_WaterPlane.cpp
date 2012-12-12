@@ -13,7 +13,7 @@
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
 #include "Renderer.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "OgreWorld.h"
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"

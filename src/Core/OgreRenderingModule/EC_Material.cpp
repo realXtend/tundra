@@ -9,7 +9,7 @@
 #include "OgreRenderingModule.h"
 
 #include "FrameAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
 #include "AssetAPI.h"

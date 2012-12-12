@@ -28,7 +28,7 @@
 
 #include "Application.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AssetAPI.h"
 #include "AssetCache.h"
 #include "GenericAssetFactory.h"

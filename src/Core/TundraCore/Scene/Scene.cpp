@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "SceneAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "SceneDesc.h"
 #include "IComponent.h"

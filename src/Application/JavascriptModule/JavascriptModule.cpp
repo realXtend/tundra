@@ -22,7 +22,7 @@
 #include "EC_Script.h"
 #include "ScriptAsset.h"
 #include "EC_DynamicComponent.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "InputAPI.h"
 #include "AudioAPI.h"
 #include "FrameAPI.h"

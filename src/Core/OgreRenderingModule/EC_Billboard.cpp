@@ -16,7 +16,7 @@
 
 #include "Entity.h"
 #include "Framework.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "LoggingFunctions.h"
 
 #include <OgreBillboardSet.h>

@@ -13,7 +13,7 @@
 #include "EC_SkyX.h"
 #endif
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "FrameAPI.h"
 #include "AssetAPI.h"

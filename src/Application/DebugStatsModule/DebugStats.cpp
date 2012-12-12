@@ -15,7 +15,7 @@
 #include "UiAPI.h"
 #include "LoggingFunctions.h"
 #include "SceneAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "UiProxyWidget.h"

@@ -10,7 +10,7 @@
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialAsset.h"

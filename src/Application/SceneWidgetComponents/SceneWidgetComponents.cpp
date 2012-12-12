@@ -12,7 +12,7 @@
 #include "MouseEvent.h"
 #include "InputContext.h"
 #include "SceneAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"

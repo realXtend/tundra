@@ -5,7 +5,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_Sky.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "OgreWorld.h"
 #include "LoggingFunctions.h"
 #include "TextureAsset.h"

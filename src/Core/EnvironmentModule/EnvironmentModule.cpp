@@ -15,7 +15,7 @@
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "IComponentFactory.h"
 
 #include "StaticPluginRegistry.h"

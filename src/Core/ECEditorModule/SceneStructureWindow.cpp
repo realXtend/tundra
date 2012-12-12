@@ -14,7 +14,7 @@
 #include "TreeWidgetUtils.h"
 
 #include "Framework.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "EC_Name.h"
 #include "AssetReference.h"

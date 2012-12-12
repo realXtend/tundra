@@ -9,7 +9,7 @@
 #include "OgreWorld.h"
 
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"

@@ -16,7 +16,7 @@
 
 #include "OgreMeshAsset.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "FrameAPI.h"

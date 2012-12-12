@@ -15,7 +15,7 @@
 #include "UiMainWindow.h"
 #include "Entity.h"
 #include "IComponent.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
 #include "LoggingFunctions.h"

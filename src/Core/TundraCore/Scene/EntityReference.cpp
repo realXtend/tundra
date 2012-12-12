@@ -5,7 +5,7 @@
 
 #include "EntityReference.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "EC_Name.h"
 #include "SceneAPI.h"
 

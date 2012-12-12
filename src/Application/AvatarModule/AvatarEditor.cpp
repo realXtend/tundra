@@ -8,7 +8,7 @@
 #include "EC_Avatar.h"
 #include "AssetAPI.h"
 #include "SceneAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "FileUtils.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"

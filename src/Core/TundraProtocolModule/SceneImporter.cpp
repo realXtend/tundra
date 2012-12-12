@@ -6,7 +6,7 @@
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "SceneDesc.h"
 #include "OgreMaterialUtils.h"

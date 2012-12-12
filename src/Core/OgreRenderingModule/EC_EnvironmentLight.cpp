@@ -10,7 +10,7 @@
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
 #include "Renderer.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"

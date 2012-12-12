@@ -5,7 +5,7 @@
 #include "AvatarModule.h"
 #include "AvatarEditor.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"

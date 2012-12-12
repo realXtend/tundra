@@ -20,7 +20,7 @@
 
 #include "Application.h"
 #include "UiGraphicsView.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"

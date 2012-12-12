@@ -9,7 +9,7 @@
 
 #include "IComponent.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "SceneAPI.h"
 
 #include "CoreStringUtils.h"

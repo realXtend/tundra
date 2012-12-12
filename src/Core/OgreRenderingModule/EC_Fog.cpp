@@ -7,7 +7,7 @@
 
 #include "EC_Fog.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 #include "OgreWorld.h"

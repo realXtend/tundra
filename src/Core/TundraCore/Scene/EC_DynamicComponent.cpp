@@ -8,7 +8,7 @@
 
 #include "Entity.h"
 #include "LoggingFunctions.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 
 #include <QScriptEngine>
 #include <QScriptValueIterator>

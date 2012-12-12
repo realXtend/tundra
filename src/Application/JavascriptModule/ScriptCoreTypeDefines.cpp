@@ -8,7 +8,7 @@
 #include "EntityReference.h"
 #include "Entity.h"
 #include "ScriptMetaTypeDefines.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "LoggingFunctions.h"
 #include "QScriptEngineHelpers.h"
 

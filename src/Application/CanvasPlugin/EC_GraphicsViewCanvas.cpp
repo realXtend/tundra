@@ -13,7 +13,7 @@
 #include "OgreRenderingModule.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "MouseEvent.h"
 #include "TextureAsset.h"

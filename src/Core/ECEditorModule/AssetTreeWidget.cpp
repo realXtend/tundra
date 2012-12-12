@@ -20,7 +20,7 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetStorage.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AssetCache.h"
 #include "FileUtils.h"
 #include "UiAPI.h"

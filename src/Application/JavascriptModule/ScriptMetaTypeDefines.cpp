@@ -23,7 +23,7 @@
 #include "UiProxyWidget.h"
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AudioAPI.h"
 #include "SoundChannel.h"
 #include "InputContext.h"

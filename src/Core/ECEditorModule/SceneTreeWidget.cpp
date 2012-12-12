@@ -11,7 +11,7 @@
 #include "SceneTreeWidgetItems.h"
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "FileUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"

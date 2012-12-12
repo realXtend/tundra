@@ -17,7 +17,7 @@
 #include "IAsset.h"
 #include "ConfigAPI.h"
 #include "IComponentFactory.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AssetAPI.h"
 #include "ConsoleAPI.h"
 #include "AssetAPI.h"
