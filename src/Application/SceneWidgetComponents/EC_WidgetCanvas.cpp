@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "Math/MathNamespace.h"
-#include "StableHeaders.h"
+
 #include "DebugOperatorNew.h"
 #include "EC_WidgetCanvas.h"
 
@@ -19,6 +19,7 @@
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreTechnique.h>
 
+#include <QTimer>
 #include <QWidget>
 #include <QPainter>
 #include <QDebug>

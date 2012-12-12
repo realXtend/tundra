@@ -5,8 +5,7 @@ Copyright (c) 2011 Jacob 'jacmoe' Moen
 Licensed under the MIT license:
 */
 
-#ifndef incl_OpenAssetImport_h
-#define incl_OpenAssetImport_h
+#pragma once
 
 #include "CoreTypes.h"
 #include "AssetAPI.h"
@@ -108,6 +107,3 @@ private slots:
     void OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason);
 
 };
-
-#endif // __OpenAssetImport_h__
-

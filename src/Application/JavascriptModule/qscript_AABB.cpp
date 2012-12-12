@@ -276,7 +276,7 @@ static QScriptValue AABB_FacePlane_int_const(QScriptContext *context, QScriptEng
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue AABB_GetFacePlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue AABB_GetFacePlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_GetFacePlanes_Plane_ptr_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     AABB This = qscriptvalue_cast<AABB>(context->thisObject());
@@ -657,7 +657,7 @@ static QScriptValue AABB_Intersects_Polyhedron_const(QScriptContext *context, QS
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue AABB_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue AABB_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function AABB_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     AABB This = qscriptvalue_cast<AABB>(context->thisObject());

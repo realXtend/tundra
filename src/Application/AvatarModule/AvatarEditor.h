@@ -4,7 +4,7 @@
 
 #include "AvatarModule.h"
 #include "AvatarModuleApi.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "SceneFwd.h"
 #include "AssetFwd.h"
 

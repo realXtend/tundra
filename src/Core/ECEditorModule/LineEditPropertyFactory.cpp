@@ -47,7 +47,7 @@ void LineEditPropertyFactory::AddButtons(AttributeMetadata::ButtonInfoList butto
     buttons_ = buttons;
 }
 
-void LineEditPropertyFactory::ComponentAdded(QtProperty *property, IComponent *comp)
+void LineEditPropertyFactory::ComponentAdded(QtProperty * /*property*/, IComponent *comp)
 {
     assert(comp);
     if(!comp)
@@ -61,7 +61,7 @@ void LineEditPropertyFactory::ComponentAdded(QtProperty *property, IComponent *c
     components_.push_back(ComponentWeakPtr(comp->ParentEntity()->GetComponent(comp->TypeName(), comp->Name())));
 }
 
-void LineEditPropertyFactory::ComponentRemoved(QtProperty *property, IComponent *comp)
+void LineEditPropertyFactory::ComponentRemoved(QtProperty * /*property*/, IComponent *comp)
 {
     assert(comp);
     if(!comp)
@@ -76,7 +76,7 @@ void LineEditPropertyFactory::ComponentRemoved(QtProperty *property, IComponent 
         }
 }
 
-void LineEditPropertyFactory::connectPropertyManager(QtStringPropertyManager *manager)
+void LineEditPropertyFactory::connectPropertyManager(QtStringPropertyManager * /*manager*/)
 {
 }
 
@@ -103,7 +103,7 @@ QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager,
     return editor;
 }
 
-void LineEditPropertyFactory::disconnectPropertyManager(QtStringPropertyManager *manager)
+void LineEditPropertyFactory::disconnectPropertyManager(QtStringPropertyManager * /*manager*/)
 {
 }
 

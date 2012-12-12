@@ -33,7 +33,7 @@ void EC_ProximityTrigger::AttributesChanged()
         SetUpdateMode();
 }
 
-void EC_ProximityTrigger::Update(float timeStep)
+void EC_ProximityTrigger::Update(float /*timeStep*/)
 {
     if (!active.Get())
         return;

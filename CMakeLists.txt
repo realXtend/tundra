@@ -22,6 +22,7 @@ endmacro ()
 
 macro (PrintUsedBuildConfig)
     message ("\n=========== Used Build Configuration =============\n")
+    message (STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message (STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
     message (STATUS "BUILDING_INSTALLER         = " ${BUILDING_INSTALLER})
     message (STATUS "ENABLE_BUILD_OPTIMIZATIONS = " ${ENABLE_BUILD_OPTIMIZATIONS})
@@ -194,13 +195,10 @@ endif ()
 
 # Set compiler warning levels.
 # On MSVC, use warning level 4 but disable the following warnings:
-# C4100 'identifier' : unreferenced formal parameter
 # C4127 conditional expression is constant
 # C4512 'class' : assignment operator could not be generated 
-# C4505 'function' : unreferenced local function has been removed
-# C4251 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 if (MSVC)
-    add_definitions (/W4 /wd4100 /wd4127 /wd4512 /wd4505 /wd4251)
+    add_definitions (/W4 /wd4127 /wd4512)
 else ()
     add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
 endif()
@@ -310,16 +308,17 @@ if (NOT ANDROID)
     use_package(OPENAL)
 endif()
 
-set (CORE_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/src/Core)
-include_directories (${CORE_MODULE_DIRECTORY}/Input)
-include_directories (${CORE_MODULE_DIRECTORY}/Ui)
-include_directories (${CORE_MODULE_DIRECTORY}/Asset)
-include_directories (${CORE_MODULE_DIRECTORY}/Scene)
-
-link_directories (${CORE_MODULE_DIRECTORY}/Input)
-link_directories (${CORE_MODULE_DIRECTORY}/Ui)
-link_directories (${CORE_MODULE_DIRECTORY}/Asset)
-link_directories (${CORE_MODULE_DIRECTORY}/Scene)
+# Convenience macro for including all TundraCore subfolders.
+macro(UseTundraCore)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Asset)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Audio)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Console)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Framework)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Input)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Scene)
+    include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/Ui)
+endmacro()
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.

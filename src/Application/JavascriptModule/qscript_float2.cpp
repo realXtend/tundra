@@ -620,7 +620,7 @@ static QScriptValue float2_AngleBetweenNorm_float2_const(QScriptContext *context
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float2_Decompose_float2_float2_float2_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float2_Decompose_float2_float2_float2_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float2_Decompose_float2_float2_float2_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float2 This = qscriptvalue_cast<float2>(context->thisObject());
@@ -684,7 +684,7 @@ static QScriptValue float2_Lerp_float2_float2_float(QScriptContext *context, QSc
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float2_Orthogonalize_float2_float2(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float2_Orthogonalize_float2_float2(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Orthogonalize_float2_float2 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float2 a = qscriptvalue_cast<float2>(context->argument(0));
@@ -703,7 +703,7 @@ static QScriptValue float2_AreOrthogonal_float2_float2_float(QScriptContext *con
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float2_Orthonormalize_float2_float2(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float2_Orthonormalize_float2_float2(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Orthonormalize_float2_float2 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float2 a = qscriptvalue_cast<float2>(context->argument(0));

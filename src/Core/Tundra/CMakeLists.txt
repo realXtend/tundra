@@ -39,7 +39,8 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_core_modules(Framework Math Scene Console)
+UseTundraCore()
+use_core_modules(TundraCore Math)
 
 # On Android build the main program as a shared object
 if (ANDROID)
@@ -52,12 +53,11 @@ else()
    build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
 endif()
 
+link_modules(TundraCore)
 # On Android all modules are linked as static.
 if (ANDROID)
-    link_modules (Framework Scene Console TundraProtocolModule OgreRenderingModule PhysicsModule EnvironmentModule AssetModule JavascriptModule AvatarModule DebugStatsModule)
-else ()
-    link_modules (Framework Scene Console)
-endif ()
+    link_modules(TundraProtocolModule OgreRenderingModule PhysicsModule EnvironmentModule AssetModule JavascriptModule AvatarModule DebugStatsModule)
+endif()
 
 final_target ()
 

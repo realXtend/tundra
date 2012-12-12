@@ -14,6 +14,7 @@
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 #include "Profiler.h"
+#include "SceneAPI.h"
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>
@@ -272,47 +273,27 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
     const QString &name,
     const QString &type)
 {
-    ECAttributeEditorBase *attributeEditor = 0;
-    if (type == "real")
-        attributeEditor = new ECAttributeEditor<float>(browser, component, name, type, editor);
-    else if(type == "int")
-        attributeEditor = new ECAttributeEditor<int>(browser, component, name, type, editor);
-    else if(type == "uint")
-        attributeEditor = new ECAttributeEditor<uint>(browser, component, name, type, editor);
-    else if(type == "float2")
-        attributeEditor = new ECAttributeEditor<float2>(browser, component, name, type, editor);
-    else if(type == "float3")
-        attributeEditor = new ECAttributeEditor<float3>(browser, component, name, type, editor);
-    else if(type == "float4")
-        attributeEditor = new ECAttributeEditor<float4>(browser, component, name, type, editor);
-    else if(type == "quat")
-        attributeEditor = new ECAttributeEditor<Quat>(browser, component, name, type, editor);
-    else if(type == "color")
-        attributeEditor = new ECAttributeEditor<Color>(browser, component, name, type, editor);
-    else if(type == "string")
-        attributeEditor = new ECAttributeEditor<QString>(browser, component, name, type, editor);
-    else if(type == "bool")
-        attributeEditor = new ECAttributeEditor<bool>(browser, component, name, type, editor);
-    else if(type == "qvariant")
-        attributeEditor = new ECAttributeEditor<QVariant>(browser, component, name, type, editor);
-    else if(type == "qvariantlist")
-        attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, type, editor);
-    else if(type == "entityreference")
-        attributeEditor = new ECAttributeEditor<EntityReference>(browser, component, name, type, editor);
-    else if(type == "assetreference")
-        // AssetReference uses own special case editor.
-        //attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, type, editor);
-        attributeEditor = new AssetReferenceAttributeEditor(browser, component, name, type, editor);
-    else if(type == "assetreferencelist")
-        // AssetReferenceList uses own special case editor.
-        //attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
-        attributeEditor = new AssetReferenceListAttributeEditor(browser, component, name, type, editor);
-    else if(type == "transform")
-        attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
-    else if(type == "qpoint")
-        attributeEditor = new ECAttributeEditor<QPoint>(browser, component, name, type, editor);
-    else
+    switch(SceneAPI::GetAttributeTypeId(type))
+    {
+    case cAttributeString: return new ECAttributeEditor<QString>(browser, component, name, type, editor);
+    case cAttributeInt: return new ECAttributeEditor<int>(browser, component, name, type, editor);
+    case cAttributeReal: return new ECAttributeEditor<float>(browser, component, name, type, editor);
+    case cAttributeColor: return new ECAttributeEditor<Color>(browser, component, name, type, editor);
+    case cAttributeFloat2: return new ECAttributeEditor<float2>(browser, component, name, type, editor);
+    case cAttributeFloat3: return new ECAttributeEditor<float3>(browser, component, name, type, editor);
+    case cAttributeFloat4: return new ECAttributeEditor<float4>(browser, component, name, type, editor);
+    case cAttributeBool: return new ECAttributeEditor<bool>(browser, component, name, type, editor);
+    case cAttributeUInt: return new ECAttributeEditor<uint>(browser, component, name, type, editor);
+    case cAttributeQuat: return new ECAttributeEditor<Quat>(browser, component, name, type, editor);
+    case cAttributeAssetReference: return  new AssetReferenceAttributeEditor(browser, component, name, type, editor); // Note: AssetReference uses own special case editor.
+    case cAttributeAssetReferenceList: return new AssetReferenceListAttributeEditor(browser, component, name, type, editor); // Note: AssetReferenceList uses own special case editor.
+    case cAttributeEntityReference: return new ECAttributeEditor<EntityReference>(browser, component, name, type, editor);
+    case cAttributeQVariant: return new ECAttributeEditor<QVariant>(browser, component, name, type, editor);
+    case cAttributeQVariantList: return new ECAttributeEditor<QVariantList>(browser, component, name, type, editor);
+    case cAttributeTransform: return new ECAttributeEditor<Transform>(browser, component, name, type, editor);
+    case cAttributeQPoint: return new ECAttributeEditor<QPoint>(browser, component, name, type, editor);
+    default:
         LogWarning("Unknown attribute type " + type + " for ECAttributeEditorBase creation.");
-
-    return attributeEditor;
+        return 0;
+    }
 }
