@@ -18,6 +18,19 @@ class QScriptEngine;
 class RenderWindow;
 class Framework;
 
+#ifdef ANDROID
+namespace Ogre
+{
+    class StaticPluginLoader;
+    class OverlaySystem;
+
+    namespace RTShader
+    {
+        class ShaderGenerator;
+    }
+}
+#endif
+
 namespace OgreRenderer
 {
     class OgreLogListener;
@@ -130,6 +143,11 @@ namespace OgreRenderer
         /// Returns texture quality.
         TextureQualitySetting TextureQuality() const { return textureQuality; }
 
+#ifdef ANDROID
+        /// Returns the shader generator for converting fixed-function materials (Android only)
+        Ogre::RTShader::ShaderGenerator* GetShaderGenerator() { return shaderGenerator; }
+#endif
+
     public slots:
         /// Renders the screen. Advances Ogre's time internally by the frameTime specified
         virtual void Render(float frameTime);
@@ -232,6 +250,12 @@ namespace OgreRenderer
 
         RenderWindow *renderWindow;
 
+        #ifdef ANDROID
+        Ogre::StaticPluginLoader* staticPluginLoader;
+	Ogre::RTShader::ShaderGenerator* shaderGenerator;
+	Ogre::OverlaySystem* overlaySystem;
+        #endif
+        
         /// Framework we belong to
         Framework* framework;
 

@@ -29,6 +29,10 @@ inline tick_t GetCurrentClockTime()
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
     return *(tick_t*)&now;
+#elif defined(ANDROID)
+    struct timespec res;
+    clock_gettime(CLOCK_REALTIME, &res);
+    return 1000000000ULL*res.tv_sec + (tick_t)res.tv_nsec;
 #elif defined(_POSIX_MONOTONIC_CLOCK) && !defined(Q_WS_MAC)
     struct timespec clock_now;
     clock_gettime(CLOCK_MONOTONIC, &clock_now);
@@ -55,6 +59,8 @@ inline tick_t GetCurrentClockFreq()
     LARGE_INTEGER now;
     QueryPerformanceFrequency(&now);
     return *(tick_t*)&now;
+#elif defined(ANDROID)
+    return 1000000000ULL; // 1e9 == nanoseconds.
 #elif defined(_POSIX_MONOTONIC_CLOCK) && !defined(Q_WS_MAC)
     return 1000000000;
 #elif defined(_POSIX_C_SOURCE) && !defined(Q_WS_MAC)

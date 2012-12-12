@@ -19,7 +19,9 @@
 #include <QTranslator>
 #include <QLocale>
 #include <QIcon>
+#ifndef ANDROID
 #include <QWebSettings>
+#endif
 #include <QSplashScreen>
 
 #if defined(_WINDOWS)
@@ -120,7 +122,9 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     QString default_language = framework->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
     ChangeLanguage(default_language);
 
+#ifndef ANDROID
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enable flash
+#endif
 
     ReadTargetFpsLimitFromConfig();
 }
@@ -348,6 +352,9 @@ QString Application::InstallationDirectory()
         LogError("Application::InstallationDirectory: _NSGetExecutablePath failed! Returning './'");
         return "./";
     }
+#elif defined(ANDROID)
+    /// \todo Implement a proper file access mechanism. Hardcoded internal storage access is used for now
+    return "/sdcard/Download/Tundra/";
 #else
     LogError("Application::InstallationDirectory not implemented for this platform. Returning './'");
     return "./";
@@ -633,7 +640,9 @@ void Application::AboutToExit()
 
 QString Application::Platform()
 {
-#ifdef Q_WS_WIN
+#ifdef ANDROID
+    return QString("android");
+#elif defined(Q_WS_WIN)
     return QString("win");
 #elif defined(Q_WS_MAC)
     return QString("mac");

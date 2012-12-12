@@ -21,13 +21,13 @@ macro (init_target NAME)
     # Define target name and output directory.
     # Skip ARGV1 that is the keyword OUTPUT.
     set (TARGET_NAME ${NAME})
-    set (TARGET_OUTPUT ${ARGV2}) 
+    set (TARGET_OUTPUT ${ARGV2})
     
     message ("** " ${TARGET_NAME})
 
     # Headers or libraries are found here will just work
     # Removed from windows due we dont have anything here directly.
-    # On linux this might have useful things but still ConfigurePackages should 
+    # On linux this might have useful things but still ConfigurePackages should
     # find them properly so essentially this is not needed.
     if (NOT WIN32)
         include_directories (${ENV_TUNDRA_DEP_PATH}/include)
@@ -80,20 +80,26 @@ endmacro (final_target)
 # build a library from internal sources
 macro (build_library TARGET_NAME LIB_TYPE)
 
-    # save for later use in other macros
-    set (TARGET_LIB_TYPE ${LIB_TYPE})
+    # On Android force all libs to be static, except the main lib (Tundra)
+    if (ANDROID AND ${LIB_TYPE} STREQUAL "SHARED" AND NOT (${TARGET_NAME} STREQUAL "Tundra"))
+        message("- Forcing lib to static for Android")
+        set (TARGET_LIB_TYPE "STATIC")
+    else ()
+        set (TARGET_LIB_TYPE ${LIB_TYPE})
+    endif ()
+
     message (STATUS "-- build type:")
-    message (STATUS "       " ${LIB_TYPE} " library")
+    message (STATUS "       " ${TARGET_LIB_TYPE} " library")
    
     # *unix add -fPIC for static libraries
-    if (UNIX AND ${LIB_TYPE} STREQUAL "STATIC")
+    if (UNIX AND ${TARGET_LIB_TYPE} STREQUAL "STATIC")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     endif ()
 
-    add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
+    add_library (${TARGET_NAME} ${TARGET_LIB_TYPE} ${ARGN})
 
     if (MSVC AND ENABLE_BUILD_OPTIMIZATIONS)
-        if (${LIB_TYPE} STREQUAL "SHARED")
+        if (${TARGET_LIB_TYPE} STREQUAL "SHARED")
             set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
             set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
         else ()
@@ -101,27 +107,31 @@ macro (build_library TARGET_NAME LIB_TYPE)
             set_target_properties (${TARGET_NAME} PROPERTIES STATIC_LIBRARY_FLAGS_RELWITHDEBINFO "/LTCG")
         endif ()
     endif ()
-    
-    # build static libraries to /lib if
-    # - Is part of the SDK (/src/Core/)
-    # - Is a static EC declared by SDK on the build (/src/EntityComponents/)
-    if (${LIB_TYPE} STREQUAL "STATIC" AND NOT TARGET_DIR)
-        string (REGEX MATCH  ".*/src/Core/?.*" TARGET_IS_CORE ${CMAKE_CURRENT_SOURCE_DIR})
-        string (REGEX MATCH  ".*/src/EntityComponents/?.*" TARGET_IS_EC ${CMAKE_CURRENT_SOURCE_DIR})
-        if (TARGET_IS_CORE)
-            message (STATUS "-- SDK lib output path:")
-        elseif (TARGET_IS_EC)
-            message (STATUS "-- SDK EC lib output path:")
-        endif ()
-        if (TARGET_IS_CORE OR TARGET_IS_EC)
-            message (STATUS "       " ${PROJECT_BINARY_DIR}/lib)
-            set_target_properties (${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
+    if (NOT ANDROID)
+        # build static libraries to /lib if
+        # - Is part of the SDK (/src/Core/)
+        # - Is a static EC declared by SDK on the build (/src/EntityComponents/)
+        if (${TARGET_LIB_TYPE} STREQUAL "STATIC" AND NOT TARGET_DIR)
+            string (REGEX MATCH  ".*/src/Core/?.*" TARGET_IS_CORE ${CMAKE_CURRENT_SOURCE_DIR})
+            string (REGEX MATCH  ".*/src/EntityComponents/?.*" TARGET_IS_EC ${CMAKE_CURRENT_SOURCE_DIR})
+            if (TARGET_IS_CORE)
+                message (STATUS "-- SDK lib output path:")
+            elseif (TARGET_IS_EC)
+                message (STATUS "-- SDK EC lib output path:")
+            endif ()
+            if (TARGET_IS_CORE OR TARGET_IS_EC)
+                message (STATUS "       " ${PROJECT_BINARY_DIR}/lib)
+                set_target_properties (${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+            endif ()
         endif ()
     endif ()
-    
+
     # internal library naming convention
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
-    set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
+    if (NOT ANDROID OR NOT (${TARGET_NAME} STREQUAL "Tundra"))
+        set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
+    endif ()
     set_target_properties (${TARGET_NAME} PROPERTIES LINK_INTERFACE_LIBRARIES "")
 
 endmacro (build_library)
@@ -131,7 +141,7 @@ macro (build_executable TARGET_NAME)
 
     set (TARGET_LIB_TYPE "EXECUTABLE")
     message (STATUS "building executable: " ${TARGET_NAME})
-    
+
     add_executable (${TARGET_NAME} ${ARGN})
     if (MSVC)
         target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)

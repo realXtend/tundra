@@ -194,6 +194,9 @@ public slots:
     /// Prints the list of input contexts, for debugging purposes.
     void DumpInputContexts();
 
+    /// Returns the number of currently active touch points, if touch input is active.
+    int NumTouchPoints() { return numTouchPoints; }
+
 signals:
     void TouchBegin(QTouchEvent *touchEvent);
     void TouchUpdate(QTouchEvent *touchEvent);
@@ -217,6 +220,8 @@ private:
     void PruneDeadInputContexts();
     /// Takes the given point in the coordinate frame of source and maps it to the coordinate space of the main graphics view.
     QPoint MapPointToMainGraphicsView(QObject *source, const QPoint &point);
+    /// Goes through a QTouchEvent and updates the touch point information.
+    void UpdateTouchPoints(QTouchEvent* touchEvent);
 
     typedef std::list<boost::weak_ptr<InputContext> > InputContextList;
 
@@ -300,6 +305,9 @@ private:
     // events depending on what order the module Updates are called.
     unsigned long newMouseButtonsPressedQueue;
     unsigned long newMouseButtonsReleasedQueue;
+
+    /// Amount of currently active touch points
+    int numTouchPoints;
 
     QGraphicsView *mainView;
     QWidget *mainWindow;

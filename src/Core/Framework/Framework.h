@@ -11,6 +11,10 @@
 
 #include <vector>
 
+#ifdef ANDROID
+#include <jni.h>
+#endif
+
 /// The system root access object.
 class Framework : public QObject
 {
@@ -83,6 +87,20 @@ public:
         to run multiple instances inside a single process (inside a browser memory space). This function is intended to serve only for 
         carefully crafted re-entrant code (currently only logging and profiling). */
     static Framework *Instance() { return instance; }
+
+    /// Returns the static plugin registry for systems where plugins are not loaded as dynamic libraries. Used by StaticPluginRegistry.
+    static StaticPluginRegistry *StaticPluginRegistryInstance();
+
+#ifdef ANDROID
+    /// Returns the Java virtual machine instance on Android.
+    static JavaVM* JavaVMInstance() { return javaVM; }
+    /// Returns the Java environment instance on Android.
+    static JNIEnv* JniEnvInstance() { return jniEnv; }
+    /// Sets the Java virtual machine instance on Android. Called by JNIOnLoad in main.cpp.
+    static void SetJavaVMInstance(JavaVM* instance) { javaVM = instance; }
+    /// Sets the Java environment instance on Android. Called by main in main.cpp.
+    static void SetJniEnvInstance(JNIEnv* instance) { jniEnv = instance; }
+#endif
 
 public slots:
     /// Returns the core API UI object.
@@ -159,6 +177,11 @@ private:
     /// Appends all found startup options from the given file to the startupOptions member.
     void LoadStartupOptionsFromXML(QString configurationFile);
 
+    /// Appends startup options from a commandline file, Android only
+    #ifdef ANDROID
+    void LoadCommandLineFromFile();
+    #endif
+
     bool exitSignal; ///< If true, exit application.
 #ifdef PROFILING
     Profiler *profiler;
@@ -189,6 +212,11 @@ private:
     static Framework *instance;
     int argc; ///< Command line argument count as supplied by the operating system.
     char **argv; ///< Command line arguments as supplied by the operating system.
+
+#ifdef ANDROID
+    static JavaVM* javaVM;
+    static JNIEnv* jniEnv;
+#endif 
 };
 
 template <class T>

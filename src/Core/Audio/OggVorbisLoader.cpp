@@ -5,8 +5,11 @@
 #include "LoggingFunctions.h"
 #include <sstream>
 
+#ifndef TUNDRA_NO_AUDIO
 #include <vorbis/vorbisfile.h>
+#endif
 
+#ifndef TUNDRA_NO_AUDIO
 namespace
 {
 
@@ -16,10 +19,10 @@ public:
     OggMemDataSource(const u8* data, uint size) :
         data_(data),
         size_(size),
-        position_(0)    
+        position_(0)
     {
     }
-        
+
     size_t Read(void* ptr, size_t size)
     {
         uint max_read = size_ - position_;
@@ -31,7 +34,7 @@ public:
         }
         return size;
     }
-        
+
     int Seek(ogg_int64_t offset, int whence)
     {
         ogg_int64_t new_pos = position_;
@@ -86,6 +89,7 @@ long OggTellCallback(void* datasource)
 }
 
 } // ~unnamed namespace
+#endif
 
 namespace OggVorbisLoader
 {
@@ -104,6 +108,7 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
         return false;
     }
     
+#ifndef TUNDRA_NO_AUDIO
     OggVorbis_File vf;
     OggMemDataSource src(fileData, numBytes);
     
@@ -161,6 +166,9 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
      
     ov_clear(&vf);
     return true;
+#else
+    return false;
+#endif
 }
 
 } // ~OggVorbisLoader

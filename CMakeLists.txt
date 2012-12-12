@@ -293,8 +293,10 @@ if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
     endif()
 endif()
 configure_ogre()
-configure_qtpropertybrowser()
-configure_openal ()
+if (NOT ANDROID)
+    configure_qtpropertybrowser()
+    configure_openal ()
+endif()
 use_package_ogg()
 use_package_vorbis()
 
@@ -304,7 +306,9 @@ use_package_knet()
 message ("\n** Adding global include and link directories")
 use_package(OGRE)
 use_package(QT4)
-use_package(OPENAL)
+if (NOT ANDROID)
+    use_package(OPENAL)
+endif()
 
 set (CORE_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/src/Core)
 include_directories (${CORE_MODULE_DIRECTORY}/Input)
@@ -329,6 +333,10 @@ endif ()
 add_definitions(-DMATH_QT_INTEROP)
 add_definitions(-DMATH_ENABLE_STL_SUPPORT)
 add_definitions(-DMATH_TUNDRA_INTEROP)
+
+if (ANDROID)
+    add_definitions(-DQT_STL)
+endif()
 
 # Read the set of optional modules from another file
 # that is kept outside the source control. 

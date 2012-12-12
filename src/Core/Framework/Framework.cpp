@@ -23,14 +23,24 @@
 #include "SceneInteract.h"
 #include "UiAPI.h"
 
+#include "StaticPluginRegistry.h"
+
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
+#endif
+#ifdef ANDROID
+#include <termios.h>
 #endif
 #include <iostream>
 #include <QDir>
 #include <QDomDocument>
 
 #include "MemoryLeakCheck.h"
+
+#ifdef ANDROID
+JavaVM* Framework::javaVM = 0;
+JNIEnv* Framework::jniEnv = 0;
+#endif
 
 namespace
 {
@@ -123,10 +133,14 @@ Framework::Framework(int argc_, char** argv_) :
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
 
+    #ifdef ANDROID
+    LoadCommandLineFromFile();
+    #else
     // Remember all startup command line options.
     // Skip argv[0], since it is the program name.
     for(int i = 1; i < argc; ++i)
         startupOptions << argv[i];
+    #endif
 
     //  Load additional command line options from each config XML file.
     QStringList cmdLineParams = CommandLineParameters("--config");
@@ -191,6 +205,7 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
     cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigidbody extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
     cmdLineDescs.commands["--noClientPhysics"] = "Disables rigidbody handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
+    cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
     
     apiVersionInfo = new VersionInfo(Application::Version());
     applicationVersionInfo = new VersionInfo(Application::Version());
@@ -375,6 +390,9 @@ void Framework::Go()
         return;
     
     srand(time(0));
+
+    // Run any statically registered plugin main functions first
+    StaticPluginRegistryInstance()->RunPluginMainFunctions(this);
 
     foreach(const QString &config, plugin->ConfigurationFiles())
     {
@@ -707,3 +725,57 @@ void Framework::PrintDynamicObjects()
     foreach(const QByteArray &obj, dynamicPropertyNames())
         LogInfo(QString(obj));
 }
+
+StaticPluginRegistry* Framework::StaticPluginRegistryInstance()
+{
+    static StaticPluginRegistry* instance = new StaticPluginRegistry();
+    return instance;
+}
+
+#ifdef ANDROID
+void Framework::LoadCommandLineFromFile()
+{
+    QFile file(Application::InstallationDirectory() + "commandline.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    QTextStream in(&file);
+    QString line = in.readLine();
+    while (!line.isNull())
+    {
+        int i;
+        unsigned cmdStart = 0;
+        unsigned cmdEnd = 0;
+        bool cmd = false;
+        bool quote = false;
+
+        for(i = 0; i < line.length(); ++i)
+        {
+            if (line[i] == '\"')
+                quote = !quote;
+            if ((line[i] == ' ') && (!quote))
+            {
+                if (cmd)
+                {
+                    cmd = false;
+                    cmdEnd = i;
+                    startupOptions << line.mid(cmdStart, cmdEnd-cmdStart);
+                }
+            }
+            else
+            {
+                if (!cmd)
+                {
+                   cmd = true;
+                   cmdStart = i;
+                }
+            }
+        }
+        if (cmd)
+            startupOptions << line.mid(cmdStart, i-cmdStart);
+
+        line = in.readLine();
+    }
+}
+
+#endif

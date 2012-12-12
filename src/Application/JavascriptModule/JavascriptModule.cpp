@@ -36,6 +36,8 @@
 #include <QtScript>
 #include <QDomElement>
 
+#include "StaticPluginRegistry.h"
+
 #include "MemoryLeakCheck.h"
 
 JavascriptModule::JavascriptModule() :
@@ -701,7 +703,11 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
 
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(JavascriptModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new JavascriptModule();

@@ -11,12 +11,14 @@
 
 #include <QString>
 
+#ifndef TUNDRA_NO_AUDIO
 #ifndef Q_WS_MAC
 #include <AL/al.h>
 #include <AL/alc.h>
 #else
 #include <al.h>
 #include <alc.h>
+#endif
 #endif
 
 AudioAsset::AudioAsset(AssetAPI *owner, const QString &type_, const QString &name_)
@@ -31,16 +33,20 @@ AudioAsset::~AudioAsset()
 
 void AudioAsset::DoUnload()
 {
+#ifndef TUNDRA_NO_AUDIO
     if (handle)
     {
         alDeleteBuffers(1, &handle);
         handle = 0;
     }
+#endif
 }
 
 bool AudioAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     bool loadResult = false;
+
+#ifndef TUNDRA_NO_AUDIO
     if (WavLoader::IdentifyWavFileInMemory(data, numBytes) && this->Name().endsWith(".wav", Qt::CaseInsensitive)) // Detect whether this file is Wav data or not.
     {
         loadResult = LoadFromWavFileInMemory(data, numBytes);
@@ -55,6 +61,7 @@ bool AudioAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allow
     }
     else
         LogError("Unable to serialize audio asset data. Unknown format!");
+#endif
 
     return loadResult;
 }
@@ -84,6 +91,7 @@ bool AudioAsset::LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool ste
     // Clean up the previous OpenAL audio buffer handle, if old data existed.
     DoUnload();
 
+#ifndef TUNDRA_NO_AUDIO
     if (!data || numBytes == 0)
     {
         LogError("Null data passed in AudioAsset::LoadFromWavData!");
@@ -114,6 +122,9 @@ bool AudioAsset::LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool ste
         return false;
     }
     return true;
+#else
+    return false;
+#endif
 }
 
 bool AudioAsset::LoadFromSoundBuffer(const SoundBuffer &buffer)
@@ -129,16 +140,20 @@ bool AudioAsset::LoadFromSoundBuffer(const SoundBuffer &buffer)
 
 bool AudioAsset::CreateBuffer()
 {
+#ifndef TUNDRA_NO_AUDIO
     if (!handle)
         alGenBuffers(1, &handle);
-    
+
     if (!handle)
     {
         LogError("Could not create OpenAL sound buffer");
         return false;
-    } 
-    
+    }
+
     return true;
+#else
+    return false;
+#endif    
 }
 
 bool AudioAsset::IsLoaded() const

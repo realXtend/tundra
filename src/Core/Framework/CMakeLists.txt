@@ -25,11 +25,20 @@ link_modules(Math Scene Ui Input Asset Audio Console)
 if (UNIX AND NOT APPLE)
   # for dlopen() etc used in PluginAPI
   target_link_libraries (${TARGET_NAME} dl)
-  target_link_libraries (${TARGET_NAME} rt)
-endif () 
+  # rt library does not exist on Android
+  if (NOT ANDROID)
+      target_link_libraries (${TARGET_NAME} rt)
+  endif ()
+endif ()
+
+# Add log library on Android
+if (ANDROID)
+  target_link_libraries (${TARGET_NAME} log)
+endif ()
 
 # Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propapage from here to each library.
 if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
+    message(STATUS "Linking Tundra to Boost libraries: '${Boost_LIBRARIES}'")
     target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
 

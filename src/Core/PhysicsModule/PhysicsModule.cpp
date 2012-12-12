@@ -32,6 +32,8 @@
 
 #include <Ogre.h>
 
+#include "StaticPluginRegistry.h"
+
 #include "MemoryLeakCheck.h"
 
 Q_DECLARE_METATYPE(Physics::PhysicsModule*);
@@ -351,7 +353,11 @@ using namespace Physics;
 
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(PhysicsModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new Physics::PhysicsModule();

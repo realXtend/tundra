@@ -1,3 +1,8 @@
+# Android: build cpu-features static library which Ogre depends on
+# Todo: do in a cleaner way. This library is in turn referred by FindOgre.cmake
+if (ANDROID)
+    add_library (cpu-features STATIC ${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c)
+endif ()
 
 # Define target name and output directory
 init_target(OgreRenderingModule OUTPUT plugins)

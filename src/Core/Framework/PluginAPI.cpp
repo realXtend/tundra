@@ -58,13 +58,18 @@ PluginAPI::PluginAPI(Framework *owner_)
 
 void PluginAPI::LoadPlugin(const QString &filename)
 {
+#ifdef ANDROID
+    // On Android plugins are currently static
+    return;
+#endif
+
 #ifdef WIN32
   #ifdef _DEBUG
     const QString pluginSuffix = "d.dll";
   #else
     const QString pluginSuffix = ".dll";
   #endif
-#elif defined(_POSIX_C_SOURCE)
+#elif defined(_POSIX_C_SOURCE) || defined(ANDROID)
     const QString pluginSuffix = ".so";
 #elif defined(__APPLE__)
     const QString pluginSuffix = ".dylib";
@@ -92,7 +97,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
         return;
     }
 #else
-    char *dlerrstr;
+    const char *dlerrstr;
     dlerror();
     PluginHandle module = dlopen(path.toStdString().c_str(), RTLD_GLOBAL|RTLD_LAZY);
     if ((dlerrstr=dlerror()) != 0)

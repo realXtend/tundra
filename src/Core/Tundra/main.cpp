@@ -13,6 +13,21 @@
 
 #include "MemoryLeakCheck.h"
 
+#ifdef ANDROID
+#include "StaticPluginRegistry.h"
+
+/// \todo Eliminate the need to list static plugins explicitly here
+REGISTER_STATIC_PLUGIN(OgreRenderingModule)
+REGISTER_STATIC_PLUGIN(PhysicsModule)
+REGISTER_STATIC_PLUGIN(EnvironmentModule)
+REGISTER_STATIC_PLUGIN(TundraLogicModule)
+REGISTER_STATIC_PLUGIN(AssetModule)
+REGISTER_STATIC_PLUGIN(JavascriptModule)
+REGISTER_STATIC_PLUGIN(AvatarModule)
+REGISTER_STATIC_PLUGIN(DebugStatsModule)
+
+#endif
+
 int run(int argc, char **argv);
 
 #if !defined(_MSC_VER)
@@ -77,3 +92,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return run(0, 0);
 }
 #endif
+
