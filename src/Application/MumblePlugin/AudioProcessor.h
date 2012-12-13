@@ -39,6 +39,7 @@ namespace MumbleAudio
         bool isPositional;
         float3 pos;
         AudioFrameDeque frames;
+        AudioFrameDeque playedFrames;
         SoundChannelPtr soundChannel;
     };
 

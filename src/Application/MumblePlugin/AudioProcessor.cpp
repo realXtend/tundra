@@ -795,6 +795,14 @@ namespace MumbleAudio
                 }
             }
 
+            if (userAudioState.soundChannel.get())
+                userAudioState.playedFrames.insert(
+                        userAudioState.playedFrames.end(),
+                        userAudioState.frames.begin(),
+                        userAudioState.frames.end());
+            else
+                userAudioState.playedFrames.clear();
+
             // Clear users input frames
             userAudioState.frames.clear();
         }
