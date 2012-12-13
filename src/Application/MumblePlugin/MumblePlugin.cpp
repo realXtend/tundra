@@ -118,8 +118,6 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
             float levelPeakMic = 0.0f;
             bool speaking = false;
 
-            audio_->DoEchoCancellation();
-
             PROFILE(MumblePlugin_Update_ProcessOutputAudio)
             VoicePacketInfo packetInfo(audio_->ProcessOutputAudio());
             audio_->GetLevels(levelPeakMic, speaking);

@@ -56,7 +56,6 @@ namespace MumbleAudio
         ~AudioProcessor();
 
         void GetLevels(float &peakMic, bool &speaking);
-        void DoEchoCancellation();
 
     protected:
         // QThread override.
@@ -95,6 +94,9 @@ namespace MumbleAudio
     private:
         void ResetSpeexProcessor();
         void ClearPendingChannels();
+
+        // Caller must hold mutexOutputPCM lock
+        void DoEchoCancellation(SoundBuffer &frame);
 
         void PrintCeltError(int celtError, bool decoding);
 
