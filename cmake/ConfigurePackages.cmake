@@ -70,6 +70,11 @@ if (APPLE)
     set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
 endif()
 
+# On Android, pthread library does not exist. Remove it if mistakenly added to boost libraries
+if (ANDROID)
+    list(REMOVE_ITEM Boost_LIBRARIES "pthread")   
+endif()
+
 endmacro (configure_boost)
 
 macro (configure_qt4)
