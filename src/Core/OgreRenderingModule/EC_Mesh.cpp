@@ -616,7 +616,7 @@ bool EC_Mesh::SetMaterial(uint index, const QString& material_name, AttributeCha
         // Update the EC_Mesh material attribute list so that users can call EC_Mesh::SetMaterial as a replacement for setting
         // meshMaterial attribute.
         AssetReferenceList materials = meshMaterial.Get();
-        while(materials.Size() <= index)
+        while(materials.Size() <= (int)index)
             materials.Append(AssetReference());
         materials.Set(index, AssetReference(material_name));
         meshMaterial.Set(materials, change); // Potentially signal the change of attribute, if requested so.
