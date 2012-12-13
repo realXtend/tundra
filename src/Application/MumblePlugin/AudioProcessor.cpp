@@ -105,12 +105,11 @@ namespace MumbleAudio
             speex_echo_state_destroy(speexEcho);
             speexEcho = 0;
         }
-        // Use *multi-channel* cancellation [init_mc]
-        // We can safely assume there is only one microphone
-        // And we go with the hope that there is just one echo
-        // channel...
+
+        // Initialize echo cancellation state, using the same frame size as used for sending
+        // and receiving (should be 10-20 ms), and filter length of 250 ms (quarter of a second)
         qDebug("Initializing echo cancellation...");
-        speexEcho = speex_echo_state_init_mc(MUMBLE_AUDIO_SAMPLES_IN_FRAME, MUMBLE_AUDIO_SAMPLE_RATE, 1, 1);
+        speexEcho = speex_echo_state_init(MUMBLE_AUDIO_SAMPLES_IN_FRAME, MUMBLE_AUDIO_SAMPLE_RATE / 4);
 
         // Use fixed sample rate
         arg = MUMBLE_AUDIO_SAMPLE_RATE;
