@@ -35,6 +35,11 @@ endif()
 message("** Configuring Boost")
 message(STATUS "Using BOOST_ROOT = " ${BOOST_ROOT})
 
+# We build boost from custom deps directory, so don't look up boost from system.
+if (ANDROID)
+   set(Boost_NO_SYSTEM_PATHS TRUE)
+endif()
+
 set(Boost_FIND_REQUIRED TRUE)
 set(Boost_FIND_QUIETLY TRUE)
 set(Boost_DEBUG FALSE)
