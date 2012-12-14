@@ -5,8 +5,11 @@
 #include "EuclideanDistanceFilter.h"
 #include "RayVisibilityFilter.h"
 #include "RelevanceFilter.h"
+#include "Entity.h"
+#include "LoggingFunctions.h"
 
 EA3Filter::EA3Filter(InterestManager *im, int criticalrange, int maxrange, int raycastinterval, int updateinterval, bool enabled) :
+    im_(im),
     MessageFilter(EA3, enabled)
 {
     euclideandistance_ = new EuclideanDistanceFilter(im, criticalrange, true);
@@ -23,20 +26,21 @@ EA3Filter::~EA3Filter()
 
 bool EA3Filter::Filter(IMParameters params)
 {
-    bool accepted = true;
-
     if(enabled_)
     {
-        accepted = euclideandistance_->Filter(params);
-
-        if(accepted)
+        if(euclideandistance_->Filter(params))
             return true;
 
-        if(params.dot >= 0)
-            accepted = rayvisibility_->Filter(params);
+        if(params.dot <= 0) //If the entity is behind the client
+        {
+            im_->UpdateEntityVisibility(params.connection, params.changed_entity->Id(), false);
+            im_->UpdateRelevance(params.connection, params.changed_entity->Id(), 0);
+            return false;
+        }
 
-        if(accepted)
-            return relevance_->Filter(params);
+        else if(rayvisibility_->Filter(params)) //If rayvisibility accepts it
+            return relevance_->Filter(params);  //Pass it through the relevance filter and return
+
         else
             return false;
     }
