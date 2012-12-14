@@ -19,6 +19,7 @@ public:
 
 private:
 
+    InterestManager *im_;
     MessageFilter *euclideandistance_;
     MessageFilter *relevance_;
 };

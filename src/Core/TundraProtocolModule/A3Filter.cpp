@@ -4,8 +4,11 @@
 #include "RelevanceFilter.h"
 #include "EuclideanDistanceFilter.h"
 #include "InterestManager.h"
+#include "Entity.h"
+#include "LoggingFunctions.h"
 
 A3Filter::A3Filter(InterestManager *im, int criticalrange, int maxrange, int updateinterval, bool enabled) :
+    im_(im),
     MessageFilter(A3, enabled)
 {
     euclideandistance_ = new EuclideanDistanceFilter(im, criticalrange, true);
@@ -20,17 +23,19 @@ A3Filter::~A3Filter()
 
 bool A3Filter::Filter(IMParameters params)
 {
-    bool accepted = true;
-
     if(enabled_)
     {
-        accepted = euclideandistance_->Filter(params);
-
-        if(accepted)
+        if(euclideandistance_->Filter(params))
             return true;
 
-        else if(params.dot >= 0)
-            return relevance_->Filter(params);
+        if(params.dot <= 0)
+        {
+            im_->UpdateRelevance(params.connection, params.changed_entity->Id(), 0);
+            return false;
+        }
+
+        else if(relevance_->Filter(params))
+            return true;
 
         else
             return false;
