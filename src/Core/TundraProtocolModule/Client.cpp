@@ -334,7 +334,7 @@ void Client::GetCameraOrientation()
 
     const Transform &t = camera_placeable->transform.Get();
 
-    ::LogError("X: " + QString::number(location.x) + "Y: " + QString::number(location.y) + "Z: " + QString::number(location.z));
+    //::LogError("X: " + QString::number(location.x) + "Y: " + QString::number(location.y) + "Z: " + QString::number(location.z));
 
     //Serialize the position of the client inside the message. Sends 57 bits.
     ds.AddSignedFixedPoint(11, 8, orientation.x);
@@ -346,13 +346,15 @@ void Client::GetCameraOrientation()
     ds.AddSignedFixedPoint(11, 8, location.y);
     ds.AddSignedFixedPoint(11, 8, location.z);
 
+/*
     //Serialize the orientation of the client. Sends 17 bits.
-    /*
+    //const Transform &t = camera_placeable->transform.Get();
     float3x3 rot = t.Orientation3x3();
     float3 forward = rot.Col(2);
     forward.Normalize();
     ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8);
 */
+
     //Update the current location and orientation of the client.
     currentcameraorientation_ = orientation;
     currentcameralocation_ = location;
