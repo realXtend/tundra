@@ -18,7 +18,12 @@ enum IMFilter
 
 struct IMParameters
 {
-    IMParameters() {}
+    IMParameters() :    headless(false),
+                        dot(0),
+                        distance(0),
+                        client_position(float3::nan),
+                        entity_position(float3::nan),
+                        relAccepted(false) {}
 
     bool headless;                  //Is the server running in headless mode or not
     float dot;                      //Dot product between the client and the entity (is the entity is in front of the camera or not)
@@ -28,6 +33,7 @@ struct IMParameters
     ScenePtr scene;
     Entity* changed_entity;
     UserConnectionPtr connection;   //Client connection
+    bool relAccepted;
 };
 
 class MessageFilter
