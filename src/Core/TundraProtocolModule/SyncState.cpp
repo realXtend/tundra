@@ -19,6 +19,7 @@ SceneSyncState::SceneSyncState(u32 userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
     changeRequest_(userConnectionID),
     isServer_(isServer),
+    locationInitialized(false),
     clientLocation(float3::nan),
     initialLocation(float3::nan)
 {
