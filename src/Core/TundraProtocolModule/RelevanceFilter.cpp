@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "InterestManager.h"
 #include "RelevanceFilter.h"
+#include "LoggingFunctions.h"
 
 RelevanceFilter::RelevanceFilter(InterestManager *im, int r, int cr, int interval, bool enabled) :
     im_(im),
@@ -15,28 +16,31 @@ RelevanceFilter::RelevanceFilter(InterestManager *im, int r, int cr, int interva
 }
 
 bool RelevanceFilter::Filter(IMParameters params)
-{
+{   
     if(enabled_)
     {
-        float relevancefactor;
+        float relevancefactor = 0;
 
         relevancefactor = 1.f - (params.distance - (critical_range_ * critical_range_)) / ((range_ * range_) - (critical_range_ * critical_range_));
 
+        if(relevancefactor <= 0)
+            relevancefactor = 0;
+
         im_->UpdateRelevance(params.connection, params.changed_entity->Id(), relevancefactor);
 
-        if(relevancefactor <= 0)
+        if(relevancefactor == 0)
             return false;
 
-        else if(relevancefactor < 1.f)
+        else
         {
-            int lastUpdated = im_->FindLastUpdatedEntity(params.changed_entity->Id());
-            int currentTime = im_->ElapsedTime();
+            float currentTime = im_->ElapsedTime();
+            float lastUpdated = im_->FindLastUpdatedEntity(params.connection, params.changed_entity->Id());
 
-            if(lastUpdated + (updateinterval_ * (1 - relevancefactor)) > currentTime)
+            if(lastUpdated + (updateinterval_ * (1.f - relevancefactor)) < currentTime)
+                return true;
+            else
                 return false;
         }
-
-        return true;
     }
     else
         return true;
