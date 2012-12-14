@@ -11,6 +11,8 @@
 #include "RayVisibilityFilter.h"
 #include "RelevanceFilter.h"
 
+//#define IM_DEBUG
+
 class InterestManager
 {
 
@@ -35,19 +37,19 @@ public:
     void UpdateRelevance(UserConnectionPtr conn, entity_id_t id, float relevance);
 
     /// Updates a specific map which contains a list of entities and their visibilities. (client specific map)
-    void UpdateEntityVisibility(UserConnectionPtr connection, entity_id_t id, bool visible);
+    void UpdateEntityVisibility(UserConnectionPtr conn, entity_id_t id, bool visible);
 
     /// Updates a map that contains the timestamps that describe when a specific entity was last updated
-    void UpdateLastUpdatedEntity(entity_id_t id);
+    void UpdateLastUpdatedEntity(UserConnectionPtr conn, entity_id_t id);
 
     /// Updates a map that contains the timestamps that describe when a specific entity was last raycasted
-    void UpdateLastRaycastedEntity(entity_id_t id);
+    void UpdateLastRaycastedEntity(UserConnectionPtr conn, entity_id_t id);
 
     /// Utility method for checking when a specific entity has been updated
-    int FindLastUpdatedEntity(entity_id_t id);
+    float FindLastUpdatedEntity(UserConnectionPtr conn, entity_id_t id);
 
     /// Utility method for checking when a specific entity has been raycasted
-    int FindLastRaycastedEntity(entity_id_t id);
+    float FindLastRaycastedEntity(UserConnectionPtr conn, entity_id_t id);
 
 private:
 
@@ -63,7 +65,6 @@ private:
     /// The filter that is used inside the IM
     MessageFilter* activeFilter_;
 
-    /// Couple of maps containing the timestamps of last updates and raycasts
-    std::map<entity_id_t, int> lastUpdatedEntitys_;
-    std::map<entity_id_t, int> lastRaycastedEntitys_;
+    /// Parameters used by the filtering process
+    IMParameters params_;
 };

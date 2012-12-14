@@ -11,15 +11,18 @@ InterestManager* InterestManager::thisPointer_ = NULL;
 
 InterestManager::InterestManager()
 {
+    activeFilter_ = 0;
     timer_ = new QTime();
     timer_->start();
 }
 
 InterestManager::~InterestManager()
 {
-    thisPointer_ = NULL;
+    thisPointer_ = 0;
     delete timer_;
     delete activeFilter_;
+    timer_ = 0;
+    activeFilter_ = 0;
 }
 
 InterestManager* InterestManager::getInstance()
@@ -42,8 +45,6 @@ int InterestManager::ElapsedTime()
 
 bool InterestManager::CheckRelevance(UserConnectionPtr conn, Entity* changed_entity, SceneWeakPtr scene_, bool headless)
 {
-    bool accepted = true;
-    IMParameters params;
     ScenePtr scene = scene_.lock();
 
     if (!scene)
@@ -51,33 +52,38 @@ bool InterestManager::CheckRelevance(UserConnectionPtr conn, Entity* changed_ent
 
     EC_Placeable *entity_location = changed_entity->GetComponent<EC_Placeable>().get();
 
-    if(!conn->syncState->clientLocation.IsFinite() || !entity_location) //If the client hasn't informed the server about the orientation yet, do not proceed
+    if(!conn->syncState->locationInitialized || !entity_location) //If the client hasn't informed the server about the orientation yet, do not proceed
         return true;
 
-    Quat client_orientation = conn->syncState->clientOrientation;
+    bool accepted = false;  //By default, we assume that the update will be rejected
 
-    params.client_position = conn->syncState->clientLocation;      //Client location vector
-    params.entity_position = entity_location->transform.Get().pos; //Entitys location vector
+    Quat client_orientation = conn->syncState->clientOrientation.Normalized();
 
-    float3 d = params.client_position - params.entity_position;
-    float3 v = params.entity_position - params.client_position;    //Calculate the vector between the player and the changed entity by substracting their location vectors
-    float3 f = client_orientation.Mul(scene->ForwardVector());     //Calculate the forward vector of the client
+    params_.client_position = conn->syncState->clientLocation;      //Client location vector
+    params_.entity_position = entity_location->transform.Get().pos; //Entitys location vector
 
-    params.dot = v.Dot(f);                                         //Finally the dot product is calculated so we know if the entity is in front of the player or not
+    float3 d = params_.client_position - params_.entity_position;
+    float3 v = params_.entity_position - params_.client_position;   //Calculate the vector between the player and the changed entity by substracting their location vectors
+    float3 f = client_orientation.Mul(scene->ForwardVector());      //Calculate the forward vector of the client
 
-    params.distance = d.LengthSq();
-    params.connection = conn;
-    params.changed_entity = changed_entity;
-    params.scene = scene;
-    params.headless = headless;
+    params_.headless = headless;
+    params_.dot = v.Dot(f);                                          //Finally the dot product is calculated so we know if the entity is in front of the player or not
+    params_.distance = d.LengthSq();
+    params_.scene = scene;
+    params_.changed_entity = changed_entity;
+    params_.connection = conn;
+    params_.relAccepted = false;
 
     if(activeFilter_ != 0)
-        accepted = activeFilter_->Filter(params);
+        accepted = activeFilter_->Filter(params_);
 
     if(accepted)
-        UpdateLastUpdatedEntity(changed_entity->Id());
-
-    return accepted;
+    {
+        UpdateLastUpdatedEntity(params_.connection, params_.changed_entity->Id());
+        return true;
+    }
+    else
+        return false;
 }
 
 void InterestManager::UpdateRelevance(UserConnectionPtr conn, entity_id_t id, float relevance)
@@ -104,49 +110,49 @@ void InterestManager::UpdateEntityVisibility(UserConnectionPtr conn, entity_id_t
         it->second = visible;
 }
 
-void InterestManager::UpdateLastUpdatedEntity(entity_id_t id)
+void InterestManager::UpdateLastUpdatedEntity(UserConnectionPtr conn, entity_id_t id)
 {
-    std::map<entity_id_t, int>::iterator it;
+    std::map<entity_id_t, float>::iterator it;
 
-    it = lastUpdatedEntitys_.find(id);
+    it = conn->syncState->lastUpdatedEntitys_.find(id);
 
-    if(it == lastUpdatedEntitys_.end())
-        lastUpdatedEntitys_.insert(std::make_pair(id, ElapsedTime()));
+    if(it == conn->syncState->lastUpdatedEntitys_.end())
+        conn->syncState->lastUpdatedEntitys_.insert(std::make_pair(id, ElapsedTime()));
     else
         it->second = ElapsedTime();
 }
 
-int InterestManager::FindLastUpdatedEntity(entity_id_t id)
+float InterestManager::FindLastUpdatedEntity(UserConnectionPtr conn, entity_id_t id)
 {
-    std::map<entity_id_t, int>::iterator it;
+    std::map<entity_id_t, float>::iterator it;
 
-    it = lastUpdatedEntitys_.find(id);
+    it = conn->syncState->lastUpdatedEntitys_.find(id);
 
-    if(it == lastUpdatedEntitys_.end())
+    if(it == conn->syncState->lastUpdatedEntitys_.end())
         return 0;
     else
         return it->second;
 }
 
-void InterestManager::UpdateLastRaycastedEntity(entity_id_t id)
+void InterestManager::UpdateLastRaycastedEntity(UserConnectionPtr conn, entity_id_t id)
 {
-    std::map<entity_id_t, int>::iterator it;
+    std::map<entity_id_t, float>::iterator it;
 
-    it = lastRaycastedEntitys_.find(id);
+    it = conn->syncState->lastRaycastedEntitys_.find(id);
 
-    if(it == lastRaycastedEntitys_.end())
-        lastRaycastedEntitys_.insert(std::make_pair(id, ElapsedTime()));
+    if(it == conn->syncState->lastRaycastedEntitys_.end())
+        conn->syncState->lastRaycastedEntitys_.insert(std::make_pair(id, ElapsedTime()));
     else
         it->second = ElapsedTime();
 }
 
-int InterestManager::FindLastRaycastedEntity(entity_id_t id)
+float InterestManager::FindLastRaycastedEntity(UserConnectionPtr conn, entity_id_t id)
 {
-    std::map<entity_id_t, int>::iterator it;
+    std::map<entity_id_t, float>::iterator it;
 
-    it = lastRaycastedEntitys_.find(id);
+    it = conn->syncState->lastRaycastedEntitys_.find(id);
 
-    if(it == lastRaycastedEntitys_.end())
+    if(it == conn->syncState->lastRaycastedEntitys_.end())
         return 0;
     else
         return it->second;
