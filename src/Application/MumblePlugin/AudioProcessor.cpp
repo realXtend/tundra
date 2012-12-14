@@ -21,6 +21,7 @@ namespace MumbleAudio
         framework(framework_),
         codec(new CeltCodec()),
         speexPreProcessor(0),
+        speexEcho(0),
         outputPreProcessed(false),
         preProcessorReset(true),
         isSpeech(false),
