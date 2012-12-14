@@ -31,9 +31,6 @@ namespace MumbleAudio
     {
         ApplySettings(settings);
 
-        // Ensure that our local MumbleUser reference is NULL
-        me = NULL;
-
         // Timer is created in the main thread context as it can only be started in the thread its created in,
         // and we want to start it in ProcessOutputAudio().
         resetFramesPerPacket.setSingleShot(true);
@@ -619,16 +616,6 @@ namespace MumbleAudio
         // This function is called in the main thread
         if (!framework)
             return;
-
-        // XXX: This is evil, pure and simple.
-        // Use provided MumblePlugin to get permanent reference to our
-        // own MumbleUser; needed for echo cancellation (well, not the
-        // user. The user-ID really.)
-        // NOTE! MumblePlugin::Me() can return NULL until channels and
-        // users have been synced.
-        if (!me)
-            me = mumble->Me();
-
 
         // Read positional playback settings
         mutexAudioSettings.lockForRead();

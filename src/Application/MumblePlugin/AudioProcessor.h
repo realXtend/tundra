@@ -164,10 +164,6 @@ namespace MumbleAudio
 
         QString LC;
 
-        // This is here to get a reference to our own user id; that is
-        // required for echo cancellation.
-        MumbleUser *me;
-
     };
 }
 /// @endcond
