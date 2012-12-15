@@ -362,7 +362,7 @@ float3x4 float3x4::Mirror(const Plane &p)
 	return v;
 }
 
-float3x4 float3x4::OrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)
+float3x4 float3x4::OrthographicProjection(float /*nearPlaneDistance*/, float /*farPlaneDistance*/, float /*horizontalViewportSize*/, float /*verticalViewportSize*/)
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return float3x3(); ///@todo
@@ -1248,7 +1248,7 @@ bool float3x4::IsUpperTriangular(float epsilon) const
 		&& EqualAbs(v[2][1], 0.f, epsilon);
 }
 
-bool float3x4::IsInvertible(float epsilon) const
+bool float3x4::IsInvertible(float /*epsilon*/) const
 {
 	///@todo Optimize.
 	float3x4 copy = *this;

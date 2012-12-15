@@ -17,7 +17,7 @@
 #include "Entity.h"
 #include "SceneAPI.h"
 #include "Framework.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Profiler.h"
 #include "Renderer.h"
 #include "ConsoleAPI.h"
@@ -25,12 +25,22 @@
 #include "QScriptEngineHelpers.h"
 #include "LoggingFunctions.h"
 
+// Disable unreferenced formal parameter coming from Bullet
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#endif
 #include <btBulletDynamicsCommon.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <QtScript>
 #include <QTreeWidgetItem>
 
 #include <Ogre.h>
+
+#include "StaticPluginRegistry.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -351,7 +361,11 @@ using namespace Physics;
 
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(PhysicsModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new Physics::PhysicsModule();

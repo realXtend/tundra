@@ -13,7 +13,7 @@
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "OgreRenderingModule.h"
 #include "OgreMaterialAsset.h"

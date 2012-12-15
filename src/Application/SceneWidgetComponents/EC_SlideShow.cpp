@@ -66,7 +66,8 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
 
     // Connect signals both for headless and non-headless
     connect(&changeTimer_, SIGNAL(timeout()), SLOT(NextSlide()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+        SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 
     // Server controls the slide change timer, so detect if we are on one.
     TundraLogic::TundraLogicModule *tundraLogic = framework->GetModule<TundraLogic::TundraLogicModule>();
@@ -83,7 +84,7 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
     
     // Prepare scene interactions
-    SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
+    SceneInteract *sceneInteract = GetFramework()->GetModule<SceneInteract>();
     if (sceneInteract)
         connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
     
@@ -549,10 +550,10 @@ void EC_SlideShow::ComponentRemoved(IComponent *component, AttributeChange::Type
     }
 }
 
-void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType)
+void EC_SlideShow::AttributesChanged()
 {
     // Can handle before we are prepared
-    if (attribute == &slides)
+    if (slides.ValueChanged())
     {
         // Don't request textures on the server or headless
         if (isServer_ || framework->IsHeadless())
@@ -603,7 +604,7 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
             }
         }
     }
-    else if (attribute == &slideChangeInterval)
+    if (slideChangeInterval.ValueChanged())
     {
         if (isServer_)
         {
@@ -619,12 +620,12 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
     if (!IsPrepared())
         return;
 
-    if (attribute == &currentSlideIndex)
+    if (currentSlideIndex.ValueChanged())
     {
         if (getenabled())
             ShowSlide(getcurrentSlideIndex());
     }
-    else if (attribute == &renderSubmeshIndex)
+    if (renderSubmeshIndex.ValueChanged())
     {
         EC_Mesh *mesh = GetMeshComponent();
         // Validate submesh index from EC_Mesh
@@ -642,7 +643,7 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
         if (!sceneCanvas->GetSubMeshes().contains(submeshIndex))
             sceneCanvas->SetSubmesh(submeshIndex);
     }
-    else if (attribute == &enabled)
+    if (enabled.ValueChanged())
     {
         EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
         if (!getenabled())
@@ -653,7 +654,7 @@ void EC_SlideShow::AttributeChanged(IAttribute *attribute, AttributeChange::Type
             ShowSlide(getcurrentSlideIndex());
         }
     }
-    else if (attribute == &illuminating)
+    if (illuminating.ValueChanged())
     {
         EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
         if (canvas)

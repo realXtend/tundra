@@ -15,7 +15,7 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "InputAPI.h"
 #include "InputContext.h"
 #include "MouseEvent.h"
@@ -102,8 +102,6 @@ void EC_LaserPointer::CreateLaser()
         UpdateColor();
         laserObjectNode->attachObject(laserObject_);
 
-        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandleAttributeChange(IAttribute*, AttributeChange::Type)));
-
         input_ = framework->Input()->RegisterInputContext(QString::fromStdString(id_), 90);
         input_->SetTakeMouseEventsOverQt(true);
         connect(input_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(Update(MouseEvent*)));
@@ -187,7 +185,7 @@ void EC_LaserPointer::Update(MouseEvent *e)
     }
 }
 
-void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChange::Type change)
+void EC_LaserPointer::AttributesChanged()
 {
     if (!ViewEnabled())
         return;
@@ -196,12 +194,12 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
     if (!laserObject_)
         return;
 
-    if (attribute == &color)
+    if (color.ValueChanged())
     {
         UpdateColor();
         return;
     }
-    else if (attribute == &startPos || attribute == &endPos || attribute == &enabled)
+    if (startPos.ValueChanged() || endPos.ValueChanged() || enabled.ValueChanged())
     {
         if (enabled.Get())
         {

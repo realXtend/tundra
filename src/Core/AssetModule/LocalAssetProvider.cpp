@@ -16,7 +16,7 @@
 #include "Framework.h"
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "Profiler.h"
 
 #include <QDir>
@@ -247,9 +247,12 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
     storage->name = storageName;
     storage->recursive = recursive;
     storage->provider = shared_from_this();
+// On Android, we get spurious file change notifications. Disable watcher for now.
+#ifndef ANDROID
     storage->SetupWatcher(); // Start listening on file change notifications. Note: it's important that recursive is set before calling this!
     connect(storage->changeWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(OnDirectoryChanged(const QString &)), Qt::UniqueConnection);
     connect(storage->changeWatcher, SIGNAL(fileChanged(const QString &)), SLOT(OnFileChanged(const QString &)), Qt::UniqueConnection);
+#endif
     storages.push_back(storage);
 
     // Tell the Asset API that we have created a new storage.

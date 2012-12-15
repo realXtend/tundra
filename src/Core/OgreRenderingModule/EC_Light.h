@@ -135,9 +135,6 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, outerAngle);
 
 private slots:
-    /// Update light attributes to the Ogre light object.
-    void UpdateOgreLight();
-    
     /// Called when the parent entity has been set.
     void UpdateSignals();
     
@@ -148,6 +145,9 @@ private slots:
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
     
 private:
+    /// Update light attributes to the Ogre light object.
+    void AttributesChanged();
+
     /// Automatically checks for placeable in same entity
     void CheckForPlaceable();
     

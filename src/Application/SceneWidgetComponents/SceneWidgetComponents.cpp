@@ -1,25 +1,22 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "SceneWidgetComponents.h"
+#include "EC_WebView.h"
+#include "EC_WidgetBillboard.h"
+#include "EC_Billboard.h"
 
 #include "Framework.h"
 #include "Math/float2.h"
 #include "LoggingFunctions.h"
-
 #include "InputAPI.h"
 #include "MouseEvent.h"
 #include "InputContext.h"
-
 #include "SceneAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
-
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
-
-#include "EC_WebView.h"
-#include "EC_WidgetBillboard.h"
-#include "EC_Billboard.h"
+#include "OgreWorld.h"
 
 #include <QPainter>
 #include <QNetworkReply>
@@ -99,8 +96,9 @@ void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
         return;
     if (framework_->Ui()->GraphicsView()->GetVisibleItemAtCoords(mEvent->x, mEvent->y) != 0)
         return;
-        
-    RaycastResult *raycast = framework_->Renderer()->Raycast(mEvent->x, mEvent->y);
+
+    OgreWorldPtr world = framework_->Scene()->MainCameraScene()->GetWorld<OgreWorld>();
+    RaycastResult *raycast = world->Raycast(mEvent->x, mEvent->y);
     IComponent* hitComponent = raycast != 0 ? raycast->component : 0;
     EC_Billboard *hitBillboard = hitComponent != 0 ? dynamic_cast<EC_Billboard*>(hitComponent) : 0;
     EC_WidgetBillboard *hitWidgetBillboard = 0;

@@ -7,15 +7,16 @@ var avatar_area_size = 10;
 var avatar_area_x = 0;
 var avatar_area_y = 5;
 var avatar_area_z = 0;
+var inputContext = null;
 
-if (!server.IsRunning()) {
-    var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
-    inputmapper.SetTemporary(true);
-    inputmapper.contextPriority = 102;
-    inputmapper.RegisterMapping("Ctrl+Tab", "ToggleCamera", 1);
+function OnScriptDestroyed()
+{
+    if (inputContext)
+        input.UnregisterInputContextRaw(inputContext.Name());
+}
 
-    me.Action("ToggleCamera").Triggered.connect(ClientHandleToggleCamera);
-} else {
+if (server.IsRunning())
+{
     server.UserAboutToConnect.connect(ServerHandleUserAboutToConnect);
     server.UserConnected.connect(ServerHandleUserConnected);
     server.UserDisconnected.connect(ServerHandleUserDisconnected);
@@ -28,23 +29,29 @@ if (!server.IsRunning()) {
     for(var i=0; i < users.length; i++)
         ServerHandleUserConnected(users[i].id, users[i]);
 }
+else // client
+{
+    inputContext = input.RegisterInputContextRaw("AvatarApplication", 102);
+    inputContext.KeyPressed.connect(function(e) { if (e.HasCtrlModifier() && e.keyCode == Qt.Key_Tab) me.Exec(1, "ToggleCamera") } );
+    me.Action("ToggleCamera").Triggered.connect(ClientHandleToggleCamera);
+}
 
 function ClientHandleToggleCamera() {
-    // For camera switching to work, must have both the freelookcamera & avatarcamera in the scene
-    var freelookcameraentity = scene.GetEntityByName("FreeLookCamera");
-    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
-    var freecameralistener = freelookcameraentity.GetComponent("EC_SoundListener");
-    var avatarent = scene.GetEntityByName("Avatar" + client.connectionId);
-    var avatarlistener = avatarent.GetComponent("EC_SoundListener");
-    if ((freelookcameraentity == null) || (avatarcameraentity == null))
+    // For camera switching to work, must have both the FreeLookCamera & AvatarCamera in the scene
+    var freeLookCameraEntity = scene.EntityByName("FreeLookCamera");
+    var avatarCameraEntity = scene.EntityByName("AvatarCamera");
+    var freeCameraListener = freeLookCameraEntity.GetComponent("EC_SoundListener");
+    var avatarEnt = scene.EntityByName("Avatar" + client.connectionId);
+    var avatarListener = avatarEnt.GetComponent("EC_SoundListener");
+    if (freeLookCameraEntity == null || avatarCameraEntity == null)
         return;
-    var freelookcamera = freelookcameraentity.camera;
-    var avatarcamera = avatarcameraentity.camera;
+    var freeLookCamera = freeLookCameraEntity.camera;
+    var avatarCamera = avatarCameraEntity.camera;
 
-    if (avatarcamera.IsActive()) {
-        var trans = freelookcameraentity.placeable.transform;
-        trans.pos = avatarcameraentity.placeable.WorldPosition();
-        trans.SetOrientation(avatarcameraentity.placeable.WorldOrientation());
+    if (avatarCamera.IsActive()) {
+        var trans = freeLookCameraEntity.placeable.transform;
+        trans.pos = avatarCameraEntity.placeable.WorldPosition();
+        trans.SetOrientation(avatarCameraEntity.placeable.WorldOrientation());
 
         // If there is roll in the rotation, adjust it away
         if (trans.rot.z > 170.0)
@@ -60,18 +67,18 @@ function ClientHandleToggleCamera() {
             trans.rot.y = -90.0 - (90.0 + trans.rot.y);
         }
 
-        freelookcameraentity.placeable.transform = trans;
-        freelookcamera.SetActive();
-        freecameralistener.active = true;
-        avatarlistener.active = false;
+        freeLookCameraEntity.placeable.transform = trans;
+        freeLookCamera.SetActive();
+        freeCameraListener.active = true;
+        avatarListener.active = false;
     } else {
-        avatarcamera.SetActive();
-        avatarlistener.active = true;
-        freecameralistener.active = false;
+        avatarCamera.SetActive();
+        avatarListener.active = true;
+        freeCameraListener.active = false;
     }
     
     // Ask entity to check his camera state
-    avatarent.Exec(1, "CheckState");
+    avatarEnt.Exec(1, "CheckState");
 }
 
 function ServerHandleUserAboutToConnect(connectionID, user) {
@@ -93,7 +100,7 @@ function ServerHandleUserConnected(connectionID, user) {
     avatarEntity.SetName(avatarEntityName);
     
     if (user != null)
-    	avatarEntity.SetDescription(user.GetProperty("username"));
+        avatarEntity.SetDescription(user.GetProperty("username"));
 
     var script = avatarEntity.script;
     script.className = "AvatarApp.SimpleAvatar";
@@ -117,12 +124,12 @@ function ServerHandleUserConnected(connectionID, user) {
 
 function ServerHandleUserDisconnected(connectionID, user) {
     var avatarEntityName = "Avatar" + connectionID;
-    var avatarEntity = scene.GetEntityByName(avatarEntityName);
+    var avatarEntity = scene.EntityByName(avatarEntityName);
     if (avatarEntity != null) {
         scene.RemoveEntity(avatarEntity.id);
 
         if (user != null) {
-        print("[Avatar Application] User " + user.GetProperty("username") + " disconnected, destroyed avatar entity.");
+            print("[Avatar Application] User " + user.GetProperty("username") + " disconnected, destroyed avatar entity.");
         }
     }
 }

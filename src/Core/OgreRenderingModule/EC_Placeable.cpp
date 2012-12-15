@@ -13,7 +13,7 @@
 #include "AttributeMetadata.h"
 #include "EC_Mesh.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Math/Quat.h"
 #include "Math/float3x3.h"
 #include "Math/float3x4.h"
@@ -202,10 +202,6 @@ EC_Placeable::EC_Placeable(Scene* scene) :
         sceneNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Placeable_SceneNode"));
 // Would like to do this for improved debugging in the Profiler window, but because we don't have the parent entity yet, we don't know the id or the name of this entity.
 //        sceneNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName(("EC_Placeable_SceneNode_" + QString::number(ParentEntity()->Id()) + "_" + ParentEntity()->Name()).toStdString()));
-    
-        // Hook the transform attribute change
-        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
 
         connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
     
@@ -669,14 +665,15 @@ void EC_Placeable::RegisterActions()
     }
 }
 
-void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
+void EC_Placeable::AttributesChanged()
 {
     // If parent ref or parent bone changed, reattach node to scene hierarchy
-    if ((attribute == &parentRef) || (attribute == &parentBone))
+    if (parentRef.ValueChanged() || parentBone.ValueChanged())
         AttachNode();
     
-    if (attribute == &transform)
+    if (transform.ValueChanged())
     {
+        transform.ClearChangedFlag();
         const Transform& trans = transform.Get();
         if (trans.pos.IsFinite())
             sceneNode_->setPosition(trans.pos);
@@ -699,11 +696,11 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
 
         sceneNode_->setScale(scale);
     }
-    else if (attribute == &drawDebug)
+    if (drawDebug.ValueChanged())
     {
         SetShowBoundingBoxRecursive(sceneNode_, drawDebug.Get());
     }
-    else if (attribute == &visible && sceneNode_)
+    if (visible.ValueChanged() && sceneNode_)
         sceneNode_->setVisible(visible.Get());
 }
 

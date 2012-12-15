@@ -83,8 +83,6 @@ EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
 
         // Connect component signals
         connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), 
-                SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 
         // Asset reference listener
         refListener_ = new AssetRefListener();
@@ -180,7 +178,7 @@ void EC_WidgetBillboard::RenderInternal()
     // Prepare render buffer.
     if (renderBuffer_.size() != widget_->size())
     {
-        AttributeChanged(&ppm, AttributeChange::LocalOnly);
+        HandlePPMChange();
         renderBuffer_ = QImage(widget_->size(), QImage::Format_ARGB32_Premultiplied);
     }
     renderBuffer_.fill(Qt::transparent);
@@ -276,15 +274,15 @@ void EC_WidgetBillboard::PrepareComponent()
     RenderInternal();
 }
 
-void EC_WidgetBillboard::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
+void EC_WidgetBillboard::AttributesChanged()
 {
     EC_Billboard *myBillboard = GetBillboardComponent();
 
     // Fetch ui asset and hide EC_Billboard if created.
-    if (attribute == &uiRef)
+    if (uiRef.ValueChanged())
     {
         if (!getuiRef().ref.isEmpty())
-            refListener_->HandleAssetRefChange(attribute, "QtUiFile");
+            refListener_->HandleAssetRefChange(&uiRef, "QtUiFile");
         else
         {
             // Ref was reseted: Destroy widget and hide target billboard.
@@ -306,18 +304,25 @@ void EC_WidgetBillboard::OnAttributeUpdated(IAttribute* attribute, AttributeChan
     // Below things that are reflected to EC_Billboard
     if (myBillboard)
     {
-        if (attribute == &visible && widget_)
+        if (visible.ValueChanged() && widget_)
             myBillboard->show.Set(getvisible(), AttributeChange::LocalOnly);
-        else if (attribute == &position)
+        if (position.ValueChanged())
             myBillboard->position.Set(getposition(), AttributeChange::LocalOnly);
-        else if (attribute == &ppm && widget_)
-        {
-            QSize wsize = widget_->size();
-            float dx = (float)wsize.width() / (float)getppm();
-            float dy = (float)wsize.height() / (float)getppm();
-            myBillboard->width.Set(dx, AttributeChange::LocalOnly);
-            myBillboard->height.Set(dy, AttributeChange::LocalOnly);
-        }
+    }
+    if (ppm.ValueChanged() && widget_)
+        HandlePPMChange();
+}
+
+void EC_WidgetBillboard::HandlePPMChange()
+{
+    EC_Billboard *myBillboard = GetBillboardComponent();
+    if (myBillboard)
+    {
+        QSize wsize = widget_->size();
+        float dx = (float)wsize.width() / (float)getppm();
+        float dy = (float)wsize.height() / (float)getppm();
+        myBillboard->width.Set(dx, AttributeChange::LocalOnly);
+        myBillboard->height.Set(dy, AttributeChange::LocalOnly);
     }
 }
 
