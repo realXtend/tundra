@@ -307,7 +307,7 @@ IF NOT EXIST "%DEPS%\bullet\". (
    svn checkout http://bullet.googlecode.com/svn/trunk@2613 bullet
    ) ELSE (
    :: make sure bullet is updated to revision 2613 (2.81 SP1)
-   cecho {0D}Updating Bullet to 2.80 SP1.{# #}{\n}
+   cecho {0D}Updating Bullet to 2.81 SP1.{# #}{\n}
    cd %DEPS%\bullet
    svn update -r 2613
    :: configure bullet with CMake
