@@ -21,6 +21,7 @@ namespace MumbleAudio
         framework(framework_),
         codec(new CeltCodec()),
         speexPreProcessor(0),
+        speexEcho(0),
         outputPreProcessed(false),
         preProcessorReset(true),
         isSpeech(false),
@@ -30,7 +31,7 @@ namespace MumbleAudio
         qualityFramesPerPacket(MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA)
     {
         ApplySettings(settings);
-        
+
         // Timer is created in the main thread context as it can only be started in the thread its created in,
         // and we want to start it in ProcessOutputAudio().
         resetFramesPerPacket.setSingleShot(true);
@@ -47,20 +48,20 @@ namespace MumbleAudio
         if (!preProcessorReset)
             return;
         preProcessorReset = false;
-        
+
         AudioSettings currentSettings;
-        
+
         mutexAudioSettings.lockForRead();
         currentSettings = audioSettings;
         mutexAudioSettings.unlock();
-        
+
         outputPreProcessed = false;
         if (currentSettings.suppression < 0 || currentSettings.amplification > 0)
             outputPreProcessed = true;
 
         // Only usage of speexPreProcessor ptr in another thread is behind this lock.
         QMutexLocker outputLock(&mutexOutputPCM);
-        
+
         if (speexPreProcessor)
             speex_preprocess_state_destroy(speexPreProcessor);
 
@@ -74,7 +75,7 @@ namespace MumbleAudio
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_AGC, &enabled);
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_DENOISE, &enabled);
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_DEREVERB, &enabled);
-      
+
         arg = 30000;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_AGC_TARGET, &arg);
 
@@ -87,19 +88,37 @@ namespace MumbleAudio
 
         arg = -60;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_AGC_DECREMENT, &arg);
-        
+
         arg = currentSettings.suppression;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &arg);
 
         fArg = 0.0f;
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_DEREVERB_DECAY, &fArg);
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_DEREVERB_LEVEL, &fArg);
+
+
+        // Echo-cancellation
+        // FIXME: make this tunable
+        if (speexEcho) {
+            speex_echo_state_destroy(speexEcho);
+            speexEcho = 0;
+        }
+
+        // Initialize echo cancellation state, using the same frame size as used for sending
+        // and receiving (should be 10-20 ms), and filter length of 250 ms (quarter of a second)
+        qDebug("Initializing echo cancellation...");
+        speexEcho = speex_echo_state_init(MUMBLE_AUDIO_SAMPLES_IN_FRAME, MUMBLE_AUDIO_SAMPLE_RATE / 4);
+
+        // Use fixed sample rate
+        arg = MUMBLE_AUDIO_SAMPLE_RATE;
+        speex_echo_ctl(speexEcho, SPEEX_ECHO_SET_SAMPLING_RATE, &arg);
+        speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_ECHO_STATE, speexEcho);
     }
 
     void AudioProcessor::run()
     {
         qobjTimerId = startTimer(15); // Audio processing with ~60 fps.
-        
+
         exec(); // Blocks untill quit()
 
         killTimer(qobjTimerId);
@@ -114,6 +133,10 @@ namespace MumbleAudio
 
         if (speexPreProcessor)
             speex_preprocess_state_destroy(speexPreProcessor);
+        if (speexEcho) {
+            speex_echo_state_destroy(speexEcho);
+            speexEcho = 0;
+        }
     }
 
     void AudioProcessor::timerEvent(QTimerEvent *event)
@@ -128,7 +151,7 @@ namespace MumbleAudio
             return;
 
         int localGain = 0;
-        
+
         mutexAudioSettings.lockForRead();
         int localQualityBitrate = qualityBitrate;
         int localSuppress = audioSettings.suppression;
@@ -144,15 +167,17 @@ namespace MumbleAudio
             mutexOutputPCM.unlock();
             return;
         }
-            
+
         QList<QByteArray> encodedFrames;
-        for (std::vector<SoundBuffer>::const_iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
+        for (std::vector<SoundBuffer>::iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
         {
-            const SoundBuffer &pcmFrame = (*pcmIter);
+            SoundBuffer &pcmFrame = (*pcmIter);
             if (pcmFrame.data.size() == 0)
                 continue;
 
             isSpeech = true;
+            DoEchoCancellation(pcmFrame);
+
             if (localPreProcess)
             {
                 speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_GET_AGC_GAIN, &localGain);
@@ -208,7 +233,7 @@ namespace MumbleAudio
                 // append any 'prediction' buffered frames so start of sentences
                 // can get to the outgoing buffer safely.
                 if (isSpeech || wasPreviousSpeech)
-                {    
+                {
                     if (detectVAD && pendingVADPreBuffer.size() > 0)
                     {
                         encodedFrames.append(pendingVADPreBuffer);
@@ -216,7 +241,7 @@ namespace MumbleAudio
                     }
                     encodedFrames.push_back(encodedFrame);
                 }
-                // If voice activity detection is enabled but this is 
+                // If voice activity detection is enabled but this is
                 // not speech, add the frame to the VAD 'prediction' buffer.
                 else if (detectVAD && !isSpeech && !wasPreviousSpeech)
                 {
@@ -234,7 +259,7 @@ namespace MumbleAudio
         }
         pendingPCMFrames.clear();
         mutexOutputPCM.unlock();
-        
+
         // Push encoded frames for the main thread to send out to network.
         mutexOutputEncoded.lock();
         for(int i=0; i<encodedFrames.size(); ++i)
@@ -259,6 +284,62 @@ namespace MumbleAudio
         }
     }
 
+    // Echo cancellation
+    // This can only work when echo cancellation state is
+    // set up, and we have data still remaining in the
+    // speaker buffer.
+    //
+    // Outgoing "clean" data is by design empty:
+    // cancellation fills that element in.
+    void AudioProcessor::DoEchoCancellation(SoundBuffer &pcmFrame)
+    {
+        if (!speexEcho)
+            return;
+
+        SoundBuffer outBuf;
+        SoundBuffer playedFrame;
+        uint16_t *playedFrameData;
+
+        playedFrame.data.resize(MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8, 0);
+        playedFrameData = reinterpret_cast<uint16_t *>(&playedFrame.data[0]);
+
+        if (mutexInput.tryLock(15)) {
+            for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != inputAudioStates.end(); ++iter) {
+                UserAudioState &userAudioState = iter->second;
+
+                if (userAudioState.playedFrames.empty())
+                    continue;
+
+                const SoundBuffer &buf = userAudioState.playedFrames.front();
+
+                if (buf.data.size() == playedFrame.data.size()) {
+                    const uint16_t *bufData = reinterpret_cast<const uint16_t *>(&buf.data[0]);
+
+                    for (size_t i = 0; i < buf.data.size() / 2; i++)
+                        playedFrameData[i] += bufData[i];
+                }
+                userAudioState.playedFrames.pop_front();
+            }
+            mutexInput.unlock();
+        }
+
+        outBuf.data.resize(pcmFrame.data.size());
+
+        // Input (mic) data is from pcmFrame
+        // Output (speaker) data mixed from separate input streams
+        // Echo-cancelled data is put to outBuf
+        speex_echo_cancellation(speexEcho,
+                                (spx_int16_t*)&pcmFrame.data[0],
+                                (spx_int16_t*)&playedFrame.data[0],
+                                (spx_int16_t*)&outBuf.data[0] );
+
+        // Echo-cancelled output should be copied over
+        // existing output in PCM frames
+        // XXX: Apparently we can swap data between two
+        // vectors, which should make this *REALLY* fast(!)
+        pcmFrame.data.swap(outBuf.data);
+    }
+
     void AudioProcessor::SetOutputAudioMuted(bool outputAudioMuted_)
     {
         // This function is called in the main thread
@@ -268,14 +349,14 @@ namespace MumbleAudio
         mutexAudioMute.lockForWrite();
         outputAudioMuted = outputAudioMuted_;
         mutexAudioMute.unlock();
-        
+
         if (!outputAudioMuted_)
         {
             mutexAudioSettings.lockForWrite();
-            
+
             // Reset back to ultra state, gets increased automatically if necessary.
             qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA;
-            
+
             // Recording buffer of 40 celt frames, 38400 bytes
             int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
             if (!framework->Audio()->StartRecording(audioSettings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize))
@@ -283,7 +364,7 @@ namespace MumbleAudio
                 LogWarning("Could not open recording device '" + audioSettings.recordingDevice + "'. Trying to open the default device instead.");
                 framework->Audio()->StartRecording("", MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
             }
-            
+
             mutexAudioSettings.unlock();
         }
         else
@@ -301,24 +382,24 @@ namespace MumbleAudio
         mutexAudioMute.lockForWrite();
         inputAudioMuted = inputAudioMuted_;
         mutexAudioMute.unlock();
-        
+
         ClearInputAudio();
     }
-    
+
     void AudioProcessor::ApplyFramesPerPacket(int framesPerPacket)
     {
         if (framesPerPacket < 2)
             framesPerPacket = 2;
         if (framesPerPacket > 10)
             framesPerPacket = 10;
-            
+
         LogWarning(LC + "Changing frames per packet to " + QString::number(framesPerPacket) + ", changing the rate is not recommended for other than debugging!");
-        
+
         mutexAudioSettings.lockForWrite();
         bufferFullFrames = 0;
         qualityFramesPerPacket = framesPerPacket;
         mutexAudioSettings.unlock();
-        
+
         ClearOutputAudio();
     }
 
@@ -335,7 +416,7 @@ namespace MumbleAudio
         // Detect recording device changed
         if (audioSettings.recordingDevice != settings.recordingDevice)
             recondingDeviceChanged = true;
-            
+
         // Detect if positional playback ranges changed.
         if (audioSettings.innerRange != settings.innerRange || audioSettings.outerRange != settings.outerRange)
         {
@@ -366,11 +447,11 @@ namespace MumbleAudio
                 break;
             }
         }
-        
+
         // Reset back to ultra state, gets increased automatically if necessary.
         bufferFullFrames = 0;
         qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA;
-        
+
         mutexAudioSettings.unlock();
 
         // Apply new positional ranges to existing positional sound channels.
@@ -390,7 +471,7 @@ namespace MumbleAudio
 
         preProcessorReset = true;
         ResetSpeexProcessor();
-        
+
         // Start recording with the new device if changed.
         // If recording is not enabled, change to false,
         // it will be applied on the when output mute state is changed.
@@ -406,11 +487,11 @@ namespace MumbleAudio
         {
             LogInfo(LC + "Recording device change detected to '" + (settings.recordingDevice.isEmpty() ? "Default Recording Device" : settings.recordingDevice) + "'.");
             framework->Audio()->StopRecording();
-            
+
             // Recording buffer of 40 celt frames, 38400 bytes
             int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
             framework->Audio()->StartRecording(settings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
-            
+
             ClearOutputAudio();
         }
     }
@@ -465,19 +546,19 @@ namespace MumbleAudio
         mutexAudioSettings.lockForRead();
         int framesPerPacket = qualityFramesPerPacket;
         mutexAudioSettings.unlock();
-        
-         /** Ensure we are not buffing faster than what is sent to network. Increasing the frames per packet (automatically) is not a good thing. 
+
+         /** Ensure we are not buffing faster than what is sent to network. Increasing the frames per packet (automatically) is not a good thing.
             This happens when our main thread gets blocked and our encoded frames gets filled.
             We can increase the frames per packet to catch up quickly, but going anything above 2-4 is bad found sound quality. Hence we reset back to
             ULTRA == 2 after 5 seconds, we assume the mainloop blockage like loading heavy assets has ended and want to return to a proper voice network
             sync rate. If your FPS is bad all the time, eg. in a particular heavy scene to render, this will keep hitting and there is little we can do, if you
-            have constant < 25 FPS in Tundra your voip will quality will suck anyways. 
-           
+            have constant < 25 FPS in Tundra your voip will quality will suck anyways.
+
             This is Tundra VOIPs main problem: We are trying to stream and receive real time voice audio that will at times get interrupted by something
             blocking the main thread. This is why we have one audio thread and secondary network thread and process voip at 60 fps if we can. The upside
             of normal voip clients like Mumble is that they don't have 3D rendering interrupting them and they can focus on doing voice stuff ;)
-            
-            @todo Remove OpenAL usage for input microphone and 3D positional playback. Thread microphone by using WASAPI on windows and something on linux/mac. 
+
+            @todo Remove OpenAL usage for input microphone and 3D positional playback. Thread microphone by using WASAPI on windows and something on linux/mac.
             Research our options for threaded recording/playback without using Framework or AudioAPI pointers in this audio processing thread.
         */
         if (pendingEncodedFrames.size() > framesPerPacket * 10)
@@ -485,7 +566,7 @@ namespace MumbleAudio
             // Do some helpful info logs if we are auto increasing frames per packet count.
             if (framesPerPacket > 8)
                 LogInfo(LC + QString("Output buffer full with %1/%2 frames, frames/packet is %3").arg(pendingEncodedFrames.size()).arg(framesPerPacket*10).arg(framesPerPacket));
-                
+
             // Remove oldest frames to get the buffer to a acceptable size.
             while(pendingEncodedFrames.size() > framesPerPacket * 10)
             {
@@ -500,17 +581,17 @@ namespace MumbleAudio
             if (bufferFullFrames >= 5 && qualityFramesPerPacket <= 8)
             {
                 LogInfo(LC + QString("Output buffer full with %1/%2 frames, auto increasing frames/packet to %3 due to potential main thread blockage.").arg(pendingEncodedFrames.size()).arg(framesPerPacket*10).arg(framesPerPacket+2));
-                
+
                 bufferFullFrames = 0;
                 qualityFramesPerPacket += 2;
                 framesPerPacket = qualityFramesPerPacket;
-                
+
                 if (!resetFramesPerPacket.isActive())
                     resetFramesPerPacket.start(5000);
             }
             mutexAudioSettings.unlock();
         }
-        
+
         // If we are speaking send out full 'framesPerPacket' frames. If we are not speaking send whatever is left in the buffer but max is still 'framesPerPacket'.
         int framesToPacket = (isSpeech || wasPreviousSpeech) ? framesPerPacket : qMin(framesPerPacket, pendingEncodedFrames.size());
 
@@ -543,7 +624,7 @@ namespace MumbleAudio
         int positionalInnerRange = allowReceivingPositional ? audioSettings.innerRange : 0;
         int positionalOuterRange = allowReceivingPositional ? audioSettings.outerRange : 0;
         mutexAudioSettings.unlock();
-           
+
         // Lock user audio states. This is the place we want to fail on a tryLock as we can play the frames later as well.
         // If this fails too many times we just remove the oldest frames.
         if (!mutexInput.tryLock(15))
@@ -556,7 +637,7 @@ namespace MumbleAudio
             mutexInput.unlock();
             return;
         }
-           
+
         AudioStateMap::iterator end = inputAudioStates.end();
         for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != end; ++iter)
         {
@@ -565,9 +646,9 @@ namespace MumbleAudio
 
             // We must have the user if we are receiving audio from him.
             MumbleUser *user = mumble->User(userId);
-            if (!user)            
+            if (!user)
                 continue;
-            
+
             // When muted don't play any pending frames, just delete them.
             if (user->isMuted)
                 userAudioState.frames.clear();
@@ -587,13 +668,13 @@ namespace MumbleAudio
                         userAudioState.soundChannel->Stop();
                         userAudioState.soundChannel.reset();
                     }
-                }                        
+                }
                 if (!playing)
                     user->SetAndEmitSpeaking(false);
                 continue;
             }
-            
-            // Report if we are getting too much buffers from a single user. We don't want to feed OpenAL too many 
+
+            // Report if we are getting too much buffers from a single user. We don't want to feed OpenAL too many
             // buffers as it can crash and also there is not sense in playing very old audio.
             if (userAudioState.frames.size() > 150)
             {
@@ -601,7 +682,7 @@ namespace MumbleAudio
                 while (userAudioState.frames.size() > 150)
                     userAudioState.frames.pop_front();
             }
-            
+
             // Setup existing audio channels and users positional state.
             if (userAudioState.soundChannel.get() && allowReceivingPositional)
             {
@@ -620,7 +701,7 @@ namespace MumbleAudio
 
                 // Only emits on change.
                 if (!user->isMe)
-                    user->SetAndEmitPositional(userAudioState.isPositional); 
+                    user->SetAndEmitPositional(userAudioState.isPositional);
             }
             else if (userAudioState.soundChannel.get() && !allowReceivingPositional)
             {
@@ -635,7 +716,7 @@ namespace MumbleAudio
                     user->SetAndEmitPositional(false);
                 }
             }
-            
+
             // Iterate audio frames for user
             AudioFrameDeque::iterator frameEnd = userAudioState.frames.end();
             for (AudioFrameDeque::iterator frameIter = userAudioState.frames.begin(); frameIter != frameEnd; ++frameIter)
@@ -654,7 +735,7 @@ namespace MumbleAudio
                     else
                     {
                         LogDebug(LC + QString("Failed to create new sound buffer for user id %1, clearing all his input frames").arg(userId));
-                        
+
                         // Something went wrong, eg. out of memory, release "broken" SoundChannel and its data.
                         // Bail out as otherwise the next buffer creation will most likely fail the same way.
                         user->SetAndEmitSpeaking(false); // Only emits on change.
@@ -692,18 +773,28 @@ namespace MumbleAudio
                         }
 
                         // Update user speaking state. Only emits on change.
-                        user->SetAndEmitSpeaking(true); 
+                        user->SetAndEmitSpeaking(true);
                     }
                 }
             }
 
+            mutexAudioMute.lockForRead();
+            if (!outputAudioMuted && userAudioState.soundChannel.get())
+                userAudioState.playedFrames.insert(
+                        userAudioState.playedFrames.end(),
+                        userAudioState.frames.begin(),
+                        userAudioState.frames.end());
+            else
+                userAudioState.playedFrames.clear();
+            mutexAudioMute.unlock();
+
             // Clear users input frames
             userAudioState.frames.clear();
         }
-        
+
         mutexInput.unlock();
     }
-    
+
     void AudioProcessor::ClearInputAudio()
     {
         // This function should be called in the main thread
@@ -716,7 +807,7 @@ namespace MumbleAudio
     {
         // This function should be called in the main thread
         QMutexLocker lock(&mutexInput);
-        
+
         AudioStateMap::iterator userStateIter = inputAudioStates.find(userId);
         if (userStateIter != inputAudioStates.end())
         {
@@ -802,7 +893,7 @@ namespace MumbleAudio
         // This function is called in the audio thread
         if (frames.size() == 0)
             return;
-        
+
         // This will never* hit if the server was properly informed that we don't want to receive audio,
         // from all or from certain users. See MumblePlugin::SetInputAudioMuted.
         // *The return here will only hit for a short period when input was muted
@@ -817,7 +908,7 @@ namespace MumbleAudio
 
         QMutexLocker lockBuffers(&mutexInput);
         UserAudioState &userAudioState = inputAudioStates[userId]; // Creates a new one if does not exist already.
-        
+
         // If you change audio output settings in Mumble or various other things, sequence will reset to 0.
         // If this is received we need to reset our tracking sequence number as well.
         if (seq == 0)
@@ -846,10 +937,10 @@ namespace MumbleAudio
                 PrintCeltError(celtResult, true);
                 userAudioState.frames.clear();
                 return;
-            }            
+            }
         }
     }
-    
+
     void AudioProcessor::OnResetFramesPerPacket()
     {
         mutexAudioSettings.lockForWrite();
