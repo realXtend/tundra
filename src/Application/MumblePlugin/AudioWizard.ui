@@ -262,6 +262,9 @@ QPushButton#buttonAdvanced {
       </item>
       <item>
        <widget class="QPushButton" name="detectLevelsButton">
+        <property name="toolTip">
+         <string>A short guided level detection step to help improve your voice detection.</string>
+        </property>
         <property name="text">
          <string>Start Audio Level Detection</string>
         </property>
