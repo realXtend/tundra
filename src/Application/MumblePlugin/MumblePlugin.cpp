@@ -1257,6 +1257,8 @@ MumbleAudio::AudioSettings MumblePlugin::LoadSettings()
         settings.allowSendingPositional = config->Get(data, "allowSendingPositional").toBool();
     if (config->HasValue(data, "allowReceivingPositional"))
         settings.allowReceivingPositional = config->Get(data, "allowReceivingPositional").toBool();
+    if (config->HasValue(data, "echoCancellation"))
+        settings.echoCancellation = config->Get(data, "echoCancellation").toBool();
     if (config->HasValue(data, "recordingDevice"))
         settings.recordingDevice = config->Get(data, "recordingDevice").toString();
     return settings;
@@ -1282,6 +1284,7 @@ void MumblePlugin::SaveSettings(MumbleAudio::AudioSettings settings)
     config->Set(data, "outerRange", settings.outerRange);
     config->Set(data, "allowSendingPositional", settings.allowSendingPositional);
     config->Set(data, "allowReceivingPositional", settings.allowReceivingPositional);
+    config->Set(data, "echoCancellation", settings.echoCancellation);
     config->Set(data, "recordingDevice", settings.recordingDevice);
 }
 

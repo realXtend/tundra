@@ -94,6 +94,7 @@ namespace MumbleAudio
 
         void OnAllowSendingPositionalChanged();
         void OnAllowReceivingPositionalChanged();
+        void OnEchoCancellationChanged();
 
         void OnAdvancedToggle();
 

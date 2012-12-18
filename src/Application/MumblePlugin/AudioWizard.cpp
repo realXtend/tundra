@@ -97,6 +97,10 @@ namespace MumbleAudio
         OnAllowSendingPositionalChanged();
         checkBoxPositionalReceive->setChecked(settings.allowReceivingPositional);
         OnAllowReceivingPositionalChanged();
+        
+        // Echo cancellation
+        checkBoxEchoCancellation->setChecked(currentSettings.echoCancellation);
+        OnEchoCancellationChanged();
 
         // Setting tooltips
         QString tooltipTr;
@@ -150,6 +154,7 @@ namespace MumbleAudio
 
         connect(checkBoxPositionalSend, SIGNAL(clicked()), SLOT(OnAllowSendingPositionalChanged()));
         connect(checkBoxPositionalReceive, SIGNAL(clicked()), SLOT(OnAllowReceivingPositionalChanged()));
+        connect(checkBoxEchoCancellation, SIGNAL(clicked()), SLOT(OnEchoCancellationChanged()));
 
         buttonApply->setDisabled(true);
         groupBoxQuality->setVisible(false);
@@ -360,6 +365,14 @@ namespace MumbleAudio
         innerRangeSpinBox->setEnabled(currentSettings.allowReceivingPositional);
         outerRangeSpinBox->setEnabled(currentSettings.allowReceivingPositional);
 
+        buttonApply->setEnabled(true);
+    }
+    
+    void AudioWizard::OnEchoCancellationChanged()
+    {
+        currentSettings.echoCancellation = checkBoxEchoCancellation->isChecked();
+        checkBoxEchoCancellation->setText((checkBoxEchoCancellation->isChecked() ? "Enabled" : "Disabled"));
+        
         buttonApply->setEnabled(true);
     }
 

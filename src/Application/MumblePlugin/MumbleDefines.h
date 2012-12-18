@@ -107,6 +107,7 @@ namespace MumbleAudio
             outerRange = 75;
             allowSendingPositional = true;
             allowReceivingPositional = true;
+            echoCancellation = true;
             recordingDevice = "";
         }
 
@@ -122,6 +123,7 @@ namespace MumbleAudio
             outerRange = other.outerRange;
             allowSendingPositional = other.allowSendingPositional;
             allowReceivingPositional = other.allowReceivingPositional;
+            echoCancellation = other.echoCancellation;
             recordingDevice = other.recordingDevice;
         }
 
@@ -137,6 +139,7 @@ namespace MumbleAudio
             outerRange = other.outerRange;
             allowSendingPositional = other.allowSendingPositional;
             allowReceivingPositional = other.allowReceivingPositional;
+            echoCancellation = other.echoCancellation;
             recordingDevice = other.recordingDevice;
             return *this;
         }
@@ -151,6 +154,7 @@ namespace MumbleAudio
         int outerRange;
         bool allowSendingPositional;
         bool allowReceivingPositional;
+        bool echoCancellation;
         QString recordingDevice;
     };
 

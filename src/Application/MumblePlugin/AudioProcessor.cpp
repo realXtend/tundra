@@ -10,6 +10,7 @@
 #include "Profiler.h"
 #include "AudioAPI.h"
 #include "CoreDefines.h"
+#include "CoreTypes.h"
 #include "LoggingFunctions.h"
 
 #include <QMutexLocker>
@@ -63,7 +64,10 @@ namespace MumbleAudio
         QMutexLocker outputLock(&mutexOutputPCM);
 
         if (speexPreProcessor)
+        {
             speex_preprocess_state_destroy(speexPreProcessor);
+            speexPreProcessor = 0;
+        }
 
         speexPreProcessor = speex_preprocess_state_init(MUMBLE_AUDIO_SAMPLES_IN_FRAME, MUMBLE_AUDIO_SAMPLE_RATE);
 
@@ -96,23 +100,26 @@ namespace MumbleAudio
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_DEREVERB_DECAY, &fArg);
         speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_DEREVERB_LEVEL, &fArg);
 
-
-        // Echo-cancellation
-        // FIXME: make this tunable
-        if (speexEcho) {
+        if (speexEcho) 
+        {
             speex_echo_state_destroy(speexEcho);
             speexEcho = 0;
         }
 
-        // Initialize echo cancellation state, using the same frame size as used for sending
-        // and receiving (should be 10-20 ms), and filter length of 250 ms (quarter of a second)
-        qDebug("Initializing echo cancellation...");
-        speexEcho = speex_echo_state_init(MUMBLE_AUDIO_SAMPLES_IN_FRAME, MUMBLE_AUDIO_SAMPLE_RATE / 4);
+        // Enable echo cancellation if its enabled in the settings.
+        if (currentSettings.echoCancellation)
+        {
+            // Initialize echo cancellation state, using the same frame size as used for sending
+            // and receiving (should be 10-20 ms), and filter length of 250 ms (quarter of a second)
+            speexEcho = speex_echo_state_init(MUMBLE_AUDIO_SAMPLES_IN_FRAME, MUMBLE_AUDIO_SAMPLE_RATE / 4);
 
-        // Use fixed sample rate
-        arg = MUMBLE_AUDIO_SAMPLE_RATE;
-        speex_echo_ctl(speexEcho, SPEEX_ECHO_SET_SAMPLING_RATE, &arg);
-        speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_ECHO_STATE, speexEcho);
+            // Use fixed sample rate
+            arg = MUMBLE_AUDIO_SAMPLE_RATE;
+            speex_echo_ctl(speexEcho, SPEEX_ECHO_SET_SAMPLING_RATE, &arg);
+            speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_ECHO_STATE, speexEcho);
+        }
+        else
+            speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_ECHO_STATE, 0);
     }
 
     void AudioProcessor::run()
@@ -132,8 +139,12 @@ namespace MumbleAudio
         }
 
         if (speexPreProcessor)
+        {
             speex_preprocess_state_destroy(speexPreProcessor);
-        if (speexEcho) {
+            speexPreProcessor = 0;
+        }
+        if (speexEcho) 
+        {
             speex_echo_state_destroy(speexEcho);
             speexEcho = 0;
         }
@@ -284,37 +295,31 @@ namespace MumbleAudio
         }
     }
 
-    // Echo cancellation
-    // This can only work when echo cancellation state is
-    // set up, and we have data still remaining in the
-    // speaker buffer.
-    //
-    // Outgoing "clean" data is by design empty:
-    // cancellation fills that element in.
     void AudioProcessor::DoEchoCancellation(SoundBuffer &pcmFrame)
     {
+        // If not enabled this is null.
         if (!speexEcho)
             return;
 
         SoundBuffer outBuf;
         SoundBuffer playedFrame;
-        uint16_t *playedFrameData;
+        u16 *playedFrameData;
 
         playedFrame.data.resize(MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8, 0);
-        playedFrameData = reinterpret_cast<uint16_t *>(&playedFrame.data[0]);
+        playedFrameData = reinterpret_cast<u16*>(&playedFrame.data[0]);
 
-        if (mutexInput.tryLock(15)) {
-            for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != inputAudioStates.end(); ++iter) {
+        if (mutexInput.tryLock(15))
+        {
+            for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != inputAudioStates.end(); ++iter)
+            {
                 UserAudioState &userAudioState = iter->second;
-
                 if (userAudioState.playedFrames.empty())
                     continue;
 
                 const SoundBuffer &buf = userAudioState.playedFrames.front();
-
-                if (buf.data.size() == playedFrame.data.size()) {
-                    const uint16_t *bufData = reinterpret_cast<const uint16_t *>(&buf.data[0]);
-
+                if (buf.data.size() == playedFrame.data.size())
+                {
+                    const u16 *bufData = reinterpret_cast<const u16*>(&buf.data[0]);
                     for (size_t i = 0; i < buf.data.size() / 2; i++)
                         playedFrameData[i] += bufData[i];
                 }
@@ -322,21 +327,19 @@ namespace MumbleAudio
             }
             mutexInput.unlock();
         }
+        else
+            return;
 
         outBuf.data.resize(pcmFrame.data.size());
 
-        // Input (mic) data is from pcmFrame
-        // Output (speaker) data mixed from separate input streams
-        // Echo-cancelled data is put to outBuf
+        // Input (mic) data is from pcmFrame. Output (speaker) data mixed from 
+        // separate input streams. Echo-cancelled data is put to outBuf.
         speex_echo_cancellation(speexEcho,
                                 (spx_int16_t*)&pcmFrame.data[0],
                                 (spx_int16_t*)&playedFrame.data[0],
-                                (spx_int16_t*)&outBuf.data[0] );
+                                (spx_int16_t*)&outBuf.data[0]);
 
-        // Echo-cancelled output should be copied over
-        // existing output in PCM frames
-        // XXX: Apparently we can swap data between two
-        // vectors, which should make this *REALLY* fast(!)
+        // Echo-cancelled output should be copied over existing output in PCM frames.
         pcmFrame.data.swap(outBuf.data);
     }
 
@@ -779,11 +782,13 @@ namespace MumbleAudio
             }
 
             mutexAudioMute.lockForRead();
-            if (!outputAudioMuted && userAudioState.soundChannel.get())
+            if (speexEcho && !outputAudioMuted && userAudioState.soundChannel.get())
+            {
                 userAudioState.playedFrames.insert(
                         userAudioState.playedFrames.end(),
                         userAudioState.frames.begin(),
                         userAudioState.frames.end());
+            }
             else
                 userAudioState.playedFrames.clear();
             mutexAudioMute.unlock();
