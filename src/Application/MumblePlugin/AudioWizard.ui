@@ -260,6 +260,13 @@ QPushButton#buttonAdvanced {
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QPushButton" name="detectLevelsButton">
+        <property name="text">
+         <string>Start Audio Level Detection</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
