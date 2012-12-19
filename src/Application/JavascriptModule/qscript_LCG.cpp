@@ -1,6 +1,6 @@
 #include "QtScriptBindingsHelpers.h"
 
-void ToExistingScriptValue_LCG(QScriptEngine *engine, const LCG &value, QScriptValue obj)
+void ToExistingScriptValue_LCG(QScriptEngine * /*engine*/, const LCG & /*value*/, QScriptValue obj)
 {
 }
 
@@ -119,7 +119,7 @@ static QScriptValue LCG_Float_selector(QScriptContext *context, QScriptEngine *e
     printf("LCG_Float_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
-void FromScriptValue_LCG(const QScriptValue &obj, LCG &value)
+void FromScriptValue_LCG(const QScriptValue & /*obj*/, LCG & /*value*/)
 {
 }
 

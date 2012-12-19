@@ -18,12 +18,11 @@
 #include "ECEditorModule.h"
 #include "TransformEditor.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "Application.h"
 #include "Profiler.h"
 #include "SceneAPI.h"
-#include "Scene.h"
 #include "EC_Name.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"

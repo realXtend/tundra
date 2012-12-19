@@ -8,7 +8,7 @@
 #include "EntityReference.h"
 #include "Entity.h"
 #include "ScriptMetaTypeDefines.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "LoggingFunctions.h"
 #include "QScriptEngineHelpers.h"
 
@@ -337,7 +337,7 @@ QScriptValue toScriptValueComponentMap(QScriptEngine *engine, const Entity::Comp
     return obj;
 }
 
-void fromScriptValueComponentVector(const QScriptValue &obj, Entity::ComponentVector &components)
+void fromScriptValueComponentVector(const QScriptValue &/*obj*/, Entity::ComponentVector &/*components*/)
 {
     // Left empty deliberately, since we do not have need of conversion from QScriptValue to component vector
 }
@@ -388,8 +388,9 @@ QScriptValue toScriptValueStdString(QScriptEngine *engine, const std::string &s)
     return engine->newVariant(QString::fromStdString(s));
 }
 
-void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
+void fromScriptValueIAttribute(const QScriptValue & /*obj*/, IAttribute *& /*s*/)
 {
+    // Left empty deliberately, since we do not have need of conversion from QScriptValue to IAttribute
 }
 
 QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)

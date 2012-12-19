@@ -125,9 +125,6 @@ private slots:
     /// Monitors this entitys removed components.
     void ComponentRemoved(IComponent *component, AttributeChange::Type change);
 
-    /// Monitors this components Attribute changes.
-    void AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType);
-
     /// Get parent entitys EC_Mesh. Return 0 if not present.
     EC_Mesh *GetMeshComponent();
 
@@ -138,6 +135,9 @@ private slots:
     void EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
 
 private:
+    /// Monitors this components Attribute changes.
+    void AttributesChanged();
+
     /// Timer that changes slides automatically according to slideChangeInterval attribute.
     QTimer changeTimer_;
 

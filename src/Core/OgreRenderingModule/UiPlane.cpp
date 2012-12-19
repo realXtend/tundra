@@ -11,6 +11,7 @@
 #include "LoggingFunctions.h"
 
 #include <OgreOverlay.h>
+#include <OgreOverlayManager.h>
 #include <OgrePanelOverlayElement.h>
 
 UiPlane::UiPlane(Framework *framework, RenderWindow *renderWindow)

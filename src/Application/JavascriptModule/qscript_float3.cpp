@@ -973,7 +973,7 @@ static QScriptValue float3_AngleBetweenNorm_float3_const(QScriptContext *context
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3_Decompose_float3_float3_float3_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3_Decompose_float3_float3_float3_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3_Decompose_float3_float3_float3_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 This = qscriptvalue_cast<float3>(context->thisObject());
@@ -1047,7 +1047,7 @@ static QScriptValue float3_Lerp_float3_float3_float(QScriptContext *context, QSc
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3_Orthogonalize_float3_float3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3_Orthogonalize_float3_float3(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3_Orthogonalize_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 a = qscriptvalue_cast<float3>(context->argument(0));
@@ -1056,7 +1056,7 @@ static QScriptValue float3_Orthogonalize_float3_float3(QScriptContext *context, 
     return QScriptValue();
 }
 
-static QScriptValue float3_Orthogonalize_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3_Orthogonalize_float3_float3_float3(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3_Orthogonalize_float3_float3_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 a = qscriptvalue_cast<float3>(context->argument(0));
@@ -1087,7 +1087,7 @@ static QScriptValue float3_AreOrthogonal_float3_float3_float3_float(QScriptConte
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3_Orthonormalize_float3_float3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3_Orthonormalize_float3_float3(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3_Orthonormalize_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 a = qscriptvalue_cast<float3>(context->argument(0));
@@ -1096,7 +1096,7 @@ static QScriptValue float3_Orthonormalize_float3_float3(QScriptContext *context,
     return QScriptValue();
 }
 
-static QScriptValue float3_Orthonormalize_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3_Orthonormalize_float3_float3_float3(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3_Orthonormalize_float3_float3_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 a = qscriptvalue_cast<float3>(context->argument(0));

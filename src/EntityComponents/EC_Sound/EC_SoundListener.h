@@ -60,18 +60,19 @@ public:
 private:
     /// Parent entity's placeable component.
     boost::weak_ptr<EC_Placeable> placeable_;
-
+    
 private slots:
+    /// Called when component changes.
+    /** If this listener component is set active it iterates the scene and
+     disables all the other sound listeners.
+     */
+    void AttributesChanged();
+
     /// Retrieves placeable component when parent entity is set.
     void RetrievePlaceable();
 
     /// Updates listeners position for sound system, is this listener is active. Called each frame.
     void Update();
-
-    /// Called when component changes.
-    /** If this listener component is set active it iterates the scene and
-        disables all the other sound listeners. */
-    void OnActiveChanged();
 
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();

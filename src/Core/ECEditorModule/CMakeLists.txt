@@ -32,14 +32,17 @@ add_definitions(-DECEDITOR_MODULE_EXPORTS)
 use_package(QT_PROPERTY_BROWSER)
 use_package_qtpropertybrowser()
 # Audio is needed only for visualization purposes to access the attributes of EC_Sound.
-use_core_modules(Framework Math Scene Input Audio Console Ui OgreRenderingModule TundraProtocolModule)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule TundraProtocolModule)
 
 build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
+link_package(QT4)
+link_package_knet()
 link_ogre()
 link_package(QT_PROPERTY_BROWSER)
 link_package_qtpropertybrowser()
-link_modules(Framework Scene Input Console Ui OgreRenderingModule TundraProtocolModule)
+link_modules(TundraCore Math OgreRenderingModule TundraProtocolModule)
 
 # EC_Sound is needed only for visualization purposes to access the attributes of EC_Sound.
 link_entity_components(EC_TransformGizmo EC_Highlight EC_Sound)

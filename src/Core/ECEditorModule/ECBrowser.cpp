@@ -15,7 +15,7 @@
 #include "UiMainWindow.h"
 #include "Entity.h"
 #include "IComponent.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
 #include "LoggingFunctions.h"
@@ -756,8 +756,6 @@ void ECBrowser::CreateAttribute()
 
     /// @todo make this code to its own NewAttributeDialog class.
     // Create the dialog
-    QStringList types = framework_->Scene()->AttributeTypes();
-
     QDialog newAttrDialog(framework_->Ui()->MainWindow());
     newAttrDialog.setModal(true);
     newAttrDialog.setWindowFlags(Qt::Tool);
@@ -772,7 +770,7 @@ void ECBrowser::CreateAttribute()
 
     QComboBox *comboTypes = new QComboBox();
     comboTypes->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    comboTypes->addItems(types);
+    comboTypes->addItems(SceneAPI::AttributeTypes());
 
     QLineEdit *nameEdit = new QLineEdit();
     nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);

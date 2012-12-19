@@ -67,11 +67,13 @@ public slots:
     void PrepareRtt();
     void SetAutoUpdated(bool val);
 
-private slots:
-    void OnAttributeUpdated(IAttribute* attribute);
+//private slots:
     //void UpdateRtt();
 
 private:
+
+    void AttributesChanged();
+
     std::string material_name_;
     //void ScheduleRender();
 };

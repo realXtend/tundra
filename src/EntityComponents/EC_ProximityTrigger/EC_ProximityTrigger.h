@@ -74,9 +74,11 @@ signals:
         @todo Make signature uppercase, QML support is deprecated. */
     void triggered(Entity* otherEntity, float distance);
 
+private:
+    /// Attribute has been updated
+    void AttributesChanged();
+    
 private slots:
-    void OnAttributeUpdated(IAttribute* attr);
-
     /// Check for other triggers and emit signals
     void Update(float timeStep);
 

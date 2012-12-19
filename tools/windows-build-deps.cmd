@@ -163,7 +163,7 @@ IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
       cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
+      wget ftp://ftp.qt-project.org/qt/source/qt-everywhere-opensource-src-4.7.4.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
@@ -183,7 +183,7 @@ IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
    IF NOT EXIST jom_1_0_11.zip. (
       cecho {0D}Downloading JOM build tool for Qt.{# #}{\n}
-      wget ftp://ftp.qt.nokia.com/jom/jom_1_0_11.zip
+      wget http://releases.qt-project.org/jom/jom_1_0_11.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 

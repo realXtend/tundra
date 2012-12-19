@@ -5,7 +5,7 @@
 
 #include "AddComponentDialog.h"
 #include "Framework.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 
