@@ -305,11 +305,13 @@ IF NOT EXIST "%DEPS%\bullet\". (
    cd "%DEPS%"
    :: check out bullet 2.81 sp1, which is revision 2613
    svn checkout http://bullet.googlecode.com/svn/trunk@2613 bullet
+   cd %DEPS%\bullet
    ) ELSE (
    :: make sure bullet is updated to revision 2613 (2.81 SP1)
    cecho {0D}Updating Bullet to 2.81 SP1.{# #}{\n}
    cd %DEPS%\bullet
    svn update -r 2613
+   )
    :: configure bullet with CMake
    cecho {0D}Configuring Bullet.{# #}{\n}
    REM   cmake -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF -DBUILD_MINICL_OPENCL_DEMOS:BOOL=OFF -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF -DBUILD_CPU_DEMOS:BOOL=OFF -DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF
