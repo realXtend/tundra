@@ -150,14 +150,15 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
     PROFILE(OgreWorld_Raycast);
     
     result_.entity = 0;
+    result_.component = 0;
     
     int width = renderer_->WindowWidth();
     int height = renderer_->WindowHeight();
     if (!width || !height)
-        return &result_; // Headless
+        return 0; // Headless
     Ogre::Camera* camera = VerifyCurrentSceneCamera();
     if (!camera)
-        return &result_;
+        return 0;
     
     float screenx = x / (float)width;
     float screeny = y / (float)height;
