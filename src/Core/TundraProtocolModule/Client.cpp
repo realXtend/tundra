@@ -40,6 +40,7 @@ Client::Client(TundraLogicModule* owner) :
     framework_(owner->GetFramework()),
     loginstate_(NotConnected),
     reconnect_(false),
+    cameraUpdateTimer(0),
     sendCameraUpdates_(0),
     sendInitialCameraUpdate_(1),
     client_id_(0)
@@ -434,6 +435,13 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
 void Client:: HandleCameraOrientationRequest(MessageConnection* source, const MsgCameraOrientationRequest& msg)
 {
     sendCameraUpdates_ = msg.enableCameraUpdates;
+
+    if(!cameraUpdateTimer)
+    {
+        cameraUpdateTimer = new QTimer(this);
+        connect(cameraUpdateTimer, SIGNAL(timeout()), this, SLOT(GetCameraOrientation()));
+        cameraUpdateTimer->start(500);
+    }
 }
 
 void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& msg)
@@ -461,9 +469,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
 
             if(!framework_->IsHeadless())
             {
-                cameraUpdateTimer = new QTimer(this);
-                connect(cameraUpdateTimer, SIGNAL(timeout()), this, SLOT(GetCameraOrientation()));
-                cameraUpdateTimer->start(500);
+                QTimer::singleShot(2000, this, SLOT(GetCameraOrientation()));
             }
         }
         else
