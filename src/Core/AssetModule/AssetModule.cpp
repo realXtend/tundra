@@ -29,6 +29,8 @@
 
 #include <QDir>
 
+#include "StaticPluginRegistry.h"
+
 #include "MemoryLeakCheck.h"
 
 AssetModule::AssetModule()
@@ -192,7 +194,7 @@ void AssetModule::RefreshHttpStorages()
     }
 }
 
-void AssetModule::ServerNewUserConnected(unsigned int connectionID, UserConnection *connection, UserConnectedResponseData *responseData)
+void AssetModule::ServerNewUserConnected(unsigned int /*connectionID*/, UserConnection *connection, UserConnectedResponseData *responseData)
 {
     QDomDocument &doc = responseData->responseData;
     QDomElement assetRoot = doc.createElement("asset");
@@ -474,7 +476,11 @@ bool AssetModule::ShouldReplicateAssetDiscovery(const QString& assetRef)
 
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(AssetModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new AssetModule();

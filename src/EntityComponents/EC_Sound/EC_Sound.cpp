@@ -6,7 +6,7 @@
 
 #include "Framework.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AttributeMetadata.h"
 #include "AudioAPI.h"
 #include "AudioAsset.h"
@@ -40,7 +40,6 @@ EC_Sound::EC_Sound(Scene* scene):
     soundGain.SetMetadata(&metaData);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Sound::~EC_Sound()
@@ -48,18 +47,18 @@ EC_Sound::~EC_Sound()
     StopSound();
 }
 
-void EC_Sound::OnAttributeUpdated(IAttribute *attribute)
+void EC_Sound::AttributesChanged()
 {
     if (framework->IsHeadless())
         return;
 
-    if (attribute == &soundRef)
+    if (soundRef.ValueChanged())
     {
         AssetTransferPtr tranfer =  framework->Asset()->RequestAsset(soundRef.Get().ref);
         if (tranfer.get())
             connect(tranfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AudioAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
-    else if (attribute == &playOnLoad)
+    if (playOnLoad.ValueChanged())
     {
         /// \todo check sound channels audio asset if its different, then play the new one
         if (getplayOnLoad())

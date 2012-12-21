@@ -202,7 +202,7 @@ float3x4 Plane::OrthoProjection() const
 	return float3x4::OrthographicProjection(*this);
 }
 
-float3x4 Plane::ObliqueProjection(const float3 &obliqueProjectionDir) const
+float3x4 Plane::ObliqueProjection(const float3 & /*obliqueProjectionDir*/) const
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return float3x4();
@@ -301,7 +301,7 @@ float3 Plane::ClosestPoint(const LineSegment &lineSegment) const
 			return Project(lineSegment.b);
 }
 
-float3 Plane::ObliqueProject(const float3 &point, const float3 &obliqueProjectionDir) const
+float3 Plane::ObliqueProject(const float3 & /*point*/, const float3 & /*obliqueProjectionDir*/) const
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return float3();
@@ -698,13 +698,13 @@ bool Plane::PassesThroughOrigin(float epsilon) const
 	return fabs(d) <= epsilon;
 }
 
-float Plane::DihedralAngle(const Plane &plane) const
+float Plane::DihedralAngle(const Plane & /*plane*/) const
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return false;
 }
 
-Circle Plane::GenerateCircle(const float3 &circleCenter, float radius) const
+Circle Plane::GenerateCircle(const float3 & /*circleCenter*/, float /*radius*/) const
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return Circle();

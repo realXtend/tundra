@@ -7,7 +7,7 @@
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
@@ -27,7 +27,6 @@ EC_VolumeTrigger::EC_VolumeTrigger(Scene* scene) :
     byPivot(this, "By Pivot", false),
     entities(this, "Entities")
 {
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()), Qt::UniqueConnection);
 }
 
@@ -156,11 +155,11 @@ bool EC_VolumeTrigger::IsInsideVolume(const float3& point) const
            RayTestSingle(float3(point.x, point.y + 1e7f, point.z), point, rigidbody->GetRigidBody());
 }
 
-void EC_VolumeTrigger::OnAttributeUpdated(IAttribute* attribute)
+void EC_VolumeTrigger::AttributesChanged()
 {
     /// \todo Attribute updates not handled yet, there are a bit too many problems of what signals to send after the update -cm
 
-    //if (attribute == &mass)
+    //if (mass.ValueChanged())
     //    ReadBody();
 }
 

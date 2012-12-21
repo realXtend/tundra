@@ -1,29 +1,28 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "StableHeaders.h"
+#include "Math/MathNamespace.h"
 #include "DebugOperatorNew.h"
+
 #include "EC_WebView.h"
 #include "SceneWidgetComponents.h"
+#include "EC_WidgetCanvas.h"
 
+#include "Framework.h"
 #include "IModule.h"
 #include "SceneAPI.h"
 #include "SceneInteract.h"
+#include "IRenderer.h"
 #include "Entity.h"
 #include "AttributeMetadata.h"
-
-#include "IRenderer.h"
-
 #include "Application.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-
 #include "TundraLogicModule.h"
 #include "Client.h"
 #include "Server.h"
 #include "UserConnection.h"
-
-#include "EC_WidgetCanvas.h"
 #include "EC_Mesh.h"
+#include "LoggingFunctions.h"
 
 #include <QWebView>
 #include <QWebFrame>
@@ -43,7 +42,6 @@
 #include <QNetworkDiskCache>
 #endif
 
-#include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
 static int NoneControlID = -1;
@@ -66,7 +64,7 @@ EC_WebView::EC_WebView(Scene *scene) :
     illuminating(this, "Illuminating", true),
     enabled(this, "Enabled", true)
 {
-    interactionMetaData_ = new AttributeMetadata();
+    interactionMetaData_ = new AttributeMetadata(); /**< @todo memory leak */
 
     static AttributeMetadata submeshMetaData;
     static AttributeMetadata refreshRateMetadata;
@@ -108,7 +106,6 @@ EC_WebView::EC_WebView(Scene *scene) :
 
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
     
     // Prepare render timer
     renderTimer_ = new QTimer(this);
@@ -118,7 +115,7 @@ EC_WebView::EC_WebView(Scene *scene) :
     connect(resizeRenderTimer_, SIGNAL(timeout()), SLOT(RenderDelayed()), Qt::UniqueConnection);
 
     // Prepare scene interactions
-    SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
+    SceneInteract *sceneInteract = GetFramework()->GetModule<SceneInteract>();
     if (sceneInteract)
     {
         connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
@@ -183,7 +180,6 @@ void EC_WebView::ServerInitialize(TundraLogic::Server *server)
     if (!server || !server->IsRunning())
         return;
     connect(server, SIGNAL(UserDisconnected(int, UserConnection*)), SLOT(ServerHandleDisconnect(int, UserConnection*)), Qt::UniqueConnection);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(ServerHandleAttributeChange(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
 void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connection)
@@ -198,12 +194,6 @@ void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connec
             ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
         }
     }
-}
-
-void EC_WebView::ServerHandleAttributeChange(IAttribute *attribute, AttributeChange::Type changeType)
-{
-    if (attribute == &controllerId)
-        ServerCheckControllerValidity(getcontrollerId());
 }
 
 void EC_WebView::ServerCheckControllerValidity(int connectionID)
@@ -867,8 +857,19 @@ void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type c
     }
 }
 
-void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType)
+void EC_WebView::AttributesChanged()
 {
+    TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+    if (tundraLogic)
+    {
+        if (tundraLogic->IsServer())
+        {
+            if (controllerId.ValueChanged())
+                ServerCheckControllerValidity(getcontrollerId());
+            return;
+        }
+    }
+
     if (webviewUrl.ValueChanged())
     {
         webviewUrl.ClearChangedFlag();

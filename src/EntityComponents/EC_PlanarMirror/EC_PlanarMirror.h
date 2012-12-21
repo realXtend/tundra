@@ -59,11 +59,11 @@ public:
 public slots:
     void Initialize();
     void Update(float val);
-    void OnAttributeUpdated(IAttribute* attr);
     void WindowResized(int w,int h);
 
 private:
     void CreatePlane();
+    void AttributesChanged();
 
     OgreRenderer::RendererPtr renderer_;
     

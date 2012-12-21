@@ -11,7 +11,7 @@
 #include "TundraMessages.h"
 #include "MsgEntityAction.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "CoreStringUtils.h"
 #include "EC_DynamicComponent.h"

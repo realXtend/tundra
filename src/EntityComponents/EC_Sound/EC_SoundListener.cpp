@@ -8,7 +8,7 @@
 #include "EC_SoundListener.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "LoggingFunctions.h"
 #include "AudioAPI.h"
 #include "SceneAPI.h"
@@ -26,7 +26,6 @@ EC_SoundListener::EC_SoundListener(Scene* scene):
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
@@ -53,7 +52,7 @@ void EC_SoundListener::Update()
     }
 }
 
-void EC_SoundListener::OnActiveChanged()
+void EC_SoundListener::AttributesChanged()
 {
     if (active.Get())
     {
@@ -75,7 +74,9 @@ void EC_SoundListener::RegisterActions()
     Entity *entity = ParentEntity();
     assert(entity);
     if (entity)
-        entity->ConnectAction("Active", this, SLOT(OnActiveChanged()));
+    {
+        entity->ConnectAction("Active", this, SLOT(AttributesChanged()));
+    }
     else
         LogError("EC_SoundListener::RegisterActions: Failed to register actions because component's parent entity is null.");
 }

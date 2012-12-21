@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EntityPlacer.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "EC_Placeable.h"

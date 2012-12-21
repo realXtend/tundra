@@ -82,10 +82,10 @@ public slots:
     QStringList ApplicableParameters() const;
 
 private slots:
-    void OnAttributeUpdated(IAttribute* attribute);
     void OneTimeRefresh();
 
 private:
+    void AttributesChanged();
     /// Enables or disables and sets the priority of the specified compositor based on the attributes
     void UpdateCompositor(const QString &compositor);
 

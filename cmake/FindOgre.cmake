@@ -6,21 +6,29 @@
 if (NOT WIN32 AND NOT APPLE)
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()
 macro(configure_ogre)
-  find_path(OGRE_LIBRARY_DIR NAMES lib/libOgreMain.so
-    HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
 
-  find_path(OGRE_INCLUDE_DIR Ogre.h
-    HINTS ${ENV_OGRE_HOME}/include ${ENV_NAALI_DEP_PATH}/include
-    PATH_SUFFIXES OGRE)
+  # Android uses static Ogre, include all used plugins and their include directories
+  if (NOT ANDROID)
+      find_path(OGRE_INCLUDE_DIR Ogre.h
+        HINTS ${ENV_OGRE_HOME}/include ${ENV_NAALI_DEP_PATH}/include
+        PATH_SUFFIXES OGRE)
 
-  find_library(OGRE_LIBRARY OgreMain
-    HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+      find_path(OGRE_LIBRARY_DIR NAMES libOgreMain.so
+        HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+      find_library(OGRE_LIBRARY OgreMain
+        HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
 
-  include_directories(${OGRE_INCLUDE_DIR})
-  link_directories(${OGRE_LIBRARY_DIR})
-
+      include_directories(${OGRE_INCLUDE_DIR})
+      link_directories(${OGRE_LIBRARY_DIR})
+  else()
+      set (OGRE_LIBRARY_DIR ${ENV_OGRE_HOME}/lib ${ENV_OGRE_HOME}/AndroidDependencies/lib)
+      set (OGRE_LIBRARY OgreOverlayStatic Plugin_OctreeSceneManagerStatic OgreRTShaderSystemStatic Plugin_ParticleFXStatic RenderSystem_GLES2Static OgreMainStatic freeimage freetype stdc++ supc++ z zziplib cpu-features EGL GLESv1_CM GLESv2 android)
+      include_directories(${ENV_OGRE_HOME}/include ${ENV_OGRE_HOME}/OgreMain/include ${ENV_OGRE_HOME}/Components/Overlay/include ${ENV_OGRE_HOME}/Components/RTShaderSystem/include  
+        ${ENV_OGRE_HOME}/RenderSystems/GLES2/include ${ENV_OGRE_HOME}/PlugIns/OctreeSceneManager/include ${ENV_OGRE_HOME}/PlugIns/ParticleFX/include)
+      link_directories(${OGRE_LIBRARY_DIR})
+  endif()
 endmacro()
-    
+
 else() # Windows Ogre lookup.
 
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()

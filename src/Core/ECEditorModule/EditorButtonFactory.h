@@ -9,6 +9,8 @@ class QPushButton;
 /// @cond PRIVATE
 class EditorButtonFactory : public QWidget
 {
+    Q_OBJECT
+
 public:
     EditorButtonFactory(QWidget *parent = 0);
     ~EditorButtonFactory();

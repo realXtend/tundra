@@ -11,8 +11,8 @@
 #include "SceneTreeWidgetItems.h"
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
-#include "Scene.h"
-#include "QtUtils.h"
+#include "Scene/Scene.h"
+#include "FileUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
 
@@ -525,27 +525,7 @@ QString SceneTreeWidget::SelectionAsXml() const
             EntityPtr entity = eItem->Entity();
             assert(entity);
             if (entity)
-            {
-                if (!entity->IsTemporary())
-                    entity->SerializeToXML(sceneDoc, sceneElem);
-                else  //Cannot use Entity::SerializeToXML as it wont return temporary entities, which we want to include in the copy/paste feature.
-                {
-                    QDomElement entity_elem = sceneDoc.createElement("entity");
-
-                    QString id_str;
-                    id_str.setNum((int)entity->Id());
-                    entity_elem.setAttribute("id", id_str);
-                    entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(entity->IsReplicated())));
-                    // Set a non-standard "temporary" property as we need to know in the paste step if the entity/component was temporary
-                    entity_elem.setAttribute("temporary", QString::fromStdString(::ToString<bool>(entity->IsTemporary())));
-
-                    const Entity::ComponentMap &components = entity->Components();
-                    for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-                        i->second->SerializeTo(sceneDoc, entity_elem);
-
-                    sceneElem.appendChild(entity_elem);
-                }
-            }
+                entity->SerializeToXML(sceneDoc, sceneElem, true);
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -556,7 +536,7 @@ QString SceneTreeWidget::SelectionAsXml() const
         {
             ComponentPtr component = cItem->Component();
             if (component)
-                component->SerializeTo(sceneDoc, sceneElem);
+                component->SerializeTo(sceneDoc, sceneElem, true);
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -943,15 +923,26 @@ void SceneTreeWidget::Paste()
                 {
                     QString type = componentElem.attribute("type");
                     QString name = componentElem.attribute("name");
+                    QString sync = componentElem.attribute("sync");
+                    QString temp = componentElem.attribute("temporary");
+
                     if (!type.isNull())
                     {
                         // If we already have component with the same type name and name, add suffix to the new component's name.
-                        if (entity->GetComponent(type, name))
-                            name.append("_copy");
+                        int copy = 2;
+                        QString newName = name;
+                        while(entity->GetComponent(type, newName))
+                            newName = QString(name + " (%1)").arg(copy++);
 
-                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, name);
+                        componentElem.setAttribute("name", newName);
+                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, newName);
                         if (component)
                         {
+                            if (!temp.isEmpty())
+                                component->SetTemporary(ParseBool(temp));
+                            if (!sync.isEmpty())
+                                component->SetReplicated(ParseBool(sync));
+
                             entity->AddComponent(component);
                             component->DeserializeFrom(componentElem, AttributeChange::Default);
                         }
@@ -966,81 +957,6 @@ void SceneTreeWidget::Paste()
         }
     }
 
-    // Check sceneDoc for temporary entities and create them here.
-    std::vector<EntityWeakPtr> entities;
-    while(!entityElem.isNull())
-    {
-        QString temporaryStr = entityElem.attribute("temporary");
-        bool temporary = false;
-        if (!temporaryStr.isEmpty())
-            temporary = ParseBool(temporaryStr);
-
-        if (temporary)
-        {
-            QString replicatedStr = entityElem.attribute("sync");
-            bool replicated = true;
-            if (!replicatedStr.isEmpty())
-                replicated = ParseBool(replicatedStr);
-
-            entity_id_t id = replicated ? scene.lock()->NextFreeId() : scene.lock()->NextFreeIdLocal();
-
-            if (scene.lock()->HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
-            {
-                LogDebug("SceneTreeWidget::Paste: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
-                LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +" might not replicate properly!");
-                scene.lock()->RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-            }
-
-            EntityPtr entity = scene.lock()->CreateEntity(id);
-            if (entity)
-            {
-                QDomElement compElem = entityElem.firstChildElement("component");
-                entity->SetTemporary(true);
-
-                while(!compElem.isNull())
-                {
-                    QString type_name = compElem.attribute("type");
-                    QString name = compElem.attribute("name");
-                    QString compReplicatedStr = compElem.attribute("sync");
-                    bool compReplicated = true;
-                    if (!compReplicatedStr.isEmpty())
-                        compReplicated = ParseBool(compReplicatedStr);
-
-                    ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name, AttributeChange::Default, compReplicated);
-                    if (new_comp)
-                    {
-                        // Trigger no signal yet when scene is in incoherent state
-                        new_comp->DeserializeFrom(compElem, AttributeChange::Disconnected);
-                    }
-
-                    compElem = compElem.nextSiblingElement("component");
-                }
-                entities.push_back(entity);
-            }
-
-            QDomElement nextElem = entityElem.nextSiblingElement("entity");
-            // Remove the temporary entities from sceneDoc.
-            sceneElem.removeChild(entityElem);
-            entityElem = nextElem;
-        }
-        else
-            entityElem = entityElem.nextSiblingElement("entity");
-
-        for(unsigned i = 0; i < entities.size(); ++i)
-        {
-            if (!entities[i].expired())
-                scene.lock()->EmitEntityCreated(entities[i].lock().get(), AttributeChange::Default);
-            if (!entities[i].expired())
-            {
-                EntityPtr entityShared = entities[i].lock();
-                const Entity::ComponentMap &components = entityShared->Components();
-                for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-                    i->second->ComponentChanged(AttributeChange::Default);
-            }
-        }
-    }
-
-    // Create content that is not temporary
     scene.lock()->CreateContentFromXml(sceneDoc, false, AttributeChange::Replicate);
 }
 
@@ -1048,7 +964,7 @@ void SceneTreeWidget::SaveAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+    fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
         tr("Save SceneTreeWidgetSelection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
 }
 
@@ -1056,7 +972,7 @@ void SceneTreeWidget::SaveSceneAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+    fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
         tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
@@ -1068,13 +984,13 @@ void SceneTreeWidget::ExportAll()
     if (SelectedItems().HasEntities())
     {
         // Save only selected entities
-        fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+        fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
             tr("Export scene"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
     }
     else
     {
         // Save all entities in the scene
-        fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+        fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
             tr("Export scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
     }
 
@@ -1086,7 +1002,7 @@ void SceneTreeWidget::Import()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    fileDialog = OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + 
 #ifdef ASSIMP_ENABLED
         cMeshFileFilter + ";;" + 
@@ -1099,7 +1015,7 @@ void SceneTreeWidget::OpenNewScene()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    fileDialog = OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;" + cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter + ";;" +
         cAllTypesFileFilter, tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
@@ -1485,13 +1401,13 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                     if (!attr)
                         continue;
                     
-                    if (attr->TypeName() == "assetreference")
+                    if (attr->TypeId() == cAttributeAssetReference)
                     {
                         Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
                         if (assetRef)
                             assets.insert(assetRef->Get().ref);
                     }
-                    else if (attr->TypeName() == "assetreferencelist")
+                    else if (attr->TypeId() == cAttributeAssetReferenceList)
                     {
                         Attribute<AssetReferenceList> *assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
                         if (assetRefs)
@@ -1624,11 +1540,11 @@ void SceneTreeWidget::SaveAssetAs()
     if (sel.assets.size() == 1)
     {
         assetName = AssetAPI::ExtractFilenameFromAssetRef(sel.assets[0]->id);
-        fileDialog = QtUtils::SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+        fileDialog = SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
     else
     {
-        QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+        DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
 }
 

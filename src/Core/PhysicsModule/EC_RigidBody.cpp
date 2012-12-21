@@ -14,7 +14,7 @@
 #include "Profiler.h"
 #include "OgreMeshAsset.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"
@@ -84,7 +84,6 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     shapeType.SetMetadata(&shapemetadata);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_RigidBody::~EC_RigidBody()
@@ -535,7 +534,7 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
     }
 }
 
-void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
+void EC_RigidBody::AttributesChanged()
 {
     if (disconnected_)
         return;
@@ -547,26 +546,26 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     if (!body_)
         return;
     
-    if ((attribute == &mass) || (attribute == &collisionLayer) || (attribute == &collisionMask))
+    if (mass.ValueChanged() || collisionLayer.ValueChanged() || collisionMask.ValueChanged())
         // Readd body to the world in case static/dynamic classification changed, or if collision mask changed
         ReaddBody();
     
-    if (attribute == &friction)
+    if (friction.ValueChanged())
         body_->setFriction(friction.Get());
     
-    if (attribute == &restitution)
+    if (restitution.ValueChanged())
         body_->setRestitution(friction.Get());
     
-    if ((attribute == &linearDamping) || (attribute == &angularDamping))
+    if (linearDamping.ValueChanged() || angularDamping.ValueChanged())
          body_->setDamping(linearDamping.Get(), angularDamping.Get());
     
-    if (attribute == &linearFactor)
+    if (linearFactor.ValueChanged())
         body_->setLinearFactor(linearFactor.Get());
     
-    if (attribute == &angularFactor)
+    if (angularFactor.ValueChanged())
         body_->setAngularFactor(angularFactor.Get());
     
-    if ((attribute == &shapeType) || (attribute == &size))
+    if (shapeType.ValueChanged() || size.ValueChanged())
     {
         if ((shapeType.Get() != cachedShapeType_) || (size.Get() != cachedSize_))
         {
@@ -583,17 +582,17 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     }
     
     // Request mesh if its id changes
-    if (attribute == &collisionMeshRef)
+    if (collisionMeshRef.ValueChanged())
     {
         if (shapeType.Get() == Shape_TriMesh || shapeType.Get() == Shape_ConvexHull)
             RequestMesh();
     }
     
-    if (attribute == &phantom || attribute == &kinematic)
+    if (phantom.ValueChanged() || kinematic.ValueChanged())
         // Readd body to the world in case phantom or kinematic classification changed
         ReaddBody();
     
-    if (attribute == &drawDebug)
+    if (drawDebug.ValueChanged())
     {
         bool enable = drawDebug.Get();
         if (body_)
@@ -616,13 +615,13 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
         }
     }
     
-    if (attribute == &linearVelocity)
+    if (linearVelocity.ValueChanged())
     {
         body_->setLinearVelocity(linearVelocity.Get());
         body_->activate();
     }
     
-    if (attribute == &angularVelocity)
+    if (angularVelocity.ValueChanged())
     {
         body_->setAngularVelocity(DegToRad(angularVelocity.Get()));
         body_->activate();

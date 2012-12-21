@@ -15,7 +15,7 @@
 #include "UiMainWindow.h"
 #include "Entity.h"
 #include "IComponent.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
 #include "LoggingFunctions.h"
@@ -609,7 +609,7 @@ void ECBrowser::CopyComponent()
         ComponentWeakPtr pointer = (*iter)->components_[0];
         if (!pointer.expired())
         {
-            pointer.lock()->SerializeTo(temp_doc, sceneElem);
+            pointer.lock()->SerializeTo(temp_doc, sceneElem, true);
             temp_doc.appendChild(sceneElem);
             clipboard->setText(temp_doc.toString());
         }
@@ -641,15 +641,24 @@ void ECBrowser::PasteComponent()
             ComponentPtr component;
             QString type = comp_elem.attribute("type");
             QString name = comp_elem.attribute("name");
-            if (!entity_ptr->GetComponent(type, name))
-            {
-                component = framework_->Scene()->CreateComponentByName(entity_ptr->ParentScene(), type, name);
-                entity_ptr->AddComponent(component, AttributeChange::Default);
-            }
-            else
-                component = entity_ptr->GetComponent(type, name);
-            if (component)
-                component->DeserializeFrom(comp_elem, AttributeChange::Default);
+            QString sync = comp_elem.attribute("sync");
+            QString temp = comp_elem.attribute("temporary");
+
+            int copy = 2;
+            QString newName = name;
+            while(entity_ptr->GetComponent(type, newName))
+                newName = QString(name + " (%1)").arg(copy++);
+
+            comp_elem.setAttribute("name", newName);
+            component = framework_->Scene()->CreateComponentByName(entity_ptr->ParentScene(), type, newName);
+
+            if (!sync.isEmpty())
+                component->SetReplicated(ParseBool(sync));
+            if (!temp.isEmpty())
+                component->SetTemporary(ParseBool(temp));
+
+            entity_ptr->AddComponent(component, AttributeChange::Default);
+            component->DeserializeFrom(comp_elem, AttributeChange::Default);
         }
     }
 }
@@ -747,8 +756,6 @@ void ECBrowser::CreateAttribute()
 
     /// @todo make this code to its own NewAttributeDialog class.
     // Create the dialog
-    QStringList types = framework_->Scene()->AttributeTypes();
-
     QDialog newAttrDialog(framework_->Ui()->MainWindow());
     newAttrDialog.setModal(true);
     newAttrDialog.setWindowFlags(Qt::Tool);
@@ -763,7 +770,7 @@ void ECBrowser::CreateAttribute()
 
     QComboBox *comboTypes = new QComboBox();
     comboTypes->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    comboTypes->addItems(types);
+    comboTypes->addItems(SceneAPI::AttributeTypes());
 
     QLineEdit *nameEdit = new QLineEdit();
     nameEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);

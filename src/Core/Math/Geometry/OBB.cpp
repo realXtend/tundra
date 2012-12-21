@@ -123,13 +123,13 @@ void OBB::SetFrom(const Sphere &sphere)
 	axis[2] = float3(0,0,1);
 }
 
-bool OBB::SetFrom(const Polyhedron &polyhedron)
+bool OBB::SetFrom(const Polyhedron & /*polyhedron*/)
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return false;
 }
 
-void OBB::SetFromApproximate(const float3 *pointArray, int numPoints)
+void OBB::SetFromApproximate(const float3 * /*pointArray*/, int /*numPoints*/)
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 }
@@ -406,7 +406,7 @@ void OBB::ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArra
 		*idxLargest = largest;
 }
 
-OBB OBB::PCAEnclosingOBB(const float3 *pointArray, int numPoints)
+OBB OBB::PCAEnclosingOBB(const float3 * /*pointArray*/, int /*numPoints*/)
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return OBB();
