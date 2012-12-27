@@ -593,7 +593,7 @@ void EC_MediaPlayer::AttributesChanged()
                 sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
         }
     }
-    else if (attribute == &spatialRadius)
+    if (spatialRadius.ValueChanged())
     {
         if (mediaPlayer_ && mediaPlayer_->GetVideoWidget() && getspatialRadius() == 0.0)
             if (mediaPlayer_->GetVideoWidget()->Volume() != 50)
