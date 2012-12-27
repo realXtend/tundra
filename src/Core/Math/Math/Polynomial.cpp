@@ -40,13 +40,13 @@ int Polynomial::SolveQuadratic(float a, float b, float c, float &root1, float &r
 	return 2;
 }
 
-int Polynomial::SolveCubic(float a, float b, float c, float d, float &root1, float &root2, float &root3)
+int Polynomial::SolveCubic(float /*a*/, float /*b*/, float /*c*/, float /*d*/, float &/*root1*/, float &/*root2*/, float &/*root3*/)
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return 0;
 }
 
-int Polynomial::SolveQuartic(float a, float b, float c, float d, float &root1, float &root2, float &root3, float &root4)
+int Polynomial::SolveQuartic(float /*a*/, float /*b*/, float /*c*/, float /*d*/, float &/*root1*/, float &/*root2*/, float &/*root3*/, float &/*root4*/)
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return 0;

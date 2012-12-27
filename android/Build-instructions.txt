@@ -1,0 +1,117 @@
+Tundra-Android port, build instructions
+---------------------------------------
+
+Some dependencies will be automatically built, others need to be manually installed. See below for detail.
+
+
+Windows
+-------
+
+- You will need the Android SDK & NDK, download and install them from http://developer.android.com/sdk/index.html.
+  Install API platform 10 (2.3.3) for the Native Activity support that OGRE library needs.
+
+- Important! Android NDK version r8b or newer are NOT currently supported, due to incompatibilities between Android CMake toolchain and the new
+  4.4.3/4.6 folder structure introduced to Android NDK r8b. Download Android NDK version r8 from here: http://dl.google.com/android/ndk/android-ndk-r8-windows.zip
+
+- Set the environment variables ANDROID_SDK & ANDROID_NDK to point to them, for example
+  ANDROID_NDK=C:\android-ndk-r8
+  ANDROID_SDK=C:\Program Files (x86)\Android\android-sdk
+
+- Download and install Java SE Development Kit 7 from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  Set up JAVA_HOME to point to the installation directory, e.g. JAVA_HOME=C:\Program Files\Java\jdk1.7.0
+
+- Set the environment variable TUNDRA_ANDROID_ABI to either 
+  armeabi-v7a OR x86
+  depending on whether you want an arm or x86 Android build. Alternatively use the helper batch files BuildDepsArm.bat, BuildDepsX86.bat,
+  BuildTundraArm.bat, BuildTundraX86.bat which set it before invoking the corresponding build script.
+
+- Set the environment variable QTDIR to point to your Necessitas-Qt build.
+  The helper batch files BuildTundraArm.bat & BuildTundraX86.bat automatically set this to point to subdirectory "deps-android\Qt" of the Tundra checkout.
+
+  (To use a prebuilt Necessitas for arm, download and install Necessitas-SDK from http://necessitas.kde.org/necessitas/necessitas_sdk_installer.php,
+   and set QTDIR to point to its "Android\Qt\482\armeabi-v7a" subdirectory, which contains bin, include and lib subdirectories.
+   Alternatively, copy that directory's contents to "deps-android\Qt" of the Tundra checkout to use the helper scripts without modification.) 
+
+- Using a Visual Studio command prompt, run BuildAndroidDeps.cmd from the "android" subdirectory of Tundra checkout.
+  This downloads and builds the automatically buildable dependencies (Bullet, Boost, kNet, OGRE.) This may take some time,
+  so be patient.
+
+- Install the 'ant' tool on your system from http://ant.apache.org/bindownload.cgi. The installation step consists of simply
+  unzipping a single archive. After unzipping, add the ant bin\ folder to system PATH, e.g. "C:\apache-ant-1.8.4\bin"
+
+- Before running BuildTundra.cmd, make sure to add the path to the Android SDK tool 'android' to the system PATH. By default, this is 
+  located in the folder C:\Program Files (x86)\Android\android-sdk\tools
+
+- To build and package Tundra, run BuildTundra.cmd from the "android" subdirectory of Tundra checkout, using a Visual Studio command prompt.
+  Tundra is compiled as a monolithic library "libTundra.so" after which it is packaged together with the Ministro/Necessitas activity shell 
+  into "android\bin\Tundra-release.apk". This can be installed on a device and run.
+
+Linux
+-----
+
+- Install packages build-essential, OpenJDK, git and ant using the package manager of your distribution, or by some other means.
+
+- Download Necessitas SDK 4.1 alpha from https://sourceforge.net/projects/necessitas/files/ . Install it by first making it executable (chmod +x) and then running it.
+
+- Download and install Android NDK version r8 (not r8b or newer!) from http://developer.android.com/tools/sdk/ndk/index.html .
+
+- Ensure that the Android SDK's 'platform-tools' and 'tools' subdirectories are added to path, so that commands such as android and dx are runnable from shell
+
+- Build Necessitas SDK manually:
+
+  1. Clone the Necessitas source tree with 'git clone git://anongit.kde.org/android-qt.git'
+  2. cd android-qt
+  3. Check out the 0.41 tag of Necessitas
+     git checkout n0.41
+  4. If building for x86, modify Necessitas for it to compile:
+  4.1 Edit the file androidconfigbuild.sh and replace the line
+      NDK_TOOLS_PREFIX="i686-android-linux"
+      with
+      NDK_TOOLS_PREFIX="i686-linux-android"
+  4.2 Edit Qt's include file src/corelib/arch/qatomic_arch.h
+      Remove the whole section of #ifdefs for including the proper atomics based on platform, eg. the part that begins with
+	#if defined(Q_OS_ANDROID)
+	#  include "QtCore/qatomic_android.h"
+	#elif defined(QT_ARCH_INTEGRITY)
+	#  include "QtCore/qatomic_integrity.h"
+	#elif defined(QT_ARCH_VXWORKS)
+	#  include "QtCore/qatomic_vxworks.h"
+	..
+      and insert the unconditional line
+ 	#include "QtCore/qatomic_generic.h"
+  5. Necessitas needs to be built using the Android NDK (r8b) supplied by the Necessitas 4.1 SDK package, while Tundra and rest of dependencies will be built using r8.
+     Run the build script by calling './android/androidconfigbuild.sh -n /path/to/necessitas-sdk-android-ndk -q 1 -a x86'.
+      - NOTE the flag '-a x86'! This should be only passed if compiling for the Intel x86 Android ABI. If you are building for ARM, omit this part.
+  5.1 When building for x86, the Necessitas build will halt due to errors in compiling the OpenGL-based Android platform plugin. QtUiTools library needs to be built separately:
+	cd tools/designer/src/uitools
+	make
+
+- Clone Tundra-Android:
+  1. git clone 'https://github.com/LudoCraft/Tundra.git'
+  2. git checkout android  
+
+- Setup permanent environment variables
+  QTDIR to point at the android-qt checkout
+  ANDROID_NDK to point at the r8 NDK that you donwloaded and installed
+
+- Build Tundra dependencies:
+  1. cd Tundra/android
+  2. Edit the script BuildAndroidDeps.bash to configure the target ABI and Android API level. These are located in the variables 'tundra_android_native_api_level' and 'TUNDRA_ANDROID_ABI'.
+  3. Run ./BuildAndroidDeps.bash
+
+- Build Tundra:
+  1. Run ./BuildTundra.bash
+
+- Deploy built Necessitas Qt libraries to the Android device. This needs to be done only once, or whenever you rebuild Necessitas Qt. (not if you rebuild Tundra or its dependencies)
+  1. Connect your Android device.
+  2. Make sure that the ADB drivers are installed correctly: call 'adb devices' and observe that the ID of the device is printed properly.
+  3. In the tundra/android/ directory, run ./DeployQtLibs.bash
+
+Running Tundra
+--------------
+
+- Tundra on Android will currently use the fixed directory Download/Tundra on the Android device's internal memory (/sdcard/Download/Tundra) as its "Bin" folder. Copy the contents of your Tundra Bin directory there as applicable.
+
+- Qt's .so files (in the Necessitas build's 'lib' directory, as well as in 'plugins/platforms/android' directory) and .jar files (in Necessitas build's 'jar' directory) need also to be placed in Download/Tundra.
+
+- If it exists, Tundra will use the file commandline.txt in the Download/Tundra folder for its command line parameters. Use this to configure eg. the scene to load.

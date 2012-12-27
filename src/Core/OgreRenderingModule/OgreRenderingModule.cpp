@@ -14,20 +14,21 @@
 #include "EC_OgreCompositor.h"
 #include "EC_RttTarget.h"
 #include "EC_Material.h"
+#include "EC_Billboard.h"
+#include "EC_ParticleSystem.h"
+#include "EC_Fog.h"
+#include "EC_EnvironmentLight.h"
+#include "EC_Sky.h"
 #include "OgreWorld.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreMaterialAsset.h"
-#include "OgreProfiler.h"
-#ifdef OGRE_HAS_PROFILER_HOOKS
-#include "OgreProfilerHook.h"
-#endif
 #include "TextureAsset.h"
 
 #include "Application.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AssetAPI.h"
 #include "AssetCache.h"
 #include "GenericAssetFactory.h"
@@ -36,6 +37,13 @@
 #include "ConsoleAPI.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
+
+#include "StaticPluginRegistry.h"
+
+#include <OgreProfiler.h>
+#ifdef OGRE_HAS_PROFILER_HOOKS
+#include <OgreProfilerHook.h>
+#endif
 
 #include "MemoryLeakCheck.h"
 
@@ -72,9 +80,8 @@ void Profiler_EndBlock()
     if (p)
     {
         ProfilerNodeTree *treeNode = p->CurrentNode();
-        if (!treeNode)
-            return;
-        p->EndBlock(treeNode->Name());
+        if (treeNode)
+            p->EndBlock(treeNode->Name());
     }
 #endif
 }
@@ -108,6 +115,11 @@ void OgreRenderingModule::Load()
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_OgreCompositor>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RttTarget>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Material>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Billboard>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Fog>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sky>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_EnvironmentLight>));
 
     // Main ogre .mesh extension
     QStringList meshExtensions;
@@ -312,13 +324,17 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
 
 } // ~namespace OgreRenderer
 
-using namespace OgreRenderer;
-
 extern "C"
 {
+
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(OgreRenderingModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     fw->RegisterModule(new OgreRenderer::OgreRenderingModule());
 }
+
 }

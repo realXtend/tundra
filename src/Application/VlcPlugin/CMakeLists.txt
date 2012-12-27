@@ -52,11 +52,15 @@ if (SHOULD_RUN)
     QT4_WRAP_UI(UI_SRCS ${UI_FILES})
     QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-    use_core_modules (Framework Math Asset Ui OgreRenderingModule)
-    use_app_modules (SceneWidgetComponents)
-    use_package (VLC)
+    UseTundraCore()
+    use_core_modules(TundraCore Math OgreRenderingModule)
+    use_app_modules(SceneWidgetComponents SceneInteract)
+    use_package(VLC)
 
     build_library (${TARGET_NAME} SHARED ${CPP_FILES} ${H_FILES} ${MOC_FILES} ${UI_SRCS} ${RESOURCE_SRCS})
+    
+    link_modules(TundraCore Math OgreRenderingModule SceneWidgetComponents SceneInteract)
+    link_package(QT4)
     
     # Disable certain optimizations for VLC as the libs get unstable when too much stuff is removed from them.
     # I dont know if this is a bug in VLC or Microsoft tools that strip the unreferenced info away from the linked libs.
@@ -65,14 +69,14 @@ if (SHOULD_RUN)
         set_target_properties (${TARGET_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/INCREMENTAL /OPT:NOREF")
     endif ()
 
-    SetupCompileFlags()
-
-    link_modules (Framework Asset Ui OgreRenderingModule SceneWidgetComponents)
     link_entity_components(EC_Sound)
-    link_package (VLC)
+    link_package(VLC)
     if (APPLE)
         link_ogre()
     endif()
+
+    SetupCompileFlags()
+
     final_target ()
 
     # Install vlcplugins to install prefix for windows

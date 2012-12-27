@@ -15,7 +15,7 @@
 
 #include "Entity.h"
 #include "FrameAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Profiler.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
@@ -58,7 +58,6 @@ EC_Camera::EC_Camera(Scene* scene) :
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     if (framework)
         connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Camera::~EC_Camera()
@@ -366,15 +365,15 @@ void EC_Camera::OnComponentStructureChanged()
     SetPlaceable(placeable);
 }
 
-void EC_Camera::OnAttributeUpdated(IAttribute *attribute)
+void EC_Camera::AttributesChanged()
 {
-    if (attribute == &nearPlane)
+    if (nearPlane.ValueChanged())
         SetNearClipDistance(nearPlane.Get());
-    else if (attribute == &farPlane)
+    if (farPlane.ValueChanged())
         SetFarClipDistance(farPlane.Get());
-    else if (attribute == &verticalFov)
+    if (verticalFov.ValueChanged())
         SetFovY(verticalFov.Get());
-    else if (attribute == &aspectRatio)
+    else if (aspectRatio.ValueChanged())
         SetAspectRatio(AspectRatio());
 }
 

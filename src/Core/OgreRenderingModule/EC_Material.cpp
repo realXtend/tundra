@@ -9,7 +9,7 @@
 #include "OgreRenderingModule.h"
 
 #include "FrameAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
 #include "AssetAPI.h"
@@ -25,9 +25,6 @@ EC_Material::EC_Material(Scene* scene) :
 {
     materialAsset = AssetRefListenerPtr(new AssetRefListener());
     connect(materialAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
-
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(OnAttributeUpdated(IAttribute*)));
     
     connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
 
@@ -58,12 +55,12 @@ void EC_Material::OnComponentAdded(IComponent* component, AttributeChange::Type 
         connect(mesh, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(OnMeshAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 }
 
-void EC_Material::OnAttributeUpdated(IAttribute* attribute)
+void EC_Material::AttributesChanged()
 {
-    if (attribute == &inputMat)
+    if (inputMat.ValueChanged())
         CheckForInputMaterial();
     
-    if ((attribute == &outputMat) || (attribute == &parameters))
+    if (outputMat.ValueChanged() || parameters.ValueChanged())
     {
         // If output material or parameters change, and input asset exists, can apply parameters
         AssetPtr material = materialAsset->Asset();

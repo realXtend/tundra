@@ -34,4 +34,8 @@
 #include <OgreTexture.h>
 #include <OgreOverlay.h>
 
+#ifdef ANDROID
+    
+#endif
+
 #endif

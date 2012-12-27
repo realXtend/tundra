@@ -117,7 +117,7 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
     return true;
 }
 
-bool ZipAssetBundle::DeserializeFromData(const u8 *data, size_t numBytes)
+bool ZipAssetBundle::DeserializeFromData(const u8 * /*data*/, size_t /*numBytes*/)
 {
     /** @note At this point it seems zzip needs a disk source to do processing
         so we require disk source for the archive. This might change in the future by changing the lib. */

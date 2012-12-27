@@ -17,7 +17,7 @@
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "UiAPI.h"

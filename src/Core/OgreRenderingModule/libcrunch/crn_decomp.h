@@ -314,7 +314,7 @@ namespace crnd
 
 #include <stdlib.h>
 #include <stdio.h>
-#ifdef WIN32
+#if defined(WIN32)
 #include <memory.h>
 #elif defined(__APPLE__)
 #include <malloc/malloc.h>
@@ -582,7 +582,7 @@ namespace crnd
 #else
 #define CRND_IS_POD(T) __is_pod(T)
 #endif
-
+    
 } // namespace crnd
 
 // File: crnd_mem.h
@@ -755,6 +755,13 @@ namespace crnd
 }
 
 // File: crnd_utils.h
+#ifdef swap16
+#undef swap16
+#endif
+#ifdef swap32
+#undef swap32
+#endif
+
 namespace crnd
 {
    namespace utils
@@ -1124,7 +1131,7 @@ namespace crnd
 
       inline bool increase_capacity(uint32 min_new_capacity, bool grow_hint)
       {
-         if (!reinterpret_cast<elemental_vector*>(this)->increase_capacity(
+          if (!reinterpret_cast<elemental_vector*>(this)->increase_capacity(
             min_new_capacity, grow_hint, sizeof(T),
             ((scalar_type<T>::cFlag) || (is_vector<T>::cFlag) || (bitwise_movable<T>::cFlag) || CRND_IS_POD(T)) ? NULL : object_mover))
          {
@@ -2413,7 +2420,7 @@ namespace crnd
 #ifdef __APPLE__
 #define malloc_usable_size(x) malloc_size(x)
 #endif
-
+    
 namespace crnd
 {
    const uint32 MAX_POSSIBLE_BLOCK_SIZE = 0x7FFF0000U;
@@ -2432,6 +2439,8 @@ namespace crnd
          {
 #ifdef WIN32
             *pActual_size = p_new ? ::_msize(p_new) : 0;
+#elif defined(ANDROID)
+            *pActual_size = size;
 #else
             *pActual_size = p_new ? malloc_usable_size(p_new) : 0;
 #endif
@@ -2468,6 +2477,8 @@ namespace crnd
          {
 #ifdef WIN32
             *pActual_size = ::_msize(p_final_block);
+#elif defined(ANDROID)
+            *pActual_size = p_new ? size : 0;
 #else
             *pActual_size = ::malloc_usable_size(p_final_block);
 #endif
@@ -2482,6 +2493,8 @@ namespace crnd
       pUser_data;
 #ifdef WIN32
       return p ? _msize(p) : 0;
+#elif defined(ANDROID)
+      return 0;
 #else
       return p ? malloc_usable_size(p) : 0;
 #endif
@@ -2827,15 +2840,15 @@ namespace crnd
          *pSize = 0;
 
       if ((!pData) || (data_size < cCRNHeaderMinSize))
-         return false;
+         return 0;
 
       crn_header tmp_header;
       const crn_header* pHeader = crnd_get_header(tmp_header, pData, data_size);
       if (!pHeader)
-         return false;
+         return 0;
 
       if (level_index >= pHeader->m_levels)
-         return false;
+         return 0;
 
       uint32 cur_level_ofs = pHeader->m_level_ofs[level_index];
 
@@ -4841,3 +4854,4 @@ namespace crnd
 // 3. This notice may not be removed or altered from any source distribution.
 //
 //------------------------------------------------------------------------------
+

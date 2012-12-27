@@ -71,9 +71,6 @@ private slots:
     /// Prepares the component.
     void PrepareComponent();
 
-    /// Monitors attribute changes.
-    void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
-
     /// Monitors removed components.
     void ComponentRemoved(IComponent *component, AttributeChange::Type change);
 
@@ -124,6 +121,11 @@ protected:
     bool eventFilter(QObject *obj, QEvent *e);
 
 private:
+    /// Monitors attribute changes.
+    void AttributesChanged();
+
+    void HandlePPMChange();
+
     // Widget and its container.
     QPointer<QWidget> widget_;
     QGraphicsView *widgetContainer_;

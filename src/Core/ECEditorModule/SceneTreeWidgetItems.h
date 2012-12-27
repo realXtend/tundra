@@ -156,14 +156,14 @@ class AssetBundleItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
-    /** @param storage Asset storage pointer.
+    /** @param bundle Asset bundle.
         @param parent Parent tree widget item. */
-    AssetBundleItem(const AssetBundlePtr &bundle, const QString &bundleName, QTreeWidgetItem *parent = 0);
+    AssetBundleItem(const AssetBundlePtr &bundle, QTreeWidgetItem *parent = 0);
 
-    bool Contains(const QString &assetRef);
+    bool Contains(const QString &assetRef) const;
 
 private:
-    QString bundleName_;
+    AssetBundleWeakPtr assetBundle;
 };
 
 /// Represents selection of AssetTreeWidget items.
