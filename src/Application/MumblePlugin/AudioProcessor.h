@@ -26,14 +26,8 @@ namespace MumbleAudio
 
     struct UserAudioState
     {
-        UserAudioState ()
-        {
-            lastSeq = 0;
-            isPositional = false;
-            pos = float3::zero;
-            frames.clear();
-            soundChannel.reset();
-        }
+        explicit UserAudioState();
+        ~UserAudioState();
 
         uint lastSeq;
         bool isPositional;
@@ -41,9 +35,10 @@ namespace MumbleAudio
         AudioFrameDeque frames;
         AudioFrameDeque playedFrames;
         SoundChannelPtr soundChannel;
+        CeltCodec *codec;
     };
 
-    typedef std::map<uint, UserAudioState > AudioStateMap;
+    typedef std::map<uint, UserAudioState* > AudioStateMap;
 
     //////////////////////////////////////////////////////
 

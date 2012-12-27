@@ -132,11 +132,8 @@ namespace MumbleAudio
 
         SAFE_DELETE(codec);
 
-        {
-            QMutexLocker lockInput(&mutexInput);
-            inputAudioStates.clear();
-            framework = 0;
-        }
+        ClearInputAudio();
+        framework = 0;
 
         if (speexPreProcessor)
         {
@@ -312,18 +309,18 @@ namespace MumbleAudio
         {
             for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != inputAudioStates.end(); ++iter)
             {
-                UserAudioState &userAudioState = iter->second;
-                if (userAudioState.playedFrames.empty())
+                UserAudioState *userAudioState = iter->second;
+                if (!userAudioState || userAudioState->playedFrames.empty())
                     continue;
 
-                const SoundBuffer &buf = userAudioState.playedFrames.front();
+                const SoundBuffer &buf = userAudioState->playedFrames.front();
                 if (buf.data.size() == playedFrame.data.size())
                 {
                     const u16 *bufData = reinterpret_cast<const u16*>(&buf.data[0]);
                     for (size_t i = 0; i < buf.data.size() / 2; i++)
                         playedFrameData[i] += bufData[i];
                 }
-                userAudioState.playedFrames.pop_front();
+                userAudioState->playedFrames.pop_front();
             }
             mutexInput.unlock();
         }
@@ -334,12 +331,9 @@ namespace MumbleAudio
 
         // Input (mic) data is from pcmFrame. Output (speaker) data mixed from 
         // separate input streams. Echo-cancelled data is put to outBuf.
-        speex_echo_cancellation(speexEcho,
-                                (spx_int16_t*)&pcmFrame.data[0],
-                                (spx_int16_t*)&playedFrame.data[0],
-                                (spx_int16_t*)&outBuf.data[0]);
+        speex_echo_cancellation(speexEcho, (spx_int16_t*)&pcmFrame.data[0], (spx_int16_t*)&playedFrame.data[0], (spx_int16_t*)&outBuf.data[0]);
 
-        // Echo-cancelled output should be copied over existing output in PCM frames.
+        // Copy echo-cancelled output over existing output PCM frames.
         pcmFrame.data.swap(outBuf.data);
     }
 
@@ -360,7 +354,10 @@ namespace MumbleAudio
             // Reset back to ultra state, gets increased automatically if necessary.
             qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA;
 
-            // Recording buffer of 40 celt frames, 38400 bytes
+            // Reset processor. Clears echo cancellation state.
+            ResetSpeexProcessor();
+
+            // Recording buffer of 40 celt frames, 38400 bytes (overcompensate a bit)
             int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
             if (!framework->Audio()->StartRecording(audioSettings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize))
             {
@@ -371,7 +368,18 @@ namespace MumbleAudio
             mutexAudioSettings.unlock();
         }
         else
+        {
             framework->Audio()->StopRecording();
+
+            // Clear obsolete playback history for echo cancellation.
+            if (mutexInput.tryLock(15))
+            {
+                for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != inputAudioStates.end(); ++iter)
+                    if (iter->second)
+                        iter->second->playedFrames.clear();
+                mutexInput.unlock();
+            }
+        }
 
         ClearOutputAudio();
     }
@@ -464,9 +472,9 @@ namespace MumbleAudio
             {
                 for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != inputAudioStates.end(); ++iter)
                 {
-                    UserAudioState &userAudioState = iter->second;
-                    if (userAudioState.soundChannel.get() && userAudioState.soundChannel->IsPositional())
-                        userAudioState.soundChannel->SetRange(static_cast<float>(changedInnerRange), static_cast<float>(changedOuterRange), 1.0f);
+                    UserAudioState *userAudioState = iter->second;
+                    if (userAudioState->soundChannel.get() && userAudioState->soundChannel->IsPositional())
+                        userAudioState->soundChannel->SetRange(static_cast<float>(changedInnerRange), static_cast<float>(changedOuterRange), 1.0f);
                 }
                 mutexInput.unlock();
             }
@@ -491,7 +499,7 @@ namespace MumbleAudio
             LogInfo(LC + "Recording device change detected to '" + (settings.recordingDevice.isEmpty() ? "Default Recording Device" : settings.recordingDevice) + "'.");
             framework->Audio()->StopRecording();
 
-            // Recording buffer of 40 celt frames, 38400 bytes
+            // Recording buffer of 40 celt frames, 38400 bytes (overcompensate a bit)
             int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
             framework->Audio()->StartRecording(settings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
 
@@ -621,12 +629,16 @@ namespace MumbleAudio
         if (!framework)
             return;
 
-        // Read positional playback settings
+        // Read playback settings
         mutexAudioSettings.lockForRead();
         int allowReceivingPositional = audioSettings.allowReceivingPositional;
         int positionalInnerRange = allowReceivingPositional ? audioSettings.innerRange : 0;
         int positionalOuterRange = allowReceivingPositional ? audioSettings.outerRange : 0;
         mutexAudioSettings.unlock();
+
+        mutexAudioMute.lockForRead();
+        bool localOutputAudioMuted = outputAudioMuted;
+        mutexAudioMute.unlock();
 
         // Lock user audio states. This is the place we want to fail on a tryLock as we can play the frames later as well.
         // If this fails too many times we just remove the oldest frames.
@@ -645,7 +657,9 @@ namespace MumbleAudio
         for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != end; ++iter)
         {
             uint userId = iter->first;
-            UserAudioState &userAudioState = iter->second;
+            UserAudioState *userAudioState = iter->second;
+            if (userAudioState == 0)
+                continue;
 
             // We must have the user if we are receiving audio from him.
             MumbleUser *user = mumble->User(userId);
@@ -654,23 +668,21 @@ namespace MumbleAudio
 
             // When muted don't play any pending frames, just delete them.
             if (user->isMuted)
-                userAudioState.frames.clear();
+            {
+                userAudioState->frames.clear();
+                userAudioState->playedFrames.clear();
+            }
 
             // Check speaking state, not speaking if pending frames is empty and SoundChannel is not playing.
-            if (user->isMuted || userAudioState.frames.empty())
+            if (user->isMuted || userAudioState->frames.empty())
             {
                 bool playing = false;
-                if (userAudioState.soundChannel.get())
+                if (userAudioState->soundChannel.get())
                 {
                     // Continue showing "playing" state until all queued buffers have been played.
                     // Remove the sound channel once we are done with it 1) muted 2) no pending frames, user is silent.
-                    if (userAudioState.soundChannel->State() == SoundChannel::Playing)
+                    if (userAudioState->soundChannel->State() == SoundChannel::Playing)
                         playing = true;
-                    else if (userAudioState.soundChannel->State() == SoundChannel::Pending)
-                    {
-                        userAudioState.soundChannel->Stop();
-                        userAudioState.soundChannel.reset();
-                    }
                 }
                 if (!playing)
                     user->SetAndEmitSpeaking(false);
@@ -679,38 +691,38 @@ namespace MumbleAudio
 
             // Report if we are getting too much buffers from a single user. We don't want to feed OpenAL too many
             // buffers as it can crash and also there is not sense in playing very old audio.
-            if (userAudioState.frames.size() > 150)
+            if (userAudioState->frames.size() > 150)
             {
-                LogWarning(LC + QString("Input frame buffer size too high (%1) for user id %2, removing oldest.").arg(userAudioState.frames.size()).arg(userId));
-                while (userAudioState.frames.size() > 150)
-                    userAudioState.frames.pop_front();
+                LogWarning(LC + QString("Input frame buffer size too high (%1) for user id %2, removing oldest.").arg(userAudioState->frames.size()).arg(userId));
+                while (userAudioState->frames.size() > 150)
+                    userAudioState->frames.pop_front();
             }
 
             // Setup existing audio channels and users positional state.
-            if (userAudioState.soundChannel.get() && allowReceivingPositional)
+            if (userAudioState->soundChannel.get() && allowReceivingPositional)
             {
                 // Update positional and position info.
-                if (userAudioState.soundChannel->IsPositional() != userAudioState.isPositional)
-                    userAudioState.soundChannel->SetPositional(userAudioState.isPositional);
-                if (userAudioState.isPositional)
+                if (userAudioState->soundChannel->IsPositional() != userAudioState->isPositional)
+                    userAudioState->soundChannel->SetPositional(userAudioState->isPositional);
+                if (userAudioState->isPositional)
                 {
                     // Only update positional data to the channel if it has changed as it does multiple calls to OpenAL.
-                    userAudioState.soundChannel->SetRange(static_cast<float>(positionalInnerRange), static_cast<float>(positionalOuterRange), 1.0f);
-                    if (!userAudioState.soundChannel->Position().Equals(userAudioState.pos))
-                        userAudioState.soundChannel->SetPosition(userAudioState.pos);
+                    userAudioState->soundChannel->SetRange(static_cast<float>(positionalInnerRange), static_cast<float>(positionalOuterRange), 1.0f);
+                    if (!userAudioState->soundChannel->Position().Equals(userAudioState->pos))
+                        userAudioState->soundChannel->SetPosition(userAudioState->pos);
                     if (!user->isMe)
-                        user->pos = userAudioState.pos;
+                        user->pos = userAudioState->pos;
                 }
 
                 // Only emits on change.
                 if (!user->isMe)
-                    user->SetAndEmitPositional(userAudioState.isPositional);
+                    user->SetAndEmitPositional(userAudioState->isPositional);
             }
-            else if (userAudioState.soundChannel.get() && !allowReceivingPositional)
+            else if (userAudioState->soundChannel.get() && !allowReceivingPositional)
             {
                 // Reset positional info from the channel
-                if (userAudioState.soundChannel->IsPositional())
-                    userAudioState.soundChannel->SetPositional(false);
+                if (userAudioState->soundChannel->IsPositional())
+                    userAudioState->soundChannel->SetPositional(false);
 
                 // Reset users positional state.
                 if (!user->isMe && user->isPositional)
@@ -720,12 +732,12 @@ namespace MumbleAudio
                 }
             }
 
-            // Iterate audio frames for user
-            AudioFrameDeque::iterator frameEnd = userAudioState.frames.end();
-            for (AudioFrameDeque::iterator frameIter = userAudioState.frames.begin(); frameIter != frameEnd; ++frameIter)
+            // Iterate and play audio frames for this user
+            AudioFrameDeque::iterator frameEnd = userAudioState->frames.end();
+            for (AudioFrameDeque::iterator frameIter = userAudioState->frames.begin(); frameIter != frameEnd; ++frameIter)
             {
                 const SoundBuffer &frame = (*frameIter);
-                if (userAudioState.soundChannel.get())
+                if (userAudioState->soundChannel.get())
                 {
                     // Create new AudioAsset to be added to the sound channels playback buffer.
                     AudioAssetPtr audioAsset = framework->Audio()->CreateAudioAssetFromSoundBuffer(frame);
@@ -733,41 +745,41 @@ namespace MumbleAudio
                     {
                         // Update user speaking state and add buffer to the sound channel.
                         user->SetAndEmitSpeaking(true); // Only emits on change.
-                        userAudioState.soundChannel->AddBuffer(audioAsset);
+                        userAudioState->soundChannel->AddBuffer(audioAsset);
                     }
                     else
                     {
-                        LogDebug(LC + QString("Failed to create new sound buffer for user id %1, clearing all his input frames").arg(userId));
+                        LogWarning(LC + QString("Failed to create new sound buffer for user id %1, clearing all his input frames").arg(userId));
 
                         // Something went wrong, eg. out of memory, release "broken" SoundChannel and its data.
                         // Bail out as otherwise the next buffer creation will most likely fail the same way.
                         user->SetAndEmitSpeaking(false); // Only emits on change.
-                        userAudioState.soundChannel->Stop();
-                        userAudioState.soundChannel.reset();
+                        userAudioState->soundChannel->Stop();
+                        userAudioState->soundChannel.reset();
                         break;
                     }
                 }
                 else
                 {
                     // Create sound channel with initial audio frame. We should get here only once per this for loop.
-                    userAudioState.soundChannel = framework->Audio()->PlaySoundBuffer(frame, SoundChannel::Voice);
-                    if (userAudioState.soundChannel.get())
+                    userAudioState->soundChannel = framework->Audio()->PlaySoundBuffer(frame, SoundChannel::Voice);
+                    if (userAudioState->soundChannel.get())
                     {
                         // Set positional if available and our local settings allows it
-                        if (allowReceivingPositional && userAudioState.isPositional)
+                        if (allowReceivingPositional && userAudioState->isPositional)
                         {
-                            userAudioState.soundChannel->SetPositional(true);
-                            userAudioState.soundChannel->SetRange(static_cast<float>(positionalInnerRange), static_cast<float>(positionalOuterRange), 1.0f);
-                            userAudioState.soundChannel->SetPosition(userAudioState.pos);
+                            userAudioState->soundChannel->SetPositional(true);
+                            userAudioState->soundChannel->SetRange(static_cast<float>(positionalInnerRange), static_cast<float>(positionalOuterRange), 1.0f);
+                            userAudioState->soundChannel->SetPosition(userAudioState->pos);
                             if (!user->isMe)
                             {
-                                user->pos = userAudioState.pos;
+                                user->pos = userAudioState->pos;
                                 user->SetAndEmitPositional(true);
                             }
                         }
                         else
                         {
-                            userAudioState.soundChannel->SetPositional(false);
+                            userAudioState->soundChannel->SetPositional(false);
                             if (!user->isMe && user->isPositional)
                             {
                                 user->pos = float3::zero;
@@ -778,23 +790,19 @@ namespace MumbleAudio
                         // Update user speaking state. Only emits on change.
                         user->SetAndEmitSpeaking(true);
                     }
+                    else
+                        LogError("Failed to create sound channel for " + QString::number(userId));
                 }
             }
 
-            mutexAudioMute.lockForRead();
-            if (speexEcho && !outputAudioMuted && userAudioState.soundChannel.get())
-            {
-                userAudioState.playedFrames.insert(
-                        userAudioState.playedFrames.end(),
-                        userAudioState.frames.begin(),
-                        userAudioState.frames.end());
-            }
+            // Store playback frames for echo cancellation
+            if (speexEcho && !localOutputAudioMuted && userAudioState->soundChannel.get())
+                userAudioState->playedFrames.insert(userAudioState->playedFrames.end(), userAudioState->frames.begin(), userAudioState->frames.end());
             else
-                userAudioState.playedFrames.clear();
-            mutexAudioMute.unlock();
+                userAudioState->playedFrames.clear();
 
             // Clear users input frames
-            userAudioState.frames.clear();
+            userAudioState->frames.clear();
         }
 
         mutexInput.unlock();
@@ -805,7 +813,15 @@ namespace MumbleAudio
         // This function should be called in the main thread
         QMutexLocker lock(&mutexInput);
         if (inputAudioStates.size() > 0)
+        {
+            for (AudioStateMap::iterator iter = inputAudioStates.begin(); iter != inputAudioStates.end(); ++iter)
+            {
+                UserAudioState *userAudioState = iter->second;
+                if (userAudioState)
+                    SAFE_DELETE(userAudioState);
+            }
             inputAudioStates.clear();
+        }
     }
 
     void AudioProcessor::ClearInputAudio(uint userId)
@@ -816,11 +832,12 @@ namespace MumbleAudio
         AudioStateMap::iterator userStateIter = inputAudioStates.find(userId);
         if (userStateIter != inputAudioStates.end())
         {
-            UserAudioState &userState = userStateIter->second;
-            userState.frames.clear();
-            if (userState.soundChannel.get())
-                userState.soundChannel->Stop();
-            userState.soundChannel.reset();
+            UserAudioState *userState = userStateIter->second;
+            userState->frames.clear();
+            if (userState->soundChannel.get())
+                userState->soundChannel->Stop();
+            userState->soundChannel.reset();
+            SAFE_DELETE(userState);
             inputAudioStates.erase(userStateIter);
         }
     }
@@ -912,35 +929,50 @@ namespace MumbleAudio
         mutexAudioMute.unlock();
 
         QMutexLocker lockBuffers(&mutexInput);
-        UserAudioState &userAudioState = inputAudioStates[userId]; // Creates a new one if does not exist already.
+
+        UserAudioState *userAudioState = 0;
+        if (inputAudioStates.find(userId) == inputAudioStates.end())
+        {
+            userAudioState = new UserAudioState();
+            inputAudioStates[userId] = userAudioState;
+        }
+        else
+            userAudioState = inputAudioStates[userId]; // Creates a new one if does not exist already.
+
+        if (userAudioState == 0)
+        {
+            LogWarning(LC + "User state is null, erasing " + QString::number(userId));
+            inputAudioStates.erase(inputAudioStates.find(userId));
+            return;
+        }
 
         // If you change audio output settings in Mumble or various other things, sequence will reset to 0.
         // If this is received we need to reset our tracking sequence number as well.
         if (seq == 0)
-            userAudioState.lastSeq = 0;
+            userAudioState->lastSeq = 0;
 
         // If this sequence is older than what has been previously received, ignore the frames
-        if (userAudioState.lastSeq > seq)
+        if (userAudioState->lastSeq > seq)
             return;
 
         // Update the users audio state struct
-        userAudioState.lastSeq = seq;
-        userAudioState.isPositional = isPositional;
-        if (userAudioState.isPositional)
-            userAudioState.pos = pos;
+        userAudioState->lastSeq = seq;
+        userAudioState->isPositional = isPositional;
+        if (userAudioState->isPositional)
+            userAudioState->pos = pos;
 
         for (ByteArrayVector::const_iterator frameIter = frames.begin(); frameIter != frames.end(); ++frameIter)
         {
             const QByteArray &inputFrame = (*frameIter);
             SoundBuffer soundFrame;
 
-            int celtResult = codec->Decode(inputFrame.data(), inputFrame.size(), soundFrame);
+            int celtResult = userAudioState->codec->Decode(inputFrame.data(), inputFrame.size(), soundFrame);
             if (celtResult == CELT_OK)
-                userAudioState.frames.push_back(soundFrame);
+                userAudioState->frames.push_back(soundFrame);
             else
             {
                 PrintCeltError(celtResult, true);
-                userAudioState.frames.clear();
+                userAudioState->frames.clear();
                 return;
             }
         }
@@ -952,5 +984,29 @@ namespace MumbleAudio
         bufferFullFrames = 0;
         qualityFramesPerPacket = MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA;
         mutexAudioSettings.unlock();
+    }
+
+    /// UserAudioState
+
+    UserAudioState::UserAudioState()
+    {
+        codec = new CeltCodec();
+
+        lastSeq = 0;
+        isPositional = false;
+        pos = float3::zero;
+
+        frames.clear();
+        playedFrames.clear();
+        soundChannel.reset();
+    }
+
+    UserAudioState::~UserAudioState()
+    {
+        SAFE_DELETE(codec);
+
+        frames.clear();
+        playedFrames.clear();
+        soundChannel.reset();
     }
 }
