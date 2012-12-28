@@ -62,6 +62,8 @@ void  EC_Highlight::Show()
     EC_Mesh* mesh = mesh_.lock().get();
     AssetAPI* assetAPI = framework->Asset();
     
+    originalMaterials_.clear();
+
     // Clone all valid material assets that we can find from the mesh
     /// \todo Currently will clone the same material several times if used on several submeshes
     /// \todo What if the material is yet pending, or is not an asset (LitTextured)
@@ -79,8 +81,11 @@ void  EC_Highlight::Show()
                 {
                     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(clone.get());
                     CreateHighlightToOgreMaterial(matAsset);
-                    mesh->SetMaterial(i, clone->Name());
+                    mesh->SetMaterial(i, clone->Name(), AttributeChange::Disconnected);
                     materials_.push_back(clone);
+
+                    // Store original ref to be restored in Hide()
+                    originalMaterials_[i] = materialList[i].ref;
                 }
             }
         }
@@ -93,7 +98,9 @@ void EC_Highlight::Hide()
     {
         // Restore mesh component's original materials to hide highlight effect
         EC_Mesh* mesh = mesh_.lock().get();
-        mesh->ApplyMaterial();
+        foreach(uint index, originalMaterials_.keys())
+            mesh->SetMaterial(index, originalMaterials_[index], AttributeChange::Disconnected);
+        originalMaterials_.clear();
     }
     
     // Destroy all the highlight materials
