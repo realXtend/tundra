@@ -96,10 +96,11 @@ void EC_Highlight::Hide()
 {
     if (!mesh_.expired())
     {
-        // Restore mesh component's original materials to hide highlight effect
+        // Restore mesh component's original materials to hide highlight effect.
+        // Use AttributeChange::LocalOnly to ensure all editors will show the real refs.
         EC_Mesh* mesh = mesh_.lock().get();
         foreach(uint index, originalMaterials_.keys())
-            mesh->SetMaterial(index, originalMaterials_[index], AttributeChange::Disconnected);
+            mesh->SetMaterial(index, originalMaterials_[index], AttributeChange::LocalOnly);
         originalMaterials_.clear();
     }
     
