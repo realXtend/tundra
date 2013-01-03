@@ -160,8 +160,14 @@ namespace MumbleAudio
         groupBoxQuality->setVisible(false);
         groupBoxProcessing->setVisible(false);
 
+#ifdef Q_WS_MAC
+        setMinimumSize(492, 650);
+        setMaximumSize(492, 900);
+#else
         setMinimumSize(492, 575);
         setMaximumSize(492, 824);
+#endif
+
         show();
 
         resize(1,1);
@@ -384,7 +390,11 @@ namespace MumbleAudio
 
         QString text = buttonAdvanced->text();
         buttonAdvanced->setText(!visible ? text.replace("Hide", "Show") : text.replace("Show", "Hide"));
+#ifdef Q_WS_MAC
+        resize(visible ? maximumSize() : minimumSize());
+#else
         resize(visible ? QSize(999,999) : QSize(1,1));
+#endif
     }
 
     void AudioWizard::OnOKPressed()
