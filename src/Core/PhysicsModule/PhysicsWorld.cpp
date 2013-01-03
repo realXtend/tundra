@@ -48,16 +48,16 @@ struct CollisionSignal
 
 struct ObbCallback : public btCollisionWorld::ContactResultCallback
 {
-    ObbCallback(std::set<btCollisionObject*>& result) : result_(result) {}
+    ObbCallback(std::set<btCollisionObjectWrapper*>& result) : result_(result) {}
 
-    virtual btScalar addSingleResult(btManifoldPoint &, const btCollisionObject *colObj0, int, int, const btCollisionObject *colObj1, int, int)
+    virtual btScalar addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0, int, int, const btCollisionObjectWrapper *colObj1, int, int)
     {
-        result_.insert(const_cast<btCollisionObject*>(colObj0));
-        result_.insert(const_cast<btCollisionObject*>(colObj1));
+        result_.insert((btCollisionObjectWrapper*)(colObj0));
+        result_.insert((btCollisionObjectWrapper*)(colObj1));
         return 0.0f;
     }
     
-    std::set<btCollisionObject*>& result_;
+    std::set<btCollisionObjectWrapper*>& result_;
 };
 
 } // ~unnamed namespace
@@ -180,7 +180,7 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     // Check contacts and send collision signals for them
     int numManifolds = collisionDispatcher_->getNumManifolds();
     
-    std::set<std::pair<btCollisionObject*, btCollisionObject*> > currentCollisions;
+    std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > currentCollisions;
     
     // Collect all collision signals to a list before emitting any of them, in case a collision
     // handler changes physics state before the loop below is over (which would lead into catastrophic
@@ -202,7 +202,7 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
 			const btCollisionObject* objectA = contactManifold->getBody0();
 			const btCollisionObject* objectB = contactManifold->getBody1();
 			
-            std::pair<btCollisionObject*, btCollisionObject*> objectPair;
+            std::pair<const btCollisionObject*, const btCollisionObject*> objectPair;
             if (objectA < objectB)
                 objectPair = std::make_pair(objectA, objectB);
             else
@@ -310,7 +310,7 @@ EntityList PhysicsWorld::ObbCollisionQuery(const OBB &obb, int collisionGroup, i
 {
     PROFILE(PhysicsWorld_ObbCollisionQuery);
     
-    std::set<btCollisionObject*> objects;
+    std::set<btCollisionObjectWrapper*> objects;
     EntityList entities;
     
     btBoxShape box(obb.HalfSize()); // Note: Bullet uses box halfsize
@@ -326,9 +326,9 @@ EntityList PhysicsWorld::ObbCollisionQuery(const OBB &obb, int collisionGroup, i
     ObbCallback resultCallback(objects);
     world_->contactTest(tempRigidBody, resultCallback);
     
-    for (std::set<btCollisionObject*>::iterator i = objects.begin(); i != objects.end(); ++i)
+    for (std::set<btCollisionObjectWrapper*>::iterator i = objects.begin(); i != objects.end(); ++i)
     {
-        EC_RigidBody* body = static_cast<EC_RigidBody*>((*i)->getUserPointer());
+        EC_RigidBody* body = static_cast<EC_RigidBody*>((*i)->getCollisionObject()->getUserPointer());
         if (body && body->ParentEntity())
             entities.push_back(body->ParentEntity()->shared_from_this());
     }
