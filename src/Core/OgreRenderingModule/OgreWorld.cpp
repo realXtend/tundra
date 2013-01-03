@@ -150,6 +150,7 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
     PROFILE(OgreWorld_Raycast);
     
     result_.entity = 0;
+    result_.component = 0;
     
     int width = renderer_->WindowWidth();
     int height = renderer_->WindowHeight();
@@ -170,8 +171,11 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
 
 RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
 {
+    result_.entity = 0;
+    result_.component = 0;
+
     if (!rayQuery_)
-        return 0;
+        return &result_;
     rayQuery_->setRay(Ogre::Ray(ray.pos, ray.dir));
     return RaycastInternal(layerMask);
 }
@@ -238,7 +242,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 if (!node)
                 {
                     LogError("EC_Mesh::Raycast called for a mesh entity that is not attached to a scene node. Returning no result.");
-                    return 0;
+                    return &result_;
                 }
 
                 assume(!float3(node->_getDerivedScale()).IsZero());
