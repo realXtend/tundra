@@ -140,6 +140,10 @@ public:
     Q_PROPERTY(float friction READ getfriction WRITE setfriction);
     DEFINE_QPROPERTY_ATTRIBUTE(float, friction);
 
+    /// Rolling friction coefficient between 0.0 - 1.0.
+    Q_PROPERTY(float rollingFriction READ getrollingFriction WRITE setrollingFriction);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, rollingFriction);
+
     /// Restitution coefficient between 0.0 - 1.0.
     Q_PROPERTY(float restitution READ getrestitution WRITE setrestitution);
     DEFINE_QPROPERTY_ATTRIBUTE(float, restitution);
