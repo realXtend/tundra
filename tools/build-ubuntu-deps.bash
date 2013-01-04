@@ -303,12 +303,16 @@ what=qtpropertybrowser
 if test -f $tags/$what-done; then
     echo $what is done
 else
-    pkgbase=${what}-2.5_1-opensource
-    rm -rf $pkgbase
-    zip=../tarballs/$pkgbase.tar.gz
-    test -f $zip || wget -O $zip http://get.qt.nokia.com/qt/solutions/lgpl/$pkgbase.tar.gz
-    tar zxf $zip
-    cd $pkgbase
+    if test -f $build/qt-solutions; then
+        echo Updating QtPropertyBrowser in "$build/qt-solutions".
+        cd $build/qt-solutions
+        git pull
+    else
+        echo Cloning QtPropertyBrowser into "$build/qt-solutions".
+        cd $build
+        git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
+    fi
+    cd $build/qt-solutions/qtpropertybrowser
     echo yes | ./configure -library
     qmake
     make -j$nprocs
