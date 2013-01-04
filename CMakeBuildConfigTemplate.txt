@@ -152,6 +152,4 @@ endif ()
 #AddProject(Application AssetInterestPlugin)    # Options to only keep assets below certain distance threshold in memory. Can also unload all non used assets from memory. Exposed to scripts so scenes can set the behaviour.
 AddProject(Application CanvasPlugin)            # Component that draws a graphics scene with any number of widgets into a mesh and provides 3D mouse input.
 #AddProject(Application XMPPModule)              # A module that implements XMPP-based chat.
-
-build scripts.
-    AddProject(Application ArchivePlugin)          # Provides archived asset bundle capabilities. Enables example sub asset referencing into eg. zip files.
+AddProject(Application ArchivePlugin)          # Provides archived asset bundle capabilities. Enables example sub asset referencing into eg. zip files.

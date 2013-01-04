@@ -198,9 +198,9 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             int numContacts = contactManifold->getNumContacts();
             if (numContacts == 0)
                 continue;
-			
-			const btCollisionObject* objectA = contactManifold->getBody0();
-			const btCollisionObject* objectB = contactManifold->getBody1();
+
+            const btCollisionObject* objectA = contactManifold->getBody0();
+            const btCollisionObject* objectB = contactManifold->getBody1();
 			
             std::pair<const btCollisionObject*, const btCollisionObject*> objectPair;
             if (objectA < objectB)
