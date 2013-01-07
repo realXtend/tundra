@@ -11,7 +11,7 @@
 #include "RayVisibilityFilter.h"
 #include "RelevanceFilter.h"
 
-//#define IM_DEBUG
+#define IM_DEBUG
 
 class InterestManager
 {

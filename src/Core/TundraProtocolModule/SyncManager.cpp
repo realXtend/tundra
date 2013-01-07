@@ -137,7 +137,13 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
 
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
             if ((*i)->syncState)
+            {
                 SendCameraUpdateRequest((*i), enabled);
+                (*i)->syncState->visibleEntities.clear();
+                (*i)->syncState->relevanceFactors.clear();
+                (*i)->syncState->lastUpdatedEntitys_.clear();
+                (*i)->syncState->lastRaycastedEntitys_.clear();
+            }
 
         InterestManager *IM = 0;
         MessageFilter *filter = 0;
@@ -1589,9 +1595,8 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
     kNet::DataDeserializer dd(data, numBytes);
     UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
 
-    float3 clientpos;
-
     Quat orientation;
+    float3 clientpos;
 
     //Read the position of the client from the message
     orientation.x = dd.ReadSignedFixedPoint(11, 8);
@@ -1603,15 +1608,7 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
     clientpos.y = dd.ReadSignedFixedPoint(11, 8);
     clientpos.z = dd.ReadSignedFixedPoint(11, 8);
 
-    //Read the orientation of the client
-    /*
-    float3 forward;
-    dd.ReadNormalizedVector3D(9, 8, forward.x, forward.y, forward.z);
-    float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
-*/
-    //Finally update the orientation and location
-
-    if(!user->syncState->locationInitialized)  //If this is the first camera update, save it to the initialPosition variable
+    if(!user->syncState->locationInitialized) //If this is the first camera update, save it to the initialPosition variable
     {
         user->syncState->initialLocation = clientpos;
         user->syncState->initialOrientation = orientation;

@@ -62,13 +62,15 @@ bool RayVisibilityFilter::Filter(IMParameters params)
 
             else
             {
-#ifdef IM_DEBUG
+//#ifdef IM_DEBUG
                 Ray ray(params.client_position, (params.entity_position - params.client_position).Normalized());
                 RaycastResult *result = 0;
                 OgreWorldPtr w = params.scene->GetWorld<OgreWorld>();
 
                 result = w->Raycast(ray, 0xFFFFFFFF);
-#endif
+//#endif
+
+#if 0
                 /// Hack, lets try to detect entities with EC_Cameras IsEntityVisible function
                 EntityPtr cameraentity = params.scene->CreateEntity(0, QStringList(), AttributeChange::LocalOnly, false, false);
 
@@ -86,22 +88,22 @@ bool RayVisibilityFilter::Filter(IMParameters params)
 
                 bool visible = camera->IsEntityVisible(params.changed_entity);
 
-#ifdef IM_DEBUG
-               ::LogInfo("Entity " + QString::number(params.changed_entity->Id()) + " is " + QString::number(visible) + " to connection " + QString::number(params.connection->ConnectionId()));
-#endif
                 params.scene->DeleteEntityById(cameraentity->Id());
-
+#endif
                 im_->UpdateLastRaycastedEntity(params.connection, params.changed_entity->Id());
 
-//                if(result && result->entity && result->entity->Id() == params.changed_entity->Id())  //If the ray hit someone and its our target entity
-                if(visible)
+                if(result && result->entity && result->entity->Id() == params.changed_entity->Id())  //If the ray hit someone and its our target entity
                 {
                     im_->UpdateEntityVisibility(params.connection, params.changed_entity->Id(), true);
+#ifdef IM_DEBUG
+                    ::LogInfo("Entity " + QString::number(params.changed_entity->Id()) + " is visible to connection " + QString::number(params.connection->ConnectionId()));
+#endif
                     return true;
                 }
                 else
                 {
                     im_->UpdateEntityVisibility(params.connection, params.changed_entity->Id(), false);
+                    im_->UpdateRelevance(params.connection, params.changed_entity->Id(), 0);
                     return false;
                 }
 
