@@ -12,6 +12,7 @@
 #include "SceneTreeWidget.h"
 #include "SceneTreeWidgetItems.h"
 #include "TreeWidgetUtils.h"
+#include "UndoManager.h"
 
 #include "Framework.h"
 #include "Scene/Scene.h"
@@ -21,6 +22,7 @@
 #include "EC_DynamicComponent.h"
 
 #include <QTreeWidgetItemIterator>
+#include <QToolButton>
 
 #include "LoggingFunctions.h"
 
@@ -61,7 +63,26 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     QCheckBox *assetCheckBox = new QCheckBox(tr("Asset References"), this);
     assetCheckBox->setChecked(showAssets);
 
+    undoButton_ = new QToolButton();
+    undoButton_->setPopupMode(QToolButton::MenuButtonPopup);
+    undoButton_->setDisabled(true);
+
+    redoButton_ = new QToolButton();
+    redoButton_->setPopupMode(QToolButton::MenuButtonPopup);
+    redoButton_->setDisabled(true);
+
+    undoButton_->setIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/undo-icon.png"));
+    redoButton_->setIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/redo-icon.png"));
+
+    undoButton_->setMenu(treeWidget->GetUndoManager()->UndoMenu());
+    redoButton_->setMenu(treeWidget->GetUndoManager()->RedoMenu());
+
     // Fill layouts
+    QHBoxLayout *undoRedoLayout = new QHBoxLayout;
+    undoRedoLayout->addWidget(undoButton_);
+    undoRedoLayout->addWidget(redoButton_);
+    undoRedoLayout->addSpacerItem(new QSpacerItem(20, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+
     QHBoxLayout *layoutFilterAndSort = new QHBoxLayout();
     layoutFilterAndSort->addWidget(searchField);
     layoutFilterAndSort->addWidget(sortLabel);
@@ -74,6 +95,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     layoutSettingsVisibility->addWidget(assetCheckBox);
     layoutSettingsVisibility->addSpacerItem(new QSpacerItem(20, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
 
+    layout->addLayout(undoRedoLayout);
     layout->addLayout(layoutFilterAndSort);
     layout->addWidget(treeWidget);
     layout->addLayout(layoutSettingsVisibility);
@@ -86,6 +108,10 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
     connect(treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
     connect(treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
+    connect(treeWidget->GetUndoManager(), SIGNAL(CanUndoChanged(bool)), this, SLOT(OnUndoChanged(bool)));
+    connect(treeWidget->GetUndoManager(), SIGNAL(CanRedoChanged(bool)), this, SLOT(OnRedoChanged(bool)));
+    connect(undoButton_, SIGNAL(clicked()), treeWidget->GetUndoManager(), SLOT(Undo()));
+    connect(redoButton_, SIGNAL(clicked()), treeWidget->GetUndoManager(), SLOT(Redo()));
 }
 
 SceneStructureWindow::~SceneStructureWindow()
@@ -748,4 +774,14 @@ void SceneStructureWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
     }
 
     expandAndCollapseButton->setText(anyExpanded ? tr("Collapse All") : tr("Expand All"));
+}
+
+void SceneStructureWindow::OnUndoChanged(bool canUndo)
+{
+    undoButton_->setEnabled(canUndo);
+}
+
+void SceneStructureWindow::OnRedoChanged(bool canRedo)
+{
+    redoButton_->setEnabled(canRedo);
 }

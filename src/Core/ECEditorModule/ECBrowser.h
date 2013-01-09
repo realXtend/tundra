@@ -16,6 +16,7 @@ class QMenu;
 class QMimeData;
 
 class Framework;
+class ECEditorWindow;
 class TreeWidgetItemExpandMemory;
 struct ComponentGroup;
 
@@ -37,7 +38,7 @@ class ECBrowser : public QtTreePropertyBrowser
     Q_OBJECT
 
 public:
-    ECBrowser(Framework *framework, QWidget *parent = 0);
+    ECBrowser(Framework *framework, ECEditorWindow *editorWindow, QWidget *parent = 0);
     virtual ~ECBrowser();
 
     /// Insert new entity to browser.
@@ -190,5 +191,6 @@ private:
     QMenu *menu_;
     QTreeWidget *treeWidget_;
     Framework *framework_;
+    ECEditorWindow *editorWindow_;
     boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
 };

@@ -17,6 +17,8 @@
 #include "FunctionInvoker.h"
 #include "ECEditorModule.h"
 #include "TransformEditor.h"
+#include "UndoCommands.h"
+#include "UndoManager.h"
 
 #include "Scene/Scene.h"
 #include "Entity.h"
@@ -36,6 +38,11 @@
 
 #include <QUiLoader>
 #include <QDomDocument>
+
+#include "Math/float2.h"
+#include "Math/float3.h"
+#include "Math/float4.h"
+#include "Math/Quat.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -88,7 +95,20 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     contents->installEventFilter(this);
     file.close();
 
+    undoManager_ = new UndoManager(fw->Scene()->MainCameraScene(), this);
+
     QVBoxLayout *layout = new QVBoxLayout(this);
+    undoButton_ = findChild<QToolButton *>("undoButton");
+    undoButton_->setDisabled(true);
+    redoButton_ = findChild<QToolButton *>("redoButton");
+    redoButton_->setDisabled(true);
+
+    undoButton_->setIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/undo-icon.png"));
+    redoButton_->setIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/redo-icon.png"));
+
+    undoButton_->setMenu(undoManager_->UndoMenu());
+    redoButton_->setMenu(undoManager_->RedoMenu());
+
     layout->addWidget(contents);
     layout->setContentsMargins(0,0,0,0);
     setLayout(layout);
@@ -104,7 +124,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     QWidget *browserWidget = findChild<QWidget*>("browser_widget");
     if (browserWidget)
     {
-        ecBrowser = new ECBrowser(framework, browserWidget);
+        ecBrowser = new ECBrowser(framework, this, browserWidget);
         ecBrowser->setMinimumWidth(100);
         QVBoxLayout *property_layout = dynamic_cast<QVBoxLayout *>(browserWidget->layout());
         if (property_layout)
@@ -153,6 +173,11 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), ecEditorModule, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
     connect(this, SIGNAL(EditEntityXml(const QList<EntityPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<EntityPtr> &)));
     connect(this, SIGNAL(EditComponentXml(const QList<ComponentPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<ComponentPtr> &)));
+    //connect(this, SIGNAL(AttributeAboutToBeEdited(IAttribute *)), this, SLOT(OnAboutToEditAttribute(IAttribute* )));
+    connect(undoManager_, SIGNAL(CanUndoChanged(bool)), this, SLOT(OnUndoChanged(bool)));
+    connect(undoManager_, SIGNAL(CanRedoChanged(bool)), this, SLOT(OnRedoChanged(bool)));
+    connect(undoButton_, SIGNAL(clicked()), undoManager_, SLOT(Undo()));
+    connect(redoButton_, SIGNAL(clicked()), undoManager_, SLOT(Redo()));
 }
 
 ECEditorWindow::~ECEditorWindow()
@@ -628,6 +653,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
 
     // Unbold all items for starters.
     BoldEntityListItems(QSet<entity_id_t>());
+    undoManager_->Clear();
 
     QList<EntityPtr> entities = SelectedEntities();
     // If any of entities was not selected clear the browser window.
@@ -1002,6 +1028,8 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         return;
     }
 
+    QList<entity_id_t> targetEntities;
+
     foreach(entity_id_t id, dialog->EntityIds())
     {
         EntityPtr entity = scene->GetEntity(id);
@@ -1019,13 +1047,130 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
             continue;
         }
 
-        comp = framework->Scene()->CreateComponentByName(scene, dialog->TypeName(), dialog->Name());
-        assert(comp);
-        if (comp)
-        {
-            comp->SetReplicated(dialog->IsReplicated());
-            comp->SetTemporary(dialog->IsTemporary());
-            entity->AddComponent(comp, AttributeChange::Default);
-        }
+        targetEntities << id;
     }
+
+    undoManager_->Push(new AddComponentCommand(scene->shared_from_this(), undoManager_->GetTracker(), targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
+}
+
+void ECEditorWindow::OnAboutToEditAttribute(IAttribute *attr)
+{
+    if (attr)
+    {
+        QString type = attr->TypeName();
+        if (type == "real")
+        {
+            Attribute<float> *a = dynamic_cast<Attribute<float> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<float>(attr, a->Get()));
+        }
+        else if(type == "int")
+        {
+            Attribute<int> *a = dynamic_cast<Attribute<int> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<int>(attr, a->Get()));
+        }
+        else if(type == "uint")
+        {
+            Attribute<unsigned int> *a = dynamic_cast<Attribute<unsigned int> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<unsigned int>(attr, a->Get()));
+        }
+        else if(type == "float2")
+        {
+            Attribute<float2> *a = dynamic_cast<Attribute<float2> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<float2>(attr, a->Get()));
+        }
+        else if(type == "float3")
+        {
+            Attribute<float3> *a = dynamic_cast<Attribute<float3> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<float3>(attr, a->Get()));
+        }
+        else if(type == "float4")
+        {
+            Attribute<float4> *a = dynamic_cast<Attribute<float4> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<float4>(attr, a->Get()));
+        }
+        else if(type == "quat")
+        {
+            Attribute<Quat> *a = dynamic_cast<Attribute<Quat> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<Quat>(attr, a->Get()));
+        }
+        else if(type == "color")
+        {
+            Attribute<Color> *a = dynamic_cast<Attribute<Color> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<Color>(attr, a->Get()));
+        }
+        else if(type == "string")
+        {
+            Attribute<QString> *a = dynamic_cast<Attribute<QString> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<QString>(attr, a->Get()));
+        }
+        else if(type == "bool")
+        {
+            Attribute<bool> *a = dynamic_cast<Attribute<bool> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<bool>(attr, a->Get()));
+        }
+        else if(type == "qvariant")
+        {
+            Attribute<QVariant> *a = dynamic_cast<Attribute<QVariant> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<QVariant>(attr, a->Get()));
+        }
+        else if(type == "qvariantlist")
+        {
+            Attribute<QVariantList> *a = dynamic_cast<Attribute<QVariantList> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<QVariantList>(attr, a->Get()));
+        }
+        else if(type == "entityreference")
+        {
+            Attribute<EntityReference> *a = dynamic_cast<Attribute<EntityReference> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<EntityReference>(attr, a->Get()));
+        }
+        else if(type == "assetreference")
+        {
+            Attribute<AssetReference> *a = dynamic_cast<Attribute<AssetReference> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<AssetReference>(attr, a->Get()));
+        }
+        else if(type == "assetreferencelist")
+        {
+            Attribute<AssetReferenceList> *a = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<AssetReferenceList>(attr, a->Get()));
+        }
+        else if(type == "transform")
+        {
+            Attribute<Transform> *a = dynamic_cast<Attribute<Transform> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<Transform>(attr, a->Get()));
+        }
+        else if(type == "qpoint")
+        {
+            Attribute<QPoint> *a = dynamic_cast<Attribute<QPoint> *>(attr);
+            if (a)
+                undoManager_->Push(new EditAttributeCommand<QPoint>(attr, a->Get()));
+        }
+        else
+            LogWarning("Unknown attribute type " + attr->TypeName() + " for pushing into the undo stack.");
+    }
+}
+
+void ECEditorWindow::OnUndoChanged(bool canUndo)
+{
+    undoButton_->setEnabled(canUndo);
+}
+
+void ECEditorWindow::OnRedoChanged(bool canRedo)
+{
+    redoButton_->setEnabled(canRedo);
 }

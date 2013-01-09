@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "ECBrowser.h"
+#include "ECEditorWindow.h"
 #include "ComponentGroup.h"
 #include "ECComponentEditor.h"
 #include "TreeWidgetItemExpandMemory.h"
@@ -19,6 +20,8 @@
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
 #include "LoggingFunctions.h"
+#include "UndoCommands.h"
+#include "UndoManager.h"
 
 #include <QtBrowserItem>
 #include <QLayout>
@@ -41,10 +44,11 @@
 #define KEY_DELETE_SHORTCUT QKeySequence::Delete
 #endif
 
-ECBrowser::ECBrowser(Framework *framework, QWidget *parent):
+ECBrowser::ECBrowser(Framework *framework, ECEditorWindow *editorWindow, QWidget *parent):
     QtTreePropertyBrowser(parent),
     menu_(0),
     treeWidget_(0),
+    editorWindow_(editorWindow),
     framework_(framework)
 {
     setMouseTracking(true);
@@ -832,11 +836,7 @@ void ECBrowser::CreateAttribute()
         if (!dynComp->ContainsAttribute(name))
         {
             dialogDone = true;
-            if (dynComp->CreateAttribute(typeName, name))
-                dynComp->ComponentChanged(AttributeChange::Default);
-            else
-                QMessageBox::information(framework_->Ui()->MainWindow(), tr("Failed to create attribute"),
-                    tr("Failed to create %1 attribute \"%2\", please try again.").arg(typeName).arg(name));
+            editorWindow_->GetUndoManager()->Push(new AddAttributeCommand(dynComp, typeName, name));
         }
         else
         {
@@ -917,6 +917,8 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     }
 
     ECComponentEditor *componentEditor = new ECComponentEditor(comp, this);
+    connect(componentEditor, SIGNAL(AttributeAboutToBeEdited(IAttribute *)), editorWindow_, SLOT(OnAboutToEditAttribute(IAttribute *)));
+
     for(uint i = 0; i < (uint)treeWidget_->topLevelItemCount(); i++)
         newList.insert(treeWidget_->topLevelItem(i));
 
@@ -1033,11 +1035,7 @@ void ECBrowser::DeleteAttribute(QTreeWidgetItem *item)
             continue;
         EC_DynamicComponent *comp = dynamic_cast<EC_DynamicComponent*>(comp_ptr.get());
         if(comp)
-        {
-            // We assume that item's text contains attribute name.
-            comp->RemoveAttribute(item->text(0));
-            comp->ComponentChanged(AttributeChange::Default);
-        }
+            editorWindow_->GetUndoManager()->Push(new RemoveAttributeCommand(comp_ptr.get()->GetAttribute(item->text(0))));
     }
 }
 
@@ -1057,14 +1055,8 @@ void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
         componentsToDelete = (*iter)->components_;
 
     // Perform the actual deletion.
-    for(std::vector<ComponentWeakPtr>::iterator iter = componentsToDelete.begin(); iter != componentsToDelete.end(); ++iter)
-    {
-        ComponentPtr comp = iter->lock();
-        if (comp)
-        {
-            Entity *entity = comp->ParentEntity();
-            if (entity)
-                entity->RemoveComponent(comp, AttributeChange::Default);
-        }
-    }
+    ComponentPtr comp = componentsToDelete.at(0).lock();
+    editorWindow_->GetUndoManager()->Push(new RemoveCommand(comp->ParentScene(), editorWindow_->GetUndoManager()->GetTracker(), 
+            QList<EntityWeakPtr>(),
+            QList<ComponentWeakPtr>::fromVector(QVector<ComponentWeakPtr>::fromStdVector(componentsToDelete))));
 }
