@@ -2,6 +2,7 @@
 
 #include "InterestManager.h"
 #include "EuclideanDistanceFilter.h"
+#include "Profiler.h"
 
 EuclideanDistanceFilter::EuclideanDistanceFilter(InterestManager *im, int criticaldistance, bool enabled) :
     im_(im),
@@ -13,6 +14,8 @@ EuclideanDistanceFilter::EuclideanDistanceFilter(InterestManager *im, int critic
 
 bool EuclideanDistanceFilter::Filter(IMParameters params)
 {
+    PROFILE(EuclideanDistance_Filter);
+
     if(enabled_)
     {
         float cutoffrange = radius_ * radius_;

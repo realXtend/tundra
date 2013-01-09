@@ -4,6 +4,7 @@
 #include "InterestManager.h"
 #include "RelevanceFilter.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 RelevanceFilter::RelevanceFilter(InterestManager *im, int r, int cr, int interval, bool enabled) :
     im_(im),
@@ -17,6 +18,7 @@ RelevanceFilter::RelevanceFilter(InterestManager *im, int r, int cr, int interva
 
 bool RelevanceFilter::Filter(IMParameters params)
 {   
+    PROFILE(Relevance_Filter);
     if(enabled_)
     {
         float relevancefactor = 0;

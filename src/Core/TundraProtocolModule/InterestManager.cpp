@@ -6,6 +6,7 @@
 #include "EC_Placeable.h"
 #include "InterestManager.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 InterestManager* InterestManager::thisPointer_ = NULL;
 
@@ -45,6 +46,7 @@ int InterestManager::ElapsedTime()
 
 bool InterestManager::CheckRelevance(UserConnectionPtr conn, Entity* changed_entity, SceneWeakPtr scene_, bool headless)
 {
+    PROFILE(Interest_Management);
     ScenePtr scene = scene_.lock();
 
     if (!scene)

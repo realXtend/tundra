@@ -6,6 +6,7 @@
 #include "InterestManager.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 A3Filter::A3Filter(InterestManager *im, int criticalrange, int maxrange, int updateinterval, bool enabled) :
     im_(im),
@@ -23,6 +24,8 @@ A3Filter::~A3Filter()
 
 bool A3Filter::Filter(IMParameters params)
 {
+    PROFILE(A3_Filter);
+
     if(enabled_)
     {
         if(euclideandistance_->Filter(params))

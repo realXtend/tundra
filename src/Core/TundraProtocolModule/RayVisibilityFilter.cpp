@@ -11,6 +11,7 @@
 #include "InterestManager.h"
 #include "RayVisibilityFilter.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 RayVisibilityFilter::RayVisibilityFilter(InterestManager *im, int r, int interval, bool enabled) :
     im_(im),
@@ -23,6 +24,8 @@ RayVisibilityFilter::RayVisibilityFilter(InterestManager *im, int r, int interva
 
 bool RayVisibilityFilter::Filter(IMParameters params)
 {
+    PROFILE(RayVisibility_Filter);
+
     if(enabled_)
     {
         float cutoffrange = range_ * range_;

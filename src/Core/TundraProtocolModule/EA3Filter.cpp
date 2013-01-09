@@ -7,6 +7,7 @@
 #include "RelevanceFilter.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 EA3Filter::EA3Filter(InterestManager *im, int criticalrange, int maxrange, int raycastinterval, int updateinterval, bool enabled) :
     im_(im),
@@ -26,6 +27,7 @@ EA3Filter::~EA3Filter()
 
 bool EA3Filter::Filter(IMParameters params)
 {
+    PROFILE(EA3_Filter);
     if(enabled_)
     {
         if(euclideandistance_->Filter(params))
