@@ -15,6 +15,7 @@
 #include "UndoManager.h"
 
 #include "Framework.h"
+#include "Application.h"
 #include "Scene/Scene.h"
 #include "Entity.h"
 #include "EC_Name.h"
