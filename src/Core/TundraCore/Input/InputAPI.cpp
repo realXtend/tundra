@@ -572,6 +572,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         QKeyEvent *e = static_cast<QKeyEvent*>(event);
 
         KeyEvent keyEvent;
+        keyEvent.qtEvent = e;
         keyEvent.keyCode = StripModifiersFromKey(e->key());
         keyEvent.sequence = QKeySequence(e->key() | e->modifiers());
         keyEvent.keyPressCount = 1;
@@ -655,6 +656,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
             return false;
 
         KeyEvent keyEvent;
+        keyEvent.qtEvent = e;
         keyEvent.keyCode = StripModifiersFromKey(e->key());
         keyEvent.keyPressCount = existingKey->second.keyPressCount;
         keyEvent.modifiers = e->modifiers();

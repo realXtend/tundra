@@ -9,6 +9,8 @@
 #include <QString>
 #include <QKeySequence>
 
+class QKeyEvent;
+
 /// This data structure is passed as a parameter in all keyboard-related input events.
 class TUNDRACORE_API KeyEvent : public QObject
 {
@@ -27,11 +29,15 @@ public:
     keyPressCount(0),
     modifiers(0),
     eventType(KeyEventInvalid),
-    handled(false)
+    handled(false),
+    qtEvent(0)
     {
     }
 
     virtual ~KeyEvent() {}
+    
+    /// Underlying Qt key event.
+    QKeyEvent *qtEvent;
 
     /// The key code associated with this key event.
     /// See Qt::Key from http://doc.trolltech.com/4.6/qt.html#Key-enum
