@@ -346,15 +346,15 @@ IF NOT EXIST "%DEPS%\assimp\". (
    cmake -G %GENERATOR%
    
    :: Debug build.
-   devenv Assimp.sln /Build Debug
+   msbuild Assimp.sln /p:configuration=Debug /nologo
    copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
       
    :: Release or RelWithDebInfo build, depending on which type of release was preferred.
    IF %BUILD_RELEASE% == TRUE (
-      devenv Assimp.sln /Build Release
+      msbuild Assimp.sln /p:configuration=Release /nologo
       copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
    ) ELSE (
-      devenv Assimp.sln /Build RelWithDebInfo
+      msbuild Assimp.sln /p:configuration=RelWithDebInfo /nologo
       copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
    )
 )
