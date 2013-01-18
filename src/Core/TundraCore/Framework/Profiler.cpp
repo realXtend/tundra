@@ -9,6 +9,8 @@
 #include "MemoryLeakCheck.h"
 #include "Math/MathFunc.h"
 
+#include <QThread>
+
 #include <iostream>
 #include <utility>
 
@@ -134,12 +136,12 @@ void ProfilerQObj::EndBlock()
 }
 
 ProfilerNodeTree *Profiler::GetThreadRootBlock()
-{ 
+{
     return thread_specific_root_;
 }
 
 ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
-{ 
+{
 #ifdef PROFILING // If not profiling, never create the root block so the getter will always return 0.
     if (!thread_specific_root_)
         return CreateThreadRootBlock();
@@ -149,7 +151,7 @@ ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
 
 std::string Profiler::GetThisThreadRootBlockName()
 {
-    return std::string("Thread" + ToString(boost::this_thread::get_id()));
+    return std::string("Thread" + ToString(QThread::currentThreadId()));
 }
 
 ProfilerNodeTree *FindBlockByName(ProfilerNodeTree *parent, const char *name)

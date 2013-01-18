@@ -3,18 +3,12 @@
 #pragma once
 
 #include "CoreDefines.h"
-#ifdef _WINDOWS
 #include "Win.h"
-#endif
 #include "TundraCoreApi.h"
 #include "Framework.h"
 #include "HighPerfClock.h"
 
-// Disable warning C4244 coming from boost
-#pragma warning ( push )
-#pragma warning( disable : 4244 )
-#include <boost/thread.hpp>
-#pragma warning( pop )
+#include <QMutex>
 
 // Allows short-timed block tracing
 #define TRACESTART(x) kNet::PolledTimer polledTimer_##x;
@@ -398,7 +392,7 @@ private:
     /// container for all the root profile nodes for each thread.
     std::list<ProfilerNodeTree*> thread_root_nodes_;
 
-    boost::mutex mutex_;
+    QMutex mutex_;
 
     friend class ProfilerQObj;
 };
