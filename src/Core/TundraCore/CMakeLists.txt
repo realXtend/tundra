@@ -15,7 +15,7 @@ file(GLOB MOC_FILES
     Asset/IAssetStorage.h Asset/AssetRefListener.h Asset/BinaryAsset.h Asset/AssetCache.h
     Asset/IAssetBundle.h Asset/IAssetBundleTypeFactory.h
     Audio/AudioAPI.h Audio/AudioAsset.h Audio/SoundChannel.h Audio/SoundSettings.h
-    Console/ConsoleAPI.h Console/ConsoleWidget.h
+    Console/ConsoleAPI.h Console/ConsoleWidget.h Console/ShellInputThread.h
     Framework/Framework.h Framework/Application.h Framework/FrameAPI.h Framework/ConsoleAPI.h
     Framework/DebugAPI.h Framework/ConfigAPI.h Framework/IRenderer.h Framework/IModule.h
     Framework/PluginAPI.h Framework/VersionInfo.h Framework/Profiler.h
