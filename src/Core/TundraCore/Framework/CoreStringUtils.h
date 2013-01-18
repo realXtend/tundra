@@ -5,7 +5,15 @@
 #include "TundraCoreApi.h"
 #include "CoreTypes.h"
 
-#include <sstream>
+// Disable warnings C4702 coming from boost
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4702)
+#endif
+#include <boost/lexical_cast.hpp>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 /// @cond PRIVATE
 class TUNDRACORE_API QStringLessThanNoCase
@@ -30,24 +38,22 @@ std::wstring TUNDRACORE_API ToWString(const std::string &str);
 std::wstring TUNDRACORE_API QStringToWString(const QString &qstr);
 QString TUNDRACORE_API WStringToQString(const std::wstring &str);
 
-/// Converts value to a string.
+/// Converts value to a string. May throw boost::bad_lexical_cast.
 template <class T>
-std::string ToString(const T &val)
-{
-    std::ostringstream ss;
-    ss << val;
-    return ss.str();
-}
+std::string ToString(const T &val) { return boost::lexical_cast<std::string>(val); }
 
-/// Converts string to a primitive type, such as int or float. Returns default value if conversion fails.
+/// Converts string to a primitive type, such as int or float. Returns default value on boost::bad_lexical_cast
 template <typename T>
-T ParseString(const std::string &string, T defaultValue)
+T ParseString(const std::string &val, T defaultValue)
 {
-    std::istringstream ss;
-    ss.str(string);
-    T value;
-    ss >> value;
-    return ss.good() ? value : defaultValue;
+    try
+    {
+        return boost::lexical_cast<T>(val);
+    }
+    catch(boost::bad_lexical_cast e)
+    {
+        return defaultValue;
+    }
 }
 
 /// Split a string by separator char
@@ -85,15 +91,15 @@ std::vector<s8> TUNDRACORE_API StringToBuffer(const std::string& str);
 
 /// Calculate SDBM hash for a string
 uint TUNDRACORE_API ComputeHash(const std::string &str);
-inline uint ComputeHash(const QString &str) { return ComputeHash(str.toStdString()); } /**< @overload */
-inline uint GetHash(const std::string &str) { return ComputeHash(str); } /**< @deprecated Use ComputeHash */
-inline uint GetHash(const QString &str) { return ComputeHash(str); } /**< @deprecated Use ComputeHash */
+inline uint ComputeHash(const QString &str) { return ComputeHash(str.toStdString()); } ///< @overload
+inline uint GetHash(const std::string &str) { return ComputeHash(str); } ///< @deprecated Use ComputeHash
+inline uint GetHash(const QString &str) { return ComputeHash(str); } ///< @deprecated Use ComputeHash
 
 /// Parses boolean value from string, case-insensitive.
 /** Accepted variations are on/off, true/false & 0/1* /
     @param value String to be inspected. */
 bool TUNDRACORE_API ParseBool(QString value);
-inline bool ParseBool(const std::string &value) { return ParseBool(QString::fromStdString(value)); } /**< @overload */
+inline bool ParseBool(const std::string &value) { return ParseBool(QString::fromStdString(value)); } ///< @overload
 
 /// Converts boolean to "true" or "false".
 inline QString BoolToString(bool value) { return value ? "true" : "false"; }
