@@ -276,7 +276,7 @@ private:
 
 namespace
 {
-    /// For boost::thread_specific_ptr, we don't want it doing automatic deletion
+    /// For boost::shared_ptr, we don't want it doing automatic deletion
     void EmptyDeletor(ProfilerNodeTree * UNUSED_PARAM(node)) {}
 }
 
@@ -309,8 +309,6 @@ public slots:
     reporting profiling data. They are threadsafe because the
     variables that are accessed during reporting are ones that are only
     written to during Reset() or ResetThread and that is protected by a lock.
-    Otherwise for thread safety boost::thread_specific_ptr is used to store
-    thread specific profiling data. 
 
     Locks are not used when dealing with profiling blocks, as they might skew
     the data too much.

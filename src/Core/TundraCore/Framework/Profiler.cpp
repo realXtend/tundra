@@ -104,9 +104,7 @@ void Profiler::EndBlock(const std::string &name)
     if (node->recursion_ > 0)
         --node->recursion_;
     else
-    {
         current_node_ = node->Parent();
-    }
 #endif
 }
 
@@ -151,7 +149,9 @@ ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
 
 std::string Profiler::GetThisThreadRootBlockName()
 {
-    return std::string("Thread" + ToString(QThread::currentThreadId()));
+    char str[256];
+    sprintf(str, "Thread%p", QThread::currentThreadId());
+    return str;
 }
 
 ProfilerNodeTree *FindBlockByName(ProfilerNodeTree *parent, const char *name)

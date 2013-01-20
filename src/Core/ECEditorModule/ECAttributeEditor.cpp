@@ -1543,10 +1543,10 @@ template<> void ECAttributeEditor<QVariantList>::Initialize()
             QVariantList variantArray = attribute->Get();
             for(uint i = 0; i < (uint)variantArray.size(); ++i)
             {
-                childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
+                childProperty = stringManager->addProperty(QString("[%1]").arg(i));
                 rootProperty_->addSubProperty(childProperty);
             }
-            childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(variantArray.size()) + "]"));
+            childProperty = stringManager->addProperty(QString("[%1]").arg(variantArray.size()));
             rootProperty_->addSubProperty(childProperty);
 
             Update();
@@ -1899,11 +1899,11 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
             const AssetReferenceList &refList = attribute->Get();
             for(uint i = 0; i < (uint)refList.Size(); ++i)
             {
-                childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
+                childProperty = stringManager->addProperty(QString("[%1]").arg(i));
                 rootProperty_->addSubProperty(childProperty);
             }
 
-            childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(refList.Size()) + "]"));
+            childProperty = stringManager->addProperty(QString("[%1]").arg(refList.Size()));
             rootProperty_->addSubProperty(childProperty);
 
             Update();
@@ -2029,7 +2029,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
             assetType = components_[0].lock()->GetFramework()->Asset()->GetResourceTypeFromAssetRef(refList->Get()[0]);
     }
 
-    LogDebug("OpenAssetsWindow, index " + ToString(currentIndex));
+    LogDebug("OpenAssetsWindow, index " + QString::number(currentIndex));
     LogDebug("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
     connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
