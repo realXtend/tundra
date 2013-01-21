@@ -1,7 +1,13 @@
 #pragma once
 
+#ifdef __APPLE__
+#include "IAttribute.h"
+#include "IComponent.h"
+#include "Entity.h"
+#endif
+
 template <typename T>
-EditAttributeCommand<T>::EditAttributeCommand(IAttribute * attr, const T& value, QUndoCommand *parent = 0) :
+EditAttributeCommand<T>::EditAttributeCommand(IAttribute * attr, const T& value, QUndoCommand *parent) :
     entity_(attr->Owner()->ParentEntity()->shared_from_this()),
     componentName_(attr->Owner()->Name()),
     componentType_(attr->Owner()->TypeName()),
