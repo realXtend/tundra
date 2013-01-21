@@ -1057,111 +1057,131 @@ void ECEditorWindow::OnAboutToEditAttribute(IAttribute *attr)
 {
     if (attr)
     {
-        QString type = attr->TypeName();
-        if (type == "real")
+        u32 type = attr->TypeId();
+        switch (type)
         {
-            Attribute<float> *a = dynamic_cast<Attribute<float> *>(attr);
-            if (a)
+            case cAttributeReal:
+            {
+                Attribute<float> *a = static_cast<Attribute<float> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<float>(attr, a->Get()));
-        }
-        else if(type == "int")
-        {
-            Attribute<int> *a = dynamic_cast<Attribute<int> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeInt:
+            {
+                Attribute<int> *a = static_cast<Attribute<int> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<int>(attr, a->Get()));
-        }
-        else if(type == "uint")
-        {
-            Attribute<unsigned int> *a = dynamic_cast<Attribute<unsigned int> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeUInt:
+            {
+                Attribute<unsigned int> *a = static_cast<Attribute<unsigned int> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<unsigned int>(attr, a->Get()));
-        }
-        else if(type == "float2")
-        {
-            Attribute<float2> *a = dynamic_cast<Attribute<float2> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeFloat2:
+            {
+                Attribute<float2> *a = static_cast<Attribute<float2> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<float2>(attr, a->Get()));
-        }
-        else if(type == "float3")
-        {
-            Attribute<float3> *a = dynamic_cast<Attribute<float3> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeFloat3:
+            {
+                Attribute<float3> *a = static_cast<Attribute<float3> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<float3>(attr, a->Get()));
-        }
-        else if(type == "float4")
-        {
-            Attribute<float4> *a = dynamic_cast<Attribute<float4> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeFloat4:
+            {
+                Attribute<float4> *a = static_cast<Attribute<float4> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<float4>(attr, a->Get()));
-        }
-        else if(type == "quat")
-        {
-            Attribute<Quat> *a = dynamic_cast<Attribute<Quat> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeQuat:
+            {
+                Attribute<Quat> *a = static_cast<Attribute<Quat> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<Quat>(attr, a->Get()));
-        }
-        else if(type == "color")
-        {
-            Attribute<Color> *a = dynamic_cast<Attribute<Color> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeColor:
+            {
+                Attribute<Color> *a = static_cast<Attribute<Color> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<Color>(attr, a->Get()));
-        }
-        else if(type == "string")
-        {
-            Attribute<QString> *a = dynamic_cast<Attribute<QString> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeString:
+            {
+                Attribute<QString> *a = static_cast<Attribute<QString> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<QString>(attr, a->Get()));
-        }
-        else if(type == "bool")
-        {
-            Attribute<bool> *a = dynamic_cast<Attribute<bool> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeBool:
+            {
+                Attribute<bool> *a = static_cast<Attribute<bool> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<bool>(attr, a->Get()));
-        }
-        else if(type == "qvariant")
-        {
-            Attribute<QVariant> *a = dynamic_cast<Attribute<QVariant> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeQVariant:
+            {
+                Attribute<QVariant> *a = static_cast<Attribute<QVariant> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<QVariant>(attr, a->Get()));
-        }
-        else if(type == "qvariantlist")
-        {
-            Attribute<QVariantList> *a = dynamic_cast<Attribute<QVariantList> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeQVariantList:
+            {
+                Attribute<QVariantList> *a = static_cast<Attribute<QVariantList> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<QVariantList>(attr, a->Get()));
-        }
-        else if(type == "entityreference")
-        {
-            Attribute<EntityReference> *a = dynamic_cast<Attribute<EntityReference> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeEntityReference:
+            {
+                Attribute<EntityReference> *a = static_cast<Attribute<EntityReference> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<EntityReference>(attr, a->Get()));
-        }
-        else if(type == "assetreference")
-        {
-            Attribute<AssetReference> *a = dynamic_cast<Attribute<AssetReference> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeAssetReference:
+            {
+                Attribute<AssetReference> *a = static_cast<Attribute<AssetReference> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<AssetReference>(attr, a->Get()));
-        }
-        else if(type == "assetreferencelist")
-        {
-            Attribute<AssetReferenceList> *a = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeAssetReferenceList:
+            {
+                Attribute<AssetReferenceList> *a = static_cast<Attribute<AssetReferenceList> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<AssetReferenceList>(attr, a->Get()));
-        }
-        else if(type == "transform")
-        {
-            Attribute<Transform> *a = dynamic_cast<Attribute<Transform> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeTransform:
+            {
+                Attribute<Transform> *a = static_cast<Attribute<Transform> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<Transform>(attr, a->Get()));
-        }
-        else if(type == "qpoint")
-        {
-            Attribute<QPoint> *a = dynamic_cast<Attribute<QPoint> *>(attr);
-            if (a)
+            }
+            break;
+
+            case cAttributeQPoint:
+            {
+                Attribute<QPoint> *a = static_cast<Attribute<QPoint> *>(attr);
                 undoManager_->Push(new EditAttributeCommand<QPoint>(attr, a->Get()));
+            }
+            break;
+
+            default:
+                LogWarning("Unknown attribute type " + attr->TypeName() + " for pushing into the undo stack.");
         }
-        else
-            LogWarning("Unknown attribute type " + attr->TypeName() + " for pushing into the undo stack.");
     }
 }
 
