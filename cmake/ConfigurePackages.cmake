@@ -299,10 +299,13 @@ endmacro()
 macro(link_package_ogg)
     if (MSVC)
         # Always use ENV_TUNDRA_DEP_PATH as its read from cache. $ENV{TUNDRA_DEP_PATH} is not and can be empty/incorrect.
-        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32) 
-            # Using full-built deps.
+        # TODO Ugly, implement the following using less lines of code
+        if (MSVC90 AND IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32) # Using full-built deps VC9 deps.
             target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32/Release/libogg_static.lib)
             target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2008/Win32/Debug/libogg_static.lib)
+        elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2010/Win32) # Using full-built deps VC10/11 deps.
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2010/Win32/Release/libogg_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/ogg/win32/VS2010/Win32/Debug/libogg_static.lib)
         elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogg/lib/Release) 
             # Using pre-built deps mirrored from full-built deps.
             target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/ogg/lib/Release/libogg_static.lib)
@@ -336,19 +339,24 @@ endmacro()
 macro(link_package_vorbis)
     if (MSVC)
         # Always use ENV_TUNDRA_DEP_PATH as its read from cache. $ENV{TUNDRA_DEP_PATH} is not and can be empty/incorrect.
-        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32) 
-            # Using full-built deps.
+        # TODO Ugly, implement the following using less lines of code
+        if (MSVC90 AND IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32) # Using full-built deps VC9 deps.
             target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Release/libvorbis_static.lib)
             target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Release/libvorbisfile_static.lib)
             target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Debug/libvorbis_static.lib)
             target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2008/Win32/Debug/libvorbisfile_static.lib)
-        elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Release) 
+        elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2010/Win32) # Using full-built deps VC10/11 deps.
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2010/Win32/Release/libvorbis_static.lib)
+            target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2010/Win32/Release/libvorbisfile_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2010/Win32/Debug/libvorbis_static.lib)
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/VS2010/Win32/Debug/libvorbisfile_static.lib)
+        elseif (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Release)
             # Using pre-built deps mirrored from full-built deps.
             target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Release/libvorbis_static.lib)
             target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Release/libvorbisfile_static.lib)
             target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Debug/libvorbis_static.lib)
-            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Debug/libvorbisfile_static.lib)  
-        else() 
+            target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/lib/Debug/libvorbisfile_static.lib)
+        else()
             # Using old pre-built VS2008/VS2010 deps. TODO: safe to remove?
             target_link_libraries(${TARGET_NAME} optimized libvorbis optimized libvorbisfile)
             target_link_libraries(${TARGET_NAME} debug libvorbisd debug libvorbisfiled)
