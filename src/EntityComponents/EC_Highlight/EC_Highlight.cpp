@@ -83,7 +83,17 @@ void  EC_Highlight::Show()
                 {
                     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(clone.get());
                     CreateHighlightToOgreMaterial(matAsset);
-                    mesh->GetEntity()->getSubEntity(i)->setMaterial(matAsset->ogreMaterial);
+
+                    try
+                    {
+                        mesh->GetEntity()->getSubEntity(i)->setMaterial(matAsset->ogreMaterial);
+                    }
+                    catch(Ogre::Exception& e)
+                    {
+                        LogError("EC_Highlight::Show: Could not set material " + matAsset->Name() + " to subentity " + i + ":" + e.what());
+                        continue;
+                    }
+
                     materials_.push_back(clone);
 
                     // Store original ref to be restored in Hide()
@@ -109,7 +119,15 @@ void EC_Highlight::Hide()
             if ((asset) && (asset->IsLoaded()) && (dynamic_cast<OgreMaterialAsset*>(asset.get())))
             {
                 OgreMaterialAsset *matAsset = dynamic_cast<OgreMaterialAsset*> (asset.get());
-                mesh->GetEntity()->getSubEntity(index)->setMaterial(matAsset->ogreMaterial);
+                try
+                {
+                    mesh->GetEntity()->getSubEntity(index)->setMaterial(matAsset->ogreMaterial);
+                }
+                catch(Ogre::Exception& e)
+                {
+                    LogError("EC_Highlight::Hide: Could not set material " + matAsset->Name() + " to subentity " + index + ":" + e.what());
+                    continue;
+                }
             }
         }
         originalMaterials_.clear();
