@@ -25,6 +25,8 @@
 #include <OgreMaterial.h>
 #include <OgreTechnique.h>
 #include <OgrePass.h>
+#include <OgreEntity.h>
+#include <OgreSubEntity.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -81,7 +83,7 @@ void  EC_Highlight::Show()
                 {
                     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(clone.get());
                     CreateHighlightToOgreMaterial(matAsset);
-                    mesh->SetMaterial(i, clone->Name(), AttributeChange::Disconnected);
+                    mesh->GetEntity()->getSubEntity(i)->setMaterial(matAsset->ogreMaterial);
                     materials_.push_back(clone);
 
                     // Store original ref to be restored in Hide()
@@ -98,9 +100,18 @@ void EC_Highlight::Hide()
     {
         // Restore mesh component's original materials to hide highlight effect.
         // Use AttributeChange::LocalOnly to ensure all editors will show the real refs.
+        AssetAPI * assetAPI = framework->Asset();
         EC_Mesh* mesh = mesh_.lock().get();
         foreach(uint index, originalMaterials_.keys())
-            mesh->SetMaterial(index, originalMaterials_[index], AttributeChange::LocalOnly);
+        {
+            QString fullName = assetAPI->ResolveAssetRef("", originalMaterials_[index]);
+            AssetPtr asset = assetAPI->GetAsset(fullName);
+            if ((asset) && (asset->IsLoaded()) && (dynamic_cast<OgreMaterialAsset*>(asset.get())))
+            {
+                OgreMaterialAsset *matAsset = dynamic_cast<OgreMaterialAsset*> (asset.get());
+                mesh->GetEntity()->getSubEntity(index)->setMaterial(matAsset->ogreMaterial);
+            }
+        }
         originalMaterials_.clear();
     }
     
