@@ -94,7 +94,7 @@ private slots:
     void OnComponentRemoved(IComponent *component, AttributeChange::Type change);
 
 private:
-    void AttibutesChanged();
+    void AttributesChanged();
     ComponentPtr FindPlaceable() const;
 
     std::map<QString, Ogre::ParticleSystem*> particleSystems_;
