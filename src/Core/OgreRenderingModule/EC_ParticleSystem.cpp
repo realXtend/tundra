@@ -209,7 +209,7 @@ void EC_ParticleSystem::SoftStopParticleSystem(const QString& systemName)
     system->setEmitting(false);
 }
 
-void EC_ParticleSystem::AttibutesChanged()
+void EC_ParticleSystem::AttributesChanged()
 {
     if (!ViewEnabled())
         return;
