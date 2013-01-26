@@ -51,6 +51,7 @@ EC_Billboard::EC_Billboard(Scene* scene) :
     connect(materialAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
     
     connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Billboard::~EC_Billboard()
@@ -189,19 +190,20 @@ void EC_Billboard::DetachBillboard()
 // Matches OgrePrerequisites.h:62 (OGRE_VERSION #define)
 #define OGRE_VER(major, minor, patch) (((major) << 16) | ((minor) << 8) | (patch))
 
-void EC_Billboard::AttributesChanged()
+void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
 {
-    if (!ViewEnabled())
-        return;
-    if (position.ValueChanged() || width.ValueChanged()  || height.ValueChanged() || rotation.ValueChanged())
+    if (attribute == &position || attribute == &width || attribute == &height || attribute == &rotation)
     {
         if (billboard_)
             UpdateBillboardProperties();
         else
             CreateBillboard();
     }
-    if (materialRef.ValueChanged())
+    else if (attribute == &materialRef)
     {
+        if (!ViewEnabled())
+            return;
+        
         // In the case of empty ref setting it to the ref listener will
         // make sure we don't get called to OnMaterialAssetLoaded. This would happen 
         // if something touches the previously set material in the asset system (eg. reload).
@@ -220,7 +222,7 @@ void EC_Billboard::AttributesChanged()
             LogError("EC_Billboard: Failed to reset visuals after material was removed: " + std::string(e.what()));
         }
     }
-    if (show.ValueChanged())
+    else if (attribute == &show)
     {
         if (show.Get())
             Show();
