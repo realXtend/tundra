@@ -526,9 +526,8 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
    cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
-   MSBuild Dependencies\src\OgreDependencies.vs2010.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   ::MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   ::MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+   MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+   MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
@@ -605,14 +604,9 @@ IF %BUILD_RELEASE%==FALSE (
 )
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-set OGRE_HOME=%DEPS%\ogre-safe-nocrashes\SDK
-set BOOST_ROOT=%DEPS%\boost
-set BOOST_INCLUDEDIR=%DEPS%\boost
-set BOOST_LIBRARYDIR=%DEPS%\boost\stage\lib
 cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
 cd "%DEPS%\realxtend-tundra-deps\hydrax"
 IF %GENERATOR%==%GENERATOR_VS2008% cd msvc9
-::IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade -nologo "Hydrax.sln"
 MSBuild Hydrax.sln /p:configuration=Debug /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
 MSBuild Hydrax.sln /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
