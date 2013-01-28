@@ -15,10 +15,6 @@
 
 ## Various flags/defines that configure your build
 
-# TUNDRA_NO_BOOST defines do we want to replace usage of Boost with std equivalents.
-# Requires compiler with up-to-date TR1 support. Also requires that the Tundra dependencies
-# are build with Boost disabled.
-set(TUNDRA_NO_BOOST 0)
 set(TUNDRACORE_SHARED 1)            # Do we want to build TundraCore as a shared or static library.
 set(BUILD_SDK_ONLY 0)               # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
 set(BUILDING_INSTALLER 0)           # Enables additional resources to create icon for the main executable.
@@ -31,6 +27,11 @@ else()
     set(ENABLE_HYDRAX 0)
     set(ENABLE_SKYX 0)
     set(ENABLE_OPEN_ASSET_IMPORT 0)
+endif()
+
+# TUNDRA_NO_BOOST is configured in the root CMakeLists.txt
+if (TUNDRA_NO_BOOST)
+    add_definitions(-DTUNDRA_NO_BOOST)
 endif()
 
 if (ENABLE_OPEN_ASSET_IMPORT)
