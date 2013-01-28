@@ -173,9 +173,14 @@ endfunction ()
 macro (setup_install_target)
     # install libraries and executables
     if (${TARGET_LIB_TYPE} STREQUAL "SHARED")
+        # assume /plugins for shared libs, if not plugins assume root.
+        set (INTALL_SHARED_TARGET "plugins")
+        if (NOT "${TARGET_OUTPUT}" STREQUAL "plugins")
+            set (INTALL_SHARED_TARGET "")
+        endif ()
         install (TARGETS ${TARGET_NAME} 
-                 LIBRARY DESTINATION "bin/plugins" # non DLL platforms shared libs are LIBRARY
-                 RUNTIME DESTINATION "bin/plugins" # DLL platforms shared libs are RUNTIME
+                 LIBRARY DESTINATION "bin/${INTALL_SHARED_TARGET}" # non DLL platforms shared libs are LIBRARY
+                 RUNTIME DESTINATION "bin/${INTALL_SHARED_TARGET}" # DLL platforms shared libs are RUNTIME
                  ARCHIVE DESTINATION "lib" # DLL platforms static link part of the shared lib are ARCHIVE
                  CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
     endif ()
