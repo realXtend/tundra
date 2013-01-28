@@ -5,44 +5,21 @@ Copyright (c) 2011 Jacob 'jacmoe' Moen
 Licensed under the MIT license:
 */
 
+#include "OpenAssetImport.h"
 #include "CoreDefines.h"
 #include "Framework.h"
 #include "OgreMaterialAsset.h"
 #include "LoggingFunctions.h"
-#include "OpenAssetImport.h"
-#include "assimp/DefaultLogger.hpp"
-#include "assimp/Importer.hpp"
-#include "OgreDataStream.h"
-#include "OgreImage.h"
-#include "OgreTexture.h"
-#include "OgreTextureManager.h"
-#include "OgreMaterial.h"
-#include "OgreMaterialManager.h"
-#include "OgreLog.h"
-#include "OgreLogManager.h"
-#include "OgreHardwareBuffer.h"
-#include "OgreMesh.h"
-#include "OgreSubMesh.h"
-#include "OgreMatrix4.h"
-#include "OgreDefaultHardwareBufferManager.h"
-#include "OgreMeshManager.h"
-#include "OgreSceneManager.h"
-#include <OgreStringConverter.h>
-#include <OgreSkeletonManager.h>
-#include "OgreMeshSerializer.h"
-#include "OgreSkeletonSerializer.h"
-#include "OgreAnimation.h"
-#include "OgreAnimationTrack.h"
-#include "OgreKeyFrame.h"
-#include "OgreVector3.h"
-#include "OgreRoot.h"
-#include "OgreRenderSystem.h"
-#include <QString>
-#include <QStringList>
-#include <QObject>
-#include <boost/tuple/tuple.hpp>
+#include "Math/MathFunc.h"
+
+#include <Ogre.h>
+
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/Importer.hpp>
 
 //#define SKELETON_ENABLED
+
+int OpenAssetImport::msBoneCount = 0;
 
 OpenAssetImport::OpenAssetImport(AssetAPI *assetApi):
 assetAPI(assetApi), meshCreated(false), texCount(0)
@@ -51,16 +28,6 @@ assetAPI(assetApi), meshCreated(false), texCount(0)
 
 OpenAssetImport::~OpenAssetImport()
 {
-}
-
-
-int OpenAssetImport::msBoneCount = 0;
-
-double degreeToRadian(double degree)
-{
-    double radian = 0;
-    radian = degree * (Ogre::Math::PI/180);
-    return radian;
 }
 
 /**************************************************************************
@@ -485,7 +452,7 @@ void OpenAssetImport::Convert(const u8 *data_, size_t numBytes, const QString &f
 #endif
 
     aiMatrix4x4 transform;
-    transform.FromEulerAnglesXYZ(degreeToRadian(90), 0, degreeToRadian(180));
+    transform.FromEulerAnglesXYZ(DegToRad(90), 0, DegToRad(180));
     scene->mRootNode->mTransformation = transform;
 
     ComputeNodesDerivedTransform(scene, scene->mRootNode, transform);
