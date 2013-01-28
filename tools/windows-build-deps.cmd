@@ -672,7 +672,7 @@ IF EXIST "%DEPS%\ogg". (
    ) ELSE (
       cd "%DEPS%\ogg\win32\VS2010"
    )
-::   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade -nologo "libogg_static.sln"
+
    cecho {0D}Building Ogg. Please be patient, this will take a while.{# #}{\n}
    MSBuild libogg_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild libogg_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
@@ -691,7 +691,7 @@ IF EXIST "%DEPS%\vorbis". (
       cd "%DEPS%\vorbis\win32\VS2010"
    )
    echo %CD%
-::   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade -nologo "vorbis_static.sln"
+
    cecho {0D}Building Vorbis. Please be patient, this will take a while.{# #}{\n}
    MSBuild vorbis_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild vorbis_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
@@ -704,7 +704,7 @@ IF NOT EXIST "%DEPS%\theora". (
    cecho {0D}Cloning Theora into "%DEPS%\theora".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
    cd "%DEPS%\theora\win32\VS2008"
-::   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade -nologo "libtheora_static.sln"
+
    cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
    MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /t:libtheora_static /clp:ErrorsOnly /nologo  /m:%NUMBER_OF_PROCESSORS%
@@ -720,13 +720,12 @@ IF NOT EXIST "%DEPS%\speex". (
    svn checkout http://svn.xiph.org/trunk/speex/ speex
    cd speex\win32\VS2008
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-::   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade -nologo "libspeex.sln"
+
    cecho {0D}Building Speex. Please be patient, this will take a while.{# #}{\n}
    MSBuild libspeex.sln /p:configuration=Debug /t:libspeex /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild libspeex.sln /p:configuration=Release /t:libspeex /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
    :: For some reason /t:libspeex;libspeexdsp wont build the dsp lib, so do it separately.
    :: Only build release because the target directory and name are the same for debug and release.
-   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade -nologo "libspeexdsp\libspeexdsp.vcproj"
    MSBuild libspeexdsp\libspeexdsp.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
    :: Copy libspeex.lib also to \lib
    copy /Y Win32\Release\libspeex.lib "%DEPS%\speex\lib"
@@ -790,7 +789,7 @@ IF NOT EXIST "%DEPS%\celt\.git" (
    call git clone http://git.xiph.org/celt.git celt
    :: Copy config.h from head to the 0.11.1 tag.
    cd celt
-   copy /Y msvc\config.h config.h
+   copy /Y msvc\config.h libcelt\config.h
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    call git checkout -b v0.11.1 v0.11.1
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -966,8 +965,7 @@ IF NOT EXIST "%DEPS%\zziplib". (
    :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
    cecho {0D}Building zziplib from premade project %TOOLS%\utils-windows\vs2008-zziplib.vcproj{# #}{\n}
    copy /Y "%TOOLS%\utils-windows\vs2008-zziplib.vcproj" zziplib.vcproj
-   :: Update project file if using VS newer than 2008
-   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade -nologo "zziplib.vcproj"
+
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo  /m:%NUMBER_OF_PROCESSORS%
    
