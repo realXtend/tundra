@@ -48,9 +48,11 @@ else()
     build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 endif()
 
-# Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propagate from here to each library.
-if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
-   target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+if (NOT TUNDRA_NO_BOOST)
+    # Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propagate from here to each library.
+    if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
+       target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+    endif()
 endif()
 
 link_package(QT4)
@@ -65,8 +67,7 @@ link_modules(Math)
 # Add log library on Android
 if (ANDROID)
     target_link_libraries (${TARGET_NAME} log)
-endif ()
-
+endif()
 
 SetupCompileFlagsWithPCH()
 
