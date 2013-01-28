@@ -79,7 +79,3 @@ if (VS90)
 elseif(VC100)
     setup_install_windows_deps("OpenAL32.dll" Release|RelWithDebInfo|Debug)
 endif()
-
-setup_install_windows_deps(
-    "libogg.dll;libvorbis.dll;libvorbisfile.dll;libtheora.dll" Release|RelWithDebInfo
-    "liboggd.dll;libvorbisd.dll;libvorbisfiled.dll;libtheorad.dll" Debug)
