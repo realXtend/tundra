@@ -86,7 +86,6 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
 SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
-    updatePeriod_(1.0f / 20.0f),
     interestmanager_(0),
     updateAcc_(0.0),
     maxLinExtrapTime_(3.0f),
