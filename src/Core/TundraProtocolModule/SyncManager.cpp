@@ -687,7 +687,7 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
         }
         else // Linear extrapolation if server has not sent an update.
         {
-            if (isNewtonian)
+            if (isNewtonian && maxLinExtrapTime_ > 1.0f)
                 pos = r.interpEnd.pos + r.interpEnd.vel * (r.interpTime-1.f) * interpPeriod;
             else
                 pos = r.interpEnd.pos;
@@ -704,21 +704,23 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
 
         // Local simulation steps:
         // One fixed update interval: interpolate
-        // Four subsequent update intervals: linear extrapolation
+        // Two subsequent update intervals: linear extrapolation
         // All subsequente update intervals: local physics extrapolation.
-        const float maxLinExtrapTime = 15.f; // For one second of extrapolation set to 1.f / interpPeriod;
-        if (r.interpTime >= maxLinExtrapTime) // Hand-off to client-side physics?
+        if (r.interpTime >= maxLinExtrapTime_) // Hand-off to client-side physics?
         {
             if (rigidBody)
             {
-                bool objectIsInRest = (r.interpEnd.vel.LengthSq() < 1e-4f && r.interpEnd.angVel.LengthSq() < 1e-4f);
-                // Now the local client-side physics will take over the simulation of this rigid body, but only if the object
-                // is moving. This is because the client shouldn't wake up the object (locally) if it's stationary, but wait for the
-                // server-side signal for that event.
-                rigidBody->SetClientExtrapolating(objectIsInRest == false);
-                // Give starting parameters for the simulation.
-                rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
-                rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
+                if (!noClientPhysicsHandoff_)
+                {
+                    bool objectIsInRest = (r.interpEnd.vel.LengthSq() < 1e-4f && r.interpEnd.angVel.LengthSq() < 1e-4f);
+                    // Now the local client-side physics will take over the simulation of this rigid body, but only if the object
+                    // is moving. This is because the client shouldn't wake up the object (locally) if it's stationary, but wait for the
+                    // server-side signal for that event.
+                    rigidBody->SetClientExtrapolating(objectIsInRest == false);
+                    // Give starting parameters for the simulation.
+                    rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
+                    rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
+                }
                 r.interpolatorActive = false;
             }
             ++iter;
@@ -815,7 +817,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
     {
         const int maxRigidBodyMessageSizeBits = 350; // An update for a single rigid body can take at most this many bits. (conservative bound)
         // If we filled up this message, send it out and start crafting anothero one.
-        if (maxMessageSizeBytes * 8 - ds.BitsFilled() <= maxRigidBodyMessageSizeBits)
+        if (maxMessageSizeBytes * 8 - (int)ds.BitsFilled() <= maxRigidBodyMessageSizeBits)
         {
             destination->EndAndQueueMessage(msg, ds.BytesFilled());
             msg = destination->StartNewMessage(cRigidBodyUpdateMessage, maxMessageSizeBytes);
