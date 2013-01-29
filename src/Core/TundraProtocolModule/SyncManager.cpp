@@ -12,7 +12,7 @@
 #include "MsgEntityAction.h"
 #include "OgreWorld.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "CoreStringUtils.h"
 #include "EC_DynamicComponent.h"
@@ -87,12 +87,19 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
     updatePeriod_(1.0f / 20.0f),
-    interestManager(0),
-    updateAcc_(0.0)
+    interestmanager_(0),
+    updateAcc_(0.0),
+    maxLinExtrapTime_(3.0f),
+    noClientPhysicsHandoff_(false)
 {
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
+    
+    if (framework_->HasCommandLineParameter("--noclientphysics"))
+        noClientPhysicsHandoff_ = true;
+    
+    GetClientExtrapolationTime();
 }
 
 SyncManager::~SyncManager()
@@ -186,6 +193,23 @@ void SyncManager::SetUpdatePeriod(float period)
     if (period < 0.01f)
         period = 0.01f;
     updatePeriod_ = period;
+    
+    GetClientExtrapolationTime();
+}
+
+void SyncManager::GetClientExtrapolationTime()
+{
+    QStringList extrapTimeParam = framework_->CommandLineParameters("--clientextrapolationtime");
+    if (extrapTimeParam.size() > 0)
+    {
+        bool ok;
+        float newExtrapTime = extrapTimeParam.first().toFloat(&ok);
+        if (ok && newExtrapTime >= 0.0f)
+        {
+            // First update period is always interpolation, and extrapolation time is in addition to that
+            maxLinExtrapTime_ = 1.0f + newExtrapTime / 1000.0f / updatePeriod_;
+        }
+    }
 }
 
 SceneSyncState* SyncManager::SceneState(int connectionId) const
@@ -338,7 +362,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
 
     bool isServer = owner_->IsServer();
     
-    // Client: r for stopping interpolation, if we change a currently interpolating variable ourselves
+    // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
     if (!isServer) // Since the server never interpolates attributes, we don't need to do this check on the server at all.
     {
         ScenePtr scene = scene_.lock();
@@ -364,18 +388,8 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         // clients on the next network sync iteration.
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-        {
             if ((*i)->syncState)
-            {
-                /// Check here if the attribute should be updated to which client?
-                /// @remarks InterestManager functionality
-                if(interestManager && !interestManager->CheckRelevance((*i), entity, scene_, framework_->IsHeadless()))
-                        return;
-
-                else    //If IM is not available, accept the update
-                    (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
-            }
-        }
+                (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
     }
     else
     {
