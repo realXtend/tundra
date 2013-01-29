@@ -14,20 +14,21 @@
 #include "EC_OgreCompositor.h"
 #include "EC_RttTarget.h"
 #include "EC_Material.h"
+#include "EC_Billboard.h"
+#include "EC_ParticleSystem.h"
+#include "EC_Fog.h"
+#include "EC_EnvironmentLight.h"
+#include "EC_Sky.h"
 #include "OgreWorld.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreMaterialAsset.h"
-#include "OgreProfiler.h"
-#ifdef OGRE_HAS_PROFILER_HOOKS
-#include "OgreProfilerHook.h"
-#endif
 #include "TextureAsset.h"
 
 #include "Application.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AssetAPI.h"
 #include "AssetCache.h"
 #include "GenericAssetFactory.h"
@@ -36,6 +37,13 @@
 #include "ConsoleAPI.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
+
+#include "StaticPluginRegistry.h"
+
+#include <OgreProfiler.h>
+#ifdef OGRE_HAS_PROFILER_HOOKS
+#include <OgreProfilerHook.h>
+#endif
 
 #include "MemoryLeakCheck.h"
 
@@ -72,9 +80,8 @@ void Profiler_EndBlock()
     if (p)
     {
         ProfilerNodeTree *treeNode = p->CurrentNode();
-        if (!treeNode)
-            return;
-        p->EndBlock(treeNode->Name());
+        if (treeNode)
+            p->EndBlock(treeNode->Name());
     }
 #endif
 }
@@ -108,24 +115,55 @@ void OgreRenderingModule::Load()
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_OgreCompositor>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RttTarget>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Material>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Billboard>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Fog>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sky>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_EnvironmentLight>));
+
+    // Main ogre .mesh extension
+    QStringList meshExtensions;
+    meshExtensions << ".mesh";
+    
+    // These file types are supported by the Open Asset Import library:
+    // http://assimp.sourceforge.net/main_features_formats.html
+#ifdef ASSIMP_ENABLED
+    meshExtensions << ".3d" << ".b3d" << ".dae" << ".bvh" << ".3ds" << ".ase" << ".obj" << ".ply" << ".dxf" 
+        << ".nff" << ".smd" << ".vta" << ".mdl" << ".md2" << ".md3" << ".mdc" << ".md5mesh" << ".x" << ".q3o" 
+        << ".q3s" << ".raw" << ".ac" << ".stl" << ".irrmesh" << ".irr" << ".off" << ".ter" << ".mdl" << ".hmp"
+        << ".ms3d" << ".lwo" << ".lws" << ".lxo" << ".csm" << ".ply" << ".cob" << ".scn";
+#endif
+
+    // The following file types are from FreeImage's list of supported formats:
+    // http://freeimage.sourceforge.net/features.html
+    // The GIMP xcf is not in the list of known image formats, but detect it anyways.
+    // Put the most common formats to the front as this list will be iterated to find asset types.
+    QStringList textureExtensions;
+    textureExtensions << ".dds" << ".png" << ".jpeg" << ".jpg" << ".gif" << ".bmp" << ".tga" << ".targa" << ".tiff" << ".tif"
+        << ".cut" << ".exr" << ".g3"  << ".hdr" << ".ico" << ".iff" << ".j2k" << ".j2c" << ".jp2" << ".jif" << ".jpe" << ".jng" 
+        << ".koa" << ".lbm" << ".mng" << ".pbm" << ".pcd" << ".pcx" << ".pfm" << ".pict" << ".psd" << ".pgm" <<  ".ppm" << ".ras" 
+        << ".raw" << ".sgi" << ".wap" << ".wbmp" << ".wbm" << ".xbm" << ".xcf" << ".xpm";
+
+    // Add CRN format that we handle in Tundra, decompressing it to DDS before passing the data to Ogre.
+    textureExtensions << ".crn";
 
     // Create asset type factories for each asset OgreRenderingModule provides to the system.
-    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));
+    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh", meshExtensions)));
 
     // Loading materials crashes Ogre in headless mode because we don't have Ogre Renderer running, so only register the Ogre material asset type if not in headless mode.
     if (!framework_->IsHeadless())
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial", ".material")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture", textureExtensions)));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle", ".particle")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton", ".skeleton")));
     }
     else
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreMaterial")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Texture")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreParticle")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreSkeleton")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreMaterial", ".material")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Texture", textureExtensions)));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreParticle", ".particle")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreSkeleton", ".skeleton")));
     }
 }
 
@@ -286,13 +324,17 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
 
 } // ~namespace OgreRenderer
 
-using namespace OgreRenderer;
-
 extern "C"
 {
+
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(OgreRenderingModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     fw->RegisterModule(new OgreRenderer::OgreRenderingModule());
 }
+
 }

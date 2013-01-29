@@ -94,7 +94,7 @@ cecho {0E}Warning: This script is not fully unattended once you continue.{# #}{\
 cecho {0E}         When building Qt, you must press 'y' once for the script to proceed.{# #}{\n}
 echo.
 
-echo If you are not ready with the above, press Ctrl-C to abort!\n
+echo If you are not ready with the above, press Ctrl-C to abort!
 pause
 echo.
 
@@ -163,7 +163,7 @@ IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
       cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
+      wget ftp://ftp.qt-project.org/qt/source/qt-everywhere-opensource-src-4.7.4.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
@@ -183,7 +183,7 @@ IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
    IF NOT EXIST jom_1_0_11.zip. (
       cecho {0D}Downloading JOM build tool for Qt.{# #}{\n}
-      wget ftp://ftp.qt.nokia.com/jom/jom_1_0_11.zip
+      wget http://releases.qt-project.org/jom/jom_1_0_11.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
@@ -337,6 +337,28 @@ IF NOT EXIST "%DEPS%\boost". (
    cecho {0D}Boost already built. Skipping.{# #}{\n}
 )
 
+IF NOT EXIST "%DEPS%\assimp\". (
+   cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
+   cd "%DEPS%"
+:: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
+   svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+   cd assimp
+   cmake -G %GENERATOR%
+   
+   :: Debug build.
+   msbuild Assimp.sln /p:configuration=Debug /nologo
+   copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
+      
+   :: Release or RelWithDebInfo build, depending on which type of release was preferred.
+   IF %BUILD_RELEASE% == TRUE (
+      msbuild Assimp.sln /p:configuration=Release /nologo
+      copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
+   ) ELSE (
+      msbuild Assimp.sln /p:configuration=RelWithDebInfo /nologo
+      copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
+   )
+)
+
 IF NOT EXIST "%DEPS%\kNet\". (
    cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
    cd "%DEPS%"
@@ -364,7 +386,7 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}Cloning QtScriptGenerator into "%DEPS%\qtscriptgenerator".{# #}{\n}
    cd "%DEPS%"
-   call git clone git://gitorious.org/qt-labs/qtscriptgenerator
+   call git clone https://git.gitorious.org/qt-labs/qtscriptgenerator
    IF NOT EXIST "%DEPS%\qtscriptgenerator\.git" GOTO :ERROR
 ) ELSE (
    cecho {0D}QtScriptGenerator already cloned. Skipping.{# #}{\n}
@@ -571,7 +593,7 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 IF NOT EXIST "%DEPS%\qt-solutions". (
    cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
    cd "%DEPS%"
-   call git clone git://gitorious.org/qt-solutions/qt-solutions.git
+   call git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
    IF NOT EXIST "%DEPS%\qt-solutions\.git" GOTO :ERROR
    cd qt-solutions\qtpropertybrowser
 
@@ -716,7 +738,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
 IF NOT EXIST "%DEPS%\celt\.git" (
    cd "%DEPS%"
    cecho {0D}Cloning Celt 0.11.1 into "%DEPS%\celt".{# #}{\n}
-   call git clone git://git.xiph.org/celt.git celt
+   call git clone http://git.xiph.org/celt.git celt
    :: Copy config.h from head to the 0.11.1 tag.
    cd celt
    copy /Y msvc\config.h config.h
@@ -792,6 +814,110 @@ IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
+)
+
+::qxmpp
+IF NOT EXIST "%DEPS%\qxmpp\". (
+   cecho {0D}Cloning qxmpp into "%DEPS%\qxmpp".{# #}{\n}
+   cd "%DEPS%"
+   svn checkout http://qxmpp.googlecode.com/svn/trunk@r1671 qxmpp
+   IF NOT EXIST "%DEPS%\qxmpp\.svn" GOTO :ERROR
+   cecho {0D}Building qxmpp.{# #}{\n}
+   cd qxmpp
+   sed 's/# DEFINES += QXMPP_USE_SPEEX/DEFINES += QXMPP_USE_SPEEX/g' < src\src.pro > src\temp
+   sed 's/# LIBS += -lspeex/LIBS += -L"..\\\..\\\speex\\\lib\\\libspeex.lib -L"..\\\.\\\speex\\\lib\\\libspeexdsp.lib"/g' < src\temp > src\src.pro
+   sed 's/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES ..\\\..\\\speex\\\include\nDEPENDPATH += ..\\\..\\\speex/g' < src\src.pro > src\temp
+   mv src\temp src\src.pro
+   sed 's/LIBS += $$QXMPP_LIBS/LIBS += $$QXMPP_LIBS -L"..\\\..\\\speex\\\lib\\\libspeex.lib" -L"..\\\..\\\speex\\\lib\\\libspeexdsp.lib"/g' < tests\tests.pro > tests\temp
+   mv tests\temp tests\tests.pro
+   qmake
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   IF %USE_JOM%==TRUE (
+      cecho {0D}- Building qxmpp with jom{# #}{\n}
+      "%DEPS%\qt\jom\jom.exe" sub-src-all-ordered
+   ) ELSE (
+      cecho {0D}- Building qxmpp with nmake{# #}{\n}
+      nmake /nologo sub-src-all-ordered
+   )
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   IF NOT EXIST "%DEPS%\qxmpp\include\qxmpp". mkdir %DEPS%\qxmpp\include\qxmpp
+   copy /Y "src\*.h" "%DEPS%\qxmpp\include\qxmpp\"
+) ELSE (
+   cecho {0D}qxmpp already built. Skipping.{# #}{\n}
+)
+
+:: ZLIB
+IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". (
+   CD "%DEPS%"
+   rmdir /S /Q "%DEPS%\zlib"
+   cecho {0D}Downloading zlib 1.2.7{# #}{\n}
+   wget http://zlib.net/zlib-1.2.7.tar.gz
+   IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+) ELSE (
+   cecho {0D}zlib 1.2.7 already downloaded. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%DEPS%\zlib". (
+   CD "%DEPS%"
+   cecho {0D}Extracting zlib 1.2.7 package to "%DEPS%\zlib"{# #}{\n}
+   mkdir zlib
+   7za e -y zlib-1.2.7.tar.gz
+   7za x -y -ozlib zlib-1.2.7.tar
+   del /Q zlib-1.2.7.tar
+   cecho {0D}Building zlib 1.2.7{# #}{\n}
+   cd zlib
+   mkdir lib
+   mkdir include
+   cd zlib-1.2.7
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   cd contrib\masmx86
+   call bld_ml32.bat
+   cd ..\..
+   nmake -f win32/Makefile.msc LOC="-DASMV -DASMINF" OBJA="inffas32.obj match686.obj"
+   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   copy /Y zlib.lib ..\lib\
+   copy /Y *.h ..\include\
+) ELSE (
+   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+)
+
+:: ZZIPLIB
+IF NOT EXIST "%DEPS%\zziplib-0.13.59.tar.bz2". (
+  CD "%DEPS%"
+  rmdir /S /Q "%DEPS%\zziplib"
+  cecho {0D}Downloading zziplib 0.13.59{# #}{\n}
+  wget http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/zziplib-0.13.59.tar.bz2/download
+  IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+) ELSE (
+   cecho {0D}zziplib 0.13.59 already downloaded. Skipping.{# #}{\n}
+)
+
+IF NOT EXIST "%DEPS%\zziplib". (
+   CD "%DEPS%"
+   cecho {0D}Extracting zziplib 0.13.59 package to "%DEPS%\zziplib"{# #}{\n}
+   mkdir zziplib
+   7za e -y zziplib-0.13.59.tar.bz2
+   7za x -y -ozziplib zziplib-0.13.59.tar
+   del /Q zziplib-0.13.59.tar
+   cd zziplib
+   mkdir lib
+   mkdir include\zzip
+   cd zziplib-0.13.59\msvc8
+
+   :: Use a custom project file as zziblib does not ship with vs2008 project files.
+   :: Additionally its include/lib paths are not proper for it to find our zlib build and it has weird lib name postfixes.
+   :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
+   cecho {0D}Building zziplib from premade project %TOOLS%\utils-windows\vs2008-zziplib.vcproj{# #}{\n}
+   copy /Y "%TOOLS%\utils-windows\vs2008-zziplib.vcproj" zziplib.vcproj
+   msbuild zziplib.vcproj /p:configuration=Release /nologo
+   msbuild zziplib.vcproj /p:configuration=Debug /nologo
+   
+   :: Copy results to lib/include
+   copy /Y zziplib.lib ..\..\lib
+   copy /Y zziplibd.lib ..\..\lib
+   copy /Y ..\zzip\*.h ..\..\include\zzip
+) ELSE (
+   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
 )
 
 echo.

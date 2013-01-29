@@ -11,6 +11,7 @@
 
 #include <QDateTime>
 #include <QByteArray>
+#include <QPointer>
 
 class QNetworkAccessManager;
 class QNetworkRequest;
@@ -111,7 +112,7 @@ private:
     QNetworkAccessManager *networkAccessManager;
 
     /// Maps each Qt Http download transfer we start to Asset API internal HttpAssetTransfer struct.
-    typedef std::map<QNetworkReply*, HttpAssetTransferPtr> TransferMap;
+    typedef std::map<QPointer<QNetworkReply>, HttpAssetTransferPtr> TransferMap;
     TransferMap transfers;
 
     /// Maps each Qt Http upload transfer we start to Asset API internal HttpAssetTransfer struct.

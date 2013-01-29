@@ -15,59 +15,56 @@
 #endif
 
 /// Represents in-world sound source.
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Sound</h2>
-Represents in-world sound source. The audio clip to play is specified in the soundRef attribute. Setting
-the soundRef attribute does not immediately trigger sound playback. Use the "PlaySound" action to do it.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Sound</h2>
+    Represents in-world sound source. The audio clip to play is specified in the soundRef attribute. Setting
+    the soundRef attribute does not immediately trigger sound playback. Use the "PlaySound" action to do it.
 
-@note If the spatial attribute is true, and th entity this EC_Sound is part of contains an EC_Placeable 
-    component, this sound clip is treated as a spatial (3D) sound. Otherwise, the sound is treated as a
-    nonpositional (ambient) sound.
+    @note If the spatial attribute is true, and th entity this EC_Sound is part of contains an EC_Placeable 
+        component, this sound clip is treated as a spatial (3D) sound. Otherwise, the sound is treated as a
+        nonpositional (ambient) sound.
 
-@note If sound attributes has been changed while the audio clip is on playing state, user needs to call
-UpdateSoundSettings() to apply those changes into the Audio API.
+    @note If sound attributes has been changed while the audio clip is on playing state, user needs to call
+    UpdateSoundSettings() to apply those changes into the Audio API.
 
-<b>Attributes</b>:
-<ul>
-<li>AssetReference: soundRef
-<div>Sound asset reference that is used to request a sound from the AssetAPI.</div> 
-<li>float: soundInnerRadius
-<div>Sound inner radius tell the distance where sound gain value is in it's maximum.</div> 
-<li>float: soundOuterRadius
-<div>Sound outer radius tell the distance where sound gain value is zero.</div> 
-<li>float: soundGain
-<div>Sound gain value should be between 0.0-1.0</div> 
-<li>bool: loopSound
-<div>Do we want to loop the sound until the stop sound is called.</div> 
-<li>bool: spatial
-<div>If true, the audio source is played back as a spatial (3D) sound source. This requires a 
-EC_Placeable component to be present in the same entity as this EC_Sound component. Otherwise,
-the sound is played back as a nonspatial audio clip.</div> 
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>AssetReference: soundRef
+    <div> @copydoc soundRef </div>
+    <li>float: soundInnerRadius
+    <div> @copydoc soundInnerRadius </div>
+    <li>float: soundOuterRadius
+    <div> @copydoc soundOuterRadius </div>
+    <li>float: soundGain
+    <div> @copydoc soundGain </div>
+    <li>bool: loopSound
+    <div> @copydoc loopSound </div>
+    <li>bool: spatial
+    <div> @copydoc spatial </div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>"PlaySound": Starts playing the sound.
-<li>"StopSound": Stops playing the sound.
-<li>"UpdateSoundSettings": Refreshes all sound attributes.
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>"PlaySound": @copydoc PlaySound
+    <li>"StopSound": @copydoc StopSound
+    <li>"UpdateSoundSettings": @copydoc UpdateSoundSettings
+    <li>"GetActiveSoundListener": @copydoc GetActiveSoundListener
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>"PlaySound": Starts playing the sound.
-<li>"StopSound": Stops playing the sound.
-</ul>
-</td>
-</tr>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li>"PlaySound": @copydoc PlaySound
+    <li>"StopSound": @copydoc StopSound
+    </ul>
+    </td>
+    </tr>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Depends on the component Placeable</b>.
-</table>
-*/
+    <b>Depends on the component @ref EC_Placeable "Placeable".</b>
+    </table> */
 class EC_Sound : public IComponent
 {
     Q_OBJECT
@@ -103,7 +100,10 @@ public:
     Q_PROPERTY(bool loopSound READ getloopSound WRITE setloopSound);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, loopSound);
 
-    /// Is the sound type spatial or ambient
+    /// Is the sound type spatial or ambient.
+    /** If true, the audio source is played back as a spatial (3D) sound source. This requires a 
+        EC_Placeable component to be present in the same entity as this EC_Sound component. Otherwise,
+        the sound is played back as a nonspatial audio clip. */
     Q_PROPERTY(bool spatial READ getspatial WRITE setspatial);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, spatial);
 
@@ -124,9 +124,6 @@ private slots:
     /// Update signals to parents signals.
     void UpdateSignals();
 
-    /// Monitors own attribute changes.
-    void OnAttributeUpdated(IAttribute *attribute);
-
     /// Handles asset loaded signal.
     void AudioAssetLoaded(AssetPtr asset);
 
@@ -140,6 +137,8 @@ private slots:
     void ConstantPositionUpdate();
     
 private:
+    /// Monitors own attribute changes.
+    void AttributesChanged();
     ComponentPtr FindPlaceable() const;
     SoundChannelPtr soundChannel;
 };

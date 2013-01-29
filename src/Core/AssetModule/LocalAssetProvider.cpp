@@ -16,7 +16,7 @@
 #include "Framework.h"
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "Profiler.h"
 
 #include <QDir>
@@ -28,8 +28,8 @@
 
 #include "MemoryLeakCheck.h"
 
-LocalAssetProvider::LocalAssetProvider(Framework* framework_)
-:framework(framework_)
+LocalAssetProvider::LocalAssetProvider(Framework* framework_) :
+    framework(framework_)
 {
     enableRequestsOutsideStorages = framework_->HasCommandLineParameter("--accept_unknown_local_sources");
 }
@@ -66,7 +66,7 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
         return AssetTransferPtr();
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
-        assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef);
+        assetType = framework->Asset()->GetResourceTypeFromAssetRef(assetRef);
 
     if (!enableRequestsOutsideStorages)
     {
@@ -98,7 +98,9 @@ bool LocalAssetProvider::AbortTransfer(IAssetTransfer *transfer)
         AssetTransferPtr ongoingTransfer = (*iter);
         if (ongoingTransfer.get() == transfer)
         {
-            transfer->EmitAssetFailed("Transfer aborted.");
+            framework->Asset()->AssetTransferAborted(transfer);
+            
+            ongoingTransfer.reset();
             pendingDownloads.erase(iter);
             return true;
         }
@@ -175,12 +177,16 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
 {
     if (!assetRef.isEmpty())
     {
-        ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
-        // Find full path
-        //FindStorageForPath(fullPath);
-        // (!storage) { LogError(""); return; }
-        QString fullFilename;
-        bool success = QFile::remove(assetRef);
+        LocalAssetStoragePtr storage;
+        QString path = GetPathForAsset(assetRef, &storage);
+        if (!storage)
+        {
+            LogError("LocalAssetProvider::DeleteAssetFromStorage: Could not verify the asset storage pointed by \"" + assetRef + "\"!");
+            return;
+        }
+
+        QString fullFilename = path + QDir::separator() + AssetAPI::ExtractFilenameFromAssetRef(assetRef);
+        bool success = QFile::remove(fullFilename);
         if (success)
         {
             LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset \"" + assetRef + "\", file " + fullFilename + " from disk.");
@@ -241,9 +247,12 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
     storage->name = storageName;
     storage->recursive = recursive;
     storage->provider = shared_from_this();
+// On Android, we get spurious file change notifications. Disable watcher for now.
+#ifndef ANDROID
     storage->SetupWatcher(); // Start listening on file change notifications. Note: it's important that recursive is set before calling this!
     connect(storage->changeWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(OnDirectoryChanged(const QString &)), Qt::UniqueConnection);
     connect(storage->changeWatcher, SIGNAL(fileChanged(const QString &)), SLOT(OnFileChanged(const QString &)), Qt::UniqueConnection);
+#endif
     storages.push_back(storage);
 
     // Tell the Asset API that we have created a new storage.
@@ -299,6 +308,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
     if (pendingUploads.size() > 0)
         return;
 
+    const int maxLoadMSecs = 16;
     tick_t startTime = GetCurrentClockTime();
 
     while(pendingDownloads.size() > 0)
@@ -332,8 +342,10 @@ void LocalAssetProvider::CompletePendingFileDownloads()
                 if (path.isEmpty())
                 {
                     QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
-        //            AssetModule::LogWarning(reason);
                     framework->Asset()->AssetTransferFailed(transfer.get(), reason);
+                    // Also throttle asset loading here. This is needed in the case we have a lot of failed refs.
+                    //if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
+                    //    break;
                     continue;
                 }
             
@@ -346,22 +358,22 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         if (!success)
         {
             QString reason = "Failed to read asset data for asset \"" + ref + "\" from file \"" + absoluteFilename + "\"";
-//            AssetModule::LogError(reason);
             framework->Asset()->AssetTransferFailed(transfer.get(), reason);
+            // Also throttle asset loading here. This is needed in the case we have a lot of failed refs.
+            if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
+                break;
             continue;
         }
         
         // Tell the Asset API that this asset should not be cached into the asset cache, and instead the original filename should be used
         // as a disk source, rather than generating a cache file for it.
         transfer->SetCachingBehavior(false, absoluteFilename);
-
         transfer->storage = storage;
 
         // Signal the Asset API that this asset is now successfully downloaded.
         framework->Asset()->AssetTransferCompleted(transfer.get());
 
         // Throttle asset loading to at most 16 msecs/frame.
-        const int maxLoadMSecs = 16;
         if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
             break;
     }

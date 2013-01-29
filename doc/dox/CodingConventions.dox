@@ -3,6 +3,7 @@
 \page progconv Programming Conventions
 
 This page describes the different conventions for producing code and documentation for the RealXtend Tundra project.
+<b>Note:</b> Even though this page documents mainly the C/C++ convetions, please try to apply the same coding conventions for all languages (JavaScript, CMake, etc.) as applicable.
 
 \section nameconv Naming Conventions
 
@@ -21,13 +22,24 @@ Internal helper structures or function objects may be declared in a <b>.cpp</b> 
 Very small bodies of template and inline code may be placed inside the class header, but any larger pieces of code
 should be placed in an .inl file that matches the classes name, for example for a class Entity introduced in Entity.h, the file Entity.inl defines the template and inline code that is associated to that class.
 
+\subsection filenameconv Filenames and Directories
+Filenames and directories are written in title case with a lower case file extension, f.ex.:
+\verbatim
+/SomeDirectory/SomeFile.ext
+\endverbatim
+
+Name the entry point of a demo scene as "scene.txml" (analogous to index.html), f.ex.:
+\verbatim
+bin/scenes/MyNewDemo/scene.txml
+\endverbatim
+
 \subsection nameconvh Header Files
 Each .cpp file should have corresponding header file, excluding certain .cpp files such as main.cpp and unit tests.
 <b>All header files must have #pragma once inclusion guards.</b>
 
 Use <b>forward declarations</b> to minimize use of \#include declarations in header files.
 
-In all files, try to order your \#include statements in the following order:
+In all code files, try to order your \#include statements in the following order:
 \verbatim
 StableHeaders.h (ONLY IN CPP FILE, if applicable)
 DebugOperatorNew.h (optional)
@@ -87,6 +99,8 @@ Preprocessor macros are written in upper case with underscores:
 \verbatim
 #define SAFE_DELETE(p) { delete p; p=0; }
 \endverbatim
+
+Do not indent preprocessor code blocks.
 
 Prepend variable names of (global) static constants with "c"-prefix:
 \verbatim

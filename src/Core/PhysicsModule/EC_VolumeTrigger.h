@@ -8,57 +8,53 @@
 #include "PhysicsModuleFwd.h"
 
 /// Physics volume trigger component
-/**
-<table class="header">
-<tr>
-<td>
-<h2>VolumeTrigger</h2>
-Physics volume trigger component
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>VolumeTrigger</h2>
+    Physics volume trigger component
 
-Registered by Physics::PhysicsModule.
+    Registered by Physics::PhysicsModule.
 
-<b>Attributes</b>:
-<ul>
-<li>bool: byPivot
-<div>If false (default), triggers by entity volume. If true, triggers by entity pivot point (ie. entity pivot point enters/leaves the volume).</div>
-<li>QVariantList: entities
-<div>List of interesting entities by name. Events are dispatched only for entities in this list, other entities are ignored. 
-Leave empty to get events for all entities in the scene.</div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>bool: byPivot
+    <div>@copydoc byPivot</div>
+    <li>QVariantList: entities
+    <div>@copydoc entities</div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li> "GetNumEntitiesInside": return number of entities currently inside the volume trigger
-<li> "GetEntityInside": return an entity that is currently inside the volume trigger
-        @param idx Index
-<li> "GetEntityInsidePercent": return an approximate percent of how much of the entity is inside this volume, returns value in the range [0,1]
-        @param entity Entity to test
-<li> "GetEntityInsidePercentByName": return an approximate percent of how much of the entity is inside this volume, returns value in the range [0,1]
-        @param name Name of the entity to test
-<li> "IsInterestingEntity": return true if the volume trigger events are send for this entity
-        @param name Name of the entity to test
-<li> "IsPivotInside": return true if the pivot point of the entity is inside this volume trigger
-        @param entity Entity to test
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li> GetEntitiesInside: @copydoc GetEntitiesInside
+    <li> "GetNumEntitiesInside": @copydoc GetNumEntitiesInside
+    <li> "GetEntityInside": @copydoc GetEntityInside
+    <li> "GetEntityInsidePercent": @copydoc GetEntityInsidePercent
+    <li> "GetEntityInsidePercentByName": @copydoc GetEntityInsidePercentByName
+    <li> "IsInterestingEntity": @copydoc IsInterestingEntity
+    <li> "IsPivotInside": @copydoc IsPivotInside
+    <li> "IsInsideVolume":@copydoc IsInsideVolume
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li> None.
+    </ul>
+    </td>
+    </tr>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Depends on the component RigitBody.</b>.
+    <b>Depends on the component RigitBody.</b>.
 
-@note If you use 'byPivot' -option or use IsPivotInside-function, the pivot point shouldn't be outside the mesh (or physics collision primitive) because physics collisions are used for efficiency even in this case.
-\todo If you add an entity to the 'interesting entities list', no signals may get send for that entity,
-      and it may not show up in any list of entities contained in this volume trigger until that entity moves.
-      Also if you enable/disable 'byPivot' option when entities are inside the volume, no signals may get send for those entities,
-      and they may not show up in any list of entities contained in this volume trigger until the entities move.
+    @note If you use 'byPivot' -option or use IsPivotInside-function, the pivot point shouldn't be outside the mesh 
+        (or physics collision primitive) because physics collisions are used for efficiency even in this case.
+    @todo If you add an entity to the 'interesting entities list', no signals may get send for that entity,
+          and it may not show up in any list of entities contained in this volume trigger until that entity moves.
+          Also if you enable/disable 'byPivot' option when entities are inside the volume, no signals may get send for those entities,
+          and they may not show up in any list of entities contained in this volume trigger until the entities move.
 
-</table> */
+    </table> */
 class EC_VolumeTrigger : public IComponent
 {
     friend class Physics::PhysicsWorld;
@@ -72,18 +68,22 @@ public:
 
     virtual ~EC_VolumeTrigger();
 
-    /// Pivot trigger flag. If false (default), triggers by entity volume. If true, triggers by entity pivot point (ie. entity pivot points enters/leaves the volume).
+    /// Pivot trigger flag.
+    /** If false (default), triggers by entity volume. If true, triggers by entity pivot point (ie. entity pivot points enters/leaves the volume). */
     Q_PROPERTY(bool byPivot READ getbyPivot WRITE setbyPivot)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, byPivot)
 
-    /// List of interesting entities by name. If the list is non-empty, this volume trigger only sends signals for entities that are on this list.
+    /// List of interesting entities by name.
+    /** Events are dispatched only for entities in this list, other entities are ignored. Leave empty to get events for all entities in the scene */
     Q_PROPERTY(QVariantList entities READ getentities WRITE setentities);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, entities);
 
 signals:
     /// Note: needs to be lowercase for QML to accept connections to it
+    /// @todo Make signature uppercase, QML support is deprecated. */
     void entityEnter(Entity* entity/*, const float3& position*/);
     /// Note: needs to be lowercase for QML to accept connections to it
+    /// @todo Make signature uppercase, QML support is deprecated. */
     void entityLeave(Entity* entity/*, const float3& position*/);
 
 public slots:
@@ -119,7 +119,6 @@ public slots:
         @return approximated percent of how much of the entity is inside this volume */
     float GetEntityInsidePercent(const Entity* entity) const;
 
-
     /// Returns an approximate percent of how much of the entity is inside this volume, [0,1]
     /** If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
         @note Uses axis aligned bounding boxes for calculations, so it is not accurate.
@@ -144,8 +143,6 @@ public slots:
     bool IsInsideVolume(const float3& point) const;
 
 private slots:
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
 
     void UpdateSignals();
 
@@ -162,6 +159,9 @@ private slots:
     void OnEntityRemoved(Entity* entity);
 
 private:
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
+
     /// Rigid body component that is needed for collision signals
     boost::weak_ptr<EC_RigidBody> rigidbody_;
 

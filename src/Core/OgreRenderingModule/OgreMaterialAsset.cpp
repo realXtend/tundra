@@ -250,11 +250,13 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
                         // Check for textures
                         if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
                         {
+                            // Push the found texture reference to this materials dependencies.
                             std::string tex_name = QString(line.substr(8).c_str()).trimmed().toStdString();
                             QString absolute_tex_name = assetAPI->ResolveAssetRef(Name(), tex_name.c_str());
                             references_.push_back(AssetReference(absolute_tex_name));
-//                            original_textures_.push_back(tex_name);
-                            // Sanitate the asset reference
+
+                            // Ask the texture the internal name that should be used inside the material script.
+                            absolute_tex_name = TextureAsset::NameInternal(absolute_tex_name);
                             line = "texture " + AddDoubleQuotesIfNecessary(AssetAPI::SanitateAssetRef(absolute_tex_name).toStdString());
                         }
                         // Check for shadow_caster_material reference
@@ -265,6 +267,38 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
                             references_.push_back(AssetReference(absolute_mat_name));
                             // Sanitate the asset reference
                             line = "shadow_caster_material " + AddDoubleQuotesIfNecessary(AssetAPI::SanitateAssetRef(absolute_mat_name).toStdString());
+                        }
+                        // Check for cubic_texture reference
+                        if (line.substr(0, 14) == "cubic_texture " && line.length() > 14)
+                        {
+                            // Ogre supports two formats for cubic_texture, but we ignore the short one.
+                            // Format1 (short): cubic_texture <base_name> <combinedUVW|separateUV>
+                            // Format2 (long): cubic_texture <front> <back> <left> <right> <up> <down> separateUV
+                            QStringList textures = QString(line.substr(14).c_str()).split(" ", QString::SkipEmptyParts);
+                            if (textures.size() == 2)
+                            {
+                                LogWarning("OgreMaterialAsset::DeserializeFromData: Usage of \"cubic_texture <base_name> <combinedUVW|separateUV>\" detected. "
+                                    "This format is not supported by the Asset API. Use \"cubic_texture <front> <back> <left> <right> <up> <down> separateUV\" instead.");
+                            }
+                            else if (textures.size() == 7)
+                            {
+                                std::string newLine = "cubic_texture";
+                                for(int i = 0; i < textures.size() - 1; ++i) // ignore the separateUV param
+                                {
+                                    QString absoluteTexName = assetAPI->ResolveAssetRef(Name(), textures[i]);
+                                    references_.push_back(AssetReference(absoluteTexName));
+                                    // Sanitate the asset reference
+                                    newLine += " " + AddDoubleQuotesIfNecessary(AssetAPI::SanitateAssetRef(absoluteTexName).toStdString());
+                                }
+                                // Put the last line as is
+                                newLine += " " + textures.last().toStdString();
+                                line = newLine;
+                            }
+                            else
+                            {
+                                LogWarning("OgreMaterialAsset::DeserializeFromData: malformed syntax for cubic_texture encountered. "
+                                    "The supported format is \"cubic_texture <front> <back> <left> <right> <up> <down> separateUV\".");
+                            }
                         }
                     }
 
@@ -419,7 +453,7 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
 {
     if (ogreMaterial.isNull())
     {
-        LogWarning("SerializeTo: Tried to export non-existing Ogre material " + Name().toStdString());
+        LogWarning("SerializeTo: Tried to export non-existing Ogre material " + Name());
         return false;
     }
     try
@@ -432,7 +466,7 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
 
         // Make sure that asset refs/IDs are desanitated.
         QStringList keywords;
-        keywords << "material " << "texture " << "shadow_caster_material ";
+        keywords << "material " << "texture " << "shadow_caster_material " << "cubix_texture ";
         OgreRenderer::DesanitateAssetIds(materialData, keywords);
 
         data.clear();
@@ -441,7 +475,7 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
     }
     catch(std::exception &e)
     {
-        LogError("SerializeTo: Failed to export Ogre material " + Name().toStdString() + ":");
+        LogError("SerializeTo: Failed to export Ogre material " + Name() + ":");
         if (e.what())
             LogError(e.what());
         return false;
@@ -713,7 +747,7 @@ bool OgreMaterialAsset::CreateOgreMaterial()
     }
     catch (Ogre::Exception& e)
     {
-        LogError("OgreMaterialAsset: Failed to create empty material " + Name().toStdString() + ", reason: " + e.what());
+        LogError("OgreMaterialAsset: Failed to create empty material " + Name() + ", reason: " + e.what());
         return false;
     }
     
@@ -907,7 +941,7 @@ bool OgreMaterialAsset::SetTexture(int techIndex, int passIndex, int texUnitInde
             }
             catch (Ogre::Exception& e)
             {
-                LogError("SetTexture exception for " + Name().toStdString() + ", reason: " + std::string(e.what()));
+                LogError("SetTexture exception for " + Name() + ", reason: " + QString(e.what()));
                 return false;
             }
             return true;
@@ -1841,6 +1875,7 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
         SetTexture(techIndex, passIndex, tuIndex, origVal);
         return true;
     }
+
     if (attr == "tex_coord_set")
     {
         texUnit->setTextureCoordSet(val.toInt());

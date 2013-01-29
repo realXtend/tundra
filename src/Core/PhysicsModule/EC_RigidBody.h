@@ -15,186 +15,180 @@
 class EC_Placeable;
 class EC_Terrain;
 
-/// Physics rigid body entity component
-/**
-<table class="header">
-<tr>
-<td>
-<h2>RigidBody</h2>
-Physics rigid body entity component
+/// Physics rigid body entity-component
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>RigidBody</h2>
+    Physics rigid body entity-component
 
-Registered by Physics::PhysicsModule.
+    Registered by Physics::PhysicsModule.
 
-<b>Attributes</b>:
-<ul>
-<li>float: mass
-<div>Mass of the body. Set to 0 to have a static (immovable) object</div>
-<li>int: shapeType
-<div>Shape type. Can be box, sphere, cylinder, capsule, trimesh, or heightfield (not yet supported)</div>
-<li>float3: size
-<div>Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.</div>
-<li>QString: collisionMeshRef
-<div>Asset ref of the collision mesh. Only effective if shapetype is TriMesh.</div>
-<li>float: friction
-<div>Friction coefficient between 0.0 - 1.0.</div>
-<li>float: restitution
-<div>Restitution coefficient between 0.0 - 1.0.</div>
-<li>float: linearDamping
-<div>Linear damping coefficient of the object (makes it lose velocity even when no force acts on it)</div>
-<li>float: angularDamping
-<div>Angular damping coefficient of the object (makes it lose angular velocity even when no force acts on it)</div>
-<li>float3: linearFactor
-<div>Specifies the axes on which forces can act on the object, making it move</div>
-<li>float3: angularFactor
-<div>Specifies the axes on which torques can act on the object, making it rotate.
-Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself.</div>
-<li>bool: kinematic
-<div>If true, forces don't apply to this object, but it may push other objects around.</div>
-<li>bool: phantom
-<div>If true, contact response is disabled, ie. there is no collision interaction between this object and others.</div>
-<li>bool: drawDebug
-<div>If true (default), collision shape will be visualized when physics debug drawing is enabled.</div>
-<li>int: collisionLayer
-<div>The collision layer bitmask of this rigidbody. Several bits can be set. 0 is default (all bits set)</div>
-<li>int: collisionMask
-<div>Tells with which collision layers this rigidbody collides with (a bitmask). 0 is default (all bits set)</div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>float: mass
+    <div>@copydoc mass</div>
+    <li>enum: shapeType
+    <div>@copydoc shapeType</div>
+    <li>float3: size
+    <div>@copydoc size</div>
+    <li>AssetReference: collisionMeshRef
+    <div>@copydoc @copydoc collisionMeshRef</div>
+    <li>float: friction
+    <div>@copydoc friction</div>
+    <li>float: restitution
+    <div>@copydoc restitution</div>
+    <li>float: linearDamping
+    <div>@copydoc linearDamping</div>
+    <li>float: angularDamping
+    <div>@copydoc angularDamping</div>
+    <li>float3: linearFactor
+    <div>@copydoc linearFactor</div>
+    <li>float3: angularFactor
+    <div>@copydoc angularFactor</div>
+    <li>bool: kinematic
+    <div>@copydoc kinematic</div>
+    <li>bool: phantom
+    <div>@copydoc phantom</div>
+    <li>bool: drawDebug
+    <div>@copydoc drawDebug</div>
+    <li>float3: linearVelocity
+    <div>@copydoc linearVelocity</div>
+    <li>float3: angularVelocity
+    <div>@copydoc angularVelocity</div>
+    <li>int: collisionLayer
+    <div>@copydoc collisionLayer</div>
+    <li>int: collisionMask
+    <div>@copydoc collisionMask</div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li> "SetShapeFromVisibleMesh": set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
-        @return true if successful (EC_Mesh could be found and contained a mesh reference)
-<li> "SetLinearVelocity": set linear velocity and activate body
-        Note: sets also the attribute, signals a Default attribute change
-        @param velocity New linear velocity
-<li> "SetAngularVelocity": Set angular velocity and activate body
-        Note: sets also the attribute, signals a Default attribute change
-        @param angularVelocity New angular velocity, specified in degrees / sec
-<li> "ApplyForce": apply a force to the body
-        @param force Force
-        @param position Object space position, by default center
-<li> "ApplyTorque": apply a torque to the body
-        @param torque Torque
-<li> "ApplyImpulse": apply an impulse to the body
-        @param impulse Impulse
-        @param position Object space position, by default center
-<li> "ApplyTorqueImpulse": apply a torque impulse to the body
-        @param torqueImpulse Impulse
-<li> "Activate": force the body to activate (wake up)
-<li> "IsActive": return whether body is active
-<li> "ResetForces": reset accumulated force & torque
-<li> "SetRotation": forces just the rotation part of transform, while letting the position interpolate undisturbed
-        @param rotation New absolute rotation vector (eulers)
-<li> "Rotate": modifies just the rotation part of transform, while letting the position interpolate undisturbed
-        @param rotation Delta rotation (eulers)
-<li> "GetLinearVelocity": Returns linear velocity. Should be same as accessing the attribute.
-<li> "GetAngularVelocity": Returns angular velocity. Should be same as accessing the attribute.
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li> "SetShapeFromVisibleMesh": @copydoc SetShapeFromVisibleMesh
+    <li> "SetLinearVelocity": @copydoc SetLinearVelocity
+    <li> "SetAngularVelocity": @copydoc SetAngularVelocity
+    <li> "ApplyForce": @copydoc ApplyForce
+    <li> "ApplyTorque": @copydoc ApplyTorque
+    <li> "ApplyImpulse": @copydoc ApplyImpulse
+    <li> "ApplyTorqueImpulse": @copydoc ApplyTorqueImpulse
+    <li> "Activate": @copydoc Activate
+    <li> "IsActive": @copydoc IsActive
+    <li> "KeepActive": @copydoc KeepActive
+    <li> "ResetForces": @copydoc ResetForces
+    <li> "SetRotation": @copydoc SetRotation
+    <li> "Rotate": @copydoc Rotate
+    <li> "GetLinearVelocity": @copydoc GetLinearVelocity
+    <li> "GetAngularVelocity": @copydoc GetAngularVelocity
+    <li> "HasAuthority": @copydoc HasAuthority
+    <li> "ShapeAABB": @copydoc ShapeAABB
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li>None.
+    </ul>
+    </td>
+    </tr>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Depends on the component Placeable, and optionally on Mesh & Terrain to copy the collision shape from them</b>.
-</table> */
+    <b>Depends on the component @ref EC_Placeable "Placeable", and optionally on @ref EC_Mesh "Mesh" 
+    and @ref EC_Terrain "Terrain" to copy the collision shape from them</b>.
+    </table> */
 class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
 {
-    friend class Physics::PhysicsWorld;
-    
     Q_OBJECT
     COMPONENT_NAME("EC_RigidBody", 23)
     Q_ENUMS(ShapeType)
-    
+
+    friend class Physics::PhysicsWorld;
+
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_RigidBody(Scene* scene);
-
     virtual ~EC_RigidBody();
 
     enum ShapeType
     {
-        Shape_Box = 0,
-        Shape_Sphere,
-        Shape_Cylinder,
-        Shape_Capsule,
-        Shape_TriMesh,
-        Shape_HeightField,
-        Shape_ConvexHull
+        Shape_Box = 0, ///< Box
+        Shape_Sphere, ///< Sphere
+        Shape_Cylinder, ///< Cylinder
+        Shape_Capsule, ///< Capsule
+        Shape_TriMesh, ///< Triangle mesh
+        Shape_HeightField, ///< Heightfield
+        Shape_ConvexHull ///< Convex hull
     };
-    
-    /// Mass of the body. Set to 0 for static
+
+    /// Mass of the body. Set to 0 to have a static (immovable) object
     Q_PROPERTY(float mass READ getmass WRITE setmass);
     DEFINE_QPROPERTY_ATTRIBUTE(float, mass);
-    
-    /// Shape type
+
+    /// Shape type, see ShapeType.
     Q_PROPERTY(int shapeType READ getshapeType WRITE setshapeType)
     DEFINE_QPROPERTY_ATTRIBUTE(int, shapeType);
-    
-    /// Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.
+
+    /// Size (scaling) of the shape.
+    /** Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.*/
     Q_PROPERTY(float3 size READ getsize WRITE setsize)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, size);
 
-    /// Collision mesh asset reference.
+    /// Collision mesh asset reference, only effective if shapeType is Shape_TriMesh.
     Q_PROPERTY(AssetReference collisionMeshRef READ getcollisionMeshRef WRITE setcollisionMeshRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, collisionMeshRef);
 
-    /// Friction
+    /// Friction coefficient between 0.0 - 1.0.
     Q_PROPERTY(float friction READ getfriction WRITE setfriction);
     DEFINE_QPROPERTY_ATTRIBUTE(float, friction);
-    
-    /// Restitution
+
+    /// Restitution coefficient between 0.0 - 1.0.
     Q_PROPERTY(float restitution READ getrestitution WRITE setrestitution);
     DEFINE_QPROPERTY_ATTRIBUTE(float, restitution);
-    
-    /// Linear damping
+
+    /// Linear damping coefficient of the object (makes it lose velocity even when no force acts on it).
     Q_PROPERTY(float linearDamping READ getlinearDamping WRITE setlinearDamping);
     DEFINE_QPROPERTY_ATTRIBUTE(float, linearDamping);
-    
-    /// Angular damping
+
+    /// Angular damping coefficient of the object (makes it lose angular velocity even when no force acts on it)
     Q_PROPERTY(float angularDamping READ getangularDamping WRITE setangularDamping);
     DEFINE_QPROPERTY_ATTRIBUTE(float, angularDamping);
-    
-    /// Linear factor. Defines in which dimensions the object can move
+
+    /// Linear factor. Specifies the axes on which forces can act on the object, making it move.
     Q_PROPERTY(float3 linearFactor READ getlinearFactor WRITE setlinearFactor)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, linearFactor);
-    
+
     /// Angular factor. Defines in which dimensions the object can rotate
     Q_PROPERTY(float3 angularFactor READ getangularFactor WRITE setangularFactor)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, angularFactor);
-    
+
     /// Kinematic flag. If true, forces don't affect the object, but it may push other objects around.
     Q_PROPERTY(bool kinematic READ getkinematic WRITE setkinematic)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, kinematic)
-    
+
     /// Phantom flag. If true, contact response is disabled, ie. there is no collision interaction between this object and others
     Q_PROPERTY(bool phantom READ getphantom WRITE setphantom)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, phantom)
-    
+
     /// DrawDebug flag. If true, collision shape will be visualized when physics debug drawing is enabled.
     Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug)
-    
+
     /// Linear velocity
     Q_PROPERTY(float3 linearVelocity READ getlinearVelocity WRITE setlinearVelocity)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, linearVelocity)
-    
-    /// Angular velocity
+
+    /// Specifies the axes on which torques can act on the object, making it rotate.
+    /** Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself. */
     Q_PROPERTY(float3 angularVelocity READ getangularVelocity WRITE setangularVelocity)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, angularVelocity)
-    
-    /// Collision layer
+
+    /// The collision layer bitmask of this rigidbody. Several bits can be set. 0 is default (all bits set)
     Q_PROPERTY(int collisionLayer READ getcollisionLayer WRITE setcollisionLayer)
     DEFINE_QPROPERTY_ATTRIBUTE(int, collisionLayer)
-    
-    /// Collision mask
+
+    /// Tells with which collision layers this rigidbody collides with (a bitmask). 0 is default (all bits set)
     Q_PROPERTY(int collisionMask READ getcollisionMask WRITE setcollisionMask)
     DEFINE_QPROPERTY_ATTRIBUTE(int, collisionMask)
-    
+
     /// btMotionState override. Called when Bullet wants us to tell the body's initial transform
     virtual void getWorldTransform(btTransform &worldTrans) const;
 
@@ -202,6 +196,14 @@ public:
     virtual void setWorldTransform(const btTransform &worldTrans);
 
     void SetClientExtrapolating(bool isClientExtrapolating);
+
+    btRigidBody* GetRigidBody() const { return body_; }
+
+    /// Constructs axis-aligned bounding box from bullet collision shape
+    /** @param outMin The minimum corner of the box
+        @param outMax The maximum corner of the box */
+    void GetAabbox(float3 &outAabbMin, float3 &outAabbMax);
+
 signals:
     /// A physics collision has happened between this rigid body and another entity
     /** If there are several contact points, the signal will be sent multiple times for each contact.
@@ -213,31 +215,37 @@ signals:
         @param newCollision True if same collision did not happen on the previous frame.
         If collision has multiple contact points, newCollision can only be true for the first of them. */
     void PhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
-    
-public slots:
 
+public slots:
     /// Set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
     /** @return true if successful (EC_Mesh could be found and contained a mesh reference) */
     bool SetShapeFromVisibleMesh();
 
     /// Set linear velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
-        @param velocity New linear velocity */
+        @param velocity New linear velocity
+        @todo Remove and use linearVelocity attribute? */
     void SetLinearVelocity(const float3& velocity);
-    
+    /// Return linear velocity. Should be same as accessing the attribute.
+    /** @todo Remove and use linearVelocity attribute? */
+    float3 GetLinearVelocity();
+
     /// Set angular velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
-        @param angularVelocity New angular velocity, specified in degrees / sec */
+        @param angularVelocity New angular velocity, specified in degrees / sec
+        @todo Remove and use angularVelocity attribute? */
     void SetAngularVelocity(const float3& angularVelocity);
-    
+    /// Return angular velocity. Should be same as accessing the attribute.
+    /** @todo Remove and use angularVelocity attribute? */
+    float3 GetAngularVelocity();
+
     /// Apply a force to the body
     /** @param force Force
         @param position Object space position, by default center */
     void ApplyForce(const float3& force, const float3& position = float3::zero);
     
     /// Apply a torque to the body
-    /** @param torque Torque
-     */
+    /** @param torque Torque */
     void ApplyTorque(const float3& torque);
     
     /// Apply an impulse to the body
@@ -272,23 +280,10 @@ public slots:
         to continue uninterrupted (with proper inter-step interpolation)
         @param rotation Delta rotation (eulers) */
     void Rotate(const float3& rotation);
-    
-    /// Return linear velocity
-    float3 GetLinearVelocity();
-    
-    /// Return angular velocity
-    float3 GetAngularVelocity();
-    
+
     /// Return physics world
     Physics::PhysicsWorld* GetPhysicsWorld() const { return world_; }
 
-    /// Constructs axis-aligned bounding box from bullet collision shape
-    /** @param outMin The minimum corner of the box
-        @param outMax The maximum corner of the box */
-    void GetAabbox(float3 &outAabbMin, float3 &outAabbMax);
-
-    btRigidBody* GetRigidBody() const { return body_; }
-    
     /// Return whether have authority. On the client, returns false for non-local objects.
     bool HasAuthority() const;
 
@@ -302,9 +297,6 @@ private slots:
     
     /// Called when the simulation is about to be stepped
     void OnAboutToUpdate();
-    
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
     
     /// Called when attributes of the placeable have changed
     void PlaceableUpdated(IAttribute *attribute);
@@ -322,6 +314,9 @@ private slots:
     void OnCollisionMeshAssetLoaded(AssetPtr asset);
 
 private:
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
+
     /// (Re)create the collisionshape
     void CreateCollisionShape();
     

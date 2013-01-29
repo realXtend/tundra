@@ -13,7 +13,7 @@
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
 #include "Renderer.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "OgreWorld.h"
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"
@@ -28,7 +28,7 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     IComponent(scene),
     xSize(this, "x-size", 5000),
     ySize(this, "y-size", 5000),
-    depth(this, "Depth", 20),
+    depth(this, "Depth", 10000),
     position(this, "Position", float3::zero),
     rotation(this, "Rotation", Quat::identity),
     scaleUfactor(this, "U factor", 0.0002f),
@@ -70,9 +70,6 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     OgreWorldPtr world = world_.lock();
     if (world)
         node_ = world->OgreSceneManager()->createSceneNode(world->GetUniqueObjectName("EC_WaterPlane_Root"));
-
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-        SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
     lastXsize_ = xSize.Get();
     lastYsize_ = ySize.Get();
@@ -367,24 +364,24 @@ void EC_WaterPlane::RemoveWaterPlane()
     disconnect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(Update()));
 }
 
-void EC_WaterPlane::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
+void EC_WaterPlane::AttributesChanged()
 {
-    if ((attribute == &xSize || attribute == &ySize || attribute == &scaleUfactor || attribute == &scaleVfactor) &&
+    if ((xSize.ValueChanged() || ySize.ValueChanged() || scaleUfactor.ValueChanged() || scaleVfactor.ValueChanged()) &&
         (lastXsize_ != xSize.Get() || lastYsize_ != ySize.Get()))
     {
         CreateWaterPlane();
         lastXsize_ = xSize.Get();
         lastYsize_ = ySize.Get();
     }
-    else if (attribute == &xSegments || attribute == &ySegments)
+    if (xSegments.ValueChanged() || ySegments.ValueChanged())
     {
         CreateWaterPlane();
     }
-    else if (attribute == &position)
+    if (position.ValueChanged())
     {
         SetPosition();
     }
-    else if (attribute == &rotation)
+    if (rotation.ValueChanged())
     {
         // Is there placeable component? If not use given rotation 
         //if (dynamic_cast<EC_Placeable*>(FindPlaceable().get()) == 0 )
@@ -392,19 +389,19 @@ void EC_WaterPlane::OnAttributeUpdated(IAttribute* attribute, AttributeChange::T
            SetOrientation();
         //}
     }
-    else if (attribute == &depth)
+    if (depth.ValueChanged())
     {
         // Change depth
         // Currently do nothing..
     }
-    else if (attribute ==  &materialName)
+    if (materialName.ValueChanged())
     {
         //Change material
         if (entity_)
             entity_->setMaterialName(materialName.Get().toStdString());
     }
-    else if (attribute == &fogColor || attribute == &fogStartDistance || attribute == &fogEndDistance ||
-        attribute == &fogMode || attribute == &fogExpDensity)
+    if (fogColor.ValueChanged() || fogStartDistance.ValueChanged() || fogEndDistance.ValueChanged() ||
+        fogMode.ValueChanged() || fogExpDensity.ValueChanged())
     {
         // Apply fog immediately only if the camera is within the water cube.
         if (IsCameraInsideWaterCube())
@@ -412,7 +409,7 @@ void EC_WaterPlane::OnAttributeUpdated(IAttribute* attribute, AttributeChange::T
     }
 /*
     // Currently commented out, working feature but not enabled yet.
-    else if (name == textureNameAttr.GetNameString())
+    if (name == textureNameAttr.GetNameString())
     {
 
         QString currentMaterial = materialName.Get();

@@ -20,7 +20,7 @@
 
 #include "Application.h"
 #include "UiGraphicsView.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"
@@ -34,6 +34,16 @@
 
 #include <Ogre.h>
 #include <OgreDefaultHardwareBufferManager.h>
+
+#ifdef ANDROID
+#define OGRE_STATIC_GLES2
+#define OGRE_STATIC_ParticleFX
+#define OGRE_STATIC_OctreeSceneManager
+#include "OgreStaticPluginLoader.h"
+#include <OgreRTShaderSystem.h>
+#include <OgreShaderGenerator.h>
+#include <OgreOverlaySystem.h>
+#endif
 
 Q_DECLARE_METATYPE(EC_Placeable*)
 Q_DECLARE_METATYPE(EC_Camera*)
@@ -75,6 +85,95 @@ static const float MAX_FRAME_TIME = 0.1f;
 #endif
 
 #include "MemoryLeakCheck.h"
+
+#ifdef ANDROID
+/*
+ -----------------------------------------------------------------------------
+ This source file is part of OGRE
+ (Object-oriented Graphics Rendering Engine)
+ For the latest info, see http://www.ogre3d.org/
+ 
+ Copyright (c) 2000-2012 Torus Knot Software Ltd
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ -----------------------------------------------------------------------------
+ */
+class ShaderGeneratorTechniqueResolverListener : public Ogre::MaterialManager::Listener
+{
+public:
+
+	ShaderGeneratorTechniqueResolverListener(Ogre::RTShader::ShaderGenerator* pShaderGenerator)
+	{
+		mShaderGenerator = pShaderGenerator;			
+	}
+
+	/** This is the hook point where shader based technique will be created.
+	It will be called whenever the material manager won't find appropriate technique
+	that satisfy the target scheme name. If the scheme name is out target RT Shader System
+	scheme name we will try to create shader generated technique for it. 
+	*/
+	virtual Ogre::Technique* handleSchemeNotFound(unsigned short schemeIndex, 
+		const Ogre::String& schemeName, Ogre::Material* originalMaterial, unsigned short lodIndex, 
+		const Ogre::Renderable* rend)
+	{	
+		Ogre::Technique* generatedTech = NULL;
+
+		// Case this is the default shader generator scheme.
+		if (schemeName == Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME)
+		{
+			bool techniqueCreated;
+
+			// Create shader generated technique for this material.
+			techniqueCreated = mShaderGenerator->createShaderBasedTechnique(
+				originalMaterial->getName(), 
+				Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+				schemeName);	
+
+			// Case technique registration succeeded.
+			if (techniqueCreated)
+			{
+				// Force creating the shaders for the generated technique.
+				mShaderGenerator->validateMaterial(schemeName, originalMaterial->getName());
+				
+				// Grab the generated technique.
+				Ogre::Material::TechniqueIterator itTech = originalMaterial->getTechniqueIterator();
+
+				while (itTech.hasMoreElements())
+				{
+					Ogre::Technique* curTech = itTech.getNext();
+
+					if (curTech->getSchemeName() == schemeName)
+					{
+						generatedTech = curTech;
+						break;
+					}
+				}				
+			}
+		}
+
+		return generatedTech;
+	}
+
+protected:	
+	Ogre::RTShader::ShaderGenerator*	mShaderGenerator;			// The shader generator instance.		
+};
+#endif
 
 namespace OgreRenderer
 {
@@ -148,6 +247,10 @@ namespace OgreRenderer
         defaultScene(0),
         dummyDefaultCamera(0),
         mainViewport(0),
+#ifdef ANDROID
+	shaderGenerator(0),
+        overlaySystem(0),
+#endif
         uniqueObjectId(0),
         uniqueGroupId(0),
         configFilename(config),
@@ -185,10 +288,19 @@ namespace OgreRenderer
         {
             defaultScene->destroyCamera(dummyDefaultCamera);
             dummyDefaultCamera = 0;
+#ifdef ANDROID
+	    if (shaderGenerator)
+                shaderGenerator->removeSceneManager(defaultScene);
+#endif
             ogreRoot->destroySceneManager(defaultScene);
             defaultScene = 0;
         }
-        
+
+#ifdef ANDROID
+	SAFE_DELETE(overlaySystem);
+	Ogre::RTShader::ShaderGenerator::finalize();
+#endif
+
         ogreRoot.reset();
         SAFE_DELETE(compositionHandler);
         SAFE_DELETE(logListener);
@@ -242,13 +354,15 @@ namespace OgreRenderer
 
         logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString(); ///<\todo Unicode support
 #include "DisableMemoryLeakCheck.h"
+// On Android instantiating our own LogManager results in a crash during Ogre initialization. Ogre has its own Android logging hook, so this can be skipped for now
+#ifndef ANDROID
         static Ogre::LogManager *overriddenLogManager = 0;
         overriddenLogManager = new Ogre::LogManager; ///\bug This pointer is never freed. We leak memory here, but cannot free due to Ogre singletons being accessed.
         overriddenLogManager->createLog("", true, false, true);
         Ogre::LogManager::getSingleton().getDefaultLog()->setDebugOutputEnabled(false); // Disable Ogre from outputting to std::cerr by itself.
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(logListener); // Make all Ogre log output to come to our log listener.
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_NORMAL); // This is probably the default level anyway, but be explicit.
-
+#endif
         ogreRoot = OgreRootPtr(new Ogre::Root("", configFilename, logfilepath));
 
 #include "EnableMemoryLeakCheck.h"
@@ -291,6 +405,12 @@ namespace OgreRenderer
             rendersystem = ogreRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
 #endif
 
+#ifdef ANDROID
+        // Android: use the first available rendersystem, should be GLES2
+        if (!rendersystem)
+            rendersystem = ogreRoot->getAvailableRenderers().at(0);
+#endif
+
         if (!rendersystem)
             throw Exception("Could not find Ogre rendersystem.");
 
@@ -321,6 +441,11 @@ namespace OgreRenderer
             // Set the found rendering system
             ogreRoot->setRenderSystem(rendersystem);
 
+#ifdef ANDROID
+	    // On Android (static Ogre linking) create overlaysystem now
+            overlaySystem = new Ogre::OverlaySystem();
+#endif
+
             // Initialise but don't create rendering window yet
             ogreRoot->initialise(false);
 
@@ -332,7 +457,14 @@ namespace OgreRenderer
                 int window_top = 0;
                 renderWindow = new RenderWindow();
                 bool fullscreen = framework->HasCommandLineParameter("--fullscreen");
-
+#ifdef Q_WS_MAC
+                // Fullscreen causes crash on Mac OS X. See https://github.com/realXtend/naali/issues/522
+                if (fullscreen)
+                {
+                    LogWarning("Fullscreen is not currently supported on Mac OS X. The application will run in windowed-mode");
+                    fullscreen = false;
+                }
+#endif
                 // On some systems, the Ogre rendering output is overdrawn by the Windows desktop compositing manager, but the actual cause of this
                 // is uncertain.
                 // As a workaround, it is possible to have Ogre output directly on the main window HWND of the ui chain. On other systems, this gives
@@ -369,8 +501,19 @@ namespace OgreRenderer
             LogInfo("Renderer: Loading Ogre resources");
             SetupResources();
 
+#ifdef ANDROID
+            // Android: initialize RT shader system
+            Ogre::RTShader::ShaderGenerator::initialize();
+            shaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+            Ogre::MaterialManager::getSingleton().addListener(new ShaderGeneratorTechniqueResolverListener(shaderGenerator));
+#endif
+
             /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
             defaultScene = ogreRoot->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
+#ifdef ANDROID
+	    if (shaderGenerator)
+                shaderGenerator->addSceneManager(defaultScene);
+#endif
             dummyDefaultCamera = defaultScene->createCamera("DefaultCamera");
         
             mainViewport = renderWindow->OgreRenderWindow()->addViewport(dummyDefaultCamera);
@@ -386,9 +529,12 @@ namespace OgreRenderer
         if (framework->IsHeadless())
             return;
 
+#ifndef Q_WS_MAC
+        // Fullscreen causes crash on Mac OS X. See https://github.com/realXtend/naali/issues/522
         if (value)
             framework->Ui()->MainWindow()->showFullScreen();
         else
+#endif
             framework->Ui()->MainWindow()->showNormal();
     }
 
@@ -416,6 +562,7 @@ namespace OgreRenderer
     {
         QStringList loadedPlugins;
 
+        #ifndef ANDROID
         Ogre::ConfigFile file;
         try
         {
@@ -447,8 +594,14 @@ namespace OgreRenderer
                 LogError("Plugin " + plugins[i] + " failed to load");
             }
         }
+        #else
+            // On Android, load Ogre plugins statically
+            staticPluginLoader = new Ogre::StaticPluginLoader();
+            staticPluginLoader->load();
+        #endif
 
         return loadedPlugins;
+
     }
 
     void Renderer::SetupResources()
@@ -491,6 +644,13 @@ namespace OgreRenderer
         }
 
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(shadowPath, "FileSystem", "General");
+
+#if ANDROID
+	// Initialize RTShader resources
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib/materials", "FileSystem", "General");
+#endif
+
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
 
@@ -520,6 +680,9 @@ namespace OgreRenderer
     {
         if (framework->IsHeadless())
             return;
+
+	if (!renderWindow->OgreOverlay())
+	    return;
 
         PROFILE(Renderer_DoFullUIRedraw);
 
@@ -776,10 +939,14 @@ namespace OgreRenderer
 #ifdef PROFILING
         // Performance debugging: Toggle the UI overlay visibility based on a debug key.
         // Allows testing whether the GPU is majorly fill rate bound.
-        if (framework->Input()->IsKeyDown(Qt::Key_F8))
-            renderWindow->OgreOverlay()->hide();
-        else
-            renderWindow->OgreOverlay()->show();
+        Ogre::Overlay* overlay = renderWindow->OgreOverlay();
+        if (overlay)
+        {
+	    if (framework->Input()->IsKeyDown(Qt::Key_F8))
+	        renderWindow->OgreOverlay()->hide();
+            else
+                renderWindow->OgreOverlay()->show();
+        }
 #endif
 
         // Flush debug geometry into vertex buffer now

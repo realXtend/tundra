@@ -6,6 +6,8 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Math/float3.h"
+#include "Math/float4x4.h"
+#include "Geometry/Frustum.h"
 #include "Geometry/Ray.h"
 
 #include <QImage>
@@ -20,58 +22,58 @@ namespace Ogre
 }
 
 /// Ogre camera entity component
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Camera</h2>
-Ogre camera entity component
-Needs to be attached to a placeable (aka scene node) to be useful.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Camera</h2>
+    Ogre camera entity component
+    Needs to be attached to a placeable (aka scene node) to be useful.
 
-Registered by OgreRenderer::OgreRenderingModule.
+    Registered by OgreRenderer::OgreRenderingModule.
 
-\ingroup OgreRenderingModuleClient
+    \ingroup OgreRenderingModuleClient
 
-<b>Attributes</b>:
-<ul>
-<li>float3: upVector
-<div>Up vector that defines the yaw axis.</div>
-<li>float: nearPlane
-<div>Near clip distance.</div>
-<li>float: farPlane
-<div>Far clip distance.</div>
-<li>float3: verticalFov
-<div>Vertical field of view as degrees.</div>
-<li>QString: aspectRatio
-<div>Aspect ratio is a string of form "<widthProportion>:<heightProportion>", e.g. "4:3".</div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>float3: upVector
+    <div> @copydoc .</div>
+    <li>float: nearPlane
+    <div> @copydoc </div>
+    <li>float: farPlane
+    <div> @copydoc </div>
+    <li>float3: verticalFov
+    <div> @copydoc </div>
+    <li>QString: aspectRatio
+    <div> @copydoc </div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>"SetActive": sets as active camera in the viewport
-<li>"IsActive": returns whether camera is active in the viewport
-<li>"InitialRotation": returns initial Euler rotation according to the up vector.
-<li>"AdjustedRotation": returns an adjusted Euler rotation according to the up vector.
-<li>"GetMouseRay": Returns a world space ray as cast from the camera through a viewport position.
-<li>"AspectRatio": Returns the currently used view aspect ratio (width/height).
-<li>"VisibleEntities": Returns visible entities in the camera's frustum.
-<li>"VisibleEntityIDs": Returns entity IDs of visible entities in the camera's frustum.
-<li>"StartViewTracking": Starts tracking an entity's visibility within the scene using this camera.
-<li>"StopViewTracking": Stops tracking an entity's visibility.
-<li>"AspectRatio": Returns the currently used view aspect ratio (width/height).
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>"SetActive": @copydoc SetActive
+    <li>"IsActive": @copydoc IsActive
+    <li>"InitialRotation": @copydoc InitialRotation
+    <li>"AdjustedRotation": @copydoc AdjustedRotation
+    <li>"ViewportPointToRay": @copydoc ViewportPointToRay
+    <li>"ScreenPointToRay": @copydoc ScreenPointToRay
+    <li>"AspectRatio": @copydoc AspectRatio
+    <li>"VisibleEntities": @copydoc VisibleEntities
+    <li>"VisibleEntityIDs": @copydoc VisibleEntityIDs
+    <li>"StartViewTracking": @copydoc StartViewTracking
+    <li>"StopViewTracking": @copydoc StopViewTracking
+    <li>"AspectRatio": @copydoc AspectRatio
+    <li>"SetAspectRatio": @copydoc SetAspectRatio
+    <li>"ViewMatrix": @copydoc ViewMatrix
+    <li>"ProjectionMatrix": @copydoc ProjectionMatrix
+    <li>"SetFromFrustum": @copydoc ViewMatrix
+    <li>"ToFrustum": @copydoc ProjectionMatrix
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
+    Does not react on any actions.
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Depends on the component Placeable</b>.
-</table> */
+    <b>Depends on the component @ref EC_ Placeable "Placeable".</b>
+    </table> */
 class OGRE_MODULE_API EC_Camera : public IComponent
 {
     Q_OBJECT
@@ -101,9 +103,22 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, verticalFov);
 
     /// Aspect ratio is a string of form "<widthProportion>:<heightProportion>", e.g. "4:3".
-    /** If this string is empty, the aspect ratio of the main window viewport is used (default). */
+    /**  Alternatively float can be used too, e.g. "1.33". If this string is empty, the aspect ratio of the main window viewport is used (default). */
     Q_PROPERTY(QString aspectRatio READ getaspectRatio WRITE setaspectRatio);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, aspectRatio);
+
+    /// Returns the actual Ogre camera.
+    /** @note Use with caution. Never set the position of the camera directly, use the placeable component for that. */
+    Ogre::Camera* OgreCamera() const { return camera_; }
+
+    /// Render current view to a Ogre::Image. Returns null Ogre::Image if operation fails.
+    /** Tundra rendering viewport size is used as the image size.
+        @param renderUi If the image should have the user interface included.
+        @return The render result image. */
+    Ogre::Image ToOgreImage(bool renderUi = true);
+
+    /// Returns entity IDs of visible entities in the camera's frustum.
+    const std::set<entity_id_t>& VisibleEntityIDs();
 
 public slots:
     /// Sets this camera as the active main window camera.
@@ -123,18 +138,16 @@ public slots:
     /// Returns the currently used view aspect ratio (width/height).
     float AspectRatio() const;
 
-    /// Returns the actual Ogre camera.
-    /** @note Use with caution. Never set the position of the camera directly, use the placeable component for that. */
-    Ogre::Camera* GetCamera() const { return camera_; }
+    /// Sets the currently used view aspect ratio (width/height).
+    /** @note Does not change the value of the aspectRatio attribute.
+        @note The aspectRatio attribute must be != "" (i.e. we're not using automatic aspect ratio) otherwise this functions has not effect. */
+    void SetAspectRatio(float ratio);
 
     /// Returns whether an entity is visible in the camera's frustum
     bool IsEntityVisible(Entity* entity);
 
     /// Returns visible entities in the camera's frustum.
     QList<Entity*> VisibleEntities();
-
-    /// Returns entity IDs of visible entities in the camera's frustum.
-    const std::set<entity_id_t>& VisibleEntityIDs();
 
     /// Takes a screen shot to hard drive.
     /** Store location will be users app data directory to make the function script safe. The name will have a timestamp identifier. 
@@ -150,17 +163,18 @@ public slots:
         @param renderUi If the image should have the user interface included.
         @return The render result image, null QImage if operation fails. */
     QImage ToQImage(bool renderUi = true);
-   
-    /// Render current view to a Ogre::Image. Returns null Ogre::Image if operation fails.
-    /** Tundra rendering viewport size is used as the image size.
-        @param renderUi If the image should have the user interface included.
-        @return The render result image. */
-    Ogre::Image ToOgreImage(bool renderUi = true);
 
     /// Returns a world space ray as cast from the camera through a viewport position.
-    /** @param The x position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
-        @param The y position at which the ray should intersect the viewport, in normalized screen coordinates [0,1]. */
-    Ray GetMouseRay(float x, float y) const;
+    /** @param x The x position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
+        @param y The y position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
+        @sa ScreenPointToRay */
+    Ray ViewportPointToRay(float x, float y) const;
+
+    /// Returns a world space ray as cast from the camera through a screen (graphics scene) position.
+    /** @param x The x screen position.
+        @param y The y screen position.
+        @sa ViewportPointToRay */
+    Ray ScreenPointToRay(uint x, uint y) const;
 
     /// Starts tracking an entity's visibility within the scene using this camera
     /** After this, connect either to the camera's EntityEnterView and EntityLeaveView signals,
@@ -170,12 +184,27 @@ public slots:
     /// Stops tracking an entity's visibility
     void StopViewTracking(Entity* entity);
 
+    /// Returns the view matrix for this camera, float4x4::nan if not applicable.
+    float4x4 ViewMatrix() const;
+
+    /// Returns the projection matrix for this camera, float4x4::nan if not applicable.
+    float4x4 ProjectionMatrix() const;
+
+    /// Returns the camera's perspective viewing frustum, Frustum::type == InvalidFrustum if not applicable.
+    Frustum ToFrustum() const;
+
+    /// Sets the camera's view from a perspective viewing frustum.
+    void SetFromFrustum(const Frustum &f);
+
+    // DEPRECATED
+    Ray GetMouseRay(float x, float y) const { return ViewportPointToRay(x, y); } /**< @deprecated use ViewportPointToRay @todo Add warning and remove at some point. */
     void SetNearClip(float nearclip); /**< @deprecated use attribute nearPlane @todo Remove */
     float NearClip() const; /**< @deprecated use attribute nearPlane @todo Remove */
     void SetFarClip(float farclip); ///< @deprecated use attribute farPlane @todo Remove */
     float FarClip() const; /**< @deprecated use attribute farPlane @todo Remove */
-    void SetVerticalFov(float fov); /**< @deprecated use attribute verticalFov @todo Remove */
-    float VerticalFov() const; /**< @deprecated use attribute verticalFov @todo Remove */
+    void SetVerticalFov(float fov); /**< @deprecated use attribute verticalFov @note fov as degrees @todo Remove */
+    float VerticalFov() const; /**< @deprecated use attribute verticalFov @note returns radians @todo Remove */
+    Ogre::Camera* GetCamera() const { return OgreCamera(); } /**< @deprecated use OgreCamera @todo Add warning and remove at some point. */
 
 signals:
     /// An entity has entered the view
@@ -191,16 +220,17 @@ private slots:
     /// Called when component has been added or removed from the parent entity. Checks the existence of the EC_Placeable component, and attaches this camera to it.
     void OnComponentStructureChanged();
 
-    void OnAttributeUpdated(IAttribute *attribute);
-
     /// Handle frame update. Used for entity visibility tracking
     void OnUpdated(float timeStep);
 
 private:
+
+    void AttributesChanged();
+
     /// Sets placeable component
     /** set a null placeable to detach the camera, otherwise will attach
         @param placeable placeable component */
-    void SetPlaceable(ComponentPtr placeable);
+    void SetPlaceable(const ComponentPtr &placeable);
 
     /// attaches camera to placeable
     void AttachCamera();
@@ -216,8 +246,7 @@ private:
     void QueryVisibleEntities();
 
     /// Update the render texture with the current view.
-    bool UpdateRenderTexture(QSize textureSize, bool renderUi);
-    
+    Ogre::TexturePtr UpdateRenderTexture(bool renderUi);
 
     void SetNearClipDistance(float distance);
     void SetFarClipDistance(float distance);
@@ -226,7 +255,7 @@ private:
     /// placeable component 
     ComponentPtr placeable_;
 
-    /// attached to placeable -flag
+    /// Attached to placeable -flag. Not ideal but needed due to Ogre crappiness (Ogre::SceneNode::getAttachedObject throws an expection if no object found)...
     bool attached_;
 
     /// Ogre world ptr

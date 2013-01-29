@@ -362,7 +362,7 @@ float3x4 float3x4::Mirror(const Plane &p)
 	return v;
 }
 
-float3x4 float3x4::OrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)
+float3x4 float3x4::OrthographicProjection(float /*nearPlaneDistance*/, float /*farPlaneDistance*/, float /*horizontalViewportSize*/, float /*verticalViewportSize*/)
 {
 	assume(false && "Not implemented!"); /// @todo Implement.
 	return float3x3(); ///@todo
@@ -1013,7 +1013,7 @@ void float3x4::BatchTransformPos(float3 *pointArray, int numPoints, int stride) 
 	if (!pointArray)
 		return;
 #endif
-	assume(stride >= sizeof(float3));
+	assume(stride >= (int)sizeof(float3));
 	u8 *data = reinterpret_cast<u8*>(pointArray);
 	for(int i = 0; i < numPoints; ++i)
 	{
@@ -1040,7 +1040,7 @@ void float3x4::BatchTransformDir(float3 *dirArray, int numVectors, int stride) c
 	if (!dirArray)
 		return;
 #endif
-	assume(stride >= sizeof(float3));
+	assume(stride >= (int)sizeof(float3));
 	u8 *data = reinterpret_cast<u8*>(dirArray);
 	for(int i = 0; i < numVectors; ++i)
 	{
@@ -1067,7 +1067,7 @@ void float3x4::BatchTransform(float4 *vectorArray, int numVectors, int stride) c
 	if (!vectorArray)
 		return;
 #endif
-	assume(stride >= sizeof(float4));
+	assume(stride >= (int)sizeof(float4));
 	u8 *data = reinterpret_cast<u8*>(vectorArray);
 	for(int i = 0; i < numVectors; ++i)
 	{
@@ -1248,7 +1248,7 @@ bool float3x4::IsUpperTriangular(float epsilon) const
 		&& EqualAbs(v[2][1], 0.f, epsilon);
 }
 
-bool float3x4::IsInvertible(float epsilon) const
+bool float3x4::IsInvertible(float /*epsilon*/) const
 {
 	///@todo Optimize.
 	float3x4 copy = *this;

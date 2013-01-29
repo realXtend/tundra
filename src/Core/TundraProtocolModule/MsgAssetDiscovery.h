@@ -26,7 +26,7 @@ struct MsgAssetDiscovery
 	}
 
 	enum { messageID = 121 };
-	static inline const char * const Name() { return "AssetDiscovery"; }
+	static inline const char * Name() { return "AssetDiscovery"; }
 
 	static const bool defaultReliable = true;
 	static const bool defaultInOrder = true;

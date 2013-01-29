@@ -304,7 +304,7 @@ void AssetInterestPlugin::Update(f64 frametime)
                 for(int iDep=0; iDep<matDeps.size(); iDep++)
                 {
                     QString depRef = matDeps[iDep].ref;
-                    if (AssetAPI::GetResourceTypeFromAssetRef(depRef) == "Texture")
+                    if (GetFramework()->Asset()->GetResourceTypeFromAssetRef(depRef) == "Texture")
                     {
                         TextureAsset *texAsset = dynamic_cast<TextureAsset*>(GetFramework()->Asset()->GetAsset(depRef).get());
                         if (texAsset && texAsset->IsLoaded())

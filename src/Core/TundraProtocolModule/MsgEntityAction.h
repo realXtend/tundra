@@ -26,7 +26,7 @@ struct MsgEntityAction
 	}
 
 	enum { messageID = 120 };
-	static inline const char * const Name() { return "EntityAction"; }
+	static inline const char * Name() { return "EntityAction"; }
 
 	static const bool defaultReliable = true;
 	static const bool defaultInOrder = true;
@@ -44,7 +44,7 @@ struct MsgEntityAction
 		{
             // This function has been manually modified, and not generated using the MessageCompiler tool.
             // kNet does not support setting VLE fields as dynamicCount length fields.
-            return kNet::VLE8_16_32::GetEncodedBitLength(parameter.size()) / 8 + parameter.size()*1;
+            return (size_t)kNet::VLE8_16_32::GetEncodedBitLength(parameter.size()) / 8 + parameter.size()*1;
 		}
 
 		inline void SerializeTo(kNet::DataSerializer &dst) const

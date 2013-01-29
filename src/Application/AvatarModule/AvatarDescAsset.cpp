@@ -79,7 +79,7 @@ void AvatarDescAsset::DoUnload()
     properties_.clear();
 }
 
-bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
+bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool /*allowAsynchronous*/)
 {
     // Store the raw XML as a string
     QByteArray bytes((const char *)data, numBytes);
@@ -101,7 +101,7 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool 
     return true;
 }
 
-bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
+bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &/*serializationParameters*/) const
 {
     QDomDocument avatarDoc("Avatar");
     WriteAvatarAppearance(avatarDoc);
@@ -588,10 +588,7 @@ void AvatarDescAsset::AddAttachment(AssetPtr assetPtr)
     {
         ReadAttachment(elem);
         AssetReferencesChanged();
-        // If an attachment is added, removed, and added again,
-        // AssetReferencesChanged() doesn't seem to emit AppearanceChanged().
-        if (!assetAPI->HasPendingDependencies(this->shared_from_this()))
-            emit AppearanceChanged();
+        emit AppearanceChanged();
     }
     else
     {

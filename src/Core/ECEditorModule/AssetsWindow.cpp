@@ -15,6 +15,7 @@
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+#include "IAssetBundle.h"
 #include "IAssetStorage.h"
 #include "UiAPI.h"
 
@@ -91,9 +92,9 @@ void AssetsWindow::PopulateTreeWidget()
     noProviderItem = new QTreeWidgetItem;
     noProviderItem->setText(0, tr("No provider"));
 
-    AssetStoragePtr defaultStorage = framework->Asset()->GetDefaultAssetStorage();
+    AssetStoragePtr defaultStorage = framework->Asset()->DefaultAssetStorage();
 
-    foreach(const AssetStoragePtr &storage, framework->Asset()->GetAssetStorages())
+    foreach(const AssetStoragePtr &storage, framework->Asset()->AssetStorages())
     {
         AssetStorageItem *item = new AssetStorageItem(storage);
         //item->setText(0, storage->ToString());
@@ -108,9 +109,16 @@ void AssetsWindow::PopulateTreeWidget()
             item->setFont(0, font);
         }
     }
+    std::pair<QString, AssetBundlePtr> bundlePair;
+    foreach(bundlePair, framework->Asset()->AssetBundles())
+    {
+        AssetBundleItem *item = new AssetBundleItem(bundlePair.second);
+        treeWidget->addTopLevelItem(item);
+    }
 
     std::pair<QString, AssetPtr> pair;
-    foreach(pair, framework->Asset()->GetAllAssets())
+    foreach(pair, framework->Asset()->Assets())
+    {
         if (alreadyAdded.find(pair.second) == alreadyAdded.end())
         {
             // If we're viewing only specific asset type, ignore non-matching assets.
@@ -118,6 +126,7 @@ void AssetsWindow::PopulateTreeWidget()
                 continue;
             AddAsset(pair.second);
         }
+    }
 
     treeWidget->addTopLevelItem(noProviderItem);
     noProviderItem->setHidden(noProviderItem->childCount() == 0);
@@ -138,21 +147,32 @@ void AssetsWindow::AddAsset(AssetPtr asset)
     connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
     connect(asset.get(), SIGNAL(PropertyStatusChanged(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
 
-    bool storageFound = false;
-    AssetStoragePtr storage = asset->GetAssetStorage();
-    if (storage)
-        for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    bool parentItemFound = false;
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        if (asset->AssetStorage()) // Inspect storage items only and find the right one.
         {
             AssetStorageItem *storageItem = dynamic_cast<AssetStorageItem *>(treeWidget->topLevelItem(i));
-            if (storageItem && storageItem->Storage() == storage)
+            if (storageItem && storageItem->Storage() == asset->AssetStorage())
             {
                 storageItem->addChild(item);
-                storageFound = true;
+                parentItemFound = true;
                 break;
             }
         }
+        else // Inspect asset bundles
+        {
+            AssetBundleItem *bundleItem = dynamic_cast<AssetBundleItem *>(treeWidget->topLevelItem(i));
+            if (bundleItem && bundleItem->Contains(asset->Name()))
+            {
+                bundleItem->addChild(item);
+                parentItemFound = true;
+                break;
+            }
+        }
+    }
 
-    if (!storageFound)
+    if (!parentItemFound)
         noProviderItem->addChild(item);
 
     noProviderItem->setHidden(noProviderItem->childCount() == 0);
@@ -306,7 +326,7 @@ void AssetsWindow::ExpandOrCollapseAll()
     expandAndCollapseButton->setText(treeExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
-void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
+void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem * /*item*/)
 {
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
@@ -329,7 +349,7 @@ void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
     expandAndCollapseButton->setText(anyExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
-void AssetsWindow::AssetDoubleClicked(QTreeWidgetItem *item, int column)
+void AssetsWindow::AssetDoubleClicked(QTreeWidgetItem *item, int /*column*/)
 {
     AssetItem* assItem = dynamic_cast<AssetItem*>(item);
     if (!assItem || !assItem->Asset())

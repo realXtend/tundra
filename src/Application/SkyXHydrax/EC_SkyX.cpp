@@ -10,7 +10,7 @@
 
 #include "EC_SkyX.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "FrameAPI.h"
 #include "OgreWorld.h"
@@ -279,7 +279,8 @@ void EC_SkyX::OnActiveCameraChanged(Entity *camEntity)
     if (impl->skyX->getCamera())
         UnregisterCamera(impl->skyX->getCamera());
 
-    if (camEntity)
+    // Only initialize the SkyX component if this EC_SkyX component is in the same scene as the new active camera entity.
+    if (camEntity && camEntity->ParentScene() == ParentScene())
     {
         EC_Camera *cameraComp = camEntity->GetComponent<EC_Camera>().get();
         Ogre::Camera *camera = cameraComp != 0 ? cameraComp->GetCamera() : 0;

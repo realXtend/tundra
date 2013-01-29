@@ -13,6 +13,7 @@
 #include "Entity.h"
 #include "AssetReference.h"
 #include "IAsset.h"
+#include "IAssetBundle.h"
 #include "IAssetStorage.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
@@ -32,7 +33,8 @@ void EntityItem::SetText(::Entity *entity)
     if (ptr.lock().get() != entity)
         LogWarning("EntityItem::SetText: the entity given is different than the entity this item represents.");
 
-    QString name = QString("%1 %2").arg(entity->Id()).arg(entity->Name());
+    QString name = QString("%1 %2").arg(entity->Id()).arg(entity->Name().isEmpty() ? "(no name)" : entity->Name());
+
     setTextColor(0, QColor(Qt::black));
     
     bool local = entity->IsLocal();
@@ -246,8 +248,11 @@ void AssetItem::SetText(IAsset *asset)
     if (assetPtr.lock().get() != asset)
         LogWarning("AssetItem::SetText: the asset given is different than the asset this item represents.");
 
-    QString name;//outPathFileName
-    AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &name);
+    QString name;
+    QString subAssetName;
+    AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &name, 0, 0, &subAssetName);
+    if (!subAssetName.isEmpty())
+        name = subAssetName;
 
     // "File missing" red
     // "No disk source" red
@@ -334,6 +339,24 @@ AssetStorageItem::AssetStorageItem(const AssetStoragePtr &storage, QTreeWidgetIt
 AssetStoragePtr AssetStorageItem::Storage() const
 {
     return assetStorage.lock();
+}
+
+// AssetBundleItem
+
+AssetBundleItem::AssetBundleItem(const AssetBundlePtr &bundle, QTreeWidgetItem *parent) :
+    QTreeWidgetItem(parent),
+    assetBundle(bundle)
+
+{
+    setText(0, QApplication::translate("AssetBundleItem", "Asset Bundle (") + bundle->Name() + ")");
+}
+
+bool AssetBundleItem::Contains(const QString &assetRef) const
+{
+    // We could also query the bundle for this, but for some bundle types this might take a lot
+    // of time. So lets do a starts with string check. This should not produce misses if AssetAPI has
+    // parsed the asset ref correctly to the bundle and the asset itself.
+    return (!assetBundle.expired() && assetRef.startsWith(assetBundle.lock()->Name(), Qt::CaseInsensitive));
 }
 
 // AssetSelection

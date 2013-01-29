@@ -18,6 +18,9 @@
 
 #include <Ogre.h>
 
+#include <crn_decomp.h>
+#include <dds_defs.h>
+
 #ifdef WIN32
 #include <squish.h>
 #endif
@@ -39,7 +42,7 @@
 TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_), loadTicket_(0)
 {
-    ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
+    ogreAssetName = AssetAPI::SanitateAssetRef(NameInternal());
 }
 
 TextureAsset::~TextureAsset()
@@ -66,6 +69,127 @@ bool TextureAsset::LoadFromFile(QString filename)
         return IAsset::LoadFromFile(filename);
 }
 
+QString TextureAsset::NameInternal() const
+{
+    return NameInternal(name);
+}
+
+QString TextureAsset::NameInternal(const QString &textureRef)
+{
+    // .crn -> .dds
+    if (textureRef.endsWith(".crn", Qt::CaseInsensitive))
+        return textureRef.left(textureRef.lastIndexOf(".")+1) + "dds";
+    return textureRef;
+}
+
+QString TextureAsset::NameSuffix() const
+{
+    QString checkName = name;
+    if (checkName.contains("/"))
+        checkName = checkName.mid(checkName.lastIndexOf("/")+1);
+    return QFileInfo(checkName).suffix().toLower();
+}
+
+bool TextureAsset::DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, std::vector<u8> &ddsData)
+{
+    PROFILE(TextureAsset_DeserializeFromData_CRN_Uncompress);
+    ddsData.clear();
+    
+    // Texture data
+    crnd::crn_texture_info textureInfo;
+    if (!crnd::crnd_get_texture_info((void*)crnData, crnNumBytes, &textureInfo))
+    {
+        LogError("CRN texture info parsing failed, invalid input data.");
+        return false;
+    }
+    // Begin unpack
+    crnd::crnd_unpack_context crnContext = crnd::crnd_unpack_begin((void*)crnData, crnNumBytes);
+    if (!crnContext)
+    {
+        LogError("CRN texture data unpacking failed, invalid input data.");
+        return false;
+    }
+    
+    // DDS header
+    crnlib::DDSURFACEDESC2 header;
+    memset(&header, 0, sizeof(header));
+    header.dwSize = sizeof(header);
+    // - Size and flags
+    header.dwFlags = crnlib::DDSD_CAPS | crnlib::DDSD_HEIGHT | crnlib::DDSD_WIDTH | crnlib::DDSD_PIXELFORMAT | ((textureInfo.m_levels > 1) ? crnlib::DDSD_MIPMAPCOUNT : 0);
+    header.ddsCaps.dwCaps = crnlib::DDSCAPS_TEXTURE;
+    header.dwWidth = textureInfo.m_width;
+    header.dwHeight = textureInfo.m_height;
+    // - Pixelformat
+    header.ddpfPixelFormat.dwSize = sizeof(crnlib::DDPIXELFORMAT);
+    header.ddpfPixelFormat.dwFlags = crnlib::DDPF_FOURCC;
+    crn_format fundamentalFormat = crnd::crnd_get_fundamental_dxt_format(textureInfo.m_format);
+    header.ddpfPixelFormat.dwFourCC = crnd::crnd_crn_format_to_fourcc(fundamentalFormat);
+    if (fundamentalFormat != textureInfo.m_format)
+        header.ddpfPixelFormat.dwRGBBitCount = crnd::crnd_crn_format_to_fourcc(textureInfo.m_format);
+    // - Mipmaps
+    header.dwMipMapCount = (textureInfo.m_levels > 1) ? textureInfo.m_levels : 0;
+    if (textureInfo.m_levels > 1)
+        header.ddsCaps.dwCaps |= (crnlib::DDSCAPS_COMPLEX | crnlib::DDSCAPS_MIPMAP);
+    // - Cubemap with 6 faces
+    if (textureInfo.m_faces == 6)
+    {
+        header.ddsCaps.dwCaps2 = crnlib::DDSCAPS2_CUBEMAP | 
+            crnlib::DDSCAPS2_CUBEMAP_POSITIVEX | crnlib::DDSCAPS2_CUBEMAP_NEGATIVEX | crnlib::DDSCAPS2_CUBEMAP_POSITIVEY | 
+            crnlib::DDSCAPS2_CUBEMAP_NEGATIVEY | crnlib::DDSCAPS2_CUBEMAP_POSITIVEZ | crnlib::DDSCAPS2_CUBEMAP_NEGATIVEZ;
+    }
+    
+    // Set pitch/linear size field (some DDS readers require this field to be non-zero).
+    int bits_per_pixel = crnd::crnd_get_crn_format_bits_per_texel(textureInfo.m_format);
+    header.lPitch = (((header.dwWidth + 3) & ~3) * ((header.dwHeight + 3) & ~3) * bits_per_pixel) >> 3;
+    header.dwFlags |= crnlib::DDSD_LINEARSIZE;
+          
+    // Prepare output data
+    uint totalSize = sizeof(crnlib::cDDSFileSignature) + header.dwSize;
+    uint writePos = 0;
+    ddsData.resize(totalSize);
+
+    // Write signature. Note: Not endian safe.
+    memcpy(&ddsData[0] + writePos, &crnlib::cDDSFileSignature, sizeof(crnlib::cDDSFileSignature));
+    writePos += sizeof(crnlib::cDDSFileSignature);
+
+    // Write header
+    memcpy(&ddsData[0] + writePos, &header, header.dwSize);
+    writePos += header.dwSize;
+    
+    // Now transcode all face and mipmap levels into memory, one mip level at a time.    
+    for (crn_uint32 iLevel = 0; iLevel < textureInfo.m_levels; iLevel++)
+    {
+        // Compute the face's width, height, number of DXT blocks per row/col, etc.
+        const crn_uint32 width = std::max(1U, textureInfo.m_width >> iLevel);
+        const crn_uint32 height = std::max(1U, textureInfo.m_height >> iLevel);
+        const crn_uint32 blocksX = std::max(1U, (width + 3) >> 2);
+        const crn_uint32 blocksY = std::max(1U, (height + 3) >> 2);
+        const crn_uint32 rowPitch = blocksX * crnd::crnd_get_bytes_per_dxt_block(textureInfo.m_format);
+        const crn_uint32 faceSize = rowPitch * blocksY;
+
+        totalSize += faceSize;
+        if (ddsData.size() < totalSize)
+            ddsData.resize(totalSize);
+    
+        // Now transcode the level to raw DXTn
+        void *dest = (void*)(&ddsData[0] + writePos);
+        if (!crnd::crnd_unpack_level(crnContext, &dest, faceSize, rowPitch, iLevel))
+        {
+            ddsData.clear();
+            break;
+        }
+        writePos += faceSize;
+    }
+    crnd::crnd_unpack_end(crnContext);
+    
+    if (ddsData.size() == 0)
+    {
+        LogError("CRN uncompression failed!");
+        return false;
+    }
+    return true;
+}
+
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     if (assetAPI->GetFramework()->HasCommandLineParameter("--notextures"))
@@ -88,6 +212,70 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
+    }
+
+    // Check if this is a crunch library CRN file and we need to decompress to DDS.
+    std::vector<u8> crnUncompressData;
+    if (NameSuffix() == "crn")
+    {
+        /** If asynchronous loading is allowed we want to store the decompressed DDS data to the asset cache.
+            This way below threaded loading can be done on the DDS disk source. If saving to disk fails, it is not
+            fatal, we can still continue with async loading withe data ptr and len. Checking for allowAsynchronous
+            also filters out any local:// etc. refs that are not meant to be loaded from asynch from asset cache.
+
+            - Do not rewrite dds to disk if the source type for this asset is cache and the dds already exists. 
+              Otherwise we would save the potentially big dds disk file every time this .crn loads!
+            - If async loading is allowed and we have a valid disk source, don't do in memory decompression.
+              Its a waste of resources as our disk source is up to date and we are allowed to use it to load
+              into Ogre. 
+        */
+        QString nameInternal = NameInternal();
+        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(nameInternal);
+        if (allowAsynchronous)
+        {
+            // Only decompress and store dds if the data is new or not in cache.
+            if (diskSourceType == IAsset::Original || cacheDiskSource.isEmpty())
+            {
+                // Input data ptr can be empty if it has been detected that we can load 
+                // asynchronously, meaning there was no need to load the file data.
+                std::vector<u8> fileData;
+                if (!data || numBytes == 0)
+                {
+                    bool success = LoadFileToVector(assetAPI->GetAssetCache()->FindInCache(Name()), fileData);
+                    if (!success)
+                        return false;
+                    data = &fileData[0];
+                    numBytes = fileData.size();
+                }
+                if (!DecompressCRNtoDDS(data, numBytes, crnUncompressData))
+                    return false;
+                if (crnUncompressData.size() == 0)
+                    return false;
+                PROFILE(TextureAsset_DeserializeFromData_CRN_CacheStore);
+                cacheDiskSource = assetAPI->GetAssetCache()->StoreAsset(&crnUncompressData[0], crnUncompressData.size(), nameInternal);
+                fileData.clear();
+                ELIFORP(TextureAsset_DeserializeFromData_CRN_CacheStore);
+            }
+            allowAsynchronous = !cacheDiskSource.isEmpty();
+            if (!allowAsynchronous)
+                LogWarning("TextureAsset::DeserializeFromData: Could not store decompressed CRN to asset cache, threaded loading disabled.");
+        }
+        if (!allowAsynchronous)
+        {
+            // We are doing a synchronous loading, ddsData memory is released once its loaded to ogre.
+            if (crnUncompressData.size() == 0)
+                if (!DecompressCRNtoDDS(data, numBytes, crnUncompressData))
+                    return false;
+            if (crnUncompressData.size() == 0)
+                return false;
+            data = (const u8*)&crnUncompressData[0];
+            numBytes = crnUncompressData.size();
+        }
+        else
+        {
+            // We are bound to do threaded loading from disk.
+            crnUncompressData.clear();
+        }
     }
     
     // Asynchronous loading
@@ -129,6 +317,10 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         Ogre::Image image;
         image.load(stream);
 
+        // Internal name that will be passed to Ogre for creating and loading the texture.
+        // This differs from Name() only if the data was pre-processed above, eg. CRN files.
+        const QString nameInternal = NameInternal();
+
         // If we are submitting a .dds file which did not contain mip maps, don't have Ogre generating them either.
         // Reasons:
         // 1. Not all textures need mipmaps, i.e. if the texture is always shown with 1:1 texel-to-pixel ratio, then the mip levels are never needed.
@@ -136,12 +328,12 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         // 3. If the texture is updated dynamically, we might not afford to regenerate mips at each update.
         int numMipmapsInImage = image.getNumMipmaps(); // Note: This is actually numMipmaps - 1: Ogre doesn't think the first level is a mipmap.
         int numMipmapsToUseOnGPU = Ogre::MIP_DEFAULT;
-        if (numMipmapsInImage == 0 && this->Name().endsWith(".dds", Qt::CaseInsensitive))
+        if (numMipmapsInImage == 0 && nameInternal.endsWith(".dds", Qt::CaseInsensitive))
             numMipmapsToUseOnGPU = 0;
 
         if (ogreTexture.isNull()) // If we are creating this texture for the first time, create a new Ogre::Texture object.
         {
-            ogreAssetName = AssetAPI::SanitateAssetRef(this->Name().toStdString()).c_str();
+            ogreAssetName = AssetAPI::SanitateAssetRef(nameInternal);
             
             // Optionally load textures to default pool for memory use debugging. Do not use in production use due to possible crashes on device loss & missing mipmaps!
             // Note: this does not affect async loading path, so specify additionally --no_async_asset_load to be sure textures are loaded through this path
@@ -158,8 +350,10 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
                     numMipmapsToUseOnGPU);
             }
         }
-        else // If we're loading on top of an Ogre::Texture we've created before, don't lose the old Ogre::Texture object, but reuse the old.
-        {    // This will allow all existing materials to keep referring to this texture, and they'll get the updated texture image immediately.
+        else
+        {
+            // If we're loading on top of an Ogre::Texture we've created before, don't lose the old Ogre::Texture object, but reuse the old.
+            // This will allow all existing materials to keep referring to this texture, and they'll get the updated texture image immediately.
             ogreTexture->freeInternalResources(); 
 
             if (image.getWidth() != ogreTexture->getWidth() || image.getHeight() != ogreTexture->getHeight() || image.getFormat() != ogreTexture->getFormat())
@@ -180,16 +374,22 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
 
             ogreTexture->createInternalResources();
         }
-        
+
+        if (NameSuffix() == "crn" && crnUncompressData.size() > 0)
+            crnUncompressData.clear();
+
         PostProcessTexture();
         
-        // We did a synchronous load, must call AssetLoadCompleted here.
+        // We did a synchronous load and must call AssetLoadCompleted here.
+        // This is done with Name() that is tracked by AssetAPI and is the ref
+        // we are showing outside this object, even if the input data was pre-processed 
+        // before passed to Ogre with NameInternal().
         assetAPI->AssetLoadCompleted(Name());
         return true;
     }
     catch(Ogre::Exception &e)
     {
-        LogError("TextureAsset::DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
+        LogError("TextureAsset::DeserializeFromData: Failed to create texture " + Name().toStdString() + ": " + std::string(e.what()));
         return false;
     }
 }
@@ -202,8 +402,7 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
     // Reset to 0 to mark the asynch request is not active anymore. Aborted in Unload() if it is.
     loadTicket_ = 0;
 
-    const QString assetRef = Name();
-    ogreAssetName = AssetAPI::SanitateAssetRef(assetRef);
+    ogreAssetName = AssetAPI::SanitateAssetRef(NameInternal());
     if (!result.error)
     {
         ogreTexture = Ogre::TextureManager::getSingleton().getByName(ogreAssetName.toStdString(), OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
@@ -211,17 +410,17 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
         {
             PostProcessTexture();
             
-            assetAPI->AssetLoadCompleted(assetRef);
+            assetAPI->AssetLoadCompleted(Name());
             return;
         }
         else
-            LogError("TextureAsset asynch load: Ogre::Texture was null after threaded loading: " + assetRef);
+            LogError("TextureAsset asynch load: Ogre::Texture was null after threaded loading: " + Name());
     }
     else
         LogError("TextureAsset asynch load: Ogre failed to do threaded loading: " + result.message);
 
     DoUnload();
-    assetAPI->AssetLoadFailed(assetRef);
+    assetAPI->AssetLoadFailed(Name());
 }
 
 /*
@@ -243,6 +442,7 @@ void TextureAsset::RegenerateAllMipLevels()
         }
 }
 */
+
 bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     PROFILE(TextureAsset_SerializeTo);
@@ -260,7 +460,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
         if (formatExtension.empty())
         {
             LogDebug("TextureAsset::SerializeTo: no serializationParameters given. Trying to guess format extension from the asset name.");
-            formatExtension = QFileInfo(Name()).suffix().toStdString();
+            formatExtension = QFileInfo(NameInternal()).suffix().toStdString();
         }
 
         Ogre::DataStreamPtr imageStream = newImage.encode(formatExtension);
@@ -346,6 +546,20 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     return ToQImage(ogreTexture.get(), faceIndex, mipmapLevel);
 }
 
+uint TextureAsset::Height() const
+{
+    if (!ogreTexture.get())
+        return 0;
+    return ogreTexture->getHeight();
+}
+
+uint TextureAsset::Width() const
+{
+    if (!ogreTexture.get())
+        return 0;
+    return ogreTexture->getWidth();
+}
+
 void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic)
 {
     if (newWidth == 0 || newHeight == 0)
@@ -378,7 +592,7 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
 
     if (!ogreTexture.get())
     {
-        ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+        ogreTexture = Ogre::TextureManager::getSingleton().createManual(NameInternal().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
             newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, usage);
         if (!ogreTexture.get())
         {

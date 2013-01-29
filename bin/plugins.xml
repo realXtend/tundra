@@ -1,20 +1,23 @@
 <?xml version="1.0"?>
 <Tundra>
   <!-- plugins.xml is hardcoded to be the default configuration file to load if another file is not specified on the command line with the "config filename.xml" parameter. -->
-  <plugin path="OgreRenderingModule" />
-  <plugin path="EnvironmentModule" />           <!-- EnvironmentModule depends on OgreRenderingModule -->
-  <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
-  <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on OgreRenderingModule -->
-  <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule and TundraProtocolModule-->
+  <plugin path="OpenAssetImport" />             <!-- Does not depend on any other module -->
+  <plugin path="OgreRenderingModule" />         <!-- Depends on OpenAssetImport -->
+  <plugin path="SceneInteract" />               <!-- Depends on OgreRenderingModule -->
+  <plugin path="EnvironmentModule" />           <!-- Depends on OgreRenderingModule -->
+  <plugin path="PhysicsModule" />               <!-- Depends on OgreRenderingModule and EnvironmentModule -->
+  <plugin path="TundraProtocolModule" />        <!-- Depends on OgreRenderingModule -->
+  <plugin path="ECEditorModule" />              <!-- Depends on OgreRenderingModule and TundraProtocolModule-->
   <!--  Note: All modules that implicitly depend on JavascriptModule, by performing QtScript object meta type registration in their registered
         dynamic objects (Framework::RegisterDynamicObject) in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
-  <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraProtocolModule --> 
-  <plugin path="AssetModule" />                 <!-- AssetModule depends on TundraProtocolModule -->
-  <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
-  <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
-  <plugin path="OgreAssetEditorModule" />       <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
-  <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule, OgreAssetEditorModule and AssetModule -->
-  <plugin path="BrowserUiPlugin" />             <!-- Depends on JavascriptModule -->    
+  <plugin path="JavascriptModule" />            <!-- Depends on TundraProtocolModule --> 
+  <plugin path="AssetModule" />                 <!-- Depends on TundraProtocolModule -->
+  <plugin path="ArchivePlugin" />               <!-- Does not depend on any other module -->
+  <plugin path="AvatarModule" />                <!-- Depends on AssetModule and OgreRenderingModule -->
+  <plugin path="SkyXHydrax" />                  <!-- Depends on OgreRenderingModule -->
+  <plugin path="OgreAssetEditorModule" />       <!-- Depends on OgreRenderingModule -->
+  <plugin path="DebugStatsModule" />            <!-- Depends on OgreRenderingModule, EnvironmentModule, OgreAssetEditorModule and AssetModule -->
+  <plugin path="BrowserUiPlugin" />             <!-- Depends on JavascriptModule -->
   <plugin path="SceneWidgetComponents" />       <!-- Depends on OgreRenderingModule and TundraProtocolModule (and optionally on BrowserUiPlugin) -->
   <plugin path="PythonScriptModule" />          <!-- Depends on OgreRenderingModule, TundraProtocolModule -->
   <plugin path="MumblePlugin" />                <!-- Depends on OgreRenderingModule, JavascriptModule and TundraLogicModule -->

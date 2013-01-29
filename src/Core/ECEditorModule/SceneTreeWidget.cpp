@@ -11,8 +11,8 @@
 #include "SceneTreeWidgetItems.h"
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
-#include "Scene.h"
-#include "QtUtils.h"
+#include "Scene/Scene.h"
+#include "FileUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
 
@@ -49,6 +49,12 @@
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
+
+#ifdef Q_WS_MAC
+#define KEY_DELETE_SHORTCUT QKeySequence(Qt::CTRL + Qt::Key_Backspace)
+#else
+#define KEY_DELETE_SHORTCUT QKeySequence::Delete
+#endif
 
 // Menu
 
@@ -97,7 +103,7 @@ SceneTreeWidget::SceneTreeWidget(Framework *fw, QWidget *parent) :
 
     // Create keyboard shortcuts.
     QShortcut *renameShortcut = new QShortcut(QKeySequence(Qt::Key_F2), this);
-    QShortcut *deleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    QShortcut *deleteShortcut = new QShortcut(KEY_DELETE_SHORTCUT, this);
     QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), this);
     QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), this);
 
@@ -321,7 +327,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     }
 
     // "Rename" action is possible only if have one entity selected.
-    bool renamePossible = (selectionModel()->selection().size() == 1);
+    bool renamePossible = (selectionModel()->selectedIndexes().size() == 1);
     if (renamePossible)
     {
         renameAction = new QAction(tr("Rename"), menu);
@@ -519,7 +525,7 @@ QString SceneTreeWidget::SelectionAsXml() const
             EntityPtr entity = eItem->Entity();
             assert(entity);
             if (entity)
-                entity->SerializeToXML(sceneDoc, sceneElem);
+                entity->SerializeToXML(sceneDoc, sceneElem, true);
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -530,7 +536,7 @@ QString SceneTreeWidget::SelectionAsXml() const
         {
             ComponentPtr component = cItem->Component();
             if (component)
-                component->SerializeTo(sceneDoc, sceneElem);
+                component->SerializeTo(sceneDoc, sceneElem, true);
         }
 
         sceneDoc.appendChild(sceneElem);
@@ -673,6 +679,7 @@ void SceneTreeWidget::Rename()
 //            openPersistentEditor(eItem);
 //            setCurrentIndex(index);
             edit(index);
+            connect(this->itemDelegate(), SIGNAL(commitData(QWidget*)), SLOT(OnCommitData(QWidget*)), Qt::UniqueConnection);
             connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *, int)), Qt::UniqueConnection);
 //            connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *)));
         }
@@ -687,6 +694,32 @@ void SceneTreeWidget::Rename()
 //        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
     }
 */
+}
+
+void SceneTreeWidget::OnCommitData(QWidget * editor)
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+    SceneTreeWidgetSelection selection = SelectedItems();
+    if (selection.entities.size() == 1)
+    {
+        EntityItem *entityItem = selection.entities[0];
+        EntityPtr entity = entityItem->Entity();
+        if (entity)
+        {
+            QLineEdit *edit = dynamic_cast<QLineEdit*>(editor);
+            if (edit)
+                // If there are no changes, restore back the previous stripped entity ID from the item, and restore sorting
+                if (edit->text() == entity->Name())
+                {
+                    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
+                    entityItem->SetText(entity.get());
+                    setSortingEnabled(true);
+                }
+        }
+    }
 }
 
 void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
@@ -890,15 +923,26 @@ void SceneTreeWidget::Paste()
                 {
                     QString type = componentElem.attribute("type");
                     QString name = componentElem.attribute("name");
+                    QString sync = componentElem.attribute("sync");
+                    QString temp = componentElem.attribute("temporary");
+
                     if (!type.isNull())
                     {
                         // If we already have component with the same type name and name, add suffix to the new component's name.
-                        if (entity->GetComponent(type, name))
-                            name.append("_copy");
+                        int copy = 2;
+                        QString newName = name;
+                        while(entity->GetComponent(type, newName))
+                            newName = QString(name + " (%1)").arg(copy++);
 
-                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, name);
+                        componentElem.setAttribute("name", newName);
+                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, newName);
                         if (component)
                         {
+                            if (!temp.isEmpty())
+                                component->SetTemporary(ParseBool(temp));
+                            if (!sync.isEmpty())
+                                component->SetReplicated(ParseBool(sync));
+
                             entity->AddComponent(component);
                             component->DeserializeFrom(componentElem, AttributeChange::Default);
                         }
@@ -920,7 +964,7 @@ void SceneTreeWidget::SaveAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+    fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
         tr("Save SceneTreeWidgetSelection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
 }
 
@@ -928,7 +972,7 @@ void SceneTreeWidget::SaveSceneAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+    fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
         tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
@@ -940,13 +984,13 @@ void SceneTreeWidget::ExportAll()
     if (SelectedItems().HasEntities())
     {
         // Save only selected entities
-        fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+        fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
             tr("Export scene"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
     }
     else
     {
         // Save all entities in the scene
-        fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+        fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
             tr("Export scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
     }
 
@@ -958,7 +1002,7 @@ void SceneTreeWidget::Import()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    fileDialog = OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + 
 #ifdef ASSIMP_ENABLED
         cMeshFileFilter + ";;" + 
@@ -971,7 +1015,7 @@ void SceneTreeWidget::OpenNewScene()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    fileDialog = OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;" + cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter + ";;" +
         cAllTypesFileFilter, tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
@@ -1357,13 +1401,13 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                     if (!attr)
                         continue;
                     
-                    if (attr->TypeName() == "assetreference")
+                    if (attr->TypeId() == cAttributeAssetReference)
                     {
                         Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
                         if (assetRef)
                             assets.insert(assetRef->Get().ref);
                     }
-                    else if (attr->TypeName() == "assetreferencelist")
+                    else if (attr->TypeId() == cAttributeAssetReferenceList)
                     {
                         Attribute<AssetReferenceList> *assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
                         if (assetRefs)
@@ -1496,11 +1540,11 @@ void SceneTreeWidget::SaveAssetAs()
     if (sel.assets.size() == 1)
     {
         assetName = AssetAPI::ExtractFilenameFromAssetRef(sel.assets[0]->id);
-        fileDialog = QtUtils::SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+        fileDialog = SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
     else
     {
-        QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+        DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
 }
 

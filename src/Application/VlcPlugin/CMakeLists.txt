@@ -39,9 +39,10 @@ if (SHOULD_RUN)
 
     file (GLOB CPP_FILES *.cpp)
     if (WIN32 AND VC90)
-        file(GLOB H_FILES *.h)
+        include_directories(windows/)
+        file(GLOB H_FILES *.h windows/*.h)
     else() # Omit stdint.h in other platforms.
-        file(GLOB H_FILES VlcPlugin.h VlcMediaPlayer.h VlcVideoWidget.h PlayerStatus.h EC_MediaPlayer.h)
+        file(GLOB H_FILES *.h)
     endif()
     file(GLOB UI_FILES ui/*.ui)
     file(GLOB RESOURCE_FILES ui/*.qrc)
@@ -51,19 +52,22 @@ if (SHOULD_RUN)
     QT4_WRAP_UI(UI_SRCS ${UI_FILES})
     QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-    use_core_modules (Framework Math Asset Ui OgreRenderingModule)
-    use_app_modules (SceneWidgetComponents)
-    use_package (VLC)
+    UseTundraCore()
+    use_core_modules(TundraCore Math OgreRenderingModule)
+    use_app_modules(SceneWidgetComponents SceneInteract)
+    use_package(VLC)
 
     build_library (${TARGET_NAME} SHARED ${CPP_FILES} ${H_FILES} ${MOC_FILES} ${UI_SRCS} ${RESOURCE_SRCS})
 
-    SetupCompileFlags()
-
-    link_modules (Framework Asset Ui OgreRenderingModule SceneWidgetComponents)
-    link_package (VLC)
+    link_modules(TundraCore Math OgreRenderingModule SceneWidgetComponents SceneInteract)
+    link_package(QT4)
+    link_package(VLC)
     if (APPLE)
         link_ogre()
     endif()
+
+    SetupCompileFlags()
+
     final_target ()
 
     # Install vlcplugins to install prefix for windows

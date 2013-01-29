@@ -14,7 +14,7 @@
 #include "TreeWidgetUtils.h"
 
 #include "Framework.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "EC_Name.h"
 #include "AssetReference.h"
@@ -111,6 +111,7 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
     Scene *scenePtr = scene.lock().get();
     connect(scenePtr, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
     connect(scenePtr, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
+    connect(scenePtr, SIGNAL(EntityTemporaryStateToggled(Entity *)), SLOT(UpdateEntityTemporaryState(Entity *)));
     connect(scenePtr, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
     connect(scenePtr, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
         SLOT(AddComponent(Entity *, IComponent *)));
@@ -270,7 +271,7 @@ void SceneStructureWindow::CreateAssetReferences()
                     continue;
 
                 foreach(IAttribute *attr, comp->Attributes())
-                    if (attr && (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist"))
+                    if (attr && (attr->TypeId() == cAttributeAssetReference || attr->TypeId() == cAttributeAssetReferenceList))
                         CreateAssetItem(cItem, attr);
             }
         }
@@ -278,9 +279,9 @@ void SceneStructureWindow::CreateAssetReferences()
         {
             // Create asset ref items as children of entity items.
             const Entity::ComponentMap &components = entity->Components();
-            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
                 foreach(IAttribute *attr, i->second->Attributes())
-                    if (attr && (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist"))
+                    if (attr && (attr->TypeId() == cAttributeAssetReference || attr->TypeId() == cAttributeAssetReferenceList))
                         CreateAssetItem(eItem, attr);
         }
     }
@@ -327,6 +328,27 @@ void SceneStructureWindow::AckEntity(Entity* entity, entity_id_t oldId)
 {
     RemoveEntityById(oldId);
     AddEntity(entity);
+}
+
+void SceneStructureWindow::UpdateEntityTemporaryState(Entity *entity)
+{
+    for (int i = 0; i < treeWidget->topLevelItemCount(); i++)
+    {
+        EntityItem *entItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
+        if (entItem && (entItem->Id() == entity->Id()))
+        {
+            entItem->SetText(entity);
+
+            for(int j = 0; j < entItem->childCount(); ++j)
+            {
+                ComponentItem *compItem = dynamic_cast<ComponentItem *>(entItem->child(j));
+                if (compItem && compItem->Component().get() && compItem->Parent() == entItem)
+                    compItem->SetText(compItem->Component().get());
+            }
+
+            break;
+        }
+    }
 }
 
 void SceneStructureWindow::RemoveEntity(Entity* entity)
@@ -390,7 +412,7 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
 
             // Add possible asset references.
             foreach(IAttribute *attr, comp->Attributes())
-                if (attr && (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist"))
+                if (attr && (attr->TypeId() == cAttributeAssetReference || attr->TypeId() == cAttributeAssetReferenceList))
                     CreateAssetItem(cItem, attr);
         }
     }

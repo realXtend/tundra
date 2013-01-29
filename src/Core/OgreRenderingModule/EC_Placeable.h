@@ -11,54 +11,76 @@
 #include "Math/float3.h"
 #include "Math/MathFwd.h"
 
-namespace Ogre { class Bone; }
-
 /// Ogre placeable (scene node) component
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Placeable</h2>
-Ogre (scene node) component.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Placeable</h2>
+    Ogre (scene node) component.
 
-Registered by OgreRenderer::OgreRenderingModule.
+    Registered by OgreRenderer::OgreRenderingModule.
 
-<b>Attributes</b>:
-<ul>
-<li>Transform: transform
-<div>Sets the position, rotation and scale of the entity.</div>
-<li>bool: drawDebug
-<div>Shows the debug bounding box of geometry attached to the placeable.</div>
-<li>int: selectionLayer
-<div>Selection layer for raycasts.</div>
-<li>EntityReference: parentRef
-<div>The entity to attach to. The entity in question needs to have EC_Placeable as well to work correctly</div>
-<li>string: parentBone
-<div>The bone to attach to. The parent entity needs to have a skeletal EC_Mesh component</div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>Transform: transform
+    <div> @copydoc transform </div>
+    <li>bool: drawDebug
+    <div> @copydoc drawDebug </div>
+    <li>int: selectionLayer
+    <div> @copydoc selectionLayer </div>
+    <li>EntityReference: parentRef
+    <div> @copydoc parentRef </div>
+    <li>QString: parentBone
+    <div> @copydoc parentBone </div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>"Show": Shows the Entity
-<li>"Hide": Hides the Entity
-<li>"ToggleVisibility": Toggles visibility
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>"SetPosition": @copydoc SetPosition
+    <li>"SetOrientation": @copydoc SetOrientation
+    <li>"SetOrientationAndScale": @copydoc SetOrientationAndScale
+    <li>"SetScale": @copydoc SetScale
+    <li>"SetTransform": @copydoc SetTransform
+    <li>"SetTransform": @copydoc SetTransform
+    <li>"SetWorldTransform": @copydoc SetWorldTransform
+    <li>"WorldPosition": @copydoc WorldPosition
+    <li>"WorldOrientation": @copydoc WorldOrientation
+    <li>"WorldScale": @copydoc WorldScale
+    <li>"Position": @copydoc Position
+    <li>"Orientation": @copydoc Orientation
+    <li>"Scale": @copydoc Scale
+    <li>"LocalToWorld": @copydoc LocalToWorld
+    <li>"WorldToLocal": @copydoc WorldToLocal
+    <li>"LocalToParent": @copydoc LocalToParent
+    <li>"ParentToLocal": @copydoc ParentToLocal
+    <li>"Show": @copydoc Show
+    <li>"Hide": @copydoc Hide
+    <li>"ToggleVisibility": @copydoc ToggleVisibility
+    <li>"IsAttached": @copydoc IsAttached
+    <li>"SetParent": @copydoc SetParent
+    <li>"Children": @copydoc Children
+    <li>"DumpNodeHierarhy": @copydoc DumpNodeHierarhy
+    <li>"ParentPlaceableEntity": @copydoc ParentPlaceableEntity
+    <li>"ParentPlaceableComponent": @copydoc ParentPlaceableComponent
+    <li>"IsGrandparentOf": @copydoc IsGrandparentOf
+    <li>"IsGrandchildOf": @copydoc IsGrandchildOf
+    <li>"Grandchildren": @copydoc Grandchildren
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>"ShowEntity": Shows the Entity
-<li>"HideEntity": Hides the Entity
-<li>"ToggleEntity": Toggles visibility
-</ul>
-</td>
-</tr>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li>"ShowEntity": Shows the Entity
+    <li>"HideEntity": Hides the Entity
+    <li>"ToggleEntity": Toggles visibility
+    </ul>
+    </td>
+    </tr>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Doesn't depend on any components</b>.
+    <b>Doesn't depend on any components</b>.
 
-</table>
-*/
+    </table> */
 class OGRE_MODULE_API EC_Placeable : public IComponent
 {
     Q_OBJECT
@@ -90,8 +112,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(EntityReference, parentRef);
 
     /// Specifies the name of the bone on the parent entity.
-    /// Needs that the parent entity has a skeletal mesh. 
-    /// Set to empty for no parent bone assignment, in which case this scene node is attached to the root of the parent node.
+    /** Needs that the parent entity has a skeletal mesh.
+        Set to empty for no parent bone assignment, in which case this scene node is attached to the root of the parent node. */
     Q_PROPERTY(QString parentBone READ getparentBone WRITE setparentBone)
     DEFINE_QPROPERTY_ATTRIBUTE(QString, parentBone);
 
@@ -103,7 +125,7 @@ public slots:
     /// Sets the translation part of this placeable's transform.
     /// @note This function sets the Transform attribute of this component, and synchronizes to network.
     void SetPosition(float x, float y, float z);
-    void SetPosition(const float3 &pos);
+    void SetPosition(const float3 &pos); /**< @overload */
 
     /// Sets the orientation of this placeable's transform.
     /// If you want to set the orientation of this placeable using Euler angles, use e.g. 
@@ -118,7 +140,7 @@ public slots:
     /// @note This function sets the Transform attribute of this component, and synchronizes to network.
     /// @note This function preserves the previous position of this transform.
     void SetOrientationAndScale(const float3x3 &rotAndScale);
-    void SetOrientationAndScale(const Quat &q, const float3 &scale);
+    void SetOrientationAndScale(const Quat &q, const float3 &scale); /**< @overload */
 
     /// Sets the scale of this placeable's transform.
     /// @note Due to very odd Ogre3D behavior, hierarchical nodes are concatenated in a very unstandard manner.
@@ -128,7 +150,7 @@ public slots:
     ///       Therefore, expect to receive odd results if using scales in a hierarchy.
     /// @note This function preserves the previous translation and rotation of this placeable.
     void SetScale(float x, float y, float z);
-    void SetScale(const float3 &scale);
+    void SetScale(const float3 &scale); /**< @overload */
 
     /// Sets the position, rotation and scale of this placeable (the local-to-parent transform).
     /// @param tm An orthogonal matrix (no shear), which cannot contain mirroring. The float4x4 version is provided
@@ -136,8 +158,8 @@ public slots:
     /// @note This function sets the Transform attribute of this component, and synchronizes to network.
     /// @note Logically, the matrix tm is applied to the object first before translating by pos.
     void SetTransform(const float3x3 &tm, const float3 &pos);
-    void SetTransform(const float3x4 &tm);
-    void SetTransform(const float4x4 &tm);
+    void SetTransform(const float3x4 &tm); /**< @overload */
+    void SetTransform(const float4x4 &tm); /**< @overload */
 
     /// Sets the position and rotation of this placeable (the local-to-parent transform).
     /// @note This function RESETS the scale of this transform to (1,1,1).
@@ -154,8 +176,8 @@ public slots:
     /// @note This function sets the Transform attribute of this component, and synchronizes to network.
     /// @note Logically, the matrix tm is applied to the object first before translating by pos.
     void SetWorldTransform(const float3x3 &tm, const float3 &pos);
-    void SetWorldTransform(const float3x4 &tm);
-    void SetWorldTransform(const float4x4 &tm);
+    void SetWorldTransform(const float3x4 &tm); /**< @overload */
+    void SetWorldTransform(const float4x4 &tm); /**< @overload */
 
     /// Sets the transform of this placeable by specifying the world-space transform this scene node should have.
     /// @note This function RESETS the scale of this transform to (1,1,1).
@@ -264,11 +286,6 @@ signals:
     void AboutToBeDestroyed();
 
 private slots:
-    /// Handle attributechange
-    /** @param attribute Attribute that changed.
-        @param change Change type. */
-    void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
-
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
     
@@ -288,6 +305,9 @@ private slots:
     void OnComponentAdded(IComponent* component, AttributeChange::Type change);
 
 private:
+    /// Handle attributechange
+    void AttributesChanged();
+
     /// attaches scenenode to parent
     void AttachNode();
     

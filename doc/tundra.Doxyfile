@@ -686,12 +686,13 @@ EXCLUDE_PATTERNS       = *.git* \
 # wildcard * is used, a substring. Examples: ANamespace, AClass, 
 # AClass::ANamespace, ANamespace::*Test
 
-EXCLUDE_SYMBOLS        =    StanHull \
+EXCLUDE_SYMBOLS        =    DEFINE_QPROPERTY_ATTRIBUTE* \
+                            StanHull \
                             kNet \
                             TiXml*\
                             json \
                             boost \
-                            Ogre
+                            Ogre \
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 
@@ -1328,7 +1329,7 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator 
 # instead of the = operator.
 
-PREDEFINED             = 
+PREDEFINED             = DOXYGEN=1
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

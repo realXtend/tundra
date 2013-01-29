@@ -1,10 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_PlanarMirror.cpp
- *  @brief  EC_PlanarMirror enables one to create planar mirrors.
- *  @note   The entity should have EC_Placeable available in advance.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+ 
+    @file   EC_PlanarMirror.cpp
+    @brief  Enables one to create planar mirrors. */
 
 #include "Math/MathFwd.h"
 #include "EC_PlanarMirror.h"
@@ -43,8 +41,6 @@ EC_PlanarMirror::EC_PlanarMirror(Scene *scene) :
     mirror_plane_(0)
 {
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(Initialize()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_PlanarMirror::~EC_PlanarMirror()
@@ -57,12 +53,12 @@ EC_PlanarMirror::~EC_PlanarMirror()
     SAFE_DELETE(mirror_plane_);
 }
 
-void EC_PlanarMirror::OnAttributeUpdated(IAttribute* attr)
+void EC_PlanarMirror::AttributesChanged()
 {
     if (!ViewEnabled())
         return;
 
-    if (attr->Name() == "Show Reflection Plane")
+    if (reflectionPlaneVisible.ValueChanged())
         mirror_plane_entity_->setVisible(getreflectionPlaneVisible());
 }
 

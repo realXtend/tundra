@@ -2,7 +2,7 @@
 
 # Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
 !ifndef VERSION
-!define VERSION "2.3.3.1"
+!define VERSION "2.4.1"
 !endif
 
 Name "Tundra ${VERSION}"
@@ -78,8 +78,10 @@ Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\How to run offline demos.lnk" "$INSTDIR\dox\offlinedemos.txt" ""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Animated UI.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\AnimatedUI\scene.txml$\""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\AssImpDemoScene.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\AssImpDemoScene\scene.txml$\""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Compositor.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Compositor\scene.txml$\""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Day-Night.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\DayNight\scene.txml$\""
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Glow.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Glow\scene.txml$\""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Sound Component.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\ECSound\scene.txml$\""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Physics.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\Physics\scene.txml$\""
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Offline Demos\Render to Texture.lnk" "$INSTDIR\tundra.exe" "--file $\"$INSTDIR\scenes\RenderToTexture\scene.txml$\""

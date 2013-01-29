@@ -1,3 +1,61 @@
+v2.4.1 - https://github.com/realXtend/naali/compare/tundra2.4...tundra2.4.1
+------
+ - Add support for Crunch texture format (#532), see http://code.google.com/p/crunch/
+ - Optimized Tundra built-in attribute change management architecture to use the new AttributeChanged() signature (#541, #563)
+ - Merged in TundraCore DLL architecture change that reduces code duplication and plugin DLL sizes (#575)
+ - Added support for building Tundra on Android (#574)
+ - Moved SceneInteract into its own plugin to decouple application logic from core (7d53390)
+ - Move several Ogre-specific scene components into OgreRenderingModule (fbc37db, db329a3)
+ - Cleaned massive amounts of build warnings on /W4 and -Wall
+ - Documentation cleanup
+ - Fixed a bug in Transform constructor that left the scale member variable uninitialized (0f8d0f5)
+ - Remove use of the InputMapper component in favor of more flexible InputContexts in scripts (109e6eb, #551)
+ - Registered fixed-width primitive integer types to QtScript (d1e56c6)
+ - Fixed a crash that could occur when the user clicked on the main window before any entities were loaded to the scene (bfc894c, 37ecf87)
+
+v2.4 - https://github.com/realXtend/naali/compare/tundra2.4rc1...tundra2.4
+------
+ - Fixed Glow example scene to not conflict with Tundra built-in asset names.
+ - Added Glow and AssImpDemoScene to Windows startup menu entries.
+ - Fixed OSX build script to not fail in SkyX.
+ - Fixed OSX app bundling script to properly bundle up Cg and Ogre frameworks.
+ - Enabled default build of SkyX, Hydrax and OpenAssetImport on OSX.
+
+v2.4-RC1 - https://github.com/realXtend/naali/compare/tundra2.3.3.1...tundra2.4rc1
+------
+ - Fixed KeyBindingMap not being accessible from QtScript. (related to #485)
+ - Added support for individual objects to glow, and added a new Glow example scene.
+ - Fix an issue where the default water plane slab was very shallow in depth.
+ - Fixes an issue with Hydrax when using multiple scenes. (#500)
+ - Exposed LoginProperties to QtScript.
+ - Fixed a border issue with EC_GraphicsViewCanvas.
+ - Added support for materials to refer to cube textures. (related to #479)
+ - Refactored the EC_Sky component to support material asset references. (#479)
+ - Added new module XMPPModule that enables Tundra application developers to implement communication with an XMPP server. (#512, #546, #537)
+ - Added the concept of 'Asset Bundles' and implemented support for loading assets from .zip files. (#508)
+ - Added support for OpenAssetImport assets. This enables Tundra to load assets from the formats listed at http://assimp.sourceforge.net/main_features_formats.html (#509, #513)
+ - Added --noclientphysics and --clientextrapolationtime command line parameters to allow tweaking the rigid body network sync mechanisms.
+ - Fixed build issue related to making Debug builds (#507)
+ - Added a new helper function Scene::FindEntities that performs substring or regex search for entities in the scene. (#237)
+ - Added support for double-clicking on .txml files on OSX to open them in Tundra. (#526)
+ - Fixed an issue with very long Windows filenames (#347)
+ - Fixed an issue with loading manually edited xml scenes with entities with id of 0. (#418)
+ - Improved the usability of the Entity and Asset Import dialog and other UIs. (#462, #527, #161, #63, #461)
+ - Work around a threading issue in VlcWidget (#486)
+ - Fix a crash bug when aborting asset transfers.
+ - Fix an issue with a Tundra server having more than 255 connected users. (#562)
+ - Fixed several bad crash bugs related to asset serialization and access from scripts. (#496)
+ - Added helper functions EC_Camera::ToFrustum and EC_Camera::SetFromFrustum. (#490)
+ - Enable using '#' sign to delimit subassetnames in asset refs.
+ - Added support for handling HTTP 307 Temporary Redirect status code when fetching assets.
+ - Fix an issue where deleting a local asset from disk did not actually delete the asset, but only hid the asset from view (#319)
+ - Fix several issues with EC_Fog not being displayed properly.
+ - Fixed a problem with InputAPI::MousePos() not functioning properly. (#402)
+ - Closed several build system related issues: #505, #534, #515, #316, #383, #395, #504, #315, #552, #555, #380, #553, #558, #560, #561
+ - Other closed issues: #476, #339, #497, #491, #451, #393, #520, #516, #230, #258, #464, #80, #266, #253, #465, #528, #544, #158, #529, #47, #236, #301, #420, #556, #550, #557
+
+The version 2.4-RC1 is *not* network-compatible with previous versions.
+
 v2.3.3.1 - https://github.com/realXtend/naali/compare/tundra2.3.3...tundra2.3.3.1
 ------
  - Updated ogre-safe-nocrashes (the Ogre branch Tundra builds against) to stable Ogre 1.8 release.

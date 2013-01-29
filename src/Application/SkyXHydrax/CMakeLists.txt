@@ -45,13 +45,13 @@ macro(link_package_hydrax)
 endmacro()
 
 macro(use_package_skyx)
-    # SkyX lookup rules:
-    # 1. If the environment variable SKYX_HOME is set, use that directory and cache it
-    # 2. Otherwise, use the deps directory path.
-    
-    # TODO Linux/mac still uses sagase. Try to get rid of it and unify the below.
+    # SkyX look up rules:
+    # 1. Use cmake cached SKYX_DIR.
+    # 2. Use env variable SKYX_DIR and cache it.
+    # 3. Assume SkyX from deps path.
+
+    message("** Configuring SkyX")
     if (MSVC)
-        message("** Configuring SkyX")
         if ("${SKYX_HOME}" STREQUAL "")
             if (NOT "$ENV{SKYX_HOME}" STREQUAL "")
                 file (TO_CMAKE_PATH "$ENV{SKYX_HOME}" SKYX_HOME)
@@ -63,28 +63,30 @@ macro(use_package_skyx)
             endif ()
         endif()
         message(STATUS "Using SKYX_HOME = ${SKYX_HOME}")
-    endif ()
-    
-    if (MSVC)
         include_directories(${SKYX_HOME}/include) # For prebuilt VS2008/VS2010 deps.
         include_directories(${SKYX_HOME}/SkyX/include) # For full-built deps.
         link_directories(${SKYX_HOME}/lib)
-    else ()
-        sagase_configure_package (SKYX
-            NAMES SkyX SKYX skyx
-            COMPONENTS SkyX SKYX skyx
-            PREFIXES ${ENV_SKYX_HOME} ${ENV_TUNDRA_DEP_PATH})
-        set (SKYX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/SkyX)
-        sagase_configure_report (SKYX)
+    else() # Linux and mac
+        if ("${SKYX_DIR}" STREQUAL "")
+            file (TO_CMAKE_PATH "$ENV{SKYX_DIR}" SKYX_DIR)
+            # Cache SKYX_DIR for runs that dont define $ENV{SKYX_DIR}.
+            set (SKYX_DIR ${SKYX_DIR} CACHE PATH "SKYX_DIR dependency path" FORCE)
+        endif ()
+        if ("${SKYX_DIR}" STREQUAL "")
+            set(SKYX_DIR ${ENV_TUNDRA_DEP_PATH})
+        endif()
+        message (STATUS "Using SKYX_DIR = ${SKYX_DIR}")
+        include_directories(${SKYX_DIR}/include/SkyX)
+        link_directories(${SKYX_DIR}/lib)
     endif()
 endmacro()
 
 macro(link_package_skyx)
     if (MSVC)
         target_link_libraries(${TARGET_NAME} optimized SkyX debug SkyX_d)
-    else ()
-        # Linux: assume sagase found the libs. See use_package_hydrax todos.
-        target_link_libraries(${TARGET_NAME} ${SKYX_LIBRARIES})
+    else()
+        # TODO: Add support for building against debug/release versions of SkyX on OSX and Linux.
+        target_link_libraries(${TARGET_NAME} SkyX)
     endif()
 endmacro()
 
@@ -119,8 +121,7 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 
 if (ENABLE_SKYX)
     add_definitions(-DSKYX_ENABLED)
-    use_package(SKYX) # Other OSes #TODO:REMOVE THIS!
-    use_package_skyx() # Windows 
+    use_package_skyx()
 endif()
 if (ENABLE_HYDRAX)
     add_definitions(-DHYDRAX_ENABLED)
@@ -128,17 +129,17 @@ if (ENABLE_HYDRAX)
     use_package_hydrax() # Windows
 endif()
 
-use_core_modules(Framework Math Scene OgreRenderingModule)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules(Framework Math Scene OgreRenderingModule)
+link_modules(TundraCore Math OgreRenderingModule)
 
 link_ogre()
 
 if (ENABLE_SKYX)
-    link_package (SKYX)  # Other OSes #TODO:REMOVE THIS!
-    link_package_skyx() # Windows
+    link_package_skyx()
 endif()
 if (ENABLE_HYDRAX)
     link_package(HYDRAX)  # Other OSes #TODO:REMOVE THIS!

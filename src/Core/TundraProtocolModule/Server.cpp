@@ -72,17 +72,13 @@ bool Server::Start(unsigned short port, QString protocol)
         else
             ::LogError("--protocol specified without a parameter! Using UDP protocol as default.");
     }
-    if (protocol.isEmpty())
-        protocol = "udp";
 
-    kNet::SocketTransportLayer transportLayer = kNet::SocketOverUDP; // By default operate over UDP.
-
-    if (protocol.compare("tcp", Qt::CaseInsensitive) == 0)
-        transportLayer = kNet::SocketOverTCP;
-    else if (protocol.compare("udp", Qt::CaseInsensitive) == 0)
-        transportLayer = kNet::SocketOverUDP;
-    else
+    kNet::SocketTransportLayer transportLayer = StringToSocketTransportLayer(protocol.trimmed().toStdString().c_str());
+    if (transportLayer == kNet::InvalidTransportLayer)
+    {
         ::LogError("Invalid server protocol '" + protocol + "' specified! Using UDP protocol as default.");
+        transportLayer = kNet::SocketOverUDP; // By default operate over UDP.
+    }
 
     // Start server
     if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
@@ -188,7 +184,7 @@ QVariantList Server::GetConnectionIDs() const
     return ret;
 }
 
-UserConnectionPtr Server::GetUserConnection(int connectionID) const
+UserConnectionPtr Server::GetUserConnection(unsigned int connectionID) const
 {
     foreach(const UserConnectionPtr &user, AuthenticatedUsers())
         if (user->userID == connectionID)
@@ -389,7 +385,8 @@ QScriptValue toScriptValueUserConnectionList(QScriptEngine *engine, const UserCo
 
 QScriptValue qScriptValueFromLoginPropertyMap(QScriptEngine *engine, const LoginPropertyMap &map)
 {
-    QScriptValue v = engine->newArray(map.size());
+    // Expose the login properties as a JavaScript _associative_ array.
+    QScriptValue v = engine->newObject();
     for(LoginPropertyMap::const_iterator iter = map.begin(); iter != map.end(); ++iter)
         v.setProperty((*iter).first, (*iter).second);
     return v;

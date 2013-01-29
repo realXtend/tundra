@@ -16,7 +16,6 @@
 
 #include <QObject>
 #include <QVariant>
-#include <QSize>
 #include <QPoint>
 
 #include <map>
@@ -249,21 +248,9 @@ template<> void ECAttributeEditor<Color>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<Color>::Initialize();
 template<> void ECAttributeEditor<Color>::Set(QtProperty *property);
 
-template<> void ECAttributeEditor<QSize>::Update(IAttribute *attr);
-template<> void ECAttributeEditor<QSize>::Initialize();
-template<> void ECAttributeEditor<QSize>::Set(QtProperty *property);
-
-template<> void ECAttributeEditor<QSizeF>::Update(IAttribute *attr);
-template<> void ECAttributeEditor<QSizeF>::Initialize();
-template<> void ECAttributeEditor<QSizeF>::Set(QtProperty *property);
-
 template<> void ECAttributeEditor<QPoint>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<QPoint>::Initialize();
 template<> void ECAttributeEditor<QPoint>::Set(QtProperty *property);
-
-template<> void ECAttributeEditor<QPointF>::Update(IAttribute *attr);
-template<> void ECAttributeEditor<QPointF>::Initialize();
-template<> void ECAttributeEditor<QPointF>::Set(QtProperty *property);
 
 template<> void ECAttributeEditor<QString>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<QString>::Initialize();

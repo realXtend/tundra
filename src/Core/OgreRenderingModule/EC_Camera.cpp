@@ -15,12 +15,13 @@
 
 #include "Entity.h"
 #include "FrameAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Profiler.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "AttributeMetadata.h"
 
 #include <Ogre.h>
 
@@ -41,15 +42,22 @@ EC_Camera::EC_Camera(Scene* scene) :
     attached_(false),
     camera_(0),
     query_(0),
-    queryFrameNumber_(-1),
-    renderTextureName_("")
+    queryFrameNumber_(-1)
 {
+    static AttributeMetadata minZero;
+    static bool metadataInitialized = false;
+    if (!metadataInitialized)
+    {
+        minZero.minimum = "0.0";
+        metadataInitialized = true;
+    }
+    nearPlane.SetMetadata(&minZero);
+
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     if (framework)
         connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Camera::~EC_Camera()
@@ -85,7 +93,7 @@ EC_Camera::~EC_Camera()
             if (!texture.isNull())
                 Ogre::TextureManager::getSingleton().remove(renderTextureName_);
         }
-        catch(Ogre::Exception) {}
+        catch(const Ogre::Exception &) {}
     }
 }
 
@@ -124,7 +132,7 @@ float3 EC_Camera::AdjustedRotation(const float3& rotVec) const
     return euler;
 }
 
-void EC_Camera::SetPlaceable(ComponentPtr placeable)
+void EC_Camera::SetPlaceable(const ComponentPtr &placeable)
 {
     if (placeable && !dynamic_cast<EC_Placeable*>(placeable.get()))
     {
@@ -147,7 +155,6 @@ void EC_Camera::SetFarClip(float farclip)
 {
     LogWarning("EC_Camera::SetNearClip: this functions is deprecated and will be removed. Use attribute farPlane direcly.");
     SetFarClipDistance(farclip);
-
 }
 
 void EC_Camera::SetVerticalFov(float fov)
@@ -181,35 +188,25 @@ void EC_Camera::SetActive()
 
     // Forcibly update the aspect ratio for the new camera. Ogre has a bug that activating a new camera will not automatically re-apply the aspect ratio automatically,
     // if its setAutoAspectRatio was set to true. Therefore, re-apply the aspect ratio when activating a new camera to the main viewport.
-    camera_->setAspectRatio(AspectRatio());
-    camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); ///\note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). 
+    SetAspectRatio(AspectRatio());
 }
 
 float EC_Camera::NearClip() const
 {
     LogWarning("EC_Camera::NearClip: this functions is deprecated and will be removed. Use attribute nearPlane direcly.");
-    if (!camera_)
-        return 0.0f;
-
-    return camera_->getNearClipDistance();
+    return (camera_ ? camera_->getNearClipDistance() : 0.0f);
 }
 
 float EC_Camera::FarClip() const
 {
     LogWarning("EC_Camera::FarClip: this functions is deprecated and will be removed. Use attribute farPlane direcly.");
-    if (!camera_)
-        return 0.0f;
-
-    return camera_->getFarClipDistance();
+    return (camera_ ? camera_->getFarClipDistance() : 0.0f);
 }
 
 float EC_Camera::VerticalFov() const
 {
     LogWarning("EC_Camera::VerticalFov: this functions is deprecated and will be removed. Use attribute verticalFov direcly.");
-    if (!camera_)
-        return 0.0f;
-
-    return camera_->getFOVy().valueRadians();
+    return (camera_ ? camera_->getFOVy().valueRadians() : 0.0f);
 }
 
 float EC_Camera::AspectRatio() const
@@ -225,7 +222,6 @@ float EC_Camera::AspectRatio() const
         else
         {
             QStringList str = aspectRatio.Get().split(":");
-
             if (str.length() == 2)
             {
                 float width = str[0].toFloat();
@@ -242,17 +238,22 @@ float EC_Camera::AspectRatio() const
     Ogre::Viewport *viewport = world->Renderer()->MainViewport();
     if (viewport)
         return (float)viewport->getActualWidth() / viewport->getActualHeight();
-    LogWarning("EC_Camera::AspectRatio(): No viewport or aspectRatio attribute set! Don't have an aspect ratio for the camera!");
+    LogWarning("EC_Camera::AspectRatio: No viewport or aspectRatio attribute set! Don't have an aspect ratio for the camera!");
     return 1.f;
+}
+
+void EC_Camera::SetAspectRatio(float ratio)
+{
+    if (camera_)
+    {
+        camera_->setAspectRatio(ratio);
+        camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); /**< @note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). */
+    }
 }
 
 bool EC_Camera::IsActive() const
 {
-    if (!camera_)
-        return false;
-    if (world_.expired())
-        return false;
-    if (!ParentEntity())
+    if (!camera_ || world_.expired() || !ParentEntity())
         return false;
 
     return world_.lock()->Renderer()->MainCamera() == ParentEntity();
@@ -305,16 +306,18 @@ void EC_Camera::DestroyOgreCamera()
     camera_ = 0;
 }
 
-Ray EC_Camera::GetMouseRay(float x, float y) const
+Ray EC_Camera::ViewportPointToRay(float x, float y) const
 {
     // Do a bit of sanity checking that the user didn't go and input absolute window coordinates.
     if (fabs(x) >= 10.f || fabs(y) >= 10.f || !isfinite(x) || !isfinite(y))
-        LogError(QString("EC_Camera::GetMouseRay takes input (x,y) coordinates normalized in the range [0,1]! (You inputted x=%1, y=%2").arg(x).arg(y));
+        LogError(QString("EC_Camera::ViewportPointToRay takes input (x,y) coordinates normalized in the range [0,1]! (You inputted x=%1, y=%2").arg(x).arg(y));
+    return (camera_ ? Ray(camera_->getCameraToViewportRay(Clamp(x, 0.f, 1.f), Clamp(y, 0.f, 1.f))) : Ray());
+}
 
-    if (camera_)
-        return camera_->getCameraToViewportRay(Clamp(x, 0.f, 1.f), Clamp(y, 0.f, 1.f));
-    else
-        return Ray();
+Ray EC_Camera::ScreenPointToRay(uint x, uint y) const
+{
+    QGraphicsScene *gscene = GetFramework()->Ui()->GraphicsScene(); // graphics scene can be null if running headless mode
+    return (gscene ? ViewportPointToRay((float)x / gscene->width(), (float)y / gscene->height()) : Ray());
 }
 
 void EC_Camera::UpdateSignals()
@@ -342,8 +345,7 @@ void EC_Camera::UpdateSignals()
         SetNearClipDistance(nearPlane.Get());
         SetFarClipDistance(farPlane.Get());
         SetFovY(verticalFov.Get());
-        camera_->setAspectRatio(AspectRatio());
-        camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); ///\note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). 
+        SetAspectRatio(AspectRatio());
 
         // Create a reusable frustum query
         Ogre::PlaneBoundedVolumeList dummy;
@@ -363,19 +365,16 @@ void EC_Camera::OnComponentStructureChanged()
     SetPlaceable(placeable);
 }
 
-void EC_Camera::OnAttributeUpdated(IAttribute *attribute)
+void EC_Camera::AttributesChanged()
 {
-    if (attribute == &nearPlane)
+    if (nearPlane.ValueChanged())
         SetNearClipDistance(nearPlane.Get());
-    else if (attribute == &farPlane)
+    if (farPlane.ValueChanged())
         SetFarClipDistance(farPlane.Get());
-    else if (attribute == &verticalFov)
+    if (verticalFov.ValueChanged())
         SetFovY(verticalFov.Get());
-    else if (attribute == &aspectRatio && camera_)
-    {
-        camera_->setAspectRatio(AspectRatio());
-        camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); ///\note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). 
-    }
+    else if (aspectRatio.ValueChanged())
+        SetAspectRatio(AspectRatio());
 }
 
 bool EC_Camera::IsEntityVisible(Entity* entity)
@@ -456,11 +455,64 @@ void EC_Camera::StopViewTracking(Entity* entity)
     }
 }
 
+float4x4 EC_Camera::ViewMatrix() const
+{
+    return (camera_ ? camera_->getViewMatrix() : float4x4::nan);
+}
+
+float4x4 EC_Camera::ProjectionMatrix() const
+{
+    return (camera_ ? camera_->getProjectionMatrix() : float4x4::nan);
+}
+
+void EC_Camera::SetFromFrustum(const Frustum &f)
+{
+    /// @todo check that f.type == PerspectiveFrustum when FrustumType is exposed to scripts.
+    EC_Placeable *p = dynamic_cast<EC_Placeable*>(placeable_.get());
+    if (p)
+        p->SetWorldTransform(float3x4::LookAt(f.pos, f.pos + f.front, -float3::unitZ, float3::unitY, f.up));
+    else
+        LogWarning("EC_Camera::SetFromFrustum: Camera entity has no Placeable, cannot set world transform.");
+
+    upVector.Set(f.up, AttributeChange::Disconnected);
+    nearPlane.Set(f.nearPlaneDistance, AttributeChange::Disconnected);
+    farPlane.Set(f.farPlaneDistance, AttributeChange::Disconnected);
+    // f.horizontalFov is used for calculating the aspect ratio
+    verticalFov.Set(RadToDeg(f.verticalFov), AttributeChange::Disconnected);
+    aspectRatio.Set(QString::number(f.AspectRatio()), AttributeChange::Default);
+}
+
+Frustum EC_Camera::ToFrustum() const
+{
+    Frustum f;
+    f.type = InvalidFrustum;
+    if (!camera_)
+    {
+        LogError("EC_Camera::ToFrustum failed: No Ogre camera initialized to EC_Camera!");
+        return f;
+    }
+    EC_Placeable *p = dynamic_cast<EC_Placeable*>(placeable_.get());
+    if (!p)
+    {
+        LogError("EC_Camera::ToFrustum failed: No Placeable set to the camera entity!");
+        return f;
+    }
+
+    f.type = PerspectiveFrustum;
+    f.pos = p->WorldPosition();
+    f.front = p->WorldOrientation() * -float3::unitZ;
+    f.up = upVector.Get().Normalized();
+    f.nearPlaneDistance = nearPlane.Get();
+    f.farPlaneDistance = farPlane.Get();
+    f.horizontalFov = DegToRad(verticalFov.Get());
+    f.verticalFov = AspectRatio() * f.horizontalFov;
+    return f;
+}
+
 void EC_Camera::OnUpdated(float timeStep)
 {
-    // Do nothing if visibility not being tracked for any entities
     if (visibilityTrackedEntities_.empty())
-        return;
+        return; // Do nothing if visibility not being tracked for any entities
     
     PROFILE(EC_Camera_OnUpdated);
     // Update visible objects now if necessary
@@ -480,13 +532,12 @@ void EC_Camera::OnUpdated(float timeStep)
             // Check for change in visibility status
             bool last = lastVisibleEntities_.find(id) != lastVisibleEntities_.end();
             bool now = visibleEntities_.find(id) != visibleEntities_.end();
-            
-            if ((!last) && (now))
+            if (!last && now)
             {
                 emit EntityEnterView(entity);
                 entity->EmitEnterView(this);
             }
-            else if ((last) && (!now))
+            else if (last && !now)
             {
                 emit EntityLeaveView(entity);
                 entity->EmitLeaveView(this);
@@ -500,7 +551,7 @@ void EC_Camera::QueryVisibleEntities()
     if (!camera_ || !query_)
         return;
     
-    PROFILE(OgreWorld_FrustumQuery);
+    PROFILE(EC_Camera_QueryVisibleEntities);
 
 #if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 7
     lastVisibleEntities_ = visibleEntities_;
@@ -536,17 +587,14 @@ void EC_Camera::QueryVisibleEntities()
     queryFrameNumber_ = framework->Frame()->FrameNumber();
 #else
     visibleEntities_.clear();
-    LogWarning("EC_Camera::QueryVisibleEntities: Not supported on your Ogre version!"); ///\todo Check which exact version has the above getPlaneBoundedVolume(), 1.6.4 doesn't seem to, 1.7.1 does.
+    LogWarning("EC_Camera::QueryVisibleEntities: Not supported on your Ogre version!");
 #endif
 }
 
 void EC_Camera::SetNearClipDistance(float distance)
 {
-    if (!camera_)
-        return;
-    if (world_.expired())
-        return;
-    camera_->setNearClipDistance(distance);
+    if (camera_ && !world_.expired())
+        camera_->setNearClipDistance(Clamp(distance, 0.0f, floatMax)); // Ogre throws an exception if negative value given.
 }
 
 QString EC_Camera::SaveScreenshot(bool renderUi)
@@ -571,7 +619,7 @@ QString EC_Camera::SaveScreenshot(bool renderUi)
     if (appdataDir.exists(filename + ext))
     {
         int runningID = 1;
-        QString filenameWithId = filename + "_" + QString::number(runningID);        
+        QString filenameWithId = filename + "_" + QString::number(runningID);
         while (appdataDir.exists(filenameWithId + ext))
         {
             runningID += 1;
@@ -594,81 +642,36 @@ QString EC_Camera::SaveScreenshot(bool renderUi)
 
 QImage EC_Camera::ToQImage(bool renderUi)
 {
-    if (!ViewEnabled() || !framework->Ui()->MainWindow())
-    {
-        LogError("EC_Camera::ToQImage() Cannot take screenshot in headless mode!");
-        return QImage();
-    }
-    OgreWorldPtr world = world_.lock();
-    if (!world.get() || !world.get()->Renderer())
-    {
-        LogError("EC_Camera::ToQImage() OgreWorld/Renderer null, cannot proceed!");
-        return QImage();
-    }
-    if (!GetCamera())
-    {
-        LogError("EC_Camera::ToQImage() Ogre::Camera not prepared yet, cannot proceed!");
-        return QImage();
-    }
-
-    QSize size(world.get()->Renderer()->WindowWidth(), world.get()->Renderer()->WindowHeight());
-    if (!UpdateRenderTexture(size, renderUi))
-        return QImage();
-
-    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderTextureName_);
+    Ogre::TexturePtr texture = UpdateRenderTexture(renderUi);
     if (texture.isNull())
         return QImage();
-
     return TextureAsset::ToQImage(texture.get());
 }
 
 Ogre::Image EC_Camera::ToOgreImage(bool renderUi)
 {
-    if (!ViewEnabled() || !framework->Ui()->MainWindow())
-    {
-        LogError("EC_Camera::ToOgreImage() Cannot take screenshot in headless mode!");
-        return Ogre::Image();
-    }
-    OgreWorldPtr world = world_.lock();
-    if (!world.get() || !world.get()->Renderer())
-    {
-        LogError("EC_Camera::ToOgreImage() OgreWorld/Renderer null, cannot proceed!");
-        return Ogre::Image();
-    }
-    if (!GetCamera())
-    {
-        LogError("EC_Camera::ToOgreImage() Ogre::Camera not prepared yet, cannot proceed!");
-        return Ogre::Image();
-    }
-
-    QSize size(world.get()->Renderer()->WindowWidth(), world.get()->Renderer()->WindowHeight());
-    if (!UpdateRenderTexture(size, renderUi))
-        return Ogre::Image();
-
-    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderTextureName_);
+    Ogre::Image image;
+    Ogre::TexturePtr texture = UpdateRenderTexture(renderUi);
     if (texture.isNull())
-        return Ogre::Image();
-
-    Ogre::Image ogreImage;
-    texture->convertToImage(ogreImage);
-    return ogreImage;
+        return image;
+    texture->convertToImage(image);
+    return image;
 }
 
-bool EC_Camera::UpdateRenderTexture(QSize textureSize, bool renderUi)
+Ogre::TexturePtr EC_Camera::UpdateRenderTexture(bool renderUi)
 {
     if (!ViewEnabled() || !framework->Ui()->MainWindow())
-        return false;
+        Ogre::TexturePtr();
     OgreWorldPtr world = world_.lock();
-    if (!world.get() || !world->Renderer())
-        return false;
-    if (!GetCamera())
-        return false;
-    
+    if (!camera_ || !world || !world->Renderer())
+        Ogre::TexturePtr();
+
+    QSize textureSize(world->Renderer()->WindowWidth(), world->Renderer()->WindowHeight());
     try
     {
         // First run init the texture name.
         if (renderTextureName_.empty())
-            renderTextureName_ =  world->Renderer()->GetUniqueObjectName("EC_Camera_RenderTexture_");
+            renderTextureName_ =  world->GenerateUniqueObjectName("EC_Camera_RenderTexture_");
 
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderTextureName_);
         if (texture.isNull())
@@ -689,20 +692,15 @@ bool EC_Camera::UpdateRenderTexture(QSize textureSize, bool renderUi)
         if (renderTarget)
         {
             renderTarget->removeAllViewports();
-            Ogre::Viewport *viewPort = renderTarget->addViewport(GetCamera());
+            Ogre::Viewport *viewPort = renderTarget->addViewport(camera_);
             if (viewPort)
-            {            
-                // Show/hide overlays. UI layer is a overlay in Tundra.
-                if (renderUi)
-                    viewPort->setOverlaysEnabled(true);
-                else
-                    viewPort->setOverlaysEnabled(false);
-
+            {
+                // Show/hide overlays. UI layer is an overlay in Tundra.
+                viewPort->setOverlaysEnabled(renderUi);
                 // Update texture
                 renderTarget->update(false);
-                renderTarget->setAutoUpdated(false); 
-
-                return true;
+                renderTarget->setAutoUpdated(false);
+                return texture;
             }
         }
     }
@@ -711,13 +709,12 @@ bool EC_Camera::UpdateRenderTexture(QSize textureSize, bool renderUi)
         LogError("EC_Camera::UpdateRenderTexture() caught and expection: " + std::string(e.what()));
     }
 
-    return false;
+    return Ogre::TexturePtr();
 }
+
 void EC_Camera::SetFarClipDistance(float distance)
 {
-    if (!camera_)
-        return;
-    if (world_.expired())
+    if (!camera_ || world_.expired())
         return;
 
     ///@todo Uncomment when SkyX 0.2.1 is used, http://www.ogre3d.org/forums/viewtopic.php?f=11&t=67137&sid=df2bdcd4352cea57057b7861f563f692&start=100#p445143
@@ -734,9 +731,6 @@ void EC_Camera::SetFarClipDistance(float distance)
 
 void EC_Camera::SetFovY(float fov)
 {
-    if (!camera_)
-        return;
-    if (world_.expired())
-        return;
-    camera_->setFOVy(Ogre::Radian(Ogre::Math::DegreesToRadians(fov)));
+    if (camera_ && !world_.expired())
+        camera_->setFOVy(Ogre::Radian(Ogre::Math::DegreesToRadians(fov)));
 }

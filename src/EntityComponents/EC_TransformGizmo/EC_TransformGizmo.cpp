@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_TransformGizmo.cpp
- *  @brief  Enables visual manipulators (gizmos) for Transform attributes.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_TransformGizmo.cpp
+    @brief  Enables visual manipulators (gizmos) for Transform attributes. */
 
 #define MATH_OGRE_INTEROP
 
@@ -18,17 +17,20 @@
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "FrameAPI.h"
 #include "Profiler.h"
-
 #include "Geometry/Ray.h"
 #include "Geometry/Plane.h"
+
 #include <Ogre.h>
+
+namespace
+{
 
 const AssetReference cTranslate("Ogre Media:axis1.mesh");
 const AssetReference cRotate("Ogre Media:rotate1.mesh");
@@ -42,6 +44,8 @@ const AssetReference cAxisBlue("Ogre Media:AxisBlue.material");
 const AssetReference cAxisBlueHi("Ogre Media:AxisBlueHi.material");
 const AssetReference cAxisWhite("Ogre Media:AxisWhite.material");
 
+}
+
 EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     IComponent(scene),
     gizmoType(Translate),
@@ -53,7 +57,6 @@ EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
 {
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 
-//    connect(fw->Frame(), SIGNAL(Updated(float)), SLOT(DrawDebug()));
     QString uniqueName("EC_TransformGizmo_" + framework->Asset()->GenerateUniqueAssetName("",""));
     input = framework->Input()->RegisterInputContext(uniqueName, 100);
     connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
@@ -81,7 +84,6 @@ void EC_TransformGizmo::SetOrientation(const Quat &rot)
     if (placeable)
         placeable->SetOrientation(rot);
 }
-
 
 void EC_TransformGizmo::SetCurrentGizmoType(GizmoType type)
 {
@@ -124,7 +126,7 @@ void EC_TransformGizmo::Initialize()
         EC_Placeable::TypeNameStatic(), "TransformGizmoPlaceable"));
     if (!placeable)
     {
-        LogError("Could not create EC_Placeable for EC_TransformGizmo.");
+        LogError("EC_TransformGizmo::Initialize: Could not create EC_Placeable for EC_TransformGizmo.");
         return;
     }
 
@@ -136,7 +138,7 @@ void EC_TransformGizmo::Initialize()
         EC_Mesh::TypeNameStatic(), "TransformGizmoMesh"));
     if (!mesh)
     {
-        LogError("Could not create EC_Mesh for EC_TransformGizmo.");
+        LogError("EC_TransformGizmo::Initialize: Could not create EC_Mesh for EC_TransformGizmo.");
         return;
     }
 
@@ -155,6 +157,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 //    std::cout << IsVisible() << " " << placeable->WorldPosition() << std::endl;
     using namespace OgreRenderer;
     if (!mesh || !placeable)
+        return;
+    if (!mesh->HasMesh())
         return;
     if (!IsVisible())
     {
@@ -430,32 +434,11 @@ float EC_TransformGizmo::DesiredGizmoScale()
     boost::shared_ptr<EC_Placeable> placeable = cam->GetComponent<EC_Placeable>();
     if (!placeable)
         return 1.f;
-
+    if (!mesh->HasMesh())
+        return 1.f;
     // We always keep the transform gizmo constant-sized in the view.
     float3 gizmoPos = mesh->LocalToWorld().TranslatePart();
     float3 cameraPos = placeable->LocalToWorld().TranslatePart();
     float distance = gizmoPos.Distance(cameraPos);
     return std::max(0.1f, 0.1f*distance);
 }
-
-/*
-
-void EC_TransformGizmo::DrawDebug()
-{
-    Ogre::Vector3 xStart = xRay.getOrigin();
-    Ogre::Vector3 xEnd = xRay.getOrigin()+300.f*xRay.getDirection();
-    framework->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(xStart), OgreToBt(xEnd), btVector3(1,0,0));
-
-    Ogre::Vector3 yStart = yRay.getOrigin();
-    Ogre::Vector3 yEnd = yRay.getOrigin()+300.f*yRay.getDirection();
-    framework->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(yStart), OgreToBt(yEnd), btVector3(0,1,0));
-
-    Ogre::Vector3 zStart = zRay.getOrigin();
-    Ogre::Vector3 zEnd = zRay.getOrigin()+300.f*zRay.getDirection();
-    framework->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(zStart), OgreToBt(zEnd), btVector3(0,0,1));
-
-    Ogre::Vector3 mouseStart = mouseRay.getOrigin();
-    Ogre::Vector3 mouseEnd = mouseRay.getOrigin()+300.f*mouseRay.getDirection();
-    framework->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(mouseStart), OgreToBt(mouseEnd), btVector3(1,1,1));
-}
-*/

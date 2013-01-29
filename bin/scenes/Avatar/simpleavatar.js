@@ -1,7 +1,9 @@
 // !ref: default_avatar.avatar
 // !ref: crosshair.js
 
-if (!server.IsRunning() && !framework.IsHeadless())
+var isAndroid = (application.platform == "android");
+
+if (!server.IsRunning() && !framework.IsHeadless() && !isAndroid)
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
@@ -51,6 +53,9 @@ function SimpleAvatar(entity, comp)
     this.animsDetected = false;
     this.listenGesture = false;
 
+    // Android finger touch movement
+    this.fingersDown = 0;
+
     // Create avatar on server, and camera & inputmapper on client
     if (this.isServer)
         this.ServerInitialize();
@@ -59,6 +64,9 @@ function SimpleAvatar(entity, comp)
 }
 
 SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
+    if (framework.IsExiting())
+        return;
+
     // Must remember to manually disconnect subsystem signals, otherwise they'll continue to get signalled
     if (this.isServer)
     {
@@ -66,7 +74,13 @@ SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
         scene.physics.Updated.disconnect(this, this.ServerUpdatePhysics);
     }
     else
+    {
+        var avatar = scene.EntityByName("Avatar" + client.connectionId);
+        if (avatar)
+            scene.RemoveEntity(avatar.id);
+
         frame.Updated.disconnect(this, this.ClientUpdate);
+    }
 }
 
 SimpleAvatar.prototype.ServerInitialize = function() {
@@ -351,11 +365,15 @@ SimpleAvatar.prototype.ClientInitialize = function() {
         this.ownAvatar = true;
         this.ClientCreateInputMapper();
         this.ClientCreateAvatarCamera();
-        this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
+        if (!isAndroid)
+            this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
         var soundlistener = this.me.GetOrCreateComponent("EC_SoundListener", 2, false);
         soundlistener.active = true;
 
         this.me.Action("MouseScroll").Triggered.connect(this, this.ClientHandleMouseScroll);
+        // Use mouselook action on Android for simple panning, as Qt touch events can not be yet accessed
+        if (isAndroid)
+            this.me.Action("MouseLookX").Triggered.connect(this, this.ClientHandleMouseLookX);
         this.me.Action("Zoom").Triggered.connect(this, this.ClientHandleKeyboardZoom);
         this.me.Action("Rotate").Triggered.connect(this, this.ClientHandleRotate);
         this.me.Action("StopRotate").Triggered.connect(this, this.ClientHandleStopRotate);
@@ -421,6 +439,18 @@ SimpleAvatar.prototype.ClientUpdate = function(frametime) {
         this.ClientUpdateAvatarCamera(frametime);
     }
 
+    // Android touch movement
+    if (isAndroid) {
+        var fingersDownNow = input.NumTouchPoints();
+        if (fingersDownNow != this.fingersDown) {
+            this.fingersDown = fingersDownNow;
+            if (fingersDownNow >= 2)
+		this.me.Exec(2, "Move", "forward");
+            else
+                this.me.Exec(2, "Stop", "forward");
+        }
+    }
+
     if (!this.animsDetected) {
         this.CommonFindAnimations();
     }
@@ -460,9 +490,12 @@ SimpleAvatar.prototype.ClientCreateInputMapper = function() {
 
     // Connect mouse gestures
     var inputContext = inputmapper.GetInputContext();
-    inputContext.GestureStarted.connect(this, this.GestureStarted);
-    inputContext.GestureUpdated.connect(this, this.GestureUpdated);
-    inputContext.MouseMove.connect(this, this.ClientHandleMouseMove);
+    if (!isAndroid)
+    {
+        inputContext.GestureStarted.connect(this, this.GestureStarted);
+        inputContext.GestureUpdated.connect(this, this.GestureUpdated);
+        inputContext.MouseMove.connect(this, this.ClientHandleMouseMove);
+    }
 
     // Local mapper for mouse scroll and rotate
     var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
@@ -541,7 +574,7 @@ SimpleAvatar.prototype.GestureUpdated = function(gestureEvent) {
             if (walking) {
                 this.me.Exec(2, "Stop", "forward");
                 this.me.Exec(2, "Stop", "back");
-            } else
+            } else 
                 this.me.Exec(2, "Move", "forward");
             listenGesture = false;
         }
@@ -712,6 +745,25 @@ SimpleAvatar.prototype.ClientCheckState = function() {
                 this.crosshair.show();
             }
         }
+    }
+}
+
+// Android only, simplified touch rotate code
+SimpleAvatar.prototype.ClientHandleMouseLookX = function(param) {
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
+    if (cameraentity == null)
+        return;
+
+    // Dont move av rotation if we are not the active cam
+    if (!cameraentity.camera.IsActive())
+        return;
+
+    var move = parseInt(param);
+    if (move != 0)
+    {
+        // Rotate avatar or camera
+        this.yaw -= this.mouseRotateSensitivity * move;
+        this.me.Exec(2, "SetRotation", this.yaw.toString());
     }
 }
 

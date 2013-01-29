@@ -20,9 +20,9 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetStorage.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AssetCache.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "FunctionInvoker.h"
@@ -67,7 +67,7 @@ void AssetTreeWidget::dragEnterEvent(QDragEnterEvent *e)
     if (data->hasUrls())
     {
         foreach(QUrl url, data->urls())
-            if (!AssetAPI::GetResourceTypeFromAssetRef(url.path()).isEmpty())
+            if (!framework->Asset()->GetResourceTypeFromAssetRef(url.path()).isEmpty())
                 e->acceptProposedAction();
     }
     else
@@ -80,7 +80,7 @@ void AssetTreeWidget::dragMoveEvent(QDragMoveEvent *e)
     if (data->hasUrls())
     {
         foreach(QUrl url, data->urls())
-            if (!AssetAPI::GetResourceTypeFromAssetRef(url.path()).isEmpty())
+            if (!framework->Asset()->GetResourceTypeFromAssetRef(url.path()).isEmpty())
                 e->acceptProposedAction();
     }
     else
@@ -94,7 +94,7 @@ void AssetTreeWidget::dropEvent(QDropEvent *e)
     {
         QStringList filenames;
         foreach(QUrl url, data->urls())
-            if (!AssetAPI::GetResourceTypeFromAssetRef(url.path()).isEmpty())
+            if (!framework->Asset()->GetResourceTypeFromAssetRef(url.path()).isEmpty())
             {
                 QString filename = url.path();
 #ifdef _WINDOWS
@@ -339,7 +339,7 @@ void AssetTreeWidget::ReloadFromSource()
 
 void AssetTreeWidget::Import()
 {
-    QtUtils::OpenFileDialogNonModal(cAllTypesFileFilter, tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)), true);
+    OpenFileDialogNonModal(cAllTypesFileFilter, tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)), true);
 }
 
 void AssetTreeWidget::OpenFileDialogClosed(int result)
@@ -435,11 +435,11 @@ void AssetTreeWidget::Export()
     {
         QString ref = sel.first()->Asset() ? sel.first()->Asset()->Name() : "";
         QString assetName= AssetAPI::ExtractFilenameFromAssetRef(ref);
-        QtUtils::SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+        SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
     else
     {
-        QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+        DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
 }
 

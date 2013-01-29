@@ -19,7 +19,7 @@ void ScriptAsset::DoUnload()
     references.clear();
 }
 
-bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous)
+bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool /*allowAsynchronous*/)
 {
     QByteArray arr((const char *)data, numBytes);
     scriptContent = arr;
@@ -29,7 +29,7 @@ bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool allo
     return true;
 }
 
-bool ScriptAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
+bool ScriptAsset::SerializeTo(std::vector<u8> &dst, const QString &/*serializationParameters*/) const
 {
     QByteArray arr(scriptContent.toStdString().c_str());
     dst.clear();
@@ -60,7 +60,7 @@ void ScriptAsset::ParseReferences()
         if ((*iter)[3].matched)
             ref.type = (*iter)[3].str().c_str();
         
-        if (ignoredAssetTypes.contains(AssetAPI::GetResourceTypeFromAssetRef(ref.ref)))
+        if (ignoredAssetTypes.contains(assetAPI->GetResourceTypeFromAssetRef(ref.ref)))
             continue;
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {

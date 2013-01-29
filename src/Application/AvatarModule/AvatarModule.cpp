@@ -5,7 +5,7 @@
 #include "AvatarModule.h"
 #include "AvatarEditor.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
@@ -21,6 +21,8 @@
 #include "../JavascriptModule/JavascriptModule.h"
 #include "AvatarModuleScriptTypeDefines.h"
 
+#include "StaticPluginRegistry.h"
+
 AvatarModule::AvatarModule() : IModule("Avatar")
 {
 }
@@ -35,13 +37,13 @@ void AvatarModule::Load()
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Avatar>));
     if (!framework_->IsHeadless())
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("AvatarAttachment")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar", ".avatar")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("AvatarAttachment", ".attachment")));
     }
     else
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Avatar")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("AvatarAttachment")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Avatar", ".avatar")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("AvatarAttachment", ".attachment")));
     }
 }
 
@@ -116,7 +118,11 @@ void AvatarModule::OnScriptEngineCreated(QScriptEngine *engine)
 
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(AvatarModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new AvatarModule();

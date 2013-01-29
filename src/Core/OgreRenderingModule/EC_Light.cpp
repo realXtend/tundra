@@ -9,15 +9,11 @@
 #include "EC_Placeable.h"
 
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
-
-#include <QDomDocument>
-#include <QList>
-#include <QVector>
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -63,7 +59,6 @@ EC_Light::EC_Light(Scene* scene) :
             light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
             
             connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-            connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateOgreLight()));
         }
     }
 }
@@ -144,7 +139,7 @@ void EC_Light::SetPlaceable(ComponentPtr placeable)
 
 void EC_Light::AttachLight()
 {
-    if ((light_) && (placeable_) && (!attached_))
+    if (light_ && placeable_ && !attached_)
     {
         EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -155,7 +150,7 @@ void EC_Light::AttachLight()
 
 void EC_Light::DetachLight()
 {
-    if ((light_) && (placeable_) && (attached_))
+    if (light_ && placeable_ && attached_)
     {
         EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -164,20 +159,19 @@ void EC_Light::DetachLight()
     }
 }
 
-void EC_Light::UpdateOgreLight()
+void EC_Light::AttributesChanged()
 {
     if (!light_)
         return;
     
     Ogre::Light::LightTypes ogreType = Ogre::Light::LT_POINT;
 
-    switch (type.Get())
+    switch(type.Get())
     {
-        case LT_Spot:
+    case LT_Spot:
         ogreType = Ogre::Light::LT_SPOTLIGHT;
         break;
-        
-        case LT_Directional:
+    case LT_Directional:
         ogreType = Ogre::Light::LT_DIRECTIONAL;
         break;
     }
@@ -213,4 +207,3 @@ void EC_Light::UpdateOgreLight()
         LogError("Exception while setting EC_Light parameters to Ogre: " + std::string(e.what()));
     }
 }
-

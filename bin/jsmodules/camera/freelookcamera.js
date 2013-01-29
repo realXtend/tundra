@@ -1,5 +1,4 @@
-// A freelook camera script. Upon run, creates necessary components if they don't exist yet, and hooks to the InputMapper's
-// input context to process camera movement (WASD + mouse)
+// A freelook camera script. Upon run, creates necessary components if they don't exist yet
 
 // Global application data
 var _g =
@@ -14,11 +13,26 @@ var _g =
         sensitivity : 30.0,
         amount : new float3(0,0,0)
     },
-    motion : new float3(0,0,0)
+    motion : new float3(0,0,0),
+
+    // Android specific
+    isAndroid : application.platform == "android"
 };
+
+var inputContext;
+
+// Entry point
+if (!framework.IsHeadless())
+    Initialize();
+
+function OnScriptDestroyed()
+{
+    input.UnregisterInputContextRaw("FreeLookCamera");
+}
 
 function Initialize()
 {
+    engine.ImportExtension("qt.core");
     // Connect to camera changed signal. This disconnects frame updates when camera is not active
     // and connects back when camera is active. This is a optimization not to have any update processing
     // when the camera is not active. Note that for clients this saves 2x fps updates as the empty "TundraServer"
@@ -27,56 +41,31 @@ function Initialize()
 
     // Create components & setup default position/lookat for the camera
     var camera = me.GetOrCreateComponent("EC_Camera");
-    var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
     var placeable = me.GetOrCreateComponent("EC_Placeable");
-    var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
+    var soundListener = me.GetOrCreateComponent("EC_SoundListener");
 
-    // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the freelookcamera right now
-    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
-    if (!avatarcameraentity)
+    // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the FreeLookCamera right now
+    var avatarCameraEntity = scene.EntityByName("AvatarCamera");
+    if (!avatarCameraEntity)
     {
         camera.SetActive(); // This will connect frame updates for this script.
-        soundlistener.active = true;
+        soundListener.active = true;
     }
 
-    // Register press & release action mappings to the inputmapper, use higher priority than RexMovementInput to be sure
-    inputmapper.contextPriority = 101;
-    inputmapper.takeMouseEventsOverQt = true;
-    inputmapper.modifiersEnabled = false;
-    inputmapper.RegisterMapping("W", "Move(forward)", 1);
-    inputmapper.RegisterMapping("S", "Move(back)", 1);
-    inputmapper.RegisterMapping("A", "Move(left)", 1);
-    inputmapper.RegisterMapping("D", "Move(right)", 1);
-    inputmapper.RegisterMapping("Space", "Move(up)", 1);
-    inputmapper.RegisterMapping("C", "Move(down)", 1);
-    inputmapper.RegisterMapping("W", "Stop(forward)", 3);
-    inputmapper.RegisterMapping("S", "Stop(back)", 3);
-    inputmapper.RegisterMapping("A", "Stop(left)", 3);
-    inputmapper.RegisterMapping("D", "Stop(right)", 3);
-    inputmapper.RegisterMapping("Space", "Stop(up)", 3);
-    inputmapper.RegisterMapping("C", "Stop(down)", 3);
-    inputmapper.RegisterMapping("Up", "Move(forward)", 1);
-    inputmapper.RegisterMapping("Down", "Move(back)", 1);
-    inputmapper.RegisterMapping("Left", "Move(left)", 1);
-    inputmapper.RegisterMapping("Right", "Move(right)", 1);
-    inputmapper.RegisterMapping("Up", "Stop(forward)", 3);
-    inputmapper.RegisterMapping("Down", "Stop(back)", 3);
-    inputmapper.RegisterMapping("Left", "Stop(left)", 3);
-    inputmapper.RegisterMapping("Right", "Stop(right)", 3);
-    inputmapper.enabled = true;
-
-    // Connect actions
-    me.Action("Move").Triggered.connect(HandleMove);
-    me.Action("Stop").Triggered.connect(HandleStop);
-    me.Action("MouseLookX").Triggered.connect(HandleMouseLookX);
-    me.Action("MouseLookY").Triggered.connect(HandleMouseLookY);
-
+    // Register input handling
+    var inputContext = input.RegisterInputContextRaw("FreeLookCamera", 101);
+    inputContext.takeMouseEventsOverQt = true;
+    inputContext.KeyPressed.connect(HandleMove);
+    inputContext.KeyReleased.connect(HandleStop);
+    inputContext.MouseEventReceived.connect(HandleMouse);
     // Connect gestures
-    var inputContext = inputmapper.GetInputContext();
-    if (inputContext.GestureStarted && inputContext.GestureUpdated)
+    if (!_g.isAndroid)
     {
-        inputContext.GestureStarted.connect(GestureStarted);
-        inputContext.GestureUpdated.connect(GestureUpdated);
+        if (inputContext.GestureStarted && inputContext.GestureUpdated)
+        {
+            inputContext.GestureStarted.connect(GestureStarted);
+            inputContext.GestureUpdated.connect(GestureUpdated);
+        }
     }
 }
 
@@ -94,6 +83,10 @@ function Update(frametime)
         return;
     }
 
+    // Android movement logic: move forward if more than 1 finger on screen
+    if (_g.isAndroid)
+        _g.move.amount.z = input.NumTouchPoints() > 1 ? -1 : 0; 
+
     if (_g.move.amount.x == 0 && _g.move.amount.y == 0 && _g.move.amount.z == 0)
     {
         profiler.EndBlock();
@@ -110,42 +103,53 @@ function Update(frametime)
     profiler.EndBlock();
 }
 
-function HandleMove(param)
+function HandleMove(e)
 {
     if (!IsCameraActive())
         return;
 
-    if (param == "forward")
+    if (e.keyCode == Qt.Key_W)
         _g.move.amount.z = -1;
-    else if (param == "back")
+    else if (e.keyCode == Qt.Key_S)
         _g.move.amount.z = 1;
-    else if (param == "right")
+    else if (e.keyCode == Qt.Key_D)
         _g.move.amount.x = 1;
-    else if (param == "left")
+    else if (e.keyCode == Qt.Key_A)
         _g.move.amount.x = -1;
-    else if (param == "up")
+    else if (e.keyCode == Qt.Key_Space)
         _g.move.amount.y = 1;
-    else if (param == "down")
+    else if (e.keyCode == Qt.Key_C)
         _g.move.amount.y = -1;
 }
 
-function HandleStop(param)
+function HandleStop(e)
 {
     if (!IsCameraActive())
         return;
 
-    if ((param == "forward") && (_g.move.amount.z == -1))
+    if (e.keyCode == Qt.Key_W && _g.move.amount.z == -1)
         _g.move.amount.z = 0;
-    else if ((param == "back") && (_g.move.amount.z == 1))
+    else if (e.keyCode == Qt.Key_S && _g.move.amount.z == 1)
         _g.move.amount.z = 0;
-    else if ((param == "right") && (_g.move.amount.x == 1))
+    else if (e.keyCode == Qt.Key_D && _g.move.amount.x == 1)
         _g.move.amount.x = 0;
-    else if ((param == "left") && (_g.move.amount.x == -1))
+    else if (e.keyCode == Qt.Key_A && _g.move.amount.x == -1)
         _g.move.amount.x = 0;
-    else if ((param == "up") && (_g.move.amount.y == 1))
+    else if (e.keyCode == Qt.Key_Space && _g.move.amount.y == 1)
         _g.move.amount.y = 0;
-    else if ((param == "down") && (_g.move.amount.y == -1))
+    else if (e.keyCode == Qt.Key_C && _g.move.amount.y == -1)
         _g.move.amount.y = 0;
+}
+
+function HandleMouse(e)
+{
+    if (e.IsButtonDown(2) && !input.IsMouseCursorVisible())
+    {
+        if (e.relativeX != 0)
+            HandleMouseLookX(e.relativeX);
+        if (e.relativeY != 0)
+            HandleMouseLookY(e.relativeY);
+    }
 }
 
 function HandleMouseLookX(param)
@@ -174,38 +178,38 @@ function HandleMouseLookY(param)
 
 function GestureStarted(gestureEvent)
 {
-    if (!IsCameraActive())
-        return;
-
-    if (gestureEvent.GestureType() == Qt.TapAndHoldGesture)
-    {
-        if (motion_z == 0)
-            HandleMove("forward");
-        else
-            HandleStop("forward");
-        gestureEvent.Accept();
-    }
-    else if (gestureEvent.GestureType() == Qt.PanGesture)
-    {
-        var offset = gestureEvent.Gesture().offset.toPoint();
-        HandleMouseLookX(offset.x());
-        HandleMouseLookY(offset.y());
-        gestureEvent.Accept();
-    }
+        if (!IsCameraActive())
+            return;
+    
+        if (gestureEvent.GestureType() == Qt.TapAndHoldGesture)
+        {
+            if (motion_z == 0)
+                HandleMove("forward");
+            else
+                HandleStop("forward");
+            gestureEvent.Accept();
+        }
+        else if (gestureEvent.GestureType() == Qt.PanGesture)
+        {
+            var offset = gestureEvent.Gesture().offset.toPoint();
+            HandleMouseLookX(offset.x());
+            HandleMouseLookY(offset.y());
+            gestureEvent.Accept();
+        }
 }
 
 function GestureUpdated(gestureEvent)
 {
-    if (!IsCameraActive())
-        return;
+        if (!IsCameraActive())
+            return;
 
-    if (gestureEvent.GestureType() == Qt.PanGesture)
-    {
-        var delta = gestureEvent.Gesture().delta.toPoint();
-        HandleMouseLookX(delta.x());
-        HandleMouseLookY(delta.y());
-        gestureEvent.Accept();
-    }
+        if (gestureEvent.GestureType() == Qt.PanGesture)
+        {
+            var delta = gestureEvent.Gesture().delta.toPoint();
+            HandleMouseLookX(delta.x());
+            HandleMouseLookY(delta.y());
+            gestureEvent.Accept();
+        }
 }
 
 function OnScriptDestroyed() 
@@ -217,10 +221,8 @@ function DisconnectApplication()
 {
     if (_g.connected)
     {
-        // Disconnect frame updates and enabled inputmapper + soundlistener
+        // Disconnect frame updates and enabled SoundListener
         frame.Updated.disconnect(Update);
-        if (me.inputmapper != null)
-            me.inputmapper.enabled = false;
         if (me.soundlistener != null)
             me.soundlistener.active = false;
         _g.connected = false;
@@ -235,10 +237,8 @@ function ConnectApplication()
 {
     if (!_g.connected)
     {
-        // Connect frame updates and enabled inputmapper + soundlistener
+        // Connect frame updates and enabled SoundListener
         frame.Updated.connect(Update);
-        if (me.inputmapper != null)
-            me.inputmapper.enabled = true;
         if (me.soundlistener != null)
             me.soundlistener.active = true;
         _g.connected = true;
@@ -259,6 +259,3 @@ function ActiveCameraChanged(cameraEnt)
     else
         DisconnectApplication();
 }
-
-if (!framework.IsHeadless())
-    Initialize();

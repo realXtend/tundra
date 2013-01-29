@@ -1,0 +1,2 @@
+set TUNDRA_ANDROID_ABI=x86
+call BuildAndroidDeps.cmd

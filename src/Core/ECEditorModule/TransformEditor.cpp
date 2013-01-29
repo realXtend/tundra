@@ -8,7 +8,7 @@
 #include "TransformEditor.h"
 #include "LoggingFunctions.h"
 #include "OgreWorld.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "EC_Camera.h"
 #include "EC_Light.h"

@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_HoveringText.cpp
- *  @brief  Shows a hovering text attached to an entity.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_HoveringText.cpp
+    @brief  Shows a hovering text attached to an entity. */
 
 #define MATH_OGRE_INTEROP
 
@@ -14,7 +13,7 @@
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "OgreRenderingModule.h"
 #include "OgreMaterialAsset.h"
@@ -439,4 +438,3 @@ void EC_HoveringText::DeleteMaterial()
         materialName_ = "";
     }
 }
-

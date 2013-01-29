@@ -4,7 +4,6 @@ init_target (EC_TransformGizmo)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES EC_TransformGizmo.h)
 
 # Qt4 Moc files to subgroup "CMake Moc"
@@ -15,13 +14,12 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_package_bullet()
-use_core_modules(Framework Math Scene Ui Input Asset OgreRenderingModule)# PhysicsModule)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
-#link_package_bullet()
 link_ogre()
-link_modules (Framework Scene Ui Input Asset OgreRenderingModule)# PhysicsModule)
+link_modules(TundraCore OgreRenderingModule)
 
-final_target ()
+final_target()

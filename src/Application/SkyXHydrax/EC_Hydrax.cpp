@@ -13,7 +13,7 @@
 #include "EC_SkyX.h"
 #endif
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Framework.h"
 #include "FrameAPI.h"
 #include "AssetAPI.h"
@@ -157,7 +157,6 @@ void EC_Hydrax::Create()
         RequestConfigAsset();
 
         connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
-        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)), Qt::UniqueConnection);
     }
     catch(Ogre::Exception &e)
     {
@@ -169,11 +168,15 @@ void EC_Hydrax::Create()
 void EC_Hydrax::OnActiveCameraChanged(Entity *newActiveCamera)
 {
     PROFILE(EC_Hydrax_OnActiveCameraChanged);
-    if (!newActiveCamera)
+
+    // If no active camera or the new active camera is observing another Ogre scene than the one this EC_Hydrax component is in, 
+    // don't initialize Hydrax to that scene.
+    if (!newActiveCamera || newActiveCamera->ParentScene() != ParentScene())
     {
         SAFE_DELETE(impl);
         return;
     }
+
     // If we haven't yet initialized, do a full init.
     if (!impl)
         Create();
@@ -191,26 +194,26 @@ void EC_Hydrax::RequestConfigAsset()
     configRefListener.HandleAssetRefChange(framework->Asset(), ref, "Binary");
 }
 
-void EC_Hydrax::UpdateAttribute(IAttribute *attr)
+void EC_Hydrax::AttributesChanged()
 {
-    PROFILE(EC_Hydrax_UpdateAttribute);
-    if (attr == &configRef)
+    PROFILE(EC_Hydrax_AttributesChanged);
+    if (configRef.ValueChanged())
         RequestConfigAsset();
 
     if (!impl || !impl->hydrax)
         return;
 
-    if (attr == &visible)
+    if (visible.ValueChanged())
     {
         const float3 &pos = position.Get();
         impl->hydrax->setVisible(visible.Get());
         if (visible.Get() && impl->hydrax->getPosition() != pos)
             impl->hydrax->setPosition(pos);
     }
-    else if (attr == &position && visible.Get())
+    if (position.ValueChanged() && visible.Get())
         impl->hydrax->setPosition(position.Get());
 /*
-    else if (attr == &noiseModule || attr == &normalMode || &noiseType)
+    if (noiseModule.ValueChanged() || normalMode.ValueChanged() || noiseType.ValueChanged())
         UpdateNoiseModule();
 */
 }

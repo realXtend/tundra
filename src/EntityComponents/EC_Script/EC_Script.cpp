@@ -143,7 +143,7 @@ EC_Script::EC_Script(Scene* scene):
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
-void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
+void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type /*change*/)
 {
     AssetAPI* assetAPI = framework->Asset();
     
@@ -199,6 +199,11 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
         {
             if (scriptAssets.empty())
                 HandleAttributeChanged(&scriptRef, AttributeChange::Default);
+        }
+        else // If runmode is changed and shouldn't run, unload script assets and script instance 
+        {
+            scriptAssets.clear();
+            SetScriptInstance(0);
         }
     }
     else if (attribute == &runOnLoad)

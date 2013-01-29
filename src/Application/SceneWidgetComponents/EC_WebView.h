@@ -168,9 +168,6 @@ private slots:
     /// Server side handler for user disconnects.
     void ServerHandleDisconnect(int connectionID, UserConnection *connection);
 
-    /// Server side handler for attribute changes. Only interested in 'controllerId'.
-    void ServerHandleAttributeChange(IAttribute *attribute, AttributeChange::Type changeType);
-
     /** Server side handler for checking controller id against connected clients. 
         The id must never be set in any component to a connection id that is not connected.
         Fixes situations some rarer situations e.g. server is shut down when someone has control and something auto stores the conmponent data,
@@ -235,9 +232,6 @@ private slots:
     /// Monitors this entitys removed components.
     void ComponentRemoved(IComponent *component, AttributeChange::Type change);
 
-    /// Monitors this components Attribute changes.
-    void AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType);
-
     /// Get parent entitys EC_Mesh. Return 0 if not present.
     EC_Mesh *GetMeshComponent();
 
@@ -255,7 +249,10 @@ private slots:
     /// \note The action signature is (string)"WebViewScroll", (int)"x", (int)"y"
     void ActionScroll(QString x, QString y);
 
-private:   
+private:
+    /// Monitors this components Attribute changes.
+    void AttributesChanged();
+
     /// Boolean for tracking if this component has been prepared properly.
     /** Guarantees: 
         - EC_Mesh is present and loaded to Ogre, ready for rendering.

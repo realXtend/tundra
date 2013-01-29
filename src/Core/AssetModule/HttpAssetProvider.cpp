@@ -232,8 +232,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
             request.setRawHeader("If-Modified-Since", ToHttpDate(cacheLastModified));
         
         QNetworkReply *reply = networkAccessManager->get(request);
-
-        transfers[reply] = transfer;
+        transfers[QPointer<QNetworkReply>(reply)] = transfer;
     }
     return transfer;
 }
@@ -248,13 +247,14 @@ bool HttpAssetProvider::AbortTransfer(IAssetTransfer *transfer)
         AssetTransferPtr ongoingTransfer = iter->second;
         if (ongoingTransfer.get() == transfer)
         {
-            transfer->EmitAssetFailed("Transfer aborted.");
-            transfers.erase(iter);
-            
-            // Abort last as it will invoke a call to OnHttpTransferFinished.
-            if (iter->first)
-                iter->first->abort();
-            return true;
+            // QNetworkReply::abort() will invoke a call to OnHttpTransferFinished. There we continue to 
+            // call AssetAPI::AssetTransferAborted and remove the transfer from our map.
+            QPointer<QNetworkReply> reply = iter->first;
+            if (reply.data())
+            {    
+                reply->abort();
+                return true;
+            }
         }
     }
     return false;
@@ -378,17 +378,43 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     {
     case QNetworkAccessManager::GetOperation:
     {
-        // If the transfer is not in our transfers map it was aborted via AbortTransfer.
         TransferMap::iterator iter = transfers.find(reply);
         if (iter == transfers.end())
             return;
-
         HttpAssetTransferPtr transfer = iter->second;
-        assert(transfer);
         transfer->rawAssetData.clear();
 
-        // Check for errors
-        if (reply->error() == QNetworkReply::NoError)
+        // We have called abort() or close() on an ongoing transfer, for example in AbortTransfer.
+        if (reply->error() == QNetworkReply::OperationCanceledError)
+        {
+            framework->Asset()->AssetTransferAborted(transfer.get());
+        }
+        // Handle 307 Temporary Redirect
+        else if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 307)
+        {           
+            // Handle "Location" header that will have the URL where the resource can be found.
+            // Note that the original reply to asset transfer mapping will be removed after this block exists.
+            QByteArray redirectUrl = reply->rawHeader("Location");
+            if (!redirectUrl.isEmpty())
+            {
+                LogDebug("HttpAssetProvider: Handling \"307 Temporary Redirect\" from " + reply->url().toString() + " to " + redirectUrl);
+
+                // Add new mapping to the asset transfer for the new redirect URL.
+                QNetworkRequest redirectRequest;
+                redirectRequest.setUrl(QUrl(redirectUrl));
+                redirectRequest.setRawHeader("User-Agent", "realXtend Tundra");
+
+                QNetworkReply *redirectReply = networkAccessManager->get(redirectRequest);
+                transfers[QPointer<QNetworkReply>(redirectReply)] = transfer;
+            }
+            else
+            {
+                QString error = "Http GET for address \"" + reply->url().toString() + "\" returned 307 Temporary Redirect but the \"Location\" header is empty, cannot request asset from temporary redirect URL.";
+                framework->Asset()->AssetTransferFailed(transfer.get(), error);
+            }
+        }
+        // No error, proceed
+        else if (reply->error() == QNetworkReply::NoError)
         {            
             AssetCache *cache = framework->Asset()->GetAssetCache();
             QString sourceRef = transfer->source.ref;
@@ -400,7 +426,9 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             if (replyCode == 304)
             {
                 // Read cache file to transfer asset data
-                if (cache->FindInCache(sourceRef).isEmpty())
+                if (!cache->FindInCache(sourceRef).isEmpty())
+                    transfer->diskSourceType = IAsset::Cached;
+                else
                     error = "Http GET for address \"" + reply->url().toString() + "\" returned '304 Not Modified' but existing cache file could not be opened: \"" + cache->GetDiskSourceByRef(sourceRef) + "\"";
             }
             // 200 OK
@@ -415,6 +443,10 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                     // Store to cache
                     if (!cache->StoreAsset((u8*)bodyData.data(), bodyData.size(), sourceRef).isEmpty())
                     {
+                        // Setting original source type on the request here will allow later code
+                        // to detect if this is a first or update download of this asset.
+                        transfer->diskSourceType = IAsset::Original;
+
                         // If 'Last-Modified' is not present we maybe should set it to a really old date via AssetCache::SetLastModified().
                         // As the metadata is not in a separate file it would mean for replies that did not have 'Last-Modified' header
                         // we would send the next request 'If-Modified-Since' header as the write time of the cache file.

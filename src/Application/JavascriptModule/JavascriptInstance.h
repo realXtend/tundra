@@ -72,8 +72,8 @@ public slots:
         @param path is relative path from bin/ to file. Example jsmodules/apitest/myscript.js */
     void IncludeFile(const QString &file);
 
-    /// Imports the given QtScript extension plugin into the current script instance.
-    void ImportExtension(const QString &scriptExtensionName);
+    /// Imports the given QtScript extension plugin into the current script instance. Returns true if successful.
+    bool ImportExtension(const QString &scriptExtensionName);
 
     /// Return whether has been evaluated
     virtual bool IsEvaluated() const { return evaluated; }

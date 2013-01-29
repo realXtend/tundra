@@ -1,10 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_PlanarMirror.h
- *  @brief  EC_PlanarMirror enables one to create planar mirrors.
- *  @note   The entity should have EC_Placeable available in advance.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+ 
+    @file   EC_PlanarMirror.h
+    @brief  Enables one to create planar mirrors. */
 
 #pragma once
 
@@ -13,37 +11,35 @@
 
 #include <OgreTexture.h>
 
-/// EntityComponent that will create a planar mirror texture (and optionally a plane showing it).
-/**
-<table class="header">
-<tr>
-<td>
-<h2>PlanarMirror</h2>
-EntityComponent that will create a planar mirror texture (and optionally a plane showing it).
-NOTE: Assumes the the entity already has: EC_Placeable, EC_RttTarget and EC_Camera. Otherwise EC_PlanarMirror cannot function.
-<b>Attributes</b>:
-<ul>
-<li>bool reflectionPlaneVisible
-<div>Do we want to show the mirror plane</div>
-</ul>
+/// Creates a planar mirror texture (and optionally a plane showing it).
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>PlanarMirror</h2>
+    Creates a planar mirror texture (and optionally a plane showing it).
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>...
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>bool reflectionPlaneVisible
+    <div>@copydoc reflectionPlaneVisible</div>
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>...
+    </ul>
 
-Does not emit any actions.
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li>...
+    </ul>
+    </td>
+    </tr>
 
-<b>Depends on EC_Camera, EC_Placeable and EC_RttTarget.</b>
-</table>
-*/
+    Does not emit any actions.
+
+    <b>Depends on components @ref EC_Camera "Camera", @ref EC_Placeable "Placeable" and @ref EC_RttTarget "RttTarget".</b>
+    </table> */
 class EC_PlanarMirror : public IComponent
 {
     Q_OBJECT
@@ -63,11 +59,11 @@ public:
 public slots:
     void Initialize();
     void Update(float val);
-    void OnAttributeUpdated(IAttribute* attr);
     void WindowResized(int w,int h);
 
 private:
     void CreatePlane();
+    void AttributesChanged();
 
     OgreRenderer::RendererPtr renderer_;
     

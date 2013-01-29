@@ -15,7 +15,7 @@
 #include "UiAPI.h"
 #include "LoggingFunctions.h"
 #include "SceneAPI.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "UiProxyWidget.h"
@@ -30,9 +30,13 @@
 
 #include <QCryptographicHash>
 
+#include "StaticPluginRegistry.h"
+
 #include "MemoryLeakCheck.h"
 
 using namespace std;
+
+void DumpProfilerToLog(ProfilerNodeTree* node, int indent, int elapsedFrames);
 
 DebugStatsModule::DebugStatsModule() :
     IModule("DebugStats"),
@@ -48,6 +52,9 @@ DebugStatsModule::~DebugStatsModule()
 void DebugStatsModule::Initialize()
 {
     lastCallTime = GetCurrentClockTime();
+    lastProfilerDumpTime = GetCurrentClockTime();
+    profilerLogDumpElapsedFrames = 0;
+    enableProfilerLogDump = framework_->HasCommandLineParameter("--dumpProfiler");
 
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.",
         this, SLOT(ShowProfilingWindow()));
@@ -109,6 +116,23 @@ void DebugStatsModule::Update(f64 frametime)
     double timeSpent = ProfilerBlock::ElapsedTimeSeconds(lastCallTime, now);
     lastCallTime = now;
 
+#ifdef PROFILING
+    if (enableProfilerLogDump)
+    {
+	++profilerLogDumpElapsedFrames;        
+        if (ProfilerBlock::ElapsedTimeSeconds(lastProfilerDumpTime, now) > 5.0)
+        { 
+            LogInfo("Dumping profiling data...");
+            lastProfilerDumpTime = now;
+            Profiler &profiler = *framework_->GetProfiler();
+            profiler.Lock();
+            DumpProfilerToLog(profiler.GetRoot(), 0, profilerLogDumpElapsedFrames);
+            profiler.Release();
+	    profilerLogDumpElapsedFrames = 0;
+        }        
+    }
+#endif
+
     frameTimes.push_back(make_pair(*(u64*)&now, timeSpent));
     if (frameTimes.size() > 2048) // Maintain an upper bound in the frame history.
         frameTimes.erase(frameTimes.begin());
@@ -120,6 +144,7 @@ void DebugStatsModule::Update(f64 frametime)
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
 //        profilerWindow_->DoThresholdLogging();
     }
+
 }
 
 void DebugStatsModule::Exec(const QStringList &params)
@@ -171,9 +196,43 @@ void DebugStatsModule::Exec(const QStringList &params)
         entity->Exec(EntityAction::Local, params[1], execParameters);
 }
 
+void DumpProfilerToLog(ProfilerNodeTree* node, int indent, int elapsedFrames)
+{
+    if (!node)
+	return;
+
+    const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
+
+    if (timings_node && timings_node->num_called_custom_)
+    {
+        char str[256];
+        char tempStr[256];
+        if (indent > 0)
+            memset(str, ' ', indent);
+
+        sprintf(tempStr, "%s: Calls %d Calls/frame %.2f Total %.2fms Frame %.2fms", timings_node->Name().c_str(), (int)timings_node->num_called_custom_, (float)timings_node->num_called_custom_ / elapsedFrames, timings_node->total_custom_*1000.f, timings_node->total_custom_*1000.f / elapsedFrames);
+        strcpy(&str[indent], tempStr);
+    
+        LogInfo(QString(str));
+
+        timings_node->num_called_custom_ = 0;
+        timings_node->total_custom_ = 0;
+        timings_node->custom_elapsed_min_ = 1e9;
+        timings_node->custom_elapsed_max_ = 0;
+    }
+
+    const ProfilerNodeTree::NodeList& children = node->GetChildren();
+    for (ProfilerNodeTree::NodeList::const_iterator i = children.begin(); i != children.end(); ++i)
+        DumpProfilerToLog(i->get(), indent + 1, elapsedFrames);
+}
+
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(DebugStatsModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new DebugStatsModule();

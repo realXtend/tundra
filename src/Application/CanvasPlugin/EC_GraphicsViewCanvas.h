@@ -22,13 +22,40 @@ class QDropEvent;
 class RedirectedPaintWidget;
 
 /// Makes possible to to embed arbitrary Qt UI elements into a 3D model.
-/** The mouse input to the 3D object is passed to the actual UI element.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>GraphicsViewCanvas</h2>
+    Makes possible to to embed arbitrary Qt UI elements into a 3D model.
+    The mouse input to the 3D object is passed to the actual UI element.
 
-    @note The entity this component is used in needs to have EC_Mesh also.
+    Registered by CanvasPlugin.
+
+    @todo Implement keyboard input.
+
+    <b>Attributes</b>:
+    <ul>
+    <li> QString: outputTexture.
+    <div> @copydoc outputTexture
+    <li> uint : width.
+    <div> @copydoc width
+    <li> uint : height
+    <div> @copydoc height
+    <li> uint : submesh
+    <div> @copydoc submesh
+    </ul>
+
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>"GraphicsScene": @copydoc GraphicsScene
+    <li>"GraphicsView": @copydoc GraphicsView
+    </ul>
+
+    <b>Depends on the component @ref EC_Mesh "Mesh".</b>
     The material at the EC_Mesh at index which @c submesh points to is cloned for the usage of this component.
     Only material with single texture unit supported.
 
-    @todo Implement keyboard input. */
+    </table> */
 class EC_GraphicsViewCanvas : public IComponent
 {
     Q_OBJECT
@@ -66,10 +93,10 @@ public slots:
     /** @note Do not store the pointer, but access it through this each time you need it. */
     QGraphicsView *GraphicsView() const { return graphicsView; }
 
+private slots:
     void UpdateSignals();
 
 private slots:
-    void OnAttributeUpdated(IAttribute *attribute);
     void OnGraphicsSceneChanged(const QList<QRectF> &);
     void OnMouseEventReceived(MouseEvent *e);
     void OnDragEnterEvent(QDragEnterEvent *e);
@@ -80,6 +107,7 @@ private slots:
     void UpdateTexture();
 
 private:
+    void AttributesChanged();
     void SendMouseEvent(QEvent::Type type, const QPointF &point, MouseEvent *e);
     void SendMouseScrollEvent(MouseEvent *e, const QPointF &ptOnScene);
     Ogre::MaterialPtr OgreMaterial() const;

@@ -6,8 +6,9 @@
 #include "LocalAssetStorage.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 #include "Profiler.h"
+#include "LoggingFunctions.h"
 
 #include <QFileSystemWatcher>
 #include <QDir>
@@ -116,7 +117,7 @@ QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
     QString filename;
     QString subAssetName;
     AssetAPI::ParseAssetRef(localName, 0, 0, 0, 0, &filename, 0, 0, &subAssetName);
-    return BaseURL() + filename + (subAssetName.isEmpty() ? "" : ("," + subAssetName));
+    return BaseURL() + filename + (subAssetName.isEmpty() ? "" : ("#" + subAssetName));
 }
 
 QString LocalAssetStorage::Type() const

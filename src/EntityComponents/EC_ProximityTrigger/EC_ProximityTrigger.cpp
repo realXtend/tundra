@@ -1,14 +1,13 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_ProximityTrigger.cpp
- *  @brief  EC_ProximityTrigger reports distance, each frame, of other entities that also have EC_ProximityTrigger component
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_ProximityTrigger.cpp
+    @brief  Reports distance, each frame, of other entities that also have this same component. */
 
 #include "EC_ProximityTrigger.h"
 
 #include "Framework.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 
 #include "EC_Placeable.h"
@@ -22,20 +21,19 @@ EC_ProximityTrigger::EC_ProximityTrigger(Scene *scene) :
     interval(this, "Trigger signal interval", 0.0f)
 {
     SetUpdateMode();
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_ProximityTrigger::~EC_ProximityTrigger()
 {
 }
 
-void EC_ProximityTrigger::OnAttributeUpdated(IAttribute* attr)
+void EC_ProximityTrigger::AttributesChanged()
 {
-    if (attr == &interval)
+    if (interval.ValueChanged())
         SetUpdateMode();
 }
 
-void EC_ProximityTrigger::Update(float timeStep)
+void EC_ProximityTrigger::Update(float /*timeStep*/)
 {
     if (!active.Get())
         return;

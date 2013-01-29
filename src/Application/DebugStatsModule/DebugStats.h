@@ -54,4 +54,7 @@ private:
     QPointer<TimeProfilerWindow> profilerWindow_; /// Profiler window
     boost::shared_ptr<InputContext> inputContext; ///< InputContext for Shift-P - Profiler window shortcut.
     tick_t lastCallTime;
+    tick_t lastProfilerDumpTime;
+    int profilerLogDumpElapsedFrames;
+    bool enableProfilerLogDump;
 };

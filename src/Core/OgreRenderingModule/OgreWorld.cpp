@@ -16,7 +16,7 @@
 
 #include "OgreMeshAsset.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "FrameAPI.h"
@@ -33,6 +33,11 @@
 
 #include <Ogre.h>
 
+#ifdef ANDROID
+#include <OgreRTShaderSystem.h>
+#include <OgreShaderGenerator.h>
+#endif
+
 #include "MemoryLeakCheck.h"
 
 OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
@@ -46,6 +51,12 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
 {
     assert(renderer_->IsInitialized());
     sceneManager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, scene->Name().toStdString());
+#ifdef ANDROID
+    Ogre::RTShader::ShaderGenerator* shaderGenerator = renderer_->GetShaderGenerator();
+    if (shaderGenerator)
+        shaderGenerator->addSceneManager(sceneManager_);
+#endif
+
     if (!framework_->IsHeadless())
     {
         rayQuery_ = sceneManager_->createRayQuery(Ogre::Ray());
@@ -94,10 +105,15 @@ OgreWorld::~OgreWorld()
     if (comp)
         comp->RemoveAllCompositors();
     
+#ifdef ANDROID
+    Ogre::RTShader::ShaderGenerator* shaderGenerator = renderer_->GetShaderGenerator();
+    if (shaderGenerator)
+        shaderGenerator->removeSceneManager(sceneManager_);
+#endif
     Ogre::Root::getSingleton().destroySceneManager(sceneManager_);
 }
 
-std::string OgreWorld::GetUniqueObjectName(const std::string &prefix)
+std::string OgreWorld::GenerateUniqueObjectName(const std::string &prefix)
 {
     return renderer_->GetUniqueObjectName(prefix);
 }
@@ -134,6 +150,7 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
     PROFILE(OgreWorld_Raycast);
     
     result_.entity = 0;
+    result_.component = 0;
     
     int width = renderer_->WindowWidth();
     int height = renderer_->WindowHeight();
@@ -154,8 +171,11 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
 
 RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
 {
+    result_.entity = 0;
+    result_.component = 0;
+
     if (!rayQuery_)
-        return 0;
+        return &result_;
     rayQuery_->setRay(Ogre::Ray(ray.pos, ray.dir));
     return RaycastInternal(layerMask);
 }
@@ -222,7 +242,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 if (!node)
                 {
                     LogError("EC_Mesh::Raycast called for a mesh entity that is not attached to a scene node. Returning no result.");
-                    return false;
+                    return &result_;
                 }
 
                 assume(!float3(node->_getDerivedScale()).IsZero());

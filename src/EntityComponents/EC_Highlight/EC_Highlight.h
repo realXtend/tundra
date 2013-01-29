@@ -1,10 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EC_Highlight.h
- *  @brief  EC_Highlight enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_Mesh component available to be useful
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EC_Highlight.h
+    @brief  EC_Highlight enables visual highlighting effect for of scene entity. */
 
 #pragma once
 
@@ -13,43 +11,43 @@
 #include "Color.h"
 #include "OgreModuleFwd.h"
 
-/// Enables visual highlighting effect for of scene entity.
-/**
-<table class="header">
-<tr>
-<td>
-<h2>HighLight</h2>
-Enables visual highlighting effect of scene entity.
+#include <QHash>
+#include <QString>
 
-<b>Attributes</b>:
-<ul>
-<li> bool: visible
-<div> Whether the highlight effect is shown.  </div>
-<li> Color: solidColor
-<div> Color of the solid fill pass. </div>
-<li> Color: outlineColor
-<div> Color of the outline (wireframe) pass. </div>
+/// Enables visual highlighting effect for scene entity.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Highlight</h2>
+    Enables visual highlighting effect of scene entity.
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>"Hide": Disables the highlighting effect.
-<li>"Show": Shows the highlighting effect.
-<li>"IsVisible": Returns if the highlight component is visible or not.
-  @true If the highlight component is visible, false if it's hidden or not initialized properly.
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li> bool: visible
+    <div> @copydoc visible. </div>
+    <li> Color: solidColor
+    <div> @copydoc solidColor </div>
+    <li> Color: outlineColor
+    <div> @copydoc outlineColor </div>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    <li>"Hide": @copydoc Hide
+    <li>"Show": @copydoc Show
+    <li>"IsVisible": @copydoc IsVisible
+    </ul>
 
-Does not emit any actions.
+    <b>Reacts on the following actions:</b>
+    <ul>
+    <li>...
+    </ul>
+    </td>
+    </tr>
 
-<b>Depends on components Placeable and OgreMesh</b>. 
-</table>
-*/
+    Does not emit any actions.
+
+    <b>Depends on components @ref EC_Placeable "Placeable" and @ref EC_Mesh "Mesh".</b>
+    </table> */
 class EC_Highlight : public IComponent
 {
     Q_OBJECT
@@ -58,8 +56,6 @@ class EC_Highlight : public IComponent
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Highlight(Scene* scene);
-
-    /// Destructor.
     ~EC_Highlight();
 
     /// Visible flag. If true,the mesh component in the same entity will be highlighted
@@ -89,9 +85,6 @@ private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
 
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
-
     /// Called when component has been removed from the parent entity.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
     
@@ -107,7 +100,10 @@ private slots:
 private:
     /// Create highlight pass to an Ogre material's all techniques
     void CreateHighlightToOgreMaterial(OgreMaterialAsset* mat);
-    
+
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
+
     /// Apply a color change to all existing highlight materials
     void ApplyHighlightColors();
         
@@ -120,7 +116,9 @@ private:
     /// Highlight material assets, cloned from the mesh component's materials
     std::vector<AssetPtr> materials_;
     
+    /// Store original materials from EC_Mesh for restoring later.
+    QHash<uint, QString> originalMaterials_;
+
     /// Delayed reapply already pending -flag
     bool reapplyPending_;
 };
-

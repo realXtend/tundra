@@ -18,7 +18,7 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Entity.h"
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
@@ -41,11 +41,11 @@
 
 #include <QToolTip>
 #include <QCursor>
-
+/* // Regression: TODO: reimplement! Preferably in some nicer manner that doesn't require compiling OpenAssetImport support into ECEditorModule!
 #ifdef ASSIMP_ENABLED
 #include <OpenAssetImport.h>
 #endif
-
+*/
 #include "MemoryLeakCheck.h"
 
 // Shortcuts for config keys.
@@ -185,9 +185,10 @@ void SceneStructureModule::InstantiateContent(const QStringList &filenames, cons
         }
         else
         {
+/* // Regression: TODO: reimplement! Preferably in some nicer manner that doesn't require compiling OpenAssetImport support into ECEditorModule!
 #ifdef ASSIMP_ENABLED
             QFileInfo path(filename);
-            AssImp::OpenAssetImport assimporter;
+            OpenAssetImport assimporter;
             QString extension = "." + path.extension();
             if (assimporter.IsSupportedExtension(extension))
             {
@@ -203,6 +204,7 @@ void SceneStructureModule::InstantiateContent(const QStringList &filenames, cons
                 return;
             }
 #endif
+*/
         }
     }
 
@@ -278,6 +280,7 @@ bool SceneStructureModule::IsSupportedFileType(const QString &fileRef)
     }
     else
     {
+/* // Regression: TODO: reimplement! Preferably in some nicer manner that doesn't require compiling OpenAssetImport support into ECEditorModule!
 #ifdef ASSIMP_ENABLED
         QFileInfo path(fileRef);
         AssImp::OpenAssetImport assimporter;
@@ -285,6 +288,7 @@ bool SceneStructureModule::IsSupportedFileType(const QString &fileRef)
         if (assimporter.IsSupportedExtension(extension))
             return true;
 #endif
+*/
         return false;
     }
 }

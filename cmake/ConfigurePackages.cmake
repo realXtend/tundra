@@ -11,6 +11,7 @@ if (MSVC)
     set(Boost_USE_MULTITHREADED TRUE)
     set(Boost_USE_STATIC_LIBS TRUE)
 else ()
+    set(Boost_USE_MULTITHREADED FALSE)
     set(Boost_USE_STATIC_LIBS FALSE)
 endif ()
 
@@ -41,7 +42,11 @@ set(Boost_USE_MULTITHREADED TRUE)
 set(Boost_DETAILED_FAILURE_MSG FALSE)
 set(Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1")
 
-find_package(Boost 1.39.0 COMPONENTS thread regex)
+if (APPLE OR MSVC)
+   find_package(Boost 1.39.0 COMPONENTS thread regex)
+else()
+   find_package(Boost 1.39.0 COMPONENTS system thread regex) # Some Ubuntu 12.10 installs require system, others do not. OSX fails with system. Not needed on MSVC
+endif()
 
 if (Boost_FOUND)
    include_directories(${Boost_INCLUDE_DIRS})
@@ -68,14 +73,18 @@ endif()
 endmacro (configure_boost)
 
 macro (configure_qt4)
-    sagase_configure_package (QT4 
-        NAMES Qt4 4.6.1
-        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
-        PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
+    if (NOT ANDROID)
+        sagase_configure_package (QT4 
+            NAMES Qt4 4.6.1
+            COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
+	    PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
+    else()
+        find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork QtScript QtUiTools)
+    endif()
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
-    
+
         include (${QT_USE_FILE})
         
         set (QT4_INCLUDE_DIRS 
@@ -91,25 +100,30 @@ macro (configure_qt4)
             
 #            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
 #            ${QT_PHONON_INCLUDE_DIR}
-
         
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
         
-        set (QT4_LIBRARIES 
-            ${QT_LIBRARIES}
-            ${QT_QTCORE_LIBRARY}
-            ${QT_QTGUI_LIBRARY}
-            ${QT_QTUITOOLS_LIBRARY}
-            ${QT_QTNETWORK_LIBRARY}
-            ${QT_QTXML_LIBRARY}
-            ${QT_QTSCRIPT_LIBRARY}
-            ${QT_DECLARATIVE_LIBRARY}
-            ${QT_QTWEBKIT_LIBRARY})
-            
+	if (ANDROID)
+            set (QT4_LIBRARIES 
+                ${QT_LIBRARIES})
+        else ()
+            set (QT4_LIBRARIES 
+                ${QT_LIBRARIES}
+                ${QT_QTCORE_LIBRARY}
+                ${QT_QTGUI_LIBRARY}
+                ${QT_QTUITOOLS_LIBRARY}
+                ${QT_QTNETWORK_LIBRARY}
+                ${QT_QTXML_LIBRARY}
+                ${QT_QTSCRIPT_LIBRARY}
+                ${QT_DECLARATIVE_LIBRARY}
+                ${QT_QTWEBKIT_LIBRARY})            
+
 #            ${QT_QTSCRIPTTOOLS_LIBRARY}
-#            ${QT_PHONON_LIBRARY}
-        
+#            ${QT_PHONON_LIBRARY}       
+
+	endif()
+
     endif ()
     
     sagase_configure_report (QT4)
@@ -178,12 +192,6 @@ macro (configure_openal)
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
 
-macro (configure_sparkle)
-    FIND_LIBRARY (SPARKLE_LIBRARY NAMES Sparkle)
-    set (SPARKLE_INCLUDE_DIRS ${SPARKLE_LIBRARY}/Headers)
-    set (SPARKLE_LIBRARIES ${SPARKLE_LIBRARY})
-endmacro (configure_sparkle)
-
 macro(use_package_knet)
     # kNet look up rules:
     # 1. Use cmake cached KNET_DIR.
@@ -235,39 +243,39 @@ macro(use_package_bullet)
     endif()
     message (STATUS "Using BULLET_DIR = ${BULLET_DIR}")
 
-    if (WIN32)
+    if (WIN32 OR ANDROID)
         include_directories(${BULLET_DIR}/include) # For prebuilt VS2008/VS2010 deps.
         include_directories(${BULLET_DIR}/src) # For full-built source deps.
-        link_directories(${BULLET_DIR}/lib)
-    else() # Linux and mac
+        if (NOT ANDROID)
+            link_directories(${BULLET_DIR}/lib)
+        else ()
+            link_directories(${BULLET_DIR}/libs/${ANDROID_ABI})
+        endif()
+    else () # Linux and mac
         include_directories(${BULLET_DIR}/include/bullet)
         link_directories(${BULLET_DIR}/lib)
-    endif()
+    endif ()
 endmacro()
 
 macro(link_package_bullet)
-    if (IS_DIRECTORY ${BULLET_DIR}/msvc/2008) # full prebuilt deps
-        if (WIN32)
-            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/LinearMath.lib)
-            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletDynamics.lib)
-            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletCollision.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/LinearMath.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletDynamics.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletCollision.lib)
-        endif()
-    elseif (IS_DIRECTORY ${BULLET_DIR}/lib/Release) # prebuilt deps package
-        if (WIN32)
-            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/LinearMath.lib)
-            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/BulletDynamics.lib)
-            target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/BulletCollision.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/LinearMath.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/BulletDynamics.lib)
-            target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/BulletCollision.lib)
-        endif()
+    if (WIN32 AND IS_DIRECTORY ${BULLET_DIR}/msvc/2008) # full prebuilt deps
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/LinearMath.lib)
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletDynamics.lib)
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletCollision.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/LinearMath.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletDynamics.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletCollision.lib)
+    elseif (WIN32 AND IS_DIRECTORY ${BULLET_DIR}/lib/Release) # prebuilt deps package
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/LinearMath.lib)
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/BulletDynamics.lib)
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/BulletCollision.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/LinearMath.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/BulletDynamics.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/BulletCollision.lib)
     else()
-        target_link_libraries(${TARGET_NAME} optimized LinearMath optimized BulletDynamics optimized BulletCollision)
+        target_link_libraries(${TARGET_NAME} optimized BulletDynamics optimized BulletCollision optimized LinearMath)
         if (WIN32)
-            target_link_libraries(${TARGET_NAME} debug LinearMath_d debug BulletDynamics_d debug BulletCollision_d)
+            target_link_libraries(${TARGET_NAME} debug BulletDynamics_d debug BulletCollision_d debug LinearMath_d)
         endif()
     endif()
 endmacro()
@@ -413,8 +421,7 @@ macro(use_package_assimp)
             set(ASSIMP_DIR ${ENV_ASSIMP_DIR})
         endif()
         include_directories(${ASSIMP_DIR}/include)
-        link_directories(${ASSIMP_DIR}/lib/assimp_debug_Win32)
-        link_directories(${ASSIMP_DIR}/lib/assimp_release_Win32)
+        link_directories(${ASSIMP_DIR}/lib)
     else() # Linux, note: mac will also come here..
         if ("${ENV_ASSIMP_DIR}" STREQUAL "")
             set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH})

@@ -16,7 +16,25 @@
 #include <QX11Info>
 #endif
 
+#include <OgreOverlayManager.h>
+#include <OgrePanelOverlayElement.h>
+
+#ifdef ANDROID
+#include <jni.h>
+#include <android/log.h>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
+#include "Framework.h"
+#endif
+
+#include "LoggingFunctions.h"
+
 #include "MemoryLeakCheck.h"
+
+#ifdef ANDROID
+jclass qtApplicationClass;
+jmethodID getSurfaceMethod;
+#endif
 
 using namespace std;
 
@@ -36,6 +54,55 @@ overlayContainer(0)
 void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen, Framework *fw)
 {
     Ogre::NameValuePairList params;
+
+#ifdef ANDROID
+    fullscreen = true;
+
+    /// \todo This should not be done here, but doing it in Tundra's main seems to be unreliable and lead to crashes
+    JavaVM* vm = Framework::JavaVMInstance();
+    JNIEnv* env;
+    vm->AttachCurrentThread(&env, 0);
+    if (vm->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK)
+    {
+	LogError("CreateRenderWindow: GetEnv failed");
+	return;
+    }
+    Framework::SetJniEnvInstance(env);
+
+    if (!env)
+    {    
+	LogError("CreateRenderWindow: Null Java environment, can not call Java methods");
+	return;
+    }
+
+    jobject result = env->CallStaticObjectMethod(qtApplicationClass, getSurfaceMethod);
+    if (!result)
+    {
+        LogError("CreateRenderWindow: Surface was null");
+	return;
+    }  
+
+/*
+    jclass clsID = env->GetObjectClass(result);
+    jmethodID msgMethodID;
+    const char* localstr = NULL;
+    jclass javaClassClsID = env->FindClass("java/lang/Class");
+    msgMethodID = env->GetMethodID(javaClassClsID, "getName", "()Ljava/lang/String;");
+    if(msgMethodID == NULL)
+        LogInfo("Null getName method");
+    else 
+    {
+        jstring clsName = (jstring)env->CallObjectMethod(clsID, msgMethodID);
+        localstr = env->GetStringUTFChars(clsName, NULL);
+        LogInfo("Surface class name: " + QString(localstr));
+    }
+*/
+
+    LogInfo("CreateRenderWindow: calling ANativeWindow_fromSurface");
+    ANativeWindow* window = ANativeWindow_fromSurface(env, result);
+
+    params["externalWindowHandle"] = Ogre::StringConverter::toString((int)window);
+#endif
 
     // See http://www.ogre3d.org/tikiwiki/RenderWindowParameters
     if (fw->CommandLineParameters("--vsync").length() > 0) // "Synchronize buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate"
@@ -110,7 +177,10 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
     renderWindow = Ogre::Root::getSingletonPtr()->createRenderWindow(name.toStdString().c_str(), width, height, fullscreen, &params);
     renderWindow->setDeactivateOnFocusChange(false);
 
+    // Currently do not create UI overlay on Android to save fillrate
+#ifndef ANDROID
     CreateRenderTargetOverlay(width, height);
+#endif
 }
 
 void RenderWindow::CreateRenderTargetOverlay(int width, int height)
@@ -174,6 +244,9 @@ std::string RenderWindow::OverlayTextureName() const
 
 void RenderWindow::UpdateOverlayImage(const QImage &src)
 {
+    if (!overlay)
+        return;
+
     PROFILE(RenderWindow_UpdateOverlayImage);
 
     Ogre::Box bounds(0, 0, src.width(), src.height());
@@ -206,7 +279,7 @@ void RenderWindow::Resize(int width, int height)
     renderWindow->resize(width, height);
     renderWindow->windowMovedOrResized();
 
-    if (Ogre::TextureManager::getSingletonPtr() && Ogre::OverlayManager::getSingletonPtr())
+    if (overlay && Ogre::TextureManager::getSingletonPtr() && Ogre::OverlayManager::getSingletonPtr())
     {
         PROFILE(RenderWindow_Resize);
 
@@ -243,3 +316,39 @@ int RenderWindow::Height() const
 {
     return renderWindow->getHeight();
 }
+
+#ifdef ANDROID
+extern "C" {
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
+{
+    __android_log_print(ANDROID_LOG_INFO,"Tundra", "Tundra JNI_OnLoad");
+    Framework::SetJavaVMInstance(vm);
+
+    JNIEnv *env = 0;
+    if (vm->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK)
+    {
+        __android_log_print(ANDROID_LOG_FATAL,"Qt","GetEnv failed");
+        return -1;
+    }
+
+    qtApplicationClass = env->FindClass("org/kde/necessitas/origo/QtApplication");
+    if (!qtApplicationClass) 
+    {
+        __android_log_print(ANDROID_LOG_INFO,"Tundra", "Can not find QtApplication class");
+        return -1;
+    }
+    qtApplicationClass = (jclass)env->NewGlobalRef(qtApplicationClass);
+
+    getSurfaceMethod = env->GetStaticMethodID(qtApplicationClass, "getSurface", "()Ljava/lang/Object;");
+    if (!getSurfaceMethod)
+    {
+        __android_log_print(ANDROID_LOG_INFO,"Tundra", "Can not find getSurface method from QtApplication class");
+	return -1;
+    }
+
+    return JNI_VERSION_1_4;
+}
+
+}
+#endif

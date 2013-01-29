@@ -18,11 +18,11 @@
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "AssetAPI.h"
+#include "GenericAssetFactory.h"
 #include "EC_Script.h"
 #include "ScriptAsset.h"
-#include "ScriptAssetFactory.h"
 #include "EC_DynamicComponent.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "InputAPI.h"
 #include "AudioAPI.h"
 #include "FrameAPI.h"
@@ -31,10 +31,12 @@
 #include "IComponentFactory.h"
 #include "TundraLogicModule.h"
 #include "LoggingFunctions.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 
 #include <QtScript>
 #include <QDomElement>
+
+#include "StaticPluginRegistry.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -53,8 +55,16 @@ void JavascriptModule::Load()
 {
     if (!framework_->Scene()->IsComponentFactoryRegistered(EC_Script::TypeNameStatic()))
         framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Script>));
+
+    // This check is done as both js and py modules can register this factory. 
+    // They both need to register .js and .py extensions to play nice.
+    // @todo Refactor to separate the .js and .py assets to be in separate factories.
     if (!framework_->Asset()->IsAssetTypeFactoryRegistered("Script"))
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory));
+    {
+        QStringList scriptExtensions;
+        scriptExtensions << ".js" << ".py";
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<ScriptAsset>("Script", scriptExtensions)));
+    }
 }
 
 void JavascriptModule::Initialize()
@@ -225,13 +235,14 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
     }
 }
 
-void JavascriptModule::ScriptAppNameChanged(const QString& newAppName)
+void JavascriptModule::ScriptAppNameChanged(const QString& /*newAppName*/)
 {
     /// \todo Currently we do not react to changing the script app name on the fly.
 }
 
 void JavascriptModule::ScriptClassNameChanged(const QString& newClassName)
 {
+    UNREFERENCED_PARAM(newClassName) /**< @todo Do we want to do something with this? */
     EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
     assert(sender && "JavascriptModule::ScriptClassNameChanged needs to be invoked from EC_Script!");
     if (!sender)
@@ -271,7 +282,7 @@ void JavascriptModule::ScriptUnloading()
     RemoveScriptObjects(sender);
 }
 
-void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
+void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type /*change*/)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
     {
@@ -294,7 +305,7 @@ void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, Attribut
     }
 }
 
-void JavascriptModule::ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
+void JavascriptModule::ComponentRemoved(Entity* /*entity*/, IComponent* comp, AttributeChange::Type /*change*/)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
     {
@@ -693,7 +704,11 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
 
 extern "C"
 {
+#ifndef ANDROID
 DLLEXPORT void TundraPluginMain(Framework *fw)
+#else
+DEFINE_STATIC_PLUGIN_MAIN(JavascriptModule)
+#endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new JavascriptModule();

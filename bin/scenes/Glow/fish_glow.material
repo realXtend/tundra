@@ -1,0 +1,48 @@
+material fish
+{
+	technique
+	{
+		pass
+		{
+			vertex_program_ref rex/DiffShadowVP
+			{
+			}
+			fragment_program_ref rex/DiffShadowFP
+			{
+			}
+ 
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+ 
+			texture_unit shadowMap0
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap1
+			{
+				content_type shadow                           
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap2
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+		}
+	}
+ 
+     technique
+     {
+         scheme glow
+
+         pass
+         {
+             ambient 0 0 0
+             diffuse 0 0 0
+             emissive 0 1 0
+         }
+     }
+}

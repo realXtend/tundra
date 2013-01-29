@@ -6,9 +6,7 @@
 #include "CoreDefines.h"
 #include "OgreModuleApi.h"
 #include "AssetRefListener.h"
-
-class OgreMaterialAsset;
-class EC_Mesh;
+#include "OgreModuleFwd.h"
 
 /// Ogre material modifier component
 /**
@@ -22,12 +20,12 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QVariantList parameters
-<div>The parameters to apply.
-<li>QString inputMat
-<div>Input material asset reference. Can also be a submesh number in the same entity's EC_Mesh, or empty to use submesh 0 material.
-<li>QString outputMat
-<div>Output material asset.
+<li>QVariantList : parameters
+<div> @copydoc parameters </div>
+<li>QString : inputMat
+<div> @copydoc inputMat </div>
+<li>QString : outputMat
+<div> @copydoc outputMat </div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -57,17 +55,19 @@ public:
 
     virtual ~EC_Material();
 
+    /// The parameters to apply.
     Q_PROPERTY(QVariantList parameters READ getparameters WRITE setparameters);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, parameters);
 
+    /// Input material asset reference. Can also be a submesh number in the same entity's EC_Mesh, or empty to use submesh 0 material.
     Q_PROPERTY(QString inputMat READ getinputMat WRITE setinputMat);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, inputMat);
 
+    /// Output material asset.
     Q_PROPERTY(QString outputMat READ getoutputMat WRITE setoutputMat);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, outputMat);
 
 private slots:
-    void OnAttributeUpdated(IAttribute* attribute);
     
     /// Parent entity has been set. Check for existence of EC_Mesh
     void OnParentEntitySet();
@@ -85,6 +85,8 @@ signals:
     void AppliedOutputMaterial(Entity *entity, const QString &meshCompName, const int index, const QString &material);
     
 private:
+    void AttributesChanged();
+
     /// Return the submesh number to use from EC_Mesh, or -1 if not using the EC_Mesh's material
     int GetSubmeshNumber() const;
 
