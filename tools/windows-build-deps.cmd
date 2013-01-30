@@ -6,6 +6,7 @@ set GENERATOR="Visual Studio 9 2008"
 set BUILD_RELEASE=FALSE
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
+set USE_BOOST=TRUE
 
 :: Populate path variables
 cd ..
@@ -342,7 +343,15 @@ IF NOT EXIST "%DEPS%\assimp\". (
    cd "%DEPS%"
 :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+
    cd assimp
+   IF %USE_BOOST%==FALSE (
+      :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
+      sed s/"ASSIMP_ENABLE_BOOST_WORKAROUND OFF"/"ASSIMP_ENABLE_BOOST_WORKAROUND ON"/g <CMakeLists.txt >CMakeLists.txt.sed
+      del CMakeLists.txt
+      rename CMakeLists.txt.sed CMakeLists.txt
+   )
+
    cmake -G %GENERATOR%
    
    :: Debug build.
@@ -374,7 +383,8 @@ cd "%DEPS%\kNet"
 IF NOT EXIST kNet.sln. (
    cecho {0D}Running cmake for kNet.{# #}{\n}
    del /Q CMakeCache.txt
-   cmake . -G %GENERATOR% -DBOOST_ROOT="%DEPS%\boost"
+   :: TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's default (stable) branch yet!
+   cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
@@ -511,7 +521,7 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
    )
 
    cecho {0D}Extracting Ogre prebuilt dependencies package.{# #}{\n}
-   7za x -y OgreDependencies_MSVC_20101231.zip Dependencies
+   7za x -y OgreDependencies_MSVC_20101231.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
    cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
@@ -520,10 +530,31 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
+:: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
+set TBB_VERSION=tbb41_20121003oss
+set TBB_HOME="%DEPS%\ogre-safe-nocrashes\Dependencies\%TBB_VERSION%"
+IF %USE_BOOST%==FALSE (
+   IF NOT EXIST %TBB_VERSION%_win.zip. (
+      wget "http://threadingbuildingblocks.org/sites/default/files/software_releases/windows/%TBB_VERSION%_win.zip"
+      IF NOT EXIST %TBB_VERSION%_win.zip. (
+         cecho {0C}Error downloading Intel Thread Building Blocks! Aborting!{# #}{\n}
+         GOTO :ERROR
+      )
+      cecho {0D}Extracting Intel Thread Building Blocks package.{# #}{\n}
+      7za x -y %TBB_VERSION%_win.zip -oDependencies
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   )
+)
+
 IF NOT EXIST OGRE.sln. (
+   :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
+   :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
+   IF %USE_BOOST%==FALSE (
+      copy /Y "%TOOLS%\utils-windows\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
+   )
    cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
 REM   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1 -DOGRE_PROFILING:BOOL=ON
-   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+   cmake -G %GENERATOR% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
