@@ -4,6 +4,15 @@ project(tundra)
 # CMake version requirement
 cmake_minimum_required(VERSION 2.4)
 
+# TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
+# Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
+# with up-to-date TR1 and/or partial C++11 support, and C99 standard cstdint header. Currenly make_shared
+# is the only C++11 feature used in the Tundra codebase. 
+# If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
+# Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
+# with Boost disabled. See the dependencies scripts for instructions how to control this.
+option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+
 macro (PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
     # in most cases as they should be resolved to our cmake variables and get cached.
@@ -22,6 +31,7 @@ endmacro ()
 
 macro (PrintUsedBuildConfig)
     message ("\n=========== Used Build Configuration =============\n")
+    message (STATUS "TUNDRA_NO_BOOST            = " ${TUNDRA_NO_BOOST})
     message (STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message (STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
     message (STATUS "BUILDING_INSTALLER         = " ${BUILDING_INSTALLER})
@@ -282,7 +292,9 @@ endif ()
 message ("\n\n=========== Configuring Dependencies ===========\n")
 
 # Find needed external libraries, abort on error
-configure_boost()
+if (NOT TUNDRA_NO_BOOST)
+    configure_boost()
+endif()
 configure_qt4()
 if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
     if ("$ENV{TUNDRA_PYTHON_ENABLED}" STREQUAL "TRUE") 

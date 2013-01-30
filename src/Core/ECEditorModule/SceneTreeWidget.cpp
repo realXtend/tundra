@@ -831,7 +831,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         EntityPtr entity = scene.lock()->GetEntity(entities[i]);
         if (!entity)
         {
-            LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(entities[i]));
+            LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + QString::number(entities[i]));
             continue;
         }
 

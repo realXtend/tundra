@@ -3,18 +3,12 @@
 #pragma once
 
 #include "CoreDefines.h"
-#ifdef _WINDOWS
 #include "Win.h"
-#endif
 #include "TundraCoreApi.h"
 #include "Framework.h"
 #include "HighPerfClock.h"
 
-// Disable warning C4244 coming from boost
-#pragma warning ( push )
-#pragma warning( disable : 4244 )
-#include <boost/thread.hpp>
-#pragma warning( pop )
+#include <QMutex>
 
 // Allows short-timed block tracing
 #define TRACESTART(x) kNet::PolledTimer polledTimer_##x;
@@ -282,7 +276,7 @@ private:
 
 namespace
 {
-    /// For boost::thread_specific_ptr, we don't want it doing automatic deletion
+    /// For boost::shared_ptr, we don't want it doing automatic deletion
     void EmptyDeletor(ProfilerNodeTree * UNUSED_PARAM(node)) {}
 }
 
@@ -315,8 +309,6 @@ public slots:
     reporting profiling data. They are threadsafe because the
     variables that are accessed during reporting are ones that are only
     written to during Reset() or ResetThread and that is protected by a lock.
-    Otherwise for thread safety boost::thread_specific_ptr is used to store
-    thread specific profiling data. 
 
     Locks are not used when dealing with profiling blocks, as they might skew
     the data too much.
@@ -398,7 +390,7 @@ private:
     /// container for all the root profile nodes for each thread.
     std::list<ProfilerNodeTree*> thread_root_nodes_;
 
-    boost::mutex mutex_;
+    QMutex mutex_;
 
     friend class ProfilerQObj;
 };

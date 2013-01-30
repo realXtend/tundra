@@ -15,7 +15,7 @@ file(GLOB MOC_FILES
     Asset/IAssetStorage.h Asset/AssetRefListener.h Asset/BinaryAsset.h Asset/AssetCache.h
     Asset/IAssetBundle.h Asset/IAssetBundleTypeFactory.h
     Audio/AudioAPI.h Audio/AudioAsset.h Audio/SoundChannel.h Audio/SoundSettings.h
-    Console/ConsoleAPI.h Console/ConsoleWidget.h
+    Console/ConsoleAPI.h Console/ConsoleWidget.h Console/ShellInputThread.h
     Framework/Framework.h Framework/Application.h Framework/FrameAPI.h Framework/ConsoleAPI.h
     Framework/DebugAPI.h Framework/ConfigAPI.h Framework/IRenderer.h Framework/IModule.h
     Framework/PluginAPI.h Framework/VersionInfo.h Framework/Profiler.h
@@ -48,9 +48,11 @@ else()
     build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 endif()
 
-# Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propagate from here to each library.
-if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
-   target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+if (NOT TUNDRA_NO_BOOST)
+    # Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propagate from here to each library.
+    if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
+       target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+    endif()
 endif()
 
 link_package(QT4)
@@ -65,8 +67,7 @@ link_modules(Math)
 # Add log library on Android
 if (ANDROID)
     target_link_libraries (${TARGET_NAME} log)
-endif ()
-
+endif()
 
 SetupCompileFlagsWithPCH()
 

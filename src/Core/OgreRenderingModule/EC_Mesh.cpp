@@ -643,7 +643,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
     
     if (submesh_index >= attachment_entities_[index]->getNumSubEntities())
     {
-        LogError("EC_Mesh::SetAttachmentMaterial: Could not set material " + material_name + " on attachment: illegal submesh index " + ToString<uint>(submesh_index));
+        LogError("EC_Mesh::SetAttachmentMaterial: Could not set material " + material_name + " on attachment: illegal submesh index " + QString::number(submesh_index).toStdString());
         return false;
     }
     
