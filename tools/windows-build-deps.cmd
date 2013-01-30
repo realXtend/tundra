@@ -317,6 +317,11 @@ set BOOST_ROOT=%DEPS%\boost
 set BOOST_INCLUDEDIR=%DEPS%\boost
 set BOOST_LIBRARYDIR=%DEPS%\boost\stage\lib
 
+IF %USE_BOOST%==FALSE (
+   cecho {0D}USE_BOOST set to FALSE. Skipping Boost.{# #}{\n}
+   GOTO :SKIP_BOOST
+)
+
 IF NOT EXIST "%DEPS%\boost". (
    cecho {0D}Cloning Boost into "%DEPS%\boost".{# #}{\n}
    cd "%DEPS%"
@@ -344,6 +349,7 @@ IF NOT EXIST "%DEPS%\boost". (
    cecho {0D}Boost already built. Skipping.{# #}{\n}
 )
 
+:SKIP_BOOST
 IF NOT EXIST "%DEPS%\assimp\". (
    cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
    cd "%DEPS%"
@@ -389,10 +395,16 @@ IF NOT EXIST "%DEPS%\kNet\". (
 )
 
 cd "%DEPS%\kNet"
+:: TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
+:: default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
+sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
+del CMakeLists.txt
+rename CMakeLists.txt.sed CMakeLists.txt
+
 IF NOT EXIST kNet.sln. (
    cecho {0D}Running cmake for kNet.{# #}{\n}
    del /Q CMakeCache.txt
-   cmake . -G %GENERATOR% -DBOOST_ROOT="%BOOST_ROOT%"
+   cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
@@ -614,7 +626,7 @@ cd "%DEPS%\realxtend-tundra-deps\skyx"
 IF NOT EXIST SKYX.sln. (
    cecho {0D}Running cmake for SkyX.{# #}{\n}
    del /Q CMakeCache.txt
-   cmake . -G %GENERATOR%
+   cmake . -G %GENERATOR% -DUSE_BOOST:BOOL=%USE_BOOST%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
