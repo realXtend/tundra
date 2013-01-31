@@ -624,28 +624,28 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
         QDomElement scale_elem = node_elem.firstChildElement("scale");
         float posx, posy, posz, rotx = 0.0f, roty = 0.0f, rotz = 0.0f, rotw = 1.0f, scalex, scaley, scalez;
 
-        posx = ParseString<float>(pos_elem.attribute("x").toStdString(), 0.0f);
-        posy = ParseString<float>(pos_elem.attribute("y").toStdString(), 0.0f);
-        posz = ParseString<float>(pos_elem.attribute("z").toStdString(), 0.0f);
+        posx = ParseFloat(pos_elem.attribute("x"), 0.0f);
+        posy = ParseFloat(pos_elem.attribute("y"), 0.0f);
+        posz = ParseFloat(pos_elem.attribute("z"), 0.0f);
 
         if (!rot_elem.isNull())
         {
-            rotx = ParseString<float>(rot_elem.attribute("qx").toStdString(), 0.0f);
-            roty = ParseString<float>(rot_elem.attribute("qy").toStdString(), 0.0f);
-            rotz = ParseString<float>(rot_elem.attribute("qz").toStdString(), 0.0f);
-            rotw = ParseString<float>(rot_elem.attribute("qw").toStdString(), 1.0f);
+            rotx = ParseFloat(rot_elem.attribute("qx"), 0.0f);
+            roty = ParseFloat(rot_elem.attribute("qy"), 0.0f);
+            rotz = ParseFloat(rot_elem.attribute("qz"), 0.0f);
+            rotw = ParseFloat(rot_elem.attribute("qw"), 1.0f);
         }
         if (!quat_elem.isNull())
         {
-            rotx = ParseString<float>(quat_elem.attribute("x").toStdString(), 0.0f);
-            roty = ParseString<float>(quat_elem.attribute("y").toStdString(), 0.0f);
-            rotz = ParseString<float>(quat_elem.attribute("z").toStdString(), 0.0f);
-            rotw = ParseString<float>(quat_elem.attribute("w").toStdString(), 1.0f);
+            rotx = ParseFloat(quat_elem.attribute("x"), 0.0f);
+            roty = ParseFloat(quat_elem.attribute("y"), 0.0f);
+            rotz = ParseFloat(quat_elem.attribute("z"), 0.0f);
+            rotw = ParseFloat(quat_elem.attribute("w"), 1.0f);
         }
 
-        scalex = ParseString<float>(scale_elem.attribute("x").toStdString(), 1.0f);
-        scaley = ParseString<float>(scale_elem.attribute("y").toStdString(), 1.0f);
-        scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
+        scalex = ParseFloat(scale_elem.attribute("x"), 1.0f);
+        scaley = ParseFloat(scale_elem.attribute("y"), 1.0f);
+        scalez = ParseFloat(scale_elem.attribute("z"), 1.0f);
 
         float3 newpos(posx, posy, posz);
         Quat newrot(rotx, roty, rotz, rotw);
@@ -794,7 +794,6 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
     }
 }
 
-
 void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipyz, 
     QStringList &meshFiles, QStringList &skeletonFiles, QSet<QString> &usedMaterials, const QString &parentRef)
 {
@@ -807,28 +806,28 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement,
         QDomElement scaleElement = nodeElement.firstChildElement("scale");
         float posX, posY, posZ, rotX = 0.0f, rotY = 0.0f, rotZ = 0.0f, rotW = 1.0f, scaleX, scaleY, scaleZ;
 
-        posX = ParseString<float>(posElement.attribute("x").toStdString(), 0.0f);
-        posY = ParseString<float>(posElement.attribute("y").toStdString(), 0.0f);
-        posZ = ParseString<float>(posElement.attribute("z").toStdString(), 0.0f);
+        posX = ParseFloat(posElement.attribute("x"), 0.0f);
+        posY = ParseFloat(posElement.attribute("y"), 0.0f);
+        posZ = ParseFloat(posElement.attribute("z"), 0.0f);
 
         if (!rotElement.isNull())
         {
-            rotX = ParseString<float>(rotElement.attribute("qx").toStdString(), 0.0f);
-            rotY = ParseString<float>(rotElement.attribute("qy").toStdString(), 0.0f);
-            rotZ = ParseString<float>(rotElement.attribute("qz").toStdString(), 0.0f);
-            rotW = ParseString<float>(rotElement.attribute("qw").toStdString(), 1.0f);
+            rotX = ParseFloat(rotElement.attribute("qx"), 0.0f);
+            rotY = ParseFloat(rotElement.attribute("qy"), 0.0f);
+            rotZ = ParseFloat(rotElement.attribute("qz"), 0.0f);
+            rotW = ParseFloat(rotElement.attribute("qw"), 1.0f);
         }
         if (!quatElement.isNull())
         {
-            rotX = ParseString<float>(quatElement.attribute("x").toStdString(), 0.0f);
-            rotY = ParseString<float>(quatElement.attribute("y").toStdString(), 0.0f);
-            rotZ = ParseString<float>(quatElement.attribute("z").toStdString(), 0.0f);
-            rotW = ParseString<float>(quatElement.attribute("w").toStdString(), 1.0f);
+            rotX = ParseFloat(quatElement.attribute("x"), 0.0f);
+            rotY = ParseFloat(quatElement.attribute("y"), 0.0f);
+            rotZ = ParseFloat(quatElement.attribute("z"), 0.0f);
+            rotW = ParseFloat(quatElement.attribute("w"), 1.0f);
         }
 
-        scaleX = ParseString<float>(scaleElement.attribute("x").toStdString(), 1.0f);
-        scaleY = ParseString<float>(scaleElement.attribute("y").toStdString(), 1.0f);
-        scaleZ = ParseString<float>(scaleElement.attribute("z").toStdString(), 1.0f);
+        scaleX = ParseFloat(scaleElement.attribute("x"), 1.0f);
+        scaleY = ParseFloat(scaleElement.attribute("y"), 1.0f);
+        scaleZ = ParseFloat(scaleElement.attribute("z"), 1.0f);
 
         float3 newPos(posX, posY, posZ);
         Quat newRot(rotX, rotY, rotZ, rotW);
@@ -901,7 +900,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement,
                         materialName += ".material";
                         materialName.replace('/', '_');
 
-                        int index = ParseString<int>(subentityElement.attribute("index").toStdString(), 0);
+                        int index = ParseInt(subentityElement.attribute("index"), 0);
 
                         materialName = prefix + materialName;
                         if (index >= materials.size())

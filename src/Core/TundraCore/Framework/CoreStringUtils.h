@@ -5,18 +5,6 @@
 #include "TundraCoreApi.h"
 #include "CoreTypes.h"
 
-#ifndef TUNDRA_NO_BOOST
-// Disable warnings C4702 coming from boost
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4702)
-#endif
-#include <boost/lexical_cast.hpp>
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-#endif // TUNDRA_NO_BOOST
-
 /// @cond PRIVATE
 class TUNDRACORE_API QStringLessThanNoCase
 {
@@ -40,24 +28,17 @@ std::wstring TUNDRACORE_API ToWString(const std::string &str);
 std::wstring TUNDRACORE_API QStringToWString(const QString &qstr);
 QString TUNDRACORE_API WStringToQString(const std::wstring &str);
 
-/// Converts string to a primitive type, such as int or float. Returns default value on boost::bad_lexical_cast
-template <typename T>
-T ParseString(const std::string &val, const T &defaultValue)
-{
-#ifndef TUNDRA_NO_BOOST
-    try
-    {
-        return boost::lexical_cast<T>(val);
-    }
-    catch(const boost::bad_lexical_cast &)
-    {
-        return defaultValue;
-    }
-#else
-    LogError("ParseString not implemented when TUNDRA_NO_BOOST defined!");
-    return defaultValue;
-#endif
-}
+/// Converts string to a float, returns defaultValue if conversion fails.
+inline float ParseFloat(const QString &val, float defaultValue) { bool ok; float ret = val.toFloat(&ok); return ok ? ret : defaultValue; }
+inline float ParseFloat(const std::string &val, float defaultValue) { return ParseFloat(QString::fromStdString(val), defaultValue); } /**< @overload */
+
+/// Converts string to an integer, returns defaultValue if conversion fails.
+inline int ParseInt(const QString &val, int defaultValue) { bool ok; int ret = val.toInt(&ok); return ok ? ret : defaultValue; }
+inline float ParseInt(const std::string &val, int defaultValue) { return ParseInt(QString::fromStdString(val), defaultValue); } /**< @overload */
+
+/// Converts string to an unsigned integer, returns defaultValue if conversion fails.
+inline uint ParseUInt(const QString &val, uint defaultValue) { bool ok; uint ret = val.toUInt(&ok); return ok ? ret : defaultValue; }
+inline float ParseUInt(const std::string &val, uint defaultValue) { return ParseInt(QString::fromStdString(val), defaultValue); } /**< @overload */
 
 /// Split a string by separator char
 StringVector TUNDRACORE_API SplitString(const std::string& str, char separator);

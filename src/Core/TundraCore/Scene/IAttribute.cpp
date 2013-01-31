@@ -200,7 +200,7 @@ template<> std::string TUNDRACORE_API Attribute<Transform>::ToString() const
 
 template<> std::string TUNDRACORE_API Attribute<QPoint>::ToString() const
 {
-    return QString("%1 %2").arg(Get().x()).arg(Get().y()).toStdString();
+    return QString("%1 %2").arg(Get().x()).arg(Get().y()).toStdString(); /**< @todo Maybe should use ';' instead of ' ' here as a delimeter as it's used for all other attributes. */
 }
 
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
@@ -305,17 +305,17 @@ template<> void TUNDRACORE_API Attribute<bool>::FromString(const std::string& st
 
 template<> void TUNDRACORE_API Attribute<int>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    Set(ParseString<int>(str, DefaultValue()), change);
+    Set(ParseInt(str, DefaultValue()), change);
 }
 
 template<> void TUNDRACORE_API Attribute<uint>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    Set(ParseString<uint>(str, DefaultValue()), change);
+    Set(ParseUInt(str, DefaultValue()), change);
 }
 
 template<> void TUNDRACORE_API Attribute<float>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    Set(ParseString<float>(str, DefaultValue()), change);
+    Set(ParseFloat(str, DefaultValue()), change);
 }
 
 template<> void TUNDRACORE_API Attribute<Color>::FromString(const std::string& str, AttributeChange::Type change)
