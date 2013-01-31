@@ -404,15 +404,26 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
 IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll". (
    cd "%DEPS%\qtscriptgenerator\generator"
    cecho {0D}Running qmake for QtScriptGenerator.{# #}{\n}
-   qmake
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cecho {0D}Building QtScriptGenerator.{# #}{\n}
-   IF %USE_JOM%==TRUE (
-      cecho {0D}- Building QtScriptGenerator with jom{# #}{\n}
-      "%DEPS%\qt\jom\jom.exe"
+   :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
+   :: http://stackoverflow.com/questions/2791525/stl-operator-behavior-change-with-visual-studio-2010
+   :: Also cannot use QMake as it results in linker errors, so instead generate vcproj files and build using MSBuild.
+   IF NOT %GENERATOR%==%GENERATOR_VS2008% (
+      copy /Y "%TOOLS%\utils-windows\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
+      qmake -tp vc
+      cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
+      MSBuild generator.vcxproj /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
+      MSBuild generator.vcxproj /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
    ) ELSE (
-      cecho {0D}- Building QtScriptGenerator with nmake{# #}{\n}
-      nmake /nologo
+      qmake
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+      cecho {0D}Building QtScriptGenerator.{# #}{\n}
+      IF %USE_JOM%==TRUE (
+         cecho {0D}- Building QtScriptGenerator with jom{# #}{\n}
+         "%DEPS%\qt\jom\jom.exe"
+      ) ELSE (
+         cecho {0D}- Building QtScriptGenerator with nmake{# #}{\n}
+         nmake /nologo
+      )
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cecho {0D}Executing QtScriptGenerator.{# #}{\n}
