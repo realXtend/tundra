@@ -5,6 +5,7 @@
 #include "TundraCoreApi.h"
 #include "CoreTypes.h"
 
+#ifndef TUNDRA_NO_BOOST
 // Disable warnings C4702 coming from boost
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -14,6 +15,7 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+#endif // TUNDRA_NO_BOOST
 
 /// @cond PRIVATE
 class TUNDRACORE_API QStringLessThanNoCase
@@ -42,6 +44,7 @@ QString TUNDRACORE_API WStringToQString(const std::wstring &str);
 template <typename T>
 T ParseString(const std::string &val, const T &defaultValue)
 {
+#ifndef TUNDRA_NO_BOOST
     try
     {
         return boost::lexical_cast<T>(val);
@@ -50,6 +53,10 @@ T ParseString(const std::string &val, const T &defaultValue)
     {
         return defaultValue;
     }
+#else
+    LogError("ParseString not implemented when TUNDRA_NO_BOOST defined!");
+    return defaultValue;
+#endif
 }
 
 /// Split a string by separator char

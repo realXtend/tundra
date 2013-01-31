@@ -102,22 +102,26 @@ typedef unsigned int component_id_t;
 using boost::shared_ptr;
 using boost::weak_ptr;
 using boost::dynamic_pointer_cast;
+using boost::static_pointer_cast;
 using boost::make_shared;
 using boost::enable_shared_from_this;
 using boost::regex;
 using boost::wregex;
 using boost::sregex_iterator;
 using boost::regex_search;
+using boost::smatch;
 #else
 using std::shared_ptr;
 using std::weak_ptr;
 using std::dynamic_pointer_cast;
+using std::static_pointer_cast;
 using std::make_shared;
 using std::enable_shared_from_this;
 using std::regex;
 using std::wregex;
 using std::sregex_iterator;
 using std::regex_search;
+using std::smatch;
 #endif
 
 typedef std::vector<std::string> StringVector;

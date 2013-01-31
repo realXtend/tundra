@@ -19,6 +19,7 @@
 #include <QNetworkReply>
 #include <QLocale>
 
+#ifndef TUNDRA_NO_BOOST
 // Disable C4245 warning (signed/unsigned mismatch) coming from boost
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -28,6 +29,7 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+#endif // TUNDRA_NO_BOOST
 
 #include "MemoryLeakCheck.h"
 
@@ -104,16 +106,13 @@ QDateTime HttpAssetProvider::FromHttpDate(const QByteArray &value)
     }
 
     QDateTime qDateTime;
-
+#ifndef TUNDRA_NO_BOOST
     try
     {
         using namespace boost::local_time;
 #include "DisableMemoryLeakCheck.h"
-        local_time_input_facet *timeFacet(new local_time_input_facet(timeFacetFormat));
+        local_time_input_facet *timeFacet(new local_time_input_facet(timeFacetFormat)); // Not a memory leak, the locale object takes over responsibility of deleting the facet object
 #include "EnableMemoryLeakCheck.h"
-
-        // This is not a memory leak. 'timeFacet' is destoryed by the std::local object, from a c++ reference guide:
-        // "The locale object takes over responsibility of deleting this facet object."
         std::stringstream stringStream;
         stringStream.exceptions(std::ios_base::failbit);
         stringStream.imbue(std::locale(std::locale::classic(), timeFacet));
@@ -121,7 +120,6 @@ QDateTime HttpAssetProvider::FromHttpDate(const QByteArray &value)
 
         local_date_time dateTime(local_sec_clock::local_time(time_zone_ptr()));
         stringStream >> dateTime;
-
         if (dateTime.is_not_a_date_time())
         {
             LogError("HttpAssetProvider: Failed to parse date from header " + QString(value.data()));
@@ -140,7 +138,9 @@ QDateTime HttpAssetProvider::FromHttpDate(const QByteArray &value)
         LogError("HttpAssetProvider: Exception while parsing date from header " + QString(value.data()) + " - " + e.what());
         return QDateTime();
     }
-
+#else
+    LogError("HttpAssetProvider::FromHttpDate not implemented when TUNDRA_NO_BOOST defined!");
+#endif
     return qDateTime;
 }
 
