@@ -965,7 +965,7 @@ IF NOT EXIST "%DEPS%\zziplib". (
    :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
    cecho {0D}Building zziplib from premade project %TOOLS%\utils-windows\vs2008-zziplib.vcproj{# #}{\n}
    copy /Y "%TOOLS%\utils-windows\vs2008-zziplib.vcproj" zziplib.vcproj
-
+   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade /nologo zziplib.vcproj
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo  /m:%NUMBER_OF_PROCESSORS%
    
