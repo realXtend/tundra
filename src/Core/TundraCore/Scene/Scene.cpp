@@ -32,8 +32,6 @@
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
 
-#include <boost/regex.hpp>
-
 #include <utility>
 #include "MemoryLeakCheck.h"
 
@@ -1066,18 +1064,18 @@ void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sc
             QString scriptData = script.readAll();
             std::string content = scriptData.toStdString();
             QStringList foundRefs;
-            boost::sregex_iterator searchEnd;
+            sregex_iterator searchEnd;
 
-            boost::regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
-            for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
+            regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
+            for(sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
             {
                 QString ref = QString::fromStdString((*iter)[1].str());
                 if (!foundRefs.contains(ref, Qt::CaseInsensitive))
                     foundRefs << ref;
             }
 
-            expression = boost::regex("engine.IncludeFile\\(\\s*\"\\s*(.*?)\\s*\"\\s*\\)");
-            for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
+            expression = regex("engine.IncludeFile\\(\\s*\"\\s*(.*?)\\s*\"\\s*\\)");
+            for(sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
             {
                 QString ref = QString::fromStdString((*iter)[1].str());
                 if (!foundRefs.contains(ref, Qt::CaseInsensitive))

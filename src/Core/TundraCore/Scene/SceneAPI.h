@@ -26,9 +26,9 @@ public:
     /// Creates new component of the type @c T.
     /** @param newComponentName Name for the component (optional). */
     template<typename T>
-    boost::shared_ptr<T> CreateComponent(Scene* parentScene, const QString &newComponentName = "") const
+    shared_ptr<T> CreateComponent(Scene* parentScene, const QString &newComponentName = "") const
     {
-        return boost::dynamic_pointer_cast<T>(CreateComponentById(parentScene, T::TypeIdStatic(), newComponentName));
+        return dynamic_pointer_cast<T>(CreateComponentById(parentScene, T::TypeIdStatic(), newComponentName));
     }
 
     /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
@@ -139,7 +139,7 @@ private:
     ComponentFactoryPtr GetFactory(u32 typeId) const;
 
     typedef std::map<QString, ComponentFactoryPtr, QStringLessThanNoCase> ComponentFactoryMap;
-    typedef std::map<u32, boost::weak_ptr<IComponentFactory> > ComponentFactoryWeakMap;
+    typedef std::map<u32, weak_ptr<IComponentFactory> > ComponentFactoryWeakMap;
 
     ComponentFactoryMap componentFactories;
     ComponentFactoryWeakMap componentFactoriesByTypeid;

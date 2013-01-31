@@ -30,6 +30,8 @@
 #include <termios.h>
 #endif
 #include <iostream>
+#include <sstream>
+
 #include <QDir>
 #include <QDomDocument>
 
@@ -545,7 +547,7 @@ void Framework::RegisterRenderer(IRenderer *renderer_)
 void Framework::RegisterModule(IModule *module)
 {
     module->SetFramework(this);
-    modules.push_back(boost::shared_ptr<IModule>(module));
+    modules.push_back(shared_ptr<IModule>(module));
     module->Load();
 }
 

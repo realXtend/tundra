@@ -11,8 +11,6 @@
 #include "AttributeChangeType.h"
 #include "IAttribute.h"
 
-#include <boost/enable_shared_from_this.hpp>
-
 #include <QObject>
 #include <QVariant>
 
@@ -74,7 +72,7 @@ private: // Return the class visibility specifier to the strictest form so that 
     Every Component has a state variable updateMode that specifies a default setting for managing which objects
     get notified whenever an Attribute change event occurs. This is used to create "Local Only"-objects as well
     as when doing batch updates of Attributes (for performance or correctness). */
-class TUNDRACORE_API IComponent : public QObject, public boost::enable_shared_from_this<IComponent>
+class TUNDRACORE_API IComponent : public QObject, public enable_shared_from_this<IComponent>
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ Name WRITE SetName) /**< @copybrief Name */

@@ -65,7 +65,7 @@ public:
     /// Returns the asset provider of the given type.
     /** The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system. */
     template<typename T>
-    boost::shared_ptr<T> AssetProvider() const;
+    shared_ptr<T> AssetProvider() const;
 
     /// Registers a new asset provider to the Asset API.
     /** Use this to add a new provider type you have instantiated to the system. */
@@ -176,7 +176,7 @@ public:
     bool IsAssetTypeFactoryRegistered(const QString &typeName) const { return AssetTypeFactory(typeName) != 0; } /**< @deprecated Use AssetTypeFactory. @todo Remove. */
     std::vector<AssetProviderPtr> GetAssetProviders() const { return AssetProviders(); }  /**< @deprecated Use AssetProviders instead @todo Add warning print in some distant future */
     std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() const { return AssetTypeFactories(); } /**< @deprecated Use AssetTypeFactories instead @todo Add warning print in some distant future */
-    template<typename T> boost::shared_ptr<T> GetAssetProvider() const { return AssetProvider<T>(); } /**< @deprecated Use AssetProvider instead @todo Add warning print in some distant future */
+    template<typename T> shared_ptr<T> GetAssetProvider() const { return AssetProvider<T>(); } /**< @deprecated Use AssetProvider instead @todo Add warning print in some distant future */
 
 public slots:
     /// Returns all assets known to the asset system.

@@ -464,7 +464,7 @@ void EC_Placeable::SetParent(Entity *parent, bool preserveWorldTransform)
     }
     else
     {
-        boost::shared_ptr<EC_Placeable> parentPlaceable = parent->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> parentPlaceable = parent->GetComponent<EC_Placeable>();
         if (!parentPlaceable)
         {
             LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity->ToString() + " to entity " + parent->ToString() + ", but the target entity does not have an EC_Placeable component!");
@@ -493,14 +493,14 @@ void EC_Placeable::SetParent(Entity *parent, QString boneName, bool preserveWorl
     }
     else
     {
-        boost::shared_ptr<EC_Placeable> parentPlaceable = parent->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> parentPlaceable = parent->GetComponent<EC_Placeable>();
         if (!parentPlaceable)
         {
             LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity->ToString() + " to entity " + parent->ToString() + ", but the target entity does not have an EC_Placeable component!");
             return;
         }
 
-        boost::shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
+        shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
         if (!mesh)
         {
             LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity->ToString() + " to a bone \"" + boneName + "\" of entity " + parent->ToString() + ", but the target entity does not have an EC_Mesh component!");
@@ -534,7 +534,7 @@ void DumpChildHierarchy(EC_Placeable *placeable, int indent)
 
     foreach(EntityPtr child, children)
     {
-        boost::shared_ptr<EC_Placeable> placeable = child->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> placeable = child->GetComponent<EC_Placeable>();
         LogInfo(indentStr + child->ToString().toStdString() + " at local->parent: " + placeable->LocalToParent().ToString() + ", world space: " + placeable->LocalToWorld().ToString());
         DumpChildHierarchy(placeable.get(), indent + 2);
     }
@@ -641,7 +641,7 @@ EntityList EC_Placeable::Children() const
     ///\todo Optimize this function! The current implementation is very slow since it iterates through the whole scene! Instead, keep a list of weak_ptrs to child EC_Placeables.
     for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        boost::shared_ptr<EC_Placeable> placeable = iter->second->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> placeable = iter->second->GetComponent<EC_Placeable>();
         if (placeable)
         {
             EntityPtr parent = placeable->parentRef.Get().Lookup(scene);

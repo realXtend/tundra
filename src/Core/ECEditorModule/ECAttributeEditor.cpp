@@ -1761,7 +1761,7 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
             {
                 Attribute<AssetReference> *ref = FindAttribute<AssetReference>(c.lock());
                 if (ref)
-                    originalValues.insert(c, ref->Get());
+                    originalValues[c] = ref->Get();
             }
     }
 }
@@ -1782,13 +1782,9 @@ void AssetReferenceAttributeEditor::RestoreOriginalValue()
     if (!assetRef)
         return;
 
-    QMapIterator<ComponentWeakPtr, AssetReference> it(originalValues);
-    while(it.hasNext())
-    {
-        ComponentWeakPtr c = it.next().key();
-        if (!c.expired())
-            SetValue(c.lock(), it.value());
-    }
+    for(std::map<ComponentWeakPtr, AssetReference, ComponentWeakPtrLessThan>::iterator it =  originalValues.begin(); it != originalValues.end(); ++it)
+        if (!it->first.expired())
+            SetValue(it->first.lock(), it->second);
 
     originalValues.clear();
 
@@ -2047,7 +2043,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
         {
             Attribute<AssetReferenceList> *refs = FindAttribute<AssetReferenceList>(c.lock());
             if (refs)
-                originalValues.insert(c, refs->Get());
+                originalValues[c] = refs->Get();
         }
 }
 
@@ -2084,15 +2080,9 @@ void AssetReferenceListAttributeEditor::RestoreOriginalValue()
 {
     Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (refList)
-    {
-        QMapIterator<ComponentWeakPtr, AssetReferenceList> it(originalValues);
-        while(it.hasNext())
-        {
-            ComponentWeakPtr c = it.next().key();
-            if (c.lock())
-                SetValue(c.lock(), it.value());
-        }
-    }
+        for(std::map<ComponentWeakPtr, AssetReferenceList, ComponentWeakPtrLessThan>::iterator it = originalValues.begin(); it != originalValues.end(); ++it)
+            if (!it->first.expired())
+                SetValue(it->first.lock(), it->second);
 
     originalValues.clear();
 

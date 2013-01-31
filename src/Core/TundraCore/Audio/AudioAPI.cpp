@@ -337,7 +337,7 @@ SoundChannelPtr AudioAPI::PlaySound(AssetPtr audioAsset, SoundChannel::SoundType
 
     channel->SetMasterGain(impl->soundMasterGain[type] * impl->masterGain);
     channel->SetPositional(false);
-    channel->Play(boost::dynamic_pointer_cast<AudioAsset>(audioAsset));
+    channel->Play(dynamic_pointer_cast<AudioAsset>(audioAsset));
 
     return channel;
 }
@@ -357,7 +357,7 @@ SoundChannelPtr AudioAPI::PlaySound3D(const float3 &position, AssetPtr audioAsse
     channel->SetMasterGain(impl->soundMasterGain[type] * impl->masterGain);
     channel->SetPositional(true);
     channel->SetPosition(position);
-    channel->Play(boost::dynamic_pointer_cast<AudioAsset>(audioAsset));
+    channel->Play(dynamic_pointer_cast<AudioAsset>(audioAsset));
 
     return channel;
 }

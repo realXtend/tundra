@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <boost/enable_shared_from_this.hpp>
 #include "AssetModuleApi.h"
 #include "IAssetProvider.h"
 #include "AssetFwd.h"
@@ -11,10 +10,10 @@
 
 class LocalAssetStorage;
 
-typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
+typedef shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
 
 /// Provides access to files on the local file system using the 'local://' URL specifier.
-class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<LocalAssetProvider>
+class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public enable_shared_from_this<LocalAssetProvider>
 {
     Q_OBJECT
 

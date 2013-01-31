@@ -907,7 +907,7 @@ void EC_Mesh::AttributesChanged()
         while(materialAssets.size() > (size_t)materials.Size())
             materialAssets.pop_back();
         while(materialAssets.size() < (size_t)materials.Size())
-            materialAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
+            materialAssets.push_back(shared_ptr<AssetRefListener>(new AssetRefListener));
 
         for(int i = 0; i < materials.Size(); ++i)
         {
@@ -1303,21 +1303,21 @@ OgreMeshAssetPtr EC_Mesh::MeshAsset() const
 {
     if (!meshAsset)
         return OgreMeshAssetPtr();
-    return boost::dynamic_pointer_cast<OgreMeshAsset>(meshAsset->Asset());
+    return dynamic_pointer_cast<OgreMeshAsset>(meshAsset->Asset());
 }
 
 OgreMaterialAssetPtr EC_Mesh::MaterialAsset(int materialIndex) const
 {
     if (materialIndex < 0 || materialIndex >= (int)materialAssets.size())
         return OgreMaterialAssetPtr();
-    return boost::dynamic_pointer_cast<OgreMaterialAsset>(materialAssets[materialIndex]->Asset());
+    return dynamic_pointer_cast<OgreMaterialAsset>(materialAssets[materialIndex]->Asset());
 }
 
 OgreSkeletonAssetPtr EC_Mesh::SkeletonAsset() const
 {
     if (!skeletonAsset)
         return OgreSkeletonAssetPtr();
-    return boost::dynamic_pointer_cast<OgreSkeletonAsset>(skeletonAsset->Asset());
+    return dynamic_pointer_cast<OgreSkeletonAsset>(skeletonAsset->Asset());
 }
 
 Ogre::Vector2 FindUVs(const Ogre::Vector3& hitPoint, const Ogre::Vector3& t1, const Ogre::Vector3& t2, const Ogre::Vector3& t3, const Ogre::Vector2& tex1, const Ogre::Vector2& tex2, const Ogre::Vector2& tex3)

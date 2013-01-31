@@ -156,7 +156,7 @@ private:
 
     typedef QMap<QPair<QKeySequence, KeyEvent::EventType>, ActionInvocation> ActionInvocationMap;
     ActionInvocationMap actionInvokationMappings; ///< List of registered key sequence - action mappings.
-    boost::shared_ptr<InputContext> inputContext; ///< Input context for this EC.
+    shared_ptr<InputContext> inputContext; ///< Input context for this EC.
 
     /// Alters input context's parameters when attributes are changed.
     /** @param attribute Changed attribute.

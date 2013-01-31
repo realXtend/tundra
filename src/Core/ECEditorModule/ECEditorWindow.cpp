@@ -594,7 +594,7 @@ void ECEditorWindow::OpenFunctionDialog()
 {
     QObjectWeakPtrList objs;
     foreach(const EntityPtr &entity, SelectedEntities())
-        objs << boost::dynamic_pointer_cast<QObject>(entity);
+        objs << dynamic_pointer_cast<QObject>(entity);
 
     if (objs.size())
     {

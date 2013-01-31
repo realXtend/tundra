@@ -15,7 +15,7 @@ class QScriptEngine;
 class ECEditorWindow;
 class EcXmlEditorWidget;
 class TreeWidgetItemExpandMemory;
-typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
+typedef shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
 
 /// Implements and enables visual editing of ECs.
 /** @defgroup ECEditorModuleClient ECEditorModule Client interface. */

@@ -71,7 +71,7 @@ public:
 };
 /** @endcond */
 
-typedef boost::weak_ptr<QObject> QObjectWeakPtr;
+typedef weak_ptr<QObject> QObjectWeakPtr;
 typedef QList<QObjectWeakPtr> QObjectWeakPtrList;
 
 /// Dialog for invoking Qt slots (i.e. functions) of entities and components.

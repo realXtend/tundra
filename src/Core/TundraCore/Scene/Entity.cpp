@@ -523,7 +523,7 @@ void Entity::SetName(const QString &name)
 
 QString Entity::Name() const
 {
-    boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
+    shared_ptr<EC_Name> name = GetComponent<EC_Name>();
     if (name)
         return name->name.Get();
     else
@@ -539,7 +539,7 @@ void Entity::SetDescription(const QString &desc)
 
 QString Entity::Description() const
 {
-    boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
+    shared_ptr<EC_Name> name = GetComponent<EC_Name>();
     if (name)
         return name->description.Get();
     else

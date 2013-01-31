@@ -1012,7 +1012,7 @@ namespace OgreRenderer
 
     void Renderer::SetMainCamera(Entity *mainCameraEntity)
     {
-        activeMainCamera = mainCameraEntity ? mainCameraEntity->shared_from_this() : boost::shared_ptr<Entity>();
+        activeMainCamera = mainCameraEntity ? mainCameraEntity->shared_from_this() : shared_ptr<Entity>();
 
         Ogre::Camera *newActiveCamera = 0;
         EC_Camera *cameraComponent = mainCameraEntity ? mainCameraEntity->GetComponent<EC_Camera>().get() : 0;

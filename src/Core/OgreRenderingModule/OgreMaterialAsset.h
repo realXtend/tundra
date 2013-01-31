@@ -2,13 +2,11 @@
 
 #pragma once
 
+#include "OgreModuleApi.h"
 #include "IAsset.h"
 #include "Color.h"
 
-#include <boost/shared_ptr.hpp>
-
 #include <OgreMaterial.h>
-#include "OgreModuleApi.h"
 
 /// Contains an Ogre .material loaded to memory.
 class OGRE_MODULE_API OgreMaterialAsset : public IAsset

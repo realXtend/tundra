@@ -576,10 +576,10 @@ void AssetTreeWidget::OpenFunctionDialog()
     QObjectWeakPtrList objs;
     if (sel.HasAssets())
         foreach(AssetItem *item, SelectedItems().assets)
-            objs << boost::dynamic_pointer_cast<QObject>(item->Asset());
+            objs << dynamic_pointer_cast<QObject>(item->Asset());
     else if (sel.HasStorages())
         foreach(AssetStorageItem *item, SelectedItems().storages)
-            objs << boost::dynamic_pointer_cast<QObject>(item->Storage());
+            objs << dynamic_pointer_cast<QObject>(item->Storage());
 
     if (objs.size())
     {

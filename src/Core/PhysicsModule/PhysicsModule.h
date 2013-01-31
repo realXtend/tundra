@@ -41,11 +41,11 @@ public:
    
     /// Get a Bullet triangle mesh corresponding to an Ogre mesh.
     /** If already has been generated, returns the previously created one */
-    boost::shared_ptr<btTriangleMesh> GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh);
+    shared_ptr<btTriangleMesh> GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh);
 
     /// Get a Bullet convex hull set (using minimum recursion, not very accurate but fast) corresponding to an Ogre mesh.
     /** If already has been generated, returns the previously created one */
-    boost::shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
+    shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
 
     /// Set default physics update rate for new physics worlds
     void SetDefaultPhysicsUpdatePeriod(float updatePeriod);
@@ -85,15 +85,15 @@ private slots:
     void OnSceneRemoved(const QString &name);
 
 private:
-    typedef std::map<Scene*, boost::shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
+    typedef std::map<Scene*, shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
     /// Map of physics worlds assigned to scenes
     PhysicsWorldMap physicsWorlds_;
     
-    typedef std::map<std::string, boost::shared_ptr<btTriangleMesh> > TriangleMeshMap;
+    typedef std::map<std::string, shared_ptr<btTriangleMesh> > TriangleMeshMap;
     /// Bullet triangle meshes generated from Ogre meshes
     TriangleMeshMap triangleMeshes_;
 
-    typedef std::map<std::string, boost::shared_ptr<ConvexHullSet> > ConvexHullSetMap;
+    typedef std::map<std::string, shared_ptr<ConvexHullSet> > ConvexHullSetMap;
     /// Bullet convex hull sets generated from Ogre meshes
     ConvexHullSetMap convexHullSets_;
     

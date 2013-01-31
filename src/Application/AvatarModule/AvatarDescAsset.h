@@ -122,5 +122,5 @@ public:
     QMap<QString, QString> properties_;
 };
 
-typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
+typedef shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 

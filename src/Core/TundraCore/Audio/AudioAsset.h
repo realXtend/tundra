@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 #include "TundraCoreApi.h"
 #include "AudioFwd.h"

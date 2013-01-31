@@ -105,7 +105,7 @@ class Profiler;
 class TUNDRACORE_API ProfilerNodeTree
 {
 public:
-    typedef std::list<boost::shared_ptr<ProfilerNodeTree> > NodeList;
+    typedef std::list<shared_ptr<ProfilerNodeTree> > NodeList;
 
     /// constructor that takes a name for the node
     explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0), owner_(0) {}
@@ -127,7 +127,7 @@ public:
     }
 
     /// Add a child for this node
-    void AddChild(boost::shared_ptr<ProfilerNodeTree> node)
+    void AddChild(shared_ptr<ProfilerNodeTree> node)
     {
         children_.push_back(node);
         node->parent_ = this;
@@ -186,7 +186,7 @@ private:
     /// helper counter for recursion
     int recursion_;
 };
-typedef boost::shared_ptr<ProfilerNodeTree> ProfilerNodeTreePtr;
+typedef shared_ptr<ProfilerNodeTree> ProfilerNodeTreePtr;
 
 /// Data container for profiling data for a profiling block
 class TUNDRACORE_API ProfilerNode : public ProfilerNodeTree
@@ -276,7 +276,7 @@ private:
 
 namespace
 {
-    /// For boost::shared_ptr, we don't want it doing automatic deletion
+    /// For shared_ptr, we don't want it doing automatic deletion
     void EmptyDeletor(ProfilerNodeTree * UNUSED_PARAM(node)) {}
 }
 

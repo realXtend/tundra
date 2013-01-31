@@ -224,7 +224,7 @@ bool ConsoleWidget::eventFilter(QObject *obj, QEvent *e)
                     }
 
                     QStringList suggestions;
-                    std::pair<QString, boost::shared_ptr<ConsoleCommand> > p;
+                    std::pair<QString, shared_ptr<ConsoleCommand> > p;
                     foreach(p, framework->Console()->Commands())
                         if (p.first.toLower().startsWith(commandStub))
                             suggestions.push_back(p.first.toLower());

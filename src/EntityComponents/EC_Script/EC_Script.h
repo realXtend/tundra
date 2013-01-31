@@ -8,7 +8,7 @@
 
 class IScriptInstance;
 class ScriptAsset;
-typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
+typedef shared_ptr<ScriptAsset> ScriptAssetPtr;
 
 /// Provides mechanism for adding scripts to entities.
 /** <table class="header">

@@ -54,7 +54,7 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
     if (!entity)
         return;
 
-    AvatarDescAssetPtr avatarAsset = boost::dynamic_pointer_cast<AvatarDescAsset>(asset);
+    AvatarDescAssetPtr avatarAsset = dynamic_pointer_cast<AvatarDescAsset>(asset);
     if (!avatarAsset)
         return;
         

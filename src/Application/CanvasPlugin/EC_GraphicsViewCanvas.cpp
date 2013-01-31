@@ -374,7 +374,7 @@ void EC_GraphicsViewCanvas::OnMaterialChanged(uint materialIndex, const QString 
     {
         OgreMaterialAssetPtr material = mesh->MaterialAsset(materialIndex);
         QString newMaterialName = framework->Asset()->GenerateUniqueAssetName("OgreMaterial", "GraphicsViewCanvas");
-        OgreMaterialAssetPtr newMaterial = material ? boost::dynamic_pointer_cast<OgreMaterialAsset>(material->Clone(newMaterialName)) : OgreMaterialAssetPtr();
+        OgreMaterialAssetPtr newMaterial = material ? dynamic_pointer_cast<OgreMaterialAsset>(material->Clone(newMaterialName)) : OgreMaterialAssetPtr();
         if (newMaterial)
         {
             newMaterial->SetTexture(0, 0, 0, outputTexture.Get());
