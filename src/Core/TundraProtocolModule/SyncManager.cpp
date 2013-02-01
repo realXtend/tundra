@@ -249,7 +249,7 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
         this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
-    user->syncState = make_shared<SceneSyncState>(user->ConnectionId(), owner_->IsServer());
+    user->syncState = MAKE_SHARED(SceneSyncState, user->ConnectionId(), owner_->IsServer());
     user->syncState->SetParentScene(scene_);
 
     if (owner_->IsServer())

@@ -6,12 +6,12 @@ cmake_minimum_required(VERSION 2.4)
 
 # TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
-# with up-to-date TR1 and/or partial C++11 support, and C99 standard cstdint header. Currenly make_shared
-# is the only C++11 feature used in the Tundra codebase. 
+# with up-to-date C++ TR1 and preferably the C99 standard cstdint header. Also if the used compiler has C++11 
+# make_shared function available, it is used.
 # If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
-option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
 
 macro (PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables

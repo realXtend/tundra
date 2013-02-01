@@ -191,7 +191,7 @@ void PhysicsModule::OnSceneAdded(const QString& name)
         return;
     }
     
-    shared_ptr<PhysicsWorld> newWorld = make_shared<PhysicsWorld>(scene, !scene->IsAuthority());
+    shared_ptr<PhysicsWorld> newWorld = MAKE_SHARED(PhysicsWorld, scene, !scene->IsAuthority());
     newWorld->SetGravity(scene->UpVector() * -9.81f);
     newWorld->SetPhysicsUpdatePeriod(defaultPhysicsUpdatePeriod_);
     newWorld->SetMaxSubSteps(defaultMaxSubSteps_);
@@ -243,7 +243,7 @@ shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogre::Mesh
     
     // Create new, then interrogate the Ogre mesh
 #include "DisableMemoryLeakCheck.h"
-    ptr = make_shared<btTriangleMesh>();
+    ptr = MAKE_SHARED(btTriangleMesh);
 #include "EnableMemoryLeakCheck.h"
     GenerateTriangleMesh(mesh, ptr.get());
     
@@ -264,7 +264,7 @@ shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogre::Mesh
         return iter->second;
     
     // Create new, then interrogate the Ogre mesh
-    ptr = make_shared<ConvexHullSet>();
+    ptr = MAKE_SHARED(ConvexHullSet);
     GenerateConvexHullSet(mesh, ptr.get());
 
     convexHullSets_[mesh->getName()] = ptr;

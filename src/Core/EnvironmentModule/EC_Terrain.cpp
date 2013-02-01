@@ -53,7 +53,7 @@ EC_Terrain::EC_Terrain(Scene* scene) :
     patches.resize(1);
     MakePatchFlat(0, 0, 0.f);
 
-    heightMapAsset = make_shared<AssetRefListener>();
+    heightMapAsset = MAKE_SHARED(AssetRefListener);
     connect(heightMapAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(TerrainAssetLoaded(AssetPtr)));
 }
 

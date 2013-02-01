@@ -45,7 +45,7 @@ EC_Sky::EC_Sky(Scene* scene) :
     if (scene)
         ogreWorld = scene->GetWorld<OgreWorld>();
 
-    materialAsset = make_shared<AssetRefListener>();
+    materialAsset = MAKE_SHARED(AssetRefListener);
     connect(materialAsset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 }
 
@@ -91,7 +91,7 @@ void EC_Sky::AttributesChanged()
         while(textureAssets.size() > (size_t)textures.Size())
             textureAssets.pop_back();
         while(textureAssets.size() < (size_t)textures.Size())
-            textureAssets.push_back(make_shared<AssetRefListener>());
+            textureAssets.push_back(MAKE_SHARED(AssetRefListener));
 
         for(int i = 0; i < textures.Size(); ++i)
         {

@@ -32,7 +32,7 @@ public:
     
     virtual const QStringList &TypeExtensions() const { return assetTypeExtensions; }
 
-    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const QString &name) { return make_shared<AssetType>(owner, Type(), name); }
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const QString &name) { return MAKE_SHARED(AssetType, owner, Type(), name); }
 
 private:
     const QString assetType;

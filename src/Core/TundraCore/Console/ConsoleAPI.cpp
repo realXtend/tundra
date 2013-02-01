@@ -50,7 +50,7 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
         this, SLOT(SetLogLevel(const QString &)));
 
     /// \todo Visual Leak Detector shows a memory leak originating from this allocation although the shellInputThread is released in the destructor. Perhaps a shared pointer is held elsewhere.
-    shellInputThread = make_shared<ShellInputThread>();
+    shellInputThread = MAKE_SHARED(ShellInputThread);
 
     QStringList logLevel = fw->CommandLineParameters("--loglevel");
     if (logLevel.size() >= 1)
@@ -113,7 +113,7 @@ ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &
         return commands[name].get();
     }
 
-    shared_ptr<ConsoleCommand> command = make_shared<ConsoleCommand>(name, desc, (QObject *)0, "", "");
+    shared_ptr<ConsoleCommand> command = MAKE_SHARED(ConsoleCommand, name, desc, (QObject *)0, "", "");
     commands[name] = command;
     return command.get();
 }
@@ -126,7 +126,7 @@ void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObje
         return;
     }
 
-    shared_ptr<ConsoleCommand> command = make_shared<ConsoleCommand>(name, desc, receiver, memberSlot+1, memberSlotDefaultArgs ? memberSlotDefaultArgs+1 : "");
+    shared_ptr<ConsoleCommand> command = MAKE_SHARED(ConsoleCommand, name, desc, receiver, memberSlot+1, memberSlotDefaultArgs ? memberSlotDefaultArgs+1 : "");
     commands[name] = command;
 }
 

@@ -52,7 +52,7 @@ typedef boost::int64_t s64; ///< 8 bytes signed. 9,223,372,036,854,775,807 ~ 9e1
 
 #include <limits.h>
 
-#pragma warning "Not using Boost and C99 not defined. Guessing the built-ins for fixed-width types!"
+//#pragma warning "Not using Boost and C99 not defined. Guessing the built-ins for fixed-width types!"
 
 typedef unsigned char u8; ///< a single byte: 0-255.
 typedef unsigned short u16; ///< 2 bytes: 0 - 65535.
@@ -98,30 +98,36 @@ typedef unsigned int component_id_t;
 #include <regex>
 #endif
 
+/** @def CORETYPES_NAMESPACE
+    The namespace from which C++ TR1 functionalities are used (boost, std::tr1 or std). */
 #ifndef TUNDRA_NO_BOOST
-using boost::shared_ptr;
-using boost::weak_ptr;
-using boost::dynamic_pointer_cast;
-using boost::static_pointer_cast;
-using boost::make_shared;
-using boost::enable_shared_from_this;
-using boost::regex;
-using boost::wregex;
-using boost::sregex_iterator;
-using boost::regex_search;
-using boost::smatch;
+#define CORETYPES_NAMESPACE boost
+#elif defined(_MSC_VER) && (_MSC_VER == 1500) /**< @todo Find out which GCC version has the TR1 features Tundra uses. */
+#define CORETYPES_NAMESPACE std::tr1
+#elif defined(_MSC_VER) && (_MSC_VER >= 1600) /**< @todo Find out which GCC version has TR1 functionality moved to std namespace. */
+#define CORETYPES_NAMESPACE std
+#endif
+
+using CORETYPES_NAMESPACE::shared_ptr;
+using CORETYPES_NAMESPACE::weak_ptr;
+using CORETYPES_NAMESPACE::dynamic_pointer_cast;
+using CORETYPES_NAMESPACE::static_pointer_cast;
+using CORETYPES_NAMESPACE::enable_shared_from_this;
+using CORETYPES_NAMESPACE::regex;
+using CORETYPES_NAMESPACE::wregex;
+using CORETYPES_NAMESPACE::sregex_iterator;
+using CORETYPES_NAMESPACE::regex_search;
+using CORETYPES_NAMESPACE::smatch;
+
+/** @def MAKE_SHARED(type, ...)
+    Workaround for the fact that make_shared is not a C++ TR1 feature, but a C++11 feature.
+    If make_shared is not available, the shared_ptr is constructed using the old-fashioned way.
+    @todo Although make_shared is a nice little optimization, consider if this macro workaround
+    is worth the trouble and worth keeping. */
+#if !defined(TUNDRA_NO_BOOST) || (defined(_MSC_VER) && (_MSC_VER >= 1600)) /**< @todo Find out which GCC version has make_shared. */
+#define MAKE_SHARED(type, ...) CORETYPES_NAMESPACE::make_shared<type>(__VA_ARGS__)
 #else
-using std::shared_ptr;
-using std::weak_ptr;
-using std::dynamic_pointer_cast;
-using std::static_pointer_cast;
-using std::make_shared;
-using std::enable_shared_from_this;
-using std::regex;
-using std::wregex;
-using std::sregex_iterator;
-using std::regex_search;
-using std::smatch;
+#define MAKE_SHARED(type, ...) shared_ptr<type>(new type(__VA_ARGS__))
 #endif
 
 typedef std::vector<std::string> StringVector;

@@ -253,7 +253,7 @@ void InputAPI::SetPriority(InputContextPtr inputContext, int newPriority)
 
 InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
 {
-    shared_ptr<InputContext> newInputContext = make_shared<InputContext>(this, name.toStdString().c_str(), priority);
+    shared_ptr<InputContext> newInputContext = MAKE_SHARED(InputContext, this, name.toStdString().c_str(), priority);
     SetPriority(newInputContext, priority);
     return newInputContext;
 }

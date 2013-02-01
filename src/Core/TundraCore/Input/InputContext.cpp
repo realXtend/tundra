@@ -258,7 +258,7 @@ void InputContext::ReleaseAllKeys()
 void InputContext::SetMouseCursorOverride(QCursor cursor)
 {
     if (!mouseCursorOverride)
-        mouseCursorOverride = make_shared<QCursor>(cursor);
+        mouseCursorOverride = MAKE_SHARED(QCursor, cursor);
     else
         *mouseCursorOverride = cursor;
 

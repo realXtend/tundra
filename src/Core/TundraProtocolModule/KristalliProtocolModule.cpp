@@ -312,7 +312,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     source->RegisterInboundMessageHandler(this);
     
-    UserConnectionPtr connection = make_shared<UserConnection>();
+    UserConnectionPtr connection = MAKE_SHARED(UserConnection);
     connection->userID = AllocateNewConnectionID();
     connection->connection = source;
     connections.push_back(connection);

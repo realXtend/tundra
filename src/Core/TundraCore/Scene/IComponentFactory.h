@@ -31,7 +31,7 @@ public:
 
     ComponentPtr Create(Scene* scene, const QString &newComponentName) const
     {
-        ComponentPtr component = make_shared<T>(scene);
+        ComponentPtr component = MAKE_SHARED(T, scene);
         component->SetName(newComponentName);
         return component;
     }
@@ -51,8 +51,8 @@ public:
             LogError("Cannot clone component of type \"" + TypeName() + " from a component of type \"" + existingComponent->TypeName() + "\"!");
             return ComponentPtr();
         }
-//        ComponentPtr component = make_shared<T>(*existingComponent);
-        ComponentPtr component = shared_ptr<T>(new T(*existingComponent));
+//        ComponentPtr component = MAKE_SHARED(T, *existingComponent);
+        ComponentPtr component = shared_ptr<T>(new T, *existingComponent);
         component->SetName(newComponentName);
         return component;
     }
