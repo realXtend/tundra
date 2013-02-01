@@ -13,21 +13,23 @@ cmake_minimum_required(VERSION 2.4)
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
 option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
 
-macro (PrintUsedEnvVariables)
+macro(PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
     # in most cases as they should be resolved to our cmake variables and get cached.
     # This way this printed list wont lie if ran without env variables and we are still
     # succesfully finding all the deps from our cacher (or in bad cases assumed) dirs.
-    message ("\n=========== Used Environment Variables ===========\n")
-    message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
-    message (STATUS "QTDIR            = " ${ENV_QT_DIR})
-    message (STATUS "BOOST_ROOT       = " ${BOOST_ROOT})
-    message (STATUS "OGRE_HOME        = " ${OGRE_DIR}) # OGRE_DIR is our internal OGRE_HOME
-    message (STATUS "SKYX_HOME        = " ${SKYX_HOME})
-    message (STATUS "HYDRAX_HOME      = " ${HYDRAX_HOME})
-    message (STATUS "KNET_DIR         = " ${KNET_DIR})
-    message (STATUS "BULLET_DIR       = " ${BULLET_DIR})
-endmacro ()
+    message("\n=========== Used Environment Variables ===========\n")
+    message(STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
+    message(STATUS "QTDIR            = " ${ENV_QT_DIR})
+    if (NOT TUNDRA_NO_BOOST)
+        message (STATUS "BOOST_ROOT       = " ${BOOST_ROOT})
+    endif()
+    message(STATUS "OGRE_HOME        = " ${OGRE_DIR}) # OGRE_DIR is our internal OGRE_HOME
+    message(STATUS "SKYX_HOME        = " ${SKYX_HOME})
+    message(STATUS "HYDRAX_HOME      = " ${HYDRAX_HOME})
+    message(STATUS "KNET_DIR         = " ${KNET_DIR})
+    message(STATUS "BULLET_DIR       = " ${BULLET_DIR})
+endmacro()
 
 macro (PrintUsedBuildConfig)
     message ("\n=========== Used Build Configuration =============\n")
