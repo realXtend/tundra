@@ -46,25 +46,19 @@ echo      Default enabled as jom is significantly faster by usin all CPUs.
 echo.
 
 :: Validate user defined variables
-IF NOT %BUILD_OPENSSL% == FALSE (
-   IF NOT %BUILD_OPENSSL% == TRUE (
-      cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE{# #}{\n}
-      GOTO :ERROR
-   )
+IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
+   cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE{# #}{\n}
+   GOTO :ERROR
 )
 
-IF NOT %USE_JOM% == FALSE (
-   IF NOT %USE_JOM% == TRUE (
-      cecho {0E}USE_JOM needs to be either TRUE or FALSE{# #}{\n}
-      GOTO :ERROR
-   )
+IF NOT %USE_JOM%==FALSE IF NOT %USE_JOM%==TRUE (
+   cecho {0E}USE_JOM needs to be either TRUE or FALSE{# #}{\n}
+   GOTO :ERROR
 )
 
-IF NOT %BUILD_RELEASE% == FALSE (
-   IF NOT %BUILD_RELEASE% == TRUE (
-      cecho {0E}BUILD_RELEASE needs to be either TRUE or FALSE{# #}{\n}
-      GOTO :ERROR
-   )
+IF NOT %BUILD_RELEASE%==FALSE IF NOT %BUILD_RELEASE%==TRUE (
+   cecho {0E}BUILD_RELEASE needs to be either TRUE or FALSE{# #}{\n}
+   GOTO :ERROR
 )
 
 :: Print scripts usage information
@@ -73,13 +67,13 @@ echo   1. Install SVN and make sure 'svn' is accessible from PATH.
 echo    - http://tortoisesvn.net/downloads.html, install with command line tools!
 echo   2. Install Hg and make sure 'hg' is accessible from PATH.
 echo    - http://tortoisehg.bitbucket.org/
-echo   3. Install git and make sure 'git' is accessible from PATH.
+echo   3. Install Git and make sure 'git' is accessible from PATH.
 echo    - http://code.google.com/p/tortoisegit/
 echo   4. Install DirectX SDK June 2010.
 echo    - http://www.microsoft.com/download/en/details.aspx?id=6812
-echo   5. Install cmake and make sure 'cmake' is accessible from PATH.
+echo   5. Install CMake and make sure 'cmake' is accessible from PATH.
 echo    - http://www.cmake.org/
-echo   6. Install Visual Studio 2008 with SP1. (Express is ok)
+echo   6. Install Visual Studio 2008/2010 with SP1 (Express is ok).
 echo    - http://www.microsoft.com/download/en/details.aspx?id=14597
 echo   7. Install Windows SDK.
 echo    - http://www.microsoft.com/download/en/details.aspx?id=8279
@@ -164,6 +158,8 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :SKIP_OPENSSL
 
 :: Qt
+:: NOTE For VS2012 support Qt 4.8.3>= needed:
+:: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
@@ -644,6 +640,7 @@ REM ) ELSE (
 REM    echo PythonQt already built. Skipping.{# #}{\n}
 REM )
 
+:: SkyX
 cd "%DEPS%\realxtend-tundra-deps\skyx"
 IF NOT EXIST SKYX.sln. (
    cecho {0D}Running cmake for SkyX.{# #}{\n}
@@ -668,17 +665,41 @@ IF %BUILD_RELEASE%==FALSE (
 )
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
+:: Hydrax
 cd "%DEPS%\realxtend-tundra-deps\hydrax"
-IF %GENERATOR%==%GENERATOR_VS2008% cd msvc9
+:: TODO Remove the msvc9 directory and use CMake always
+IF %GENERATOR%==%GENERATOR_VS2008% (
+   cd msvc9
+) ELSE (
+   IF NOT EXIST Hydrax.sln. (
+      cecho {0D}Running cmake for Hydrax.{# #}{\n}
+      del /Q CMakeCache.txt
+      cmake . -G %GENERATOR%
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   )
+)
+
+cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
 MSBuild Hydrax.sln /p:configuration=Debug /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
-MSBuild Hydrax.sln /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+:: TODO For now build Release with VC9 and RelWithDebInfo otherwise TODO the VS2008 logic when VS2008 build uses CMake also
+IF %GENERATOR%==%GENERATOR_VS2008% (
+   MSBuild Hydrax.sln /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+) ELSE (
+   MSBuild Hydrax.sln /p:configuration=RelWithDebInfo /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+)
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying Hydrax DLLs to Tundra bin\.{# #}{\n}
-copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\lib\*.dll" "%TUNDRA_BIN%"
+:: TODO Remove the VS2008 logic when VS2008 build uses CMake also
+IF %GENERATOR%==%GENERATOR_VS2008% (
+   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\lib\*.dll" "%TUNDRA_BIN%"
+) ELSE (
+   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\Debug\Hydraxd.dll" "%TUNDRA_BIN%"
+   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\RelWithDebInfo\Hydrax.dll" "%TUNDRA_BIN%"
+)
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
+:: QtPropertyBrowser
 IF NOT EXIST "%DEPS%\qt-solutions". (
    cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
    cd "%DEPS%"
@@ -715,6 +736,7 @@ IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
    cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
 )
 
+:: OpenAL
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
    cecho {0D}OpenAL does not exist. Unzipping a prebuilt package.{# #}{\n}
    copy "%TOOLS%\utils-windows\OpenAL.zip" "%DEPS%\"
@@ -727,6 +749,7 @@ IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
    cecho {0D}OpenAL already prepared. Skipping.{# #}{\n}
 )
 
+:: Ogg
 IF NOT EXIST "%DEPS%\ogg". (
    cecho {0D}Cloning Ogg into "%DEPS%\ogg".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/ogg/libogg-1.3.0/ "%DEPS%\ogg"
@@ -745,6 +768,7 @@ IF NOT EXIST "%DEPS%\ogg". (
    cecho {0D}Ogg already built. Skipping.{# #}{\n}
 )
 
+:: Vorbis
 IF NOT EXIST "%DEPS%\vorbis". (
    cecho {0D}Cloning Vorbis into "%DEPS%\vorbis".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/vorbis/libvorbis-1.3.3/ "%DEPS%\vorbis"
@@ -764,6 +788,7 @@ IF NOT EXIST "%DEPS%\vorbis". (
    cecho {0D}Vorbis already built. Skipping.{# #}{\n}
 )
 
+:: Theora
 IF NOT EXIST "%DEPS%\theora". (
    cecho {0D}Cloning Theora into "%DEPS%\theora".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
@@ -777,6 +802,7 @@ IF NOT EXIST "%DEPS%\theora". (
    cecho {0D}Theora already built. Skipping.{# #}{\n}
 )
 
+:: Speex
 IF NOT EXIST "%DEPS%\speex". (
    cd "%DEPS%"
    :: Speex does not have a tagged release for VS2008! So, check out trunk instead.
