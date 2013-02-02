@@ -7,34 +7,62 @@ IF NOT EXIST %VSVARSALL%. (
    GOTO :ERROR
 )
 
-call VSConfig.cmd %1%
+:: User-defined variables
+set BUILD_RELEASE=FALSE
+set BUILD_OPENSSL=TRUE
+set USE_JOM=TRUE
+set USE_BOOST=TRUE
 
-:: User defined variables
+:: Validate user-defined variables
+IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
+   cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE!{# #}{\n}
+   GOTO :ERROR
+)
+IF NOT %USE_JOM%==FALSE IF NOT %USE_JOM%==TRUE (
+   cecho {0E}USE_JOM needs to be either TRUE or FALSE!{# #}{\n}
+   GOTO :ERROR
+)
+IF NOT %BUILD_RELEASE%==FALSE IF NOT %BUILD_RELEASE%==TRUE (
+   cecho {0E}BUILD_RELEASE needs to be either TRUE or FALSE!{# #}{\n} 
+   GOTO :ERROR
+)
+IF NOT %USE_BOOST%==FALSE IF NOT %USE_BOOST%==TRUE (
+   cecho {0E}USE_BOOST needs to be either TRUE or FALSE!{# #}{\n}
+   GOTO :ERROR
+)
 :: TODO remove BUILD_RELEASE and instead use BUILD_TYPE
+::set BUILD_TYPE=%2
 :: IF %BUILD_TYPE%=="" (
 ::   set BUILD_TYPE=RelWithDebInfo
 ::   cecho {0D}BUILD_TYPE not specified - using the default %BUILD_TYPE%{# #}{\n}
 :: )
 ::
-set BUILD_RELEASE=FALSE
-set BUILD_OPENSSL=TRUE
-set USE_JOM=TRUE
-set USE_BOOST=TRUE
+set BUILD_TYPE_RELEASE=Release
+set BUILD_TYPE_RELWITHDEBINFO=RelWithDebInfo
+set BUILD_TYPE_DEBUG=Debug
+IF %BUILD_RELEASE%==TRUE (
+    set BUILD_TYPE=%BUILD_TYPE_RELEASE%
+) ELSE (
+    set BUILD_TYPE=%BUILD_TYPE_RELWITHDEBINFO%
+)
+
+:: Set up variables depending on the used Visual Studio version
+call VSConfig.cmd %1
 
 IF %GENERATOR%=="" (
    cecho {0C}GENERATOR not specified - cannot proceed!{# #}{\n}
    GOTO :ERROR
 )
 
-:: Print user defined variables
+:: Print user-defined variables
 cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
 echo.
 cecho {0A}Script configuration:{# #}{\n}
 cecho {0D}  CMake Generator    = %GENERATOR%{# #}{\n}
 echo    - Passed to CMake -G option
-cecho {0D}  Use Boost = %USE_BOOST%{# #}{\n}
+cecho {0D}  Use Boost          = %USE_BOOST%{# #}{\n}
 echo    - Configures whether dependencies kNet, Ogre, and AssImp are built using Boost.
-cecho {0D}  Build Release = %BUILD_RELEASE%{# #}{\n}
+cecho {0D}  Build Release      = %BUILD_RELEASE%{# #}{\n}
 echo    - Build Release mode in addition to RelWithDebInfo when possible.
 echo      Default is disabled, enable if you are planning to deploy
 echo      Tundra in Release mode.
@@ -44,22 +72,6 @@ cecho {0D}  Build Qt with JOM  = %USE_JOM%{# #}{\n}
 echo    - Use jom.exe instead of nmake.exe to build qmake projects.
 echo      Default enabled as jom is significantly faster by usin all CPUs.
 echo.
-
-:: Validate user defined variables
-IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
-   cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE{# #}{\n}
-   GOTO :ERROR
-)
-
-IF NOT %USE_JOM%==FALSE IF NOT %USE_JOM%==TRUE (
-   cecho {0E}USE_JOM needs to be either TRUE or FALSE{# #}{\n}
-   GOTO :ERROR
-)
-
-IF NOT %BUILD_RELEASE%==FALSE IF NOT %BUILD_RELEASE%==TRUE (
-   cecho {0E}BUILD_RELEASE needs to be either TRUE or FALSE{# #}{\n}
-   GOTO :ERROR
-)
 
 :: Print scripts usage information
 cecho {0A}Requirements for a successful execution:{# #}{\n}
@@ -367,15 +379,8 @@ IF NOT EXIST "%DEPS%\assimp\". (
    :: Debug build.
    MSBuild Assimp.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
    copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
-      
-   :: Release or RelWithDebInfo build, depending on which type of release was preferred.
-   IF %BUILD_RELEASE% == TRUE (
-      MSBuild Assimp.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
-      copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
-   ) ELSE (
-      MSBuild Assimp.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
-      copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
-   )
+   MSBuild Assimp.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
+   copy /Y "bin\%BUILD_TYPE%\assimp.dll" "%TUNDRA_BIN%"
 ) ELSE (
    ::TODO Even if %DEPS%\assimp exists, we have no guarantee that assimp is built successfully for real
    cecho {0D}OpenAssetImport already built. Skipping.{# #}{\n}
@@ -600,27 +605,18 @@ REM   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_
 
 cecho {0D}Building ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
 MSBuild OGRE.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
-MSBuild OGRE.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
-IF %BUILD_RELEASE%==TRUE MSBuild OGRE.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+MSBuild OGRE.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying ogre-safe-nocrashes SDK directory.{# #}{\n}
 MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo
-IF %BUILD_RELEASE%==FALSE (
-   MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=RelWithDebInfo /nologo
-) ELSE (
-   MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo
-)
+MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying Ogre DLLs to Tundra bin\ directory.{# #}{\n}
 copy /Y "%DEPS%\ogre-safe-nocrashes\bin\debug\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-IF %BUILD_RELEASE%==FALSE (
-   copy /Y "%DEPS%\ogre-safe-nocrashes\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
-) ELSE (
-   copy /Y "%DEPS%\ogre-safe-nocrashes\bin\release\*.dll" "%TUNDRA_BIN%"
-)
+copy /Y "%DEPS%\ogre-safe-nocrashes\bin\%BUILD_TYPE%\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -651,52 +647,32 @@ IF NOT EXIST SKYX.sln. (
 
 cecho {0D}Building SkyX. Please be patient, this will take a while.{# #}{\n}
 MSBuild SKYX.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-MSBuild SKYX.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-IF %BUILD_RELEASE%==TRUE MSBuild SKYX.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+MSBuild SKYX.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying SkyX DLLs to Tundra bin\.{# #}{\n}
 copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\debug\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-IF %BUILD_RELEASE%==FALSE (
-   copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\relwithdebinfo\*.dll" "%TUNDRA_BIN%"
-) ELSE (
-   copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\release\*.dll" "%TUNDRA_BIN%"
-)
+copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\%BUILD_TYPE%\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Hydrax
 cd "%DEPS%\realxtend-tundra-deps\hydrax"
-:: TODO Remove the msvc9 directory and use CMake always
-IF %GENERATOR%==%GENERATOR_VS2008% (
-   cd msvc9
-) ELSE (
-   IF NOT EXIST Hydrax.sln. (
-      cecho {0D}Running cmake for Hydrax.{# #}{\n}
-      del /Q CMakeCache.txt
-      cmake . -G %GENERATOR%
-      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   )
+IF NOT EXIST Hydrax.sln. (
+  cecho {0D}Running cmake for Hydrax.{# #}{\n}
+  del /Q CMakeCache.txt
+  cmake . -G %GENERATOR% -DOGRE_HOME=%OGRE_HOME% -DBOOST_ROOT=%BOOST_ROOT%
+  IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
 cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
 MSBuild Hydrax.sln /p:configuration=Debug /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
-:: TODO For now build Release with VC9 and RelWithDebInfo otherwise TODO the VS2008 logic when VS2008 build uses CMake also
-IF %GENERATOR%==%GENERATOR_VS2008% (
-   MSBuild Hydrax.sln /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
-) ELSE (
-   MSBuild Hydrax.sln /p:configuration=RelWithDebInfo /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
-)
+MSBuild Hydrax.sln /p:configuration=%BUILD_TYPE% /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying Hydrax DLLs to Tundra bin\.{# #}{\n}
-:: TODO Remove the VS2008 logic when VS2008 build uses CMake also
-IF %GENERATOR%==%GENERATOR_VS2008% (
-   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\lib\*.dll" "%TUNDRA_BIN%"
-) ELSE (
-   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\Debug\Hydraxd.dll" "%TUNDRA_BIN%"
-   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\RelWithDebInfo\Hydrax.dll" "%TUNDRA_BIN%"
-)
+copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\Debug\Hydraxd.dll" "%TUNDRA_BIN%"
+copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\%BUILD_TYPE%\Hydrax.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: QtPropertyBrowser
@@ -796,7 +772,7 @@ IF NOT EXIST "%DEPS%\theora". (
 
    cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
    MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /t:libtheora_static /clp:ErrorsOnly /nologo  /m:%NUMBER_OF_PROCESSORS%
+   MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Theora already built. Skipping.{# #}{\n}
