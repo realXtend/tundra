@@ -32,6 +32,8 @@ echo.
 cecho {0A}Script configuration:{# #}{\n}
 cecho {0D}  CMake Generator    = %GENERATOR%{# #}{\n}
 echo    - Passed to CMake -G option
+cecho {0D}  Use Boost = %USE_BOOST%{# #}{\n}
+echo    - Configures whether dependencies kNet, Ogre, and AssImp are built using Boost.
 cecho {0D}  Build Release = %BUILD_RELEASE%{# #}{\n}
 echo    - Build Release mode in addition to RelWithDebInfo when possible.
 echo      Default is disabled, enable if you are planning to deploy
