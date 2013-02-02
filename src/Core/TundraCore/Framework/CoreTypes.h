@@ -108,16 +108,19 @@ typedef unsigned int component_id_t;
 #define CORETYPES_NAMESPACE std
 #endif
 
+// From <memory>:
 using CORETYPES_NAMESPACE::shared_ptr;
 using CORETYPES_NAMESPACE::weak_ptr;
 using CORETYPES_NAMESPACE::dynamic_pointer_cast;
 using CORETYPES_NAMESPACE::static_pointer_cast;
 using CORETYPES_NAMESPACE::enable_shared_from_this;
+// From <regex>:
 using CORETYPES_NAMESPACE::regex;
 using CORETYPES_NAMESPACE::wregex;
 using CORETYPES_NAMESPACE::sregex_iterator;
 using CORETYPES_NAMESPACE::regex_search;
 using CORETYPES_NAMESPACE::smatch;
+using CORETYPES_NAMESPACE::wsmatch;
 
 /** @def MAKE_SHARED(type, ...)
     Workaround for the fact that make_shared is not a C++ TR1 feature, but a C++11 feature.
