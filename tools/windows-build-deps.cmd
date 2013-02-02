@@ -578,6 +578,15 @@ IF %USE_BOOST%==FALSE (
       cecho {0D}Extracting Intel Thread Building Blocks package.{# #}{\n}
       7za x -y %TBB_VERSION%_win.zip -oDependencies
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+      :: nedmalloc messes up the _WIN32_WINNT define which causes TBB headers not to compile on VS2008
+      :: (and reportedly on VS2012 too), so fix that. See https://ogre3d.atlassian.net/browse/OGRE-119
+      :: TODO Remove when possible (when moving to newer Ogre).
+      cd OgreMain\src\nedmalloc
+      sed s/"#define _WIN32_WINNT 0x403"//g <malloc.c.h >malloc.c.h.sed
+      del malloc.c.h
+      rename malloc.c.h.sed malloc.c.h
+      cd "%DEPS%\ogre-safe-nocrashes"
    )
 )
 
