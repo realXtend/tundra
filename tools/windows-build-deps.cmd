@@ -587,6 +587,7 @@ REM ) ELSE (
 REM    echo PythonQt already built. Skipping.{# #}{\n}
 REM )
 
+:: SkyX
 cd "%DEPS%\realxtend-tundra-deps\skyx"
 IF NOT EXIST SKYX.sln. (
    cecho {0D}Running cmake for SkyX.{# #}{\n}
@@ -611,17 +612,41 @@ IF %BUILD_RELEASE%==FALSE (
 )
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
+:: Hydrax
 cd "%DEPS%\realxtend-tundra-deps\hydrax"
-IF %GENERATOR%==%GENERATOR_VS2008% cd msvc9
+:: TODO Remove the msvc9 directory and use CMake always
+IF %GENERATOR%==%GENERATOR_VS2008% (
+   cd msvc9
+) ELSE (
+   IF NOT EXIST Hydrax.sln. (
+      cecho {0D}Running cmake for Hydrax.{# #}{\n}
+      del /Q CMakeCache.txt
+      cmake . -G %GENERATOR%
+      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   )
+)
+
+cecho {0D}Building Hydrax. Please be patient, this will take a while.{# #}{\n}
 MSBuild Hydrax.sln /p:configuration=Debug /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
-MSBuild Hydrax.sln /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+:: TODO For now build Release with VC9 and RelWithDebInfo otherwise TODO the VS2008 logic when VS2008 build uses CMake also
+IF %GENERATOR%==%GENERATOR_VS2008% (
+   MSBuild Hydrax.sln /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+) ELSE (
+   MSBuild Hydrax.sln /p:configuration=RelWithDebInfo /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+)
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying Hydrax DLLs to Tundra bin\.{# #}{\n}
-copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\lib\*.dll" "%TUNDRA_BIN%"
+:: TODO Remove the VS2008 logic when VS2008 build uses CMake also
+IF %GENERATOR%==%GENERATOR_VS2008% (
+   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\lib\*.dll" "%TUNDRA_BIN%"
+) ELSE (
+   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\Debug\Hydraxd.dll" "%TUNDRA_BIN%"
+   copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\RelWithDebInfo\Hydrax.dll" "%TUNDRA_BIN%"
+)
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
+:: QtPropertyBrowser
 IF NOT EXIST "%DEPS%\qt-solutions". (
    cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
    cd "%DEPS%"
@@ -658,6 +683,7 @@ IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
    cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
 )
 
+:: OpenAL
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
    cecho {0D}OpenAL does not exist. Unzipping a prebuilt package.{# #}{\n}
    copy "%TOOLS%\utils-windows\OpenAL.zip" "%DEPS%\"
@@ -670,6 +696,7 @@ IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
    cecho {0D}OpenAL already prepared. Skipping.{# #}{\n}
 )
 
+:: Ogg
 IF NOT EXIST "%DEPS%\ogg". (
    cecho {0D}Cloning Ogg into "%DEPS%\ogg".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/ogg/libogg-1.3.0/ "%DEPS%\ogg"
@@ -688,6 +715,7 @@ IF NOT EXIST "%DEPS%\ogg". (
    cecho {0D}Ogg already built. Skipping.{# #}{\n}
 )
 
+:: Vorbis
 IF NOT EXIST "%DEPS%\vorbis". (
    cecho {0D}Cloning Vorbis into "%DEPS%\vorbis".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/vorbis/libvorbis-1.3.3/ "%DEPS%\vorbis"
@@ -707,6 +735,7 @@ IF NOT EXIST "%DEPS%\vorbis". (
    cecho {0D}Vorbis already built. Skipping.{# #}{\n}
 )
 
+:: Theora
 IF NOT EXIST "%DEPS%\theora". (
    cecho {0D}Cloning Theora into "%DEPS%\theora".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
@@ -720,6 +749,7 @@ IF NOT EXIST "%DEPS%\theora". (
    cecho {0D}Theora already built. Skipping.{# #}{\n}
 )
 
+:: Speex
 IF NOT EXIST "%DEPS%\speex". (
    cd "%DEPS%"
    :: Speex does not have a tagged release for VS2008! So, check out trunk instead.
