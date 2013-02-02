@@ -104,8 +104,10 @@ macro(configure_ogre)
         link_directories(${OGRE_DIR}/lib)
         if (WIN32)
             include_directories(${OGRE_DIR}/include/OGRE/RenderSystems/Direct3D9)
-            link_directories(${OGRE_DIR}/lib/$(Configuration))
-            link_directories(${OGRE_DIR}/lib/$(Configuration)/opt)
+            # Note: VC9 uses $(ConfigurationName), but #VC10 and onwards uses $(Configuration).
+            # However VC10 seems to able to $(ConfigurationName) also, so use that.
+            link_directories(${OGRE_DIR}/lib/$(ConfigurationName))
+            link_directories(${OGRE_DIR}/lib/$(ConfigurationName)/opt)
         endif()
         message(STATUS "Using Ogre from SDK directory " ${OGRE_DIR})
     else()
