@@ -43,25 +43,19 @@ echo      Default enabled as jom is significantly faster by usin all CPUs.
 echo.
 
 :: Validate user defined variables
-IF NOT %BUILD_OPENSSL% == FALSE (
-   IF NOT %BUILD_OPENSSL% == TRUE (
-      cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE{# #}{\n}
-      GOTO :ERROR
-   )
+IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
+   cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE{# #}{\n}
+   GOTO :ERROR
 )
 
-IF NOT %USE_JOM% == FALSE (
-   IF NOT %USE_JOM% == TRUE (
-      cecho {0E}USE_JOM needs to be either TRUE or FALSE{# #}{\n}
-      GOTO :ERROR
-   )
+IF NOT %USE_JOM%==FALSE IF NOT %USE_JOM%==TRUE (
+   cecho {0E}USE_JOM needs to be either TRUE or FALSE{# #}{\n}
+   GOTO :ERROR
 )
 
-IF NOT %BUILD_RELEASE% == FALSE (
-   IF NOT %BUILD_RELEASE% == TRUE (
-      cecho {0E}BUILD_RELEASE needs to be either TRUE or FALSE{# #}{\n}
-      GOTO :ERROR
-   )
+IF NOT %BUILD_RELEASE%==FALSE IF NOT %BUILD_RELEASE%==TRUE (
+   cecho {0E}BUILD_RELEASE needs to be either TRUE or FALSE{# #}{\n}
+   GOTO :ERROR
 )
 
 :: Print scripts usage information
@@ -70,13 +64,13 @@ echo   1. Install SVN and make sure 'svn' is accessible from PATH.
 echo    - http://tortoisesvn.net/downloads.html, install with command line tools!
 echo   2. Install Hg and make sure 'hg' is accessible from PATH.
 echo    - http://tortoisehg.bitbucket.org/
-echo   3. Install git and make sure 'git' is accessible from PATH.
+echo   3. Install Git and make sure 'git' is accessible from PATH.
 echo    - http://code.google.com/p/tortoisegit/
 echo   4. Install DirectX SDK June 2010.
 echo    - http://www.microsoft.com/download/en/details.aspx?id=6812
-echo   5. Install cmake and make sure 'cmake' is accessible from PATH.
+echo   5. Install CMake and make sure 'cmake' is accessible from PATH.
 echo    - http://www.cmake.org/
-echo   6. Install Visual Studio 2008 with SP1. (Express is ok)
+echo   6. Install Visual Studio 2008/2010 with SP1 (Express is ok).
 echo    - http://www.microsoft.com/download/en/details.aspx?id=14597
 echo   7. Install Windows SDK.
 echo    - http://www.microsoft.com/download/en/details.aspx?id=8279
@@ -161,6 +155,8 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :SKIP_OPENSSL
 
 :: Qt
+:: NOTE For VS2012 support Qt 4.8.3>= needed:
+:: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
