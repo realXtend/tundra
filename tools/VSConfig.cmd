@@ -2,7 +2,6 @@
 @echo off
 
 set GENERATOR=%1
-echo %GENERATOR%
 ::IF "%GENERATOR%"=="" VCConfig.cmd: echo Generator not passed! Batch script will most likely fail.
 
 :: Supported Visual Studio versions
