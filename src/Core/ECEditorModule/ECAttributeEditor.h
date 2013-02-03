@@ -279,7 +279,7 @@ template<> void ECAttributeEditor<EntityReference>::Set(QtProperty *property);
 /// As C++ standard weak_ptr doesn't provide less than operator (or any comparison operators for that matter), we need to provide it ourselves.
 struct ComponentWeakPtrLessThan
 {
-    bool operator() (const ComponentWeakPtr &a, const ComponentWeakPtr &b) const { return a.owner_before(b); }
+    bool operator() (const ComponentWeakPtr &a, const ComponentWeakPtr &b) const { return WEAK_PTR_LESS_THAN(a, b); }
 };
 
 /// Special case editor for AssetReference attributes.

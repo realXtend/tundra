@@ -133,6 +133,15 @@ using CORETYPES_NAMESPACE::wsmatch;
 #define MAKE_SHARED(type, ...) shared_ptr<type>(new type(__VA_ARGS__))
 #endif
 
+/** @def WEAK_PTR_LESS_THAN(a, b)
+    Workaround for the fact that VC9SP1's std::tr1::weak_ptr doesn't have the owner_before member function
+    that is typically used for weak_ptr less-than comparison. */
+#if defined(TUNDRA_NO_BOOST) && defined(_MSC_VER) && (_MSC_VER == 1500) // VC9SP1 implementation is a special case
+#define WEAK_PTR_LESS_THAN(a, b) a._Cmp(b)
+#else // Boost-style implementation
+#define WEAK_PTR_LESS_THAN(a, b) a.owner_before(b)
+#endif
+
 typedef std::vector<std::string> StringVector;
 typedef shared_ptr<StringVector> StringVectorPtr;
 

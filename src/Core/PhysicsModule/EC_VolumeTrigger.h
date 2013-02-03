@@ -170,7 +170,7 @@ private:
     /// As C++ standard weak_ptr doesn't provide less than operator (or any comparison operators for that matter), we need to provide it ourselves.
     struct EntityWeakPtrLessThan
     {
-        bool operator() (const EntityWeakPtr &a, const EntityWeakPtr &b) const { return a.owner_before(b); }
+        bool operator() (const EntityWeakPtr &a, const EntityWeakPtr &b) const { return WEAK_PTR_LESS_THAN(a, b); }
     };
     typedef std::map<EntityWeakPtr, bool, EntityWeakPtrLessThan> EntitiesWithinVolumeMap;
     /// Map of entities inside this volume. 
