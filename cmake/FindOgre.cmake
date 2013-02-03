@@ -104,10 +104,18 @@ macro(configure_ogre)
         link_directories(${OGRE_DIR}/lib)
         if (WIN32)
             include_directories(${OGRE_DIR}/include/OGRE/RenderSystems/Direct3D9)
+            if (MSVC90 AND TUNDRA_NO_BOOST) # TODO VC10 doesn't need this, investigate why
+            # Hackish, use TBB_HOME instead
+                include_directories(${OGRE_DIR}/../Dependencies/tbb/include)
+            endif()
             # Note: VC9 uses $(ConfigurationName), but #VC10 and onwards uses $(Configuration).
-            # However VC10 seems to able to $(ConfigurationName) also, so use that.
+            # However VC10 seems to be able to understand $(ConfigurationName) also, so use that.
             link_directories(${OGRE_DIR}/lib/$(ConfigurationName))
             link_directories(${OGRE_DIR}/lib/$(ConfigurationName)/opt)
+            if (MSVC90 AND TUNDRA_NO_BOOST) # TODO VC10 doesn't need this, investigate why
+            # Hackish, use TBB_HOME instead
+                link_directories(${OGRE_DIR}/../Dependencies/tbb/lib/ia32/vc9)
+            endif()
         endif()
         message(STATUS "Using Ogre from SDK directory " ${OGRE_DIR})
     else()
