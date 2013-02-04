@@ -37,6 +37,9 @@ IF NOT %USE_BOOST%==FALSE IF NOT %USE_BOOST%==TRUE (
 ::   cecho {0D}BUILD_TYPE not specified - using the default %BUILD_TYPE%{# #}{\n}
 :: )
 ::
+
+:: TODO Would we like to support MinSizeRel?
+::set BUILD_TYPE_MINSIZEREL=MinSizeRel
 set BUILD_TYPE_RELEASE=Release
 set BUILD_TYPE_RELWITHDEBINFO=RelWithDebInfo
 set BUILD_TYPE_DEBUG=Debug
@@ -573,30 +576,41 @@ IF %USE_BOOST%==FALSE (
    IF NOT EXIST %TBB_VERSION%_win.zip. (
       cecho {0D}Downloading Intel Thread Building Blocks prebuilt package.{# #}{\n}
       wget "http://threadingbuildingblocks.org/sites/default/files/software_releases/windows/%TBB_VERSION%_win.zip"
-      IF NOT EXIST %TBB_VERSION%_win.zip. (
-         cecho {0C}Error downloading Intel Thread Building Blocks! Aborting!{# #}{\n}
-         GOTO :ERROR
-      )
+   )
+   IF NOT EXIST %TBB_VERSION%_win.zip. (
+      cecho {0C}Error downloading Intel Thread Building Blocks! Aborting!{# #}{\n}
+      GOTO :ERROR
+   )
+   IF NOT EXIST %TBB_HOME%. (
       cecho {0D}Extracting Intel Thread Building Blocks package.{# #}{\n}
       7za x -y %TBB_VERSION%_win.zip -oDependencies
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
       cd Dependencies
       rename %TBB_VERSION% tbb
       cd..
-      REM nedmalloc messes up the _WIN32_WINNT define which causes TBB headers not to compile on VS2008
-      REM (and reportedly on VS2012 too), so fix that. See https://ogre3d.atlassian.net/browse/OGRE-119
-      REM TODO Remove when possible (when moving to newer Ogre).
-      cd OgreMain\src\nedmalloc
-
-      sed s/"#define _WIN32_WINNT 0x403"//g <malloc.c.h >malloc.c.h.sed
-
-      del malloc.c.h
-      rename malloc.c.h.sed malloc.c.h
-      cd "%DEPS%\ogre-safe-nocrashes"
-      REM TODO sed
-      REM "#error TBB is unable to run on old Windows versions;
-      REM //#error TBB is unable to run on old Windows versions;
    )
+   
+   REM nedmalloc messes up the _WIN32_WINNT define which causes TBB headers not to compile on VS2008
+   REM (and reportedly on VS2012 too), so fix that. See https://ogre3d.atlassian.net/browse/OGRE-119
+   REM TODO Remove when possible (when moving to newer Ogre).
+   cd OgreMain\src\nedmalloc
+   sed s/"#define _WIN32_WINNT 0x403"//g <malloc.c.h >malloc.c.h.sed
+   del malloc.c.h
+   rename malloc.c.h.sed malloc.c.h
+
+   IF %GENERATOR%==%GENERATOR_VS2008% (
+      REM TODO Apparently the above fix is not enough and VC9 build fails to TBB header due erroneously defined _WIN32_WINNT.
+      REM Hack around the error thrown in _tbb_windef.h.
+      cd "%TBB_HOME%\include\tbb\internal"
+      sed s@"#error TBB is unable to run on old Windows versions;"@"//#error TBB is unable to run on old Windows versions;"@g <_tbb_windef.h >_tbb_windef.h.sed
+      del _tbb_windef.h
+      rename _tbb_windef.h.sed _tbb_windef.h
+
+      REM Copy TBB DLLs. TODO this is not needed with VC10, investigate why.
+      copy /Y "%TBB_HOME%\bin\ia32\vc9\*.dll" "%TUNDRA_BIN%"
+   )
+
+   cd "%DEPS%\ogre-safe-nocrashes"
 )
 
 IF NOT EXIST OGRE.sln. (
