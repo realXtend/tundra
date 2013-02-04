@@ -41,9 +41,12 @@ macro(configure_ogre)
         message(STATUS "DirectX disabled from the build\n")
     endif()
 
-    if ("${TBB_HOME}" STREQUAL "")
-        file(TO_CMAKE_PATH "$ENV{TBB_HOME}" TBB_HOME)
-        set(TBB_HOME ${TBB_HOME} CACHE PATH "TBB_HOME dependency path" FORCE)
+    # If doing TUNDRA_NO_BOOST build, TBB is used for Ogre's threading.
+    if (MSVC90 AND TUNDRA_NO_BOOST) # TODO VC10 doesn't need this, investigate why
+        if ("${TBB_HOME}" STREQUAL "")
+            file(TO_CMAKE_PATH "$ENV{TBB_HOME}" TBB_HOME)
+            set(5TBB_HOME ${TBB_HOME} CACHE PATH "TBB_HOME dependency path" FORCE)
+        endif()
     endif()
 
     # Ogre lookup rules:
@@ -107,6 +110,7 @@ macro(configure_ogre)
         include_directories(${OGRE_DIR}/include/OGRE)
         link_directories(${OGRE_DIR}/lib)
         if (WIN32)
+            include_directories(${OGRE_DIR}/include/OGRE/RenderSystems/Direct3D9)
             # Note: VC9 uses $(ConfigurationName), but #VC10 and onwards uses $(Configuration).
             # However VC10 seems to be able to understand $(ConfigurationName) also, so use that.
             link_directories(${OGRE_DIR}/lib/$(ConfigurationName))
