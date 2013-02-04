@@ -39,7 +39,7 @@ IF %TUNDRA_PYTHON_ENABLED%==FALSE cecho {0E}Disabling Python from the build unti
 echo.
 
 IF NOT EXIST Tundra.sln. (
-   del /Q CMakeCache.txt
+   IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
    cecho {0D}Running CMake for Tundra.{# #}{\n}
    cmake.exe -G %GENERATOR%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
