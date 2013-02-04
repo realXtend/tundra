@@ -5,17 +5,25 @@ Copyright (c) 2011 Jacob 'jacmoe' Moen
 Licensed under the MIT license:
 */
 
+#include "StableHeaders.h"
 #include "OpenAssetImport.h"
+
 #include "CoreDefines.h"
 #include "Framework.h"
 #include "OgreMaterialAsset.h"
 #include "LoggingFunctions.h"
 #include "Math/MathFunc.h"
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
+#include "IAsset.h"
 
 #include <Ogre.h>
 
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 //#define SKELETON_ENABLED
 

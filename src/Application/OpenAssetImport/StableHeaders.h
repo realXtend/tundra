@@ -9,7 +9,10 @@
 ///\todo Refactor the above #include inside this #ifdef as well.
 #ifdef PCH_ENABLED
 
+#include "Win.h"
 #include "Framework.h"
 #include "CoreDefines.h"
+
+#include <Ogre.h>
 
 #endif
