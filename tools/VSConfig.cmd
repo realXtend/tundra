@@ -9,10 +9,19 @@ set GENERATOR=%1
 set GENERATOR_VS2010="Visual Studio 10"
 set GENERATOR_VS2008="Visual Studio 9 2008"
 
-:: VS_VER is a convenience define used f.ex. for filenames
-::IF %GENERATOR%==%GENERATOR_VS2012% set VS_VER=vs2012
-IF %GENERATOR%==%GENERATOR_VS2010% set VS_VER=vs2010
-IF %GENERATOR%==%GENERATOR_VS2008% set VS_VER=vs2008
+:: VS_VER and VC_VER are convenience variables used f.ex. for filenames
+::IF %GENERATOR%==%GENERATOR_VS2012% (
+::    set VS_VER=vs2012
+::    set VC_VER=vc11
+::)
+IF %GENERATOR%==%GENERATOR_VS2010% ( 
+    set VS_VER=vs2010
+    set VC_VER=vc10
+)
+IF %GENERATOR%==%GENERATOR_VS2008% (
+    set VS_VER=vs2008
+    set VC_VER=vc9
+)
 
 :: VS project file extension differ on different VS versions
 IF %GENERATOR%==%GENERATOR_VS2008% (
