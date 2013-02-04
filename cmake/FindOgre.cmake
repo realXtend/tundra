@@ -29,7 +29,7 @@ macro(configure_ogre)
   endif()
 endmacro()
 
-else() # Windows Ogre lookup.
+else() # Windows and OSX Ogre lookup.
 
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()
 macro(configure_ogre)
@@ -39,6 +39,11 @@ macro(configure_ogre)
         link_directx()
     else()
         message(STATUS "DirectX disabled from the build\n")
+    endif()
+
+    if ("${TBB_HOME}" STREQUAL "")
+        file(TO_CMAKE_PATH "$ENV{TBB_HOME}" TBB_HOME)
+        set(TBB_HOME ${TBB_HOME} CACHE PATH "TBB_HOME dependency path" FORCE)
     endif()
 
     # Ogre lookup rules:
@@ -80,7 +85,6 @@ macro(configure_ogre)
     # having to always do the intermediate SDK installation/deployment step.
     
     message("** Configuring Ogre")
-    
     if (APPLE)# AND IS_DIRECTORY ${OGRE_DIR}/Headers) # OGRE_DIR points to a manually installed Ogre.framework?
         if (IS_DIRECTORY ${OGRE_DIR}/lib)
             include_directories(${OGRE_DIR}/lib/relwithdebinfo/Ogre.framework/Headers)
@@ -103,18 +107,13 @@ macro(configure_ogre)
         include_directories(${OGRE_DIR}/include/OGRE)
         link_directories(${OGRE_DIR}/lib)
         if (WIN32)
-            include_directories(${OGRE_DIR}/include/OGRE/RenderSystems/Direct3D9)
-            if (MSVC90 AND TUNDRA_NO_BOOST) # TODO VC10 doesn't need this, investigate why
-            # Hackish, use TBB_HOME instead
-                include_directories(${OGRE_DIR}/../Dependencies/tbb/include)
-            endif()
             # Note: VC9 uses $(ConfigurationName), but #VC10 and onwards uses $(Configuration).
             # However VC10 seems to be able to understand $(ConfigurationName) also, so use that.
             link_directories(${OGRE_DIR}/lib/$(ConfigurationName))
             link_directories(${OGRE_DIR}/lib/$(ConfigurationName)/opt)
             if (MSVC90 AND TUNDRA_NO_BOOST) # TODO VC10 doesn't need this, investigate why
-            # Hackish, use TBB_HOME instead
-                link_directories(${OGRE_DIR}/../Dependencies/tbb/lib/ia32/vc9)
+                include_directories(${TBB_HOME}/include)
+                link_directories(${TBB_HOME}/lib/ia32/vc9) # TODO ia32/vc9 correct folder only on VC9 32-bit
             endif()
         endif()
         message(STATUS "Using Ogre from SDK directory " ${OGRE_DIR})

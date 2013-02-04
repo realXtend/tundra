@@ -31,6 +31,7 @@ SET VLC_ROOT=%DEPS%\vlc
 SET QXMPP_ROOT=%DEPS%\qxmpp
 SET ZZIPLIB_ROOT=%DEPS%\zziplib
 SET CRUNCH_ROOT=%DEPS%\crunch
+set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 
 :: Disable python until it has been fixed to windows-build-deps.cmd!
 SET TUNDRA_PYTHON_ENABLED=FALSE
