@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "DebugOperatorNew.h"
+
 #include "EC_MediaPlayer.h"
 #include "VlcMediaPlayer.h"
 #include "VlcVideoWidget.h"
@@ -12,9 +13,8 @@
 #include "AttributeMetadata.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-#include "IRenderer.h"
 #include "LoggingFunctions.h"
-
+#include "IRenderer.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
@@ -62,7 +62,6 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
 
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 
     // Connect window size changes to update rendering as the ogre textures go black.
     if (GetFramework()->Ui()->MainWindow())
@@ -73,7 +72,7 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
     connect(resizeRenderTimer_, SIGNAL(timeout()), mediaPlayer_, SLOT(ForceUpdateImage()), Qt::UniqueConnection);
 
     // Prepare scene interactions
-    SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
+    SceneInteract *sceneInteract = GetFramework()->GetModule<SceneInteract>();
     if (sceneInteract)
     {
         connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
@@ -451,9 +450,9 @@ void EC_MediaPlayer::ComponentRemoved(IComponent *component, AttributeChange::Ty
     }
 }
 
-void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType)
+void EC_MediaPlayer::AttributesChanged()
 {
-    if (attribute == &sourceRef)
+    if (sourceRef.ValueChanged())
     {
         if (!mediaPlayer_)
             return;
@@ -497,13 +496,13 @@ void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Ty
             mediaDownloader_->HandleAssetRefChange(framework->Asset(), source, "Binary");
         }
     }
-    else if (attribute == &illuminating)
+    if (illuminating.ValueChanged())
     {
         EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
         if (canvas)
             canvas->SetSelfIllumination(getilluminating());
     }
-    else if (attribute == &enabled)
+    if (enabled.ValueChanged())
     {
         EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
         if (componentPrepared_ && sceneCanvas)

@@ -17,9 +17,9 @@ macro(configure_qxmpp)
     sagase_configure_package(QXMPP
         NAMES qxmpp
         COMPONENTS qxmpp       # works on Ubuntu
-	           qxmpp_d     # find .lib on Windows
-		   QxmppClient # find QxmppClient.h on Windows
-	PREFIXES ${QXMPP_ROOT}
+               qxmpp_d     # find .lib on Windows
+           QxmppClient # find QxmppClient.h on Windows
+    PREFIXES ${QXMPP_ROOT}
                  ${ENV_TUNDRA_DEP_PATH})
     sagase_configure_report(QXMPP)
 endmacro(configure_qxmpp)
@@ -27,40 +27,41 @@ endmacro(configure_qxmpp)
 # Define target name and output directory
 init_target (XMPPModule OUTPUT plugins)
 
-MocFolder ()
+MocFolder()
 
 # Define source files
-file (GLOB CPP_FILES *.cpp)
-file (GLOB H_FILES *.h)
-file (GLOB XML_FILES *.xml)
-#file (GLOB MOC_FILES XMPPModule.h)
+file(GLOB CPP_FILES *.cpp)
+file(GLOB H_FILES *.h)
+file(GLOB MOC_FILES XMPPModule.h Client/AccountManager.h Client/Call.h Client/CallExtension.h
+    Client/ChatExtension.h Client/Client.h Client/Extension.h Client/MucExtension.h Client/UserItem.h)
 
-AddSourceFolder (Client)
-AddSourceFolder (Server)
+AddSourceFolder(Client)
+AddSourceFolder(Server)
 
-set (SOURCE_FILES ${SOURCE_FILES} ${CPP_FILES} ${H_FILES})
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
+set(SOURCE_FILES ${SOURCE_FILES} ${CPP_FILES} ${H_FILES})
+set(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
 # Qt4 Wrap
-QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
+QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 configure_qxmpp()
 configure_speex()
-use_package (QXMPP)
-use_package (SPEEX)
+use_package(QXMPP)
+use_package(SPEEX)
 
-add_definitions (-DXMPP_MODULE_EXPORTS)
+add_definitions(-DXMPP_MODULE_EXPORTS)
 
-use_app_modules (XMPPModule)
-use_core_modules (Framework Audio Math)
+UseTundraCore()
+use_app_modules(XMPPModule)
+use_core_modules(TundraCore Math)
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
+build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Framework Audio)
-link_package (QXMPP)
-link_package (SPEEX)
+link_package(QT4)
+link_modules(TundraCore)
+link_package(QXMPP)
+link_package(SPEEX)
 
 SetupCompileFlagsWithPCH()
 
-final_target ()
-
+final_target()

@@ -7,7 +7,7 @@
 #include "OgreWorld.h"
 #include "Renderer.h"
 #include "Entity.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "OgreSkeletonAsset.h"
@@ -60,7 +60,6 @@ EC_Mesh::EC_Mesh(Scene* scene) :
         adjustment_node_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Mesh_adjustment_node"));
 
         connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
         connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
         connect(skeletonAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
@@ -301,14 +300,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         adjustment_node_->setOrientation(newTransform.Orientation());
         
         // Prevent Ogre exception from zero scale
-        if (newTransform.scale.x < 0.0000001f)
-            newTransform.scale.x = 0.0000001f;
-        if (newTransform.scale.y < 0.0000001f)
-            newTransform.scale.y = 0.0000001f;
-        if (newTransform.scale.z < 0.0000001f)
-            newTransform.scale.z = 0.0000001f;
-
-        adjustment_node_->setScale(newTransform.scale);
+        adjustment_node_->setScale(Max(newTransform.scale, float3::FromScalar(0.0000001f)));
             
         // Force a re-apply of all materials to this new mesh.
         ApplyMaterial();
@@ -593,15 +585,10 @@ void EC_Mesh::RemoveAllAttachments()
     attachment_nodes_.clear();
 }
 
-bool EC_Mesh::SetMaterial(uint index, const QString& material_name)
+bool EC_Mesh::SetMaterial(uint index, const QString& material_name, AttributeChange::Type change)
 {
     if (!entity_)
-    {
-        // The mesh is not ready yet, track bending applies 
-        // so we can apply it once OnMeshAssetLoaded() is called
-        pendingMaterialApplies[index] = material_name;
         return false;
-    }
     
     if (index >= entity_->getNumSubEntities())
     {
@@ -613,6 +600,22 @@ bool EC_Mesh::SetMaterial(uint index, const QString& material_name)
     try
     {
         entity_->getSubEntity(index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name.toStdString()));
+
+        if (pendingFailedMaterials_.contains(index))
+            pendingFailedMaterials_.removeAll(index);
+
+        // Update the EC_Mesh material attribute list so that users can call EC_Mesh::SetMaterial as a replacement for setting
+        // meshMaterial attribute. Only apply the change if the value really changed.
+        AssetReferenceList materials = meshMaterial.Get();
+        while(materials.Size() <= (int)index)
+            materials.Append(AssetReference());
+        if (material_name.compare(materials[index].ref, Qt::CaseSensitive) != 0)
+        {
+            materials.Set(index, AssetReference(material_name));
+            meshMaterial.Set(materials, change); // Potentially signal the change of attribute, if requested so.
+        }
+
+        // To retain compatibility with old behavior, always fire the EC_Mesh -specific change signal independent of the value of 'change'.
         emit MaterialChanged(index, material_name);
     }
     catch(Ogre::Exception& e)
@@ -841,14 +844,14 @@ void EC_Mesh::UpdateSignals()
     }
 }
 
-void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
+void EC_Mesh::AttributesChanged()
 {
-    if (attribute == &drawDistance)
+    if (drawDistance.ValueChanged())
     {
         if(entity_)
             entity_->setRenderingDistance(drawDistance.Get());
     }
-    else if (attribute == &castShadows)
+    if (castShadows.ValueChanged())
     {
         if(entity_)
         {
@@ -862,32 +865,27 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
             }
         }
     }
-    else if (attribute == &nodeTransformation)
+    if (nodeTransformation.ValueChanged())
     {
         Transform newTransform = nodeTransformation.Get();
         adjustment_node_->setPosition(newTransform.pos);
         adjustment_node_->setOrientation(newTransform.Orientation());
         
         // Prevent Ogre exception from zero scale
-        if (newTransform.scale.x < 0.0000001f)
-            newTransform.scale.x = 0.0000001f;
-        if (newTransform.scale.y < 0.0000001f)
-            newTransform.scale.y = 0.0000001f;
-        if (newTransform.scale.z < 0.0000001f)
-            newTransform.scale.z = 0.0000001f;
+        newTransform.scale = Max(newTransform.scale, float3::FromScalar(0.0000001f));
         
         adjustment_node_->setScale(newTransform.scale);
     }
-    else if (attribute == &meshRef)
+    if (meshRef.ValueChanged())
     {
         if (!ViewEnabled())
             return;
-            
+
         if (meshRef.Get().ref.trimmed().isEmpty())
             LogDebug("Warning: Mesh \"" + this->parentEntity->Name() + "\" mesh ref was set to an empty reference!");
         meshAsset->HandleAssetRefChange(&meshRef);
     }
-    else if (attribute == &meshMaterial)
+    if (meshMaterial.ValueChanged())
     {
         if (!ViewEnabled())
             return;
@@ -896,10 +894,15 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
 
         // Reset all the materials from the submeshes which now have an empty material asset reference set.
         for(uint i = 0; i < GetNumMaterials(); ++i)
+        {
             if ((int)i >= materials.Size() || materials[i].ref.trimmed().isEmpty())
-                SetMaterial(i, "");
+            {
+                if (entity_ && entity_->getSubEntity(i))
+                    entity_->getSubEntity(i)->setMaterialName("");
+            }
+        }
 
-        // Reallocate the number of material asset reflisteners.
+        // Reallocate the number of material asset ref listeners.
         while(materialAssets.size() > (size_t)materials.Size())
             materialAssets.pop_back();
         while(materialAssets.size() < (size_t)materials.Size())
@@ -907,16 +910,20 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
 
         for(int i = 0; i < materials.Size(); ++i)
         {
-            connect(materialAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
-            connect(materialAssets[i].get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
-            materialAssets[i]->HandleAssetRefChange(framework->Asset(), materials[i].ref);
+            // Don't request empty refs. HandleAssetRefChange will just do unnecessary work and the below connections are for nothing.
+            if (!materials[i].ref.trimmed().isEmpty())
+            {
+                connect(materialAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+                connect(materialAssets[i].get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
+                materialAssets[i]->HandleAssetRefChange(framework->Asset(), materials[i].ref);
+            }
         }
     }
-    else if(attribute == &skeletonRef)
+    if (skeletonRef.ValueChanged())
     {
         if (!ViewEnabled())
             return;
-        
+
         if (!skeletonRef.Get().ref.isEmpty())
             skeletonAsset->HandleAssetRefChange(&skeletonRef);
     }
@@ -954,13 +961,21 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
     if (skeletonAsset->Asset())
         OnSkeletonAssetLoaded(skeletonAsset->Asset());
 
-    // Apply pending materials, these were tried to be applied before the mesh was loaded
-    if (!pendingMaterialApplies.empty())
+    // Apply any failed materials that failed before the mesh was loaded. We want the visual error material to be there.
+    foreach(uint failedIndex, pendingFailedMaterials_)
     {
-        for(int idx = 0; idx < (int)pendingMaterialApplies.size(); ++idx)
-            SetMaterial(idx, pendingMaterialApplies[idx]);
-        pendingMaterialApplies.clear();
+        if (!entity_ || !entity_->getSubEntity(failedIndex))
+            continue;
+        try
+        {
+            entity_->getSubEntity(failedIndex)->setMaterialName("AssetLoadError");
+        }
+        catch(Ogre::Exception& e)
+        {
+            LogError(QString("EC_Mesh::OnMeshAssetLoaded: Could not set error material AssetLoadError: ") + e.what());
+        }
     }
+    pendingFailedMaterials_.clear();
 }
 
 void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
@@ -1025,7 +1040,7 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
         if (materialList[i].ref.compare(ogreMaterial->Name(), Qt::CaseInsensitive) == 0 ||
             framework->Asset()->ResolveAssetRef("", materialList[i].ref).compare(ogreMaterial->Name(), Qt::CaseInsensitive) == 0) ///<///\todo The design of whether the ResolveAssetRef should occur here, or internal to Asset API needs to be revisited.
         {
-            SetMaterial(i, ogreMaterial->Name());
+            SetMaterial(i, ogreMaterial->Name(), AttributeChange::Disconnected);
             assetUsed = true;
         }
 
@@ -1049,7 +1064,29 @@ void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
     {
         QString absoluteRef = framework->Asset()->ResolveAssetRef("", materialList[i].ref);
         if (absoluteRef == transfer->source.ref)
-            SetMaterial(i, QString("AssetLoadError"));
+        {
+            // Do not use SetMaterial here as it will modify meshMaterials into "AssetLoadError"
+            // which is not what we want to do here. If the asset it later created/loaded the 
+            // string compare in OnMaterialAssetLoaded breaks. This is a valid scenario in some 
+            // components like EC_Material.
+            if (entity_)
+            {
+                if ((uint)i < entity_->getNumSubEntities() && entity_->getSubEntity(i))
+                {
+                    try
+                    {
+                        entity_->getSubEntity(i)->setMaterialName("AssetLoadError");
+                    }
+                    catch(Ogre::Exception& e)
+                    {
+                        LogError(QString("EC_Mesh::OnMaterialAssetFailed: Could not set error material AssetLoadError: ") + e.what());
+                    }
+                }
+            }
+            // Store the index so we can apply the visual error material later once the mesh is loaded.
+            else if (!pendingFailedMaterials_.contains((uint)i))
+                pendingFailedMaterials_ << (uint)i;
+        }
     }
 }
 
@@ -1065,7 +1102,7 @@ void EC_Mesh::ApplyMaterial()
             QString assetFullName = assetAPI->ResolveAssetRef("", materialList[i].ref);
             AssetPtr asset = assetAPI->GetAsset(assetFullName);
             if (asset && !assetAPI->HasPendingDependencies(asset))
-                SetMaterial(i, assetFullName);
+                SetMaterial(i, assetFullName, AttributeChange::Disconnected);
         }
     }
 }

@@ -1,0 +1,35 @@
+particle_system sparkles
+{
+	material Flare.000.material
+	particle_width 3.0
+	particle_height 3.0
+	quota 10000
+	cull_each false
+	sorted false
+	local_space false
+	iteration_interval 0.0
+	nonvisible_update_timeout 0.0
+	billboard_type point
+	billboard_origin center
+	billboard_rotation_type vertex
+	point_rendering false
+	accurate_facing true
+
+	emitter Point
+	{
+		position 0.2 0.0 0.0
+		direction 0.0 0.0 1.0
+		angle 180
+		emission_rate 40
+		velocity_min 3
+		velocity_max 3
+		time_to_live_min 15
+		time_to_live_max 15
+		duration_min 1
+		duration_max 1
+		repeat_delay_min 0.001
+		repeat_delay_max 0.001
+		colour_range_start 0 0 1 1
+		colour_range_end 0.5 0.5 1 1
+	}
+}

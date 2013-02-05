@@ -1,10 +1,18 @@
 #!/bin/bash
 
 # To use this script, first configure these paths!
-qtdir=/Users/lc/QtSDK/Desktop/Qt/4.8.0/gcc
-ogredir=/Users/lc/ogre-safe-nocrashes/lib/relwithdebinfo
+qtdir=~/QtSDK/Desktop/Qt/4.8.0/gcc
+startdir=$(pwd)
+cd ../../naali-deps
+depsdir=$(pwd)
+cd build/ogre-safe-nocrashes
+ogredir=$(pwd)
+cd $startdir
 
 echo "Assuming Qt is found at $qtdir."
+if [ ! -d $qtdir ]; then
+	echo "ERROR: qtdir=$qtdir does not seem to exist! Please configure this script by hand to point to where you installed QtSDK."
+fi
 echo "Assuming Ogre is found at $ogredir."
 
 qtlibdir=$qtdir/lib
@@ -14,6 +22,7 @@ qtpluginsdir=$qtdir/plugins
 cd ..
 startdir=$(pwd)
 echo "Assuming $startdir is the Tundra repository root directory."
+mkdir -p build/Tundra.app/ # Hide errors if path doesn't exist.
 cd build/Tundra.app/
 bundledir=$(pwd)
 frameworksdir=$bundledir/Contents/Frameworks
@@ -57,9 +66,17 @@ ogresamples=`find $bundledir/Contents/Plugins -name "Sample_*.dylib"`
 rm $ogresamples
 
 echo "Deploying Ogre framework $ogredir to app bundle."
-cp -R $ogredir/Ogre.framework $frameworksdir
+cp -R $ogredir/lib/relwithdebinfo/Ogre.framework $frameworksdir
+
+# When running in an app bundle, Ogre plugins are loaded from the Plugins/ folder of the app bundle.
+mv $bundledir/Contents/MacOS/*.dylib $bundledir/Contents/Plugins
+
+# Deploy Tundra deps dylibs to Plugins
+cp $depsdir/lib/*.dylib $bundledir/Contents/Plugins
+
 echo "Deploying system Cg.framework to app bundle."
-cp -R /Library/Frameworks/Cg.framework $frameworksdir
+cp -R $depsdir/Frameworks/Cg.framework $frameworksdir
+
 chmod -R u+w $frameworksdir/Cg.framework
 
 echo "Cleaning redundant files from bundle (*_debug*.dylib etc.)"

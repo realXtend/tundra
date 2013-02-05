@@ -11,6 +11,9 @@
 #include "Color.h"
 #include "OgreModuleFwd.h"
 
+#include <QHash>
+#include <QString>
+
 /// Enables visual highlighting effect for scene entity.
 /** <table class="header">
     <tr>
@@ -82,9 +85,6 @@ private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
 
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
-
     /// Called when component has been removed from the parent entity.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
     
@@ -100,7 +100,10 @@ private slots:
 private:
     /// Create highlight pass to an Ogre material's all techniques
     void CreateHighlightToOgreMaterial(OgreMaterialAsset* mat);
-    
+
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
+
     /// Apply a color change to all existing highlight materials
     void ApplyHighlightColors();
         
@@ -113,6 +116,9 @@ private:
     /// Highlight material assets, cloned from the mesh component's materials
     std::vector<AssetPtr> materials_;
     
+    /// Store original materials from EC_Mesh for restoring later.
+    QHash<uint, QString> originalMaterials_;
+
     /// Delayed reapply already pending -flag
     bool reapplyPending_;
 };

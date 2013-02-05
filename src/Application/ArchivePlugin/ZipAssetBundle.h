@@ -13,16 +13,16 @@ struct zzip_dir;
 /// Provides zip packed asset bundle support.
 class ZipAssetBundle : public IAssetBundle
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     ZipAssetBundle(AssetAPI *owner, const QString &type, const QString &name);
     ~ZipAssetBundle();
 
-    /// IAsset override.
+    /// IAssetBundle override.
     virtual bool IsLoaded() const;
 
-    /// IAsset override.
+    /// IAssetBundle override.
     virtual void DoUnload();
 
     /// IAssetBundle override.
@@ -38,7 +38,8 @@ public:
 
     /// IAssetBundle override.
     /** @todo If we must support this in memory method with zzip 
-        we could store the data to disk and open it. Be sure to change RequiresDiskSource to false. */
+        we could store the data to disk and open it. Be sure to change RequiresDiskSource to false.
+        @return Currently not applicable, so false always. */
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
 
     /// IAssetBundle override.

@@ -7,7 +7,7 @@
 #include "EC_Camera.h"
 #include "OgreMaterialUtils.h"
 
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "FrameAPI.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
@@ -20,9 +20,6 @@ EC_RttTarget::EC_RttTarget(Scene* scene) :
     width(this, "Texture width", 400),
     height(this, "Texture height", 300)
 {
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(OnAttributeUpdated(IAttribute*)));
-
     //can't do immediately here, 'cause getcomponent crashes
     //.. is not allowed to get other components in the creation of a component. ok?
     //framework->Frame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
@@ -127,7 +124,7 @@ void EC_RttTarget::SetAutoUpdated(bool val)
 }
 */
 
-void EC_RttTarget::OnAttributeUpdated(IAttribute* attribute)
+void EC_RttTarget::AttributesChanged()
 {
 }
 

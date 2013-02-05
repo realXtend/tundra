@@ -31,9 +31,6 @@ EC_Avatar::EC_Avatar(Scene* scene) :
     IComponent(scene),
     appearanceRef(this, "Appearance ref", AssetReference("", "Avatar"))
 {
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-        this, SLOT(OnAttributeUpdated(IAttribute*)));
-    
     avatarAssetListener_ = AssetRefListenerPtr(new AssetRefListener());
     connect(avatarAssetListener_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(avatarAssetListener_.get(), SIGNAL(TransferFailed(IAssetTransfer *, QString)), this, SLOT(OnAvatarAppearanceFailed(IAssetTransfer*, QString)));
@@ -88,9 +85,9 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
     SetupAppearance();
 }
 
-void EC_Avatar::OnAttributeUpdated(IAttribute *attribute)
+void EC_Avatar::AttributesChanged()
 {
-    if (attribute == &appearanceRef)
+    if (appearanceRef.ValueChanged())
     {
         QString ref = appearanceRef.Get().ref.trimmed();
         if (ref.isEmpty())
@@ -214,7 +211,7 @@ void EC_Avatar::SetupMeshAndMaterials()
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
         return;
-    
+
     // Mesh needs to be cloned if there are attachments which need to hide vertices
     bool need_mesh_clone = false;
     
@@ -244,7 +241,7 @@ void EC_Avatar::SetupMeshAndMaterials()
         HideVertices(mesh->GetEntity(), vertices_to_hide);
     
     for (uint i = 0; i < desc->materials_.size(); ++i)
-        mesh->SetMaterial(i, LookupAsset(desc->materials_[i]));
+        mesh->SetMaterial(i, LookupAsset(desc->materials_[i]), AttributeChange::Default);
     
     // Position approximately within the bounding box
     // Will be overridden by bone-based height adjust, if available

@@ -149,18 +149,20 @@ else()
     message(FATAL_ERROR "Protobuf was not found properly, cannot make custom build step for Mumble.proto")
 endif ()
 
-use_core_modules (Framework Math Scene Audio Console OgreRenderingModule TundraProtocolModule)
-use_app_modules (JavascriptModule)
+UseTundraCore()
+use_core_modules(TundraCore Math OgreRenderingModule TundraProtocolModule)
+use_app_modules(JavascriptModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${PROTOBUF_CPP_FILES} ${PROTOBUF_H_FILES})
 
-link_modules (Framework Math Scene Audio Console OgreRenderingModule TundraProtocolModule JavascriptModule)
-link_entity_components (EC_Sound)
+link_modules(TundraCore Math OgreRenderingModule TundraProtocolModule JavascriptModule)
+link_entity_components(EC_Sound)
 
-link_package (SPEEX)
-link_package (CELT)
-link_package (PROTOBUF)
-link_package (OPENSSL)
+link_package(QT4)
+link_package(SPEEX)
+link_package(CELT)
+link_package(PROTOBUF)
+link_package(OPENSSL)
 
 if (NOT WIN32)
     link_ogre()

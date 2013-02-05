@@ -13,6 +13,8 @@
 #include "AssetReference.h"
 #include "AssetRefListener.h"
 
+#include <QList>
+
 /// Ogre mesh entity component
 /** <table class="header">
     <tr>
@@ -143,14 +145,18 @@ public slots:
         @param skeletonName skeleton to use
         @param clone whether mesh should be cloned for modifying geometry uniquely
         @return true if successful */
-    bool SetMeshWithSkeleton(const std::string& meshName, const std::string& skeletonNAme, bool clone = false);
+    bool SetMeshWithSkeleton(const std::string& meshName, const std::string& skeletonName, bool clone = false);
 
     /// Sets material in mesh
     /** @param index submesh index
         @param materialName material name. Note that the material name must only contain ASCII characters! Even though
             this string is a QString, Unicode or other character encodings are not supported by Ogre.
+        @param change The signalling type to use for this change. Important! In order to preserve compatibility and old behavior,
+                      the default changetype is Disconnected. When changing a material from script code, you will want to set this to
+                      Default almost _always_.
+        @note This function causes the signal MaterialChanged() to be fired, independent what the value of change is.
         @return true if successful */
-    bool SetMaterial(uint index, const QString& materialName);
+    bool SetMaterial(uint index, const QString& materialName, AttributeChange::Type change = AttributeChange::Disconnected);
 
     /// (Re)applies the currently set material refs to the currently set mesh ref.
     /** Does not start any asset requests, but sets the data on the currently loaded assets. */
@@ -380,9 +386,6 @@ private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
 
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
-
     /// Called when component has been removed from the parent entity. Checks if the component removed was the placeable, and autodissociates it.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
 
@@ -399,6 +402,10 @@ private slots:
     void OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason);
 
 private:
+
+    /// Called when some of the attributes has been changed.
+    void AttributesChanged();
+
     /// Prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
     /** @param meshName Mesh to prepare
         @param clone Whether should return an uniquely named clone of the mesh, rather than the original
@@ -444,5 +451,6 @@ private:
     /// Manages skeleton asset requests for EC_Mesh.
     AssetRefListenerPtr skeletonAsset;
 
-    std::map<int, QString> pendingMaterialApplies;
+    /// Tracking pending failed material applies.
+    QList<uint> pendingFailedMaterials_;
 };

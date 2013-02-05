@@ -8,7 +8,7 @@
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include "Profiler.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "OgreWorld.h"
 #include "EC_RigidBody.h"
 #include "LoggingFunctions.h"
@@ -18,7 +18,15 @@
 #include "Math/Quat.h"
 #include "Entity.h"
 
+// Disable unreferenced formal parameter coming from Bullet
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#endif
 #include <btBulletDynamicsCommon.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <Ogre.h>
 

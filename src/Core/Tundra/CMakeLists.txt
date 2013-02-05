@@ -1,9 +1,16 @@
 # Define target name and output directory
-init_target (Tundra OUTPUT ./)
+if (NOT ANDROID)
+    init_target (Tundra OUTPUT ./)
+else ()
+    file(MAKE_DIRECTORY ${TUNDRA_BIN}/../android/libs)
+    file(MAKE_DIRECTORY ${TUNDRA_BIN}/../android/libs/${ANDROID_ABI})
+    init_target (Tundra OUTPUT ../android/libs/${ANDROID_ABI})
+endif ()
 
 # Define source files
 file (GLOB CPP_FILES main.cpp)
 file (GLOB H_FILES "") # Dont do *.h it will pickup windows spesific resource.h
+
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 set (RESOURCE_FILES "")
 
@@ -32,15 +39,25 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_core_modules(Framework Math Scene Console)
+UseTundraCore()
+use_core_modules(TundraCore Math)
 
-if (MSVC)
+# On Android build the main program as a shared object
+if (ANDROID)
+   # Nasty CMake hack: the linker directories needed by the static modules have to be redeclared here. \todo Better solution
+   use_package_bullet()
+   build_library(${TARGET_NAME} SHARED ${SOURCE_FILES})
+elseif (MSVC)
    build_executable(${TARGET_NAME} WIN32 ${SOURCE_FILES} ${RESOURCE_FILES})
 else()
    build_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCE_FILES})
 endif()
 
-link_modules (Framework Scene Console)
+link_modules(TundraCore)
+# On Android all modules are linked as static.
+if (ANDROID)
+    link_modules(TundraProtocolModule OgreRenderingModule PhysicsModule EnvironmentModule AssetModule JavascriptModule AvatarModule DebugStatsModule)
+endif()
 
 final_target ()
 

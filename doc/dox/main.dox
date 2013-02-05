@@ -311,10 +311,10 @@ See the following topics for more information:
 
 <p>Implemented by modules
 <ul>
-<li>OgreRenderer::OgreRenderingModule
-<ul><li>Exposes the components EC_Placeable, EC_Mesh, EC_Light, EC_ParticleSystem, EC_AnimationController, EC_Camera, EC_Material, EC_OgreCompositor, EC_RttTarget.</ul> 
+<li>\ref OgreRenderer::OgreRenderingModule "OgreRenderingModule"
+<ul><li>Exposes the components EC_AnimationController, EC_Billboard, EC_Camera, EC_EnvironmentLight, EC_Fog, EC_Light, EC_Material, EC_Mesh, EC_OgreCompositor, EC_ParticleSystem, EC_Placeable, EC_RttTarget, and EC_Sky.</ul> 
 <li>EnvironmentModule
-<ul><li>Exposes the components EC_Sky, EC_Terrain, EC_WaterPlane, EC_Fog.</ul> 
+<ul><li>Exposes the components EC_Terrain and EC_WaterPlane.</ul> 
 <li>SkyXHydrax
 <ul><li>Exposes the components EC_SkyX and EC_Hydrax.</ul> 
 </ul>

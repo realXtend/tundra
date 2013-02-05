@@ -105,7 +105,7 @@ void AddEntityDialog::CheckTempAndSync()
     checkBoxTemp_->setStyleSheet(checkBoxTemp_->isChecked() ? "color: red;" : "color: black;");
 }
 
-void AddEntityDialog::showEvent( QShowEvent *event )
+void AddEntityDialog::showEvent(QShowEvent * /*e*/)
 {
     if (editName_)
         editName_->setFocus(Qt::ActiveWindowFocusReason);

@@ -41,7 +41,7 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal" && tty >/dev/null; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal|nadia" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
 	 build-essential g++ libboost-all-dev libois-dev \
@@ -306,7 +306,7 @@ else
     pkgbase=${what}-2.5_1-opensource
     rm -rf $pkgbase
     zip=../tarballs/$pkgbase.tar.gz
-    test -f $zip || wget -O $zip http://get.qt.nokia.com/qt/solutions/lgpl/$pkgbase.tar.gz
+    test -f $zip || wget -O $zip http://ftp.heanet.ie/mirrors/ftp.trolltech.com/pub/qt/solutions/lgpl/$pkgbase.tar.gz
     tar zxf $zip
     cd $pkgbase
     echo yes | ./configure -library

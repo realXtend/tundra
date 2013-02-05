@@ -57,7 +57,7 @@ function OnEntityCreated(entity, change)
     // If a camera spawnpos entity is loaded, copy the transform
     if (entity.name == "FreeLookCameraSpawnPos")
     {
-        var cameraEntity = scene.GetEntity(cameraEntityId);
+        var cameraEntity = scene.EntityById(cameraEntityId);
         if (cameraEntity)
             cameraEntity.placeable.transform = entity.placeable.transform;
     }
@@ -65,7 +65,7 @@ function OnEntityCreated(entity, change)
 
 function CreateCamera(scene)
 {
-    if (scene.GetEntityByName("FreeLookCamera") != null)
+    if (scene.EntityByName("FreeLookCamera") != null)
         return;
 
     var entity = scene.CreateLocalEntity(["EC_Placeable", "EC_Script", "EC_Camera", "EC_Name"]);
@@ -120,7 +120,7 @@ function OnContextMenu(menu, targets)
 
 function OnLocateTriggered()
 {
-    var cameraEntity = scene.GetEntity(cameraEntityId);
+    var cameraEntity = scene.EntityById(cameraEntityId);
     if (cameraEntity)
     {
         var transform = cameraEntity.placeable.transform;
