@@ -11,7 +11,7 @@ IF NOT EXIST %VSVARSALL%. (
 set BUILD_RELEASE=FALSE
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
-set USE_BOOST=TRUE
+set USE_BOOST=FALSE
 
 :: Validate user-defined variables
 IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
@@ -571,7 +571,7 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
 
 :: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
 set TBB_VERSION=tbb41_20121003oss
-set TBB_HOME="%DEPS%\ogre-safe-nocrashes\Dependencies\tbb"
+set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 IF %USE_BOOST%==FALSE (
     IF NOT EXIST %TBB_VERSION%_win.zip. (
         cecho {0D}Downloading Intel Thread Building Blocks prebuilt package.{# #}{\n}
@@ -581,7 +581,7 @@ IF %USE_BOOST%==FALSE (
         cecho {0C}Error downloading Intel Thread Building Blocks! Aborting!{# #}{\n}
         GOTO :ERROR
     )
-    IF NOT EXIST %TBB_HOME%. (
+    IF NOT EXIST "%TBB_HOME%". (
         cecho {0D}Extracting Intel Thread Building Blocks package.{# #}{\n}
         7za x -y %TBB_VERSION%_win.zip -oDependencies
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -682,7 +682,7 @@ cd "%DEPS%\realxtend-tundra-deps\hydrax"
 IF NOT EXIST Hydrax.sln. (
   cecho {0D}Running cmake for Hydrax.{# #}{\n}
   del /Q CMakeCache.txt
-  cmake . -G %GENERATOR% -DOGRE_HOME=%OGRE_HOME% -DBOOST_ROOT=%BOOST_ROOT%
+  cmake . -G %GENERATOR%
   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
