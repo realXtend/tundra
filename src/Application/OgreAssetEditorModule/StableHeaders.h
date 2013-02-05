@@ -8,8 +8,8 @@
 ///\todo Refactor the above #include inside this #ifdef as well.
 #ifdef PCH_ENABLED
 
+#include "Win.h"
 #include "CoreDefines.h"
-
 #include "Framework.h"
 
 #include <Ogre.h>
@@ -18,4 +18,3 @@
 #include <QtGui>
 
 #endif
-
