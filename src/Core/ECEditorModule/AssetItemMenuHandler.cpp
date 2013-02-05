@@ -19,7 +19,7 @@
 #include "Win.h"
 
 #include "UiMainWindow.h"
-#include "QtUtils.h"
+#include "FileUtils.h"
 
 #include "AssetItemMenuHandler.h"
 
@@ -291,7 +291,7 @@ void AssetItemMenuHandler::CloneAssetDialogClosed(int result)
 
 void AssetItemMenuHandler::Import()
 {
-    QtUtils::OpenFileDialogNonModal(cAllTypesFileFilter, tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)), true);
+    OpenFileDialogNonModal(cAllTypesFileFilter, tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)), true);
 }
 
 void AssetItemMenuHandler::OpenFileDialogClosed(int result)
@@ -322,11 +322,11 @@ void AssetItemMenuHandler::Export()
     {
         QString ref = targets_.assets.first() ? targets_.assets.first()->Name() : "";
         QString assetName= AssetAPI::ExtractFilenameFromAssetRef(ref);
-        QtUtils::SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+        SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
     else
     {
-        QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+        DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
 }
 

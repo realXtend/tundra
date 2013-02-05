@@ -11,7 +11,7 @@
 #include "OgreRenderingModule.h"
 #include "CoreStringUtils.h"
 #include "Profiler.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "OgreWorld.h"
 
 #include <Ogre.h>
