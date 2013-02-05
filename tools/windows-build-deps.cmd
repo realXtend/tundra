@@ -588,28 +588,28 @@ IF %USE_BOOST%==FALSE (
         cd Dependencies
         rename %TBB_VERSION% tbb
         cd..
+
+        REM nedmalloc messes up the _WIN32_WINNT define which causes TBB headers not to compile on VS2008
+        REM (and reportedly on VS2012 too), so fix that. See https://ogre3d.atlassian.net/browse/OGRE-119
+        REM TODO Remove when possible (when moving to newer Ogre).
+        cd OgreMain\src\nedmalloc
+        sed s/"#define _WIN32_WINNT 0x403"//g <malloc.c.h >malloc.c.h.sed
+        del malloc.c.h
+        rename malloc.c.h.sed malloc.c.h
+
+        REM TODO Apparently the above fix is not enough and VC9 build fails to TBB header due erroneously defined _WIN32_WINNT.
+        REM Hack around the error thrown in _tbb_windef.h.
+        cd "%TBB_HOME%\include\tbb\internal"
+        sed s@"#error TBB is unable to run on old Windows versions;"@"//#error TBB is unable to run on old Windows versions;"@g <_tbb_windef.h >_tbb_windef.h.sed
+        del _tbb_windef.h
+        rename _tbb_windef.h.sed _tbb_windef.h
+
+        REM Copy TBB DLLs.
+        REM TODO Currently hardcoded to the 32-bit versions.
+        copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\*.dll" "%TUNDRA_BIN%"
+
+        cd "%DEPS%\ogre-safe-nocrashes"
     )
-
-    REM nedmalloc messes up the _WIN32_WINNT define which causes TBB headers not to compile on VS2008
-    REM (and reportedly on VS2012 too), so fix that. See https://ogre3d.atlassian.net/browse/OGRE-119
-    REM TODO Remove when possible (when moving to newer Ogre).
-    cd OgreMain\src\nedmalloc
-    sed s/"#define _WIN32_WINNT 0x403"//g <malloc.c.h >malloc.c.h.sed
-    del malloc.c.h
-    rename malloc.c.h.sed malloc.c.h
-
-    REM TODO Apparently the above fix is not enough and VC9 build fails to TBB header due erroneously defined _WIN32_WINNT.
-    REM Hack around the error thrown in _tbb_windef.h.
-    cd "%TBB_HOME%\include\tbb\internal"
-    sed s@"#error TBB is unable to run on old Windows versions;"@"//#error TBB is unable to run on old Windows versions;"@g <_tbb_windef.h >_tbb_windef.h.sed
-    del _tbb_windef.h
-    rename _tbb_windef.h.sed _tbb_windef.h
-
-    REM Copy TBB DLLs.
-    REM TODO Currently hardcoded to the 32-bit versions.
-    copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\*.dll" "%TUNDRA_BIN%"
-
-    cd "%DEPS%\ogre-safe-nocrashes"
 )
 
 IF NOT EXIST OGRE.sln. (
