@@ -104,7 +104,7 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QSt
         //In that case the correct texture file is searched using a top-down search.   
         else
         {
-            int length = parsedMeshPath.length();
+//            int length = parsedMeshPath.length();
             QString base;
 
             for(int j=0; j<4/*length*/; j++)
@@ -301,7 +301,7 @@ aiMatrix4x4 UpdateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Og
 void GetBasePose(const aiScene * sc, const aiNode * nd)
 {
     unsigned int i;
-    unsigned int n=0, k = 0, t;
+    unsigned int n=0, /*k = 0,*/ t;
 
     //insert current mesh's bones into boneMatrices
     for(n=0; n < nd->mNumMeshes; ++n)
@@ -387,7 +387,7 @@ void OpenAssetImport::Convert(const u8 *data_, size_t numBytes, const QString &f
     Assimp::DefaultLogger::create("asslogger.log",Assimp::Logger::VERBOSE);
     mAnimationSpeedModifier = 1.0f;
     Assimp::Importer importer;
-    bool searchFromIndex = false;
+//    bool searchFromIndex = false;
 
     /// NOTICE!!!
     // Some converted mesh might show up pretty messed up, it's happening because some formats might
@@ -851,16 +851,15 @@ Ogre::MaterialPtr OpenAssetImport::CreateVertexColorMaterial()
 
 Ogre::MaterialPtr OpenAssetImport::CreateMaterial(Ogre::String& matName, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName)
 {
-
     std::ostringstream matname;
     Ogre::MaterialManager* ogreMaterialMgr =  Ogre::MaterialManager::getSingletonPtr();
     enum aiTextureType Type = aiTextureType_DIFFUSE;
     aiString path;
-    aiTextureMapping mapping = aiTextureMapping_UV;       // the mapping (should be uv for now)
+//    aiTextureMapping mapping = aiTextureMapping_UV;       // the mapping (should be uv for now)
     unsigned int uvindex = 0;                             // the texture uv index channel
-    float blend = 1.0f;                                   // blend
-    aiTextureOp op = aiTextureOp_Multiply;                // op
-    aiTextureMapMode mapmode[2] =  { aiTextureMapMode_Wrap, aiTextureMapMode_Wrap };    // mapmode
+//    float blend = 1.0f;                                   // blend
+//    aiTextureOp op = aiTextureOp_Multiply;                // op
+//    aiTextureMapMode mapmode[2] =  { aiTextureMapMode_Wrap, aiTextureMapMode_Wrap };    // mapmode
     std::ostringstream texname;
 
     aiString szPath;
