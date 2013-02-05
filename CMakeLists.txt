@@ -186,24 +186,19 @@ if (COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif()
 
-# Detect what compiler we are using on windows
-set (VC90 FALSE)
-set (VC100 FALSE)
+# Detect what compiler we are using on Windows
+# TODO Remove these as redundant.
+set(VC90 FALSE)
+set(VC100 FALSE)
 if (MSVC)
-    message ("")
-    message (STATUS "Detecting Visual Studio compiler")
-    if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 10" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 10 Win64")
-        set (VC100 TRUE)
-        message (STATUS "-- VC100 detected")
-    endif ()
-    if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Win64")
-        set (VC90 TRUE)
-        message (STATUS "-- VC90 detected")
-    endif ()
-    if (NOT VC90 AND NOT VC100)
-        message (STATUS "-- Warning: Could not determine compiler from cmake generator name. We support 'officially' Visual Studio 2008 and 2010")
-    endif ()
-endif ()
+    if (MSVC90)
+        set(VC90 TRUE)
+    elseif(MSVC10)
+        set(VC100 TRUE)
+    else()
+        message(STATUS "-- Warning: Unsupported Visual Studio version detected. Currently Visual Studio 2008 and 2010 are supported".)
+    endif()
+endif()
 
 # Set compiler warning levels.
 # On MSVC, use warning level 4 but disable the following warnings:

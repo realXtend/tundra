@@ -42,10 +42,10 @@ macro(configure_ogre)
     endif()
 
     # If doing TUNDRA_NO_BOOST build, TBB is used for Ogre's threading.
-    if (MSVC90 AND TUNDRA_NO_BOOST) # TODO VC10 doesn't need this, investigate why
+    if (TUNDRA_NO_BOOST)
         if ("${TBB_HOME}" STREQUAL "")
             file(TO_CMAKE_PATH "$ENV{TBB_HOME}" TBB_HOME)
-            set(5TBB_HOME ${TBB_HOME} CACHE PATH "TBB_HOME dependency path" FORCE)
+            set(TBB_HOME ${TBB_HOME} CACHE PATH "TBB_HOME dependency path" FORCE)
         endif()
     endif()
 
@@ -115,9 +115,16 @@ macro(configure_ogre)
             # However VC10 seems to be able to understand $(ConfigurationName) also, so use that.
             link_directories(${OGRE_DIR}/lib/$(ConfigurationName))
             link_directories(${OGRE_DIR}/lib/$(ConfigurationName)/opt)
-            if (MSVC90 AND TUNDRA_NO_BOOST) # TODO VC10 doesn't need this, investigate why
+            if (TUNDRA_NO_BOOST) # TBB used for Ogre threading, so include it
                 include_directories(${TBB_HOME}/include)
-                link_directories(${TBB_HOME}/lib/ia32/vc9) # TODO ia32/vc9 correct folder only on VC9 32-bit
+                if (MSVC90)
+                    set(VC_VER "vc9")
+                elseif(MSVC10)
+                    set(VC_VER "vc10")
+                #elseif(MSVC11)
+                #    set(VC_VER "vc11")
+                endif()
+                link_directories(${TBB_HOME}/lib/ia32/${VC_VER}) # TODO ia32 is correct folder only on 32-bit
             endif()
         endif()
         message(STATUS "Using Ogre from SDK directory " ${OGRE_DIR})
@@ -131,12 +138,9 @@ endif()
 
 macro(link_ogre)
     if (WIN32)
+        target_link_libraries(${TARGET_NAME} debug OgreMain_d optimized OgreMain)
         if (ENABLE_DIRECTX)
-            target_link_libraries(${TARGET_NAME} debug OgreMain_d debug RenderSystem_Direct3D9_d)
-            target_link_libraries(${TARGET_NAME} optimized OgreMain optimized RenderSystem_Direct3D9)
-        else()
-            target_link_libraries(${TARGET_NAME} debug OgreMain_d)
-            target_link_libraries(${TARGET_NAME} optimized OgreMain)
+            target_link_libraries(${TARGET_NAME} debug RenderSystem_Direct3D9_d optimized RenderSystem_Direct3D9)
         endif()
     else()
         target_link_libraries(${TARGET_NAME} ${OGRE_LIBRARY})
