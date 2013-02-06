@@ -258,13 +258,12 @@ macro(use_package_bullet)
 endmacro()
 
 macro(link_package_bullet)
-    if (WIN32 AND IS_DIRECTORY ${BULLET_DIR}/msvc/2008) # full prebuilt deps
-        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/LinearMath.lib)
-        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletDynamics.lib)
-        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletCollision.lib)
-        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/LinearMath.lib)
-        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletDynamics.lib)
-        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletCollision.lib)
+    # TODO just checking for RelWithDebInfo dir doesn't necessary cut it as user could have modified 
+    # the build script and built Release instead during initial deps build. This is however very unlikely.
+    if (WIN32 AND IS_DIRECTORY ${BULLET_DIR}/lib/RelWithDebInfo) # Full-build deps 
+        link_directories(${TARGET_NAME}/lib/$(ConfigurationName))
+        target_link_libraries(${TARGET_NAME} debug LinearMath.lib debug BulletDynamics.lib BulletCollision.lib)
+        target_link_libraries(${TARGET_NAME} optimized LinearMath.lib optimized BulletDynamics.lib optimized BulletCollision.lib)
     elseif (WIN32 AND IS_DIRECTORY ${BULLET_DIR}/lib/Release) # prebuilt deps package
         target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/LinearMath.lib)
         target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/lib/Debug/BulletDynamics.lib)
@@ -272,6 +271,13 @@ macro(link_package_bullet)
         target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/LinearMath.lib)
         target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/BulletDynamics.lib)
         target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/lib/Release/BulletCollision.lib)
+    elseif (WIN32 AND IS_DIRECTORY ${BULLET_DIR}/msvc/2008) # TODO DEPRECATED Remove this path (for old full prebuilt deps in /msvc/2008/lib/)
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/LinearMath.lib)
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletDynamics.lib)
+        target_link_libraries(${TARGET_NAME} debug ${BULLET_DIR}/msvc/2008/lib/debug/BulletCollision.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/LinearMath.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletDynamics.lib)
+        target_link_libraries(${TARGET_NAME} optimized ${BULLET_DIR}/msvc/2008/lib/release/BulletCollision.lib)
     else()
         target_link_libraries(${TARGET_NAME} optimized BulletDynamics optimized BulletCollision optimized LinearMath)
         if (WIN32)

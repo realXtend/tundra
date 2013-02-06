@@ -157,20 +157,21 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :: Qt
 :: NOTE For VS2012 support Qt 4.8.3>= needed:
 :: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
+set QT_VER=4.7.4
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
-   IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
-      cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
+   IF NOT EXIST qt-everywhere-opensource-src-%QT_VER%.zip. (
+      cecho {0D}Downloading Qt %QT_VER%. Please be patient, this will take a while.{# #}{\n}
+      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-%QT_VER%.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\qt".{# #}{\n}
+   cecho {0D}Extracting Qt %QT_VER% sources to "%DEPS%\qt".{# #}{\n}
    mkdir qt
-   7za x -y -oqt qt-everywhere-opensource-src-4.7.4.zip
+   7za x -y -oqt qt-everywhere-opensource-src-%QT_VER%.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd qt
-   ren qt-everywhere-opensource-src-4.7.4 qt-src-4.7.4
+   ren qt-everywhere-opensource-src-%QT_VER% qt-src-%QT_VER%
    IF NOT EXIST "%DEPS%\qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
@@ -212,7 +213,7 @@ IF %BUILD_OPENSSL%==TRUE (
 :: a system set QMAKESPEC might take over the build in some bizarre fashion.
 :: Note 1: QTDIR is not used while build, neither should QMAKESPEC be used when -platform is given to configure.
 :: Note 2: We cannot do this inside the qt IF without @setlocal EnableDelayedExpansion.
-set QTDIR=%DEPS%\qt\qt-src-4.7.4
+set QTDIR=%DEPS%\qt\qt-src-%QT_VER%
 set QMAKESPEC=%QTDIR%\mkspecs\%QT_PLATFORM%
 
 IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
@@ -296,16 +297,24 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
 )
 
 IF NOT EXIST "%DEPS%\bullet\". (
-   cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
-   cd "%DEPS%"
-   svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
-   IF NOT EXIST "%DEPS%\bullet\.svn" GOTO :ERROR
-   cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
-   MSBuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
+    cd "%DEPS%"
+    svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
+    IF NOT EXIST "%DEPS%\bullet\.svn" GOTO :ERROR
+    cd bullet
+    IF NOT EXIST BULLET_PHYSICS.sln. (
+        cecho {0D}Running CMake for Bullet.{# #}{\n}
+        IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+        cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_MINICL_OPENCL_DEMOS:BOOL=OFF
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    )
+
+    cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
+    MSBuild BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild BULLET_PHYSICS.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Bullet already built. Skipping.{# #}{\n}
+    cecho {0D}Bullet already built. Skipping.{# #}{\n}
 )
 
 set BOOST_ROOT=%DEPS%\boost
