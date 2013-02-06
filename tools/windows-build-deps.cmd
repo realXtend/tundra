@@ -350,13 +350,15 @@ IF NOT EXIST "%DEPS%\assimp\". (
    copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
       
    :: Release or RelWithDebInfo build, depending on which type of release was preferred.
-   IF %BUILD_RELEASE% == TRUE (
-      msbuild Assimp.sln /p:configuration=Release /nologo
-      copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
-   ) ELSE (
-      msbuild Assimp.sln /p:configuration=RelWithDebInfo /nologo
-      copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
-   )
+   msbuild Assimp.sln /p:configuration=Release /nologo
+   msbuild Assimp.sln /p:configuration=RelWithDebInfo /nologo
+)
+
+:: Copy the correct runtime to /bin for this run
+IF %BUILD_RELEASE% == TRUE (
+   copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
+) ELSE (
+   copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
 )
 
 IF NOT EXIST "%DEPS%\kNet\". (
