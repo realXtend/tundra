@@ -815,22 +815,30 @@ IF NOT EXIST "%DEPS%\protobuf". (
 :: will know this and find them properly from vsprojects\Release|Debug as long as PROTOBUF_SRC_ROOT_FOLDER
 :: is set properly. Because of this we can skip copying things to /lib /bin /include folders.
 IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
-   cd "%DEPS%\protobuf\vsprojects"
-   cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
-   vcbuild /c /upgrade libprotobuf.vcproj $ALL
-   vcbuild /c /upgrade libprotoc.vcproj Release
-   vcbuild /c /upgrade protoc.vcproj Release
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   echo.
-   cecho {0D}Building Google Protobuf. Please be patient, this will take a while.{# #}{\n}
-   msbuild protobuf.sln /p:configuration=Debug /t:libprotobuf /clp:ErrorsOnly /nologo
-   msbuild protobuf.sln /p:configuration=Release /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cd "%DEPS%\protobuf\vsprojects"
+    IF %GENERATOR%==%GENERATOR_VS2008% (
+        :: Upgrade the VS2005 files to VS2008
+        cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
+        VCUpgrade libprotobuf.vcproj /nologo
+        VCUpgrade libprotoc.vcproj /nologo
+        VCUpgrade protoc.vcproj /nologo
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    ) ELSE (
+        :: Command-line upgrading from VS2005 format to VS2010 (or newer) format fails,
+        :: so must use files converted by the Visual Studio Conversion Wizard.
+        copy /Y "%TOOLS%\utils-windows\vs2010-protobuf.sln_" protobuf.sln
+        copy /Y "%TOOLS%\utils-windows\vs2010-libprotobuf.vcxproj_" libprotobuf.vcxproj
+        copy /Y "%TOOLS%\utils-windows\vs2010-libprotoc.vcxproj_" libprotoc.vcxproj
+        copy /Y "%TOOLS%\utils-windows\vs2010-protoc.vcxproj_" protoc.vcxproj
+    )
+    echo.
+    cecho {0D}Building Google Protobuf. Please be patient, this will take a while.{# #}{\n}
+    MSBuild protobuf.sln /p:configuration=Debug /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild protobuf.sln /p:configuration=Release /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Google Protobuf already built. Skipping.{# #}{\n}
 )
-
-:SKIP_PROTOBUF
 
 :: Celt
 IF NOT EXIST "%DEPS%\celt\.git" (
