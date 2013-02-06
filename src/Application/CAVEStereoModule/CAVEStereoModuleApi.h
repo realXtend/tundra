@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_CAVEStereoModuleApi_h
-#define incl_CAVEStereoModuleApi_h
+#pragma once
 
 #if defined (_WINDOWS)
 #if defined(CAVESTEREO_MODULE_EXPORTS) 
@@ -11,6 +10,4 @@
 #endif
 #else
 #define CAVESTEREO_MODULE_API
-#endif
-
 #endif

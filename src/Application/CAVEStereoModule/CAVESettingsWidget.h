@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_OgreRenderingModule_CaveSettingsWidget_h
-#define incl_OgreRenderingModule_CaveSettingsWidget_h
+#pragma once
 
 #include <QWidget>
 #include "ui_CaveSettings.h"
@@ -15,8 +14,7 @@ namespace CAVEStereo
 {
     class CAVESettingsWidget: public QWidget, private Ui::CAVESettings 
     {
-    
-    Q_OBJECT
+        Q_OBJECT
     
     public:
         CAVESettingsWidget(Framework* framework, QWidget* parent = 0);
@@ -53,5 +51,3 @@ namespace CAVEStereo
         QSignalMapper remmapper_;
     };
 }
-
-#endif
