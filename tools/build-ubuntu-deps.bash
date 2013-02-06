@@ -306,7 +306,7 @@ else
     pkgbase=${what}-2.5_1-opensource
     rm -rf $pkgbase
     zip=../tarballs/$pkgbase.tar.gz
-    test -f $zip || wget -O $zip http://get.qt.nokia.com/qt/solutions/lgpl/$pkgbase.tar.gz
+    test -f $zip || wget -O $zip http://ftp.heanet.ie/mirrors/ftp.trolltech.com/pub/qt/solutions/lgpl/$pkgbase.tar.gz
     tar zxf $zip
     cd $pkgbase
     echo yes | ./configure -library

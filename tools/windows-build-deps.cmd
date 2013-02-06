@@ -163,7 +163,7 @@ IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
       cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
+      wget ftp://ftp.qt-project.org/qt/source/qt-everywhere-opensource-src-4.7.4.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
@@ -183,7 +183,7 @@ IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
    IF NOT EXIST jom_1_0_11.zip. (
       cecho {0D}Downloading JOM build tool for Qt.{# #}{\n}
-      wget ftp://ftp.qt.nokia.com/jom/jom_1_0_11.zip
+      wget http://releases.qt-project.org/jom/jom_1_0_11.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
@@ -346,17 +346,17 @@ IF NOT EXIST "%DEPS%\assimp\". (
    cmake -G %GENERATOR%
 
    :: Build Debug and both Release and RelWithDebInfo so we can swap the 
-   :: runtime binaries without coming into this build block later
-   devenv Assimp.sln /Build Debug
-   devenv Assimp.sln /Build Release
-   devenv Assimp.sln /Build RelWithDebInfo
-)
-
-copy /Y "%DEPS%\assimp\bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
-IF %BUILD_RELEASE% == TRUE (
-  copy /Y "%DEPS%\assimp\bin\Release\assimp.dll" "%TUNDRA_BIN%"
-) ELSE (
-  copy /Y "%DEPS%\assimp\bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
+   msbuild Assimp.sln /p:configuration=Debug /nologo
+   copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
+      
+   :: Release or RelWithDebInfo build, depending on which type of release was preferred.
+   IF %BUILD_RELEASE% == TRUE (
+      msbuild Assimp.sln /p:configuration=Release /nologo
+      copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
+   ) ELSE (
+      msbuild Assimp.sln /p:configuration=RelWithDebInfo /nologo
+      copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
+   )
 )
 
 IF NOT EXIST "%DEPS%\kNet\". (
