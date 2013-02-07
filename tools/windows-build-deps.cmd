@@ -785,12 +785,6 @@ IF NOT EXIST "%DEPS%\speex". (
 )
 
 :: Google Protocol Buffer
-:: TODO Investigate whether building with VS2010 possible
-IF NOT %GENERATOR%==%GENERATOR_VS2008% (
-   cecho {0D}Google Protocol Buffer doens't support building with Visual Studio newer than 2008, skipping.{# #}{\n}
-   GOTO :SKIP_PROTOBUF
-)
-
 IF NOT EXIST "%DEPS%\protobuf". (
    cd "%DEPS%"
    IF NOT EXIST protobuf-2.4.1.zip. (
