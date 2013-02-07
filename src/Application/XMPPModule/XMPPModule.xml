@@ -1,4 +1,0 @@
-<config>
-    <entry>XMPPModule</entry>
-    <dependency>TundraLogicModule</dependency>
-</config>

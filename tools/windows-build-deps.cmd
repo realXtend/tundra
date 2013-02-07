@@ -175,20 +175,21 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :: Qt
 :: NOTE For VS2012 support Qt 4.8.3>= needed:
 :: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
+set QT_VER=4.7.4
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
-   IF NOT EXIST qt-everywhere-opensource-src-4.7.4.zip. (
-      cecho {0D}Downloading Qt 4.7.4. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.zip
+   IF NOT EXIST qt-everywhere-opensource-src-%QT_VER%.zip. (
+      cecho {0D}Downloading Qt %QT_VER%. Please be patient, this will take a while.{# #}{\n}
+      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-%QT_VER%.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
-   cecho {0D}Extracting Qt 4.7.4 sources to "%DEPS%\qt".{# #}{\n}
+   cecho {0D}Extracting Qt %QT_VER% sources to "%DEPS%\qt".{# #}{\n}
    mkdir qt
-   7za x -y -oqt qt-everywhere-opensource-src-4.7.4.zip
+   7za x -y -oqt qt-everywhere-opensource-src-%QT_VER%.zip
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd qt
-   ren qt-everywhere-opensource-src-4.7.4 qt-src-4.7.4
+   ren qt-everywhere-opensource-src-%QT_VER% qt-src-%QT_VER%
    IF NOT EXIST "%DEPS%\qt" GOTO :ERROR
 ) ELSE (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
@@ -230,7 +231,7 @@ IF %BUILD_OPENSSL%==TRUE (
 :: a system set QMAKESPEC might take over the build in some bizarre fashion.
 :: Note 1: QTDIR is not used while build, neither should QMAKESPEC be used when -platform is given to configure.
 :: Note 2: We cannot do this inside the qt IF without @setlocal EnableDelayedExpansion.
-set QTDIR=%DEPS%\qt\qt-src-4.7.4
+set QTDIR=%DEPS%\qt\qt-src-%QT_VER%
 set QMAKESPEC=%QTDIR%\mkspecs\%QT_PLATFORM%
 
 IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
@@ -314,16 +315,28 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
 )
 
 IF NOT EXIST "%DEPS%\bullet\". (
-   cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
-   cd "%DEPS%"
-   svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
-   IF NOT EXIST "%DEPS%\bullet\.svn" GOTO :ERROR
-   cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
-   MSBuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild bullet\msvc\2008\BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
+    cd "%DEPS%"
+    svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
+    IF NOT EXIST "%DEPS%\bullet\.svn" GOTO :ERROR
+    cd bullet
+    IF NOT EXIST BULLET_PHYSICS.sln. (
+        cecho {0D}Running CMake for Bullet.{# #}{\n}
+        IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+        cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_MINICL_OPENCL_DEMOS:BOOL=OFF
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    )
+
+    cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
+    MSBuild BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    if %BUILD_RELEASE%==TRUE (
+        MSBuild BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    ) ELSE (
+        MSBuild BULLET_PHYSICS.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Bullet already built. Skipping.{# #}{\n}
+    cecho {0D}Bullet already built. Skipping.{# #}{\n}
 )
 
 set BOOST_ROOT=%DEPS%\boost
@@ -852,22 +865,30 @@ IF NOT EXIST "%DEPS%\protobuf". (
 :: will know this and find them properly from vsprojects\Release|Debug as long as PROTOBUF_SRC_ROOT_FOLDER
 :: is set properly. Because of this we can skip copying things to /lib /bin /include folders.
 IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
-   cd "%DEPS%\protobuf\vsprojects"
-   cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
-   vcbuild /c /upgrade libprotobuf.vcproj $ALL
-   vcbuild /c /upgrade libprotoc.vcproj Release
-   vcbuild /c /upgrade protoc.vcproj Release
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   echo.
-   cecho {0D}Building Google Protobuf. Please be patient, this will take a while.{# #}{\n}
-   msbuild protobuf.sln /p:configuration=Debug /t:libprotobuf /clp:ErrorsOnly /nologo
-   msbuild protobuf.sln /p:configuration=Release /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cd "%DEPS%\protobuf\vsprojects"
+    IF %GENERATOR%==%GENERATOR_VS2008% (
+        :: Upgrade the VS2005 files to VS2008
+        cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
+        VCUpgrade libprotobuf.vcproj /nologo
+        VCUpgrade libprotoc.vcproj /nologo
+        VCUpgrade protoc.vcproj /nologo
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    ) ELSE (
+        :: Command-line upgrading from VS2005 format to VS2010 (or newer) format fails,
+        :: so must use files converted by the Visual Studio Conversion Wizard.
+        copy /Y "%TOOLS%\utils-windows\vs2010-protobuf.sln_" protobuf.sln
+        copy /Y "%TOOLS%\utils-windows\vs2010-libprotobuf.vcxproj_" libprotobuf.vcxproj
+        copy /Y "%TOOLS%\utils-windows\vs2010-libprotoc.vcxproj_" libprotoc.vcxproj
+        copy /Y "%TOOLS%\utils-windows\vs2010-protoc.vcxproj_" protoc.vcxproj
+    )
+    echo.
+    cecho {0D}Building Google Protobuf. Please be patient, this will take a while.{# #}{\n}
+    MSBuild protobuf.sln /p:configuration=Debug /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild protobuf.sln /p:configuration=Release /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Google Protobuf already built. Skipping.{# #}{\n}
 )
-
-:SKIP_PROTOBUF
 
 :: Celt
 IF NOT EXIST "%DEPS%\celt\.git" (

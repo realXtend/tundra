@@ -1,8 +1,8 @@
 # Set project name
 project(tundra)
 
-# CMake version requirement
-cmake_minimum_required(VERSION 2.4)
+# CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
+cmake_minimum_required(VERSION 2.5.5)
 
 # TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
