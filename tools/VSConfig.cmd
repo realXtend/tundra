@@ -1,17 +1,22 @@
-:: This script initializes various Visual Studio envinronment variables needed for building
+:: This script initializes various Visual Studio -related envinronment variables needed for building
 @echo off
-set GENERATOR=%1%
-::IF "%GENERATOR%"=="" echo Generator not passed! Batch script will most likely fail.
-:: TODO Utilize BUILD_TYPE
-::set BUILD_TYPE=%2%
-::set BUILD_TYPE_RELEASE=Release
-::set BUILD_TYPE_RELWITHDEBINFO=RelWithDebInfo
-::set BUILD_TYPE_DEBUG=Debug
 
 :: Supported Visual Studio versions
 ::set GENERATOR_VS2012="Visual Studio 11"
 set GENERATOR_VS2010="Visual Studio 10"
 set GENERATOR_VS2008="Visual Studio 9 2008"
+set GENERATOR_DEFAULT=%GENERATOR_VS2008%
+
+set GENERATOR=%1
+IF "%GENERATOR%"=="" (
+    set GENERATOR=%GENERATOR_DEFAULT%
+    utils-windows\cecho {0E}VSConfig.cmd: Warning: Generator not passed - using the default %GENERATOR_DEFAULT%.{# #}{\n}
+)
+:: TODO Utilize BUILD_TYPE
+::set BUILD_TYPE=%2%
+::set BUILD_TYPE_RELEASE=Release
+::set BUILD_TYPE_RELWITHDEBINFO=RelWithDebInfo
+::set BUILD_TYPE_DEBUG=Debug
 
 :: VS_VER is a convenience define used f.ex. for filenames
 ::IF %GENERATOR%==%GENERATOR_VS2012% set VS_VER=vs2012
