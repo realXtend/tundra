@@ -2,7 +2,7 @@
 echo.
 
 :: Make sure we're running in Visual Studio Command Prompt
-IF NOT EXIST %VSVARSALL%. (
+IF "%VSINSTALLDIR%"=="" (
    cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
    GOTO :ERROR
 )
