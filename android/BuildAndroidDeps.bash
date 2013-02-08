@@ -20,7 +20,7 @@ fi
 
 tundra_android_native_api_level=9 # This is the minimum API level we can possibly support, we require NativeActivity and AAssetManager.
 echo "Targeting Android Native API level $tundra_android_native_api_level"
-export TUNDRA_ANDROID_ABI=x86 # Possible options 'armeabi', 'armeabi-v7a', 'x86'
+export TUNDRA_ANDROID_ABI=armeabi-v7a # Possible options 'armeabi', 'armeabi-v7a', 'x86'
 echo "Targeting Android ABI '$TUNDRA_ANDROID_ABI'"
  
 cmake_build_type=Release
@@ -88,7 +88,7 @@ fi
 
 if [ ! -d ogre/.hg ]; then
 	echo "Cloning OGRE.."
-	hg clone -r v1-9 https://bitbucket.org/sinbad/ogre ogre
+	hg clone -r dd56c87 https://bitbucket.org/sinbad/ogre ogre
 else
 	echo "OGRE already cloned. Skipping.."
 fi
