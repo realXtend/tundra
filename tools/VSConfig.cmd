@@ -12,12 +12,6 @@ IF "%GENERATOR%"=="" (
     set GENERATOR=%GENERATOR_DEFAULT%
     utils-windows\cecho {0E}VSConfig.cmd: Warning: Generator not passed - using the default %GENERATOR_DEFAULT%.{# #}{\n}
 )
-:: TODO Utilize BUILD_TYPE
-::set BUILD_TYPE=%2%
-::set BUILD_TYPE_RELEASE=Release
-::set BUILD_TYPE_RELWITHDEBINFO=RelWithDebInfo
-::set BUILD_TYPE_DEBUG=Debug
-
 :: VS_VER and VC_VER are convenience variables used f.ex. for filenames
 ::IF %GENERATOR%==%GENERATOR_VS2012% (
 ::    set VS_VER=vs2012
@@ -40,6 +34,7 @@ IF %GENERATOR%==%GENERATOR_VS2008% (
 )
 IF %GENERATOR%==%GENERATOR_VS2008% set QT_PLATFORM=win32-msvc2008
 IF %GENERATOR%==%GENERATOR_VS2010% set QT_PLATFORM=win32-msvc2010
+::IF %GENERATOR%==%GENERATOR_VS2012% set QT_PLATFORM=win32-msvc2012
 
 :: Populate path variables
 cd ..

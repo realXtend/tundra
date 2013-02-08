@@ -38,8 +38,7 @@ IF NOT %USE_BOOST%==FALSE IF NOT %USE_BOOST%==TRUE (
 :: )
 ::
 
-:: TODO Would we like to support MinSizeRel?
-::set BUILD_TYPE_MINSIZEREL=MinSizeRel
+set BUILD_TYPE_MINSIZEREL=MinSizeRel
 set BUILD_TYPE_RELEASE=Release
 set BUILD_TYPE_RELWITHDEBINFO=RelWithDebInfo
 set BUILD_TYPE_DEBUG=Debug
@@ -175,6 +174,8 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :: Qt
 :: NOTE For VS2012 support Qt 4.8.3>= needed:
 :: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
+:: But 4.8.4 should support VS2012 out-of-the-box.
+:: Use http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4.8.4.zip
 set QT_VER=4.7.4
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
