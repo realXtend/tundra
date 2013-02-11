@@ -26,7 +26,7 @@ using namespace OgreRenderer;
 EC_AnimationController::EC_AnimationController(Scene* scene) :
     IComponent(scene),
     animationState(this, "Animation state", ""),
-    drawSkeleton(this, "Draw debug", false),
+    drawDebug(this, "Draw debug", false),
     mesh(0)
 {
     ResetState();
@@ -282,7 +282,7 @@ void EC_AnimationController::Update(float frametime)
                 animstate->_setBlendMaskData(&lowpriority_mask_[0]);
         }
     }
-    if (getdrawSkeleton())
+    if (getdrawDebug())
         DrawSkeleton(frametime);
 }
 

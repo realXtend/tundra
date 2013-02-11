@@ -77,8 +77,8 @@ public:
     Q_PROPERTY(QString animationState READ getanimationState WRITE setanimationState);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, animationState);
 
-    Q_PROPERTY(bool drawSkeleton READ getdrawSkeleton WRITE setdrawSkeleton);
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, drawSkeleton);
+    Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug);
 
     /// Gets mesh entity component
     EC_Mesh *GetMeshEntity() const { return mesh; }
