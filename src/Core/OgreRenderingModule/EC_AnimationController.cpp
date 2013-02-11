@@ -26,7 +26,7 @@ using namespace OgreRenderer;
 EC_AnimationController::EC_AnimationController(Scene* scene) :
     IComponent(scene),
     animationState(this, "Animation state", ""),
-    drawSkeleton(this, "Draw skeleton", false),
+    drawSkeleton(this, "Draw debug", false),
     mesh(0)
 {
     ResetState();
