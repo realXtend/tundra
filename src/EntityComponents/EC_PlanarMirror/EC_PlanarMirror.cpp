@@ -58,8 +58,8 @@ void EC_PlanarMirror::AttributesChanged()
     if (!ViewEnabled())
         return;
 
-    if (reflectionPlaneVisible.ValueChanged())
-        mirror_plane_entity_->setVisible(getreflectionPlaneVisible());
+    if (reflectionPlaneVisible.ValueChanged() && mirror_plane_entity_)
+        mirror_plane_entity_->setVisible(reflectionPlaneVisible.Get());
 }
 
 void EC_PlanarMirror::Update(float val)
@@ -188,8 +188,11 @@ void EC_PlanarMirror::CreatePlane()
     tex_unit_state_ = mat_->getTechnique(0)->getPass(0)->createTextureUnitState(mirror_texture_->getName());
     tex_unit_state_->setProjectiveTexturing(true, mirror_cam_);
     tex_unit_state_->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+    
     Ogre::MaterialPtr mat(mat_);
     mirror_plane_entity_->setMaterial(mat);
+    
+    mirror_plane_entity_->setVisible(reflectionPlaneVisible.Get());
 }
 
 Ogre::Texture* EC_PlanarMirror::GetMirrorTexture() const
