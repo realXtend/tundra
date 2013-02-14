@@ -43,13 +43,27 @@ class SCENEINTERACT_API SceneInteract : public IModule
 {
     Q_OBJECT
 
+    /// See CurrentMouseRaycastResult.
+    Q_PROPERTY(RaycastResult* currentMouseRaycastResult READ CurrentMouseRaycastResult)
+
 public:
     SceneInteract();
     ~SceneInteract() {}
 
+    /// IModule override.
     void Initialize();
-    /// Executes "MouseHover" action each frame if raycast has hit an entity.
+    
+    /// IModule override. Executes "MouseHover" action 
+    /// each frame if raycast has hit an entity.
     void Update(f64 frameTime);
+    
+public slots:
+    /// Returns the latest raycast result to last known mouse cursor position in the currently active scene.
+    /** @return Raycast result. 
+        @note If you are operating inside a higher than 100 priority context callback there
+        is a change the returned result is incorrect. If you want to be absolutely sure
+        use the your mouse events position to execute a raycast operation yourself. */
+    RaycastResult* CurrentMouseRaycastResult() const;
 
 signals:
     /// Emitted when mouse cursor moves on top of an entity.
@@ -78,14 +92,19 @@ signals:
 
 private:
     /// Performs raycast to last known mouse cursor position in the currently active scene.
-    RaycastResult* Raycast();
-
-    InputContextPtr input;
+    /** This function will only perform the raycast once per Tundra mainloop frame. */
+    RaycastResult* ExecuteRaycast();
+    
     int lastX; ///< Last known mouse cursor's x position.
     int lastY; ///< Last known mouse cursor's y position.
+    
     bool itemUnderMouse; ///< Was there widget under mouse in last known position.
+    bool frameRaycasted; ///< Has raycast been already done for this frame.
+    
+    InputContextPtr input; ///< Input Context
     EntityWeakPtr lastHitEntity; ///< Last entity raycast has hit.
-
+    RaycastResult *lastRaycast; ///< Last raycast result.
+    
 private slots:
     void HandleKeyEvent(KeyEvent *e);
     void HandleMouseEvent(MouseEvent *e);

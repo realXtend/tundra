@@ -21,7 +21,9 @@ SceneInteract::SceneInteract() :
     IModule("SceneInteract"),
     lastX(-1),
     lastY(-1),
-    itemUnderMouse(false)
+    itemUnderMouse(false),
+    frameRaycasted(false),
+    lastRaycast(0)
 {
 }
 
@@ -42,30 +44,44 @@ void SceneInteract::Update(f64 /*frameTime*/)
     if (!framework_->IsHeadless())
     {
         PROFILE(SceneInteract_Update);
-        Raycast();
 
+        ExecuteRaycast();
         if (lastHitEntity.lock())
             lastHitEntity.lock()->Exec(EntityAction::Local, "MouseHover");
+            
+        frameRaycasted = false;
     }
 }
 
-RaycastResult* SceneInteract::Raycast()
+RaycastResult* SceneInteract::CurrentMouseRaycastResult() const
 {
+    return lastRaycast;
+}
+
+RaycastResult* SceneInteract::ExecuteRaycast()
+{
+    // Return the cached result if already executed this frame.
+    if (frameRaycasted && lastRaycast)
+        return lastRaycast;
+    frameRaycasted = true;
+
     OgreWorldPtr world = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer()->GetActiveOgreWorld();
     if (!world)
         return 0;
 
-    RaycastResult *result = world->Raycast(lastX, lastY); // Never returns null
-    if (!result->entity || itemUnderMouse)
+    lastRaycast = world->Raycast(lastX, lastY);
+    if (!lastRaycast)
+        return 0;
+    if (!lastRaycast->entity || itemUnderMouse)
     {
         if (!lastHitEntity.expired())
             lastHitEntity.lock()->Exec(EntityAction::Local, "MouseHoverOut");
         lastHitEntity.reset();
-        return result;
+        return lastRaycast;
     }
 
     EntityPtr lastEntity = lastHitEntity.lock();
-    EntityPtr entity = result->entity->shared_from_this();
+    EntityPtr entity = lastRaycast->entity->shared_from_this();
     if (entity != lastEntity)
     {
         if (lastEntity)
@@ -77,7 +93,7 @@ RaycastResult* SceneInteract::Raycast()
         lastHitEntity = entity;
     }
 
-    return result;
+    return lastRaycast;
 }
 
 void SceneInteract::HandleKeyEvent(KeyEvent * /*e*/)
@@ -87,11 +103,16 @@ void SceneInteract::HandleKeyEvent(KeyEvent * /*e*/)
 
 void SceneInteract::HandleMouseEvent(MouseEvent *e)
 {
+    // Invalidate cached raycast if mouse coordinates have changed
+    if (frameRaycasted)
+        if (lastX != e->x || lastY != e->y)
+            frameRaycasted = false;
+
     lastX = e->x;
     lastY = e->y;
     itemUnderMouse = (e->ItemUnderMouse() != 0);
 
-    RaycastResult *raycastResult = Raycast();
+    RaycastResult *raycastResult = ExecuteRaycast();
 
     Entity *hitEntity = lastHitEntity.lock().get();
     if (!hitEntity || !raycastResult)
@@ -146,9 +167,9 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
 
 extern "C"
 {
-DLLEXPORT void TundraPluginMain(Framework *fw)
-{
-    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    fw->RegisterModule(new SceneInteract());
-}
+    DLLEXPORT void TundraPluginMain(Framework *fw)
+    {
+        Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
+        fw->RegisterModule(new SceneInteract());
+    }
 }
