@@ -1,4 +1,6 @@
 :: This script initializes various Visual Studio -related envinronment variables needed for building
+:: NOTE: The delayed environment variable expansion needs to be enabled before calling this.
+
 @echo off
 
 :: Supported Visual Studio versions
@@ -8,7 +10,7 @@ set GENERATOR_VS2008="Visual Studio 9 2008"
 set GENERATOR_DEFAULT=%GENERATOR_VS2008%
 
 set GENERATOR=%1
-IF "%GENERATOR%"=="" (
+IF "!GENERATOR!"=="" (
     set GENERATOR=%GENERATOR_DEFAULT%
     utils-windows\cecho {0E}VSConfig.cmd: Warning: Generator not passed - using the default %GENERATOR_DEFAULT%.{# #}{\n}
 )

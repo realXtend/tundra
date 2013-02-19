@@ -1,6 +1,9 @@
 @echo off
 echo.
 
+:: Enable the delayed environment variable expansion needed in VSConfig.cmd.
+setlocal EnableDelayedExpansion
+
 call VSConfig.cmd %1%
 
 cd ..
@@ -60,3 +63,5 @@ cecho {0C}An error occurred! Aborting!{# #}{\n}
 cd tools
 set PATH=%ORIGINAL_PATH%
 pause
+
+endlocal
