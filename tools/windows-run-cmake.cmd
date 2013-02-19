@@ -4,7 +4,7 @@ echo.
 :: Enable the delayed environment variable expansion needed in VSConfig.cmd.
 setlocal EnableDelayedExpansion
 
-call VSConfig.cmd %1%
+call VSConfig.cmd %1
 
 cd ..
 

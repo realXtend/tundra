@@ -10,7 +10,7 @@ IF "%VSINSTALLDIR%"=="" (
    GOTO :ERROR
 )
 
-call VSConfig.cmd %1%
+call VSConfig.cmd %1
 
 :: User defined variables
 :: TODO remove BUILD_RELEASE and instead use BUILD_TYPE
