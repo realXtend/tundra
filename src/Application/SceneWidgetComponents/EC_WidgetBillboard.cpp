@@ -276,13 +276,19 @@ void EC_WidgetBillboard::PrepareComponent()
 
 void EC_WidgetBillboard::AttributesChanged()
 {
+    if (framework->IsHeadless())
+        return;
+
     EC_Billboard *myBillboard = GetBillboardComponent();
 
     // Fetch ui asset and hide EC_Billboard if created.
     if (uiRef.ValueChanged())
     {
         if (!getuiRef().ref.isEmpty())
-            refListener_->HandleAssetRefChange(&uiRef, "QtUiFile");
+        {
+            if (refListener_)
+                refListener_->HandleAssetRefChange(&uiRef, "QtUiFile");
+        }
         else
         {
             // Ref was reseted: Destroy widget and hide target billboard.
