@@ -550,6 +550,20 @@ void EC_SlideShow::ComponentRemoved(IComponent *component, AttributeChange::Type
 
 void EC_SlideShow::AttributesChanged()
 {
+    if (slideChangeInterval.ValueChanged())
+    {
+        if (isServer_)
+        {
+            int timerSec = getslideChangeInterval();
+            if (timerSec <= 0)
+                changeTimer_.stop();
+            else
+                changeTimer_.start(timerSec * 1000);
+        }
+    }
+    if (framework->IsHeadless())
+        return;
+
     // Can handle before we are prepared
     if (slides.ValueChanged())
     {
@@ -589,11 +603,11 @@ void EC_SlideShow::AttributesChanged()
                 listener->setProperty("isTexture", false);
                 continue;
             }
-            
+
             // Connect signals
             connect(listener, SIGNAL(Loaded(AssetPtr)), SLOT(TextureLoaded(AssetPtr)));
             connect(listener, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(TextureLoadFailed(IAssetTransfer*, QString)));
-            
+
             // Request the asset only for the current index
             if (i == getcurrentSlideIndex())
             {
@@ -602,18 +616,7 @@ void EC_SlideShow::AttributesChanged()
             }
         }
     }
-    if (slideChangeInterval.ValueChanged())
-    {
-        if (isServer_)
-        {
-            int timerSec = getslideChangeInterval();
-            if (timerSec <= 0)
-                changeTimer_.stop();
-            else
-                changeTimer_.start(timerSec * 1000);
-        }
-    }
-
+        
     // Cant handle yet, not prepared
     if (!IsPrepared())
         return;
