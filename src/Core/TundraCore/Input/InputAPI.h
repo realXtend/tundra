@@ -179,6 +179,12 @@ public slots:
 
     /// Explicitly defocus any widgets and return key focus to the 3D world
     void ClearFocus();
+    
+    /// Sends key release messages for each currently tracked pressed key and clears the record of all pressed keys.
+    void SceneReleaseAllKeys();
+    
+    /// Sends mouse button release messages for each mouse button that was held down.
+    void SceneReleaseMouseButtons();
 
     /// Return the current key bindings.
     KeyBindingMap KeyBindings() const { return keyboardMappings; }
@@ -210,10 +216,6 @@ private:
     std::list<InputContextPtr> untrackedInputContexts;
 
     bool eventFilter(QObject *obj, QEvent *event);
-    /// Sends key release messages for each currently tracked pressed key and clears the record of all pressed keys.
-    void SceneReleaseAllKeys();
-    /// Sends mouse button release messages for each mouse button that was held down.
-    void SceneReleaseMouseButtons();
     /// Moves the mouse to the center of the client area. Used in relative mouse movement mode to force the mouse cursor
     /// to stay at screen center at all times.
     void RecenterMouse();
