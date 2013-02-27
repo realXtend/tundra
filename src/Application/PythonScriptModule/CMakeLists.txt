@@ -37,8 +37,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 link_modules(TundraCore OgreRenderingModule TundraProtocolModule)
 
 # Link to ECs. This macro will smartly opt out ECs that are not included in the build, info for this provided by GetEntityComponents() on top.
-link_entity_components (EC_Script EC_Highlight EC_HoveringText EC_Sound EC_TransformGizmo
-                        EC_PlanarMirror EC_ProximityTrigger EC_Billboard EC_ParticleSystem)
+link_entity_components (EC_Script EC_Highlight EC_HoveringText EC_Sound EC_TransformGizmo EC_PlanarMirror EC_ProximityTrigger)
 
 # Use python, pythonqt and ogre
 link_package (PYTHON)

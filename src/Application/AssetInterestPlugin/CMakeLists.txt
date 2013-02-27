@@ -13,13 +13,15 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI (UI_SRCS ${UI_FILES})
 
 # Includes
+UseTundraCore()
 use_core_modules(TundraCore Math OgreRenderingModule TundraProtocolModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 # Linking
 link_ogre()
-link_modules(TundraCore OgreRenderingModule TundraProtocolModule)
+link_package_knet()
+link_modules(TundraCore Math OgreRenderingModule TundraProtocolModule)
 
 if (WIN32)
     target_link_libraries (${TARGET_NAME} ws2_32.lib)

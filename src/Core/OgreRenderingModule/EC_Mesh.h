@@ -13,6 +13,8 @@
 #include "AssetReference.h"
 #include "AssetRefListener.h"
 
+#include <QList>
+
 /// Ogre mesh entity component
 /** <table class="header">
     <tr>
@@ -449,5 +451,6 @@ private:
     /// Manages skeleton asset requests for EC_Mesh.
     AssetRefListenerPtr skeletonAsset;
 
-    std::map<int, QString> pendingMaterialApplies;
+    /// Tracking pending failed material applies.
+    QList<uint> pendingFailedMaterials_;
 };
