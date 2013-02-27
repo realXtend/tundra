@@ -35,6 +35,11 @@ endif()
 message("** Configuring Boost")
 message(STATUS "Using BOOST_ROOT = " ${BOOST_ROOT})
 
+# We build boost from custom deps directory, so don't look up boost from system.
+if (ANDROID)
+   set(Boost_NO_SYSTEM_PATHS TRUE)
+endif()
+
 set(Boost_FIND_REQUIRED TRUE)
 set(Boost_FIND_QUIETLY TRUE)
 set(Boost_DEBUG FALSE)
@@ -68,6 +73,11 @@ endif()
 if (APPLE)
     set (BOOST_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/lib)
     set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
+endif()
+
+# On Android, pthread library does not exist. Remove it if mistakenly added to boost libraries
+if (ANDROID)
+    list(REMOVE_ITEM Boost_LIBRARIES "pthread")   
 endif()
 
 endmacro (configure_boost)

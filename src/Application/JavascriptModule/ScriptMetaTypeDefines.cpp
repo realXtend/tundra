@@ -263,7 +263,6 @@ static QScriptValue math_SetMathBreakOnAssume(QScriptContext *context, QScriptEn
     return QScriptValue();
 }
 
-/// @todo Dead code, evalue if this function is needed
 static QScriptValue math_MathBreakOnAssume(QScriptContext * /*context*/, QScriptEngine *engine)
 {
     return qScriptValueFromValue(engine, MathBreakOnAssume());
@@ -307,7 +306,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     register_Transform_prototype(engine);
     QScriptValue mathNamespace = engine->newObject();
     mathNamespace.setProperty("SetMathBreakOnAssume", engine->newFunction(math_SetMathBreakOnAssume, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    mathNamespace.setProperty("MathBreakOnAssume", engine->newFunction(math_SetMathBreakOnAssume, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mathNamespace.setProperty("MathBreakOnAssume", engine->newFunction(math_MathBreakOnAssume, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     engine->globalObject().setProperty("math", mathNamespace);
 
     // Input metatypes.
