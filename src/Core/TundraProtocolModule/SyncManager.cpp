@@ -634,9 +634,10 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
                     rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
                     rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
                 }
-                r.interpolatorActive = false;
             }
+            r.interpolatorActive = false;
             ++iter;
+            
             // Could remove the interpolation structure here, as inter/extrapolation it is no longer active. However, it is currently
             // used to store most recently received entity position  & velocity data.
             //iter = state->entityInterpolations.erase(iter); // Finished interpolation.
