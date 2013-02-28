@@ -1,8 +1,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#define MATH_OGRE_INTEROP
-
 #include "StableHeaders.h"
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
