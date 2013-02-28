@@ -1,17 +1,16 @@
 @echo off
 echo.
 
+:: Enable the delayed environment variable expansion needed in VSConfig.cmd.
+setlocal EnableDelayedExpansion
+
 :: Make sure we're running in Visual Studio Command Prompt
 IF "%VSINSTALLDIR%"=="" (
    cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
    GOTO :ERROR
 )
 
-:: User-defined variables
-set BUILD_RELEASE=FALSE
-set BUILD_OPENSSL=TRUE
-set USE_JOM=TRUE
-set USE_BOOST=FALSE
+call VSConfig.cmd %1
 
 :: Validate user-defined variables
 IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
@@ -1099,3 +1098,5 @@ cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 pause
+
+endlocal
