@@ -12,6 +12,12 @@ IF "%VSINSTALLDIR%"=="" (
 
 call VSConfig.cmd %1
 
+:: User-defined variables
+set BUILD_RELEASE=FALSE
+set BUILD_OPENSSL=TRUE
+set USE_JOM=TRUE
+set USE_BOOST=FALSE
+
 :: Validate user-defined variables
 IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
    cecho {0E}BUILD_OPENSSL needs to be either TRUE or FALSE!{# #}{\n}
