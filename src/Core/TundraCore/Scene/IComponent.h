@@ -175,6 +175,8 @@ public:
     IAttribute* GetAttribute(const QString &name) const;
     
     /// Create an attribute with specifed index, type and name. Return it if successful or null if not. Called by SyncManager.
+    /** Component must override SupportsDynamicAttributes() to allow creating attributes.
+     */
     IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change = AttributeChange::Default);
     
     /// Remove an attribute at the specified index. Called by network sync.
@@ -214,6 +216,13 @@ public slots:
     /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
     component_id_t Id() const { return id; }
 
+    /// Returns whether this component supports adding dynamic attributes. False by default.
+    /** Components that do *not* support dynamic attributes (most of them) are resilient to versioning mismatches between client/server
+        as long as the new attributes are added to the end of the static attributes list. In contrast, components with dynamic attributes
+        are not resilient to mismatches, except if they use *only* dynamic attributes, like EC_DynamicComponent.
+     */
+    virtual bool SupportsDynamicAttributes() const { return false; }
+    
     /// Returns the total number of attributes in this component. Does not count holes in the attribute vector
     int NumAttributes() const;
 
