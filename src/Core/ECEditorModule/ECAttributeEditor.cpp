@@ -13,6 +13,8 @@
 #include "Math/float2.h"
 #include "Math/float4.h"
 #include "Math/Quat.h"
+#include "float.h"
+
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "Transform.h"
@@ -277,10 +279,19 @@ template<> void ECAttributeEditor<float>::Initialize()
                 metaDataFlag_ |= UsingStepValue;
             if((metaDataFlag_ & UsingMinValue) != 0)
                 realPropertyManager->setAttribute(rootProperty_, "minimum", metaData->minimum.toFloat());
+            else
+                realPropertyManager->setAttribute(rootProperty_, "minimum", -(FLT_MAX));
             if((metaDataFlag_ & UsingMaxValue) != 0)
                 realPropertyManager->setAttribute(rootProperty_, "maximum", metaData->maximum.toFloat());
+            else
+                realPropertyManager->setAttribute(rootProperty_, "maximum", FLT_MAX);
             if((metaDataFlag_ & UsingStepValue) != 0)
                 realPropertyManager->setAttribute(rootProperty_, "singleStep", metaData->step.toFloat());
+        }
+        else
+        {
+            realPropertyManager->setAttribute(rootProperty_, "minimum", -(FLT_MAX));
+            realPropertyManager->setAttribute(rootProperty_, "maximum", FLT_MAX);
         }
 
         if(rootProperty_)
@@ -325,8 +336,12 @@ template<> void ECAttributeEditor<float>::Set(QtProperty *property)
 {
     if(listenEditorChangedSignal_)
     {
-        float newValue = property->valueText().toFloat();
-        SetValue(newValue);
+        bool success = false;
+        float newValue = QLocale::system().toFloat(property->valueText(), &success);
+        if (success)
+            SetValue(newValue);
+        else
+            LogError("ECAttributeEditor<float>: Failed to convert the property value text to float.");
     }
 }
 
@@ -701,13 +716,17 @@ template<> void ECAttributeEditor<float2>::Initialize()
 
         if(rootProperty_)
         {
-            QtProperty *childProperty = 0;
+            QtVariantProperty *childProperty = 0;
             childProperty = variantManager->addProperty(QVariant::Double, "x");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
-
+            
             childProperty = variantManager->addProperty(QVariant::Double, "y");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
-
+            
             Update();
             connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
@@ -728,13 +747,20 @@ template<> void ECAttributeEditor<float2>::Set(QtProperty *property)
             if (!attribute)
                 return;
 
-            float2 newValue = attribute->Get();
-            QString propertyName = property->propertyName();
-            if(propertyName == "x")
-                newValue.x = property->valueText().toFloat();
-            else if(propertyName == "y")
-                newValue.y = property->valueText().toFloat();
-            SetValue(newValue);
+            bool success = false;
+            float value = QLocale::system().toFloat(property->valueText(), &success);
+            if (success)
+            {
+                float2 newValue = attribute->Get();
+                QString propertyName = property->propertyName();
+                if (propertyName == "x")
+                    newValue.x = value;
+                else if(propertyName == "y")
+                    newValue.y = value;
+                SetValue(newValue);
+            }
+            else
+                LogError("ECAttributeEditor<float2>: Failed to convert the property value text to float.");
         }
     }
 }
@@ -791,14 +817,20 @@ template<> void ECAttributeEditor<float3>::Initialize()
 
         if(rootProperty_)
         {
-            QtProperty *childProperty = 0;
+            QtVariantProperty *childProperty = 0;
             childProperty = variantManager->addProperty(QVariant::Double, "x");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "y");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "z");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
             Update();
             connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
@@ -819,16 +851,23 @@ template<> void ECAttributeEditor<float3>::Set(QtProperty *property)
             Attribute<float3> *attribute = FindAttribute<float3>(components_[0].lock());
             if (!attribute)
                 return;
-
-            float3 newValue = attribute->Get();
-            QString propertyName = property->propertyName();
-            if(propertyName == "x")
-                newValue.x = property->valueText().toFloat();
-            else if(propertyName == "y")
-                newValue.y = property->valueText().toFloat();
-            else if(propertyName == "z")
-                newValue.z = property->valueText().toFloat();
-            SetValue(newValue);
+                
+            bool success = false;
+            float value = QLocale::system().toFloat(property->valueText(), &success);
+            if (success)
+            {
+                float3 newValue = attribute->Get();
+                QString propertyName = property->propertyName();
+                if(propertyName == "x")
+                    newValue.x = value;
+                else if(propertyName == "y")
+                    newValue.y = value;
+                else if(propertyName == "z")
+                    newValue.z = value;
+                SetValue(newValue);
+            }
+            else
+                LogError("ECAttributeEditor<float3>: Failed to convert the property value text to float.");
         }
     }
 }
@@ -886,17 +925,25 @@ template<> void ECAttributeEditor<float4>::Initialize()
 
         if(rootProperty_)
         {
-            QtProperty *childProperty = 0;
+            QtVariantProperty *childProperty = 0;
             childProperty = variantManager->addProperty(QVariant::Double, "x");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "y");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "z");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "w");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             Update();
@@ -919,17 +966,24 @@ template<> void ECAttributeEditor<float4>::Set(QtProperty *property)
             if (!attribute)
                 return;
 
-            float4 newValue = attribute->Get();
-            QString propertyName = property->propertyName();
-            if(propertyName == "x")
-                newValue.x = property->valueText().toFloat();
-            else if(propertyName == "y")
-                newValue.y = property->valueText().toFloat();
-            else if(propertyName == "z")
-                newValue.z = property->valueText().toFloat();
-            else if(propertyName == "w")
-                newValue.w = property->valueText().toFloat();
-            SetValue(newValue);
+            bool success = false;
+            float value = QLocale::system().toFloat(property->valueText(), &success);
+            if (success)
+            {
+                float4 newValue = attribute->Get();
+                QString propertyName = property->propertyName();
+                if(propertyName == "x")
+                    newValue.x = value;
+                else if(propertyName == "y")
+                    newValue.y = value;
+                else if(propertyName == "z")
+                    newValue.z = value;
+                else if(propertyName == "w")
+                    newValue.w = value;
+                SetValue(newValue);
+            }
+            else
+                LogError("ECAttributeEditor<float4>: Failed to convert the property value text to float.");
         }
     }
 }
@@ -987,17 +1041,25 @@ template<> void ECAttributeEditor<Quat>::Initialize()
 
         if(rootProperty_)
         {
-            QtProperty *childProperty = 0;
+            QtVariantProperty *childProperty = 0;
             childProperty = variantManager->addProperty(QVariant::Double, "x");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "y");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "z");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "w");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rootProperty_->addSubProperty(childProperty);
 
             Update();
@@ -1020,17 +1082,24 @@ template<> void ECAttributeEditor<Quat>::Set(QtProperty *property)
             if (!attribute)
                 return;
 
-            Quat newValue = attribute->Get();
-            QString propertyName = property->propertyName();
-            if (propertyName == "x")
-                newValue.x = property->valueText().toFloat();
-            else if(propertyName == "y")
-                newValue.y = property->valueText().toFloat();
-            else if(propertyName == "z")
-                newValue.z = property->valueText().toFloat();
-            else if(propertyName == "w")
-                newValue.w = property->valueText().toFloat();
-            SetValue(newValue);
+            bool success = false;
+            float value = QLocale::system().toFloat(property->valueText(), &success);
+            if (success)
+            {
+                Quat newValue = attribute->Get();
+                QString propertyName = property->propertyName();
+                if (propertyName == "x")
+                    newValue.x = value;
+                else if(propertyName == "y")
+                    newValue.y = value;
+                else if(propertyName == "z")
+                    newValue.z = value;
+                else if(propertyName == "w")
+                    newValue.w = value;
+                SetValue(newValue);
+            }
+            else
+                LogError("ECAttributeEditor<Quat>: Failed to convert the property value text to float.");
         }
     }
 }
@@ -1290,7 +1359,7 @@ template<> void ECAttributeEditor<Transform>::Update(IAttribute *attr)
         {
             QList<QtProperty *> children = rootProperty_->subProperties();
             if(children.size() >= 3)
-            {
+            {                
                 Transform transformValue = attribute->Get();
                 QList<QtProperty *> positions = children[0]->subProperties();
                 variantManager->setValue(positions[0], transformValue.pos.x);
@@ -1332,34 +1401,52 @@ template<> void ECAttributeEditor<Transform>::Initialize()
             QtVariantProperty *positionProperty = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), "Position");
             rootProperty_->addSubProperty(positionProperty);
             childProperty = variantManager->addProperty(QVariant::Double, "x");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             positionProperty->addSubProperty(childProperty);
-
+                
             childProperty = variantManager->addProperty(QVariant::Double, "y");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             positionProperty->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "z");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             positionProperty->addSubProperty(childProperty);
 
             QtVariantProperty *rotationProperty = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), "Rotation");
             rootProperty_->addSubProperty(rotationProperty);
             childProperty = variantManager->addProperty(QVariant::Double, "x");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rotationProperty->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "y");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rotationProperty->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "z");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             rotationProperty->addSubProperty(childProperty);
 
             QtVariantProperty *scaleProperty = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), "Scale");
             rootProperty_->addSubProperty(scaleProperty);
             childProperty = variantManager->addProperty(QVariant::Double, "x");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             scaleProperty->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "y");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             scaleProperty->addSubProperty(childProperty);
 
             childProperty = variantManager->addProperty(QVariant::Double, "z");
+            childProperty->setAttribute("minimum", -(FLT_MAX));
+            childProperty->setAttribute("maximum", FLT_MAX);
             scaleProperty->addSubProperty(childProperty);
 
             Update();
@@ -1402,10 +1489,10 @@ template<> void ECAttributeEditor<Transform>::Set(QtProperty *property)
             if(foundIndex != -1)
             {
                 bool success = false;
-                float value = property->valueText().toFloat(&success);
+                float value = QLocale::system().toFloat(property->valueText(), &success);
                 if(!success)
                 {
-                    LogError("Failed to convert the property value in float format.");
+                    LogError("ECAttributeEditor<Transform>: Failed to convert the property value text to float.");
                     return;
                 }
 
@@ -1728,9 +1815,15 @@ void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *f
     }
 
     if (pickButton)
+    {
+        pickButton->setAttribute(Qt::WA_LayoutUsesWidgetRect, true);
         connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
+    }
     if (editButton)
+    {
+        editButton->setAttribute(Qt::WA_LayoutUsesWidgetRect, true);
         connect(editButton, SIGNAL(clicked(bool)), SLOT(OpenEditor()));
+    }
 }
 
 void AssetReferenceAttributeEditor::OpenAssetsWindow()

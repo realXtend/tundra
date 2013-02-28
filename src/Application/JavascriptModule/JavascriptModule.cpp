@@ -588,7 +588,7 @@ void JavascriptModule::LoadStartupScripts()
 {
     UnloadStartupScripts();
 
-    QString path = Application::InstallationDirectory() + "jsmodules/startup";
+    QString path = QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules/startup";
     QStringList scripts;
     foreach(const QString &file, DirectorySearch(path, false, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
     if (file.endsWith(".js", Qt::CaseInsensitive))
@@ -600,24 +600,30 @@ void JavascriptModule::LoadStartupScripts()
     LogInfo(Name() + ": Loading startup scripts from /jsmodules/startup");
     if (scripts.empty())
         LogInfo(Name() + ": ** No scripts in /jsmodules/startup");
-
-    for(int i = 0; i < scripts.size(); ++i)
+    else
     {
-        QString startupScript = scripts[i];
-        startupScript = startupScript.replace("\\", "/");
-        QString baseName = startupScript.mid(startupScript.lastIndexOf("/")+1);
-        if (startupScriptsToLoad.contains(startupScript) || startupScriptsToLoad.contains(baseName))
+        QStringList scriptsToBeRemoved;
+        foreach (QString script, startupScriptsToLoad)
         {
-            LogInfo(Name() + ": ** " + baseName);
-            JavascriptInstance* jsInstance = new JavascriptInstance(startupScript, this);
-            PrepareScriptInstance(jsInstance);
-            startupScripts_.push_back(jsInstance);
-            jsInstance->Run();
+            QString fullPath = path + "/" + script;
+            if (scripts.contains(fullPath) || scripts.contains(script))
+            {
+                LogInfo(Name() + ": ** " + script);
+                JavascriptInstance* jsInstance = new JavascriptInstance(fullPath, this);
+                PrepareScriptInstance(jsInstance);
+                startupScripts_.push_back(jsInstance);
+                jsInstance->Run();
 
-            // Remove from the list so we can check relative paths next.
-            startupScriptsToLoad.removeAll(startupScript);
-            startupScriptsToLoad.removeAll(baseName);
+                scriptsToBeRemoved << fullPath;
+                scriptsToBeRemoved << script;
+            }
         }
+
+        if (scriptsToBeRemoved.empty())
+            LogInfo(Name() + ": ** No startup scripts were specified in config file");
+        else
+            foreach (QString script, scriptsToBeRemoved)
+                startupScriptsToLoad.removeAll(script);
     }
 
     LogInfo(Name() + ": Loading scripts from startup config");
