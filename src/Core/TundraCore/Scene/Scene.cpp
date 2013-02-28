@@ -32,8 +32,6 @@
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
 
-#include <boost/regex.hpp>
-
 #include <utility>
 #include "MemoryLeakCheck.h"
 
@@ -87,7 +85,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     {
         if(entities_.find(id) != entities_.end())
         {
-            LogError("Can't create entity with given id because it's already used: " + ToString(id));
+            LogError("Can't create entity with given id because it's already used: " + QString::number(id));
             return EntityPtr();
         }
         else
@@ -166,7 +164,7 @@ void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
     
     if (GetEntity(new_id))
     {
-        LogWarning("Purged entity " + ToString(new_id) + " to make room for a ChangeEntityId request. This should not happen");
+        LogWarning("Purged entity " + QString::number(new_id) + " to make room for a ChangeEntityId request. This should not happen");
         RemoveEntity(new_id, AttributeChange::LocalOnly);
     }
     
@@ -428,11 +426,9 @@ QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
             EntityPtr entity = iter->second;
             QDomElement entity_elem = scene_doc.createElement("entity");
 
-            QString id_str;
-            id_str.setNum((int)entity->Id());
-            entity_elem.setAttribute("id", id_str);
-            entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(entity->IsReplicated())));
-            
+            entity_elem.setAttribute("id", QString::number(entity->Id()));
+            entity_elem.setAttribute("sync", BoolToString(entity->IsReplicated()));
+
             const Entity::ComponentMap &components = entity->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             {
@@ -1080,18 +1076,18 @@ void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sc
             QString scriptData = script.readAll();
             std::string content = scriptData.toStdString();
             QStringList foundRefs;
-            boost::sregex_iterator searchEnd;
+            sregex_iterator searchEnd;
 
-            boost::regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
-            for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
+            regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
+            for(sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
             {
                 QString ref = QString::fromStdString((*iter)[1].str());
                 if (!foundRefs.contains(ref, Qt::CaseInsensitive))
                     foundRefs << ref;
             }
 
-            expression = boost::regex("engine.IncludeFile\\(\\s*\"\\s*(.*?)\\s*\"\\s*\\)");
-            for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
+            expression = regex("engine.IncludeFile\\(\\s*\"\\s*(.*?)\\s*\"\\s*\\)");
+            for(sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
             {
                 QString ref = QString::fromStdString((*iter)[1].str());
                 if (!foundRefs.contains(ref, Qt::CaseInsensitive))

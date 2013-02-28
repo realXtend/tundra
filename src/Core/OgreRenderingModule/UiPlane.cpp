@@ -127,7 +127,7 @@ void UiPlane::SetHeight(float height_, bool absolutePixels)
 void UiPlane::SetTexture(TextureAsset *texture)
 {
     if (texture)
-        textureAsset = boost::dynamic_pointer_cast<TextureAsset>(texture->shared_from_this());
+        textureAsset = dynamic_pointer_cast<TextureAsset>(texture->shared_from_this());
     else
         textureAsset.reset();
     UpdateOgreOverlay();
@@ -136,11 +136,11 @@ void UiPlane::SetTexture(TextureAsset *texture)
 void UiPlane::UpdateOgreOverlay()
 {
     // Create an Ogre material for the Overlay, if one didn't exist.
-    boost::shared_ptr<OgreMaterialAsset> matAsset = materialAsset.lock();
+    shared_ptr<OgreMaterialAsset> matAsset = materialAsset.lock();
     if (!matAsset)
     {
         AssetAPI *asset = fw->Asset();
-        materialAsset = matAsset = boost::dynamic_pointer_cast<OgreMaterialAsset>(asset->CreateNewAsset("OgreMaterial", asset->GenerateUniqueAssetName("Material", "UiPlane")));
+        materialAsset = matAsset = dynamic_pointer_cast<OgreMaterialAsset>(asset->CreateNewAsset("OgreMaterial", asset->GenerateUniqueAssetName("Material", "UiPlane")));
         if (!materialAsset.lock())
         {
             LogError("UiPlane::CreateOverlayMaterial: Could not create overlay material asset!");
@@ -156,7 +156,7 @@ void UiPlane::UpdateOgreOverlay()
     }
     
     // Apply the texture onto the material.
-    boost::shared_ptr<TextureAsset> texAsset = boost::dynamic_pointer_cast<TextureAsset>(textureAsset.lock());
+    shared_ptr<TextureAsset> texAsset = dynamic_pointer_cast<TextureAsset>(textureAsset.lock());
     if (texAsset)
         matAsset->SetTexture(0, 0, 0, texAsset->Name());
 

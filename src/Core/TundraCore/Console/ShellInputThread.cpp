@@ -9,26 +9,24 @@
 
 ShellInputThread::ShellInputThread()
 {
-    inputThread = boost::thread(boost::bind(&ShellInputThread::ThreadMain, this));
+    start();
 }
 
 ShellInputThread::~ShellInputThread()
 {
-    inputThread.interrupt();
+    terminate();
 }
 
-void ShellInputThread::ThreadMain()
+void ShellInputThread::run()
 {
-    while(true)
+    for(;;)
     {
         std::string commandLine;
         std::getline(std::cin, commandLine);
-
-        boost::this_thread::interruption_point();
-
         if (std::cin.fail())
         {
-            std::cout << "NativeInputThread cin failed! Killing thread!" << std::endl;
+            std::cout << "ShellInputThread cin failed! Killing thread!" << std::endl;
+            terminate();
             return;
         }
 

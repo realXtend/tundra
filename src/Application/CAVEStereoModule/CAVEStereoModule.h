@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_CAVEStereoModule_CAVEStereoModule_h
-#define incl_CAVEStereoModule_CAVEStereoModule_h
+#pragma once
 
 #include "IModule.h"
 #include "CAVEStereoModuleApi.h"
@@ -50,5 +49,3 @@ namespace CAVEStereo
         CAVEManager* cave_;
     };
 }
-
-#endif

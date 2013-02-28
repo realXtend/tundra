@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <boost/enable_shared_from_this.hpp>
 #include "AssetModuleApi.h"
 #include "IAssetProvider.h"
 #include "AssetFwd.h"
@@ -18,14 +17,14 @@ class QNetworkRequest;
 class QNetworkReply;
 
 class HttpAssetStorage;
-typedef boost::shared_ptr<HttpAssetStorage> HttpAssetStoragePtr;
+typedef shared_ptr<HttpAssetStorage> HttpAssetStoragePtr;
 
 // Uncomment to enable a --disable_http_ifmodifiedsince command line parameter.
 // This is used to profile the performance effect the HTTP queries have on scene loading times.
 // #define HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
 
 /// Adds support for downloading assets over the web using the 'http://' specifier.
-class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<HttpAssetProvider>
+class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider, public enable_shared_from_this<HttpAssetProvider>
 {
     Q_OBJECT
 
@@ -74,19 +73,22 @@ public:
 
     QString GenerateUniqueStorageName() const;
 
-    /// Return the network access manager
-    QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }
-    
-    /// Constructs QDateTime from a QByteArray header. Can detect and parse following formats:
-    /// ANSI C's asctime(), RFC 822, updated by RFC 1123 and RFC 850, obsoleted by RFC 1036.
-    QDateTime FromHttpDate(const QByteArray &value);
-    
-    /// Constructs a QByteArray from QDateTime. Returns value as Sun, 06 Nov 1994 08:49:37 GMT - RFC 822.
-    QByteArray ToHttpDate(const QDateTime &dateTime);
+    /// Returns the network access manager
+    QNetworkAccessManager* NetworkAccessManager() const { return networkAccessManager; }
+
+    /// Constructs a QDateTime from a HTTP date string.
+    /** Can detect and parse following formats: ANSI C's asctime(), RFC 822, updated by RFC 1123 and RFC 850, obsoleted by RFC 1036. */
+    static QDateTime ParseHttpDate(const QByteArray &value);
+
+    /// Constructs a RFC 822 HTTP date string. f.ex. "Sun, 06 Nov 1994 08:49:37 GMT"
+    static QByteArray CreateHttpDate(const QDateTime &dateTime);
 
 #ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
     virtual void Update(f64 frametime);
 #endif
+
+    // DEPRECATED
+    QNetworkAccessManager* GetNetworkAccessManager() const { return NetworkAccessManager(); } /**< @deprecated Use NetworkAccessManager instead. */
 
 private slots:
     void AboutToExit();

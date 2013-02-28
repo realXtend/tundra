@@ -29,7 +29,7 @@ macro(configure_ogre)
   endif()
 endmacro()
 
-else() # Windows Ogre lookup.
+else() # Windows and OSX Ogre lookup.
 
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()
 macro(configure_ogre)
@@ -39,6 +39,14 @@ macro(configure_ogre)
         link_directx()
     else()
         message(STATUS "DirectX disabled from the build\n")
+    endif()
+
+    # If doing TUNDRA_NO_BOOST build, TBB is used for Ogre's threading.
+    if (TUNDRA_NO_BOOST)
+        if ("${TBB_HOME}" STREQUAL "")
+            file(TO_CMAKE_PATH "$ENV{TBB_HOME}" TBB_HOME)
+            set(TBB_HOME ${TBB_HOME} CACHE PATH "TBB_HOME dependency path" FORCE)
+        endif()
     endif()
 
     # Ogre lookup rules:
@@ -80,7 +88,6 @@ macro(configure_ogre)
     # having to always do the intermediate SDK installation/deployment step.
     
     message("** Configuring Ogre")
-    
     if (APPLE)# AND IS_DIRECTORY ${OGRE_DIR}/Headers) # OGRE_DIR points to a manually installed Ogre.framework?
         if (IS_DIRECTORY ${OGRE_DIR}/lib)
             include_directories(${OGRE_DIR}/lib/relwithdebinfo/Ogre.framework/Headers)
@@ -90,7 +97,7 @@ macro(configure_ogre)
             link_directories(${OGRE_DIR})
         endif()
         message(STATUS "Using Ogre from directory " ${OGRE_DIR})
-    elseif (IS_DIRECTORY ${OGRE_DIR}/OgreMain) # Ogre path points to #1 above.    
+    elseif (IS_DIRECTORY ${OGRE_DIR}/OgreMain) # Ogre path points to #1 above.
         include_directories(${OGRE_DIR}/include)
         include_directories(${OGRE_DIR}/OgreMain/include)
         if (WIN32)
@@ -104,8 +111,21 @@ macro(configure_ogre)
         link_directories(${OGRE_DIR}/lib)
         if (WIN32)
             include_directories(${OGRE_DIR}/include/OGRE/RenderSystems/Direct3D9)
-            link_directories(${OGRE_DIR}/lib/opt)
-            link_directories(${OGRE_DIR}/lib/$(OutDir)/opt)
+            # Note: VC9 uses $(ConfigurationName), but #VC10 and onwards uses $(Configuration).
+            # However VC10 seems to be able to understand $(ConfigurationName) also, so use that.
+            link_directories(${OGRE_DIR}/lib/$(ConfigurationName))
+            link_directories(${OGRE_DIR}/lib/$(ConfigurationName)/opt)
+            if (TUNDRA_NO_BOOST) # TBB used for Ogre threading, so include it
+                include_directories(${TBB_HOME}/include)
+                if (MSVC90)
+                    set(VC_VER "vc9")
+                elseif(MSVC10)
+                    set(VC_VER "vc10")
+                #elseif(MSVC11)
+                #    set(VC_VER "vc11")
+                endif()
+                link_directories(${TBB_HOME}/lib/ia32/${VC_VER}) # TODO ia32 is correct folder only on 32-bit
+            endif()
         endif()
         message(STATUS "Using Ogre from SDK directory " ${OGRE_DIR})
     else()
@@ -118,12 +138,9 @@ endif()
 
 macro(link_ogre)
     if (WIN32)
+        target_link_libraries(${TARGET_NAME} debug OgreMain_d optimized OgreMain)
         if (ENABLE_DIRECTX)
-            target_link_libraries(${TARGET_NAME} debug OgreMain_d debug RenderSystem_Direct3D9_d)
-            target_link_libraries(${TARGET_NAME} optimized OgreMain optimized RenderSystem_Direct3D9)
-        else()
-            target_link_libraries(${TARGET_NAME} debug OgreMain_d)
-            target_link_libraries(${TARGET_NAME} optimized OgreMain)
+            target_link_libraries(${TARGET_NAME} debug RenderSystem_Direct3D9_d optimized RenderSystem_Direct3D9)
         endif()
     else()
         target_link_libraries(${TARGET_NAME} ${OGRE_LIBRARY})

@@ -276,6 +276,12 @@ template<> void ECAttributeEditor<EntityReference>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<EntityReference>::Initialize();
 template<> void ECAttributeEditor<EntityReference>::Set(QtProperty *property);
 
+/// As C++ standard weak_ptr doesn't provide less than operator (or any comparison operators for that matter), we need to provide it ourselves.
+struct ComponentWeakPtrLessThan
+{
+    bool operator() (const ComponentWeakPtr &a, const ComponentWeakPtr &b) const { return WEAK_PTR_LESS_THAN(a, b); }
+};
+
 /// Special case editor for AssetReference attributes.
 class AssetReferenceAttributeEditor : public ECAttributeEditor<AssetReference>
 {
@@ -300,7 +306,7 @@ private:
     bool IsAssetEditorAvailable() const;
 
     Framework *fw;
-    QMap<ComponentWeakPtr, AssetReference> originalValues;
+    std::map<ComponentWeakPtr, AssetReference, ComponentWeakPtrLessThan> originalValues;
 };
 
 template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr);
@@ -332,5 +338,5 @@ private:
 
     Framework *fw;
     int currentIndex;
-    QMap<ComponentWeakPtr, AssetReferenceList> originalValues;
+    std::map<ComponentWeakPtr, AssetReferenceList, ComponentWeakPtrLessThan> originalValues;
 };

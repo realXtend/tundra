@@ -299,7 +299,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 float3x4 worldToLocal = localToWorld.Inverted();
 
                 EC_Mesh *mesh = entity->GetComponent<EC_Mesh>().get();
-                boost::shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh ? mesh->MeshAsset() : boost::shared_ptr<OgreMeshAsset>();
+                shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh ? mesh->MeshAsset() : shared_ptr<OgreMeshAsset>();
                 if (ogreMeshAsset)
                 {
                     Ray localRay = worldToLocal * ray;

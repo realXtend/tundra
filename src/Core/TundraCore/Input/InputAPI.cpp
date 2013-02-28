@@ -13,8 +13,6 @@
 #include "ConfigAPI.h"
 #include "Profiler.h"
 
-#include <boost/make_shared.hpp>
-
 #include <QList>
 #include <QVector>
 #include <QGraphicsItem>
@@ -205,7 +203,7 @@ void InputAPI::DumpInputContexts()
 {
     int idx = 0;
 
-    foreach(const boost::weak_ptr<InputContext> &inputContext, registeredInputContexts)
+    foreach(const weak_ptr<InputContext> &inputContext, registeredInputContexts)
     {
         InputContextPtr ic = inputContext.lock();
         if (ic)
@@ -239,7 +237,7 @@ void InputAPI::SetPriority(InputContextPtr inputContext, int newPriority)
     InputContextList::iterator iter = registeredInputContexts.begin();
     for(; iter != registeredInputContexts.end(); ++iter)
     {
-        boost::shared_ptr<InputContext> inputContext = iter->lock();
+        shared_ptr<InputContext> inputContext = iter->lock();
         if (!inputContext)
             continue;
 
@@ -248,14 +246,14 @@ void InputAPI::SetPriority(InputContextPtr inputContext, int newPriority)
     }
 
     // iter now points to the proper spot w.r.t the priority order. Insert there.
-    registeredInputContexts.insert(iter, boost::weak_ptr<InputContext>(inputContext));
+    registeredInputContexts.insert(iter, weak_ptr<InputContext>(inputContext));
 
     inputContext->priority = newPriority;
 }
 
 InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
 {
-    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(this, name.toStdString().c_str(), priority);
+    shared_ptr<InputContext> newInputContext = MAKE_SHARED(InputContext, this, name.toStdString().c_str(), priority);
     SetPriority(newInputContext, priority);
     return newInputContext;
 }
@@ -316,7 +314,7 @@ void InputAPI::SceneReleaseAllKeys()
 {
     for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
-        boost::shared_ptr<InputContext> inputContext = iter->lock();
+        shared_ptr<InputContext> inputContext = iter->lock();
         if (inputContext)
             inputContext->ReleaseAllKeys();
     }
@@ -396,7 +394,7 @@ void InputAPI::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt:
 {
     for(; start != registeredInputContexts.end(); ++start)
     {
-        boost::shared_ptr<InputContext> context = start->lock();
+        shared_ptr<InputContext> context = start->lock();
         if (context)
             context->TriggerKeyReleaseEvent(keyCode);
     }
@@ -428,7 +426,7 @@ void InputAPI::TriggerKeyEvent(KeyEvent &key)
     // Pass the event to all input contexts in the priority order.
     for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
-        boost::shared_ptr<InputContext> context = iter->lock();
+        shared_ptr<InputContext> context = iter->lock();
         if (context.get() && (!qtWidgetHasKeyboardFocus || context->TakesKeyboardEventsOverQt() || !IsMouseCursorVisible()))
             context->TriggerKeyEvent(key);
         if (key.handled)
@@ -468,7 +466,7 @@ void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
     {
         if (mouse.handled)
             break;
-        boost::shared_ptr<InputContext> context = iter->lock();
+        shared_ptr<InputContext> context = iter->lock();
         if (context.get() && (!mouse.itemUnderMouse || context->TakesMouseEventsOverQt() || !IsMouseCursorVisible()))
             context->TriggerMouseEvent(mouse);
     }
@@ -492,7 +490,7 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
     {
         if (gesture.handled)
             break;
-        boost::shared_ptr<InputContext> context = iter->lock();
+        shared_ptr<InputContext> context = iter->lock();
         if (context.get())
             context->TriggerGestureEvent(gesture);
     }
@@ -992,7 +990,7 @@ void InputAPI::Update(float /*frametime*/)
     for(InputContextList::iterator iter = registeredInputContexts.begin();
         iter != registeredInputContexts.end(); ++iter)
     {
-        boost::shared_ptr<InputContext> inputContext = (*iter).lock();
+        shared_ptr<InputContext> inputContext = (*iter).lock();
         if (inputContext)
             inputContext->UpdateFrame();
     }

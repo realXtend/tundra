@@ -1667,7 +1667,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     tree_asset_transfers_->clear();
 /*     /// \todo Regression. Reimplement using the Asset API. -jj.
 
-    boost::shared_ptr<Asset ServiceInterface> asset_service = 
+    shared_ptr<Asset ServiceInterface> asset_service = 
         framework_->GetS erviceM anager()->Get Service<AssetServiceInterface>(Service::ST_Asset).lock();
     if (!asset_service)
         return;
@@ -2370,7 +2370,7 @@ void TimeProfilerWindow::PopulateBulletStats()
     Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
         return;
-    boost::shared_ptr<Physics::PhysicsWorld> physics = scene->GetWorld<Physics::PhysicsWorld>();
+    shared_ptr<Physics::PhysicsWorld> physics = scene->GetWorld<Physics::PhysicsWorld>();
     const std::set<std::pair<btCollisionObject*, btCollisionObject*> > &collisions = physics->PreviousFrameCollisions();
 
     treeBulletStats->clear();

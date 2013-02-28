@@ -6,8 +6,6 @@
 #include "IAssetBundle.h"
 #include "ZipWorker.h"
 
-#include <boost/shared_ptr.hpp>
-
 struct zzip_dir;
 
 /// Provides zip packed asset bundle support.
@@ -66,4 +64,4 @@ private:
     ZipFileList files_;
 };
 
-typedef boost::shared_ptr<ZipAssetBundle> ArchiveAssetPtr;
+typedef shared_ptr<ZipAssetBundle> ArchiveAssetPtr;

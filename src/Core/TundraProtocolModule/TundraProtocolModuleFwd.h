@@ -6,12 +6,10 @@
 
 #pragma once
 
+#include "CoreTypes.h"
+
 #include <kNetFwd.h>
 
-#include <QString>
-
-#include <boost/smart_ptr.hpp>
-#include <list>
 #include <map>
 
 class KristalliProtocolModule;
@@ -25,8 +23,8 @@ namespace TundraLogic
 }
 
 class UserConnection;
-typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
-typedef boost::weak_ptr<UserConnection> UserConnectionWeakPtr;
+typedef shared_ptr<UserConnection> UserConnectionPtr;
+typedef weak_ptr<UserConnection> UserConnectionWeakPtr;
 typedef std::list<UserConnectionPtr> UserConnectionList;
 
 class SceneSyncState;

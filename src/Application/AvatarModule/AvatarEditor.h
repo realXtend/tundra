@@ -16,7 +16,7 @@ class QTabWidget;
 class EC_Avatar;
 class AvatarDescAsset;
 class Framework;
-typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
+typedef shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 /// Avatar editing window.
 class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
@@ -85,9 +85,9 @@ private:
     /// Avatar entity to edit
     EntityWeakPtr avatarEntity_;
     /// Avatar asset to edit
-    boost::weak_ptr<AvatarDescAsset> avatarAsset_;
+    weak_ptr<AvatarDescAsset> avatarAsset_;
     /// Previous avatar asset, saved when the AssetsWindow for loading new avatar is opened
-    boost::weak_ptr<AvatarDescAsset> previousAvatar_;
+    weak_ptr<AvatarDescAsset> previousAvatar_;
 
     bool reverting_;
 

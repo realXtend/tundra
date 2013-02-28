@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_OgreRenderingModule_CaveManager_h
-#define incl_OgreRenderingModule_CaveManager_h
+#pragma once
 
 #include "OgreModuleFwd.h"
 #include "CAVEView.h"
@@ -79,5 +78,3 @@ namespace CAVEStereo
         CAVESettingsWidget* settings_widget_;
     };
 }
-
-#endif

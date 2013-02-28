@@ -5,8 +5,6 @@
 #include "IAssetTypeFactory.h"
 #include "BinaryAsset.h"
 
-#include <boost/make_shared.hpp>
-
 /// A factory for instantiating assets of a templated type T.
 /** GenericAssetFactory is a predefined concrete factory type anyone defining a new asset type can use
     to create new assets of any type. */
@@ -34,7 +32,7 @@ public:
     
     virtual const QStringList &TypeExtensions() const { return assetTypeExtensions; }
 
-    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const QString &name) { return boost::make_shared<AssetType>(owner, Type(), name); }
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const QString &name) { return MAKE_SHARED(AssetType, owner, Type(), name); }
 
 private:
     const QString assetType;

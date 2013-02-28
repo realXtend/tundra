@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_OgreRenderingModule_CaveView_h
-#define incl_OgreRenderingModule_CaveView_h
+#pragma once
 
 #include "OgreModuleFwd.h"
 
@@ -19,8 +18,7 @@ namespace CAVEStereo
     /// This class is responsible of calculating the projection matrices and manage the render window and camera of the view
     class CAVEView : public QObject
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         explicit CAVEView(const OgreRenderer::RendererPtr &renderer);
@@ -83,5 +81,3 @@ namespace CAVEStereo
         OgreRenderer::RendererWeakPtr renderer_;
     };
 }
-
-#endif

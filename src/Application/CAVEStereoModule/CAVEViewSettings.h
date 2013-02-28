@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_OgreRenderingModule_CaveViewSettings_h
-#define incl_OgreRenderingModule_CaveViewSettings_h
+#pragma once
 
 #include "ui_CaveViewSettingsDialog.h"
 #include <QDialog>
@@ -13,7 +12,6 @@ namespace Ogre
 
 namespace CAVEStereo
 {
-
     class CAVEViewSettings: public QDialog, private Ui::CaveViewSettingsDialog
     {
         Q_OBJECT
@@ -25,4 +23,3 @@ namespace CAVEStereo
     };
 
 }
-#endif

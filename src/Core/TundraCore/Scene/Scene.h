@@ -14,7 +14,7 @@
 #include <QObject>
 #include <QVariant>
 
-#include <boost/enable_shared_from_this.hpp>
+#include <map>
 
 class Framework;
 /// @todo Not nice: UserConnection is a class from TundraProtocolModule, so Scene core API "depends" on it currently.
@@ -29,7 +29,7 @@ class QDomDocument;
     To create, access and remove scenes, see SceneAPI.
 
     \ingroup Scene_group */
-class TUNDRACORE_API Scene : public QObject, public boost::enable_shared_from_this<Scene>
+class TUNDRACORE_API Scene : public QObject, public enable_shared_from_this<Scene>
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ Name)
@@ -73,12 +73,12 @@ public:
 
     /// Return a subsystem world (OgreWorld, PhysicsWorld)
     template <class T>
-    boost::shared_ptr<T> GetWorld() const
+    shared_ptr<T> GetWorld() const
     {
         QVariant pr = this->property(T::PropertyName());
         QObject *qo = pr.value<QObject*>();
         T* rawPtr = checked_static_cast<T*>(qo);
-        return rawPtr ? rawPtr->shared_from_this() : boost::shared_ptr<T>();
+        return rawPtr ? rawPtr->shared_from_this() : shared_ptr<T>();
     }
 
     /// Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged

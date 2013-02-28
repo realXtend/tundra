@@ -441,13 +441,10 @@ void Entity::DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange:
 void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool serializeTemporary) const
 {
     QDomElement entity_elem = doc.createElement("entity");
-    
-    QString id_str;
-    id_str.setNum((int)Id());
-    entity_elem.setAttribute("id", id_str);
-    entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(IsReplicated())));
+    entity_elem.setAttribute("id", QString::number(Id()));
+    entity_elem.setAttribute("sync", BoolToString(IsReplicated()));
     if (serializeTemporary)
-        entity_elem.setAttribute("temporary", QString::fromStdString(::ToString<bool>(IsTemporary())));
+        entity_elem.setAttribute("temporary", BoolToString(IsTemporary()));
 
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
             i->second->SerializeTo(doc, entity_elem, serializeTemporary);
@@ -499,7 +496,7 @@ EntityPtr Entity::Clone(bool local, bool temporary) const
     QDomDocument doc("Scene");
     QDomElement sceneElem = doc.createElement("scene");
     QDomElement entityElem = doc.createElement("entity");
-    entityElem.setAttribute("sync", QString::fromStdString(::ToString<bool>(!local)));
+    entityElem.setAttribute("sync", BoolToString(!local));
     entityElem.setAttribute("id", local ? scene_->NextFreeIdLocal() : scene_->NextFreeId());
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         i->second->SerializeTo(doc, entityElem);
@@ -526,7 +523,7 @@ void Entity::SetName(const QString &name)
 
 QString Entity::Name() const
 {
-    boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
+    shared_ptr<EC_Name> name = GetComponent<EC_Name>();
     if (name)
         return name->name.Get();
     else
@@ -542,7 +539,7 @@ void Entity::SetDescription(const QString &desc)
 
 QString Entity::Description() const
 {
-    boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
+    shared_ptr<EC_Name> name = GetComponent<EC_Name>();
     if (name)
         return name->description.Get();
     else

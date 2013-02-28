@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "CoreTypes.h"
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -31,12 +33,10 @@ struct GlobalAllocObject
     T* handle() { return (T*) this; }
 };
 
-#include <boost/smart_ptr.hpp>
-
 template <typename T>
-struct SharedGlobalObject : public boost::shared_ptr<GlobalAllocObject<T> >
+struct SharedGlobalObject : public shared_ptr<GlobalAllocObject<T> >
 {
-    typedef boost::shared_ptr<GlobalAllocObject<T> > sgPtr;
+    typedef shared_ptr<GlobalAllocObject<T> > sgPtr;
 
     SharedGlobalObject() : sgPtr (new sgPtr::element_type) {}
 

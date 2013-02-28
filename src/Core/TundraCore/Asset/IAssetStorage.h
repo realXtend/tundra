@@ -10,10 +10,9 @@
 #include <QString>
 #include <QStringList>
 #include <vector>
-#include <boost/enable_shared_from_this.hpp>
 
 /// A base class for a database or a collection of assets in a single source.
-class TUNDRACORE_API IAssetStorage : public QObject, public boost::enable_shared_from_this<IAssetStorage>
+class TUNDRACORE_API IAssetStorage : public QObject, public enable_shared_from_this<IAssetStorage>
 {
     Q_OBJECT
     Q_ENUMS(ChangeType)

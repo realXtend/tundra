@@ -86,10 +86,17 @@ private:
         @param parent The newly created (parent) item. */
     void AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent);
 
+
+    /// As C++ standard weak_ptr doesn't provide less than operator (or any comparison operators for that matter), we need to provide it ourselves.
+    struct AssetWeakPtrLessThan
+    {
+        bool operator() (const AssetWeakPtr &a, const AssetWeakPtr &b) const { return WEAK_PTR_LESS_THAN(a, b); }
+    };
+
     Framework *framework;
     AssetTreeWidget *treeWidget; ///< Tree widget showing the assets.
     QTreeWidgetItem *noProviderItem; ///< "No provider" parent item for assets without storage.
-    std::set<AssetWeakPtr> alreadyAdded; ///< Set of already added assets.
+    std::set<AssetWeakPtr, AssetWeakPtrLessThan> alreadyAdded; ///< Set of already added assets.
     QLineEdit *searchField;
     QPushButton *expandAndCollapseButton;
     QString assetType;

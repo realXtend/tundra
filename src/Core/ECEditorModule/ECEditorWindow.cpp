@@ -211,7 +211,7 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
     EntityPtr entity = framework->Scene()->MainCameraScene()->GetEntity(entity_id);
     if (!entity)
     {
-        LogError("Fail to remove entity, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
+        LogError("Failed to remove entity, since scene doesn't contain entity with ID: " + QString::number(entity_id));
         return;
     }
 
@@ -594,7 +594,7 @@ void ECEditorWindow::OpenFunctionDialog()
 {
     QObjectWeakPtrList objs;
     foreach(const EntityPtr &entity, SelectedEntities())
-        objs << boost::dynamic_pointer_cast<QObject>(entity);
+        objs << dynamic_pointer_cast<QObject>(entity);
 
     if (objs.size())
     {
@@ -1007,7 +1007,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         EntityPtr entity = scene->GetEntity(id);
         if (!entity)
         {
-            LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(id));
+            LogWarning("Failed to add a new component to an entity, since couldn't find a entity with ID: " + QString::number(id));
             continue;
         }
 
@@ -1015,7 +1015,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         ComponentPtr comp = entity->GetComponent(dialog->TypeName(), dialog->Name());
         if (comp)
         {
-            LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
+            LogWarning("Failed to add a new component, because there was already a component with the same type and the same name.");
             continue;
         }
 

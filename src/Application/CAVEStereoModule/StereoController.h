@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_OgreRenderingModule_StereoController_h
-#define incl_OgreRenderingModule_StereoController_h
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -24,8 +23,7 @@ namespace CAVEStereo
 
     class StereoController : public QObject
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         StereoController(OgreRenderer::Renderer *r, CAVEStereoModule* mod);
@@ -57,5 +55,3 @@ namespace CAVEStereo
         bool flip_;
     };
 }
-
-#endif

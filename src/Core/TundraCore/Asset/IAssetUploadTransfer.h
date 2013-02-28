@@ -2,17 +2,15 @@
 
 #pragma once
 
-#include <QObject>
-#include <QByteArray>
-
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 #include "IAssetStorage.h"
-#include <boost/weak_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+
+#include <QObject>
+#include <QByteArray>
 
 /// Represents a currently ongoing asset upload operation.
-class TUNDRACORE_API IAssetUploadTransfer : public QObject, public boost::enable_shared_from_this<IAssetUploadTransfer>
+class TUNDRACORE_API IAssetUploadTransfer : public QObject, public enable_shared_from_this<IAssetUploadTransfer>
 {
     Q_OBJECT
 
@@ -34,7 +32,7 @@ public:
     /// Specifies the destination name for the asset.
     QString destinationName;
 
-    boost::weak_ptr<IAssetStorage> destinationStorage;
+    weak_ptr<IAssetStorage> destinationStorage;
 
     AssetProviderWeakPtr destinationProvider;
 
@@ -45,7 +43,7 @@ public slots:
     /// Returns the full assetRef address this asset will have when the upload is complete.
     QString AssetRef()
     { 
-        boost::shared_ptr<IAssetStorage> storage = destinationStorage.lock();
+        shared_ptr<IAssetStorage> storage = destinationStorage.lock();
         if (!storage)
             return "";
         return storage->GetFullAssetURL(destinationName);

@@ -30,8 +30,6 @@
 #include <QList>
 #include <QMap>
 
-#include <boost/regex.hpp>
-
 #include "MemoryLeakCheck.h"
 
 AssetAPI::AssetAPI(Framework *framework, bool headless) :
@@ -278,7 +276,6 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     assetRef = assetRef.trimmed();
     assetRef.replace("\\", "/"); // Normalize all path separators to use forward slashes.
 
-    using namespace boost;
     using namespace std;
 
     wstring ref = QStringToWString(assetRef);

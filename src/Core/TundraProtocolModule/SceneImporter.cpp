@@ -109,7 +109,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
     }
 
     // Fill the placeable attributes
-    boost::shared_ptr<EC_Placeable> placeablePtr = boost::dynamic_pointer_cast<EC_Placeable>(newentity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change));
+    shared_ptr<EC_Placeable> placeablePtr = dynamic_pointer_cast<EC_Placeable>(newentity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change));
     if (placeablePtr)
         placeablePtr->transform.Set(worldtransform, AttributeChange::Disconnected);
     else
@@ -120,7 +120,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
     foreach(QString matName, material_names)
         materials.Append(AssetReference(prefix + matName + ".material"));
 
-    boost::shared_ptr<EC_Mesh> meshPtr = boost::dynamic_pointer_cast<EC_Mesh>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change));
+    shared_ptr<EC_Mesh> meshPtr = dynamic_pointer_cast<EC_Mesh>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change));
     if (meshPtr)
     {
         meshPtr->meshRef.Set(AssetReference(prefix + meshleafname), AttributeChange::Disconnected);
@@ -137,7 +137,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
         LogError("No EC_Mesh was created!");
 
     // Fill the name attributes
-    boost::shared_ptr<EC_Name> namePtr = boost::dynamic_pointer_cast<EC_Name>(newentity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change));
+    shared_ptr<EC_Name> namePtr = dynamic_pointer_cast<EC_Name>(newentity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change));
     if (namePtr)
         ///\todo Use name of scenedesc?
         namePtr->name.Set(meshleafname.replace(".mesh", ""), AttributeChange::Disconnected);
@@ -415,7 +415,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
         materials.Append(AssetReference(path + "/" + matName + ".material"));
 
     /// \todo This creates dummy components, specifying a null scene during creation
-    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>(0);
+    shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>(0);
     assert(mesh);
     if (mesh)
     {
@@ -438,7 +438,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
         }
     }
 
-    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
+    shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
     assert(placeable);
     if (placeable)
         foreach(IAttribute *a, placeable->Attributes())
@@ -447,7 +447,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
             placeableDesc.attributes.append(attrDesc);
         }
 
-    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>(0);
+    shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>(0);
     assert(name);
     if (name)
     {
@@ -624,28 +624,28 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
         QDomElement scale_elem = node_elem.firstChildElement("scale");
         float posx, posy, posz, rotx = 0.0f, roty = 0.0f, rotz = 0.0f, rotw = 1.0f, scalex, scaley, scalez;
 
-        posx = ParseString<float>(pos_elem.attribute("x").toStdString(), 0.0f);
-        posy = ParseString<float>(pos_elem.attribute("y").toStdString(), 0.0f);
-        posz = ParseString<float>(pos_elem.attribute("z").toStdString(), 0.0f);
+        posx = ParseFloat(pos_elem.attribute("x"), 0.0f);
+        posy = ParseFloat(pos_elem.attribute("y"), 0.0f);
+        posz = ParseFloat(pos_elem.attribute("z"), 0.0f);
 
         if (!rot_elem.isNull())
         {
-            rotx = ParseString<float>(rot_elem.attribute("qx").toStdString(), 0.0f);
-            roty = ParseString<float>(rot_elem.attribute("qy").toStdString(), 0.0f);
-            rotz = ParseString<float>(rot_elem.attribute("qz").toStdString(), 0.0f);
-            rotw = ParseString<float>(rot_elem.attribute("qw").toStdString(), 1.0f);
+            rotx = ParseFloat(rot_elem.attribute("qx"), 0.0f);
+            roty = ParseFloat(rot_elem.attribute("qy"), 0.0f);
+            rotz = ParseFloat(rot_elem.attribute("qz"), 0.0f);
+            rotw = ParseFloat(rot_elem.attribute("qw"), 1.0f);
         }
         if (!quat_elem.isNull())
         {
-            rotx = ParseString<float>(quat_elem.attribute("x").toStdString(), 0.0f);
-            roty = ParseString<float>(quat_elem.attribute("y").toStdString(), 0.0f);
-            rotz = ParseString<float>(quat_elem.attribute("z").toStdString(), 0.0f);
-            rotw = ParseString<float>(quat_elem.attribute("w").toStdString(), 1.0f);
+            rotx = ParseFloat(quat_elem.attribute("x"), 0.0f);
+            roty = ParseFloat(quat_elem.attribute("y"), 0.0f);
+            rotz = ParseFloat(quat_elem.attribute("z"), 0.0f);
+            rotw = ParseFloat(quat_elem.attribute("w"), 1.0f);
         }
 
-        scalex = ParseString<float>(scale_elem.attribute("x").toStdString(), 1.0f);
-        scaley = ParseString<float>(scale_elem.attribute("y").toStdString(), 1.0f);
-        scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
+        scalex = ParseFloat(scale_elem.attribute("x"), 1.0f);
+        scaley = ParseFloat(scale_elem.attribute("y"), 1.0f);
+        scalez = ParseFloat(scale_elem.attribute("z"), 1.0f);
 
         float3 newpos(posx, posy, posz);
         Quat newrot(rotx, roty, rotz, rotw);
@@ -700,15 +700,15 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                 LogInfo("Updating existing entity " + node_name);
             }
 
-            boost::shared_ptr<EC_Mesh> meshPtr;
-            boost::shared_ptr<EC_Name> namePtr;
-            boost::shared_ptr<EC_Placeable> placeablePtr;
+            shared_ptr<EC_Mesh> meshPtr;
+            shared_ptr<EC_Name> namePtr;
+            shared_ptr<EC_Placeable> placeablePtr;
 
             if (entity)
             {
-                meshPtr = boost::dynamic_pointer_cast<EC_Mesh>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change));
-                namePtr = boost::dynamic_pointer_cast<EC_Name>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change));
-                placeablePtr = boost::dynamic_pointer_cast<EC_Placeable>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change));
+                meshPtr = dynamic_pointer_cast<EC_Mesh>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change));
+                namePtr = dynamic_pointer_cast<EC_Name>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change));
+                placeablePtr = dynamic_pointer_cast<EC_Placeable>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change));
                 assert(meshPtr && namePtr && placeablePtr);
                 if (meshPtr && namePtr && placeablePtr)
                 {
@@ -794,7 +794,6 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
     }
 }
 
-
 void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipyz, 
     QStringList &meshFiles, QStringList &skeletonFiles, QSet<QString> &usedMaterials, const QString &parentRef)
 {
@@ -807,28 +806,28 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement,
         QDomElement scaleElement = nodeElement.firstChildElement("scale");
         float posX, posY, posZ, rotX = 0.0f, rotY = 0.0f, rotZ = 0.0f, rotW = 1.0f, scaleX, scaleY, scaleZ;
 
-        posX = ParseString<float>(posElement.attribute("x").toStdString(), 0.0f);
-        posY = ParseString<float>(posElement.attribute("y").toStdString(), 0.0f);
-        posZ = ParseString<float>(posElement.attribute("z").toStdString(), 0.0f);
+        posX = ParseFloat(posElement.attribute("x"), 0.0f);
+        posY = ParseFloat(posElement.attribute("y"), 0.0f);
+        posZ = ParseFloat(posElement.attribute("z"), 0.0f);
 
         if (!rotElement.isNull())
         {
-            rotX = ParseString<float>(rotElement.attribute("qx").toStdString(), 0.0f);
-            rotY = ParseString<float>(rotElement.attribute("qy").toStdString(), 0.0f);
-            rotZ = ParseString<float>(rotElement.attribute("qz").toStdString(), 0.0f);
-            rotW = ParseString<float>(rotElement.attribute("qw").toStdString(), 1.0f);
+            rotX = ParseFloat(rotElement.attribute("qx"), 0.0f);
+            rotY = ParseFloat(rotElement.attribute("qy"), 0.0f);
+            rotZ = ParseFloat(rotElement.attribute("qz"), 0.0f);
+            rotW = ParseFloat(rotElement.attribute("qw"), 1.0f);
         }
         if (!quatElement.isNull())
         {
-            rotX = ParseString<float>(quatElement.attribute("x").toStdString(), 0.0f);
-            rotY = ParseString<float>(quatElement.attribute("y").toStdString(), 0.0f);
-            rotZ = ParseString<float>(quatElement.attribute("z").toStdString(), 0.0f);
-            rotW = ParseString<float>(quatElement.attribute("w").toStdString(), 1.0f);
+            rotX = ParseFloat(quatElement.attribute("x"), 0.0f);
+            rotY = ParseFloat(quatElement.attribute("y"), 0.0f);
+            rotZ = ParseFloat(quatElement.attribute("z"), 0.0f);
+            rotW = ParseFloat(quatElement.attribute("w"), 1.0f);
         }
 
-        scaleX = ParseString<float>(scaleElement.attribute("x").toStdString(), 1.0f);
-        scaleY = ParseString<float>(scaleElement.attribute("y").toStdString(), 1.0f);
-        scaleZ = ParseString<float>(scaleElement.attribute("z").toStdString(), 1.0f);
+        scaleX = ParseFloat(scaleElement.attribute("x"), 1.0f);
+        scaleY = ParseFloat(scaleElement.attribute("y"), 1.0f);
+        scaleZ = ParseFloat(scaleElement.attribute("z"), 1.0f);
 
         float3 newPos(posX, posY, posZ);
         Quat newRot(rotX, rotY, rotZ, rotW);
@@ -879,9 +878,9 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement,
             entityDesc.name = nodeName;
 
             SceneAPI &sceneAPI = *scene_->GetFramework()->Scene();
-            boost::shared_ptr<EC_Mesh> meshPtr = sceneAPI.CreateComponent<EC_Mesh>(0);
-            boost::shared_ptr<EC_Name> namePtr = sceneAPI.CreateComponent<EC_Name>(0);
-            boost::shared_ptr<EC_Placeable> placeablePtr = sceneAPI.CreateComponent<EC_Placeable>(0);
+            shared_ptr<EC_Mesh> meshPtr = sceneAPI.CreateComponent<EC_Mesh>(0);
+            shared_ptr<EC_Name> namePtr = sceneAPI.CreateComponent<EC_Name>(0);
+            shared_ptr<EC_Placeable> placeablePtr = sceneAPI.CreateComponent<EC_Placeable>(0);
 
             if (meshPtr.get() && namePtr.get() && placeablePtr.get())
             {
@@ -901,7 +900,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement,
                         materialName += ".material";
                         materialName.replace('/', '_');
 
-                        int index = ParseString<int>(subentityElement.attribute("index").toStdString(), 0);
+                        int index = ParseInt(subentityElement.attribute("index"), 0);
 
                         materialName = prefix + materialName;
                         if (index >= materials.size())

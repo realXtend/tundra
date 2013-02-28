@@ -9,6 +9,8 @@
 #include "MemoryLeakCheck.h"
 #include "Math/MathFunc.h"
 
+#include <QThread>
+
 #include <iostream>
 #include <utility>
 
@@ -50,7 +52,7 @@ void Profiler::StartBlock(const std::string &name)
     if (!node)
     {
         node = new ProfilerNode(name);
-        parent->AddChild(boost::shared_ptr<ProfilerNodeTree>(node));
+        parent->AddChild(shared_ptr<ProfilerNodeTree>(node));
     }
 
     assert (parent->recursion_ >= 0);
@@ -102,9 +104,7 @@ void Profiler::EndBlock(const std::string &name)
     if (node->recursion_ > 0)
         --node->recursion_;
     else
-    {
         current_node_ = node->Parent();
-    }
 #endif
 }
 
@@ -134,12 +134,12 @@ void ProfilerQObj::EndBlock()
 }
 
 ProfilerNodeTree *Profiler::GetThreadRootBlock()
-{ 
+{
     return thread_specific_root_;
 }
 
 ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
-{ 
+{
 #ifdef PROFILING // If not profiling, never create the root block so the getter will always return 0.
     if (!thread_specific_root_)
         return CreateThreadRootBlock();
@@ -149,7 +149,9 @@ ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
 
 std::string Profiler::GetThisThreadRootBlockName()
 {
-    return std::string("Thread" + ToString(boost::this_thread::get_id()));
+    char str[256];
+    sprintf(str, "Thread%p", QThread::currentThreadId());
+    return str;
 }
 
 ProfilerNodeTree *FindBlockByName(ProfilerNodeTree *parent, const char *name)
@@ -211,7 +213,7 @@ ProfilerNodeTree *Profiler::CreateThreadRootBlock()
     // but just weakly refers to them an allows easy access for printing the
     // profiling data in each thread.
     mutex_.lock();
-    root_.AddChild(boost::shared_ptr<ProfilerNodeTree>(root, &EmptyDeletor));
+    root_.AddChild(shared_ptr<ProfilerNodeTree>(root, &EmptyDeletor));
     root->MarkAsRootBlock(this);
     thread_root_nodes_.push_back(root);
     mutex_.unlock();

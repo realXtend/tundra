@@ -12,7 +12,6 @@
 
 #include <QList>
 #include <QCursor>
-#include <boost/make_shared.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -259,7 +258,7 @@ void InputContext::ReleaseAllKeys()
 void InputContext::SetMouseCursorOverride(QCursor cursor)
 {
     if (!mouseCursorOverride)
-        mouseCursorOverride = boost::make_shared<QCursor>(cursor);
+        mouseCursorOverride = MAKE_SHARED(QCursor, cursor);
     else
         *mouseCursorOverride = cursor;
 
