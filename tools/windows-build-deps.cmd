@@ -16,7 +16,7 @@ call VSConfig.cmd %1
 set BUILD_RELEASE=FALSE
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
-set USE_BOOST=FALSE
+set USE_BOOST=TRUE
 
 :: Validate user-defined variables
 IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
@@ -295,7 +295,6 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
    IF EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
       del /Q "%TUNDRA_BIN%\QtWebKit4.dll"
    )
-
 ) ELSE (
    cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
@@ -335,11 +334,7 @@ IF NOT EXIST "%DEPS%\bullet\". (
 
     cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
     MSBuild BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    if %BUILD_RELEASE%==TRUE (
-        MSBuild BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    ) ELSE (
-        MSBuild BULLET_PHYSICS.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    )
+    MSBuild BULLET_PHYSICS.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}Bullet already built. Skipping.{# #}{\n}
@@ -439,6 +434,7 @@ IF NOT EXIST kNet.sln. (
    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
+
 cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
 MSBuild kNet.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
 MSBuild kNet.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
@@ -876,9 +872,9 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
     IF %GENERATOR%==%GENERATOR_VS2008% (
         :: Upgrade the VS2005 files to VS2008
         cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
-        VCUpgrade libprotobuf.vcproj /nologo
-        VCUpgrade libprotoc.vcproj /nologo
-        VCUpgrade protoc.vcproj /nologo
+        vcbuild /c /upgrade libprotobuf.vcproj $ALL
+        vcbuild /c /upgrade libprotoc.vcproj Release
+        vcbuild /c /upgrade protoc.vcproj Release
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     ) ELSE (
         :: Command-line upgrading from VS2005 format to VS2010 (or newer) format fails,
