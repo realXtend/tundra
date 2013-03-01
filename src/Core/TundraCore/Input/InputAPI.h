@@ -226,7 +226,7 @@ private:
     /// Goes through a QTouchEvent and updates the touch point information.
     void UpdateTouchPoints(QTouchEvent* touchEvent);
 
-    typedef std::list<boost::weak_ptr<InputContext> > InputContextList;
+    typedef std::list<weak_ptr<InputContext> > InputContextList;
 
     /// Starting from the input context 'start', triggers key release events to that context and all lower ones.
     void TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Key keyCode);

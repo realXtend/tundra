@@ -153,7 +153,7 @@ private:
     bool attached_;
     
     /// Placeable pointer
-    boost::shared_ptr<EC_Placeable> placeable_;
+    shared_ptr<EC_Placeable> placeable_;
     
     /// Asset ref listener for the material
     AssetRefListenerPtr materialAsset_;

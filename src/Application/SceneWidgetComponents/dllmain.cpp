@@ -1,5 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#include "Win.h"
 #include "Framework.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
@@ -15,12 +16,7 @@ extern "C"
     DLLEXPORT void TundraPluginMain(Framework *fw)
     {
         Framework::SetInstance(fw);
-
-        // Register module
-        IModule *module = new SceneWidgetComponents();
-        fw->RegisterModule(module);
-
-        // Register component factories
+        fw->RegisterModule(new SceneWidgetComponents());
         fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_WidgetCanvas>));
         fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_WebView>));
         fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SlideShow>));

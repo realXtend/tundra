@@ -1,28 +1,24 @@
 @echo off
 echo.
 
-set GENERATOR="Visual Studio 9 2008"
+:: Enable the delayed environment variable expansion needed in VSConfig.cmd.
+setlocal EnableDelayedExpansion
+
+call VSConfig.cmd %1
 
 cd ..
-set ORIGINAL_PATH=%PATH%
-set PATH=%PATH%;"%CD%\tools\utils-windows"
-set TOOLS=%CD%\tools
-set TUNDRA_DIR="%CD%"
-set TUNDRA_BIN=%CD%\bin
-set DEPS=%CD%\deps
 
 :: Print user defined variables
 cecho {0A}Script configuration:{# #}{\n}
 echo CMake Generator   = %GENERATOR%
+
 echo.
 
-:: Make sure we call .Net Framework 3.5 version of msbuild, to be able to build VS2008 solutions.
-set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 :: Add qmake from our downloaded Qt to PATH.
 set PATH=%DEPS%\Qt\bin;%PATH%
 
 SET BOOST_ROOT=%DEPS%\boost
-SET QMAKESPEC=win32-msvc2008
+SET QMAKESPEC=%QT_PLATFORM%
 SET QTDIR=%DEPS%\qt
 SET TUNDRA_DEP_PATH=%DEPS%
 SET KNET_DIR=%DEPS%\kNet
@@ -38,14 +34,15 @@ SET VLC_ROOT=%DEPS%\vlc
 SET QXMPP_ROOT=%DEPS%\qxmpp
 SET ZZIPLIB_ROOT=%DEPS%\zziplib
 SET CRUNCH_ROOT=%DEPS%\crunch
+set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 
-:: Disable python untill it has been fixed to windows-build-deps.cmd!
+:: Disable python until it has been fixed to windows-build-deps.cmd!
 SET TUNDRA_PYTHON_ENABLED=FALSE
 IF %TUNDRA_PYTHON_ENABLED%==FALSE cecho {0E}Disabling Python from the build until deps are automated!{# #}{\n}
 echo.
 
 IF NOT EXIST Tundra.sln. (
-   del /Q CMakeCache.txt
+   IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
    cecho {0D}Running CMake for Tundra.{# #}{\n}
    cmake.exe -G %GENERATOR%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -56,7 +53,7 @@ IF NOT EXIST Tundra.sln. (
 echo.
 
 :: Finish in same directory we started in.
-cd TOOLS
+cd tools
 set PATH=%ORIGINAL_PATH%
 GOTO :EOF
 
@@ -67,3 +64,5 @@ cecho {0C}An error occurred! Aborting!{# #}{\n}
 cd tools
 set PATH=%ORIGINAL_PATH%
 pause
+
+endlocal

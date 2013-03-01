@@ -37,7 +37,7 @@ public:
     /// Called by Framework, do not call from elsewhere.
     void Update(f64 frametime);
 
-    typedef std::map<QString, boost::shared_ptr<ConsoleCommand>, QStringLessThanNoCase> CommandMap;
+    typedef std::map<QString, shared_ptr<ConsoleCommand>, QStringLessThanNoCase> CommandMap;
 
     /// Returns all command for introspection purposes.
     const CommandMap &Commands() const { return commands; }
@@ -127,7 +127,7 @@ private:
     CommandMap commands; ///< Stores all the registered console commands.
     InputContextPtr inputContext;
     QPointer<ConsoleWidget> consoleWidget;
-    boost::shared_ptr<ShellInputThread> shellInputThread;
+    shared_ptr<ShellInputThread> shellInputThread;
     u32 enabledLogChannels; ///< Stores the set of currently active log channels.
     QFile *logFile; ///< Points to the currently open text file for logging.
     QTextStream *logFileText;

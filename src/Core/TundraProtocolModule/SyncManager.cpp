@@ -28,8 +28,6 @@
 
 #include <cstring>
 
-#include <boost/make_shared.hpp>
-
 #include "MemoryLeakCheck.h"
 
 // This variable is used for the interpolation stop check
@@ -251,7 +249,7 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
         this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
-    user->syncState = boost::make_shared<SceneSyncState>(user->ConnectionId(), owner_->IsServer());
+    user->syncState = MAKE_SHARED(SceneSyncState, user->ConnectionId(), owner_->IsServer());
     user->syncState->SetParentScene(scene_);
 
     if (owner_->IsServer())
@@ -564,7 +562,7 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
         iter != state->entityInterpolations.end();)
     {
         EntityPtr e = scene->GetEntity(iter->first);
-        boost::shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : boost::shared_ptr<EC_Placeable>();
+        shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : shared_ptr<EC_Placeable>();
         if (!placeable.get())
         {
             std::map<entity_id_t, RigidBodyInterpolationState>::iterator del = iter++;
@@ -572,7 +570,7 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
             continue;
         }
 
-        boost::shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
+        shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
 
         RigidBodyInterpolationState &r = iter->second;
         if (!r.interpolatorActive)
@@ -743,7 +741,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
             continue; // Newly created and removed entities are handled through the traditional sync mechanism.
 
         EntityPtr e = scene->GetEntity(ess.id);
-        boost::shared_ptr<EC_Placeable> placeable = e->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> placeable = e->GetComponent<EC_Placeable>();
         if (!placeable.get())
             continue;
 
@@ -762,7 +760,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         bool velocityDirty = false;
         bool angularVelocityDirty = false;
         
-        boost::shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
+        shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
         if (rigidBody)
         {
             std::map<component_id_t, ComponentSyncState>::iterator rigidBodyComp = ess.components.find(rigidBody->Id());
@@ -975,8 +973,8 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
     {
         u32 entityID = dd.ReadVLE<kNet::VLE8_16_32>();
         EntityPtr e = scene->GetEntity(entityID);
-        boost::shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : boost::shared_ptr<EC_Placeable>();
-        boost::shared_ptr<EC_RigidBody> rigidBody = e ? e->GetComponent<EC_RigidBody>() : boost::shared_ptr<EC_RigidBody>();
+        shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : shared_ptr<EC_Placeable>();
+        shared_ptr<EC_RigidBody> rigidBody = e ? e->GetComponent<EC_RigidBody>() : shared_ptr<EC_RigidBody>();
         Transform t = e ? placeable->transform.Get() : Transform();
 
         float3 newLinearVel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;

@@ -119,9 +119,9 @@ void TundraLogicModule::Load()
 
 void TundraLogicModule::Initialize()
 {
-    syncManager_ = boost::make_shared<SyncManager>(this);
-    client_ = boost::make_shared<Client>(this);
-    server_ = boost::make_shared<Server>(this);
+    syncManager_ = MAKE_SHARED(SyncManager, this);
+    client_ = MAKE_SHARED(Client, this);
+    server_ = MAKE_SHARED(Server, this);
     
     // Expose client and server to everyone
     framework_->RegisterDynamicObject("client", client_.get());

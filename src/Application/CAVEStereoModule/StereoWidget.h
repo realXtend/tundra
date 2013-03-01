@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_OgreRenderingModule_StereoWidget_h
-#define incl_OgreRenderingModule_StereoWidget_h
+#pragma once
 
 #include <QWidget>
 #include "ui_stereoUI.h"
@@ -12,8 +11,7 @@ namespace CAVEStereo
 {
     class StereoWidget: public QWidget, private Ui::StereoUI 
     {
-    
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         StereoWidget(Framework* framework, QWidget* parent = 0);
@@ -36,5 +34,3 @@ namespace CAVEStereo
         Framework* framework_;
     };
 }
-
-#endif

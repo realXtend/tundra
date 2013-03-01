@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "ExternalRenderWindow.h"
-#include "CoreStringUtils.h"
 
 #include <QResizeEvent>
 #include <QKeyEvent>
@@ -17,7 +16,6 @@
 
 namespace CAVEStereo
 {
-
     ExternalRenderWindow::ExternalRenderWindow()
     {
     }
@@ -91,14 +89,12 @@ namespace CAVEStereo
 
         // Window position to params
         if (left != -1)
-            params["left"] = ToString(left);
+            params["left"] = Ogre::StringConverter::toString(left);
         if (top != -1)
-            params["top"] = ToString(top);
+            params["top"] = Ogre::StringConverter::toString(top);
 
         render_window_ = Ogre::Root::getSingletonPtr()-> createRenderWindow(name, width, height, fullscreen, &params);
-
         return render_window_;
-
     }
 
     void ExternalRenderWindow::ResizeWindow(int width, int height)
@@ -128,6 +124,5 @@ namespace CAVEStereo
                 showNormal();
             }
         }
-
     }
 }

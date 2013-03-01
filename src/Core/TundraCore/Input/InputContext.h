@@ -9,7 +9,7 @@
 
 #include <map>
 #include <set>
-#include <boost/enable_shared_from_this.hpp>
+
 #include <QCursor>
 
 /// Holds information about pressed key.
@@ -30,7 +30,7 @@ struct TUNDRACORE_API KeyPressInformation
 typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
 
 /// Provides clients with input events in a priority order.
-class TUNDRACORE_API InputContext : public QObject, public boost::enable_shared_from_this<InputContext>
+class TUNDRACORE_API InputContext : public QObject, public enable_shared_from_this<InputContext>
 {
     Q_OBJECT
 
@@ -226,7 +226,7 @@ private:
     /// to determine the order in which input is received by the input contexts.
     int priority;
 
-    boost::shared_ptr<QCursor> mouseCursorOverride;
+    shared_ptr<QCursor> mouseCursorOverride;
    
     InputAPI *inputApi;
 

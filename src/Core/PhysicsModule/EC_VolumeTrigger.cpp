@@ -36,7 +36,10 @@ EC_VolumeTrigger::~EC_VolumeTrigger()
 
 QList<EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
 {
-    return entities_.keys();
+    QList<EntityWeakPtr> ret;
+    for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
+        ret.push_back(it->first);
+    return ret;
 }
 
 int EC_VolumeTrigger::GetNumEntitiesInside() const
@@ -46,12 +49,15 @@ int EC_VolumeTrigger::GetNumEntitiesInside() const
 
 Entity* EC_VolumeTrigger::GetEntityInside(int idx) const
 {
-    QList<EntityWeakPtr> entities = entities_.keys();
-    if (idx >=0 && idx < entities.size())
+    if (idx >=0 && (size_t)idx < entities_.size())
     {
-        EntityPtr entity = entities.at(idx).lock();
-        if (entity)
-            return entity.get();
+        int currentIndex = 0;
+        for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
+        {
+            if (currentIndex == idx)
+                return it->first.lock().get();
+            ++currentIndex;
+        }
     }
     return 0;
 }
@@ -59,14 +65,9 @@ Entity* EC_VolumeTrigger::GetEntityInside(int idx) const
 QStringList EC_VolumeTrigger::GetEntityNamesInside() const
 {
     QStringList entitynames;
-    QList<EntityWeakPtr> entities = entities_.keys();
-    foreach (EntityWeakPtr entityw, entities)
-    {
-        EntityPtr entity = entityw.lock();
-        if (entity)
-            entitynames.append(entity->Name());
-    }
-
+    for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
+        if (it->first.expired())
+            entitynames.append(it->first.lock()->Name());
     return entitynames;
 }
 
@@ -74,9 +75,9 @@ float EC_VolumeTrigger::GetEntityInsidePercent(const Entity *entity) const
 {
     if (entity)
     {
-        boost::shared_ptr<EC_RigidBody> otherRigidbody = entity->GetComponent<EC_RigidBody>();
+        shared_ptr<EC_RigidBody> otherRigidbody = entity->GetComponent<EC_RigidBody>();
 
-        boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+        shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
         if (rigidbody && otherRigidbody)
         {
             float3 thisBoxMin, thisBoxMax;
@@ -98,13 +99,9 @@ float EC_VolumeTrigger::GetEntityInsidePercent(const Entity *entity) const
 
 float EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
 {
-    QList<EntityWeakPtr> entities = entities_.keys();
-    foreach(EntityWeakPtr wentity, entities)
-    {
-        EntityPtr entity = wentity.lock();
-        if (entity && entity->Name().compare(name) == 0)
-            return GetEntityInsidePercent(entity.get());
-    }
+    for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
+        if (!it->first.expired() && it->first.lock()->Name().compare(name) == 0)
+            return GetEntityInsidePercent(it->first.lock().get());
     return 0.f;
 }
 
@@ -128,8 +125,8 @@ bool EC_VolumeTrigger::IsInterestingEntity(const QString &name) const
 
 bool EC_VolumeTrigger::IsPivotInside(Entity *entity) const
 {
-    boost::shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
-    boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+    shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
+    shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
     if (placeable && rigidbody)
     {
         const Transform& trans = placeable->transform.Get();
@@ -144,7 +141,7 @@ bool EC_VolumeTrigger::IsPivotInside(Entity *entity) const
 
 bool EC_VolumeTrigger::IsInsideVolume(const float3& point) const
 {
-    boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+    shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
     if (!rigidbody)
     {
         LogWarning("Volume has no EC_RigidBody.");
@@ -185,7 +182,7 @@ void EC_VolumeTrigger::CheckForRigidBody()
     
     if (!rigidbody_.lock())
     {
-        boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>();
+        shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>();
         if (rigidbody)
         {
             rigidbody_ = rigidbody;
@@ -198,23 +195,22 @@ void EC_VolumeTrigger::CheckForRigidBody()
 void EC_VolumeTrigger::OnPhysicsUpdate()
 {
     PROFILE(EC_VolumeTrigger_OnPhysicsUpdate);
-    QMap<EntityWeakPtr, bool>::iterator i = entities_.begin();
-    while(i != entities_.end())
+    for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
     {
-        if (!i.value())
+        if (!it->first.expired())
         {
-            EntityPtr entity = i.key().lock();
+            EntityPtr entity = it->first.lock();
             bool active = true;
             // inactive rigid bodies don't generate collisions, so before emitting EntityLeave -event, make sure the body is active.
             if (entity)
             {
-                boost::shared_ptr<EC_RigidBody> rigidbody = entity->GetComponent<EC_RigidBody>();
+                shared_ptr<EC_RigidBody> rigidbody = entity->GetComponent<EC_RigidBody>();
                 if (rigidbody)
                     active = rigidbody->IsActive();
             }
             if (active)
             {
-                i = entities_.erase(i);
+                it = entities_.erase(it);
                 
                 if (entity)
                 {
@@ -226,9 +222,8 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
         } else
         {
             // Age the internal bool from true to false to signal that this collision is now an old one.
-            entities_.insert(i.key(), false);
+            entities_[it->first] = false;
         }
-        ++i;
     }
 }
 
@@ -257,19 +252,17 @@ void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const float3& pos
             connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
         }
     }
-    entities_.insert(entity, true);
+    entities_[entity] = true;
 }
 
 /** Called when the given entity is deleted from the scene. In that case, remove the Entity immediately from our tracking data structure (and signal listeners). */
 void EC_VolumeTrigger::OnEntityRemoved(Entity *entity)
 {
     assert(entity);
-    EntityWeakPtr ptr = entity->shared_from_this();
-    QMap<EntityWeakPtr, bool>::iterator i = entities_.find(ptr);
+    EntitiesWithinVolumeMap::iterator i = entities_.find(entity->shared_from_this());
     if (i != entities_.end())
     {
         entities_.erase(i);
         emit entityLeave(entity);
     }
 }
-

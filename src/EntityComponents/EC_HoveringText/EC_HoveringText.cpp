@@ -258,7 +258,7 @@ void EC_HoveringText::Redraw()
         {
             textureName_ = framework->Asset()->GenerateUniqueAssetName("tex", "EC_HoveringText_").toStdString();
             QString name(textureName_.c_str());
-            texture_  = boost::dynamic_pointer_cast<TextureAsset>(framework->Asset()->CreateNewAsset("Texture", name));
+            texture_  = dynamic_pointer_cast<TextureAsset>(framework->Asset()->CreateNewAsset("Texture", name));
             assert(texture_);
             if (texture_ == 0)
             {
@@ -401,7 +401,7 @@ void EC_HoveringText::OnMaterialAssetFailed(IAssetTransfer* transfer, QString re
 
 void EC_HoveringText::RecreateMaterial()
 {
-    boost::shared_ptr<OgreMaterialAsset> materialAsset = boost::dynamic_pointer_cast<OgreMaterialAsset>(framework->Asset()->GetAsset(material.Get().ref));
+    shared_ptr<OgreMaterialAsset> materialAsset = dynamic_pointer_cast<OgreMaterialAsset>(framework->Asset()->GetAsset(material.Get().ref));
     if (!materialAsset)
         return;
 

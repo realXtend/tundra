@@ -108,7 +108,7 @@ private:
     void ApplyHighlightColors();
         
     /// Mesh component pointer
-    boost::weak_ptr<EC_Mesh> mesh_;
+    weak_ptr<EC_Mesh> mesh_;
     
     /// Ogre World
     OgreWorldWeakPtr world_;

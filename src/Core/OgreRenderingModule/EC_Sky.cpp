@@ -14,8 +14,6 @@
 
 #include <Ogre.h>
 
-#include <boost/make_shared.hpp>
-
 #include "MemoryLeakCheck.h"
 
 namespace
@@ -47,7 +45,7 @@ EC_Sky::EC_Sky(Scene* scene) :
     if (scene)
         ogreWorld = scene->GetWorld<OgreWorld>();
 
-    materialAsset = boost::make_shared<AssetRefListener>();
+    materialAsset = MAKE_SHARED(AssetRefListener);
     connect(materialAsset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 }
 
@@ -93,7 +91,7 @@ void EC_Sky::AttributesChanged()
         while(textureAssets.size() > (size_t)textures.Size())
             textureAssets.pop_back();
         while(textureAssets.size() < (size_t)textures.Size())
-            textureAssets.push_back(boost::make_shared<AssetRefListener>());
+            textureAssets.push_back(MAKE_SHARED(AssetRefListener));
 
         for(int i = 0; i < textures.Size(); ++i)
         {
@@ -124,7 +122,7 @@ void EC_Sky::Update()
 
 void EC_Sky::OnMaterialAssetLoaded(AssetPtr mat)
 {
-    OgreMaterialAssetPtr material = boost::dynamic_pointer_cast<OgreMaterialAsset>(mat);
+    OgreMaterialAssetPtr material = dynamic_pointer_cast<OgreMaterialAsset>(mat);
     if (!material)
         return;
     if (material->ogreMaterial.isNull())

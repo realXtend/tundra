@@ -15,18 +15,23 @@
 
 ## Various flags/defines that configure your build
 
-set(TUNDRACORE_SHARED 1)           # Do we want to build TundraCore as a shared or static library.
-set(BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
-set(BUILDING_INSTALLER 0)          # Enables additional resources to create icon for the main executable.
-set(ENABLE_BUILD_OPTIMIZATIONS 0)  # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
+set(TUNDRACORE_SHARED 1)            # Do we want to build TundraCore as a shared or static library.
+set(BUILD_SDK_ONLY 0)               # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
+set(BUILDING_INSTALLER 0)           # Enables additional resources to create icon for the main executable.
+set(ENABLE_BUILD_OPTIMIZATIONS 0)   # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
 if (NOT ANDROID)
-    set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
-    set (ENABLE_SKYX 1)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
-    set (ENABLE_OPEN_ASSET_IMPORT 1)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
+    set(ENABLE_HYDRAX 1)            # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
+    set(ENABLE_SKYX 1)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
+    set(ENABLE_OPEN_ASSET_IMPORT 1) # Enables Open Asset Import Library, which can be used to import various mesh formats.
 else()
-    set (ENABLE_HYDRAX 0)
-    set (ENABLE_SKYX 0)
-    set (ENABLE_OPEN_ASSET_IMPORT 0)
+    set(ENABLE_HYDRAX 0)
+    set(ENABLE_SKYX 0)
+    set(ENABLE_OPEN_ASSET_IMPORT 0)
+endif()
+
+# TUNDRA_NO_BOOST is configured in the root CMakeLists.txt
+if (TUNDRA_NO_BOOST)
+    add_definitions(-DTUNDRA_NO_BOOST)
 endif()
 
 if (ENABLE_OPEN_ASSET_IMPORT)
@@ -142,8 +147,11 @@ endif()
 AddProject(Application SceneWidgetComponents)   # Provides ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application BrowserUiPlugin)         # Provides a browser UI for the client. Features multi-tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 if (NOT APPLE AND NOT ANDROID)
-   AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
-   AddProject(Application VlcPlugin)              # Adds media playback capabilities with libVLC and entity components.
+    AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
+    # Currently not possible to build VlcPlugin when doing VC9 No-Boost build as it requires the cstdint definitions from Boost.
+    if (NOT TUNDRA_NO_BOOST)
+        AddProject(Application VlcPlugin)              # Adds media playback capabilities with libVLC and entity components.
+    endif()
 endif()
 
 #AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.

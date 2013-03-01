@@ -3,7 +3,7 @@ init_target (BrowserUiPlugin OUTPUT plugins)
 
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-QT4_WRAP_CPP(MOC_FILES ${H_FILES})
+QT4_WRAP_CPP(MOC_FILES BrowserUiPlugin.h CookieJar.h)
 
 UseTundraCore()
 use_core_modules(TundraCore Math)

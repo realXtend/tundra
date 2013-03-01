@@ -33,8 +33,7 @@ For the latest info, see http://www.ogre3d.org/
 
 // Last update jan 19 2010
 
-#ifndef incl_OgreRenderingModule_StereoManager_h_
-#define incl_OgreRenderingModule_StereoManager_h_
+#pragma once
 
 #include <Ogre.h>
 #include <map>
@@ -293,5 +292,3 @@ namespace CAVEStereo
         OgreRenderer::Renderer* getRenderer() { return renderer_; }
     };
 }
-
-#endif
