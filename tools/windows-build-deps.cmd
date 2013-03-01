@@ -165,7 +165,7 @@ IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-%QT_VER%.zip. (
       cecho {0D}Downloading Qt %QT_VER%. Please be patient, this will take a while.{# #}{\n}
-      wget http://download.qt.nokia.com/qt/source/qt-everywhere-opensource-src-%QT_VER%.zip
+      wget ftp://ftp.qt-project.org/qt/source/qt-everywhere-opensource-src-%QT_VER%.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
