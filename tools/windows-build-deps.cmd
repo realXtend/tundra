@@ -816,9 +816,9 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
     IF %GENERATOR%==%GENERATOR_VS2008% (
         :: Upgrade the VS2005 files to VS2008
         cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
-        VCUpgrade libprotobuf.vcproj /nologo
-        VCUpgrade libprotoc.vcproj /nologo
-        VCUpgrade protoc.vcproj /nologo
+        vcbuild /c /upgrade libprotobuf.vcproj $ALL
+        vcbuild /c /upgrade libprotoc.vcproj Release
+        vcbuild /c /upgrade protoc.vcproj Release
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     ) ELSE (
         :: Command-line upgrading from VS2005 format to VS2010 (or newer) format fails,
