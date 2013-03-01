@@ -90,7 +90,7 @@ macro(configure_ogre)
             link_directories(${OGRE_DIR})
         endif()
         message(STATUS "Using Ogre from directory " ${OGRE_DIR})
-    elseif (IS_DIRECTORY ${OGRE_DIR}/OgreMain) # Ogre path points to #1 above.    
+    elseif (IS_DIRECTORY ${OGRE_DIR}/OgreMain) # Ogre path points to #1 above.
         include_directories(${OGRE_DIR}/include)
         include_directories(${OGRE_DIR}/OgreMain/include)
         if (WIN32)
@@ -104,8 +104,10 @@ macro(configure_ogre)
         link_directories(${OGRE_DIR}/lib)
         if (WIN32)
             include_directories(${OGRE_DIR}/include/OGRE/RenderSystems/Direct3D9)
-            link_directories(${OGRE_DIR}/lib/opt)
-            link_directories(${OGRE_DIR}/lib/$(OutDir)/opt)
+            # Note: VC9 uses $(ConfigurationName), but #VC10 and onwards uses $(Configuration).
+            # However VC10 seems to able to $(ConfigurationName) also, so use that.
+            link_directories(${OGRE_DIR}/lib/$(ConfigurationName))
+            link_directories(${OGRE_DIR}/lib/$(ConfigurationName)/opt)
         endif()
         message(STATUS "Using Ogre from SDK directory " ${OGRE_DIR})
     else()
