@@ -334,7 +334,7 @@ namespace MumbleNetwork
 
     typedef std::list<MumbleNetwork::PendingMessage> PendingMessageList;
 
-    static QString PermissionName(ACLPermission p) 
+    inline QString PermissionName(ACLPermission p) 
     {
         switch (p) 
         {
