@@ -1008,7 +1008,8 @@ void MumblePlugin::OnUserUpdate(MumbleNetwork::MumbleUserState userState)
     }
 }
 
-void MumblePlugin::OnUserLeft(uint id, uint actorId, bool banned, bool kicked, QString reason)
+/// @todo Handle actorId, banned and kicked?
+void MumblePlugin::OnUserLeft(uint id, uint /*actorId*/, bool /*banned*/, bool /*kicked*/, QString reason)
 {
     if (!state.serverSynced)
     {
