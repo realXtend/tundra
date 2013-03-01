@@ -19,7 +19,7 @@ EC_StencilGlow::EC_StencilGlow(Scene *scene) :
     outlineSceneNode_(0),
     enabled(this, "enabled", false),
     isEnabled(false),
-    color(this, "color", Color(1.f, 1.f, 1.f, 0.4))
+    color(this, "color", Color(1.f, 1.f, 1.f, 0.4f))
 {
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
@@ -86,7 +86,7 @@ void EC_StencilGlow::CreateStencilGlow()
         if (mgr)
         {
             outlineSceneNode_ = entity->getParentSceneNode()->createChildSceneNode(entity->getName() + "_outlineGlowNode");
-            outlineSceneNode_->setScale(Ogre::Vector3(1.08, 1.08, 1.08));
+            outlineSceneNode_->setScale(Ogre::Vector3(1.08f, 1.08f, 1.08f));
         }
     }
 }
