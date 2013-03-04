@@ -22,6 +22,8 @@ bool RelevanceFilter::Filter(IMParameters params)
 
         relevancefactor = 1.f - (params.distance - (critical_range_ * critical_range_)) / ((range_ * range_) - (critical_range_ * critical_range_));
 
+        im_->UpdateRelevance(params.connection, params.changed_entity->Id(), relevancefactor);
+
         if(relevancefactor <= 0)
             return false;
 
