@@ -148,10 +148,7 @@ AddProject(Application SceneWidgetComponents)   # Provides ECs for injecting var
 AddProject(Application BrowserUiPlugin)         # Provides a browser UI for the client. Features multi-tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 if (NOT APPLE AND NOT ANDROID)
     AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
-    # Currently not possible to build VlcPlugin when doing VC9 No-Boost build as it requires the cstdint definitions from Boost.
-    if (NOT TUNDRA_NO_BOOST)
-        AddProject(Application VlcPlugin)              # Adds media playback capabilities with libVLC and entity components.
-    endif()
+    AddProject(Application VlcPlugin)              # Adds media playback capabilities with libVLC and entity components.
 endif()
 
 #AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.
