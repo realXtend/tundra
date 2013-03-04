@@ -197,7 +197,7 @@ private:
     char removeAttrsBuffer_[1024];
     std::vector<u8> changedAttributes_;
 
-    InterestManager *interestManager;
+    InterestManager *interestmanager_;
 };
 
 }
