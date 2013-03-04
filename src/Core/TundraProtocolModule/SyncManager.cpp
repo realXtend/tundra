@@ -1611,10 +1611,11 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
 */
     //Finally update the orientation and location
 
-    if(user->syncState->initialLocation.IsFinite()) //If this is the first camera update, save it to the initialPosition variable
+    if(!user->syncState->locationInitialized)  //If this is the first camera update, save it to the initialPosition variable
     {
         user->syncState->initialLocation = clientpos;
         user->syncState->initialOrientation = orientation;
+        user->syncState->locationInitialized = true;
     }
 
     user->syncState->clientOrientation = orientation;
