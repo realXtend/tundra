@@ -68,34 +68,11 @@ bool RayVisibilityFilter::Filter(IMParameters params)
 
             else
             {
-//#ifdef IM_DEBUG
                 Ray ray(params.client_position, (params.entity_position - params.client_position).Normalized());
                 RaycastResult *result = 0;
                 OgreWorldPtr w = params.scene->GetWorld<OgreWorld>();
 
                 result = w->Raycast(ray, 0xFFFFFFFF);
-//#endif
-
-#if 0
-                /// Hack, lets try to detect entities with EC_Cameras IsEntityVisible function
-                EntityPtr cameraentity = params.scene->CreateEntity(0, QStringList(), AttributeChange::LocalOnly, false, false);
-
-                ComponentPtr cameracomponent = cameraentity->GetOrCreateComponent("EC_Camera");
-                EC_Camera *camera = checked_static_cast<EC_Camera*>(cameracomponent.get());
-
-                ComponentPtr placeablecomponent = cameraentity->GetOrCreateComponent("EC_Placeable");
-                EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeablecomponent.get());
-
-                placeable->SetPosition(params.connection->syncState->clientLocation);
-                placeable->SetOrientation(params.connection->syncState->clientOrientation.Normalized());
-
-                // Crank up the FOV
-                camera->setverticalFov(179);
-
-                bool visible = camera->IsEntityVisible(params.changed_entity);
-
-                params.scene->DeleteEntityById(cameraentity->Id());
-#endif
                 im_->UpdateLastRaycastedEntity(params.connection, params.changed_entity->Id());
 
                 if(result && result->entity && result->entity->Id() == params.changed_entity->Id())  //If the ray hit someone and its our target entity
