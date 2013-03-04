@@ -69,7 +69,7 @@ public slots:
         @param int relrange specifies the radius for the relevance filtering.
         @param int updateint specifies the update interval for the relevance filtering.
         @param int raycastint specifies the raycasting interval for the ray visibility filter. */
-    void UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint);
+    void UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int relrange, int updateint, int raycastint);
 
     void SendCameraUpdateRequest(UserConnectionPtr conn, bool enabled);
 

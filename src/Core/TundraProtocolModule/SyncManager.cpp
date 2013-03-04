@@ -123,7 +123,7 @@ void SyncManager::SendCameraUpdateRequest(UserConnectionPtr conn, bool enabled)
     QueueMessage(conn->connection, cCameraOrientationRequest, true, true, ds);
 }
 
-void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int rayrange, int relrange, int updateint, int raycastint)
+void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int relrange, int updateint, int raycastint)
 {
     Scene *scene = framework_->Scene()->MainCameraScene();
 
@@ -169,7 +169,7 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
 
         SetInterestManager(IM);
 
-        LogInfo("InterestManager Settings Updated");
+        LogInfo("InterestManager Settings Updated. Using " + filter->ToString() + " filter");
     }
 }
 

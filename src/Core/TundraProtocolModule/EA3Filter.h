@@ -17,6 +17,8 @@ public:
 
     bool Filter(IMParameters params);
 
+    QString ToString();
+
 private:
 
     InterestManager *im_;

@@ -22,6 +22,11 @@ A3Filter::~A3Filter()
     delete relevance_;
 }
 
+QString A3Filter::ToString()
+{
+    return QString("A3");
+}
+
 bool A3Filter::Filter(IMParameters params)
 {
     PROFILE(A3_Filter);

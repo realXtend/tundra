@@ -13,9 +13,11 @@ public:
 
     EuclideanDistanceFilter(InterestManager *im, int criticaldistance, bool enabled);
 
-    ~EuclideanDistanceFilter();
+    ~EuclideanDistanceFilter() {}
 
     bool Filter(IMParameters params);
+
+    QString ToString();
 
 private:
 

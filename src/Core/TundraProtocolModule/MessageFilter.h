@@ -41,12 +41,14 @@ class MessageFilter
 public:
 
     MessageFilter(IMFilter type, bool enabled) : type_(type), enabled_(enabled) {}
+    virtual ~MessageFilter() {}
 
     virtual bool Filter(IMParameters params) = 0;
 
     virtual void SetEnabled(bool e)     { enabled_ = e; }
     virtual bool Enabled()              { return enabled_; }
     virtual IMFilter Info()             { return type_; }
+    virtual QString ToString() = 0;
 
 protected:
     IMFilter type_;

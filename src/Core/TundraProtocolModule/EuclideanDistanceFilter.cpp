@@ -12,6 +12,11 @@ EuclideanDistanceFilter::EuclideanDistanceFilter(InterestManager *im, int critic
 
 }
 
+QString EuclideanDistanceFilter::ToString()
+{
+    return QString("Euclidean distance");
+}
+
 bool EuclideanDistanceFilter::Filter(IMParameters params)
 {
     PROFILE(EuclideanDistance_Filter);

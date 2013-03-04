@@ -13,9 +13,11 @@ public:
 
     RayVisibilityFilter(InterestManager *im, int r, int interval, bool enabled);
 
-    ~RayVisibilityFilter();
+    ~RayVisibilityFilter() {}
 
     bool Filter(IMParameters params);
+
+    QString ToString();
 
 private:
 

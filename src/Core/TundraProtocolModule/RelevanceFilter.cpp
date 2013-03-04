@@ -16,6 +16,11 @@ RelevanceFilter::RelevanceFilter(InterestManager *im, int r, int cr, int interva
 
 }
 
+QString RelevanceFilter::ToString()
+{
+    return QString("Relevance");
+}
+
 bool RelevanceFilter::Filter(IMParameters params)
 {   
     PROFILE(Relevance_Filter);

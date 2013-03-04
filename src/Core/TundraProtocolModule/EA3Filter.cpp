@@ -25,6 +25,11 @@ EA3Filter::~EA3Filter()
     delete relevance_;
 }
 
+QString EA3Filter::ToString()
+{
+    return QString("EA3");
+}
+
 bool EA3Filter::Filter(IMParameters params)
 {
     PROFILE(EA3_Filter);

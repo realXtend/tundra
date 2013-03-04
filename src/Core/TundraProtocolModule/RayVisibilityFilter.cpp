@@ -22,6 +22,11 @@ RayVisibilityFilter::RayVisibilityFilter(InterestManager *im, int r, int interva
 
 }
 
+QString RayVisibilityFilter::ToString()
+{
+    return QString("Rayvisibility");
+}
+
 bool RayVisibilityFilter::Filter(IMParameters params)
 {
     PROFILE(RayVisibility_Filter);

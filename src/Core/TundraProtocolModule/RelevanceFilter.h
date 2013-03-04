@@ -13,9 +13,11 @@ public:
 
     RelevanceFilter(InterestManager *im, int r, int cr, int interval, bool enabled);
 
-    ~RelevanceFilter();
+    ~RelevanceFilter() {}
 
     bool Filter(IMParameters params);
+
+    QString ToString();
 
 private:
 
