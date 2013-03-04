@@ -148,7 +148,7 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
         InterestManager *IM = 0;
         MessageFilter *filter = 0;
 
-        if(enabled == false)    //If IM is not enabled, delete the IM altogether
+        if(enabled == false)    //If IM is not enabled, delete the IM
         {
             SetInterestManager(0);
             return;
@@ -162,14 +162,14 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
         else if(eucl && rel && !ray)    //Combination that the A3 uses
             filter = new A3Filter(IM, critrange, relrange, updateint, true);
 
-        else                            //In other case enable Euclidean Distance Filter
+        else                            //As a last resort enable Euclidean Distance Filter
             filter = new EuclideanDistanceFilter(IM, critrange, true);
 
         IM->AssignFilter(filter);
 
         SetInterestManager(IM);
 
-        LogInfo("InterestManager Settings Updated. Using " + filter->ToString() + " filter");
+        LogInfo("InterestManager Settings Updated. Using " + filter->ToString() + " to filter out unnecessary network messages");
     }
 }
 
@@ -1617,14 +1617,6 @@ void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const
 
     user->syncState->clientOrientation = orientation;
     user->syncState->clientLocation = clientpos;
-
-#if 0
-    ::LogError(
-                " Location: x: "   + QString::number(clientpos.x) +
-                " y: "             + QString::number(clientpos.y) +
-                " z: "             + QString::number(clientpos.z)
-              );
-#endif
 }
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)
