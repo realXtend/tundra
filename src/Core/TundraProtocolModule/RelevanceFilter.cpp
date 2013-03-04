@@ -23,7 +23,6 @@ QString RelevanceFilter::ToString()
 
 bool RelevanceFilter::Filter(IMParameters params)
 {   
-    PROFILE(Relevance_Filter);
     if(enabled_)
     {
         float relevancefactor = 0;

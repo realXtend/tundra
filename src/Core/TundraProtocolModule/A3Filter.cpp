@@ -29,8 +29,6 @@ QString A3Filter::ToString()
 
 bool A3Filter::Filter(IMParameters params)
 {
-    PROFILE(A3_Filter);
-
     if(enabled_)
     {
         if(euclideandistance_->Filter(params))

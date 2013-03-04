@@ -19,8 +19,6 @@ QString EuclideanDistanceFilter::ToString()
 
 bool EuclideanDistanceFilter::Filter(IMParameters params)
 {
-    PROFILE(EuclideanDistance_Filter);
-
     if(enabled_)
     {
         float cutoffrange = radius_ * radius_;

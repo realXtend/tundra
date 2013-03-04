@@ -31,8 +31,7 @@ QString EA3Filter::ToString()
 }
 
 bool EA3Filter::Filter(IMParameters params)
-{
-    PROFILE(EA3_Filter);
+{  
     if(enabled_)
     {
         if(euclideandistance_->Filter(params))

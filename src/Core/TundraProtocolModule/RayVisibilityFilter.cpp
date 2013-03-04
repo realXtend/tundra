@@ -29,8 +29,6 @@ QString RayVisibilityFilter::ToString()
 
 bool RayVisibilityFilter::Filter(IMParameters params)
 {
-    PROFILE(RayVisibility_Filter);
-
     if(enabled_)
     {
         float cutoffrange = range_ * range_;

@@ -47,6 +47,7 @@ int InterestManager::ElapsedTime()
 bool InterestManager::CheckRelevance(UserConnectionPtr conn, Entity* changed_entity, SceneWeakPtr scene_, bool headless)
 {
     PROFILE(Interest_Management);
+
     ScenePtr scene = scene_.lock();
 
     if (!scene)
