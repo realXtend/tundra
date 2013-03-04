@@ -11,6 +11,8 @@ IF "%VSINSTALLDIR%"=="" (
 )
 
 call VSConfig.cmd %1
+:: Make sure deps folder exists.
+IF NOT EXIST "%DEPS%". mkdir "%DEPS%"
 
 :: User-defined variables
 set BUILD_RELEASE=FALSE
