@@ -169,25 +169,25 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
 
 InterestManager* SyncManager::GetInterestManager()
 {
-    if(!interestManager)
-        interestManager = InterestManager::getInstance();
+    if(!interestmanager_)
+        interestmanager_ = InterestManager::getInstance();
 
-    return interestManager;
+    return interestmanager_;
 }
 
 void SyncManager::SetInterestManager(InterestManager *im)
 {
-    if(!im && !interestManager)
+    if(!im && !interestmanager_)
         return;
 
-    else if(!im && interestManager)
+    else if(!im && interestmanager_)
     {
-        delete interestManager;
-        interestManager = 0;
+        delete interestmanager_;
+        interestmanager_ = 0;
     }
 
     else
-        interestManager = im;
+        interestmanager_ = im;
 }
 
 void SyncManager::SetUpdatePeriod(float period)
@@ -344,7 +344,7 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
     user->syncState = boost::make_shared<SceneSyncState>(user->ConnectionId(), owner_->IsServer());
     user->syncState->SetParentScene(scene_);
 
-    if(interestManager) //If the server is running InterestManager, inform the connected user that the server wants camera updates
+    if(interestmanager_) //If the server is running InterestManager, inform the connected user that the server wants camera updates
         SendCameraUpdateRequest(user, true);
 
     if (owner_->IsServer())
@@ -399,7 +399,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
             {
                 /// Check here if the attribute should be updated to which client?
                 /// @remarks InterestManager functionality
-                if(interestManager && !interestManager->CheckRelevance((*i), entity, scene_, framework_->IsHeadless()))
+                if(interestmanager_ && !interestmanager_->CheckRelevance((*i), entity, scene_, framework_->IsHeadless()))
                     continue;
 
                 else    //If IM is not available, accept the update

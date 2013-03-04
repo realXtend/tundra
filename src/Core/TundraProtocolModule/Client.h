@@ -184,6 +184,7 @@ private:
     float3 currentcameralocation_;
     // Variable controlling whether or not to send camera orientation updates
     bool sendCameraUpdates_;
+    bool sendInitialCameraUpdate_;
 };
 
 }
